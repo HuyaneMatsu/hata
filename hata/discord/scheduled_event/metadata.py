@@ -1,7 +1,30 @@
-__all__ = ('ScheduledEventEntityMetadata', 'StageEntityMetadata')
+__all__ = ('LocationEntityMetadata', 'ScheduledEventEntityMetadata', 'StageEntityMetadata')
 
 from ..user import ClientUserBase, create_partial_user_from_id
 from scarletio import copy_docs
+
+def try_get_scheduled_event_metadata_type_from_data(data):
+    """
+    Tries to detect what type of scheduled metadata the given data is.
+    
+    Parameters
+    ----------
+    data : `dict` of (`str`, `str`) items
+        Scheduled event metadata type.
+    
+    Returns
+    -------
+    metadata_type : `None` or `type`
+    """
+    if 'location' in data:
+        metadata_type = LocationEntityMetadata
+    elif 'speaker_ids' in data:
+        metadata_type = StageEntityMetadata
+    else:
+        metadata_type = None
+    
+    return metadata_type
+
 
 class ScheduledEventEntityMetadata:
     """

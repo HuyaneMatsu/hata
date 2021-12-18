@@ -8,6 +8,11 @@
 - Add `ApplicationFlag.embedded_released`.
 - Add `ApplicationFlag.embedded_first_party`.
 - Add `ApplicationCommandOptionType.attachment`.
+- Add `creator` transformer to audit logs.
+- Add `entity_id` transformer to audit logs.
+- Add `entity_metadata` transformer to audit logs.
+- Add `end` transformer to audit logs.
+- Add `start` transformer to audit logs.
 
 ##### ext.asyncio
 - Add attachment converter to slash commands.

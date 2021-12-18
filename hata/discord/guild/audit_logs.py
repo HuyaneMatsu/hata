@@ -1,11 +1,9 @@
 __all__ = ('AuditLog', 'AuditLogEntry', 'AuditLogIterator', 'AuditLogChange', )
 
-import warnings
-
 from ...env import API_VERSION
 
 from ..utils import Unknown, now_as_id, id_to_datetime, timestamp_to_datetime
-from ..core import CHANNELS, USERS, ROLES, MESSAGES, SCHEDULED_EVENTS
+from ..core import CHANNELS, USERS, ROLES, MESSAGES
 from ..permission import Permission
 from ..color import Color
 from ..user import User, ClientUserBase
@@ -15,6 +13,7 @@ from ..integration import Integration
 from ..bases import Icon, maybe_snowflake
 from ..channel import VideoQualityMode, ChannelThread
 from ..scheduled_event import ScheduledEventStatus, ScheduledEventEntityType, PrivacyLevel, ScheduledEvent
+from ..scheduled_event.metadata import try_get_scheduled_event_metadata_type_from_data
 from ..emoji import create_unicode_emoji
 
 from .utils import create_partial_guild_from_id
@@ -1191,6 +1190,25 @@ def transform_scheduled_event_entity_type(name, data):
     
     return AuditLogChange('entity_type', before, after)
 
+def transform_scheduled_event_entity_metadata(name, data):
+    before = data.get('old_value', None)
+    if (before is not None):
+        metadata_type = try_get_scheduled_event_metadata_type_from_data(before)
+        if metadata_type is None:
+            before = None
+        else:
+            before = metadata_type(before)
+    
+    after = data.get('new_value', None)
+    if (after is not None):
+        metadata_type = try_get_scheduled_event_metadata_type_from_data(after)
+        if metadata_type is None:
+            after = None
+        else:
+            after = metadata_type(after)
+    
+    return AuditLogChange('entity_metadata', before, after)
+
 
 def transform_snowflake_array(name, data):
     before = data.get('old_value', None)
@@ -1240,6 +1258,38 @@ def transform_timestamp__timed_out_until(name, data):
     return AuditLogChange('timed_out_until', before, after)
 
 
+def transform_timestamp__end(name, data):
+    before = data.get('old_value', None)
+    if (before is None):
+        before = None
+    else:
+        before = timestamp_to_datetime(before)
+    
+    after = data.get('new_value', None)
+    if (after is None):
+        after = None
+    else:
+        after = timestamp_to_datetime(after)
+    
+    return AuditLogChange('end', before, after)
+
+
+def transform_timestamp__start(name, data):
+    before = data.get('old_value', None)
+    if (before is None):
+        before = None
+    else:
+        before = timestamp_to_datetime(before)
+    
+    after = data.get('new_value', None)
+    if (after is None):
+        after = None
+    else:
+        after = timestamp_to_datetime(after)
+    
+    return AuditLogChange('start', before, after)
+
+
 TRANSFORMERS = {
     '$add': transform_roles,
     '$remove': transform_roles,
@@ -1257,6 +1307,7 @@ TRANSFORMERS = {
     # code (str)
     'color': transform_color,
     'communication_disabled_until': transform_timestamp__timed_out_until,
+    'creator': transform_user,
     # deaf (bool)
     # description (None or str)
     'default_message_notifications': transform_message_notification,
@@ -1265,6 +1316,8 @@ TRANSFORMERS = {
     'deny_new': transform_permission if API_VERSION in (6, 7) else transform_deprecated,
     'discovery_splash_hash' : transform_icon,
     # enable_emoticons (bool)
+    'entity_id': transform_snowflake,
+    'entity_metadata' : transform_scheduled_event_entity_metadata,
     'entity_type': transform_scheduled_event_entity_type,
     # expire_behavior (int)
     # expire_grace_period (int)
@@ -1294,6 +1347,9 @@ TRANSFORMERS = {
     'rate_limit_per_user': transform_int__slowmode,
     'region': transform_region,
     'rules_channel_id': transform_snowflake,
+    'scheduled_end_time': transform_timestamp__end,
+    'scheduled_start_time': transform_timestamp__start,
+    # send_start_notification (bool)
     'sku_ids': transform_snowflake_array,
     'splash_hash': transform_icon,
     'status': transform_scheduled_event_status,
@@ -1343,6 +1399,9 @@ del transform_snowflake_array
 del transform_unicode_emoji
 del transform_bool__boost_progress_bar_enabled
 del transform_timestamp__timed_out_until
+del transform_scheduled_event_entity_metadata
+del transform_timestamp__end
+del transform_timestamp__start
 
 class AuditLogChange:
     """
@@ -1366,7 +1425,7 @@ class AuditLogChange:
     +===============================+===============================================+
     | account_id                    | `None` or `int`                               |
     +-------------------------------+-----------------------------------------------+
-    | afk_channel_id                | `int`                                         |
+    | afk_channel_id                | `None` or `int`                               |
     +-------------------------------+-----------------------------------------------+
     | allow                         | `None` or ``Permission``                      |
     +-------------------------------+-----------------------------------------------+
@@ -1382,13 +1441,17 @@ class AuditLogChange:
     +-------------------------------+-----------------------------------------------+
     | bitrate                       | `None` or `int`                               |
     +-------------------------------+-----------------------------------------------+
-    | boost_progress_bar_enabled    | `bool`                                        |
+    | boost_progress_bar_enabled    | `None` or `bool`                              |
     +-------------------------------+-----------------------------------------------+
     | channel                       | `None` or ``ChannelGuildBase`` instance       |
     +-------------------------------+-----------------------------------------------+
     | code                          | `None` or `str`                               |
     +-------------------------------+-----------------------------------------------+
     | color                         | `None` or ``Color``                           |
+    +-------------------------------+-----------------------------------------------+
+    | communication_disabled_until  | `None` or `datetime`                          |
+    +-------------------------------+-----------------------------------------------+
+    | creator                       | `None` or ``ClientUserBase``                  |
     +-------------------------------+-----------------------------------------------+
     | content_filter                | `None` or ``ContentFilterLevel``              |
     +-------------------------------+-----------------------------------------------+
@@ -1405,6 +1468,12 @@ class AuditLogChange:
     | discovery_splash              | `None` or ``Icon``                            |
     +-------------------------------+-----------------------------------------------+
     | enable_emoticons              | `None` or `bool`                              |
+    +-------------------------------+-----------------------------------------------+
+    | end                           | `None` or `datetime`                          |
+    +-------------------------------+-----------------------------------------------+
+    | entity_id                     | `None` or `int`                               |
+    +-------------------------------+-----------------------------------------------+
+    | entity_metadata               | `None` or ``ScheduledEventEntityMetadata``    |
     +-------------------------------+-----------------------------------------------+
     | entity_type                   | `None` or ``ScheduledEventEntityType``        |
     +-------------------------------+-----------------------------------------------+
@@ -1442,7 +1511,7 @@ class AuditLogChange:
     +-------------------------------+-----------------------------------------------+
     | position                      | `None` or `int`                               |
     +-------------------------------+-----------------------------------------------+
-    | public_updates_channel_id     | `int`                                         |
+    | public_updates_channel_id     | `None` or `int`                               |
     +-------------------------------+-----------------------------------------------+
     | overwrites                    | `None` or `list` of ``PermissionOverwrite``   |
     +-------------------------------+-----------------------------------------------+
@@ -1454,15 +1523,19 @@ class AuditLogChange:
     +-------------------------------+-----------------------------------------------+
     | role                          | `None` or `list` of ``Role``                  |
     +-------------------------------+-----------------------------------------------+
-    | rules_channel_id              | `int`                                         |
+    | rules_channel_id              | `None` or `int`                               |
     +-------------------------------+-----------------------------------------------+
     | separated                     | `None` or `bool`                              |
+    +-------------------------------+-----------------------------------------------+
+    | send_start_notification       | `None` or `bool`                              |
     +-------------------------------+-----------------------------------------------+
     | slowmode                      | `None` or `int`                               |
     +-------------------------------+-----------------------------------------------+
     | sku_ids                       | `None` or `tuple` of `int`                    |
     +-------------------------------+-----------------------------------------------+
-    | system_channel_id             | `int`                                         |
+    | start                         | `None` or `datetime`                          |
+    +-------------------------------+-----------------------------------------------+
+    | system_channel_id             | `None` or `int`                               |
     +-------------------------------+-----------------------------------------------+
     | system_channel_flags          | `None` or ``SystemChannelFlag``               |
     +-------------------------------+-----------------------------------------------+
@@ -1484,7 +1557,7 @@ class AuditLogChange:
     +-------------------------------+-----------------------------------------------+
     | verification_level            | `None` or ``VerificationLevel``               |
     +-------------------------------+-----------------------------------------------+
-    | widget_channel_id             | `int`                                         |
+    | widget_channel_id             | `None` or `int`                               |
     +-------------------------------+-----------------------------------------------+
     | widget_enabled                | `None` or `bool`                              |
     +-------------------------------+-----------------------------------------------+

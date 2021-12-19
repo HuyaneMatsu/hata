@@ -14,7 +14,11 @@ from ..channel import CHANNEL_TYPE_MAP, ChannelGuildBase, ChannelPrivate, Channe
 from ..utils import Relationship, Gift
 from ..guild import EMOJI_UPDATE_CREATE, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, VOICE_STATE_NONE, VOICE_STATE_JOIN, \
     VOICE_STATE_LEAVE, VOICE_STATE_UPDATE, Guild, STICKER_UPDATE_EDIT, STICKER_UPDATE_CREATE, STICKER_UPDATE_DELETE, \
-    VOICE_STATE_MOVE
+    VOICE_STATE_MOVE, GuildJoinRequestDeleteEvent, GuildJoinRequest
+from ..guild.embedded_activity_state import EMBEDDED_ACTIVITY_UPDATE_NONE, EMBEDDED_ACTIVITY_UPDATE_CREATE, \
+    EMBEDDED_ACTIVITY_UPDATE_DELETE, EMBEDDED_ACTIVITY_UPDATE_UPDATE, EMBEDDED_ACTIVITY_UPDATE_USER_ADD, \
+    EMBEDDED_ACTIVITY_UPDATE_USER_DELETE, difference_handle_embedded_activity_update_event, \
+    handle_embedded_update_event
 from ..role import Role
 from ..invite import Invite
 from ..message import EMBED_UPDATE_NONE, Message, MessageRepr
@@ -1929,6 +1933,7 @@ def GUILD_EMOJIS_UPDATE__CAL_SC(client, data):
             continue
         
         # no more case
+        continue
 
 def GUILD_EMOJIS_UPDATE__CAL_MC(client, data):
     guild_id = int(data['guild_id'])
@@ -1969,8 +1974,9 @@ def GUILD_EMOJIS_UPDATE__CAL_MC(client, data):
                     Task(event_handler(client_, emoji), KOKORO)
                 continue
             
-            continue
             # no more case
+            continue
+
 
 def GUILD_EMOJIS_UPDATE__OPT_SC(client, data):
     guild_id = int(data['guild_id'])
@@ -1981,6 +1987,7 @@ def GUILD_EMOJIS_UPDATE__OPT_SC(client, data):
         return
     
     guild._sync_emojis(data['emojis'])
+
 
 def GUILD_EMOJIS_UPDATE__OPT_MC(client, data):
     guild_id = int(data['guild_id'])
@@ -1994,6 +2001,7 @@ def GUILD_EMOJIS_UPDATE__OPT_MC(client, data):
         return
     
     guild._sync_emojis(data['emojis'])
+
 
 add_parser(
     'GUILD_EMOJIS_UPDATE',
@@ -2387,22 +2395,31 @@ del GUILD_MEMBER_REMOVE__CAL_SC, \
     GUILD_MEMBER_REMOVE__OPT_SC, \
     GUILD_MEMBER_REMOVE__OPT_MC
 
+
+def GUILD_JOIN_REQUEST_CREATE__CAL(client, data):
+    event = GuildJoinRequest(data)
+    
+    Task(client.events.guild_join_request_create(client, event), KOKORO)
+
+def GUILD_JOIN_REQUEST_CREATE__OPT(client, data):
+    pass
+
+
+add_parser(
+    'GUILD_JOIN_REQUEST_CREATE',
+    GUILD_JOIN_REQUEST_CREATE__CAL,
+    GUILD_JOIN_REQUEST_CREATE__CAL,
+    GUILD_JOIN_REQUEST_CREATE__OPT,
+    GUILD_JOIN_REQUEST_CREATE__OPT)
+del GUILD_JOIN_REQUEST_CREATE__CAL, \
+    GUILD_JOIN_REQUEST_CREATE__OPT
+
 # This is a low priority event. Is called after `GUILD_MEMBER_REMOVE`, so we should have everything cached.
 
 def GUILD_JOIN_REQUEST_DELETE__CAL(client, data):
-    guild_id = int(data['guild_id'])
-    try:
-        guild = GUILDS[guild_id]
-    except KeyError:
-        return
+    event = GuildJoinRequestDeleteEvent(data)
     
-    user_id = int(data['user_id'])
-    try:
-        user = USERS[user_id]
-    except KeyError:
-        return
-    
-    Task(client.events.guild_join_reject(client, guild, user), KOKORO)
+    Task(client.events.guild_join_request_delete(client, event), KOKORO)
 
 def GUILD_JOIN_REQUEST_DELETE__OPT(client, data):
     pass
@@ -2416,6 +2433,26 @@ add_parser(
     GUILD_JOIN_REQUEST_DELETE__OPT)
 del GUILD_JOIN_REQUEST_DELETE__CAL, \
     GUILD_JOIN_REQUEST_DELETE__OPT
+
+
+def GUILD_JOIN_REQUEST_UPDATE__CAL(client, data):
+    event = GuildJoinRequest(data)
+    
+    Task(client.events.guild_join_request_update(client, event), KOKORO)
+
+def GUILD_JOIN_REQUEST_UPDATE__OPT(client, data):
+    pass
+
+
+add_parser(
+    'GUILD_JOIN_REQUEST_UPDATE',
+    GUILD_JOIN_REQUEST_UPDATE__CAL,
+    GUILD_JOIN_REQUEST_UPDATE__CAL,
+    GUILD_JOIN_REQUEST_UPDATE__OPT,
+    GUILD_JOIN_REQUEST_UPDATE__OPT)
+del GUILD_JOIN_REQUEST_UPDATE__CAL, \
+    GUILD_JOIN_REQUEST_UPDATE__OPT
+
 
 if CACHE_PRESENCE:
     def GUILD_CREATE__CAL(client, data):
@@ -4355,3 +4392,160 @@ add_parser(
 del GUILD_SCHEDULED_EVENT_USER_REMOVE__CAL_SC, \
     GUILD_SCHEDULED_EVENT_USER_REMOVE__CAL_MC, \
     GUILD_SCHEDULED_EVENT_USER_REMOVE__OPT
+
+
+def EMBEDDED_ACTIVITY_UPDATE__CAL_SC(client, data):
+    embedded_activity_state, changes = difference_handle_embedded_activity_update_event(data)
+    
+    for action, value in changes:
+        
+        if action == EMBEDDED_ACTIVITY_UPDATE_CREATE:
+            event_handler = client.events.embedded_activity_create
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client, embedded_activity_state), KOKORO)
+            continue
+        
+        if action == EMBEDDED_ACTIVITY_UPDATE_DELETE:
+            event_handler = client.events.embedded_activity_delete
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client, embedded_activity_state), KOKORO)
+            continue
+        
+        if action == EMBEDDED_ACTIVITY_UPDATE_UPDATE:
+            event_handler = client.events.embedded_activity_update
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client, embedded_activity_state, value), KOKORO)
+            continue
+        
+        if action == EMBEDDED_ACTIVITY_UPDATE_USER_ADD:
+            event_handler = client.events.embedded_activity_user_add
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client, embedded_activity_state, value), KOKORO)
+            continue
+        
+        if action == EMBEDDED_ACTIVITY_UPDATE_USER_DELETE:
+            event_handler = client.events.embedded_activity_user_delete
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client, embedded_activity_state, value), KOKORO)
+            continue
+        
+        # no more cases
+        continue
+
+def EMBEDDED_ACTIVITY_UPDATE__CAL_MC(client, data):
+    guild_id = int(data['guild_id'])
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        clients = None
+    else:
+        clients = filter_clients(guild.clients, INTENT_MASK_GUILD_EMOJIS_AND_STICKERS)
+        if clients.send(None) is not client:
+            clients.close()
+            return
+    
+    embedded_activity_state, changes = difference_handle_embedded_activity_update_event(data)
+    if not changes:
+        if (clients is not None):
+            clients.close()
+        return
+    
+    if clients is None:
+        for action, value in changes:
+            
+            if action == EMBEDDED_ACTIVITY_UPDATE_CREATE:
+                event_handler = client.events.embedded_activity_create
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, embedded_activity_state), KOKORO)
+                continue
+            
+            if action == EMBEDDED_ACTIVITY_UPDATE_DELETE:
+                event_handler = client.events.embedded_activity_delete
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, embedded_activity_state), KOKORO)
+                continue
+            
+            if action == EMBEDDED_ACTIVITY_UPDATE_UPDATE:
+                event_handler = client.events.embedded_activity_update
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, embedded_activity_state, value), KOKORO)
+                continue
+            
+            if action == EMBEDDED_ACTIVITY_UPDATE_USER_ADD:
+                event_handler = client.events.embedded_activity_user_add
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, embedded_activity_state, value), KOKORO)
+                continue
+            
+            if action == EMBEDDED_ACTIVITY_UPDATE_USER_DELETE:
+                event_handler = client.events.embedded_activity_user_delete
+                if (event_handler is not DEFAULT_EVENT_HANDLER):
+                    Task(event_handler(client, embedded_activity_state, value), KOKORO)
+                continue
+            
+            # no more cases
+            continue
+    
+    else:
+        for client_ in clients:
+            for action, value in changes:
+                if action == EMBEDDED_ACTIVITY_UPDATE_CREATE:
+                    event_handler = client_.events.embedded_activity_create
+                    if (event_handler is not DEFAULT_EVENT_HANDLER):
+                        Task(event_handler(client_, embedded_activity_state), KOKORO)
+                    continue
+                
+                if action == EMBEDDED_ACTIVITY_UPDATE_DELETE:
+                    event_handler = client_.events.embedded_activity_delete
+                    if (event_handler is not DEFAULT_EVENT_HANDLER):
+                        Task(event_handler(client_, embedded_activity_state), KOKORO)
+                    continue
+                
+                if action == EMBEDDED_ACTIVITY_UPDATE_UPDATE:
+                    event_handler = client_.events.embedded_activity_update
+                    if (event_handler is not DEFAULT_EVENT_HANDLER):
+                        Task(event_handler(client_, embedded_activity_state, value), KOKORO)
+                    continue
+                
+                if action == EMBEDDED_ACTIVITY_UPDATE_USER_ADD:
+                    event_handler = client_.events.embedded_activity_user_add
+                    if (event_handler is not DEFAULT_EVENT_HANDLER):
+                        Task(event_handler(client_, embedded_activity_state, value), KOKORO)
+                    continue
+                
+                if action == EMBEDDED_ACTIVITY_UPDATE_USER_DELETE:
+                    event_handler = client_.events.embedded_activity_user_delete
+                    if (event_handler is not DEFAULT_EVENT_HANDLER):
+                        Task(event_handler(client_, embedded_activity_state, value), KOKORO)
+                    continue
+                
+                # no more cases
+                continue
+
+def EMBEDDED_ACTIVITY_UPDATE__OPT_SC(client, data):
+    handle_embedded_update_event(data)
+
+
+def EMBEDDED_ACTIVITY_UPDATE__OPT_MC(client, data):
+    guild_id = int(data['guild_id'])
+    try:
+        guild = GUILDS[guild_id]
+    except KeyError:
+        pass
+    else:
+        if first_client(guild.clients, INTENT_MASK_GUILDS) is not client:
+            return
+    
+    handle_embedded_update_event(data)
+
+
+add_parser(
+    'EMBEDDED_ACTIVITY_UPDATE',
+    EMBEDDED_ACTIVITY_UPDATE__CAL_SC,
+    EMBEDDED_ACTIVITY_UPDATE__CAL_MC,
+    EMBEDDED_ACTIVITY_UPDATE__OPT_SC,
+    EMBEDDED_ACTIVITY_UPDATE__OPT_MC)
+del EMBEDDED_ACTIVITY_UPDATE__CAL_SC, \
+    EMBEDDED_ACTIVITY_UPDATE__CAL_MC, \
+    EMBEDDED_ACTIVITY_UPDATE__OPT_SC, \
+    EMBEDDED_ACTIVITY_UPDATE__OPT_MC

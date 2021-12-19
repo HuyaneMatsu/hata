@@ -31,6 +31,31 @@
 - Add missing `ScheduledEventUnsubscribeEvent.__hash__`.
 - Add missing `ScheduledEventSubscribeEvent.__eq__`.
 - Add missing `ScheduledEventSubscribeEvent.__hash__`.
+- Add `GuildJoinRequest`.
+- Add `GuildJoinRequestStatus`.
+- Add `GuildRequestFormResponse`.
+- Add `GuildFeature.role_subscription_purchasable`.
+- Add `GuildFeature.text_in_voice_enabled`.
+- Add `GuildFeature.has_directory_entry`.
+- Add `GuildFeature.linked_to_hub`.
+- Add `MessageFlag.failed_to_mention_some_roles_in_thread`.
+- Add `VerificationScreenStepType.text input`.
+- Add `VerificationScreenStepType.paragraph`.
+- Add `VerificationScreenStepType.multiple_choices`.
+- Add `VerificationScreenStepType.verification`.
+- Add `VerificationFieldPlatform` (name might change later).
+- Add `GuildJoinRequestDeleteEvent`.
+- Add `Client.events.guild_join_request_create`.
+- Add `Client.events.guild_join_request_delete`.
+- Add `Client.events.guild_join_request_update`.
+- Add `Guild._embedded_activity_states`.
+- Add `EmbeddedActivityState`.
+- Add `EMBEDDED_ACTIVITY_STATES`.
+- Add `Client.events.embedded_activity_create`.
+- Add `Client.events.embedded_activity_delete`.
+- Add `Client.events.embedded_activity_update`.
+- Add `Client.events.embedded_activity_user_add`.
+- Add `Client.events.embedded_activity_user_delete`.
 
 
 ##### ext.asyncio
@@ -42,6 +67,9 @@
 - `ReactionDeleteEvent` had duped slots.
 - Fix an `AttributeError` in `GuildUserChunkEvent.__new__` when user caching is disabled (you don not get the event,
     at that case anyways).
+
+#### Renames, Deprecation & Removals
+- Deprecate `Client.events.guild_join_reject` in favor of `.guild_join_request_delete`.
 
 ## 1.1.128 *\[2021-12-15\]*
 

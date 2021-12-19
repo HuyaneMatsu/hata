@@ -102,6 +102,8 @@ class Guild(DiscordEntity, immortal=True):
         The unique identifier number of the guild.
     _boosters : `None` or `list` of ``ClientUserBase`` objects
         Cached slot for the boosters of the guild.
+    _embedded_activity_states : `None` or `set` of ``EmbeddedActivityState``
+        Embedded activity states to keep them alive in cache.
     _permission_cache : `None` or `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     afk_channel_id : `int`
@@ -224,13 +226,14 @@ class Guild(DiscordEntity, immortal=True):
     - ``.widget_channel_id``
     - ``.widget_enabled``
     """
-    __slots__ = ('_boosters', '_permission_cache', 'afk_channel_id', 'afk_timeout', 'approximate_online_count',
-        'approximate_user_count', 'available', 'boost_progress_bar_enabled', 'booster_count', 'channels', 'clients',
-        'content_filter', 'description', 'emojis', 'features', 'is_large', 'max_presences', 'max_users',
-        'max_video_channel_users', 'message_notification', 'mfa', 'name', 'nsfw_level', 'owner_id', 'preferred_locale',
-        'premium_tier', 'public_updates_channel_id', 'region', 'roles', 'roles', 'rules_channel_id',
-        'scheduled_events', 'stages', 'stickers', 'system_channel_flags', 'system_channel_id', 'threads', 'user_count',
-        'users', 'vanity_code', 'verification_level', 'voice_states', 'widget_channel_id', 'widget_enabled')
+    __slots__ = ('_boosters', '_embedded_activity_states', '_permission_cache', 'afk_channel_id', 'afk_timeout',
+        'approximate_online_count', 'approximate_user_count', 'available', 'boost_progress_bar_enabled',
+        'booster_count', 'channels', 'clients', 'content_filter', 'description', 'emojis', 'features', 'is_large',
+        'max_presences', 'max_users', 'max_video_channel_users', 'message_notification', 'mfa', 'name', 'nsfw_level',
+        'owner_id', 'preferred_locale', 'premium_tier', 'public_updates_channel_id', 'region', 'roles', 'roles',
+        'rules_channel_id', 'scheduled_events', 'stages', 'stickers', 'system_channel_flags', 'system_channel_id',
+        'threads', 'user_count', 'users', 'vanity_code', 'verification_level', 'voice_states', 'widget_channel_id',
+        'widget_enabled')
     
     banner = IconSlot(
         'banner',
@@ -300,6 +303,7 @@ class Guild(DiscordEntity, immortal=True):
             self.approximate_online_count = 0
             self.approximate_user_count = 0
             self.stages = None
+            self._embedded_activity_states = None
             
             update = True
         
@@ -665,6 +669,7 @@ class Guild(DiscordEntity, immortal=True):
         self.nsfw_level = NsfwLevel.none
         self.stickers = {}
         self.scheduled_events = {}
+        self._embedded_activity_states = None
         return self
     
     
@@ -782,6 +787,7 @@ class Guild(DiscordEntity, immortal=True):
                     pass
         
         users.clear()
+        self.scheduled_events.clear()
         
         self.roles.clear()
         self._boosters = None

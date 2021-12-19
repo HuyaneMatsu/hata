@@ -1,5 +1,6 @@
 __all__ = ()
 
+import warnings
 from functools import partial as partial_func
 
 from scarletio import WeakReferer, Task, RichAttributeErrorBaseType
@@ -35,6 +36,30 @@ EVENT_HANDLER_ATTRIBUTES = frozenset((
     '_plugin_events',
     '_plugins',
 ))
+
+def _check_is_event_deprecated(name):
+    """
+    Checks whether the event is deprecated.
+    
+    If it is deprecated returns `True` and drops a warning.
+    
+    Returns
+    -------
+    is_deprecated : `bool`
+    """
+    if name == 'guild_join_reject':
+        warnings.warn(
+            (
+                '`Client.events.guild_join_reject` is deprecated and will be removed in 2022 march.\n'
+                'Please use `Client.events.guild_join_request_delete(client, event)` instead.'
+            ),
+            FutureWarning,
+        )
+        
+        return True
+    
+    return False
+
 
 class EventHandlerManager(RichAttributeErrorBaseType):
     """
@@ -213,6 +238,57 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         At the case of `EMBED_UPDATE_NONE` the event is of course not called.
     
+    embedded_activity_create(client: ``Client``, embedded_activity_state: ``EmbeddedActivityState``)
+        Called when an embedded activity is created.
+    
+    embedded_activity_delete(client: ``Client``, embedded_activity_state: ``EmbeddedActivityState``)
+        Called when an embedded activity is deleted (all users left).
+    
+    embedded_activity_update(client: ``Client``, embedded_activity_state: ``EmbeddedActivityState``,
+            old_attributes: `dict`)
+        Called when an embedded activity is updated. The passed `old_attributes` parameter contains the old states of
+        the respective activity in `attribute-name` - `old-value` relation.
+        
+        Every item in `old_attributes` is optional and it's items can be any of the following:
+        
+        +-------------------+-----------------------------------+
+        | Keys              | Values                            |
+        +===================+===================================+
+        | application_id    | `int`                             |
+        +-------------------+-----------------------------------+
+        | assets            | `None` or ``ActivityAssets``      |
+        +-------------------+-----------------------------------+
+        | created_at        | `datetime`                        |
+        +-------------------+-----------------------------------+
+        | details           | `None` or `str`                   |
+        +-------------------+-----------------------------------+
+        | flags             | ``ActivityFlag``                  |
+        +-------------------+-----------------------------------+
+        | name              | `str`                             |
+        +-------------------+-----------------------------------+
+        | party             | `None` or ``ActivityParty``       |
+        +-------------------+-----------------------------------+
+        | secrets           | `None` or ``ActivitySecrets``     |
+        +-------------------+-----------------------------------+
+        | session_id        | `None` or `str`                   |
+        +-------------------+-----------------------------------+
+        | state             | `None` or `str`                   |
+        +-------------------+-----------------------------------+
+        | sync_id           | `None` or `str`                   |
+        +-------------------+-----------------------------------+
+        | timestamps        | `None` or `ActivityTimestamps``   |
+        +-------------------+-----------------------------------+
+        | url               | `None` or `str`                   |
+        +-------------------+-----------------------------------+
+        
+    embedded_activity_user_add(client: ``Client``, embedded_activity_state: ``EmbeddedActivityState``,
+            user_id: `int`)
+        Called when a user joins an embedded activity. It is not called for the person(s) creating the activity.
+        
+    embedded_activity_user_delete(client: ``Client``, embedded_activity_state: ``EmbeddedActivityState``,
+            user_id: `int`)
+        Called when a user leaves / is removed from an embedded activity.
+    
     emoji_create(client: ``Client``, emoji: ``Emoji``):
         Called when an emoji is created at a guild.
     
@@ -345,6 +421,19 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         Called when a user leaves from a guild before completing it's verification screen.
         
         > ``.guild_user_delete`` is called as well.
+        
+        Deprecated in favor of ``.guild_join_request_delete`.
+    
+    guild_join_request_create(client: ``Client``, join_request: ``GuildJoinRequest``)
+        Called when a user completes the verification screen of the guild, which needs an approval.
+    
+    guild_join_request_delete(client: ``Client``, event: ``GuildJoinRequestDeleteEvent``)
+        Called when a user leaves from a guild before completing it's verification screen.
+        
+        > ``.guild_user_delete`` is called as well.
+    
+    guild_join_request_update(client: ``Client``, join_request: ``GuildJoinRequest``)
+        Called when a completed verification screen is updated (approved, denied and such).
     
     guild_user_add(client: ``Client``, guild: ``Guild``, user: ``ClientUserBase``):
         Called when a user joins a guild.
@@ -549,35 +638,35 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         Every item in `old_attributes` is optional any can be any of the following:
         
-            +---------------------------+-----------------------------------------------+
-            | Key                       | Value                                         |
-            +===========================+===============================================+
-            | channel_id                | `int`                                         |
-            +---------------------------+-----------------------------------------------+
-            | description               | `None` or `str`                               |
-            +---------------------------+-----------------------------------------------+
-            | entity_id                 | `int`                                         |
-            +---------------------------+-----------------------------------------------+
-            | entity_metadata           | `None` or ``ScheduledEventEntityMetadata``    |
-            +---------------------------+-----------------------------------------------+
-            | entity_type               | ``ScheduledEventEntityType``                  |
-            +---------------------------+-----------------------------------------------+
-            | image                     | ``Icon``                                      |
-            +---------------------------+-----------------------------------------------+
-            | name                      | `str`                                         |
-            +---------------------------+-----------------------------------------------+
-            | privacy_level             | ``PrivacyLevel``                              |
-            +---------------------------+-----------------------------------------------+
-            | send_start_notification   | `bool`                                        |
-            +---------------------------+-----------------------------------------------+
-            | end                       | `None` or `datetime`                          |
-            +---------------------------+-----------------------------------------------+
-            | start                     | `None` or `datetime`                          |
-            +---------------------------+-----------------------------------------------+
-            | sku_ids                   | `None` or `tuple` of `int`                    |
-            +---------------------------+-----------------------------------------------+
-            | status                    | ``ScheduledEventStatus``                      |
-            +---------------------------+-----------------------------------------------+
+        +---------------------------+-----------------------------------------------+
+        | Key                       | Value                                         |
+        +===========================+===============================================+
+        | channel_id                | `int`                                         |
+        +---------------------------+-----------------------------------------------+
+        | description               | `None` or `str`                               |
+        +---------------------------+-----------------------------------------------+
+        | entity_id                 | `int`                                         |
+        +---------------------------+-----------------------------------------------+
+        | entity_metadata           | `None` or ``ScheduledEventEntityMetadata``    |
+        +---------------------------+-----------------------------------------------+
+        | entity_type               | ``ScheduledEventEntityType``                  |
+        +---------------------------+-----------------------------------------------+
+        | image                     | ``Icon``                                      |
+        +---------------------------+-----------------------------------------------+
+        | name                      | `str`                                         |
+        +---------------------------+-----------------------------------------------+
+        | privacy_level             | ``PrivacyLevel``                              |
+        +---------------------------+-----------------------------------------------+
+        | send_start_notification   | `bool`                                        |
+        +---------------------------+-----------------------------------------------+
+        | end                       | `None` or `datetime`                          |
+        +---------------------------+-----------------------------------------------+
+        | start                     | `None` or `datetime`                          |
+        +---------------------------+-----------------------------------------------+
+        | sku_ids                   | `None` or `tuple` of `int`                    |
+        +---------------------------+-----------------------------------------------+
+        | status                    | ``ScheduledEventStatus``                      |
+        +---------------------------+-----------------------------------------------+
     
     scheduled_event_user_subscribe(client: ``Client``, event: ``ScheduledEventSubscribeEvent``):
         Called when a user subscribes to a scheduled event.
@@ -862,6 +951,9 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         name = check_name(func, name)
         
+        if _check_is_event_deprecated(name):
+            return
+        
         plugin, parameter_count = get_plugin_event_handler_and_parameter_count(self, name)
         
         if plugin is None:
@@ -957,6 +1049,9 @@ class EventHandlerManager(RichAttributeErrorBaseType):
             object.__setattr__(self, name, value)
             return
         
+        if _check_is_event_deprecated(name):
+            return
+        
         plugin, parameter_count = get_plugin_event_handler_and_parameter_count(self, name)
         
         if plugin is None:
@@ -1017,6 +1112,9 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         AttributeError
             The ``EventHandlerManager`` has no attribute named as the given `name`.
         """
+        if _check_is_event_deprecated(name):
+            return
+        
         plugin, parser_names = get_plugin_event_handler_and_parser_names(self, name)
         if plugin is None:
             
@@ -1096,7 +1194,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
             The event's name.
         type_ : `type`
             The event handler's type.
-
+        
         Returns
         -------
         event_handler : `None`, `Any`
@@ -1144,6 +1242,9 @@ class EventHandlerManager(RichAttributeErrorBaseType):
             return
         
         name = check_name(func, name)
+        
+        if _check_is_event_deprecated(name):
+            return
         
         plugin = get_plugin_event_handler(self, name)
         

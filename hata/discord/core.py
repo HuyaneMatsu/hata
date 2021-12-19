@@ -1,6 +1,6 @@
 ﻿__all__ = ('APPLICATIONS', 'APPLICATION_COMMANDS', 'BUILTIN_EMOJIS', 'CHANNELS', 'CLIENTS', 'DISCOVERY_CATEGORIES',
-    'EMOJIS', 'EULAS', 'GUILDS', 'INTEGRATIONS', 'INVITES', 'KOKORO', 'MESSAGES', 'ROLES', 'SCHEDULED_EVENTS',
-    'STAGES', 'STICKERS', 'STICKER_PACKS', 'TEAMS', 'UNICODE_TO_EMOJI', 'USERS')
+    'EMBEDDED_ACTIVITY_STATES', 'EMOJIS', 'EULAS', 'GUILDS', 'INTEGRATIONS', 'INVITES', 'KOKORO', 'MESSAGES', 'ROLES',
+    'SCHEDULED_EVENTS', 'STAGES', 'STICKERS', 'STICKER_PACKS', 'TEAMS', 'UNICODE_TO_EMOJI', 'USERS')
 
 from scarletio import WeakValueDictionary, WeakKeyDictionary, get_event_loop, EventThread
 
@@ -38,6 +38,10 @@ Weak Caches
     
     Discovery categories are populated startup time.
 
+- `EMBEDDED_ACTIVITY_STATES` : ``WeakValueDictionary``
+    
+    Contains ``EmbeddedActivityState``
+    
 - `EMOJIS` : ``WeakValueDictionary``
     
     Contains all the emojis stored by the wrapper. Unicode emojis are never garbage collected, because they are present
@@ -149,6 +153,7 @@ APPLICATIONS = WeakValueDictionary()
 APPLICATION_COMMANDS = WeakValueDictionary()
 CHANNELS = WeakValueDictionary()
 DISCOVERY_CATEGORIES = WeakValueDictionary()
+EMBEDDED_ACTIVITY_STATES = WeakValueDictionary()
 EMOJIS = WeakValueDictionary()
 EULAS = WeakValueDictionary()
 GUILDS = WeakValueDictionary()

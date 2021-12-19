@@ -2382,8 +2382,11 @@ def gather(*coroutines_or_futures, loop=None, return_exceptions=False):
     if loop is None:
         loop = get_event_loop()
     else:
-        warnings.warn('The loop parameter is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
-                      DeprecationWarning, stacklevel=2)
+        warnings.warn(
+            'The loop parameter is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
+            DeprecationWarning,
+            stacklevel = 2,
+        )
     
     future = HataFuture(loop)
     

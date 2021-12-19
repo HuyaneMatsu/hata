@@ -538,6 +538,22 @@ class SolarPlayerBase:
         return ''.join(repr_parts)
     
     
+    def __eq__(self, other):
+        """Returns whether the two players are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self is not other:
+            return False
+        
+        return True
+    
+    
+    def __hash__(self):
+        """Returns the player's hash value."""
+        return self.guild_id
+    
+    
     @property
     def channel(self):
         """

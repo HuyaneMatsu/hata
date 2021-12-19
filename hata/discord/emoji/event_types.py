@@ -1,6 +1,6 @@
 __all__ = ('ReactionAddEvent', 'ReactionDeleteEvent', )
 
-from scarletio import Task
+from scarletio import Task, copy_docs
 
 from ..core import KOKORO
 from ..bases import EventBase
@@ -29,11 +29,11 @@ async def _delete_reaction_with_task(reaction_add_event, client):
         
         if isinstance(err, DiscordException):
             if err.code in (
-                    ERROR_CODES.unknown_message, # message deleted
-                    ERROR_CODES.unknown_channel, # channel deleted
-                    ERROR_CODES.missing_access, # client removed
-                    ERROR_CODES.missing_permissions, # permissions changed meanwhile
-                        ):
+                ERROR_CODES.unknown_message, # message deleted
+                ERROR_CODES.unknown_channel, # channel deleted
+                ERROR_CODES.missing_access, # client removed
+                ERROR_CODES.missing_permissions, # permissions changed meanwhile
+            ):
                 return
         
         await client.events.error(client, f'_delete_reaction_with_task called from {reaction_add_event!r}', err)
@@ -88,24 +88,46 @@ class ReactionAddEvent(EventBase):
         self.user = user
         return self
     
+    @copy_docs(EventBase.__repr__)
     def __repr__(self):
-        """Returns the representation of the event."""
         return (f'<{self.__class__.__name__} message={self.message!r}, emoji={self.emoji!r}, '
             f'user={self.user.full_name!r}>')
     
+    
+    @copy_docs(EventBase.__len__)
     def __len__(self):
-        """Helper for unpacking if needed."""
         return 3
     
+    
+    @copy_docs(EventBase.__iter__)
     def __iter__(self):
-        """
-        Unpacks the event.
-        
-        This method is a generator.
-        """
         yield self.message
         yield self.emoji
         yield self.user
+    
+    
+    @copy_docs(EventBase.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        # message type can be different, so check id instead of identity
+        if self.message.id != other.message.id:
+            return False
+        
+        if self.emoji is not other.message:
+            return False
+        
+        if self.user is not other.user:
+            return False
+        
+        return True
+    
+    
+    @copy_docs(EventBase.__hash__)
+    def __hash__(self):
+        return self.message.id^self.emoji.id^self.user.id
+    
     
     def delete_reaction_with(self, client):
         """
@@ -170,7 +192,7 @@ class ReactionDeleteEvent(ReactionAddEvent):
         Returned by ``.delete_reaction_with`` when the client has permission to execute the reaction remove, but
         it cannot, because the reaction is not added on the respective message.
     """
-    __slots__ = ReactionAddEvent.__slots__
+    __slots__ = ()
     
     def delete_reaction_with(self, client):
         """

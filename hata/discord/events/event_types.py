@@ -2,7 +2,7 @@ __all__ = ('GuildUserChunkEvent', 'VoiceServerUpdateEvent',)
 
 from ...env import CACHE_PRESENCE
 
-from scarletio import set_docs
+from scarletio import set_docs, copy_docs
 
 from ..bases import EventBase
 from ..user import User
@@ -15,18 +15,18 @@ class GuildUserChunkEvent(EventBase):
     
     Attributes
     ----------
-    guild_id : `int`
-        The guild's identifier, what received the user chunk.
-    users : `list` of ``ClientUserBase``
-        The received users.
-    nonce : `None` or `str`
-        A nonce to identify guild user chunk response.
-    index : `int`
-        The index of the received chunk response (0 <= index < count).
     count : `int`
         The total number of chunk responses what Discord sends for the respective gateway.
+    guild_id : `int`
+        The guild's identifier, what received the user chunk.
+    index : `int`
+        The index of the received chunk response (0 <= index < count).
+    nonce : `None` or `str`
+        A nonce to identify guild user chunk response.
+    users : `list` of ``ClientUserBase``
+        The received users.
     """
-    __slots__ = ('guild_id', 'users', 'nonce', 'index', 'count')
+    __slots__ = ('count', 'guild_id', 'index', 'nonce', 'users')
     
     if CACHE_PRESENCE:
         def __new__(cls, data):
@@ -66,7 +66,7 @@ class GuildUserChunkEvent(EventBase):
                 users.append(user)
             
             self = object.__new__(GuildUserChunkEvent)
-            self.guild = guild
+            self.guild_id = guild_id
             self.users = users
             self.nonce = data.get('nonce', None)
             self.index = data.get('chunk_index', 0)
@@ -85,8 +85,9 @@ class GuildUserChunkEvent(EventBase):
         """
     )
     
+    
+    @copy_docs(EventBase.__repr__)
     def __repr__(self):
-        """Returns the representation of the guild user chunk event."""
         repr_parts = ['<', self.__class__.__name__]
         
         repr_parts.append(' guild_id=')
@@ -109,21 +110,71 @@ class GuildUserChunkEvent(EventBase):
         
         repr_parts.append('>')
     
+    
+    @copy_docs(EventBase.__len__)
     def __len__(self):
-        """Helper for unpacking if needed."""
         return 5
     
+    
+    @copy_docs(EventBase.__iter__)
     def __iter__(self):
-        """
-        Unpacks the guild user chunk event.
-        
-        This method is a generator.
-        """
         yield self.guild_id
         yield self.users
         yield self.nonce
         yield self.index
         yield self.count
+    
+    
+    @copy_docs(EventBase.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.count != other.count:
+            return False
+        
+        if self.guild_id != other.guild_id:
+            return False
+        
+        if self.index != other.index:
+            return False
+        
+        if self.nonce != other.nonce:
+            return False
+        
+        if self.users != other.users:
+            return False
+        
+        return True
+    
+    
+    @copy_docs(EventBase.__hash__)
+    def __hash__(self):
+        hash_value = 0
+        
+        # count
+        hash_value ^= self.count
+        
+        # guild_id
+        hash_value ^= self.guild_id
+        
+        # index
+        hash_value ^= (self.index<<12)
+        
+        # nonce
+        nonce = self.nonce
+        if (nonce is not None):
+            hash_value ^= hash(nonce)
+        
+        # users
+        users = self.users
+        if users:
+            hash_value ^= (len(users)<<24)
+            
+            for user in users:
+                hash_value ^= user.id
+        
+        return hash_value
 
 
 class VoiceServerUpdateEvent(EventBase):
@@ -136,7 +187,7 @@ class VoiceServerUpdateEvent(EventBase):
         The voice server's host.
     guild_id : `int`
         The respective guild's identifier.
-    token : `str`
+    token : `None` or `str`
         Voice connection token.
     """
     __slots__ = ('endpoint', 'guild_id', 'token')
@@ -163,8 +214,9 @@ class VoiceServerUpdateEvent(EventBase):
         
         return self
     
+    
+    @copy_docs(EventBase.__repr__)
     def __repr__(self):
-        """Returns the representation of the voice server update event."""
         repr_parts = ['<', self.__class__.__name__,]
         
         repr_parts.append(' guild_id=')
@@ -183,16 +235,51 @@ class VoiceServerUpdateEvent(EventBase):
         repr_parts.append('>')
         return ''.join(repr_parts)
     
+    
+    @copy_docs(EventBase.__len__)
     def __len__(self):
-        """Helper for unpacking if needed."""
         return 3
     
+    
+    @copy_docs(EventBase.__iter__)
     def __iter__(self):
-        """
-        Unpacks the voice server update event.
-        
-        This method is a generator.
-        """
         yield self.guild_id
         yield self.endpoint
         yield self.token
+    
+    
+    @copy_docs(EventBase.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.endpoint != other.endpoint:
+            return False
+        
+        if self.guild_id != other.guild_id:
+            return False
+        
+        if self.token != other.token:
+            return False
+        
+        return True
+    
+    
+    @copy_docs(EventBase.__hash__)
+    def __hash__(self):
+        hash_value = 0
+        
+        # endpoint
+        endpoint = self.endpoint
+        if (endpoint is not None):
+            hash_value ^= hash(endpoint)
+        
+        # guild_id
+        hash_value ^= self.guild_id
+        
+        # token
+        token = self.token
+        if (token is not None):
+            hash_value ^= hash(token)
+        
+        return hash_value

@@ -1,5 +1,7 @@
 __all__ = ('ChannelCreateEvent', 'ChannelVoiceSelectEvent', 'GuildCreateEvent', )
 
+from scarletio import copy_docs
+
 from ...discord.bases import EventBase
 
 class GuildCreateEvent(EventBase):
@@ -31,22 +33,39 @@ class GuildCreateEvent(EventBase):
         self.name = guild_name
         return self
     
+    @copy_docs(EventBase.__repr__)
     def __repr__(self):
-        """Returns the representation of the guild create event."""
         return f'<{self.__class__.__name__} id={self.id}, name={self.name!r}>'
     
+    
+    @copy_docs(EventBase.__len__)
     def __len__(self):
-        """Helper for unpacking if needed."""
         return 2
     
+    
+    @copy_docs(EventBase.__iter__)
     def __iter__(self):
-        """
-        Unpacks the guild create event.
-        
-        This method is a generator.
-        """
         yield self.id
         yield self.name
+    
+    
+    @copy_docs(EventBase.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.id != other.id:
+            return False
+        
+        if self.name != other.name:
+            return False
+        
+        return True
+    
+    
+    @copy_docs(EventBase.__hash__)
+    def __hash__(self):
+        return self.id^hash(self.name)
 
 
 class ChannelCreateEvent(EventBase):
@@ -83,23 +102,44 @@ class ChannelCreateEvent(EventBase):
         self.type = channel_type
         return self
     
+    
+    @copy_docs(EventBase.__repr__)
     def __repr__(self):
-        """Returns the representation of the channel create event."""
         return f'<{self.__class__.__name__} id={self.id}, name={self.name!r}, type={self.type}>'
     
-    def __len__(self):
-        """Helper for unpacking if needed."""
-        return 2
     
+    @copy_docs(EventBase.__len__)
+    def __len__(self):
+        return 3
+    
+    
+    @copy_docs(EventBase.__iter__)
     def __iter__(self):
-        """
-        Unpacks the channel create event.
-        
-        This method is a generator.
-        """
         yield self.id
         yield self.name
         yield self.type
+    
+    
+    @copy_docs(EventBase.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.id != other.id:
+            return False
+        
+        if self.name != other.name:
+            return False
+        
+        if self.type != other.type:
+            return False
+        
+        return True
+    
+    
+    @copy_docs(EventBase.__hash__)
+    def __hash__(self):
+        return self.id^hash(self.name)^self.type
 
 
 class ChannelVoiceSelectEvent(EventBase):
@@ -131,19 +171,37 @@ class ChannelVoiceSelectEvent(EventBase):
         self.guild_id = guild_id
         return self
     
+    
+    @copy_docs(EventBase.__repr__)
     def __repr__(self):
-        """Returns the representation of the channel voice select event."""
         return f'<{self.__class__.__name__} guild_id={self.guild_id}, channel_id={self.channel_id}>'
     
+    
+    @copy_docs(EventBase.__len__)
     def __len__(self):
-        """Helper for unpacking if needed."""
         return 2
     
+    
+    @copy_docs(EventBase.__iter__)
     def __iter__(self):
-        """
-        Unpacks the channel voice select event.
-        
-        This method is a generator.
-        """
         yield self.guild_id
         yield self.channel_id
+    
+    
+    @copy_docs(EventBase.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.guild_id != other.guild_id:
+            return False
+        
+        if self.channel_id != other.channel_id:
+            return False
+        
+        return True
+    
+    
+    @copy_docs(EventBase.__hash__)
+    def __hash__(self):
+        return self.guild_id^self.channel_id

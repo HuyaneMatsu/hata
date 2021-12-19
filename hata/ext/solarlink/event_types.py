@@ -63,6 +63,25 @@ class TrackStartEvent(EventBase):
     def __iter__(self):
         yield self.player
         yield self.track
+    
+    
+    @copy_docs(EventBase.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.player != other.player:
+            return False
+        
+        if self.track != other.track:
+            return False
+        
+        return True
+    
+    
+    @copy_docs(EventBase.__hash__)
+    def __hash__(self):
+        return hash(self.player)^hash(self.track)
 
 
 class TrackEndEvent(EventBase):
@@ -133,6 +152,41 @@ class TrackEndEvent(EventBase):
         yield self.player
         yield self.track
         yield self.reason
+    
+    
+    @copy_docs(EventBase.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.player != other.player:
+            return False
+        
+        if self.reason != other.reason:
+            return False
+        
+        if self.track != other.track:
+            return False
+        
+        return True
+    
+    
+    @copy_docs(EventBase.__hash__)
+    def __hash__(self):
+        hash_value = 0
+        
+        # player
+        hash_value ^= hash(self.player)
+        
+        # reason
+        reason = self.reason
+        if (reason is not None):
+            hash_value ^= hash(reason)
+        
+        # track
+        hash_value ^= hash(self.track)
+        
+        return hash_value
 
 
 class TrackStuckEvent(EventBase):
@@ -203,7 +257,39 @@ class TrackStuckEvent(EventBase):
         yield self.player
         yield self.track
         yield self.threshold
-
+    
+    
+    @copy_docs(EventBase.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.player != other.player:
+            return False
+        
+        if self.threshold != other.threshold:
+            return False
+        
+        if self.track != other.track:
+            return False
+        
+        return True
+    
+    
+    @copy_docs(EventBase.__hash__)
+    def __hash__(self):
+        hash_value = 0
+        
+        # player
+        hash_value ^= hash(self.player)
+        
+        # threshold
+        hash_value ^= hash(self.threshold)
+        
+        # track
+        hash_value ^= hash(self.track)
+        
+        return hash_value
 
 
 class TrackExceptionEvent(EventBase):
@@ -274,6 +360,41 @@ class TrackExceptionEvent(EventBase):
         yield self.player
         yield self.track
         yield self.reason
+    
+    
+    @copy_docs(EventBase.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.player != other.player:
+            return False
+        
+        if self.reason != other.reason:
+            return False
+        
+        if self.track != other.track:
+            return False
+        
+        return True
+    
+    
+    @copy_docs(EventBase.__hash__)
+    def __hash__(self):
+        hash_value = 0
+        
+        # player
+        hash_value ^= hash(self.player)
+        
+        # reason
+        reason = self.reason
+        if (reason is not None):
+            hash_value ^= hash(reason)
+        
+        # track
+        hash_value ^= hash(self.track)
+        
+        return hash_value
 
 
 class PlayerWebsocketClosedEvent(EventBase):
@@ -357,3 +478,44 @@ class PlayerWebsocketClosedEvent(EventBase):
         yield self.code
         yield self.reason
         yield self.by_remote
+    
+    
+    @copy_docs(EventBase.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.by_remote != other.by_remote:
+            return False
+        
+        if self.code != other.code:
+            return False
+        
+        if self.player != other.player:
+            return False
+        
+        if self.reason != other.reason:
+            return False
+        
+        return True
+    
+    
+    @copy_docs(EventBase.__hash__)
+    def __hash__(self):
+        hash_value = 0
+        
+        # by_remote
+        hash_value ^= self.by_remote
+        
+        # code
+        hash_value ^= (self.code<<8)
+        
+        # player
+        hash_value ^= hash(self.player)
+        
+        # reason
+        reason = self.reason
+        if (reason is not None):
+            hash_value ^= hash(reason)
+        
+        return hash_value

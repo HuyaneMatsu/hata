@@ -13,6 +13,25 @@
 - Add `entity_metadata` transformer to audit logs.
 - Add `end` transformer to audit logs.
 - Add `start` transformer to audit logs.
+- Add `GuildJoinRequestStatus`.
+- Add missing `EventBase.__eq__`.
+- Add missing `EventBase.__hash__`.
+- Add missing `ReactionAddEvent.__eq__`.
+- Add missing `ReactionAddEvent.__hash__`.
+- Add missing `ReactionAddEvent.__eq__`.
+- Add missing `ReactionAddEvent.__hash__`.
+- Add missing `ReactionDeleteEvent.__eq__`.
+- Add missing `ReactionDeleteEvent.__hash__`.
+- Add missing `GuildUserChunkEvent.__eq__`.
+- Add missing `GuildUserChunkEvent.__hash__`.
+- Add missing `VoiceServerUpdateEvent.__eq__`.
+- Add missing `VoiceServerUpdateEvent.__hash__`.
+- `ScheduledEventUnsubscribeEvent` is now subclass of `ScheduledEventSubscribeEvent`.
+- Add missing `ScheduledEventUnsubscribeEvent.__eq__`.
+- Add missing `ScheduledEventUnsubscribeEvent.__hash__`.
+- Add missing `ScheduledEventSubscribeEvent.__eq__`.
+- Add missing `ScheduledEventSubscribeEvent.__hash__`.
+
 
 ##### ext.asyncio
 - Add attachment converter to slash commands.
@@ -20,6 +39,9 @@
 #### Bug Fixes
 
 - Another `KeyError` in `DiscordGateway._received_message` when using fosscord. (Forest#2913)
+- `ReactionDeleteEvent` had duped slots.
+- Fix an `AttributeError` in `GuildUserChunkEvent.__new__` when user caching is disabled (you don not get the event,
+    at that case anyways).
 
 ## 1.1.128 *\[2021-12-15\]*
 

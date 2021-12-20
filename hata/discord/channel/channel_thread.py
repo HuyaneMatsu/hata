@@ -46,15 +46,8 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         The channel's guild's identifier.
     name : `str`
         The channel's name.
-    _message_history_collector :  `None` or ``MessageHistoryCollector``
-        Collector for the channel's message history.
-    _message_keep_limit : `int`
-        The channel's own limit of how much messages it should keep before removing their reference.
-    message_history_reached_end : `bool`
-        Whether the channel's message's are loaded till their end. If the channel's message history reached it's end
-        no requests will be requested to get older messages.
-    messages : `deque` of ``Message`` objects
-        The channel's message history.
+    _message_history :  `None` or ``MessageHistory``
+        The message history of the channel if any.
     archived : `bool`
         Whether the thread s archived.
     archived_at : `None` or `datetime`
@@ -121,7 +114,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
             self = object.__new__(cls)
             self.id = channel_id
             CHANNELS[channel_id] = self
-            self._messageable_init()
+            self._message_history = None
             self.thread_users = None
             update = True
         else:
@@ -264,7 +257,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
     @copy_docs(ChannelBase._create_empty)
     def _create_empty(cls, channel_id, channel_type, guild_id):
         self = super(ChannelThread, cls)._create_empty(channel_id, channel_type, guild_id)
-        self._messageable_init()
+        self._message_history = None
         
         self.archived = False
         self.archived_at = None

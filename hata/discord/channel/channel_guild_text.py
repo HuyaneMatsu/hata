@@ -51,15 +51,8 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         The channel's permission overwrites.
     position : `int`
         The channel's position.
-    _message_history_collector :  `None` or ``MessageHistoryCollector``
-        Collector for the channel's message history.
-    _message_keep_limit : `int`
-        The channel's own limit of how much messages it should keep before removing their reference.
-    message_history_reached_end : `bool`
-        Whether the channel's message's are loaded till their end. If the channel's message history reached it's end
-        no requests will be requested to get older messages.
-    messages : `deque` of ``Message`` objects
-        The channel's message history.
+    _message_history :  `None` or ``MessageHistory``
+        The message history of the channel if any.
     banner_hash : `int`
         The channel's banner's hash in `uint128`.
     banner_type : ``IconType``
@@ -120,7 +113,7 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
             self = object.__new__(cls)
             self.id = channel_id
             CHANNELS[channel_id] = self
-            self._messageable_init()
+            self._message_history = None
         else:
             if not self.partial:
                 return self
@@ -178,7 +171,7 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
     @copy_docs(ChannelBase._create_empty)
     def _create_empty(cls, channel_id, channel_type, guild_id):
         self = super(ChannelText, cls)._create_empty(channel_id, channel_type, guild_id)
-        self._messageable_init()
+        self._message_history = None
         
         self.default_auto_archive_after = AUTO_ARCHIVE_DEFAULT
         self.nsfw = False

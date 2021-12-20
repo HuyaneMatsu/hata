@@ -57,6 +57,9 @@
 - Add `Client.events.embedded_activity_user_add`.
 - Add `Client.events.embedded_activity_user_delete`.
 - Add `ApplicationCommandInteraction.resolved_attachments`.
+- Move message history to it's own class to reduce the cost of channel, with no messages.
+- `ChannelVoice` now supports receiving messages.
+- `ChannelStage` now supports receiving messages.
 
 ##### ext.asyncio
 - Add attachment converter to slash commands.

@@ -22,15 +22,8 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
     ----------
     id : `int`
         Unique identifier of the channel.
-    _message_history_collector :  `None` or ``MessageHistoryCollector``
-        Collector for the channel's message history.
-    _message_keep_limit : `int`
-        The channel's own limit of how much messages it should keep before removing their reference.
-    message_history_reached_end : `bool`
-        Whether the channel's message's are loaded till their end. If the channel's message history reached it's end
-        no requests will be requested to get older messages.
-    messages : `deque` of ``Message`` objects
-        The channel's message history.
+    _message_history :  `None` or ``MessageHistory``
+        The message history of the channel if any.
     users : `list` of ``ClientUserBase`` objects
         The channel's recipient.
     
@@ -71,7 +64,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
             self = object.__new__(cls)
             self.id = channel_id
             CHANNELS[channel_id] = self
-            self._messageable_init()
+            self._message_history = None
             self.users = users = []
         else:
             users = self.users
@@ -103,7 +96,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
     @copy_docs(ChannelBase._create_empty)
     def _create_empty(cls, channel_id, channel_type, guild_id):
         self = super(ChannelPrivate, cls)._create_empty(channel_id, channel_type, guild_id)
-        self._messageable_init()
+        self._message_history = None
         self.users = []
         
         return self
@@ -126,7 +119,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
             The created channel.
         """
         self = object.__new__(cls)
-        self._messageable_init()
+        self._message_history = None
         self.id = channel_id
         self.users = []
         CHANNELS[channel_id] = self
@@ -259,15 +252,8 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
     ----------
     id : `int`
         Unique identifier of the channel.
-    _message_history_collector :  `None` or ``MessageHistoryCollector``
-        Collector for the channel's message history.
-    _message_keep_limit : `int`
-        The channel's own limit of how much messages it should keep before removing their reference.
-    message_history_reached_end : `bool`
-        Whether the channel's message's are loaded till their end. If the channel's message history reached it's end
-        no requests will be requested to get older messages.
-    messages : `deque` of ``Message`` objects
-        The channel's message history.
+    _message_history :  `None` or ``MessageHistory``
+        The message history of the channel if any.
     users : `list` of ``ClientUserBase`` objects
         The channel's recipient.
     icon_hash : `int`
@@ -319,7 +305,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
             self = object.__new__(cls)
             self.id = channel_id
             CHANNELS[channel_id] = self
-            self._messageable_init()
+            self._message_history = None
             self.users = users = []
         else:
             users = self.users
@@ -379,7 +365,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
     @copy_docs(ChannelBase._create_empty)
     def _create_empty(cls, channel_id, channel_type, guild_id):
         self = super(ChannelGroup, cls)._create_empty(channel_id, channel_type, guild_id)
-        self._messageable_init()
+        self._message_history = None
         
         self.users = []
         

@@ -18,13 +18,14 @@ from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_int
 from .preinstanced import VideoQualityMode
 from .channel_guild_base import ChannelGuildMainBase
 from .channel_base import ChannelBase
+from .channel_text_base import ChannelTextBase
 
 VoiceRegion = include('VoiceRegion')
 parse_permission_overwrites = include('parse_permission_overwrites')
 
 
 @export
-class ChannelVoiceBase(ChannelGuildMainBase):
+class ChannelVoiceBase(ChannelGuildMainBase, ChannelTextBase):
     """
     Base class for guild voice channels.
     
@@ -44,6 +45,8 @@ class ChannelVoiceBase(ChannelGuildMainBase):
         The channel's permission overwrites.
     position : `int`
         The channel's position.
+    _message_history :  `None` or ``MessageHistory``
+        The message history of the channel if any.
     bitrate : `int`
         The bitrate (in bits) of the voice channel.
     region : `None` or ``VoiceRegion``
@@ -71,6 +74,7 @@ class ChannelVoiceBase(ChannelGuildMainBase):
     def _create_empty(cls, channel_id, channel_type, guild_id):
         self = super(ChannelVoiceBase, cls)._create_empty(channel_id, channel_type, guild_id)
         
+        self._message_history = None
         self.bitrate = 0
         self.region = None
         self.user_limit = 0
@@ -143,6 +147,8 @@ class ChannelVoice(ChannelVoiceBase):
         The channel's permission overwrites.
     position : `int`
         The channel's position.
+    _message_history :  `None` or ``MessageHistory``
+        The message history of the channel if any.
     bitrate : `int`
         The bitrate (in bits) of the voice channel.
     region : `None` or ``VoiceRegion``
@@ -189,6 +195,7 @@ class ChannelVoice(ChannelVoiceBase):
         except KeyError:
             self = object.__new__(cls)
             self.id = channel_id
+            self._message_history = None
             CHANNELS[channel_id] = self
         else:
             if self.clients:
@@ -483,6 +490,8 @@ class ChannelStage(ChannelVoiceBase):
         The channel's permission overwrites.
     position : `int`
         The channel's position.
+    _message_history :  `None` or ``MessageHistory``
+        The message history of the channel if any.
     bitrate : `int`
         The bitrate (in bits) of the voice channel.
     region : `None` or ``VoiceRegion``
@@ -530,6 +539,7 @@ class ChannelStage(ChannelVoiceBase):
         except KeyError:
             self = object.__new__(cls)
             self.id = channel_id
+            self._message_history = None
             CHANNELS[channel_id] = self
         else:
             if self.clients:

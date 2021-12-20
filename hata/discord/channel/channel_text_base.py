@@ -136,10 +136,9 @@ class MessageHistoryCollector:
 # Do not try to delete not existing message's id, or it will cause de-sync.
 # Use pypy?
 
-@export
-class ChannelTextBase:
+class MessageHistory:
     """
-    Base class of the message-able channel types.
+    Contains message logic for message-able channels.
     
     Attributes
     ----------
@@ -153,18 +152,141 @@ class ChannelTextBase:
     messages : `deque` of ``Message`` objects
         The channel's message history.
     """
-    __slots__ = ()
-    __slots = ('_message_keep_limit', '_message_history_collector', 'message_history_reached_end', 'messages', )
+    __slots__ = ('_message_keep_limit', '_message_history_collector', 'message_history_reached_end', 'messages',)
     
-    def _messageable_init(self):
+    def __init__(self, message_keep_limit):
         """
-        Sets the default values specific to text channels.
+        Creates a nwe message history instance with it's default values.
+        
+        Parameters
+        ----------
+        message_keep_limit : `int`
+            The amount of messages to keep.
         """
-        #discord side bug: we cant check last message
         self.message_history_reached_end = False
         self._message_history_collector = None
-        self._message_keep_limit = MESSAGE_CACHE_SIZE
+        self._message_keep_limit = message_keep_limit
         self.messages = None
+    
+    
+    def _set_message_keep_limit(self, message_keep_limit):
+        """
+        Sets the amount of messages to keep by the channel.
+        
+        Parameters
+        ----------
+        message_keep_limit : `int`
+            The amount of messages to keep.
+        """
+        if self._message_keep_limit != message_keep_limit:
+            if message_keep_limit == 0:
+                new_messages = None
+            else:
+                old_messages = self.messages
+                if old_messages is None:
+                    new_messages = None
+                else:
+                    new_messages = deque(
+                        (old_messages[i] for i in range(min(message_keep_limit, len(old_messages)))),
+                        maxlen = message_keep_limit,
+                    )
+            
+            self.messages = new_messages
+            self._message_keep_limit = message_keep_limit
+
+
+@export
+class ChannelTextBase:
+    """
+    Base class of the message-able channel types.
+    
+    Attributes
+    ----------
+    _message_history : `None` or ``MessageHistory``
+        The channel's message history if any.
+    """
+    __slots__ = ()
+    __slots = ('_message_history', )
+    
+    @property
+    def message_history_reached_end(self):
+        message_history = self._message_history
+        if message_history is None:
+            message_history_reached_end = False
+        else:
+            message_history_reached_end = message_history.message_history_reached_end
+        
+        return message_history_reached_end
+    
+    @message_history_reached_end.setter
+    def message_history_reached_end(self, message_history_reached_end):
+        message_history = self._message_history
+        if message_history is None:
+            message_history = MessageHistory(MESSAGE_CACHE_SIZE)
+            self._message_history = message_history
+        
+        message_history.message_history_reached_end = message_history_reached_end
+    
+    
+    @property
+    def _message_history_collector(self):
+        message_history = self._message_history
+        if message_history is None:
+            message_history_collector = None
+        else:
+            message_history_collector = message_history._message_history_collector
+        
+        return message_history_collector
+    
+    @_message_history_collector.setter
+    def _message_history_collector(self, message_history_collector):
+        message_history = self._message_history
+        if message_history is None:
+            message_history = MessageHistory(MESSAGE_CACHE_SIZE)
+            self._message_history = message_history
+        
+        message_history._message_history_collector = message_history_collector
+    
+    
+    @property
+    def _message_keep_limit(self):
+        message_history = self._message_history
+        if message_history is None:
+            message_keep_limit = MESSAGE_CACHE_SIZE
+        else:
+            message_keep_limit = message_history._message_keep_limit
+        
+        return message_keep_limit
+    
+    @_message_keep_limit.setter
+    def _message_keep_limit(self, message_keep_limit):
+        message_history = self._message_history
+        if message_history is None:
+            message_history = MessageHistory(MESSAGE_CACHE_SIZE)
+            self._message_history = message_history
+        
+        message_history._message_keep_limit = message_keep_limit
+    
+    
+    @property
+    def messages(self):
+        message_history = self._message_history
+        if message_history is None:
+            messages = None
+        else:
+            messages = message_history.messages
+        
+        return messages
+    
+    @messages.setter
+    def messages(self, messages):
+        message_history = self._message_history
+        if message_history is None:
+            message_history = MessageHistory(MESSAGE_CACHE_SIZE)
+            self._message_history = message_history
+        
+        message_history.messages = messages
+    
     
     @property
     def message_keep_limit(self):
@@ -173,27 +295,25 @@ class ChannelTextBase:
         
         Returns and accepts an `int`.
         """
-        return self._message_keep_limit
+        message_history = self._message_history
+        if (message_history is None):
+            message_keep_limit = MESSAGE_CACHE_SIZE
+        else:
+            message_keep_limit = message_history._message_keep_limit
+        
+        return message_keep_limit
     
     @message_keep_limit.setter
-    def message_keep_limit(self, limit):
-        if limit < 0:
-            limit = 0
+    def message_keep_limit(self, message_keep_limit):
+        if message_keep_limit <= 0:
+            self._message_history = None
         
-        if self._message_keep_limit == limit:
-            return
-        
-        if limit == 0:
-            new_messages = None
         else:
-            old_messages = self.messages
-            if old_messages is None:
-                new_messages = None
+            message_history = self._message_history
+            if (message_history is None):
+                self._message_history = MessageHistory(message_keep_limit)
             else:
-                new_messages = deque((old_messages[i] for i in range(min(limit, len(old_messages)))), maxlen=limit)
-                
-        self.messages = new_messages
-        self._message_keep_limit = limit
+                message_history._set_keep_limit(message_keep_limit)
     
     
     def _create_new_message(self, message_data):
@@ -402,11 +522,6 @@ class ChannelTextBase:
     def _switch_to_limited(self):
         """
         Switches a channel's `.messages` to limited from unlimited.
-        
-        Parameters
-        ----------
-        channel : ``ChannelTextBase`` instance.
-            The channel, what's `.messages` will be limited.
         """
         old_messages = self.messages
         if old_messages is None:
@@ -418,7 +533,7 @@ class ChannelTextBase:
             else:
                 new_messages = deque(
                     (old_messages[index] for index in range(min(limit, len(old_messages)))),
-                    maxlen=limit,
+                    maxlen = limit,
                 )
         
         self.messages = new_messages

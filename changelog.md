@@ -56,7 +56,7 @@
 - Add `Client.events.embedded_activity_update`.
 - Add `Client.events.embedded_activity_user_add`.
 - Add `Client.events.embedded_activity_user_delete`.
-
+- Add `ApplicationCommandInteraction.resolved_attachments`.
 
 ##### ext.asyncio
 - Add attachment converter to slash commands.

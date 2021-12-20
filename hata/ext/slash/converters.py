@@ -253,7 +253,18 @@ async def converter_attachment(client, interaction_event, value):
     value : ``Attachment``
         If conversion fails, then returns `None`.
     """
-    return value
+    attachment_id = await converter_snowflake(client, interaction_event, value)
+    
+    if attachment_id is None:
+        attachment = None
+    else:
+        resolved_attachments = interaction_event.interaction.resolved_attachments
+        if resolved_attachments is None:
+            attachment = None
+        else:
+            attachment = resolved_attachments.get(attachment_id, None)
+    
+    return attachment
 
 
 async def converter_snowflake(client, interaction_event, value):

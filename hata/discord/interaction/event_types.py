@@ -51,6 +51,8 @@ class ApplicationCommandInteraction(DiscordEntity):
         The name of the command. It's length can be in range [1:32].
     options : `None` or `tuple` of ``ApplicationCommandInteractionOption``
         The parameters and values from the user if any. Defaults to `None` if non is received.
+    resolved_attachments : `None` or `dict` of (`int`, `Attachment``) items
+        Resolved received attachments stored by their identifier as keys if any.
     resolved_channels : `None` or `dict` of (`int`, ``ChannelBase``) items
         Resolved received channels stored by their identifier as keys if any.
     resolved_roles : `None` or `dict` of (`int`, ``Role``) items
@@ -62,8 +64,8 @@ class ApplicationCommandInteraction(DiscordEntity):
     target_id : `int`
         The interaction's target's identifier.
     """
-    __slots__ = ('name', 'options', 'resolved_channels', 'resolved_roles', 'resolved_messages', 'resolved_users',
-        'target_id',)
+    __slots__ = ('name', 'options', 'resolved_attachments', 'resolved_channels', 'resolved_roles', 'resolved_messages',
+        'resolved_users', 'target_id',)
     
     def __new__(cls, data, interaction_event):
         """
@@ -93,11 +95,31 @@ class ApplicationCommandInteraction(DiscordEntity):
         try:
             resolved_data = data['resolved']
         except KeyError:
+            resolved_attachments = None
             resolved_channels = None
             resolved_roles = None
             resolved_messages = None
             resolved_users = None
         else:
+            # resolved_attachments
+            try:
+                resolved_attachment_datas = resolved_data['attachments']
+            except KeyError:
+                resolved_attachments = None
+            else:
+                if resolved_attachment_datas:
+                    resolved_attachments = {}
+                    
+                    for attachment_data in resolved_attachment_datas.values():
+                        attachment = Attachment(attachment_data)
+                        if (attachment is not None):
+                            resolved_attachments[attachment.id] = attachment
+                    
+                    if not resolved_attachments:
+                        resolved_attachments = None
+                else:
+                    resolved_attachments = None
+            
             # resolved_channels
             try:
                 resolved_channel_datas = resolved_data['channels']
@@ -189,6 +211,7 @@ class ApplicationCommandInteraction(DiscordEntity):
         self.id = id_
         self.name = name
         self.options = options
+        self.resolved_attachments = resolved_attachments
         self.resolved_users = resolved_users
         self.resolved_channels = resolved_channels
         self.resolved_roles = resolved_roles
@@ -256,6 +279,10 @@ class ApplicationCommandInteraction(DiscordEntity):
         if self.options != other.options:
             return False
         
+        # resolved_attachments
+        if self.resolved_attachments != other.resolved_attachments:
+            return False
+        
         # resolved_channels
         if self.resolved_channels != other.resolved_channels:
             return False
@@ -296,6 +323,14 @@ class ApplicationCommandInteraction(DiscordEntity):
             
             for option in options:
                 hash_value ^= hash(option)
+        
+        # resolved_attachments
+        resolved_attachments = self.resolved_attachments
+        if (resolved_attachments is not None):
+            hash_value ^= (len(resolved_attachments)<<24)
+            
+            for attachment_id in resolved_attachments.keys():
+                hash_value ^= attachment_id
         
         # resolved_channels
         resolved_channels = self.resolved_channels
@@ -390,8 +425,17 @@ class ApplicationCommandInteraction(DiscordEntity):
                 return entity
         
         
+        resolved_attachments = self.resolved_attachments
+        if (resolved_attachments is not None):
+            try:
+                entity = resolved_attachments[entity_id]
+            except KeyError:
+                pass
+            else:
+                return entity
+        
+        
         return None
-
     
     @property
     def target(self):
@@ -427,7 +471,7 @@ class ApplicationCommandInteractionOption:
     type : ``ApplicationCommandOptionType``
         The option's type.
     
-    value : `None`, `str`, `bool`, `float`, `int`, `Attachment``
+    value : `None`, `str`, `bool`, `float`, `int`
         The given value by the user.
         
         Mutually exclusive with the `options` field,
@@ -459,10 +503,6 @@ class ApplicationCommandInteractionOption:
         
         # value
         value = data.get('value', None)
-        if (value is not None):
-            # Check conversions / type
-            if type_ is ApplicationCommandOptionType.attachment:
-                value = Attachment(value)
         
         self = object.__new__(cls)
         

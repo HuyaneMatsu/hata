@@ -1607,8 +1607,8 @@ def format_unix_time(unix_time, style=None):
     formatted_string : `str`
     """
     if style is None:
-        formatted_string = f'<t:{unix_time}>'
+        formatted_string = f'<t:{unix_time:.0f}>'
     else:
-        formatted_string = f'<t:{unix_time}:{style}>'
+        formatted_string = f'<t:{unix_time:.0f}:{style}>'
     
     return formatted_string

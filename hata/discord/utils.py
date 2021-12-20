@@ -1586,7 +1586,7 @@ def format_loop_time(loop_time, style=None):
     -------
     formatted_string : `str`
     """
-    return format_unix_time(id_to_unix_time(loop_time-LOOP_TIME()+time_now()), style)
+    return format_unix_time(loop_time-LOOP_TIME()+time_now(), style)
 
 
 def format_unix_time(unix_time, style=None):

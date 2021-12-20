@@ -75,7 +75,7 @@ class ApplicationCommandOptionType(PreinstancedBase):
     role = P(8, 'role',)
     mentionable = P(9, 'mentionable',)
     float = P(10, 'float',)
-    attachment = P(10, 'attachment',)
+    attachment = P(11, 'attachment',)
 
 
 @export

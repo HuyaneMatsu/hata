@@ -26,6 +26,7 @@ from ..http import urls as module_urls
 from ..scheduled_event import ScheduledEvent
 
 from .flags import SystemChannelFlag
+from .embedded_activity_state import EmbeddedActivityState
 
 VoiceClient = include('VoiceClient')
 Client = include('Client')
@@ -414,9 +415,18 @@ class Guild(DiscordEntity, immortal=True):
                     ScheduledEvent(scheduled_event_data)
             
             stage_datas = data.get('stage_instances', None)
-            if (stage_datas is not None) and stage_datas:
+            if (stage_datas is not None):
                 for stage_data in stage_datas:
                     Stage(stage_data)
+            
+            try:
+                embedded_activity_state_datas = data['embedded_activities']
+            except KeyError:
+                pass
+            else:
+                for embedded_activity_state_data in embedded_activity_state_datas:
+                    EmbeddedActivityState(embedded_activity_state_data)
+            
         
         if (not CACHE_PRESENCE):
             # we get information about the client here

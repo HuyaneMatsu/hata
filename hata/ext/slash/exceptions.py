@@ -185,7 +185,7 @@ class SlasherApplicationCommandParameterConversionError(SlasherCommandError):
             
             for expected_value in expected_values:
                 repr_parts.append('\n- `')
-                repr_parts.append(expected_value)
+                repr_parts.append(str(expected_value))
                 repr_parts.append('`')
         
         repr_parts.append(
@@ -197,7 +197,7 @@ class SlasherApplicationCommandParameterConversionError(SlasherCommandError):
             repr_parts.append('N/A')
         else:
             repr_parts.append('`')
-            repr_parts.append(received_value)
+            repr_parts.append(repr(received_value))
             repr_parts.append('`')
         
         pretty_repr = ''.join(repr_parts)

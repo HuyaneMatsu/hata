@@ -60,12 +60,15 @@ INTENT_SHIFT_EVENTS = {
         'THREAD_MEMBER_UPDATE',
         'THREAD_MEMBERS_UPDATE',
         'GUILD_APPLICATION_COMMAND_COUNTS_UPDATE',
+        'GUILD_JOIN_REQUEST_CREATE',
+        'GUILD_JOIN_REQUEST_DELETE',
+        'GUILD_JOIN_REQUEST_UPDATE',
+        'EMBEDDED_ACTIVITY_UPDATE',
     ),
     INTENT_SHIFT_GUILD_USERS: (
         'GUILD_MEMBER_ADD',
         'GUILD_MEMBER_UPDATE',
         'GUILD_MEMBER_REMOVE',
-        'GUILD_JOIN_REQUEST_DELETE',
         'THREAD_MEMBERS_UPDATE',
     ),
     INTENT_SHIFT_GUILD_BANS: (
@@ -218,12 +221,15 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
     |                                        |       |                            | THREAD_DELETE,                              |
     |                                        |       |                            | THREAD_LIST_SYNC,                           |
     |                                        |       |                            | THREAD_MEMBER_UPDATE,                       |
-    |                                        |       |                            | THREAD_MEMBERS_UPDATE                       |
+    |                                        |       |                            | THREAD_MEMBERS_UPDATE,                      |
+    |                                        |       |                            | GUILD_JOIN_REQUEST_CREATE,                  |
+    |                                        |       |                            | GUILD_JOIN_REQUEST_DELETE,                  |
+    |                                        |       |                            | GUILD_JOIN_REQUEST_UPDATE,                  |
+    |                                        |       |                            | EMBEDDED_ACTIVITY_UPDATE                    |
     +----------------------------------------+-------+----------------------------+---------------------------------------------+
     | INTENT_SHIFT_GUILD_USERS               | 1     | guild_users                | GUILD_MEMBER_ADD,                           |
     |                                        |       |                            | GUILD_MEMBER_UPDATE,                        |
     |                                        |       |                            | GUILD_MEMBER_REMOVE,                        |
-    |                                        |       |                            | GUILD_JOIN_REQUEST_DELETE,                  |
     |                                        |       |                            | THREAD_MEMBERS_UPDATE                       |
     +----------------------------------------+-------+----------------------------+---------------------------------------------+
     | INTENT_SHIFT_GUILD_BANS                | 2     | guild_bans                 | GUILD_BAN_ADD,                              |

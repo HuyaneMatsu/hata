@@ -30,6 +30,30 @@ def parse_locale(data):
     return locale
 
 
+def parse_guild_locale(data):
+    """
+    Gets `'guild_locale'`'s value out from the given `dict`. If found returns it, if not, then returns `DEFAULT_LOCAL`.
+    
+    To not keep using new local values at every case, the already used local values are cached at `LOCALE`.
+    
+    Parameters
+    ----------
+    data : `dict` of (`str`, `Any`) items
+        Some data received from Discord.
+    
+    Returns
+    -------
+    guild_locale : `str`
+    """
+    try:
+        guild_locale = data['guild_locale']
+    except KeyError:
+        return DEFAULT_LOCALE
+    
+    guild_locale = LOCALES.setdefault(guild_locale, guild_locale)
+    return guild_locale
+
+
 def parse_preferred_locale(data):
     """
     Gets `'preferred_locale'`'s value out from the given `dict`. If found returns it, if not, then returns

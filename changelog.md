@@ -60,6 +60,8 @@
 - Move message history to it's own class to reduce the cost of channel, with no messages.
 - `ChannelVoice` now supports receiving messages.
 - `ChannelStage` now supports receiving messages.
+- Add `InteractionEvent.locale`.
+- Add `InteractionEvent.guild_locale`.
 
 ##### ext.asyncio
 - Add attachment converter to slash commands.

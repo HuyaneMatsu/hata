@@ -18,6 +18,7 @@ from ..permission.permission import PERMISSION_PRIVATE
 from ..guild import create_partial_guild_from_id
 from ..user import User, ClientUserBase
 from ..role import Role
+from ..oauth2.helpers import parse_locale, parse_guild_locale
 
 from .components import ComponentBase
 from .preinstanced import ApplicationCommandOptionType, InteractionType, ComponentType
@@ -1640,10 +1641,14 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
     guild_id : `int`
         The guild's identifier from where the interaction was called from. Might be `0` if the interaction was called
         from a private channel.
+    guild_locale : `str`
+        The guild's preferred locale if invoked from guild.
     interaction : `None` or ``ApplicationCommandInteraction``, ``ComponentInteraction`` or \
             ``ApplicationCommandAutocompleteInteraction``
         
         The called interaction by it's route by the user.
+    locale : `str`
+        The selected language of the invoking user.
     message : `None` or ``Message``
         The message from where the interaction was received. Applicable for message components.
     token : `str`
@@ -1672,8 +1677,8 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
     
     ˙˙InteractionEvent˙˙ instances are weakreferable.
     """
-    __slots__ = ('_cached_users', '_response_flag', 'application_id', 'channel_id', 'guild_id', 'interaction',
-        'message', 'token', 'type', 'user', 'user_permissions')
+    __slots__ = ('_cached_users', '_response_flag', 'application_id', 'channel_id', 'guild_id', 'guild_locale',
+        'interaction', 'locale', 'message', 'token', 'type', 'user', 'user_permissions')
     
     _USER_GUILD_CACHE = {}
     
@@ -1707,8 +1712,14 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         else:
             guild = None
         
+        # guild_locale
+        guild_locale = parse_guild_locale(data)
+        
         # interaction
         # We set interaction at the end when the object is fully initialized
+        
+        # locale
+        locale = parse_locale(data)
         
         # message
         try:
@@ -1748,7 +1759,9 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         self.type = type_
         self.channel_id = channel_id
         self.guild_id = guild_id
+        self.guild_locale = guild_locale
         self.interaction = None
+        self.locale = locale
         self.token = token
         self.user = user
         self.user_permissions = user_permissions
@@ -1932,17 +1945,15 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         repr_parts.append(')')
         
         
-        guild = self.guild
-        if (guild is not None):
-            repr_parts.append(', guild=')
-            repr_parts.append(repr(guild))
+        guild_id = self.guild_id
+        if guild_id:
+            repr_parts.append(', guild_id=')
+            repr_parts.append(repr(guild_id))
         
         
-        channel = self.channel
-        if (channel is not None):
-            repr_parts.append(', channel=')
-            repr_parts.append(repr(channel))
-
+        repr_parts.append(', channel_id=')
+        repr_parts.append(repr(self.channel_id))
+        
         
         message = self.message
         if (message is not None):
@@ -1953,6 +1964,12 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         repr_parts.append(', user=')
         repr_parts.append(repr(self.user))
         
+        repr_parts.append(', guild_locale=')
+        repr_parts.append(repr(self.guild_locale))
+        
+        if guild_id:
+            repr_parts.append(', locale=')
+            repr_parts.append(repr(self.locale))
         
         repr_parts.append(', interaction=')
         repr_parts.append(repr(self.interaction))

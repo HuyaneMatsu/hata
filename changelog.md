@@ -62,6 +62,7 @@
 - `ChannelStage` now supports receiving messages.
 - Add `InteractionEvent.locale`.
 - Add `InteractionEvent.guild_locale`.
+- Add `Client.events.unknown_dispatch_event`.
 
 ##### ext.asyncio
 - Add attachment converter to slash commands.

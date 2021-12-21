@@ -739,6 +739,9 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         However a typing requests stands for 8 seconds, but the official Discord client usually just spams it.
     
+    unknown_dispatch_event(client: ``Client``, name: `str`, data: `object`):
+        Called when an unknown dispatch event is received.
+    
     user_edit(client: ``Client``, user: ``ClientUserBase``, old_attributes: `dict`):
         Called when a user is edited This event not includes guild profile changes. The passed `old_attributes`
         parameter contains the message's overwritten attributes in `attribute-name` - `old-value` relation.

@@ -9,6 +9,7 @@ from scarletio.web_common import ConnectionClosed, WebSocketProtocolError, Inval
 
 from ..activity import ACTIVITY_UNKNOWN
 from ..events.core import PARSERS
+from ..events.handling_helpers import call_unknown_dispatch_event_event_handler
 from ..guild import LARGE_GUILD_LIMIT
 from ..core import KOKORO
 from ..exceptions import DiscordGatewayException, GATEWAY_EXCEPTION_CODE_TABLE
@@ -340,15 +341,7 @@ class DiscordGateway:
         try:
             parser = PARSERS[event]
         except KeyError:
-            Task(
-                client.events.error(
-                    client,
-                    f'{self.__class__.__name__}._received_message',
-                    f'Unknown dispatch event {event}\nData: {data!r}'
-                ),
-                KOKORO,
-            )
-            
+            call_unknown_dispatch_event_event_handler(client, event, data)
             return False
         
         if data is None:

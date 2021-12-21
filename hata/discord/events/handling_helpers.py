@@ -2466,6 +2466,24 @@ async def ensure_event_handlers(client, event_handlers):
         await future
 
 
+def call_unknown_dispatch_event_event_handler(client, name, data):
+    """
+    Calls `client.events.unknown_dispatch_event`.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The respective client.
+    name : `str`
+        The name of an event.
+    data : `object`
+        The received data.
+    """
+    event_handler = client.events.unknown_dispatch_event
+    if (event_handler is not DEFAULT_EVENT_HANDLER):
+        Task(event_handler(client, name, data), KOKORO)
+
+
 IGNORED_EVENT_HANDLER_TYPES = frozenset((
     WaitForHandler,
     ChunkWaiter,

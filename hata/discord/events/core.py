@@ -61,7 +61,7 @@ def _iter_name(name):
 
 def add_event_handler(name, value, parser):
     """
-    Adds a new event-name argcount parser names relation to the event system core instance.
+    Adds a new event-name parameter count parser names relation to the event system core instance.
     
     Parameters
     ----------
@@ -185,6 +185,7 @@ def get_plugin_event_handler(event_handler_manager, name):
 
 
 add_event_handler('error', 3, None,)
+add_event_handler('unknown_dispatch_event', 3, None)
 add_event_handler('launch', 1, None,)
 add_event_handler('shutdown', 1, None,)
 add_event_handler('voice_client_ghost', 2, None,)

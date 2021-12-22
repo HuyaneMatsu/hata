@@ -19,6 +19,7 @@ from .invite_stage import InviteStage
 # Experimental addition
 
 EMBEDDED_ACTIVITY_NAME_TO_APPLICATION_ID = {
+    'Awkword': 879863881349087252,
     'Betrayal.io': 773336526917861400,
     'Chess in The Park': 832012774040141894,
     'Fishington.io': 814288819477020702,

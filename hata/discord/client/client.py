@@ -11451,10 +11451,10 @@ class Client(ClientUserPBase):
             return (await self.invite_create(channel, **kwargs))
         except DiscordException as err:
             if err.code in (
-                    ERROR_CODES.unknown_channel, # the channel was deleted meanwhile
-                    ERROR_CODES.missing_permissions, # permissions changed meanwhile
-                    ERROR_CODES.missing_access, # client removed
-                        ):
+                ERROR_CODES.unknown_channel, # the channel was deleted meanwhile
+                ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                ERROR_CODES.missing_access, # client removed
+            ):
                 return None
             raise
     
@@ -11493,13 +11493,17 @@ class Client(ClientUserPBase):
             invite_code = invite
             invite = None
         else:
-            raise TypeError(f'`invite`` can be given as `{Invite.__name__}` or `str` instance, got '
-                f'{invite.__class__.__name__}.')
+            raise TypeError(
+                f'`invite`` can be given as `{Invite.__name__}` or `str` instance, got {invite.__class__.__name__}; '
+                f'{invite!r}.'
+            )
         
         if __debug__:
             if not isinstance(with_count, bool):
-                raise AssertionError(f'`with_count` can be given as `str` instance, got '
-                    f'{with_count.__class__.__name__}.')
+                raise AssertionError(
+                    f'`with_count` can be given as `str` instance, got {with_count.__class__.__name__}; '
+                    f'{with_count!r}.'
+                )
         
         invite_data = await self.http.invite_get(invite_code, {'with_counts': with_count})
         
@@ -11576,9 +11580,11 @@ class Client(ClientUserPBase):
         else:
             channel_id = maybe_snowflake(channel)
             if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelText.__name__}`, `{ChannelText.__name__}`, '
+                raise TypeError(
+                    f'`channel` can be given as `{ChannelText.__name__}`, `{ChannelText.__name__}`, '
                     f'`{ChannelText.__name__}`, `{ChannelText.__name__}` or as `int` instance, got '
-                    f'{channel.__class__.__name__}.')
+                    f'{channel.__class__.__name__}; {channel!r}.'
+                )
         
         invite_datas = await self.http.invite_get_all_channel(channel_id)
         return [Invite(invite_data, False) for invite_data in invite_datas]
@@ -11612,8 +11618,10 @@ class Client(ClientUserPBase):
             invite_code = invite
             invite = None
         else:
-            raise TypeError(f'`invite`` can be given as `{Invite.__name__}` or `str` instance, got '
-                f'{invite.__class__.__name__}.')
+            raise TypeError(
+                f'`invite`` can be given as `{Invite.__name__}` or `str` instance, got '
+                f'{invite.__class__.__name__}; {invite!r}.'
+            )
         
         invite_data = await self.http.invite_delete(invite_code, reason)
         
@@ -11682,7 +11690,10 @@ class Client(ClientUserPBase):
         """
         snowflake_pair = get_guild_id_and_role_id(role)
         if snowflake_pair is None:
-            raise TypeError(f'`role` can be given either as `{Role.__name__}` or as `tuple` (`int`, `int`), got {role.__class__.__name__}; {role!r}.')
+            raise TypeError(
+                f'`role` can be given either as `{Role.__name__}` or as `tuple` (`int`, `int`), got '
+                f'{role.__class__.__name__}; {role!r}.'
+            )
         
         guild_id, role_id = snowflake_pair
         

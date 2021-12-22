@@ -225,14 +225,14 @@ An interaction event has the following top level attributes, which you may use u
 
 The possible parameter types are listed above in the [Limitations](#Limitations) section, tho it is a little bit more
 complicated as might look for first time. All parameter has 3 fields what we need to fulfill; `name`, `type` and
-`description`. Their definition is expected in the following format: `name : (type, description)`.
+`description`. Their definition is expected in the following format: `name: (type, description)`.
 
 ```py
 from hata import Embed
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def cookie(event,
-    user : ('user', 'To who?'),
+    user: ('user', 'To who?'),
 ):
     """Gifts a cookie!"""
     return Embed(description=f'{event.user:f} just gifted a cookie to {user:f} !')
@@ -258,7 +258,7 @@ CAKES = [
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def cake(event,
-    user : P('user', 'To who?'),
+    user: P('user', 'To who?'),
 ):
     """Gifts a cake!"""
     return Embed(description=f'{event.user:f} just gifted a cookie to {user:f} !').add_image(choice(CAKES))
@@ -310,12 +310,15 @@ from hata import Embed
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def guild_icon(event,
-    choice: ({
-        'Icon': 'icon',
-        'Banner': 'banner',
-        'Discovery-splash': 'discovery_splash',
-        'Invite-splash': 'invite_splash',
-    }, 'Which icon of the guild?' ) = 'icon',
+    choice: (
+        {
+            'Icon': 'icon',
+            'Banner': 'banner',
+            'Discovery-splash': 'discovery_splash',
+            'Invite-splash': 'invite_splash',
+        },
+        'Which icon of the guild?',
+    ) = 'icon',
 ):
     """Shows the guild's icon or it's selected splash."""
     guild = event.guild
@@ -326,14 +329,17 @@ async def guild_icon(event,
         name = 'icon'
         url = guild.icon_url_as(size=4096)
         hash_value = guild.icon_hash
+    
     elif choice == 'banner':
         name = 'banner'
         url = guild.banner_url_as(size=4096)
         hash_value = guild.banner_hash
+    
     elif choice == 'discovery_splash':
         name = 'discovery splash'
         url = guild.discovery_splash_url_as(size=4096)
         hash_value = guild.discovery_splash_hash
+    
     else:
         name = 'invite splash'
         url = guild.invite_splash_url_as(size=4096)
@@ -451,7 +457,7 @@ from hata import Embed
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def cookie(client, event,
-    user : ('user', 'To who?') = None,
+    user: ('user', 'To who?') = None,
 ):
     """Gifts a cookie!"""
     if user is None:
@@ -523,7 +529,7 @@ from hata import id_to_datetime, DATETIME_FORMAT_CODE, elapsed_time
 
 @Nitro.interactions(guild=TEST_GUILD, name='id-to-time')
 async def idtotime(
-    snowflake : ('int', 'Id please!'),
+    snowflake: ('int', 'Id please!'),
 ):
     """Converts the given Discord snowflake to time."""
     time = id_to_datetime(snowflake)
@@ -539,7 +545,7 @@ from hata import id_to_datetime, DATETIME_FORMAT_CODE, elapsed_time
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def id_to_datetime_(
-    snowflake : ('int', 'Id please!'),
+    snowflake: ('int', 'Id please!'),
 ):
     """Converts the given Discord snowflake to time."""
     time = id_to_datetime(snowflake)
@@ -554,12 +560,13 @@ commands, like:
 ```py
 class Action:
     __slots__ = ('action_name', 'embed_color', )
+    
     def __init__(self, action_name, embed_color):
         self.action_name = action_name
         self.embed_color = embed_color
     
     async def __call__(self, client, event,
-        user : ('user', 'Who?') = None,
+        user: ('user', 'Who?') = None,
     ):
         if user is None:
             source_user = client
@@ -613,7 +620,7 @@ from hata.ext.slash import SlashResponse
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def repeat(
-    text : ('str', 'The content to repeat')
+    text: ('str', 'The content to repeat')
 ):
     """What should I exactly repeat?"""
     if not text:
@@ -921,12 +928,14 @@ async def latest_users(event):
             created_at = user.created_at
             embed.add_field(
                 f'{index}. {user.full_name}',
-                f'Id: {user.id}\n'
-                f'Mention: {user.mention}\n'
-                '\n'
-                f'Joined : {joined_at:{DATETIME_FORMAT_CODE}} [*{elapsed_time(joined_at)} ago*]\n'
-                f'Created : {created_at:{DATETIME_FORMAT_CODE}} [*{elapsed_time(created_at)} ago*]\n'
-                f'Difference : {elapsed_time(relativedelta(created_at, joined_at))}',
+                (
+                    f'Id : {user.id}\n'
+                    f'Mention : {user.mention}\n'
+                    '\n'
+                    f'Joined : {joined_at:{DATETIME_FORMAT_CODE}} [*{elapsed_time(joined_at)} ago*]\n'
+                    f'Created : {created_at:{DATETIME_FORMAT_CODE}} [*{elapsed_time(created_at)} ago*]\n'
+                    f'Difference : {elapsed_time(relativedelta(created_at, joined_at))}'
+                ),
             )
     
     else:

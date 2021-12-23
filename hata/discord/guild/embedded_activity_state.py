@@ -135,7 +135,7 @@ def difference_handle_embedded_activity_update_event(data):
             If `action` is `EMBEDDED_ACTIVITY_UPDATE_USER_ADD` or `EMBEDDED_ACTIVITY_UPDATE_USER_DELETE`, it will
             contain the joined or left user's identifier.
     """
-    embedded_activity_state, is_created = EmbeddedActivityState(data)
+    embedded_activity_state, is_created = EmbeddedActivityState(data, None)
     
     changes = []
     
@@ -179,7 +179,7 @@ def handle_embedded_update_event(data):
     data : `dict` of (`str`, `Any`) items
         Embedded activity update event.
     """
-    embedded_activity_state, is_created = EmbeddedActivityState(data)
+    embedded_activity_state, is_created = EmbeddedActivityState(data, None)
     if is_created:
         _add_embedded_activity_state_to_guild_cache(embedded_activity_state)
     else:
@@ -210,7 +210,7 @@ class EmbeddedActivityState:
     __slots__ = ('__weakref__', 'activity', 'channel_id', 'guild_id', 'user_ids')
     
     
-    def __new__(cls, data):
+    def __new__(cls, data, guild_id):
         """
         Creates a new embedded activity state instance.
         
@@ -218,6 +218,8 @@ class EmbeddedActivityState:
         ----------
         data : `dict` of (`str`, `Any`) items
             Received data.
+        guild_id : `None` or `int`
+            The guild's identifier where the activity is.
         
         Returns
         -------
@@ -226,7 +228,13 @@ class EmbeddedActivityState:
         is_created : `bool`
             Whether the instance was just created.
         """
-        guild_id = int(data['guild_id'])
+        if guild_id is None:
+            guild_id = data.get('guild_id', None)
+            if guild_id is None:
+                guild_id = 0
+            else:
+                guild_id = int(guild_id)
+        
         channel_id = int(data['channel_id'])
         activity_data = data['embedded_activity']
         application_id = activity_data.get('application_id', None)
@@ -244,7 +252,7 @@ class EmbeddedActivityState:
             self.channel_id = channel_id
             self.guild_id = guild_id
             self.activity = ActivityRich.from_data(activity_data)
-            self.user_ids = set(int(user_id) for user_id in data['user_ids'])
+            self.user_ids = set(int(user_id) for user_id in data['users'])
             
             EMBEDDED_ACTIVITY_STATES[key] = self
             is_created = True
@@ -332,7 +340,7 @@ class EmbeddedActivityState:
         data : `dict` of (`str`, `Any`) items
             Embedded activity state data.
         """
-        self.user_ids = set(int(user_id) for user_id in data['user_ids'])
+        self.user_ids = set(int(user_id) for user_id in data['users'])
     
     
     def _difference_update_use_ids(self, data):
@@ -351,7 +359,7 @@ class EmbeddedActivityState:
         left_user_ids : `set` of `int`
             The left users' identifiers.
         """
-        new_user_ids = set(int(user_id) for user_id in data['user_ids'])
+        new_user_ids = set(int(user_id) for user_id in data['users'])
         old_user_ids = self.user_ids
         self.user_ids = new_user_ids
         

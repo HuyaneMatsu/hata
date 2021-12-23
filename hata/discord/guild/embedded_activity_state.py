@@ -157,15 +157,20 @@ def difference_handle_embedded_activity_update_event(data):
         for user_id in left_user_ids:
             changes.append((EMBEDDED_ACTIVITY_UPDATE_USER_DELETE, user_id))
         
-        activity_old_attributes = embedded_activity_state.activiy._difference_update_attributes(
-            data['embedded_activity'],
-        )
-        if activity_old_attributes:
-            changes.append((EMBEDDED_ACTIVITY_UPDATE_UPDATE, activity_old_attributes))
-        
-        if not embedded_activity_state.user_ids:
+        if embedded_activity_state.user_ids:
+            activity_old_attributes = embedded_activity_state.activiy._difference_update_attributes(
+                data['embedded_activity'],
+            )
+            if activity_old_attributes:
+                changes.append((EMBEDDED_ACTIVITY_UPDATE_UPDATE, activity_old_attributes))
+        else:
+            embedded_activity_state.activiy._update_attributes(data['embedded_activity'])
+            
             _remove_embedded_activity_state_from_guild_cache(embedded_activity_state)
             changes.append((EMBEDDED_ACTIVITY_UPDATE_DELETE, None))
+        
+        
+
     
     return embedded_activity_state, changes
 

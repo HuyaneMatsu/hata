@@ -23,7 +23,7 @@ def create_activity_from_data(activity_data):
     if activity_data is None:
         return ACTIVITY_UNKNOWN
     
-    if activity_data['type'] == ACTIVITY_TYPES.custom:
+    if activity_data.get('type', 0) == ACTIVITY_TYPES.custom:
         activity_type = ActivityCustom
     else:
         activity_type = ActivityRich

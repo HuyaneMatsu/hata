@@ -328,7 +328,8 @@ class ActivityRich(ActivityBase):
         self : ``ActivityRich``
         """
         self = object.__new__(cls)
-        type_ = activity_data['type']
+        
+        type_ = activity_data.get('type', ACTIVITY_TYPES.game)
         self.type = type_
         
         if type_ in CUSTOM_IDS:
@@ -356,17 +357,16 @@ class ActivityRich(ActivityBase):
         activity_data : `dict` of (`str`, `Any`) items
             Data received from Discord.
         """
-        try:
-            application_id = activity_data['application_id']
-        except KeyError:
+        application_id = activity_data.get('application_id', None)
+        if (application_id is None):
             application_id = 0
         else:
             application_id = int(application_id)
         self.application_id = application_id
         
-        try:
-            assets_data = activity_data['assets']
-        except KeyError:
+        
+        assets_data = activity_data.get('assets', None)
+        if (assets_data is None):
             assets = None
         else:
             assets = ActivityAssets.from_data(assets_data)
@@ -383,19 +383,17 @@ class ActivityRich(ActivityBase):
         
         self.flags = ActivityFlag(activity_data.get('flags', 0))
         
-        self.name = activity_data['name']
+        self.name = activity_data.get('name', '')
         
-        try:
-            party_data = activity_data['party']
-        except KeyError:
+        party_data = activity_data.get('party', None)
+        if (party_data is None):
             party = None
         else:
             party = ActivityParty.from_data(party_data)
         self.party = party
         
-        try:
-            secrets_data = activity_data['secrets']
-        except KeyError:
+        secrets_data = activity_data.get('secrets', None)
+        if (secrets_data is None):
             secrets = None
         else:
             secrets = ActivitySecrets.from_data(secrets_data)
@@ -407,9 +405,8 @@ class ActivityRich(ActivityBase):
         
         self.sync_id = activity_data.get('sync_id', None)
         
-        try:
-            timestamps_data = activity_data['timestamps']
-        except KeyError:
+        timestamps_data = activity_data.get('timestamps', None)
+        if timestamps_data is None:
             timestamps = None
         else:
             timestamps = ActivityTimestamps.from_data(timestamps_data)
@@ -466,9 +463,8 @@ class ActivityRich(ActivityBase):
         """
         old_attributes = {}
         
-        try:
-            application_id = activity_data['application_id']
-        except KeyError:
+        application_id = activity_data.get('application_id', None)
+        if (application_id is None):
             application_id = 0
         else:
             application_id = int(application_id)
@@ -477,9 +473,9 @@ class ActivityRich(ActivityBase):
             old_attributes['application_id'] = self.application_id
             self.application_id = application_id
         
-        try:
-            assets_data = activity_data['assets']
-        except KeyError:
+        
+        assets_data = activity_data.get('assets', None)
+        if (assets_data is None):
             assets = None
         else:
             assets = ActivityAssets.from_data(assets_data)
@@ -507,14 +503,13 @@ class ActivityRich(ActivityBase):
             old_attributes['flags'] = self.flags
             self.flags = ActivityFlag(flags)
         
-        name = activity_data['name']
+        name = activity_data.get('name', '')
         if self.name != name:
             old_attributes['name'] = self.name
             self.name = name
         
-        try:
-            party_data = activity_data['party']
-        except KeyError:
+        party_data = activity_data.get('party', None)
+        if (party_data is None):
             party = None
         else:
             party = ActivityParty.from_data(party_data)
@@ -523,9 +518,8 @@ class ActivityRich(ActivityBase):
             old_attributes['party'] = self.party
             self.party = party
         
-        try:
-            secrets_data = activity_data['secrets']
-        except KeyError:
+        secrets_data = activity_data.get('secrets', None)
+        if (secrets_data is None):
             secrets = None
         else:
             secrets = ActivitySecrets.from_data(secrets_data)
@@ -549,9 +543,8 @@ class ActivityRich(ActivityBase):
             old_attributes['sync_id'] = self.sync_id
             self.sync_id = sync_id
         
-        try:
-            timestamps_data = activity_data['timestamps']
-        except KeyError:
+        timestamps_data = activity_data.get('timestamps', None)
+        if timestamps_data is None:
             timestamps = None
         else:
             timestamps = ActivityTimestamps.from_data(timestamps_data)

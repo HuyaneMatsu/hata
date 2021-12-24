@@ -63,6 +63,10 @@
 - Add `InteractionEvent.locale`.
 - Add `InteractionEvent.guild_locale`.
 - Add `Client.events.unknown_dispatch_event`.
+- `user_avatar_url_for` now accepts `guild` as `int`.
+- `user_avatar_url_for_as` now accepts `guild` as `int`.
+- `user_avatar_url_at` now accepts `guild` as `int`.
+- `user_avatar_url_at_as` now accepts `guild` as `int`.
 
 ##### ext.asyncio
 - Add attachment converter to slash commands.

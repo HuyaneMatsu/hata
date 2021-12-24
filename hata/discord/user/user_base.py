@@ -1,6 +1,6 @@
 __all__ = ('UserBase', )
 
-from scarletio import include
+from scarletio import include, export
 
 from ..bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
 from ..utils import DATETIME_FORMAT_CODE
@@ -17,7 +17,7 @@ create_partial_role_from_id = include('create_partial_role_from_id')
 Client = include('Client')
 Guild = include('Guild')
 
-
+@export
 def _try_get_guild_id(guild):
     """
     Tries to get the guild's identifier.

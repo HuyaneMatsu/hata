@@ -362,15 +362,16 @@ class ClientUserBase(UserBase):
     
     @copy_docs(UserBase.name_at)
     def name_at(self, guild):
-        if (guild is not None):
-            try:
-                guild_profile = self.guild_profiles[guild.id]
-            except KeyError:
-                pass
-            else:
-                nick = guild_profile.nick
-                if (nick is not None):
-                    return nick
+        guild_id = _try_get_guild_id(guild)
+        
+        try:
+            guild_profile = self.guild_profiles[guild_id]
+        except KeyError:
+            pass
+        else:
+            nick = guild_profile.nick
+            if (nick is not None):
+                return nick
         
         return self.name
     

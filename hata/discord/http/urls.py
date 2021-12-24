@@ -40,6 +40,8 @@ STYLE_PATTERN = re.compile('(^shield$)|(^banner[1-4]$)')
 MESSAGE_JUMP_URL_RP = re.compile('(?:https://)?discord(?:app)?.com/channels/(?:(\d{7,21})|@me)/(\d{7,21})/(\d{7,21})')
 export(MESSAGE_JUMP_URL_RP, 'MESSAGE_JUMP_URL_RP')
 
+_try_get_guild_id = include('_try_get_guild_id')
+
 #returns a URL that allows the client to jump to this message
 #guild is guild's id, or @me if there is no guild
 def message_jump_url(message):
@@ -854,33 +856,6 @@ def user_avatar_url(user):
     return f'{CDN_ENDPOINT}/avatars/{user.id}/{prefix}{user.avatar_hash:0>32x}.{ext}'
 
 
-def user_avatar_url(user):
-    """
-    Returns the user's avatar's url. If the user has no avatar, then returns it's default avatar's url.
-    
-    Parameters
-    ----------
-    user : ``UserBase``
-        The respective user.
-    
-    Returns
-    -------
-    url : `None` or `str`
-    """
-    icon_type = user.avatar_type
-    if icon_type is ICON_TYPE_NONE:
-        return user.default_avatar.url
-    
-    if icon_type is ICON_TYPE_STATIC:
-        prefix = ''
-        ext = 'png'
-    else:
-        prefix = 'a_'
-        ext = 'gif'
-    
-    return f'{CDN_ENDPOINT}/avatars/{user.id}/{prefix}{user.avatar_hash:0>32x}.{ext}'
-
-
 def user_avatar_url_as(user, ext=None, size=None):
     """
     Returns the user's avatar's url. If the user has no avatar, then returns it's default avatar's url.
@@ -1026,18 +1001,17 @@ def user_avatar_url_for(user, guild):
     ----------
     user : ``UserBase``
         The Respective user.
-    guild : ``Guild``
-        The respective guild.
+    guild : ``Guild`` or `int`
+        The respective guild or it's identifier.
     
     Returns
     -------
     url : `None` or `str`
     """
-    if guild is None:
-        return None
+    guild_id = _try_get_guild_id(guild)
     
     try:
-        guild_profile = user.guild_profiles[guild.id]
+        guild_profile = user.guild_profiles[guild_id]
     except KeyError:
         return None
     
@@ -1052,7 +1026,7 @@ def user_avatar_url_for(user, guild):
         prefix = 'a_'
         ext = 'gif'
     
-    return f'{CDN_ENDPOINT}/guilds/{guild.id}/users/{user.id}/avatars/{prefix}{guild_profile.avatar_hash:0>32x}.{ext}'
+    return f'{CDN_ENDPOINT}/guilds/{guild_id}/users/{user.id}/avatars/{prefix}{guild_profile.avatar_hash:0>32x}.{ext}'
 
 
 def user_avatar_url_for_as(user, guild, ext=None, size=None):
@@ -1063,8 +1037,8 @@ def user_avatar_url_for_as(user, guild, ext=None, size=None):
     ----------
     user : ``UserBase``
         The Respective user.
-    guild : ``Guild``
-        The respective guild.
+    guild : ``Guild`` or `int`
+        The respective guild or it's identifier.
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If the user has
         animated avatar, it can `'gif'` as well.
@@ -1080,11 +1054,10 @@ def user_avatar_url_for_as(user, guild, ext=None, size=None):
     ValueError
         If `ext` or `size` was not passed as any of the expected values.
     """
-    if guild is None:
-        return None
+    guild_id = _try_get_guild_id(guild)
     
     try:
-        guild_profile = user.guild_profiles[guild.id]
+        guild_profile = user.guild_profiles[guild_id]
     except KeyError:
         return None
     
@@ -1117,7 +1090,7 @@ def user_avatar_url_for_as(user, guild, ext=None, size=None):
                 raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.')
             prefix = 'a_'
     
-    return f'{CDN_ENDPOINT}/guilds/{guild.id}/users/{user.id}/avatars/{prefix}{guild_profile.avatar_hash:0>32x}.' \
+    return f'{CDN_ENDPOINT}/guilds/{guild_id}/users/{user.id}/avatars/{prefix}{guild_profile.avatar_hash:0>32x}.' \
            f'{ext}{end}'
 
 
@@ -1129,8 +1102,8 @@ def user_avatar_url_at(user, guild):
     ----------
     user : ``UserBase``
         The Respective user.
-    guild : ``Guild``
-        The respective guild.
+    guild : ``Guild`` or `int`
+        The respective guild or it's identifier.
     
     Returns
     -------
@@ -1151,8 +1124,8 @@ def user_avatar_url_at_as(user, guild, ext=None, size=None):
     ----------
     user : ``UserBase``
         The Respective user.
-    guild : ``Guild``
-        The respective guild.
+    guild : ``Guild`` or `int`
+        The respective guild or it's identifier.
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If the user has
         animated avatar, it can `'gif'` as well.

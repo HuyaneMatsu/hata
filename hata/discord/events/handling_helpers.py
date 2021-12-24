@@ -153,7 +153,7 @@ def check_parameter_count_and_convert(func, expected, *, name='event', can_be_as
     if analyzer.is_async() or (analyzer.is_async_generator() if can_be_async_generator else False):
         min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
         if min_ > expected:
-            raise TypeError(f'A `{name}` should accept `{expected!r}` parameters, meanwhile the given callable expects '
+            raise TypeError(f'`{name}` should accept `{expected!r}` parameters, meanwhile the given callable expects '
                 f'at least `{min_!r}`, got `{func!r}`.')
         
         if min_ == expected:
@@ -166,7 +166,7 @@ def check_parameter_count_and_convert(func, expected, *, name='event', can_be_as
         if analyzer.accepts_args():
             return func
         
-        raise TypeError(f'A `{name}` should accept `{expected}` parameters, meanwhile the given callable expects up to '
+        raise TypeError(f'`{name}` should accept `{expected}` parameters, meanwhile the given callable expects up to '
             f'`{max_!r}`, got `{func!r}`.')
     
     if analyzer.can_instance_to_async_callable() or \

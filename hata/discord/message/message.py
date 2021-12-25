@@ -745,8 +745,10 @@ class Message(DiscordEntity, immortal=True):
             If called as a classmethod defaults to `0`.
         id_ : `int` or `str`, Optional (Keyword only)
             Alias of `id`.
+        
         message_id : `int` or `str`, Optional (Keyword only)
             Alias of `id`.
+        
         nonce : `None` or `str`, Optional (Keyword only)
             The ``.nonce`` attribute of the message. If passed as `str` can be between length `0` and `32`.
             
@@ -788,6 +790,7 @@ class Message(DiscordEntity, immortal=True):
             If called as a classmethod defaults to ``MessageType.default`
         type_ : ``MessageType`` or `int`, Optional (Keyword only)
             Alias of ``type`.
+        
         user_mentions : `None` or `list`, `tuple`  of ``UserBase``, Optional (Keyword only)
             The ``.user_mentions`` attribute of the message. If passed as an empty list will be set as `None` instead.
             
@@ -2301,7 +2304,91 @@ class Message(DiscordEntity, immortal=True):
         
         Other Parameters
         ----------------
-        activity : `None` or ``MessageActivity``
+        activity : `None` or ``MessageActivity``, Optional (Keyword only)
+            The ``.activity`` attribute the message.
+        
+        application : `None` or ``MessageApplication``., Optional (Keyword only)
+            The ``.application`` attribute the message.
+        
+        application_id : `int`, Optional (Keyword Only)
+            The ``.application_id`` attribute of the message.
+        
+        attachments : `None` or ((`list`, `tuple`) of ``Attachment``), Optional (Keyword only)
+            The ``.attachments`` attribute of the message. If passed as an empty list, then will be as `None` instead.
+        
+        author : `None`, ``ClientUserBase``, ``Webhook`` or ``WebhookRepr``, Optional (Keyword only)
+            The ``.author`` attribute of the message. If passed as `None` then it will be set as `ZEROUSER` instead.
+        
+        channel_id : ``ChannelTextBase`` or `int` instance, Optional if called as method (Keyword only)
+            The ``.channel_id`` attribute of the message.
+        
+        components : `None` or (`list` or `tuple`) of ``ComponentBase``, Optional (Keyword only)
+            The ``.components`` attribute of the message.
+        
+        content : `None` or `str`, Optional (Keyword only)
+            The ``.content`` attribute of the message. Can be between length `0` and `4000`.
+        
+        cross_mentions : `None` or (`tuple`, `list`) of (``UnknownCrossMention`` or ``ChannelGuildBase`` instances)
+                , Optional (Keyword only)
+            The `.cross_mentions` attribute of the message. If passed as an empty list, then will be set `None` instead.
+        
+        referenced_message : `None`, ``Message`` ``MessageReference``, Optional (Keyword only)
+            The ``.referenced_message`` attribute of the message.
+        
+        deleted : `bool`, Optional (Keyword only)
+            The ``.deleted`` attribute of the message. If called as a class method, defaults to `True`.
+        
+        edited_at : `None` or `datetime`, Optional (Keyword only)
+            The ``.edited_at`` attribute of the message.
+        
+        embeds : `None` or (`list` or `tuple`) of ``EmbedBase``, Optional (Keyword only)
+            The ``.embeds`` attribute of the message. If passed as an empty list, then is set as `None` instead. If
+            passed as list and it contains any embeds, which are not type ``EmbedCore``, then those will be converted
+            to ``EmbedCore`` as well.
+        
+        everyone_mention : `bool` or `int` instance (`0` or `1`), Optional (Keyword only)
+            The ``.everyone_mention`` attribute of the message. Accepts other `int` instance as `bool` as well, but
+            their value still cannot be other than `0` or `1`.
+        
+        flags : ``MessageFlag`` or `int`, Optional (Keyword only)
+            The ``.flags`` attribute of the message. If passed as other `int` instances than ``MessageFlag``, then will
+            be converted to ``MessageFlag``.
+        
+        interaction : `None` or ``MessageInteraction``, Optional (Keyword only)
+           The `.interaction` attribute of the message.
+        
+        nonce : `None` or `str`, Optional (Keyword only)
+            The ``.nonce`` attribute of the message. If passed as `str` can be between length `0` and `32`.
+            
+            If called as a classmethod defaults to `None`.
+        pinned : `bool` or `int` instance (`0` or `1`), Optional (Keyword only)
+            The ``.pinned`` attribute of the message. Accepts other `int` instances as `bool` as well, but their value
+            still cannot be other than `0` or `1`.
+        
+        reactions : `None` or ``reaction_mapping``, Optional (Keyword only)
+            The ``.reactions`` attribute of the message. If passed as `None` will be set as an empty
+            ``reaction_mapping``.
+        
+        role_mentions : `None` or (`list` or `tuple`) of ``Role``, Optional (Keyword only)
+            The ``.role_mentions`` attribute of the message. If passed as an empty `list`, will be set as `None`
+            instead.
+            
+        stickers : `None` or (`list`, `tuple`) of ``Sticker``, Optional (Keyword only)
+            The ``.stickers`` attribute of the message.
+            
+        thread : `None` or ``ChannelThread``
+            The ``.thread`` attribute of the message.
+        
+        tts : `bool` or `int` instance (`0` or `1`), Optional (Keyword only)
+            The ``.tts`` attribute of the message. Accepts other `int` instances as `bool` as well, but their value
+            still cannot be other than `0` or `1`.
+        
+        type : ``MessageType`` or `int`, Optional (Keyword only)
+            The ``.type`` attribute of the message. If passed as `int`, it will be converted to it's wrapper side
+            ``MessageType`` representation.
+        
+        user_mentions : `None` or `list`, `tuple`  of ``UserBase``, Optional (Keyword only)
+            The ``.user_mentions`` attribute of the message. If passed as an empty list will be set as `None` instead.
         
         Returns
         -------

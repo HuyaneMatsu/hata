@@ -276,7 +276,8 @@ class Client(ClientUserPBase):
         intents : ``IntentFlag``, Optional (Keyword only)
              By default the client will launch up using all the intent flags. Negative values will be interpreted as
              using all the intents, meanwhile if passed as positive, non existing intent flags are removed.
-        additional_owners : `None`, `int`, ``ClientUserBase``, `iterable` of (`int`, ``ClientUserBase``)
+        additional_owners : `None`, `int`, ``ClientUserBase``, `iterable` of (`int`, ``ClientUserBase``), \
+                Optional (Keyword only)
             Additional users to return `True` if ``is_owner` is called.
         extensions : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
             The extension's name to setup on the client.
@@ -312,7 +313,7 @@ class Client(ClientUserPBase):
             
             > Mutually exclusive with `banner_type` and `banner_hash`.
         
-        banner_color : `None` or ``Color``
+        banner_color : `None` or ``Color``, Optional (Keyword only)
             The user's banner color.
         
         banner_type : ``IconType``, Optional (Keyword only)

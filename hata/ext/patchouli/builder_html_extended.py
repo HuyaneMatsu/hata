@@ -499,10 +499,12 @@ class FunctionOrPropertySerializer:
         Contained section part.
     object : ``TypeUnit``
         The owner type-unit.
+    parameter_section : `None` or ``ParameterSection``
+        The parameter section of the serialiser.
     path : ``QualPath``
         Path to use instead of the object's.
     """
-    __slots__ = ('content', 'object', 'path')
+    __slots__ = ('content', 'object', 'parameter_section', 'path')
     
     def __init__(self, object_, path=None):
         """
@@ -523,6 +525,7 @@ class FunctionOrPropertySerializer:
         docs = object_.docs
         if docs is None:
             self.content = None
+            self.parameter_section = None
             return
         
         parameter_section = None
@@ -558,6 +561,8 @@ class FunctionOrPropertySerializer:
             existing.append(SimpleSection(section_name, section_content, object_, path))
             continue
         
+        self.parameter_section = parameter_section
+        
         content = []
         for part in sorted(section_parts.items()):
             sub_section = part[1]
@@ -589,9 +594,33 @@ class FunctionOrPropertySerializer:
         yield '>'
         yield from anchor_for_serializer(anchor_escape(prefix))
         yield html_escape(name)
-        yield '<div class="underline"><div></h'
+        
+        parameter_section = self.parameter_section
+        if (parameter_section is not None):
+            parameter_section_started = False
+            
+            for parameter_sub_section in parameter_section.parameter_sub_sections:
+                if parameter_sub_section.optional:
+                    if parameter_section_started:
+                        yield ', ...'
+                    break
+                
+                if parameter_section_started:
+                    yield ', '
+                else:
+                    yield '<span class="function_parameter">('
+                    parameter_section_started = True
+                
+                yield html_escape(parameter_sub_section.name)
+            
+            if parameter_section_started:
+                yield ')</span>'
+        
+        yield '</h'
         yield str(tier)
         yield '>'
+        
+        yield '<div class="underline"><div>'
         
         content = self.content
         if content is None:
@@ -636,6 +665,7 @@ class FunctionOrPropertySerializer:
         title = path.parts[-1]
         prefixed_title = get_anchor_prefix_for(path)
         return Structure(title, prefixed_title, children)
+
 
 class UnitSection:
     """
@@ -746,7 +776,8 @@ class UnitSection:
             prefixed_title = anchor_escape(title)
         
         return Structure(title, prefixed_title, children)
-    
+
+
 class AttributeSection:
     """
     Represents an attribute section.
@@ -940,7 +971,7 @@ class AttributeSection:
         
         return Structure(title, prefixed_title, children)
 
-PARAMETER_NAME_RP = re.compile('([a-zA-Z_]+[a-zA-Z_0-9]*)(?: *\: *(.+)?)?')
+PARAMETER_NAME_RP = re.compile('(\*{0,2}[a-zA-Z_]+[a-zA-Z_0-9]*)(?: *\: *(.+)?)?')
 PARAMETER_OPTIONALITY_RP = re.compile('(.*?)(?:,? *([Oo]ptional)(?:,? *\(?([Kk]eyword [Oo]nly)\)?)?)?')
 
 PARAMETER_SHIFT_NAME = 0
@@ -1007,7 +1038,7 @@ class ParameterSubSection:
                     before_part, optional_part, keyword_only_part = match.groups()
                     
                     if (before_part is not None) and before_part:
-                        header_contents[-1] = header_contents
+                        header_contents[-1] = before_part
                     else:
                         del header_contents[-1]
                     
@@ -1027,7 +1058,14 @@ class ParameterSubSection:
             optional = False
             keyword_only = False
         
-
+        if name.startswith('**'):
+            optional = True
+            keyword_only = True
+        
+        elif name.startswith('*'):
+            optional = True
+            keyword_only = False
+        
         self.optional = optional
         self.keyword_only = keyword_only
         

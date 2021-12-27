@@ -100,7 +100,7 @@ def graved_global_link(reference, object_, path, linker):
                     f'{reference_escaped}'
                 '</span>'
             '</code>'
-                )
+        )
     
     url = linker(path, referred_object.path)
     
@@ -112,7 +112,7 @@ def graved_global_link(reference, object_, path, linker):
                 '</span>'
             '</code>'
         '</a>'
-            )
+    )
 
 
 def graved_link(reference):
@@ -140,7 +140,7 @@ def graved_link(reference):
                 '</span>'
             '</code>'
         '</a>'
-            )
+    )
 
 
 def graved_text(text):
@@ -161,7 +161,7 @@ def graved_text(text):
         '<code>'
             f'{text}'
         '</code>'
-            )
+    )
 
 def graved_to_escaped(graved, object_, path, linker):
     """
@@ -283,6 +283,7 @@ def attribute_description_serializer(description, object_, path, linker):
     html_part : `str`
     """
     yield '<p>'
+    yield '.'
     yield html_escape(description.name)
     separator = description.separator
     if separator == '(':
@@ -367,7 +368,7 @@ def table_serializer(table, object_, path, linker):
     html_part : `str`
     """
     head_line, *content_lines = table
-    yield '<table><thead><tr>'
+    yield '<table class="generic_table"><thead><tr>'
     for element in head_line:
         yield '<th>'
         
@@ -565,13 +566,13 @@ def sub_section_serializer(sub_section, object_, path, linker):
 
 
 CONVERTER_TABLE = {
-    list : sub_section_serializer,
-    GravedListing : listing_serializer,
-    GravedDescription : description_serializer,
-    GravedTable : table_serializer,
-    GravedCodeBlock : code_block_serializer,
-    GravedAttributeDescription : attribute_description_serializer,
-    GravedBlockQuote : block_quote_serializer,
+    list: sub_section_serializer,
+    GravedListing: listing_serializer,
+    GravedDescription: description_serializer,
+    GravedTable: table_serializer,
+    GravedCodeBlock: code_block_serializer,
+    GravedAttributeDescription: attribute_description_serializer,
+    GravedBlockQuote: block_quote_serializer,
 }
 
 

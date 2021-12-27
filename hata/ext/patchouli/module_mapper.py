@@ -55,55 +55,55 @@ IGNORED_FUNCTIONS = set()
 
 converted = None
 for func in (
-        object.__delattr__,
-        object.__dir__,
-        object.__eq__,
-        object.__format__,
-        object.__ge__,
-        object.__getattribute__,
-        object.__gt__,
-        object.__hash__,
-        object.__init__,
-        object.__init_subclass__,
-        object.__le__,
-        object.__lt__,
-        object.__ne__,
-        object.__new__,
-        object.__reduce__,
-        object.__reduce_ex__,
-        object.__repr__,
-        object.__setattr__,
-        getattr(object, '__sizeof__', None), # Not present in Pypy
-        object.__str__,
-        object.__subclasshook__,
-        type.__call__,
-        type.__delattr__,
-        type.__dir__,
-        type.__eq__,
-        type.__format__,
-        type.__ge__,
-        type.__getattribute__,
-        type.__gt__,
-        type.__hash__,
-        type.__init__,
-        type.__init_subclass__,
-        type.__instancecheck__,
-        type.__le__,
-        type.__lt__,
-        type.__ne__,
-        type.__new__,
-        type.__prepare__,
-        type.__reduce__,
-        type.__reduce_ex__,
-        type.__repr__,
-        type.__setattr__,
-        getattr(type, '__sizeof__', None), # Not present in Pypy
-        type.__str__,
-        type.__subclasscheck__,
-        type.__subclasses__,
-        type.__subclasshook__,
-        type.mro,
-            ):
+    object.__delattr__,
+    object.__dir__,
+    object.__eq__,
+    object.__format__,
+    object.__ge__,
+    object.__getattribute__,
+    object.__gt__,
+    object.__hash__,
+    object.__init__,
+    object.__init_subclass__,
+    object.__le__,
+    object.__lt__,
+    object.__ne__,
+    object.__new__,
+    object.__reduce__,
+    object.__reduce_ex__,
+    object.__repr__,
+    object.__setattr__,
+    getattr(object, '__sizeof__', None), # Not present in Pypy
+    object.__str__,
+    object.__subclasshook__,
+    type.__call__,
+    type.__delattr__,
+    type.__dir__,
+    type.__eq__,
+    type.__format__,
+    type.__ge__,
+    type.__getattribute__,
+    type.__gt__,
+    type.__hash__,
+    type.__init__,
+    type.__init_subclass__,
+    type.__instancecheck__,
+    type.__le__,
+    type.__lt__,
+    type.__ne__,
+    type.__new__,
+    type.__prepare__,
+    type.__reduce__,
+    type.__reduce_ex__,
+    type.__repr__,
+    type.__setattr__,
+    getattr(type, '__sizeof__', None), # Not present in Pypy
+    type.__str__,
+    type.__subclasscheck__,
+    type.__subclasses__,
+    type.__subclasshook__,
+    type.mro,
+):
     
     if func is None:
         continue
@@ -457,7 +457,7 @@ class UnitBase:
         """
         Renders the extended docstring to html.
         
-        This html renderer will not only render only the given docstring, but render it with the other related
+        This html renderer will not only render the given docstring, but render it with the other related
         docstrings.
         
         Returns
@@ -689,6 +689,7 @@ class InstanceAttributeUnit(AttributeUnitBase):
         The path to the attribute.
     """
     __slots__ = ()
+    
     def __new__(cls, name, path):
         """
         Creates a new instance attribute unit from the given parameters.
@@ -723,6 +724,7 @@ class ClassAttributeUnit(AttributeUnitBase):
         The path to the attribute.
     """
     __slots__ = ()
+    
     def __new__(cls, name, path):
         """
         Creates a new class attribute unit from the given parameters.
@@ -805,6 +807,7 @@ class PropertyUnit(ObjectedUnitBase):
         The represented property.
     """
     __slots__ = ()
+    
     def __new__(cls, name, path, obj):
         """
         Creates a new property unit from the given parameters.
@@ -851,6 +854,7 @@ class FunctionUnit(ObjectedUnitBase):
         The represented function.
     """
     __slots__= ()
+    
     def __new__(cls, name, path, obj, alternative_path):
         """
         Creates a new property unit from the given parameters.

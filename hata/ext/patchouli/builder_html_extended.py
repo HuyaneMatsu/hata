@@ -1,13 +1,13 @@
-# -*- coding: utf-8 -*-
 __all__ = ()
 
+import re, reprlib
 from html import escape as html_escape
 
 from scarletio import export
 
 from .graver import GravedDescription, GravedAttributeDescription
 from .parser import ATTRIBUTE_SECTION_NAME_RP, ATTRIBUTE_NAME_RP
-from .builder_html import sub_section_serializer, create_relative_link, graved_to_escaped
+from .builder_html import sub_section_serializer, create_relative_link, graved_to_escaped, description_serializer
 from .module_mapper import TypeUnit, ModuleUnit, PropertyUnit, InstanceAttributeUnit, FunctionUnit, MAPPED_OBJECTS
 
 class Structure:
@@ -24,6 +24,7 @@ class Structure:
         The child units of sections. Set as `None` if would have non.
     """
     __slots__ = ( 'title', 'prefixed_title', 'children')
+    
     def __init__(self, title, prefixed_title, children):
         """
         Creates a nw structure object with the given parameters.
@@ -42,6 +43,7 @@ class Structure:
         self.title = title
         self.prefixed_title = prefixed_title
         self.children = children
+
 
 def create_relative_sectioned_link(source, target):
     """
@@ -119,7 +121,28 @@ ANCHOR_SVG = (
             'a 0.75 0.75 0 0 0 1.06 -1.06 a 3.5 3.5 0 0 0 -4.95 0 l -2.5 2.5 a 3.5 3.5 0 0 0 4.95 4.95 l 1.25 -1.25 '
             'a 0.75 0.75 0 0 0 -1.06 -1.06 l -1.25 1.25 a 2 2 0 0 1 -2.83 0 Z"></path>'
     '</svg>'
-        )
+)
+
+YES_SVG = (
+    '<svg '
+        'width="1.2em" '
+        'height="1.2em" '
+        'preserveAspectRatio="xMidYMid meet" '
+        'viewBox="0 0 24 24" '
+        'aria-hidden="true"'
+    '>'
+        '<g fill="none">'
+            '<path '
+                'd="M5 13l4 4L19 7" '
+                'stroke="currentColor" '
+                'stroke-width="2" '
+                'stroke-linecap="round" '
+                'stroke-linejoin="round"'
+            '>'
+            '</path>'
+        '</g>'
+    '</svg>'
+)
 
 def anchor_for_serializer(section_name):
     """
@@ -383,6 +406,7 @@ class SimpleSection:
         Path to use instead of the objects's.
     """
     __slots__ = ('content', 'object', 'title', 'path')
+    
     def __init__(self, title, content, object_, path):
         """
         Creates a new attribute section with the given parameters.
@@ -407,7 +431,7 @@ class SimpleSection:
     
     def serialize(self):
         """
-        Serializes the attribute section to html string parts.
+        Serializes the section to html string parts.
         
         This method is a generator.
         
@@ -440,6 +464,7 @@ class SimpleSection:
         
         yield from sub_section_serializer(self.content, object_, get_parent_path_of(path),
             create_relative_sectioned_link)
+        
         return
     
     def structurize(self):
@@ -463,6 +488,7 @@ class SimpleSection:
         
         return Structure(title, prefixed_title, None)
 
+
 class FunctionOrPropertySerializer:
     """
     Serializer for a method or for a property.
@@ -477,13 +503,14 @@ class FunctionOrPropertySerializer:
         Path to use instead of the object's.
     """
     __slots__ = ('content', 'object', 'path')
+    
     def __init__(self, object_, path=None):
         """
         Creates a new method or property serializer.
         
         Parameters
         ----------
-        object_ : ``PropertyUnit`` or ``MethodUnit``
+        object_ : ``PropertyUnit`` or ``FunctionUnit``
             The object to serialize.
         path : `None` or ``QualPath``, Optional
             Path to use instead of the object's.
@@ -498,6 +525,8 @@ class FunctionOrPropertySerializer:
             self.content = None
             return
         
+        parameter_section = None
+        
         section_parts = {}
         for section_name, section_content in docs.sections:
             if section_name is None:
@@ -510,6 +539,15 @@ class FunctionOrPropertySerializer:
                 pass
             else:
                 section_parts[section_type_value] = SimpleSection(section_name, section_content, object_, path)
+                continue
+            
+            if section_name in ('Parameters', 'Other Parameters'):
+                if (parameter_section is None):
+                    parameter_section = ParameterSection(section_content, object_, path)
+                    section_parts[SECTION_TYPE_PARAMETERS] = parameter_section
+                else:
+                    parameter_section.extend(section_content)
+                
                 continue
             
             try:
@@ -615,6 +653,7 @@ class UnitSection:
         Path to use instead of the object's.
     """
     __slots__ = ('title', 'object', 'units', 'path')
+    
     def __init__(self, title, object_, units, path):
         """
         Creates a new unit section.
@@ -627,6 +666,8 @@ class UnitSection:
             The represented parent object.
         units : `list` of ``UnitBase`` instances
             The contained units.
+        path : `None` or ``QualPath``
+            Path to use instead of the object's.
         """
         self.title = title
         self.object = object_
@@ -724,7 +765,8 @@ class AttributeSection:
         Path to use instead of the object's.
     """
     __slots__ = ('extra', 'relations', 'object', 'title', 'path')
-    def __init__(self, title, mentioned_names, object_, path=None):
+    
+    def __init__(self, title, mentioned_names, object_, path):
         """
         Creates a new attribute section with the given parameters.
         
@@ -745,8 +787,9 @@ class AttributeSection:
             relations = {mentioned_name:None for mentioned_name in mentioned_names}
             extra = None
         else:
-            relations = \
-                {mentioned_name: docs.attribute_docstring_for(mentioned_name) for mentioned_name in mentioned_names}
+            relations = {
+                mentioned_name: docs.attribute_docstring_for(mentioned_name) for mentioned_name in mentioned_names
+            }
             extra = docs.extra_attribute_docstring_for(title)
         self.relations = relations
         self.extra = extra
@@ -897,16 +940,351 @@ class AttributeSection:
         
         return Structure(title, prefixed_title, children)
 
+PARAMETER_NAME_RP = re.compile('([a-zA-Z_]+[a-zA-Z_0-9]*)(?: *\: *(.+)?)?')
+PARAMETER_OPTIONALITY_RP = re.compile('(.*?)(?:,? *([Oo]ptional)(?:,? *\(?([Kk]eyword [Oo]nly)\)?)?)?')
+
+PARAMETER_SHIFT_NAME = 0
+PARAMETER_SHIFT_DESCRIPTION = 1
+PARAMETER_SHIFT_TYPE = 2
+PARAMETER_SHIFT_OPTIONAL = 3
+PARAMETER_SHIFT_KEYWORD_ONLY = 4
+
+PARAMETER_MASK_NAME = 1 << PARAMETER_SHIFT_NAME
+PARAMETER_MASK_DESCRIPTION = 1 << PARAMETER_SHIFT_DESCRIPTION
+PARAMETER_MASK_TYPE = 1 << PARAMETER_SHIFT_TYPE
+PARAMETER_MASK_OPTIONAL = 1 << PARAMETER_SHIFT_OPTIONAL
+PARAMETER_MASK_KEYWORD_ONLY = 1 << PARAMETER_SHIFT_KEYWORD_ONLY
+
+class ParameterSubSection:
+    """
+    A ``ParameterSection``'s parameter row.
+    
+    Parameters
+    ----------
+    description : `None` or `list` of ``GravedDescription``
+        Description of the parameter.
+    keyword_only : `bool`
+        Whether the parameter is keyword only.
+    name : `str`
+        The parameter's name.
+    optional : `bool`
+        Whether the parameter is optional.
+    type : `None` or ``GravedDescription``
+        The parameter's type.
+    """
+    __slots__ = ('description', 'keyword_only', 'name', 'optional', 'type')
+    
+    def __init__(self, header, description):
+        self.description = description
+        
+        header_contents = header.content
+        
+        parameter_name_part = header_contents[0]
+        if isinstance(parameter_name_part, str):
+            match = PARAMETER_NAME_RP.fullmatch(parameter_name_part)
+            if match is None:
+                name = ''
+            else:
+                name, after_part = match.groups()
+                if after_part is None:
+                    del header_contents[0]
+                else:
+                    header_contents[0] = after_part
+        else:
+            # should not happen
+            name = ''
+            
+        self.name = name
+        
+        if header_contents:
+            parameter_optionality_part = header_contents[-1]
+            if isinstance(parameter_optionality_part, str):
+                match = PARAMETER_OPTIONALITY_RP.fullmatch(parameter_optionality_part)
+                if match is None:
+                    optional = False
+                    keyword_only = False
+                else:
+                    before_part, optional_part, keyword_only_part = match.groups()
+                    
+                    if (before_part is not None) and before_part:
+                        header_contents[-1] = header_contents
+                    else:
+                        del header_contents[-1]
+                    
+                    if (optional_part is None):
+                        optional = False
+                    else:
+                        optional = True
+                    
+                    if (keyword_only_part is None):
+                        keyword_only = False
+                    else:
+                        keyword_only = True
+            else:
+                optional = False
+                keyword_only = False
+        else:
+            optional = False
+            keyword_only = False
+        
+
+        self.optional = optional
+        self.keyword_only = keyword_only
+        
+        if header_contents:
+            type_ = header
+        else:
+            type_ = None
+        
+        self.type = type_
+    
+    
+    def get_mask(self):
+        """
+        Gets the mask of the used features by the parameter sub part.
+        
+        Returns
+        -------
+        mask : `int`
+        """
+        # We add name every time
+        mask = PARAMETER_MASK_NAME
+        
+        if (self.description is not None):
+            mask |= PARAMETER_MASK_DESCRIPTION
+        
+        if self.keyword_only:
+            mask |= PARAMETER_MASK_TYPE
+        
+        if self.optional:
+            mask |= PARAMETER_MASK_OPTIONAL
+        
+        if (self.type is not None):
+            mask |= PARAMETER_MASK_TYPE
+        
+        return mask
+    
+    
+    def serialize(self, parent, mask):
+        """
+        Serializes the parameter sub section to html string parts.
+        
+        This method is a generator.
+        
+        Parameters
+        ----------
+        parent : ``ParameterSerializer``
+            The parent parameter serialiser.
+        mask : `str`
+            Mask to serialise the mask based of.
+        
+        Yields
+        ------
+        html : `str`
+        """
+        yield '<tr>'
+        
+        if mask & PARAMETER_MASK_NAME:
+            yield '<td class="parameter_table_name">'
+            
+            name = self.name
+            if name:
+                yield html_escape(name)
+            
+            yield '</td>'
+        
+        if mask & PARAMETER_MASK_TYPE:
+            yield '<td class="parameter_table_type">'
+            
+            type_ = self.type
+            if (type_ is not None):
+                yield from description_serializer(type_, parent.object, parent.path, create_relative_sectioned_link)
+            
+            yield '</td>'
+        
+        if mask & PARAMETER_MASK_OPTIONAL:
+            yield '<td class="parameter_table_optional">'
+            
+            if self.optional:
+                yield YES_SVG
+            
+            yield '</td>'
+        
+        if mask & PARAMETER_MASK_KEYWORD_ONLY:
+            yield '<td class="parameter_table_keyword_only">'
+            
+            if self.keyword_only:
+                yield YES_SVG
+            
+            yield '</td>'
+        
+        if mask & PARAMETER_MASK_DESCRIPTION:
+            yield '<td class="parameter_table_description">'
+            
+            description = self.description
+            if (description is not None):
+                yield from sub_section_serializer(description, parent.object, get_parent_path_of(parent.path),
+                    create_relative_sectioned_link)
+            
+            yield '</td>'
+        
+        yield '</tr>'
+    
+    
+    def __repr__(self):
+        """Returns the parameter sub section's representation."""
+        repr_parts = ['<', self.__class__.__name__, ' name=', repr(self.name)]
+        
+        type_ = self.type
+        if (type_ is not None):
+            repr_parts.append(', type=')
+            repr_parts.append(reprlib.repr(type_))
+        
+        description = self.description
+        if (description is not None):
+            repr_parts.append(', description=')
+            repr_parts.append(reprlib.repr(description))
+        
+        if self.optional:
+            repr_parts.append(', optional=True')
+        
+        if self.keyword_only:
+            repr_parts.append(', keyword only=True')
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+
+
+class ParameterSection:
+    """
+    Represents a parameter's section.
+    
+    Attributes
+    ----------
+    parameter_sub_sections : `list` of `ParameterSubSection`
+        The stored parameters.
+    object : ``UnitBase`` instance
+        The owner unit.
+    path : ``QualPath``
+        Path to use instead of the objects's.
+    """
+    __slots__ = ('parameter_sub_sections', 'object', 'path')
+    
+    def __init__(self, section_content, object_, path):
+        """
+        Creates a new parameter section instance with the given initial content.
+        
+        Parameters
+        ----------
+        section_content : `list` of `Any`
+            Contained section parts.
+        object_ : ``TypeUnit``
+            The owner type-unit.
+        path : `None` or ``QualPath``
+            Path to use instead of the objects's.
+        """
+        self.parameter_sub_sections = []
+        self.object = object_
+        if path is None:
+            path = object_.path
+        self.path = path
+        self.extend(section_content)
+    
+    
+    def extend(self, section_content):
+        """
+        Extends the parameter section with the given content.
+        
+        Parameters
+        ----------
+        section_content : `list` of `Any`
+            Contained section parts.
+        """
+        header = None
+        
+        for section_content in section_content:
+            # section content can be either ``GraveDescription`` or `list` of it.
+            
+            if isinstance(section_content, GravedDescription):
+                if header is None:
+                    header = section_content
+                else:
+                    # Unlucky. Parameter definition without description
+                    self.parameter_sub_sections.append(ParameterSubSection(header, None))
+                    header = section_content
+            
+            else:
+                if header is None:
+                    # nani desuka?
+                    pass
+                else:
+                    self.parameter_sub_sections.append(ParameterSubSection(header, section_content))
+                    header = None
+        
+        if (header is not None):
+            self.parameter_sub_sections.append(ParameterSubSection(header, None))
+    
+    
+    def serialize(self):
+        """
+        Serializes the section to html string parts.
+        
+        This method is a generator.
+        
+        Yields
+        ------
+        html : `str`
+        """
+        mask = 0
+        for parameter_sub_section in self.parameter_sub_sections:
+            mask |= parameter_sub_section.get_mask()
+        
+        yield '<table class="parameter_table"><thead><tr>'
+        
+        if mask & PARAMETER_MASK_NAME:
+            yield '<th>Parameter</th>'
+        
+        if mask & PARAMETER_MASK_TYPE:
+            yield '<th>Type</th>'
+        
+        if mask & PARAMETER_MASK_OPTIONAL:
+            yield '<th>Optional</th>'
+        
+        if mask & PARAMETER_MASK_KEYWORD_ONLY:
+            yield '<th>Keyword only</th>'
+        
+        if mask & PARAMETER_MASK_DESCRIPTION:
+            yield '<th>Description</th>'
+        
+        yield '</tr></thead><tbody>'
+        
+        for parameter_sub_section in self.parameter_sub_sections:
+            yield from parameter_sub_section.serialize(self, mask)
+        
+        yield '</tbody></table>'
+    
+    
+    def structurize(self):
+        """
+        Returns the structure of the section.
+        
+        Returns
+        -------
+        structure : `None` or ``Structure``
+            If the section is unnamed, returns `None`.
+        """
+        # Since we are building a big table this time, we have nothing to do with this.
+        return None
+
+
 SECTION_NAME_TYPE_DEFAULT_RELATIONS = {
-    'Usage' : SECTION_TYPE_USAGES,
-    'Usages' : SECTION_TYPE_USAGES,
-    'Parameters' : SECTION_TYPE_PARAMETERS,
-    'Other Parameters' : SECTION_TYPE_OTHER_PARAMETERS,
-    'Yields' : SECTION_TYPE_YIELDS,
+    'Usage': SECTION_TYPE_USAGES,
+    'Usages': SECTION_TYPE_USAGES,
+    'Yields': SECTION_TYPE_YIELDS,
     'Returns': SECTION_TYPE_RETURNS,
-    'Raises' : SECTION_TYPE_RAISES,
-    'Notes' : SECTION_TYPE_NOTES,
-        }
+    'Raises': SECTION_TYPE_RAISES,
+    'Notes': SECTION_TYPE_NOTES,
+}
 
 
 class TypeSerializer:
@@ -917,12 +1295,13 @@ class TypeSerializer:
     ----------
     object : ``TypeUnit``
         The represented type unit.
-    sections : `list` of (``SimpleSection``, ``AttributeSection`` or ``UnitSection``)
+    sections : `list` of (``SimpleSection``, ``AttributeSection`` or ``UnitSection``, ``ParameterSection``)
         The type's sections.
     path : ``QualPath``
         Path to use instead of the object's.
     """
     __slots__ = ('object', 'sections', 'path')
+    
     def __init__(self, object_, path=None):
         """
         Parameters
@@ -936,6 +1315,7 @@ class TypeSerializer:
         if path is None:
             path = object_.path
         self.path = path
+        
         section_parts = {}
         
         docs = object_.docs
@@ -953,16 +1333,17 @@ class TypeSerializer:
                     section_parts[section_type_value] = SimpleSection(section_name, section_content, object_, path)
                     continue
                 
+                
                 if section_name in ('Attributes', 'Instance Attributes'):
                     mentioned_names = get_attribute_section_mentioned_names(section_content)
                     section_parts[SECTION_TYPE_INSTANCE_ATTRIBUTES] = \
-                        AttributeSection(section_name, mentioned_names, object_)
+                        AttributeSection(section_name, mentioned_names, object_, None)
                     continue
                 
                 if section_name in ('Class Attributes', 'Type Attributes'):
                     mentioned_names = get_attribute_section_mentioned_names(section_content)
                     section_parts[SECTION_TYPE_OTHER_PARAMETERS] = \
-                        AttributeSection(section_name, mentioned_names, object_)
+                        AttributeSection(section_name, mentioned_names, object_, None)
                     continue
                 
                 if ATTRIBUTE_SECTION_NAME_RP.fullmatch(section_name) is not None:
@@ -1150,6 +1531,7 @@ class UnitListerSection:
         Path to use instead of the object's.
     """
     __slots__ = ('title', 'object', 'units', 'path',)
+    
     def __init__(self, title, object_, units, path):
         """
         Creates a new unit lister section.
@@ -1227,6 +1609,7 @@ class UnitListerSection:
         child_prefixed_title = anchor_escape(title)
         return Structure(title, child_prefixed_title, None)
 
+
 class ModuleSerializer:
     """
     Collects the given module to topically broken down parts.
@@ -1241,6 +1624,7 @@ class ModuleSerializer:
         Path to use instead of the object's.
     """
     __slots__ = ('object', 'sections', 'path')
+    
     def __init__(self, object_, path=None):
         """
         Creates a module serializer to html serialize a module.
@@ -1276,13 +1660,13 @@ class ModuleSerializer:
                 if section_name in ('Attributes', 'Instance Attributes'):
                     mentioned_names = get_attribute_section_mentioned_names(section_content)
                     section_parts[SECTION_TYPE_INSTANCE_ATTRIBUTES] = \
-                        AttributeSection(section_name, mentioned_names, object_)
+                        AttributeSection(section_name, mentioned_names, object_, None)
                     continue
                 
                 if section_name in ('Class Attributes', 'Type Attributes'):
                     mentioned_names = get_attribute_section_mentioned_names(section_content)
                     section_parts[SECTION_TYPE_OTHER_PARAMETERS] = \
-                        AttributeSection(section_name, mentioned_names, object_)
+                        AttributeSection(section_name, mentioned_names, object_, None)
                     continue
                 
                 if ATTRIBUTE_SECTION_NAME_RP.fullmatch(section_name) is not None:
@@ -1292,7 +1676,7 @@ class ModuleSerializer:
                         existing = section_parts[SECTION_TYPE_X_ATTRIBUTES] = []
                     
                     mentioned_names = get_attribute_section_mentioned_names(section_content)
-                    existing.append(AttributeSection(section_name, mentioned_names, object_))
+                    existing.append(AttributeSection(section_name, mentioned_names, object_, None))
                     continue
                 
                 try:
@@ -1391,10 +1775,10 @@ class ModuleSerializer:
         return Structure(title, prefixed_title, children)
         
 UNIT_CONVERSION_TABLE = {
-    PropertyUnit : FunctionOrPropertySerializer,
-    FunctionUnit : FunctionOrPropertySerializer,
-    TypeUnit : TypeSerializer,
-    ModuleUnit : ModuleSerializer,
+    PropertyUnit: FunctionOrPropertySerializer,
+    FunctionUnit: FunctionOrPropertySerializer,
+    TypeUnit: TypeSerializer,
+    ModuleUnit: ModuleSerializer,
 }
 
 @export

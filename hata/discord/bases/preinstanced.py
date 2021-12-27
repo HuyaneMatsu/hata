@@ -111,13 +111,16 @@ class PreinstancedBase(metaclass=PreinstancedMeta):
         
         Parameters
         ----------
-        value : ``.VALUE_TYPE``
+        value : `None` or ``.VALUE_TYPE``
             The value to get it's representation.
         
         Returns
         -------
         obj_ : ``PreinstancedBase`` instance
         """
+        if value is None:
+            value = 0
+        
         try:
             obj_ = cls.INSTANCES[value]
         except KeyError:

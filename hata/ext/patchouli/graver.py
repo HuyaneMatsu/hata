@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 __all__ = ('show_warnings',)
+
 import sys, re
 from ast import literal_eval
 
@@ -26,6 +26,7 @@ class DocWarning:
         TextDescription of the error.
     """
     __slots__ = ('path', 'reason')
+    
     def __new__(cls, path, reason):
         """
         Creates a new ``DocWarning`` instance with the given parameters.
@@ -437,6 +438,7 @@ class GravedDescription:
         The graved content of the description.
     """
     __slots__ = ('content', )
+    
     def __new__(cls, parent, path):
         """
         Creates a new graved description.
@@ -466,6 +468,7 @@ class GravedDescription:
     def __repr__(self):
         """Returns the graved description's representation."""
         return f'<{self.__class__.__name__} content={graved_to_source_text(self.content)!r}>'
+    
 
 class GravedAttributeDescription:
     """
@@ -481,6 +484,7 @@ class GravedAttributeDescription:
         The type description of the attribute.
     """
     __slots__ = ('name', 'separator', 'content')
+    
     def __new__(cls, name, separator, content):
         """
         Creates a ``GravedAttributeDescription`` instance with the given parameters.
@@ -508,6 +512,7 @@ class GravedAttributeDescription:
         """Returns the graved description's representation."""
         return (f'<{self.__class__.__name__} name={self.name!r}, separator={self.separator!r}, content='
             f'{graved_to_source_text(self.content)!r}>')
+
 
 class GravedCodeBlock:
     """
@@ -670,7 +675,7 @@ class GravedTable:
             ', size=',
             repr(self.size),
             ', table=[',
-                ]
+        ]
         
         for line in self:
             line = [graved_to_source_text(element) for element in line]
@@ -758,7 +763,7 @@ class GravedListingElement:
             self.__class__.__name__,
             ' head=',
             repr(graved_to_source_text(self.head)),
-                ]
+        ]
         
         content = self.content
         if content is not None:

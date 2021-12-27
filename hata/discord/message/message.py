@@ -759,10 +759,9 @@ class Message(DiscordEntity, immortal=True):
             
             If called as a classmethod, defaults to `False`.
         reactions : `None` or ``reaction_mapping``, Optional (Keyword only)
-            The ``.reactions`` attribute of the message. If passed as `None` will be set as an empty
-            ``reaction_mapping``.
+            The ``.reactions`` attribute of the message.
             
-            If called as a classmethod defaults to empty ``reaction_mapping``.
+            If called as a classmethod defaults to `None`.
         role_mentions : `None` or (`list` or `tuple`) of ``Role``, Optional (Keyword only)
             The ``.role_mentions`` attribute of the message. If passed as an empty `list`, will be set as `None`
             instead.
@@ -2366,8 +2365,7 @@ class Message(DiscordEntity, immortal=True):
             still cannot be other than `0` or `1`.
         
         reactions : `None` or ``reaction_mapping``, Optional (Keyword only)
-            The ``.reactions`` attribute of the message. If passed as `None` will be set as an empty
-            ``reaction_mapping``.
+            The ``.reactions`` attribute of the message.
         
         role_mentions : `None` or (`list` or `tuple`) of ``Role``, Optional (Keyword only)
             The ``.role_mentions`` attribute of the message. If passed as an empty `list`, will be set as `None`

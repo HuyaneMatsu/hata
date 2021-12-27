@@ -554,7 +554,7 @@ class FriendRequestFlag(PreinstancedBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `bool`)
+        data : `None` or `dict` of (`str`, `bool`)
             Received friend request flag data.
         
         Returns

@@ -4,7 +4,28 @@ __all__ = ()
 __doc__ = """
 The possible json error codes received from Discord HTTP API requests.
 
-These are the following:
+Import it as `ERROR_CODES`.
+
+Examples
+--------
+
+Sending a direct message to a user.
+
+```py
+from hata import ERROR_CODES, DiscordException
+
+async def try_send_private_message(client, user, content):
+    private_channel = await client.channel_private_create(user)
+    
+    try:
+        await client.message_create(private_channel, content)
+    except DiscordException as err:
+        if err.code != ERROR_CODES.cannot_message_user:
+            raise
+```
+
+Error Codes
+-----------
 
 +-------------------------------------------------------+-----------+-----------+
 | Respective name                                       | Value     | Notes     |

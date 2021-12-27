@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 __all__ = ('DocString', )
+
 import re, sys
 
 from .graver import build_graves_on_subsection, GravedListing, GravedListingElement, GravedTable, GravedDescription, \
@@ -218,6 +218,7 @@ class TextTable:
         The dimensions of the table.
     """
     __slots__ = ('_array', '_size', )
+    
     def __new__(cls, lines, start, end):
         """
         Creates a new table from the given lines's start:end range.
@@ -1346,6 +1347,7 @@ class TextBlockQuote:
         The description parts inside of the block quote.
     """
     __slots__ = ('_descriptions', )
+    
     def __new__(cls, lines, start, end):
         """
         Creates a new block quote from the given lines's start:end range.
@@ -1375,9 +1377,9 @@ class TextBlockQuote:
         
         
             for detector, builder in (
-                    (detect_void, build_void),
-                    (detect_description, TextDescription),
-                        ):
+                (detect_void, build_void),
+                (detect_description, TextDescription),
+            ):
                 
                 detected_end = detector(lines, index, limit)
                 if detected_end == index:
@@ -1430,7 +1432,7 @@ def parse_docstring(text, path):
     ---------
     text : `None` or `str`
         The docstring itself.
-    path : ``QUalPath``
+    path : ``QualPath``
         The path of the docstring's object.
     
     Returns
@@ -1549,7 +1551,12 @@ def get_attribute_docs_from(sections):
                 else:
                     attr_body = None
             
-            result[attr_name] = DocString._create_attribute_docstring_part(attr_name, attr_separator, attr_head, attr_body)
+            result[attr_name] = DocString._create_attribute_docstring_part(
+                attr_name,
+                attr_separator,
+                attr_head,
+                attr_body,
+            )
             continue
         
         extra = []
@@ -1580,16 +1587,26 @@ class DocString:
         The sections of the docstring.
     """
     __slots__ = ('_attribute_sections', 'sections')
-    def __new__(cls, docstring, path):
+    
+    def __new__(cls, text, path):
         """
         Creates a new docstring.
         
+        Parameters
+        ----------
+        text : `None` or `str`
+            The docstring itself.
+        path : ``QualPath``
+            The path of the docstring's object.
+            
+        Returns
+        ----------
         docstring : `None` or ``Docstring``
         """
-        if docstring is None:
+        if text is None:
             return None
         
-        sections = parse_docstring(docstring, path)
+        sections = parse_docstring(text, path)
         if sections is None:
             return None
         

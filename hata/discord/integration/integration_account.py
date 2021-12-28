@@ -16,6 +16,7 @@ class IntegrationAccount:
         The respective account's name
     """
     __slots__ = ('id', 'name', )
+    
     def __new__(cls, data, integration_type):
         """
         Creates a new integration account instance from the given account data and integration type.
@@ -42,9 +43,11 @@ class IntegrationAccount:
         
         return self
     
+    
     def __repr__(self):
         """Returns the integration account's representation."""
         return f'<{self.__class__.__name__} name={self.name!r}, id={self.id!r}>'
+    
     
     @classmethod
     def create_empty(cls):

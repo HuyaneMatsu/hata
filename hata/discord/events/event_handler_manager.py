@@ -960,7 +960,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         plugin, parameter_count = get_plugin_event_handler_and_parameter_count(self, name)
         
         if plugin is None:
-            raise LookupError(f'Invalid Event name: `{name!r}`.') from None
+            raise LookupError(f'Invalid event name: {name!r}.') from None
         
         if plugin is self:
             parser_names = EVENT_HANDLER_NAME_TO_PARSER_NAMES.get(name, None)
@@ -1058,7 +1058,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         plugin, parameter_count = get_plugin_event_handler_and_parameter_count(self, name)
         
         if plugin is None:
-            raise AttributeError(f'Unknown attribute: `{name!r}`.') from None
+            raise AttributeError(f'Unknown attribute: {name!r}.') from None
         
         if plugin is self:
             parser_names = EVENT_HANDLER_NAME_TO_PARSER_NAMES.get(name, None)
@@ -1332,8 +1332,9 @@ class EventHandlerManager(RichAttributeErrorBaseType):
             plugin = plugin()
         
         else:
-            raise TypeError(f'`plugins can only be `{EventHandlerPlugin.__name__}` instances, got '
-                f'{plugin.__class__.__name__}.')
+            raise TypeError(
+                f'`plugin` can be `{EventHandlerPlugin.__name__}`, got {plugin.__class__.__name__}; {plugin!r}.'
+            )
         
         plugins = self._plugins
         if plugins is None:
@@ -1354,7 +1355,9 @@ class EventHandlerManager(RichAttributeErrorBaseType):
                 except KeyError:
                     pass
                 else:
-                    raise RuntimeError(f'`{event_name!r}` of `{plugin!r}` is already defined by: `{other_plugin!r}`')
+                    raise RuntimeError(
+                        f'`{event_name!r}` of `{plugin!r}` is already defined by: `{other_plugin!r}`.'
+                    )
         
         for event_name in event_names:
             plugin_events[event_name] = plugin

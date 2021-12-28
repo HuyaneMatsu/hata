@@ -176,7 +176,7 @@ def guild_icon_url_as(guild, ext=None, size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:
@@ -257,7 +257,7 @@ def guild_invite_splash_url_as(guild, ext=None, size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:
@@ -338,7 +338,7 @@ def guild_discovery_splash_url_as(guild, ext=None, size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:
@@ -419,7 +419,7 @@ def guild_banner_url_as(guild, ext=None, size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:
@@ -542,7 +542,7 @@ def channel_group_icon_url_as(channel, ext=None, size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:
@@ -620,7 +620,7 @@ def emoji_url_as(emoji, ext=None, size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
     
     if ext is None:
         if emoji.animated:
@@ -746,7 +746,7 @@ def activity_asset_image_large_url_as(activity, ext=None, size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
 
     if ext not in VALID_ICON_FORMATS:
         raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
@@ -821,7 +821,7 @@ def activity_asset_image_small_url_as(activity, ext=None, size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
     
     if ext not in VALID_ICON_FORMATS:
         raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
@@ -888,7 +888,7 @@ def user_avatar_url_as(user, ext=None, size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:
@@ -970,7 +970,7 @@ def user_banner_url_as(user, ext=None, size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:
@@ -1070,7 +1070,7 @@ def user_avatar_url_for_as(user, guild, ext=None, size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:
@@ -1222,7 +1222,7 @@ def application_icon_url_as(application, ext=None, size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:
@@ -1303,7 +1303,7 @@ def application_cover_url_as(application, ext=None, size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:
@@ -1384,7 +1384,7 @@ def team_icon_url_as(team, ext=None, size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:
@@ -1466,7 +1466,7 @@ def achievement_icon_url_as(achievement, ext=None, size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:
@@ -1546,7 +1546,7 @@ def sticker_url_as(sticker, size=None, preview=False):
             if size in VALID_ICON_SIZES:
                 end = f'?size={size}'
             else:
-                raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+                raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
     
     # Resolve preview
     if preview:
@@ -1599,7 +1599,7 @@ def sticker_pack_banner_as(sticker_pack, ext=None, size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
     
     if ext is None:
         ext = 'png'
@@ -1669,7 +1669,7 @@ def role_icon_url_as(role, ext=None, size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
     
     if ext is None:
         if icon_type is ICON_TYPE_STATIC:
@@ -1750,7 +1750,7 @@ def channel_banner_url_as(channel, ext=None, size=None):
     elif size in VALID_ICON_SIZES:
         end = f'?size={size}'
     else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size}.')
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
     
     if ext is None:
         if banner_type is ICON_TYPE_STATIC:

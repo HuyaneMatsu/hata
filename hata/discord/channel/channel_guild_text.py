@@ -452,7 +452,7 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
             else:
                 type_ = preconvert_int(type_, 'type', 0, 256)
                 if (type_ not in cls.INTERCHANGE):
-                    raise ValueError(f'`type` should be one of: {cls.INTERCHANGE!r}')
+                    raise ValueError(f'`type` should be one of: {cls.INTERCHANGE!r}, got {type_!r}.')
                 
                 processable.append(('type', type_))
             
@@ -467,7 +467,7 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
             cls.banner.preconvert(kwargs, processable)
             
             if kwargs:
-                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+                raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
         
         else:
             processable = None

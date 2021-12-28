@@ -214,8 +214,10 @@ class AuditLogIterator:
         else:
             guild_id = maybe_snowflake(guild)
             if guild_id is None:
-                raise TypeError(f'`guild_or_discovery` can be `{Guild.__name__}` or `int` instance, got '
-                    f'{guild.__class__.__name__}.')
+                raise TypeError(
+                    f'`guild_or_discovery` can be `{Guild.__name__}`, `int`, got '
+                    f'{guild.__class__.__name__}; {guild!r}.'
+                )
             
             guild = None
         
@@ -226,8 +228,10 @@ class AuditLogIterator:
             else:
                 user_id = maybe_snowflake(user)
                 if user_id is None:
-                    raise TypeError(f'`user` can be given as `{ClientUserBase.__name__}` or `int` instance, '
-                        f'got {user.__class__.__name__}.')
+                    raise TypeError(
+                        f'`user` can be given as `{ClientUserBase.__name__}`, `int`, got'
+                        f'{user.__class__.__name__}; {user!r}.'
+                    )
             
             data['user_id'] = user_id
         
@@ -237,8 +241,10 @@ class AuditLogIterator:
             elif isinstance(event, int):
                 event_value = event
             else:
-                raise TypeError(f'`event` can be given as `None`, `{AuditLogEvent.__name__}` or `int` instance, got '
-                    f'{event.__class__.__name__}.')
+                raise TypeError(
+                    f'`event` can be given as `None`, `{AuditLogEvent.__name__}`, `int`, got '
+                    f'{event.__class__.__name__}; {event!r}.'
+                )
             
             data['action_type'] = event_value
         

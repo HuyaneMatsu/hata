@@ -423,7 +423,7 @@ class Embed(EmbedBase):
                 video_data = video.to_data()
         
         if kwargs:
-            raise TypeError(f'Unused or unsettable attributes: `{kwargs}`')
+            raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
         
         
         new_data = {}
@@ -973,13 +973,16 @@ class Embed(EmbedBase):
         try:
             field_datas = self._data['fields']
         except KeyError:
-            raise IndexError('Index out of the fields\' range.') from None
+            raise IndexError(
+                f'Index out of the fields\' range, got index={index!r}; count=0.'
+            ) from None
         
         try:
             field_data = field_datas[index]
-        except IndexError as err:
-            err.args = ('Index out of the fields\' range.', )
-            raise
+        except IndexError:
+            raise IndexError(
+                f'Index out of the fields\' range, got index={index!r}; count={len(field_datas)!r}.'
+            ) from None
         
         return EmbedField.from_data(field_data)
     
@@ -1020,17 +1023,20 @@ class Embed(EmbedBase):
             Index out of the fields' range.
         """
         try:
-            fields = self._data['fields']
+            field_datas = self._data['fields']
         except KeyError:
-            raise IndexError('Index out of the fields\' range.') from None
+            raise IndexError(
+                f'Index out of the fields\' range, got index={index!r}; count=0.'
+            ) from None
         
         field_data = field.to_data()
         
         try:
-            fields[index] = field_data
-        except IndexError as err:
-            err.args = ('Index out of the fields\' range.',)
-            raise
+            field_datas[index] = field_data
+        except IndexError:
+            raise IndexError(
+                f'Index out of the fields\' range, got index={index!r}; count={len(field_datas)!r}.'
+            ) from None
     
     
     def del_field(self, index):
@@ -1048,15 +1054,18 @@ class Embed(EmbedBase):
             Index out of the fields' range.
         """
         try:
-            fields = self._data['fields']
+            field_datas = self._data['fields']
         except KeyError:
-            raise IndexError('Index out of the fields\' range.') from None
+            raise IndexError(
+                f'Index out of the fields\' range, got index={index!r}; count=0.'
+            ) from None
         
         try:
-            del fields[index]
-        except IndexError as err:
-            err.args = ('Index out of the fields\' range.', )
-            raise
+            del field_datas[index]
+        except IndexError:
+            raise IndexError(
+                f'Index out of the fields\' range, got index={index!r}; count={len(field_datas)!r}.'
+            ) from None
     
     remove_field = del_field
     
@@ -1146,6 +1155,7 @@ class _EmbedFieldsProxy:
         Raw data containing the respective embed's fields.
     """
     __slots__ = ('_data',)
+    
     def __init__(self, data):
         """
         Creates a ``_EmbedFieldsProxy`` object.
@@ -1156,6 +1166,7 @@ class _EmbedFieldsProxy:
             Raw data containing the respective embed's fields.
         """
         self._data = data
+    
         
     def clear(self):
         """
@@ -1163,25 +1174,31 @@ class _EmbedFieldsProxy:
         """
         self._data.clear()
     
+    
     def __len__(self):
         """Returns how much fields the respective embed has."""
         return len(self._data)
+    
     
     def __repr__(self):
         """Returns the representation of the object."""
         return f'<{self.__class__.__name__} length={len(self._data)}>'
     
+    
     def __getitem__(self, index):
         """Returns the embed field on the given index."""
         return EmbedField.from_data(self._data[index])
+    
     
     def __setitem__(self, index, field):
         """Sets the given embed field object on the given index."""
         self._data[index] = field.to_data()
     
+    
     def __delitem__(self, index):
         """Deletes the field on the given index"""
         del self._data[index]
+    
     
     def append(self, field):
         """
@@ -1193,6 +1210,7 @@ class _EmbedFieldsProxy:
             The field to append the embed's field with.
         """
         self._data.append(field.to_data())
+    
     
     def insert(self, index, field):
         """
@@ -1206,6 +1224,7 @@ class _EmbedFieldsProxy:
             The field to insert.
         """
         self._data.insert(index,field.to_data())
+    
     
     def add_field(self, name, value, inline=False):
         """

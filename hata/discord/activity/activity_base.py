@@ -57,10 +57,14 @@ class ActivityTimestamps:
         """
         if __debug__:
             if (start is not None) and (not isinstance(start, datetime)):
-                raise AssertionError(f'`start` can be either `None` or `datetime`, got {start.__class__.__name__}.')
+                raise AssertionError(
+                    f'`start` can be either `None` or `datetime`, got {start.__class__.__name__}; {start!r}.'
+                )
 
             if (end is not None) and (not isinstance(end, datetime)):
-                raise AssertionError(f'`end` can be either `None` or `datetime`, got {end.__class__.__name__}.')
+                raise AssertionError(
+                    f'`end` can be either `None` or `datetime`, got {end.__class__.__name__}; {end!r}.'
+                )
         
         self = object.__new__(cls)
         self.start = start
@@ -198,8 +202,10 @@ class ActivityAssets:
         if (image_large is not None):
             if __debug__:
                 if (not isinstance(image_large, str)):
-                    raise AssertionError(f'`image_large` can be either `None` or `str`, got '
-                        f'{image_large.__class__.__name__}.')
+                    raise AssertionError(
+                        f'`image_large` can be either `None` or `str`, got {image_large.__class__.__name__}; '
+                        f'{image_large!r}.'
+                    )
             
             if (not image_large):
                 image_large = None
@@ -208,8 +214,10 @@ class ActivityAssets:
         if (image_small is not None):
             if __debug__:
                 if (not isinstance(image_small, str)):
-                    raise AssertionError(f'`image_small` can be either `None` or `str`, got '
-                        f'{image_small.__class__.__name__}.')
+                    raise AssertionError(
+                        f'`image_small` can be either `None` or `str`, got {image_small.__class__.__name__}; '
+                        f'{image_small!r}.'
+                    )
             
             if (not image_small):
                 image_small = None
@@ -218,8 +226,10 @@ class ActivityAssets:
         if (text_large is not None):
             if __debug__:
                 if (not isinstance(text_large, str)):
-                    raise AssertionError(f'`text_large` can be either `None` or `str`, got '
-                        f'{text_large.__class__.__name__}.')
+                    raise AssertionError(
+                        f'`text_large` can be either `None` or `str`, got {text_large.__class__.__name__}; '
+                        f'{text_large!r}.'
+                    )
             
             if (not text_large):
                 text_large = None
@@ -227,8 +237,10 @@ class ActivityAssets:
         if (text_small is not None):
             if __debug__:
                 if (not isinstance(text_small, str)):
-                    raise AssertionError(f'`image_large` can be either `None` or `str`, got '
-                        f'{text_small.__class__.__name__}.')
+                    raise AssertionError(
+                        f'`image_large` can be either `None` or `str`, got {text_small.__class__.__name__}; '
+                        f'{text_small!r}.'
+                    )
             
             if (not text_small):
                 text_small = None
@@ -391,23 +403,33 @@ class ActivityParty:
         if (id_ is not None):
             if __debug__:
                 if (not isinstance(id_, int)):
-                    raise AssertionError(f'`id_` can be either `None` or `str`, got {id_.__class__.__name__}.')
+                    raise AssertionError(
+                        f'`id_` can be either `None` or `str`, got {id_.__class__.__name__}; {id_!r}.'
+                    )
             
             if (not id_):
                 id_ = None
         
         if __debug__:
             if (not isinstance(size, int)):
-                raise AssertionError(f'`size` can be `int` instance, got {size.__class__.__name__}.')
+                raise AssertionError(
+                    f'`size` can be `int` instance, got {size.__class__.__name__}; {size!r}.'
+                )
             
             if (not isinstance(max_, int)):
-                raise AssertionError(f'`max_` can be `int` instance, got {max_.__class__.__name__}.')
+                raise AssertionError(
+                    f'`max_` can be `int` instance, got {max_.__class__.__name__}; {max_!r}.'
+                )
             
             if (size < 0):
-                raise AssertionError(f'`size` cannot be negative, got {size!r}.')
+                raise AssertionError(
+                    f'`size` cannot be negative, got {size!r}.'
+                )
             
             if (max_ < 0):
-                raise AssertionError(f'`max_` cannot be negative, got {max_!r}.')
+                raise AssertionError(
+                    f'`max_` cannot be negative, got {max_!r}.'
+                )
         
         self = object.__new__(cls)
         self.id = id_
@@ -538,7 +560,9 @@ class ActivitySecrets:
         if (join is not None):
             if __debug__:
                 if (not isinstance(join, str)):
-                    raise AssertionError(f'`join` can be either `None` or `str`, got {join.__class__.__name__}.')
+                    raise AssertionError(
+                        f'`join` can be either `None` or `str`, got {join.__class__.__name__}; {join!r}.'
+                    )
             
             if (not join):
                 join = None
@@ -547,7 +571,9 @@ class ActivitySecrets:
         if (match is not None):
             if __debug__:
                 if (not isinstance(match, str)):
-                    raise AssertionError(f'`match` can be either `None` or `str`, got {match.__class__.__name__}.')
+                    raise AssertionError(
+                        f'`match` can be either `None` or `str`, got {match.__class__.__name__}; {match!r}.'
+                    )
             
             if (not match):
                 match = None
@@ -556,7 +582,9 @@ class ActivitySecrets:
         if (spectate is not None):
             if __debug__:
                 if (not isinstance(spectate, str)):
-                    raise AssertionError(f'`spectate` can be either `None` or `str`, got {spectate.__class__.__name__}.')
+                    raise AssertionError(
+                        f'`spectate` can be either `None` or `str`, got {spectate.__class__.__name__}; {spectate!r}.'
+                    )
             
             if (not spectate):
                 spectate = None
@@ -680,6 +708,7 @@ class ActivityBase:
     created_at = DISCORD_EPOCH_START
     
     __slots__ = ()
+    
     def __new__(cls, data):
         """
         Creates a new activity. Neither ``ActivityBase`` or it's subclass: ``ActivityUnknown`` cannot be instanced and

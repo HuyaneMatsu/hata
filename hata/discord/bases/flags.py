@@ -202,7 +202,9 @@ class FlagMeta(type):
         """
         if base_class:
             if (not class_parents) or (not issubclass(class_parents[0], int)):
-                raise TypeError(f'`{class_name}` is not derived directly from `int`.')
+                raise TypeError(
+                    f'`{class_name}` is not derived directly from `int`.'
+                )
             
             class_keys = class_attributes.get('__keys__', ...)
             if class_keys is NotImplemented:
@@ -210,11 +212,15 @@ class FlagMeta(type):
             elif class_keys is ...:
                 class_attributes['__keys__'] = NotImplemented
             else:
-                raise TypeError(f'`{class_name}` has `__keys__` defined and not as `NotImplemented`.')
+                raise TypeError(
+                    f'`{class_name}` has `__keys__` defined and not as `NotImplemented`.'
+                )
             
             for attribute_name in ('__getter_class__', '__enabler_class__', '__disabler_class__'):
                 if attribute_name not in class_attributes:
-                    raise TypeError(f'`{class_name}` should implement a `{attribute_name}`.')
+                    raise TypeError(
+                        f'`{class_name}` should implement a `{attribute_name}`.'
+                    )
             
             # do not care about the leftover
             
@@ -227,28 +233,40 @@ class FlagMeta(type):
                 if (type(parent) is FlagMeta) and parent.__keys__ is NotImplemented:
                     break
             
-            raise TypeError(f'`{class_name}` is not derived directly from a `{cls.__name__}` base instance.')
+            raise TypeError(
+                f'`{class_name}` is not derived directly from a `{cls.__name__}` base instance.'
+            )
         
         # Validate keys
         try:
             keys = class_attributes['__keys__']
         except KeyError:
-            raise TypeError(f'`{class_name}` did not define `__keys__` attribute.') from None
+            raise TypeError(
+                f'`{class_name}` did not define `__keys__` attribute.'
+            ) from None
         
         if (type(keys) is not dict):
-            raise TypeError(f'`__keys__` defined as non `dict`: `{keys.__class__.__name__}`.')
+            raise TypeError(
+                f'`__keys__` defined as non `dict`: `{keys.__class__.__name__}`.'
+            )
         
         for name, shift in keys.items():
-            if (type(name) is not str):
-                raise TypeError('`__keys__`\'s keys should be `str` instances, meanwhile got at least 1 non `str`: '
-                    f'{name!r}.')
+            if not isinstance(name, str):
+                raise TypeError(
+                    f'`__keys__`\'s keys should be `str` instances, meanwhile got at least 1 non `str`: '
+                    f'{name.__class__.__name__}; {name!r}.'
+                )
             
-            if (type(shift) is not int):
-                raise TypeError('`__keys__`\'s values should be `int` instances, meanwhile got at least 1 non `int`: '
-                    f'{shift!r}.')
+            if not isinstance(shift, int):
+                raise TypeError(
+                    f'`__keys__`\'s values should be `int` instances, meanwhile got at least 1 non `int`: '
+                    f'{shift.__class__.__name__}; {shift!r}.'
+                )
             
             if shift < 0 or shift > 63:
-                raise TypeError(f'`__keys__`\' values must be between 0 and 63, got: {shift!r}')
+                raise TypeError(
+                    f'`__keys__`\' values must be between 0 and 63, got: {shift!r}'
+                )
         
         class_attributes.setdefault('__new__', int.__new__)
         

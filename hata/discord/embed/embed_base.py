@@ -1450,6 +1450,6 @@ class EmbedBase:
         """
         for key in kwargs:
             if key not in EMBED_ATTRIBUTES:
-                raise TypeError(f'Unused or unsettable attribute: `{key}`')
+                raise TypeError(f'Unused or unsettable attribute: {key!r}.')
         
         return

@@ -273,7 +273,7 @@ class ChannelForum(ChannelGuildMainBase):
                 processable.append(('default_auto_archive_after', default_auto_archive_after))
             
             if kwargs:
-                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+                raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
         
         else:
             processable = None

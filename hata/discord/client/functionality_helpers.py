@@ -239,17 +239,21 @@ class DiscoveryCategoryRequestCacher:
         self._active_request = False
         self._last_update = -inf
     
+    
     def __get__(self, client, type_):
         if client is None:
             return self
         
         return BaseMethodType(self.__class__.execute, self, client)
     
+    
     def __set__(self, obj, value):
         raise AttributeError('can\'t set attribute')
     
+    
     def __delete__(self, obj):
         raise AttributeError('can\'t delete attribute')
+    
     
     async def execute(self, client):
         """
@@ -367,7 +371,7 @@ class DiscoveryTermRequestCacher:
         The last time when a cleanup was done.
     _minimal_cleanup_interval : `float`
         The minimal time what needs to pass between cleanups.
-    _rate_limit_proxy_args : `tuple` (``RateLimitGroup``, (``DiscordEntity`` or `None`))
+    _rate_limit_proxy_parameters : `tuple` (``RateLimitGroup``, (``DiscordEntity`` or `None`))
         Rate limit proxy parameters used when looking up the rate limits of clients.
     _waiters : `dict` of (`str`, `
         Waiters for requests already being done.
@@ -378,8 +382,8 @@ class DiscoveryTermRequestCacher:
     timeout : `float`
         The timeout after the new request should be done instead of using the already cached response.
     """
-    __slots__ =('_last_cleanup', '_minimal_cleanup_interval', '_rate_limit_proxy_args', '_waiters', 'cached', 'func',
-        'timeout')
+    __slots__ =('_last_cleanup', '_minimal_cleanup_interval', '_rate_limit_proxy_parameters', '_waiters', 'cached',
+        'func', 'timeout')
     
     def __init__(self, func, timeout, rate_limit_group, rate_limit_limiter=None,):
         """
@@ -399,7 +403,7 @@ class DiscoveryTermRequestCacher:
         self.func = func
         self.timeout = timeout
         self.cached = {}
-        self._rate_limit_proxy_args = (rate_limit_group, rate_limit_limiter)
+        self._rate_limit_proxy_parameters = (rate_limit_group, rate_limit_limiter)
         self._waiters = {}
         minimal_cleanup_interval = timeout / 10.0
         if minimal_cleanup_interval < 1800.0:
@@ -408,23 +412,34 @@ class DiscoveryTermRequestCacher:
         self._minimal_cleanup_interval = minimal_cleanup_interval
         self._last_cleanup = -inf
     
+    
     def __get__(self, client, type_):
         if client is None:
             return self
         
         return BaseMethodType(self.__class__.execute, self, client)
     
+    
     def __set__(self, obj, value):
         raise AttributeError('can\'t set attribute')
+    
     
     def __delete__(self, obj):
         raise AttributeError('can\'t delete attribute')
     
-    async def execute(self, client, arg):
+    
+    async def execute(self, client, parameter):
         """
         Executes the request and returns it's result or raises.
         
         This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The client, who's `.discovery_validate_term` method was called.
+        parameter : `str`
+            The discovery term.
         
         Returns
         -------
@@ -435,22 +450,24 @@ class DiscoveryTermRequestCacher:
         ConnectionError
             If there is no internet connection, or there is no available cached result.
         TypeError
-            The given `arg` was not passed as `str` instance.
+            The given `parameter` was not passed as `str` instance.
         DiscordException
             If any exception was received from the Discord API.
         """
-        # First check arg
-        arg_type = arg.__class__
-        if arg_type is str:
+        # First check parameter
+        parameter_type = parameter.__class__
+        if parameter_type is str:
             pass
-        elif issubclass(arg_type, str):
-            arg = str(arg)
+        elif issubclass(parameter_type, str):
+            parameter = str(parameter)
         else:
-            raise TypeError(f'The parameter can be given as `str` instance, got {arg_type.__class__}.')
+            raise TypeError(
+                f'`parameter` can be `str`, got {parameter_type.__class__}; {parameter!r}.'
+            )
         
         # First check cache
         try:
-            unit = self.cached[arg]
+            unit = self.cached[parameter]
         except KeyError:
             unit = None
         else:
@@ -461,27 +478,27 @@ class DiscoveryTermRequestCacher:
         
         # Second check actual request
         try:
-            waiter = self._waiters[arg]
+            waiter = self._waiters[parameter]
         except KeyError:
             pass
         else:
             if waiter is None:
-                self._waiters[arg] = waiter = Future(KOKORO)
+                self._waiters[parameter] = waiter = Future(KOKORO)
             
             return await waiter
         
         # No actual request is being done, so mark that we are doing a request.
-        self._waiters[arg] = None
+        self._waiters[parameter] = None
         
         # Search client with free rate limits.
-        free_count = RateLimitProxy(client, *self._rate_limit_proxy_args).free_count
+        free_count = RateLimitProxy(client, *self._rate_limit_proxy_parameters).free_count
         if not free_count:
             requester = client
             for client_ in CLIENTS.values():
                 if client_ is client:
                     continue
                 
-                free_count = RateLimitProxy(client_, *self._rate_limit_proxy_args).free_count
+                free_count = RateLimitProxy(client_, *self._rate_limit_proxy_parameters).free_count
                 if free_count:
                     requester = client_
                     break
@@ -494,10 +511,10 @@ class DiscoveryTermRequestCacher:
         
         # Do the request
         try:
-            result = await self.func(client, arg)
+            result = await self.func(client, parameter)
         except ConnectionError as err:
             if (unit is None):
-                waiter = self._waiters.pop(arg)
+                waiter = self._waiters.pop(parameter)
                 if (waiter is not None):
                     waiter.set_exception(err)
                 
@@ -507,7 +524,7 @@ class DiscoveryTermRequestCacher:
             result = unit.result
         
         except BaseException as err:
-            waiter = self._waiters.pop(arg, None)
+            waiter = self._waiters.pop(parameter, None)
             if (waiter is not None):
                 waiter.set_exception(err)
             
@@ -515,7 +532,7 @@ class DiscoveryTermRequestCacher:
         
         else:
             if unit is None:
-                self.cached[arg] = unit = TimedCacheUnit()
+                self.cached[parameter] = unit = TimedCacheUnit()
             
             now = LOOP_TIME()
             unit.last_usage_time = now
@@ -532,14 +549,14 @@ class DiscoveryTermRequestCacher:
                 collected = []
                 
                 cached = self.cached
-                for cached_arg, cached_unit in cached.items():
+                for cached_parameter, cached_unit in cached.items():
                     if cached_unit.last_usage_time < cleanup_till:
-                        collected.append(cached_arg)
+                        collected.append(cached_parameter)
                 
-                for cached_arg in collected:
-                    del cached[cached_arg]
+                for cached_parameter in collected:
+                    del cached[cached_parameter]
         
-        waiter = self._waiters.pop(arg)
+        waiter = self._waiters.pop(parameter)
         if (waiter is not None):
             waiter.set_result(result)
         
@@ -555,7 +572,7 @@ class DiscoveryTermRequestCacher:
             repr(self.timeout),
         ]
         
-        rate_limit_group, rate_limit_limiter = self._rate_limit_proxy_args
+        rate_limit_group, rate_limit_limiter = self._rate_limit_proxy_parameters
         
         repr_parts.append(', rate_limit_group=')
         repr_parts.append(repr(rate_limit_group))
@@ -641,8 +658,9 @@ def _check_is_client_duped(client, client_id):
         return
     
     if other_client is not client:
-        raise RuntimeError(f'Creating the same client multiple times is not allowed; {client!r} already exists:, '
-            f'{other_client!r}.')
+        raise RuntimeError(
+            f'Creating the same client multiple times is not allowed; {client!r} already exists:, {other_client!r}.'
+        )
 
 
 
@@ -1055,8 +1073,10 @@ def application_command_autocomplete_choice_parser(choices):
         # Should we sort it?
     
     else:
-        raise TypeError(f'`{choices}` can be either `None` or `list`, `tuple`, `set`, `dict` including any other '
-            f'iterables, got {choices.__class__.__name__}; {choices!r}.')
+        raise TypeError(
+            f'`choices` can be `None`, `list`, `tuple`, `set`, `dict`, `iterable`, got '
+            f'{choices.__class__.__name__}; {choices!r}.'
+        )
     
     del choices_processed[20:]
     
@@ -1087,15 +1107,19 @@ def application_command_autocomplete_choice_validator(choice):
         if choice_tuple_length == 2:
             return application_command_autocomplete_choice_validator_tuple_item(choice)
         
-        raise TypeError(f'Tuple autocomplete choice can have length `2`, got {choice_tuple_length}; {choice!r}.')
+        raise TypeError(
+            f'Tuple autocomplete choice can have length `2`, got {choice_tuple_length}; {choice!r}.'
+        )
     
     if isinstance(choice, str):
         pass
     elif isinstance(choice, (int, float)):
         choice = str(choice)
     else:
-        raise TypeError(f'An autocomplete choice can be either a `name` - `value` pair or a `str`, `int` or a `float` '
-            f'instance, got {choice.__class__.__name__}; {choice!r}.')
+        raise TypeError(
+            f'An autocomplete choice can be either a `name` - `value` pair or `str`, `int`, `float`, got '
+            f'{choice.__class__.__name__}; {choice!r}.'
+        )
     
     return application_command_autocomplete_choice_builder(choice, choice)
 
@@ -1122,16 +1146,20 @@ def application_command_autocomplete_choice_validator_tuple_item(item):
     """
     name, value = item
     if not isinstance(name, str):
-        raise TypeError(f'Tuple item autocomplete choice name should be `str` instance, got '
-            f'{name.__class__.__name__}; {name!r}.')
+        raise TypeError(
+            f'Tuple item autocomplete choice name can be `str`, got '
+            f'{name.__class__.__name__}; {name!r}.'
+        )
     
     if isinstance(value, str):
         pass
     elif isinstance(value, (int, float)):
         value = str(value)
     else:
-        raise TypeError(f'Tuple item autocomplete choice value should be either `str`, `int` or `float` instance, got '
-            f'{value.__class__.__name__}, {value!r}.')
+        raise TypeError(
+            f'Tuple item autocomplete choice value can be `str`, `int`, `float`, got '
+            f'{value.__class__.__name__}, {value!r}.'
+        )
     
     return application_command_autocomplete_choice_builder(name, value)
 

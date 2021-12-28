@@ -222,7 +222,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         channel_id = preconvert_snowflake(channel_id, 'channel_id')
         
         if kwargs:
-            raise ValueError(f'Unused or unsettable attributes: {kwargs}')
+            raise ValueError(f'Unused or unsettable attributes: {kwargs!r}.')
         
         try:
             self = CHANNELS[channel_id]

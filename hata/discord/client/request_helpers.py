@@ -1,5 +1,6 @@
 __all__ = ()
 
+import reprlib
 from os.path import split as split_path
 from collections import deque
 
@@ -93,8 +94,10 @@ def get_components_data(components, is_edit):
                     component = ComponentRow(*component)
                 
                 else:
-                    raise TypeError(f'`components` contains a non `{ComponentBase.__name__}` or as `list`, `tuple` of '
-                        f'`{ComponentBase.__name__}` instances, got {components.__class__.__name__}')
+                    raise TypeError(
+                        f'`components` can contain contain `{ComponentBase.__name__}`, (`list`, `tuple`) of '
+                        f'`{ComponentBase.__name__}`, got {components.__class__.__name__}; {components!r}.'
+                    )
                 
                 if component_datas is None:
                     component_datas = []
@@ -103,9 +106,11 @@ def get_components_data(components, is_edit):
                 continue
         
         else:
-            raise TypeError(f'`components` can be given as `{ComponentBase.__name__}` or as `list`, `tuple` of '
-                f'(`{ComponentBase.__name__}` or (`list`, `tuple`) of `{ComponentBase.__name__}`), '
-                f'got {components.__class__.__name__}')
+            raise TypeError(
+                f'`components` can be `{ComponentBase.__name__}`, (`list`, `tuple`) of '
+                f'(`{ComponentBase.__name__}`, (`list`, `tuple`) of `{ComponentBase.__name__}`), '
+                f'got {components.__class__.__name__}; {components!r}.'
+            )
     
     return component_datas
 
@@ -125,7 +130,7 @@ def validate_message_to_delete(message):
         The channel's identifier where the message is.
     message_id : `int`
         The message's identifier.
-    message : `None` or ``Message``
+    message : `None`, ``Message``
         The referenced message if found.
     
     Raises
@@ -147,9 +152,10 @@ def validate_message_to_delete(message):
         else:
             snowflake_pair = maybe_snowflake_pair(message)
             if snowflake_pair is None:
-                raise TypeError(f'`message` should have be given as `{Message.__name__}` or as '
-                    f'`{MessageRepr.__name__}`, `{MessageReference.__name__}`, or as `tuple` of (`int`, `int`), '
-                    f'got {message.__class__.__name__}.')
+                raise TypeError(
+                    f'`message` can be `{Message.__name__}`, `{MessageRepr.__name__}`, `{MessageReference.__name__}`, '
+                    f'`tuple` of (`int`, `int`), got {message.__class__.__name__}; {message!r}.'
+                )
             
             channel_id, message_id = snowflake_pair
         
@@ -165,14 +171,14 @@ if API_VERSION >= 9:
         
         Parameters
         ----------
-        files : `None` or `list` of `tuple` (`str`, `Any`, (`None`, `str`))
+        files : `None`, `list` of `tuple` (`str`, `Any`, (`None`, `str`))
             The collected files to send.
-        tuple_ : `tuple` (?(`None` or `str`), ?`Any`, ?(`None` or `str`))
+        tuple_ : `tuple` (?(`None`, `str`), ?`Any`, ?(`None`, `str`))
             A tuple containing the name, io and the description.
         
         Returns
         -------
-        files : `None` or `list` of `tuple` (`str`, `Any`, (`None`, `str`))
+        files : `None`, `list` of `tuple` (`str`, `Any`, (`None`, `str`))
             The collected files to send.
         
         Raises
@@ -183,7 +189,9 @@ if API_VERSION >= 9:
         tuple_length = len(tuple_)
         if tuple_length:
             if tuple_length > 3:
-                raise ValueError(f'`tuple` length can be in range [0:3], got {tuple_length!r}; {tuple_!r}.')
+                raise ValueError(
+                    f'`tuple` length can be in range [0:3], got {tuple_length!r}; {tuple_!r}.'
+                )
             
             if tuple_length == 1:
                 io = tuple_[0]
@@ -224,7 +232,7 @@ if API_VERSION >= 9:
         ----------
         attachment_id : `int`
             The attachment's identifier.
-        description : `None` or `str`
+        description : `None`, `str`
             Description for the attachment.
         
         Returns
@@ -254,7 +262,7 @@ if API_VERSION >= 9:
         
         Returns
         -------
-        form : `None` or `Formdata`
+        form : `None`, `Formdata`
             Returns a `Formdata` of the files and from the message's data. If there are no files to send, returns
             `None` instead.
         contains_attachments : `bool`
@@ -271,7 +279,7 @@ if API_VERSION >= 9:
         Accepted `io` types with check order are:
         - ``BodyPartReader`` instance
         - `bytes`, `bytearray`, `memoryview` instance
-        - `str` instance
+        - `str`
         - `BytesIO` instance
         - `StringIO` instance
         - `TextIOBase` instance
@@ -385,7 +393,7 @@ if API_VERSION >= 9:
         ----------
         message_data : `dict` of (`str`, `Any`) items
             The message's payload to send.
-        file : `None` or `dict` of (`file-name`, `io`) items, `list` of (`file-name`, `io`) elements, \
+        file : `None`, `dict` of (`file-name`, `io`) items, `list` of (`file-name`, `io`) elements, \
                 tuple (`file-name`, `io`), `io`
             The files to send.
         contains_content : `bool`
@@ -393,7 +401,7 @@ if API_VERSION >= 9:
         
         Returns
         -------
-        message_data : `None` or `dict`, ``Formdata``
+        message_data : `None`, `dict`, ``Formdata``
             Returns a ``Formdata`` if the message contains attachments, `dict` if contains any content and `None` if
             not.
         
@@ -431,7 +439,7 @@ else:
         
         Returns
         -------
-        form : `None` or `Formdata`
+        form : `None`, `Formdata`
             Returns a `Formdata` of the files and from the message's data. If there are no files to send, returns `None`
             instead.
         
@@ -524,7 +532,9 @@ else:
         
         # case 4 more than 10 files
         else:
-            raise ValueError('You can send maximum 10 files at once.')
+            raise ValueError(
+                f'Can send up to 10 files at once, got {len(files)!r}; {reprlib.repr(files)}.'
+            )
         
         return form
     
@@ -537,7 +547,7 @@ else:
         ----------
         message_data : `dict` of (`str`, `Any`) items
             The message's payload to send.
-        file : `None` or `dict` of (`file-name`, `io`) items, `list` of (`file-name`, `io`) elements, \
+        file : `None`, `dict` of (`file-name`, `io`) items, `list` of (`file-name`, `io`) elements, \
                 tuple (`file-name`, `io`), `io`
             The files to send.
         contains_content : `bool`
@@ -545,7 +555,7 @@ else:
         
         Returns
         -------
-        message_data : `None` or `dict`, ``Formdata``
+        message_data : `None`, `dict`, ``Formdata``
             Returns a ``Formdata`` if the message contains attachments, `dict` if contains any content and `None` if
             not.
         
@@ -573,7 +583,7 @@ def validate_content_and_embed(content, embed, is_edit):
     
     Parameters
     ----------
-    content : `str`, ``EmbedBase`` or `Any`, Optional
+    content : `str`, ``EmbedBase``, `Any`, Optional
         The content of the message.
         
         
@@ -591,13 +601,13 @@ def validate_content_and_embed(content, embed, is_edit):
     -------
     content : `Ellipsis`, `None`, `str`
         The message's content.
-    embed : `Ellipsis`, `None`, ``EmbedBase``, (`list` or `tuple`) of ``EmbedBase``
+    embed : `Ellipsis`, `None`, ``EmbedBase``, (`list`, `tuple`) of ``EmbedBase``
         The messages embeds.
     
     Raises
     ------
     TypeError
-        If `embed` was not given neither as ``EmbedBase`` nor as `list` or `tuple` of ``EmbedBase`` instances.
+        If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase`` instances.
     AssertionError
         - If `embed` contains a non ``EmbedBase`` element.
         - If both `content` and `embed` fields are embeds.
@@ -623,16 +633,20 @@ def validate_content_and_embed(content, embed, is_edit):
             if __debug__:
                 for embed_element in embed:
                     if not isinstance(embed_element, EmbedBase):
-                        raise AssertionError(f'`embed` was given as a `list` or `tuple`, but it\'s it contains a non '
-                            f'`{EmbedBase.__name__}` instance element, got {embed_element.__class__.__name__}.')
+                        raise AssertionError(
+                            f'`embed` can contains `{EmbedBase.__name__}` elements, got '
+                            f'{embed_element.__class__.__name__}; {embed_element!r}; embed={embed!r}.'
+                        )
             
             embed = embed[:10]
         else:
             embed = None
     
     else:
-        raise TypeError(f'`embed` was not given as `{EmbedBase.__name__}` instance, neither as a `list`  or `tuple` of '
-            f'{EmbedBase.__name__} instances, got {embed.__class__.__name__}.')
+        raise TypeError(
+            f'`embed` can be `{EmbedBase.__name__}`, (`list`, `tuple`) of {EmbedBase.__name__}, got '
+            f'{embed.__class__.__name__}; {embed!r}.'
+        )
     
     # Content check order:
     # 1.: None -> None || ''
@@ -656,7 +670,9 @@ def validate_content_and_embed(content, embed, is_edit):
     elif isinstance(content, EmbedBase):
         if __debug__:
             if (embed is not (... if is_edit else None)):
-                raise AssertionError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
+                raise AssertionError(
+                    f'Multiple parameters were given as embed, got content={content!r}, embed={embed!r}.'
+                )
         
         embed = [content]
         
@@ -685,7 +701,9 @@ def validate_content_and_embed(content, embed, is_edit):
         if is_list_of_embeds:
             if __debug__:
                 if (embed is not (... if is_edit else None)):
-                    raise AssertionError(f'Multiple embeds were given, got content={content!r}, embed={embed!r}.')
+                    raise AssertionError(
+                        f'Multiple parameters were given as embed, got content={content!r}, embed={embed!r}.'
+                    )
             
             embed = content[:10]
             
@@ -726,8 +744,9 @@ def get_channel_id(channel, channel_type):
     else:
         channel_id = maybe_snowflake(channel)
         if channel_id is None:
-            raise TypeError(f'The channel can be either given as `{channel_type.__name__}` or as `int` instance, '
-                f'got {channel.__class__.__name__}.')
+            raise TypeError(
+                f'`channel` can be `{channel_type.__name__}`, `int`, got {channel.__class__.__name__}; {channel!r}.'
+            )
     
     return channel_id
 
@@ -743,7 +762,7 @@ def get_guild_and_guild_text_channel_id(channel):
     
     Returns
     -------
-    guild : ``Guild`` or `None`
+    guild : `None`, ``Guild``
         The respective guild if any found.
     channel_id : `int`
         The channel's identifier.
@@ -771,8 +790,9 @@ def get_guild_and_guild_text_channel_id(channel):
                 guild = channel.guild
                 break
         
-        raise TypeError(f'`channel` can be either given as `{ChannelText.__name__}` or as `int` instance, '
-            f'got {channel.__class__.__name__}.')
+        raise TypeError(
+            f'`channel` can be `{ChannelText.__name__}`, `int`, got {channel.__class__.__name__}; {channel!r}.'
+        )
     
     return guild, channel_id
 
@@ -783,14 +803,14 @@ def get_guild_id_and_channel_id(channel, channel_type):
     
     Parameters
     ----------
-    channel : `channel_type` or `tuple` (`int`, `int`)
+    channel : `channel_type`, `tuple` (`int`, `int`)
         The role, or `guild-id`, `role-id` pair.
     channel_type : `type`
         The expected type of `channel`.
     
     Returns
     -------
-    snowflake_pair : `None` or `tuple` (`int`, `int`)
+    snowflake_pair : `None`, `tuple` (`int`, `int`)
         The channel's guild's and it's own identifier if applicable.
     
     Raises
@@ -807,8 +827,10 @@ def get_guild_id_and_channel_id(channel, channel_type):
     else:
         snowflake_pair = maybe_snowflake_pair(channel)
         if snowflake_pair is None:
-            raise TypeError(f'`channel` can be given as `{channel_type.__name__}`, or as '
-                f'`tuple` (`int`, `int`), got {channel.__class__.__name__}.')
+            raise TypeError(
+                f'`channel` can be `{channel_type.__name__}`, `tuple` (`int`, `int`), got '
+                f'{channel.__class__.__name__}; {channel!r}.'
+            )
         
     return snowflake_pair
 
@@ -826,7 +848,7 @@ def get_channel_and_id(channel, channel_type):
     
     Returns
     -------
-    channel : ``channel_type``, `None`
+    channel : `None`, `channel_type`
         The channel if found.
     channel_id : `int`
         The channel's identifier.
@@ -852,8 +874,9 @@ def get_channel_and_id(channel, channel_type):
             if isinstance(channel, channel_type):
                 break
         
-        raise TypeError(f'`channel` can be either given as `{channel_type.__name__}` or as `int` instance, '
-            f'got {channel.__class__.__name__}.')
+        raise TypeError(
+            f'`channel` can be `{channel_type.__name__}`, `int`, got {channel.__class__.__name__}; {channel!r}.'
+        )
     
     return channel, channel_id
 
@@ -884,8 +907,10 @@ def get_stage_channel_id(stage):
     else:
         channel_id = maybe_snowflake(stage)
         if channel_id is None:
-            raise TypeError(f'`stage` can be given as `{Stage.__name__}`, `{ChannelStage.__name__}`, or as '
-                f'int` instance, got {stage.__class__.__name__}.')
+            raise TypeError(
+                f'`stage` can be `{Stage.__name__}`, `{ChannelStage.__name__}`, `int`, got '
+                f'{stage.__class__.__name__}; {stage!r}.'
+            )
     
     return channel_id
 
@@ -915,8 +940,9 @@ def get_user_id(user):
     else:
         user_id = maybe_snowflake(user)
         if user_id is None:
-            raise TypeError(f'`user` can be either given as `{ClientUserBase.__name__}` or as `int` instance, '
-                f'got {user.__class__.__name__}.')
+            raise TypeError(
+                f'`user` can be `{ClientUserBase.__name__}`, `int`, got {user.__class__.__name__}; {user!r}.'
+            )
     
     return user_id
 
@@ -932,7 +958,7 @@ def get_user_and_id(user):
     
     Returns
     -------
-    user : ``ClientUserBase`` or `None`
+    user : `None`, ``ClientUserBase``
         The user if found.
     user_id : `int`
         The user's identifier.
@@ -958,15 +984,16 @@ def get_user_and_id(user):
             if isinstance(user, ClientUserBase):
                 break
         
-        raise TypeError(f'`user` can be either given as `{ClientUserBase.__name__}` or as `int` instance, '
-            f'got {user.__class__.__name__}.')
+        raise TypeError(
+            f'`user` can be `{ClientUserBase.__name__}`, `int`, got {user.__class__.__name__}; {user!r}.'
+        )
         
     return user, user_id
 
 
 def get_user_id_nullable(user):
     """
-    Gets user identifier from the given user or of it's identifier. The user can be given as `None`. At that case
+    Gets user identifier from the given user or of it's identifier. The user can be `None`. At that case
     `user_id` will default to `0`.
     
     Parameters
@@ -993,8 +1020,9 @@ def get_user_id_nullable(user):
     else:
         user_id = maybe_snowflake(user)
         if user_id is None:
-            raise TypeError(f'`user` can be either given as `{ClientUserBase.__name__}` or as `int` instance, '
-                f'got {user.__class__.__name__}.')
+            raise TypeError(
+                f'`user` can be `{ClientUserBase.__name__}`, `int`, got {user.__class__.__name__}; {user!r}.'
+            )
     
     return user_id
 
@@ -1023,8 +1051,9 @@ def get_guild_id(guild):
     else:
         guild_id = maybe_snowflake(guild)
         if guild_id is None:
-            raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
-                f'{guild.__class__.__name__}.')
+            raise TypeError(
+                f'`guild` can be `{Guild.__name__}`, `int`, got {guild.__class__.__name__}; {guild!r}.'
+            )
     
     return guild_id
 
@@ -1040,7 +1069,7 @@ def get_guild_and_id(guild):
     
     Returns
     -------
-    guild : ``Guild`` or `None`
+    guild : `None`, ``Guild``
         The guild if found.
     guild_id : `int`
         The guild's identifier.
@@ -1055,8 +1084,9 @@ def get_guild_and_id(guild):
     else:
         guild_id = maybe_snowflake(guild)
         if guild_id is None:
-            raise TypeError(f'`guild` can be given as `{Guild.__name__}` or `int` instance, got '
-                f'{guild.__class__.__name__}.')
+            raise TypeError(
+                f'`guild` can be `{Guild.__name__}`, `int`, got {guild.__class__.__name__}; {guild!r}.'
+            )
         
         guild = GUILDS.get(guild_id, None)
     
@@ -1074,7 +1104,7 @@ def get_guild_discovery_and_id(guild):
     
     Returns
     -------
-    guild : ``GuildDiscovery`` or `None`
+    guild : ``GuildDiscovery``, `None`
         The guild or the
     guild_id : `int`
         The guild's identifier.
@@ -1093,8 +1123,10 @@ def get_guild_discovery_and_id(guild):
     else:
         guild_id = maybe_snowflake(guild)
         if guild_id is None:
-            raise TypeError(f'`guild` can be given as `{Guild.__name__}`, `{GuildDiscovery.__name__}` or `int` '
-                f'instance, got {guild.__class__.__name__}.')
+            raise TypeError(
+                f'`guild` can be `{Guild.__name__}`, `{GuildDiscovery.__name__}`, `int`, got '
+                f'{guild.__class__.__name__}; {guild!r}.'
+            )
         
         guild_discovery = None
     
@@ -1125,8 +1157,10 @@ def get_achievement_id(achievement):
     else:
         achievement_id = maybe_snowflake(achievement)
         if achievement_id is None:
-            raise TypeError(f'`achievement` can be given as `{Achievement.__name__}` or `int` instance, got '
-                f'{achievement.__class__.__name__}.')
+            raise TypeError(
+                f'`achievement` can be `{Achievement.__name__}`, `int`, got '
+                f'{achievement.__class__.__name__}; {achievement!r}.'
+            )
     
     return achievement_id
 
@@ -1157,8 +1191,10 @@ def get_achievement_and_id(achievement):
     else:
         achievement_id = maybe_snowflake(achievement)
         if achievement_id is None:
-            raise TypeError(f'`achievement` can be given as `{Achievement.__name__}` or `int` instance, got '
-                f'{achievement.__class__.__name__}.')
+            raise TypeError(
+                f'`achievement` can be `{Achievement.__name__}`, `int`, got '
+                f'{achievement.__class__.__name__}; {achievement!r}.'
+            )
         
         achievement = None
     
@@ -1202,14 +1238,16 @@ def get_channel_id_and_message_id(message):
         channel_id = message.channel_id
         message_id = message.message_id
     elif message is None:
-        raise TypeError('`message` was given as `None`. Make sure to use `Client.message_create` with giving '
-            'content and using a cached channel.')
+        raise TypeError(
+            '`message` was given as `None`. Make sure to call message create methods with non-empty content(s).'
+        )
     else:
         snowflake_pair = maybe_snowflake_pair(message)
         if snowflake_pair is None:
-            raise TypeError(f'`message` can be given as `{Message.__name__}` or as '
-                f'`{MessageRepr.__name__}`, `{MessageReference.__name__}` or as `tuple` of (`int`, `int`), got '
-                f'`{message.__class__.__name__}`.')
+            raise TypeError(
+                f'`message` can be `{Message.__name__}`, `{MessageRepr.__name__}`, `{MessageReference.__name__}`, '
+                f'`tuple` of (`int`, `int`), got {message.__class__.__name__}; {message!r}.'
+            )
         
         channel_id, message_id = snowflake_pair
     
@@ -1240,8 +1278,9 @@ def get_role_id(role):
     else:
         role_id = maybe_snowflake(role)
         if role_id is None:
-            raise TypeError(f'`role` can be given as `{Role.__name__}` or `int` instance, got '
-                f'{role.__class__.__name__}.')
+            raise TypeError(
+                f'`role` can be `{Role.__name__}`, `int`, got {role.__class__.__name__}; {role!r}.'
+            )
     
     return role_id
 
@@ -1252,12 +1291,12 @@ def get_guild_id_and_role_id(role):
     
     Parameters
     ----------
-    role : ``Role`` or `tuple` (`int`, `int`)
+    role : ``Role``, `tuple` (`int`, `int`)
         The role, or `guild-id`, `role-id` pair.
     
     Returns
     -------
-    snowflake_pair : `None` or `tuple` (`int`, `int`)
+    snowflake_pair : `None`, `tuple` (`int`, `int`)
         The role's guild's and it's own identifier if applicable.
     
     Raises
@@ -1275,8 +1314,9 @@ def get_guild_id_and_role_id(role):
     else:
         snowflake_pair = maybe_snowflake_pair(role)
         if snowflake_pair is None:
-            raise TypeError(f'`role` can be given as `{Role.__name__}`, or as `tuple` (`int`, `int`), got '
-                f'{role.__class__.__name__}.')
+            raise TypeError(
+                f'`role` can be `{Role.__name__}`, `tuple` (`int`, `int`), got {role.__class__.__name__}; {role!r}.'
+            )
     
     return snowflake_pair
 
@@ -1305,8 +1345,9 @@ def get_webhook_id(webhook):
     else:
         webhook_id = maybe_snowflake(webhook)
         if webhook_id is None:
-            raise TypeError(f'`webhook` can be given as `{Webhook.__name__}` or `int` instance, got '
-                f'{webhook.__class__.__name__}.')
+            raise TypeError(
+                f'`webhook` can be `{Webhook.__name__}`, `int`, got {webhook.__class__.__name__}; {webhook!r}.'
+            )
     
     return webhook_id
 
@@ -1322,7 +1363,7 @@ def get_webhook_and_id(webhook):
     
     Returns
     -------
-    webhook : ``Webhook`` or `None`
+    webhook : ``Webhook``, `None`
         The webhook if any.
     webhook_id : `int`
         The webhook's identifier.
@@ -1348,8 +1389,9 @@ def get_webhook_and_id(webhook):
             if isinstance(webhook, Webhook):
                 break
             
-            raise TypeError(f'`webhook` can be given as `{Webhook.__name__}` or `int` instance, got '
-                f'{webhook.__class__.__name__}.')
+            raise TypeError(
+                f'`webhook` can be `{Webhook.__name__}`, `int`, got {webhook.__class__.__name__}; {webhook!r}.'
+            )
     
     return webhook, webhook_id
 
@@ -1380,8 +1422,10 @@ def get_webhook_id_token(webhook):
     else:
         snowflake_token_pair = maybe_snowflake_token_pair(webhook)
         if (snowflake_token_pair is None):
-            raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `tuple` (`int`, `str`), '
-                f'got {webhook.__class__.__name__}.')
+            raise TypeError(
+                f'`webhook` can be `{Webhook.__name__}`, `tuple` (`int`, `str`), got '
+                f'{webhook.__class__.__name__}; {webhook!r}.'
+            )
     
     return snowflake_token_pair
 
@@ -1397,7 +1441,7 @@ def get_webhook_and_id_token(webhook):
     
     Returns
     -------
-    webhook : ``Webhook`` or `None`
+    webhook : ``Webhook``, `None`
         The webhook if any.
     webhook_id : `int`
         The webhook's identifier.
@@ -1428,8 +1472,10 @@ def get_webhook_and_id_token(webhook):
             if isinstance(webhook, Webhook):
                 break
         
-        raise TypeError(f'`webhook` can be given either as `{Webhook.__name__}` or as `tuple` (`int`, `str`), '
-            f'got {webhook.__class__.__name__}.')
+        raise TypeError(
+            f'`webhook` can be `{Webhook.__name__}`, `tuple` (`int`, `str`), got '
+            f'{webhook.__class__.__name__}; {webhook!r}.'
+        )
     
     return webhook, webhook_id, webhook_token
 
@@ -1440,7 +1486,7 @@ def get_reaction(emoji):
     
     Parameters
     ----------
-    emoji : ``Emoji`` or `str`
+    emoji : ``Emoji``, `str`
         The emoji to get it's reaction form of.
     
     Returns
@@ -1458,8 +1504,9 @@ def get_reaction(emoji):
     elif isinstance(emoji, str):
         as_reaction = emoji
     else:
-        raise TypeError(f'`emoji` can be given as ``{Emoji.__class__}`` or as `str` instance, got '
-            f'{emoji.__class__.__name__}.')
+        raise TypeError(
+            f'`emoji` can be `{Emoji.__class__}`, `str`, got {emoji.__class__.__name__}; {emoji!r}.'
+        )
     
     return as_reaction
 
@@ -1470,7 +1517,7 @@ def get_emoji_from_reaction(emoji):
     
     Parameters
     ----------
-    emoji : ``Emoji`` or `str`
+    emoji : ``Emoji``, `str`
         The emoji or reaction to get the emoji from.
     
     Returns
@@ -1490,10 +1537,13 @@ def get_emoji_from_reaction(emoji):
     elif isinstance(emoji, str):
         emoji = parse_reaction(emoji)
         if emoji is None:
-            raise ValueError(f'The given `emoji` is not a valid reaction, got {emoji!r}.')
+            raise ValueError(
+                f'The given `emoji` is not a valid reaction, got {emoji!r}.'
+            )
     else:
-        raise TypeError(f'`emoji` can be given as ``{Emoji.__class__}`` or as `str` instance, got '
-            f'{emoji.__class__.__name__}.')
+        raise TypeError(
+            f'`emoji` can be `{Emoji.__class__}`, `str`, got {emoji.__class__.__name__}; {emoji!r}.'
+        )
     
     return emoji
 
@@ -1504,12 +1554,12 @@ def get_guild_id_and_emoji_id(emoji):
     
     Parameters
     ----------
-    emoji : ``Emoji`` or `tuple` (`int`, `int`)
+    emoji : ``Emoji``, `tuple` (`int`, `int`)
         The emoji, or `guild-id`, `emoji-id` pair.
     
     Returns
     -------
-    snowflake_pair : `None` or `tuple` (`int`, `int`)
+    snowflake_pair : `None`, `tuple` (`int`, `int`)
         The emoji's guild's and it's own identifier if applicable.
     
     Raises
@@ -1527,8 +1577,10 @@ def get_guild_id_and_emoji_id(emoji):
     else:
         snowflake_pair = maybe_snowflake_pair(emoji)
         if snowflake_pair is None:
-            raise TypeError(f'`emoji` can be given as `{Emoji.__name__}`, or as `tuple` (`int`, `int`), got '
-                f'{emoji.__class__.__name__}.')
+            raise TypeError(
+                f'`emoji` can be `{Emoji.__name__}`, `tuple` (`int`, `int`), got {emoji.__class__.__name__}; '
+                f'{emoji!r}.'
+            )
     
     return snowflake_pair
 
@@ -1544,7 +1596,7 @@ def get_sticker_and_id(sticker):
     
     Returns
     -------
-    sticker : ``Sticker`` or `None`
+    sticker : ``Sticker``, `None`
         The sticker if found.
     sticker_id : `int`
         The sticker's identifier.
@@ -1564,8 +1616,9 @@ def get_sticker_and_id(sticker):
             sticker = STICKERS.get(sticker_id, None)
             break
         
-        raise TypeError(f'`sticker` can be either given as `{Sticker.__name__}` or as `int` instance, '
-            f'got {sticker.__class__.__name__}.')
+        raise TypeError(
+            f'`sticker` can be `{Sticker.__name__}`, `int`, got {sticker.__class__.__name__}; {sticker!r}.'
+        )
         
     return sticker, sticker_id
 
@@ -1581,7 +1634,7 @@ def get_sticker_pack_and_id(sticker_pack):
     
     Returns
     -------
-    sticker_pack : ``StickerPack`` or `None`
+    sticker_pack : ``StickerPack``, `None`
         The sticker pack if found.
     sticker_pack_id : `int`
         The sticker pack's identifier.
@@ -1601,8 +1654,10 @@ def get_sticker_pack_and_id(sticker_pack):
             sticker_pack = STICKER_PACKS.get(sticker_pack_id, None)
             break
         
-        raise TypeError(f'`sticker` can be either given as `{StickerPack.__name__}` or as `int` instance, '
-            f'got {sticker_pack.__class__.__name__}.')
+        raise TypeError(
+            f'`sticker_pack` can be `{StickerPack.__name__}`, `int`, got {sticker_pack.__class__.__name__}; '
+            f'{sticker_pack!r}.'
+        )
         
     return sticker_pack, sticker_pack_id
 
@@ -1634,8 +1689,10 @@ def get_guild_id_and_scheduled_event_id(scheduled_event):
     else:
         snowflake_pair = maybe_snowflake_pair(scheduled_event)
         if snowflake_pair is None:
-            raise TypeError(f'`scheduled_event` should have be given as `{ScheduledEvent.__name__}` or as '
-                f'`tuple` of (`int`, `int`), got {scheduled_event.__class__.__name__}.')
+            raise TypeError(
+                f'`scheduled_event` can be `{ScheduledEvent.__name__}`, `tuple` of (`int`, `int`), got '
+                f'{scheduled_event.__class__.__name__}; {scheduled_event!r}.'
+            )
         
         guild_id, scheduled_event_id = snowflake_pair
     
@@ -1653,7 +1710,7 @@ def get_scheduled_event_guild_id_and_id(scheduled_event):
     
     Returns
     -------
-    scheduled_event : `None` or ``ScheduledEvent``
+    scheduled_event : `None`, ``ScheduledEvent``
         The scheduled event.
     guild_id : `int`
         The scheduled event's guild's identifier.
@@ -1672,8 +1729,10 @@ def get_scheduled_event_guild_id_and_id(scheduled_event):
     else:
         snowflake_pair = maybe_snowflake_pair(scheduled_event)
         if snowflake_pair is None:
-            raise TypeError(f'`scheduled_event` should have be given as `{ScheduledEvent.__name__}` or as '
-                f'`tuple` of (`int`, `int`), got {scheduled_event.__class__.__name__}.')
+            raise TypeError(
+                f'`scheduled_event` can be `{ScheduledEvent.__name__}`, `tuple` of (`int`, `int`), got '
+                f'{scheduled_event.__class__.__name__}; {scheduled_event!r}.'
+            )
         
         guild_id, scheduled_event_id = snowflake_pair
         
@@ -1693,7 +1752,7 @@ def get_guild_and_id_and_scheduled_event_id(scheduled_event):
     
     Returns
     -------
-    guild : `None` or ``Guild``
+    guild : `None`, ``Guild``
         The scheduled event's guild.
     guild_id : `int`
         The scheduled event's guild's identifier.
@@ -1711,8 +1770,10 @@ def get_guild_and_id_and_scheduled_event_id(scheduled_event):
     else:
         snowflake_pair = maybe_snowflake_pair(scheduled_event)
         if snowflake_pair is None:
-            raise TypeError(f'`scheduled_event` should have be given as `{ScheduledEvent.__name__}` or as '
-                f'`tuple` of (`int`, `int`), got {scheduled_event.__class__.__name__}.')
+            raise TypeError(
+                f'`scheduled_event` can be `{ScheduledEvent.__name__}`, `tuple` of (`int`, `int`), got '
+                f'{scheduled_event.__class__.__name__}; {scheduled_event!r}.'
+            )
         
         guild_id, scheduled_event_id = snowflake_pair
     

@@ -83,7 +83,7 @@ def _validate_custom_ids(custom_id):
                 custom_ids.add(sub_custom_id)
                 continue
             
-            raise TypeError(f'`custom_id` contains a non `st` element, got: {custom_id.__class__.__name__}.')
+            raise TypeError(f'`custom_id` contains a non `str` element, got: {custom_id.__class__.__name__}.')
         
         if not custom_id:
             raise ValueError(f'`custom_id` received as empty {custom_id.__class__.__name__}.')

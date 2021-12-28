@@ -1,8 +1,6 @@
 __all__ = ('ApplicationCommand', 'ApplicationCommandOption', 'ApplicationCommandOptionChoice',
      'ApplicationCommandPermission', 'ApplicationCommandPermissionOverwrite', )
 
-import warnings
-
 from ..bases import DiscordEntity, maybe_snowflake
 from ..core import APPLICATION_COMMANDS, ROLES
 from ..preconverters import preconvert_preinstanced_type
@@ -54,7 +52,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         The command's description. It's length can be in range [2:100].
     name : `str`
         The name of the command. It's length can be in range [1:32].
-    options : `None` or `list` of ``ApplicationCommandOption``
+    options : `None`, `list` of ``ApplicationCommandOption``
         The parameters of the command. It's length can be in range [0:25]. If would be set as empty list, instead is
         set as `None`.
     target_type : ``ApplicationCommandTargetType``
@@ -62,20 +60,20 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     
     Notes
     -----
-    ``ApplicationCommand`` instances are weakreferable.
+    ``ApplicationCommand``s are weakreferable.
     """
     __slots__ = ('allow_by_default', 'application_id', 'description', 'name', 'options', 'target_type',)
     
     def __new__(cls, name, description=None, *, allow_by_default=True, options=None, target_type=None):
         """
-        Creates a new ``ApplicationCommand`` instance with the given parameters.
+        Creates a new ``ApplicationCommand`` with the given parameters.
         
         Parameters
         ----------
         name : `str`
             The name of the command. It's length can be in range [1:32].
         
-        description : `None` or `str`, Optional
+        description : `None`, `str`, Optional
             The command's description. It's length can be in range [2:100].
         
         allow_by_default : `bool`, Optional (Keyword only)
@@ -83,7 +81,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             
             Defaults to `True`.
         
-        options : `None` or (`list` or `tuple`) of ``ApplicationCommandOption``, Optional (Keyword only)
+        options : `None`, (`list` or `tuple`) of ``ApplicationCommandOption``, Optional (Keyword only)
             The parameters of the command. It's length can be in range [0:25].
         
         target_type : `int`, ``ApplicationCommandTargetType``, Optional (Keyword only)
@@ -94,70 +92,90 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         Raises
         ------
         TypeError
-            If `target_type` is neither `int`, nor ``ApplicationCommandTargetType`` instance.
+            If `target_type` is neither `int`, nor ``ApplicationCommandTargetType``.
         ValueError
             `description` cannot be `None` for application commands with non-context target.
         AssertionError
-            - If `name` was not given as `str` instance.
+            - If `name` was not given as `str`.
             - If `name` length is out of range [1:32].
             - If `name` contains unexpected character.
-            - If `description` was not given as `None` nor `str` instance.
+            - If `description` was not given as `None` nor `str`.
             - If `description` length is out of range [1:100].
             - If `options` was not given neither as `None` nor as (`list` or `tuple`) of ``ApplicationCommandOption``
                 instances.
             - If `options`'s length is out of range [0:25].
-            - If `allow_by_default` was not given as `bool` instance.
+            - If `allow_by_default` was not given as `bool`.
         """
         if __debug__:
             if not isinstance(name, str):
-                raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
+                raise AssertionError(
+                    f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+                )
             
             name_length = len(name)
-            if name_length < APPLICATION_COMMAND_NAME_LENGTH_MIN or name_length > APPLICATION_COMMAND_NAME_LENGTH_MAX:
-                raise AssertionError(f'`name` length can be in range '
+            if (
+                name_length < APPLICATION_COMMAND_NAME_LENGTH_MIN or
+                name_length > APPLICATION_COMMAND_NAME_LENGTH_MAX
+            ):
+                raise AssertionError(
+                    f'`name` length can be in range '
                     f'[{APPLICATION_COMMAND_NAME_LENGTH_MIN}:{APPLICATION_COMMAND_NAME_LENGTH_MAX}], got '
-                    f'{name_length!r}; {name!r}.')
+                    f'{name_length!r}; {name!r}.'
+                )
             
             if not is_valid_application_command_name(name):
-                raise AssertionError(f'`name` contains an unexpected character; Got {name!r}.')
+                raise AssertionError(
+                    f'`name` contains an unexpected character, got {name!r}.'
+                )
             
             if (description is not None):
                 if not isinstance(description, str):
-                    raise AssertionError(f'`description` can be given as `None` or `str` instance, got '
-                        f'{description.__class__.__name__}.')
+                    raise AssertionError(
+                        f'`description` can be `None`, `str`, got {description.__class__.__name__}; {description!r}.'
+                    )
                 
                 description_length = len(description)
-                if description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or \
-                        description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX:
-                    raise AssertionError(f'`description` length can be in range '
+                if (
+                    description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or
+                    description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX
+                ):
+                    raise AssertionError(
+                        f'`description` length can be in range '
                         f'[{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], '
-                        f'got {description_length!r}; {description!r}.')
+                        f'got {description_length!r}; {description!r}.'
+                    )
             
             if not isinstance(allow_by_default, bool):
-                raise AssertionError(f'`allow_by_default` can be given as `bool` instance, got '
-                    f'{allow_by_default.__class__.__name__}.')
+                raise AssertionError(
+                    f'`allow_by_default` can be `bool`, got {allow_by_default.__class__.__name__}; '
+                    f'{allow_by_default!r}.'
+                )
         
         if options is None:
             options_processed = None
         else:
             if __debug__:
                 if not isinstance(options, (tuple, list)):
-                    raise AssertionError(f'`options` can be given as `None` or (`list` or `tuple`) of '
-                        f'`{ApplicationCommandOption.__name__}`, got {options.__class__.__name__}.')
+                    raise AssertionError(
+                        f'`options` can be `None`, (`list` or `tuple`) of `{ApplicationCommandOption.__name__}`, '
+                        f'got {options.__class__.__name__}; {options!r}.')
             
             # Copy it
             options_processed = list(options)
             if options_processed:
                 if __debug__:
                     if len(options_processed) > APPLICATION_COMMAND_OPTIONS_MAX:
-                        raise AssertionError(f'`options` length can be in range '
-                            f'[0:{APPLICATION_COMMAND_OPTIONS_MAX}], got {len(options_processed)!r}; {options!r}')
+                        raise AssertionError(
+                            f'`options` length can be in range '
+                            f'[0:{APPLICATION_COMMAND_OPTIONS_MAX}], got {len(options_processed)!r}; {options!r}'
+                        )
                     
                     for index, option in enumerate(options_processed):
                         if not isinstance(option, ApplicationCommandOption):
-                            raise AssertionError(f'`options` was given either as `list` or `tuple`, but it\'s element '
-                                f'At index {index!r} is not {ApplicationCommandOption.__name__} instance, but '
-                                f'{option.__class__.__name__}.')
+                            raise AssertionError(
+                                f'`options[{index!r}]` is not `{ApplicationCommandOption.__name__}`, got '
+                                f'{option.__class__.__name__}; {option!r}; options={options!r}.'
+                            )
             
             else:
                 options_processed = None
@@ -169,7 +187,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         if (target_type not in APPLICATION_COMMAND_CONTEXT_TARGET_TYPES):
             if (description is None):
-                raise ValueError(f'`description` cannot be `None` for application commands with non-context target.')
+                raise ValueError(
+                    f'`description` cannot be `None` for application commands with non-context target.'
+                )
         else:
             # We do not really care about them, we can just lose them, no problem.
             description = None
@@ -203,18 +223,22 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         ------
         AssertionError
             - If the entity is not partial.
-            - If `option` is not ``ApplicationCommandOption`` instance.
+            - If `option` is not ``ApplicationCommandOption``.
             - If the ``ApplicationCommand`` has already `25` options.
         """
         if __debug__:
             if self.id != 0:
-                raise AssertionError(f'{self.__class__.__name__}.add_option` can be only called on partial '
-                    f'`{self.__class__.__name__}`-s, but was called on {self!r}.')
+                raise AssertionError(
+                    f'{self.__class__.__name__}.add_option` can be only called on partial '
+                    f'`{self.__class__.__name__}`-s, but was called on {self!r}.'
+                )
         
         if __debug__:
             if not isinstance(option, ApplicationCommandOption):
-                raise AssertionError(f'`option` can be given as {ApplicationCommandOption.__name__} instance, got '
-                    f'{option.__class__.__name__}.')
+                raise AssertionError(
+                    f'`option` can be `{ApplicationCommandOption.__name__}`, got '
+                    f'{option.__class__.__name__}; {option!r}.'
+                )
         
         options = self.options
         if options is None:
@@ -222,8 +246,10 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         else:
             if __debug__:
                 if len(options) >= APPLICATION_COMMAND_OPTIONS_MAX:
-                    raise AssertionError(f'`option` cannot be added if the {ApplicationCommandOption.__name__} has '
-                        f'already `{APPLICATION_COMMAND_OPTIONS_MAX}` options.')
+                    raise AssertionError(
+                        f'`option` cannot be added if the `{ApplicationCommandOption.__name__}` has '
+                        f'already `{APPLICATION_COMMAND_OPTIONS_MAX}` options.'
+                    )
         
         options.append(option)
         return self
@@ -331,13 +357,13 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             +-----------------------+---------------------------------------------------+
             | Keys                  | Values                                            |
             +=======================+===================================================+
-            | description           | `None` or `str`                                   |
+            | description           | `None`, `str`                                     |
             +-----------------------+---------------------------------------------------+
             | allow_by_default      | `bool`                                            |
             +-----------------------+---------------------------------------------------+
             | name                  | `str`                                             |
             +-----------------------+---------------------------------------------------+
-            | options               | `None` or `list` of ``ApplicationCommandOption``  |
+            | options               | `None`, `list` of ``ApplicationCommandOption``    |
             +-----------------------+---------------------------------------------------+
             | target_type           | ``ApplicationCommandTargetType``                  |
             +-----------------------+---------------------------------------------------+
@@ -555,7 +581,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     
     def copy(self):
         """
-        Copies the ``ApplicationCommand`` instance.
+        Copies the ``ApplicationCommand``.
         
         Returns
         -------
@@ -764,12 +790,12 @@ class ApplicationCommandOption:
         
         Mutually exclusive with the ``.choices``. Only applicable for string type parameters.
     
-    channel_types : `None` or `tuple` of `int`
+    channel_types : `None`, `tuple` of `int`
         The accepted channel types by the option.
         
         Only applicable if ``.type`` is set to `ApplicationCommandOptionType.channel`.
     
-    choices : `None` or `list` of ``ApplicationCommandOptionChoice``
+    choices : `None`, `list` of ``ApplicationCommandOptionChoice``
         Choices for `str` and `int` types for the user to pick from.
         
         Mutually exclusive with the ``.autocomplete``.
@@ -790,7 +816,7 @@ class ApplicationCommandOption:
     
     name : `str`
         The name of the application command option. It's length can be in range [1:32].
-    options : `None` or `list` of ``ApplicationCommandOption``
+    options : `None`, `list` of ``ApplicationCommandOption``
         If the command's type is sub-command group type, then this nested option will be the parameters of the
         sub-command. It's length can be in range [0:25]. If would be set as empty list, instead is set as `None`.
     required : `bool`
@@ -804,7 +830,7 @@ class ApplicationCommandOption:
     def __new__(cls, name, description, type_, *, autocomplete=False, channel_types=None, default=False,
             required=False, max_value=None, min_value=None, choices=None, options=None):
         """
-        Creates a new ``ApplicationCommandOption`` instance with the given parameters.
+        Creates a new ``ApplicationCommandOption`` with the given parameters.
         
         Parameters
         ----------
@@ -819,7 +845,7 @@ class ApplicationCommandOption:
             
             Mutually exclusive with the `choices` parameter. Only applicable for string type parameters.
         
-        channel_types : `None` or `iterable` of `int`, Optional (Keyword only)
+        channel_types : `None`, `iterable` of `int`, Optional (Keyword only)
             The accepted channel types by the option.
             
             Only applicable if ``.type`` is set to `ApplicationCommandOptionType.channel`.
@@ -838,18 +864,18 @@ class ApplicationCommandOption:
             
             Only Applicable for integer as `int`, or `as float options as `float`.
             
-        choices : `None` or (`list` or `tuple`) of ``ApplicationCommandOptionChoice``, Optional (Keyword only)
+        choices : `None`, (`list` or `tuple`) of ``ApplicationCommandOptionChoice``, Optional (Keyword only)
             The choices of the command for string or integer types. It's length can be in range [0:25].
             
             Mutually exclusive with the `autocomplete` parameter.
             
-        options : `None` or (`list` or `tuple`) of ``ApplicationCommandOption``, Optional (Keyword only)
+        options : `None`, (`list` or `tuple`) of ``ApplicationCommandOption``, Optional (Keyword only)
             The parameters of the command. It's length can be in range [0:25]. Only applicable for sub command groups.
         
         Raises
         ------
         TypeError
-            - If `type_` was not given neither as `int` nor ``ApplicationCommandOptionType`` instance.
+            - If `type_` was not given neither as `int` nor ``ApplicationCommandOptionType``.
             - If `choices` was given meanwhile `type_` is neither string nor integer option type.
             - If `options` was given meanwhile `type_` is not a sub-command group option type.
             - If a choice's value's type not matched the expected type described `type_`.
@@ -857,83 +883,101 @@ class ApplicationCommandOption:
             - If `max_value` is not the expected type defined by `type_`'s value.
             - If `min_value` is not the expected type defined by `type_`'s value.
         ValueError
-            - If `type_` was given as `int` instance, but it do not matches any of the precreated
+            - If `type_` was given as `int`, but it do not matches any of the precreated
                 ``ApplicationCommandOptionType``-s.
             - If `channel_types` contains an unknown channel type value.
             - If `max_value` is given, but it is not applicable for the given `type_`.
             - If `min_value` is given, but it is not applicable for the given `type_`.
         AssertionError
-            - If `name` was not given as `str` instance.
+            - If `name` was not given as `str`.
             - If `name` length is out of range [1:32].
-            - If `description` was not given as `str` instance.
+            - If `description` was not given as `str`.
             - If `description` length is out of range [1:100].
             - If `options` was not given neither as `None` nor as (`list` or `tuple`) of ``ApplicationCommandOption``
                 instances.
             - If `options`'s length is out of range [0:25].
-            - If `default` was not given as `bool` instance.
-            - If `required` was not given as `bool` instance.
+            - If `default` was not given as `bool`.
+            - If `required` was not given as `bool`.
             - If `choices` was not given neither as `None` nor as (`list` or `tuple`) of
-                ``ApplicationCommandOptionChoice`` instances.
+                ``ApplicationCommandOptionChoice``s.
             - If `choices`'s length is out of range [0:25].
             - If an option is a sub command group option.
             - If `channel_types` is given, but `type_` is not `ApplicationCommandOptionType.channel`.
-            - If `autocomplete` is not `bool` instance.
+            - If `autocomplete` is not `bool`.
             - If both `autocomplete` and `choices` are defined.
             - If `autocomplete` is defined, but the parameters's type is not string.
         """
         if __debug__:
             if not isinstance(name, str):
-                raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
+                raise AssertionError(
+                    f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+                )
             
             name_length = len(name)
-            if name_length < APPLICATION_COMMAND_NAME_LENGTH_MIN or \
-                    name_length > APPLICATION_COMMAND_NAME_LENGTH_MAX:
-                raise AssertionError(f'`name` length can be in range '
+            if (
+                name_length < APPLICATION_COMMAND_NAME_LENGTH_MIN or
+                name_length > APPLICATION_COMMAND_NAME_LENGTH_MAX
+            ):
+                raise AssertionError(
+                    f'`name` length can be in range '
                     f'[{APPLICATION_COMMAND_NAME_LENGTH_MIN}:{APPLICATION_COMMAND_NAME_LENGTH_MAX}], got '
-                    f'{name_length!r}; {name!r}.')
+                    f'{name_length!r}; {name!r}.'
+                )
         
             if not isinstance(description, str):
-                raise AssertionError(f'`description` can be given as `str` instance, got '
-                    f'{description.__class__.__name__}.')
+                raise AssertionError(
+                    f'`description` can be `str`, got {description.__class__.__name__}; {description!r}.'
+                )
             
             description_length = len(description)
-            if description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or \
-                    description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX:
-                raise AssertionError(f'`description` length can be in range '
-                    f'[{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:'
-                    f'{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], got {description_length!r}; '
-                    f'{description!r}.')
+            if (
+                description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or
+                description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX
+            ):
+                raise AssertionError(
+                    f'`description` length can be in range '
+                    f'[{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], '
+                    f'got {description_length!r}; {description!r}.'
+                )
         
         type_ = preconvert_preinstanced_type(type_, 'type_', ApplicationCommandOptionType)
         
         if __debug__:
             if not isinstance(default, bool):
-                raise AssertionError(f'`default` can be given as `bool` instance, got {default.__class__.__name__}.')
+                raise AssertionError(
+                    f'`default` can be `bool`, got {default.__class__.__name__}; {default!r}.'
+                )
             
             if not isinstance(required, bool):
-                raise AssertionError(f'`required` can be given as `bool` instance, got {required.__class__.__name__}.')
+                raise AssertionError(
+                    f'`required` can be `bool`, got {required.__class__.__name__}; {required!r}.'
+                )
         
         if choices is None:
             choices_processed = None
         else:
             if __debug__:
                 if not isinstance(choices, (tuple, list)):
-                    raise AssertionError(f'`choices` can be given as `None` or (`list` or `tuple`) of '
-                        f'`{ApplicationCommandOptionChoice.__name__}`, got {choices.__class__.__name__}.')
+                    raise AssertionError(
+                        f'`choices` can be `None`, (`list` or `tuple`) of '
+                        f'`{ApplicationCommandOptionChoice.__name__}`, got {choices.__class__.__name__}; {choices!r}.'
+                    )
             
             choices_processed = list(choices)
             
             if __debug__:
                 if len(choices_processed) > APPLICATION_COMMAND_CHOICES_MAX:
-                    raise AssertionError(f'`choices` length can be in range '
-                        f'[0:{APPLICATION_COMMAND_CHOICES_MAX}], got {len(choices_processed)!r}; '
-                        f'{choices!r}')
+                    raise AssertionError(
+                        f'`choices` length can be in range '
+                        f'[0:{APPLICATION_COMMAND_CHOICES_MAX}], got {len(choices_processed)!r}; {choices!r}'
+                    )
                 
                 for index, choice in enumerate(choices_processed):
                     if not isinstance(choice, ApplicationCommandOptionChoice):
-                        raise AssertionError(f'`choices` was given either as `list` or `tuple`, but it\'s element '
-                            f'At index {index!r} is not {ApplicationCommandOptionChoice.__name__} instance, but '
-                            f'{choice.__class__.__name__}; got {choices!r}.')
+                        raise AssertionError(
+                            f'`choices[{index}]` is not `{ApplicationCommandOptionChoice.__name__}`, got '
+                            f'{choice.__class__.__name__}; {choice!r}; choices={choices!r}.'
+                        )
             
             if not choices_processed:
                 choices_processed = None
@@ -943,26 +987,34 @@ class ApplicationCommandOption:
         else:
             if __debug__:
                 if not isinstance(options, (tuple, list)):
-                    raise AssertionError(f'`options` can be given as `None` or (`list` or `tuple`) of '
-                        f'`{ApplicationCommandOption.__name__}`, got {options.__class__.__name__}.')
+                    raise AssertionError(
+                        f'`options` can be `None`, (`list` or `tuple`) of `{ApplicationCommandOption.__name__}`, got '
+                        f'{options.__class__.__name__}; {options!r}.'
+                    )
             
             # Copy it
             options_processed = list(options)
             
             if __debug__:
                 if len(options_processed) > APPLICATION_COMMAND_OPTIONS_MAX:
-                    raise AssertionError(f'`options` length can be in range '
-                        f'[0:{APPLICATION_COMMAND_OPTIONS_MAX}], got {len(options_processed)!r}; {options!r}')
+                    raise AssertionError(
+                        f'`options` length can be in range '
+                        f'[0:{APPLICATION_COMMAND_OPTIONS_MAX}], got {len(options_processed)!r}; {options!r}.'
+                    )
                 
                 for index, option in enumerate(options_processed):
                     if not isinstance(option, ApplicationCommandOption):
-                        raise AssertionError(f'`options` was given either as `list` or `tuple`, but it\'s element '
-                            f'At index {index!r} is not {ApplicationCommandOption.__name__} instance, but '
-                            f'{option.__class__.__name__}; got {options!r}.')
+                        raise AssertionError(
+                            f'`options[{index}]` is not `{ApplicationCommandOption.__name__}`, got '
+                            f'{option.__class__.__name__}; {options!r}; options={options}.'
+                        )
                     
                     if option.type is ApplicationCommandOptionType.sub_command_group:
-                        raise AssertionError(f'`options` element {index}\'s type is cub-command group option, but'
-                             f'sub-command groups cannot be added under sub-command groups; got {options!r}.')
+                        raise AssertionError(
+                            f'`options[{index!r}]` element\'s type is cub-command group option, but'
+                            f'sub-command groups cannot be added under sub-command groups; got '
+                            f'{option!r}; options={options!r}.'
+                        )
             
             if not options_processed:
                 options_processed = None
@@ -975,15 +1027,18 @@ class ApplicationCommandOption:
             elif type_ is ApplicationCommandOptionType.float:
                 expected_choice_type = float
             else:
-                raise TypeError(f'`choices` is bound to string, integer and float option type, got '
-                    f'choices={choices!r}, type={type_!r}.')
+                raise TypeError(
+                    f'`choices` can be bound either to string, integer or float option types, got '
+                    f'choices={choices!r}, type={type_!r}.'
+                )
             
             for index, choice in enumerate(choices):
                 if not isinstance(choice.value, expected_choice_type):
-                    raise TypeError(f'`choices` element\'s {index!r} value\'s type is not '
-                        f'`{expected_choice_type.__name__}` as expected from the received command option type: '
-                        f'{type_!r}')
-                pass
+                    raise TypeError(
+                        f'`choices[{index!r}]` is not `{expected_choice_type.__name__}` as expected from the received'
+                        f'command option type, got {choice.__class__.__name__}; {choice!r}; type_={type_!r}; '
+                        f'choices={choices!r}.'
+                    )
         
         if (channel_types is None):
             channel_types_processed = None
@@ -992,8 +1047,10 @@ class ApplicationCommandOption:
             
             iterator = getattr(type(channel_types), '__iter__', None)
             if (iterator is None):
-                raise TypeError(f'`channel_types` is neither `None` nor `iterable`, got '
-                    f'{channel_types.__class__.__anme__}.')
+                raise TypeError(
+                    f'`channel_types` can be `None`, `iterable`, got '
+                    f'{channel_types.__class__.__anme__}; {channel_types!r}.'
+                )
             
             for channel_type in iterator(channel_types):
                 if type(channel_type) is int:
@@ -1001,8 +1058,10 @@ class ApplicationCommandOption:
                 elif isinstance(channel_type, int):
                     channel_type = int(channel_type)
                 else:
-                    raise TypeError(f'`channel_types` may include only `int` instances, got '
-                        f'{channel_type.__class__.__name__}; {channel_type!r}.')
+                    raise TypeError(
+                        f'`channel_types` may include only `int`s, got {channel_type.__class__.__name__}; '
+                        f'{channel_type!r}; channel_types={channel_types!r}.'
+                    )
                 
                 if channel_types_processed is None:
                     channel_types_processed = set()
@@ -1018,51 +1077,71 @@ class ApplicationCommandOption:
         if (max_value is not None):
             if type_ is ApplicationCommandOptionType.integer:
                 if not isinstance(max_value, int):
-                    raise TypeError(f'`max_value` can be `int` type, if `type_` is defined as {type_!r}, got '
-                        f'{max_value.__class__.__name__}; {max_value!r}.')
+                    raise TypeError(
+                        f'`max_value` can be `int`, if `type_` is defined as {type_!r}, got '
+                        f'{max_value.__class__.__name__}; {max_value!r}.'
+                    )
             
             elif type_ is ApplicationCommandOptionType.float:
                 if not isinstance(max_value, float):
-                    raise TypeError(f'`max_value` can be `float` type, if `type_` is defined as {type_!r}, got '
-                        f'{max_value.__class__.__name__}; {max_value!r}.')
+                    raise TypeError(
+                        f'`max_value` can be `float`, if `type_` is defined as {type_!r}, got '
+                        f'{max_value.__class__.__name__}; {max_value!r}.'
+                    )
             
             else:
-                raise ValueError(f'`max_value` is only meaningful if `type` is either '
+                raise ValueError(
+                    f'`max_value` is only meaningful if `type` is either '
                     f'{ApplicationCommandOptionType.integer!r}, or {ApplicationCommandOptionType.float!r}, got '
-                    f'type_={type!r}; max_value={max_value!r}.'
+                    f'type_={type_!r}; max_value={max_value!r}.'
                 )
         
         if (min_value is not None):
             if type_ is ApplicationCommandOptionType.integer:
                 if not isinstance(min_value, int):
-                    raise TypeError(f'`min_value` can be `int` type, if `type_` is defined as {type_!r}, got '
-                        f'{min_value.__class__.__name__}; {min_value!r}.')
+                    raise TypeError(
+                        f'`min_value` can be `int` type, if `type_` is defined as {type_!r}, got '
+                        f'{min_value.__class__.__name__}; {min_value!r}.'
+                    )
             
             elif type_ is ApplicationCommandOptionType.float:
                 if not isinstance(min_value, float):
-                    raise TypeError(f'`min_value` can be `float` type, if `type_` is defined as {type_!r}, got '
-                        f'{min_value.__class__.__name__}; {min_value!r}.')
+                    raise TypeError(
+                        f'`min_value` can be `float` type, if `type_` is defined as {type_!r}, got '
+                        f'{min_value.__class__.__name__}; {min_value!r}.'
+                    )
             
             else:
-                raise ValueError(f'`min_value` is only meaningful if `type` is either '
+                raise ValueError(
+                    f'`min_value` is only meaningful if `type` is either '
                     f'{ApplicationCommandOptionType.integer!r}, or {ApplicationCommandOptionType.float!r}, got '
-                    f'type_={type!r}; min_value={min_value!r}.'
+                    f'type_={type_!r}; min_value={min_value!r}.'
                 )
         
         if __debug__:
             if (channel_types_processed is not None) and (type_ is not ApplicationCommandOptionType.channel):
-                raise AssertionError(f'`channel_types` is only meaningful if `type_` is '
-                    f'`{ApplicationCommandOptionType.__name__}.channel`.')
-        
+                raise AssertionError(
+                    f'`channel_types` is only meaningful if `type_` is '
+                    f'`{ApplicationCommandOptionType.__name__}.channel`, got '
+                    f'type_={type_!r}; channel_types={channel_types_processed!r}.'
+                )
+            
             if not isinstance(autocomplete, bool):
-                raise AssertionError(f'`autocomplete` can be `bool` instance, got {autocomplete.__class__.__name__}.')
+                raise AssertionError(
+                    f'`autocomplete` can be `bool`, got {autocomplete.__class__.__name__}; {autocomplete!r}.'
+                )
             
             if autocomplete:
                 if (choices_processed is not None):
-                    raise AssertionError(f'`autocomplete` and `choices` parameters are mutually exclusive.')
+                    raise AssertionError(
+                        f'`autocomplete` and `choices` parameters are mutually exclusive, got '
+                        f'autocomplete={autocomplete!r}; choices={choices_processed!r}.'
+                    )
                 
                 if (type_ is not ApplicationCommandOptionType.string):
-                    raise AssertionError(f'`autocomplete` is only available for string option type, got {type_!r}')
+                    raise AssertionError(
+                        f'`autocomplete` is only available for string option type, got type={type_!r}.'
+                    )
         
         self = object.__new__(cls)
         self.name = name
@@ -1097,22 +1176,28 @@ class ApplicationCommandOption:
         TypeError
             If the source application command's type is not a sub-command group type.
         AssertionError
-            - If `option` is not ``ApplicationCommandOption`` instance.
+            - If `option` is not ``ApplicationCommandOption``.
             - If the ``ApplicationCommandOption`` has already `25` options.
             - If `option` is a sub command group option.
         """
         if self.type is not ApplicationCommandOptionType.sub_command_group:
-            raise TypeError(f'`option` can be added only if the command option\s type is sub command option, '
-                f'got option={option!r}, self={self!r}.')
+            raise TypeError(
+                f'`option` can be added only if the command option\s type is sub command option, '
+                f'got option={option!r}, self={self!r}.'
+            )
         
         if __debug__:
             if not isinstance(option, ApplicationCommandOption):
-                raise AssertionError(f'`option` can be given as {ApplicationCommandOption.__name__} instance, got '
-                    f'{option.__class__.__name__}.')
+                raise AssertionError(
+                    f'`option` can be `{ApplicationCommandOption.__name__}`, got '
+                    f'{option.__class__.__name__}; {option!r}.'
+                )
         
             if option.type is ApplicationCommandOptionType.sub_command_group:
-                raise AssertionError(f'`option`\'s type is sub-command group option, but sub-command groups cannot be '
-                    f'added under sub-command groups; got {option!r}.')
+                raise AssertionError(
+                    f'`option`\'s type is sub-command group option, but sub-command groups cannot be '
+                    f'added under sub-command groups; got {option!r}; self={self!r}.'
+                )
         
         options = self.options
         if options is None:
@@ -1120,8 +1205,10 @@ class ApplicationCommandOption:
         else:
             if __debug__:
                 if len(options) >= APPLICATION_COMMAND_OPTIONS_MAX:
-                    raise AssertionError(f'`option` cannot be added if the {ApplicationCommandOption.__name__} has '
-                        f'already `{APPLICATION_COMMAND_OPTIONS_MAX}` options.')
+                    raise AssertionError(
+                        f'`option` cannot be added if the `{ApplicationCommandOption.__name__}` has '
+                        f'already `{APPLICATION_COMMAND_OPTIONS_MAX}` options, got {option!r}.'
+                    )
         
         options.append(option)
         return self
@@ -1154,14 +1241,18 @@ class ApplicationCommandOption:
             pass
         elif isinstance(choice, tuple):
             if len(choice) != 2:
-                raise TypeError(f'If `choice` is given as `tuple` it\'s length should be `2` representing a '
-                    f'{ApplicationCommandOptionChoice.__name__}\s `.name` and `.value`.')
+                raise TypeError(
+                    f'`choice` `tuple`\'s length should be `2` representing a '
+                    f'`{ApplicationCommandOptionChoice.__name__}`\'s `.name` and `.value`, got {choice!r}.'
+                )
             
             choice = ApplicationCommandOptionChoice(*choice)
         else:
-            raise TypeError(f'`choice` can be given as {ApplicationCommandOptionChoice.__name__} instance or a `tuple` '
-                f'representing one with i\'s respective `.name` and `.value` as it\'s elements, got '
-                f'{choice.__class__.__name__}.')
+            raise TypeError(
+                f'`choice` can be `{ApplicationCommandOptionChoice.__name__}`, '
+                f'`tuple` (`str`, (`str`, `int`, `float`)), got '
+                f'{choice.__class__.__name__}; {choice!r}.'
+            )
         
         type_ = self.type
         if type_ is ApplicationCommandOptionType.string:
@@ -1171,12 +1262,16 @@ class ApplicationCommandOption:
         elif type_ is ApplicationCommandOptionType.float:
             expected_choice_type = float
         else:
-            raise TypeError(f'`choice` is bound to string, integer and float choice type, got choice={choice!r}, '
-                f'self={self!r}.')
+            raise TypeError(
+                f'`choice` is bound to string, integer and float application option types, '
+                f'got choice={choice!r}, self={self!r}.'
+            )
         
         if not isinstance(choice.value, expected_choice_type):
-            raise TypeError(f'`choice` value\'s type is not `{expected_choice_type.__name__}` as expected from the '
-                f'received command choice type: {type_!r}')
+            raise TypeError(
+                f'`choice` value\'s type is not `{expected_choice_type.__name__}` as expected, got '
+                f'choice={choice!r}, self={self!r}.'
+            )
         
         choices = self.choices
         if choices is None:
@@ -1184,8 +1279,10 @@ class ApplicationCommandOption:
         else:
             if __debug__:
                 if len(choices) >= APPLICATION_COMMAND_CHOICES_MAX:
-                    raise AssertionError(f'`choice` cannot be added if the {ApplicationCommandOption.__name__} has '
-                        f'already `{APPLICATION_COMMAND_CHOICES_MAX}` choices.')
+                    raise AssertionError(
+                        f'`choice` cannot be added if the {ApplicationCommandOption.__name__} has '
+                        f'already `{APPLICATION_COMMAND_CHOICES_MAX}` choices.'
+                    )
         
         choices.append(choice)
         return self
@@ -1194,7 +1291,7 @@ class ApplicationCommandOption:
     @classmethod
     def from_data(cls, data):
         """
-        Creates a new ``ApplicationCommandOption`` instance from the received data from Discord.
+        Creates a new ``ApplicationCommandOption`` from the received data from Discord.
         
         Parameters
         ----------
@@ -1502,7 +1599,7 @@ class ApplicationCommandOptionChoice:
     
     def __new__(cls, name, value):
         """
-        Creates a new ``ApplicationCommandOptionChoice`` instance with the given parameters.
+        Creates a new ``ApplicationCommandOptionChoice`` with the given parameters.
         
         Parameters
         ----------
@@ -1514,46 +1611,60 @@ class ApplicationCommandOptionChoice:
         Raises
         ------
         AssertionError
-            - If `name` is not `str` instance.
+            - If `name` is not `str`.
             - If `name`'s length is out of range [1:100].
-            - If `value` is neither `str`, `int` nor `float` instance.
+            - If `value` is neither `str`, `int` nor `float`.
             - If `value` is `str` and it's length is out of range [0:100].
         """
         if __debug__:
             if not isinstance(name, str):
-                raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
+                raise AssertionError(
+                    f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+                )
             
             name_length = len(name)
-            if name_length < APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN or \
-                    name_length > APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX:
-                raise AssertionError(f'`name` length can be in range '
+            if (
+                name_length < APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN or
+                name_length > APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX
+            ):
+                raise AssertionError(
+                    f'`name` length can be in range '
                     f'[{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN}:{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX}], '
-                    f'got {name_length!r}; {name!r}.')
+                    f'got {name_length!r}; {name!r}.'
+                )
             
             if isinstance(value, int):
                 pass
+            
             elif isinstance(value, str):
                 value_length = len(value)
-                if value_length < APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN or \
-                        value_length > APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MAX:
-                    raise AssertionError(f'`value` length` can be in range '
+                if (
+                    value_length < APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN or
+                    value_length > APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MAX
+                ):
+                    raise AssertionError(
+                        f'`value` length` can be in range '
                         f'[{APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN}:{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX}]'
-                        f'got {value_length!r}; {value!r}.')
+                        f'got {value_length!r}; {value!r}.'
+                    )
+            
             elif isinstance(value, float):
                 pass
+            
             else:
-                raise AssertionError(f'`value` type can be either `str`, `int` or `float`, '
-                    f'got {value.__class__.__name__}.')
+                raise AssertionError(f'`value` type can be either `str`, `int`, `float`, '
+                    f'got {value.__class__.__name__}; {value!r}.')
         
         self = object.__new__(cls)
         self.name = name
         self.value = value
         return self
     
+    
     @classmethod
     def from_data(cls, data):
         """
-        Creates a new ``ApplicationCommandOptionChoice`` instance from the received data.
+        Creates a new ``ApplicationCommandOptionChoice`` from the received data.
         
         Parameters
         ----------
@@ -1622,27 +1733,27 @@ class ApplicationCommandPermission:
         The application command's application's identifier.
     guild_id : `int`
         The identifier of the respective guild.
-    permission_overwrites : `None` or `list` of ``ApplicationCommandPermissionOverwrite``
+    permission_overwrites : `None`, `list` of ``ApplicationCommandPermissionOverwrite``
         The application command permissions overwrites relating to the respective application command in the guild.
     """
     __slots__ = ('application_command_id', 'application_id', 'guild_id', 'permission_overwrites')
     
     def __new__(cls, application_command, *, permission_overwrites=None, overwrites=None):
         """
-        Creates a new ``ApplicationCommandPermission`` instance from the given parameters.
+        Creates a new ``ApplicationCommandPermission`` from the given parameters.
         
         Parameters
         ----------
         application_command : ``ApplicationCommand`` or `int`
             The application command's identifier.
-        permission_overwrites : `None` or (`list`, `set`, `tuple`) of ``ApplicationCommandPermissionOverwrite`
+        permission_overwrites : `None`, (`list`, `set`, `tuple`) of ``ApplicationCommandPermissionOverwrite`
                 , Optional (Keyword only)
             Overwrites for the application command.
         
         Raises
         ------
         TypeError
-            - If `application_command` was not given neither as ``ApplicationCommand`` nor as `int` instance.
+            - If `application_command` was not given neither as ``ApplicationCommand`` nor as `int`.
         AssertionError
             - If `permission_overwrites` was not give neither as `None`, `list`, `set` or `tuple`.
             - If `permission_overwrites` contains a non ``ApplicationCommandPermissionOverwrite`` element.
@@ -1653,35 +1764,45 @@ class ApplicationCommandPermission:
         else:
             application_command_id = maybe_snowflake(application_command)
             if application_command_id is None:
-                raise TypeError(f'`application_command` can be given as `{ApplicationCommand.__name__}`, or as `int` '
-                    f'instance, got {application_command.__class__.__name__}.')
+                raise TypeError(
+                    f'`application_command` can be `{ApplicationCommand.__name__}`, `int` , got '
+                    f'{application_command.__class__.__name__}; {application_command!r}.'
+                )
         
         if permission_overwrites is None:
             permission_overwrites_processed = None
+        
         else:
             if __debug__:
                 if not isinstance(permission_overwrites, (list, set, tuple)):
-                    raise AssertionError(f'`permission_overwrites` can be given either as `None` or as `list`, '
-                        f'`set`, `tuple`instance, got {permission_overwrites.__class__.__name__}.')
+                    raise AssertionError(
+                        f'`permission_overwrites` can be `None`, `list`, `set`, `tuple`, got '
+                        f'{permission_overwrites.__class__.__name__}; {permission_overwrites!r}.'
+                    )
             
             permission_overwrites_processed = []
             
             for permission_overwrite in permission_overwrites:
                 if __debug__:
                     if not isinstance(permission_overwrite, ApplicationCommandPermissionOverwrite):
-                        raise AssertionError(f'`permission_overwrites` contains a non '
-                            f'{ApplicationCommandPermissionOverwrite.__name__} element, got '
-                            f'{overwrite.__class__.__name__}.')
+                        raise AssertionError(
+                            f'`permission_overwrites` contains a non '
+                            f'`{ApplicationCommandPermissionOverwrite.__name__}` element, got '
+                            f'{permission_overwrite.__class__.__name__}; {permission_overwrite!r}; '
+                            f'permission_overwrites={permission_overwrites!r}.'
+                        )
                 
                 permission_overwrites_processed.append(permission_overwrite)
                 
             
             if permission_overwrites_processed:
                 if __debug__:
-                    if len(overwrites) >= APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX:
-                        raise AssertionError(f'`permission_overwrites` can contain up to '
-                            f'`{APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX}` permission_overwrites, which is passed, '
-                            f'got {len(permission_overwrites)!r}.')
+                    if len(permission_overwrites_processed) >= APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX:
+                        raise AssertionError(
+                            f'`permission_overwrites` can have up to '
+                            f'`{APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX}` elements, which is already reached, '
+                            f'got {permission_overwrites_processed!r}.'
+                        )
             else:
                 permission_overwrites_processed = None
         
@@ -1696,7 +1817,7 @@ class ApplicationCommandPermission:
     @classmethod
     def from_data(cls, data):
         """
-        Creates a new ``ApplicationCommandPermission`` instance.
+        Creates a new ``ApplicationCommandPermission``.
         
         Parameters
         ----------
@@ -1756,7 +1877,7 @@ class ApplicationCommandPermission:
         repr_parts = ['<', self.__class__.__name__, ' application_command_id=', repr(self.application_command_id),
             ' guild_id=', repr(self.guild_id), ', permission overwrite count=']
         
-        permission_overwrites = self.overwrites
+        permission_overwrites = self.permission_overwrites
         if permission_overwrites is None:
             permission_overwrite_count = '0'
         else:
@@ -1766,6 +1887,7 @@ class ApplicationCommandPermission:
         repr_parts.append('>')
         
         return ''.join(repr_parts)
+    
     
     def __eq__(self, other):
         """Returns whether the two application command permission's are equal."""
@@ -1784,6 +1906,7 @@ class ApplicationCommandPermission:
         
         return True
     
+    
     def __hash__(self):
         """Returns the application command overwrite's hash value."""
         hash_ = self.application_command_id ^ self.guild_id
@@ -1793,6 +1916,7 @@ class ApplicationCommandPermission:
                 hash_ ^= hash(permission_overwrite)
         
         return hash_
+    
     
     def copy(self):
         """
@@ -1828,14 +1952,15 @@ class ApplicationCommandPermission:
         Raises
         ------
         AssertionError
-            - If `overwrite` is not ``ApplicationCommandPermissionOverwrite`` instance.
+            - If `overwrite` is not ``ApplicationCommandPermissionOverwrite``.
             - If the application command permission has `10` overwrites already.
         """
         if __debug__:
             if not isinstance(permission_overwrite, ApplicationCommandPermissionOverwrite):
-                raise AssertionError(f'`permission_overwrite` can be given as '
-                    f'{ApplicationCommandPermissionOverwrite.__name__}  instance, got '
-                    f'{permission_overwrite.__class__.__name__}.')
+                raise AssertionError(
+                    f'`permission_overwrite` can be {ApplicationCommandPermissionOverwrite.__name__} , got '
+                    f'{permission_overwrite.__class__.__name__}; {permission_overwrite!r}.'
+                )
         
         permission_overwrites = self.permission_overwrites
         if permission_overwrites is None:
@@ -1843,9 +1968,11 @@ class ApplicationCommandPermission:
         else:
             if __debug__:
                 if len(permission_overwrites) >= APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX:
-                    raise AssertionError(f'`permission_overwrites` can contain up to '
-                        f'`{APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX}` permission_overwrites, which is already '
-                        f'reached.')
+                    raise AssertionError(
+                        f'`permission_overwrites` can have up to '
+                        f'`{APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX}` elements, which is already reached, '
+                        f'got {permission_overwrite!r}.'
+                    )
         
         permission_overwrites.append(permission_overwrite)
 
@@ -1867,7 +1994,7 @@ class ApplicationCommandPermissionOverwrite:
     
     def __new__(cls, target, allow):
         """
-        Creates a new ``ApplicationCommandPermission`` instance with the given parameters.
+        Creates a new ``ApplicationCommandPermission`` with the given parameters.
         
         Parameters
         ----------
@@ -1878,10 +2005,10 @@ class ApplicationCommandPermissionOverwrite:
             The expected type & value might be pretty confusing, but the target was it to allow relaxing creation.
             To avoid confusing, here is a list of the expected structures:
             
-            - ``Role`` instance
-            - ``ClientUserBase`` instance
+            - ``Role``
+            - ``ClientUserBase``
             - `tuple` (``Role`` type, `int`)
-            - `tuple` (``ClientUserBase`` instance, `int`)
+            - `tuple` (``ClientUserBase``, `int`)
             - `tuple` (`'Role'`, `int`)
             - `tuple` (`'role'`, `int`)
             - `tuple` (`'User'`, `int`)
@@ -1895,7 +2022,7 @@ class ApplicationCommandPermissionOverwrite:
         TypeError
             If `target` was not given as any of the expected types & values.
         AssertionError
-            If `allow` was not given as `bool` instance.
+            If `allow` was not given as `bool`.
         """
         # GOTO
         while True:
@@ -1951,14 +2078,17 @@ class ApplicationCommandPermissionOverwrite:
             break
         
         if target_lookup_failed:
-            raise TypeError(f'`target` can be given either as {Role.__name__}, {ClientUserBase.__name__}, '
-                f'or as a `tuple` (({Role.__name__}, {User.__name__}, {UserBase.__name__} type or `str` '
-                f'(`\'Role\'`, `\'role\'`, `\'User\'`, `\'user\'`)), `int`), got {target.__class__.__name__}: '
-                f'{target!r}.')
+            raise TypeError(
+                f'`target` can be `{Role.__name__}`, `{ClientUserBase.__name__}`, `tuple` ((`{Role.__name__}`, '
+                f'`{ClientUserBase.__name__}`, `str` (`\'Role\'`, `\'role\'`, `\'User\'`, `\'user\'`)), `int`), '
+                f'got {target.__class__.__name__}: {target!r}.'
+            )
         
         if __debug__:
             if not isinstance(allow, bool):
-                raise AssertionError(f'`allow` can be given as `bool` instance, got {allow.__class__.__name__}.')
+                raise AssertionError(
+                    f'`allow` can be `bool`, got {allow.__class__.__name__}; {allow!r}.'
+                )
         
         self = object.__new__(cls)
         self.allow = allow
@@ -1969,7 +2099,7 @@ class ApplicationCommandPermissionOverwrite:
     @classmethod
     def from_data(cls, data):
         """
-        Creates a new ``ApplicationCommandPermissionOverwrite`` instance from the received data.
+        Creates a new ``ApplicationCommandPermissionOverwrite`` from the received data.
         
         Parameters
         ----------

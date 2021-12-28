@@ -590,7 +590,7 @@ class Guild(DiscordEntity, immortal=True):
                 processable.append(('boost_progress_bar_enabled', boost_progress_bar_enabled))
             
             if kwargs:
-                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+                raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
             
         else:
             processable = None

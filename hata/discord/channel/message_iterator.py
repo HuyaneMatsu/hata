@@ -60,11 +60,14 @@ class MessageIterator:
         """
         if __debug__:
             if not isinstance(chunk_size, int):
-                raise AssertionError(f'`chunk_size` can be given as `int` instance, got '
-                    f'{chunk_size.__class__.__name__}.')
+                raise AssertionError(
+                    f'`chunk_size` can be given as `int` instance, got {chunk_size.__class__.__name__}; {chunk_size!r}.'
+                )
             
             if chunk_size < 1:
-                raise AssertionError(f'`chunk_size` is out from the expected [0:] range, got {chunk_size!r}.')
+                raise AssertionError(
+                    f'`chunk_size` is out from the expected [0:] range, got {chunk_size!r}.'
+                )
         
         if chunk_size > 99:
             chunk_size = 99
@@ -74,8 +77,10 @@ class MessageIterator:
         else:
             channel_id = maybe_snowflake(channel)
             if channel_id is None:
-                raise TypeError(f'`channel` can be given as `{ChannelTextBase.__name__}` instance, got'
-                    f'{channel.__class__.__name__}.')
+                raise TypeError(
+                    f'`channel` can be given as `{ChannelTextBase.__name__}` instance, got '
+                    f'{channel.__class__.__name__}; {channel!r}.'
+                )
             
             channel = CHANNELS.get(channel_id, None)
             
@@ -84,12 +89,12 @@ class MessageIterator:
                     messages = await client.message_get_chunk_from_zero(channel_id, 100)
                 except BaseException as err:
                     if isinstance(err, DiscordException) and err.code in (
-                            ERROR_CODES.unknown_message, # message deleted
-                            ERROR_CODES.unknown_channel, # message's channel deleted
-                            ERROR_CODES.missing_access, # client removed
-                            ERROR_CODES.missing_permissions, # permissions changed meanwhile
-                            ERROR_CODES.cannot_message_user, # user has dm-s disallowed
-                                ):
+                        ERROR_CODES.unknown_message, # message deleted
+                        ERROR_CODES.unknown_channel, # message's channel deleted
+                        ERROR_CODES.missing_access, # client removed
+                        ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                        ERROR_CODES.cannot_message_user, # user has dm-s disallowed
+                    ):
                         pass
                     
                     else:

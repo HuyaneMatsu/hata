@@ -37,7 +37,9 @@ def _check_name_should_break(name):
         return False
         
     if type(name) is not str:
-        raise TypeError(f'`name` should be `None` or type `str`, got `{name.__class__.__name__}`.')
+        raise TypeError(
+            f'`name` can be `None`, `str`, got {name.__class__.__name__}; {name!r}.'
+        )
         
     if name:
         return True
@@ -74,7 +76,9 @@ def check_name(func, name):
         - If both `name` and `func` are given as `None`.
     """
     if None is func is name:
-        raise TypeError(f'Both `func` and `name` are given as `None`')
+        raise TypeError(
+            f'Both `func` and `name` parameters are `None`'
+        )
     
     while True:
         if _check_name_should_break(name):
@@ -97,7 +101,9 @@ def check_name(func, name):
             if _check_name_should_break(name):
                 break
         
-        raise TypeError(f'Meta-classes are not allowed, got {func!r}.')
+        raise TypeError(
+            f'Meta-classes are not allowed, got {func!r}.'
+        )
     
     if not name.islower():
         name = name.lower()
@@ -153,8 +159,10 @@ def check_parameter_count_and_convert(func, expected, *, name='event', can_be_as
     if analyzer.is_async() or (analyzer.is_async_generator() if can_be_async_generator else False):
         min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
         if min_ > expected:
-            raise TypeError(f'`{name}` should accept `{expected!r}` parameters, meanwhile the given callable expects '
-                f'at least `{min_!r}`, got `{func!r}`.')
+            raise TypeError(
+                f'`{name}` should accept `{expected!r}` parameters, meanwhile the given callable expects '
+                f'at least `{min_!r}`, got {func!r}.'
+            )
         
         if min_ == expected:
             return func
@@ -166,19 +174,24 @@ def check_parameter_count_and_convert(func, expected, *, name='event', can_be_as
         if analyzer.accepts_args():
             return func
         
-        raise TypeError(f'`{name}` should accept `{expected}` parameters, meanwhile the given callable expects up to '
-            f'`{max_!r}`, got `{func!r}`.')
+        raise TypeError(
+            f'`{name}` should accept `{expected}` parameters, meanwhile the given callable expects up to '
+            f'`{max_!r}`, got {func!r}.'
+        )
     
-    if analyzer.can_instance_to_async_callable() or \
-            (analyzer.can_instance_to_async_generator() if can_be_async_generator else False):
-        
+    if (
+        analyzer.can_instance_to_async_callable() or
+        (analyzer.can_instance_to_async_generator() if can_be_async_generator else False)
+    ):
         sub_analyzer = CallableAnalyzer(func.__call__, as_method=True)
         if sub_analyzer.is_async():
             min_, max_ = sub_analyzer.get_non_reserved_positional_parameter_range()
             
             if min_ > expected:
-                raise TypeError(f'A `{name}` should accept `{expected!r}` parameters, meanwhile the given callable '
-                    f'after instancing expects at least `{min_!r}`, got `{func!r}`.')
+                raise TypeError(
+                    f'`{name}` should accept `{expected!r}` parameters, meanwhile the given callable '
+                    f'after instancing expects at least `{min_!r}`, got {func!r}.'
+                )
             
             if min_ == expected:
                 func = analyzer.instance()
@@ -193,8 +206,10 @@ def check_parameter_count_and_convert(func, expected, *, name='event', can_be_as
                 func = analyzer.instance()
                 return func
             
-            raise TypeError(f'A `{name}` should accept `{expected}` parameters, meanwhile the given callable after '
-                f'instancing expects up to `{max_!r}`, got `{func!r}`.')
+            raise TypeError(
+                f'`{name}` should accept `{expected}` parameters, meanwhile the given callable after '
+                f'instancing expects up to {max_!r}, got `{func!r}`.'
+            )
             
             func = analyzer.instance()
             return func
@@ -244,8 +259,10 @@ def compare_converted(converted, non_converted):
         if hasattr(non_converted, '__call__'):
             return (type(converted) is non_converted)
     
-    #meow?
-    raise TypeError(f'Expected function, method or a callable object, got {non_converted!r}')
+    # meow?
+    raise TypeError(
+        f'Expected function, method or a callable object, got {non_converted!r}'
+    )
 
 
 def _convert_unsafe_event_iterable(iterable, type_=None):
@@ -289,27 +306,32 @@ def _convert_unsafe_event_iterable(iterable, type_=None):
         
         else:
             if isinstance(element, tuple):
-                element_len = len(element)
-                if element_len > 3 or element_len == 0:
-                    raise ValueError(f'Expected `tuple` with length 1 or 2, got `{element!r}`.')
+                element_length = len(element)
+                if element_length > 3 or element_length == 0:
+                    raise ValueError(
+                        f'Expected `tuple` with length 1 or 2, got {element_length!r}; {element!r}.'
+                    )
                 
                 func = element[0]
-                if element_len == 1:
+                if element_length == 1:
                     args = None
                     kwargs = None
                 else:
                     args = element[1]
                     if (args is not None) and not isinstance(args, tuple):
-                        raise ValueError(f'Expected `None` or `tuple` instance at index 1 at element: `{element!r}`')
+                        raise ValueError(
+                            f'Expected `None`, `tuple` at index 1 of an element, got {element!r}.'
+                        )
                     
-                    if element_len == 2:
+                    if element_length == 2:
                         kwargs = None
                     else:
                         kwargs = element[2]
                         if (kwargs is not None):
                             if (type(kwargs) is not dict):
-                                raise ValueError(f'Expected `None` or `dict` instance at index 2 at element: '
-                                    f'`{element!r}`')
+                                raise ValueError(
+                                    f'Expected `None`, `dict` at index 2 of an element: got {element!r}.'
+                                )
                             
                             if not kwargs:
                                 kwargs = None
@@ -356,7 +378,9 @@ def create_event_from_class(constructor, klass, parameter_names, name_name, even
         Any occurred exception.
     """
     if not isinstance(klass, type):
-        raise TypeError(f'Expected `type` instance, got {klass.__class__.__name__}.')
+        raise TypeError(
+            f'`klass` can be `type`, got {klass.__class__.__name__}; {klass!r}.'
+        )
     
     parameters_by_name = {}
     for parameter_name in parameter_names:
@@ -417,9 +441,11 @@ class _EventHandlerManager(RichAttributeErrorBaseType):
         """
         self.parent = parent
     
+    
     def __repr__(self):
         """Returns the representation of the event handler manager."""
         return f'<{self.__class__.__name__} of {self.parent!r}>'
+    
     
     def __call__(self, func=..., *args, **kwargs):
         """
@@ -447,6 +473,7 @@ class _EventHandlerManager(RichAttributeErrorBaseType):
         func = self.parent.create_event(func, *args, **kwargs)
         return func
     
+    
     def from_class(self, klass):
         """
         Allows the event handler manager to be able to capture a class and create add it to the parent event handler
@@ -469,7 +496,9 @@ class _EventHandlerManager(RichAttributeErrorBaseType):
         """
         from_class_constructor = getattr(type(self.parent), 'create_event_from_class', None)
         if (from_class_constructor is None):
-            raise TypeError(f'`.from_class` is not supported by `{self.parent!r}`.')
+            raise TypeError(
+                f'`.from_class` is not supported by {self.parent!r}.'
+            )
         
         return from_class_constructor(self.parent, klass)
     
@@ -527,7 +556,9 @@ class _EventHandlerManager(RichAttributeErrorBaseType):
                 parent = self.parent
                 supported_types = getattr(parent, 'SUPPORTED_TYPES', None)
                 if (supported_types is None) or (type_ not in supported_types):
-                    raise TypeError(f'`{parent!r}` does not supports elements of type `{type_!r}`.')
+                    raise TypeError(
+                        f'`{parent!r}` does not support elements of type {type_!r}; got {iterable!r}.'
+                    )
                 
                 for element in iterable:
                     parent.create_event(element)
@@ -550,6 +581,7 @@ class _EventHandlerManager(RichAttributeErrorBaseType):
                     parent.create_event(func, *args)
                 else:
                     parent.create_event(func, *args, **kwargs)
+    
     
     def unextend(self, iterable):
         """
@@ -574,7 +606,9 @@ class _EventHandlerManager(RichAttributeErrorBaseType):
                 parent = self.parent
                 supported_types = getattr(parent, 'SUPPORTED_TYPES', None)
                 if (supported_types is None) or (type_ not in supported_types):
-                    raise TypeError(f'`{parent!r}` does not supports elements of type `{type_!r}`.')
+                    raise TypeError(
+                        f'`{parent!r}` does not support elements of type {type_!r}; got {iterable!r}.'
+                    )
                 
                 collected = []
                 for element in iterable:
@@ -585,6 +619,7 @@ class _EventHandlerManager(RichAttributeErrorBaseType):
 
                 if collected:
                     raise ValueError('\n'.join(collected)) from None
+                
                 return
         else:
             iterable = _convert_unsafe_event_iterable(iterable)
@@ -718,6 +753,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         self._getter = getter
         self._from_class_constructor = from_class_constructor
     
+    
     def __call__(self, func=..., *args, **kwargs):
         """
         Adds the given `func` to all of the represented client's respective event handler managers.
@@ -781,7 +817,9 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         """
         from_class_constructor = self._from_class_constructor
         if from_class_constructor is None:
-            raise TypeError(f'`.from_class` is not supported by `{self.parent!r}`.')
+            raise TypeError(
+                f'`.from_class` is not supported by {self.parent!r}.'
+            )
         
         handlers = self._getter(self)
         count = len(handlers)
@@ -791,9 +829,13 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         routed_maybe = from_class_constructor(klass)
         if isinstance(routed_maybe, Router):
             if len(routed_maybe) != count:
-                raise ValueError(f'The given class is routed to `{len(routed_maybe)}`, meanwhile expected to be routed '
-                    f'to `{count}` times, got {klass!r}.')
+                raise ValueError(
+                    f'The given class is routed to `{len(routed_maybe)}`, meanwhile expected to be routed '
+                    f'to `{count}` times, got {klass!r}.'
+                )
+            
             routed = routed_maybe
+        
         else:
             copy_method = getattr(type(routed_maybe), 'copy', None)
             if copy_method is None:
@@ -805,6 +847,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
             handler.create_event(event)
         
         return routed
+    
     
     def remove(self, func, *args, **kwargs):
         """
@@ -827,8 +870,10 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         
         if isinstance(func, Router):
             if len(func) != count:
-                raise ValueError(f'The given `func` is routed `{len(func)}` times, meanwhile expected to be routed '
-                    f'to `{count}` times, got {func!r}.')
+                raise ValueError(
+                    f'The given `func` is routed `{len(func)}` times, meanwhile expected to be routed '
+                    f'to `{count}` times, got {func!r}.'
+                )
             
             for func, handler in zip(func, handlers):
                 handler.delete_event(func, *args, **kwargs)
@@ -836,6 +881,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         else:
             for handler in handlers:
                 handler.delete_event(func, *args, **kwargs)
+    
     
     def extend(self, iterable):
         """
@@ -864,13 +910,17 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
                 parent = self.parent
                 supported_types = getattr(handlers[0], 'SUPPORTED_TYPES', None)
                 if (supported_types is None) or (type_ not in supported_types):
-                    raise TypeError(f'`{parent!r}` does not supports elements of type `{type_!r}`.')
+                    raise TypeError(
+                        f'`{parent!r}` does not support elements of type {type_!r}; got {iterable!r}.'
+                    )
                 
                 for element in iterable:
                     if isinstance(element, Router):
                         if len(element) != count:
-                            raise ValueError(f'The given `func` is routed `{len(element)}` times, meanwhile expected to be routed '
-                                f'to `{count}` times, got {element!r}.')
+                            raise ValueError(
+                                f'The given `func` is routed `{len(element)}` times, meanwhile expected to be routed '
+                                f'to `{count}` times, got {element!r}.'
+                            )
                         
                         for func, handler in zip(element, handlers):
                             handler.create_event(func, None)
@@ -893,6 +943,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
             
             for handler, func_, args, kwargs in zip(handlers, routed_func, routed_args, routed_kwargs):
                 handler.create_event(func_, *args, **kwargs)
+    
     
     def unextend(self, iterable):
         """
@@ -923,14 +974,18 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
                 parent = self.parent
                 supported_types = getattr(handlers[0], 'SUPPORTED_TYPES', None)
                 if (supported_types is None) or (type_ not in supported_types):
-                    raise TypeError(f'`{parent!r}` does not supports elements of type `{type_!r}`.')
+                    raise TypeError(
+                        f'`{parent!r}` does not support elements of type {type_!r}; got {iterable!r}.'
+                    )
                 
                 collected = []
                 for element in iterable:
                     if isinstance(element, Router):
                         if len(element) != count:
-                            collected.append(f'The given `func` is routed `{len(element)}` times, meanwhile expected '
-                                f'to be routed to `{count}` times, got {element!r}.')
+                            collected.append(
+                                f'The given `func` is routed `{len(element)}` times, meanwhile expected '
+                                f'to be routed to `{count}` times, got {element!r}.'
+                            )
                             continue
                         
                         for func, handler in zip(element, handlers):
@@ -947,6 +1002,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
                 
                 if collected:
                     raise ValueError('\n'.join(collected)) from None
+            
                 return
         else:
             iterable = _convert_unsafe_event_iterable(iterable)
@@ -980,8 +1036,13 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
             raise ValueError('\n'.join(collected)) from None
     
     def __repr__(self):
-        return f'<{self.__class__.__name__} parent={self.parent!r}, getter={self._getter!r}, from_class_constructor=' \
-               f'{self._from_class_constructor!r}>'
+        return (
+            f'<{self.__class__.__name__} '
+            f'parent={self.parent!r}, '
+            f'getter={self._getter!r}, '
+            f'from_class_constructor={self._from_class_constructor!r}'
+            f'>'
+        )
 
 class EventListElement:
     """
@@ -997,6 +1058,7 @@ class EventListElement:
         Additional key word parameters for `func`.
     """
     __slots__ = ('func', 'args', 'kwargs', )
+    
     def __init__(self, func, args, kwargs):
         """
         Creates a ``EventListElement` from the given parameters.
@@ -1132,8 +1194,10 @@ def route_parameter(parameter, count):
     """
     if isinstance(parameter, tuple):
         if len(parameter) != count:
-            raise ValueError(f'The represented router has `{count}` applicable clients, meanwhile received only '
-                f'`{len(parameter)}` routed values, got: {parameter!r}.')
+            raise ValueError(
+                f'The represented router has `{count}` applicable clients, meanwhile received only '
+                f'`{len(parameter)}` routed values, got: {parameter!r}.'
+            )
         
         last = None
         for value in parameter:
@@ -1247,12 +1311,16 @@ def route_name(name, count):
     if isinstance(name, tuple):
         for index, name_value in enumerate(name):
             if (name_value is not None) and (name_value is not ...) and (not isinstance(name_value, str)):
-                raise TypeError(f'`name` was given as a `tuple`, but it\'s {index}th element is not `None`, '
-                    f'`Ellipsis`, neither `str` instance, got, {name_value.__class__.__name__}: {name_value}.')
+                raise TypeError(
+                    f'`name` was given as a `tuple`, but it\'s {index}th element is not `None`, '
+                    f'`Ellipsis`, `str`, got, {name_value.__class__.__name__}: {name_value!r}.'
+                )
         
         if len(name) != count:
-            raise ValueError(f'`name` was given as `tuple`, but it\'s length ({len(name)!r}) not matches the expected '
-                f'(`{count}`) one, got {name!r}.')
+            raise ValueError(
+                f'`name` was given as `tuple`, but it\'s length ({len(name)!r}) not matches the expected '
+                f'(`{count}`) one, got {name!r}.'
+            )
         
         last = None
         for name_value in name:
@@ -1271,8 +1339,10 @@ def route_name(name, count):
         elif isinstance(name, str):
             name_value = str(name)
         else:
-            raise TypeError('`name` can be given as `None` or as `tuple` of (`None, `Ellipsis`, `str`), got: '
-                f'{name.__class__.__name__}: {name!r}.')
+            raise TypeError(
+                '`name` can be given `None`, `tuple` of (`None, `Ellipsis`, `str`), got '
+                f'{name.__class__.__name__}; {name!r}.'
+            )
         
         for _ in range(count):
             result.append(name_value)
@@ -1366,7 +1436,9 @@ class eventlist(list):
             - If `iterable` was not passed as type ``eventlist`` and any of it's element's format is incorrect.
         """
         if (type_ is not None) and (not isinstance(type_, type)):
-            raise TypeError(f'`type_` can be given as `None` or as `type` instance, got `{type_!r}`.')
+            raise TypeError(
+                f'`type_` can be `None`, `type` instance, got {type_!r}.'
+            )
         
         if not kwargs:
             kwargs = None
@@ -1405,15 +1477,20 @@ class eventlist(list):
         """
         type_ = self.type
         if type_ is None:
-            raise TypeError('On `eventlist` without type `.from_class` method cannot be used.')
+            raise TypeError(
+                '`.from_class` method cannot be used on `eventlist` without type.'
+            )
         
         from_class = getattr(type_, 'from_class', None)
         if from_class is None:
-            raise TypeError(f'The `eventlist`\'s type: `{type_!r}` is not supporting `.from_class`.')
+            raise TypeError(
+                f'`.from_class`. is not supported by the `eventlist`\'s type: {type_!r}.'
+            )
         
         element = from_class(klass)
         list.append(self, element)
         return element
+    
     
     def extend(self, iterable):
         """
@@ -1432,8 +1509,10 @@ class eventlist(list):
         """
         if type(iterable) is type(self):
             if self.type is not iterable.type:
-                raise ValueError(f'Extending {self.__class__.__name__} with an other object of the same type, but with '
-                    f'a different type, own: `{self.type!r}`, other\'s: `{iterable.type!r}`.')
+                raise ValueError(
+                    f'Extending {self.__class__.__name__} with an other object of the same type, is not allowed if '
+                    f'their `.type` is different. Own: {self.type!r}; other: {iterable.type!r}.'
+                )
         else:
             iterable = _convert_unsafe_event_iterable(iterable, self.type)
         
@@ -1459,8 +1538,10 @@ class eventlist(list):
             iterable = _convert_unsafe_event_iterable(iterable, self.type)
         else:
             if self.type is not iterable.type:
-                raise ValueError(f'Extending {self.__class__.__name__} with an other object of the same type, but with '
-                    f'a different type, own: `{self.type!r}`, other\'s: `{iterable.type!r}`.')
+                raise ValueError(
+                    f'Extending {self.__class__.__name__} with an other object of the same type, is not allowed if '
+                    f'their `.type` is different. Own: {self.type!r}; other: {iterable.type!r}.'
+                )
         
         collected = []
         for element in iterable:
@@ -1471,7 +1552,8 @@ class eventlist(list):
         
         if collected:
             raise ValueError('\n'.join(collected))
-        
+    
+    
     def __call__(self, func=..., *args, **kwargs):
         """
         Adds the given `func` to the ``eventlist`` with the other given keyword parameters. If `func` is not passed,
@@ -1511,6 +1593,7 @@ class eventlist(list):
         list.append(self, element)
         return func
     
+    
     def remove(self, func):
         """
         Removes an element of the eventlist.
@@ -1530,7 +1613,10 @@ class eventlist(list):
             if compare_converted(element.func, func):
                 return
         
-        raise ValueError(f'Did not find any element, what matched the passed func={func!r}, combination.')
+        raise ValueError(
+            f'Could not match any element by func={func!r}.'
+        )
+    
     
     def __repr__(self):
         """Returns the representation of the eventlist."""
@@ -1569,6 +1655,7 @@ class eventlist(list):
         repr_parts.append(')')
         return ''.join(repr_parts)
     
+    
     def add_kwargs(self, **kwargs):
         """
         Adds keyword parameters to the ``eventlist`'s.
@@ -1586,6 +1673,7 @@ class eventlist(list):
             self.kwargs = kwargs
         else:
             own_kwargs.update(kwargs)
+    
     
     def remove_kwargs(self, *names):
         """
@@ -2127,6 +2215,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
             else:
                 Task(event(*args), KOKORO)
 
+
 def EventWaitforMeta__new__(cls, class_name, class_parents, class_attributes):
     """
     Subclasses ``EventWaitforBase``.
@@ -2157,21 +2246,26 @@ def EventWaitforMeta__new__(cls, class_name, class_parents, class_attributes):
         if issubclass(base,EventWaitforBase):
             break
     else:
-        raise TypeError(f'`{cls.__name__} should be only the metaclass of `{EventWaitforBase.__name__}`.')
+        raise TypeError(
+            f'`{cls.__name__} should be only the metaclass of `{EventWaitforBase.__name__}`.'
+        )
     
     event_name = class_attributes.get('__event_name__', None)
     if event_name is None:
         event_name = class_name
     
     if event_name not in EVENT_HANDLER_NAME_TO_PARSER_NAMES:
-        raise TypeError(f'`{class_name}.__event_name__` is not set, or not set correctly.')
+        raise TypeError(
+            f'`{class_name}.__event_name__` is not set, or is not set correctly.'
+        )
     
     if (class_attributes.get('call_waitfors', None) is None):
         try:
             call_waitfors = cls._call_waitfors[event_name]
         except KeyError:
-            raise TypeError(f'The following event name: `{event_name!r}` has no auto `call_waitfor` added. Please '
-                'define one.')
+            raise TypeError(
+                f'Event: `{event_name!r}` has no auto `call_waitfor` added. Please define one.'
+            )
         
         class_attributes['call_waitfors'] = call_waitfors
         
@@ -2202,7 +2296,8 @@ class ChunkWaiter(EventHandlerBase):
         RuntimeError
             Interact with self.waiters instead.
         """
-        raise RuntimeError('Interact with self.waiters instead.')
+        raise RuntimeError('Interact with `self.waiters` instead.')
+    
     
     def delete_event(self, waiter, nonce):
         """
@@ -2211,7 +2306,8 @@ class ChunkWaiter(EventHandlerBase):
         RuntimeError
             Interact with self.waiters instead.
         """
-        raise RuntimeError('Interact with self.waiters instead.')
+        raise RuntimeError('Interact with `self.waiters` instead.')
+    
     
     async def __call__(self, client, event):
         """

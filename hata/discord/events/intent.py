@@ -332,7 +332,7 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
         if those are not allowed for you, then make sure, you specify them.
         """
         if not isinstance(int_, int):
-            raise TypeError(f'{cls.__name__} expected `int` instance, got `{int_!r}')
+            raise TypeError(f'{cls.__name__} expected `int`, got {int_.__class__.__name__}; {int_!r}.')
         
         intent_flag = 0
         if int_ < 0:
@@ -353,6 +353,7 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
                     intent_flag = intent_flag^INTENT_MASK_GUILD_PRESENCES
         
         return int.__new__(cls, intent_flag)
+    
     
     def iterate_parser_names(self):
         """

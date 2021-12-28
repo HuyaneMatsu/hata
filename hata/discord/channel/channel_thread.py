@@ -573,7 +573,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
             else:
                 type_ = preconvert_int(type_, 'type', 0, 256)
                 if (type_ not in cls.REPRESENTED_TYPES):
-                    raise ValueError(f'`type` should be one of: {cls.REPRESENTED_TYPES!r}')
+                    raise ValueError(f'`type` should be one of: {cls.REPRESENTED_TYPES!r}, got {type_!r}.')
                 
                 processable.append(('type', type_))
             
@@ -589,7 +589,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
             
             
             if kwargs:
-                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+                raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
         
         else:
             processable = None

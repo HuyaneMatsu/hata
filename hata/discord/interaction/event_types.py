@@ -1825,8 +1825,10 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
             return message
         
         if self._response_flag & RESPONSE_FLAG_EPHEMERAL:
-            raise RuntimeError(f'The interaction was acknowledged with `show_for_invoking_user_only=True` '
-                f'(as ephemeral). Response `message` cannot be detected.')
+            raise RuntimeError(
+                f'The interaction was acknowledged with `show_for_invoking_user_only=True` '
+                f'(as ephemeral). Response `message` cannot be detected.'
+            )
         
         try:
             waiter = INTERACTION_EVENT_MESSAGE_WAITERS[self]
@@ -2111,7 +2113,9 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         try:
             return APPLICATION_ID_TO_CLIENT[self.application_id]
         except KeyError:
-            raise RuntimeError(f'Client of {self!r} could not be identified.') from None
+            raise RuntimeError(
+                f'Client of {self!r} could not be identified.'
+            ) from None
     
     
     @property

@@ -233,7 +233,7 @@ class Emoji(DiscordEntity, immortal=True):
                         processable.append(('role_ids', role_ids))
             
             if kwargs:
-                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+                raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
         
         else:
             processable = None

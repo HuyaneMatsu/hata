@@ -192,7 +192,7 @@ class ChannelCategory(ChannelGuildMainBase):
                 processable.append(('name', name))
             
             if kwargs:
-                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+                raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
         
         else:
             processable = None

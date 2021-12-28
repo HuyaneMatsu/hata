@@ -159,7 +159,7 @@ class WelcomeChannel:
         
         Other Parameters
         ----------------
-        channel : ``ChannelTextBase`` or `int` instance, Optional
+        channel : ``ChannelTextBase`` or `int`, Optional
             The channel of the welcome screen.
         channel_id : `int`, optional
             Alias of `channel`, tho it accepts only snowflake.
@@ -177,16 +177,16 @@ class WelcomeChannel:
         Raises
         ------
         TypeError
-            - If `channel` parameter was given as a channel, but not as ``ChannelText`` instance.
-            - If `channel` parameter was not given neither as ``ChannelText`` or `int` instance.
-            - If `channel_id` was given but neither as `int` or `str` instance.
-            - If `description` was not given as `str` instance.
-            - If `emoji` was not given as ``Emoji`` instance.
+            - If `channel` parameter was given as a channel, but not as ``ChannelText``.
+            - If `channel` parameter was not given neither as ``ChannelText`` or `int`.
+            - If `channel_id` was given but neither as `int` or `str`.
+            - If `description` was not given as `str`.
+            - If `emoji` was not given as ``Emoji``.
         ValueError
-            - If `channel` was given as `str` instance, but not convertable to `int`.
-            - If `channel` was given as `int` instance, but out of the expected range.
-            - If `channel_id` was given as `str` instance, but not convertable to `int`.
-            - If `channel_id` was given as `int` instance, but out of the expected range.
+            - If `channel` was given as `str`, but not convertible to `int`.
+            - If `channel` was given as `int`, but out of the expected range.
+            - If `channel_id` was given as `str`, but not convertible to `int`.
+            - If `channel_id` was given as `int`, but out of the expected range.
             - If `description` was given as empty string.
         """
         while True:
@@ -198,8 +198,10 @@ class WelcomeChannel:
                 if isinstance(channel, ChannelText):
                     channel_id = channel.id
                 elif isinstance(channel, ChannelBase):
-                    raise TypeError(f'`channel` parameters can be given as {ChannelText.__name__} or `int` instance,'
-                        f'got an other channel type, {channel.__class__.__name__}.')
+                    raise TypeError(
+                        f'`channel` can be `{ChannelText.__name__}` or `int`, got {channel.__class__.__name__}; '
+                        f'{channel!r}.'
+                    )
                 else:
                     channel_id = preconvert_snowflake(channel, 'channel')
                 
@@ -214,8 +216,10 @@ class WelcomeChannel:
                 break
             
             if base is None:
-                raise TypeError(f'`channel` or `channel_id` are required parameters if `{cls.__name__}.custom` is '
-                    f'called as a classmethod.')
+                raise TypeError(
+                    f'Either `channel` or `channel_id` parameters are required if `{cls.__name__}.custom`'
+                    f'is called as a classmethod.'
+                )
             
             channel_id = base.channel_id
             break
@@ -224,32 +228,40 @@ class WelcomeChannel:
             description = kwargs.pop('description')
         except KeyError:
             if base is None:
-                raise TypeError(f'`description` is a required parameter if `{cls.__name__}.custom` is called as a '
-                    f'classmethod.') from None
+                raise TypeError(
+                    f'`description` is a required parameter if `{cls.__name__}.custom` is called as a classmethod.'
+                ) from None
             
             description = base.description
         else:
             if not isinstance(description, str):
-                raise TypeError(f'`description` can be given as `str` instance, got {description.__class__.__name__}.')
+                raise TypeError(
+                    f'`description` can be `str`, got {description.__class__.__name__}; {description!r}.'
+                )
             
             if not description:
-                raise ValueError(f'`description` cannot be given as empty string.')
+                raise ValueError(
+                    f'`description` cannot be empty string.'
+                )
             
         try:
             emoji = kwargs.pop('emoji')
         except KeyError:
             if base is None:
-                raise TypeError(f'`emoji` is a required parameter if `{cls.__name__}.custom` is called as a '
-                    f'classmethod.') from None
+                raise TypeError(
+                    f'`emoji` is a required parameter if `{cls.__name__}.custom` is called as a classmethod.'
+                ) from None
             
             emoji = base.emoji
         else:
             if not isinstance(emoji, Emoji):
-                raise TypeError(f'`emoji` can be given as `{Emoji.__name__}` instance, got {emoji.__class__.__name__}.')
+                raise TypeError(
+                    f'`emoji` can be `{Emoji.__name__}`, got {emoji.__class__.__name__}; {emoji!r}.'
+                )
         
         
         if kwargs:
-            raise TypeError(f'Unused parameters: {", ".join(list(kwargs))}')
+            raise TypeError(f'Unused parameters: {kwargs!r}.')
         
         self = object.__new__(cls)
         self.channel_id = channel_id

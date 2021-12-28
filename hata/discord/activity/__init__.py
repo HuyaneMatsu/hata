@@ -1,5 +1,3 @@
-import warnings
-
 from scarletio import export
 
 from .activity_base import *

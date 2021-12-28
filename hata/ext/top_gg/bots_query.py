@@ -55,7 +55,7 @@ def avatar_to_base16(avatar):
     
     Returns
     -------
-    avatar : `st`
+    avatar : `str`
     """
     return avatar.as_base16_hash
 

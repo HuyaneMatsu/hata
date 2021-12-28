@@ -95,11 +95,14 @@ class Event:
         elif isinstance(parameter_count, int):
             parameter_count = int(parameter_count)
         else:
-            raise TypeError(f'`parameter_count` can be given as `int` instance, got '
-                f'{parameter_count.__class__.__name__}')
+            raise TypeError(
+                f'`parameter_count` can be `int`, got {parameter_count.__class__.__name__}; {parameter_count!r}.'
+            )
         
         if (parameter_count < 0):
-            raise ValueError(f'`parameter_count` cannot be negative.')
+            raise ValueError(
+                f'`parameter_count` cannot be negative, got {parameter_count!r}.'
+            )
         
         # Check `default_handler`
         if (default_handler is None):
@@ -124,8 +127,10 @@ class Event:
                             instance_default_handler = False
                             break
                     
-                    raise TypeError(f'`default_handler` should accept `{parameter_count!r}` parameters as defined, '
-                        f'but it accepts [{min_!r}:{max_!r}], got `{default_handler!r}`.')
+                    raise TypeError(
+                        f'`default_handler` should accept `{parameter_count!r}` parameters as defined, '
+                        f'but it accepts [{min_!r}:{max_!r}], got {default_handler!r}.'
+                    )
                 
                 
                 if analyzer.can_instance_to_async_callable():
@@ -148,12 +153,16 @@ class Event:
                                 instance_default_handler = True
                                 break
                             
-                        raise TypeError(f'`default_handler` should accept `{parameter_count!r}` parameters as '
+                        raise TypeError(
+                            f'`default_handler` should accept `{parameter_count!r}` parameters as '
                             f'defined, but after instancing it accepts [{min_!r}:{max_!r}], got '
-                            f'`{default_handler!r}`.')
+                            f'{default_handler!r}.'
+                        )
                 
-                raise TypeError(f'`default_handler` is neither `None`, `async-callable`, nor cannot be instanced to '
-                    f'async callable, got `{default_handler!r}`.')
+                raise TypeError(
+                    f'`default_handler` can be `None`, `async-callable`, instantiable to '
+                    f'`async-callable`, got {default_handler!r}.'
+                )
         
         # Check `callback`
         # TODO
@@ -229,8 +238,9 @@ class EventHandlerPluginType(type):
                     '_plugin_parameter_counts',
                 ):
                     if (getattr(class_parent, attribute_name, None) is not None):
-                        raise RuntimeError(f'superclasses shall not implement `{attribute_name!r}`, but '
-                            f'{class_parent!r} does.')
+                        raise RuntimeError(
+                            f'superclasses shall not implement `{attribute_name!r}`, but {class_parent!r} does.'
+                        )
             
             old_event_names = None
             old_default_handlers = None

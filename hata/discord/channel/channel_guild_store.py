@@ -249,7 +249,7 @@ class ChannelStore(ChannelGuildMainBase):
                 processable.append(('nsfw', nsfw))
             
             if kwargs:
-                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+                raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
         
         else:
             processable = None

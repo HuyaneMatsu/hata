@@ -788,7 +788,7 @@ class ChannelStage(ChannelVoiceBase):
                     processable.append(('region', region))
             
             if kwargs:
-                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+                raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
             
             try:
                 topic = kwargs.pop('topic')

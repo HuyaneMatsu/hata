@@ -125,6 +125,7 @@ class GuildWidgetChannel(DiscordEntity):
         self.name = data['name']
         self.position = data['name']
     
+    
     @property
     def mention(self):
         """

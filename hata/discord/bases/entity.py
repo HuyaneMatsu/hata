@@ -35,8 +35,10 @@ def _get_direct_parents_and_merge_slots(class_name, class_parents, class_attribu
     
     for class_parent in class_parents[1:]:
         if isinstance(class_parent, DiscordEntity):
-            raise RuntimeError(f'`{class_name}` wanted to inherit `{DiscordEntity.__name__}` not as it\'s direct '
-                f'(1st) parent type.')
+            raise RuntimeError(
+                f'`{class_name}` wanted to inherit `{DiscordEntity.__name__}` not as it\'s direct '
+                f'(1st) parent type.'
+            )
     
     if (direct_parent is not None):
         # Subclasses might miss hash!

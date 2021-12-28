@@ -48,27 +48,35 @@ def _debug_component_components(components):
     ------
     AssertionError
         - If `components`'s length is out of the expected range [0:5].
-        - If `components` is neither `None`, `tuple` or `list`.
-        - If `components` contains a non ``ComponentBase`` instance.
+        - If `components` is neither `None`, `tuple`, `list`.
+        - If `components` contains a non ``ComponentBase``.
     """
     if (components is None):
         pass
     elif isinstance(components, (tuple, list)):
         if (len(components) > COMPONENT_SUB_COMPONENT_LIMIT):
-            raise AssertionError(f'A `component.components` can have maximum 5 sub-components, got '
-                f'{len(components)}; {components!r}.')
+            raise AssertionError(
+                f'`component.components` can have maximum 5 sub-components, got '
+                f'{len(components)}; {components!r}.'
+            )
         
         for component in components:
             if not isinstance(component, ComponentBase):
-                raise AssertionError(f'`component` can be given as `{ComponentBase.__name__}` instance, got '
-                    f'{component.__class__.__name__}.')
+                raise AssertionError(
+                    f'`component` can be `{ComponentBase.__name__}`, got '
+                    f'{component.__class__.__name__}.'
+                )
             
             if component.type is COMPONENT_TYPE_ROW:
-                raise AssertionError(f'Cannot add `{COMPONENT_TYPE_ROW}` type as sub components, got '
-                    f'{component!r}.')
+                raise AssertionError(
+                    f'Cannot add `{COMPONENT_TYPE_ROW}` type as sub components, got '
+                    f'{component!r}.'
+                )
     else:
-        raise AssertionError(f'`components` can be given as `None`, `tuple` or `list`, got '
-            f'{components.__class__.__name__}.')
+        raise AssertionError(
+            f'`components` can be `None`, `tuple`, `list`, got '
+            f'{components.__class__.__name__}; {components!r}.'
+        )
 
 
 def _debug_component_custom_id(custom_id):
@@ -83,7 +91,7 @@ def _debug_component_custom_id(custom_id):
     Raises
     ------
     AssertionError
-        - If `custom_id` was not given neither as `None` or `str` instance.
+        - If `custom_id` was not given neither as `None` or `str`.
         - If `custom_id`'s length is over `100`.
     """
     if (custom_id is None):
@@ -91,14 +99,19 @@ def _debug_component_custom_id(custom_id):
     elif isinstance(custom_id, str):
         custom_id_length = len(custom_id)
         if custom_id_length == 0:
-            raise AssertionError(f'`custom_id` is not nullable.')
+            raise AssertionError(
+                f'`custom_id` is not nullable.'
+            )
         
         if custom_id_length > COMPONENT_CUSTOM_ID_LENGTH_MAX:
-            raise AssertionError(f'`custom_id`\'s max length can be {COMPONENT_CUSTOM_ID_LENGTH_MAX!r}, got '
-                f'{len(custom_id)!r}; {custom_id!r}.')
+            raise AssertionError(
+                f'`custom_id`\'s max length is {COMPONENT_CUSTOM_ID_LENGTH_MAX!r}, got '
+                f'{len(custom_id)!r}; {custom_id!r}.'
+            )
     else:
-        raise AssertionError(f'`custom_id` can be given either as `None` or as `str` instance, got '
-            f'{custom_id.__class__.__name__}.')
+        raise AssertionError(
+            f'`custom_id` can be `None`, `str`, got {custom_id.__class__.__name__}; {custom_id!r}.'
+        )
 
 
 def _debug_component_emoji(emoji):
@@ -113,14 +126,14 @@ def _debug_component_emoji(emoji):
     Raises
     ------
     AssertionError
-        If `emoji` was not given as ``Emoji`` instance.
+        If `emoji` was not given as ``Emoji``.
     """
     if emoji is None:
         pass
     elif isinstance(emoji, Emoji):
         pass
     else:
-        raise AssertionError(f'`emoji` can be given as `{Emoji.__name__}` instance, got '
+        raise AssertionError(f'`emoji` can be `{Emoji.__name__}`, got '
             f'{emoji.__class__.__name__}')
 
 
@@ -136,18 +149,21 @@ def _debug_component_label(label):
     Raises
     ------
     AssertionError
-        - If `label` was not given neither as `None` nor as `int` instance.
+        - If `label` was not given neither as `None` nor as `int`.
         - If `label`'s length is over `80`.
     """
     if label is None:
         pass
     elif isinstance(label, str):
         if len(label) > COMPONENT_LABEL_LENGTH_MAX:
-            raise AssertionError(f'`label`\'s max length can be {COMPONENT_LABEL_LENGTH_MAX!r}, got '
-                f'{len(label)!r}; {label!r}.')
+            raise AssertionError(
+                f'`label`\'s max length can be {COMPONENT_LABEL_LENGTH_MAX!r}, got '
+                f'{len(label)!r}; {label!r}.'
+            )
     else:
-        raise AssertionError(f'`label` can be given either as `None` or as `str` instance, got '
-            f'{label.__class__.__name__}.')
+        raise AssertionError(
+            f'`label` can be `None`, `str`, got {label.__class__.__name__}; {label!r}.'
+        )
 
     
 def _debug_component_title(title):
@@ -162,26 +178,31 @@ def _debug_component_title(title):
     Raises
     ------
     AssertionError
-        - If `title` was not given neither as `None` nor as `int` instance.
+        - If `title` was not given neither as `None` nor as `int`.
         - If `title`'s length is out of the expected range.
     """
     if title is None:
-        raise AssertionError(f'`title`\'s is nto nullable.')
+        raise AssertionError(
+            f'`title`\'s is not nullable.'
+        )
         
     elif isinstance(title, str):
         title_length = len(title)
         
         if title_length < COMPONENT_TITLE_LENGTH_MIN:
-            raise AssertionError(f'`title`\'s min length can be {COMPONENT_TITLE_LENGTH_MIN!r}, got '
-                f'{len(title)!r}; {title!r}.')
+            raise AssertionError(
+                f'`title`\'s minimal length is {COMPONENT_TITLE_LENGTH_MIN!r}, got {title_length!r}; {title!r}.'
+            )
         
         if title_length > COMPONENT_TITLE_LENGTH_MAX:
-            raise AssertionError(f'`title`\'s max length can be {COMPONENT_TITLE_LENGTH_MAX!r}, got '
-                f'{len(title)!r}; {title!r}.')
+            raise AssertionError(
+                f'`title`\'s maximal length is {COMPONENT_TITLE_LENGTH_MAX!r}, got {title_length!r}; {title!r}.'
+            )
     
     else:
-        raise AssertionError(f'`title` can be given either as `None` or as `str` instance, got '
-            f'{title.__class__.__name__}.')
+        raise AssertionError(
+            f'`title` can be `None`, `str`, got {title.__class__.__name__}; {title!r}.'
+        )
 
 
 def _debug_component_enabled(enabled):
@@ -196,10 +217,12 @@ def _debug_component_enabled(enabled):
     Raises
     ------
     AssertionError
-        If `enabled` was not given as `bool` instance.
+        If `enabled` was not given as `bool`.
     """
     if not isinstance(enabled, bool):
-        raise AssertionError(f'`enabled` can be given as `bool` instance, got {enabled.__class__.__name__}.')
+        raise AssertionError(
+            f'`enabled` can be `bool`, got {enabled.__class__.__name__}; {enabled!r}.'
+        )
 
 
 def _debug_component_url(url):
@@ -214,15 +237,16 @@ def _debug_component_url(url):
     Raises
     ------
     AssertionError
-        If `url` was not given neither as `None` or `str` instance.
+        If `url` was not given neither as `None` or `str`.
     """
     if url is None:
         pass
     elif isinstance(url, str):
         pass
     else:
-        raise AssertionError(f'`url` can be given either as `None` or as `str` instance, got '
-            f'{url.__class__.__name__}.')
+        raise AssertionError(
+            f'`url` can be `None`, `str`, got {url.__class__.__name__}; {url!r}.'
+        )
 
 
 def _debug_component_select_option_value(value):
@@ -237,11 +261,12 @@ def _debug_component_select_option_value(value):
     Raises
     ------
     AssertionError
-        If `value` was not given as `str` instance.
+        If `value` was not given as `str`.
     """
     if not isinstance(value, str):
-        raise AssertionError(f'`value` can be given either as `str` instance, got '
-            f'{value.__class__.__name__}.')
+        raise AssertionError(
+            f'`value` can be `str`, got {value.__class__.__name__}; {value!r}.'
+        )
 
 
 def _debug_component_initial_value(value):
@@ -256,11 +281,12 @@ def _debug_component_initial_value(value):
     Raises
     ------
     AssertionError
-        If `value` was not given as `str` instance.
+        If `value` was not given as `str`.
     """
     if not isinstance(value, str):
-        raise AssertionError(f'`value` can be given either as `str` instance, got '
-            f'{value.__class__.__name__}.')
+        raise AssertionError(
+            f'`value` can be `str`, got {value.__class__.__name__}; {value!r}.'
+        )
 
 
 def _debug_component_description(description):
@@ -275,15 +301,16 @@ def _debug_component_description(description):
     Raises
     ------
     AssertionError
-        If `description` was not given neither as `None` or `str` instance.
+        If `description` was not given neither as `None` or `str`.
     """
     if description is None:
         pass
     elif isinstance(description, str):
         pass
     else:
-        raise AssertionError(f'`description` can be given either as `None` or as `str` instance, got '
-            f'{description.__class__.__name__}.')
+        raise AssertionError(
+            f'`description` can be `None`, `str`, got {description.__class__.__name__}; {description!r}.'
+        )
 
 
 def _debug_component_default(default):
@@ -298,10 +325,12 @@ def _debug_component_default(default):
     Raises
     ------
     AssertionError
-        If `default` was not given as `bool` instance.
+        If `default` was not given as `bool`.
     """
     if not isinstance(default, bool):
-        raise AssertionError(f'`default` can be given as `bool` instance, got {default.__class__.__name__}.')
+        raise AssertionError(
+            f'`default` can be `bool`, got {default.__class__.__name__}; {default!r}.'
+        )
 
 
 def _debug_component_options(options):
@@ -316,8 +345,8 @@ def _debug_component_options(options):
     Raises
     ------
     AssertionError
-        - If `options` is neither `None`, `tuple` or `list`.
-        - If `options` contains a non ``ComponentSelectOption`` instance.
+        - If `options` is neither `None`, `tuple`, `list`.
+        - If `options` contains a non ``ComponentSelectOption``.
         - If `options`'s length is out of the expected [1:25] range.
     """
     if options is None:
@@ -325,17 +354,22 @@ def _debug_component_options(options):
     elif isinstance(options, (tuple, list)):
         for option in options:
             if not isinstance(option, ComponentSelectOption):
-                raise AssertionError(f'`option` can be given as `{ComponentSelectOption.__name__}` instance, got '
-                    f'{option.__class__.__name__}.')
+                raise AssertionError(
+                    f'`option` can be `{ComponentSelectOption.__name__}`, got '
+                    f'{option.__class__.__name__}, {option!r}.'
+                )
         
         option_length = len(options)
     else:
-        raise AssertionError(f'`options` can be given as `None`, `tuple` or `list`, got '
-            f'{options.__class__.__name__}.')
+        raise AssertionError(
+            f'`options` can be `None`, `tuple`, `list`, got {options.__class__.__name__}; {options!r}.'
+        )
     
     if (option_length < COMPONENT_OPTION_LENGTH_MIN) or (option_length > COMPONENT_OPTION_LENGTH_MAX):
-        raise AssertionError(f'`options` can be in range '
-            f'[{COMPONENT_OPTION_LENGTH_MIN}:{COMPONENT_OPTION_LENGTH_MAX}], got {option_length}.')
+        raise AssertionError(
+            f'`options`\'s length can be in range '
+            f'[{COMPONENT_OPTION_LENGTH_MIN}:{COMPONENT_OPTION_LENGTH_MAX}], got {option_length}; {options!r}.'
+        )
 
 
 def _debug_component_placeholder(placeholder):
@@ -350,15 +384,16 @@ def _debug_component_placeholder(placeholder):
     Raises
     ------
     AssertionError
-        - If `placeholder` is neither `None` nor `str` instance.
+        - If `placeholder` is neither `None` nor `str`.
     """
     if placeholder is None:
         pass
     elif isinstance(placeholder, str):
         pass
     else:
-        raise AssertionError(f'`placeholder` can be given as `None or `str` instance, got '
-            f'{placeholder.__class__.__name__}.')
+        raise AssertionError(
+            f'`placeholder` can be `None`, `str`, got {placeholder.__class__.__name__}; {placeholder!r}.'
+        )
 
 
 def _debug_component_min_values(min_values):
@@ -373,15 +408,19 @@ def _debug_component_min_values(min_values):
     Raises
     ------
     AssertionError
-        - If `min_values` was not given as `int` instance.
+        - If `min_values` was not given as `int`.
         - If `min_values`'s is out of range [0:15].
     """
     if not isinstance(min_values, int):
-        raise AssertionError(f'`min_values` can be given as `int` instance, got {min_values.__class__.__name__}.')
+        raise AssertionError(
+            f'`min_values` can be `int`, got {min_values.__class__.__name__}; {min_values!r}.'
+        )
     
     if (min_values < COMPONENT_OPTION_MIN_VALUES_MIN) or (min_values > COMPONENT_OPTION_MIN_VALUES_MAX):
-        raise AssertionError(f'`min_values` can be in range '
-            f'[{COMPONENT_OPTION_MIN_VALUES_MIN}:{COMPONENT_OPTION_MAX_VALUES_MIN}], got {min_values!r}.')
+        raise AssertionError(
+            f'`min_values` can be in range '
+            f'[{COMPONENT_OPTION_MIN_VALUES_MIN}:{COMPONENT_OPTION_MAX_VALUES_MIN}], got {min_values!r}.'
+        )
 
 
 def _debug_component_max_values(max_values):
@@ -396,15 +435,19 @@ def _debug_component_max_values(max_values):
     Raises
     ------
     AssertionError
-        - If `max_values` was not given as `int` instance.
+        - If `max_values` was not given as `int`.
         - If `max_values`'s is out of range [1:25].
     """
     if not isinstance(max_values, int):
-        raise AssertionError(f'`max_values` can be given as `int` instance, got {max_values.__class__.__name__}.')
+        raise AssertionError(
+            f'`max_values` can be `int`, got {max_values.__class__.__name__}; {max_values!r}.'
+        )
 
     if (max_values < COMPONENT_OPTION_MAX_VALUES_MIN) or (max_values > COMPONENT_OPTION_MAX_VALUES_MAX):
-        raise AssertionError(f'`max_values` can be in range '
-            f'[{COMPONENT_OPTION_MAX_VALUES_MIN}:{COMPONENT_OPTION_MAX_VALUES_MAX}], got {max_values!r}.')
+        raise AssertionError(
+            f'`max_values` can be in range '
+            f'[{COMPONENT_OPTION_MAX_VALUES_MIN}:{COMPONENT_OPTION_MAX_VALUES_MAX}], got {max_values!r}.'
+        )
 
 
 def _debug_component_max_length(max_length):
@@ -419,15 +462,19 @@ def _debug_component_max_length(max_length):
     Raises
     ------
     AssertionError
-        - If `max_length` was not given as `int` instance.
+        - If `max_length` was not given as `int`.
         - If `man_length`'s is out of the expected range.
     """
     if not isinstance(max_length, int):
-        raise AssertionError(f'`max_length` can be given as `int` instance, got {max_length.__class__.__name__}.')
+        raise AssertionError(
+            f'`max_length` can be `int`, got {max_length.__class__.__name__}; {max_length!r}.'
+        )
 
     if (max_length < COMPONENT_MAX_LENGTH_MIN) or (max_length > COMPONENT_MAX_LENGTH_MAX):
-        raise AssertionError(f'`max_length` can be in range '
-            f'[{COMPONENT_MAX_LENGTH_MIN}:{COMPONENT_MAX_LENGTH_MAX}], got {max_length!r}.')
+        raise AssertionError(
+            f'`max_length` can be in range '
+            f'[{COMPONENT_MAX_LENGTH_MIN}:{COMPONENT_MAX_LENGTH_MAX}], got {max_length!r}.'
+        )
 
 
 def _debug_component_min_length(min_length):
@@ -442,15 +489,19 @@ def _debug_component_min_length(min_length):
     Raises
     ------
     AssertionError
-        - If `min_length` was not given as `int` instance.
+        - If `min_length` was not given as `int`.
         - If `min_length`'s is out of the expected range.
     """
     if not isinstance(min_length, int):
-        raise AssertionError(f'`min_length` can be given as `int` instance, got {min_length.__class__.__name__}.')
+        raise AssertionError(
+            f'`min_length` can be `int`, got {min_length.__class__.__name__}; {min_length!r}.'
+        )
 
     if (min_length < COMPONENT_MIN_LENGTH_MIN) or (min_length > COMPONENT_MIN_LENGTH_MAX):
-        raise AssertionError(f'`min_length` can be in range '
-            f'[{COMPONENT_MIN_LENGTH_MIN}:{COMPONENT_MIN_LENGTH_MAX}], got {min_length!r}.')
+        raise AssertionError(
+            f'`min_length` can be in range '
+            f'[{COMPONENT_MIN_LENGTH_MIN}:{COMPONENT_MIN_LENGTH_MAX}], got {min_length!r}.'
+        )
 
 
 def _debug_component_required(required):
@@ -465,11 +516,12 @@ def _debug_component_required(required):
     Raises
     ------
     AssertionError
-        If `required` was not given neither as `None` or `bool` instance.
+        If `required` was not given neither as `None` or `bool`.
     """
     if (required is not None) and (not isinstance(required, bool)):
-        raise AssertionError(f'`required` can be given as `None` or as `bool` instance, got '
-            f'{required.__class__.__name__}.')
+        raise AssertionError(
+            f'`required` can be `None`, `bool`, got {required.__class__.__name__}; {required!r}.'
+        )
 
 
 def _debug_component_text_input_value(value):
@@ -484,11 +536,12 @@ def _debug_component_text_input_value(value):
     Raises
     ------
     AssertionError
-        If `value` was not given neither as `None` or `str` instance.
+        If `value` was not given neither as `None` or `str`.
     """
     if (value is not None) and (not isinstance(value, bool)):
-        raise AssertionError(f'`value` can be given as `None` or as `bool` instance, got '
-            f'{value.__class__.__name__}.')
+        raise AssertionError(
+            f'`value` can be `None`, `bool`, got {value.__class__.__name__}; {value!r}.'
+        )
 
 
 def create_auto_custom_id():
@@ -539,7 +592,7 @@ class ComponentBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        self : ``ComponentBase`` instance
+        self : ``ComponentBase``
             The created component instance.
         """
         return None
@@ -592,7 +645,7 @@ class ComponentBase(RichAttributeErrorBaseType):
             Keyword parameters referencing attributes.
         """
         if kwargs:
-            raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+            raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
         
         return self
     
@@ -657,7 +710,7 @@ class ComponentRow(ComponentBase):
     
     Attributes
     ----------
-    components : `None` or `tuple` of ``ComponentBase`` instances
+    components : `None` or `tuple` of ``ComponentBase``s
         Stored components.
     
     Class Attributes
@@ -677,13 +730,13 @@ class ComponentRow(ComponentBase):
         
         Parameters
         ----------
-        *components : ``ComponentBase`` instances
+        *components : ``ComponentBase``s
             Sub components.
         
         Raises
         ------
         AssertionError
-            - If `components` contains a non ``ComponentBase`` instance.
+            - If `components` contains a non ``ComponentBase``.
         """
         if __debug__:
             _debug_component_components(components)
@@ -802,7 +855,7 @@ class ComponentRow(ComponentBase):
         
         Other Parameters
         ----------------
-        components : `iterable` of ``ComponentBase`` instances, Optional (Keyword only)
+        components : `iterable` of ``ComponentBase``s, Optional (Keyword only)
             Sub components.
         
         Returns
@@ -952,13 +1005,13 @@ class ComponentButton(ComponentBase):
         TypeError
             If `style`'s type is unexpected.
         AssertionError
-            - If `custom_id` was not given neither as `None` or `str` instance.
+            - If `custom_id` was not given neither as `None` or `str`.
             - `url` is mutually exclusive with `custom_id`.
-            - If `emoji` was not given as ``Emoji`` instance.
-            - If `url` was not given neither as `None` or `str` instance.
+            - If `emoji` was not given as ``Emoji``.
+            - If `url` was not given neither as `None` or `str`.
             - If `style` was not given as any of the `type`'s expected styles.
-            - If `label` was not given neither as `None` nor as `int` instance.
-            - If `enabled` was not given as `bool` instance.
+            - If `label` was not given neither as `None` nor as `int`.
+            - If `enabled` was not given as `bool`.
             - If `label`'s length is over `80`.
             - If `custom_id`'s length is over `100`.
         """
@@ -990,8 +1043,10 @@ class ComponentButton(ComponentBase):
         # custom_id & custom_id mixed
         if __debug__:
             if (custom_id is not None) and (url is not None):
-                raise AssertionError(f'`custom_id` and `url` fields are mutually exclusive, got '
-                    f'custom_id={custom_id!r}, url={url!r}.')
+                raise AssertionError(
+                    f'`custom_id` and `url` fields are mutually exclusive, got '
+                    f'custom_id={custom_id!r}, url={url!r}.'
+                )
         
         # style
         if (url is None):
@@ -1260,14 +1315,16 @@ class ComponentButton(ComponentBase):
 
         
         if kwargs:
-            raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+            raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
         
         
         # custom_id & url
         if __debug__:
             if (custom_id is not None) and (url is not None):
-                raise AssertionError(f'`custom_id` and `url` fields are mutually exclusive, got '
-                    f'custom_id={custom_id!r}, url={url!r}.')
+                raise AssertionError(
+                    f'`custom_id` and `url` fields are mutually exclusive, got '
+                    f'custom_id={custom_id!r}, url={url!r}.'
+                )
         
         # url # style & custom
         if (url is None):
@@ -1425,7 +1482,9 @@ class ComponentSelectOption(ComponentBase):
         # label
         if __debug__:
             if (label is None) or (not label):
-                raise AssertionError('`label` cannot be empty..')
+                raise AssertionError(
+                    f'`label` cannot be empty.'
+                )
         
         # value
         # No additional checks
@@ -1610,7 +1669,9 @@ class ComponentSelectOption(ComponentBase):
                 _debug_component_label(label)
                 
                 if (label is None) or (not label):
-                    raise AssertionError('`label` cannot be empty..')
+                    raise AssertionError(
+                        f'`label` cannot be empty.'
+                    )
         
         # value
         try:
@@ -1622,7 +1683,7 @@ class ComponentSelectOption(ComponentBase):
                 _debug_component_select_option_value(value)
         
         if kwargs:
-            raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+            raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
         
         new = object.__new__(type(self))
         new.default = default
@@ -1722,7 +1783,7 @@ class ComponentSelect(ComponentBase):
     
     def __new__(cls, options, custom_id=None, *, enabled=True, placeholder=None, max_values=1, min_values=1):
         """
-        Creates a new ``ComponentSelect`` instance with the given parameters.
+        Creates a new ``ComponentSelect`` with the given parameters.
         
         Parameters
         ----------
@@ -1742,15 +1803,15 @@ class ComponentSelect(ComponentBase):
         Raises
         ------
         AssertionError
-            - If `custom_id` is not given as `None` or `str` instance.
+            - If `custom_id` is not given as `None` or `str`.
             - If `custom_id`'s length is out of range [0:100].
             - If `options` length is out from the expected range [1:25].
             - If `options` is neither `None` or (`list`, `tuple`) of ``ComponentSelectOption`` elements.
-            - If `min_values` is not `int` instance.
+            - If `min_values` is not `int`.
             - If `min_values` is out of range [1:15].
-            - If `max_values` is not `int` instance.
+            - If `max_values` is not `int`.
             - If `max_values` is out of range [1:25].
-            - If `enabled` was not given as `bool` instance.
+            - If `enabled` was not given as `bool`.
         """
         if __debug__:
             _debug_component_custom_id(custom_id)
@@ -2072,7 +2133,7 @@ class ComponentSelect(ComponentBase):
                 _debug_component_min_values(min_values)
         
         if kwargs:
-            raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+            raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
         
         new = object.__new__(type(self))
         new.custom_id = custom_id
@@ -2271,18 +2332,18 @@ class ComponentTextInput(ComponentBase):
         TypeError
             If `style`'s type is unexpected.
         AssertionError
-            - If `custom_id` was not given neither as `None` or `str` instance.
+            - If `custom_id` was not given neither as `None` or `str`.
             - If `style` was not given as any of the `type`'s expected styles.
-            - If `label` was not given neither as `None` nor as `int` instance.
-            - If `enabled` was not given as `bool` instance.
+            - If `label` was not given neither as `None` nor as `int`.
+            - If `enabled` was not given as `bool`.
             - If `label`'s length is over `80`.
             - If `custom_id`'s length is over `100`.
-            - If `max_length` was not given as `int` instance.
+            - If `max_length` was not given as `int`.
             - If `man_length`'s is out of the expected range.
-            - If `min_length` was not given as `int` instance.
+            - If `min_length` was not given as `int`.
             - If `min_length`'s is out of the expected range.
-            - If `required` is neither `None` nor `bool` instance.
-            - If `value` is neither `None` nor `bool` instance.
+            - If `required` is neither `None` nor `bool`.
+            - If `value` is neither `None` nor `bool`.
         """
         if __debug__:
             _debug_component_custom_id(custom_id)
@@ -2690,7 +2751,7 @@ class ComponentTextInput(ComponentBase):
                 value = None
         
         if kwargs:
-            raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+            raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
         
         new = object.__new__(type(self))
         
@@ -2970,7 +3031,7 @@ class ComponentDynamic(ComponentBase):
         new : ``ComponentDynamic``
         """
         if kwargs:
-            raise TypeError(f'Unused or unsettable attributes: `{kwargs}`')
+            raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
         
         return self.copy()
     

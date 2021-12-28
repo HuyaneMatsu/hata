@@ -138,15 +138,19 @@ class ActivityRich(ActivityBase):
         
         
         if (assets is not None) and (not isinstance(assets, ActivityAssets)):
-            raise TypeError(f'`assets` can be either `None` or `{ActivityAssets.__name__}` instance, got '
-                f'{assets.__class__.__name__}')
+            raise TypeError(
+                f'`assets` can be either `None` or `{ActivityAssets.__name__}` instance, got '
+                f'{assets.__class__.__name__}; {assets!r}.'
+            )
         
         
         if created_at is ...:
             created_at = DISCORD_EPOCH_START
         else:
             if not isinstance(created_at, datetime):
-                raise TypeError(f'`created_at` can be `datetime` instance, got {created_at.__class__.__name__}.')
+                raise TypeError(
+                    f'`created_at` can be `datetime` instance, got {created_at.__class__.__name__}; {created_at!r}.'
+                )
         
         
         if (details is not None):
@@ -169,13 +173,17 @@ class ActivityRich(ActivityBase):
         
         
         if (party is not None) and (not isinstance(party, ActivityParty)):
-            raise TypeError(f'`party` can be either `None` or `{ActivityParty.__name__}` instance, got '
-                f'{party.__class__.__name__}.')
+            raise TypeError(
+                f'`party` can be either `None` or `{ActivityParty.__name__}` instance, got '
+                f'{party.__class__.__name__}; {party!r}.'
+            )
         
         
         if (secrets is not None) and (not isinstance(secrets, ActivitySecrets)):
-            raise TypeError(f'`secrets` can be either `None` or `{ActivitySecrets.__name__}` instance, got '
-                f'{secrets.__class__.__name__}.')
+            raise TypeError(
+                f'`secrets` can be either `None` or `{ActivitySecrets.__name__}` instance, got '
+                f'{secrets.__class__.__name__}; {secrets!r}.'
+            )
         
         
         if (session_id is not None):
@@ -191,8 +199,10 @@ class ActivityRich(ActivityBase):
         
         
         if (timestamps is not None) and (not isinstance(timestamps, ActivityTimestamps)):
-            raise TypeError(f'`timestamps` can be either `None` or `{ActivityTimestamps.__name__}` instance, got '
-                f'{timestamps.__class__.__name__}')
+            raise TypeError(
+                f'`timestamps` can be either `None` or `{ActivityTimestamps.__name__}` instance, got '
+                f'{timestamps.__class__.__name__}; {timestamps!r}.'
+            )
         
         
         if (sync_id is not None):
@@ -206,7 +216,9 @@ class ActivityRich(ActivityBase):
             if url:
                 if __debug__:
                     if not is_url(url):
-                        raise AssertionError(f'`url` was not given as a valid url, got {url!r}.')
+                        raise AssertionError(
+                            f'`url` was not given as a valid url, got {url!r}.'
+                        )
             
             else:
                 url = None

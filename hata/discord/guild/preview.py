@@ -4,10 +4,10 @@ __all__ = ('GuildPreview', )
 from ..bases import DiscordEntity, IconSlot
 from ..utils import DATETIME_FORMAT_CODE
 from ..emoji import Emoji
-from .preinstanced import GuildFeature
-
+from ..sticker import Sticker
 from ..http import urls as module_urls
 
+from .preinstanced import GuildFeature
 
 class GuildPreview(DiscordEntity):
     """
@@ -15,6 +15,10 @@ class GuildPreview(DiscordEntity):
     
     Attributes
     ----------
+    approximate_online_count : `int`
+        Approximate amount of online users at the guild.
+    approximate_user_count : `int`
+        Approximate amount of users at the guild.
     description : `None` or `str`
         Description of the guild. The guild must have `PUBLIC` feature.
     discovery_splash_hash : `int`
@@ -34,14 +38,13 @@ class GuildPreview(DiscordEntity):
         The guild's invite splash's hash in `uint128`. The guild must have `INVITE_SPLASH` feature.
     invite_splash_type : ``IconType``
         the guild's invite splash's type.
+    stickers : `dict` of (`int`, ``Sticker``) items
+        The stickers of the guild stored in `sticker_id` - `sticker` relation.
     name : `str`
         The name of the guild.
-    approximate_online_count : `int`
-        Approximate amount of online users at the guild.
-    approximate_user_count : `int`
-        Approximate amount of users at the guild.
     """
-    __slots__ = ('description', 'emojis', 'features', 'name', 'approximate_online_count', 'approximate_user_count', )
+    __slots__ = ('approximate_online_count', 'approximate_user_count','description', 'emojis', 'features', 'name',
+        'stickers')
     
     icon = IconSlot(
         'icon',
@@ -88,6 +91,17 @@ class GuildPreview(DiscordEntity):
                 emoji = Emoji(emoji_data, None)
                 emojis[emoji.id] = emoji
         
+        stickers = {}
+        self.stickers = stickers
+        try:
+            sticker_datas = data['stickers']
+        except KeyError:
+            pass
+        else:
+            for sticker_data in sticker_datas:
+                sticker = Sticker(sticker_data)
+                stickers[sticker.id] = sticker
+        
         features = []
         self.features = features
         try:
@@ -116,7 +130,7 @@ class GuildPreview(DiscordEntity):
     
     def __repr__(self):
         """Returns the guild preview's representation."""
-        return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}>'
+        return f'<{self.__class__.__name__} id={self.id}, name={self.name!r}>'
     
     
     def __format__(self, code):

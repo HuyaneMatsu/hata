@@ -1,4 +1,15 @@
-## 1.1.129 *\[2021-12-??\]*
+## 1.1.130 *\[2021-12-??\]*
+
+#### Improvements
+
+- Add `GuildPreview.stickers`.
+
+#### Bug Fixes
+
+- Fix a logic error in `Client.role_edit` when editing `icon`.
+- Fix an `AttributeError` in `ApplicationCommandPermission.__repr__`.
+
+## 1.1.129 *\[2021-12-24\]*
 
 #### Improvements
 

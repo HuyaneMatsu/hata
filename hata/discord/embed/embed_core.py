@@ -554,7 +554,7 @@ class EmbedCore(EmbedBase):
                 video = video.copy()
         
         if kwargs:
-            raise TypeError(f'Unused or unsettable attributes: `{kwargs}`')
+            raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
         
         new = object.__new__(type(self))
         

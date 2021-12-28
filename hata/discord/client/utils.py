@@ -90,6 +90,7 @@ class BanEntry:
         The ban reason if applicable.
     """
     __slots__ = ('user', 'reason')
+    
     def __init__(self, user, reason):
         """
         Creates a new ban entry instance.
@@ -171,6 +172,7 @@ class Typer:
         The sleeping future what will wake_up ``.run``.
     """
     __slots__ = ('channel_id', 'client', 'timeout', 'waiter',)
+    
     def __init__(self, client, channel_id, timeout=300.):
         """
         Parameters
@@ -187,10 +189,12 @@ class Typer:
         self.waiter = None
         self.timeout = timeout
     
+    
     def __enter__(self):
         """Enters the typer's context block by ensuring it's ``.run`` method."""
         Task(self.run(), KOKORO)
         return self
+    
     
     async def run(self):
         """
@@ -206,6 +210,7 @@ class Typer:
             await waiter
         
         self.waiter = None
+    
     
     def __await__(self):
         """Keeps typing till timeout occurs."""
@@ -276,14 +281,17 @@ class ClientWrapper:
         if clients:
             for client in clients:
                 if not isinstance(client, Client):
-                    raise TypeError(f'{cls.__name__} expects only `{Client.__name__}` instances to be given, got '
-                        f'{client.__class__.__name__}: {client!r}.')
+                    raise TypeError(
+                        f'{cls.__name__} expects only `{Client.__name__}` instances, got '
+                        f'{client.__class__.__name__}; {client!r}.'
+                    )
         else:
             clients = tuple(CLIENTS.values())
         
         self = object.__new__(cls)
         object.__setattr__(self, 'clients', clients)
         return self
+    
     
     def __repr__(self):
         """Returns the client wrapper's representation."""
@@ -307,6 +315,7 @@ class ClientWrapper:
         result.append(')')
         
         return ''.join(result)
+    
     
     def events(self, func=None, name=None, overwrite=False):
         """
@@ -345,6 +354,7 @@ class ClientWrapper:
         
         return func
     
+    
     class _events_wrapper:
         """
         When the parent ``ClientWrapper``'s `.events` is called without giving the `func` parameter to it an instance
@@ -355,11 +365,12 @@ class ClientWrapper:
         ----------
         parent : ``ClientWrapper``
             The owner event descriptor.
-        args: `tuple` of `Any`
+        parameters: `tuple` of `Any`
             Additional keyword parameters (in order) passed when the wrapper was created.
         """
-        __slots__ = ('parent', 'args',)
-        def __init__(self, parent, args):
+        __slots__ = ('parent', 'parameters',)
+        
+        def __init__(self, parent, parameters):
             """
             Creates an instance from the given parameters.
             
@@ -367,11 +378,11 @@ class ClientWrapper:
             ----------
             parent : ``EventHandlerManager``
                 The owner event descriptor.
-            args: `tuple` of `Any`
+            parameters: `tuple` of `Any`
                 Additional keyword parameters (in order) passed when the wrapper was created.
             """
             self.parent = parent
-            self.args = args
+            self.parameters = parameters
         
         def __call__(self, func):
             """
@@ -401,7 +412,8 @@ class ClientWrapper:
             if func is None:
                 raise TypeError('`func` is given as `None`.')
             
-            return self.parent.events(func, *self.args)
+            return self.parent.events(func, *self.parameters)
+    
     
     def __setattr__(self, attribute_name, attribute_value):
         """

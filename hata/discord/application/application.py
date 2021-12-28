@@ -539,8 +539,10 @@ class Application(DiscordEntity, immortal=True):
                 pass
             else:
                 if not isinstance(owner, (ClientUserBase, Team)):
-                    raise TypeError(f'`owner` can be given as `{ClientUserBase.__name__}`  or as '
-                        f'{Team.__name__} instance, got {owner.__class__.__name__}.')
+                    raise TypeError(
+                        f'`owner` can be given as `{ClientUserBase.__name__}` or as `{Team.__name__}` instance, got '
+                        f'{owner.__class__.__name__}; {owner!r}.'
+                    )
                 
                 processable.append(('owner', owner))
             
@@ -562,7 +564,7 @@ class Application(DiscordEntity, immortal=True):
             cls.splash.preconvert(kwargs, processable)
             
             if kwargs:
-                raise TypeError(f'Unused or unsettable attributes: {kwargs}.')
+                raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
             
         else:
             processable = None

@@ -80,7 +80,9 @@ class RateLimitProxy:
             If the given `limiter` cannot be casted to `limiter_id` with the specified `group` .
         """
         if (type(group) is not RateLimitGroup):
-            raise TypeError(f'`group` should be type `{RateLimitGroup.__name__}`, got {group}.__class__.__name__.')
+            raise TypeError(
+                f'`group` can be `{RateLimitGroup.__name__}`, got {group.__class__.__name__}; {group!r}.'
+            )
         
         while True:
             group_limiter = group.limiter
@@ -127,9 +129,13 @@ class RateLimitProxy:
                         limiter_id = limiter.id
                         break
             else:
-                raise RuntimeError(f'`{group!r}.limiter` is not any of the defined limit groups.')
+                raise RuntimeError(
+                    f'`{group!r}.limiter` is not any of the defined limit groups.'
+                )
             
-            raise ValueError(f'Cannot cast rate limit group\'s: `{group!r}` rate limit_id of: `{limiter!r}`.')
+            raise ValueError(
+                f'Cannot cast rate limit `{group!r}` group\'s rate `limit_id` from {limiter!r}.'
+            )
         
         key = RateLimitHandler(group, limiter_id)
         
@@ -146,6 +152,7 @@ class RateLimitProxy:
         self._key = key
         return self
     
+    
     def is_limited_by_channel(self):
         """
         Returns whether the represented rate limit group is limited by channel id.
@@ -155,6 +162,7 @@ class RateLimitProxy:
         is_limited_by_channel : `bool`
         """
         return (self.group.limiter is LIMITER_CHANNEL)
+    
     
     def is_limited_by_guild(self):
         """
@@ -166,6 +174,7 @@ class RateLimitProxy:
         """
         return (self.group.limiter is LIMITER_GUILD)
     
+    
     def is_limited_by_webhook(self):
         """
         Returns whether the represented rate limit group is limited by webhook id.
@@ -175,6 +184,7 @@ class RateLimitProxy:
         is_limited_by_webhook : `bool`
         """
         return (self.group.limiter is LIMITER_WEBHOOK)
+    
     
     def is_limited_by_interaction(self):
         """
@@ -186,6 +196,7 @@ class RateLimitProxy:
         """
         return (self.group.limiter is LIMITER_INTERACTION)
     
+    
     def is_limited_globally(self):
         """
         Returns whether the represented rate limit group is limited globally,
@@ -195,6 +206,7 @@ class RateLimitProxy:
         is_limited_globally : `bool`
         """
         return (self.group.limiter is LIMITER_GLOBAL)
+    
     
     def is_unlimited(self):
         """
@@ -206,6 +218,7 @@ class RateLimitProxy:
         """
         return (self.group.limiter is LIMITER_UNLIMITED)
     
+    
     def is_alive(self):
         """
         Returns whether the respective client has the represented rate limit handler is alive.
@@ -215,6 +228,7 @@ class RateLimitProxy:
         is_alive : `bool`
         """
         return (self.handler is not None)
+    
     
     def has_info(self):
         """
@@ -230,6 +244,7 @@ class RateLimitProxy:
         
         return (handler.queue is not None)
     
+    
     @property
     def keep_alive(self):
         """
@@ -243,6 +258,7 @@ class RateLimitProxy:
             return False
         
         return (handler() is self._key)
+    
     
     @keep_alive.setter
     def keep_alive(self, value):
@@ -280,6 +296,7 @@ class RateLimitProxy:
                 self._key = handler.copy()
             return
     
+    
     @property
     def limiter_id(self):
         """
@@ -290,6 +307,7 @@ class RateLimitProxy:
         limiter_id : `int`
         """
         return self._key.limiter_id
+    
     
     def has_size_set(self):
         """
@@ -304,6 +322,7 @@ class RateLimitProxy:
         """
         return (self.group.size > 0)
     
+    
     @property
     def size(self):
         """
@@ -314,6 +333,7 @@ class RateLimitProxy:
         size : `int`
         """
         return self.group.size
+    
     
     @property
     def handler(self):
@@ -336,6 +356,7 @@ class RateLimitProxy:
         
         return handler
     
+    
     @property
     def used_count(self):
         """
@@ -350,6 +371,7 @@ class RateLimitProxy:
             return 0
         
         return (handler.active + handler.count_drops())
+    
     
     @property
     def free_count(self):
@@ -377,6 +399,7 @@ class RateLimitProxy:
         
         return (size - handler.active - handler.count_drops())
     
+    
     @property
     def waiting_count(self):
         """
@@ -396,9 +419,11 @@ class RateLimitProxy:
         
         return len(queue)
     
+    
     def __hash__(self):
         """Hashes the rate limit proxy."""
         return self.group.group_id^self._key.limiter_id
+    
     
     class _wait_till_limits_expire_callback:
         """
@@ -414,6 +439,7 @@ class RateLimitProxy:
             loop = future._loop
             if current_thread() is not loop:
                 loop.wake_up()
+    
     
     async def wait_till_limits_expire(self):
         """
@@ -452,6 +478,7 @@ class RateLimitProxy:
         self._handler = WeakReferer(handler, self._wait_till_limits_expire_callback(future))
         await future
     
+    
     @property
     def next_reset_at(self):
         """
@@ -473,6 +500,7 @@ class RateLimitProxy:
             return 0.0
         
         return drops[0].drop
+    
     
     @property
     def next_reset_after(self):

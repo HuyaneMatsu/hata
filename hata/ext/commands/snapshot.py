@@ -13,7 +13,7 @@ def take_command_processer_snapshot(client):
     
     Returns
     -------
-    collected : `None` or `tuple` of `Any`
+    collected : `None`, `tuple` of `Any`
     """
     command_processer = getattr(client, 'command_processer', None)
     if (command_processer is None) or (not isinstance(command_processer, CommandProcesser)):
@@ -56,7 +56,7 @@ def calculate_command_processer_snapshot_difference(client, snapshot_old, snapsh
     
     Returns
     -------
-    snapshot_difference : `None` or `tuple` of `Any`
+    snapshot_difference : `None`, `tuple` of `Any`
     """
     if (snapshot_old is None) or (snapshot_new is None):
         return None

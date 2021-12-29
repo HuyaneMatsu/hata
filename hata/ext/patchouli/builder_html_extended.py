@@ -398,9 +398,9 @@ class SimpleSection:
     ----------
     content : `list` of `Any`
         Contained section part.
-    object : ``UnitBase`` instance
+    object : ``UnitBase``
         The owner unit.
-    title : `None` or `str`
+    title : `None`, `str`
         The title of the section.
     path : ``QualPath``
         Path to use instead of the objects's.
@@ -413,13 +413,13 @@ class SimpleSection:
         
         Parameters
         ----------
-        title : `None` or `str`
+        title : `None`, `str`
             The title of the represented section.
         content : `list` of `Any`
             Contained section part.
         object_ : ``TypeUnit``
             The owner type-unit.
-        path : `None` or ``QualPath``
+        path : `None`, ``QualPath``
             Path to use instead of the objects's.
         """
         self.title = title
@@ -473,7 +473,7 @@ class SimpleSection:
         
         Returns
         -------
-        structure : `None` or ``Structure``
+        structure : `None`, ``Structure``
             If the section is unnamed, returns `None`.
         """
         title = self.title
@@ -499,7 +499,7 @@ class FunctionOrPropertySerializer:
         Contained section part.
     object : ``TypeUnit``
         The owner type-unit.
-    parameter_section : `None` or ``ParameterSection``
+    parameter_section : `None`, ``ParameterSection``
         The parameter section of the serialiser.
     path : ``QualPath``
         Path to use instead of the object's.
@@ -512,9 +512,9 @@ class FunctionOrPropertySerializer:
         
         Parameters
         ----------
-        object_ : ``PropertyUnit`` or ``FunctionUnit``
+        object_ : ``PropertyUnit``, ``FunctionUnit``
             The object to serialize.
-        path : `None` or ``QualPath``, Optional
+        path : `None`, ``QualPath``, Optional
             Path to use instead of the object's.
         """
         self.object = object_
@@ -675,9 +675,9 @@ class UnitSection:
     ----------
     title : `str`
         The section's title.
-    object : ``TypeUnit`` instance
+    object : ``TypeUnit``
         The represented parent object.
-    units : `list` of `tuple` (`str`, ``UnitBase`` instances)
+    units : `list` of `tuple` (`str`, ``UnitBase``)
         The contained units.
     path : ``QualPath``
         Path to use instead of the object's.
@@ -692,11 +692,11 @@ class UnitSection:
         ----------
         title : `str`
             The section's title.
-        object_ : ``TypeUnit`` instance
+        object_ : ``TypeUnit``
             The represented parent object.
-        units : `list` of ``UnitBase`` instances
+        units : `list` of ``UnitBase``
             The contained units.
-        path : `None` or ``QualPath``
+        path : `None`, ``QualPath``
             Path to use instead of the object's.
         """
         self.title = title
@@ -752,7 +752,7 @@ class UnitSection:
         
         Returns
         -------
-        structure : `None` or ``Structure``
+        structure : `None`, ``Structure``
             If the section is unnamed, returns `None`.
         """
         path = self.path
@@ -784,7 +784,7 @@ class AttributeSection:
     
     Attributes
     ----------
-    extra : `None` or `list` of `Any`
+    extra : `None`, `list` of `Any`
         Extra content after the attribute section.
     relations : `dict` of (`str`, `DocString`) items
         Attribute name, DocString relation.
@@ -809,7 +809,7 @@ class AttributeSection:
             Mentioned attribute names at the attribute section.
         object_ : ``TypeUnit``
             The owner type-unit.
-        path : `None` or ``QualPath``
+        path : `None`, ``QualPath``
             Path to use instead of the object's.
         """
         self.title = title
@@ -992,7 +992,7 @@ class ParameterSubSection:
     
     Parameters
     ----------
-    description : `None` or `list` of ``GravedDescription``
+    description : `None`, `list` of ``GravedDescription``
         Description of the parameter.
     keyword_only : `bool`
         Whether the parameter is keyword only.
@@ -1000,7 +1000,7 @@ class ParameterSubSection:
         The parameter's name.
     optional : `bool`
         Whether the parameter is optional.
-    type : `None` or ``GravedDescription``
+    type : `None`, ``GravedDescription``
         The parameter's type.
     """
     __slots__ = ('description', 'keyword_only', 'name', 'optional', 'type')
@@ -1201,7 +1201,7 @@ class ParameterSection:
     ----------
     parameter_sub_sections : `list` of `ParameterSubSection`
         The stored parameters.
-    object : ``UnitBase`` instance
+    object : ``UnitBase``
         The owner unit.
     path : ``QualPath``
         Path to use instead of the objects's.
@@ -1218,7 +1218,7 @@ class ParameterSection:
             Contained section parts.
         object_ : ``TypeUnit``
             The owner type-unit.
-        path : `None` or ``QualPath``
+        path : `None`, ``QualPath``
             Path to use instead of the objects's.
         """
         self.parameter_sub_sections = []
@@ -1241,7 +1241,7 @@ class ParameterSection:
         header = None
         
         for section_content in section_content:
-            # section content can be either ``GraveDescription`` or `list` of it.
+            # section content can be either ``GraveDescription``, `list` of it.
             
             if isinstance(section_content, GravedDescription):
                 if header is None:
@@ -1308,7 +1308,7 @@ class ParameterSection:
         
         Returns
         -------
-        structure : `None` or ``Structure``
+        structure : `None`, ``Structure``
             If the section is unnamed, returns `None`.
         """
         # Since we are building a big table this time, we have nothing to do with this.
@@ -1333,7 +1333,7 @@ class TypeSerializer:
     ----------
     object : ``TypeUnit``
         The represented type unit.
-    sections : `list` of (``SimpleSection``, ``AttributeSection`` or ``UnitSection``, ``ParameterSection``)
+    sections : `list` of (``SimpleSection``, ``AttributeSection``, ``UnitSection``, ``ParameterSection``)
         The type's sections.
     path : ``QualPath``
         Path to use instead of the object's.
@@ -1346,7 +1346,7 @@ class TypeSerializer:
         ----------
         object_ : ``UnitBase``
             The respective unit.
-        path : `None` or ``QualPath``, Optional
+        path : `None`, ``QualPath``, Optional
             Path to use instead of the object's.
         """
         self.object = object_
@@ -1561,9 +1561,9 @@ class UnitListerSection:
     ----------
     title : `str`
         The section's title.
-    object : ``TypeUnit`` instance
+    object : ``TypeUnit``
         The represented parent object.
-    units : `list` of ``UnitBase`` instances
+    units : `list` of ``UnitBase``
         The contained units.
     path : ``QualPath``
         Path to use instead of the object's.
@@ -1578,9 +1578,9 @@ class UnitListerSection:
         ----------
         title : `str`
             The section's title.
-        object_ : ``TypeUnit`` instance
+        object_ : ``TypeUnit``
             The represented parent object.
-        units : `list` of ``UnitBase`` instances
+        units : `list` of ``UnitBase``
             The contained units.
         path : ``QualPath``
             Path to use instead of the object's.
@@ -1656,9 +1656,9 @@ class ModuleSerializer:
     ----------
     object : ``ModuleUnit``
         The represented type unit.
-    sections : `list` of (``SimpleSection``, ``AttributeSection`` or ``UnitSection``)
+    sections : `list` of (``SimpleSection``, ``AttributeSection``, ``UnitSection``)
         The type's sections.
-    path : `None` or ``QualPath``
+    path : `None`, ``QualPath``
         Path to use instead of the object's.
     """
     __slots__ = ('object', 'sections', 'path')
@@ -1671,7 +1671,7 @@ class ModuleSerializer:
         ----------
         object_ : ``ModuleUnit``
             The module to serialize.
-        path : `None` or ``QualPath``
+        path : `None`, ``QualPath``
             Path to use instead of the object's.
         """
         self.object = object_
@@ -1828,7 +1828,7 @@ def html_serialize_docs_extended(object_, get_html, get_structure):
     
     Parameters
     ----------
-    object_ : ``UnitBase`` instance
+    object_ : ``UnitBase``
         The respective unit.
     get_html : `bool`
         Whether html code string should be created and returned.
@@ -1839,7 +1839,7 @@ def html_serialize_docs_extended(object_, get_html, get_structure):
     -------
     html : `None`  or `str`
         The created html code if possible to create or applicable.
-    structure : `None` or ``Structure``
+    structure : `None`, ``Structure``
         The structure of the html code if possible to create or applicable.
     """
     try:

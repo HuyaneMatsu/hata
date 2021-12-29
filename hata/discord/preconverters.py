@@ -8,7 +8,7 @@ def preconvert_snowflake(snowflake, name):
     
     Parameters
     ----------
-    snowflake : `str` or `int`
+    snowflake : `str`, `int`
         The snowflake to convert.
     name : `str`
         The name of the snowflake.
@@ -20,7 +20,7 @@ def preconvert_snowflake(snowflake, name):
     Raises
     ------
     TypeError
-        - If `snowflake` was not passed neither as `int` or as `str` instance.
+        - If `snowflake` was not passed neither as `int`, `str`.
     ValueError
         - If `snowflake` was passed as `str` and cannot be converted to `int`.
         - If the converted `snowflake` is negative or it's bit length is over 64.
@@ -35,13 +35,19 @@ def preconvert_snowflake(snowflake, name):
         if 6 < len(snowflake) < 21 and snowflake.isdigit():
             snowflake = int(snowflake)
         else:
-            raise ValueError(f'`{name}` can be passed as `int` or `str` instance, got `str` instance, but not a valid'
-                f'snowflake (7-20 length, digit only), got {snowflake!r}.')
+            raise ValueError(
+                f'`{name}` can be `int`, `str`, got `str`, but not a valid'
+                f'snowflake (7-20 length, digit only), got {snowflake!r}.'
+            )
     else:
-        raise TypeError(f'`{name}` can be passed as `int` or `str` instance, got {snowflake_type.__name__}.')
+        raise TypeError(
+            f'`{name}` can be `int`, `str`, got {snowflake_type.__name__}; {snowflake!r}.'
+        )
     
     if snowflake < 0 or snowflake > ((1<<64)-1):
-        raise ValueError(f'`{name}` can be only uint64, got {snowflake!r}.')
+        raise ValueError(
+            f'`{name}` can be only uint64, got {snowflake!r}.'
+        )
     
     return snowflake
 
@@ -52,7 +58,7 @@ def preconvert_snowflake_array(snowflake_array, name):
     
     Parameters
     ----------
-    snowflake : `None` or (`tuple`, `list` or `set`) of (`str` or `int`)
+    snowflake : `None` or (`tuple`, `list`, `set`) of (`str`, `int`)
         The snowflakes to convert.
     name : `str`
         The name of the snowflake array.
@@ -65,15 +71,17 @@ def preconvert_snowflake_array(snowflake_array, name):
     ------
     TypeError
         - If `snowflake_array` is neither `None`, `list`, `tuple` nor `set`.
-        - If `snowflake_array` contains a non `int` nor `str` instance.
+        - If `snowflake_array` contains a non `int` nor `str`.
     ValueError
         - If `snowflake_array`contains a `str`, what cannot be converted to `int`.
         - If a converted `snowflake` is negative or it's bit length is over 64.
     """
     if (snowflake_array is not None):
         if not isinstance(snowflake_array, (list, tuple, set)):
-            raise TypeError(f'`{name}` can be either `list`, `tuple` or `set`, got '
-                f'`{snowflake_array.__class__.__name__}`.')
+            raise TypeError(
+                f'`{name}` can be `list`, `tuple`, `set`, got '
+                f'{snowflake_array.__class__.__name__}; {snowflake_array!r}.'
+            )
         
         snowflake_array_processed = []
         
@@ -88,14 +96,21 @@ def preconvert_snowflake_array(snowflake_array, name):
                 if 6 < len(snowflake) < 21 and snowflake.isdigit():
                     snowflake = int(snowflake)
                 else:
-                    raise ValueError(f'`{name}`\'s elements can be passed as `int` or `str` instance, got `str` '
-                        f'instance, but not a valid snowflake (7-20 length, digit only), got {snowflake!r}.')
+                    raise ValueError(
+                        f'`{name}`\'s can contain `int`, `str` elements, got `str`, but not a valid snowflake '
+                        f'(7-20 length, digit only), got {snowflake!r}; snowflake_array={snowflake_array!r}.'
+                    )
             else:
-                raise TypeError(f'`{name}`\'s elements can be passed as `int` or `str` instance, got '
-                    f'{snowflake_type.__name__}.')
+                raise TypeError(
+                    f'`{name}`\'s can contain `int`, `str` elements, got '
+                    f'{snowflake_type.__name__}; {snowflake!r}; snowflake_array={snowflake_array!r}.'
+                )
             
             if snowflake < 0 or snowflake > ((1<<64)-1):
-                raise ValueError(f'`{name}`\'s elements can be only uint64, got {snowflake!r}.')
+                raise ValueError(
+                    f'`{name}`\'s elements can be only uint64, got '
+                    f'{snowflake!r}; snowflake_array={snowflake_array!r}.'
+                )
             
             snowflake_array_processed.append(snowflake)
         
@@ -114,7 +129,7 @@ def preconvert_discriminator(discriminator):
     
     Parameters
     ----------
-    discriminator : `str` or `int`
+    discriminator : `str`, `int`
         The discriminator of an user to convert.
     
     Returns
@@ -124,7 +139,7 @@ def preconvert_discriminator(discriminator):
     Raises
     ------
     TypeError
-        If `discriminator` was not passed neither as `int` or as `str` instance.
+        If `discriminator` was not passed neither as `int`, `str`.
     ValueError
         - If `discriminator` was passed as `str` and it is not numerical or it's length is over `4`.
         - If the `discriminator`'s value is less than `0` or is over than `9999`.
@@ -135,16 +150,23 @@ def preconvert_discriminator(discriminator):
         discriminator = int(discriminator)
     # Discord sends `discriminator` as `str`, so lets accept that as well.
     elif isinstance(discriminator, str):
-        if 0<len(discriminator) < 5 and discriminator.isdigit():
-            raise ValueError(f'`discriminator` was given as a `str` instance, but it is not numerical or it\'s length '
-                 f'is over `4`, got {discriminator!r}')
+        if 0 < len(discriminator) < 5 and discriminator.isdigit():
+            raise ValueError(
+                f'`discriminator` was given as a `str`, but it is either not numeric, or it\'s length is not 1-4, got '
+                f'{discriminator!r}.'
+            )
         discriminator = int(discriminator)
+    
     else:
-        raise TypeError(f'`discriminator` can be passed as `int` or `str` instance, got '
-            f'{discriminator.__class__.__name__}.')
+        raise TypeError(
+            f'`discriminator` can be `int`, `str`, got '
+            f'{discriminator.__class__.__name__}; {discriminator!r}.'
+        )
     
     if discriminator < 0 or discriminator > 9999:
-        raise ValueError(f'`discriminator` can be between 0 and 9999, got got {discriminator!r}.')
+        raise ValueError(
+            f'`discriminator` can be between 0 and 9999, got got {discriminator!r}.'
+        )
     
     return discriminator
 
@@ -169,7 +191,7 @@ def preconvert_color(color, name, nullable):
     Raises
     ------
     TypeError
-        If `color` was not passed as `int` instance.
+        If `color` was not passed as `int`.
     ValueError
         If the `color`'s value is less than `0` or is over than `0xffffff`.
     """
@@ -179,11 +201,15 @@ def preconvert_color(color, name, nullable):
         elif isinstance(color, int):
             color = Color(color)
         else:
-            raise TypeError(f'`{name}` can be {"`None`, " if nullable else ""}`{Color.__name__}` or `int` instance, '
-                f'got {color.__class__.__name__}.')
+            raise TypeError(
+                f'`{name}` can be {"`None`, " if nullable else ""}`{Color.__name__}`, `int`, '
+                f'got {color.__class__.__name__}; {color!r}.'
+            )
             
             if color < 0 or color > 0xffffff:
-                raise ValueError(f'`{name}` can be between 0 and 0xffffff, got {color!r}.')
+                raise ValueError(
+                    f'`{name}` can be between 0 and 0xffffff, got {color!r}.'
+                )
     
     return color
 
@@ -210,7 +236,7 @@ def preconvert_str(value, name, lower_limit, upper_limit):
     Raises
     ------
     TypeError
-        If `value` was not passed as `str` instance.
+        If `value` was not passed as `str`.
     ValueError
         If the `value`'s length is less than the given `lower_limit` or is higher than the given than the given
         `upper_limit`.
@@ -220,11 +246,15 @@ def preconvert_str(value, name, lower_limit, upper_limit):
     elif isinstance(value, str):
         value = str(value)
     else:
-        raise TypeError(f'`{name}` can be `str` instance, got {value.__class__.__name__}.')
+        raise TypeError(
+            f'`{name}` can be `str`, got {value.__class__.__name__}; {value!r}.'
+        )
     
     length = len(value)
     if (length != 0) and (length < lower_limit or length > upper_limit):
-        raise ValueError(f'`{name}` can be between length {lower_limit} and {upper_limit}, got {length!r}; {value!r}.')
+        raise ValueError(
+            f'`{name}` can be between length {lower_limit} and {upper_limit}, got {length!r}; {value!r}.'
+        )
     
     return value
 
@@ -264,7 +294,9 @@ def preconvert_iterable_of_str(value, name, iterable_lower_limit, iterable_upper
     """
     iterator = getattr(type(value), '__iter__', None)
     if iterator is None:
-        raise TypeError(f'`{name}` can be `iterable`, got {value.__class__.__name__}.')
+        raise TypeError(
+            f'`{name}` can be `iterable`, got {value.__class__.__name__}; {value!r}.'
+        )
     
     converted_value = set()
     
@@ -274,22 +306,29 @@ def preconvert_iterable_of_str(value, name, iterable_lower_limit, iterable_upper
         elif isinstance(value_element, str):
             value_element = str(value_element)
         else:
-            raise TypeError(f'`{name}` can contains `str` instances, got {value.__class__.__name__}.')
+            raise TypeError(
+                f'`{name}` can contain `str` elements, got {value_element.__class__.__name__}; {value_element!r}; '
+                f'value={value!r}.'
+            )
         
         length = len(value_element)
         if length == 0:
             continue
         
         if (length < lower_limit) or (length > upper_limit):
-            raise ValueError(f'`{name}` can contains elements between length {lower_limit} and {upper_limit}, '
-                f'got {length!r} {value_element!r}.')
+            raise ValueError(
+                f'`{name}` can contains elements between length {lower_limit} and {upper_limit}, '
+                f'got {length!r} {value_element!r}; value={value!r}.'
+            )
         
         converted_value.add(value_element)
     
     length = len(converted_value)
     if (length != 0) and (length < iterable_lower_limit or length > iterable_upper_limit):
-        raise ValueError(f'`{name} can be in between length {iterable_lower_limit} and {iterable_upper_limit}, '
-            f'got {length!r}; {value!r}.')
+        raise ValueError(
+            f'`{name} can be in between length {iterable_lower_limit} and {iterable_upper_limit}, '
+            f'got {length!r}; {value!r}.'
+        )
     
     return converted_value
 
@@ -312,18 +351,22 @@ def preconvert_bool(value, name):
     Raises
     ------
     TypeError
-        If `value` was not passed as `int` instance.
+        If `value` was not passed as `int`.
     ValueError
-        If value was passed as an `int` instance, but not as `0` or `1` either.
+        If value was passed as an `int`, but not as `0`, `1` either.
     """
     if (type(value) is bool):
         pass
     elif isinstance(value, int):
         if (value not in (0, 1)):
-            raise ValueError(f'`{name}` was given as `int` instance, but neither as `0` or `1`, got {value!r}.')
+            raise ValueError(
+                f'`{name}` was given as `int`, but neither as `0`, `1`, got {value!r}.'
+            )
         value = bool(value)
     else:
-        raise TypeError(f'`{name}` can be `bool` or `int` instance as `0` or `1`, got {value.__class__.__name__}.')
+        raise TypeError(
+            f'`{name}` can be `bool`, `int` as `0`, `1`, got {value.__class__.__name__}; {value!r}.'
+        )
     
     return value
 
@@ -348,9 +391,9 @@ def preconvert_flag(flag, name, type_):
     Raises
     ------
     TypeError
-        If `flag` was not given as `int` instance.
+        If `flag` was not given as `int`.
     ValueError
-        If `flag` was given as `int` instance, but it's value is less than `0` or it's bit length is over `64`.
+        If `flag` was given as `int`, but it's value is less than `0` or it's bit length is over `64`.
     """
     flag_type = flag.__class__
     if (flag_type is type_):
@@ -358,10 +401,14 @@ def preconvert_flag(flag, name, type_):
     elif issubclass(flag_type, int):
         flag = type_(flag)
     else:
-        raise TypeError(f'`{name}` can be passed as `{type_.__name__}` instance, got {flag_type.__name__}.')
+        raise TypeError(
+            f'`{name}` can be `{type_.__name__}`, got {flag_type.__name__}; {flag!r}.'
+        )
     
     if flag < 0 or flag > ((1<<64)-1):
-        raise ValueError(f'`{name}` can be only uint64, got {flag!r}.')
+        raise ValueError(
+            f'`{name}` can be only uint64, got {flag!r}.'
+        )
     
     return flag
 
@@ -376,17 +423,17 @@ def preconvert_preinstanced_type(value, name, type_):
         The value to convert.
     name : `str`
         The name of the value.
-    type_ : ``PreinstancedBase`` instance
+    type_ : ``PreinstancedBase``
         The preinstanced type.
     
     Returns
     -------
-    value : ``PreinstancedBase`` instance
+    value : ``PreinstancedBase``
     
     Raises
     ------
     TypeError
-        If `value` was not given as `type_` instance, neither as `type_.value`'s type's instance.
+        If `value` was not given as `type_`, neither as `type_.value`'s type's instance.
     ValueError
         If there is no preinstanced object for the given `value`.
     """
@@ -398,13 +445,17 @@ def preconvert_preinstanced_type(value, name, type_):
         elif issubclass(value_type, value_expected_type):
             value = value_expected_type(value)
         else:
-            raise TypeError(f'`{name}` can be passed as {type_.__name__} or as {value_expected_type.__name__} '
-                f'instance, got {value_type.__name__}.')
+            raise TypeError(
+                f'`{name}` can be `{type_.__name__}`, `{value_expected_type.__name__}` , got '
+                f'{value_type.__name__}; {value!r}.'
+            )
         
         try:
             value = type_.INSTANCES[value]
         except LookupError:
-            raise ValueError(f'There is no predefined `{name}` for the following value: {value!r}.') from None
+            raise ValueError(
+                f'There is no predefined `{name}` for value: {value!r}.'
+            ) from None
     
     return value
 
@@ -427,14 +478,16 @@ def _pre_validate_int(value, name):
     Raises
     ------
     TypeError
-        If `value` was not given as `int` instance.
+        If `value` was not given as `int`.
     """
     if type(value) is int:
         pass
     elif isinstance(value, int):
         value = int(value)
     else:
-        raise TypeError(f'`{name}` can be `int` instance, got {value.__class__.__name__}.')
+        raise TypeError(
+            f'`{name}` can be `int`, got {value.__class__.__name__}; {value!r}.'
+        )
 
     return value
 
@@ -461,14 +514,16 @@ def preconvert_int(value, name, lower_limit, upper_limit):
     Raises
     ------
     TypeError
-        If `value` was not given as `int` instance.
+        If `value` was not given as `int`.
     ValueError
         If `value` is less than `lower_limit`, or is higher than the `upper_limit`.
     """
     value = _pre_validate_int(value, name)
     
     if (value < lower_limit) or (value > upper_limit):
-        raise ValueError(f'`{name}` can be between {lower_limit} and {upper_limit}, got {value!r}.')
+        raise ValueError(
+            f'`{name}` can be between {lower_limit} and {upper_limit}, got {value!r}.'
+        )
     
     return value
 
@@ -493,14 +548,16 @@ def preconvert_int_options(value, name, options):
     Raises
     ------
     TypeError
-        If `value` was not given as `int` instance.
+        If `value` was not given as `int`.
     ValueError
         If `value` is less than `lower_limit`, or is higher than the `upper_limit`.
     """
     value = _pre_validate_int(value, name)
     
     if value not in options:
-        raise ValueError(f'`{name}` can be any of: {", ".join(options)}, got {value!r}.')
+        raise ValueError(
+            f'`{name}` can be any of: {", ".join(options)}, got {value!r}.'
+        )
     
     return value
 
@@ -527,7 +584,7 @@ def preconvert_float(value, name, lower_limit, upper_limit):
     Raises
     ------
     TypeError
-        If `value` was not given as `float` instance.
+        If `value` was not given as `float`.
     ValueError
         If `value` is less than `lower_limit`, or is higher than the `upper_limit`.
     """
@@ -538,12 +595,16 @@ def preconvert_float(value, name, lower_limit, upper_limit):
     else:
         float_converter = getattr(type(value), '__float__', None)
         if float_converter is None:
-            raise TypeError(f'`{name}` can be `float` instance, got {value.__class__.__name__}.')
+            raise TypeError(
+                f'`{name}` can be `float`, got {value.__class__.__name__}; {value!r}.'
+            )
         
         value = float_converter(value)
     
     if (value < lower_limit) or (value > upper_limit):
-        raise ValueError(f'`{name}` can be between {lower_limit} and {upper_limit}, got {value!r}.')
+        raise ValueError(
+            f'`{name}` can be between {lower_limit} and {upper_limit}, got {value!r}.'
+        )
     
     return value
 
@@ -554,7 +615,7 @@ def get_type_names(type_or_types):
     
     Parameters
     ----------
-    type_or_types : `type` or `tuple` of `type`
+    type_or_types : `type`, `tuple` of `type`
         The type(s) to get name of.
     
     Returns

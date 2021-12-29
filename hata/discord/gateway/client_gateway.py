@@ -77,18 +77,18 @@ class DiscordGateway:
         Zlib decompressor used to decompress the received data.
     client : ``Client``
         The owner client of the gateway.
-    kokoro : `None` or `Kokoro`
+    kokoro : `None`, `Kokoro`
         The heart of the gateway, sends beat-data at set intervals. If does not receives answer in time, restarts
         the gateway.
     rate_limit_handler : ``GatewayRateLimiter``
         The rate limit handler of the gateway.
-    sequence : `None` or `int`
+    sequence : `None`, `int`
         Last sequence number received.
-    session_id : `None` or `str`
+    session_id : `None`, `str`
         Last session id received at `READY`.
     shard_id : `int`
         The shard id of the gateway. If the respective client is not using sharding, it is set to `0` every time.
-    websocket : `None` or `WSClient`
+    websocket : `None`, `WebSocketClient`
         The websocket client of the gateway.
     """
     __slots__ = ('_buffer', '_decompressor', 'client', 'kokoro', 'rate_limit_handler', 'sequence', 'session_id',
@@ -373,7 +373,7 @@ class DiscordGateway:
         ----------
         operation : `int`
             The gateway operation's code what the function will handle.
-        data : `None` or `dict` of (`str`, `Any`) items
+        data : `None`, `dict` of (`str`, `Any`) items
             Deserialized json data.
         
         Returns

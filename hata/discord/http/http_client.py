@@ -96,9 +96,9 @@ class DiscordHTTPClient(HTTPClient):
         Headers used by every every Discord request.
     loop : ``EventThread``
         The event loop of the http session.
-    proxy_auth :  `None` or `str`
+    proxy_auth :  `None`, `str`
         Proxy authorization.
-    proxy_url : `None` or `str`
+    proxy_url : `None`, `str`
         Proxy url.
     
     Class Attributes
@@ -124,7 +124,7 @@ class DiscordHTTPClient(HTTPClient):
             Proxy authorization for the session's requests.
         proxy_url : `str`, Optional (Keyword only)
             Proxy url for the session's requests.
-        debug_options: `None` or `set` of `str`, Optional (Keyword only)
+        debug_options: `None`, `set` of `str`, Optional (Keyword only)
             Http debug options, like `'canary'` (I don't know more either).
         """
         loop = client.loop
@@ -197,7 +197,7 @@ class DiscordHTTPClient(HTTPClient):
         
         Parameters
         ----------
-        handler : ``RateLimitHandler`` or ``StackedStaticRateLimitHandler``
+        handler : ``RateLimitHandler``, ``StackedStaticRateLimitHandler``
             rate limit handler for the request.
         method : `str`
             The method of the request.
@@ -219,7 +219,7 @@ class DiscordHTTPClient(HTTPClient):
         Raises
         ------
         TypeError
-            `data` or `params` type is bad, or they contain object(s) with bad type.
+            `data`, `params` type is bad, or they contain object(s) with bad type.
         ConnectionError
             No internet connection.
         DiscordException
@@ -1788,7 +1788,7 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/applications/{application_id}/guilds/{guild_id}/commands',
         )
     
-    async def application_command_guild_create(self, application_id,guild_id, data):
+    async def application_command_guild_create(self, application_id, guild_id, data):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.application_command_guild_create, guild_id),
             METHOD_POST,

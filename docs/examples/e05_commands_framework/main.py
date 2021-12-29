@@ -46,7 +46,7 @@ async def say(ctx, content):
     await ctx.send(content, allowed_mentions=None)
 
 
-# The command processor can be accessed with the `.command_processor` instance attribute
+# The command processor can be accessed with the `.command_processor` attribute
 #
 # Error handlers to all the commands can be registered with the `.command_processor.error` decorator.
 # If an error handler returns `True` no other error handlers will be called.

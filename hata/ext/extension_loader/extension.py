@@ -35,12 +35,12 @@ class Extension:
     ----------
     _added_variable_names : `list of `str`
         A list of the added variables' names to the module.
-    _default_variables : `None` or `HybridValueDictionary` of (`str`, `Any`) items
+    _default_variables : `None`, `HybridValueDictionary` of (`str`, `Any`) items
         An optionally weak value dictionary to store objects for assigning them to modules before loading them.
         If it would be set as empty, then it is set as `None` instead.
-    _entry_point : `None`, `str`, or `callable`
+    _entry_point : `None`, `str`, `callable`
         Internal slot used by the ``.entry_point`` property.
-    _exit_point : `None`, `str`, or `callable`
+    _exit_point : `None`, `str`, `callable`
         Internal slot used by the ``.exit_point`` property.
     _extend_default_variables : `bool`
         Internal slot used by the ``.extend_default_variables`` property.
@@ -48,7 +48,7 @@ class Extension:
         The extension's module. Set as `module` object if it the extension was already loaded.
     _locked : `bool`
         The internal slot used for the ``.locked`` property.
-    _snapshot_difference : `None` or `list` of `tuple` (``Client``, `list` of `tuple` (`str`, `Any`))
+    _snapshot_difference : `None`, `list` of `tuple` (``Client``, `list` of `tuple` (`str`, `Any`))
         Snapshot difference if applicable. Defaults to `None`.
     _spec : `ModuleSpec`
         The module specification for the extension's module's import system related state.
@@ -80,13 +80,13 @@ class Extension:
         
         Parameters
         ----------
-        name : `None` or `str`
+        name : `None`, `str`
             The extension's name (or import path).
         path : `str`
             Path to the extension file.
-        entry_point : `None`, `str` or `callable`
+        entry_point : `None`, `str`, `callable`
             The entry point of the extension.
-        exit_point : `None`, `str` or `callable`
+        exit_point : `None`, `str`, `callable`
             The exit point of the extension.
         extend_default_variables : `bool`
             Whether the extension should use the loader's default variables or just it's own's.
@@ -95,7 +95,7 @@ class Extension:
         take_snapshot_difference: `bool`
             Whether snapshots should be taken before and after loading an extension, and when the extension is unloaded,
             the snapshot difference should be reverted.
-        default_variables : `None` or `HybridValueDictionary` of (`str`, `Any`) items
+        default_variables : `None`, `HybridValueDictionary` of (`str`, `Any`) items
             An optionally weak value dictionary to store objects for assigning them to modules before loading them.
             If would be empty, is set as `None` instead.
         
@@ -211,7 +211,9 @@ class Extension:
         
         for key, value in variables.items():
             if key in PROTECTED_NAMES:
-                raise ValueError(f'The passed {key!r} is a protected variable name of module type.')
+                raise ValueError(
+                    f'The passed {key!r} is a protected variable name of module type.'
+                )
             default_variables[key] = value
     
     
@@ -262,8 +264,10 @@ class Extension:
     @entry_point.setter
     def entry_point(self, entry_point):
         if not _validate_entry_or_exit(entry_point):
-            raise TypeError(f'`{self.__class__.__name__}.entry_point` expected `None`, `str` or a `callable`, got '
-                f'{entry_point.__class__.__name__}.')
+            raise TypeError(
+                f'`{self.__class__.__name__}.entry_point` can be `None`, `str`, `callable`, got '
+                f'{entry_point.__class__.__name__}; {entry_point!r}.'
+            )
         
         self._entry_point = entry_point
     
@@ -284,8 +288,10 @@ class Extension:
     @exit_point.setter
     def exit_point(self, exit_point):
         if not _validate_entry_or_exit(exit_point):
-            raise TypeError(f'`{self.__class__.__name__}.exit_point` expected `None`, `str` or a `callable`, got '
-                f'{exit_point.__class__.__name__}.')
+            raise TypeError(
+                f'`{self.__class__.__name__}.exit_point` can be `None`, `str`, `callable`, got '
+                f'{exit_point.__class__.__name__}; {exit_point!r}.'
+            )
         
         self._exit_point = exit_point
     
@@ -311,8 +317,10 @@ class Extension:
         elif issubclass(extend_default_variables_type, int):
             extend_default_variables = bool(extend_default_variables)
         else:
-            raise TypeError(f'`extend_default_variables` should have been passed as `bool`, got '
-                f'{extend_default_variables_type.__name__}.')
+            raise TypeError(
+                f'`extend_default_variables` can be `bool`, got '
+                f'{extend_default_variables_type.__name__}; {extend_default_variables!r}.'
+            )
         
         self._extend_default_variables = extend_default_variables
     
@@ -334,7 +342,9 @@ class Extension:
         elif issubclass(locked_type, int):
             locked = bool(locked)
         else:
-            raise TypeError(f'`locked` should have been passed as `bool`, got: {locked_type.__name__}.')
+            raise TypeError(
+                f'`locked` can be `bool`, got {locked_type.__name__}; {locked!r}.'
+            )
         
         self._locked = locked
     
@@ -345,7 +355,7 @@ class Extension:
         
         Returns
         -------
-        lib : `None` or `lib`
+        lib : `None`, `lib`
         """
         state = self._state
         if state == EXTENSION_STATE_UNDEFINED:
@@ -460,7 +470,7 @@ class Extension:
         
         Returns
         -------
-        lib : `None` or `lib`
+        lib : `None`, `lib`
         
         Raises
         ------

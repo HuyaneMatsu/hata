@@ -8,7 +8,7 @@ from scarletio import BaseMethodDescriptor, export, include
 
 from ..bases import DiscordEntity, id_sort_key
 from ..utils import timestamp_to_datetime, CHANNEL_MENTION_RP, datetime_to_id, DATETIME_FORMAT_CODE, \
-    datetime_to_timestamp
+    datetime_to_timestamp, id_to_datetime
 from ..core import MESSAGES, CHANNELS, GUILDS
 from ..user import ZEROUSER, User, ClientUserBase, UserBase
 from ..emoji import reaction_mapping
@@ -140,7 +140,7 @@ def _get_message_field(message, field_key):
     
     Returns
     -------
-    value : `None` or `Any`
+    value : `None`, `Any`
     """
     fields = message._fields
     if (fields is not None):
@@ -160,7 +160,7 @@ def _get_first_message_field(message, field_key):
     
     Returns
     -------
-    value : `None` or `Any`
+    value : `None`, `Any`
     """
     fields = message._fields
     if (fields is not None):
@@ -208,7 +208,7 @@ class Message(DiscordEntity, immortal=True):
         The unique identifier number of the message.
     _fields : `bool`
         Optional fields of the message.
-    author : ``UserBase`` instance
+    author : ``UserBase``
         The author of the message. Can be any user type and if not found, then set as `ZEROUSER`.
     channel_id : `int`
         The channel's identifier where the message is sent.
@@ -659,18 +659,18 @@ class Message(DiscordEntity, immortal=True):
         Parameters
         ----------
         validate : `bool`, Optional
-            Whether contradictory between the message's attributes should be checked. If there is any, `ValueError`
+            Whether contradictory between the message's attributes can be checked. If there is any, `ValueError`
             is raised. Defaults to `True`.
         **kwargs : keyword parameters
             Additional attributes of the created message.
         
         Other Parameters
         ----------------
-        activity : `None` or ``MessageActivity``, Optional (Keyword only)
+        activity : `None`, ``MessageActivity``, Optional (Keyword only)
             The ``.activity`` attribute the message.
             
             If called as classmethod defaults to `None`.
-        application : `None` or ``MessageApplication``., Optional (Keyword only)
+        application : `None`, ``MessageApplication``., Optional (Keyword only)
             The ``.application`` attribute the message.
             
             If called as a classmethod defaults to `None`.
@@ -678,30 +678,30 @@ class Message(DiscordEntity, immortal=True):
             The ``.application_id`` attribute of the message.
             
             If called as a classmethod defaults to `0`.
-        attachments : `None` or ((`list`, `tuple`) of ``Attachment``), Optional (Keyword only)
+        attachments : `None`, ((`list`, `tuple`) of ``Attachment``), Optional (Keyword only)
             The ``.attachments`` attribute of the message. If passed as an empty list, then will be as `None` instead.
             
             If called as a classmethod defaults to `None`.
-        author : `None`, ``ClientUserBase``, ``Webhook`` or ``WebhookRepr``, Optional (Keyword only)
+        author : `None`, ``ClientUserBase``, ``Webhook``, ``WebhookRepr``, Optional (Keyword only)
             The ``.author`` attribute of the message. If passed as `None` then it will be set as `ZEROUSER` instead.
             
             If called as a classmethod, defaults to `ZEROUSER`.
-        channel_id : ``ChannelTextBase`` or `int` instance, Optional if called as method (Keyword only)
+        channel_id : ``ChannelTextBase``, `int`, Optional if called as method (Keyword only)
             The ``.channel_id`` attribute of the message.
             
             If called as a classmethod this attribute must be passed, or `TypeError` is raised.
         
-        components : `None` or (`list` or `tuple`) of ``ComponentBase``, Optional (Keyword only)
+        components : `None`, (`list`, `tuple`) of ``ComponentBase``, Optional (Keyword only)
             The ``.components`` attribute of the message.
             
             If called as a classmethod, defaults to `None`.
         
-        content : `None` or `str`, Optional (Keyword only)
+        content : `None`, `str`, Optional (Keyword only)
             The ``.content`` attribute of the message. Can be between length `0` and `4000`.
             
             If called as a classmethod defaults to `''` (empty string).
         
-        cross_mentions : `None` or (`tuple`, `list`) of (``UnknownCrossMention`` or ``ChannelGuildBase`` instances)
+        cross_mentions : `None`, (`tuple`, `list`) of (``UnknownCrossMention``, ``ChannelGuildBase``)
                 , Optional (Keyword only)
             The `.cross_mentions` attribute of the message. If passed as an empty list, then will be set `None` instead.
             
@@ -713,84 +713,84 @@ class Message(DiscordEntity, immortal=True):
         deleted : `bool`, Optional (Keyword only)
             The ``.deleted`` attribute of the message. If called as a class method, defaults to `True`.
         
-        edited_at : `None` or `datetime`, Optional (Keyword only)
+        edited_at : `None`, `datetime`, Optional (Keyword only)
             The ``.edited_at`` attribute of the message.
             
             If called as a classmethod, defaults to `None`.
-        embeds : `None` or (`list` or `tuple`) of ``EmbedBase``, Optional (Keyword only)
+        embeds : `None`, (`list`, `tuple`) of ``EmbedBase``, Optional (Keyword only)
             The ``.embeds`` attribute of the message. If passed as an empty list, then is set as `None` instead. If
             passed as list and it contains any embeds, which are not type ``EmbedCore``, then those will be converted
             to ``EmbedCore`` as well.
             
             If called as a classmethod defaults to `None`.
-        everyone_mention : `bool` or `int` instance (`0` or `1`), Optional (Keyword only)
-            The ``.everyone_mention`` attribute of the message. Accepts other `int` instance as `bool` as well, but
-            their value still cannot be other than `0` or `1`.
+        everyone_mention : `bool`, `int` (`0`, `1`), Optional (Keyword only)
+            The ``.everyone_mention`` attribute of the message. Accepts other `int` as `bool` as well, but
+            their value still cannot be other than `0`, `1`.
             
             If called as a classmethod, defaults to `False`.
-        flags : ``MessageFlag`` or `int`, Optional (Keyword only)
-            The ``.flags`` attribute of the message. If passed as other `int` instances than ``MessageFlag``, then will
+        flags : ``MessageFlag``, `int`, Optional (Keyword only)
+            The ``.flags`` attribute of the message. If passed as other `int` than ``MessageFlag``, then will
             be converted to ``MessageFlag``.
             
             If called as a classmethod defaults to `MessageFlag(0)`.
         
-        interaction : `None` or ``MessageInteraction``, Optional (Keyword only)
+        interaction : `None`, ``MessageInteraction``, Optional (Keyword only)
            The `.interaction` attribute of the message.
         
             If called as a classmethod defaults to `None`.
         
-        id : `int` or `str`, Optional (Keyword only)
+        id : `int`, `str`, Optional (Keyword only)
             The ``.id`` attribute of the message. If passed as `str`, will be converted to `int`.
             
             If called as a classmethod defaults to `0`.
-        id_ : `int` or `str`, Optional (Keyword only)
+        id_ : `int`, `str`, Optional (Keyword only)
             Alias of `id`.
         
-        message_id : `int` or `str`, Optional (Keyword only)
+        message_id : `int`, `str`, Optional (Keyword only)
             Alias of `id`.
         
-        nonce : `None` or `str`, Optional (Keyword only)
+        nonce : `None`, `str`, Optional (Keyword only)
             The ``.nonce`` attribute of the message. If passed as `str` can be between length `0` and `32`.
             
             If called as a classmethod defaults to `None`.
-        pinned : `bool` or `int` instance (`0` or `1`), Optional (Keyword only)
-            The ``.pinned`` attribute of the message. Accepts other `int` instances as `bool` as well, but their value
-            still cannot be other than `0` or `1`.
+        pinned : `bool`, `int` (`0`, `1`), Optional (Keyword only)
+            The ``.pinned`` attribute of the message. Accepts other `int` as `bool` as well, but their value
+            still cannot be other than `0`, `1`.
             
             If called as a classmethod, defaults to `False`.
-        reactions : `None` or ``reaction_mapping``, Optional (Keyword only)
+        reactions : `None`, ``reaction_mapping``, Optional (Keyword only)
             The ``.reactions`` attribute of the message.
             
             If called as a classmethod defaults to `None`.
-        role_mentions : `None` or (`list` or `tuple`) of ``Role``, Optional (Keyword only)
+        role_mentions : `None`, (`list`, `tuple`) of ``Role``, Optional (Keyword only)
             The ``.role_mentions`` attribute of the message. If passed as an empty `list`, will be set as `None`
             instead.
             
             If called as a classmethod defaults to `None`.
-        stickers : `None` or (`list`, `tuple`) of ``Sticker``, Optional (Keyword only)
+        stickers : `None`, (`list`, `tuple`) of ``Sticker``, Optional (Keyword only)
             The ``.stickers`` attribute of the message.
             
             If called as a classmethod, defaults to `None`.
         
-        thread : `None` or ``ChannelThread``
+        thread : `None`, ``ChannelThread``
             The ``.thread`` attribute of the message.
             
             If called as a classmethod defaults to `None`.
         
-        tts : `bool` or `int` instance (`0` or `1`), Optional (Keyword only)
-            The ``.tts`` attribute of the message. Accepts other `int` instances as `bool` as well, but their value
-            still cannot be other than `0` or `1`.
+        tts : `bool`, `int` (`0`, `1`), Optional (Keyword only)
+            The ``.tts`` attribute of the message. Accepts other `int` as `bool` as well, but their value
+            still cannot be other than `0`, `1`.
             
             If called as a classmethod, defaults to `False`.
-        type : ``MessageType`` or `int`, Optional (Keyword only)
+        type : ``MessageType``, `int`, Optional (Keyword only)
             The ``.type`` attribute of the message. If passed as `int`, it will be converted to it's wrapper side
             ``MessageType`` representation.
             
             If called as a classmethod defaults to ``MessageType.default`
-        type_ : ``MessageType`` or `int`, Optional (Keyword only)
+        type_ : ``MessageType``, `int`, Optional (Keyword only)
             Alias of ``type`.
         
-        user_mentions : `None` or `list`, `tuple`  of ``UserBase``, Optional (Keyword only)
+        user_mentions : `None`, `list`, `tuple`  of ``UserBase``, Optional (Keyword only)
             The ``.user_mentions`` attribute of the message. If passed as an empty list will be set as `None` instead.
             
             If called as a classmethod defaults to `None`.
@@ -808,7 +808,7 @@ class Message(DiscordEntity, immortal=True):
             - If `validate` is passed as `True` and there is a contradictory between the message's attributes.
         """
         if (base is not None) and (type(base) is not cls):
-            raise TypeError(f'`base` should be either `None`, or type `{cls.__name__}`, got `{base!r}`')
+            raise TypeError(f'`base` can be `None`, or type `{cls.__name__}`, got `{base!r}`')
         
         try:
             channel = kwargs.pop('channel')
@@ -818,8 +818,9 @@ class Message(DiscordEntity, immortal=True):
                 channel_id = kwargs.pop('channel_id')
             except KeyError:
                 if base is None:
-                    raise TypeError('Expected to be called as method, but was called as a classmethod and `channel_id`'
-                        'was not passed.')
+                    raise TypeError(
+                        '`channel_id` is a required parameter if called as a classmethod.'
+                    )
                 
                 channel_id = base.channel_id
                 channel = None
@@ -830,8 +831,9 @@ class Message(DiscordEntity, immortal=True):
                     channel = channel_id
                     channel_id = channel_id.id
                 else:
-                    raise TypeError(f'`channel_id` should be `int` or `{ChannelTextBase.__name__}` subclass\'s'
-                        f'instance, got `{channel_id!r}`.')
+                    raise TypeError(
+                        f'`channel_id` can be `int`, `{ChannelTextBase.__name__}`, got `{channel_id!r}`.'
+                    )
             
             if (channel is None):
                 channel = CHANNELS.get('channel_id', None)
@@ -843,13 +845,17 @@ class Message(DiscordEntity, immortal=True):
         
         else:
             warnings.warn(
-                f'`{cls.__name__}.custom`\'s `channel` parameter is deprecated, and will be removed in 2022 January.'
-                f'Please use `channel_id` instead.',
-                FutureWarning)
+                (
+                    f'`{cls.__name__}.custom`\'s `channel` parameter is deprecated, and will be removed in 2022 '
+                    f'January. Please use `channel_id` instead.'
+                ),
+                FutureWarning,
+            )
             
             if not isinstance(channel, ChannelTextBase):
-                raise TypeError(f'`channel` should be or `{ChannelTextBase.__name__}` subclass\'s'
-                    f'instance, got `{channel!r}`.')
+                raise TypeError(
+                    f'`channel` can be `{ChannelTextBase.__name__}`, got {channel.__class__.__name__}; {channel!r}.'
+                )
                 
             channel_id = channel.id
             guild_id = channel.guild_id
@@ -864,7 +870,10 @@ class Message(DiscordEntity, immortal=True):
                 activity = base.activity
         else:
             if (activity is not None) and (type(activity) is not MessageActivity):
-                raise TypeError(f'`activity` should be `None` or type `{MessageActivity.__name__}`, got `{activity!r}`')
+                raise TypeError(
+                    f'`activity` can be `None` or type `{MessageActivity.__name__}`, got '
+                    f'{activity.__class__.__name__}; {activity!r}.'
+                )
         
         try:
             application = kwargs.pop('application')
@@ -875,8 +884,10 @@ class Message(DiscordEntity, immortal=True):
                 application = base.application
         else:
             if (application is not None) and (type(application) is not MessageApplication):
-                raise TypeError(f'`application` should be `None` or type `{MessageApplication.__name__}`, got '
-                    f'`{application!r}`')
+                raise TypeError(
+                    f'`application` can be `None`, `{MessageApplication.__name__}`, got '
+                    f'{application.__class__.__name__}; {application!r}.'
+                )
         
         
         try:
@@ -903,16 +914,20 @@ class Message(DiscordEntity, immortal=True):
         else:
             if (attachments is not None):
                 if not isinstance(attachments, (list, tuple)):
-                    raise TypeError(f'`attachments` should be `None` or `tuple`, `list` of `{Attachment.__name__}` '
-                        f'instances, got `{attachments!r}`')
+                    raise TypeError(
+                        f'`attachments` can be `None`, `tuple`, `list` of `{Attachment.__name__}`, got '
+                        f'{attachments.__class__.__name__}; {attachments!r}'
+                    )
                 
                 attachments = tuple(attachments)
                 
                 if attachments:
                     for attachment in attachments:
                         if not isinstance(attachment, Attachment):
-                            raise TypeError(f'`attachments` contains a non `{Attachment.__name__}` '
-                                f'instance, `{attachment.__class__.__name__}`.')
+                            raise TypeError(
+                                f'`attachments` can contain `{Attachment.__name__}` elements, got '
+                                f'{attachment.__class__.__name__}, {attachment!r}; attachments={attachment!r}.'
+                            )
                 else:
                     # We should not have empty attachment list, lets fix it
                     attachments = None
@@ -929,12 +944,13 @@ class Message(DiscordEntity, immortal=True):
                 # Author cannot be None, but accept it as `ZEROUSER`
                 author = ZEROUSER
             elif isinstance(author, (ClientUserBase, Webhook, WebhookRepr)):
-                # This should be the case
+                # This can be the case
                 pass
             else:
                 raise TypeError(
-                    f'`author` can be type `None`, `{ClientUserBase.__name__}`, `{Webhook.__name__}` or '
-                    f'`{WebhookRepr.__name__}`, got `{author!r}`.')
+                    f'`author` can be `None`, `{ClientUserBase.__name__}`, `{Webhook.__name__}`, '
+                    f'`{WebhookRepr.__name__}`, got {author.__class__.__name__}; {author!r}.'
+                )
         
         try:
             content = kwargs.pop('content')
@@ -956,8 +972,10 @@ class Message(DiscordEntity, immortal=True):
                 referenced_message = base.referenced_message
         else:
             if (referenced_message is not None) and (type(referenced_message) not in (Message, MessageReference)):
-                raise TypeError(f'`referenced_message` should be `None` or type `{Message.__name__}`, '
-                    f'`{MessageReference.__call__}`, got `{referenced_message!r}`')
+                raise TypeError(
+                    f'`referenced_message` can be `None`, `{Message.__name__}`, `{MessageReference.__call__}`, got '
+                    f'{referenced_message.__class__.__name__}; {referenced_message!r}.'
+                )
         
         try:
             cross_mentions = kwargs.pop('cross_mentions')
@@ -972,16 +990,21 @@ class Message(DiscordEntity, immortal=True):
         else:
             if (cross_mentions is not None):
                 if not isinstance(cross_mentions, (tuple, list)):
-                    raise TypeError(f'`cross_mentions` can be `None` or `tuple`, `list` of '
-                        f'`{ChannelGuildBase.__name__}` or `{UnknownCrossMention.__name__}` instances, got '
-                        f'`{cross_mentions.__class__.__name__}`.')
+                    raise TypeError(
+                        f'`cross_mentions` can be `None`, `tuple`, `list` of `{ChannelGuildBase.__name__}` or '
+                        f'`{UnknownCrossMention.__name__}`, got '
+                        f'{cross_mentions.__class__.__name__}; {cross_mentions!r}.'
+                    )
                 
                 cross_mentions_processed = []
                 
                 for channel_ in cross_mentions:
                     if not isinstance(channel_, (ChannelGuildBase, UnknownCrossMention)):
-                        raise TypeError(f'`cross_mentions` contains a non `{ChannelGuildBase.__name__}` or '
-                            f'`{UnknownCrossMention.__name__}` instance: `{channel_.__class__.__name__}`.')
+                        raise TypeError(
+                            f'`cross_mentions` can contain `{ChannelGuildBase.__name__}`, '
+                            f'`{UnknownCrossMention.__name__}` elements, got {channel_.__class__.__name__};'
+                            f'{channel_!r}; cross_mentions={cross_mentions!r}.'
+                        )
                     
                     cross_mentions_processed.append(channel_)
                 
@@ -993,7 +1016,9 @@ class Message(DiscordEntity, immortal=True):
         
         if validate:
             if (referenced_message is None) and (cross_mentions is not None):
-                raise ValueError('`cross_mentions` are supported, only if `referenced_message` is provided')
+                raise ValueError(
+                    '`cross_mentions` are supported, only if `referenced_message` is provided'
+                )
         
         try:
             deleted = kwargs.pop('deleted')
@@ -1033,11 +1058,16 @@ class Message(DiscordEntity, immortal=True):
                 edited_at = base.edited_at
         else:
             if (edited_at is not None) and (type(edited_at) is not datetime):
-                raise TypeError(f'`edited_at` can be `None` or `datetime`, got `{edited_at.__class__.__name__}`.')
+                raise TypeError(
+                    f'`edited_at` can be `None`, `datetime`, got {edited_at.__class__.__name__}; {edited_at!r}.'
+                )
         
         if validate:
             if (edited_at is not None) and (datetime_to_id(edited_at)<message_id):
-                raise ValueError('`edited_at` can not be lower, than `created_at`')
+                raise ValueError(
+                    f'`edited_at` can not be lower, than `created_at`, got edited_at={edited_at!r}, '
+                    f'created_at={id_to_datetime(message_id)}.'
+                )
         
         try:
             embeds = kwargs.pop('embeds')
@@ -1049,15 +1079,19 @@ class Message(DiscordEntity, immortal=True):
         else:
             if (embeds is not None):
                 if not isinstance(embeds, (list, tuple)):
-                    raise TypeError(f'`embeds` can be `None`, `tuple` or`list` of `{EmbedBase.__name__}` instances, '
-                        f'got `{embeds.__class__.__name__}`.')
+                    raise TypeError(
+                        f'`embeds` can be `None`, `tuple`, `list` of `{EmbedBase.__name__}`, got '
+                        f'{embeds.__class__.__name__}; {embeds!r}.'
+                    )
                 
                 embeds = list(embeds)
                 
                 embeds_length = len(embeds)
                 if validate:
                     if len(embeds) > 10:
-                        raise ValueError(f'`embeds` can have maximal length of `10`, got `{embeds_length!r}`.')
+                        raise ValueError(
+                            f'A message can have up to `10` embeds, got {embeds_length!r}; {embeds!r}.'
+                        )
                 
                 if embeds_length:
                     for index in range(embeds_length):
@@ -1072,8 +1106,10 @@ class Message(DiscordEntity, immortal=True):
                             embeds[index] = embed
                             continue
                         
-                        raise TypeError(f'`embeds` contains a non `{EmbedBase.__name__}` instance: '
-                            f'`{embeds.__class__.__name__}`.')
+                        raise TypeError(
+                            f'`embeds` can contain `{EmbedBase.__name__}` elements, got {embeds.__class__.__name__}; '
+                            f'{embeds!r}; embeds={embeds!r}.'
+                        )
                     
                     embeds = tuple(embeds)
                 else:
@@ -1109,21 +1145,28 @@ class Message(DiscordEntity, immortal=True):
                 if flags.source_message_deleted and (not flags.is_crosspost):
                     raise ValueError(
                         '`flags.source_message_deleted` is set, but `flags.is_crosspost` is not -> Only crossposted '
-                        'message\'s source can be deleted')
+                        'message\'s source can be deleted.'
+                    )
                 
                 # Other cases?
             else:
                 if flags.crossposted:
-                    raise ValueError('`flags.crossposted` is set, meanwhile `channel` is not type '
-                        f'`{ChannelText.__name__}`; `{channel!r}`')
+                    raise ValueError(
+                        '`flags.crossposted` is set, meanwhile `channel` is not type '
+                        f'`{ChannelText.__name__}`, got {channel.__class__.__name__}; {channel!r}.'
+                    )
     
                 if flags.is_crosspost:
-                    raise ValueError('`flags.is_crosspost` is set, meanwhile `channel` is not type '
-                        f'`{ChannelText.__name__}`; `{channel!r}`')
+                    raise ValueError(
+                        '`flags.is_crosspost` is set, meanwhile `channel` is not type '
+                        f'`{ChannelText.__name__}`, got {channel.__class__.__name__}; {channel!r}.'
+                    )
     
                 if flags.source_message_deleted:
-                    raise ValueError('`flags.source_message_deleted` is set, meanwhile `channel` is not type '
-                        f'`{ChannelText.__name__}`; `{channel!r}`')
+                    raise ValueError(
+                        '`flags.source_message_deleted` is set, meanwhile `channel` is not type '
+                        f'`{ChannelText.__name__}`, got {channel.__class__.__name__}; {channel!r}.'
+                    )
         
         try:
             nonce = kwargs.pop('nonce')
@@ -1139,12 +1182,16 @@ class Message(DiscordEntity, immortal=True):
                 elif isinstance(nonce, str):
                     nonce = str(nonce)
                 else:
-                    raise TypeError(f'`nonce` should be `None` or type `str` instance, got `{nonce!r}`.')
+                    raise TypeError(
+                        f'`nonce` can be `None`, `str`, got {nonce.__class__.__name__}; {nonce!r}.'
+                    )
                 
                 nonce_length = len(nonce)
                 if nonce_length > 32:
-                    raise TypeError(f'`nonce`\'s length can be be in range [1:32], got: `{nonce_length!r}`; '
-                        f'`{nonce!r}`.')
+                    raise TypeError(
+                        f'`nonce`\'s length can be be in range [1:32], got: {nonce_length!r}; {nonce!r}.'
+                    )
+                
                 elif nonce_length == 0:
                     nonce = None
         
@@ -1176,7 +1223,10 @@ class Message(DiscordEntity, immortal=True):
                 # We expect this as default
                 pass
             else:
-                raise TypeError(f'`reactions`, should be type `{reaction_mapping.__name__}`, got `{reactions}`')
+                raise TypeError(
+                    f'`reactions`, can be `None`, `{reaction_mapping.__name__}`, got '
+                    f'{reactions.__class__.__name__}; {reactions}.'
+                )
         
         try:
             role_mentions = kwargs.pop('role_mentions')
@@ -1191,14 +1241,18 @@ class Message(DiscordEntity, immortal=True):
         else:
             if (role_mentions is not None):
                 if not isinstance(role_mentions, (tuple, list)):
-                    raise TypeError(f'`role_mentions` should be `None` or `list`, `tuple` of `{Role.__name__}` '
-                        f'instances, got `{role_mentions.__class__.__name__}`.')
+                    raise TypeError(
+                        f'`role_mentions` can be `None`, `list`, `tuple` of `{Role.__name__}`, got '
+                        f'{role_mentions.__class__.__name__}; {role_mentions!r}.'
+                    )
                 
                 if role_mentions:
                     for role in role_mentions:
                         if not isinstance(role, Role):
-                            raise TypeError(f'`role_mentions` contains a non `{Role.__name__}` instance, '
-                                f'`{role.__class__.__name__}`.')
+                            raise TypeError(
+                                f'`role_mentions` can contain `{Role.__name__}` elements, got '
+                                f'{role.__class__.__name__}; {role!r}; role_mentions={role_mentions!r}.'
+                            )
                     
                 else:
                     # There cannot be an empty mention list, so lets fix it.
@@ -1206,8 +1260,10 @@ class Message(DiscordEntity, immortal=True):
         
         if validate:
             if (role_mentions is not None) and (not isinstance(channel,ChannelGuildBase)):
-                raise ValueError('`role_mentions` are set as not `None`, meanwhile the `channel` is not '
-                    f'`{ChannelGuildBase}` subclass\'s instance; `{channel!r}`')
+                raise ValueError(
+                    f'`role_mentions` are only applicable for guild channels, got {channel.__class__.__name__}; '
+                    f'{channel!r}; role_mentions={role_mentions!r}.'
+                )
         
         if (role_mentions is None):
             role_mention_ids = None
@@ -1225,8 +1281,10 @@ class Message(DiscordEntity, immortal=True):
                     stickers = tuple(stickers)
         else:
             if not isinstance(stickers, (list, tuple)):
-                raise TypeError(f'`stickers` should be `None` or ` tuple`, `list` of `{Sticker.__name__}` instances, '
-                    f'got `{stickers!r}`')
+                raise TypeError(
+                    f'`stickers` can be `None`, ` tuple`, `list` of `{Sticker.__name__}`, got '
+                    f'{stickers.__class__.__name__}; {stickers!r}.'
+                )
             
             stickers = tuple(stickers)
             
@@ -1234,8 +1292,10 @@ class Message(DiscordEntity, immortal=True):
             if stickers_length:
                 for sticker in stickers:
                     if not isinstance(sticker, Sticker):
-                        raise TypeError(f'`stickers` contains a non `{Sticker.__name__}` instance, '
-                            f'`{sticker!r}`')
+                        raise TypeError(
+                            f'`stickers` can contain `{Sticker.__name__}`, got'
+                            f'{sticker.__class__.__name__}; {sticker!r}; stickers={stickers!r}.'
+                        )
             else:
                 # We should not have empty attachment list, lets fix it
                 stickers = None
@@ -1282,14 +1342,18 @@ class Message(DiscordEntity, immortal=True):
         else:
             if (user_mentions is not None):
                 if not isinstance(user_mentions, (tuple, list)):
-                    raise TypeError(f'`user_mentions` should be `None` or `tuple`, `list` of `{UserBase.__name__}` '
-                        f'instances, got `{user_mentions.__class__.__name__}`.')
+                    raise TypeError(
+                        f'`user_mentions` can be `None`, `tuple`, `list` of `{UserBase.__name__}`, got '
+                        f'{user_mentions.__class__.__name__}; {user_mentions!r}.'
+                    )
                 
                 if user_mentions:
                     for user in user_mentions:
                         if not isinstance(user, UserBase):
-                            raise TypeError(f'`user_mentions` contains at least 1 non `{UserBase.__name__}` '
-                                f'instance; `{user.__class__.__name__}`.')
+                            raise TypeError(
+                                f'`user_mentions`can contain `{UserBase.__name__}` elements, got '
+                                f'{user.__class__.__name__}; {user!r}.'
+                            )
                     
                     user_mentions = tuple(sorted(user_mentions, key=id_sort_key))
                     
@@ -1305,8 +1369,10 @@ class Message(DiscordEntity, immortal=True):
                 interaction = base.interaction
         else:
             if (interaction is not None) and (not isinstance(interaction, MessageInteraction)):
-                raise TypeError(f'`interaction` can be given as `None` or as `{MessageInteraction.__name__}` '
-                    f'instance, got {interaction.__class__.__name__}.')
+                raise TypeError(
+                    f'`interaction` can be `None`, `{MessageInteraction.__name__}`, got '
+                    f'{interaction.__class__.__name__}; {interaction!r}.'
+                )
         
         try:
             components = kwargs.pop('components')
@@ -1320,16 +1386,20 @@ class Message(DiscordEntity, immortal=True):
         else:
             if (components is not None):
                 if not isinstance(components, (list, tuple)):
-                    raise TypeError(f'`components` should be `None` or `tuple`, `list` of `{ComponentBase.__name__}` '
-                        f'instances, got `{components.__class__.__name__}`.')
+                    raise TypeError(
+                        f'`components` can be `None`, `tuple`, `list` of `{ComponentBase.__name__}` , got '
+                        f'{components.__class__.__name__}; {components!r}.'
+                    )
                 
                 components = tuple(components)
                 
                 if components:
                     for component in components:
                         if not isinstance(component, ComponentBase):
-                            raise TypeError(f'`components` contains at least 1 non `{ComponentBase.__name__}` '
-                                f'instance; `{component.__class__.__name__}`.')
+                            raise TypeError(
+                                f'`components` can contain `{ComponentBase.__name__}` elements, got '
+                                f'{component.__class__.__name__}; {component!r}.'
+                            )
                     
                 else:
                     components = None
@@ -1343,12 +1413,14 @@ class Message(DiscordEntity, immortal=True):
                 thread = base.thread
         else:
             if (thread is not None) and (not isinstance(thread, ChannelThread)):
-                raise TypeError(f'`thread` can be given as `None` or as `{ChannelThread.__name__}` '
-                    f'instance, got {thread.__class__.__name__}.')
+                raise TypeError(
+                    f'`thread` can be `None`, `{ChannelThread.__name__}` , got '
+                    f'{thread.__class__.__name__}; {thread!r}.'
+                )
         
         # Check kwargs and raise TypeError if not every in used up
         if kwargs:
-            raise TypeError(f'Unused parameters: {", ".join(list(kwargs))}')
+            raise TypeError(f'Unused parameters: {kwargs!r}.')
         
         self = object.__new__(cls)
         self._fields = None
@@ -1475,7 +1547,7 @@ class Message(DiscordEntity, immortal=True):
         relation.
 
         A special case is if a message is (un)pinned or (un)suppressed , because then the returned dict is not going to
-        contain `'edited_at'`, only `'pinned'` or `'flags'`. If the embeds are (un)suppressed of the message, then the
+        contain `'edited_at'`, only `'pinned'`, `'flags'`. If the embeds are (un)suppressed of the message, then the
         returned dict might contain also an `'embeds'` key.
         
         Parameters
@@ -1493,13 +1565,13 @@ class Message(DiscordEntity, immortal=True):
         +-------------------+-----------------------------------------------------------------------+
         | Keys              | Values                                                                |
         +===================+=======================================================================+
-        | attachments       | `None` or (`tuple` of ``Attachment``)                                 |
+        | attachments       | `None`, (`tuple` of ``Attachment``)                                 |
         +-------------------+-----------------------------------------------------------------------+
-        | components        | `None` or (`tuple` of ``ComponentBase``)                              |
+        | components        | `None`, (`tuple` of ``ComponentBase``)                              |
         +-------------------+-----------------------------------------------------------------------+
-        | content           | `None` or `str`                                                       |
+        | content           | `None`, `str`                                                       |
         +-------------------+-----------------------------------------------------------------------+
-        | cross_mentions    | `None` or (`tuple` of (``ChannelBase`` or ``UnknownCrossMention``))   |
+        | cross_mentions    | `None`, (`tuple` of (``ChannelBase``, ``UnknownCrossMention``))   |
         +-------------------+-----------------------------------------------------------------------+
         | edited_at         | `None`  or `datetime`                                                 |
         +-------------------+-----------------------------------------------------------------------+
@@ -1511,9 +1583,9 @@ class Message(DiscordEntity, immortal=True):
         +-------------------+-----------------------------------------------------------------------+
         | pinned            | `bool`                                                                |
         +-------------------+-----------------------------------------------------------------------+
-        | user_mentions     | `None` or (`tuple` of ``ClientUserBase``)                             |
+        | user_mentions     | `None`, (`tuple` of ``ClientUserBase``)                             |
         +-------------------+-----------------------------------------------------------------------+
-        | role_mention_ids  | `None` or (`tuple` of `int`)                                          |
+        | role_mention_ids  | `None`, (`tuple` of `int`)                                          |
         +-------------------+-----------------------------------------------------------------------+
         """
         self._clear_cache()
@@ -2028,7 +2100,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        guild : `None` or ``ChannelTextBase``
+        guild : `None`, ``ChannelTextBase``
         """
         channel_id = self.channel_id
         if channel_id:
@@ -2042,7 +2114,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        guild : `None` or ``Guild``
+        guild : `None`, ``Guild``
         """
         guild_id = self.guild_id
         if guild_id:
@@ -2057,7 +2129,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        clean_content : `None` or `str`
+        clean_content : `None`, `str`
         
         Notes
         -----
@@ -2274,7 +2346,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        line : `None` or ``reaction_mapping_line``
+        line : `None`, ``reaction_mapping_line``
         """
         reactions = self.reactions
         if (reactions is not None):
@@ -2303,31 +2375,31 @@ class Message(DiscordEntity, immortal=True):
         
         Other Parameters
         ----------------
-        activity : `None` or ``MessageActivity``, Optional (Keyword only)
+        activity : `None`, ``MessageActivity``, Optional (Keyword only)
             The ``.activity`` attribute the message.
         
-        application : `None` or ``MessageApplication``., Optional (Keyword only)
+        application : `None`, ``MessageApplication``., Optional (Keyword only)
             The ``.application`` attribute the message.
         
         application_id : `int`, Optional (Keyword Only)
             The ``.application_id`` attribute of the message.
         
-        attachments : `None` or ((`list`, `tuple`) of ``Attachment``), Optional (Keyword only)
+        attachments : `None`, ((`list`, `tuple`) of ``Attachment``), Optional (Keyword only)
             The ``.attachments`` attribute of the message. If passed as an empty list, then will be as `None` instead.
         
-        author : `None`, ``ClientUserBase``, ``Webhook`` or ``WebhookRepr``, Optional (Keyword only)
+        author : `None`, ``ClientUserBase``, ``Webhook``, ``WebhookRepr``, Optional (Keyword only)
             The ``.author`` attribute of the message. If passed as `None` then it will be set as `ZEROUSER` instead.
         
-        channel_id : ``ChannelTextBase`` or `int` instance, Optional if called as method (Keyword only)
+        channel_id : ``ChannelTextBase``, `int`, Optional if called as method (Keyword only)
             The ``.channel_id`` attribute of the message.
         
-        components : `None` or (`list` or `tuple`) of ``ComponentBase``, Optional (Keyword only)
+        components : `None`, (`list`, `tuple`) of ``ComponentBase``, Optional (Keyword only)
             The ``.components`` attribute of the message.
         
-        content : `None` or `str`, Optional (Keyword only)
+        content : `None`, `str`, Optional (Keyword only)
             The ``.content`` attribute of the message. Can be between length `0` and `4000`.
         
-        cross_mentions : `None` or (`tuple`, `list`) of (``UnknownCrossMention`` or ``ChannelGuildBase`` instances)
+        cross_mentions : `None`, (`tuple`, `list`) of (``UnknownCrossMention``, ``ChannelGuildBase``)
                 , Optional (Keyword only)
             The `.cross_mentions` attribute of the message. If passed as an empty list, then will be set `None` instead.
         
@@ -2337,55 +2409,55 @@ class Message(DiscordEntity, immortal=True):
         deleted : `bool`, Optional (Keyword only)
             The ``.deleted`` attribute of the message. If called as a class method, defaults to `True`.
         
-        edited_at : `None` or `datetime`, Optional (Keyword only)
+        edited_at : `None`, `datetime`, Optional (Keyword only)
             The ``.edited_at`` attribute of the message.
         
-        embeds : `None` or (`list` or `tuple`) of ``EmbedBase``, Optional (Keyword only)
+        embeds : `None`, (`list`, `tuple`) of ``EmbedBase``, Optional (Keyword only)
             The ``.embeds`` attribute of the message. If passed as an empty list, then is set as `None` instead. If
             passed as list and it contains any embeds, which are not type ``EmbedCore``, then those will be converted
             to ``EmbedCore`` as well.
         
-        everyone_mention : `bool` or `int` instance (`0` or `1`), Optional (Keyword only)
-            The ``.everyone_mention`` attribute of the message. Accepts other `int` instance as `bool` as well, but
-            their value still cannot be other than `0` or `1`.
+        everyone_mention : `bool`, `int` (`0`, `1`), Optional (Keyword only)
+            The ``.everyone_mention`` attribute of the message. Accepts other `int` as `bool` as well, but
+            their value still cannot be other than `0`, `1`.
         
-        flags : ``MessageFlag`` or `int`, Optional (Keyword only)
-            The ``.flags`` attribute of the message. If passed as other `int` instances than ``MessageFlag``, then will
+        flags : ``MessageFlag``, `int`, Optional (Keyword only)
+            The ``.flags`` attribute of the message. If passed as other `int` than ``MessageFlag``, then will
             be converted to ``MessageFlag``.
         
-        interaction : `None` or ``MessageInteraction``, Optional (Keyword only)
+        interaction : `None`, ``MessageInteraction``, Optional (Keyword only)
            The `.interaction` attribute of the message.
         
-        nonce : `None` or `str`, Optional (Keyword only)
+        nonce : `None`, `str`, Optional (Keyword only)
             The ``.nonce`` attribute of the message. If passed as `str` can be between length `0` and `32`.
             
             If called as a classmethod defaults to `None`.
-        pinned : `bool` or `int` instance (`0` or `1`), Optional (Keyword only)
-            The ``.pinned`` attribute of the message. Accepts other `int` instances as `bool` as well, but their value
-            still cannot be other than `0` or `1`.
+        pinned : `bool`, `int` (`0`, `1`), Optional (Keyword only)
+            The ``.pinned`` attribute of the message. Accepts other `int` as `bool` as well, but their value
+            still cannot be other than `0`, `1`.
         
-        reactions : `None` or ``reaction_mapping``, Optional (Keyword only)
+        reactions : `None`, ``reaction_mapping``, Optional (Keyword only)
             The ``.reactions`` attribute of the message.
         
-        role_mentions : `None` or (`list` or `tuple`) of ``Role``, Optional (Keyword only)
+        role_mentions : `None`, (`list`, `tuple`) of ``Role``, Optional (Keyword only)
             The ``.role_mentions`` attribute of the message. If passed as an empty `list`, will be set as `None`
             instead.
             
-        stickers : `None` or (`list`, `tuple`) of ``Sticker``, Optional (Keyword only)
+        stickers : `None`, (`list`, `tuple`) of ``Sticker``, Optional (Keyword only)
             The ``.stickers`` attribute of the message.
             
-        thread : `None` or ``ChannelThread``
+        thread : `None`, ``ChannelThread``
             The ``.thread`` attribute of the message.
         
-        tts : `bool` or `int` instance (`0` or `1`), Optional (Keyword only)
-            The ``.tts`` attribute of the message. Accepts other `int` instances as `bool` as well, but their value
-            still cannot be other than `0` or `1`.
+        tts : `bool`, `int` (`0`, `1`), Optional (Keyword only)
+            The ``.tts`` attribute of the message. Accepts other `int` as `bool` as well, but their value
+            still cannot be other than `0`, `1`.
         
-        type : ``MessageType`` or `int`, Optional (Keyword only)
+        type : ``MessageType``, `int`, Optional (Keyword only)
             The ``.type`` attribute of the message. If passed as `int`, it will be converted to it's wrapper side
             ``MessageType`` representation.
         
-        user_mentions : `None` or `list`, `tuple`  of ``UserBase``, Optional (Keyword only)
+        user_mentions : `None`, `list`, `tuple`  of ``UserBase``, Optional (Keyword only)
             The ``.user_mentions`` attribute of the message. If passed as an empty list will be set as `None` instead.
         
         Returns
@@ -2410,7 +2482,7 @@ class Message(DiscordEntity, immortal=True):
                 pass
             else:
                 if not isinstance(author, UserBase):
-                    raise TypeError(f'`author` can be `{UserBase.__name__}` instance, got '
+                    raise TypeError(f'`author` can be `{UserBase.__name__}`, got '
                         f'`{author.__class__.__name__}`.')
                 
                 processable.append(('author', author))
@@ -2473,17 +2545,22 @@ class Message(DiscordEntity, immortal=True):
                 else:
                     if (variable_value is not None):
                         if not isinstance(variable_value, (list, tuple, set)):
-                            raise TypeError(f'`{variable_name}` should be `None` or `tuple`, `list` or `set` of '
-                                f'{get_type_names(variable_element_type)} instances, got '
-                                f'`{variable_value.__class__.__name__}`.')
+                            raise TypeError(
+                                f'`{variable_name}` can be `None`, `tuple`, `list`, `set` of '
+                                f'{get_type_names(variable_element_type)}, got '
+                                f'{variable_value.__class__.__name__}; {variable_value!r}.'
+                            )
                         
                         variable_values_processed = []
                         
                         for variable_element_value in variable_value:
                             if not isinstance(variable_element_value, variable_element_type):
-                                raise TypeError(f'`{variable_name}` contains a non '
-                                    f'{get_type_names(variable_element_type)} instance, got '
-                                    f'`{variable_element_value.__class__.__name__}`.')
+                                raise TypeError(
+                                    f'`{variable_name}` can contain '
+                                    f'{get_type_names(variable_element_type)} elements, got '
+                                    f'{variable_element_value.__class__.__name__}; {variable_element_value!r};'
+                                    f'{variable_name}={variable_value!r}.'
+                                )
                             
                             variable_values_processed.append(variable_element_value)
                         
@@ -2511,8 +2588,10 @@ class Message(DiscordEntity, immortal=True):
                         elif issubclass(variable_type, str):
                             variable_value = str(variable_value)
                         else:
-                            raise TypeError(f'`{variable_name}` can be either as `None` or `str` instance, got '
-                                f'{variable_type.__name__}.')
+                            raise TypeError(
+                                f'`{variable_name}` can be `None`, `str`, got '
+                                f'{variable_type.__name__}; {variable_value!r}.'
+                            )
                         
                         if variable_value:
                             processable_by_field.append((variable_field_key, variable_value))
@@ -2525,8 +2604,10 @@ class Message(DiscordEntity, immortal=True):
             else:
                 if (embeds is not None):
                     if not isinstance(embeds, (list, tuple)):
-                        raise TypeError(f'`embeds` can be `None`, `tuple` or `list` of `{EmbedBase.__name__}` '
-                            f'instances, got `{embeds.__class__.__name__}`.')
+                        raise TypeError(
+                            f'`embeds` can be `None`, `tuple`, `list` of `{EmbedBase.__name__}`, got '
+                            f'{embeds.__class__.__name__}; {embeds!r}.'
+                        )
                     
                     embeds_processed = []
                     
@@ -2539,8 +2620,10 @@ class Message(DiscordEntity, immortal=True):
                             embed = EmbedCore.from_data(embed.to_data())
                         
                         else:
-                            raise TypeError(f'`embeds` contains a non `{EmbedBase.__name__}` instance: '
-                                f'`{embeds.__class__.__name__}`.')
+                            raise TypeError(
+                                f'`embeds` can contain `{EmbedBase.__name__}` elements, got '
+                                f'{embeds.__class__.__name__}; {embeds!r}; embeds={embeds!r}.'
+                            )
                     
                         embeds_processed.append(embed)
                     
@@ -2560,8 +2643,10 @@ class Message(DiscordEntity, immortal=True):
                     pass
                 else:
                     if not isinstance(variable_value, bool):
-                        raise TypeError(f'`{variable_name}` can be `bool` instance, got '
-                            f'`{variable_value.__class__.__name__}`.')
+                        raise TypeError(
+                            f'`{variable_name}` can be `bool`, got '
+                            f'{variable_value.__class__.__name__}; {variable_value!r}.'
+                        )
                     
                     if variable_value:
                         processable_by_field.append((variable_field_key, variable_value))
@@ -2597,7 +2682,7 @@ class Message(DiscordEntity, immortal=True):
             
             
             if kwargs:
-                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+                raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
             
         else:
             processable = None
@@ -2630,7 +2715,7 @@ class Message(DiscordEntity, immortal=True):
         Parameters
         ----------
         recursive : `bool`, Optional (Keyword only)
-            Whether referenced messages should be converted as well.
+            Whether referenced messages can be converted as well.
             
             Defaults to `True`.
         
@@ -2880,7 +2965,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        activity : `None` or ``MessageActivity``
+        activity : `None`, ``MessageActivity``
         """
         fields = self._fields
         if (fields is not None):
@@ -2945,7 +3030,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        application : `None` or ``MessageApplication``
+        application : `None`, ``MessageApplication``
         """
         return _get_message_field(
             self,
@@ -3050,7 +3135,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        attachments : `None` or `tuple` of ``Attachment``
+        attachments : `None`, `tuple` of ``Attachment``
         """
         return _get_message_field(
             self,
@@ -3100,7 +3185,7 @@ class Message(DiscordEntity, immortal=True):
 
         Returns
         -------
-        attachment : `None` or ``Attachment``
+        attachment : `None`, ``Attachment``
         """
         return _get_first_message_field(
             self,
@@ -3117,7 +3202,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channel_mentions : `None` or `tuple` of (``GuildChannelBase``, ``UnknownCrossMention``) instances.
+        channel_mentions : `None`, `tuple` of (``GuildChannelBase``, ``UnknownCrossMention``) instances.
             The parsed channel mentions.
         """
         content = self.content
@@ -3159,7 +3244,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channel_mentions : `None` or (`tuple` of (``ChannelBase`` or ``UnknownCrossMentions`` instances))
+        channel_mentions : `None`, (`tuple` of (``ChannelBase``, ``UnknownCrossMentions``))
         """
         fields = self._fields
         if fields is None:
@@ -3203,7 +3288,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        components : `None` or `tuple` of ``ComponentBase``
+        components : `None`, `tuple` of ``ComponentBase``
         """
         return _get_message_field(
             self,
@@ -3256,7 +3341,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        content : `None` or `str`
+        content : `None`, `str`
         """
         return _get_message_field(
             self,
@@ -3310,7 +3395,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        cross_mentions : `None` or `tuple` of (``UnknownCrossMention`` or ``ChannelBase`` instances)
+        cross_mentions : `None`, `tuple` of (``UnknownCrossMention``, ``ChannelBase``)
         """
         return _get_message_field(
             self,
@@ -3357,7 +3442,7 @@ class Message(DiscordEntity, immortal=True):
     @property
     def referenced_message(self):
         """
-        The referenced message. Set as ``Message`` instance if the message is cached, else as ``MessageReference``.
+        The referenced message. Set as ``Message`` if the message is cached, else as ``MessageReference``.
         
         Set when the message is a reply, a crosspost or when is a pin message.
         
@@ -3365,7 +3450,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        referenced_message : `None`, ``Message`` or ``MessageReference``
+        referenced_message : `None`, ``Message``, ``MessageReference``
         """
         return _get_message_field(
             self,
@@ -3473,7 +3558,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        edited_at : `None` or `datetime`
+        edited_at : `None`, `datetime`
         """
         return _get_message_field(
             self,
@@ -3529,7 +3614,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        embeds : `None` or `tuple` of ``EmbedCore``
+        embeds : `None`, `tuple` of ``EmbedCore``
         """
         return _get_message_field(
             self,
@@ -3579,7 +3664,7 @@ class Message(DiscordEntity, immortal=True):
 
         Returns
         -------
-        embed : `None` or ``EmbedCore``
+        embed : `None`, ``EmbedCore``
         """
         return _get_first_message_field(
             self,
@@ -3591,7 +3676,7 @@ class Message(DiscordEntity, immortal=True):
     @property
     def everyone_mention(self):
         """
-        Whether the message contains `@everyone` or `@here`.
+        Whether the message contains `@everyone`, `@here`.
         
         Defaults to `False`.
         
@@ -3706,7 +3791,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        interaction : `None` or ``MessageInteraction``
+        interaction : `None`, ``MessageInteraction``
         """
         return _get_message_field(
             self,
@@ -3813,7 +3898,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        nonce : `None` or `str`
+        nonce : `None`, `str`
         """
         return _get_message_field(
             self,
@@ -3919,7 +4004,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        reactions : `None` or ``reaction_mapping``
+        reactions : `None`, ``reaction_mapping``
         """
         return _get_message_field(
             self,
@@ -3984,7 +4069,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        role_mention_ids : `None` or `tuple` of `int`
+        role_mention_ids : `None`, `tuple` of `int`
         """
         return _get_message_field(
             self,
@@ -4035,7 +4120,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        role_mentions : `None` or `tuple` of ``Role``
+        role_mentions : `None`, `tuple` of ``Role``
         """
         fields = self._fields
         if (fields is None):
@@ -4058,7 +4143,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        role_mentions : `None` or `tuple` of ``Role``
+        role_mentions : `None`, `tuple` of ``Role``
         """
         fields = self._fields
         if fields is None:
@@ -4105,7 +4190,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        stickers : `None` or `tuple` of ``Sticker``
+        stickers : `None`, `tuple` of ``Sticker``
         """
         return _get_message_field(
             self,
@@ -4155,7 +4240,7 @@ class Message(DiscordEntity, immortal=True):
 
         Returns
         -------
-        sticker : `None` or ``Sticker``
+        sticker : `None`, ``Sticker``
         """
         return _get_first_message_field(
             self,
@@ -4173,7 +4258,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        thread : `None` or ``ChannelThread``
+        thread : `None`, ``ChannelThread``
         """
         return _get_message_field(
             self,
@@ -4343,7 +4428,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        user_mentions : `None` or `tuple` of ``UserBase``
+        user_mentions : `None`, `tuple` of ``UserBase``
         """
         return _get_message_field(
             self,

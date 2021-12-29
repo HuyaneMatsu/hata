@@ -42,9 +42,9 @@ class RPCClient:
     ----------
     _auto_nonce : `int`
         Auto nonce generation index for the next request.
-    _connection_waiter : `None` or ``Future``
+    _connection_waiter : `None`, ``Future``
         Waiter for client connection.
-    _protocol : `None` or ``BaseProtocol``
+    _protocol : `None`, ``BaseProtocol``
         The connected protocol if any.
     _response_waiters : `dict` of (`str`, ``Future``) items
         Waiters for each request response.
@@ -97,7 +97,7 @@ class RPCClient:
         
         Returns
         -------
-        task : `bool`, ``Task`` or ``FutureAsyncWrapper``
+        task : `bool`, ``Task``, ``FutureAsyncWrapper``
             - If the method was called from the client's thread (KOKORO), then returns a ``Task``. The task will return
                 `True`, if connecting was successful.
             - If the method was called from an ``EventThread``, but not from the client's, then returns a
@@ -303,7 +303,7 @@ class RPCClient:
             self._protocol = protocol
     else:
         async def _open_pipe(self, ipc_path):
-            raise NotImplemented(f'Opening interprocess connection is not supported on {PLATFORM}.')
+            raise NotImplemented(f'Opening inter-process connection is not supported on {PLATFORM}.')
     
     
     async def _send_handshake(self):
@@ -384,7 +384,7 @@ class RPCClient:
         
         Parameters
         ----------
-        data : `None` or `bytes`
+        data : `None`, `bytes`
             Received close data.
         """
         self.running = False
@@ -413,7 +413,7 @@ class RPCClient:
         Raises
         ------
         TypeError
-            If `Scopes` is neither `str` nor `list` of `str` instances.
+            If `Scopes` is neither `str` nor `list` of `str`-s.
         ConnectionError
             RPC client is not connected.
         TimeoutError
@@ -421,42 +421,55 @@ class RPCClient:
         DiscordRPCError
             Any exception dropped back by the discord client.
         AssertionError
-            - If `rpc_token` is not `str` instance.
-            - If `name` is not `str` instance.
+            - If `rpc_token` is not `str`.
+            - If `name` is not `str`.
             - If `scopes` is empty.
             - If `scopes` contains empty string.
         """
         if isinstance(scopes, str):
             if __debug__:
                 if not scopes:
-                    raise AssertionError(f'`scopes` was given as an empty string.')
+                    raise AssertionError(
+                        f'`scopes` was given as an empty string.'
+                    )
         
         elif isinstance(scopes, list):
             if __debug__:
                 if not scopes:
-                    raise AssertionError(f'`scopes` cannot be empty.')
+                    raise AssertionError(
+                        f'`scopes` cannot be empty.'
+                    )
                 
                 for index, scope in enumerate(scopes):
                     if not isinstance(scope, str):
-                        raise AssertionError(f'`scopes` element `{index}` is not `str` instance, but '
-                            f'{scope.__class__.__name__}; got {scopes!r}.')
+                        raise AssertionError(
+                            f'`scopes[{index!r}]` is not `str`, got {scope.__class__.__name__}; {scope!r} '
+                            f'scopes={scopes!r}.'
+                        )
                     
                     if not scope:
-                        raise AssertionError(f'`scopes` element `{index}` is an empty string; got {scopes!r}.')
+                        raise AssertionError(
+                            f'`scopes{index!r}` is an empty string; got scopes={scopes!r}.'
+                        )
             
             scopes = ' '.join(scopes)
         
         else:
-            raise TypeError(f'`scopes` can be given as `str` or `list` of `str` instances, got '
-                f'{scopes.__class__.__name__}; {scopes!r}.')
+            raise TypeError(
+                f'`scopes` can be `str`, `list` of `str`, got {scopes.__class__.__name__}; {scopes!r}.'
+            )
         
         
         if __debug__:
             if not isinstance(rpc_token, str):
-                raise AssertionError(f'`rpc_token` can be given as `str` instance, got {rpc_token.__class__.__name__}.')
+                raise AssertionError(
+                    f'`rpc_token` can be `str`, got {rpc_token.__class__.__name__}; {rpc_token!r}.'
+                )
             
             if not isinstance(name, str):
-                raise AssertionError(f'`name` can be given as `str` instance, got {name.__class__.__name__}.')
+                raise AssertionError(
+                    f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+                )
         
         
         data = {
@@ -493,12 +506,13 @@ class RPCClient:
         DiscordRPCError
             Any exception dropped back by the discord client.
         AssertionError
-            If `access_token` is not `str` instance.
+            If `access_token` is not `str`.
         """
         if __debug__:
             if not isinstance(access_token, str):
-                raise AssertionError(f'`access_token` can be given as `str` instance, got '
-                    f'{access_token.__class__.__name__}.')
+                raise AssertionError(
+                    f'`access_token` can be `str`, got {access_token.__class__.__name__}; {access_token!r}.'
+                )
         
         data = {
             PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_AUTHENTICATE,
@@ -555,7 +569,7 @@ class RPCClient:
         
         Parameters
         ----------
-        guild : ``Guild`` or `int`
+        guild : ``Guild``, `int`
             The guild or it's identifier.
         
         Returns
@@ -565,7 +579,7 @@ class RPCClient:
         Raises
         ------
         TypeError
-            If `guild` is neither `int`, nor ``Guild`` instance.
+            If `guild` is neither `int`, nor ``Guild``.
         ConnectionError
             RPC client is not connected.
         TimeoutError
@@ -597,22 +611,22 @@ class RPCClient:
         
         Parameters
         ----------
-        channel : ``ChannelBase`` or `int`
+        channel : ``ChannelBase``, `int`
             The channel or it's identifier.
         
         Returns
         -------
         channel : ``ChannelBase``
             The response channel.
-        messages : `None` or `list` of ``Message``
+        messages : `None`, `list` of ``Message``
             Messages sent to the channel if applicable.
-        rich_voice_states : `None` or `dict` of (`int`, ``RichVoiceState``) items
+        rich_voice_states : `None`, `dict` of (`int`, ``RichVoiceState``) items
             Voice states of the users inside of the channel if applicable.
         
         Raises
         ------
         TypeError
-            If `channel` is neither `int`, nor ``ChannelBase`` instance.
+            If `channel` is neither `int`, nor ``ChannelBase``.
         ConnectionError
             RPC client is not connected.
         TimeoutError
@@ -661,7 +675,7 @@ class RPCClient:
         
         Parameters
         ----------
-        guild : ``Guild`` or `int`
+        guild : ``Guild``, `int`
             The guild or it's identifier.
         
         Returns
@@ -671,7 +685,7 @@ class RPCClient:
         Raises
         ------
         TypeError
-            If `guild` is neither `int`, nor ``Guild`` instance.
+            If `guild` is neither `int`, nor ``Guild``.
         ConnectionError
             RPC client is not connected.
         TimeoutError
@@ -708,9 +722,9 @@ class RPCClient:
         ----------
         audio_balance : `None`, ``AudioBalance``, Optional (Keyword only)
             Audio balance.
-        mute : `None` or `bool`
+        mute : `None`, `bool`
             Whether the user is muted.
-        volume : `None` or `float`
+        volume : `None`, `float`
             The user's volume.
             
             Can be in range [0.0:2.0].
@@ -728,9 +742,9 @@ class RPCClient:
         DiscordRPCError
             Any exception dropped back by the discord client.
         AssertionError
-            - If `audio_balance` is neither `None` nor ``AudioBalance`` instance.
-            - If `mute` is neither `None` nor `int` instance.
-            - If `volume` is neither `None` nor `float` instance.
+            - If `audio_balance` is neither `None` nor ``AudioBalance``.
+            - If `mute` is neither `None` nor `int`.
+            - If `volume` is neither `None` nor `float`.
             - If `volume` is out of range [0.0:2.0].
         """
         parameters = {
@@ -739,8 +753,10 @@ class RPCClient:
         
         if (audio_balance is not None):
             if not isinstance(audio_balance, AudioBalance):
-                raise AssertionError(f'`audio_balance` can  be either `None` nor `{AudioBalance.__name__}` instance, got '
-                    f'{audio_balance.__class__.__name__}.')
+                raise AssertionError(
+                    f'`audio_balance` can be `None`, `{AudioBalance.__name__}`, got '
+                    f'{audio_balance.__class__.__name__}; {audio_balance!r}.'
+                )
             
             audio_balance_data = audio_balance.to_data()
             if audio_balance_data:
@@ -748,17 +764,22 @@ class RPCClient:
         
         if (mute is not None):
             if not isinstance(mute, bool):
-                raise AssertionError(f'`mute` can be either `None` or `bool` instance, got {mute.__class__.__name__}.')
+                raise AssertionError(
+                    f'`mute` can be `None`, `bool`, got {mute.__class__.__name__}, {mute!r}.'
+                )
             
             parameters['mute'] = mute
         
         if (volume is not None):
             if not isinstance(mute, float):
-                raise AssertionError(f'`mute` can be either `None` or `float` instance, got '
-                    f'{float.__class__.__name__}.')
+                raise AssertionError(
+                    f'`volume` can be `None`, `float`, got {volume.__class__.__name__}; {volume!r}.'
+                )
             
             if (volume < 0.0) or (volume > 2.0):
-                raise AssertionError(f'`volume` can be in range [0.0:2.0], got {volume!r}.')
+                raise AssertionError(
+                    f'`volume` can be in range [0.0:2.0], got {volume!r}.'
+                )
             
             parameters['volume'] = floor(volume*100.0)
         
@@ -779,7 +800,7 @@ class RPCClient:
         
         Parameters
         ----------
-        channel : `None`, ``ChannelVoiceBase`` or `int`
+        channel : `None`, ``ChannelVoiceBase``, `int`
             The channel to select or `None` to leave.
         force : `bool`, Optional (Keyword only)
             Forces the user to join the voice channel.
@@ -788,7 +809,7 @@ class RPCClient:
         
         Returns
         -------
-        channel : ``ChannelVoiceBase`` or `None`
+        channel : ``ChannelVoiceBase``, `None`
         
         Raises
         ------
@@ -801,14 +822,16 @@ class RPCClient:
         DiscordRPCError
             Any exception dropped back by the discord client.
         AssertionError
-            If `force` is not `bool` instance.
+            If `force` is not `bool`.
         """
         channel_id = get_channel_id(channel, ChannelVoiceBase)
         channel_id = str(channel_id)
         
         if __debug__:
             if not isinstance(force, bool):
-                raise AssertionError(f'`force` can be given as `bool` instance, got {force.__class__.__name__}.')
+                raise AssertionError(
+                    f'`force` can be `bool`, got {force.__class__.__name__}; {force!r}.'
+                )
         
         data = {
             PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_CHANNEL_VOICE_SELECT,
@@ -841,7 +864,7 @@ class RPCClient:
         
         Returns
         -------
-        channel : ``ChannelVoiceBase`` or `None`
+        channel : ``ChannelVoiceBase``, `None`
         
         Raises
         ------
@@ -873,12 +896,12 @@ class RPCClient:
         
         Parameters
         ----------
-        channel : `None`, ``ChannelTextBase`` or `int`
+        channel : `None`, ``ChannelTextBase``, `int`
             The channel to select or `None` to leave.
         
         Returns
         -------
-        channel : ``ChannelTextBase`` or `None`
+        channel : ``ChannelTextBase``, `None`
         
         Raises
         ------
@@ -985,16 +1008,16 @@ class RPCClient:
         Raises
         ------
         AssertionError
-            - If `input_` is not ``VoiceSettingsInput`` instance.
-            - If `output` is not ``VoiceSettingsOutput`` instance.
-            - If `mode` is not ``VoiceSettingsMode`` instance.
-            - If `automatic_gain_control` is not `bool` instance.
-            - If `echo_cancellation` is not `bool` instance.
-            - If `noise_suppression` is not `bool` instance.
-            - If `quality_of_service` is not `bool` instance.
-            - If `silence_warning` is not `bool` instance.
-            - If `deaf` is not `bool` instance.
-            - If `mute` is not `bool` instance.
+            - If `input_` is not ``VoiceSettingsInput``.
+            - If `output` is not ``VoiceSettingsOutput``.
+            - If `mode` is not ``VoiceSettingsMode``.
+            - If `automatic_gain_control` is not `bool`.
+            - If `echo_cancellation` is not `bool`.
+            - If `noise_suppression` is not `bool`.
+            - If `quality_of_service` is not `bool`.
+            - If `silence_warning` is not `bool`.
+            - If `deaf` is not `bool`.
+            - If `mute` is not `bool`.
         ConnectionError
             RPC client is not connected.
         TimeoutError
@@ -1004,44 +1027,62 @@ class RPCClient:
         """
         if __debug__:
             if (input_ is not None) and (not isinstance(input_, VoiceSettingsInput)):
-                raise AssertionError(f'`input_` can be given as `{VoiceSettingsInput.__name__}` instance, got'
-                    f'{input_.__class__.__name__}')
+                raise AssertionError(
+                    f'`input_` can be `{VoiceSettingsInput.__name__}`, got'
+                    f'{input_.__class__.__name__}; {input_!r}.'
+                )
             
             if (output is not None) and (not isinstance(output, VoiceSettingsOutput)):
-                raise AssertionError(f'`output` can be given as `{VoiceSettingsOutput.__name__}` instance, got'
-                    f'{output.__class__.__name__}')
+                raise AssertionError(
+                    f'`output` can be `{VoiceSettingsOutput.__name__}`, got'
+                    f'{output.__class__.__name__}; {output!r}.'
+                )
             
             if (mode is not None) and (not isinstance(mode, VoiceSettingsMode)):
-                raise AssertionError(f'`mode` can be given as `{VoiceSettingsMode.__name__}` instance, got'
-                    f'{mode.__class__.__name__}')
+                raise AssertionError(
+                    f'`mode` can be `{VoiceSettingsMode.__name__}`, got'
+                    f'{mode.__class__.__name__}; {mode!r}.'
+                )
             
             if (automatic_gain_control is not None) and (not isinstance(automatic_gain_control, bool)):
-                raise AssertionError(f'`automatic_gain_control` can be given as `bool` instance, got '
-                    f'{automatic_gain_control.__class__.__name__}.')
+                raise AssertionError(
+                    f'`automatic_gain_control` can be `bool`, got '
+                    f'{automatic_gain_control.__class__.__name__}; {automatic_gain_control!r}.'
+                )
             
             if (echo_cancellation is not None) and (not isinstance(echo_cancellation, bool)):
-                raise AssertionError(f'`echo_cancellation` can be given as `bool` instance, got '
-                    f'{echo_cancellation.__class__.__name__}.')
+                raise AssertionError(
+                    f'`echo_cancellation` can be `bool`, got '
+                    f'{echo_cancellation.__class__.__name__}; {echo_cancellation!r}.'
+                )
             
             if (noise_suppression is not None) and (not isinstance(noise_suppression, bool)):
-                raise AssertionError(f'`noise_suppression` can be given as `bool` instance, got '
-                    f'{noise_suppression.__class__.__name__}.')
+                raise AssertionError(
+                    f'`noise_suppression` can be `bool`, got '
+                    f'{noise_suppression.__class__.__name__}; {noise_suppression!r}.'
+                )
             
             if (quality_of_service is not None) and (not isinstance(quality_of_service, bool)):
-                raise AssertionError(f'`quality_of_service` can be given as `bool` instance, got '
-                    f'{quality_of_service.__class__.__name__}.')
+                raise AssertionError(
+                    f'`quality_of_service` can be `bool`, got '
+                    f'{quality_of_service.__class__.__name__}; {quality_of_service!r}.'
+                )
             
             if (silence_warning is not None) and (not isinstance(silence_warning, bool)):
-                raise AssertionError(f'`silence_warning` can be given as `bool` instance, got '
-                    f'{silence_warning.__class__.__name__}.')
+                raise AssertionError(
+                    f'`silence_warning` can be `bool`, got '
+                    f'{silence_warning.__class__.__name__}; {silence_warning!r}.'
+                )
             
             if (deaf is not None) and (not isinstance(deaf, bool)):
-                raise AssertionError(f'`deaf` can be given as `bool` instance, got '
-                    f'{deaf.__class__.__name__}.')
+                raise AssertionError(
+                    f'`deaf` can be `bool`, got {deaf.__class__.__name__}; {deaf!r}.'
+                )
             
             if (mute is not None) and (not isinstance(mute, bool)):
-                raise AssertionError(f'`mute` can be given as `bool` instance, got '
-                    f'{mute.__class__.__name__}.')
+                raise AssertionError(
+                    f'`mute` can be `bool`, got {mute.__class__.__name__}; {mute!r}.'
+                )
         
         
         parameters = {}
@@ -1103,13 +1144,13 @@ class RPCClient:
         ----------
         event : `str`
             The event's name to unsubscribe from.
-        guild : ``Guild`` or `int`
+        guild : ``Guild``, `int`
             The guild where to subscribe for the event.
         
         Raises
         ------
         TypeError
-            If `guild` is neither ``Guild``, nor `int` instance.
+            If `guild` is neither ``Guild``, nor `int`.
         ConnectionError
             RPC client is not connected.
         TimeoutError
@@ -1138,13 +1179,13 @@ class RPCClient:
         ----------
         event : `str`
             The event's name to unsubscribe from.
-        guild : ``Guild`` or `int`
+        guild : ``Guild``, `int`
             The guild where to subscribe for the event.
         
         Raises
         ------
         TypeError
-            If `guild` is neither ``Guild``, nor `int` instance.
+            If `guild` is neither ``Guild``, nor `int`.
         ConnectionError
             RPC client is not connected.
         TimeoutError
@@ -1188,8 +1229,10 @@ class RPCClient:
         if __debug__:
             for device in devices:
                 if not isinstance(device, CertifiedDevice):
-                    raise AssertionError(f'Devices can be `{CertifiedDevice.__name__}` instances, got '
-                        f'{device.__class__.__name__}.')
+                    raise AssertionError(
+                        f'Devices can be `{CertifiedDevice.__name__}`, got '
+                        f'{device.__class__.__name__}; {device!r}.'
+                    )
         
         device_datas = [device.to_data() for device in devices]
         
@@ -1253,14 +1296,14 @@ class RPCClient:
         
         Parameters
         ----------
-        user : ``ClientUserBase`` or `int` instance
+        user : ``ClientUserBase``, `int`
             The user, who's achievement will be updated.
         
         Raises
         ------
         TypeError
-            - If `user` was not given neither as ``ClientUserBase`` nor `int` instance.
-            - If `achievement` was not given neither as ``Achievement``, neither as `int` instance.
+            - If `user` was not given neither as ``ClientUserBase`` nor `int`.
+            - If `achievement` was not given neither as ``Achievement``, neither as `int`.
         ConnectionError
             RPC client is not connected.
         TimeoutError
@@ -1288,14 +1331,14 @@ class RPCClient:
         
         Parameters
         ----------
-        user : ``ClientUserBase`` or `int` instance
+        user : ``ClientUserBase``, `int`
             The user, who's achievement will be updated.
         
         Raises
         ------
         TypeError
-            - If `user` was not given neither as ``ClientUserBase`` nor `int` instance.
-            - If `achievement` was not given neither as ``Achievement``, neither as `int` instance.
+            - If `user` was not given neither as ``ClientUserBase`` nor `int`.
+            - If `achievement` was not given neither as ``Achievement``, neither as `int`.
         ConnectionError
             RPC client is not connected.
         TimeoutError

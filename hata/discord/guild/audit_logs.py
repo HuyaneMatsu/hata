@@ -51,7 +51,7 @@ class AuditLog:
     
     def __init__(self, data, guild):
         """
-        Creates an ``AuditLog`` instance from the data received from Discord.
+        Creates an ``AuditLog`` from the data received from Discord.
         
         Parameters
         ----------
@@ -186,19 +186,19 @@ class AuditLogIterator:
         ----------
         client : ``Client``
             The client, who will execute the api requests.
-        guild : ``Guild`` or `int` instance
+        guild : ``Guild``, `int`
             The guild, what's audit logs will be requested.
-        user : `None`, ``ClientUserBase`` or `int` instance, Optional
+        user : `None`, ``ClientUserBase``, `int`, Optional
             Whether the audit logs should be filtered only to those, which were created by the given user.
-        event : `None`, ``AuditLogEvent`` or `int` instance, Optional
+        event : `None`, ``AuditLogEvent``, `int`, Optional
             Whether the audit logs should be filtered only on the given event.
         
         Raises
         ------
         TypeError
-            - If `guild` was not given neither as ``Guild``, nor as `int` instance.
-            - If `user` was not given neither as `None`, ``ClientUserBase`` nor as `int` instance.
-            - If `event` as not not given neither as `None`, ``AuditLogEvent`` nor as `int` instance.
+            - If `guild` was not given neither as ``Guild``, nor as `int`.
+            - If `user` was not given neither as `None`, ``ClientUserBase`` nor as `int`.
+            - If `event` as not not given neither as `None`, ``AuditLogEvent`` nor as `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -229,7 +229,7 @@ class AuditLogIterator:
                 user_id = maybe_snowflake(user)
                 if user_id is None:
                     raise TypeError(
-                        f'`user` can be given as `{ClientUserBase.__name__}`, `int`, got'
+                        f'`user` can be `{ClientUserBase.__name__}`, `int`, got'
                         f'{user.__class__.__name__}; {user!r}.'
                     )
             
@@ -242,7 +242,7 @@ class AuditLogIterator:
                 event_value = event
             else:
                 raise TypeError(
-                    f'`event` can be given as `None`, `{AuditLogEvent.__name__}`, `int`, got '
+                    f'`event` can be `None`, `{AuditLogEvent.__name__}`, `int`, got '
                     f'{event.__class__.__name__}; {event!r}.'
                 )
             
@@ -706,15 +706,15 @@ class AuditLogEntry:
     ----------
     changes : `list` of ``AuditLogChange``
         The changes of the entry.
-    details : `None` or `dict` of (`str`, `Any`) items
+    details : `None`, `dict` of (`str`, `Any`) items
         Additional information for a specific action types.
     id : `int`
         The unique identifier number of the entry.
-    reason : `None` or `str`
+    reason : `None`, `str`
         The reason provided with the logged action.
-    target : `None`, ``Guild``,  ``ChannelGuildBase`` instance, ``ClientUserBase``, ``Role``, ``Webhook``,
+    target : `None`, ``Guild``,  ``ChannelGuildBase``, ``ClientUserBase``, ``Role``, ``Webhook``,
             ``Emoji``, ``Message``, ``Integration``, ``Sticker``, ``Unknown``
-        The target entity of the logged action. If the entity is not found, it will be set as an ``Unknown`` instance.
+        The target entity of the logged action. If the entity is not found, it will be set as an ``Unknown``.
         It can also happen, that target entity is not provided, then target will be set as `None`.
     type : ``AuditLogEvent``
         The event type of the logged action.
@@ -731,7 +731,7 @@ class AuditLogEntry:
         ----------
         data : `dict` of (`str`, `Any`) items
             Data received from Discord.
-        parent : ``AuditLog`` or ``AuditLogIterator``
+        parent : ``AuditLog``, ``AuditLogIterator``
             The parent of the entry, what contains the respective guild, the included users, webhooks and the
             integrations to work with.
         """
@@ -1429,143 +1429,143 @@ class AuditLogChange:
     +-------------------------------+-----------------------------------------------+
     | attribute_name                | before / after                                |
     +===============================+===============================================+
-    | account_id                    | `None` or `int`                               |
+    | account_id                    | `None`, `int`                                 |
     +-------------------------------+-----------------------------------------------+
-    | afk_channel_id                | `None` or `int`                               |
+    | afk_channel_id                | `None`, `int`                                 |
     +-------------------------------+-----------------------------------------------+
-    | allow                         | `None` or ``Permission``                      |
+    | allow                         | `None`, ``Permission``                        |
     +-------------------------------+-----------------------------------------------+
-    | application_id                | `None` or `int`                               |
+    | application_id                | `None`, `int`                                 |
     +-------------------------------+-----------------------------------------------+
-    | archived                      | `None` or `bool`                              |
+    | archived                      | `None`, `bool`                                |
     +-------------------------------+-----------------------------------------------+
-    | auto_archive_duration         | `None` or `int`                               |
+    | auto_archive_duration         | `None`, `int`                                 |
     +-------------------------------+-----------------------------------------------+
-    | avatar                        | `None` or ``Icon``                            |
+    | avatar                        | `None`, ``Icon``                              |
     +-------------------------------+-----------------------------------------------+
-    | banner                        | `None` or ``Icon``                            |
+    | banner                        | `None`, ``Icon``                              |
     +-------------------------------+-----------------------------------------------+
-    | bitrate                       | `None` or `int`                               |
+    | bitrate                       | `None`, `int`                                 |
     +-------------------------------+-----------------------------------------------+
-    | boost_progress_bar_enabled    | `None` or `bool`                              |
+    | boost_progress_bar_enabled    | `None`, `bool`                                |
     +-------------------------------+-----------------------------------------------+
-    | channel                       | `None` or ``ChannelGuildBase`` instance       |
+    | channel                       | `None`, ``ChannelGuildBase``                  |
     +-------------------------------+-----------------------------------------------+
-    | code                          | `None` or `str`                               |
+    | code                          | `None`, `str`                                 |
     +-------------------------------+-----------------------------------------------+
-    | color                         | `None` or ``Color``                           |
+    | color                         | `None`, ``Color``                             |
     +-------------------------------+-----------------------------------------------+
-    | communication_disabled_until  | `None` or `datetime`                          |
+    | communication_disabled_until  | `None`, `datetime`                            |
     +-------------------------------+-----------------------------------------------+
-    | creator                       | `None` or ``ClientUserBase``                  |
+    | creator                       | `None`, ``ClientUserBase``                    |
     +-------------------------------+-----------------------------------------------+
-    | content_filter                | `None` or ``ContentFilterLevel``              |
+    | content_filter                | `None`, ``ContentFilterLevel``                |
     +-------------------------------+-----------------------------------------------+
-    | days                          | `None` or `int`                               |
+    | days                          | `None`, `int`                                 |
     +-------------------------------+-----------------------------------------------+
-    | deaf                          | `None` or `bool`                              |
+    | deaf                          | `None`, `bool`                                |
     +-------------------------------+-----------------------------------------------+
-    | description                   | `None` or `str`                               |
+    | description                   | `None`, `str`                                 |
     +-------------------------------+-----------------------------------------------+
-    | default_message_notifications | `None` or ``MessageNotificationLevel``        |
+    | default_message_notifications | `None`, ``MessageNotificationLevel``          |
     +-------------------------------+-----------------------------------------------+
-    | deny                          | `None` or ``Permission``                      |
+    | deny                          | `None`, ``Permission``                        |
     +-------------------------------+-----------------------------------------------+
-    | discovery_splash              | `None` or ``Icon``                            |
+    | discovery_splash              | `None`, ``Icon``                              |
     +-------------------------------+-----------------------------------------------+
-    | enable_emoticons              | `None` or `bool`                              |
+    | enable_emoticons              | `None`, `bool`                                |
     +-------------------------------+-----------------------------------------------+
-    | end                           | `None` or `datetime`                          |
+    | end                           | `None`, `datetime`                            |
     +-------------------------------+-----------------------------------------------+
-    | entity_id                     | `None` or `int`                               |
+    | entity_id                     | `None`, `int`                                 |
     +-------------------------------+-----------------------------------------------+
-    | entity_metadata               | `None` or ``ScheduledEventEntityMetadata``    |
+    | entity_metadata               | `None`, ``ScheduledEventEntityMetadata``      |
     +-------------------------------+-----------------------------------------------+
-    | entity_type                   | `None` or ``ScheduledEventEntityType``        |
+    | entity_type                   | `None`, ``ScheduledEventEntityType``          |
     +-------------------------------+-----------------------------------------------+
-    | expire_behavior               | `None` or `int`                               |
+    | expire_behavior               | `None`, `int`                                 |
     +-------------------------------+-----------------------------------------------+
-    | expire_grace_period           | `None` or `int`                               |
+    | expire_grace_period           | `None`, `int`                                 |
     +-------------------------------+-----------------------------------------------+
-    | icon                          | `None` or ``Icon``                            |
+    | icon                          | `None`, ``Icon``                              |
     +-------------------------------+-----------------------------------------------+
-    | id                            | `None` or `int`                               |
+    | id                            | `None`, `int`                                 |
     +-------------------------------+-----------------------------------------------+
-    | invite_splash                 | `None` or ``Icon``                            |
+    | invite_splash                 | `None`, ``Icon``                              |
     +-------------------------------+-----------------------------------------------+
     | inviter                       | `None`, ``ClientUserBase``                    |
     +-------------------------------+-----------------------------------------------+
-    | mentionable                   | `None` or `bool`                              |
+    | mentionable                   | `None`, `bool`                                |
     +-------------------------------+-----------------------------------------------+
-    | max_age                       | `None` or `int`                               |
+    | max_age                       | `None`, `int`                                 |
     +-------------------------------+-----------------------------------------------+
-    | max_uses                      | `None` or `int`                               |
+    | max_uses                      | `None`, `int`                                 |
     +-------------------------------+-----------------------------------------------+
-    | message_notification          | `None` or ``MessageNotificationLevel``        |
+    | message_notification          | `None`, ``MessageNotificationLevel``          |
     +-------------------------------+-----------------------------------------------+
-    | mfa                           | `None` or ``MFA``                             |
+    | mfa                           | `None`, ``MFA``                               |
     +-------------------------------+-----------------------------------------------+
-    | mute                          | `None` or `bool`                              |
+    | mute                          | `None`, `bool`                                |
     +-------------------------------+-----------------------------------------------+
-    | name                          | `None` or `str`                               |
+    | name                          | `None`, `str`                                 |
     +-------------------------------+-----------------------------------------------+
-    | nick                          | `None` or `str`                               |
+    | nick                          | `None`, `str`                                 |
     +-------------------------------+-----------------------------------------------+
-    | nsfw                          | `None` or `bool`                              |
+    | nsfw                          | `None`, `bool`                                |
     +-------------------------------+-----------------------------------------------+
     | owner                         | `None`, ``ClientUserBase``                    |
     +-------------------------------+-----------------------------------------------+
-    | position                      | `None` or `int`                               |
+    | position                      | `None`, `int`                                 |
     +-------------------------------+-----------------------------------------------+
-    | public_updates_channel_id     | `None` or `int`                               |
+    | public_updates_channel_id     | `None`, `int`                                 |
     +-------------------------------+-----------------------------------------------+
-    | overwrites                    | `None` or `list` of ``PermissionOverwrite``   |
+    | overwrites                    | `None`, `list` of ``PermissionOverwrite``     |
     +-------------------------------+-----------------------------------------------+
-    | permissions                   | `None` or ``Permission``                      |
+    | permissions                   | `None`, ``Permission``                        |
     +-------------------------------+-----------------------------------------------+
-    | privacy_level                 | `None` or ``PrivacyLevel``                    |
+    | privacy_level                 | `None`, ``PrivacyLevel``                      |
     +-------------------------------+-----------------------------------------------+
-    | region                        | `None` or ``VoiceRegion``                     |
+    | region                        | `None`, ``VoiceRegion``                       |
     +-------------------------------+-----------------------------------------------+
-    | role                          | `None` or `list` of ``Role``                  |
+    | role                          | `None`, `list` of ``Role``                    |
     +-------------------------------+-----------------------------------------------+
-    | rules_channel_id              | `None` or `int`                               |
+    | rules_channel_id              | `None`, `int`                                 |
     +-------------------------------+-----------------------------------------------+
-    | separated                     | `None` or `bool`                              |
+    | separated                     | `None`, `bool`                                |
     +-------------------------------+-----------------------------------------------+
-    | send_start_notification       | `None` or `bool`                              |
+    | send_start_notification       | `None`, `bool`                                |
     +-------------------------------+-----------------------------------------------+
-    | slowmode                      | `None` or `int`                               |
+    | slowmode                      | `None`, `int`                                 |
     +-------------------------------+-----------------------------------------------+
-    | sku_ids                       | `None` or `tuple` of `int`                    |
+    | sku_ids                       | `None`, `tuple` of `int`                      |
     +-------------------------------+-----------------------------------------------+
-    | start                         | `None` or `datetime`                          |
+    | start                         | `None`, `datetime`                            |
     +-------------------------------+-----------------------------------------------+
-    | system_channel_id             | `None` or `int`                               |
+    | system_channel_id             | `None`, `int`                                 |
     +-------------------------------+-----------------------------------------------+
-    | system_channel_flags          | `None` or ``SystemChannelFlag``               |
+    | system_channel_flags          | `None`, ``SystemChannelFlag``                 |
     +-------------------------------+-----------------------------------------------+
-    | tags                          | `None` ot `frozenset` of `str`                |
+    | tags                          | `None`, `frozenset` of `str`                  |
     +-------------------------------+-----------------------------------------------+
-    | temporary                     | `None` or `bool`                              |
+    | temporary                     | `None`, `bool`                                |
     +-------------------------------+-----------------------------------------------+
-    | timed_out_until               | `None` or `datetime`                          |
+    | timed_out_until               | `None`, `datetime`                            |
     +-------------------------------+-----------------------------------------------+
-    | topic                         | `None` or `str`                               |
+    | topic                         | `None`, `str`                                 |
     +-------------------------------+-----------------------------------------------+
-    | type                          | `None` or `int`                               |
+    | type                          | `None`, `int`                                 |
     +-------------------------------+-----------------------------------------------+
-    | unicode_emoji                 | `None` or ``Emoji``                           |
+    | unicode_emoji                 | `None`, ``Emoji``                             |
     +-------------------------------+-----------------------------------------------+
-    | uses                          | `None` or `int`                               |
+    | uses                          | `None`, `int`                                 |
     +-------------------------------+-----------------------------------------------+
-    | vanity_code                   | `None` or `str`                               |
+    | vanity_code                   | `None`, `str`                                 |
     +-------------------------------+-----------------------------------------------+
-    | verification_level            | `None` or ``VerificationLevel``               |
+    | verification_level            | `None`, ``VerificationLevel``                 |
     +-------------------------------+-----------------------------------------------+
-    | widget_channel_id             | `None` or `int`                               |
+    | widget_channel_id             | `None`, `int`                                 |
     +-------------------------------+-----------------------------------------------+
-    | widget_enabled                | `None` or `bool`                              |
+    | widget_enabled                | `None`, `bool`                                |
     +-------------------------------+-----------------------------------------------+
     """
     __slots__ = ('after', 'attribute_name', 'before', )

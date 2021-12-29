@@ -30,11 +30,11 @@ class ActivityRich(ActivityBase):
     ----------
     application_id : `int`
         The id of the activity's application. Defaults to `0`.
-    assets : `None` or ``ActivityAssets``
+    assets : `None`, ``ActivityAssets``
         The activity's assets. Defaults to `None`.
     created_at : `datetime`
         When the activity was created. Defaults to Discord epoch.
-    details : `None` or `str`
+    details : `None`, `str`
         What the player is currently doing. Defaults to `None`.
     flags : ``ActivityFlag``
         The flags of the activity. Defaults to `ActivityFlag(0)`
@@ -42,21 +42,21 @@ class ActivityRich(ActivityBase):
         The id of the activity. Defaults to `0`.
     name : `str`
         The activity's name.
-    party : `None` or ``ActivityParty``
+    party : `None`, ``ActivityParty``
         The activity's party.
-    secrets : `None` or ``ActivitySecrets``
+    secrets : `None`, ``ActivitySecrets``
         The activity's secrets. Defaults to `None`.
-    session_id : `None` or `str`
+    session_id : `None`, `str`
         Spotify activity's session's id. Defaults to `None`.
-    state : `None` or `str`
+    state : `None`, `str`
         The player's current party status. Defaults to `None`.
-    sync_id : `None` or `str`
+    sync_id : `None`, `str`
         The ID of the currently playing track of a spotify activity. Defaults to `None`.
-    timestamps : `None` or ``ActivityTimestamps``
+    timestamps : `None`, ``ActivityTimestamps``
         The activity's timestamps.
     type : `int`
         An integer, what represent the activity's type for Discord. Can be one of: `0`, `1`, `2`, `3`, `4`.
-    url : `None` or `str`
+    url : `None`, `str`
         The url of the stream (Twitch or Youtube only). Defaults to `None`.
     """
     __slots__ = ('application_id', 'assets', 'created_at', 'details', 'flags', 'id', 'name', 'party', 'secrets',
@@ -71,27 +71,27 @@ class ActivityRich(ActivityBase):
         ----------
         name : `str`
             The name of the activity.
-        application_id : `None` or `int`, Optional (Keyword only)
+        application_id : `None`, `int`, Optional (Keyword only)
             The id of the activity's application. Defaults to `0`.
-        assets : `None` or ``ActivityAssets``, Optional (Keyword only)
+        assets : `None`, ``ActivityAssets``, Optional (Keyword only)
              The activity's assets. Defaults to `None`.
-        details : `None` or `str`, Optional (Keyword only)
+        details : `None`, `str`, Optional (Keyword only)
             What the player is currently doing. Defaults to `None`.
         flags : ``ActivityFlag``, `int`, Optional (Keyword only)
             The flags of the activity. Defaults to `ActivityFlag(0)`
         id_ : `int`, Optional (Keyword only)
             The id of the activity. Defaults to `0`.
-        party : `None` or ``ActivityParty``, Optional (Keyword only)
+        party : `None`, ``ActivityParty``, Optional (Keyword only)
             The activity's party.
-        secrets : `None` or ``ActivitySecret``, Optional (Keyword only)
+        secrets : `None`, ``ActivitySecret``, Optional (Keyword only)
             The activity's secrets. Defaults to `None`.
-        session_id : `None` or `str`, Optional (Keyword only)
+        session_id : `None`, `str`, Optional (Keyword only)
             Spotify activity's session's id. Defaults to `None`.
-        state : `None` or `str`, Optional (Keyword only)
+        state : `None`, `str`, Optional (Keyword only)
             The player's current party status. Defaults to `None`.
-        sync_id : `None` or `str`, Optional (Keyword only)
+        sync_id : `None`, `str`, Optional (Keyword only)
             The ID of the currently playing track of a spotify activity. Defaults to `None`.
-        timestamps : `None` or ``ActivityTimestamps``, Optional (Keyword only)
+        timestamps : `None`, ``ActivityTimestamps``, Optional (Keyword only)
             The activity's timestamps.
         type_ : `int`, Optional (Keyword only)
             The type value of the activity.
@@ -105,19 +105,19 @@ class ActivityRich(ActivityBase):
         Raises
         ------
         TypeError
-            - If `name` was not given as `str` instance.
+            - If `name` was not given as `str`.
             - If `url`'s type is neither `None` sor `str`.
-            - If `type_` is not `int` instance.
-            - If `application_id` is not `int` instance.
-            - If `details` is neither `None` nor `str` instance.
-            - If `assets` is neither `None` nor ``ActivityAssets`` instance.
-            - If `party` is neither `None` nor ``ActivityParty`` instance.
-            - If `id_` is not `int` instance.
-            - If `created_at` is not `int` instance.
+            - If `type_` is not `int`.
+            - If `application_id` is not `int`.
+            - If `details` is neither `None` nor `str`.
+            - If `assets` is neither `None` nor ``ActivityAssets``.
+            - If `party` is neither `None` nor ``ActivityParty``.
+            - If `id_` is not `int`.
+            - If `created_at` is not `int`.
             - If `session_id` is neither `None` sor `str`
-            - If `state` is neither `None` sor `str` instance.
-            - if `timestamps` is neither `None` nor ``ActivityTimestamps`` instance.
-            - If `sync_id` is neither `None` nor `str` instance.
+            - If `state` is neither `None` sor `str`.
+            - if `timestamps` is neither `None` nor ``ActivityTimestamps``.
+            - If `sync_id` is neither `None` nor `str`.
         ValueError
             - If `name`'s length is out of range [1:2048].
             - If `url`'s length is out of range [0:2048].
@@ -139,7 +139,7 @@ class ActivityRich(ActivityBase):
         
         if (assets is not None) and (not isinstance(assets, ActivityAssets)):
             raise TypeError(
-                f'`assets` can be either `None` or `{ActivityAssets.__name__}` instance, got '
+                f'`assets` can be `None`, `{ActivityAssets.__name__}`, got '
                 f'{assets.__class__.__name__}; {assets!r}.'
             )
         
@@ -149,7 +149,7 @@ class ActivityRich(ActivityBase):
         else:
             if not isinstance(created_at, datetime):
                 raise TypeError(
-                    f'`created_at` can be `datetime` instance, got {created_at.__class__.__name__}; {created_at!r}.'
+                    f'`created_at` can be `datetime`, got {created_at.__class__.__name__}; {created_at!r}.'
                 )
         
         
@@ -174,14 +174,14 @@ class ActivityRich(ActivityBase):
         
         if (party is not None) and (not isinstance(party, ActivityParty)):
             raise TypeError(
-                f'`party` can be either `None` or `{ActivityParty.__name__}` instance, got '
+                f'`party` can be `None`, `{ActivityParty.__name__}`, got '
                 f'{party.__class__.__name__}; {party!r}.'
             )
         
         
         if (secrets is not None) and (not isinstance(secrets, ActivitySecrets)):
             raise TypeError(
-                f'`secrets` can be either `None` or `{ActivitySecrets.__name__}` instance, got '
+                f'`secrets` can be `None`, `{ActivitySecrets.__name__}`, got '
                 f'{secrets.__class__.__name__}; {secrets!r}.'
             )
         
@@ -200,7 +200,7 @@ class ActivityRich(ActivityBase):
         
         if (timestamps is not None) and (not isinstance(timestamps, ActivityTimestamps)):
             raise TypeError(
-                f'`timestamps` can be either `None` or `{ActivityTimestamps.__name__}` instance, got '
+                f'`timestamps` can be `None`, `{ActivityTimestamps.__name__}`, got '
                 f'{timestamps.__class__.__name__}; {timestamps!r}.'
             )
         
@@ -299,7 +299,7 @@ class ActivityRich(ActivityBase):
         
         Returns
         -------
-        start : `None` or `datetime`
+        start : `None`, `datetime`
         """
         timestamps = self.timestamps
         if (timestamps is not None):
@@ -313,7 +313,7 @@ class ActivityRich(ActivityBase):
         
         Returns
         -------
-        start : `None` or `datetime`
+        start : `None`, `datetime`
         """
         timestamps = self.timestamps
         if (timestamps is not None):
@@ -328,7 +328,7 @@ class ActivityRich(ActivityBase):
     @classmethod
     def from_data(cls, activity_data):
         """
-        Creates a new ``ActivityRich`` instance from the given activity data.
+        Creates a new ``ActivityRich`` from the given activity data.
         
         Parameters
         ----------
@@ -448,29 +448,29 @@ class ActivityRich(ActivityBase):
         +===================+===================================+
         | application_id    | `int`                             |
         +-------------------+-----------------------------------+
-        | assets            | `None` or ``ActivityAssets``      |
+        | assets            | `None`, ``ActivityAssets``      |
         +-------------------+-----------------------------------+
         | created_at        | `datetime`                        |
         +-------------------+-----------------------------------+
-        | details           | `None` or `str`                   |
+        | details           | `None`, `str`                   |
         +-------------------+-----------------------------------+
         | flags             | ``ActivityFlag``                  |
         +-------------------+-----------------------------------+
         | name              | `str`                             |
         +-------------------+-----------------------------------+
-        | party             | `None` or ``ActivityParty``       |
+        | party             | `None`, ``ActivityParty``       |
         +-------------------+-----------------------------------+
-        | secrets           | `None` or ``ActivitySecrets``     |
+        | secrets           | `None`, ``ActivitySecrets``     |
         +-------------------+-----------------------------------+
-        | session_id        | `None` or `str`                   |
+        | session_id        | `None`, `str`                   |
         +-------------------+-----------------------------------+
-        | state             | `None` or `str`                   |
+        | state             | `None`, `str`                   |
         +-------------------+-----------------------------------+
-        | sync_id           | `None` or `str`                   |
+        | sync_id           | `None`, `str`                   |
         +-------------------+-----------------------------------+
-        | timestamps        | `None` or `ActivityTimestamps``   |
+        | timestamps        | `None`, `ActivityTimestamps``   |
         +-------------------+-----------------------------------+
-        | url               | `None` or `str`                   |
+        | url               | `None`, `str`                   |
         +-------------------+-----------------------------------+
         """
         old_attributes = {}
@@ -700,7 +700,7 @@ class ActivityRich(ActivityBase):
         
         Returns
         -------
-        name : `None` or `str`
+        name : `None`, `str`
         """
         if self.type != ACTIVITY_TYPES.stream:
             return None
@@ -728,7 +728,7 @@ class ActivityRich(ActivityBase):
         
         Returns
         -------
-        duration : `None` or `timedelta`
+        duration : `None`, `timedelta`
         """
         if self.type != ACTIVITY_TYPES.spotify:
             return None
@@ -754,7 +754,7 @@ class ActivityRich(ActivityBase):
         
         Returns
         -------
-        album_cover_url : `None` or `str`
+        album_cover_url : `None`, `str`
         """
         if self.type != ACTIVITY_TYPES.spotify:
             return None
@@ -779,7 +779,7 @@ class ActivityRich(ActivityBase):
         
         Returns
         -------
-        track_id : `None` or `str`
+        track_id : `None`, `str`
         """
         if self.type != ACTIVITY_TYPES.spotify:
             return None
@@ -796,7 +796,7 @@ class ActivityRich(ActivityBase):
         
         Returns
         -------
-        url : `None` or `str`
+        url : `None`, `str`
         """
         if self.type != ACTIVITY_TYPES.spotify:
             return None

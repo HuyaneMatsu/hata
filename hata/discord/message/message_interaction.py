@@ -26,7 +26,7 @@ class MessageInteraction(DiscordEntity):
     __slots__ = ('name', 'type', 'user')
     def __new__(cls, data):
         """
-        Creates a new ``MessageInteraction`` instance from the received data.
+        Creates a new ``MessageInteraction`` from the received data.
         
         Parameters
         ----------

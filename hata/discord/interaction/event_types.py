@@ -50,17 +50,17 @@ class ApplicationCommandInteraction(DiscordEntity):
         The represented application command's identifier number.
     name : `str`
         The name of the command. It's length can be in range [1:32].
-    options : `None` or `tuple` of ``ApplicationCommandInteractionOption``
+    options : `None`, `tuple` of ``ApplicationCommandInteractionOption``
         The parameters and values from the user if any. Defaults to `None` if non is received.
-    resolved_attachments : `None` or `dict` of (`int`, `Attachment``) items
+    resolved_attachments : `None`, `dict` of (`int`, `Attachment``) items
         Resolved received attachments stored by their identifier as keys if any.
-    resolved_channels : `None` or `dict` of (`int`, ``ChannelBase``) items
+    resolved_channels : `None`, `dict` of (`int`, ``ChannelBase``) items
         Resolved received channels stored by their identifier as keys if any.
-    resolved_roles : `None` or `dict` of (`int`, ``Role``) items
+    resolved_roles : `None`, `dict` of (`int`, ``Role``) items
         Resolved received roles stored by their identifier as keys if any.
-    resolved_messages : `None` or `dict` of (`int`, ``Message``) items
+    resolved_messages : `None`, `dict` of (`int`, ``Message``) items
         Resolved received messages stored by their identifier as keys if any.
-    resolved_users : `None` or `dict` of (`int`, ``ClientUserBase``) items
+    resolved_users : `None`, `dict` of (`int`, ``ClientUserBase``) items
         Resolved received users stored by their identifier as keys if any.
     target_id : `int`
         The interaction's target's identifier.
@@ -382,7 +382,7 @@ class ApplicationCommandInteraction(DiscordEntity):
         
         Returns
         -------
-        resolved : `None` or ``DiscordEntity``
+        resolved : `None`, ``DiscordEntity``
             The resolved discord entity if found.
         """
         # Is used at `InteractionEvent.target`, which wanna access user and message first, so we check that two first.
@@ -463,7 +463,7 @@ class ApplicationCommandInteractionOption:
     name : `str`
         The option's name.
     
-    options : `None` or `tuple` of ``ApplicationCommandInteractionOption``
+    options : `None`, `tuple` of ``ApplicationCommandInteractionOption``
         The parameters and values from the user. Present if a sub-command was used. Defaults to `None` if non is
         received.
         
@@ -482,7 +482,7 @@ class ApplicationCommandInteractionOption:
     
     def __new__(cls, data):
         """
-        Creates a new ``ApplicationCommandInteractionOption`` instance from the data received from Discord.
+        Creates a new ``ApplicationCommandInteractionOption`` from the data received from Discord.
         
         Parameters
         ----------
@@ -616,9 +616,9 @@ class ComponentInteraction:
     
     Attributes
     ----------
-    custom_id : `None` or `str`
+    custom_id : `None`, `str`
         The component's custom identifier.
-    options : `None` or `tuple` of `str`
+    options : `None`, `tuple` of `str`
         Option values selected of the respective interaction.
     type : ``ComponentType``
         The component's type.
@@ -771,18 +771,18 @@ class ApplicationCommandAutocompleteInteractionOption:
         Whether this field is focused by the user.
     name : `str`
         The name of the parameter.
-    options : `None` or `tuple` of ``ApplicationCommandAutocompleteInteractionOption``
+    options : `None`, `tuple` of ``ApplicationCommandAutocompleteInteractionOption``
         Nested functions.
     type : ``ApplicationCommandOptionType``
         The represented option's type.
-    value : `None` or `str`
+    value : `None`, `str`
         The value, the user has been typed.
     """
     __slots__ = ('focused', 'name', 'options', 'type', 'value')
     
     def __new__(cls, data):
         """
-        Creates a new ``ApplicationCommandAutocompleteOption`` instance from the data received from Discord.
+        Creates a new ``ApplicationCommandAutocompleteOption`` from the data received from Discord.
         
         Parameters
         ----------
@@ -931,7 +931,7 @@ class ApplicationCommandAutocompleteInteractionOption:
         
         Returns
         -------
-        option : `None` or ``ApplicationCommandAutocompleteInteractionOption``
+        option : `None`, ``ApplicationCommandAutocompleteInteractionOption``
         """
         if self.focused:
             return self
@@ -955,7 +955,7 @@ class ApplicationCommandAutocompleteInteractionOption:
         
         Returns
         -------
-        value : `None` or `str`
+        value : `None`, `str`
             The value, the user has been typed.
         """
         if option_names:
@@ -987,7 +987,7 @@ class ApplicationCommandAutocompleteInteraction:
         The represented application command's identifier number.
     name : `str`
         The name of the command. It's length can be in range [1:32].
-    options : `None` or `tuple` of ``ApplicationCommandAutocompleteOption``
+    options : `None`, `tuple` of ``ApplicationCommandAutocompleteOption``
         Parameter auto completion options.
     """
     __slots__ = ('id', 'name', 'options',)
@@ -1107,7 +1107,7 @@ class ApplicationCommandAutocompleteInteraction:
         
         Returns
         -------
-        option : `None` or ``ApplicationCommandAutocompleteInteractionOption``
+        option : `None`, ``ApplicationCommandAutocompleteInteractionOption``
         """
         options = self.options
         if options is None:
@@ -1134,7 +1134,7 @@ class ApplicationCommandAutocompleteInteraction:
         
         Returns
         -------
-        value : `None` or `str`
+        value : `None`, `str`
             The value, the user has been typed.
         """
         if option_names:
@@ -1163,7 +1163,7 @@ class ApplicationCommandAutocompleteInteraction:
         
         Returns
         -------
-        value : `None` or `str`
+        value : `None`, `str`
         """
         focused_option = self.focused_option
         if (focused_option is None):
@@ -1180,9 +1180,9 @@ class FormSubmitInteraction:
     
     Attributes
     ----------
-    custom_id : `None` or `str`
+    custom_id : `None`, `str`
         The forms's custom identifier.
-    options : `None` or `tuple` of ``FormSubmitInteractionOption``
+    options : `None`, `tuple` of ``FormSubmitInteractionOption``
         Submitted component values.
     """
     __slots__ = ('custom_id', 'options', )
@@ -1333,7 +1333,7 @@ class FormSubmitInteraction:
         
         Returns
         -------
-        value : `None` or `str`
+        value : `None`, `str`
             The value if any.
         """
         for custom_id, value in self.iter_custom_ids_and_values():
@@ -1362,9 +1362,9 @@ class FormSubmitInteraction:
         
         Returns
         -------
-        match : `None` or `Any`
+        match : `None`, `Any`
             The returned value by the ``matcher``
-        value : `None` or `str`
+        value : `None`, `str`
             The matched `custom_id`'s value.
         """
         for custom_id, value in self.iter_custom_ids_and_values():
@@ -1398,9 +1398,9 @@ class FormSubmitInteraction:
         
         Yields
         -------
-        match : `None` or `Any`
+        match : `None`, `Any`
             The returned value by the ``matcher``
-        value : `None` or `str`
+        value : `None`, `str`
             The matched `custom_id`'s value.
         """
         for custom_id, value in self.iter_custom_ids_and_values():
@@ -1413,16 +1413,16 @@ class FormSubmitInteractionOption:
     """
     Attributes
     ----------
-    custom_id : `None` or `str`
+    custom_id : `None`, `str`
         The option's respective component's type.
         
-    options : `None` or `tuple` of ``FormSubmitInteractionOption``
+    options : `None`, `tuple` of ``FormSubmitInteractionOption``
         Mutually exclusive with the `value` field.
     
     type : ``ComponentType``
         The option respective component's type.
         
-    value : `None` or `str`
+    value : `None`, `str`
         Mutually exclusive with the `options` field.
     """
     __slots__ = ('custom_id', 'options', 'type', 'value')
@@ -1612,7 +1612,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
     ----------
     id : `int`
         The interaction's id.
-    _cached_users : `None` or `list` of ``ClientUserBase``
+    _cached_users : `None`, `list` of ``ClientUserBase``
         A list of users, which are temporary cached.
     _response_flag : `bool`
         The response order state of ``InteractionEvent``
@@ -1633,7 +1633,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         |                               |       | showing for the invoking user only.               |
         +-------------------------------+-------+---------------------------------------------------+
         
-        Can be used by extensions and is used by the the ``Client`` instances to ensure correct flow order.
+        Can be used by extensions and is used by the the ``Client``-s to ensure correct flow order.
     application_id : `int`
         The interaction's application's identifier.
     channel_id : `int`
@@ -1643,13 +1643,13 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         from a private channel.
     guild_locale : `str`
         The guild's preferred locale if invoked from guild.
-    interaction : `None` or ``ApplicationCommandInteraction``, ``ComponentInteraction`` or \
+    interaction : `None`, ``ApplicationCommandInteraction``, ``ComponentInteraction`` or \
             ``ApplicationCommandAutocompleteInteraction``
         
         The called interaction by it's route by the user.
     locale : `str`
         The selected language of the invoking user.
-    message : `None` or ``Message``
+    message : `None`, ``Message``
         The message from where the interaction was received. Applicable for message components.
     token : `str`
         Interaction's token used when responding on it.
@@ -1684,7 +1684,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
     
     def __new__(cls, data):
         """
-        Creates a new ``InteractionEvent`` instance with the given parameters.
+        Creates a new ``InteractionEvent`` with the given parameters.
         
         Parameters
         ----------
@@ -1804,7 +1804,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         
         Parameters
         ----------
-        timeout : `None` or `float`, Optional (Keyword only)
+        timeout : `None`, `float`, Optional (Keyword only)
             The maximal time to wait for message before `TimeoutError` is raised.
         
         Returns
@@ -2125,7 +2125,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         
         Returns
         -------
-        voice_client : `None` or ``VoiceClient``
+        voice_client : `None`, ``VoiceClient``
         """
         try:
             client = APPLICATION_ID_TO_CLIENT[self.application_id]
@@ -2186,7 +2186,7 @@ class InteractionResponseContext:
     
     def __new__(cls, interaction, is_deferring, is_ephemeral):
         """
-        Creates a new ``InteractionResponseContext`` instance with the given parameters.
+        Creates a new ``InteractionResponseContext`` with the given parameters.
         
         Parameters
         ----------

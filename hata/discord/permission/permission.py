@@ -1,7 +1,5 @@
 __all__ = ('Permission', )
 
-import warnings
-
 from ..bases import FlagBase
 
 PERMISSION_SHIFT_CREATE_INSTANT_INVITE = 0

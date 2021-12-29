@@ -6,20 +6,20 @@ from .constants import JSON_KEY_EXCEPTION_MESSAGE
 
 class TopGGGloballyRateLimited(Exception):
     """
-    response : ``ClientResponse`` or `None`
-            Response from top.gg if received as a response.
+    response : ``ClientResponse``, `None`
+        Response from top.gg if received as a response.
     """
-    def __init__(self, response, response_data):
+    def __init__(self, response):
         """
         Creates a new top.gg http exception instance.
         
         Parameters
         ----------
-        response : ``ClientResponse`` or `None`
+        response : ``ClientResponse``, `None`
             Response from top.gg if received as a response.
         """
         self.response = response
-        Exception.__init__(self, response, response_data)
+        Exception.__init__(self, response)
 
 
 class TopGGHttpException(Exception):
@@ -41,7 +41,7 @@ class TopGGHttpException(Exception):
         ----------
         response : ``ClientResponse``
             Response from top.gg.
-        response_data : `str` or `dict` of (`str`, `Any`) items
+        response_data : `str`, `dict` of (`str`, `Any`) items
             Response data.
         """
         if isinstance(response_data, str):

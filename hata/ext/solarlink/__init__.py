@@ -65,7 +65,7 @@ def setup_ext_solarlink(client):
     Raises
     ------
     TypeError
-        - If `client` is not ``Client`` instance.
+        - If `client` is not ``Client``.
     RuntimeError
         - If any attribute of the extension, is already used by the client.
     

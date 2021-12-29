@@ -64,13 +64,13 @@ class Embed(EmbedBase):
             The title of the embed. Shows at the top with intense white characters.
         description : `str`, Optional
             The main content of the embed.
-        color : ``Color`` or `int`, Optional
+        color : ``Color``, `int`, Optional
             The color code of the embed. Passing `0` means black, not like at the case of roles.
         url : `str`, Optional
             Url of the embed. If defined, the embed's `title` will show up as a hyper link pointing to the `url`.
         timestamp : `datetime`, optional
             Timestamp of the embed's content. Shows up next to the `footer` separated with a `'|'` character.
-        type_ : `None` or `str`, Optional
+        type_ : `None`, `str`, Optional
             The type of the embed. Defaults to `'rich'`.
         """
         self._data = data = {}
@@ -535,7 +535,7 @@ class Embed(EmbedBase):
         """
         A get-set-del property for accessing the embed's description.
         
-        Accepts and returns `None` or a `str` instance.
+        Accepts and returns `None` or a `str`.
         """
         return self._data.get('description', None)
     
@@ -575,7 +575,7 @@ class Embed(EmbedBase):
         """
         A get-set-del property for accessing the embed's fields.
         
-        Accepts an `iterable` of ``EmbedField``objects. Meanwhile returns an ``_EmbedFieldsProxy`` instance,
+        Accepts an `iterable` of ``EmbedField``objects. Meanwhile returns an ``_EmbedFieldsProxy``,
         through what the respective embed's fields can be modified directly.
         """
         data = self._data
@@ -741,7 +741,7 @@ class Embed(EmbedBase):
         """
         A get-set-del property for accessing the embed's title.
         
-        Accepts and returns `None` or a `str` instance.
+        Accepts and returns `None` or a `str`.
         """
         return self._data.get('title', None)
     
@@ -772,7 +772,7 @@ class Embed(EmbedBase):
         """
         A get-set-del property for accessing the embed's type.
         
-        Accepts and returns `None` or a `str` instance.
+        Accepts and returns `None` or a `str`.
         """
         return self._data.get('type', None)
     
@@ -794,7 +794,7 @@ class Embed(EmbedBase):
         """
         A get-set-del property for accessing the embed's url.
         
-        Accepts and returns `None` or a `str` instance.
+        Accepts and returns `None` or a `str`.
         """
         return self._data.get('url', None)
     

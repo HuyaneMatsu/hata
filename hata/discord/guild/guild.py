@@ -101,11 +101,11 @@ class Guild(DiscordEntity, immortal=True):
     ----------
     id : `int`
         The unique identifier number of the guild.
-    _boosters : `None` or `list` of ``ClientUserBase`` objects
+    _boosters : `None`, `list` of ``ClientUserBase`` objects
         Cached slot for the boosters of the guild.
-    _embedded_activity_states : `None` or `set` of ``EmbeddedActivityState``
+    _embedded_activity_states : `None`, `set` of ``EmbeddedActivityState``
         Embedded activity states to keep them alive in cache.
-    _permission_cache : `None` or `dict` of (`int`, ``Permission``) items
+    _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     afk_channel_id : `int`
         The afk channel's identifier of the guild if it has.
@@ -127,13 +127,13 @@ class Guild(DiscordEntity, immortal=True):
         Whether the guild has the boost progress bar enabled.
     booster_count : `int`
         The total number of boosts of the guild.
-    channels : `dict` of (`int`, ``ChannelGuildBase`` instance) items
+    channels : `dict` of (`int`, ``ChannelGuildBase``) items
         The channels of the guild stored in `channel_id` - `channel` relation.
     clients : `list` of ``Client``
         The loaded clients, who are the member of the guild. If no clients are member of a guild, it is partial.
     content_filter : ``ContentFilterLevel``
         The explicit content filter level of the guild.
-    description : `None` or `str`
+    description : `None`, `str`
         Description of the guild. The guild must be a Community guild.
     discovery_splash_hash : `int`
         The guild's discovery splash's hash in `uint128`. The guild must be a discoverable.
@@ -186,7 +186,7 @@ class Guild(DiscordEntity, immortal=True):
         The channel's identifier where the rules of a public guild's should be.
         
         The guild must be a `community` guild.
-    stages : `None` or `dict` of (`int`, ``Stage``) items
+    stages : `None`, `dict` of (`int`, ``Stage``) items
         Active stages of the guild. Defaults to `None` if would be empty.
     stickers : `dict` of (`int`, ``Sticker``) items
         Stickers of th guild.
@@ -204,7 +204,7 @@ class Guild(DiscordEntity, immortal=True):
         The amount of users at the guild.
     users : `dict` r ``WeakValueDictionary`` of (`int`, ``ClientUserBase``) items
         The users at the guild stored within `user_id` - `user` relation.
-    vanity_code : `None` or `str`
+    vanity_code : `None`, `str`
         The guild's vanity invite's code if it has.
     verification_level : ``VerificationLevel``
         The minimal verification needed to join to guild.
@@ -471,7 +471,7 @@ class Guild(DiscordEntity, immortal=True):
         ----------------
         name : `str`, Optional (Keyword only)
             The guild's ``.name``.
-        banner : `None`, ``Icon`` or `str`, Optional (Keyword only)
+        banner : `None`, ``Icon``, `str`, Optional (Keyword only)
             The guild's banner.
             
             > Mutually exclusive with `banner_type` and `banner_hash` parameters.
@@ -489,7 +489,7 @@ class Guild(DiscordEntity, immortal=True):
         boost_progress_bar_enabled : `bool`, Optional (Keyword only)
             Whether the guild has the boost progress bar enabled.
         
-        invite_splash : `None`, ``Icon`` or `str`, Optional (Keyword only)
+        invite_splash : `None`, ``Icon``, `str`, Optional (Keyword only)
             The guild's invite splash.
             
             > Mutually exclusive with the `invite_splash_type` and `invite_splash_hash` parameters.
@@ -504,7 +504,7 @@ class Guild(DiscordEntity, immortal=True):
             
             > Mutually exclusive with the `invite_splash` parameter.
         
-        discovery_splash : `None`, ``Icon`` or `str`, Optional (Keyword only)
+        discovery_splash : `None`, ``Icon``, `str`, Optional (Keyword only)
             The guild's discovery splash.
             
             Mutually exclusive with the `discovery_splash_type` and  `discovery_splash_hash` parameters.
@@ -519,7 +519,7 @@ class Guild(DiscordEntity, immortal=True):
             
             > Mutually exclusive with the `discovery_splash` parameter.
         
-        icon : `None`, ``Icon`` or `str`, Optional (Keyword only)
+        icon : `None`, ``Icon``, `str`, Optional (Keyword only)
             The guild's icon.
             
             > Mutually exclusive with `icon_type` and `icon_hash`.
@@ -534,7 +534,7 @@ class Guild(DiscordEntity, immortal=True):
             
             > Mutually exclusive with `icon`.
         
-        region : ``VoiceRegion`` or `str`, Optional (Keyword only)
+        region : ``VoiceRegion``, `str`, Optional (Keyword only)
             The guild's voice region.
         
         nsfw_level : ``NsfwLevel``, Optional (Keyword only)
@@ -837,7 +837,7 @@ class Guild(DiscordEntity, immortal=True):
             | VOICE_STATE_MOVE      | 4     |
             +-----------------------+-------+
         
-        voice_state : `None` or ``VoiceState``
+        voice_state : `None`, ``VoiceState``
             The user's respective voice state.
             
             Will be returned as `None` if action is `VOICE_STATE_NONE`.
@@ -862,7 +862,7 @@ class Guild(DiscordEntity, immortal=True):
             | self_video    | `bool`            |
             +---------------+-------------------+
             
-            If `action` is `VOICE_STATE_LEAVE` or `VOICE_STATE_MOVE`, then the old channel's identifier is returned.
+            If `action` is `VOICE_STATE_LEAVE`, `VOICE_STATE_MOVE`, then the old channel's identifier is returned.
         """
         try:
             voice_state = self.voice_states[user.id]
@@ -1027,7 +1027,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        default_role : `None` or `Role``
+        default_role : `None`, `Role``
         """
         return self.roles.get(self.id, None)
     
@@ -1212,7 +1212,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        user : ``ClientUserBase`` or `default`
+        user : ``ClientUserBase``, `default`
         """
         if (not 1 < len(name) < 38):
             return default
@@ -1262,7 +1262,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        user : ``ClientUserBase`` or `default`
+        user : ``ClientUserBase``, `default`
         """
         if (not 1 < len(name) < 38):
             return default
@@ -1406,7 +1406,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        emoji : ``Emoji`` or `default`
+        emoji : ``Emoji``, `default`
         """
         parsed = EMOJI_NAME_RP.fullmatch(name)
         if (parsed is not None):
@@ -1431,7 +1431,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        emoji : ``Emoji`` or `default`
+        emoji : ``Emoji``, `default`
         """
         emoji_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
         
@@ -1473,7 +1473,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        sticker : ``Sticker`` or `default`
+        sticker : ``Sticker``, `default`
         """
         for sticker in self.stickers.values():
             if sticker.name == name:
@@ -1495,7 +1495,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        sticker : ``Sticker`` or `default`
+        sticker : ``Sticker``, `default`
         """
         target_name_length = len(name)
         
@@ -1538,7 +1538,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channel : ``ChannelGuildBase`` instance or `default`
+        channel : ``ChannelGuildBase``, `default`
         """
         if name.startswith('#'):
             name = name[1:]
@@ -1569,7 +1569,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channel : ``ChannelGuildBase`` instance or `default`
+        channel : ``ChannelGuildBase``, `default`
         """
         if name.startswith('#'):
             name = name[1:]
@@ -1621,7 +1621,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        role : ``Role`` or `default`
+        role : ``Role``, `default`
         """
         for role in self.roles.values():
             if role.name == name:
@@ -1643,7 +1643,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        role : ``Role`` or `default`
+        role : ``Role``, `default`
         """
         target_name_length = len(name)
         if (target_name_length < 2) or (target_name_length > 32):
@@ -1681,7 +1681,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        user : ``UserBase`` instance
+        user : ``UserBase``
             The user to calculate it's permissions of.
         
         Returns
@@ -1738,7 +1738,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        user : ``UserBase`` instance
+        user : ``UserBase``
             The user to calculate it's permissions of.
         
         Returns
@@ -1838,7 +1838,7 @@ class Guild(DiscordEntity, immortal=True):
         +-------------------------------+-------------------------------+
         | content_filter                | ``ContentFilterLevel``        |
         +-------------------------------+-------------------------------+
-        | description                   | `None` or `str`               |
+        | description                   | `None`, `str`               |
         +-------------------------------+-------------------------------+
         | discovery_splash              | ``Icon``                      |
         +-------------------------------+-------------------------------+
@@ -1878,7 +1878,7 @@ class Guild(DiscordEntity, immortal=True):
         +-------------------------------+-------------------------------+
         | system_channel_flags          | ``SystemChannelFlag``         |
         +-------------------------------+-------------------------------+
-        | vanity_code                   | `None` or `str`               |
+        | vanity_code                   | `None`, `str`               |
         +-------------------------------+-------------------------------+
         | verification_level            | ``VerificationLevel``         |
         +-------------------------------+-------------------------------+
@@ -2264,7 +2264,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        changes : `list` of `tuple` (`int`, ``Emoji``, (`None` or `dict` of (`str`, `Any`) items)))
+        changes : `list` of `tuple` (`int`, ``Emoji``, (`None`, `dict` of (`str`, `Any`) items)))
             The changes broken down for each changed emoji. Each element of the list is a tuple of 3 elements:
             
             +-------+-------------------+-----------------------------------------------+
@@ -2274,7 +2274,7 @@ class Guild(DiscordEntity, immortal=True):
             +-------+-------------------+-----------------------------------------------+
             | 1     | emoji             | ``Emoji``                                     |
             +-------+-------------------+-----------------------------------------------+
-            | 2     | old_attributes    | `None` or `dict` of (`str`, `Any`) items      |
+            | 2     | old_attributes    | `None`, `dict` of (`str`, `Any`) items      |
             +-------+-------------------+-----------------------------------------------+
             
             Possible actions:
@@ -2307,7 +2307,7 @@ class Guild(DiscordEntity, immortal=True):
             +-------------------+-------------------------------+
             | require_colons    | `bool`                        |
             +-------------------+-------------------------------+
-            | roles_ids         | `None` or `tuple` of ``Role`` |
+            | roles_ids         | `None`, `tuple` of ``Role`` |
             +-------------------+-------------------------------+
         """
         emojis = self.emojis
@@ -2380,7 +2380,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        changes : `list` of `tuple` (`int`, ``Sticker``, (`None` or `dict` of (`str`, `Any`) items)))
+        changes : `list` of `tuple` (`int`, ``Sticker``, (`None`, `dict` of (`str`, `Any`) items)))
             The changes broken down for each changed sticker. Each element of the list is a tuple of 3 elements:
             
             +-------+-------------------+-----------------------------------------------+
@@ -2390,7 +2390,7 @@ class Guild(DiscordEntity, immortal=True):
             +-------+-------------------+-----------------------------------------------+
             | 1     | sticker           | ``Sticker``                                   |
             +-------+-------------------+-----------------------------------------------+
-            | 2     | old_attributes    | `None` or `dict` of (`str`, `Any`) items      |
+            | 2     | old_attributes    | `None`, `dict` of (`str`, `Any`) items      |
             +-------+-------------------+-----------------------------------------------+
             
             Possible actions:
@@ -2415,7 +2415,7 @@ class Guild(DiscordEntity, immortal=True):
             +=======================+===================================+
             | available             | `bool`                            |
             +-----------------------+-----------------------------------+
-            | description           | `None` or `str`                   |
+            | description           | `None`, `str`                   |
             +-----------------------+-----------------------------------+
             | name                  | `str`                             |
             +-----------------------+-----------------------------------+
@@ -2691,7 +2691,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channels : `list` of ``ChannelGuildBase`` instances
+        channels : `list` of ``ChannelGuildBase``
         """
         return sorted(channel for channel in self.channels.values() if channel.parent is None)
     
@@ -2702,7 +2702,7 @@ class Guild(DiscordEntity, immortal=True):
         Returns the channels of the guild in a list in their display order. Note, that channels inside of categories are
         included as well.
         
-        channels : `list` of ``ChannelGuildBase`` instances
+        channels : `list` of ``ChannelGuildBase``
         """
         channels = []
         for channel in sorted(channel for channel in self.channels.values() if channel.parent is None):
@@ -2741,7 +2741,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        public_updates_channel : `None` or ``ChannelText``
+        public_updates_channel : `None`, ``ChannelText``
         """
         public_updates_channel_id = self.public_updates_channel_id
         if public_updates_channel_id:
@@ -2755,7 +2755,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        afk_channel : `None` or ``ChannelVoice``
+        afk_channel : `None`, ``ChannelVoice``
         """
         afk_channel_id = self.afk_channel_id
         if afk_channel_id:
@@ -2769,7 +2769,7 @@ class Guild(DiscordEntity, immortal=True):
 
         Returns
         -------
-        rules_channel : `None` or ``ChannelText``
+        rules_channel : `None`, ``ChannelText``
         """
         rules_channel_id = self.rules_channel_id
         if rules_channel_id:
@@ -2783,7 +2783,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        public_updates_channel : `None` or ``ChannelText``
+        public_updates_channel : `None`, ``ChannelText``
         """
         system_channel_id = self.system_channel_id
         if system_channel_id:
@@ -2797,7 +2797,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        public_updates_channel : `None` or ``ChannelText``
+        public_updates_channel : `None`, ``ChannelText``
         """
         widget_channel_id = self.widget_channel_id
         if widget_channel_id:

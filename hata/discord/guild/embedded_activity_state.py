@@ -107,32 +107,32 @@ def difference_handle_embedded_activity_update_event(data):
             +===================+===================================+
             | application_id    | `int`                             |
             +-------------------+-----------------------------------+
-            | assets            | `None` or ``ActivityAssets``      |
+            | assets            | `None`, ``ActivityAssets``        |
             +-------------------+-----------------------------------+
             | created_at        | `datetime`                        |
             +-------------------+-----------------------------------+
-            | details           | `None` or `str`                   |
+            | details           | `None`, `str`                     |
             +-------------------+-----------------------------------+
             | flags             | ``ActivityFlag``                  |
             +-------------------+-----------------------------------+
             | name              | `str`                             |
             +-------------------+-----------------------------------+
-            | party             | `None` or ``ActivityParty``       |
+            | party             | `None`, ``ActivityParty``         |
             +-------------------+-----------------------------------+
-            | secrets           | `None` or ``ActivitySecrets``     |
+            | secrets           | `None`, ``ActivitySecrets``       |
             +-------------------+-----------------------------------+
-            | session_id        | `None` or `str`                   |
+            | session_id        | `None`, `str`                     |
             +-------------------+-----------------------------------+
-            | state             | `None` or `str`                   |
+            | state             | `None`, `str`                     |
             +-------------------+-----------------------------------+
-            | sync_id           | `None` or `str`                   |
+            | sync_id           | `None`, `str`                     |
             +-------------------+-----------------------------------+
-            | timestamps        | `None` or `ActivityTimestamps``   |
+            | timestamps        | `None`, `ActivityTimestamps``     |
             +-------------------+-----------------------------------+
-            | url               | `None` or `str`                   |
+            | url               | `None`, `str`                     |
             +-------------------+-----------------------------------+
             
-            If `action` is `EMBEDDED_ACTIVITY_UPDATE_USER_ADD` or `EMBEDDED_ACTIVITY_UPDATE_USER_DELETE`, it will
+            If `action` is `EMBEDDED_ACTIVITY_UPDATE_USER_ADD`, `EMBEDDED_ACTIVITY_UPDATE_USER_DELETE`, it will
             contain the joined or left user's identifier.
     """
     embedded_activity_state, is_created = EmbeddedActivityState(data, None)
@@ -220,7 +220,7 @@ class EmbeddedActivityState:
         ----------
         data : `dict` of (`str`, `Any`) items
             Received data.
-        guild_id : `None` or `int`
+        guild_id : `None`, `int`
             The guild's identifier where the activity is.
         
         Returns
@@ -304,7 +304,7 @@ class EmbeddedActivityState:
         
         Returns
         -------
-        guild : `None` or ``Guild``
+        guild : `None`, ``Guild``
         """
         return GUILDS.get(self.guild_id, None)
     
@@ -316,7 +316,7 @@ class EmbeddedActivityState:
         
         Returns
         -------
-        channel : `None` or ``ChannelBase``
+        channel : `None`, ``ChannelBase``
         """
         return CHANNELS.get(self.channel_id, None)
     

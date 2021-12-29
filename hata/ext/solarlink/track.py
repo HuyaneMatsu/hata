@@ -60,7 +60,7 @@ class Track:
         The position of the track in seconds.
     title : `str`
         The track's title.
-    url : `None` or `str`
+    url : `None`, `str`
         The url of the track.
     """
     __slots__ = ('author', 'base64', 'duration', 'identifier', 'is_seekable', 'is_stream', 'position', 'title', 'url')
@@ -294,7 +294,7 @@ class ConfiguredTrack(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    _added_attributes : `None` or `dict` of (`str`, `Any`) items
+    _added_attributes : `None`, `dict` of (`str`, `Any`) items
         Additionally passed attributes when registering a track.
     
     end_time : `float`
@@ -330,7 +330,7 @@ class ConfiguredTrack(RichAttributeErrorBaseType):
         Raises
         ------
         TypeError
-            If `track` is neither ``Track``, nor ``ConfiguredTrack`` instance.
+            If `track` is neither ``Track``, nor ``ConfiguredTrack``.
         ValueError
             - If `start_time` is out of the expected [0.0:duration] range.
             - If `end_time` is out of the expected [0.0:duration] range.
@@ -341,20 +341,26 @@ class ConfiguredTrack(RichAttributeErrorBaseType):
             configuration = track
             track = track.track
         else:
-            raise TypeError(f'`track` can be given either as `{Track.__name__}` or as `{ConfiguredTrack.__name__}` '
-                f'instance, got `{track.__class__.__name__}`.')
+            raise TypeError(
+                f'`track` can be `{Track.__name__}`, `{ConfiguredTrack.__name__}`, got '
+                f'{track.__class__.__name__}; {track!r}.'
+            )
         
         duration = track.duration
         if start_time:
             if (start_time < 0.0) or (start_time > duration):
-                raise ValueError(f'`start_time` can be in range [0.0:{duration:.3f}], got {end_time:.3f}.')
+                raise ValueError(
+                    f'`start_time` can be in range [0.0:{duration:.3f}], got {end_time:.3f}.'
+                )
         else:
             if (configuration is not None):
                 start_time = configuration.start_time
         
         if end_time:
             if (end_time < 0.0) or (end_time > duration):
-                raise ValueError(f'`end_time` can be in range [0.0:{duration:.3f}], got {end_time:.3f}.')
+                raise ValueError(
+                    f'`end_time` can be in range [0.0:{duration:.3f}], got {end_time:.3f}.'
+                )
         else:
             if (configuration is not None):
                 start_time = configuration.end_time
@@ -506,7 +512,7 @@ class GetTracksResult:
     
     Attributes
     ----------
-    playlist_name : `None` or `str`
+    playlist_name : `None`, `str`
         The playlist's name, of what the tracks are part.
         
         Defaults to `None`.
@@ -516,7 +522,7 @@ class GetTracksResult:
         
         Defaults to `-1`.
     
-    tracks : `None` or `tuple` of ``Track``
+    tracks : `None`, `tuple` of ``Track``
         The matched tracks.
         
         Defaults to `None`.

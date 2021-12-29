@@ -20,7 +20,7 @@ class MessageIterator:
         The index of the message, what will be yielded.
     _can_read_history : `bool`
         Tells the message iterator, whether it's client can read the history if it's channel.
-    channel : ``ChannelTextBase`` instance
+    channel : ``ChannelTextBase``
         The channel, what's messages the message iterator will iterates over.
     chunk_size : `int`
         The amount of messages, what the message iterator will extend it's channel's message history, each time, the
@@ -40,7 +40,7 @@ class MessageIterator:
         ----------
         client : ``Client``
             The client, who will do the api requests for requesting more messages.
-        channel : ``ChannelTextBase`` or `int` instance
+        channel : ``ChannelTextBase``, `int`
             The channel, what's messages the message iterator will iterates over.
         chunk_size : `int`, Optional
             The amount of messages, what the message iterator will extend it's channel's message history, each time,
@@ -49,19 +49,19 @@ class MessageIterator:
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelTextBase`` nor `int` instance.
+            If `channel` was not given neither as ``ChannelTextBase`` nor `int`.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `chunk_size` was not given as `int` instance.
+            - If `chunk_size` was not given as `int`.
             - If `chunk_size` is out of range [1:].
         """
         if __debug__:
             if not isinstance(chunk_size, int):
                 raise AssertionError(
-                    f'`chunk_size` can be given as `int` instance, got {chunk_size.__class__.__name__}; {chunk_size!r}.'
+                    f'`chunk_size` can be `int`, got {chunk_size.__class__.__name__}; {chunk_size!r}.'
                 )
             
             if chunk_size < 1:
@@ -78,7 +78,7 @@ class MessageIterator:
             channel_id = maybe_snowflake(channel)
             if channel_id is None:
                 raise TypeError(
-                    f'`channel` can be given as `{ChannelTextBase.__name__}` instance, got '
+                    f'`channel` can be `{ChannelTextBase.__name__}`, got '
                     f'{channel.__class__.__name__}; {channel!r}.'
                 )
             

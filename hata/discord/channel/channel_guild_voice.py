@@ -33,7 +33,7 @@ class ChannelVoiceBase(ChannelGuildMainBase, ChannelTextBase):
     ----------
     id : `int`
         Unique identifier of the channel.
-    _permission_cache : `None` or `dict` of (`int`, ``Permission``) items
+    _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     parent_id : `int`
         The channel's parent's identifier.
@@ -45,11 +45,11 @@ class ChannelVoiceBase(ChannelGuildMainBase, ChannelTextBase):
         The channel's permission overwrites.
     position : `int`
         The channel's position.
-    _message_history :  `None` or ``MessageHistory``
+    _message_history :  `None`, ``MessageHistory``
         The message history of the channel if any.
     bitrate : `int`
         The bitrate (in bits) of the voice channel.
-    region : `None` or ``VoiceRegion``
+    region : `None`, ``VoiceRegion``
         The voice region of the channel. If set as `None`, defaults to the voice channel's guild's.
     user_limit : `int`
         The maximal amount of users, who can join the voice channel, or `0` if unlimited.
@@ -135,7 +135,7 @@ class ChannelVoice(ChannelVoiceBase):
     ----------
     id : `int`
         Unique identifier of the channel.
-    _permission_cache : `None` or `dict` of (`int`, ``Permission``) items
+    _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     parent_id : `int`
         The channel's parent's identifier.
@@ -147,11 +147,11 @@ class ChannelVoice(ChannelVoiceBase):
         The channel's permission overwrites.
     position : `int`
         The channel's position.
-    _message_history :  `None` or ``MessageHistory``
+    _message_history :  `None`, ``MessageHistory``
         The message history of the channel if any.
     bitrate : `int`
         The bitrate (in bits) of the voice channel.
-    region : `None` or ``VoiceRegion``
+    region : `None`, ``VoiceRegion``
         The voice region of the channel. If set as `None`, defaults to the voice channel's guild's.
     user_limit : `int`
         The maximal amount of users, who can join the voice channel, or `0` if unlimited.
@@ -184,7 +184,7 @@ class ChannelVoice(ChannelVoiceBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data receive from Discord.
-        client : `None` or ``Client``
+        client : `None`, ``Client``
             The client, who received the channel's data, if any.
         guild_id : `int`
             The channel's guild's identifier.
@@ -281,7 +281,7 @@ class ChannelVoice(ChannelVoiceBase):
         +-----------------------+---------------------------------------------------+
         | position              | `int`                                             |
         +-----------------------+---------------------------------------------------+
-        | region                | `None` or ``VoiceRegion``                         |
+        | region                | `None`, ``VoiceRegion``                           |
         +-----------------------+---------------------------------------------------+
         | user_limit            | `int`                                             |
         +-----------------------+---------------------------------------------------+
@@ -368,7 +368,7 @@ class ChannelVoice(ChannelVoiceBase):
         
         Parameters
         ----------
-        channel_id : `int` or `str`
+        channel_id : `int`, `str`
             The channel's id.
         **kwargs : keyword parameters
             Additional predefined attributes for the channel.
@@ -381,7 +381,7 @@ class ChannelVoice(ChannelVoiceBase):
             The channel's ``.bitrate``.
         user_limit : `int`, Optional (Keyword only)
             The channel's ``.user_limit``.
-        region : `None`, ``VoiceRegion`` or `str`, Optional (Keyword only)
+        region : `None`, ``VoiceRegion``, `str`, Optional (Keyword only)
             The channel's voice region.
         video_quality_mode : ``VideoQualityMode``, Optional (Keyword only)
             The video quality of the voice channel.
@@ -478,7 +478,7 @@ class ChannelStage(ChannelVoiceBase):
     ----------
     id : `int`
         Unique identifier of the channel.
-    _permission_cache : `None` or `dict` of (`int`, ``Permission``) items
+    _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     parent_id : `int`
         The channel's parent's identifier.
@@ -490,15 +490,15 @@ class ChannelStage(ChannelVoiceBase):
         The channel's permission overwrites.
     position : `int`
         The channel's position.
-    _message_history :  `None` or ``MessageHistory``
+    _message_history :  `None`, ``MessageHistory``
         The message history of the channel if any.
     bitrate : `int`
         The bitrate (in bits) of the voice channel.
-    region : `None` or ``VoiceRegion``
+    region : `None`, ``VoiceRegion``
         The voice region of the channel. If set as `None`, defaults to the voice channel's guild's.
     user_limit : `int`
         The maximal amount of users, who can join the voice channel, or `0` if unlimited.
-    topic : `None` or `str`
+    topic : `None`, `str`
         The channel's topic.
     
     Class Attributes
@@ -528,7 +528,7 @@ class ChannelStage(ChannelVoiceBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data receive from Discord.
-        client : `None` or ``Client``
+        client : `None`, ``Client``
             The client, who received the channel's data, if any.
         guild_id : `int`
             The channel's guild's identifier.
@@ -637,11 +637,11 @@ class ChannelStage(ChannelVoiceBase):
         +-----------------------+---------------------------------------------------+
         | position              | `int`                                             |
         +-----------------------+---------------------------------------------------+
-        | region                | `None` or ``VoiceRegion``                         |
+        | region                | `None`, ``VoiceRegion``                         |
         +-----------------------+---------------------------------------------------+
         | user_limit            | `int`                                             |
         +-----------------------+---------------------------------------------------+
-        | topic                 | `None` or `int`                                   |
+        | topic                 | `None`, `int`                                   |
         +-----------------------+---------------------------------------------------+
         """
         self._permission_cache = None
@@ -724,7 +724,7 @@ class ChannelStage(ChannelVoiceBase):
         
         Parameters
         ----------
-        channel_id : `int` or `str`
+        channel_id : `int`, `str`
             The channel's id.
         **kwargs : keyword parameters
             Additional predefined attributes for the channel.
@@ -737,9 +737,9 @@ class ChannelStage(ChannelVoiceBase):
             The channel's ``.bitrate``.
         user_limit : `int`, Optional (Keyword only)
             The channel's ``.user_limit``.
-        region : `None`, ``VoiceRegion`` or `str`, Optional (Keyword only)
+        region : `None`, ``VoiceRegion``, `str`, Optional (Keyword only)
             The channel's voice region.
-        topic : `None` or `str`, Optional (Keyword only)
+        topic : `None`, `str`, Optional (Keyword only)
             The channel's topic.
         
         Returns

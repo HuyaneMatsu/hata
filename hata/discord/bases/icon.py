@@ -20,7 +20,7 @@ class IconType(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``IconType``) items
-        Stores the predefined ``IconType`` instances. These can be accessed with their `value` as key.
+        Stores the predefined ``IconType``-s. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The icon types' values' type.
     DEFAULT_NAME : `str` = `'Undefined'`
@@ -95,7 +95,7 @@ class Icon:
         
         Returns
         -------
-        icon : `None` or `str`
+        icon : `None`, `str`
         """
         icon_type = self.type
         if icon_type is ICON_TYPE_NONE:
@@ -198,7 +198,7 @@ class Icon:
         
         Parameters
         ----------
-        icon : `None` or `str`
+        icon : `None`, `str`
         
         Returns
         -------
@@ -274,9 +274,9 @@ class IconSlot:
             The internal name of the icon.
         discord_side_name : `str`
             The discord side name of the icon.
-        url_property : `None` or `function`
+        url_property : `None`, `function`
             A function what will be used as a property when accessing the icon' url.
-        url_as_method : `None` or `function`
+        url_as_method : `None`, `function`
             A function what will be used a method when creating a formatted icon url.
         add_updater : `bool`, Optional
             Whether the icon slot should add updater methods to the class. Defaults to `True`.
@@ -413,11 +413,14 @@ class IconSlot:
             elif isinstance(icon_hash, int):
                 icon_hash = int(icon_hash)
             else:
-                raise TypeError(f'`{icon_hash_name}` can be passed as `int` instance, got '
-                    f'{icon_hash.__class__.__name__}.')
+                raise TypeError(
+                    f'`{icon_hash_name}` can be `int`, got {icon_hash.__class__.__name__}; {icon_hash!r}.'
+                )
             
             if icon_hash < 0 or icon_hash > ((1<<128)-1):
-                raise ValueError(f'`{icon_hash_name}` cannot be negative or longer than 128 bits, got {icon_hash}.')
+                raise ValueError(
+                    f'`{icon_hash_name}` cannot be negative or longer than 128 bits, got {icon_hash!r}.'
+                )
             
             try:
                 icon_type = kwargs.pop(icon_type_name)
@@ -428,12 +431,16 @@ class IconSlot:
                     icon_type = ICON_TYPE_STATIC
             else:
                 if (type(icon_type) is not IconType):
-                    raise TypeError(f'`{icon_type_name}` can be passed as `{IconType.__name__}` instance, got '
-                        f'{icon_type.__class__.__name__}.')
+                    raise TypeError(
+                        f'`{icon_type_name}` can be `{IconType.__name__}`, got '
+                        f'{icon_type.__class__.__name__}; {icon_type!r}.'
+                    )
                 
                 if (icon_type is ICON_TYPE_NONE) and icon_hash:
-                    raise ValueError(f'If `{icon_type_name}` is passed as `ICON_TYPE_NONE`, then `{icon_hash_name}` '
-                        f'can be passed only as `0`, meanwhile got `{icon_hash}`.')
+                    raise ValueError(
+                        f'If `{icon_type_name}` is passed as `ICON_TYPE_NONE`, then `{icon_hash_name}` '
+                        f'can be passed only as `0`, meanwhile got `{icon_hash}`.'
+                    )
             
         else:
             if icon is None:
@@ -450,8 +457,10 @@ class IconSlot:
                     icon_type = ICON_TYPE_STATIC
                 icon_hash = int(icon, 16)
             else:
-                raise TypeError(f'`{self.internal_name!r}` can be passed as `None`, `{Icon.__name__}` or as `str` '
-                    f'instance, got {icon.__class__.__name__}.')
+                raise TypeError(
+                    f'`{self.internal_name!r}` can be passed as `None`, `{Icon.__name__}`, `str`, '
+                    f'got {icon.__class__.__name__}; {icon!r}.'
+                )
         
         processable[icon_type_name] = icon_type
         processable[icon_hash_name] = icon_hash

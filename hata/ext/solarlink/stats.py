@@ -14,7 +14,7 @@ class Stats:
     
     Attributes
     ----------
-    _total_penalty : `None` or `float`
+    _total_penalty : `None`, `float`
         Total resource penalty of the respective node.
     cpu_cores : `int`
         The amount of cpu cores the system of the node has.

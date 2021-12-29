@@ -31,9 +31,9 @@ class ActivityTimestamps:
     
     Attributes
     ----------
-    end : `None` or `datetime`
+    end : `None`, `datetime`
         When the activity. Defaults to `None`.
-    start : `None` or `datetime`
+    start : `None`, `datetime`
        When the activity starts. Defaults to `None`.
     """
     __slots__ = ('end', 'start',)
@@ -44,9 +44,9 @@ class ActivityTimestamps:
         
         Parameters
         ----------
-        end : `None` or `datetime`, Optional (Keyword only)
+        end : `None`, `datetime`, Optional (Keyword only)
             When the activity. Defaults to `None`.
-        start : `None` or `datetime`, Optional (Keyword only)
+        start : `None`, `datetime`, Optional (Keyword only)
            When the activity starts. Defaults to `None`.
         
         Raises
@@ -58,12 +58,12 @@ class ActivityTimestamps:
         if __debug__:
             if (start is not None) and (not isinstance(start, datetime)):
                 raise AssertionError(
-                    f'`start` can be either `None` or `datetime`, got {start.__class__.__name__}; {start!r}.'
+                    f'`start` can be `None`, `datetime`, got {start.__class__.__name__}; {start!r}.'
                 )
 
             if (end is not None) and (not isinstance(end, datetime)):
                 raise AssertionError(
-                    f'`end` can be either `None` or `datetime`, got {end.__class__.__name__}; {end!r}.'
+                    f'`end` can be `None`, `datetime`, got {end.__class__.__name__}; {end!r}.'
                 )
         
         self = object.__new__(cls)
@@ -165,30 +165,30 @@ class ActivityAssets:
     
     Attributes
     ----------
-    image_large : `None` or `str`
+    image_large : `None`, `str`
         The id of the activity's large asset to display. Defaults to `None`.
-    image_small : `None` or `str`
+    image_small : `None`, `str`
         The id of the activity's small asset to display. Defaults to `None`.
-    text_large : `None` or `str`
+    text_large : `None`, `str`
         The hover text of the large asset. Defaults to `None`.
-    text_small : `None` or `str`
+    text_small : `None`, `str`
         The hover text of the small asset. Defaults to `None`.
     """
     __slots__ = ('image_large', 'image_small', 'text_large', 'text_small',)
     
     def __new__(cls, *, image_large=None, image_small=None, text_large=None, text_small=None):
         """
-        Creates a new ``ActivityAssets`` instance from the given parameters.
+        Creates a new ``ActivityAssets`` from the given parameters.
         
         Parameters
         ----------
-        image_large : `None` or `str`, Optional (Keyword only)
+        image_large : `None`, `str`, Optional (Keyword only)
             The id of the activity's large asset to display. Defaults to `None`.
-        image_small : `None` or `str`, Optional (Keyword only)
+        image_small : `None`, `str`, Optional (Keyword only)
             The id of the activity's small asset to display. Defaults to `None`.
-        text_large : `None` or `str`, Optional (Keyword only)
+        text_large : `None`, `str`, Optional (Keyword only)
             The hover text of the large asset. Defaults to `None`.
-        text_small : `None` or `str`, Optional (Keyword only)
+        text_small : `None`, `str`, Optional (Keyword only)
             The hover text of the small asset. Defaults to `None`.
         
         Raises
@@ -203,7 +203,7 @@ class ActivityAssets:
             if __debug__:
                 if (not isinstance(image_large, str)):
                     raise AssertionError(
-                        f'`image_large` can be either `None` or `str`, got {image_large.__class__.__name__}; '
+                        f'`image_large` can be `None`, `str`, got {image_large.__class__.__name__}; '
                         f'{image_large!r}.'
                     )
             
@@ -215,7 +215,7 @@ class ActivityAssets:
             if __debug__:
                 if (not isinstance(image_small, str)):
                     raise AssertionError(
-                        f'`image_small` can be either `None` or `str`, got {image_small.__class__.__name__}; '
+                        f'`image_small` can be `None`, `str`, got {image_small.__class__.__name__}; '
                         f'{image_small!r}.'
                     )
             
@@ -227,7 +227,7 @@ class ActivityAssets:
             if __debug__:
                 if (not isinstance(text_large, str)):
                     raise AssertionError(
-                        f'`text_large` can be either `None` or `str`, got {text_large.__class__.__name__}; '
+                        f'`text_large` can be `None`, `str`, got {text_large.__class__.__name__}; '
                         f'{text_large!r}.'
                     )
             
@@ -238,7 +238,7 @@ class ActivityAssets:
             if __debug__:
                 if (not isinstance(text_small, str)):
                     raise AssertionError(
-                        f'`image_large` can be either `None` or `str`, got {text_small.__class__.__name__}; '
+                        f'`image_large` can be `None`, `str`, got {text_small.__class__.__name__}; '
                         f'{text_small!r}.'
                     )
             
@@ -369,7 +369,7 @@ class ActivityParty:
     
     Attributes
     ----------
-    id : `None` or `str`
+    id : `None`, `str`
         The party's id, which in the player is. Defaults to `None`.
     size : `int`
         The party's maximal size, which in the player is. Defaults to `0`.
@@ -384,7 +384,7 @@ class ActivityParty:
         
         Parameters
         ----------
-        id_ : `None` or `str`, Optional (Keyword only)
+        id_ : `None`, `str`, Optional (Keyword only)
             The party's id, which in the player is. Defaults to `None`.
         size : `int`, Optional (Keyword only)
             The party's maximal size, which in the player is. Defaults to `0`.
@@ -394,9 +394,9 @@ class ActivityParty:
         Raises
         ------
         AssertionError
-            - If `id_` is neither `None` nor `str` instance.
-            - if `size` is not `int` instance.
-            - If `max_` is not `int` instance.
+            - If `id_` is neither `None` nor `str`.
+            - if `size` is not `int`.
+            - If `max_` is not `int`.
             - If `size` is negative`.
             - If `max_` is negative.
         """
@@ -404,7 +404,7 @@ class ActivityParty:
             if __debug__:
                 if (not isinstance(id_, int)):
                     raise AssertionError(
-                        f'`id_` can be either `None` or `str`, got {id_.__class__.__name__}; {id_!r}.'
+                        f'`id_` can be `None`, `str`, got {id_.__class__.__name__}; {id_!r}.'
                     )
             
             if (not id_):
@@ -413,12 +413,12 @@ class ActivityParty:
         if __debug__:
             if (not isinstance(size, int)):
                 raise AssertionError(
-                    f'`size` can be `int` instance, got {size.__class__.__name__}; {size!r}.'
+                    f'`size` can be `int`, got {size.__class__.__name__}; {size!r}.'
                 )
             
             if (not isinstance(max_, int)):
                 raise AssertionError(
-                    f'`max_` can be `int` instance, got {max_.__class__.__name__}; {max_!r}.'
+                    f'`max_` can be `int`, got {max_.__class__.__name__}; {max_!r}.'
                 )
             
             if (size < 0):
@@ -535,11 +535,11 @@ class ActivitySecrets:
     
     Attributes
     ----------
-    join : `None` or `str`
+    join : `None`, `str`
         Unique hash given for the match context. Defaults to `None`.
-    match : `None` or `str`
+    match : `None`, `str`
         Unique hash for spectate button. Defaults to `None`.
-    spectate : `None` or `str`
+    spectate : `None`, `str`
         Unique hash for chat invites and ask to join. Defaults to `None`.
     """
     __slots__ = ('join', 'match', 'spectate', )
@@ -550,18 +550,18 @@ class ActivitySecrets:
         
         Parameters
         ----------
-        join : `None` or `str`, Optional (Keyword only)
+        join : `None`, `str`, Optional (Keyword only)
             Unique hash given for the match context. Defaults to `None`.
-        match : `None` or `str`, Optional (Keyword only)
+        match : `None`, `str`, Optional (Keyword only)
             Unique hash for spectate button. Defaults to `None`.
-        spectate : `None` or `str`, Optional (Keyword only)
+        spectate : `None`, `str`, Optional (Keyword only)
             Unique hash for chat invites and ask to join. Defaults to `None`.
         """
         if (join is not None):
             if __debug__:
                 if (not isinstance(join, str)):
                     raise AssertionError(
-                        f'`join` can be either `None` or `str`, got {join.__class__.__name__}; {join!r}.'
+                        f'`join` can be `None`, `str`, got {join.__class__.__name__}; {join!r}.'
                     )
             
             if (not join):
@@ -572,7 +572,7 @@ class ActivitySecrets:
             if __debug__:
                 if (not isinstance(match, str)):
                     raise AssertionError(
-                        f'`match` can be either `None` or `str`, got {match.__class__.__name__}; {match!r}.'
+                        f'`match` can be `None`, `str`, got {match.__class__.__name__}; {match!r}.'
                     )
             
             if (not match):
@@ -583,7 +583,7 @@ class ActivitySecrets:
             if __debug__:
                 if (not isinstance(spectate, str)):
                     raise AssertionError(
-                        f'`spectate` can be either `None` or `str`, got {spectate.__class__.__name__}; {spectate!r}.'
+                        f'`spectate` can be `None`, `str`, got {spectate.__class__.__name__}; {spectate!r}.'
                     )
             
             if (not spectate):

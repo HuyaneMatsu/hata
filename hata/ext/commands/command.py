@@ -42,15 +42,16 @@ class CommandWrapper:
         The wrapped function of the command.
     wrapper : `async-callable`
         Rich check, which will be
-    handler : None` or `async-callable`
+    handler : None`, `async-callable`
         The rich handler, what is called when the `wrapper` yield `False`. Note that every other value what
         `wrapper` yields will be also passed to the `handler`.
     """
     __name__ = name_property('CommandWrapper', lambda self: self.wrapped.__name__)
     __slots__ = ('wrapped', 'wrapper', 'handler', )
+    
     def __new__(cls, wrapped, wrapper, handler):
         """
-        Creates a new ``CommandWrapper`` instance.
+        Creates a new ``CommandWrapper``.
         
         Parameters
         ----------
@@ -58,7 +59,7 @@ class CommandWrapper:
             The wrapped function.
         wrapper : `Any`
             A wrapper for the function.
-        handler : None` or `async-callable`
+        handler : None`, `async-callable`
             The rich handler, what is called when the `wrapper` yield `False`. Note that every other value what
             `wrapper` yields will be also passed to the `handler`.
         
@@ -76,6 +77,7 @@ class CommandWrapper:
         """Returns the command wrapper's representation."""
         return (f'{self.__class__.__name__}(wrapped={self.wrapped!r}, wrapper={self.wrapper!r}, '
             f'handler={self.handler!r})')
+
 
 def generate_alters_for(name):
     """
@@ -140,6 +142,7 @@ def generate_alters_for(name):
     
     return alters
 
+
 async def process_command_coroutine(client, channel, coroutine):
     """
     Processes a command coroutine.
@@ -152,7 +155,7 @@ async def process_command_coroutine(client, channel, coroutine):
     ----------
     client : ``Client``
         The client who will send the responses if applicable.
-    channel : ``ChannelTextBase`` instance
+    channel : ``ChannelTextBase``
         The channel from where the respective command was called.
     coroutine : `CoroutineType`
         A coroutine with will send command response.
@@ -193,11 +196,11 @@ async def process_command_coroutine(client, channel, coroutine):
                 
                 if isinstance(err, DiscordException):
                     if err.code in (
-                            ERROR_CODES.unknown_channel, # message's channel deleted
-                            ERROR_CODES.missing_access, # client removed
-                            ERROR_CODES.missing_permissions, # permissions changed meanwhile
-                            ERROR_CODES.cannot_message_user, # user has dm-s disallowed
-                                ):
+                        ERROR_CODES.unknown_channel, # message's channel deleted
+                        ERROR_CODES.missing_access, # client removed
+                        ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                        ERROR_CODES.cannot_message_user, # user has dm-s disallowed
+                    ):
                         return
                 
                 raise
@@ -229,11 +232,11 @@ async def process_command_coroutine(client, channel, coroutine):
             
             if isinstance(err, DiscordException):
                 if err.code in (
-                        ERROR_CODES.unknown_channel, # message's channel deleted
-                        ERROR_CODES.missing_access, # client removed
-                        ERROR_CODES.missing_permissions, # permissions changed meanwhile
-                        ERROR_CODES.cannot_message_user, # user has dm-s disallowed
-                            ):
+                    ERROR_CODES.unknown_channel, # message's channel deleted
+                    ERROR_CODES.missing_access, # client removed
+                    ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                    ERROR_CODES.cannot_message_user, # user has dm-s disallowed
+                ):
                     return
             
             raise
@@ -248,13 +251,13 @@ COMMAND_SUCCEEDED = 4
 class Command:
     """
     Represents a command object stored by a ``CommandProcesser`` in it's `.commands` and by a ``Category`` in it's
-    ``.commands`` instance attribute.
+    ``.commands`` attribute.
     
     Attributes
     ----------
-    aliases : `None` or `list` of `str`
+    aliases : `None`, `list` of `str`
         The aliases of the command stored at a sorted list. If it has no aliases, this attribute will be set as `None`.
-    category : `None` or ``Category``
+    category : `None`, ``Category``
         The commands's owner category.
     command : `async-callable`
         The async callable added as the command itself.
@@ -269,12 +272,12 @@ class Command:
         The command's name. Always lower case.
     _alters : `set` of `str`
         Alternative name, with what the command can be called.
-    _category_hint : `None` or `str`
+    _category_hint : `None`, `str`
         Hint for the command processer under which category should the give command go. If set as `None`, means that
         the command will go under the default category of the command processer.
-    _checks : `None` or `list` of ``_check_base`` instances
+    _checks : `None`, `list` of ``_check_base``
         The internal slot used by the ``.checks`` property. Defaults to `None`.
-    parser : `None` or ``CommandContentParser``
+    parser : `None`, ``CommandContentParser``
         Collection of content part events to parse parameter for the command. Defaults to `None`.
     _parser_failure_handler : `Any`
         The internal slot used by the ``.parser_failure_handler`` property. Defaults to `None`.
@@ -320,36 +323,36 @@ class Command:
                 If was not defined, or was defined as `None`, the class's name will be used.
             - command : `async-callable`
                 If no `command` attribute was defined, then a attribute of the `name`'s value be checked as well.
-            - description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`)
+            - description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`)
                 If no description was provided, then the class's `.__doc__` will be picked up.
-            - aliases :  `None`, `str`, `list` of str` or `tuple` of (`None`, `Ellipsis`, `str`, `list` of `str`)
-            - category : `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``, `str`)
-            - checks : `None`, ``_check_base`` instance, `list` of ``_check_base`` instances or `tuple` of \
-                    (`None`, `Ellipsis`, ``_check_base`` instance, `list` of ``_check_base`` instances)
+            - aliases :  `None`, `str`, `list` of str`, `tuple` of (`None`, `Ellipsis`, `str`, `list` of `str`)
+            - category : `None`, ``Category``, `str`, `tuple` of (`None`, `Ellipsis`, ``Category``, `str`)
+            - checks : `None`, ``_check_base``, `list` of ``_check_base``, `tuple` of \
+                    (`None`, `Ellipsis`, ``_check_base``, `list` of ``_check_base``)
                 If no checks were provided, then the class's `.checks` attribute will be checked as well.
-            - parser_failure_handler : `None`, `async-callable` or `tuple` of (`None`, `Ellipsis`, `Async-callable`)
-            - separator : `None`, ``ContentParameterSeparator``, `str` or `tuple` (`str`, `str`)
+            - parser_failure_handler : `None`, `async-callable`, `tuple` of (`None`, `Ellipsis`, `Async-callable`)
+            - separator : `None`, ``ContentParameterSeparator``, `str`, `tuple` (`str`, `str`)
         
         Returns
         -------
-        self : ``Command`` or ``Router``
+        self : ``Command``, ``Router``
         
         Raises
         ------
         TypeError
-            - If `klass` was not given as `type` instance.
+            - If `klass` was not given as `type`.
             - `kwargs` was not given as `None` and not all of it's items were used up.
             - If A value is routed but to a bad count amount.
-            - `name` was not given as `None`, `str` or `tuple` of (`None`, `Ellipsis`, `str`).
-            - `description` was not given as `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`).
-            - `aliases` were not given as  `None`, `str`, `list` of `str` or `tuple` of (`None`, `Ellipsis`, `str`,
+            - `name` was not given as `None`, `str`, `tuple` of (`None`, `Ellipsis`, `str`).
+            - `description` was not given as `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`).
+            - `aliases` were not given as  `None`, `str`, `list` of `str`, `tuple` of (`None`, `Ellipsis`, `str`,
                 `list` of `str`).
-            - `category` was not given as `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``,
+            - `category` was not given as `None`, ``Category``, `str`, `tuple` of (`None`, `Ellipsis`, ``Category``,
                 `str`)
-            - If `checks` was not given as `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or
-                `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances)
-            - If `separator` is not given as `None`, ``ContentParameterSeparator``, `str`, neither as `tuple` instance.
-            - If `separator` was given as `tuple`, but it's element are not `str` instances.
+            - If `checks` was not given as `None`, ``_check_base``, `list` of ``_check_base`` or
+                `tuple` of (`None`, `Ellipsis`, ``_check_base``, `list` of ``_check_base``)
+            - If `separator` is not given as `None`, ``ContentParameterSeparator``, `str`, neither as `tuple`.
+            - If `separator` was given as `tuple`, but it's element are not `str`.
         ValueError
             - if an empty string was given as an alias.
             - If `separator` is given as `str`, but it's length is not 1.
@@ -374,7 +377,7 @@ class Command:
         route_to : `int`
             The value how much times the routing should happen. by default should be given as `0` if no routing was
             done yet.
-        validator : `callable` or `None`
+        validator : `callable`, `None`
             A callable, what validates the given `variable_value`'s value and converts it as well if applicable.
         
         Returns
@@ -413,8 +416,10 @@ class Command:
                 elif route_to == route_count:
                     pass
                 else:
-                    raise ValueError(f'{cls.__class__.__name__} `{variable_name}` is routed to `{route_count}`, '
-                        f'meanwhile something else is already routed to `{route_to}`.')
+                    raise ValueError(
+                        f'{cls.__class__.__name__} `{variable_name}` is routed to `{route_count}`, '
+                        f'meanwhile something else is already routed to `{route_to}`.'
+                    )
                 
                 if validator is None:
                     processed_value = variable_value
@@ -448,13 +453,13 @@ class Command:
         
         Returns
         -------
-        category : `str` or ``Category``
+        category : `str`, ``Category``
             The validated category.
         
         Raises
         ------
         TypeError
-            Category is not given either as `None`, `str` instance, or ``Category``.
+            Category is not given either as `None`, `str`, ``Category``.
         """
         if category is None:
             pass
@@ -467,8 +472,10 @@ class Command:
             elif issubclass(category_type, str):
                 category = str(category)
             else:
-                raise TypeError(f'`category` should be `None`, type `str` or `{Category.__name__}`, got '
-                    f'{category_type.__name__}.')
+                raise TypeError(
+                    f'`category` can be `None`, `str`, `{Category.__name__}`, got '
+                    f'{category_type.__name__}; {category!r}.'
+                )
         
         return category
     
@@ -479,7 +486,7 @@ class Command:
         
         Parameters
         ----------
-        parser_failure_handler : `None` or `async-callable`
+        parser_failure_handler : `None`, `async-callable`
             Called when the respective uses a parser to parse it's parameters, but it cannot parse out all the required
             ones.
             
@@ -501,7 +508,7 @@ class Command:
         
         Returns
         -------
-        parser_failure_handler : `None` or `async-callable`
+        parser_failure_handler : `None`, `async-callable`
             The validated parser failure handler.
         
         Raises
@@ -525,18 +532,18 @@ class Command:
         
         Parameters
         ----------
-        name : `None` or `str`
+        name : `None`, `str`
             A command's respective name.
         
         Returns
         -------
-        name : `None` or `str`
+        name : `None`, `str`
             The validated name.
         
         Raises
         ------
         TypeError
-            If `name` is not given as `str` instance.
+            If `name` is not given as `str`.
         """
         if name is not None:
             name_type = name.__class__
@@ -545,8 +552,9 @@ class Command:
             elif issubclass(name_type, str):
                 name = str(name)
             else:
-                raise TypeError(f'`name` can be only given as `None` or as `str` instance, got {name_type.__name__}; '
-                    f'{name!r}.')
+                raise TypeError(
+                    f'`name` can be `None`, `str`, got {name_type.__name__}; {name!r}.'
+                )
         
         return name
     
@@ -557,18 +565,18 @@ class Command:
         
         Parameters
         ----------
-        aliases : `None`, `str` or `list` of `str`
+        aliases : `None`, `str`, `list` of `str`
             Command aliases.
         
         Returns
         -------
-        aliases : `None` or `list` of `str`
+        aliases : `None`, `list` of `str`
             The validated aliases.
         
         Raises
         ------
         TypeError
-            `aliases` was not given as `None`, `str`, neither as `list` of `str` instances.
+            `aliases` was not given as `None`, `str`, neither as `list` of `str`.
         ValueError
             `aliases` contains an empty string.
         """
@@ -576,10 +584,15 @@ class Command:
             if isinstance(aliases, list):
                 for alias in aliases:
                     if not isinstance(alias, str):
-                        raise TypeError(f'A non `str` instance alias is given: {alias!r}, got {aliases!r}.')
+                        raise TypeError(
+                            f'`aliases` can contain `str` elements, got {alias.__class__.__name__}; '
+                            f'{alias!r}; aliases={aliases!r}.'
+                        )
                     
                     if not alias:
-                        raise ValueError(f'An alias cannot be empty string, got {aliases!r}.')
+                        raise ValueError(
+                            f'An alias is empty string, got {aliases!r}.'
+                        )
                 
                 aliases_processed = []
                 for alias in aliases:
@@ -594,13 +607,17 @@ class Command:
             
             elif isinstance(aliases, str):
                 if not aliases:
-                    raise ValueError(f'An alias cannot be empty string, got {aliases!r}.')
+                    raise ValueError(
+                        f'An alias is empty string, got {aliases!r}.'
+                    )
                 
                 aliases = aliases.lower()
                 aliases = [aliases]
             else:
-                raise TypeError('Aliases can be given as `str`, or `list` of `str` instances, got '
-                    f'{aliases.__class__.__name__}; {aliases!r}')
+                raise TypeError(
+                    'Aliases can be as `str`, `list` of `str`, got '
+                    f'{aliases.__class__.__name__}; {aliases!r}.'
+                )
         
         return aliases
     
@@ -613,14 +630,14 @@ class Command:
         ----------
         name : `str`
             The command's generated or set name.
-        aliases : None` or `list` of `str`
+        aliases : None`, `list` of `str`
             Aliases of the command.
         
         Returns
         -------
         name : `str`
             The command's preferred name.
-        aliases : `None` or `list` of `str`
+        aliases : `None`, `list` of `str`
             The command's generated names.
         alters : `set` of `str`
             Alternative names of the command.
@@ -680,18 +697,18 @@ class Command:
         
         Parameters
         ----------
-        category : `None`, `str` or ``Category``
+        category : `None`, `str`, ``Category``
             The respective category.
         
         Returns
         -------
-        category_hint : `None` or `str`
+        category_hint : `None`, `str`
             The category's string representation if applicable.
         
         Raises
         ------
         TypError
-            Category is not given as `None`, `str`, neither as ``Category`` instance.
+            Category is not given as `None`, `str`, neither as ``Category``.
         """
         if category is None:
             category_hint = None
@@ -704,8 +721,10 @@ class Command:
             elif issubclass(category_type, str):
                 category_hint = str(category)
             else:
-                raise TypeError(f'`category` should be `None`, type `str` or `{Category.__name__}`, got '
-                    f'{category_type.__name__}.')
+                raise TypeError(
+                    f'`category` can be `None`, `str`, `{Category.__name__}`, got '
+                    f'{category_type.__name__}; {category!r}.'
+                )
         
         return category_hint
     
@@ -718,24 +737,24 @@ class Command:
         ----------
         command : `async-callable`
             The async callable added as the command itself.
-        name : `None`, `str` or `tuple` of (`None`, `Ellipsis`, `str`), Optional
+        name : `None`, `str`, `tuple` of (`None`, `Ellipsis`, `str`), Optional
             The name to be used instead of the passed `command`'s.
-        description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`), Optional
+        description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`), Optional
             Description added to the command. If no description is provided, then it will check the commands's
             `.__doc__` attribute for it. If the description is a string instance, then it will be normalized with the
             ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
             description.
-        aliases : `None`, `str`, `list` of `str` or `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`), Optional
+        aliases : `None`, `str`, `list` of `str`, `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`), Optional
             The aliases of the command.
-        category : `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``, `str`), Optional
+        category : `None`, ``Category``, `str`, `tuple` of (`None`, `Ellipsis`, ``Category``, `str`), Optional
             The category of the command. Can be given as the category itself, or as a category's name. If given as
             `None`, then the command will go under the command processer's default category.
-        checks : `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or \
-                `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances) \
+        checks : `None`, ``_check_base``, `list` of ``_check_base`` or \
+                `tuple` of (`None`, `Ellipsis`, ``_check_base``, `list` of ``_check_base``) \
                 , Optional
             Checks to decide in which circumstances the command should be called.
         
-        parser_failure_handler : `None`, `async-callable` or `tuple` of (`None` or `async-callable`), Optional
+        parser_failure_handler : `None`, `async-callable`, `tuple` of (`None`, `async-callable`), Optional
             Called when the command uses a parser to parse it's parameters, but it cannot parse out all the required
             ones.
             
@@ -755,27 +774,27 @@ class Command:
             | args                  | `list` of `Any`   |
             +-----------------------+-------------------+
         
-        separator : `None`, ``ContentParameterSeparator``, `str` or `tuple` (`str`, `str`), Optional
+        separator : `None`, ``ContentParameterSeparator``, `str`, `tuple` (`str`, `str`), Optional
             The parameter separator of the command's parser.
         
         Returns
         -------
-        command : ``Command`` or ``Router``
+        command : ``Command``, ``Router``
         
         Raises
         ------
         TypeError
             - A value is routed but to a bad count amount.
-            - `name` was not given as `None`, `str` or `tuple` of (`None`, `Ellipsis`, `str`).
-            - `description` was not given as `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`).
-            - `aliases` were not given as  `None`, `str`, `list` of `str` or `tuple` of (`None, `Ellipsis`, `str`,
+            - `name` was not given as `None`, `str`, `tuple` of (`None`, `Ellipsis`, `str`).
+            - `description` was not given as `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`).
+            - `aliases` were not given as  `None`, `str`, `list` of `str`, `tuple` of (`None, `Ellipsis`, `str`,
                 `list` of `str`).
-            - `category` was not given as `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``,
+            - `category` was not given as `None`, ``Category``, `str`, `tuple` of (`None`, `Ellipsis`, ``Category``,
                 `str`)
-            - If `checks` was not given as `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or
-                `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances)
-            - If `separator` is not given as `None`, ``ContentParameterSeparator``, `str`, neither as `tuple` instance.
-            - If `separator was given as `tuple`, but it's element are not `str` instances.
+            - If `checks` was not given as `None`, ``_check_base``, `list` of ``_check_base`` or
+                `tuple` of (`None`, `Ellipsis`, ``_check_base``, `list` of ``_check_base``)
+            - If `separator` is not given as `None`, ``ContentParameterSeparator``, `str`, neither as `tuple`.
+            - If `separator was given as `tuple`, but it's element are not `str`.
         ValueError
             - if an empty string was given as an alias.
             - If `separator` is given as `str`, but it's length is not 1.
@@ -1074,10 +1093,10 @@ class Command:
         checks.__doc__ = ("""
         Get-set-del property for accessing the checks of the ``Command``.
         
-        When using it is get property returns the checks of the command, what can be `None` or `list` of
-        ``_check_base`` instances.
+        When using it is get property returns the checks of the command, what can be `None`, `list` of
+        ``_check_base``.
         
-        When setting it, accepts `None`, ``_check_base`` instance or a `list` of ``_check_base`` instances. Raises
+        When setting it, accepts `None`, ``_check_base`` or a `list` of ``_check_base``. Raises
         `TypeError` if invalid type or element type is given.
         
         By deleting it removes the command's checks.
@@ -1497,7 +1516,7 @@ def normalize_description(text):
     
     Returns
     -------
-    result : `None` or `str`
+    result : `None`, `str`
         The normalized description, or `None` if ended up with an empty string.
     """
     lines = text.splitlines()
@@ -1573,7 +1592,7 @@ class Category:
     
     Attributes
     ----------
-    _checks : `None` or `list` of ``_check_base`` instances
+    _checks : `None`, `list` of ``_check_base``
         The internal slot used by the ``.checks`` property. Defaults to `None`.
     commands : `sortedist` of ``Command``
         Sortedlist storing the category's commands.
@@ -1581,7 +1600,7 @@ class Category:
         Optional description for the category.
     display_name : `str`
         The category's display name.
-    name : `None` or `str`
+    name : `None`, `str`
         The name of the category. Only a command processer's default category can have it's name as `None`. (Always lower case.)
     """
     __slots__ = ('_checks', 'commands', 'description', 'display_name', 'name', )
@@ -1592,9 +1611,9 @@ class Category:
         
         Parameters
         ----------
-        name : `None` or `str`
+        name : `None`, `str`
             The name of the category. Only a command processer's default category can have it's name as `None`.
-        checks : `None`, ``_check_base`` instance or `list` of ``_check_base`` instances, Optional
+        checks : `None`, ``_check_base``, `list` of ``_check_base``, Optional
             Checks to define in which circumstances a command should be called.
         description : `Any`
             Optional description for the category. Defaults to `None`.
@@ -1606,7 +1625,7 @@ class Category:
         Raises
         ------
         TypeError
-            If `checks` was not given neither as `None`, ``_check_base`` instance or as a `list` of ``_check_base``
+            If `checks` was not given neither as `None`, ``_check_base`` or as a `list` of ``_check_base``
              instances.
         """
         checks_processed = validate_checks(checks)
@@ -1649,10 +1668,10 @@ class Category:
         checks.__doc__ = ("""
         Get-set-del property for accessing the checks of the ``Category``.
         
-        When using it is get property returns the checks of the category, what can be `None` or `list` of
-        ``_check_base`` instances.
+        When using it is get property returns the checks of the category, what can be `None`, `list` of
+        ``_check_base``.
         
-        When setting it, accepts `None`, ``_check_base`` instance or `list` of ``_check_base`` instances. Raises
+        When setting it, accepts `None`, ``_check_base``, `list` of ``_check_base``. Raises
         `TypeError` if invalid type or element type is given.
         
         By deleting it removes the command's checks.
@@ -1765,7 +1784,7 @@ def test_name_rule(rule, rule_name, nullable):
     
     Parameters
     ----------
-    rule : `None` or `function`
+    rule : `None`, `function`
         The rule to test.
     rule_name : `str`
         The name of the given rule.
@@ -1775,7 +1794,7 @@ def test_name_rule(rule, rule_name, nullable):
     Raises
     ------
     TypeError
-        - If `rule` is not `None` or `function` instance.
+        - If `rule` is not `None`, `function`.
         - If `rule` is `async` `function`.
         - If `rule` accepts bad amount of parameters.
         - If `rule` raised exception when `str` was passed to it.
@@ -1788,38 +1807,53 @@ def test_name_rule(rule, rule_name, nullable):
     
     rule_type = rule.__class__
     if (rule_type is not FunctionType):
-        raise TypeError(f'`{rule_name}` should have been given as `{FunctionType.__name__}` instance, got '
-            f'{rule_type.__name__}.')
+        raise TypeError(
+            f'`{rule_name}` can be `{FunctionType.__name__}`, got '
+            f'{rule_type.__name__}; {rule!r}.'
+            )
     
     analyzed = CallableAnalyzer(rule)
     if analyzed.is_async():
-        raise TypeError(f'`{rule_name}` should have been given as an non async function instance, got '
-            f'{rule!r}.')
+        raise TypeError(
+            f'`{rule_name}` can be non async function, got {rule!r}.'
+        )
     
     non_reserved_positional_parameter_count = analyzed.get_non_reserved_positional_parameter_count()
     if non_reserved_positional_parameter_count != 1:
-        raise TypeError(f'`{rule_name}` should accept `1` non reserved positional parameters, meanwhile it expects '
-            f'{non_reserved_positional_parameter_count}.')
+        raise TypeError(
+            f'`{rule_name}` should accept `1` non reserved positional parameters, meanwhile it expects '
+            f'{non_reserved_positional_parameter_count}, got {rule!r}.'
+        )
     
     if analyzed.accepts_args():
-        raise TypeError(f'`{rule_name}` should accept not expect args, meanwhile it does.')
+        raise TypeError(
+            f'`{rule_name}` should accept not expect args, meanwhile it does, got {rule!r}.'
+        )
     
     if analyzed.accepts_kwargs():
-        raise TypeError(f'`{rule_name}` should accept not expect kwargs, meanwhile it does.')
+        raise TypeError(
+            f'`{rule_name}` should accept not expect kwargs, meanwhile it does, got {rule!r}.'
+        )
     
     non_default_keyword_only_parameter_count = analyzed.get_non_default_keyword_only_parameter_count()
     if non_default_keyword_only_parameter_count:
-        raise TypeError(f'`{rule_name}` should accept `0` keyword only parameters, meanwhile it expects '
-            f'{non_default_keyword_only_parameter_count}.')
+        raise TypeError(
+            f'`{rule_name}` should accept `0` keyword only parameters, meanwhile it expects '
+            f'{non_default_keyword_only_parameter_count}, got {rule!r}.'
+        )
     
     try:
         result = rule('test-this-name')
     except BaseException as err:
-        raise TypeError(f'Got unexpected exception meanwhile testing the given {rule_name}: {rule!r}.') from err
+        raise TypeError(
+            f'Got unexpected exception meanwhile testing the given rule {rule_name}: {rule!r}.'
+        ) from err
     
     if (type(result) is not str):
-        raise TypeError(f'{rule_name}: {rule!r} did not return `str` instance, meanwhile testing it, got '
-            f'{result.__class__.__name__}')
+        raise TypeError(
+            f'{rule_name}: {rule!r} did not return `str` meanwhile testing it, got '
+            f'{result.__class__.__name__}; {result!r}.'
+        )
     
     if not nullable:
         return
@@ -1827,11 +1861,15 @@ def test_name_rule(rule, rule_name, nullable):
     try:
         result = rule(None)
     except BaseException as err:
-        raise TypeError(f'Got unexpected exception meanwhile testing the given {rule_name}: {rule!r}.') from err
+        raise TypeError(
+            f'Got unexpected exception meanwhile testing the given {rule_name}: {rule!r}.'
+        ) from err
     
     if (type(result) is not str):
-        raise TypeError(f'{rule_name}: {rule!r} did not return `str` instance, meanwhile testing it, got '
-            f'{result.__class__.__name__}')
+        raise TypeError(
+            f'{rule_name}: {rule!r} did not return `str` meanwhile testing it, got '
+            f'{result.__class__.__name__}; {result!r}.'
+        )
 
 
 def test_precheck(precheck):
@@ -1956,29 +1994,29 @@ class CommandProcesser(EventWaitforBase):
     ----------
     waitfors : `WeakKeyDictionary` of (``DiscordEntity``, `async-callable`) items
         Container to store the entities where message is expected to be sent and their waiters.
-    _category_name_rule : `None` or `function`
+    _category_name_rule : `None`, `function`
         Function to generate display names for categories.
-        Should accept only 1 parameter, what can be `str`  or `None` and should return a `str` instance as well.
-    _command_error : `None` or `async-callable`
+        Should accept only 1 parameter, what can be `str`  or `None` and should return a `str` as well.
+    _command_error : `None`, `async-callable`
         Called when execution of a command raised. Internal slot used by the ``.command_error`` property.
-    _command_error_checks : `None` or `list` of ``_check_base`` instances
+    _command_error_checks : `None`, `list` of ``_check_base``
         Checks to decide whether ``._command_error`` should be called. Internal slot used by the
         ``.command_error_checks`` property.
-    _command_name_rule : `None` or `function`
+    _command_name_rule : `None`, `function`
         Function to generate display names for commands.
-        Should accept only 1 parameter, what is `str` instance and should return a `str` instance as well.
-    _default_category_name : `None` or `str`
+        Should accept only 1 parameter, what is `str` and should return a `str` as well.
+    _default_category_name : `None`, `str`
         The command processor's default category's name.
-    _default_event : `None` or `async-callable`
+    _default_event : `None`, `async-callable`
         Called when no command execution took place. Internal slot used by the ``.default_event`` property.
-    _default_event_checks : `None` or `list` of ``_check_base`` instances
+    _default_event_checks : `None`, `list` of ``_check_base``
         Checks to decide whether ``._default_event`` should be called. Internal slot used by the
         ``.default_event_checks`` property.
     _ignorecase : `bool`
         Whether prefix is case insensitive.
-    _invalid_command : `None` or `async_callable`
+    _invalid_command : `None`, `async_callable`
         Called when there is no command with the given name. Internal slot used by the ``.invalid_command`` property.
-    _invalid_command_checks : `None` or `list` of ``_check_base`` instances
+    _invalid_command_checks : `None`, `list` of ``_check_base``
         Checks to decide whether ``._invalid_command`` should be called. Internal slot used by the
         ``.invalid_command_checks`` property.
     _precheck : `callable`
@@ -2046,7 +2084,7 @@ class CommandProcesser(EventWaitforBase):
     def __new__(cls, prefix, ignorecase=True, mention_prefix=True, default_category_name=None, category_name_rule=None,
             command_name_rule=None, precheck=None):
         """
-        Creates an ``CommandProcesser`` instance.
+        Creates an ``CommandProcesser``.
         
         Parameters
         ----------
@@ -2065,15 +2103,15 @@ class CommandProcesser(EventWaitforBase):
         mention_prefix : `bool`, Optional
             Whether the command processer accepts the respective client's mention as an alternative prefix. Defaults
             to `True`.
-        default_category_name : `None` or `str`, Optional
+        default_category_name : `None`, `str`, Optional
             The command processor's default category's name. Defaults to `None`.
-        category_name_rule : `None` or `function`, Optional
+        category_name_rule : `None`, `function`, Optional
             Function to generate display names for categories.
-            Should accept only 1 parameter, what can be `str`  or `None` and should return a `str` instance as well.
-        command_name_rule : `None` or `function`, Optional
+            Should accept only 1 parameter, what can be `str`  or `None` and should return a `str` as well.
+        command_name_rule : `None`, `function`, Optional
             Function to generate display names for commands.
-            Should accept only 1 parameter, what is `str` instance and should return a `str` instance as well.
-        precheck : `None` or `callable`, Optional
+            Should accept only 1 parameter, what is `str` and should return a `str` as well.
+        precheck : `None`, `callable`, Optional
             Function, which decides whether a received message should be processed. Defaults to ``._default_precheck``.
             
             The following parameters are passed to it:
@@ -2095,11 +2133,11 @@ class CommandProcesser(EventWaitforBase):
         Raises
         ------
         TypeError
-            - If `default_category_name` was not passed as `None`, or as `str` instance.
+            - If `default_category_name` was not passed as `None`, `str`.
             - If `prefix` was given as a `callable`, but accepts bad amount of parameters.
-            - If `prefix` was given as `tuple` or `list`, but contains a non `str`.
-            - If `prefix` was not given as `str`, (`tuple`, `list`) of `str` or as `callable`.
-            - If `category_name_rule` is not `None` or `function` instance.
+            - If `prefix` was given as `tuple`, `list`, but contains a non `str`.
+            - If `prefix` was not given as `str`, (`tuple`, `list`) of `str`, `callable`.
+            - If `category_name_rule` is not `None`, `function`.
             - If `category_name_rule` is `async` `function`.
             - If `category_name_rule` accepts bad amount of parameters.
             - If `category_name_rule` raised exception when `str` was passed to it.
@@ -2107,7 +2145,7 @@ class CommandProcesser(EventWaitforBase):
             - If `nullable` is given as `True` and `category_name_rule` raised exception when `None` was passed to it.
             - If `nullable` is given as `True` and `category_name_rule` did not return `str`, when passing `None`
                 to it.
-            - If `command_name_rule` is not `None` or `function` instance.
+            - If `command_name_rule` is not `None`, `function`.
             - If `command_name_rule` is `async` `function`.
             - If `command_name_rule` accepts bad amount of parameters.
             - If `command_name_rule` raised exception when `str` was passed to it.
@@ -2133,8 +2171,10 @@ class CommandProcesser(EventWaitforBase):
             elif issubclass(default_category_name_type, str):
                 default_category_name = str(default_category_name)
             else:
-                raise TypeError(f'`default_category_name` should have been passed as `None`, or as `str` instance, '
-                    f'got {default_category_name.__name__}.')
+                raise TypeError(
+                    f'`default_category_name` can be `None`, `str`, '
+                    f'got {default_category_name.__name__}; {default_category_name!r}.'
+                )
             
             if not default_category_name:
                 default_category_name = None
@@ -2186,7 +2226,7 @@ class CommandProcesser(EventWaitforBase):
         Raises
         ------
         TypeError
-            If `category_name` was not given as `None` and neither as `str` instance.
+            If `category_name` was not given as `None` and neither as `str`.
         """
         # category name can be None, but when we wanna use `.get` we need to use comparable data-types, so whenever we
         # get we need to convert `None` to empty `str` at every case
@@ -2201,8 +2241,9 @@ class CommandProcesser(EventWaitforBase):
             elif issubclass(category_name_type, str):
                 category_name = str(category_name)
             else:
-                raise TypeError(f'`category_name` can be given as `None` or as `instance`, got '
-                    f'{category_name_type.__class__}.')
+                raise TypeError(
+                    f'`category_name` can be `None`, `str`, got {category_name_type.__class__}; {category_name!r}.'
+                )
             
             if category_name:
                 if not category_name.islower():
@@ -2250,8 +2291,10 @@ class CommandProcesser(EventWaitforBase):
             elif issubclass(default_category_name_type, str):
                 default_category_name = str(default_category_name)
             else:
-                raise TypeError(f'`category_name` can be given as `None` or as `instance`, got '
-                    f'{default_category_name_type.__class__}.')
+                raise TypeError(
+                    f'`category_name` can be `None`, `str`, got '
+                    f'{default_category_name_type.__class__}; {default_category_name!r}.'
+                )
             
             if default_category_name:
                 default_category_name = None
@@ -2267,7 +2310,9 @@ class CommandProcesser(EventWaitforBase):
         
         other_category = self.get_category(default_category_name)
         if (other_category is not None):
-            raise ValueError(f'There is already a category added with name: `{default_category_name!r}`.')
+            raise ValueError(
+                f'There is already a category added with name: {default_category_name!r}; {other_category!r}.'
+            )
         
         default_category = self.get_category(actual_default_category_name)
         
@@ -2293,9 +2338,9 @@ class CommandProcesser(EventWaitforBase):
         default_category_name.__doc__ = ("""
         A get-set property for accessing or changing the command processer's default category's name.
         
-        Accepts and returns `None`, or `str` instance.
+        Accepts and returns `None`, `str`.
         
-        If given as not `None` or `str` instance, raises `TypeError`.
+        If given as not `None`, `str`, raises `TypeError`.
         """)
     
     def create_category(self, name, checks=None, description=None):
@@ -2306,7 +2351,7 @@ class CommandProcesser(EventWaitforBase):
         ----------
         name : `str`
             The name of the category. Only a command processer's default category can have it's name as `None`.
-        checks : `None`, ``_check_base`` instance or `list` of ``_check_base`` instances, Optional
+        checks : `None`, ``_check_base``, `list` of ``_check_base``, Optional
             Checks to define in which circumstances a command should be called.
         description : `Any`
             Optional description for the category. Defaults to `None`.
@@ -2318,14 +2363,16 @@ class CommandProcesser(EventWaitforBase):
         Raises
         ------
         TypeError
-            If `checks` was not given neither as `None`, ``_check_base`` instance or as `list` of ``_check_base``
+            If `checks` was not given neither as `None`, ``_check_base``, `list` of ``_check_base``
             instances.
         ValueError
             - If a category exists with the given name.
         """
         category = self.get_category(name)
         if (category is not None):
-            raise ValueError(f'There is already a category added with that name: `{name!r}`')
+            raise ValueError(
+                f'There is already a category added with that name: {name!r}; {category!r}.'
+            )
         
         category = Category(name, checks, description)
         self.categories.add(category)
@@ -2348,12 +2395,14 @@ class CommandProcesser(EventWaitforBase):
         Raises
         ------
         TypeError
-            If `category` was not given as `None`, ``Category` or as `str` instance.
+            If `category` was not given as `None`, ``Category`, `str`.
         ValueError
             If the default category would be deleted.
         """
         if category is None:
-            raise ValueError('Default category cannot be deleted.')
+            raise ValueError(
+                'Default category cannot be deleted.'
+            )
         
         category_type = category.__class__
         if category_type is Category:
@@ -2364,14 +2413,18 @@ class CommandProcesser(EventWaitforBase):
             elif issubclass(category_type, str):
                 category_name = str(category)
             else:
-                raise TypeError(f'Expected type `str` or `{Category.__class__.__name__} as `category`, got '
-                    f'{category_type.__name__}.')
+                raise TypeError(
+                    f'Expected type `str`, `{Category.__class__.__name__}, got '
+                    f'{category_type.__name__}; {category!r}.'
+                )
             
             if category_name:
                 if not category_name.islower():
                     category_name = category_name.lower()
             else:
-                raise ValueError('Default category cannot be deleted.')
+                raise ValueError(
+                    'Default category cannot be deleted.'
+                )
         
         category = self.categories.pop(category_name, key=self._get_category_key)
         if category is None:
@@ -2408,8 +2461,8 @@ class CommandProcesser(EventWaitforBase):
         ------
         TypeError
             - If `prefix` was given as a `callable`, but accepts bad amount of parameters.
-            - If `prefix` was given as `tuple`or `list`, but contains a non `str`.
-            - If `prefix` was not given as `str`, (`tuple`, `list`) of `str` or as `callable`.
+            - If `prefix` was given as `tuple`, `list`, but contains a non `str`.
+            - If `prefix` was not given as `str`, (`tuple`, `list`) of `str`, `callable`.
         ValueError
             - If `prefix` was given as an empty `str`.
         """
@@ -2427,9 +2480,11 @@ class CommandProcesser(EventWaitforBase):
                 analyzed = CallableAnalyzer(prefix)
                 non_reserved_positional_parameter_count = analyzed.get_non_reserved_positional_parameter_count()
                 if non_reserved_positional_parameter_count != 1:
-                    raise TypeError(f'If `prefix` is given as a `callable`, got {callable!r}, then it should accept '
+                    raise TypeError(
+                        f'If `prefix` is given as a `callable`, then it should accept '
                         'only `1` non reserved position parameter, meanwhile it accepts: '
-                        f'`{non_reserved_positional_parameter_count}`.')
+                        f'{non_reserved_positional_parameter_count!r}, got {prefix!r}.'
+                    )
                 
                 if analyzed.is_async():
                     async def prefix_filter(message):
@@ -2536,7 +2591,9 @@ class CommandProcesser(EventWaitforBase):
             
             if isinstance(prefix, str):
                 if not prefix:
-                    raise ValueError('`prefix` cannot be passed as empty string.')
+                    raise ValueError(
+                        '`prefix` cannot be passed as empty string.'
+                    )
                 
                 PREFIX_RP = re.compile(re.escape(prefix), flag)
                 def get_prefix_for(message):
@@ -2544,15 +2601,21 @@ class CommandProcesser(EventWaitforBase):
             
             elif isinstance(prefix, (list, tuple, set)):
                 if not prefix:
-                    raise ValueError(f'`prefix` given as empty {prefix.__class__.__name__}: {prefix!r}')
+                    raise ValueError(
+                        f'`prefix` given as empty {prefix.__class__.__name__}; {prefix!r}.'
+                    )
                 
                 for prefix_ in prefix:
                     if not isinstance(prefix_, str):
-                        raise TypeError(f'`prefix` can be given as `str`, `callable` or as `list`, `tuple` or `set` '
-                            f'of `str` instances, got {prefix_!r}.')
+                        raise TypeError(
+                            f'`prefix` can be `str`, `callable`, `list`, `tuple`, `set` '
+                            f'of `str`, got {prefix_.__class__.__name__}; {prefix_!r}; prefix={prefix!r}.'
+                        )
                     
                     if not prefix_:
-                        raise ValueError(f'`prefix` cannot be or contain empty string, got {prefix!r}.')
+                        raise ValueError(
+                            f'`prefix` cannot be or contain empty string, got {prefix!r}.'
+                        )
                 
                 PREFIX_RP = re.compile('|'.join(re.escape(prefix_) for prefix_ in prefix), flag)
                 practical_prefix = next(iter(prefix), '')
@@ -2568,8 +2631,10 @@ class CommandProcesser(EventWaitforBase):
                         else:
                             return result.group(0)
             else:
-                raise TypeError(f'Prefix can be only `callable`, `str` or `tuple` / `list` of `str` instances,  got '
-                    f'{prefix.__class__.__name__}.')
+                raise TypeError(
+                    f'Prefix can be only `callable`, `str`, `tuple`, `list` of `str`,  got '
+                    f'{prefix.__class__.__name__}; {prefix!r}.'
+                )
             
             async def prefix_filter(message):
                 content = message.content
@@ -2627,23 +2692,23 @@ class CommandProcesser(EventWaitforBase):
         ---------
         func : ``Command``, `async-callable`, instantiable to `async-callable`
             The function to be added as a command.
-        name : `None`, `str` or `tuple` of (`None`, `Ellipsis`, `str`)
+        name : `None`, `str`, `tuple` of (`None`, `Ellipsis`, `str`)
             The name to be used instead of the passed `command`'s.
-        description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`)
+        description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`)
             Description added to the command. If no description is provided, then it will check the commands's
             `.__doc__` attribute for it. If the description is a string instance, then it will be normalized with the
             ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
             description.
-        aliases : `None`, `str`, `list` of `str` or `tuple` of (`None`, `Ellipsis`, `str`, `list` of `str`)
+        aliases : `None`, `str`, `list` of `str`, `tuple` of (`None`, `Ellipsis`, `str`, `list` of `str`)
             The aliases of the command.
-        category : `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``, `str`)
+        category : `None`, ``Category``, `str`, `tuple` of (`None`, `Ellipsis`, ``Category``, `str`)
             The category of the command. Can be given as the category itself, or as a category's name. If given as
             `None`, then the command will go under the command processer's default category.
-        checks : `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or \
-                `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances)
+        checks : `None`, ``_check_base``, `list` of ``_check_base`` or \
+                `tuple` of (`None`, `Ellipsis`, ``_check_base``, `list` of ``_check_base``)
             Checks to decide in which circumstances the command should be called.
         
-        parser_failure_handler : `None`, `async-callable` or `tuple` of (`None` or `async-callable`)
+        parser_failure_handler : `None`, `async-callable`, `tuple` of (`None`, `async-callable`)
             Called when the command uses a parser to parse it's parameters, but it cannot parse out all the required
             ones.
             
@@ -2662,28 +2727,28 @@ class CommandProcesser(EventWaitforBase):
             +-----------------------+-------------------+
             | args                  | `list` of `Any`   |
             +-----------------------+-------------------+
-        separator : `None`, ``ContentParameterSeparator``, `str` or `tuple` (`str`, `str`), Optional
+        separator : `None`, ``ContentParameterSeparator``, `str`, `tuple` (`str`, `str`), Optional
             The parameter separator of the parser.
         
         Returns
         -------
         func : ``Command``, `async-callable`
-             ``Command`` instance, if it was created from the given `func`.
+             ``Command``, if it was created from the given `func`.
          
         Raises
         ------
         TypeError
             - A value is routed but to a bad count amount.
-            - `name` was not given as `None`, `str` or `tuple` of (`None`, `Ellipsis`, `str`).
-            - `description` was not given as `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`).
-            - `aliases` were not given as  `None`, `str`, `list` of `str` or `tuple` of (`None`, `Ellipsis`, `str`,
+            - `name` was not given as `None`, `str`, `tuple` of (`None`, `Ellipsis`, `str`).
+            - `description` was not given as `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`).
+            - `aliases` were not given as  `None`, `str`, `list` of `str`, `tuple` of (`None`, `Ellipsis`, `str`,
                 `list` of `str`).
-            - `category` was not given as `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``,
+            - `category` was not given as `None`, ``Category``, `str`, `tuple` of (`None`, `Ellipsis`, ``Category``,
                 `str`)
-            - If `checks` was not given as `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or
-                `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances)
-            - If `separator` is not given as `None`, ``ContentParameterSeparator``, `str`, neither as `tuple` instance.
-            - If `separator` was given as `tuple`, but it's element are not `str` instances.
+            - If `checks` was not given as `None`, ``_check_base``, `list` of ``_check_base`` or
+                `tuple` of (`None`, `Ellipsis`, ``_check_base``, `list` of ``_check_base``)
+            - If `separator` is not given as `None`, ``ContentParameterSeparator``, `str`, neither as `tuple`.
+            - If `separator` was given as `tuple`, but it's element are not `str`.
         ValueError
             - If the added command's `.name` would overwrite an alias of an other command.
             - If the added command would overwrite more than `1` already added command.
@@ -2750,17 +2815,17 @@ class CommandProcesser(EventWaitforBase):
             The class, from what's attributes the command will be created.
             
             The expected attributes of the given `klass` are the following:
-            - name : `None` or `str`
+            - name : `None`, `str`
                 If was not defined, or was defined as `None`, the class's name will be used.
             - command : `async-callable`
                 If no `command` attribute was defined, then a attribute of the `name`'s value be checked as well.
             - description : `Any`
                 If no description was provided, then the class's `.__doc__` will be picked up.
-            - aliases : `None`, `str`, `list` of `str` or `tuple` of (`None`, `Ellipsis`, `str`, `list` of `str`)
-            - category : `None`, ``Category`` or `str`
-            - checks : `None`, ``_check_base`` instance or `list` of ``_check_base`` instances
+            - aliases : `None`, `str`, `list` of `str`, `tuple` of (`None`, `Ellipsis`, `str`, `list` of `str`)
+            - category : `None`, ``Category``, `str`
+            - checks : `None`, ``_check_base``, `list` of ``_check_base``
                 If no checks were provided, then the class's `.checks` attribute will be checked as well.
-            - parser_failure_handler : `None` or `async-callable`
+            - parser_failure_handler : `None`, `async-callable`
         
         Returns
         -------
@@ -2770,17 +2835,17 @@ class CommandProcesser(EventWaitforBase):
         Raises
         ------
         TypeError
-            - If `klass` was not given as `type` instance.
-            - `name` was not given as `None`, `str` or `tuple` of (`None`, `Ellipsis`, `str`).
-            - `description` was not given as `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`).
-            - `aliases` were not given as  `None`, `str`, `list` of `str` or `tuple` of (`None`, `Ellipsis`, `str`,
+            - If `klass` was not given as `type`.
+            - `name` was not given as `None`, `str`, `tuple` of (`None`, `Ellipsis`, `str`).
+            - `description` was not given as `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`).
+            - `aliases` were not given as  `None`, `str`, `list` of `str`, `tuple` of (`None`, `Ellipsis`, `str`,
                 `list` of `str`).
-            - `category` was not given as `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``,
+            - `category` was not given as `None`, ``Category``, `str`, `tuple` of (`None`, `Ellipsis`, ``Category``,
                 `str`)
-            - If `checks` was not given as `None`, ``_check_base`` instance or `list` of ``_check_base`` instances or
-                `tuple` of (`None`, `Ellipsis`, ``_check_base`` instance or `list` of ``_check_base`` instances)
-            - If `separator` is not given as `None`, ``ContentParameterSeparator``, `str`, neither as `tuple` instance.
-            - If `separator` was given as `tuple`, but it's element are not `str` instances.
+            - If `checks` was not given as `None`, ``_check_base``, `list` of ``_check_base`` or
+                `tuple` of (`None`, `Ellipsis`, ``_check_base``, `list` of ``_check_base``)
+            - If `separator` is not given as `None`, ``ContentParameterSeparator``, `str`, neither as `tuple`.
+            - If `separator` was given as `tuple`, but it's element are not `str`.
         ValueError
             - If `.command` attribute is missing of the class.
             - If the added command's `.name` would overwrite an alias of an other command.
@@ -2848,8 +2913,10 @@ class CommandProcesser(EventWaitforBase):
         
         would_overwrite = commands.get(name, None)
         if (would_overwrite is not None) and (would_overwrite.name!=name):
-            raise ValueError(f'The command would overwrite an alias of an another one: `{would_overwrite}`.'
-                'If you intend to overwrite an another command please overwrite it with it\'s default name.')
+            raise ValueError(
+                f'The command would overwrite an alias of an another one: `{would_overwrite}`.'
+                'If you intend to overwrite an another command please overwrite it with it\'s default name.'
+            )
         
         alters = command._alters
         for alter in alters:
@@ -2943,8 +3010,9 @@ class CommandProcesser(EventWaitforBase):
                         found_alters.append(alter)
             
             if not found_alters:
-                raise ValueError(f'The passed command `{func!r}` is not added with any of it\'s own names as a '
-                    f'command.')
+                raise ValueError(
+                    f'The passed command {func!r} is not added with any of it\'s own names as a command.'
+                    )
             
             for alter in found_alters:
                 try:
@@ -2960,21 +3028,26 @@ class CommandProcesser(EventWaitforBase):
         
         aliases = func.aliases
         if (aliases is None):
-            raise ValueError(f'The passed name `{name!r}` is not the name, neither an alias of the command '
-                f'`{func!r}`.')
+            raise ValueError(
+                f'The passed name `{name!r}` is not the name, neither an alias of the command {func!r}.'
+            )
         
         if name not in aliases:
-            raise ValueError(f'The passed name `{name!r}` is not the name, neither an alias of the command '
-                f'`{func!r}`.')
+            raise ValueError(
+                f'The passed name `{name!r}` is not the name, neither an alias of the command {func!r}.'
+            )
         
         try:
             command = commands[name]
         except KeyError:
-            raise ValueError(f'At the passed name `{name!r}` there is no command removed, so it cannot be '
-                f'deleted either.')
+            raise ValueError(
+                f'At the passed name `{name!r}` there is no command removed, so it cannot be deleted either.'
+            )
         
         if func is not command:
-            raise ValueError(f'At the specified name `{name!r}` there is a different command added already.')
+            raise ValueError(
+                f'At the specified name `{name!r}` there is a different command added already.'
+            )
         
         aliases.remove(name)
         if not aliases:
@@ -2987,7 +3060,8 @@ class CommandProcesser(EventWaitforBase):
                 del commands[alter]
             except KeyError:
                 pass
-        
+    
+    
     def delete_event(self, func, name=None):
         """
         A method to remove a command by itself, or by it's function and name combination if defined.
@@ -2999,17 +3073,17 @@ class CommandProcesser(EventWaitforBase):
         ----------
         func : ``Command``, ``Router``, `async-callable` or instantiable to `async-callable`
             The command to remove.
-        name : `None` or `str`, Optional
+        name : `None`, `str`, Optional
             The command's name to remove.
         
         Raises
         ------
         TypeError
-            - If `name` was not given as `None` or as `str` instance.
+            - If `name` was not given as `None`, `str`.
             - If ``func` was not given as type ``Command`` meanwhile `name` was given as `None`.
             - If `name` was given as one of `default_event`, `invalid_command`, `command_error`, but the command
                 processer's respective attribute is different than the given `func`.
-            - If `func` was given as ``Router`` instance, but it contains not only ``Command`` instances.
+            - If `func` was given as ``Router``, but it contains not only ``Command``.
         ValueError
             - If `func` was given as type ``Command`` and `name` was not given as `None`, neither as 1 of it's aliases.
             - If `func` was given as type ``Command`` there is no command added with the given `name`.
@@ -3026,7 +3100,9 @@ class CommandProcesser(EventWaitforBase):
             elif issubclass(name_type, str):
                 name = str(name)
             else:
-                raise TypeError(f'`name` can be `None` or `str` instance, got {name_type.__name__}.')
+                raise TypeError(
+                    f'`name` can be `None`, `str`, got {name_type.__name__}; {name!r}.'
+                )
         
         if isinstance(func, Command):
             self._remove_command(func, name)
@@ -3035,8 +3111,10 @@ class CommandProcesser(EventWaitforBase):
         if isinstance(func, Router):
             for func_maybe in func:
                 if not isinstance(func_maybe, Command):
-                    raise TypeError(f'`func` was given as `{Router.__name__}` instance, but it contains not only '
-                        f'`{Command.__name__}` elements, got {func!r}.')
+                    raise TypeError(
+                        f'`func` was given as `{Router.__name__}`, but it contains not only '
+                        f'`{Command.__name__}` elements, got {func!r}.'
+                    )
             
             last_exception = None
             for func_maybe in func:
@@ -3051,8 +3129,10 @@ class CommandProcesser(EventWaitforBase):
             return
         
         if name is None:
-            raise TypeError(f'`name` should have been passed as `str`, if `func` is not passed as '
-                f'`{Command.__name___}` instance, `{func!r}`.')
+            raise TypeError(
+                f'`name` can be `str`, if `func` is not passed as '
+                f'`{Command.__name___}`, got func={func!r}.'
+            )
         
         if name == 'default_event':
             if func is self._default_event:
@@ -3060,8 +3140,10 @@ class CommandProcesser(EventWaitforBase):
                 self._default_event_checks = None
                 return
             
-            raise ValueError(f'The passed `{name!r}` ({func!r}) is not the same as the already loaded one: '
-                f'`{self._default_event!r}`')
+            raise ValueError(
+                f'The passed `{name!r}` ({func!r}) is not the same as the already loaded one: '
+                f'{self._default_event!r}.'
+            )
         
         if name == 'invalid_command':
             if func is self._invalid_command:
@@ -3069,8 +3151,10 @@ class CommandProcesser(EventWaitforBase):
                 self._invalid_command_checks = None
                 return
             
-            raise ValueError(f'The passed `{name!r}` ({func!r}) is not the same as the already loaded one: '
-                 f'`{self._invalid_command!r}`')
+            raise ValueError(
+                f'The passed `{name!r}` ({func!r}) is not the same as the already loaded one: '
+                f'{self._invalid_command!r}.'
+            )
         
         if name == 'command_error':
             if func is self._command_error:
@@ -3078,18 +3162,23 @@ class CommandProcesser(EventWaitforBase):
                 self._command_error_checks = None
                 return
             
-            raise ValueError(f'The passed `{name!r}` ({func!r}) is not the same as the already loaded one: '
-                f'`{self._command_error!r}`')
+            raise ValueError(
+                f'The passed `{name!r}` ({func!r}) is not the same as the already loaded one: '
+                f'`{self._command_error!r}`.'
+            )
         
         commands = self.commands
         try:
             command = commands[name]
         except KeyError:
-            raise ValueError(f'The passed `{name!r}` is not added as a command right now.') from None
+            raise ValueError(
+                f'The passed `{name!r}` is not added as a command right now.'
+            ) from None
         
         if not compare_converted(command.command, func):
-            raise ValueError(f'The passed `{name!r}` (`{func!r}`) command is not the same as the already loaded one: '
-                f'`{command!r}`')
+            raise ValueError(
+                f'The passed `{name!r}` (`{func!r}`) command is not the same as the already loaded one: {command!r}'
+            )
         
         for alter in command._alters:
             try:
@@ -3102,6 +3191,7 @@ class CommandProcesser(EventWaitforBase):
             category.commands.remove(command)
         
         return
+    
     
     async def __call__(self, client, message):
         """
@@ -3285,7 +3375,7 @@ class CommandProcesser(EventWaitforBase):
             ' prefix=', repr(self.prefix),
             ', command count=', repr(self.command_count),
             ', mention_prefix=', repr(self.mention_prefix),
-                ]
+        ]
         
         default_event = self._default_event
         if (default_event is not None):

@@ -146,13 +146,17 @@ def add_bot(settings, bot_name):
     """
     bot_name = prepare_bot_name(bot_name)
     if not bot_name:
-        raise RuntimeError(f'Received empty bot name.')
+        raise RuntimeError(
+            f'Received empty bot name.'
+        )
     
     bot_directory_name = convert_bot_name_to_directory_name(bot_name)
     
     bot_directories = settings.bot_directories
     if (bot_directories is not None) and (bot_directory_name in bot_directories):
-        raise RuntimeError(f'There is already a bot registered with the given name.')
+        raise RuntimeError(
+            f'There is already a bot registered with the given name.'
+        )
     
     environmental_variable_prefix = convert_bot_name_to_environmental_name(bot_name)
     

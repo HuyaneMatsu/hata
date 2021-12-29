@@ -38,7 +38,7 @@ class User(USER_BASE_CLASS):
         The user's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The user's avatar's type.
-    banner_color : `None` or ``Color``
+    banner_color : `None`, ``Color``
         The user's banner color if has any.
     banner_hash : `int`
         The user's banner's hash in `uint128`.
@@ -53,10 +53,10 @@ class User(USER_BASE_CLASS):
         The user's user flags.
     partial : `bool`
         Partial users have only their `.id` set and every other field might not reflect the reality.
-    thread_profiles : `None` or `dict` (``ChannelThread``, ``ThreadProfile``) items
+    thread_profiles : `None`, `dict` (``ChannelThread``, ``ThreadProfile``) items
         A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
         Defaults to `None`.
-    activities : `None` or `list` of ``ActivityBase`` instances
+    activities : `None`, `list` of ``ActivityBase``
         A list of the client's activities. Defaults to `None`
         
         > Only available if presence caching is enabled.
@@ -196,7 +196,7 @@ class User(USER_BASE_CLASS):
         ----------
         data : `dict` of (`str`, `Any`) items
             Received user data.
-        guild : ``Guild`` or `None`, Optional
+        guild : ``Guild``, `None`, Optional
             A respective guild from where the user data was received. It is picked up if the given data includes
             guild member data as well.
         
@@ -215,7 +215,7 @@ class User(USER_BASE_CLASS):
         
         Parameters
         ----------
-        user_id : `int` or `str`
+        user_id : `int`, `str`
             The user's id.
         **kwargs : keyword parameters
             Additional predefined attributes for the user.
@@ -224,10 +224,10 @@ class User(USER_BASE_CLASS):
         ----------------
         name : `str`, Optional (Keyword only)
             The user's ``.name``.
-        discriminator : `int` or `str` instance, Optional (Keyword only)
-            The user's ``.discriminator``. Is accepted as `str` instance as well and will be converted to `int`.
+        discriminator : `int`, `str`, Optional (Keyword only)
+            The user's ``.discriminator``. Is accepted as `str` as well and will be converted to `int`.
         
-        avatar : `None`, ``Icon`` or `str`, Optional (Keyword only)
+        avatar : `None`, ``Icon``, `str`, Optional (Keyword only)
             The user's avatar.
             
             > Mutually exclusive with `avatar_type` and `avatar_hash`.
@@ -242,12 +242,12 @@ class User(USER_BASE_CLASS):
             
             > Mutually exclusive with `avatar`.
         
-        banner : `None`, ``Icon`` or `str`, Optional (Keyword only)
+        banner : `None`, ``Icon``, `str`, Optional (Keyword only)
             The user's banner.
             
             > Mutually exclusive with `banner_type` and `banner_hash`.
         
-        banner_color : `None` or ``Color``
+        banner_color : `None`, ``Color``
             The user's banner color.
         
         banner_type : ``IconType``, Optional (Keyword only)
@@ -260,7 +260,7 @@ class User(USER_BASE_CLASS):
             
             > Mutually exclusive with `banner`.
         
-        flags : ``UserFlag`` or `int` instance, Optional (Keyword only)
+        flags : ``UserFlag``, `int`, Optional (Keyword only)
             The user's ``.flags``. If not passed as ``UserFlag``, then will be converted to it.
         
         Returns
@@ -323,7 +323,7 @@ class User(USER_BASE_CLASS):
                 processable.append(('banner_color', banner_color))
             
             if kwargs:
-                raise TypeError(f'Unused or unsettable attributes: {kwargs}.')
+                raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
         
         else:
             processable = None
@@ -452,7 +452,7 @@ class User(USER_BASE_CLASS):
         ----------
         data : `dict` of (`str`, `Any`) items
             Received user data.
-        guild : ``Guild`` or `None`, Optional
+        guild : ``Guild``, `None`, Optional
             A respective guild from where the user data was received. Picked up if the given data includes
             guild member data as well.
         

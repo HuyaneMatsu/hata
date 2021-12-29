@@ -9,15 +9,15 @@ def parse_allowed_mentions(allowed_mentions):
     If `allowed_mentions` is passed as `None`, then returns a `dict`, what will cause all mentions to be disabled.
     
     If passed as an `iterable`, then it's elements will be checked. They can be either type `str`
-    (any value from `('everyone', 'users', 'roles')`), ``UserBase`` or ``Role`` instances.
+    (any value from `('everyone', 'users', 'roles')`), ``UserBase``, ``Role``-s.
     
     Passing `everyone` will allow the message to mention `@everyone` (permissions can overwrite this behaviour).
     
-    Passing `'users'` will allow the message to mention all the users, meanwhile passing ``UserBase`` instances
-    allow to mentioned the respective users. Using `users` and ``UserBase`` instances is mutually exclusive,
+    Passing `'users'` will allow the message to mention all the users, meanwhile passing ``UserBase``-s.
+    allow to mentioned the respective users. Using `users` and ``UserBase``-s. is mutually exclusive,
     and the wrapper will register only `users` to avoid getting ``DiscordException``.
     
-    `'roles'` and ``Role`` instances follow the same rules as `'users'` and the ``UserBase`` instances.
+    `'roles'` and ``Role``-s. follow the same rules as `'users'` and the ``UserBase``-s.
     
     By passing `'!replied_user'` you can disable mentioning the replied user, or by passing`'replied_user'` you can
     re-enable mentioning the replied user.
@@ -87,9 +87,11 @@ def parse_allowed_mentions(allowed_mentions):
                 allow_roles = 1
                 continue
             
-            raise ValueError(f'`allowed_mentions` contains a not valid `str` element: `{element!r}`. Type`str` '
-                f'elements can be one of: (\'everyone\', \'users\', \'roles\', \'replied_user\', '
-                f'\'!replied_user\').')
+            raise ValueError(
+                f'`allowed_mentions` contains a not valid `str` element: `{element!r}`. `str` '
+                f'elements can be any of: (\'everyone\', \'users\', \'roles\', \'replied_user\', '
+                f'\'!replied_user\').'
+            )
         
         if isinstance(element, UserBase):
             if allowed_users is None:
@@ -105,8 +107,10 @@ def parse_allowed_mentions(allowed_mentions):
             allowed_roles.append(element.id)
             continue
         
-        raise TypeError(f'`allowed_mentions` contains an element of an invalid type: `{element!r}`. The allowed '
-            f'types are: `str`, `Role` and any `UserBase` instances.')
+        raise TypeError(
+            f'`allowed_mentions` can contain `str`, `{Role.__name__}`, `{UserBase.__name__}` elements, got '
+            f' {element.__class__.__name__}; {element!r}; allowed_mentions={allowed_mentions!r}.'
+        )
     
     
     result = {}
@@ -159,9 +163,9 @@ class AllowedMentionProxy:
         Whether everyone mention is enabled.
     _allow_replied_user : `int`
         Whether replied user can be mentioned.
-    _allowed_roles : `None` or `list` of ``Role``
+    _allowed_roles : `None`, `list` of ``Role``
         The enabled roles by the proxy.
-    _allowed_users : `None` or `list` of ``UserBase``
+    _allowed_users : `None`, `list` of ``UserBase``
         The enabled users by the proxy.
     """
     __slots__ = ('_allow_everyone', '_allow_replied_user', '_allow_roles', '_allow_users', '_allowed_roles',
@@ -213,8 +217,11 @@ class AllowedMentionProxy:
                         allow_roles = 1
                         continue
                     
-                    raise ValueError(f'`allowed_mentions` contains a not valid `str` element: `{element!r}`. Type`str` '
-                        f'elements can be one of: (\'everyone\', \'users\', \'roles\').')
+                    raise ValueError(
+                        f'`allowed_mentions` contains a not valid `str` element: `{element!r}`. `str` '
+                        f'elements can be any of: (\'everyone\', \'users\', \'roles\', \'replied_user\', '
+                        f'\'!replied_user\').'
+                    )
                 
                 if isinstance(element, UserBase):
                     if allowed_users is None:
@@ -230,8 +237,10 @@ class AllowedMentionProxy:
                     allowed_roles.append(element)
                     continue
                 
-                raise TypeError(f'`allowed_mentions` contains an element of an invalid type: `{element!r}`. The '
-                    f'allowed types are: `str`, `Role` and any `UserBase` instances.')
+                raise TypeError(
+                    f'`allowed_mentions` can contain `str`, `{Role.__name__}`, `{UserBase.__name__}` elements, got '
+                    f' {element.__class__.__name__}; {element!r}; allowed_mentions={allowed_mentions!r}.'
+                )
             
             if allow_users:
                 allowed_users = None
@@ -257,7 +266,7 @@ class AllowedMentionProxy:
         
         Parameters
         ----------
-        data : `None` or `dict` of (`str`, `Any`) items
+        data : `None`, `dict` of (`str`, `Any`) items
             Allowed mention data
         
         Returns
@@ -622,7 +631,7 @@ class AllowedMentionProxy:
         """
         A get-set-del property to enable or disable role mentions.
         
-        Accepts and returns `bool` instances.
+        Accepts and returns `bool`-s.
         """
         if self._allow_roles:
             allow_roles_output = True
@@ -635,8 +644,10 @@ class AllowedMentionProxy:
     def allow_roles(self, allow_roles_input):
         if __debug__:
             if not isinstance(allow_roles_input, bool):
-                raise AssertionError(f'`allow_roles_input` can be given as `bool` instance, got '
-                    f'{allow_roles_input.__class__.__name__}.')
+                raise AssertionError(
+                    f'`allow_roles_input` can be `bool`, got '
+                    f'{allow_roles_input.__class__.__name__}; {allow_roles_input!r}.'
+                )
         
         if allow_roles_input:
             allow_roles = 1
@@ -656,7 +667,7 @@ class AllowedMentionProxy:
         """
         A get-set-del property to enable or disable user mentions.
         
-        Accepts and returns `bool` instances.
+        Accepts and returns `bool`-s.
         """
         if self._allow_users:
             allow_users_output = True
@@ -669,8 +680,10 @@ class AllowedMentionProxy:
     def allow_users(self, allow_users_input):
         if __debug__:
             if not isinstance(allow_users_input, bool):
-                raise AssertionError(f'`allow_users_input` can be given as `bool` instance, got '
-                    f'{allow_users_input.__class__.__name__}.')
+                raise AssertionError(
+                    f'`allow_users_input` can be `bool`, got '
+                    f'{allow_users_input.__class__.__name__}; {allow_users_input!r}.'
+                )
         
         if allow_users_input:
             allow_users = 1
@@ -689,7 +702,7 @@ class AllowedMentionProxy:
         """
         A get-set-del property to enable or disable everyone mentions.
         
-        Accepts and returns `bool` instances.
+        Accepts and returns `bool`-s.
         """
         if self._allow_everyone:
             allow_everyone_output = True
@@ -702,8 +715,10 @@ class AllowedMentionProxy:
     def allow_everyone(self, allow_everyone_input):
         if __debug__:
             if not isinstance(allow_everyone_input, bool):
-                raise AssertionError(f'`allow_everyone_input` can be given as `bool` instance, got '
-                    f'{allow_everyone_input.__class__.__name__}.')
+                raise AssertionError(
+                    f'`allow_everyone_input` can be `bool`, got '
+                    f'{allow_everyone_input.__class__.__name__}; {allow_everyone_input!r}.'
+                )
         
         if allow_everyone_input:
             allow_everyone = 1
@@ -722,7 +737,7 @@ class AllowedMentionProxy:
         """
         A get-set-del property to enable or disable replied user mention.
         
-        Accepts and returns `None` and `bool` instances.
+        Accepts and returns `None` and `bool`-s.
         """
         allow_replied_user = self._allow_replied_user
         if allow_replied_user:
@@ -735,12 +750,14 @@ class AllowedMentionProxy:
         
         return allow_replied_user_output
     
-    @allow_replied_user.deleter
+    @allow_replied_user.setter
     def allow_replied_user(self, allow_replied_user_input):
         if __debug__:
             if (allow_replied_user_input is not None) and (not isinstance(allow_replied_user_input, bool)):
-                raise AssertionError(f'`allow_replied_user_input` can be given as `None` or as `bool` instance, got '
-                    f'{allow_replied_user_input.__class__.__name__}.')
+                raise AssertionError(
+                    f'`allow_replied_user_input` can be `None`, `bool`, got '
+                    f'{allow_replied_user_input.__class__.__name__}; {allow_replied_user_input!r}.'
+                )
         
         if allow_replied_user_input is None:
             allow_replied_user = 0
@@ -761,7 +778,7 @@ class AllowedMentionProxy:
         """
         A get-set-del property to enable or disable specific role mentions.
         
-        Accepts and returns `None` or a `list` of ``Role`` instances.
+        Accepts and returns `None` or a `list` of ``Role``-s.
         """
         allowed_roles = self._allowed_roles
         if allowed_roles is None:
@@ -786,16 +803,20 @@ class AllowedMentionProxy:
             
             for role in allowed_roles_input:
                 if not isinstance(role, Role):
-                    raise TypeError(f'`allowed_roles_input` elements can be given as `{Role.__name__}` '
-                        f'instances, got {role.__class__.__name__}.')
+                    raise TypeError(
+                        f'`allowed_roles_input` can contain `{Role.__name__}` elements, got '
+                        f'{role.__class__.__name__}; {role!r}; allowed_roles_input={allowed_roles_input!r}.'
+                    )
                 
                 if allowed_roles is None:
                     allowed_roles = []
                 
                 allowed_roles.append(role)
         else:
-            raise TypeError(f'`allowed_roles_input` can be given either as `None`, `{Role.__name__}` or as `list`, '
-                f'`tuple` or `set` of {Role.__name__}` instances, got {allowed_roles_input.__class__.__name__}.')
+            raise TypeError(
+                f'`allowed_roles_input` can be `None`, `{Role.__name__}`, `list`, `tuple`, `set` of {Role.__name__}`'
+                f', got {allowed_roles_input.__class__.__name__}; {allowed_roles_input!r}.'
+            )
         
         self._allowed_roles = allowed_roles
     
@@ -809,7 +830,7 @@ class AllowedMentionProxy:
         """
         A get-set-del property to enable or disable specific user mentions.
         
-        Accepts and returns `None` or a `list` of ``Role`` instances.
+        Accepts and returns `None` or a `list` of ``Role``-s.
         """
         allowed_users = self._allowed_users
         if allowed_users is None:
@@ -834,16 +855,20 @@ class AllowedMentionProxy:
             
             for user in allowed_users_input:
                 if not isinstance(user, Role):
-                    raise TypeError(f'`allowed_users_input` elements can be given as `{UserBase.__name__}` '
-                        f'instances, got {user.__class__.__name__}.')
+                    raise TypeError(
+                        f'`allowed_users_input` can contain `{UserBase.__name__}` elements, got'
+                        f'{user.__class__.__name__}; {user!r}; allowed_users_input={allowed_users_input!r}.'
+                    )
                 
                 if allowed_users is None:
                     allowed_users = []
                 
                 allowed_users.append(user)
         else:
-            raise TypeError(f'`allowed_users_input` can be given either as `None`, `{UserBase.__name__}` or as `list`, '
-                f'`tuple` or `set` of {UserBase.__name__}` instances, got {allowed_users_input.__class__.__name__}.')
+            raise TypeError(
+                f'`allowed_users_input` can be `None`, `{UserBase.__name__}`, `list`, `tuple`, `set` of '
+                f'`{UserBase.__name__}`, got {allowed_users_input.__class__.__name__}; {allowed_users_input!r}.'
+            )
         
         self._allowed_users = allowed_users
     

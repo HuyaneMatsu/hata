@@ -81,7 +81,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             
             Defaults to `True`.
         
-        options : `None`, (`list` or `tuple`) of ``ApplicationCommandOption``, Optional (Keyword only)
+        options : `None`, (`list`, `tuple`) of ``ApplicationCommandOption``, Optional (Keyword only)
             The parameters of the command. It's length can be in range [0:25].
         
         target_type : `int`, ``ApplicationCommandTargetType``, Optional (Keyword only)
@@ -101,7 +101,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             - If `name` contains unexpected character.
             - If `description` was not given as `None` nor `str`.
             - If `description` length is out of range [1:100].
-            - If `options` was not given neither as `None` nor as (`list` or `tuple`) of ``ApplicationCommandOption``
+            - If `options` was not given neither as `None` nor as (`list`, `tuple`) of ``ApplicationCommandOption``
                 instances.
             - If `options`'s length is out of range [0:25].
             - If `allow_by_default` was not given as `bool`.
@@ -157,7 +157,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             if __debug__:
                 if not isinstance(options, (tuple, list)):
                     raise AssertionError(
-                        f'`options` can be `None`, (`list` or `tuple`) of `{ApplicationCommandOption.__name__}`, '
+                        f'`options` can be `None`, (`list`, `tuple`) of `{ApplicationCommandOption.__name__}`, '
                         f'got {options.__class__.__name__}; {options!r}.')
             
             # Copy it
@@ -804,15 +804,15 @@ class ApplicationCommandOption:
         Whether the option is the default one. Only one option can be `default`.
     description : `str`
         The description of the application command option. It's length can be in range [1:100].
-    max_value : `None`, `int` or `float`
+    max_value : `None`, `int`, `float`
         The maximal value permitted for this option.
         
-        Only Applicable for integer as `int`, or `as float options as `float`.
+        Only Applicable for integer as `int`, `as float options as `float`.
     
-    min_value : `None`, `int` or `float`
+    min_value : `None`, `int`, `float`
         The minimum value permitted for this option.
         
-        Only Applicable for integer as `int`, or `as float options as `float`.
+        Only Applicable for integer as `int`, `as float options as `float`.
     
     name : `str`
         The name of the application command option. It's length can be in range [1:32].
@@ -838,7 +838,7 @@ class ApplicationCommandOption:
             The name of the command. It's length can be in range [1:32].
         description : `str`
             The command's description. It's length can be in range [2:100].
-        type_ : `int` or ``ApplicationCommandOptionType``
+        type_ : `int`, ``ApplicationCommandOptionType``
             The application command option's type.
         autocomplete : `bool`
             Whether the option supports auto completion.
@@ -854,22 +854,22 @@ class ApplicationCommandOption:
             Whether the option is the default one. Defaults to `False`.
         required : `bool`, Optional (Keyword only)
             Whether the parameter is required. Defaults to `False`.
-        max_value : `None`, `int` or `float`
+        max_value : `None`, `int`, `float`
             The maximal value permitted for this option.
             
-            Only Applicable for integer as `int`, or `as float options as `float`.
+            Only Applicable for integer as `int`, as float options as `float`.
         
-        min_value : `None`, `int` or `float`
+        min_value : `None`, `int`, `float`
             The minimum value permitted for this option.
             
-            Only Applicable for integer as `int`, or `as float options as `float`.
+            Only Applicable for integer as `int`, as float options as `float`.
             
-        choices : `None`, (`list` or `tuple`) of ``ApplicationCommandOptionChoice``, Optional (Keyword only)
+        choices : `None`, (`list`, `tuple`) of ``ApplicationCommandOptionChoice``, Optional (Keyword only)
             The choices of the command for string or integer types. It's length can be in range [0:25].
             
             Mutually exclusive with the `autocomplete` parameter.
             
-        options : `None`, (`list` or `tuple`) of ``ApplicationCommandOption``, Optional (Keyword only)
+        options : `None`, (`list`, `tuple`) of ``ApplicationCommandOption``, Optional (Keyword only)
             The parameters of the command. It's length can be in range [0:25]. Only applicable for sub command groups.
         
         Raises
@@ -893,12 +893,12 @@ class ApplicationCommandOption:
             - If `name` length is out of range [1:32].
             - If `description` was not given as `str`.
             - If `description` length is out of range [1:100].
-            - If `options` was not given neither as `None` nor as (`list` or `tuple`) of ``ApplicationCommandOption``
+            - If `options` was not given neither as `None` nor as (`list`, `tuple`) of ``ApplicationCommandOption``
                 instances.
             - If `options`'s length is out of range [0:25].
             - If `default` was not given as `bool`.
             - If `required` was not given as `bool`.
-            - If `choices` was not given neither as `None` nor as (`list` or `tuple`) of
+            - If `choices` was not given neither as `None` nor as (`list`, `tuple`) of
                 ``ApplicationCommandOptionChoice``s.
             - If `choices`'s length is out of range [0:25].
             - If an option is a sub command group option.
@@ -959,7 +959,7 @@ class ApplicationCommandOption:
             if __debug__:
                 if not isinstance(choices, (tuple, list)):
                     raise AssertionError(
-                        f'`choices` can be `None`, (`list` or `tuple`) of '
+                        f'`choices` can be `None`, (`list`, `tuple`) of '
                         f'`{ApplicationCommandOptionChoice.__name__}`, got {choices.__class__.__name__}; {choices!r}.'
                     )
             
@@ -988,7 +988,7 @@ class ApplicationCommandOption:
             if __debug__:
                 if not isinstance(options, (tuple, list)):
                     raise AssertionError(
-                        f'`options` can be `None`, (`list` or `tuple`) of `{ApplicationCommandOption.__name__}`, got '
+                        f'`options` can be `None`, (`list`, `tuple`) of `{ApplicationCommandOption.__name__}`, got '
                         f'{options.__class__.__name__}; {options!r}.'
                     )
             
@@ -1220,7 +1220,7 @@ class ApplicationCommandOption:
         
         Parameters
         ----------
-        choice : ``ApplicationCommandOptionChoice`` or `tuple` (`str`, (`str`, `int`, `float`))
+        choice : ``ApplicationCommandOptionChoice``, `tuple` (`str`, (`str`, `int`, `float`))
             The choice to add.
         
         Returns
@@ -1592,7 +1592,7 @@ class ApplicationCommandOptionChoice:
     ----------
     name : `str`
         The choice's name. It's length can be in range [1:100].
-    value : `str`, `int` or `float`
+    value : `str`, `int`, `float`
         The choice's value.
     """
     __slots__ = ('name', 'value')
@@ -1605,7 +1605,7 @@ class ApplicationCommandOptionChoice:
         ----------
         name : `str`
             The choice's name. It's length can be in range [1:100].
-        value : `str`, `int` or `float`
+        value : `str`, `int`, `float`
             The choice's value.
         
         Raises
@@ -1744,7 +1744,7 @@ class ApplicationCommandPermission:
         
         Parameters
         ----------
-        application_command : ``ApplicationCommand`` or `int`
+        application_command : ``ApplicationCommand``, `int`
             The application command's identifier.
         permission_overwrites : `None`, (`list`, `set`, `tuple`) of ``ApplicationCommandPermissionOverwrite`
                 , Optional (Keyword only)
@@ -1755,7 +1755,7 @@ class ApplicationCommandPermission:
         TypeError
             - If `application_command` was not given neither as ``ApplicationCommand`` nor as `int`.
         AssertionError
-            - If `permission_overwrites` was not give neither as `None`, `list`, `set` or `tuple`.
+            - If `permission_overwrites` was not give neither as `None`, `list`, `set`, `tuple`.
             - If `permission_overwrites` contains a non ``ApplicationCommandPermissionOverwrite`` element.
             - If `permission_overwrites` length is over `10`.
         """
@@ -1998,7 +1998,7 @@ class ApplicationCommandPermissionOverwrite:
         
         Parameters
         ----------
-        target : ``ClientUserBase`` or ``Role``, `tuple` ((``ClientUserBase``, ``Role`` type) or \
+        target : ``ClientUserBase``, ``Role``, `tuple` ((``ClientUserBase``, ``Role`` type) or \
                 `str` (`'Role'`, `'role'`, `'User'`, `'user'`), `int`)
             The target entity of the application command permission overwrite.
             

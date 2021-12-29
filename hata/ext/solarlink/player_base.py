@@ -27,7 +27,7 @@ class SolarPlayerBase:
     
     Attributes
     ----------
-    _forward_data : `None` or `dict` of (`str`, `Any`) items
+    _forward_data : `None`, `dict` of (`str`, `Any`) items
         Json to forward to the player's node as necessary.
     _position : `float`
         The position of the current track.
@@ -96,7 +96,7 @@ class SolarPlayerBase:
         
         Parameters
         ----------
-        waiter : `None` or ``Future``
+        waiter : `None`, ``Future``
             Waiter to set it's result or exception, when connection is established.
         """
         try:
@@ -202,7 +202,7 @@ class SolarPlayerBase:
         
         Returns
         -------
-        track : `None` or ``ConfiguredTrack``
+        track : `None`, ``ConfiguredTrack``
         """
         raise NotImplementedError
     
@@ -451,13 +451,13 @@ class SolarPlayerBase:
         
         Parameters
         ---------
-        channel : ``ChannelVoiceBase`` or `int` instance
+        channel : ``ChannelVoiceBase``, `int`
             The channel where the voice client will move to.
         
         Raises
         ------
         TypeError
-            If  `channel` was not given as ``ChannelVoiceBase`` not `int` instance.
+            If  `channel` was not given as ``ChannelVoiceBase`` not `int`.
         """
         node = self.node
         if node is None:
@@ -469,8 +469,10 @@ class SolarPlayerBase:
         else:
             channel_id = maybe_snowflake(channel)
             if channel_id is None:
-                raise TypeError(f'`channel` can be given as {ChannelVoiceBase.__name__}, or as `int` instance, got '
-                    f'{channel.__class__.__name__}.')
+                raise TypeError(
+                    f'`channel` can be `{ChannelVoiceBase.__name__}`, `int`, got '
+                    f'{channel.__class__.__name__}; {channel!r}.'
+                )
         
         if self.channel_id == channel_id:
             return
@@ -561,7 +563,7 @@ class SolarPlayerBase:
         
         Returns
         -------
-        channel : `None` or ``ChannelVoiceBase``
+        channel : `None`, ``ChannelVoiceBase``
         """
         channel_id = self.channel_id
         if channel_id:
@@ -575,6 +577,6 @@ class SolarPlayerBase:
         
         Returns
         -------
-        guild : `None` or ``Guild``
+        guild : `None`, ``Guild``
         """
         return GUILDS.get(self.guild_id, None)

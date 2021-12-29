@@ -17,7 +17,7 @@ class Timeouter:
     
     Attributes
     ----------
-    _handle : `None` or ``TimerHandle``
+    _handle : `None`, ``TimerHandle``
         Handle to wake_up the timeouter with it's `._step` function.
         Set to `None`, when the respective timeout is over or if the timeout is cancelled.
     _owner : `Any`
@@ -31,7 +31,7 @@ class Timeouter:
     
     def __init__(self, owner, timeout):
         """
-        Creates a new ``Timeouter`` instance with the given `owner` and `timeout`.
+        Creates a new ``Timeouter`` with the given `owner` and `timeout`.
         
         Parameters
         ----------
@@ -129,7 +129,7 @@ class ComponentInteractionWaiter:
     
     Parameters
     ----------
-    _check : `None` or `callable`
+    _check : `None`, `callable`
         The check to call to validate whether the response is sufficient.
     _finished : `bool`
         Whether the waiter finished.
@@ -137,13 +137,13 @@ class ComponentInteractionWaiter:
         The waiter future.
     _message : ``Message``
         The waited interaction component's message.
-    _timeouter : `None` or ``Timeouter``
+    _timeouter : `None`, ``Timeouter``
         Executes the timeout feature on the waiter.
     """
     __slots__ = ('_check', '_finished', '_future', '_message', '_timeouter')
     def __new__(cls, client, message, check, timeout):
         """
-        Creates a new ``ComponentInteractionWaiter`` instance with the given parameters.
+        Creates a new ``ComponentInteractionWaiter`` with the given parameters.
         
         Parameters
         ----------
@@ -151,9 +151,9 @@ class ComponentInteractionWaiter:
             The client who will wait for component interaction.
         message : ``Message``
             The waited interaction component's message.
-        check : `None` or `callable`
+        check : `None`, `callable`
             The check to call to validate whether the response is sufficient.
-        timeout : `None` or `float`
+        timeout : `None`, `float`
             The timeout till the waiting is done. If expires, `TimeoutError` is raised to ``._future``.
         """
         self = object.__new__(cls)
@@ -222,7 +222,7 @@ class ComponentInteractionWaiter:
         
         Parameters
         ----------
-        exception : `None` or ``BaseException``, Optional
+        exception : `None`, ``BaseException``, Optional
             The exception to cancel the waiter with.
         """
         if self._finished:
@@ -252,23 +252,23 @@ class ComponentInteractionIterator:
     
     Parameters
     ----------
-    _check : `None` or `callable`
+    _check : `None`, `callable`
         The check to call to validate whether the response is sufficient.
-    _exception : `None` or ``BaseException``
+    _exception : `None`, ``BaseException``
         Whether the waiter finished with an exception.
     _finished : `bool`
         Whether the interaction iterator is finished.
-    _future : `None` or ``Future``
+    _future : `None`, ``Future``
         The waiter future.
     _message : ``Message``
         The waited interaction component's message.
-    _queue : `None` or `collections.deque`
+    _queue : `None`, `collections.deque`
         A deque used to queue up interactions if needed.
-    _timeouter : `None` or ``Timeouter``
+    _timeouter : `None`, ``Timeouter``
         Executes the timeout feature on the waiter.
     count : `int`
         The maximal amount of events to yield.
-    timeout : `None` or `float`
+    timeout : `None`, `float`
         The timeout after `TimeoutError` should be raised if no sufficient event is received.
     """
     __slots__ = ('_check', '_exception', '_finished', '_future', '_message', '_queue', '_timeouter', 'count',
@@ -276,7 +276,7 @@ class ComponentInteractionIterator:
     
     def __new__(cls, client, message, check, timeout, count):
         """
-        Creates a new ``ComponentInteractionWaiter`` instance with the given parameters.
+        Creates a new ``ComponentInteractionWaiter`` with the given parameters.
         
         Parameters
         ----------
@@ -284,9 +284,9 @@ class ComponentInteractionIterator:
             The client who will wait for component interaction.
         message : ``Message``
             The waited interaction component's message.
-        check : `None` or `callable`
+        check : `None`, `callable`
             The check to call to validate whether the response is sufficient.
-        timeout : `None` or `float`
+        timeout : `None`, `float`
             The timeout till the waiting is done. If expires, `TimeoutError` is raised to ``._future``.
         count : `int`
             The maximal amount of events to yield.
@@ -414,7 +414,7 @@ class ComponentInteractionIterator:
         
         Parameters
         ----------
-        exception : `None` or ``BaseException``, Optional
+        exception : `None`, ``BaseException``, Optional
             The exception to cancel the waiter with.
         """
         if self._finished:
@@ -458,9 +458,13 @@ def get_client_from_message(message):
             try:
                 client = APPLICATION_ID_TO_CLIENT[application_id]
             except KeyError as err:
-                raise RuntimeError(f'The message is bound to a 3rd party application, got: {message!r}.') from err
+                raise RuntimeError(
+                    f'The message is bound to a 3rd party application, got: {message!r}.'
+                ) from err
         else:
-            raise RuntimeError(f'The given message has no bound interaction, got {message!r}.')
+            raise RuntimeError(
+                f'The given message has no bound interaction, got {message!r}.'
+            )
     
     return client
 
@@ -487,8 +491,9 @@ def get_client_from_interaction_event(interaction_event):
     try:
         client = APPLICATION_ID_TO_CLIENT[interaction_event.application_id]
     except KeyError as err:
-        raise RuntimeError(f'The message or interaction is bound to a 3rd party application, got: '
-            f'{interaction_event!r}.') from err
+        raise RuntimeError(
+            f'The message or interaction is bound to a 3rd party application, got: {interaction_event!r}.'
+        ) from err
     
     return client
 
@@ -503,7 +508,7 @@ async def get_interaction_client_and_message(event_or_message, timeout):
     ----------
     event_or_message : ``InteractionEvent``, ``Message``
         The interaction event or the sent message.
-    timeout : `None` or `float`
+    timeout : `None`, `float`
         The maximal amount of time wait for interaction response.
     
     Returns
@@ -518,7 +523,7 @@ async def get_interaction_client_and_message(event_or_message, timeout):
     TimeoutError
         If interaction even was not received before timeout.
     TypeError
-        `event_or_message` is neither ``Message`` nor ``InteractionEvent`` instance.
+        `event_or_message` is neither ``Message`` nor ``InteractionEvent``.
     RuntimeError
         - The message or interaction is bound to a 3rd party application.
         - The given message message has no bound interaction.
@@ -532,8 +537,10 @@ async def get_interaction_client_and_message(event_or_message, timeout):
         client = get_client_from_interaction_event(event_or_message)
     
     else:
-        raise TypeError(f'`event_or_message` can be either `{Message.__name__}` or `{InteractionEvent.__name__}` '
-            f'instance, got {event_or_message.__class__.__name__}.')
+        raise TypeError(
+            f'`event_or_message` can be `{Message.__name__}`, `{InteractionEvent.__name__}` , got '
+            f'{event_or_message.__class__.__name__}; {event_or_message!r}.'
+        )
     
     return client, message
 
@@ -548,10 +555,10 @@ async def wait_for_component_interaction(event_or_message, *, timeout=None, chec
     ----------
     event_or_message : ``InteractionEvent``, ``Message``
         The interaction event or the sent message to wait component on.
-    timeout : `None` or `float`, Optional (Keyword only)
+    timeout : `None`, `float`, Optional (Keyword only)
         The maximal amount of time wait
-    check : `None` or `callable`, Optional (Keyword only)
-        Checks whether the received ``InteractionEvent`` instances pass the requirements.
+    check : `None`, `callable`, Optional (Keyword only)
+        Checks whether the received ``InteractionEvent``-s pass the requirements.
     
     Returns
     ------
@@ -562,7 +569,7 @@ async def wait_for_component_interaction(event_or_message, *, timeout=None, chec
     TimeoutError
         No component interaction was received in time
     TypeError
-        `event_or_message` is neither ``Message`` nor ``InteractionEvent`` instance.
+        `event_or_message` is neither ``Message`` nor ``InteractionEvent``.
     RuntimeError
         - The message or interaction is bound to a 3rd party application.
         - The given message message has no bound interaction.
@@ -581,10 +588,10 @@ async def iter_component_interactions(event_or_message, *, timeout=None, check=N
     ----------
     event_or_message : ``InteractionEvent``, ``Message``
         The interaction event or the sent message to wait component on.
-    timeout : `None` or `float`, Optional (Keyword only)
+    timeout : `None`, `float`, Optional (Keyword only)
         The maximal amount of time wait
-    check : `None` or `callable`, Optional (Keyword only)
-        Checks whether the received ``InteractionEvent`` instances pass the requirements.
+    check : `None`, `callable`, Optional (Keyword only)
+        Checks whether the received ``InteractionEvent``-s pass the requirements.
     count : `int`, Optional (Keyword only)
         The maximal amount of events to yield.
         
@@ -599,7 +606,7 @@ async def iter_component_interactions(event_or_message, *, timeout=None, check=N
     TimeoutError
         No component interaction was received in time
     TypeError
-        `event_or_message` is neither ``Message`` nor ``InteractionEvent`` instance.
+        `event_or_message` is neither ``Message`` nor ``InteractionEvent``.
     RuntimeError
         - The message or interaction is bound to a 3rd party application.
         - The given message message has no bound interaction.

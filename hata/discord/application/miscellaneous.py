@@ -6,7 +6,7 @@ from ..permission import Permission
 
 class ApplicationSubEntity(DiscordEntity):
     """
-    An un-typed entity stored inside of an ``Application``, as one of it's `.developers`, or `.publishers`.
+    An un-typed entity stored inside of an ``Application``, as one of it's `.developers`, `.publishers`.
     
     Attributes
     ----------
@@ -19,7 +19,7 @@ class ApplicationSubEntity(DiscordEntity):
     
     def __init__(self, data):
         """
-        Creates a new ``ApplicationSubEntity`` instance.
+        Creates a new ``ApplicationSubEntity``.
         
         Parameters
         ----------
@@ -53,7 +53,7 @@ class ApplicationExecutable:
     
     Attributes
     ----------
-    parameters : `None` or `str`
+    parameters : `None`, `str`
         The parameters to start the application with. Defaults to `None`.
     is_launcher : `bool`
         Whether the application is a launcher. Defaults to `False`.
@@ -261,7 +261,7 @@ class ApplicationInstallParameters:
     ----------
     permissions : ``Permission``
         The permissions to invite the bot with.
-    scopes : `None` or `tuple` of `str`
+    scopes : `None`, `tuple` of `str`
         Oauth2 scopes to invite the bot with.
     """
     __slots__ = ('permissions', 'scopes')

@@ -10,9 +10,9 @@ class Attachment(DiscordEntity):
     ----------
     id : `int`
         The unique identifier number of the attachment.
-    content_type : `None` or `str`
+    content_type : `None`, `str`
         The attachment's media type.
-    description : `None` or `str`
+    description : `None`, `str`
         Description for the file.
     height : `int`
         The height of the attachment if applicable. Defaults to `0`.

@@ -22,11 +22,11 @@ class AudioPlayer:
         Whether the audio player finished playing it's source.
     resumed_waiter : `threading.Event`
         Indicates whether the the audio player is not paused.
-    source : ``AudioSource`` instance
+    source : ``AudioSource``
         The audio source what the player reads each 20 ms.
     should_update : `bool`
         Whether the voice client should update itself.
-    task : `None` or ``Task``
+    task : `None`, ``Task``
         Audio reader task. Set as `None` if the reader is stopped.
     voice_client : ``VoiceClient``
         The voice client of audio player.
@@ -41,7 +41,7 @@ class AudioPlayer:
         ----------
         voice_client : ``VoiceClient``
             The voice client of audio player.
-        source : ``AudioSource`` instance
+        source : ``AudioSource``
             The audio source what the player reads each 20 ms.
         """
         self.source = source
@@ -184,12 +184,12 @@ class AudioPlayer:
         
         Parameters
         ----------
-        actual_source : `None` or ``AudioSource`` instance
+        actual_source : `None`, ``AudioSource``
             The actual audio source of the player.
         
         Returns
         -------
-        new_source : `None` or `AudioSource`` instance
+        new_source : `None`, `AudioSource``
             New source of the player to play.
             
             Can be same as the `actual_source`.
@@ -256,7 +256,7 @@ class AudioPlayer:
         
         Parameters
         ----------
-        source : `None` or ``AudioSource`` instance
+        source : `None`, ``AudioSource``
             The new source of the player.
         """
         self.source = source

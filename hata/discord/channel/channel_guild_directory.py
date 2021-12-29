@@ -23,7 +23,7 @@ class ChannelDirectory(ChannelGuildMainBase):
     ----------
     id : `int`
         Unique identifier of the channel.
-    _permission_cache : `None` or `dict` of (`int`, ``Permission``) items
+    _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     parent_id : `0`
         The channel's parent's identifier.
@@ -65,9 +65,9 @@ class ChannelDirectory(ChannelGuildMainBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data received from Discord.
-        client : `None` or ``Client``
+        client : `None`, ``Client``
             The client, who received the channel's data, if any.
-        guild_id : `None` or ``Guild``
+        guild_id : `None`, ``Guild``
             The channel's guild's identifier.
         """
         channel_id = int(data['id'])
@@ -192,7 +192,7 @@ class ChannelDirectory(ChannelGuildMainBase):
         
         Parameters
         ----------
-        channel_id : `int` or `str`
+        channel_id : `int`, `str`
             The channel's id.
         **kwargs : keyword parameters
             Additional predefined attributes for the channel.

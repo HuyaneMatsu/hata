@@ -88,7 +88,7 @@ async def converter_self_interaction_target(client, interaction_event):
     
     Returns
     -------
-    target : `None` or ``DiscordEntity``
+    target : `None`, ``DiscordEntity``
         The resolved entity if any.
     """
     if interaction_event.type is not INTERACTION_TYPE_APPLICATION_COMMAND:
@@ -113,7 +113,7 @@ async def converter_self_interaction_value(client, interaction_event):
     
     Returns
     -------
-    target : `None` or `str`
+    target : `None`, `str`
         The received value if any.
     """
     if interaction_event.type is not INTERACTION_TYPE_APPLICATION_COMMAND_AUTOCOMPLETE:
@@ -139,7 +139,7 @@ async def converter_int(client, interaction_event, value):
     
     Returns
     -------
-    value : `None` or `int`
+    value : `None`, `int`
         If conversion fails, then returns `None`.
     """
     if not isinstance(value, int):
@@ -163,12 +163,12 @@ async def converter_float(client, interaction_event, value):
         The client who received the respective ``InteractionEvent``.
     interaction_event : ``InteractionEvent``
         The received application command interaction.
-    value : `float` or `str`
+    value : `float`, `str`
         ``ApplicationCommandInteractionOption.value``.
     
     Returns
     -------
-    value : `None` or `float`
+    value : `None`, `float`
         If conversion fails, then returns `None`.
     """
     if not isinstance(value, float):
@@ -197,7 +197,7 @@ async def converter_str(client, interaction_event, value):
     
     Returns
     -------
-    value : `None` or `str`
+    value : `None`, `str`
         If conversion fails, then returns `None`.
     """
     return value
@@ -224,7 +224,7 @@ async def converter_bool(client, interaction_event, value):
     
     Returns
     -------
-    value : `None` or `bool`
+    value : `None`, `bool`
         If conversion fails, then returns `None`.
     """
     if not isinstance(value, bool):
@@ -284,7 +284,7 @@ async def converter_snowflake(client, interaction_event, value):
     
     Returns
     -------
-    snowflake : `None` or ``int``
+    snowflake : `None`, ``int``
         If conversion fails, then returns `None`.
     """
     try:
@@ -300,7 +300,7 @@ async def converter_snowflake(client, interaction_event, value):
 
 async def converter_user(client, interaction_event, value):
     """
-    Converter for ``ApplicationCommandInteractionOption`` value to ``UserBase`` instance.
+    Converter for ``ApplicationCommandInteractionOption`` value to ``UserBase``.
     
     This function is a coroutine.
     
@@ -344,7 +344,7 @@ async def converter_user(client, interaction_event, value):
 
 async def converter_role(client, interaction_event, value):
     """
-    Converter for ``ApplicationCommandInteractionOption`` value to ``Role`` instance.
+    Converter for ``ApplicationCommandInteractionOption`` value to ``Role``.
     
     This function is a coroutine.
     
@@ -359,7 +359,7 @@ async def converter_role(client, interaction_event, value):
     
     Returns
     -------
-    value : `None` or ``Role``
+    value : `None`, ``Role``
         If conversion fails, then returns `None`.
     """
     role_id = await converter_snowflake(client, interaction_event, value)
@@ -381,7 +381,7 @@ async def converter_role(client, interaction_event, value):
 
 async def converter_channel(client, interaction_event, value):
     """
-    Converter for ``ApplicationCommandInteractionOption`` value to ``ChannelBase`` instance.
+    Converter for ``ApplicationCommandInteractionOption`` value to ``ChannelBase``.
     
     This function is a coroutine.
     
@@ -396,7 +396,7 @@ async def converter_channel(client, interaction_event, value):
     
     Returns
     -------
-    value : `None` or ``ChannelBase`` instance
+    value : `None`, ``ChannelBase``
         If conversion fails, then returns `None`.
     """
     channel_id = await converter_snowflake(client, interaction_event, value)
@@ -418,7 +418,7 @@ async def converter_channel(client, interaction_event, value):
 
 async def converter_mentionable(client, interaction_event, value):
     """
-    Converter for ``ApplicationCommandInteractionOption`` value to mentionable ``DiscordEntity`` instance.
+    Converter for ``ApplicationCommandInteractionOption`` value to mentionable ``DiscordEntity``.
     
     This function is a coroutine.
     
@@ -433,7 +433,7 @@ async def converter_mentionable(client, interaction_event, value):
     
     Returns
     -------
-    value : `None` or ``DiscordEntity`` instance
+    value : `None`, ``DiscordEntity``
         If conversion fails, then returns `None`.
     """
     entity_id = await converter_snowflake(client, interaction_event, value)
@@ -485,7 +485,7 @@ async def converter_expression(client, interaction_event, value):
     
     Returns
     -------
-    value : `int` or `float`
+    value : `int`, `float`
     
     Raises
     ------
@@ -786,7 +786,7 @@ ANNOTATION_TYPE_TO_REPRESENTATION = {
     ANNOTATION_TYPE_MENTIONABLE_ID : 'mentionable',
     ANNOTATION_TYPE_EXPRESSION: 'expression',
     ANNOTATION_TYPE_FLOAT: 'float',
-    ANNOTATION_TYPE_ATTACHMENT : 'attachment',
+    ANNOTATION_TYPE_ATTACHMENT: 'attachment',
 }
 
 
@@ -811,7 +811,7 @@ class RegexMatcher:
     
     def __new__(cls, regex_pattern):
         """
-        Creates a ``RegexMatcher`` instance from the given parameters.
+        Creates a ``RegexMatcher`` from the given parameters.
         
         Parameters
         ----------
@@ -828,8 +828,10 @@ class RegexMatcher:
         group_dict_length = len(group_dict)
         
         if group_dict_length and (group_dict_length != group_count):
-            raise ValueError(f'Regex patterns with mixed dict groups and non-dict groups are disallowed, got '
-                f'{regex_pattern!r}.')
+            raise ValueError(
+                f'Regex patterns with mixed dict groups and non-dict groups are disallowed, got '
+                f'{regex_pattern!r}.'
+            )
         
         if group_dict_length:
             is_group_dict_pattern = True
@@ -896,7 +898,7 @@ def check_component_converters_satisfy_string(parameter_converters):
     
     Parameters
     ----------
-    parameter_converters : `tuple` of ``ParameterConverter`` instances
+    parameter_converters : `tuple` of ``ParameterConverter``
         Parameter converters to check.
     
     Raises
@@ -911,7 +913,9 @@ def check_component_converters_satisfy_string(parameter_converters):
         if not parameter_converter.required:
             continue
         
-        raise ValueError(f'Parameter {parameter_converter.name!r} is not satisfied by string `custom_id`-s.')
+        raise ValueError(
+            f'Parameter {parameter_converter.parameter_name!r} is not satisfied by string `custom_id`-s.'
+        )
     
     return True
 
@@ -922,7 +926,7 @@ def check_component_converters_satisfy_regex(parameter_converters, regex_matcher
     
     Parameters
     ----------
-    parameter_converters : `tuple` of ``ParameterConverter`` instances
+    parameter_converters : `tuple` of ``ParameterConverter``
         Parameter converters to check.
     regex_matcher : ``RegexMatcher``
         The matcher to check whether is satisfied.
@@ -971,8 +975,10 @@ def check_component_converters_satisfy_regex(parameter_converters, regex_matcher
             unsatisfied = None
     
     if (unsatisfied is not None):
-        raise ValueError(f'Parameter {unsatisfied.name!r} is not satisfied by regex pattern: '
-            f'`{regex_matcher.pattern.pattern}`.')
+        raise ValueError(
+            f'Parameter {unsatisfied.parameter_name!r} is not satisfied by regex pattern: '
+            f'{regex_matcher.pattern.pattern!r}.'
+        )
 
 
 class RegexMatch:
@@ -983,20 +989,20 @@ class RegexMatch:
     ----------
     is_group_dict : `bool`
         Whether `groups` is a dictionary.
-    groups : `tuple` of `str` or `dict` of (`str`, `str`) items
+    groups : `tuple` of `str`, `dict` of (`str`, `str`) items
         The matched groups.
     """
     __slots__ = ('is_group_dict', 'groups')
     
     def __new__(cls, groups, is_group_dict):
         """
-        Creates a new ``RegexMatcher`` instance from the given parameters.
+        Creates a new ``RegexMatcher`` from the given parameters.
     
         Parameters
         ----------
         is_group_dict : `bool`
             Whether `groups` is a dictionary.
-        groups : `tuple` of `str` or `dict` of (`str`, `str`) items
+        groups : `tuple` of `str`, `dict` of (`str`, `str`) items
             The matched groups.
         """
         self = object.__new__(cls)
@@ -1015,9 +1021,9 @@ class SlashParameter:
     
     Attributes
     ----------
-    channel_types : `None` or `iterable` of `int`
+    channel_types : `None`, `iterable` of `int`
         The accepted channel types.
-    description : `None` or `str`
+    description : `None`, `str`
         Description for the annotation.
     max_value : `None`, `int`, `float`
         The maximal accepted value by the parameter.
@@ -1025,7 +1031,7 @@ class SlashParameter:
         The minimal accepted value by the parameter.
     type_or_choice : `str`, `type`, `list`, `dict`
         The annotation's value to use.
-    name : `None` or `str`, Optional
+    name : `None`, `str`, Optional
         Name to use instead of the parameter's.
     """
     __slots__ = ('channel_types', 'description', 'max_value', 'min_value', 'name', 'type_or_choice')
@@ -1033,17 +1039,17 @@ class SlashParameter:
     def __new__(cls, type_or_choice=None, description=None, name=None, *, channel_types=None,
             max_value=None, min_value=None):
         """
-        Creates a new ``Parameter`` instance.
+        Creates a new ``Parameter``.
         
         Parameters
         ----------
         type_or_choice : `str`, `type`, `list`, `dict`, Optional
             The annotation's value to use.
-        description : `None` or `str`, Optional
+        description : `None`, `str`, Optional
             Description for the annotation.
-        name : `None` or `str`, Optional
+        name : `None`, `str`, Optional
             Name to use instead of the parameter's.
-        channel_types : `None` or `iterable` of `int`, Optional (Keyword only)
+        channel_types : `None`, `iterable` of `int`, Optional (Keyword only)
             The accepted channel types.
         max_value : `None`, `int`, `float`, Optional (Keyword only)
             The maximal accepted value by the parameter.
@@ -1083,7 +1089,7 @@ def preprocess_channel_types(channel_types):
     
     Returns
     -------
-    processed_channel_types : `None` or `tuple` of `int`
+    processed_channel_types : `None`, `tuple` of `int`
     
     Raises
     ------
@@ -1099,8 +1105,10 @@ def preprocess_channel_types(channel_types):
         
         iterator = getattr(type(channel_types), '__iter__', None)
         if (iterator is None):
-            raise TypeError(f'`channel_types` is neither `None` nor `iterable`, got '
-                f'{channel_types.__class__.__anme__}.')
+            raise TypeError(
+                f'`channel_types` can be `None`, `iterable`, got '
+                f'{channel_types.__class__.__anme__}; {channel_types!r}.'
+            )
         
         for channel_type in iterator(channel_types):
             if type(channel_type) is int:
@@ -1108,8 +1116,10 @@ def preprocess_channel_types(channel_types):
             elif isinstance(channel_type, int):
                 channel_type = int(channel_type)
             else:
-                raise TypeError(f'`channel_types` may include only `int` instances, got '
-                    f'{channel_type.__class__.__name__}; {channel_type!r}.')
+                raise TypeError(
+                    f'`channel_types` can contain `int` elements, got '
+                    f'{channel_type.__class__.__name__}; {channel_type!r}; channel_types={channel_types!r}.'
+                )
             
             if processed_channel_types is None:
                 processed_channel_types = set()
@@ -1131,14 +1141,14 @@ def postprocess_channel_types(processed_channel_types, parsed_channel_types):
     
     Parameters
     ----------
-    processed_channel_types : `None` or `tuple` of `int`
+    processed_channel_types : `None`, `tuple` of `int`
         Channel types detected from `channel_types` field.
-    parsed_channel_types : `None` or `tuple` of `int`
+    parsed_channel_types : `None`, `tuple` of `int`
         Channel types processed from the `type_or_choice` field.
     
     Returns
     -------
-    channel_types : `None` or `tuple` of `int`
+    channel_types : `None`, `tuple` of `int`
         The selected channel types.
     
     Raises
@@ -1148,8 +1158,10 @@ def postprocess_channel_types(processed_channel_types, parsed_channel_types):
     """
     if (parsed_channel_types is not None):
         if (processed_channel_types is not None):
-            raise ValueError(f'`received `channel_types` from both `type_or_choice` and `channel_types` '
-                f'parameters.')
+            raise ValueError(
+                f'`received `channel_types` from both `type_or_choice` and `channel_types` '
+                f'parameters, got {parsed_channel_types!r} and {processed_channel_types!r}.'
+            )
         
         channel_types = parsed_channel_types
     else:
@@ -1181,15 +1193,19 @@ def process_max_and_min_value(type_, value, value_name):
         elif type_ == ANNOTATION_TYPE_FLOAT:
             expected_type = float
         else:
-            raise ValueError(f'`{value_name}` is not applicable for `{ANNOTATION_TYPE_FLOAT[type_]}` parameters.')
+            raise ValueError(
+                f'`{value_name}` is not applicable for `{ANNOTATION_TYPE_TO_REPRESENTATION[type_]}` parameters.'
+            )
         
         if type(value) is expected_type:
             pass
         elif isinstance(value, expected_type):
             value = expected_type(value)
         else:
-            raise TypeError(f'`{value_name}` is accepted as {expected_type.__name__} instance if type is specified '
-                f'as `{ANNOTATION_TYPE_FLOAT[type_]}`, got {value.__class__.__name__}; {value!r}.')
+            raise TypeError(
+                f'`{value_name}` is accepted as {expected_type.__name__} instance if type is specified '
+                f'as `{ANNOTATION_TYPE_TO_REPRESENTATION[type_]}`, got {value.__class__.__name__}; {value!r}.'
+            )
     
     return value
 
@@ -1270,7 +1286,9 @@ def parse_annotation_choice_from_tuple(annotation):
     """
     annotation_length = len(annotation)
     if (annotation_length < 1 or annotation_length > 2):
-        raise ValueError(f'`tuple` annotation length can be in range [1:2], got {annotation_length!r}; {annotation!r}')
+        raise ValueError(
+            f'`tuple` annotation length can be in range [1:2], got {annotation_length!r}; {annotation!r}.'
+        )
     
     if annotation_length == 1:
         value = annotation[0]
@@ -1283,16 +1301,22 @@ def parse_annotation_choice_from_tuple(annotation):
         if isinstance(value, float):
             return create_annotation_choice_from_float(value)
         
-        raise TypeError(f'`annotation-value` can be either `str`, `int` or `float`, got {value.__class__.__name__}.')
+        raise TypeError(
+            f'`annotation-value` can be `str`, `int`, `float`, got {value.__class__.__name__}; {value!r}.'
+        )
     
     # if annotation_length == 2:
     
     name, value = annotation
     if not isinstance(name, str):
-        raise TypeError(f'`annotation-name` can be `str` instance, got {name.__class__.__name__}.')
+        raise TypeError(
+            f'`annotation-name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+        )
     
     if not isinstance(value, (str, int, float)):
-        raise TypeError(f'`annotation-value` can be either `str`, `int` or `float`, got {value.__class__.__name__}.')
+        raise TypeError(
+            f'`annotation-value` can be `str`, `int`, `float`, got {value.__class__.__name__}; {value!r}.'
+        )
     
     return (name, value)
 
@@ -1331,8 +1355,10 @@ def parse_annotation_choice(annotation_choice):
     if isinstance(annotation_choice, float):
         return create_annotation_choice_from_float(annotation_choice)
     
-    raise TypeError(f'`annotation-choice` can be either given as `tuple`, `str`, `int`  or `float` instance, got '
-        f'{annotation_choice.__class__.__name__}.')
+    raise TypeError(
+        f'`annotation-choice` can be `tuple`, `str`, `int`  or `float`, got '
+        f'{annotation_choice.__class__.__name__}; {annotation_choice!r}.'
+    )
 
 
 def parse_annotation_type_and_choice(annotation_value, parameter_name):
@@ -1350,20 +1376,20 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
     -------
     annotation_type : `int`
         Internal identifier about the annotation.
-    choices : `None` or `dict` of (`int` or `str`, `str`) items
+    choices : `None`, `dict` of (`int`, `str`, `str`) items
         Choices if applicable.
-    channel_types : `None` or `tuple` of `int`
+    channel_types : `None`, `tuple` of `int`
         The accepted channel types.
     
     TypeError
-        - If `annotation_value` is `list` instance, but it's elements do not match the `tuple`
-            (`str`, `str`, `int` or `float`) pattern.
-        - If `annotation_value` is `dict` instance, but it's items do not match the
-            (`str`, `str`, `int` or `float`) pattern.
+        - If `annotation_value` is `list`, but it's elements do not match the `tuple`
+            (`str`, `str`, `int`, `float`) pattern.
+        - If `annotation_value` is `dict`, but it's items do not match the
+            (`str`, `str`, `int`, `float`) pattern.
         - If `annotation_value` is unexpected.
     ValueError
-        - If `annotation_value` is `str` instance, but not any of the expected ones.
-        - If `annotation_value` is `type` instance, but not any of the expected ones.
+        - If `annotation_value` is `str`, but not any of the expected ones.
+        - If `annotation_value` is `type`, but not any of the expected ones.
         - If `choice` amount is out of the expected range [1:25].
         - If a `choice` name is duped.
         - If a `choice` values are mixed types.
@@ -1373,16 +1399,20 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
         try:
             annotation_type, channel_types = STR_ANNOTATION_TO_ANNOTATION_TYPE[annotation_value]
         except KeyError:
-            raise ValueError(f'Parameter `{parameter_name}` has annotation not referring to any expected type, '
-                f'got {annotation_value!r}.') from None
+            raise ValueError(
+                f'Parameter `{parameter_name}` has annotation not referring to any expected type, '
+                f'got {annotation_value!r}.'
+            ) from None
         
         choices = None
     elif isinstance(annotation_value, type):
         try:
             annotation_type, channel_types = TYPE_ANNOTATION_TO_ANNOTATION_TYPE[annotation_value]
         except KeyError:
-            raise ValueError(f'Parameter `{parameter_name}` has annotation not referring to any expected type, '
-                f'got {annotation_value!r}.') from None
+            raise ValueError(
+                f'Parameter `{parameter_name}` has annotation not referring to any expected type, '
+                f'got {annotation_value!r}.'
+            ) from None
         
         choices = None
     else:
@@ -1410,8 +1440,10 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
                 choice_elements.append(choice_element)
         
         else:
-            raise TypeError(f'Parameter `{parameter_name}` has annotation not set neither as `tuple`, `str`, `type`, '
-                f'`list`, `set` or `dict`, got {annotation_value.__class__.__name__}.')
+            raise TypeError(
+                f'Parameter `{parameter_name}` has annotation not set neither as `tuple`, `str`, `type`, '
+                f'`list`, `set`, `dict`, got {annotation_value.__class__.__name__}; {annotation_value!r}.'
+            )
         
         # Filter dupe names
         dupe_checker = set()
@@ -1420,7 +1452,9 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
             dupe_checker.add(name)
             new_length = len(dupe_checker)
             if new_length == length:
-                raise ValueError(f'Duped choice name in annotation: `{parameter_name}`.')
+                raise ValueError(
+                    f'Duped choice name in annotation: {parameter_name!r}.'
+                )
             
             length = new_length
         
@@ -1439,7 +1473,9 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
                 continue
             
             if expected_type is not type_:
-                raise ValueError(f'Mixed choice value types in annotation: `{parameter_name}`.')
+                raise ValueError(
+                    f'Mixed choice value types in annotation: {parameter_name!r}.'
+                )
         
         if expected_type is str:
             annotation_type = ANNOTATION_TYPE_STR
@@ -1473,7 +1509,7 @@ def parse_annotation_description(description, parameter_name):
     Raises
     ------
     TypeError
-        - If `description`'s is not `str` instance.
+        - If `description`'s is not `str`.
     ValueError
         - If `description`'s length is out of the expected range [2:100].
     """
@@ -1482,15 +1518,21 @@ def parse_annotation_description(description, parameter_name):
     elif isinstance(description, str):
         description = str(description)
     else:
-        raise TypeError(f'Parameter `{parameter_name}` has annotation description not as `str` instance, got '
-            f'{description.__class__.__name__}.')
+        raise TypeError(
+            f'Parameter `{parameter_name}` has annotation description not as `str`, got '
+            f'{description.__class__.__name__}; {description!r}.'
+        )
     
     description_length = len(description)
-    if description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or \
-            description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX:
-        raise ValueError(f'Parameter `{parameter_name}` has annotation description\'s length is out of the expected '
+    if (
+        description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or
+        description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX
+    ):
+        raise ValueError(
+            f'Parameter `{parameter_name}` annotation\'s description\'s length is out of the expected '
             f'range [{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:'
-            f'{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], got {description_length}; {description!r}.')
+            f'{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], got {description_length}; {description!r}.'
+        )
     
     description = normalize_description(description)
     return description
@@ -1504,7 +1546,7 @@ def parse_annotation_name(name, parameter_name):
     ----------
     name : `str`
         The name of an annotation.
-    parameter_name : `None` or `str`
+    parameter_name : `None`, `str`
         The parameter's name.
     
     Returns
@@ -1514,7 +1556,7 @@ def parse_annotation_name(name, parameter_name):
     Raises
     ------
     TypeError
-        If `name`'s is neither `None` or `str` instance.
+        If `name`'s is neither `None`, `str`.
     """
     if name is None:
         name = parameter_name
@@ -1523,8 +1565,10 @@ def parse_annotation_name(name, parameter_name):
     elif isinstance(name, str):
         name = str(name)
     else:
-        raise TypeError(f'`Parameter `{parameter_name}` has `name` given as non `str` instance, got '
-            f'{name.__class__.__name__}.')
+        raise TypeError(
+            f'`Parameter `{parameter_name}` has `name` given as non `str`, got '
+            f'{name.__class__.__name__}; {name!r}.'
+        )
     
     name = raw_name_to_display(name)
     
@@ -1542,7 +1586,7 @@ def parse_annotation_tuple(parameter):
     
     Returns
     -------
-    choices : `None` or `dict` of (`str` or `int`, `str`) items
+    choices : `None`, `dict` of (`str`, `int`, `str`) items
         Parameter's choices.
     description : `str`
         Parameter's description.
@@ -1550,7 +1594,7 @@ def parse_annotation_tuple(parameter):
         The parameter's name.
     type_ : `int`
         The parameter's internal type identifier.
-    channel_types : `None` or `tuple` of `int`
+    channel_types : `None`, `tuple` of `int`
         The accepted channel types.
     max_value : `None`, `int`, `float`
         The maximal accepted value.
@@ -1567,15 +1611,19 @@ def parse_annotation_tuple(parameter):
     annotation = parameter.annotation
     annotation_tuple_length = len(annotation)
     if annotation_tuple_length not in (1, 2, 3):
-        raise ValueError(f'Parameter `{parameter_name}` has annotation as `tuple`, but it\'s length is not in '
-            f'range [1:3], got {annotation_tuple_length!r}, {annotation_tuple_length!r}.')
+        raise ValueError(
+            f'Parameter `{parameter_name}` has annotation as `tuple`, but it\'s length is not in '
+            f'range [1:3], got {annotation_tuple_length!r}; {annotation!r}.'
+        )
     
     annotation_value = annotation[0]
     annotation_type, choices, channel_types = parse_annotation_type_and_choice(annotation_value, parameter_name)
     
     if annotation_type in INTERNAL_ANNOTATION_TYPES:
-        raise ValueError(f'`Internal annotations cannot be given inside of a tuple, got annotation for: '
-            f'{ANNOTATION_TYPE_TO_STR_ANNOTATION[annotation_type]!r}.')
+        raise ValueError(
+            f'`Internal annotations cannot be given inside of a tuple, got annotation for: '
+            f'{ANNOTATION_TYPE_TO_STR_ANNOTATION[annotation_type]!r}; annotation={annotation!r}.'
+        )
     
     if annotation_tuple_length > 1:
         description = annotation[1]
@@ -1607,7 +1655,7 @@ def parse_annotation_slash_parameter(slash_parameter, parameter_name):
     
     Returns
     -------
-    choices : `None` or `dict` of (`str` or `int`, `str`) items
+    choices : `None`, `dict` of (`str`, `int`, `str`) items
         Parameter's choices.
     description : `str`
         Parameter's description.
@@ -1615,7 +1663,7 @@ def parse_annotation_slash_parameter(slash_parameter, parameter_name):
         The parameter's name.
     type_ : `int`
         The parameter's internal type identifier.
-    channel_types : `None` or `tuple` of `int`
+    channel_types : `None`, `tuple` of `int`
         The accepted channel types.
     max_value : `None`, `int`, `float`
         The maximal accepted value.
@@ -1625,18 +1673,18 @@ def parse_annotation_slash_parameter(slash_parameter, parameter_name):
     Raises
     ------
     TypeError
-        - If `description`'s is not `None` nor `str` instance.
-        - If `parameter_type_or_choice` is `list` instance, but it's elements do not match the `tuple`
-            (`str`, `str` or `int`) pattern.
-        - If `parameter_type_or_choice` is `dict` instance, but it's items do not match the (`str`, `str` or `int`)
+        - If `description`'s is not `None` nor `str`.
+        - If `parameter_type_or_choice` is `list`, but it's elements do not match the `tuple`
+            (`str`, `str`, `int`) pattern.
+        - If `parameter_type_or_choice` is `dict`, but it's items do not match the (`str`, `str`, `int`)
             pattern.
         - If `parameter_type_or_choice` is unexpected.
-        - If `name`'s is neither `None` or `str` instance.
+        - If `name`'s is neither `None`, `str`.
         - If `channel_types` is neither `None` nor `iterable` of `int`.
     ValueError
         - If `description`'s length is out of the expected range [2:100].
-        - If `parameter_type_or_choice` is `str` instance, but not any of the expected ones.
-        - If `parameter_type_or_choice` is `type` instance, but not any of the expected ones.
+        - If `parameter_type_or_choice` is `str`, but not any of the expected ones.
+        - If `parameter_type_or_choice` is `type`, but not any of the expected ones.
         - If `choice` amount is out of the expected range [1:25].
         - If `type_or_choice` is a choice, and a `choice` name is duped.
         - If `type_or_choice` is a choice, and a `choice` values are mixed types.
@@ -1674,7 +1722,7 @@ def parse_annotation_internal(annotation):
     
     Returns
     -------
-    annotation_type : `None` or `int`
+    annotation_type : `None`, `int`
         The parsed annotation type. Returns `None` if the annotation type not refers to an internal type.
     """
     if isinstance(annotation, type):
@@ -1698,7 +1746,7 @@ def parse_annotation_internal(annotation):
 
 def parse_annotation(parameter):
     """
-    Tries to parse an internal annotation referencing ``Client`` or ``InteractionEvent``.
+    Tries to parse an internal annotation referencing ``Client``, ``InteractionEvent``.
     
     Parameters
     ----------
@@ -1707,9 +1755,9 @@ def parse_annotation(parameter):
     
     Returns
     -------
-    choices : `None` or `dict` of (`str` or `int`, `str`) items
+    choices : `None`, `dict` of (`str`, `int`, `str`) items
         Parameter's choices.
-    description : `None` or `str`
+    description : `None`, `str`
         Parameter's description.
         
         > Returned as `None` for internal parameters or if `description` could nto be detected.
@@ -1717,7 +1765,7 @@ def parse_annotation(parameter):
         The parameter's name.
     type_ : `int`
         The parameter's internal type identifier.
-    channel_types : `None` or `tuple` of `int`
+    channel_types : `None`, `tuple` of `int`
         The accepted channel types.
     max_value : `None`, `int`, `float`
         The maximal accepted value.
@@ -1746,8 +1794,10 @@ def parse_annotation(parameter):
         annotation_value = parameter.name
     
     if not isinstance(annotation_value, (str, type)):
-        raise TypeError(f'Parameter `{parameter.name}` is not `tuple`, `str`, nor `str` instance '
-            f'{annotation_value.__class__.__name__}; {annotation_value!r}.')
+        raise TypeError(
+            f'Parameter `{parameter.name}` is not `tuple`, `str`, `str`, got '
+            f'{annotation_value.__class__.__name__}; {annotation_value!r}.'
+        )
     else:
         annotation_type = parse_annotation_internal(annotation_value)
         if annotation_type is None:
@@ -1801,7 +1851,7 @@ class ParameterConverter:
         
         Returns
         -------
-        converted_value : `None` or ``Any`` instance
+        converted_value : `None`, ``Any``
             If conversion fails, always returns `None`.
         
         Raises
@@ -1821,7 +1871,7 @@ class ParameterConverter:
         
         Returns
         -------
-        option : `None` or ``ApplicationCommandOption``
+        option : `None`, ``ApplicationCommandOption``
         """
         pass
 
@@ -1912,7 +1962,7 @@ class FormFieldKeywordParameterConverter(ParameterConverter):
     ----------
     parameter_name : `str`
         The parameter's name.
-    annotation : `str` or `Pattern`
+    annotation : `str`, `Pattern`
         Annotation defaulting to the parameter's name if required.
     default : `Any`
         Default value of the parameter.
@@ -1943,8 +1993,10 @@ class FormFieldKeywordParameterConverter(ParameterConverter):
             group_dict_length = len(group_dict)
             
             if group_dict_length and (group_dict_length != group_count):
-                raise ValueError(f'Regex patterns with mixed dict groups and non-dict groups are disallowed, got '
-                    f'{annotation!r}.')
+                raise ValueError(
+                    f'Regex patterns with mixed dict groups and non-dict groups are disallowed, got '
+                    f'{annotation!r}.'
+                )
             
             if group_count:
                 if group_dict_length:
@@ -2096,7 +2148,7 @@ class FormFieldMultiParameterConverter(FormFieldKeywordParameterConverter):
     ----------
     parameter_name : `str`
         The parameter's name.
-    annotation : `str` or `Pattern`
+    annotation : `str`, `Pattern`
         Annotation defaulting to the parameter's name if required.
     default : `Any`
         Default value of the parameter.
@@ -2119,7 +2171,7 @@ class FormFieldMultiParameterConverter(FormFieldKeywordParameterConverter):
         
         Returns
         -------
-        values : `None` or `list` of `Any`
+        values : `None`, `list` of `Any`
             The matched values.
         """
         value = interaction_event.interaction.get_value_for(converter.annotation)
@@ -2146,7 +2198,7 @@ class FormFieldMultiParameterConverter(FormFieldKeywordParameterConverter):
         
         Returns
         -------
-        values : `None` or `list` of `Any`
+        values : `None`, `list` of `Any`
             The matched values.
         """
         values = None
@@ -2175,7 +2227,7 @@ class FormFieldMultiParameterConverter(FormFieldKeywordParameterConverter):
         
         Returns
         -------
-        groups_and_values : `None` or `list` of `tuple` (`dict` of (`str`, `str`) items, `Any`)
+        groups_and_values : `None`, `list` of `tuple` (`dict` of (`str`, `str`) items, `Any`)
             The matched values from the field's `custom_id` and their values.
         """
         values = None
@@ -2206,7 +2258,7 @@ class FormFieldMultiParameterConverter(FormFieldKeywordParameterConverter):
         
         Returns
         -------
-        groups_and_values : `None` or `list` of `tuple` (`tuple` of `str`, `Any`)
+        groups_and_values : `None`, `list` of `tuple` (`tuple` of `str`, `Any`)
             The matched values from the field's `custom_id` and their values.
         """
         values = None
@@ -2240,7 +2292,7 @@ class InternalParameterConverter(ParameterConverter):
     
     def __new__(cls, parameter_name, type_, converter):
         """
-        Creates a new ``InternalParameterConverter`` instance with the given parameters.
+        Creates a new ``InternalParameterConverter`` with the given parameters.
         
         Parameters
         ----------
@@ -2284,17 +2336,17 @@ class SlashCommandParameterConverter(ParameterConverter):
     ----------
     parameter_name : `str`
         The parameter's name.
-    auto_completer : `None` or ``SlasherApplicationCommandParameterAutoCompleter``
+    auto_completer : `None`, ``SlasherApplicationCommandParameterAutoCompleter``
         Auto completer if registered.
-    channel_types : `None` or `tuple` of `int`
+    channel_types : `None`, `tuple` of `int`
         The accepted channel types.
-    choices : `None` or `dict` of (`str` or `int`, `str`)
+    choices : `None`, `dict` of (`str`, `int`, `str`)
         The choices to choose from if applicable. The keys are choice vales meanwhile the values are choice names.
     converter : `func`
         The converter to use to convert a value to it's desired type.
     default : `Any`
         Default value of the parameter.
-    description : `None` or `str`
+    description : `None`, `str`
         The parameter's description.
     max_value : `None`, `int`, `float`
         The maximal accepted value by the converter.
@@ -2313,7 +2365,7 @@ class SlashCommandParameterConverter(ParameterConverter):
     def __new__(cls, parameter_name, type_, converter, name, description, default, required, choices, channel_types,
             max_value, min_value):
         """
-        Creates a new ``SlashCommandParameterConverter`` instance from the given parameters.
+        Creates a new ``SlashCommandParameterConverter`` from the given parameters.
         
         Parameters
         ----------
@@ -2325,15 +2377,15 @@ class SlashCommandParameterConverter(ParameterConverter):
             The converter to use to convert a value to it's desired type.
         name : `str`
             The parameter's name.
-        description : `None` or `str`
+        description : `None`, `str`
             The parameter's description.
         default : `bool`
             Default value of the parameter.
         required : `bool`
             Whether the the parameter is required.
-        choices : `None` or `dict` of (`str` or `int`, `str`)
+        choices : `None`, `dict` of (`str`, `int`, `str`)
             The choices to choose from if applicable. The keys are choice vales meanwhile the values are choice names.
-        channel_types : `None` or `tuple` of `int`
+        channel_types : `None`, `tuple` of `int`
             The accepted channel types.
         max_value : `None`, `int`, `float`
             The maximal accepted value by the converter.
@@ -2505,12 +2557,16 @@ class SlashCommandParameterConverter(ParameterConverter):
             If the parameter cannot be auto completed.
         """
         if (self.type not in ANNOTATION_AUTO_COMPLETE_AVAILABILITY):
-            raise RuntimeError(f'Parameter `{self.name}` can not be auto completed. Only string base type parameters '
-                f'can be (str, int, expression).')
+            raise RuntimeError(
+                f'Parameter `{self.name}` can not be auto completed. Only string base type parameters '
+                f'can be (str, int, expression).'
+            )
         
         if (self.choices is not None):
-            raise RuntimeError(f'Parameter `{self.name}` can not be auto completed. `choices` and `autocomplete` are'
-               f'mutually exclusive.')
+            raise RuntimeError(
+                f'Parameter `{self.name}` can not be auto completed. `choices` and `autocomplete` are'
+                f'mutually exclusive.'
+            )
         
         self_auto_completer = self.auto_completer
         if (self_auto_completer is None) or auto_completer._is_deeper_than(self_auto_completer):
@@ -2530,7 +2586,7 @@ def create_parameter_converter(parameter, parameter_configurer):
     ----------
     parameter : ``Parameter``
         The parameter to create converter from.
-    parameter_configurer : `None` or ``SlasherApplicationCommandParameterConfigurerWrapper``
+    parameter_configurer : `None`, ``SlasherApplicationCommandParameterConfigurerWrapper``
         Parameter configurer for the parameter if any.
     
     Returns
@@ -2541,16 +2597,16 @@ def create_parameter_converter(parameter, parameter_configurer):
     ------
     TypeError
         - if the `parameter` has no annotation.
-        - If `annotation_value` is `list` instance, but it's elements do not match the `tuple`
-            (`str`, `str` or `int`) pattern.
-        - If `annotation_value` is `dict` instance, but it's items do not match the (`str`, `str` or `int`) pattern.
+        - If `annotation_value` is `list`, but it's elements do not match the `tuple`
+            (`str`, `str`, `int`) pattern.
+        - If `annotation_value` is `dict`, but it's items do not match the (`str`, `str`, `int`) pattern.
         - If `annotation_value` is unexpected.
-        - If `annotation` is not `tuple`, `type` nor `str` instance.
-        - If `annotation` 1st element (description) is not `str` instance.
+        - If `annotation` is not `tuple`, `type` nor `str`.
+        - If `annotation` 1st element (description) is not `str`.
     ValueError
         - If `annotation` is a `tuple`, but it's length is not range [2:3].
-        - If `annotation_value` is `str` instance, but not any of the expected ones.
-        - If `annotation_value` is `type` instance, but not any of the expected ones.
+        - If `annotation_value` is `str`, but not any of the expected ones.
+        - If `annotation_value` is `type`, but not any of the expected ones.
         - If `choice` amount is out of the expected range [1:25].
         - If a `choice` name is duped.
         - If a `choice` values are mixed types.
@@ -2599,7 +2655,7 @@ def create_internal_parameter_converter(parameter):
     
     Returns
     -------
-    parameter_converter : ``ParameterConverter`` or `None`
+    parameter_converter : ``ParameterConverter``, `None`
     """
     if parameter.has_annotation:
         annotation_value = parameter.annotation
@@ -2706,8 +2762,9 @@ def check_command_coroutine(
     ):
         real_analyzer = CallableAnalyzer(func.__call__, as_method=True)
         if (not real_analyzer.is_async()) and (not real_analyzer.is_async_generator()):
-            raise TypeError(f'`func` is not `async-callable` and cannot be instanced to `async` either, got '
-                f'{func!r}.')
+            raise TypeError(
+                f'`func` is not `async-callable` and cannot be instanced to `async` either, got {func!r}.'
+            )
         
         should_instance = True
     
@@ -2722,15 +2779,21 @@ def check_command_coroutine(
     if (not allow_keyword_only_parameters):
         keyword_only_parameter_count = real_analyzer.get_non_default_keyword_only_parameter_count()
         if keyword_only_parameter_count:
-            raise TypeError(f'`{real_analyzer.real_function!r}` accepts keyword only parameters.')
+            raise TypeError(
+                f'`{real_analyzer.real_function!r}` accepts keyword only parameters.'
+            )
     
     if (not allow_args_parameters):
         if real_analyzer.accepts_args():
-            raise TypeError(f'`{real_analyzer.real_function!r}` accepts `*args`.')
+            raise TypeError(
+                f'`{real_analyzer.real_function!r}` accepts `*args`.'
+            )
     
     if (not allow_kwargs_parameters):
         if real_analyzer.accepts_kwargs():
-            raise TypeError(f'`{real_analyzer.real_function!r}` accepts `**kwargs`.')
+            raise TypeError(
+                f'`{real_analyzer.real_function!r}` accepts `**kwargs`.'
+            )
     
     return analyzer, real_analyzer, should_instance
 
@@ -2743,7 +2806,7 @@ def get_slash_command_parameter_converters(func, parameter_configurers):
     ----------
     func : `async-callable`
         The function used by a ``SlasherApplicationCommand``.
-    parameter_configurers : `None` or `dict` of (`str`, ``SlasherApplicationCommandParameterConfigurerWrapper``) items
+    parameter_configurers : `None`, `dict` of (`str`, ``SlasherApplicationCommandParameterConfigurerWrapper``) items
         Parameter configurers to overwrite annotations.
     
     Returns
@@ -2761,16 +2824,16 @@ def get_slash_command_parameter_converters(func, parameter_configurers):
         - If `func` accepts `*args`.
         - If `func` accepts `**kwargs`.
         - If `func` accepts more than `27` parameters.
-        - If a parameter's `annotation_value` is `list` instance, but it's elements do not match the
-            `tuple` (`str`, `str` or `int`) pattern.
-        - If a parameter's `annotation_value` is `dict` instance, but it's items do not match the
-            (`str`, `str` or `int`) pattern.
+        - If a parameter's `annotation_value` is `list`, but it's elements do not match the
+            `tuple` (`str`, `str`, `int`) pattern.
+        - If a parameter's `annotation_value` is `dict`, but it's items do not match the
+            (`str`, `str`, `int`) pattern.
         - If a parameter's `annotation_value` is unexpected.
-        - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
+        - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str`.
     ValueError
         - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:3].
-        - If a parameter's `annotation_value` is `str` instance, but not any of the expected ones.
-        - If a parameter's `annotation_value` is `type` instance, but not any of the expected ones.
+        - If a parameter's `annotation_value` is `str`, but not any of the expected ones.
+        - If a parameter's `annotation_value` is `type`, but not any of the expected ones.
         - If a parameter's `choice` amount is out of the expected range [1:25].
         - If a parameter's `choice` name is duped.
         - If a parameter's `choice` values are mixed types.
@@ -2796,9 +2859,11 @@ def get_slash_command_parameter_converters(func, parameter_configurers):
             slash_command_option_count += 1
         
     if slash_command_option_count > APPLICATION_COMMAND_OPTIONS_MAX:
-        raise TypeError(f'`{real_analyzer.real_function!r}` should accept at maximum '
+        raise TypeError(
+            f'`{real_analyzer.real_function!r}` should accept at maximum '
             f'`{APPLICATION_COMMAND_OPTIONS_MAX}` slash command options,  meanwhile it accepts '
-            f'{slash_command_option_count}.')
+            f'{slash_command_option_count}.'
+        )
     
     parameter_converters = tuple(parameter_converters)
     
@@ -2899,8 +2964,10 @@ def get_context_command_parameter_converters(func):
         
         if (parameter_converter is None):
             if target_converter_detected:
-                raise TypeError(f'`{real_analyzer.real_function!r}`\'s `{parameter.name}` do not refers to any of the '
-                    f'expected internal parameters. Context commands do not accept any additional parameters.')
+                raise TypeError(
+                    f'`{real_analyzer.real_function!r}`\'s `{parameter.name}` do not refers to any of the '
+                    f'expected internal parameters. Context commands do not accept any additional parameters.'
+                )
             else:
                 parameter_converter = create_target_parameter_converter(parameter)
                 target_converter_detected = True
@@ -2954,8 +3021,10 @@ def get_application_command_parameter_auto_completer_converters(func):
         
         if (parameter_converter is None):
             if value_converter_detected:
-                raise TypeError(f'`{real_analyzer.real_function!r}`\'s `{parameter.name}` do not refers to any of the '
-                    f'expected internal parameters. Context commands do not accept any additional parameters.')
+                raise TypeError(
+                    f'`{real_analyzer.real_function!r}`\'s `{parameter.name}` do not refers to any of the '
+                    f'expected internal parameters. Context commands do not accept any additional parameters.'
+                )
             else:
                 parameter_converter = create_value_parameter_converter(parameter)
                 value_converter_detected = True

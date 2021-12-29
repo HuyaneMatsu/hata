@@ -61,7 +61,7 @@ its `custom_id`.
 
 You may add form commands to slasher by specifying what forms they should capture based on their `custom_id`. Also, you can
 specify that you want to match forms submit interaction and not component interactions by passing `target=` either as
-`'form'` or `'form_submit'`.
+`'form'` / `'form_submit'`.
 
 
 ```py

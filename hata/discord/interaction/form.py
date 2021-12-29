@@ -13,11 +13,11 @@ class InteractionForm(ComponentBase):
     
     Attributes
     ----------
-    components : `None` or `tuple` of ``ComponentBase`` instances
+    components : `None`, `tuple` of ``ComponentBase``
         Stored components.
-    custom_id : `None` or `str`
+    custom_id : `None`, `str`
         Custom identifier to match the form data when receiving it's interaction back.
-    title : `None` or `str`
+    title : `None`, `str`
         The form's title.
     
     Class Attributes
@@ -33,18 +33,18 @@ class InteractionForm(ComponentBase):
         
         Parameters
         ----------
-        title : `None` or `str`
+        title : `None`, `str`
             The form's title.
-        components : ``ComponentBase`` instances
+        components : ``ComponentBase``
             Sub components.
-        custom_id : `None` or `str`, Optional
+        custom_id : `None`, `str`, Optional
              Custom identifier for the form.
         
         Raises
         ------
         AssertionError
-            - If `components` contains a non ``ComponentBase`` instance.
-            - If `custom_id` was not given neither as `None` or `str` instance.
+            - If `components` contains a non ``ComponentBase``.
+            - If `custom_id` was not given neither as `None`, `str`.
             - If `custom_id`'s length is over `100`.
             - If `title`'s length is out of the expected range.
         """
@@ -210,13 +210,13 @@ class InteractionForm(ComponentBase):
         
         Other Parameters
         ----------------
-        components : `iterable` of ``ComponentBase`` instances, Optional (Keyword only)
+        components : `iterable` of ``ComponentBase``, Optional (Keyword only)
             Sub components.
         
-        custom_id : `None` or `str`, Optional (Keyword only)
+        custom_id : `None`, `str`, Optional (Keyword only)
             Custom identifier to detect which button was clicked by the user.
         
-        title : `None` or `str`, Optional (Keyword only)
+        title : `None`, `str`, Optional (Keyword only)
             The form's title.
         
         Returns

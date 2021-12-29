@@ -24,7 +24,7 @@ class WebhookBase(UserBase):
         The webhook's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The webhook's avatar's type.
-    banner_color : `None` or ``Color``
+    banner_color : `None`, ``Color``
         The user's banner color if has any.
     banner_hash : `int`
         The user's banner's hash in `uint128`.
@@ -78,7 +78,7 @@ class WebhookBase(UserBase):
         
         Returns
         -------
-        channel : `None` or ``ChannelText``
+        channel : `None`, ``ChannelText``
         """
         return CHANNELS.get(self.channel_id, None)
     
@@ -90,7 +90,7 @@ class WebhookBase(UserBase):
         
         Returns
         -------
-        guild : `None` or ``Guild``
+        guild : `None`, ``Guild``
         """
         try:
             channel = CHANNELS[self.channel_id]

@@ -26,7 +26,7 @@ def filter_clients(clients, flag_mask):
     
     Yields
     -------
-    client : ``Client`` or `None`
+    client : ``Client``, `None`
     """
     index = 0
     limit = len(clients)
@@ -89,7 +89,7 @@ def filter_clients_or_me(clients, flag_mask, me):
     
     Yields
     -------
-    client : ``Client`` or `None`
+    client : ``Client``, `None`
     """
     index = 0
     limit = len(clients)
@@ -168,7 +168,7 @@ def first_client(clients, flag_mask):
     
     Returns
     -------
-    client : ``Client`` or `None`
+    client : ``Client``, `None`
     """
     index = 0
     limit = len(clients)

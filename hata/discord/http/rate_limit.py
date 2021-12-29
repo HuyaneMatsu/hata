@@ -185,7 +185,7 @@ class RateLimitUnit:
         The amount of done requests till next rate limit reset.
     drop : `float`
         The time of the next rate limit reset in `LOOP_TIME` time.
-    next : `None` or ``RateLimitUnit``
+    next : `None`, ``RateLimitUnit``
         The next rate limit unit on the chain. It can happen that requests are done between two reset and we would need
         to store multiple rate limit units and using a chain is still better than allocating a list every time.
     """
@@ -316,7 +316,7 @@ class RateLimitHandler:
     ----------
     active : `int`
         The amount of active requests with the same `limiter_id` and with the same `parent`.
-    drops : `None` or ``RateLimitUnit``
+    drops : `None`, ``RateLimitUnit``
         The already used up rate limits.
     limiter_id : `int`
         The `id` of the Discord Entity based on what the handler is limiter.
@@ -324,7 +324,7 @@ class RateLimitHandler:
         The rate limit group of the rate limit handler.
     queue : `None` or (`deque` of ``Future``)
         Queue of ``Future`` objects of waiting requests.
-    wake_upper : `None` or ``TimerHandle``
+    wake_upper : `None`, ``TimerHandle``
         Wake ups the rate limit handler, when it's rate limits are reset.
     
     Notes
@@ -338,7 +338,7 @@ class RateLimitHandler:
         Creates a new rate limit handler.
         
         New rate limit handlers have `.queue` set to `None` not because it does not need `.queue` attribute, like the
-        `.drops` or ``.wake_upper`` one, but because this rate limit handler might be used just to look up an already
+        `.drops`, ``.wake_upper`` one, but because this rate limit handler might be used just to look up an already
         existing one with the same ``.limiter_id`` and ``.parent``, so creating an another `deque` and then collecting
         it would be just waste of resources.
         
@@ -460,7 +460,7 @@ class RateLimitHandler:
     
     
     def __ne__(self, other):
-        """Returns whether the two rate limit handler has different ``.limiter_id`` or ``.parent``."""
+        """Returns whether the two rate limit handler has different ``.limiter_id``, ``.parent``."""
         if self.limiter_id != other.limiter_id:
             return True
         
@@ -543,7 +543,7 @@ class RateLimitHandler:
         
         Parameters
         ----------
-        headers : `None` or `imultidict` of (`str`, `str) items
+        headers : `None`, `imultidict` of (`str`, `str) items
             Response headers
         """
         current_size = self.parent.size
@@ -723,7 +723,7 @@ class RateLimitHandlerCTX:
     
     Attributes
     ----------
-    parent : ``RateLimitHandler`` or ``StaticRateLimitHandler``
+    parent : ``RateLimitHandler``, ``StaticRateLimitHandler``
         The owner rate limit handler.
     exited : `bool`
         Whether the context manager was exited already.
@@ -750,10 +750,10 @@ class RateLimitHandlerCTX:
         
         Parameters
         ----------
-        headers : `None` or `imultidict`
+        headers : `None`, `imultidict`
             Response headers.
         """
-        assert not self.exited, '`RateLimitHandlerCTX.exit` or `StaticRateLimitHandler.exit` was already called.'
+        assert not self.exited, '`RateLimitHandlerCTX.exit`, `StaticRateLimitHandler.exit` was already called.'
         self.exited = True
         self.parent.exit(headers)
     
@@ -880,7 +880,7 @@ class StaticRateLimitHandler:
         The `id` of the Discord Entity based on what the handler is limiter.
     parent : ``RateLimitGroup``
         The rate limit group of the rate limit handler.
-    lock : `None` or ``ScarletLock``
+    lock : `None`, ``ScarletLock``
         Lock used to await entries and then lock them till they expire.
     
     Notes
@@ -978,7 +978,7 @@ class StaticRateLimitHandler:
     
     
     def __ne__(self, other):
-        """Returns whether the two rate limit handler has different ``.limiter_id`` or ``.parent``."""
+        """Returns whether the two rate limit handler has different ``.limiter_id``, ``.parent``."""
         if self.limiter_id != other.limiter_id:
             return True
         
@@ -1026,7 +1026,7 @@ class StaticRateLimitHandler:
         
         Parameters
         ----------
-        headers : `None` or `imultidict` of (`str`, `str`) items
+        headers : `None`, `imultidict` of (`str`, `str`) items
             Response headers
         """
         handle = KOKORO.call_later(self.parent.timeout, self.lock.release)
@@ -1102,7 +1102,7 @@ class StackedStaticRateLimitHandler:
     
     
     def __ne__(self, other):
-        """Returns whether the two rate limit handler has different ``.limiter_id`` or ``.parent``."""
+        """Returns whether the two rate limit handler has different ``.limiter_id``, ``.parent``."""
         if isinstance(other, StackedStaticRateLimitHandler):
             other = other.stack[0]
         
@@ -1154,7 +1154,7 @@ class StackedStaticRateLimitHandler:
         
         Parameters
         ----------
-        headers : `None` or `imultidict` of (`str`, `str`) items
+        headers : `None`, `imultidict` of (`str`, `str`) items
             Response headers
         """
         for handler in self.stack:

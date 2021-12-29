@@ -234,7 +234,7 @@ class TextTable:
         
         Returns
         -------
-        self : `None` or ``TextTable``
+        self : `None`, ``TextTable``
             Returns `None` if would create an empty table.
         """
         splitted_lines = []
@@ -643,7 +643,7 @@ def build_indent(lines, start, end):
     
     Returns
     -------
-    section : `None` or `list` of `Any`
+    section : `None`, `list` of `Any`
         Instead of returning an empty section, returns `None`.
     """
     lines = lines[start:end]
@@ -707,7 +707,7 @@ class TextCodeBlock:
     
     Attributes
     ----------
-    _language : `None` or `str`
+    _language : `None`, `str`
         The code block's language's name if any. Always lower case.
     _lines : `list` of `str`
         The internal lines of the code block.
@@ -729,7 +729,7 @@ class TextCodeBlock:
         
         Returns
         -------
-        self : `None` or ``TextCodeBlock``
+        self : `None`, ``TextCodeBlock``
             Returns `None` if would create an empty code block.
         """
         line = lines[start]
@@ -904,7 +904,7 @@ def parse_section(lines):
     
     Returns
     -------
-    built : `None` or `list` of `Any`
+    built : `None`, `list` of `Any`
         The built up elements of the sections. If would return an empty list, returns `None` instead.
     """
     index = 0
@@ -1041,7 +1041,7 @@ class TextListingElement:
     ----------
     _content : `None`, `list` of `Any`
         The content stored inside of a listing element. If would be set as empty `list`, is set as `None` instead.
-    _head : `None` or `str`
+    _head : `None`, `str`
         The head content of the listing. If would be set as empty string, is set as `None` instead.
     """
     __slots__ = ('_content', '_head')
@@ -1056,7 +1056,7 @@ class TextListingElement:
         
         Returns
         -------
-        self : `None` or ``TextListingElement``
+        self : `None`, ``TextListingElement``
             Instead of returning an empty listing element, returns `None` instead.
         """
         head_line = lines.pop(0)
@@ -1185,7 +1185,7 @@ class TextListing:
         
         Returns
         -------
-        self : `None` or ``TextListing``
+        self : `None`, ``TextListing``
             If would create an empty listing, returns `None` instead.
         """
         sections = []
@@ -1430,14 +1430,14 @@ def parse_docstring(text, path):
     
     Parameters
     ---------
-    text : `None` or `str`
+    text : `None`, `str`
         The docstring itself.
     path : ``QualPath``
         The path of the docstring's object.
     
     Returns
     -------
-    built_sections : `None` or `list` of (`tuple` ((`None` or `str`), `Any`))
+    built_sections : `None`, `list` of (`tuple` ((`None`, `str`), `Any`))
     """
     if text is None:
         return None
@@ -1495,7 +1495,7 @@ def get_attribute_docs_from(sections):
     
     Parameters
     ----------
-    sections : `list` of `tuple` ((`None` or `str`), (`list` of `Any`))
+    sections : `list` of `tuple` ((`None`, `str`), (`list` of `Any`))
         The sections of the docstring.
     
     Returns
@@ -1581,9 +1581,9 @@ class DocString:
     
     Attributes
     ----------
-    _attribute_sections : `None` or `dict` of (`str`, ``DocString``) items
+    _attribute_sections : `None`, `dict` of (`str`, ``DocString``) items
         A dict containing the attribute sections of the docstring. Set only when an attribute's docstring is requested.
-    sections : `list` of `tuple` ((`None` or `str`), (`list` of `Any`))
+    sections : `list` of `tuple` ((`None`, `str`), (`list` of `Any`))
         The sections of the docstring.
     """
     __slots__ = ('_attribute_sections', 'sections')
@@ -1594,14 +1594,14 @@ class DocString:
         
         Parameters
         ----------
-        text : `None` or `str`
+        text : `None`, `str`
             The docstring itself.
         path : ``QualPath``
             The path of the docstring's object.
             
         Returns
         ----------
-        docstring : `None` or ``Docstring``
+        docstring : `None`, ``Docstring``
         """
         if text is None:
             return None
@@ -1630,9 +1630,9 @@ class DocString:
             The name of the respective attribute.
         attr_separator : `str`
             Separator used between the attribute's name and it's type description.
-        attr_head : `None` or `str`
+        attr_head : `None`, `str`
             The attribute description following the attribute's name.
-        attr_body : `None` or `list` of `Any`
+        attr_body : `None`, `list` of `Any`
             Extra content after the attribute's head.
         
         Returns
@@ -1658,7 +1658,7 @@ class DocString:
         
         Parameters
         ----------
-        attr_body : `None` or `list` of `Any`
+        attr_body : `None`, `list` of `Any`
             The extra content.
         
         Returns
@@ -1681,7 +1681,7 @@ class DocString:
         
         Returns
         -------
-        docstring : `None` or ``Docstring``
+        docstring : `None`, ``Docstring``
         """
         attribute_sections = self._attribute_sections
         if attribute_sections is None:
@@ -1700,7 +1700,7 @@ class DocString:
         
         Returns
         -------
-        docstring : `None` or ``Docstring``
+        docstring : `None`, ``Docstring``
         """
         attribute_sections = self._attribute_sections
         if attribute_sections is None:

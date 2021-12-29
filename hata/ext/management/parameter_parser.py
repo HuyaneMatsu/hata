@@ -341,7 +341,7 @@ COMMAND_RESULT_CODE_TO_MESSAGE_PROCESSOR = {
 class CommandResult:
     def __new__(cls, error_code, *detail_parameters):
         """
-        Creates a new ``CommandResult`` instance with the given parameters.
+        Creates a new ``CommandResult`` with the given parameters.
         
         Parameters
         ----------
@@ -407,7 +407,7 @@ def converter_parameter_to_str(value):
     
     Returns
     -------
-    value : `None` or `str`
+    value : `None`, `str`
         Returns `None` if conversion failed.
     """
     return value
@@ -424,7 +424,7 @@ def converter_parameter_to_int(value):
     
     Returns
     -------
-    value : `None` or `int`
+    value : `None`, `int`
         Returns `None` if conversion failed.
     """
     try:
@@ -446,7 +446,7 @@ def converter_parameter_to_float(value):
     
     Returns
     -------
-    value : `None` or `float`
+    value : `None`, `float`
         Returns `None` if conversion failed.
     """
     try:
@@ -481,7 +481,7 @@ def validate_command_line_parameter_expected_type_identifier(expected_type):
     Raises
     ------
     TypeError
-        If `expected_type` is neither `None`, `str`, neither `type` instance.
+        If `expected_type` is neither `None`, `str`, neither `type`.
     ValueError
         If `expected_type` is correct type, but it's value is incorrect and cannot identifier converter for it.
     """
@@ -492,17 +492,22 @@ def validate_command_line_parameter_expected_type_identifier(expected_type):
         try:
             expected_type_identifier = TYPE_NAME_TO_IDENTIFIER[expected_type]
         except KeyError:
-            raise ValueError(f'`expected_type` value has no converter, got: {expected_type!r}.') from None
+            raise ValueError(
+                f'`expected_type` value has no converter, got: {expected_type!r}.'
+            ) from None
     
     elif isinstance(expected_type, type):
         try:
             expected_type_identifier = TYPE_TYPE_TO_IDENTIFIER[expected_type]
         except KeyError:
-            raise ValueError(f'`expected_type` value has no converter, got: {expected_type!r}.') from None
+            raise ValueError(
+                f'`expected_type` value has no converter, got: {expected_type!r}.'
+            ) from None
     
     else:
-        raise TypeError(f'`expected_type` can be either `None`, `str` or `type` instance, got '
-            f'{expected_type.__class__.__name__}.')
+        raise TypeError(
+            f'`expected_type` can be `None`, `str`, `type`, got {expected_type.__class__.__name__}; {expected_type!r}.'
+        )
     
     return expected_type_identifier
 
@@ -524,14 +529,16 @@ def validate_command_line_parameter_name(name):
     Raises
     ------
     TypeError
-        If `name` is not `str` instance.
+        If `name` is not `str`.
     """
     if type(name) is str:
         pass
     elif isinstance(name, str):
         name = str(name)
     else:
-        raise TypeError(f'`name` can be `str` instance, got {name.__class__.__name__}.')
+        raise TypeError(
+            f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+        )
     
     return name
 
@@ -542,18 +549,18 @@ def validate_command_line_parameter_keyword(keyword):
     
     Parameters
     ----------
-    keyword : `None` or `str`
+    keyword : `None`, `str`
         Keyword parameter to validate.
     
     Returns
     -------
-    keyword : `None` or `str`
+    keyword : `None`, `str`
         The validated keyword parameter.
     
     Raises
     ------
     TypeError
-        If `keyword` is neither `None` nor `str` instance.
+        If `keyword` is neither `None` nor `str`.
     """
     if keyword is None:
         pass
@@ -562,7 +569,9 @@ def validate_command_line_parameter_keyword(keyword):
     elif isinstance(keyword, str):
         keyword = str(keyword)
     else:
-        raise TypeError(f'`keyword` can be given as `None` or `str` instance, got {keyword.__class__.__name__}.')
+        raise TypeError(
+            f'`keyword` can be `None`, `str`, got {keyword.__class__.__name__}; {keyword!r}.'
+        )
     
     return keyword
 
@@ -584,14 +593,16 @@ def validate_command_line_parameter_multi(multi):
     Raises
     ------
     TypeError
-        If `multi` is not `bool` instance.
+        If `multi` is not `bool`.
     """
     if type(multi) is bool:
         pass
     elif isinstance(multi, bool):
         multi = bool(multi)
     else:
-        raise TypeError(f'`multi` can be `bool` instance, got {multi.__class__.__name__}.')
+        raise TypeError(
+            f'`multi` can be `bool`, got {multi.__class__.__name__}; {multi!r}.'
+        )
     
     return multi
 
@@ -611,7 +622,7 @@ def validate_command_line_parameter_default_value(default):
     -------
     has_default : `bool`
         Whether default value is given.
-    default_value : `None` or `Any`
+    default_value : `None`, `Any`
         Default value.
     """
     if default is DEFAULT_DEFAULT_VALUE:
@@ -641,14 +652,16 @@ def validate_command_line_parameter_modifier(modifier):
     Raises
     ------
     TypeError
-        If `modifier` is not `bool` instance.
+        If `modifier` is not `bool`.
     """
     if type(modifier) is bool:
         pass
     elif isinstance(modifier, bool):
         modifier = bool(modifier)
     else:
-        raise TypeError(f'`multi` can be `bool` instance, got {modifier.__class__.__name__}.')
+        raise TypeError(
+            f'`modifier` can be `bool`, got {modifier.__class__.__name__}; {modifier!r}.'
+        )
     
     return modifier
 
@@ -660,7 +673,7 @@ class CommandLineParameter:
     
     Attributes
     ----------
-    default_value : `None` or `Any`
+    default_value : `None`, `Any`
         Default value to give if parameter was not passed.
     expected_type_identifier : `int`
         Identifier of the accepted type of the parameter.
@@ -668,7 +681,7 @@ class CommandLineParameter:
         Whether the parameter has default value.
     modifier : `bool`
         Whether the parameter is a modifier.
-    keyword : `None` or `bool`
+    keyword : `None`, `bool`
         Keyword to pass the parameter.
     multi : `bool`
         Whether the parameter accepts multiple values.
@@ -678,9 +691,10 @@ class CommandLineParameter:
     __slots__ = ('default_value', 'expected_type_identifier', 'has_default', 'modifier', 'keyword', 'keyword_only',
         'multi', 'name')
     
-    def __new__(cls, name, *, default=DEFAULT_DEFAULT_VALUE, keyword=None, multi=False, expected_type=None, modifier=False):
+    def __new__(cls, name, *, default=DEFAULT_DEFAULT_VALUE, keyword=None, multi=False, expected_type=None,
+            modifier=False):
         """
-        Creates a new ``CommandLineParameter`` instance from the given parameters.
+        Creates a new ``CommandLineParameter`` from the given parameters.
         
         Parameters
         ----------
@@ -692,19 +706,19 @@ class CommandLineParameter:
             Keyword to pass the parameter after if applicable.
         multi : `bool`
             Whether multiple parameters are accepted.
-        expected_type : `None` or `str`, `type`, Optional (Keyword only)
+        expected_type : `None`, `str`, `type`, Optional (Keyword only)
             The expected type by the parameter. Defaults to `bool`.
         
         Raises
         ------
         TypeError
-            - If `expected_type` is neither `None`, `str`, neither `type` instance.
-            - If `name` is not `str` instance.
-            - If `keyword` is neither `None` nor `str` instance.
-            - If `multi` is not `bool` instance.
-            - If `modifier` is not `bool` instance.
+            - If `expected_type` is neither `None`, `str`, neither `type`.
+            - If `name` is not `str`.
+            - If `keyword` is neither `None` nor `str`.
+            - If `multi` is not `bool`.
+            - If `modifier` is not `bool`.
             - `default` and `modifier` parameters are mutually exclusive.
-            - Keyword parameters must have either `default` or `multi` parameters defined.
+            - Keyword parameters must have either `default`, `multi` parameters defined.
         ValueError
             If `expected_type` is correct type, but it's value is incorrect and cannot identifier converter for it.
         """
@@ -717,11 +731,16 @@ class CommandLineParameter:
         
         if modifier:
             if has_default:
-                raise TypeError(f'`default` and `modifier` parameters are mutually exclusive.')
+                raise TypeError(
+                    f'`default` and `modifier` parameters are mutually exclusive, got default={default!r}, '
+                    f'modifier={modifier!r}.'
+                )
             
         else:
             if (not has_default) and (not multi):
-                raise TypeError(f'Keyword parameters must have either `default` or `multi` parameters defined.')
+                raise TypeError(
+                    f'Keyword parameters must have either `default`, `multi` parameters defined.'
+                )
     
         
         self = object.__new__(cls)
@@ -848,9 +867,9 @@ class CommandLineCommand:
     """
     Attributes
     ----------
-    _command_category : `None` or ``CommandLineCommandCategory``
+    _command_category : `None`, ``CommandLineCommandCategory``
         Command category of the command.
-    _self_reference : `None` or ``WeakReferer``
+    _self_reference : `None`, ``WeakReferer``
         Reference to itself.
     help : `str`
         Command help message.
@@ -958,15 +977,15 @@ class CommandLineCommandCategory:
     
     Attributes
     ----------
-    _command_categories : `None` or `dict` of (`str`, ``CommandLineCommandCategory``) items
+    _command_categories : `None`, `dict` of (`str`, ``CommandLineCommandCategory``) items
         Sub commands of the command.
-    _command_function : `None` or ``CommandLineCommandFunction``
+    _command_function : `None`, ``CommandLineCommandFunction``
         Command to call, if sub command could not be detected.
-    _parent_reference : `None` or ``WeakReferer``
+    _parent_reference : `None`, ``WeakReferer``
         Weakreference to the command category's parent.
-    _self_reference : `None` or ``WeakReferer``
+    _self_reference : `None`, ``WeakReferer``
         Weakreference to the category itself.
-    name : `None` or `str`
+    name : `None`, `str`
         The sub command category's name.
     """
     __slots__ = ('__weakref__', '_command_categories', '_command_function', '_parent_reference', '_self_reference',
@@ -978,9 +997,9 @@ class CommandLineCommandCategory:
         
         Parameters
         ----------
-        parent : ``CommandLineCommand`` or ``CommandLineCommandCategory``
+        parent : ``CommandLineCommand``, ``CommandLineCommandCategory``
             The parent command or command category.
-        name : `None` or `str`
+        name : `None`, `str`
             The command category's name.
         """
         if (name is not None):
@@ -1116,13 +1135,13 @@ class CommandLineCommandFunction:
     ----------
     _function : `callable`
         The function to call.
-    _parent_reference : `None` or ``WeakReferer``
+    _parent_reference : `None`, ``WeakReferer``
         Weakreference to the command function's parent.
-    _parameters_keyword_only : `None` or `list` of ``CommandLineParameter``
+    _parameters_keyword_only : `None`, `list` of ``CommandLineParameter``
         Keyword only parameters.
-    _parameters_modifier : `None` or `list` of ``CommandLineParameter``
+    _parameters_modifier : `None`, `list` of ``CommandLineParameter``
         Parameter modifiers.
-    _parameters_positional_only : `None` or `list` of ``CommandLineParameter``
+    _parameters_positional_only : `None`, `list` of ``CommandLineParameter``
         Positional only parameters.
     """
     __slots__ = ('_function', '_parent_reference', '_parameters_keyword_only', '_parameters_modifier',
@@ -1130,7 +1149,7 @@ class CommandLineCommandFunction:
     
     def __new__(cls, parent, function):
         """
-        Creates a new ``CommandLineCommandFunction`` instance.
+        Creates a new ``CommandLineCommandFunction``.
         
         Parameters
         ----------
@@ -1165,7 +1184,9 @@ class CommandLineCommandFunction:
             if (parameters_positional_only is not None):
                 last_parameter = parameters_positional_only[-1]
                 if last_parameter.multi:
-                    raise TypeError(f'Cannot add modifier after parameter positional parameter marked as multi.')
+                    raise TypeError(
+                        f'Cannot add modifier after parameter positional parameter marked as multi, got {parameter!r}.'
+                    )
             
             parameters_modifier = self._parameters_modifier
             if parameters_modifier is None:
@@ -1178,10 +1199,14 @@ class CommandLineCommandFunction:
         elif parameter.is_positional_only():
             if parameter.multi:
                 if (self._parameters_modifier is not None):
-                    raise TypeError(f'Cannot add positional multi parameter after adding any modifier one.')
+                    raise TypeError(
+                        f'Cannot add positional multi parameter after adding any modifier one, got {parameter!r}.'
+                    )
                 
                 if (self._parameters_keyword_only is not None):
-                    raise TypeError(f'Cannot add positional multi parameter after adding any keyword one.')
+                    raise TypeError(
+                        f'Cannot add positional multi parameter after adding any keyword one, got {parameter!r}.'
+                    )
             
             parameters_positional_only = self._parameters_positional_only
             if (parameters_positional_only is None):
@@ -1190,7 +1215,9 @@ class CommandLineCommandFunction:
             else:
                 last_parameter = parameters_positional_only[-1]
                 if last_parameter.multi:
-                    raise TypeError(f'Only the last positional parameter can be `multi`.')
+                    raise TypeError(
+                        f'Only the last positional parameter can be `multi`, got {parameter!r}.'
+                    )
             
             parameters_positional_only.append(parameter)
         
@@ -1199,7 +1226,9 @@ class CommandLineCommandFunction:
             if (parameters_positional_only is not None):
                 last_parameter = parameters_positional_only[-1]
                 if last_parameter.multi:
-                    raise TypeError(f'Cannot add modifier after parameter positional parameter marked as multi.')
+                    raise TypeError(
+                        f'Cannot add modifier after parameter positional parameter marked as multi, got {parameter!r}.'
+                    )
             
             parameters_keyword_only = self._parameters_keyword_only
             if (parameters_keyword_only is None):

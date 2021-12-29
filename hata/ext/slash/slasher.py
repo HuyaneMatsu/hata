@@ -37,16 +37,16 @@ def match_application_commands_to_commands(application_commands, commands, match
     ----------
     application_commands : `list` of ``ApplicationCommand``
         Received application commands.
-    commands : `None` or `list` of ``SlasherApplicationCommand``
+    commands : `None`, `list` of ``SlasherApplicationCommand``
         A list of slash commands if any.
     match_schema : `bool`
         Whether schema or just name should be matched.
     
     Returns
     -------
-    commands : `None` or `list` of ``SlasherApplicationCommand``
+    commands : `None`, `list` of ``SlasherApplicationCommand``
         The remaining matched commands.
-    matched : `None` or `list` of `tuple` (``ApplicationCommand``, ``SlasherApplicationCommand`)
+    matched : `None`, `list` of `tuple` (``ApplicationCommand``, ``SlasherApplicationCommand`)
         The matched commands in pairs.
     """
     matched = None
@@ -138,20 +138,20 @@ class CommandState:
     
     Attributes
     ----------
-    _active : `None` or `list` of ``SlasherApplicationCommand``
+    _active : `None`, `list` of ``SlasherApplicationCommand``
         Active slash commands, which were added.
-    _changes : `None` or `list` of ``CommandChange``
+    _changes : `None`, `list` of ``CommandChange``
         Newly added or removed commands in order.
     _is_non_global : `bool`
         Whether the command state is a command state of non global commands.
-    _kept : `None` or `list` of ``SlasherApplicationCommand``
+    _kept : `None`, `list` of ``SlasherApplicationCommand``
         Slash commands, which are removed, but should not be deleted.
     """
     __slots__ = ('_active', '_changes', '_is_non_global', '_kept', )
     
     def __init__(self, is_non_global):
         """
-        Creates a new ``CommandState`` instance.
+        Creates a new ``CommandState``.
         
         Parameters
         ----------
@@ -351,7 +351,7 @@ class CommandState:
         
         Returns
         -------
-        command : `None` or ``SlasherApplicationCommand``
+        command : `None`, ``SlasherApplicationCommand``
             The purged command if any.
         purged_from_identifier : `int`
             From which internal container was the command purged from.
@@ -406,7 +406,7 @@ class CommandState:
         
         Returns
         -------
-        command : `None` or ``SlasherApplicationCommand``
+        command : `None`, ``SlasherApplicationCommand``
             The purged command if any.
         purged_from_identifier : `int`
             From which internal container was the command purged from.
@@ -794,9 +794,9 @@ class Slasher(EventHandlerBase):
     
     Attributes
     ----------
-    _auto_completers : `None` or `list` of ``SlasherApplicationCommandParameterAutoCompleter``
+    _auto_completers : `None`, `list` of ``SlasherApplicationCommandParameterAutoCompleter``
         Auto completer functions.
-    _call_later : `None` or `list` of `tuple` (`bool`, `Any`)
+    _call_later : `None`, `list` of `tuple` (`bool`, `Any`)
         Slash command changes to apply later if syncing is in progress.
     _client_reference : ``WeakReferer`` to ``Client``
         Weak reference to the parent client.
@@ -821,7 +821,7 @@ class Slasher(EventHandlerBase):
         Whenever a component interaction is received on a message, it's respective waiters will be endured inside of
         a ``Task``.
     
-    _exception_handlers : `None` or `list` of `CoroutineFunction`
+    _exception_handlers : `None`, `list` of `CoroutineFunction`
         Exception handlers added with ``.error`` to the interaction handler.
         
         The following parameters are passed to it:
@@ -857,7 +857,7 @@ class Slasher(EventHandlerBase):
     _regex_custom_id_to_form_submit_command : `dict` of (``RegexMatcher``, ``FormSubmitCommand``) items
         A dictionary which contains form submit commands based on regex patterns.
     
-    _self_reference : `None` or ``WeakReferer`` to ``Slasher``
+    _self_reference : `None`, ``WeakReferer`` to ``Slasher``
         Reference back to the slasher. Used to reference back from commands.
     
     _string_custom_id_to_component_command : `dict` of (`str`, ``ComponentCommand``) items
@@ -894,7 +894,7 @@ class Slasher(EventHandlerBase):
     
     Notes
     -----
-    ``Slasher`` instances are weakreferable.
+    ``Slasher``-s are weakreferable.
     """
     __slots__ = ('__weakref__', '_auto_completers', '_call_later', '_client_reference', '_command_states',
         '_command_unloading_behaviour', '_component_commands', '_component_interaction_waiters', '_exception_handlers',
@@ -920,18 +920,20 @@ class Slasher(EventHandlerBase):
             Whether commands should be deleted when unloaded.
         use_default_exception_handler : `bool`, Optional
             Whether the default slash exception handler should be added as an exception handler.
-        random_error_message_getter : `None` or `FunctionType`, Optional
+        random_error_message_getter : `None`, `FunctionType`, Optional
             Random error message getter used by the default exception handler.
         
         Raises
         ------
         TypeError
-            - If `delete_commands_on_unload` was not given as `bool` instance.
-            - If `use_default_exception_handler` was not given as `bool` instance.
-            - If `client` was not given as ``Client`` instance.
+            - If `delete_commands_on_unload` was not given as `bool`.
+            - If `use_default_exception_handler` was not given as `bool`.
+            - If `client` was not given as ``Client``.
         """
         if not isinstance(client, Client):
-            raise TypeError(f'`client` can be given as `{Client.__name__}` instance, got {client.__class__.__name__}.')
+            raise TypeError(
+                f'`client` can be `{Client.__name__}`, got {client.__class__.__name__}; {client!r}.'
+            )
         
         client_reference = WeakReferer(client)
         
@@ -940,16 +942,20 @@ class Slasher(EventHandlerBase):
         elif isinstance(delete_commands_on_unload, bool):
             delete_commands_on_unload = bool(delete_commands_on_unload)
         else:
-            raise TypeError(f'`delete_commands_on_unload` can be given as `bool` instance, got '
-                f'{delete_commands_on_unload.__class__.__name__}.')
+            raise TypeError(
+                f'`delete_commands_on_unload` can be `bool`, got '
+                f'{delete_commands_on_unload.__class__.__name__}; {delete_commands_on_unload!r}.'
+            )
         
         if type(use_default_exception_handler) is bool:
             pass
         elif isinstance(use_default_exception_handler, bool):
             use_default_exception_handler = bool(use_default_exception_handler)
         else:
-            raise TypeError(f'`use_default_exception_handler` can be given as `bool` instance, got '
-                f'{use_default_exception_handler.__class__.__name__}.')
+            raise TypeError(
+                f'`use_default_exception_handler` can be `bool`, got '
+                f'{use_default_exception_handler.__class__.__name__}; {use_default_exception_handler!r}.'
+            )
         
         
         if delete_commands_on_unload:
@@ -1223,22 +1229,22 @@ class Slasher(EventHandlerBase):
         name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
             The command's name if applicable. If not given or if given as `None`, the `func`'s name will be use
             instead.
-        description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`), Optional
+        description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`), Optional
             Description to use instead of the function's docstring.
-        show_for_invoking_user_only : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
+        show_for_invoking_user_only : `None`, `bool`, `tuple` of (`bool`, `Ellipsis`), Optional
             Whether the response message should only be shown for the invoking user. Defaults to `False`.
-        is_global : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
+        is_global : `None`, `bool`, `tuple` of (`bool`, `Ellipsis`), Optional
             Whether the slash command is global. Defaults to `False`.
         guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
                 `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``)), Optional
             To which guild(s) the command is bound to.
-        is_default : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
+        is_default : `None`, `bool`, `tuple` of (`bool`, `Ellipsis`), Optional
             Whether the command is the default command in it's category.
-        delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
+        delete_on_unload : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the command should be deleted from Discord when removed.
-        allow_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
+        allow_by_default : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
-        custom_id : `str`, (`list` or `set`) of `str`, `tuple` of (`str`, (`list` or `set`) of `str`)
+        custom_id : `str`, (`list`, `set`) of `str`, `tuple` of (`str`, (`list`, `set`) of `str`)
             Custom id to match by the component command.
         
         Returns
@@ -1271,8 +1277,10 @@ class Slasher(EventHandlerBase):
             elif (target in COMMAND_TARGETS_FORM_COMPONENT_COMMAND):
                 command = FormSubmitCommand(func, *args, **kwargs)
             else:
-                raise ValueError(f'Unknown command target: {target!r}; If `custom_id` parameter is given, `target` '
-                    f'can be any of: `{COMMAND_TARGETS_COMPONENT_COMMAND|COMMAND_TARGETS_FORM_COMPONENT_COMMAND}`.')
+                raise ValueError(
+                    f'Unknown command target: {target!r}; If `custom_id` parameter is given, `target` '
+                    f'can be any of: `{COMMAND_TARGETS_COMPONENT_COMMAND|COMMAND_TARGETS_FORM_COMPONENT_COMMAND}`.'
+                )
         
         else:
             command = SlasherApplicationCommand(func, *args, **kwargs)
@@ -1520,7 +1528,7 @@ class Slasher(EventHandlerBase):
         ----------
         func : ``SlasherApplicationCommand``, ``Router`` of ``SlasherApplicationCommand``
             The command to remove.
-        name : `None` or `str`, Optional
+        name : `None`, `str`, Optional
             The command's name to remove.
         
         Raises
@@ -1531,8 +1539,10 @@ class Slasher(EventHandlerBase):
         if isinstance(func, Router):
             for sub_func in func:
                 if not isinstance(sub_func, SlasherApplicationCommand):
-                    raise TypeError(f'`func` was not given neither as `{SlasherApplicationCommand.__name__}`, or '
-                        f'`{Router.__name__}` of `{SlasherApplicationCommand.__name__}` instances, got {func!r}.')
+                    raise TypeError(
+                        f'`func` can be `{SlasherApplicationCommand.__name__}`, '
+                        f'`{Router.__name__}` of `{SlasherApplicationCommand.__name__}`, got {func!r}.'
+                    )
             
             for sub_func in func:
                 self._remove_application_command(sub_func)
@@ -1540,8 +1550,10 @@ class Slasher(EventHandlerBase):
         elif isinstance(func, SlasherApplicationCommand):
             self._remove_application_command(func)
         else:
-            raise TypeError(f'`func` was not given neither as `{SlasherApplicationCommand.__name__}`, or `{Router.__name__}` of '
-                f'`{SlasherApplicationCommand.__name__}` instances, got {func!r}.')
+            raise TypeError(
+                f'`func` ca be `{SlasherApplicationCommand.__name__}`, `{Router.__name__}` of '
+                f'`{SlasherApplicationCommand.__name__}`, got {func!r}.'
+            )
     
     async def _try_get_command_by_id(self, client, interaction_event):
         """
@@ -1648,9 +1660,9 @@ class Slasher(EventHandlerBase):
         
         Parameters
         ----------
-        command : `None` or ``SlasherApplicationCommand``
+        command : `None`, ``SlasherApplicationCommand``
             The slash command to unregister.
-        command_state : `None` or ``CommandState``
+        command_state : `None`, ``CommandState``
             The command's respective state instance.
         guild_id : `int`
             The respective guild's id.
@@ -1672,9 +1684,9 @@ class Slasher(EventHandlerBase):
         
         Parameters
         ----------
-        command : `None` or ``SlasherApplicationCommand``
+        command : `None`, ``SlasherApplicationCommand``
             The slash command to register.
-        command_state : `None` or ``CommandState``
+        command_state : `None`, ``CommandState``
             The command's respective state instance.
         guild_id : `int`
             The respective guild's id.
@@ -1693,9 +1705,9 @@ class Slasher(EventHandlerBase):
         
         Parameters
         ----------
-        command : `None` or ``SlasherApplicationCommand``
+        command : `None`, ``SlasherApplicationCommand``
             The slash command to register.
-        command_state : `None` or ``CommandState``
+        command_state : `None`, ``CommandState``
             The command's respective state instance.
         guild_id : `int`
             The respective guild's id.
@@ -2192,7 +2204,7 @@ class Slasher(EventHandlerBase):
         ----------
         client : ``Client``
             The respective client.
-        command : `None` or ``SlasherApplicationCommand``
+        command : `None`, ``SlasherApplicationCommand``
             The slash command to delete.
         command_state : ``CommandState``
             The command's command state.
@@ -2237,7 +2249,7 @@ class Slasher(EventHandlerBase):
         ----------
         client : ``Client``
             The respective client.
-        command : `None` or ``SlasherApplicationCommand``
+        command : `None`, ``SlasherApplicationCommand``
             The slash command to create.
         command_state : ``CommandState``
             The command's command state.
@@ -2275,7 +2287,7 @@ class Slasher(EventHandlerBase):
         
         Returns
         -------
-        task : `bool`, ``Task`` or ``FutureAsyncWrapper``
+        task : `bool`, ``Task``, ``FutureAsyncWrapper``
             - If the method was called from the client's thread (KOKORO), then returns a ``Task``. The task will return
                 `True`, if syncing was successful.
             - If the method was called from an ``EventThread``, but not from the client's, then returns a
@@ -2395,7 +2407,7 @@ class Slasher(EventHandlerBase):
         
         Returns
         -------
-        task : `bool`, ``Task`` or ``FutureAsyncWrapper``
+        task : `bool`, ``Task``, ``FutureAsyncWrapper``
             - If the method was called from the client's thread (KOKORO), then returns a ``Task``. The task will return
                 `True`, if syncing was successful.
             - If the method was called from an ``EventThread``, but not from the client's, then returns a
@@ -2520,7 +2532,7 @@ class Slasher(EventHandlerBase):
         """
         A get-set property for changing the slasher's command unloading behaviour.
         
-        Accepts and returns any `bool` instance.
+        Accepts and returns any `bool`.
         """
         command_unloading_behaviour = self._command_unloading_behaviour
         if command_unloading_behaviour == UNLOADING_BEHAVIOUR_DELETE:
@@ -2538,8 +2550,10 @@ class Slasher(EventHandlerBase):
         elif isinstance(delete_commands_on_unload, bool):
             delete_commands_on_unload = bool(delete_commands_on_unload)
         else:
-            raise TypeError(f'`delete_commands_on_unload` can be given as `bool` instance, got '
-                f'{delete_commands_on_unload.__class__.__name__}.')
+            raise TypeError(
+                f'`delete_commands_on_unload` can be `bool`, got '
+                f'{delete_commands_on_unload.__class__.__name__}; {delete_commands_on_unload!r}.'
+            )
         
         if delete_commands_on_unload:
             command_unloading_behaviour = UNLOADING_BEHAVIOUR_DELETE
@@ -2564,6 +2578,7 @@ class Slasher(EventHandlerBase):
             return
         
         tracked_guild[permission.application_command_id] = permission
+    
     
     async def _get_permission_for(self, client, guild_id, application_command_id):
         """
@@ -2601,6 +2616,7 @@ class Slasher(EventHandlerBase):
         
         return success, permission
     
+    
     async def _sync_permission_task(self, client, guild_id):
         """
         Syncs the respective guild's permissions.
@@ -2618,7 +2634,7 @@ class Slasher(EventHandlerBase):
         -------
         success : `bool`
             Whether syncing was successful.
-        per_guild : `None` or `dict` of (`int`, ``ApplicationCommandPermission``) items
+        per_guild : `None`, `dict` of (`int`, ``ApplicationCommandPermission``) items
             The application command permission for the respective guild. If `success` is `False, this value is
             returned as `None`.
         """
@@ -2667,7 +2683,7 @@ class Slasher(EventHandlerBase):
         
         Parameters
         ----------
-        exception_handler : `None` or `CoroutineFunction`, Optional
+        exception_handler : `None`, `CoroutineFunction`, Optional
             Exception handler to register.
         first : `bool`, Optional (Keyword Only)
             Whether the exception handler should run first.
@@ -2817,8 +2833,10 @@ class Slasher(EventHandlerBase):
                 (custom_id_based_command_string_custom_ids is not None) and
                 (not would_overwrite_custom_ids.issuperset(custom_id_based_command_string_custom_ids))
             ):
-                raise RuntimeError(f'Command: {custom_id_based_command!r} would only partially overwrite the following '
-                    f'commands: {", ".join(overwrite_commands)}.')
+                raise RuntimeError(
+                    f'Command: {custom_id_based_command!r} would only partially overwrite the following '
+                    f'commands: {", ".join(repr(overwrite_command) for overwrite_command in overwrite_commands)}.'
+                )
             
             for overwrite_command in overwrite_commands:
                 custom_id_based_commands.discard(overwrite_command)
@@ -2925,7 +2943,7 @@ class Slasher(EventHandlerBase):
         
         Parameters
         ----------
-        guild : ``Guild`` or `int`
+        guild : ``Guild``, `int`
             The guild to gets command count of.
         
         Returns
@@ -2935,7 +2953,7 @@ class Slasher(EventHandlerBase):
         Raises
         ------
         TypeError
-            If `guild` is neither ``Guild``, nor `int` instance.
+            If `guild` is neither ``Guild``, nor `int`.
         """
         guild_id = get_guild_id(guild)
         return self._get_command_count(guild_id)
@@ -2947,7 +2965,7 @@ class Slasher(EventHandlerBase):
         
         Parameters
         ----------
-        guild : ``Guild`` or `int`
+        guild : ``Guild``, `int`
             The guild to gets command count of.
         
         Returns
@@ -2957,7 +2975,7 @@ class Slasher(EventHandlerBase):
         Raises
         ------
         TypeError
-            If `guild` is neither ``Guild``, nor `int` instance.
+            If `guild` is neither ``Guild``, nor `int`.
         """
         guild_id = get_guild_id(guild)
         return self._get_command_count_with_sub_commands(guild_id)
@@ -3035,12 +3053,12 @@ class Slasher(EventHandlerBase):
             The parameter's name.
         *parameter_names : `str`
             Additional parameter names to autocomplete
-        function : `None` or `async-callable`, Optional (Keyword only)
+        function : `None`, `async-callable`, Optional (Keyword only)
             The function to register as auto completer.
         
         Returns
         -------
-        function / wrapper : `async-callable` or `functools.partial`
+        function / wrapper : `async-callable`, `functools.partial`
             The registered function if given or a wrapper to register the function with.
         
         Raises

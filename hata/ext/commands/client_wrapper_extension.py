@@ -19,7 +19,7 @@ def commands_getter(manager_router):
     
     Returns
     -------
-    handlers : `list` of ``CommandProcesser`` instances
+    handlers : `list` of ``CommandProcesser``
     """
     handlers = []
     for client in manager_router.parent.clients:
@@ -52,7 +52,7 @@ class ClientWrapper:
     @property
     def commands(self):
         """
-        Returns a ``_EventHandlerManagerRouter`` instance, with what commands can be added to more clients at the same
+        Returns a ``_EventHandlerManagerRouter``, with what commands can be added to more clients at the same
         time.
         
         Returns

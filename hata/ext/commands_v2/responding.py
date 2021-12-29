@@ -7,12 +7,12 @@ from ...discord.embed import EmbedBase
 
 def is_only_embed(maybe_embeds):
     """
-    Checks whether the given value is a `tuple` or `list` containing only `embed-like`-s.
+    Checks whether the given value is a `tuple`, `list` containing only `embed-like`-s.
     
     Parameters
     ----------
-    maybe_embeds : (`tuple` or `list`) of `EmbedBase` or `Any`
-        The value to check whether is a `tuple` or `list` containing only `embed-like`-s.
+    maybe_embeds : (`tuple`, `list`) of `EmbedBase`, `Any`
+        The value to check whether is a `tuple`, `list` containing only `embed-like`-s.
     
     Returns
     -------
@@ -43,7 +43,7 @@ async def send_response(command_context, response):
     
     Returns
     -------
-    message : `None` or ``Message``
+    message : `None`, ``Message``
         The sent message if any.
     """
     if (response is None):
@@ -123,9 +123,9 @@ async def process_command_coroutine_generator(command_context, coroutine_generat
             
             if isinstance(err, DiscordException):
                 if err.code in (
-                        ERROR_CODES.unknown_channel, # Message's channel deleted; Can we get this?
-                        ERROR_CODES.missing_access, # Client removed.
-                            ):
+                    ERROR_CODES.unknown_channel, # Message's channel deleted; Can we get this?
+                    ERROR_CODES.missing_access, # Client removed.
+                ):
                     return
             
             raise

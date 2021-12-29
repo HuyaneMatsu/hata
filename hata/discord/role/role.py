@@ -49,7 +49,7 @@ class Role(DiscordEntity, immortal=True):
         
         Mutually exclusive with ``.unicode_emoji``
     
-    guild_id : ``Guild`` or `None`
+    guild_id : ``Guild``, `None`
         The guild of the role. If the role is partial, including already deleted roles, then it's `.guild` is set to
         `None`.
     manager_id : `int`
@@ -66,7 +66,7 @@ class Role(DiscordEntity, immortal=True):
         The role's position.
     separated : `bool`
         Users show up in separated groups by their highest `separated` role.
-    unicode_emoji : `None` or ``Emoji``
+    unicode_emoji : `None`, ``Emoji``
         Unicode emoji icon of the role.
         
         Mutually exclusive with ``.icon_hash`` and ``.icon_type``.
@@ -153,7 +153,7 @@ class Role(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        role_id : `int` or `str`
+        role_id : `int`, `str`
             The role's id.
         **kwargs : keyword parameters
             Additional predefined attributes for the role.
@@ -162,7 +162,7 @@ class Role(DiscordEntity, immortal=True):
         ----------------
         name : `str`, Optional (Keyword only)
             The role's ``.name``.
-        manager_id : `None`, `int` or `str`, Optional (Keyword only)
+        manager_id : `None`, `int`, `str`, Optional (Keyword only)
             The role's manager's id.
         manager_type : ``RoleManagerType``, Optional (Keyword only)
             The role's ``.manager_type``.
@@ -172,11 +172,11 @@ class Role(DiscordEntity, immortal=True):
             The role's ``.separated``.
         position : `int`, Optional (Keyword only)
             The role's ``.position``.
-        permissions : `int` or ``Permission``, Optional (Keyword only)
+        permissions : `int`, ``Permission``, Optional (Keyword only)
             The role's ``.permissions``.
-        color : `int` or ``Color``, Optional (Keyword only)
+        color : `int`, ``Color``, Optional (Keyword only)
             The role's ``.color``.
-        icon : `None`, ``Icon`` or `str`, Optional (Keyword only)
+        icon : `None`, ``Icon``, `str`, Optional (Keyword only)
             The role's icon.
             
             > Mutually exclusive with `icon_type`, `icon_hash` and with `unicode_emoji`.
@@ -191,7 +191,7 @@ class Role(DiscordEntity, immortal=True):
             
             > Mutually exclusive with `icon`  and with `unicode_emoji`.
         
-        unicode_emoji : `None` or ``Emoji``
+        unicode_emoji : `None`, ``Emoji``
             The role's icon as an unicode emoji.
             
             > Mutually exclusive with the `icon`, `icon_type` and `icon_hash` parameters.
@@ -261,13 +261,17 @@ class Role(DiscordEntity, immortal=True):
                 except KeyError:
                     pass
                 else:
-                    raise ValueError(f'`manager_type` was not given, meanwhile `manager_id` was. Received values: '
-                        f'manager_id: {manager_id!r}')
+                    raise ValueError(
+                        f'`manager_type` and `manager_id` are meaningful only together, got '
+                        f'manager_id={manager_id!r}; no `manager_id`.'
+                    )
             else:
                 manager_type_type = manager_type.__class__
                 if manager_type_type is not RoleManagerType:
-                    raise TypeError(f'`manager_type` can be given as `{RoleManagerType.__class__}` instance, got '
-                        f'{manager_type_type.__name__}')
+                    raise TypeError(
+                        f'`manager_type` can be `{RoleManagerType.__name__}`, got '
+                        f'{manager_type_type.__name__}; {manager_type!r}.'
+                    )
             
             cls.icon.preconvert(kwargs, processable)
             
@@ -278,17 +282,21 @@ class Role(DiscordEntity, immortal=True):
             else:
                 if (unicode_emoji is not None):
                     if not isinstance(unicode_emoji, Emoji):
-                        raise TypeError(f'`unicode_emoji` can be only `{Emoji.__name__}` instance, got '
-                            f'{unicode_emoji.__class__.__name__}.')
+                        raise TypeError(
+                            f'`unicode_emoji` can be `{Emoji.__name__}`, got '
+                            f'{unicode_emoji.__class__.__name__}; {unicode_emoji!r}.'
+                        )
                     
                     if not unicode_emoji.is_unicode_emoji():
-                        raise ValueError(f'`unicode_emoji` can be only unicode emoji, got {unicode_emoji!r}.')
+                        raise ValueError(
+                            f'`unicode_emoji` can be only unicode emoji, got {unicode_emoji!r}.'
+                        )
                     
                     processable.append(('unicode_emoji', unicode_emoji))
                     
             
             if kwargs:
-                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+                raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
         
         else:
             processable = None
@@ -458,7 +466,7 @@ class Role(DiscordEntity, immortal=True):
         +---------------+-----------------------+
         | separated     | `bool`                |
         +---------------+-----------------------+
-        | unicode_emoji | `None` or ``Emoji``   |
+        | unicode_emoji | `None`, ``Emoji``     |
         +---------------+-----------------------+
         """
         old_attributes = {}
@@ -643,7 +651,7 @@ class Role(DiscordEntity, immortal=True):
         
         Returns
         -------
-        users : `list` of ``ClientUserBase`` instances
+        users : `list` of ``ClientUserBase``
         """
         users = []
         guild_id = self.guild_id
@@ -690,7 +698,7 @@ class Role(DiscordEntity, immortal=True):
         
         Returns
         -------
-        manager : `None`, ``ClientUserBase`` or ``Integration``
+        manager : `None`, ``ClientUserBase``, ``Integration``
         """
         manager_type = self.manager_type
         if manager_type is ROLE_MANAGER_TYPE_NONE:
@@ -718,7 +726,7 @@ class Role(DiscordEntity, immortal=True):
         
         Returns
         -------
-        guild : `None` or ``Guild``
+        guild : `None`, ``Guild``
         """
         guild_id = self.guild_id
         if guild_id:

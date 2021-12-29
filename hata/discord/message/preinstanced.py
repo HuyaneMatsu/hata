@@ -20,7 +20,7 @@ class MessageActivityType(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``MessageActivityType``) items
-        Stores the predefined ``MessageActivityType`` instances. These can be accessed with their `value` as key.
+        Stores the predefined ``MessageActivityType``-s. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The message activity types' values' type.
     DEFAULT_NAME : `str` = `'Undefined'`
@@ -70,7 +70,7 @@ def MESSAGE_DEFAULT_CONVERTER(self):
     
     Returns
     -------
-    content : `None` or `str`
+    content : `None`, `str`
         The converted content if applicable. Might be empty string.
     """
     content = self.content
@@ -282,7 +282,7 @@ class MessageType(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``MessageType``) items
-        Stores the predefined ``MessageType`` instances. These can be accessed with their `value` as key.
+        Stores the predefined ``MessageType``-s. These can be accessed with their `value` as key.
     
     Every predefined message type can be accessed as class attribute as well:
     

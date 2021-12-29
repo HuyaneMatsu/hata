@@ -16,7 +16,7 @@ class RoleManagerType(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``RoleManagerType``) items
-        Stores the predefined ``RoleManagerType`` instances. These can be accessed with their `value` as key.
+        Stores the predefined ``RoleManagerType``-s. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The role manager types' values' type.
     DEFAULT_NAME : `str` = `'UNDEFINED'`

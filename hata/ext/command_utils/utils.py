@@ -18,7 +18,7 @@ class multievent:
     
     def __init__(self, *events):
         """
-        Creates a `multievent` instance with the given event handlers
+        Creates a ``multievent`` with the given event handlers
         
         Parameters
         ----------
@@ -27,17 +27,19 @@ class multievent:
         """
         self.events = events
     
+    
     def append(self, target, waiter):
         """
         Adds the given `target` - `waiter` pair to the contained event handlers.
         
         Parameters
         ----------
-        target : ``DiscordEntity`` instance
+        target : ``DiscordEntity``
         waiter : `async callable`
         """
         for event in self.events:
             event.append(target, waiter)
+    
     
     def remove(self, target, waiter):
         """
@@ -45,7 +47,7 @@ class multievent:
         
         Parameters
         ----------
-        target : ``DiscordEntity`` instance
+        target : ``DiscordEntity``
         waiter : `async callable`
         """
         for event in self.events:
@@ -58,7 +60,7 @@ class Timeouter:
     
     Attributes
     ----------
-    handle : `None` or ``TimerHandle``
+    handle : `None`, ``TimerHandle``
         Handle to wake_up the timeouter with it's `._step` function.
         Set to `None`, when the respective timeout is over or if the timeout is cancelled.
     owner : `Any`
@@ -71,7 +73,7 @@ class Timeouter:
     
     def __init__(self, owner, timeout):
         """
-        Creates a new ``Timeouter`` instance with the given `owner` and `timeout`.
+        Creates a new ``Timeouter`` with the given `owner` and `timeout`.
         
         Parameters
         ----------
@@ -83,6 +85,7 @@ class Timeouter:
         self.owner = owner
         self.timeout = 0.0
         self.handle = KOKORO.call_later(timeout, type(self)._step, self)
+    
     
     def _step(self):
         """
@@ -106,6 +109,7 @@ class Timeouter:
         
         owner.cancel(TimeoutError())
     
+    
     def cancel(self):
         """
         Cancels the timeouter.
@@ -119,6 +123,7 @@ class Timeouter:
         self.handle = None
         handle.cancel()
         self.owner = None
+    
     
     def set_timeout(self, value):
         """
@@ -145,6 +150,7 @@ class Timeouter:
             return
         
         self.timeout = planed_end-next_step
+    
     
     def get_expiration_delay(self):
         """

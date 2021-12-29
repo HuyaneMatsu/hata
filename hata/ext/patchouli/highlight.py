@@ -212,7 +212,7 @@ class WordNode:
         Whether the node is the end of a word.
     nodes : `dict` of (`str`, ``WordNode``) items
         Sub nodes branching out.
-    parent : `None` or ``WordNode``
+    parent : `None`, ``WordNode``
         The parent node.
     """
     __slots__ = ('character', 'is_final', 'nodes', 'parent')
@@ -333,7 +333,7 @@ class WordNode:
         
         Returns
         -------
-        matched : `None` or `str`
+        matched : `None`, `str`
             The matched string, if any.
         """
         if len(string) > index:
@@ -391,20 +391,20 @@ class TokenTypeNode:
     ----------
     id : `int`
         The node's identifier.
-    html_class : `None` or `str`
+    html_class : `None`, `str`
         The token node's type.
     is_class_direct : `bool`
         Whether ``.type`` is set directly or is inherited.
-    nodes : `None` or `dict` of (`int`, ``TokenTypeNode``) items
+    nodes : `None`, `dict` of (`int`, ``TokenTypeNode``) items
         Sub-nodes branching out from the source one.
-    parent : `None` or ``TokenTypeNode``
+    parent : `None`, ``TokenTypeNode``
         The parent node-
     """
     __slots__ = ('html_class', 'id', 'is_class_direct', 'nodes', 'parent')
     
     def __new__(cls, id_):
         """
-        Creates a new ``TokenClassNode`` instance with the given identifier.
+        Creates a new ``TokenClassNode`` with the given identifier.
         
         Parameters
         ----------
@@ -464,7 +464,7 @@ class TokenTypeNode:
         
         Parameters
         ----------
-        html_class : `None` or `str`
+        html_class : `None`, `str`
             the html class to set or `None` to remove.
         """
         self.html_class = html_class
@@ -481,7 +481,7 @@ class TokenTypeNode:
         
         Parameters
         ----------
-        html_class : `None` or `str`
+        html_class : `None`, `str`
             the html class to set or `None` to remove.
         """
         if html_class is None:
@@ -537,24 +537,30 @@ def set_highlight_html_class(token_type_identifier, html_class):
     Raises
     ------
     TypeError
-        - If `token_type_identifier` was not given as `int` instance.
-        - If `html_class` was not given neither as `None` nor as `str` instance.
+        - If `token_type_identifier` was not given as `int`.
+        - If `html_class` was not given neither as `None` nor as `str`.
     ValueError
         If `token_type_identifier` was not given as any of the predefined values. Check ``TOKEN_TYPES`` for more
             details.
     """
     if not isinstance(token_type_identifier, int):
-        raise TypeError(f'`token_type_identifier` can be given as `int` instance, got: '
-            f'{token_type_identifier.__class__.__name__}.')
+        raise TypeError(
+            f'`token_type_identifier` can be `int`, got '
+            f'{token_type_identifier.__class__.__name__}; {token_type_identifier!r}.'
+        )
     
     if (html_class is not None) and (not isinstance(html_class, str)):
-        raise TypeError(f'`html_class` can be given as `None` or `str` instance, got {html_class.__class__.__name__}.')
+        raise TypeError(
+            f'`html_class` can be `None`, `str`, got {html_class.__class__.__name__}; {html_class!r}.'
+        )
     
     try:
         node = TOKEN_TYPE_NODES[token_type_identifier]
     except KeyError:
-        raise ValueError(f'`token_type_identifier` was not given as any of the predefined values, got: '
-            f'{token_type_identifier!r}.') from None
+        raise ValueError(
+            f'`token_type_identifier` was not given as any of the predefined values, got '
+            f'{token_type_identifier!r}.'
+        ) from None
     
     node.set_html_class(html_class)
 
@@ -690,20 +696,20 @@ class Token:
     ----------
     type : `int`
         The token's identifier.
-    value : `None` or `str`
+    value : `None`, `str`
         The token's value.
     """
     __slots__ = ('type', 'value',)
     
     def __new__(cls, type_, value):
         """
-        Creates a new ``Token`` instance.
+        Creates a new ``Token``.
         
         Parameters
         ----------
         type : `int`
             The token's identifier.
-        value : `None` or `str`
+        value : `None`, `str`
             The token's value.
         """
         self = object.__new__(cls)
@@ -757,7 +763,7 @@ class HighlightContextBase:
     
     def __new__(cls):
         """
-        Creates a new ``HighlightContextBase`` instance.
+        Creates a new ``HighlightContextBase``.
         
         > Subclasses should overwrite it.
         """
@@ -822,7 +828,7 @@ class HighlightContextBase:
         ----------
         token_type : `int`
             The token's identifier.
-        token_value : `None` or `str`
+        token_value : `None`, `str`
             The token's value.
         """
         token = Token(token_type, token_value)
@@ -845,7 +851,7 @@ class HighlightContextBase:
         
         Returns
         -------
-        token : ``Token`` or `None`
+        token : ``Token``, `None`
             The token if there is any added.
         """
         tokens = self.tokens
@@ -944,7 +950,7 @@ class HighlightContext(HighlightContextBase):
     __slots__ = ('line_character_index', 'line_index', 'lines')
     def __new__(cls, lines):
         """
-        Creates a new ``HighlightContext`` instance.
+        Creates a new ``HighlightContext``.
         
         Parameters
         ----------
@@ -1134,7 +1140,7 @@ class FormatStringContext(HighlightContextBase):
     __slots__ = ('brace_level', 'is_in_code', 'line', 'line_character_index', )
     def __new__(cls, line):
         """
-        Creates a new ``FormatStringContext`` instance.
+        Creates a new ``FormatStringContext``.
         
         Parameters
         ----------
@@ -1204,7 +1210,7 @@ class FormatStringContext(HighlightContextBase):
         ----------
         token_type : `int`
             The token's identifier.
-        token_value : `None` or `str`
+        token_value : `None`, `str`
             The token's value.
         """
         if token_type == TOKEN_TYPE_LINEBREAK:

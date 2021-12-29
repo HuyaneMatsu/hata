@@ -42,33 +42,33 @@ class Invite(DiscordEntity, immortal=True):
         as `0`.
     approximate_user_count : `int`
         The approximate amount of users at the respective guild (or group channel). If not included, then set as `0`.
-    channel : `None`, ``ChannelText``, ``ChannelVoice``, ``ChannelStore``, ``ChannelGroup`` or ``ChannelDirectory``
+    channel : `None`, ``ChannelText``, ``ChannelVoice``, ``ChannelStore``, ``ChannelGroup``, ``ChannelDirectory``
         The channel where the invite redirects. If it is announcements or store channel, then the invite is a lurk
         invite. If channel data was not sent with the invite's, then this attribute is set as `None`.
     code : `str`
         The invite's unique identifier.
     created_at : `datetime`
         When the invite was created. Defaults to Discord epoch.
-    guild : `None` or ``Guild``
+    guild : `None`, ``Guild``
         The guild the invite is for. If not included or if the invite's channel is a group channel, then set as
         `None`.
     inviter : ``ClientUserBase``
         The creator of the invite. If not included, then set as `ZEROUSER`.
-    max_age : `None` or `int`
+    max_age : `None`, `int`
         The time in seconds after the invite will expire. If not included, then set as `None`.
         
         If the invite was created with max age as `0`, then this value will be negative instead of the expected `0`.
-    max_uses : `None` or `int`
+    max_uses : `None`, `int`
         How much times the invite can be used. If not included, then set as `None`.
         
         If the invite has no use limit, then this value is set as `0`.
     partial : `bool`
         Whether the invite is only partially loaded.
-    stage : `None` or ``InviteStage``
+    stage : `None`, ``InviteStage``
         A invite stage instance representing the stage to which the invite is created to.
     target_type : ``InviteTargetType``
         The invite's target type.
-    target_application : `None` or ``Application``
+    target_application : `None`, ``Application``
         The invite's target application.
     target_user : ``ClientUserBase``
         The target of the invite if applicable. Defaults to `ZEROUSER`.
@@ -76,7 +76,7 @@ class Invite(DiscordEntity, immortal=True):
         Whether this invite only grants temporary membership.
         
         When the user goes offline, they get kicked, except if they got a role meanwhile.
-    uses : `None` or `int`
+    uses : `None`, `int`
         The amount how much times the invite was used. If not included, set as `None`.
     """
     __slots__ = ('approximate_user_count', 'approximate_online_count', 'channel', 'code', 'created_at', 'guild',
@@ -451,19 +451,19 @@ class Invite(DiscordEntity, immortal=True):
             The channel where the invite redirects.
         created_at : `datetime`, Optional (Keyword only)
             When the invite was created.
-        guild : `None` or ``Guild``, Optional (Keyword only)
+        guild : `None`, ``Guild``, Optional (Keyword only)
             The guild the invite is for.
         inviter : `int`, `str`, ``ClientUserBase``, Optional (Keyword only)
             The creator of the invite.
-        max_age : `None` or `int`, Optional (Keyword only)
+        max_age : `None`, `int`, Optional (Keyword only)
             The time in seconds after the invite will expire.
-        max_uses : `None` or `int`, Optional (Keyword only)
+        max_uses : `None`, `int`, Optional (Keyword only)
             How much times the invite can be used.
         approximate_online_count : `int`, Optional (Keyword only)
             The amount of online users at the respective guild (or group channel).
-        target_type : `int` or ``InviteTargetType``, Optional (Keyword only)
+        target_type : `int`, ``InviteTargetType``, Optional (Keyword only)
             The invite's target type.
-        target_application : `int`, `str` or ``Application``, Optional (Keyword only)
+        target_application : `int`, `str`, ``Application``, Optional (Keyword only)
             The target application of the invite.
         target_user : `int`, `str`, ``ClientUserBase``, Optional (Keyword only)
             The target user of the invite.
@@ -471,7 +471,7 @@ class Invite(DiscordEntity, immortal=True):
             Whether this invite only grants temporary membership.
         approximate_user_count : `int`, Optional (Keyword only)
             The amount of users at the respective guild (or group channel).
-        uses : `None` or `int`, Optional (Keyword only)
+        uses : `None`, `int`, Optional (Keyword only)
             The amount how much times the invite was used.
         
         Returns
@@ -512,9 +512,9 @@ class Invite(DiscordEntity, immortal=True):
             except KeyError:
                 pass
             else:
-                created_at_type = created_at.__class__
-                if (created_at_type is not datetime):
-                    raise TypeError(f'`\'created_at\'` can be `int` instance, got {created_at_type.__name__}.')
+                if not isinstance(created_at, datetime):
+                    raise TypeError(f'`created_at` can be `int`, got {created_at.__class__.__name__}; {created_at!r}.')
+                
                 processable.append(('created_at', created_at))
             
             for key in ('inviter', 'target_user',):
@@ -536,9 +536,9 @@ class Invite(DiscordEntity, immortal=True):
                     processable.append((key, value))
             
             for key, type_ in (
-                    ('guild', Guild),
-                    ('channel', (ChannelText, ChannelGroup, ChannelVoice, ChannelStore, ChannelDirectory)),
-                        ):
+                ('guild', Guild),
+                ('channel', (ChannelText, ChannelGroup, ChannelVoice, ChannelStore, ChannelDirectory)),
+            ):
                 
                 try:
                     value = kwargs.pop(key)
@@ -566,7 +566,7 @@ class Invite(DiscordEntity, immortal=True):
                 processable.append(('target_application', value))
             
             if kwargs:
-                raise TypeError(f'Unused or unsettable attributes: {kwargs}.')
+                raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
         
         else:
             processable = None

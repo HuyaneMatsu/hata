@@ -18,7 +18,7 @@ def create_activity_from_data(activity_data):
     
     Returns
     -------
-    activity : ``ActivityBase`` instance
+    activity : ``ActivityBase``
     """
     if activity_data is None:
         return ACTIVITY_UNKNOWN

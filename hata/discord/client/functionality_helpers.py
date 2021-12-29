@@ -23,7 +23,7 @@ class SingleUserChunker:
     
     Attributes
     ----------
-    timer : `Handle` or `None`
+    timer : `Handle`, `None`
         The time-outer of the chunker, what will cancel if the timeout occurs.
     waiter : ``Future``
         The waiter future what will yield, when we receive the response, or when the timeout occurs.
@@ -110,7 +110,7 @@ class MassUserChunker:
     ----------
     last : `float`
         The timestamp of the last received chunk.
-    timer : `Handle` or `None`
+    timer : `Handle`, `None`
         The time-outer of the chunker, what will cancel if the timeout occurs.
     waiter : ``Future``
         The waiter future what will yield, when we receive the response, or when the timeout occurs.
@@ -208,7 +208,7 @@ class DiscoveryCategoryRequestCacher:
         Whether there is an active request.
     _last_update : `float`
         The last time when the cache was updated
-    _waiter : ``Future`` or `None`
+    _waiter : ``Future``, `None`
         Waiter to avoid concurrent calls.
     cached : `Any`
         Last result.
@@ -221,7 +221,7 @@ class DiscoveryCategoryRequestCacher:
     
     def __init__(self, func, timeout, cached=...):
         """
-        Creates a ``DiscoveryCategoryRequestCacher`` instance.
+        Creates a ``DiscoveryCategoryRequestCacher``.
         
         Parameters
         ----------
@@ -371,7 +371,7 @@ class DiscoveryTermRequestCacher:
         The last time when a cleanup was done.
     _minimal_cleanup_interval : `float`
         The minimal time what needs to pass between cleanups.
-    _rate_limit_proxy_parameters : `tuple` (``RateLimitGroup``, (``DiscordEntity`` or `None`))
+    _rate_limit_proxy_parameters : `tuple` (``RateLimitGroup``, (``DiscordEntity``, `None`))
         Rate limit proxy parameters used when looking up the rate limits of clients.
     _waiters : `dict` of (`str`, `
         Waiters for requests already being done.
@@ -450,7 +450,7 @@ class DiscoveryTermRequestCacher:
         ConnectionError
             If there is no internet connection, or there is no available cached result.
         TypeError
-            The given `parameter` was not passed as `str` instance.
+            The given `parameter` was not passed as `str`.
         DiscordException
             If any exception was received from the Discord API.
         """
@@ -601,11 +601,11 @@ class MultiClientMessageDeleteSequenceSharder:
         Whether the `client` can read message history at the respective channel.
     can_manage_messages : `int`
         Whether the respective client can manage messages at the respective channel.
-    delete_mass_task : `None` or ``Task``
+    delete_mass_task : `None`, ``Task``
         Task of bulk deleting messages.
-    delete_new_task : `None` or ``Task``
+    delete_new_task : `None`, ``Task``
         Task of deleting new or own messages.
-    delete_old_task : `None` or ``Task``
+    delete_old_task : `None`, ``Task``
         task of deleting other's old messages.
     """
     __slots__ = ('can_manage_messages', 'can_read_message_history', 'client', 'delete_mass_task', 'delete_new_task',
@@ -624,7 +624,7 @@ class MultiClientMessageDeleteSequenceSharder:
         
         Returns
         -------
-        self : `None` or ``MultiClientMessageDeleteSequenceSharder``
+        self : `None`, ``MultiClientMessageDeleteSequenceSharder``
             If the respective client could not contribute to any task, returns `None`.
         """
         permissions = channel.cached_permissions_for(client)
@@ -701,7 +701,7 @@ async def _message_delete_multiple_private_task(client, channel_id, groups, reas
         The channel's identifier, where the messages are.
     groups : `tuple` (`deque` of (`bool`, `int`), `deque` of `int`, `deque` of `int`)
         `deque`-s, which contain message identifiers depending in which rate limit group they are bound to.
-    reason : `None` or `str`
+    reason : `None`, `str`
         Additional reason which would show up in the guild's audit logs.
     
     Raises
@@ -727,7 +727,7 @@ async def _message_delete_multiple_task(client, channel_id, groups, reason):
         The channel's identifier, where the messages are.
     groups : `tuple` (`deque` of (`bool`, `int`), `deque` of `int`, `deque` of `int`)
         `deque`-s, which contain message identifiers depending in which rate limit group they are bound to.
-    reason : `None` or `str`
+    reason : `None`, `str`
         Additional reason which shows up in the respective guild's audit logs.
     
     Raises
@@ -936,7 +936,7 @@ class ForceUpdateCache:
     
     def __new__(cls):
         """
-        Creates a new ``ForceUpdateCache`` instance.
+        Creates a new ``ForceUpdateCache``.
         """
         self = object.__new__(cls)
         self.synced = False
@@ -973,7 +973,7 @@ def channel_move_sort_key(channel_key):
     
     Parameters
     ----------
-    channel_key : `tuple` of (`int`, `int`, `int`, (`None` or `list` of `...`))
+    channel_key : `tuple` of (`int`, `int`, `int`, (`None`, `list` of `...`))
     
         Channel sort keys have the following structure:
         - channel order group
@@ -1031,7 +1031,7 @@ def application_command_autocomplete_choice_parser(choices):
     
     Parameters
     ----------
-    choices : `None` or `iterable` of (`str`, `int`, `float`)
+    choices : `None`, `iterable` of (`str`, `int`, `float`)
         Application command autocomplete choices to parse.
     
     Returns
@@ -1141,8 +1141,8 @@ def application_command_autocomplete_choice_validator_tuple_item(item):
     Raises
     ------
     TypeError
-        - If `item[0]` is not `str` instance.
-        - If `item[1]` is neither `str`, `int` nor `float` instance.
+        - If `item[0]` is not `str`.
+        - If `item[1]` is neither `str`, `int` nor `float`.
     """
     name, value = item
     if not isinstance(name, str):
@@ -1172,7 +1172,7 @@ def application_command_autocomplete_choice_builder(name, value):
     ----------
     name : `str`
         Choice name.
-    value : `str`, `int` or `float`
+    value : `str`, `int`, `float`
         Choice value.
     
     Returns

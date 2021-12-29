@@ -18,31 +18,31 @@ class EmbedCore(EmbedBase):
     
     Attributes
     ----------
-    author : `None` or ``EmbedAuthor``
+    author : `None`, ``EmbedAuthor``
         Author information.
-    color : `None`, ``Color`` or `int`
+    color : `None`, ``Color``, `int`
         The color code of the embed. Passing `0` means black, not like at the case of roles.
-    description : `None` or `str`
+    description : `None`, `str`
         The main content of the embed.
     fields : `list` of ``EmbedField``
         Fields' information.
-    footer : `None` or ``EmbedFooter``
+    footer : `None`, ``EmbedFooter``
         Footer information.
-    image : `None` or ``EmbedImage``
+    image : `None`, ``EmbedImage``
         Image information.
-    provider : `None` or ``EmbedProvider``
+    provider : `None`, ``EmbedProvider``
         Provider information.
-    thumbnail : `None` or ``EmbedThumbnail``
+    thumbnail : `None`, ``EmbedThumbnail``
         Thumbnail information.
-    timestamp : `None` or `datetime`
+    timestamp : `None`, `datetime`
         Timestamp of the embed's content. Shows up next to the ``.footer`` separated with a `'|'` character.
-    title : `None` or `str`
+    title : `None`, `str`
         The title of the embed. Shows at the top with intense white characters.
-    type : `None` or `str`
+    type : `None`, `str`
         The type of the embed. Can be one of `EXTRA_EMBED_TYPES`'s elements. Webhook embeds' type must be `'rich'`.
-    url : `None` or `str`
+    url : `None`, `str`
         Url of the embed. If defined, the embed's `title` will show up as a hyper link pointing to the `url`.
-    video : `None` or `EmbedVideo`
+    video : `None`, `EmbedVideo`
         Video information.
     """
     __slots__ = ('author', 'color', 'description', 'fields', 'footer', 'image', 'provider', 'thumbnail', 'timestamp',
@@ -58,13 +58,13 @@ class EmbedCore(EmbedBase):
             The title of the embed. Shows at the top with intense white characters.
         description : `str`, Optional
             The main content of the embed.
-        color : ``Color`` or `int`, Optional
+        color : ``Color``, `int`, Optional
             The color code of the embed. Passing `0` means black, not like at the case of roles.
         url : `str`, Optional
             Url of the embed. If defined, the embed's `title` will show up as a hyper link pointing to the `url`.
         timestamp : `datetime`, optional
             Timestamp of the embed's content. Shows up next to the `footer` separated with a `'|'` character.
-        type_ : `None` or `str`, Optional
+        type_ : `None`, `str`, Optional
             The type of the embed. Defaults to `'rich'`.
         """
         self.title = title

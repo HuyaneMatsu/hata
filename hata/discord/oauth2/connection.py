@@ -23,7 +23,7 @@ class Connection(DiscordEntity):
     show_activity : `bool`
         Whether activity related to this connection will be shown in presence updates.
     type : `str`
-        The service of the connection. (Like `'twitch'` or `'youtube'`.)
+        The service of the connection. (Like `'twitch'`, `'youtube'`.)
     verified : `bool`
         Whether the connection is verified.
     visibility : `int`

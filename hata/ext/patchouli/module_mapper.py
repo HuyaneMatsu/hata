@@ -199,14 +199,14 @@ def map_types_and_functions(obj, references, path, from_type):
     
     Parameters
     ----------
-    obj : `type` or `module`
+    obj : `type`, `module`
         The object to map.
     references : `dict` of (`str`, ``UnitBase``) items
         References of `obj` to it's contained objects.
     path : ``QualPath``
         Tha path of `obj`.
     from_type : `bool`
-        Whether `obj` is a `type` instance.
+        Whether `obj` is a `type`.
     """
     for attr_name in dir(obj):
         try:
@@ -332,7 +332,7 @@ class UnitBase:
     ----------
     _cache : `dict`
         Cache used by cached properties.
-    _docs : `None` or ``DocString``
+    _docs : `None`, ``DocString``
         The processed docstring of the represented unit.
     _docs_parsed : `bool`
         Whether the represented unit's docstring was already processed.
@@ -354,7 +354,7 @@ class UnitBase:
         
         Returns
         -------
-        parent : `None` or ``UnitBase`` instance
+        parent : `None`, ``UnitBase``
         """
         parent_path = self.path.parent
         if parent_path:
@@ -370,7 +370,7 @@ class UnitBase:
         
         Returns
         -------
-        docstring : `None` or ``DocString``
+        docstring : `None`, ``DocString``
         """
         return None
     
@@ -381,7 +381,7 @@ class UnitBase:
         
         Returns
         -------
-        docstring : `None` or ``DocString``
+        docstring : `None`, ``DocString``
         """
         docs_parsed = self._docs_parsed
         if docs_parsed:
@@ -399,7 +399,7 @@ class UnitBase:
         
         Returns
         -------
-        docs : `None` or `str`
+        docs : `None`, `str`
         """
         docs = self.docs
         if docs is None:
@@ -414,7 +414,7 @@ class UnitBase:
         
         Returns
         -------
-        docs : `None` or `str`
+        docs : `None`, `str`
         """
         docs = self.docs
         if docs is None:
@@ -429,7 +429,7 @@ class UnitBase:
         
         Returns
         -------
-        docs : `None` or `list` of `str`
+        docs : `None`, `list` of `str`
         """
         docs = self.docs
         if docs is None:
@@ -444,7 +444,7 @@ class UnitBase:
         
         Returns
         -------
-        docs : `None` or `str`
+        docs : `None`, `str`
         """
         docs = self.docs
         if docs is None:
@@ -462,7 +462,7 @@ class UnitBase:
         
         Returns
         -------
-        html_extended : `None` or `str`
+        html_extended : `None`, `str`
         """
         html_extended, _ = html_serialize_docs_extended(self, True, False)
         return html_extended
@@ -474,7 +474,7 @@ class UnitBase:
         
         Returns
         -------
-        html_extended_structure : `None` or ``Structure``
+        html_extended_structure : `None`, ``Structure``
         """
         _, html_extended_structure = html_serialize_docs_extended(self, False, True)
         return html_extended_structure
@@ -486,8 +486,8 @@ class UnitBase:
         
         Returns
         -------
-        html_extended : `None` or `str`
-        html_extended_structure : `None` or ``Structure``
+        html_extended : `None`, `str`
+        html_extended_structure : `None`, ``Structure``
         """
         html_extended, html_extended_structure = html_serialize_docs_extended(self, True, True)
         cache = self._cache
@@ -502,7 +502,7 @@ class UnitBase:
         
         Returns
         -------
-        preview : `None` or `str`
+        preview : `None`, `str`
         """
         docs = self.docs
         if docs is None:
@@ -516,7 +516,7 @@ class UnitBase:
         
         Returns
         -------
-        referred : `None` or ``UnitBase`` instance.
+        referred : `None`, ``UnitBase``.
             The referenced unit.
         """
         # Is local reference?
@@ -565,7 +565,7 @@ def direct_lookup_in(object_, reference_parts):
     
     Parameters
     ----------
-    object_ : ``UnitBase`` instance
+    object_ : ``UnitBase``
         The folder to lookup up from.
     reference_parts : `list` of `str`
         Reference parts to lookup.
@@ -574,7 +574,7 @@ def direct_lookup_in(object_, reference_parts):
     
     Returns
     -------
-    object_ : `None` or ``UnitBase``
+    object_ : `None`, ``UnitBase``
         The found object if applicable.
     """
     reference_parts = reference_parts.copy()
@@ -602,7 +602,7 @@ def lookup_from(folder, reference_parts):
     
     Parameters
     ----------
-    folder : ``UnitBase`` instance
+    folder : ``UnitBase``
         The folder to look up from.
     reference_parts : `list` of `str`
         Reference parts to lookup.
@@ -641,7 +641,7 @@ class AttributeUnitBase(UnitBase):
     ----------
     _cache : `dict`
         Cache used by cached properties.
-    _docs : `None` or ``DocString``
+    _docs : `None`, ``DocString``
         The processed docstring of the represented unit.
     _docs_parsed : `bool`
         Whether the represented unit's docstring was already processed.
@@ -658,7 +658,7 @@ class AttributeUnitBase(UnitBase):
         
         Returns
         -------
-        docstring : `None` or ``DocString``
+        docstring : `None`, ``DocString``
         """
         parent = MAPPED_OBJECTS.get(self.path.parent, None)
         if parent is None:
@@ -679,7 +679,7 @@ class InstanceAttributeUnit(AttributeUnitBase):
     ----------
     _cache : `dict`
         Cache used by cached properties.
-    _docs : `None` or ``DocString``
+    _docs : `None`, ``DocString``
         The processed docstring of the represented unit.
     _docs_parsed : `bool`
         Whether the represented unit's docstring was already processed.
@@ -756,7 +756,7 @@ class ObjectedUnitBase(UnitBase):
     ----------
     _cache : `dict`
         Cache used by cached properties.
-    _docs : `None` or ``DocString``
+    _docs : `None`, ``DocString``
         The processed docstring of the represented unit.
     _docs_parsed : `bool`
         Whether the represented unit's docstring was already processed.
@@ -775,7 +775,7 @@ class ObjectedUnitBase(UnitBase):
         
         Returns
         -------
-        docstring : `None` or ``DocString``
+        docstring : `None`, ``DocString``
         """
         docstring = getattr(self.object, '__doc__', 'None')
         if docstring is None:
@@ -795,7 +795,7 @@ class PropertyUnit(ObjectedUnitBase):
     ----------
     _cache : `dict`
         Cache used by cached properties.
-    _docs : `None` or ``DocString``
+    _docs : `None`, ``DocString``
         The processed docstring of the represented unit.
     _docs_parsed : `bool`
         Whether the represented unit's docstring was already processed.
@@ -842,7 +842,7 @@ class FunctionUnit(ObjectedUnitBase):
     ----------
     _cache : `dict`
         Cache used by cached properties.
-    _docs : `None` or ``DocString``
+    _docs : `None`, ``DocString``
         The processed docstring of the represented unit.
     _docs_parsed : `bool`
         Whether the represented unit's docstring was already processed.
@@ -867,7 +867,7 @@ class FunctionUnit(ObjectedUnitBase):
             The path to the function.
         obj : `property-like`
             The represented function.
-        alternative_path : `None` or ``QualPath``
+        alternative_path : `None`, ``QualPath``
             Alternative path to the function.
             
             Methods might show up at multiple places, so more access path can be added to them.
@@ -899,7 +899,7 @@ class FolderedUnit(ObjectedUnitBase):
     ----------
     _cache : `dict`
         Cache used by cached properties.
-    _docs : `None` or ``DocString``
+    _docs : `None`, ``DocString``
         The processed docstring of the represented unit.
     _docs_parsed : `bool`
         Whether the represented unit's docstring was already processed.
@@ -928,7 +928,7 @@ class TypeUnit(FolderedUnit):
     ----------
     _cache : `dict`
         Cache used by cached properties.
-    _docs : `None` or ``DocString``
+    _docs : `None`, ``DocString``
         The processed docstring of the represented unit.
     _docs_parsed : `bool`
         Whether the represented unit's docstring was already processed.
@@ -980,7 +980,7 @@ class ModuleUnit(FolderedUnit):
     ----------
     _cache : `dict`
         Cache used by cached properties.
-    _docs : `None` or ``DocString``
+    _docs : `None`, ``DocString``
         The processed docstring of the represented unit.
     _docs_parsed : `bool`
         Whether the represented unit's docstring was already processed.
@@ -1060,7 +1060,9 @@ def map_module(module_name):
     try:
         main_module_object = sys.modules[module_name]
     except KeyError:
-        raise LookupError(f'No loaded module is named as {module_name!r}') from None
+        raise LookupError(
+            f'No loaded module is named as {module_name!r}'
+        ) from None
     
     # Invalidate search cache
     CachedSearcher._cache_valid = False
@@ -1081,7 +1083,7 @@ def map_module(module_name):
 
 def qual_path_sort_key(qual_path):
     """
-    Sort key to sort ``QualPath`` instances.
+    Sort key to sort ``QualPath``-s.
     
     Parameters
     ----------
@@ -1101,7 +1103,7 @@ class CachedSearcher:
     
     Class Attributes
     ----------------
-    _cached_relations : `dict` of (``QualPath``, (``QualPath`` or `list` of ``QualPath``)) items
+    _cached_relations : `dict` of (``QualPath``, (``QualPath``, `list` of ``QualPath``)) items
         Path shortening, path relations used when translating found patches back.
     _cached_possibilities : `list` of `str`
         The cached possibilities.
@@ -1121,7 +1123,7 @@ class CachedSearcher:
         -------
         possibilities : `list` of `str`
             The cached possibilities.
-        relations : `dict` of (``QualPath``, (``QualPath`` or `list` of ``QualPath``)) items
+        relations : `dict` of (``QualPath``, (``QualPath``, `list` of ``QualPath``)) items
             Path shortening, path relations used when translating found patches back.
         """
         cached_relations = cls._cached_relations

@@ -79,7 +79,7 @@ def graved_global_link(reference, object_, path, linker):
     ----------
     reference : `str`
         A reference, what's link should be clickable.
-    object_ : ``UnitBase`` instance
+    object_ : ``UnitBase``
         The respective object.
     path : ``QualPath``
         Path of the respective object to avoid incorrect link generation in subclasses.
@@ -169,7 +169,7 @@ def graved_to_escaped(graved, object_, path, linker):
     
     Parameters
     ----------
-    graved : `None` or `list` of (`str`, ``Grave``) elements
+    graved : `None`, `list` of (`str`, ``Grave``) elements
         Graved content.
     object_ : ``UnitBase``
         The respective unit.
@@ -180,7 +180,7 @@ def graved_to_escaped(graved, object_, path, linker):
     
     Returns
     -------
-    escaped : `None` or `str`
+    escaped : `None`, `str`
     """
     if graved is None:
         return None
@@ -519,7 +519,7 @@ def section_serializer(section, object_):
     
     Parameters
     ----------
-    section : `tuple` ((`None` or `str`), `list` of `Any`)
+    section : `tuple` ((`None`, `str`), `list` of `Any`)
         The title to serialize.
     object_ : ``UnitBase``
         The respective unit.

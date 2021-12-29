@@ -19,7 +19,7 @@ def bind(bind_to, bind_with, name):
     ------
     TypeError
         - If `bind_to` is not a type.
-        - If `bind_to` instances do not support weakreferencing.
+        - If `bind_to`-s do not support weakreferencing.
         - If `bind_to` has already an attribute named `name`.
     
     Examples
@@ -69,14 +69,20 @@ def bind(bind_to, bind_with, name):
     
     """
     if not isinstance(bind_to, type):
-        raise TypeError(f'`bind_to` to must be a type, got {bind_to.__class__.__name__}; {bind_to!r}.')
+        raise TypeError(
+            f'`bind_to` can be `type`, got {bind_to.__class__.__name__}; {bind_to!r}.'
+        )
     
     name_space = bind_to.__dict__
     if ('__weakref__' in name_space) or ('__slots__' not in name_space):
-        raise TypeError(f'`bind_to` instances must support weakreferencing, got {bind_to!r}.')
+        raise TypeError(
+            f'`bind_to`-s must support weakreferencing, got {bind_to!r}.'
+        )
     
     if hasattr(bind_to, name):
-        raise TypeError(f'`bind_to` already has an attribute named, as bind_to=`{bind_to!r}`, name={name!r}.')
+        raise TypeError(
+            f'`bind_to` already has an attribute named, as bind_to={bind_to!r}, name={name!r}.'
+        )
     
     if (getattr(bind_with, '__get__', None) is not None):
         binder = DescriptorObjectBinder(name, bind_with)
@@ -204,11 +210,11 @@ class DescriptorObjectBinder(ObjectBinderBase):
         The filed's name.
     type : `type`
         The binded class.
-    fdel : `None` or `Any`
+    fdel : `None`, `Any`
         Deleter function if applicable.
-    fget : `None` or `Any`
+    fget : `None`, `Any`
         Getter function if applicable.
-    fset : `None` or `Any`
+    fset : `None`, `Any`
         Setter function if applicable.
     """
     __slots__ = ('fdel', 'fget', 'fset')

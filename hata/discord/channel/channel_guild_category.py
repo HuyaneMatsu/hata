@@ -19,7 +19,7 @@ class ChannelCategory(ChannelGuildMainBase):
     ----------
     id : `int`
         Unique identifier of the channel.
-    _permission_cache : `None` or `dict` of (`int`, ``Permission``) items
+    _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     parent_id : `int`
         The channel's parent's identifier.
@@ -60,7 +60,7 @@ class ChannelCategory(ChannelGuildMainBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data receive from Discord.
-        client : `None` or ``Client``
+        client : `None`, ``Client``
             The client, who received the channel's data, if any.
         guild_id : `int`
             The guild's identifier of the channel.
@@ -157,7 +157,7 @@ class ChannelCategory(ChannelGuildMainBase):
         
         Parameters
         ----------
-        channel_id : `int` or `str`
+        channel_id : `int`, `str`
             The channel's id.
         **kwargs : keyword parameters
             Additional predefined attributes for the channel.
@@ -221,7 +221,7 @@ class ChannelCategory(ChannelGuildMainBase):
         
         Returns
         -------
-        channels : `list` of ``ChannelGuildMainBase`` instances
+        channels : `list` of ``ChannelGuildMainBase``
         """
         guild = self.guild
         if guild is None:

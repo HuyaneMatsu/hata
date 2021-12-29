@@ -6,11 +6,11 @@ class ActivityChange:
     
     Attributes
     ----------
-    added : `None` or `list` of ``ActivityBase``
+    added : `None`, `list` of ``ActivityBase``
         The added activities to the respective user. Defaults to `None`.
-    updated : `None` or `list` of ``ActivityUpdate``
+    updated : `None`, `list` of ``ActivityUpdate``
         The updated activities of the respective user. Defaults to `None`.
-    removed: `None` or `list` of ``ActivityBase``
+    removed: `None`, `list` of ``ActivityBase``
         The removed activities from the respective user. Defaults to `None`.
     """
     __slots__ = ('added', 'updated', 'removed',)
@@ -19,11 +19,11 @@ class ActivityChange:
         """
         Creates a new activity change with the given parameters.
         
-        added : `None` or `list` of ``ActivityBase``
+        added : `None`, `list` of ``ActivityBase``
             The added activities to the user.
-        updated : `None` or `list` of ``ActivityUpdate``
+        updated : `None`, `list` of ``ActivityUpdate``
             The updated activities of the user.
-        removed: `None` or `list` of ``ActivityBase``
+        removed: `None`, `list` of ``ActivityBase``
             The removed activities from the user.
         """
         self.added = added
@@ -87,7 +87,7 @@ class ActivityUpdate:
     
     Attributes
     ----------
-    activity : ``ActivityBase`` instance
+    activity : ``ActivityBase``
         The updated activity.
     old_attributes : `dict` of (`str`, `Any`) items
         The changed attributes of the activity in `attribute-name` - `old-value` relation. Can contain any of the
@@ -98,31 +98,31 @@ class ActivityUpdate:
         +===================+===================================+
         | application_id    | `int`                             |
         +-------------------+-----------------------------------+
-        | assets            | `None` or ``ActivityAssets``      |
+        | assets            | `None`, ``ActivityAssets``        |
         +-------------------+-----------------------------------+
         | created_at        | `datetime`                        |
         +-------------------+-----------------------------------+
-        | details           | `None` or `str`                   |
+        | details           | `None`, `str`                     |
         +-------------------+-----------------------------------+
-        | emoji             | `None` or ``Emoji``               |
+        | emoji             | `None`, ``Emoji``                 |
         +-------------------+-----------------------------------+
         | flags             | ``ActivityFlag``                  |
         +-------------------+-----------------------------------+
         | name              | `str`                             |
         +-------------------+-----------------------------------+
-        | party             | `None` or ``ActivityParty``       |
+        | party             | `None`, ``ActivityParty``         |
         +-------------------+-----------------------------------+
-        | secrets           | `None` or ``ActivitySecrets``     |
+        | secrets           | `None`, ``ActivitySecrets``       |
         +-------------------+-----------------------------------+
-        | session_id        | `None` or `str`                   |
+        | session_id        | `None`, `str`                     |
         +-------------------+-----------------------------------+
-        | state             | `None` or `str`                   |
+        | state             | `None`, `str`                     |
         +-------------------+-----------------------------------+
-        | sync_id           | `None` or `str`                   |
+        | sync_id           | `None`, `str`                     |
         +-------------------+-----------------------------------+
-        | timestamps        | `None` or `ActivityTimestamps``   |
+        | timestamps        | `None`, `ActivityTimestamps``     |
         +-------------------+-----------------------------------+
-        | url               | `None` or `str`                   |
+        | url               | `None`, `str`                     |
         +-------------------+-----------------------------------+
     """
     __slots__ = ('activity', 'old_attributes',)
@@ -131,7 +131,7 @@ class ActivityUpdate:
         """
         Creates a new activity change instance with the given parameters.
         
-        activity : ``ActivityBase`` instance
+        activity : ``ActivityBase``
             The updated activity.
         old_attributes : `dict` of (`str`, `Any`) items
             The changed attributes of the activity.

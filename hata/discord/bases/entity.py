@@ -13,14 +13,14 @@ def _get_direct_parents_and_merge_slots(class_name, class_parents, class_attribu
     ----------
     class_name : `str`
         The created class's name.
-    class_parents : `tuple` of `type` instances
+    class_parents : `tuple` of `type`
         The superclasses of the creates type.
     class_attributes : `dict` of (`str`, `Any`) items
         The class attributes of the created type.
     
     Returns
     -------
-    direct_parent : `None` or `type`
+    direct_parent : `None`, `type`
         The direct parent of the respective class.
     final_slots : `set` of `str`
         Slots for the created type.
@@ -104,13 +104,13 @@ class Slotted(type):
     """
     def __new__(cls, class_name, class_parents, class_attributes):
         """
-        Creates a new ``Slotted`` instance.
+        Creates a new ``Slotted``.
         
         Parameters
         ----------
         class_name : `str`
             The created class's name.
-        class_parents : `tuple` of `type` instances
+        class_parents : `tuple` of `type`
             The superclasses of the creates type.
         class_attributes : `dict` of (`str`, `Any`) items
             The class attributes of the created type.
@@ -135,7 +135,7 @@ class DiscordEntityMeta(Slotted):
         ----------
         class_name : `str`
             The created class's name.
-        class_parents : `tuple` of `type` instances
+        class_parents : `tuple` of `type`
             The superclasses of the creates type.
         class_attributes : `dict` of (`str`, `Any`) items
             The class attributes of the created type.
@@ -145,7 +145,7 @@ class DiscordEntityMeta(Slotted):
         
         Returns
         -------
-        type : ``DiscordEntityMeta`` instance
+        type : ``DiscordEntityMeta``
         
         Notes
         -----

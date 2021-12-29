@@ -20,7 +20,7 @@ class RichVoiceState:
         If the channel is a ``ChannelVoice``, it is always `False`, meanwhile it ``ChannelStage`` it can vary.
     mute : `bool`
         Whether the user is muted.
-    nick : `None` or `str`
+    nick : `None`, `str`
         The user's nickname in the guild if applicable.
     self_deaf : `bool`
         Whether the user muted everyone else.

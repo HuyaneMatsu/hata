@@ -19,7 +19,7 @@ class AuditLogEvent(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``AuditLogEvent``) items
-        Stores the predefined ``AuditLogEvent`` instances. These can be accessed with their `value` as key.
+        Stores the predefined ``AuditLogEvent``-s. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The audit log events' values' type.
     DEFAULT_NAME : `str` = `'UNDEFINED'`
@@ -197,7 +197,7 @@ class VerificationLevel(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``VerificationLevel``) items
-        Stores the predefined ``VerificationLevel`` instances. These can be accessed with their `value` as key.
+        Stores the predefined ``VerificationLevel``-s. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The verification levels' values' type.
     DEFAULT_NAME : `str` = `'Undefined'`
@@ -253,7 +253,7 @@ class VoiceRegion(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`str`, ``VoiceRegion``) items
-        Stores the created ``VoiceRegion`` instances.
+        Stores the created ``VoiceRegion``-s.
     VALUE_TYPE : `type` = `str`
         The voice regions' values' type.
     DEFAULT_NAME : `str` = `'Undefined'`
@@ -494,7 +494,7 @@ class GuildFeature(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`str`, ``GuildFeature``) items
-        Stores the predefined ``GuildFeature`` instances.
+        Stores the predefined ``GuildFeature``-s.
     VALUE_TYPE : `type` = `str`
         The guild features' values' type.
     DEFAULT_NAME : `str` = `''`
@@ -675,7 +675,7 @@ class NsfwLevel(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``NsfwLevel``) items
-        Stores the predefined ``NsfwLevel`` instances. These can be accessed with their `value` as key.
+        Stores the predefined ``NsfwLevel``-s. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The nsfw level' values' type.
     DEFAULT_NAME : `str` = `'UNDEFINED'`
@@ -810,7 +810,7 @@ class VerificationScreenStepType(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``VerificationScreenStepType``) items
-        Stores the predefined ``VerificationScreenStepType`` instances.
+        Stores the predefined ``VerificationScreenStepType``-s.
     VALUE_TYPE : `type` = `str`
         The verification screen steps' values' type.
     DEFAULT_NAME : `str` = `''`
@@ -886,7 +886,7 @@ class GuildJoinRequestStatus(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``GuildJoinRequestStatus``) items
-        Stores the predefined ``GuildJoinRequestStatus`` instances.
+        Stores the predefined ``GuildJoinRequestStatus``-s.
     VALUE_TYPE : `type` = `str`
         The guild join request statuses' values' type.
     DEFAULT_NAME : `str` = `''`
@@ -960,7 +960,7 @@ class VerificationFieldPlatform(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``VerificationFieldPlatform``) items
-        Stores the predefined ``VerificationFieldPlatform`` instances.
+        Stores the predefined ``VerificationFieldPlatform``-s.
     VALUE_TYPE : `type` = `str`
         The verification field platforms' values' type.
     DEFAULT_NAME : `str` = `''`

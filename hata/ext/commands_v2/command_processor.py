@@ -21,7 +21,7 @@ class CommandProcessor(EventWaitforBase):
     
     Attributes
     ----------
-    _category_name_rule : `None` or `FunctionType`
+    _category_name_rule : `None`, `FunctionType`
         Function to generate category display names.
         
         A category name rule should accept the following parameters:
@@ -40,7 +40,7 @@ class CommandProcessor(EventWaitforBase):
         | name  | `str`             |
         +-------+-------------------+
     
-    _command_name_rule : `None` or `FunctionType`
+    _command_name_rule : `None`, `FunctionType`
         Function to generate command display names.
         
         A command name rule should accept the following parameters:
@@ -62,7 +62,7 @@ class CommandProcessor(EventWaitforBase):
     _default_category : ``Category``
         The command processor's default category.
     
-    _error_handlers : `None` or `list` of `async-function`
+    _error_handlers : `None`, `list` of `async-function`
         Function to run when a command raises an exception.
         
         The following parameters are passed to each error handler:
@@ -122,7 +122,7 @@ class CommandProcessor(EventWaitforBase):
         +-----------+-------------------+
         | Name      | Type              |
         +===========+===================+
-        | prefix    | `None` or `str`   |
+        | prefix    | `None`, `str`     |
         +-----------+-------------------+
     
     _prefix_ignore_case : `bool`
@@ -144,7 +144,7 @@ class CommandProcessor(EventWaitforBase):
         +-----------+-------------------+
         | Name      | Type              |
         +===========+===================+
-        | prefix    | `None` or `str`   |
+        | prefix    | `None`, `str`     |
         +-----------+-------------------+
         | end       | `int`             |
         +-----------+-------------------+
@@ -152,10 +152,10 @@ class CommandProcessor(EventWaitforBase):
     _prefix_raw : `str`, `tuple` of `str`, `callable`
         Raw prefix of the command processor.
     
-    _self_reference : `None` or ``WeakReferer`` to ``CommandProcessor``
+    _self_reference : `None`, ``WeakReferer`` to ``CommandProcessor``
         Reference to the command processor itself.
     
-    _unknown_command : `None` or `FunctionType`
+    _unknown_command : `None`, `FunctionType`
         Called when a command would be called, but not found.
         
         Accepts the following parameters:
@@ -225,11 +225,11 @@ class CommandProcessor(EventWaitforBase):
             A function used to detect whether a message should be handled.
         mention_prefix_enabled : `bool`, Optional (Keyword only)
             Whether mentioning the client at the start of a message counts as prefix. Defaults to `True`.
-        category_name_rule : `None` or `function`, Optional (Keyword only)
+        category_name_rule : `None`, `function`, Optional (Keyword only)
             Function to generate category display names. Defaults to `None`.
-        command_name_rule : `None` or `function`, Optional (Keyword only)
+        command_name_rule : `None`, `function`, Optional (Keyword only)
             Function to generate command display names. Defaults to `None`.
-        default_category_name : `None` or `str`, Optional (Keyword only)
+        default_category_name : `None`, `str`, Optional (Keyword only)
             The command processor's default category's name. Defaults to `None`.
         prefix_ignore_case : `bool`
             Whether the prefix's case should be ignored.
@@ -239,7 +239,7 @@ class CommandProcessor(EventWaitforBase):
         TypeError
             - If `precheck` accepts bad amount of parameters.
             - If `precheck` is async.
-            - If `mention_prefix_enabled` was not given as a `bool` instance.
+            - If `mention_prefix_enabled` was not given as a `bool`.
             - If `category_name_rule` is not `None` nor `function`.
             - If `category_name_rule` is `async-function`.
             - If `category_name_rule` accepts bad amount of parameters.
@@ -250,8 +250,8 @@ class CommandProcessor(EventWaitforBase):
             - If `command_name_rule` accepts bad amount of parameters.
             - If `command_name_rule` raises exception when `str` is passed to it.
             - If `command_name_rule` not returns `str`, when `str` is passed to it.
-            - If `default_category_name` was not given neither as `None` nor as `str` instance.
-            - If `prefix_ignore_case` was not given as `bool` instance.
+            - If `default_category_name` was not given neither as `None` nor as `str`.
+            - If `prefix_ignore_case` was not given as `bool`.
             - Prefix's type is incorrect.
             - Prefix is a callable but accepts bad amount of parameters.
         ValueError
@@ -462,7 +462,7 @@ class CommandProcessor(EventWaitforBase):
         Raises
         ------
         TypeError
-            - If `prefix_ignore_case` was not given as `bool` instance.
+            - If `prefix_ignore_case` was not given as `bool`.
             - Prefix's type is incorrect.
             - Prefix is a callable but accepts bad amount of parameters.
         """
@@ -498,7 +498,7 @@ class CommandProcessor(EventWaitforBase):
         
         Returns
         -------
-        prefix : `None` or `str`
+        prefix : `None`, `str`
         """
         return await self._prefix_getter(message)
     
@@ -512,7 +512,7 @@ class CommandProcessor(EventWaitforBase):
         
         Parameters
         ---------
-        category_name : `None` or `str`
+        category_name : `None`, `str`
             The category's name.
         
         Returns
@@ -522,14 +522,15 @@ class CommandProcessor(EventWaitforBase):
         Raises
         ------
         TypeError
-            If `category_name` was not given neither as  `None` or `str` instance.
+            If `category_name` was not given neither as  `None`, `str`.
         """
         if category_name is None:
             return self._default_category
         
         if not isinstance(category_name, str):
-            raise TypeError(f'`category_name` can be given as `None` or as `str` instance, got '
-                f'{category_name.__class__.__name__}.')
+            raise TypeError(
+                f'`category_name` can be `None`, `str`, got {category_name.__class__.__name__}; {category_name!r}.'
+            )
         
         category_name = raw_name_to_display(category_name)
         
@@ -555,7 +556,7 @@ class CommandProcessor(EventWaitforBase):
         ----------
         name : `str`
             The name of the category.
-        checks : `None`, ``CheckBase`` instance or `list` of ``CheckBase`` instances, Optional (Keyword only)
+        checks : `None`, ``CheckBase``, `list` of ``CheckBase``, Optional (Keyword only)
             Checks to define in which circumstances a command should be called.
         description : `Any`, Optional (Keyword only)
             Optional description for the category. Defaults to `None`.
@@ -567,14 +568,16 @@ class CommandProcessor(EventWaitforBase):
         Raises
         ------
         TypeError
-            If `checks` was not given neither as `None`, ``CheckBase`` instance or as `list` of ``CheckBase``
+            If `checks` was not given neither as `None`, ``CheckBase``, `list` of ``CheckBase``
             instances.
         ValueError
             If a category already exists with the given name.
         """
         category_name = validate_category_or_command_name(category_name)
         if category_name in self.category_name_to_category:
-            raise ValueError(f'There is already a category added with that name: `{category_name!r}`')
+            raise ValueError(
+                f'There is already a category added with that name: {category_name!r}'
+            )
         
         category = Category(category_name, checks=checks, description=description)
         category.set_command_processor(self)
@@ -594,7 +597,7 @@ class CommandProcessor(EventWaitforBase):
         Raises
         ------
         TypeError
-            If `category` was not given neither as ``Category`` nor as `str` instance.
+            If `category` was not given neither as ``Category`` nor as `str`.
         ValueError
             - Default category cannot be deleted.
             - If te given category is not the same as the owned one with it's name.
@@ -605,8 +608,9 @@ class CommandProcessor(EventWaitforBase):
             category_name = validate_category_or_command_name(category)
             category = None
         else:
-            raise TypeError(f'`category` can be given either as `{Category.__name__}` or as `str` instance, '
-                f'got {category.__class__.__name__}.')
+            raise TypeError(
+                f'`category` can be `{Category.__name__}`, `str`, got {category.__class__.__name__}.'
+            )
         
         try:
             owned_category = self.category_name_to_category[category_name]
@@ -614,8 +618,10 @@ class CommandProcessor(EventWaitforBase):
             return
         
         if (category is not None) and (category is not owned_category):
-            raise ValueError(f'The given category is not the same as the owned owned one with it\'s name: got '
-                f'{category!r}; owning: {owned_category!r}.')
+            raise ValueError(
+                f'The given category is not the same as the owned owned one with it\'s name: got '
+                f'{category!r}; owning: {owned_category!r}.'
+            )
         
         owned_category.unlink()
     
@@ -637,7 +643,9 @@ class CommandProcessor(EventWaitforBase):
         """
         command_processor = command.get_command_processor()
         if (command_processor is not None) and (command_processor is not self):
-            raise RuntimeError(f'{Command.__name__}: {command!r} is bound to an other command processor.')
+            raise RuntimeError(
+                f'{Command.__name__}: {command!r} is bound to an other command processor.'
+            )
         
         category = command.get_category()
         if category is None:
@@ -669,12 +677,15 @@ class CommandProcessor(EventWaitforBase):
         """
         if __debug__:
             if not isinstance(command, Command):
-                raise AssertionError(f'`command` can be given as `{Command.__name__}` instance, got '
-                    f'{command.__class__.__name__}.')
+                raise AssertionError(
+                    f'`command` can be `{Command.__name__}`, got {command.__class__.__name__}; {command!r}.'
+                )
         
         command_processor = command.get_command_processor()
         if (command_processor is not None) and (command_processor is not self):
-            raise RuntimeError(f'{Command.__name__}: {command!r} is bound to an other command processor.')
+            raise RuntimeError(
+                f'{Command.__name__}: {command!r} is bound to an other command processor.'
+            )
         
         command.unlink_category()
     
@@ -695,7 +706,9 @@ class CommandProcessor(EventWaitforBase):
         """
         command_processor = category.get_command_processor()
         if (command_processor is not None) and (command_processor is not self):
-            raise RuntimeError(f'{Category.__name__}: {command_processor!r} is bound to an other command processor.')
+            raise RuntimeError(
+                f'{Category.__name__}: {command_processor!r} is bound to an other command processor.'
+            )
         
         category.set_command_processor(self)
     
@@ -716,7 +729,9 @@ class CommandProcessor(EventWaitforBase):
         """
         command_processor = category.get_command_processor()
         if (command_processor is not None) and (command_processor is not self):
-            raise RuntimeError(f'{Category.__name__}: {command_processor!r} is bound to an other command processor.')
+            raise RuntimeError(
+                f'{Category.__name__}: {command_processor!r} is bound to an other command processor.'
+            )
         
         category.unlink()
     
@@ -826,8 +841,8 @@ class CommandProcessor(EventWaitforBase):
         
         Parameters
         ----------
-        precheck : `None` or `callable`
-            Can be either `None` or `non-async` function accepting following parameters are passed to it:
+        precheck : `None`, `callable`
+            Can be either `None`, `non-async` function accepting following parameters are passed to it:
             
             +-----------+---------------+
             | Name      | Type          |
@@ -847,7 +862,7 @@ class CommandProcessor(EventWaitforBase):
         
         Returns
         -------
-        precheck : `None` or `callable`
+        precheck : `None`, `callable`
         """
         if precheck is None:
             precheck_to_set = default_precheck
@@ -867,28 +882,28 @@ class CommandProcessor(EventWaitforBase):
         ----------
         command : ``Command``, ``Router``, `None`, `async-callable`
             Async callable to add as a command.
-        name : `None` or `str`
+        name : `None`, `str`
             The command's name.
-        name : `None`, `str` or `tuple` of (`None`, `Ellipsis`, `str`)
+        name : `None`, `str`, `tuple` of (`None`, `Ellipsis`, `str`)
             The name to be used instead of the passed `command`'s.
-        description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`), Optional
+        description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`), Optional
             Description added to the command. If no description is provided, then it will check the commands's
             `.__doc__` attribute for it. If the description is a string instance, then it will be normalized with the
             ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
             description.
-        aliases : `None`, `str`, `list` of `str` or `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`), Optional
+        aliases : `None`, `str`, `list` of `str`, `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`), Optional
             The aliases of the command.
-        category : `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``, `str`), Optional
+        category : `None`, ``Category``, `str`, `tuple` of (`None`, `Ellipsis`, ``Category``, `str`), Optional
             The category of the command. Can be given as the category itself, or as a category's name. If given as
             `None`, then the command will go under the command processer's default category.
         checks : `None`, ``CommandCheckWrapper``, ``CheckBase``, `list` of ``CommandCheckWrapper``, ``CheckBase`` \
-                instances or `tuple` of (`None`, `Ellipsis`, ``CommandCheckWrapper``, ``CheckBase`` or `list` of \
+                instances or `tuple` of (`None`, `Ellipsis`, ``CommandCheckWrapper``, ``CheckBase``, `list` of \
                 ``CommandCheckWrapper``, ``CheckBase``), Optional
             Checks to decide in which circumstances the command should be called.
         error_handlers : `None`, `async-callable`, `list` of `async-callable`, `tuple` of (`None`, `async-callable`, \
                 `list` of `async-callable`), Optional
             Error handlers for the command.
-        separator : `None`, `str` or `tuple` (`str`, `str`), Optional
+        separator : `None`, `str`, `tuple` (`str`, `str`), Optional
             The parameter separator of the command's parser.
         assigner : `None`, `str`, Optional
             Parameter assigner sign of the command's parser.
@@ -944,13 +959,13 @@ class CommandProcessor(EventWaitforBase):
         ----------
         command : ``Command``, ``Router``, `async-callable` or instantiable to `async-callable`
             The command to remove.
-        name : `None` or `str`, Optional
+        name : `None`, `str`, Optional
             The command's name to remove.
         
         Raises
         ------
         TypeError
-            If `name` was not given as `None` or as `str` instance.
+            If `name` was not given as `None`, `str`.
         """
         if (name is not None):
             name_type = type(name)
@@ -959,7 +974,9 @@ class CommandProcessor(EventWaitforBase):
             elif issubclass(name_type, str):
                 name = str(name)
             else:
-                raise TypeError(f'`name` can be `None` or `str` instance, got {name_type.__name__}.')
+                raise TypeError(
+                    f'`name` can be `None`, `str`, got {name_type.__name__}; {name!r}.'
+                )
         
         if isinstance(command, Command):
             self._remove_command(command)

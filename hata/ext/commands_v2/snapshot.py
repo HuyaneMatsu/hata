@@ -12,7 +12,7 @@ def take_command_processor_snapshot(client):
     
     Returns
     -------
-    collected : `None` or `tuple` of (`None` or `set` of ``Category``, `None` or `set` of ``Command``)
+    collected : `None`, `tuple` of (`None`, `set` of ``Category``, `None`, `set` of ``Command``)
     """
     command_processor = getattr(client, 'command_processor', None)
     if (command_processor is None) or (not isinstance(command_processor, CommandProcessor)):
@@ -46,15 +46,15 @@ def calculate_command_processor_snapshot_difference(client, snapshot_old, snapsh
     ----------
     client : ``Client``
         The respective client.
-    snapshot_old : `None` or `tuple` of (`None` or `set` of ``Category``, `None` or `set` of ``Command``)
+    snapshot_old : `None`, `tuple` of (`None`, `set` of ``Category``, `None`, `set` of ``Command``)
         An old snapshot taken.
-    snapshot_new : `None` or `tuple` of (`None` or `set` of ``Category``, `None` or `set` of ``Command``)
+    snapshot_new : `None`, `tuple` of (`None`, `set` of ``Category``, `None`, `set` of ``Command``)
         A new snapshot.
     
     Returns
     -------
-    snapshot_difference : `None` or `tuple` (`tuple` (`None` or `set`, `None` or `set`), \
-            `tuple` (`None` or `set`, `None` or `set`))
+    snapshot_difference : `None`, `tuple` (`tuple` ((`None`, `set`), (`None`, `set`)), \
+            `tuple` ((`None`, `set`), (`None`, `set`)))
         The difference between the two snapshots.
     """
     if (snapshot_old is None) or (snapshot_new is None):
@@ -136,8 +136,8 @@ def revert_command_processor_snapshot(client, snapshot_difference):
     ----------
     client : ``Client``
         The respective client instance.
-    snapshot_difference : `tuple` (`tuple` (`None` or `set`, `None` or `set`), \
-            `tuple` (`None` or `set`, `None` or `set`))
+    snapshot_difference : `tuple` (`tuple` ((`None`, `set`), (`None`, `set`)), \
+            `tuple` ((`None`, `set`), (`None`, `set`)))
         The taken snapshot.
     """
     command_processor = getattr(client, 'command_processor', None)

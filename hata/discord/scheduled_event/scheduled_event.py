@@ -20,13 +20,13 @@ class ScheduledEvent(DiscordEntity):
         Defaults to `0` if not applicable.
     creator : ``ClientUserBase``
         The event's creator.
-    description : `None` or `str`
+    description : `None`, `str`
         Description of the event.
     entity_id : `int`
         The event's entity's type.
         
         Defaults to `0`.
-    entity_metadata : `None` or ``ScheduledEventEntityMetadata`` instance
+    entity_metadata : `None`, ``ScheduledEventEntityMetadata``
         Metadata about the target entity.
     entity_type : ``ScheduledEventEntityType``
         To which type of entity the event is bound to.
@@ -40,9 +40,9 @@ class ScheduledEvent(DiscordEntity):
         The event's name.
     privacy_level : ``PrivacyLevel``
         The privacy level of the event.
-    end : `None` or `datetime`
+    end : `None`, `datetime`
         The scheduled end time of the event.
-    start : `None` or `datetime`
+    start : `None`, `datetime`
         The scheduled start time of the event.
     send_start_notification : `bool`
         Whether start notification should be sent when the event is started.
@@ -65,7 +65,7 @@ class ScheduledEvent(DiscordEntity):
     
     def __new__(cls, data):
         """
-        Creates a new ``ScheduledEvent`` instance from the received data.
+        Creates a new ``ScheduledEvent`` from the received data.
         
         Ift he instance already exists, returns that instead.
         
@@ -216,11 +216,11 @@ class ScheduledEvent(DiscordEntity):
             +===========================+===============================================+
             | channel_id                | `int`                                         |
             +---------------------------+-----------------------------------------------+
-            | description               | `None` or `str`                               |
+            | description               | `None`, `str`                                 |
             +---------------------------+-----------------------------------------------+
             | entity_id                 | `int`                                         |
             +---------------------------+-----------------------------------------------+
-            | entity_metadata           | `None` or ``ScheduledEventEntityMetadata``    |
+            | entity_metadata           | `None`, ``ScheduledEventEntityMetadata``      |
             +---------------------------+-----------------------------------------------+
             | entity_type               | ``ScheduledEventEntityType``                  |
             +---------------------------+-----------------------------------------------+
@@ -232,11 +232,11 @@ class ScheduledEvent(DiscordEntity):
             +---------------------------+-----------------------------------------------+
             | send_start_notification   | `bool`                                        |
             +---------------------------+-----------------------------------------------+
-            | end                       | `None` or `datetime`                          |
+            | end                       | `None`, `datetime`                            |
             +---------------------------+-----------------------------------------------+
-            | start                     | `None` or `datetime`                          |
+            | start                     | `None`, `datetime`                            |
             +---------------------------+-----------------------------------------------+
-            | sku_ids                   | `None` or `tuple` of `int`                    |
+            | sku_ids                   | `None`, `tuple` of `int`                      |
             +---------------------------+-----------------------------------------------+
             | status                    | ``ScheduledEventStatus``                      |
             +---------------------------+-----------------------------------------------+
@@ -389,7 +389,7 @@ class ScheduledEvent(DiscordEntity):
         
         Returns
         -------
-        entity : `None` or ``ChannelStage``
+        entity : `None`, ``ChannelStage``
         """
         entity_id = self.entity_id
         if entity_id:
@@ -415,7 +415,7 @@ class ScheduledEvent(DiscordEntity):
         
         Returns
         -------
-        channel : `None` or ``ChannelStage``
+        channel : `None`, ``ChannelStage``
         """
         channel_id = self.channel_id
         if channel_id:
@@ -429,7 +429,7 @@ class ScheduledEvent(DiscordEntity):
         
         Returns
         -------
-        guild : `None` or ``Guild``
+        guild : `None`, ``Guild``
         """
         return GUILDS.get(self.guild_id, None)
     

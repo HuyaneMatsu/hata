@@ -28,7 +28,7 @@ class Stage(DiscordEntity):
         Whether the stage is discoverable.
     guild : ``Guild``
         The guild of the stage channel.
-    invite_code : `None` or `str`
+    invite_code : `None`, `str`
         Invite code to the stage's voice channel.
     privacy_level : ``PrivacyLevel``
         The privacy level of the stage.
@@ -134,9 +134,9 @@ class Stage(DiscordEntity):
         +===============+=======================+
         | discoverable  | `bool`                |
         +---------------+-----------------------+
-        | invite_code   | `None` or `str`       |
+        | invite_code   | `None`, `str`         |
         +---------------+-----------------------+
-        | privacy_level | ``PrivacyLevel`` |
+        | privacy_level | ``PrivacyLevel``      |
         +---------------+-----------------------+
         | topic         | `str`                 |
         +---------------+-----------------------+
@@ -163,7 +163,7 @@ class Stage(DiscordEntity):
         
         privacy_level = PrivacyLevel.get(data.get('privacy_level', 2))
         if privacy_level is not self.privacy_level:
-            privacy_level['privacy_level'] = self.privacy_level
+            old_attributes['privacy_level'] = self.privacy_level
             self.privacy_level = privacy_level
         
         return old_attributes

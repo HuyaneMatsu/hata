@@ -49,7 +49,7 @@ class DiscordException(Exception):
     +-------+-----------------------+---------------+
     
     \* For five times a request can fail with `OsError` or return `501` / `502` response code. If the request fails
-    with these cases for the fifth try and the last one resulted `501` or `502` response code, then
+    with these cases for the fifth try and the last one resulted `501` / `502` response code, then
     ``DiscordException`` will be raised.
     
     Attributes
@@ -58,10 +58,10 @@ class DiscordException(Exception):
         The http client response, what caused the error.
     received_data : `Any`
         Deserialized `json` response data if applicable.
-    _messages : `None` or `list` of `str`
+    _messages : `None`, `list` of `str`
         Initially the `._messages` attribute is `None`, but when the `.messages` property is used for the first time,
         the messages will be parsed out from the response and from it's data.
-    _code : `None` or `int`
+    _code : `None`, `int`
         Initially the `._code` attribute is set to `None`, but first time when the `.code` property is accessed, it is
         parsed out. If the response data does not contains `code`, then this attribute is set to `0`.
     """
@@ -125,7 +125,7 @@ class DiscordException(Exception):
         
         If the response's data contains additional errors too, then those will be parsed out, and added to the list.
         
-        Saves the result to the `._messages` instance attribute and saves it as well.
+        Saves the result to the `._messages` attribute and saves it as well.
         
         Returns
         -------

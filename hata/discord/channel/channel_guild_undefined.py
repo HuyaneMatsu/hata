@@ -22,7 +22,7 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
     ----------
     id : `int`
         Unique identifier of the channel.
-    _permission_cache : `None` or `dict` of (`int`, ``Permission``) items
+    _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     parent_id : `int`
         The channel's parent's identifier.
@@ -46,7 +46,7 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
         them.
     ORDER_GROUP : `int` = `0`
         An order group what defined which guild channel type comes after the other one.
-    IGNORED_NAMES : `frozenset` or `str`
+    IGNORED_NAMES : `frozenset`, `str`
         Attribute names, which will not be set automatically, because they are set by other modules.
     REPRESENTED_TYPES : `tuple` = (`7`, `8`,)
         The type values which ``ChannelGuildUndefined`` might represent.
@@ -72,7 +72,7 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data received from Discord.
-        client : `None` or ``Client``
+        client : `None`, ``Client``
             The client, who received the channel's data, if any.
         guild_id : `int`
             The channel's guild's identifier.
@@ -236,7 +236,7 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
         
         Parameters
         ----------
-        channel_id : `int` or `str`
+        channel_id : `int`, `str`
             The channel's id.
         **kwargs : keyword parameters
             Additional predefined attributes for the channel.

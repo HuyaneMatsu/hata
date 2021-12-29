@@ -85,13 +85,13 @@ def _debug_component_custom_id(custom_id):
     
     Parameters
     ----------
-    custom_id : `None` or `str`
+    custom_id : `None`, `str`
         Custom identifier to detect which button was clicked by the user.
     
     Raises
     ------
     AssertionError
-        - If `custom_id` was not given neither as `None` or `str`.
+        - If `custom_id` was not given neither as `None`, `str`.
         - If `custom_id`'s length is over `100`.
     """
     if (custom_id is None):
@@ -120,7 +120,7 @@ def _debug_component_emoji(emoji):
     
     Parameters
     ----------
-    emoji : `None` or ``Emoji``
+    emoji : `None`, ``Emoji``
         Emoji of the button if applicable.
     
     Raises
@@ -143,7 +143,7 @@ def _debug_component_label(label):
     
     Parameters
     ----------
-    label : `None` or `str`
+    label : `None`, `str`
         Label of the component.
     
     Raises
@@ -172,7 +172,7 @@ def _debug_component_title(title):
     
     Parameters
     ----------
-    title : `None` or `str`
+    title : `None`, `str`
         Title of the component.
     
     Raises
@@ -231,13 +231,13 @@ def _debug_component_url(url):
     
     Parameters
     ----------
-    url : `None` or `str`
+    url : `None`, `str`
         Url to redirect to when clicking on a button.
     
     Raises
     ------
     AssertionError
-        If `url` was not given neither as `None` or `str`.
+        If `url` was not given neither as `None`, `str`.
     """
     if url is None:
         pass
@@ -295,13 +295,13 @@ def _debug_component_description(description):
     
     Parameters
     ----------
-    description : `None` or `str`
+    description : `None`, `str`
         A component option's description.
     
     Raises
     ------
     AssertionError
-        If `description` was not given neither as `None` or `str`.
+        If `description` was not given neither as `None`, `str`.
     """
     if description is None:
         pass
@@ -378,7 +378,7 @@ def _debug_component_placeholder(placeholder):
     
     Parameters
     ----------
-    placeholder : `None` or `str`
+    placeholder : `None`, `str`
         The placeholder text of a component select.
     
     Raises
@@ -516,7 +516,7 @@ def _debug_component_required(required):
     Raises
     ------
     AssertionError
-        If `required` was not given neither as `None` or `bool`.
+        If `required` was not given neither as `None`, `bool`.
     """
     if (required is not None) and (not isinstance(required, bool)):
         raise AssertionError(
@@ -530,13 +530,13 @@ def _debug_component_text_input_value(value):
     
     Parameters
     ----------
-    value : `None` or `str`
+    value : `None`, `str`
         The default value of the text input.
     
     Raises
     ------
     AssertionError
-        If `value` was not given neither as `None` or `str`.
+        If `value` was not given neither as `None`, `str`.
     """
     if (value is not None) and (not isinstance(value, bool)):
         raise AssertionError(
@@ -710,7 +710,7 @@ class ComponentRow(ComponentBase):
     
     Attributes
     ----------
-    components : `None` or `tuple` of ``ComponentBase``s
+    components : `None`, `tuple` of ``ComponentBase``s
         Stored components.
     
     Class Attributes
@@ -938,7 +938,7 @@ class ComponentButton(ComponentBase):
     
     Attributes
     ----------
-    custom_id : `None` or `str`
+    custom_id : `None`, `str`
         Custom identifier to detect which button was clicked by the user.
         
         > Mutually exclusive with the `url` field.
@@ -946,16 +946,16 @@ class ComponentButton(ComponentBase):
     enabled : `bool`
         Whether the component is enabled.
     
-    emoji : `None` or ``Emoji``
+    emoji : `None`, ``Emoji``
         Emoji of the button if applicable.
     
-    label : `None` or `str`
+    label : `None`, `str`
         Label of the component.
     
-    style : `None` or ``ButtonStyle``
+    style : `None`, ``ButtonStyle``
         The button's style.
     
-    url : `None` or `str`
+    url : `None`, `str`
         Url to redirect to when clicking on the button.
         
         > Mutually exclusive with the `custom_id` field.
@@ -978,13 +978,13 @@ class ComponentButton(ComponentBase):
         
         Parameters
         ----------
-        label : `None` or `str`, Optional
+        label : `None`, `str`, Optional
             Label of the component.
         
-        emoji : `None` or ``Emoji``, Optional
+        emoji : `None`, ``Emoji``, Optional
             Emoji of the button if applicable.
         
-        custom_id : `None` or `str`, Optional (Keyword only)
+        custom_id : `None`, `str`, Optional (Keyword only)
             Custom identifier to detect which button was clicked by the user.
             
             > Mutually exclusive with the `url` field.
@@ -995,7 +995,7 @@ class ComponentButton(ComponentBase):
         style : `None`, ``ButtonStyle``, `int`, Optional (Keyword only)
             The button's style.
         
-        url : `None` or `str`, Optional (Keyword only)
+        url : `None`, `str`, Optional (Keyword only)
             Url to redirect to when clicking on the button.
             
             > Mutually exclusive with the `custom_id` field.
@@ -1005,10 +1005,10 @@ class ComponentButton(ComponentBase):
         TypeError
             If `style`'s type is unexpected.
         AssertionError
-            - If `custom_id` was not given neither as `None` or `str`.
+            - If `custom_id` was not given neither as `None`, `str`.
             - `url` is mutually exclusive with `custom_id`.
             - If `emoji` was not given as ``Emoji``.
-            - If `url` was not given neither as `None` or `str`.
+            - If `url` was not given neither as `None`, `str`.
             - If `style` was not given as any of the `type`'s expected styles.
             - If `label` was not given neither as `None` nor as `int`.
             - If `enabled` was not given as `bool`.
@@ -1234,22 +1234,22 @@ class ComponentButton(ComponentBase):
         
         Other Parameters
         ----------------
-        custom_id : `None` or `str`, Optional (Keyword only)
+        custom_id : `None`, `str`, Optional (Keyword only)
             Custom identifier to detect which button was clicked by the user.
         
         enabled : `bool`, Optional (Keyword only)
             Whether the button is enabled. Defaults to `True`.
         
-        emoji : `None` or ``Emoji``, Optional (Keyword only)
+        emoji : `None`, ``Emoji``, Optional (Keyword only)
             Emoji of the button if applicable.
         
-        label : `None` or `str`, Optional (Keyword only)
+        label : `None`, `str`, Optional (Keyword only)
             Label of the component.
         
         style : `None`, ``ButtonStyle``, `int`, Optional (Keyword only)
             The button's style.
         
-        url : `None` or `str`, Optional (Keyword only)
+        url : `None`, `str`, Optional (Keyword only)
             Url to redirect to when clicking on the button.
         
         Returns
@@ -1427,9 +1427,9 @@ class ComponentSelectOption(ComponentBase):
     ----------
     default : `bool`
         Whether this option is the default one.
-    description : `None` or `str`
+    description : `None`, `str`
         Description of the option.
-    emoji : `None` or ``Emoji``
+    emoji : `None`, ``Emoji``
         Emoji on the option if applicable.
     label : `str`
         Label of the option.
@@ -1455,11 +1455,11 @@ class ComponentSelectOption(ComponentBase):
             The option's value.
         label : `str`
             Label of the component option.
-        emoji : `None` or ``Emoji``, Optional
+        emoji : `None`, ``Emoji``, Optional
             Emoji of the option if applicable.
         default : `bool`, Optional (Keyword only)
             Whether this the the default option. Defaults to `False`.
-        description : `None` or `str`, Optional (Keyword only)
+        description : `None`, `str`, Optional (Keyword only)
             Description of the component option.
         """
         if __debug__:
@@ -1615,9 +1615,9 @@ class ComponentSelectOption(ComponentBase):
         ----------------
         default : `bool`
             Whether this the the default option. Defaults to `False`.
-        description : `None` or `str`, Optional (Keyword only)
+        description : `None`, `str`, Optional (Keyword only)
             Description of the component option.
-        emoji : `None` or ``Emoji``, Optional (Keyword only)
+        emoji : `None`, ``Emoji``, Optional (Keyword only)
             Emoji of the option if applicable.
         label : `str`, Optional (Keyword only)
             Label of the component option.
@@ -1763,7 +1763,7 @@ class ComponentSelect(ComponentBase):
         Custom identifier to detect which component was used by the user.
     enabled : `bool`
         Whether the component is enabled.
-    options : `None` or `tuple` of ``ComponentSelectOption``
+    options : `None`, `tuple` of ``ComponentSelectOption``
         Options of the select.
     placeholder : `str`
         Placeholder text of the select.
@@ -1789,7 +1789,7 @@ class ComponentSelect(ComponentBase):
         ----------
         options : `None` or (`list`, `tuple`) of ``ComponentSelectOption``
             Options of the select.
-        custom_id : `None` or `str`, Optional
+        custom_id : `None`, `str`, Optional
             Custom identifier to detect which component was used by the user.
         enabled : `bool`, Optional (Keyword only)
             Whether the button is enabled. Defaults to `True`.
@@ -1803,7 +1803,7 @@ class ComponentSelect(ComponentBase):
         Raises
         ------
         AssertionError
-            - If `custom_id` is not given as `None` or `str`.
+            - If `custom_id` is not given as `None`, `str`.
             - If `custom_id`'s length is out of range [0:100].
             - If `options` length is out from the expected range [1:25].
             - If `options` is neither `None` or (`list`, `tuple`) of ``ComponentSelectOption`` elements.
@@ -2043,7 +2043,7 @@ class ComponentSelect(ComponentBase):
         
         Other Parameters
         ----------------
-        custom_id : `None` or `str`, Optional (Keyword only)
+        custom_id : `None`, `str`, Optional (Keyword only)
             Custom identifier to detect which component was used by the user.
         
         enabled : `bool`, Optional (Keyword only)
@@ -2243,13 +2243,13 @@ class ComponentTextInput(ComponentBase):
     
     Attributes
     ----------
-    custom_id : `None` or `str`
+    custom_id : `None`, `str`
         Custom identifier to detect which text input was clicked by the user.
     
     enabled : `bool`
         Whether the component is enabled.
     
-    label : `None` or `str`
+    label : `None`, `str`
         Label of the component.
     
     max_length : `int`
@@ -2268,10 +2268,10 @@ class ComponentTextInput(ComponentBase):
     required : `bool`
         Whether the field is required to be fulfilled.
     
-    style : `None` or ``TextInputStyle``
+    style : `None`, ``TextInputStyle``
         The text input's style.
     
-    value : `None` or `str`
+    value : `None`, `str`
         The text input's default value.
     
     Class Attributes
@@ -2294,10 +2294,10 @@ class ComponentTextInput(ComponentBase):
         
         Parameters
         ----------
-        label : `None` or `str`, Optional
+        label : `None`, `str`, Optional
             Label of the component.
         
-        custom_id : `None` or `str`, Optional (Keyword only)
+        custom_id : `None`, `str`, Optional (Keyword only)
             Custom identifier to detect which text input was clicked by the user.
         
         enabled : `bool`, Optional (Keyword only)
@@ -2313,10 +2313,10 @@ class ComponentTextInput(ComponentBase):
             
             Defaults to `0` if not applicable.
         
-        placeholder : `None` or `str`, Optional (Keyword only)
+        placeholder : `None`, `str`, Optional (Keyword only)
             Placeholder text of the select.
         
-        required : `None` or `bool`, Optional (Keyword only)
+        required : `None`, `bool`, Optional (Keyword only)
             Whether the field is required to be fulfilled.
             
             If not given, or given as `None`, will default to `True` if `min_length` is defined as higher than `0`.
@@ -2324,7 +2324,7 @@ class ComponentTextInput(ComponentBase):
         style : `None`, ``TextInputStyle``, `int`, Optional (Keyword only)
             The text input's style.
         
-        value : `None` or `str`, Optional (Keyword only)
+        value : `None`, `str`, Optional (Keyword only)
             The text input's default value.
         
         Raises
@@ -2332,7 +2332,7 @@ class ComponentTextInput(ComponentBase):
         TypeError
             If `style`'s type is unexpected.
         AssertionError
-            - If `custom_id` was not given neither as `None` or `str`.
+            - If `custom_id` was not given neither as `None`, `str`.
             - If `style` was not given as any of the `type`'s expected styles.
             - If `label` was not given neither as `None` nor as `int`.
             - If `enabled` was not given as `bool`.
@@ -2616,13 +2616,13 @@ class ComponentTextInput(ComponentBase):
         
         Other Parameters
         ----------------
-        custom_id : `None` or `str`, Optional (Keyword only)
+        custom_id : `None`, `str`, Optional (Keyword only)
             Custom identifier to detect which text input was clicked by the user.
         
         enabled : `bool`, Optional (Keyword only)
             Whether the text input is enabled. Defaults to `True`.
         
-        label : `None` or `str`, Optional (Keyword only)
+        label : `None`, `str`, Optional (Keyword only)
             Label of the component.
         
         max_length : `int`, Optional (Keyword only)
@@ -2631,10 +2631,10 @@ class ComponentTextInput(ComponentBase):
         min_length : `int`, Optional (Keyword only)
             The minimal length of the inputted text.
         
-        placeholder : `None` or `str`, Optional (Keyword only)
+        placeholder : `None`, `str`, Optional (Keyword only)
             Placeholder text of the select.
         
-        required : `None` or `bool`, Optional (Keyword only)
+        required : `None`, `bool`, Optional (Keyword only)
             Whether the field is required to be fulfilled.
             
             If not given, or given as `None`, will default to `True` if `min_length` is defined as higher than `0`.
@@ -2642,7 +2642,7 @@ class ComponentTextInput(ComponentBase):
         style : `None`, ``TextInputStyle``, `int`, Optional (Keyword only)
             The text input's style.
         
-        value : `None` or `str`, Optional (Keyword only)
+        value : `None`, `str`, Optional (Keyword only)
             The text input's default value.
         
         Returns

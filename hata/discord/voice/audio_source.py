@@ -56,7 +56,7 @@ class AudioSource:
         
         Returns
         -------
-        audio_data : `bytes` or `None`
+        audio_data : `bytes`, `None`
         """
         return None
     
@@ -117,11 +117,11 @@ class LocalAudio(AudioSource):
     
     Attributes
     ----------
-    _process_args : `tuple` ((`list` of `str`),  (`None` or `file-like`))
+    _process_args : `tuple` ((`list` of `str`),  (`None`, `file-like`))
         Parameters and the stdin used to open the postprocess when postprocess happens.
     _stdout : `_io.BufferedReader`
         Stdout of `.process`.
-    path : `None` or `str`
+    path : `None`, `str`
         The audio source's path if applicable. Defaults to `None`.
     process : `subprocess.Popen`
         The ffmpeg or the avconv subprocess.
@@ -144,7 +144,7 @@ class LocalAudio(AudioSource):
         
         Parameters
         ----------
-        source : `str`, `Path` or `file-like`
+        source : `str`, `Path`, `file-like`
             The source audio file's path or `file-like` if `pipe` is `True`.
         executable : `str`
             The executable's name to use. Defaults to `'ffmpeg'`.
@@ -169,7 +169,7 @@ class LocalAudio(AudioSource):
         TypeError
             - If `pipe` was given as `True` meanwhile `source` was not given as a `file-like` supporting `.fileno()`
                 method.
-            - If `pipe` was given as `False`, meanwhile `source` was not given as `str` or `Path` instance.
+            - If `pipe` was given as `False`, meanwhile `source` was not given as `str`, `Path`.
         ValueError
             - Executable as not found.
             - Popen failed.
@@ -178,11 +178,15 @@ class LocalAudio(AudioSource):
             try:
                 fileno_function = source.__class__.fileno
             except AttributeError as err:
-                raise TypeError('The given `source` not supports `.fileno()` method') from err
+                raise TypeError(
+                    f'The given `source` not supports `.fileno()` method, got {source!r}.'
+                ) from err
             try:
                 fileno_function(source)
             except TypeError as err:
-                raise TypeError('The given `source` not supports `.fileno()` method') from err
+                raise TypeError(
+                    f'The given `source` not supports `.fileno()` method, got {source!r}.'
+                ) from err
         else:
             source_type = source.__class__
             if source_type is str:
@@ -192,8 +196,9 @@ class LocalAudio(AudioSource):
             elif issubclass(source_type, str):
                 source = str(source)
             else:
-                raise TypeError('The given `source` should be given as `str` or as `Path` instance, got '
-                    f'{source_type}.')
+                raise TypeError(
+                    f'`source` can be `str`, `Path`, got {source_type.__name__}; {source!r}.'
+                )
         
         args = []
         
@@ -243,9 +248,14 @@ class LocalAudio(AudioSource):
                 process = await KOKORO.subprocess_exec(executable, *args, stdin=stdin, stdout=subprocess.PIPE,
                     startup_info=SUBPROCESS_STARTUP_INFO)
             except FileNotFoundError:
-                raise ValueError(f'{executable!r} was not found.') from None
+                raise ValueError(
+                    f'{executable!r} was not found.'
+                ) from None
+            
             except subprocess.SubprocessError as err:
-                raise ValueError(f'Opening subprocess failed: {err.__class__.__name__}: {err}') from err
+                raise ValueError(
+                    f'Opening subprocess failed: {err.__class__.__name__}: {err}'
+                ) from err
             
             self.process = process
             self._stdout = process.stdout
@@ -256,13 +266,13 @@ class LocalAudio(AudioSource):
     async def __new__(cls, source, executable=DEFAULT_EXECUTABLE, pipe=False, before_options=None,
             options=None, title=None):
         """
-        Creates a new ``LocalAudio`` instance.
+        Creates a new ``LocalAudio``.
         
         This method is a coroutine.
         
         Parameters
         ----------
-        source : `str` or `file-like`
+        source : `str`, `file-like`
             The source audio file's path or `file-like` if `pipe` is `True`.
         executable : `str`, Optional
             The executable's name to use. Defaults to `'ffmpeg'`.
@@ -282,7 +292,7 @@ class LocalAudio(AudioSource):
         TypeError
             - If `pipe` was given as `True` meanwhile `source` was not given as a `file-like` supporting `.fileno()`
                 method.
-            - If `pipe` was given as `False`, meanwhile `source` was not given as `str` or `Path` instance.
+            - If `pipe` was given as `False`, meanwhile `source` was not given as `str`, `Path`.
         """
         args = cls._create_process_preprocess(source, executable, pipe, before_options, options)
         
@@ -319,7 +329,7 @@ class LocalAudio(AudioSource):
         
         Returns
         -------
-        audio_data : `bytes` or `None`
+        audio_data : `bytes`, `None`
         """
         stdout = self._stdout
         if stdout is None:
@@ -385,11 +395,11 @@ else:
         
         Attributes
         ----------
-        _process_args : `tuple` ((`list` of `str`),  (`None` or `file-like`))
+        _process_args : `tuple` ((`list` of `str`),  (`None`, `file-like`))
             Parameters and the stdin used to open the postprocess when postprocess happens.
         _stdout : `_io.BufferedReader`
             Stdout of `.process`.
-        path : `None` or `str`
+        path : `None`, `str`
             The audio source's path if applicable. Defaults to `None`.
         process : `subprocess.Popen`
             The ffmpeg or the avconv subprocess.
@@ -450,7 +460,7 @@ else:
         
         async def __new__(cls, url, stream=True):
             """
-            Creates a new ``YTAudio`` instance.
+            Creates a new ``YTAudio``.
             
             This method is a coroutine.
             
@@ -474,7 +484,7 @@ else:
             TypeError
                 - If `pipe` was given as `True` meanwhile `source` was not given as a `file-like` supporting `.fileno()`
                     method.
-                - If `pipe` was given as `False`, meanwhile `source` was not given as `str` or `Path` instance.
+                - If `pipe` was given as `False`, meanwhile `source` was not given as `str`, `Path`.
             """
             path, data, args = await KOKORO.run_in_executor(alchemy_incendiary(cls._preprocess,(cls, url, stream)))
             

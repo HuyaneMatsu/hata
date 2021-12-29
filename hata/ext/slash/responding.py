@@ -13,12 +13,12 @@ INTERACTION_TYPE_MESSAGE_COMPONENT = InteractionType.message_component
 
 def is_only_embed(maybe_embeds):
     """
-    Checks whether the given value is a `tuple` or `list` containing only `embed-like`-s.
+    Checks whether the given value is a `tuple`, `list` containing only `embed-like`-s.
     
     Parameters
     ----------
-    maybe_embeds : (`tuple` or `list`) of `EmbedBase` or `Any`
-        The value to check whether is a `tuple` or `list` containing only `embed-like`-s.
+    maybe_embeds : (`tuple`, `list`) of `EmbedBase`, `Any`
+        The value to check whether is a `tuple`, `list` containing only `embed-like`-s.
     
     Returns
     -------
@@ -55,7 +55,7 @@ async def get_request_coroutines(client, interaction_event, show_for_invoking_us
     
     Yields
     -------
-    request_coroutine : `None` or `CoroutineType`
+    request_coroutine : `None`, `CoroutineType`
     """
     interaction_event_type = interaction_event.type
     
@@ -333,11 +333,11 @@ class InteractionResponse:
     
     Attributes
     ----------
-    _event : `None` or ``InteractionEvent``
+    _event : `None`, ``InteractionEvent``
         The interaction event to use instead of the default one.
     _is_abort : `bool`
         Whether the slash response is derived from an ``abort`` call.
-    _message : `Ellipsis`, `None` or ``Message`` instance.
+    _message : `Ellipsis`, `None`, ``Message``.
         Whether a message should be edited instead of creating a new one.
     _parameters : `dict` of (`str`, `Any`) items
         Parameters to pass to the respective ``Client`` functions.
@@ -357,20 +357,20 @@ class InteractionResponse:
     def __init__(self, content=..., *, embed=..., file=..., allowed_mentions=..., components=..., tts=...,
             show_for_invoking_user_only=..., message=..., event=None):
         """
-        Creates a new ``InteractionResponse`` instance with the given parameters.
+        Creates a new ``InteractionResponse`` with the given parameters.
         
         Parameters
         ----------
         content : `str`, ``EmbedBase``, `Any`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
-            if any other non `str` or ``EmbedBase`` instance is given, then will be casted to string.
+            if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
             
-            If given as ``EmbedBase`` instance, then is sent as the message's embed.
+            If given as ``EmbedBase``, then is sent as the message's embed.
             
-        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
+        embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
             The embedded content of the message.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
         file : `Any`, Optional (Keyword only)
             A file to send. Check ``Client._create_file_form`` for details.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
@@ -460,7 +460,7 @@ class InteractionResponse:
         
         Yields
         -------
-        request_coroutine : `None` or `CoroutineType`
+        request_coroutine : `None`, `CoroutineType`
         """
         event = self._event
         if (event is not None):
@@ -561,13 +561,13 @@ def abort(content=..., *, embed=..., file=..., allowed_mentions=..., components=
     ----------
     content : `str`, ``EmbedBase``, `Any`, Optional
         The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
-        if any other non `str` or ``EmbedBase`` instance is given, then will be casted to string.
+        if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
         
-        If given as ``EmbedBase`` instance, then is sent as the message's embed.
-    embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
+        If given as ``EmbedBase``, then is sent as the message's embed.
+    embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
         The embedded content of the message.
         
-        If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+        If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
     file : `Any`, Optional (Keyword only)
         A file to send. Check ``Client._create_file_form`` for details.
     allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
@@ -613,7 +613,7 @@ class InteractionAbortedError(BaseException):
     """
     def __init__(self, response):
         """
-        Creates a new ``InteractionAbortedError`` instance with the given response.
+        Creates a new ``InteractionAbortedError`` with the given response.
         
         Parameters
         ----------

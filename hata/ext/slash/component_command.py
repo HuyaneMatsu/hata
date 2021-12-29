@@ -31,18 +31,18 @@ class ComponentCommand(CustomIdBasedCommand):
     ----------
     _command_function : `async-callable˛
         The command's function to call.
-    _exception_handlers : `None` or `list` of `CoroutineFunction`
+    _exception_handlers : `None`, `list` of `CoroutineFunction`
         Exception handlers added with ``.error`` to the interaction handler.
         
         Same as ``Slasher._exception_handlers``.
     
-    _parent_reference : `None` or ``WeakReferer`` to ``SlasherApplicationCommand``
+    _parent_reference : `None`, ``WeakReferer`` to ``SlasherApplicationCommand``
         The parent slasher of the component command.
     _parameter_converters : `tuple` of ``ParameterConverter``
         Parsers to parse command parameters.
-    _string_custom_ids : `None` or `tuple` of `str`
+    _string_custom_ids : `None`, `tuple` of `str`
         The custom id-s to wait for.
-    _regex_custom_ids : `None` or `tuple` of `re.Pattern`.
+    _regex_custom_ids : `None`, `tuple` of `re.Pattern`.
         Regex pattern to match custom-ids.
     name : `str`
         The component commands name.
@@ -63,22 +63,22 @@ class ComponentCommand(CustomIdBasedCommand):
     
     def __new__(cls, func, custom_id, name=None, target=None):
         """
-        Creates a new ``ComponentCommand`` instance with the given parameters
+        Creates a new ``ComponentCommand`` with the given parameters
         
         Parameters
         ----------
-        func : `None` or `async-callable`, Optional
+        func : `None`, `async-callable`, Optional
             The function used as the command when using the respective slash command.
-        custom_id : `str`, (`list` or `set`) of `str`, `tuple` of (`str`, (`list` or `set`) of `str`)
+        custom_id : `str`, (`list`, `set`) of `str`, `tuple` of (`str`, (`list`, `set`) of `str`)
             Custom id to match by the component command.
-        name : `str` or `None`, Optional
+        name : `str`, `None`, Optional
             The name of the component command.
-        target : `str` or `None`, Optional
+        target : `str`, `None`, Optional
             The component command's target.
         
         Returns
         -------
-        self : ``ComponentCommand`` or ``Router``
+        self : ``ComponentCommand``, ``Router``
         
         Raises
         ------
@@ -87,7 +87,7 @@ class ComponentCommand(CustomIdBasedCommand):
             - If `func` accepts keyword only parameters.
             - If `func` accepts `*args`.
             - If `func` accepts `**kwargs`.
-            - If `name` was not given neither as `None` or `str` instance.
+            - If `name` was not given neither as `None`, `str`.
             - If `custom_id`'s type is incorrect.
         ValueError:
             - If no `custom_id` was received.
@@ -95,8 +95,10 @@ class ComponentCommand(CustomIdBasedCommand):
             - If `target`'s value is not correct.
         """
         if (target is not None) and (target not in COMMAND_TARGETS_COMPONENT_COMMAND):
-            raise ValueError(f'`target` can be either `None` or any of `{COMMAND_TARGETS_COMPONENT_COMMAND!r}`\s '
-                f'values, got {target!r}')
+            raise ValueError(
+                f'`target` can be `None` or any of `{COMMAND_TARGETS_COMPONENT_COMMAND!r}`\'s '
+                f'values, got {target!r}'
+            )
         
         if (func is not None) and isinstance(func, SlasherCommandWrapper):
             command, wrappers = func.fetch_function_and_wrappers_back()

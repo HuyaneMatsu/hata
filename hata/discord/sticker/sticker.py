@@ -1,7 +1,5 @@
 __all__ = ('Sticker', )
 
-import warnings
-
 from scarletio import include
 
 from ..core import STICKERS, GUILDS, STICKER_PACKS
@@ -28,7 +26,7 @@ class Sticker(DiscordEntity, immortal=True):
         The unique identifier number of the sticker.
     available : `bool`
         Whether the sticker is available.
-    description : `None` or `str`
+    description : `None`, `str`
         The sticker's description.
     format : ``StickerFormat``
         The sticker's format.
@@ -42,7 +40,7 @@ class Sticker(DiscordEntity, immortal=True):
         any pack.
     sort_value : `int`
         Value used to sort the stickers.
-    tags : None` or `frozenset` of `str`
+    tags : None`, `frozenset` of `str`
         Tags of the sticker if applicable.
     type : ``StickerType``
         The sticker's type.
@@ -223,7 +221,7 @@ class Sticker(DiscordEntity, immortal=True):
             +=======================+===================================+
             | available             | `bool`                            |
             +-----------------------+-----------------------------------+
-            | description           | `None` or `str`                   |
+            | description           | `None`, `str`                     |
             +-----------------------+-----------------------------------+
             | name                  | `str`                             |
             +-----------------------+-----------------------------------+
@@ -395,7 +393,7 @@ class Sticker(DiscordEntity, immortal=True):
             The sticker's ``.pack_id``.
         sort_value : `int`, Optional (Keyword only)
             The sticker's ``.sort_value``.
-        tags : `None` or `iterable` of `str`, Optional (Keyword only)
+        tags : `None`, `iterable` of `str`, Optional (Keyword only)
             The sticker's ``.tags``.
         type : ``StickerType``, Optional (Keyword only)
             The sticker's ``.type``.
@@ -493,7 +491,7 @@ class Sticker(DiscordEntity, immortal=True):
             
             
             if kwargs:
-                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+                raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
         
         else:
             processable = None

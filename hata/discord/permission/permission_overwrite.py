@@ -27,7 +27,7 @@ class PermissionOverwrite:
     target_type : ``PermissionOverwriteTargetType``
         The permission overwrite's target's type.
 
-    target_role : `None`, ``Role`` or ``Unknown``
+    target_role : `None`, ``Role``, ``Unknown``
         The target role entity of the overwrite if applicable. Defaults to `None`.
     target_user_id : `int`
         The target user id of the overwrite if applicable. Defaults to `0`.
@@ -79,7 +79,7 @@ class PermissionOverwrite:
         
         Parameters
         ----------
-        target : ``Role`` or ``UserBase`` instance
+        target : ``Role``, ``UserBase``
             The target entity of the overwrite.
         allow : `int`
             The allowed permissions by the overwrite.

@@ -16,7 +16,7 @@ class InviteTargetType(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``InviteTargetType``) items
-        Stores the predefined ``InviteTargetType`` instances. These can be accessed with their `value` as key.
+        Stores the predefined ``InviteTargetType``-s. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The invite target types' values' type.
     DEFAULT_NAME : `str` = `'Undefined'`

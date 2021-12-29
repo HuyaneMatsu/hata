@@ -42,7 +42,7 @@ def _check_user(cooldown_handler, command_context):
     """
     Executes user cooldown check.
     
-    Might be set as the ``Cooldown``'s ``.checker`` instance attribute.
+    Might be set as the ``Cooldown``'s ``.checker`` attribute.
     
     Parameters
     ----------
@@ -79,7 +79,7 @@ def _check_channel(cooldown_handler, command_context):
     """
     Executes channel cooldown check.
     
-    Might be set as the ``Cooldown``'s ``.checker`` instance attribute.
+    Might be set as the ``Cooldown``'s ``.checker`` attribute.
     
     Parameters
     ----------
@@ -116,7 +116,7 @@ def _check_guild(cooldown_handler, command_context):
     """
     Executes guild based cooldown check.
     
-    Might be set as the ``Cooldown``'s ``.checker`` instance attribute.
+    Might be set as the ``Cooldown``'s ``.checker`` attribute.
     
     Parameters
     ----------
@@ -176,7 +176,7 @@ class CooldownHandler:
     
     def __new__(cls, for_, reset, limit=1, weight=1):
         """
-        Creates a new ``CooldownHandler`` instance from the given parameters.
+        Creates a new ``CooldownHandler`` from the given parameters.
         
         Parameters
         ----------
@@ -200,10 +200,10 @@ class CooldownHandler:
         Raises
         ------
         TypeError
-            - If `str` is not given as `str` instance.
-            - If `weight` is not numeric convertable to `int`.
-            - If `reset` is not numeric convertable to `float`.
-            - If `limit` is not numeric convertable to `int`.
+            - If `str` is not given as `str`.
+            - If `weight` is not numeric convertible to `int`.
+            - If `reset` is not numeric convertible to `float`.
+            - If `limit` is not numeric convertible to `int`.
         ValueError
             - If `for_` is not given as any of the expected value.
         """
@@ -213,7 +213,9 @@ class CooldownHandler:
         elif issubclass(for_, str):
             for_ = str(for_)
         else:
-            raise TypeError(f'`for_` can be given as `str` instance, got {for_type.__name__}.')
+            raise TypeError(
+                f'`for_` can be `str`, got {for_type.__name__}; {for_!r}.'
+            )
         
         if 'user'.startswith(for_):
             checker = _check_user
@@ -222,15 +224,19 @@ class CooldownHandler:
         elif 'guild'.startswith(for_):
             checker = _check_guild
         else:
-            raise ValueError(f'\'for_\' can be \'user\', \'channel\' or \'guild\', got {for_!r}')
+            raise ValueError(
+                f'\'for_\' can be \'user\', \'channel\' or \'guild\', got {for_!r}'
+            )
         
         reset_type = reset.__class__
         if (reset_type is not float):
             try:
                 __float__ = getattr(reset_type, '__float__')
             except AttributeError:
-                raise TypeError(f'The given reset is not `float`, neither other numeric convertable to it, got '
-                    f'{reset_type.__name__}.') from None
+                raise TypeError(
+                    f'The given reset is not `float`, neither other numeric convertible to it, got '
+                    f'{reset_type.__name__}; {reset!r}.'
+                ) from None
             
             reset = __float__(reset)
             
@@ -240,7 +246,9 @@ class CooldownHandler:
         elif issubclass(limit_type, int):
             limit = int(limit)
         else:
-            raise TypeError(f'`limit` can be given as `int` instance, got {limit_type.__name__}.') from None
+            raise TypeError(
+                f'`limit` can be `int`, got {limit_type.__name__}; {limit!r}.'
+            ) from None
         
         weight_type = weight.__class__
         if weight_type is int:
@@ -248,7 +256,9 @@ class CooldownHandler:
         elif issubclass(weight_type, int):
             weight = int(weight)
         else:
-            raise TypeError(f'`weight` can be given as `int` instance, got {weight_type.__name__}.') from None
+            raise TypeError(
+                f'`weight` can be `int`, got {weight_type.__name__}; {weight!r}.'
+            ) from None
         
         self = object.__new__(cls)
         self.checker = checker

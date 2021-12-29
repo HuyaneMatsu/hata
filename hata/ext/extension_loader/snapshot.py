@@ -54,8 +54,8 @@ def calculate_event_handler_snapshot_difference(client, snapshot_old, snapshot_n
     
     Returns
     -------
-    snapshot_difference : `None` or `list` of `tuple` \
-            (`str`, (`None` or `list` of `async-callable`), (`None` or `list` of `async-callable`))
+    snapshot_difference : `None`, `list` of `tuple` \
+            (`str`, (`None`, `list` of `async-callable`), (`None`, `list` of `async-callable`))
         A list of event handler differences in a list of tuples.
         
         The tuple has 3 elements, where the 0th element is the name of the respective event, meanwhile the 1th element
@@ -105,7 +105,7 @@ def revert_event_handler_snapshot(client, snapshot_difference):
     client : ``Client``
         The respective client instance.
     snapshot_difference : `list` of `tuple` \
-            (`str`, (`None` or `list` of `async-callable`), (`None` or `list` of `async-callable`))
+            (`str`, (`None`, `list` of `async-callable`), (`None`, `list` of `async-callable`))
         A list of event handler differences in a list of tuples.
         
         The tuple has 3 elements, where the 0th element is the name of the respective event, meanwhile the 1th element

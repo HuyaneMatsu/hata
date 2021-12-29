@@ -51,11 +51,11 @@ class FailingAddress:
 
 def _route_planner_base_repr_generator(route_planner):
     """
-    Representation builder for ``RoutePlannerBase`` instances.
+    Representation builder for ``RoutePlannerBase``-s.
     
     Parameters
     ----------
-    route_planner : ``RoutePlannerBase`` instance.
+    route_planner : ``RoutePlannerBase``.
         The instance to get representation of.
     
     Yields
@@ -112,7 +112,7 @@ class RoutePlannerBase:
     
     Attributes
     ----------
-    failing_addresses : `None` or `tuple` of ``FailingAddress``
+    failing_addresses : `None`, `tuple` of ``FailingAddress``
         The failed addresses.
     ip_block_size : `int`
         The ip block's size.
@@ -161,7 +161,7 @@ class RoutePlannerRotatingIp(RoutePlannerBase):
     
     Attributes
     ----------
-    failing_addresses : `None` or `tuple` of ``FailingAddress``
+    failing_addresses : `None`, `tuple` of ``FailingAddress``
         The failed addresses.
     ip_block_size : `int`
         The ip block's size.
@@ -206,7 +206,7 @@ class RoutePlannerNanoIP(RoutePlannerBase):
     
     Attributes
     ----------
-    failing_addresses : `None` or `tuple` of ``FailingAddress``
+    failing_addresses : `None`, `tuple` of ``FailingAddress``
         The failed addresses.
     ip_block_size : `int`
         The ip block's size.
@@ -241,7 +241,7 @@ class RoutePlannerRotatingNanoIP(RoutePlannerNanoIP):
     
     Attributes
     ----------
-    failing_addresses : `None` or `tuple` of ``FailingAddress``
+    failing_addresses : `None`, `tuple` of ``FailingAddress``
         The failed addresses.
     ip_block_size : `int`
         The ip block's size.
@@ -288,7 +288,7 @@ def get_route_planner(data):
     
     Returns
     -------
-    route_planner : `None` or ``RoutePlannerBase``
+    route_planner : `None`, ``RoutePlannerBase``
     """
     route_planner_type_name = data[LAVALINK_KEY_ROUTEPLANNER_TYPE]
     if route_planner_type_name is None:

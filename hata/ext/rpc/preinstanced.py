@@ -17,7 +17,7 @@ class DeviceType(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``DeviceType``) items
-        Stores the predefined ``DeviceType`` instances. These can be accessed with their `value` as
+        Stores the predefined ``DeviceType``-s. These can be accessed with their `value` as
         key.
     VALUE_TYPE : `type` = `str`
         The device types' values' type.
@@ -61,7 +61,7 @@ class ShortcutKeyType(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``ShortcutKeyType``) items
-        Stores the predefined ``ShortcutKeyType`` instances. These can be accessed with their `value` as
+        Stores the predefined ``ShortcutKeyType``-s. These can be accessed with their `value` as
         key.
     VALUE_TYPE : `type` = `int`
         The key types' values' type.
@@ -109,7 +109,7 @@ class VoiceSettingsModeType(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``VoiceSettingsModeType``) items
-        Stores the predefined ``VoiceSettingsModeType`` instances. These can be accessed with their `value` as
+        Stores the predefined ``VoiceSettingsModeType``-s. These can be accessed with their `value` as
         key.
     VALUE_TYPE : `type` = `str`
         The voice setting mode types' values' type.
@@ -150,7 +150,7 @@ class VoiceConnectionState(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``VoiceSettingsModeType``) items
-        Stores the predefined ``VoiceSettingsModeType`` instances. These can be accessed with their `value` as
+        Stores the predefined ``VoiceSettingsModeType``-s. These can be accessed with their `value` as
         key.
     VALUE_TYPE : `type` = `str`
         The voice connection state' values' type.

@@ -34,7 +34,7 @@ class WebhookSourceGuild(DiscordEntity):
     
     def __new__(cls, data):
         """
-        Creates a new ``WebhookSourceGuild`` instance from the given data.
+        Creates a new ``WebhookSourceGuild`` from the given data.
         
         Parameters
         ----------
@@ -122,7 +122,7 @@ class WebhookSourceChannel(DiscordEntity):
     
     def __new__(cls, data):
         """
-        Creates a new ``WebhookSourceChannel`` instance from the given data.
+        Creates a new ``WebhookSourceChannel`` from the given data.
         
         Parameters
         ----------

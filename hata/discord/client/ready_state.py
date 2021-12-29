@@ -30,7 +30,7 @@ class ShardUserRequester:
         Whether the client can request users with it's gateway.
     gateway : ``DiscordGateway``
         The shard's gateway.
-    guild_create_waiter : `None` or ``Future``
+    guild_create_waiter : `None`, ``Future``
         Water to wait for guild create event. Used when no more guild id is received to use up.
     guild_ids : `set` of `int`
         The guild's id to request the users of.
@@ -39,7 +39,7 @@ class ShardUserRequester:
         requested.
     state : `int`
         A state containing the requester's state.
-    task : `None` or ``Task`` of ``._runner``
+    task : `None`, ``Task`` of ``._runner``
         A task executing the user requesting.
     """
     __slots__ = ('can_request_users', 'gateway', 'guild_create_waiter', 'guild_ids', 'received_guild_ids', 'state',
@@ -234,7 +234,7 @@ class ReadyState:
         User requester for each shard.
     shard_ready_waiter : `None` of ``Future``
         Waiter for shard ready event.
-    task : `None` or ``Task`` to ``._runner``
+    task : `None`, ``Task`` to ``._runner``
         Task, which waits for all the user requests to finish.
     """
     __slots__ = ('client_reference', 'shard_count', 'shard_user_requesters', 'shard_ready_waiter', 'task')

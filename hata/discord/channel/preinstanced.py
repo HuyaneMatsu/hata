@@ -16,7 +16,7 @@ class VideoQualityMode(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``VideoQualityMode``) items
-        Stores the predefined ``VideoQualityMode`` instances. These can be accessed with their `value` as key.
+        Stores the predefined ``VideoQualityMode``-s. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The video quality modes' values' type.
     DEFAULT_NAME : `str` = `'UNDEFINED'`

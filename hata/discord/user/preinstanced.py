@@ -62,7 +62,7 @@ class DefaultAvatar(PreinstancedBase):
         
         Parameters
         ----------
-        user : ``UserBase`` instance
+        user : ``UserBase``
             The user, who's default avatar will be looked up.
 
         Returns
@@ -248,7 +248,7 @@ class Status(PreinstancedBase):
         
         Returns
         -------
-        self : ``Status`` instance
+        self : ``Status``
             The created status.
         """
         self = object.__new__(cls)
@@ -554,7 +554,7 @@ class FriendRequestFlag(PreinstancedBase):
         
         Parameters
         ----------
-        data : `None` or `dict` of (`str`, `bool`)
+        data : `None`, `dict` of (`str`, `bool`)
             Received friend request flag data.
         
         Returns

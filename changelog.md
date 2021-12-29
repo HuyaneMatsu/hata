@@ -8,6 +8,12 @@
 
 - Fix a logic error in `Client.role_edit` when editing `icon`.
 - Fix an `AttributeError` in `ApplicationCommandPermission.__repr__`.
+- Fix a `TypeError` in `Stage._difference_update_attributes`.
+
+##### ext.top_gg
+
+- Fix `TopGGGloballyRateLimited` accepted +1 parameters causing `TypeError`-s
+    (luckily this exception was never dropped).
 
 ## 1.1.129 *\[2021-12-24\]*
 
@@ -1101,7 +1107,7 @@ Make multiple entities to weakly bound to other ones.
 - Add `ApplicationCommandInteraction.target_id`.
 - Add `ApplicationCommandInteraction.resovle_entity`.
 - Add `ApplicationCommandInteraction.target`.
-- `ApplicationCommandInteraction.options` is now `tuple` or `None` (from `list` or `None`)
+- `ApplicationCommandInteraction.options` is now `tuple`, `None` (from `list`, `None`)
 - Add `id_to_datetime`.
 - Add `id_to_unix_time`.
 - Add `datetime_to_id`.
@@ -1942,7 +1948,7 @@ Rework `role.py` and `permission.py`.
 
 ##### ext.slash
 - `InteractionResponse` with `force_new_message=True` was not handling `show_for_invoking_user_only` correctly.
-- When passing `allowed_mentions` or `tts` to `abort`, do not set `show_for_invoking_user_only=False` if not given.
+- When passing `allowed_mentions`, `tts` to `abort`, do not set `show_for_invoking_user_only=False` if not given.
 
 #### Renames, Deprecation & Removals
 

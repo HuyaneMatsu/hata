@@ -72,9 +72,9 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     ----------
     _launch_called : `bool`
         Whether The respective client's `.events.launch` was called already.
-    _plugin_events : `None` or `dict` of (`str`, ``EventHandlerPlugin``) items
+    _plugin_events : `None`, `dict` of (`str`, ``EventHandlerPlugin``) items
         Event name to plugin relation.
-    _plugins : `None` or `set` of ``EventHandlerPlugin``
+    _plugins : `None`, `set` of ``EventHandlerPlugin``
         Plugins added to the event handler.
     client_reference : ``WeakReferer`` to ``Client``
         Weak reference to the parent client to avoid reference loops.
@@ -106,11 +106,11 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +=======================+===================================================+
         | default_permission    | `bool`                                            |
         +-----------------------+---------------------------------------------------+
-        | description           | `None` or `str`                                   |
+        | description           | `None`, `str`                                     |
         +-----------------------+---------------------------------------------------+
         | name                  | `str`                                             |
         +-----------------------+---------------------------------------------------+
-        | options               | `None` or `list` of ``ApplicationCommandOption``  |
+        | options               | `None`, `list` of ``ApplicationCommandOption``    |
         +-----------------------+---------------------------------------------------+
         | target_type           | ``ApplicationCommandTargetType``                  |
         +-----------------------+---------------------------------------------------+
@@ -137,7 +137,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +===============================+=======================================+
         | archived                      | `bool`                                |
         +-------------------------------+---------------------------------------+
-        | archived_at                   | `None` or `datetime`                  |
+        | archived_at                   | `None`, `datetime`                    |
         +-------------------------------+---------------------------------------+
         | auto_archive_after            | `int`                                 |
         +-------------------------------+---------------------------------------+
@@ -165,11 +165,11 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-------------------------------+---------------------------------------+
         | position                      | `int`                                 |
         +-------------------------------+---------------------------------------+
-        | region                        | `None` or ``VoiceRegion``             |
+        | region                        | `None`, ``VoiceRegion``               |
         +-------------------------------+---------------------------------------+
         | slowmode                      | `int`                                 |
         +-------------------------------+---------------------------------------+
-        | topic                         | `None` or `str`                       |
+        | topic                         | `None`, `str`                         |
         +-------------------------------+---------------------------------------+
         | type                          | `int`                                 |
         +-------------------------------+---------------------------------------+
@@ -200,11 +200,11 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-----------------------+-----------------------+
         | banner                | ``Icon``              |
         +-----------------------+-----------------------+
-        | banner_color          | `None` or ``Color``   |
+        | banner_color          | `None`, ``Color``     |
         +-----------------------+-----------------------+
         | discriminator         | `int`                 |
         +-----------------------+-----------------------+
-        | email                 | `None` or `str`       |
+        | email                 | `None`, `str`         |
         +-----------------------+-----------------------+
         | flags                 | ``UserFlag``          |
         +-----------------------+-----------------------+
@@ -256,29 +256,29 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +===================+===================================+
         | application_id    | `int`                             |
         +-------------------+-----------------------------------+
-        | assets            | `None` or ``ActivityAssets``      |
+        | assets            | `None`, ``ActivityAssets``        |
         +-------------------+-----------------------------------+
         | created_at        | `datetime`                        |
         +-------------------+-----------------------------------+
-        | details           | `None` or `str`                   |
+        | details           | `None`, `str`                     |
         +-------------------+-----------------------------------+
         | flags             | ``ActivityFlag``                  |
         +-------------------+-----------------------------------+
         | name              | `str`                             |
         +-------------------+-----------------------------------+
-        | party             | `None` or ``ActivityParty``       |
+        | party             | `None`, ``ActivityParty``         |
         +-------------------+-----------------------------------+
-        | secrets           | `None` or ``ActivitySecrets``     |
+        | secrets           | `None`, ``ActivitySecrets``       |
         +-------------------+-----------------------------------+
-        | session_id        | `None` or `str`                   |
+        | session_id        | `None`, `str`                     |
         +-------------------+-----------------------------------+
-        | state             | `None` or `str`                   |
+        | state             | `None`, `str`                     |
         +-------------------+-----------------------------------+
-        | sync_id           | `None` or `str`                   |
+        | sync_id           | `None`, `str`                     |
         +-------------------+-----------------------------------+
-        | timestamps        | `None` or `ActivityTimestamps``   |
+        | timestamps        | `None`, `ActivityTimestamps``     |
         +-------------------+-----------------------------------+
-        | url               | `None` or `str`                   |
+        | url               | `None`, `str`                     |
         +-------------------+-----------------------------------+
         
     embedded_activity_user_add(client: ``Client``, embedded_activity_state: ``EmbeddedActivityState``,
@@ -316,7 +316,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-------------------+-------------------------------+
         | require_colons    | `bool`                        |
         +-------------------+-------------------------------+
-        | role_ids          | `None` or `tuple` of `int`    |
+        | role_ids          | `None`, `tuple` of `int`      |
         +-------------------+-------------------------------+
     
     error(client: ``Client``, name: `str`, err: `Any`):
@@ -368,7 +368,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-------------------------------+-------------------------------+
         | content_filter                | ``ContentFilterLevel``        |
         +-------------------------------+-------------------------------+
-        | description                   | `None` or `str`               |
+        | description                   | `None`, `str`                 |
         +-------------------------------+-------------------------------+
         | discovery_splash              | ``Icon``                      |
         +-------------------------------+-------------------------------+
@@ -408,7 +408,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-------------------------------+-------------------------------+
         | system_channel_flags          | ``SystemChannelFlag``         |
         +-------------------------------+-------------------------------+
-        | vanity_code                   | `None` or `str`               |
+        | vanity_code                   | `None`, `str`                 |
         +-------------------------------+-------------------------------+
         | verification_level            | ``VerificationLevel``         |
         +-------------------------------+-------------------------------+
@@ -459,15 +459,15 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +===================+===============================+
         | avatar            | ``Icon``                      |
         +-------------------+-------------------------------+
-        | boosts_since      | `None` or `datetime`          |
+        | boosts_since      | `None`, `datetime`            |
         +-------------------+-------------------------------+
-        | nick              | `None` or `str`               |
+        | nick              | `None`, `str`                 |
         +-------------------+-------------------------------+
         | pending           | `bool`                        |
         +-------------------+-------------------------------+
-        | role_ids          | `None` or `tuple` of `int`    |
+        | role_ids          | `None`, `tuple` of `int`      |
         +-------------------+-------------------------------+
-        | timed_out_until   | `None` ot `datetime`          |
+        | timed_out_until   | `None`, `datetime`            |
         +-------------------+-------------------------------+
     
     integration_create(client: ``Client``, guild: ``Guild``, integration: ``Integration``):
@@ -507,7 +507,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         Called when a loaded message is deleted.
         
         > If `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and an uncached message is deleted,
-        > then `message` is given as ``MessageRepr`` instance.
+        > then `message` is given as ``MessageRepr``.
     
     message_edit(client: ``Client``, message: ``Message``, old_attributes: {`None`, `dict`}):
         Called when a loaded message is edited. The passed `old_attributes` parameter contains the message's overwritten
@@ -522,13 +522,13 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------------------------------------------+
         | components        | `None` or (`tuple` of ``ComponentBase``)                              |
         +-------------------+-----------------------------------------------------------------------+
-        | content           | `None` or `str`                                                       |
+        | content           | `None`, `str`                                                         |
         +-------------------+-----------------------------------------------------------------------+
-        | cross_mentions    | `None` or (`tuple` of (``ChannelBase`` or ``UnknownCrossMention``))   |
+        | cross_mentions    | `None` or (`tuple` of (``ChannelBase``, ``UnknownCrossMention``))     |
         +-------------------+-----------------------------------------------------------------------+
-        | edited_at         | `None` or `datetime`                                                  |
+        | edited_at         | `None`, `datetime`                                                    |
         +-------------------+-----------------------------------------------------------------------+
-        | embeds            | `None` or `(tuple` of ``EmbedCore``)                                  |
+        | embeds            | `None`, `(tuple` of ``EmbedCore``)                                    |
         +-------------------+-----------------------------------------------------------------------+
         | flags             | ``UserFlag``                                                          |
         +-------------------+-----------------------------------------------------------------------+
@@ -542,7 +542,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------------------------------------------+
         
         A special case is if a message is (un)pinned or (un)suppressed, because then the `old_attributes` parameter is
-        not going to contain `edited`, only `pinned` or `flags`. If the embeds are (un)suppressed of the message, then
+        not going to contain `edited`, only `pinned`, `flags`. If the embeds are (un)suppressed of the message, then
         `old_attributes` might contain also `embeds`.
         
         > If `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and an uncached message is updated,
@@ -621,7 +621,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +---------------+-----------------------+
         | separated     | `bool`                |
         +---------------+-----------------------+
-        | unicode_emoji | `None` or ``Emoji``   |
+        | unicode_emoji | `None`, ``Emoji``     |
         +---------------+-----------------------+
     
     scheduled_event_create(client: ``Client``, scheduled_event: ``ScheduledEvent``):
@@ -643,11 +643,11 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +===========================+===============================================+
         | channel_id                | `int`                                         |
         +---------------------------+-----------------------------------------------+
-        | description               | `None` or `str`                               |
+        | description               | `None`, `str`                                 |
         +---------------------------+-----------------------------------------------+
         | entity_id                 | `int`                                         |
         +---------------------------+-----------------------------------------------+
-        | entity_metadata           | `None` or ``ScheduledEventEntityMetadata``    |
+        | entity_metadata           | `None`, ``ScheduledEventEntityMetadata``      |
         +---------------------------+-----------------------------------------------+
         | entity_type               | ``ScheduledEventEntityType``                  |
         +---------------------------+-----------------------------------------------+
@@ -659,11 +659,11 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +---------------------------+-----------------------------------------------+
         | send_start_notification   | `bool`                                        |
         +---------------------------+-----------------------------------------------+
-        | end                       | `None` or `datetime`                          |
+        | end                       | `None`, `datetime`                            |
         +---------------------------+-----------------------------------------------+
-        | start                     | `None` or `datetime`                          |
+        | start                     | `None`, `datetime`                            |
         +---------------------------+-----------------------------------------------+
-        | sku_ids                   | `None` or `tuple` of `int`                    |
+        | sku_ids                   | `None`, `tuple` of `int`                      |
         +---------------------------+-----------------------------------------------+
         | status                    | ``ScheduledEventStatus``                      |
         +---------------------------+-----------------------------------------------+
@@ -675,7 +675,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         Called when a user unsubscribes from a scheduled event.
     
     shutdown(client : ``Client``):
-        Called when ``Client.stop`` or ``Client.disconnect`` is called indicating, that the client is logging off and
+        Called when ``Client.stop``, ``Client.disconnect`` is called indicating, that the client is logging off and
         all data should be saved if needed.
     
     stage_create(client: ``Client``, stage: ``Stage``):
@@ -694,7 +694,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +===============+=======================+
         | discoverable  | `bool`                |
         +---------------+-----------------------+
-        | invite_code   | `None` or `str`       |
+        | invite_code   | `None`, `str`         |
         +---------------+-----------------------+
         | privacy_level | ``PrivacyLevel``      |
         +---------------+-----------------------+
@@ -718,7 +718,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +=======================+===================================+
         | available             | `bool`                            |
         +-----------------------+-----------------------------------+
-        | description           | `None` or `str`                   |
+        | description           | `None`, `str`                     |
         +-----------------------+-----------------------------------+
         | name                  | `str`                             |
         +-----------------------+-----------------------------------+
@@ -755,7 +755,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +---------------+-----------------------+
         | banner        | ``Icon``              |
         +---------------+-----------------------+
-        | banner_color  | `None` or ``Color``   |
+        | banner_color  | `None`, ``Color``     |
         +---------------+-----------------------+
         | discriminator | `int`                 |
         +---------------+-----------------------+
@@ -769,7 +769,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         The passed `old_attributes` parameter contain the user's changed presence related attributes in
         `attribute-name` - `old-value` relation. An exception from this is `activities`, because that is a
-        ``ActivityChange`` instance containing all the changes of the user's activities.
+        ``ActivityChange`` containing all the changes of the user's activities.
         
         +---------------+-----------------------------------+
         | Keys          | Values                            |
@@ -804,7 +804,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-----------------------+-----------------------+
         | mute                  | `bool`                |
         +-----------------------+-----------------------+
-        | requested_to_speak_at | `None` or `datetime`  |
+        | requested_to_speak_at | `None`, `datetime`    |
         +-----------------------+-----------------------+
         | self_deaf             | `bool`                |
         +-----------------------+-----------------------+
@@ -868,7 +868,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-----------------------+-----------------------+
         | mute                  | `bool`                |
         +-----------------------+-----------------------+
-        | requested_to_speak_at | `None` or `datetime`  |
+        | requested_to_speak_at | `None`, `datetime`    |
         +-----------------------+-----------------------+
         | self_deaf             | `bool`                |
         +-----------------------+-----------------------+
@@ -929,7 +929,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         ----------
         func : `callable`, Optional
             The async callable to add as an event handler.
-        name : `None` or `str`, Optional
+        name : `None`, `str`, Optional
             A name to be used instead of the passed `func`'s when adding it.
         overwrite : `bool`, Optional
             Whether the passed `func` should overwrite the already added ones with the same name or extend them.
@@ -937,7 +937,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         Returns
         -------
         func : `callable`
-            The added callable or `functools.partial` instance if `func` was not given.
+            The added callable or `functools.partial` if `func` was not given.
         
         Raises
         ------
@@ -1320,7 +1320,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         Raises
         ------
         TypeError
-            - If `plugin` is not ``EventHandlerPlugin`` instance.
+            - If `plugin` is not ``EventHandlerPlugin``.
         RuntimeError
             - If an event name of the `plugin` is already defined by an other plugin.
         """

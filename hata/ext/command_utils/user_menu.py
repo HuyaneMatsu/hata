@@ -32,18 +32,24 @@ def validate_check(check):
     
     analyzer = CallableAnalyzer(check, as_method=True)
     if analyzer.is_async():
-        raise TypeError('`check` should have NOT be be `async` function.')
+        raise TypeError(
+            f'`check` should have NOT be be `async` function, got {check!r}.'
+        )
     
     min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if min_ > 1:
-        raise TypeError(f'`check` should accept `1` parameters, meanwhile the given callable expects at '
-            f'least `{min_!r}`, got `{check!r}`.')
+        raise TypeError(
+            f'`check` should accept `1` parameters, meanwhile the given one expects at '
+            f'least `{min_!r}`, got {check!r}.'
+        )
     
     if min_ != 1:
         if max_ < 1:
             if not analyzer.accepts_args():
-                raise TypeError(f'`check` should accept `1` parameters, meanwhile the given callable expects '
-                    f'up to `{max_!r}`, got `{check!r}`.')
+                raise TypeError(
+                    f'`check` should accept `1` parameters, meanwhile the given one expects '
+                    f'up to `{max_!r}`, got `{check!r}`.'
+                )
 
 
 def validate_invoke(invoke):
@@ -61,22 +67,30 @@ def validate_invoke(invoke):
         If `invoke` is not async callable or accepts not 1 parameter.
     """
     if invoke is None:
-        raise TypeError(f'`invoke` function cannot be `None`.')
+        raise TypeError(
+            f'`invoke` function cannot be `None`.'
+        )
     
     analyzer = CallableAnalyzer(invoke, as_method=True)
     if not analyzer.is_async():
-        raise TypeError('`invoke` should have be `async` function.')
+        raise TypeError(
+            f'`invoke` can be `CoroutineFunction`, got {invoke!r}.'
+        )
     
     min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if min_ > 1:
-        raise TypeError(f'`invoke` should accept `1` parameters, meanwhile the given callable expects at '
-            f'least `{min_!r}`, got `{invoke!r}`.')
+        raise TypeError(
+            f'`invoke` should accept `1` parameter, meanwhile the given one expects at '
+            f'least `{min_!r}`, got {invoke!r}.'
+        )
     
     if min_ != 1:
         if max_ < 1:
             if not analyzer.accepts_args():
-                raise TypeError(f'`invoke` should accept `1` parameters, meanwhile the given callable expects '
-                    f'up to `{max_!r}`, got `{invoke!r}`.')
+                raise TypeError(
+                    f'`invoke` should accept `1` parameters, meanwhile the given one expects '
+                    f'up to `{max_!r}`, got {invoke!r}.'
+                )
 
 
 def validate_initial_invoke(initial_invoke):
@@ -94,22 +108,30 @@ def validate_initial_invoke(initial_invoke):
         If `initial_invoke` is not async callable or accepts any parameters.
     """
     if initial_invoke is None:
-        raise TypeError(f'`initial_invoke` function cannot be `None`.')
+        raise TypeError(
+            f'`initial_invoke` function cannot be `None`.'
+        )
     
     analyzer = CallableAnalyzer(initial_invoke, as_method=True)
     if not analyzer.is_async():
-        raise TypeError('`initial_invoke` should have be `async` function.')
+        raise TypeError(
+            f'`initial_invoke` should have be `async` function, got {initial_invoke!r}.'
+        )
     
     min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if min_ > 0:
-        raise TypeError(f'`initial_invoke` should accept `0` parameters, meanwhile the given callable expects at '
-            f'least `{min_!r}`, got `{initial_invoke!r}`.')
+        raise TypeError(
+            f'`initial_invoke` should accept `0` parameters, meanwhile the given one expects at '
+            f'least `{min_!r}`, got {initial_invoke!r}.'
+        )
     
     if min_ != 0:
         if max_ < 0:
             if not analyzer.accepts_args():
-                raise TypeError(f'`initial_invoke` should accept `0` parameters, meanwhile the given callable '
-                    f'expects up to `{max_!r}`, got `{initial_invoke!r}`.')
+                raise TypeError(
+                    f'`initial_invoke` should accept `0` parameters, meanwhile the given one '
+                    f'expects up to `{max_!r}`, got {initial_invoke!r}.'
+                )
 
 
 def validate_close(close):
@@ -127,22 +149,30 @@ def validate_close(close):
         If `close` is not async callable or accepts not 1 parameter.
     """
     if close is None:
-        raise TypeError(f'`close` function cannot be `None`.')
+        raise TypeError(
+            f'`close` function cannot be `None`.'
+        )
     
     analyzer = CallableAnalyzer(close, as_method=True)
     if not analyzer.is_async():
-        raise TypeError('`close` should have be `async` function.')
+        raise TypeError(
+            f'`close` should have be `async` function, got {close!r}.'
+        )
     
     min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if min_ > 1:
-        raise TypeError(f'`close` should accept `1` parameters, meanwhile the given callable expects at '
-            f'least `{min_!r}`, got `{close!r}`.')
+        raise TypeError(
+            f'`close` should accept `1` parameters, meanwhile the given one expects at '
+            f'least `{min_!r}`, got {close!r}.'
+        )
     
     if min_ != 1:
         if max_ < 1:
             if not analyzer.accepts_args():
-                raise TypeError(f'`close` should accept `1` parameters, meanwhile the given callable expects '
-                    f'up to `{max_!r}`, got `{close!r}`.')
+                raise TypeError(
+                    f'`close` should accept `1` parameters, meanwhile the given one expects '
+                    f'up to `{max_!r}`, got {close!r}.'
+                )
 
 
 class UserMenuFactory:
@@ -152,7 +182,7 @@ class UserMenuFactory:
     allow_third_party_emojis : `bool`
         Whether the runner should pick up 3rd party emojis, listed outside of `emojis`.
     
-    check : `None` or `function`
+    check : `None`, `function`
         The function to call when checking whether an event should be called.
         
         Should accept the following parameters:
@@ -160,7 +190,7 @@ class UserMenuFactory:
         +-----------+---------------------------------------------------+
         | Name      | Type                                              |
         +===========+===================================================+
-        | event     | ``ReactionAddEvent`` or ``ReactionDeleteEvent``   |
+        | event     | ``ReactionAddEvent``, ``ReactionDeleteEvent``     |
         +-----------+---------------------------------------------------+
         
         > ``ReactionDeleteEvent`` is only given, when the client has no `manage_messages` permission.
@@ -172,7 +202,7 @@ class UserMenuFactory:
         | should_process    | `bool`    |
         +-------------------+-----------+
     
-    close : `None` or `async-function`
+    close : `None`, `async-function`
         Function to call when the pagination is closed.
         
         Should accept the following parameters:
@@ -180,13 +210,13 @@ class UserMenuFactory:
         +-----------+---------------------------+
         | Name      | Type                      |
         +===========+===========================+
-        | exception | `None` or `BaseException` |
+        | exception | `None`, `BaseException`   |
         +-----------+---------------------------+
     
-    close_emoji : `None` or ``Emoji``
+    close_emoji : `None`, ``Emoji``
         The emoji which triggers closing.
     
-    emojis : `None` or `tuple` of ``Emoji``
+    emojis : `None`, `tuple` of ``Emoji``
         The emojis to add on the message.
     
     initial_invoke : `async-function`
@@ -208,7 +238,7 @@ class UserMenuFactory:
         +-----------+---------------------------------------------------+
         | Name      | Type                                              |
         +===========+===================================================+
-        | event     | ``ReactionAddEvent`` or ``ReactionDeleteEvent``   |
+        | event     | ``ReactionAddEvent``, ``ReactionDeleteEvent``     |
         +-----------+---------------------------------------------------+
         
         > ``ReactionDeleteEvent`` is only given, when the client has no `manage_messages` permission.
@@ -242,21 +272,23 @@ class UserMenuFactory:
         Raises
         ------
         TypeError
-            - If `klass` was not given as `type` instance.
+            - If `klass` was not given as `type`.
             - If `klass.check` is not `None` neither a non-async function accepting 1 parameter.
             - If `invoke` is not async callable or accepts not 1 parameter.
-            - If `close_emoji` is neither `None` or ``Emoji`` instance.
-            - If `emojis` is neither `None` nor `tuple` or `list`.
+            - If `close_emoji` is neither `None`, ``Emoji``.
+            - If `emojis` is neither `None` nor `tuple`, `list`.
             - If `emojis` contains a non ``Emoji`` element.
             - If `initial_invoke` is not async callable or accepts any parameters.
-            - If `timeout` is not convertable to float.
+            - If `timeout` is not convertible to float.
             - If `closed` is neither `None` nor `async-callable`.
-            - If `allow_third_party_emojis` was not given as `bool` instance.
+            - If `allow_third_party_emojis` was not given as `bool`.
         ValueError
             - If `emojis` length is over 20.
         """
         if not isinstance(klass, type):
-            raise TypeError(f'`klass` can be given as `type` instance, got {klass.__class__.__name__}.')
+            raise TypeError(
+                f'`klass` can be `type`, got {klass.__class__.__name__}; {klass!r}.'
+            )
         
         check = getattr(klass, 'check', None)
         validate_check(check)
@@ -266,28 +298,36 @@ class UserMenuFactory:
         
         close_emoji = getattr(klass, 'close_emoji', None)
         if (close_emoji is not None) and (not isinstance(close_emoji, Emoji)):
-            raise TypeError(f'`close_emoji can be either `None` or `{Emoji.__name__}` instance, got '
-                f'{close_emoji.__class__.__name__}')
+            raise TypeError(
+                f'`close_emoji can be `None`, `{Emoji.__name__}`, got '
+                f'{close_emoji.__class__.__name__}; {close_emoji!r}'
+            )
             
         emojis = getattr(klass, 'emojis', None)
         if (emojis is not None):
             if not isinstance(emojis, (tuple, list)):
-                raise TypeError(f'`emojis` can be either `None`, `list` or `tuple` instance, got '
-                    f'{emojis.__class__.__name__}.')
+                raise TypeError(
+                    f'`emojis` can be `None`, `list`, `tuple`, got '
+                    f'{emojis.__class__.__name__}; {emojis!r}.'
+                )
             
             # Making sure
             emojis = tuple(emojis)
             for emoji in emojis:
                 if not isinstance(emoji, Emoji):
-                    raise TypeError(f'`emojis` contains non `{Emoji.__name__}` element, got '
-                        f'{emoji.__class__.__name__}.')
+                    raise TypeError(
+                        f'`emojis` can contain `{Emoji.__name__}` elements, got '
+                        f'{emoji.__class__.__name__}; {emoji!r}; emojis={emojis!r}.'
+                    )
             
             emojis_length = len(emojis)
             if emojis_length == 0:
                 emojis = None
             
             elif emojis_length > 20:
-                raise ValueError(f'`emojis` can contain up to `20` emojis, got {emojis_length!r}.')
+                raise ValueError(
+                    f'`emojis` can contain up to `20` emojis, got {emojis_length!r}; {emojis!r}.'
+                )
         
         initial_invoke = getattr(klass, 'initial_invoke', None)
         validate_initial_invoke(initial_invoke)
@@ -299,8 +339,9 @@ class UserMenuFactory:
             try:
                 timeout = float(timeout)
             except (TypeError, ValueError) as err:
-                raise TypeError(f'`timeout` cannot be converted to `float`, got {timeout.__class__.__mame__}; {timeout!r}') \
-                    from err
+                raise TypeError(
+                    f'`timeout` cannot be converted to `float`, got {timeout.__class__.__mame__}; {timeout!r}'
+                ) from err
         
         close = getattr(klass, 'close', None)
         validate_close(close)
@@ -371,7 +412,7 @@ class UserMenuFactory:
     
     async def __call__(self, client, channel, *args, **kwargs):
         """
-        Instances the factory creating an ``UserMenuRunner`` instance.
+        Instances the factory creating an ``UserMenuRunner``.
         
         This method is a coroutine.
         
@@ -388,7 +429,7 @@ class UserMenuRunner(PaginationBase):
     
     Parameters
     ----------
-    _canceller : `None` or `function`
+    _canceller : `None`, `function`
         The function called when the ``UserMenuRunner`` is cancelled or when it expires. This is a onetime use and
         after it was used, is set as `None`.
     
@@ -412,22 +453,22 @@ class UserMenuRunner(PaginationBase):
         |                           |       | but expected.                                                         |
         +---------------------------+-------+-----------------------------------------------------------------------+
     
-    _timeouter : `None` or ``Timeouter``
+    _timeouter : `None`, ``Timeouter``
         Executes the timing out feature on the ``UserMenuRunner``.
     
-    channel : ``ChannelTextBase`` instance
+    channel : ``ChannelTextBase``
         The channel where the ``UserMenuRunner`` is executed.
     
     client : ``Client``
         The client who executes the ``UserMenuRunner``.
     
-    message : `None` or ``Message``
+    message : `None`, ``Message``
         The message on what the ``UserMenuRunner`` is executed.
     
     _factory : ``UserMenuFactory``
         The factory of the menu containing it's details.
     
-    _instance : `None` or `Any`
+    _instance : `None`, `Any`
         The respective ``UserMenuFactory``'s class instanced.
     """
     __slots__ = ('_factory', '_instance',)
@@ -444,11 +485,11 @@ class UserMenuRunner(PaginationBase):
             The respective user menu factory to execute.
         client : ``Client``
             The client who executes the ``UserMenuRunner``.
-        channel : ``ChannelTextBase`` instance
+        channel : ``ChannelTextBase``
             The channel where the ``UserMenuRunner`` is executed.
         *args : Parameters
             Additional parameters to pass to the factory's class's constructor.
-        message : `None` or ``Message``, Optional (Keyword Only)
+        message : `None`, ``Message``, Optional (Keyword Only)
             The message to use instead of creating a new one.
         **kwargs : Keyword parameters
             Additional keyword parameters to pass to the factory's class's constructor.
@@ -468,8 +509,10 @@ class UserMenuRunner(PaginationBase):
             target_channel = channel.channel
             received_interaction = True
         else:
-            raise TypeError(f'`channel` can be given only as `{ChannelTextBase.__name__}`, `{Message.__name__}` '
-                f'of as {InteractionEvent.__name__} instance, got {channel.__class__.__name__}.')
+            raise TypeError(
+                f'`channel` can be `{ChannelTextBase.__name__}`, `{Message.__name__}`, `{InteractionEvent.__name__}`, '
+                f'got {channel.__class__.__name__}; {channel!r}.'
+            )
         
         self = object.__new__(cls)
         self.client = client
@@ -511,12 +554,12 @@ class UserMenuRunner(PaginationBase):
             
             if isinstance(err, DiscordException):
                 if err.code in (
-                        ERROR_CODES.unknown_message, # message deleted
-                        ERROR_CODES.unknown_channel, # message's channel deleted
-                        ERROR_CODES.missing_access, # client removed
-                        ERROR_CODES.missing_permissions, # permissions changed meanwhile
-                        ERROR_CODES.cannot_message_user, # user has dm-s disallowed
-                            ):
+                    ERROR_CODES.unknown_message, # message deleted
+                    ERROR_CODES.unknown_channel, # message's channel deleted
+                    ERROR_CODES.missing_access, # client removed
+                    ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                    ERROR_CODES.cannot_message_user, # user has dm-s disallowed
+                ):
                     return self
             
             raise
@@ -541,12 +584,12 @@ class UserMenuRunner(PaginationBase):
                 
                 if isinstance(err, DiscordException):
                     if err.code in (
-                            ERROR_CODES.unknown_message, # message deleted
-                            ERROR_CODES.unknown_channel, # message's channel deleted
-                            ERROR_CODES.max_reactions, # reached reaction 20, some1 is trolling us.
-                            ERROR_CODES.missing_access, # client removed
-                            ERROR_CODES.missing_permissions, # permissions changed meanwhile
-                                ):
+                        ERROR_CODES.unknown_message, # message deleted
+                        ERROR_CODES.unknown_channel, # message's channel deleted
+                        ERROR_CODES.max_reactions, # reached reaction 20, some1 is trolling us.
+                        ERROR_CODES.missing_access, # client removed
+                        ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                    ):
                         return self
                 
                 raise
@@ -620,10 +663,10 @@ class UserMenuRunner(PaginationBase):
             
             if isinstance(err, DiscordException):
                 if err.code in (
-                        ERROR_CODES.unknown_message, # message already deleted
-                        ERROR_CODES.unknown_channel, # message's channel deleted
-                        ERROR_CODES.missing_access, # client removed
-                            ):
+                    ERROR_CODES.unknown_message, # message already deleted
+                    ERROR_CODES.unknown_channel, # message's channel deleted
+                    ERROR_CODES.missing_access, # client removed
+                ):
                     return
             
             # We definitely do not want to silence `ERROR_CODES.invalid_form_body`
@@ -725,7 +768,7 @@ class UserPagination:
     
     def __init__(self, menu, pages):
         """
-        Creates a new ``UserMenuRunner`` instance with the given parameters.
+        Creates a new ``UserMenuRunner`` with the given parameters.
         
         Parameters
         ----------
@@ -747,7 +790,7 @@ class UserPagination:
         
         Returns
         -------
-        page : `None` or `Any`
+        page : `None`, `Any`
             The page to kick-off the pagination with.
         """
         pages = self.pages
@@ -803,7 +846,7 @@ class UserPagination:
         
         Parameters
         ----------
-        exception : `None` or ``BaseException``
+        exception : `None`, ``BaseException``
             - `CancelledError` if closed with the close emoji.
             - `TimeoutError` if closed by timeout.
             - `PermissionError` if closed because cant add reactions.
@@ -823,10 +866,10 @@ class UserPagination:
                 
                 if isinstance(err, DiscordException):
                     if err.code in (
-                            ERROR_CODES.unknown_channel, # channel deleted
-                            ERROR_CODES.unknown_message, # message deleted
-                            ERROR_CODES.missing_access, # client removed
-                                ):
+                        ERROR_CODES.unknown_channel, # channel deleted
+                        ERROR_CODES.unknown_message, # message deleted
+                        ERROR_CODES.missing_access, # client removed
+                    ):
                         return
                 
                 await client.events.error(client, f'{self!r}.close', err)
@@ -845,11 +888,11 @@ class UserPagination:
                     
                     if isinstance(err, DiscordException):
                         if err.code in (
-                                ERROR_CODES.unknown_message, # message deleted
-                                ERROR_CODES.unknown_channel, # channel deleted
-                                ERROR_CODES.missing_access, # client removed
-                                ERROR_CODES.missing_permissions, # permissions changed meanwhile
-                                    ):
+                            ERROR_CODES.unknown_message, # message deleted
+                            ERROR_CODES.unknown_channel, # channel deleted
+                            ERROR_CODES.missing_access, # client removed
+                            ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                        ):
                             return
             
                     await client.events.error(client, f'{self!r}.close', exception)

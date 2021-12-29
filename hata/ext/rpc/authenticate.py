@@ -68,7 +68,7 @@ class Oauth2Application(DiscordEntity):
     
     Attributes
     ----------
-    description : `None` or `str`
+    description : `None`, `str`
         The application's description.
     icon_hash : `int`
         The application's icon's hash as `uint128`.
@@ -76,7 +76,7 @@ class Oauth2Application(DiscordEntity):
         The application's icon's type.
     name : `str`
         The application's name.
-    rpc_origins : `None` or `tuple` of `str`.
+    rpc_origins : `None`, `tuple` of `str`.
         Rpc origin urls.
     """
     icon = IconSlot('icon', 'icon',

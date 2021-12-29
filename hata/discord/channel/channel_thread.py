@@ -38,19 +38,19 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
     ----------
     id : `int`
         The unique identifier of the channel.
-    _permission_cache : `None` or `dict` of (`int`, ``Permission``) items
+    _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    parent : `None` or ``ChannelText``
+    parent : `None`, ``ChannelText``
         The text channel from where the thread is created from.
     guild_id : `int`
         The channel's guild's identifier.
     name : `str`
         The channel's name.
-    _message_history :  `None` or ``MessageHistory``
+    _message_history :  `None`, ``MessageHistory``
         The message history of the channel if any.
     archived : `bool`
         Whether the thread s archived.
-    archived_at : `None` or `datetime`
+    archived_at : `None`, `datetime`
         When the thread's archive status was last changed.
     auto_archive_after : `int`
         Duration in seconds to automatically archive the thread after recent activity. Can be one of: `3600`, `86400`,
@@ -61,8 +61,8 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         Whether the thread channel is open.
     slowmode : `int`
         The amount of time in seconds what a user needs to wait between it's each message. Bots and user accounts with
-        `manage_messages` or `manage_channel` permissions are unaffected.
-    thread_users : `None` or `dict` of (`int`, ``ClientUserBase``) items
+        `manage_messages`, `manage_channel` permissions are unaffected.
+    thread_users : `None`, `dict` of (`int`, ``ClientUserBase``) items
         The users inside of the thread if any.
     type : `int` = `12`
         The channel's Discord side type.
@@ -102,7 +102,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data receive from Discord.
-        client : `None` or ``Client``
+        client : `None`, ``Client``
             The client, who received the channel's data, if any.
         guild_id : `int`
             The channel's guild's identifier.
@@ -346,7 +346,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         +=======================+===================================+
         | archived              | `bool`                            |
         +-----------------------+-----------------------------------+
-        | archived_at           | `None` or `datetime`              |
+        | archived_at           | `None`, `datetime`                |
         +-----------------------+-----------------------------------+
         | auto_archive_after    | `int`                             |
         +-----------------------+-----------------------------------+
@@ -502,7 +502,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         
         Parameters
         ----------
-        channel_id : `int` or `str`
+        channel_id : `int`, `str`
             The channel's id.
         **kwargs : keyword parameters
             Additional predefined attributes for the channel.

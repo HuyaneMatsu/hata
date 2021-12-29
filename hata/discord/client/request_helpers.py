@@ -45,7 +45,7 @@ def get_components_data(components, is_edit):
     
     Returns
     -------
-    component_datas : `None` ot `list` of (`dict` of (`str`, `Any`) items)
+    component_datas : `None`, `list` of (`dict` of (`str`, `Any`) items)
         The generated data if any.
     
     Raises
@@ -277,15 +277,15 @@ if API_VERSION >= 9:
         Notes
         -----
         Accepted `io` types with check order are:
-        - ``BodyPartReader`` instance
-        - `bytes`, `bytearray`, `memoryview` instance
+        - ``BodyPartReader``
+        - `bytes`, `bytearray`, `memoryview`
         - `str`
-        - `BytesIO` instance
-        - `StringIO` instance
-        - `TextIOBase` instance
-        - `BufferedReader`, `BufferedRandom` instance
-        - `IOBase` instance
-        - ``AsyncIO`` instance
+        - `BytesIO`
+        - `StringIO`
+        - `TextIOBase`
+        - `BufferedReader`, `BufferedRandom`
+        - `IOBase`
+        - ``AsyncIO``
         - `async-iterable`
         
         Raises `TypeError` at the case of invalid `io` type.
@@ -451,15 +451,15 @@ else:
         Notes
         -----
         Accepted `io` types with check order are:
-        - ``BodyPartReader`` instance
-        - `bytes`, `bytearray`, `memoryview` instance
-        - `str` instance
-        - `BytesIO` instance
-        - `StringIO` instance
-        - `TextIOBase` instance
-        - `BufferedReader`, `BufferedRandom` instance
-        - `IOBase` instance
-        - ``AsyncIO`` instance
+        - ``BodyPartReader``
+        - `bytes`, `bytearray`, `memoryview`
+        - `str`
+        - `BytesIO`
+        - `StringIO`
+        - `TextIOBase`
+        - `BufferedReader`, `BufferedRandom`
+        - `IOBase`
+        - ``AsyncIO``
         - `async-iterable`
         
         Raises `TypeError` at the case of invalid `io` type.
@@ -587,11 +587,11 @@ def validate_content_and_embed(content, embed, is_edit):
         The content of the message.
         
         
-        If given as ``EmbedBase`` instance, then the message's embeds will be edited with it.
-    embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
+        If given as ``EmbedBase``, then the message's embeds will be edited with it.
+    embed : `None`, ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
         The new embedded content of the message. By passing it as `None`, you can remove the old.
         
-        > If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `AssertionError` is
+        > If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
         raised.
     is_edit : `bool`
         Whether the processed `content` and `embed` fields are for message edition. At this case passing `None` will
@@ -607,7 +607,7 @@ def validate_content_and_embed(content, embed, is_edit):
     Raises
     ------
     TypeError
-        If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase`` instances.
+        If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase``-s.
     AssertionError
         - If `embed` contains a non ``EmbedBase`` element.
         - If both `content` and `embed` fields are embeds.

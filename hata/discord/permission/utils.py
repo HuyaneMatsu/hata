@@ -1,7 +1,5 @@
 __all__ = ('get_permission_overwrite_key_value', 'cr_p_permission_overwrite_object', )
 
-import warnings
-
 from ...env import API_VERSION
 
 from scarletio import include
@@ -56,7 +54,7 @@ def cr_p_permission_overwrite_object(target, allow, deny):
     
     Parameters
     ----------
-    target : ``ClientUserBase`` or ``Role``
+    target : ``ClientUserBase``, ``Role``
         The target entity of the overwrite.
         The allowed permissions by the overwrite.
     deny : `int`

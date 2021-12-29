@@ -15,7 +15,7 @@ def try_get_voice_region(guild_id, channel_id):
     
     Returns
     -------
-    region : `None` or ``VoiceRegion``
+    region : `None`, ``VoiceRegion``
     """
     try:
         channel = CHANNELS[channel_id]

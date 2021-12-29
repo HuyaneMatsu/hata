@@ -1,5 +1,6 @@
 __all__ = ('get_channel_stdin', 'get_channel_stdout',)
 
+import reprlib
 from collections import deque
 from datetime import datetime, timedelta
 
@@ -21,19 +22,19 @@ class ChannelOutputStream:
         The maximal chunk size to send in one message.
     _client : ``Client``
         The client who send the stream to the channel.
-    _close_waiter : `None` or ``Future``
+    _close_waiter : `None`, ``Future``
         Waiter future set to wait for closing.
     _closed : `bool`
         Whether the stream is closed.
     _chunks : `str`
         The data queue.
-    _last_chunk : `None` or `str`
+    _last_chunk : `None`, `str`
         The last send raw chunk.
-    _last_message : `None` or ``Message``
+    _last_message : `None`, ``Message``
         The last sent message.
     _sanitize : `bool`
         Whether the output stream should be sanitized.
-    _transfer_task : `None` or ``Task``
+    _transfer_task : `None`, ``Task``
         Transfer task set meanwhile data is transferred to ``._channel``.
     """
     __slots__ = ('_channel', '_chunk_size', '_client', '_close_waiter', '_closed', '_chunks', '_last_chunk',
@@ -85,8 +86,10 @@ class ChannelOutputStream:
             raise ValueError('I/O operation on closed or on a detached file.')
         
         if not isinstance(data, str):
-            raise TypeError(f'Only `str` can be written into `{self.__class__.__name__}`, got '
-                f'{data.__class__.__name__}')
+            raise TypeError(
+                f'Only `str` can be written into `{self.__class__.__name__}`, got '
+                f'{data.__class__.__name__}; {reprlib.repr(data)}.'
+            )
         
         if not data:
             return
@@ -193,12 +196,12 @@ class ChannelOutputStream:
         
         Parameters
         ----------
-        un_poll : `None` or `str`
+        un_poll : `None`, `str`
             Data to un-poll.
         
         Returns
         -------
-        data : `None` or `str`
+        data : `None`, `str`
             The data to send if any.
         """
         chunks = self._chunks
@@ -268,7 +271,7 @@ class ChannelOutputStream:
         
         Parameters
         ----------
-        timeout : `None` or `float`, Optional
+        timeout : `None`, `float`, Optional
             Maximal timeout to wait.
         
         Raises
@@ -305,7 +308,7 @@ class ChannelInputStream:
     ----------
     _channel : ``ChannelText``
         The source channel of the stream.
-    _check : `None` or `callable`
+    _check : `None`, `callable`
         Optional check to call to check whether a received message should be passed to the stream.
         
         Should accept the following parameters:
@@ -326,13 +329,13 @@ class ChannelInputStream:
     
     _client : ``Client``
         The client who send the stream to the channel.
-    _close_waiter : `None` or ``Future``
+    _close_waiter : `None`, ``Future``
         Waiter future set to wait for closing.
     _closed : `bool`
         Whether the stream is closed.
     _chunks : `str`
         The data queue.
-    _payload_reader : `None` or `GeneratorType`
+    _payload_reader : `None`, `GeneratorType`
         Payload reader generator, what gets the control back, when data, eof or any exception is received.
     _payload_waiter : `None` of ``Future``
         Payload waiter of the protocol, what's result is set, when the ``._payload_reader`` generator returns.
@@ -352,7 +355,7 @@ class ChannelInputStream:
             The client who send the stream to the channel.
         channel : ``ChannelText``
             The target channel of the stream.
-        check : `None` or `callable`
+        check : `None`, `callable`
             Optional check to call to check whether a received message should be passed to the stream.
         """
         self._client = client
@@ -487,7 +490,7 @@ class ChannelInputStream:
         
         Parameters
         ----------
-        timeout : `None` or `float`, Optional
+        timeout : `None`, `float`, Optional
             Maximal timeout to wait.
         
         Raises
@@ -802,7 +805,7 @@ class ChannelInputStream:
         
         Returns
         -------
-        lines : `list` of (`bytes` or `str`)
+        lines : `list` of (`bytes`, `str`)
             The red lines.
         
         Raises
@@ -839,7 +842,7 @@ def get_channel_stdout(client, channel, *, chunk_size=1000, sanitize=False):
         Whether the output stream should be sanitized. Defaults to `False`.
         
         > Sanitization is only applied after an output chunk is cut to size, so it is recommended to not set
-        `chunk_size` over `1000` if `sanitize` is given as `True`.
+        > `chunk_size` over `1000` if `sanitize` is given as `True`.
     
     Returns
     -------
@@ -858,7 +861,7 @@ def get_channel_stdin(client, channel, *, check=None):
         The client who redirects the stream.
     channel : ``ChannelText``
         The channel from where the stream will be redirected form.
-    check : `None` or `callable`, Optional (Keyword only)
+    check : `None`, `callable`, Optional (Keyword only)
         Check which message's content should be feed to the input. Defaults to `None`.
         
         Should accept the following parameters:

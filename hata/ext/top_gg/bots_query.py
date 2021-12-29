@@ -66,7 +66,7 @@ def nullable_string_tuple_to_string_array(nullable_string_tuple):
     
     Parameters
     ----------
-    nullable_string_tuple : `None` or `tuple` of `str`
+    nullable_string_tuple : `None`, `tuple` of `str`
         The value to convert.
     
     Returns
@@ -87,7 +87,7 @@ def nullable_snowflake_tuple_to_string_array(nullable_snowflake_tuple):
     
     Parameters
     ----------
-    nullable_snowflake_tuple : `None` or `tuple` of `int`
+    nullable_snowflake_tuple : `None`, `tuple` of `int`
         The value to convert.
     
     Returns
@@ -140,12 +140,12 @@ def nullable_datetime_to_timestamp(date_time):
     
     Parameters
     ----------
-    date_time : `None` or `datetime`
+    date_time : `None`, `datetime`
         The date time to convert.
     
     Returns
     -------
-    timestamp : `None` or `str`
+    timestamp : `None`, `str`
     """
     if date_time is None:
         timestamp = None
@@ -217,7 +217,7 @@ def get_bots_query_sort_by_value(sort_by):
     
     Parameters
     ----------
-    sort_by : `None` or `str`
+    sort_by : `None`, `str`
         Sort by parameter.
     
     Returns
@@ -236,8 +236,10 @@ def get_bots_query_sort_by_value(sort_by):
         try:
             query_sort_by_value = BOT_INFO_ATTRIBUTE_TO_FIELD_NAME[sort_by]
         except KeyError:
-            raise LookupError(f'There is no query field named: {sort_by!r}. The accepted fields are the '
-                f'following: {FIELD_NAMES_STRING}.') from None
+            raise LookupError(
+                f'There is no query field named: {sort_by!r}. The accepted fields are the '
+                f'following: {FIELD_NAMES_STRING}.'
+            ) from None
     
     return query_sort_by_value
 
@@ -248,7 +250,7 @@ def create_bots_query_search_value(query):
     
     Parameters
     ----------
-    query : `None` or `dict` of (`str`, `Any`)
+    query : `None`, `dict` of (`str`, `Any`)
         Search parameters.
     
     Returns
@@ -270,8 +272,10 @@ def create_bots_query_search_value(query):
             try:
                 top_gg_name, converter = BOT_INFO_ATTRIBUTE_TO_FIELD_NAME[field_name]
             except KeyError:
-                raise LookupError(f'There is no query field named: {field_name!r}. The accepted fields are the '
-                    f'following: {FIELD_NAMES_STRING}.') from None
+                raise LookupError(
+                    f'There is no query field named: {field_name!r}. The accepted fields are the '
+                    f'following: {FIELD_NAMES_STRING}.'
+                ) from None
             
             if converter is None:
                 top_gg_value = field_value

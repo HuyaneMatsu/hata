@@ -58,14 +58,14 @@ class CooldownWrapper(CommandWrapper):
 
         Returns
         -------
-        wrapper : ``Cooldown._wrapper`` or ``CooldownWrapper``
+        wrapper : ``Cooldown._wrapper``, ``CooldownWrapper``
             If `func` is given, then returns the created ``CooldownWrapper``, if not, then returns a wrapper,
             what can be used as a decorator.
         
         Raises
         ------
         TypeError
-            If `weight` is not numeric convertable to `int`.
+            If `weight` is not numeric convertible to `int`.
         """
         weight_type = weight.__class__
         if weight_type is int:
@@ -73,7 +73,9 @@ class CooldownWrapper(CommandWrapper):
         elif issubclass(weight_type, int):
             weight = int(weight)
         else:
-            raise TypeError(f'`weight` can be given as `int` instance, got {weight_type.__name__}.') from None
+            raise TypeError(
+                f'`weight` can be `int`, got {weight_type.__name__}; {weight!r}.'
+            ) from None
         
         source_wrapper = self.wrapper
         if weight == 0:
@@ -212,7 +214,7 @@ class Cooldown:
     
     @Bot.commands
     @avatar.shared(weight=1)
-    async def myavatar(client, message):
+    async def my_avatar(client, message):
         url = message.author.avatar_url_as(size=4096)
         embed = Embed('Your avatar', url=url)
         embed.add_image(url)
@@ -254,7 +256,7 @@ class Cooldown:
             The amount of calls after the respective command goes on cooldown.
         weight : `int`, Optional
             The weight of one call. Defaults to `1`.
-        handler : `None` or `async-callable`
+        handler : `None`, `async-callable`
             Called, when the wrapped command is on cooldown.
             
             If given then 4 parameters will be passed to it:
@@ -282,10 +284,10 @@ class Cooldown:
         Raises
         ------
         TypeError
-            - If `str` is not given as `str` instance.
-            - If `weight` is not numeric convertable to `int`.
-            - If `reset` is not numeric convertable to `float`.
-            - If `limit` is not numeric convertable to `int`.
+            - If `str` is not given as `str`.
+            - If `weight` is not numeric convertible to `int`.
+            - If `reset` is not numeric convertible to `float`.
+            - If `limit` is not numeric convertible to `int`.
         ValueError
             - If `for_` is not given as any of the expected value.
         """
@@ -295,7 +297,9 @@ class Cooldown:
         elif issubclass(for_, str):
             for_ = str(for_)
         else:
-            raise TypeError(f'`for_` can be given as `str` instance, got {for_type.__name__}.')
+            raise TypeError(
+                f'`for_` can be `str`, got {for_type.__name__}; {for_!r}.'
+            )
     
         if 'user'.startswith(for_):
             checker = cls._check_user
@@ -304,15 +308,19 @@ class Cooldown:
         elif 'guild'.startswith(for_):
             checker = cls._check_guild
         else:
-            raise ValueError(f'\'for_\' can be \'user\', \'channel\' or \'guild\', got {for_!r}')
+            raise ValueError(
+                f'\'for_\' can be \'user\', \'channel\' or \'guild\', got {for_!r}.'
+            )
         
         reset_type = reset.__class__
         if (reset_type is not float):
             try:
                 __float__ = getattr(reset_type, '__float__')
             except AttributeError:
-                raise TypeError(f'The given reset is not `float`, neither other numeric convertable to it, got '
-                    f'{reset_type.__name__}.') from None
+                raise TypeError(
+                    f'`reset` can be `float`, or other numeric convertible to it, got '
+                    f'{reset_type.__name__}; {reset!r}.'
+                ) from None
             
             reset = __float__(reset)
             
@@ -322,7 +330,9 @@ class Cooldown:
         elif issubclass(limit_type, int):
             limit = int(limit)
         else:
-            raise TypeError(f'`limit` can be given as `int` instance, got {limit_type.__name__}.') from None
+            raise TypeError(
+                f'`limit` can be `int`, got {limit_type.__name__}; {limit!r}.'
+            ) from None
         
         weight_type = weight.__class__
         if weight_type is int:
@@ -330,7 +340,9 @@ class Cooldown:
         elif issubclass(weight_type, int):
             weight = int(weight)
         else:
-            raise TypeError(f'`weight` can be given as `int` instance, got {weight_type.__name__}.') from None
+            raise TypeError(
+                f'`weight` can be `int`, got {weight_type.__name__}; {limit!r}.'
+            ) from None
         
         self = object.__new__(cls)
         self.checker = checker
@@ -348,14 +360,14 @@ class Cooldown:
     
     class _wrapper:
         """
-        When a parent ``Command`` instance would be created without giving `func` parameter, then a wrapper of this
+        When a parent ``Command`` would be created without giving `func` parameter, then a wrapper of this
         type is returned enabling using ``Cooldown` as a decorator, with still giving parameters to it.
         
         Attributes
         ----------
         parent : ``Cooldown``
             The parent cooldown instance.
-        handler : `None` or `async-callable`
+        handler : `None`, `async-callable`
             Called, when the wrapped command is on cooldown.
             
             If given then 4 parameters will be passed to it:
@@ -374,13 +386,13 @@ class Cooldown:
         __slots__ = ('parent', 'handler')
         def __init__(self, parent, handler):
             """
-            Creates a new ``Cooldown._wrapper`` instance with the given parameters.
+            Creates a new ``Cooldown._wrapper`` with the given parameters.
             
             Parameters
             ----------
             parent : ``Cooldown``
                 The parent cooldown instance.
-            handler : `None` or `async-callable`
+            handler : `None`, `async-callable`
                 Called, when the wrapped command is on cooldown.
                 
                 If given then 4 parameters will be passed to it:
@@ -401,7 +413,7 @@ class Cooldown:
         
         def __call__(self, func):
             """
-            By calling a cooldown's ``._wrapper`` a ``CooldownWrapper`` instance is created and returned, what can be
+            By calling a cooldown's ``._wrapper`` a ``CooldownWrapper`` is created and returned, what can be
             added as a command.
             
             Parameters
@@ -414,7 +426,9 @@ class Cooldown:
             wrapper : ``CooldownWrapper``
             """
             if func is None:
-                raise TypeError('`func` is given as `None`.')
+                raise TypeError(
+                    '`func` is given as `None`.'
+                )
             
             return CooldownWrapper(func, self.parent, self.handler)
     
@@ -454,7 +468,7 @@ class Cooldown:
         """
         Executes user cooldown check.
         
-        Might be set as the ``Cooldown``'s ``.checker`` instance attribute.
+        Might be set as the ``Cooldown``'s ``.checker`` attribute.
         
         Parameters
         ----------
@@ -488,7 +502,7 @@ class Cooldown:
         """
         Executes channel cooldown check.
         
-        Might be set as the ``Cooldown``'s ``.checker`` instance attribute.
+        Might be set as the ``Cooldown``'s ``.checker`` attribute.
         
         Parameters
         ----------
@@ -523,7 +537,7 @@ class Cooldown:
         """
         Executes guild based cooldown check.
         
-        Might be set as the ``Cooldown``'s ``.checker`` instance attribute.
+        Might be set as the ``Cooldown``'s ``.checker`` attribute.
         
         Parameters
         ----------

@@ -131,7 +131,7 @@ class Client(ClientUserPBase):
     thread_profiles : `None`, `dict` (``ChannelThread``, ``ThreadProfile``) items
         A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
         Defaults to `None`.
-    activities : `None`, `list` of ``ActivityBase`` instances
+    activities : `None`, `list` of ``ActivityBase``
         A list of the client's activities. Defaults to `None`.
     status : `Status`
         The client's display status.
@@ -172,7 +172,7 @@ class Client(ClientUserPBase):
         The client on login fills up it's ``.ready_state`` with ``Guild`` objects, which will have their members
         requested.
         
-        When receiving a `READY` dispatch event, the client's ``.ready_state`` is set as a ``ReadyState`` instance and
+        When receiving a `READY` dispatch event, the client's ``.ready_state`` is set as a ``ReadyState`` and
         a ``._delay_ready`` task is started, what delays the handle-able `ready` event, till every user from the
         received guilds is cached up. When done, ``.ready_state`` is set back to `None`.
     
@@ -192,7 +192,7 @@ class Client(ClientUserPBase):
         Each bot can join a channel at every ``Guild`` and meanwhile they do, they have an active voice client for that
         guild. This attribute stores these voice clients. They keys are the guilds' ids, meanwhile the values are
         the voice clients.
-    _activity : ``ActivityBase`` instance
+    _activity : ``ActivityBase``
         The client's preferred activity.
     _additional_owner_ids : `None`, `set` of `int`
         Additional users' (as id) to be passed by the ``.is_owner`` check.
@@ -249,7 +249,7 @@ class Client(ClientUserPBase):
             status=None, is_bot=True, shard_count=0, intents=-1, additional_owners=None, extensions=None,
             http_debug_options=None, **kwargs):
         """
-        Creates a new ``Client`` instance with the given parameters.
+        Creates a new ``Client`` with the given parameters.
         
         Parameters
         ----------
@@ -825,7 +825,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If `attachment` was not given as ``Attachment`` nor ``EmbedImage`` instance.
+            If `attachment` was not given as ``Attachment`` nor ``EmbedImage``.
         """
         if __debug__:
             if not isinstance(attachment, (Attachment, EmbedImage)):
@@ -886,7 +886,7 @@ class Client(ClientUserPBase):
         ------
         TypeError
             - If `avatar` was not given as `None`, neither as `bytes-like`.
-            - If `house` was not given as `int`  neither as ``HypesquadHouse`` instance.
+            - If `house` was not given as `int`  neither as ``HypesquadHouse``.
             - If `banner` was not given as `None`, neither as `bytes-like`.
         ConnectionError
             No internet connection.
@@ -969,7 +969,7 @@ class Client(ClientUserPBase):
             if __debug__:
                 if (banner_color is not None) and (not isinstance(banner_color, int)):
                     raise AssertionError(
-                        f'`banner_color` can be either `None`, `{Color.__name__}`, `int`, got '
+                        f'`banner_color` can be `None`, `{Color.__name__}`, `int`, got '
                         f'{banner_color.__name__}; {banner_color!r}.'
                     )
             
@@ -1230,7 +1230,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        activity : ``ActivityBase`` instance, Optional (Keyword only)
+        activity : ``ActivityBase``, Optional (Keyword only)
             The new activity of the Client.
         status : `str`, ``Status``, Optional (Keyword only)
             The new status of the client.
@@ -1240,8 +1240,8 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError:
-            - If the status is not `str`, ``Status`` instance.
-            - If activity is not ``ActivityBase`` instance, except ``ActivityCustom``.
+            - If the status is not `str`, ``Status``.
+            - If activity is not ``ActivityBase``, except ``ActivityCustom``.
         ValueError:
             - If the status `str`, but not any of the predefined ones.
         AssertionError
@@ -1263,7 +1263,7 @@ class Client(ClientUserPBase):
             self._activity = activity
         else:
             raise TypeError(
-                f'`activity` can be `{ActivityBase.__name__}` instance (except `{ActivityCustom.__name__}`), got: '
+                f'`activity` can be `{ActivityBase.__name__}` (except `{ActivityCustom.__name__}`), got: '
                 f'{activity.__class__.__name__}; {activity!r}.'
             )
         
@@ -1567,7 +1567,8 @@ class Client(ClientUserPBase):
         else:
             raise TypeError(
                 f'`access` can be `{OA2Access.__name__}`, `{UserOA2.__name__}`, `str`'
-                f', got {access.__class__.__name__}; {access!r}.')
+                f', got {access.__class__.__name__}; {access!r}.'
+            )
         
         headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
@@ -1593,7 +1594,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If `access` was not given neither as ``OA2Access``, ``UserOA2`` instance.
+            If `access` was not given neither as ``OA2Access``, ``UserOA2``.
         
         Notes
         -----
@@ -1762,8 +1763,8 @@ class Client(ClientUserPBase):
                         role_id = maybe_snowflake(role)
                         if role_id is None:
                             raise TypeError(
-                                f'`roles[{index}]` is neither `{Role.__name__}`, `int` '
-                                f', got {role.__class__.__name__}; {role!r}; roles={roles!r}.'
+                                f'`roles[{index}]` is neither `{Role.__name__}`, `int`, got '
+                                f'{role.__class__.__name__}; {role!r}; roles={roles!r}.'
                             )
                     
                     role_ids.add(role_id)
@@ -2693,12 +2694,12 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelGuildMainBase`` instance
+        channel : ``ChannelGuildMainBase``
             The channel to be moved.
         visual_position : `int`
             The visual position where the channel should go.
         parent : `None`, ``ChannelCategory``, Optional (Keyword only)
-            If not set, then the channel will keep it's current parent. If the parameter is set ``Guild`` instance or to
+            If not set, then the channel will keep it's current parent. If the parameter is set ``Guild`` or to
             `None`, then the  channel will be moved under the guild itself, Or if passed as ``ChannelCategory``,
             then the channel will be moved under it.
         lock_permissions : `bool`, Optional (Keyword only)
@@ -2712,8 +2713,8 @@ class Client(ClientUserPBase):
             - If the `channel` would be between guilds.
             - If parent channel would be moved under an other category.
         TypeError
-            - If `ChannelGuildBase` was not passed as ``ChannelGuildMainBase`` instance.
-            - If `parent` was not given as `None`, or as ``ChannelCategory`` instance.
+            - If `ChannelGuildBase` was not passed as ``ChannelGuildMainBase``.
+            - If `parent` was not given as `None`, ``ChannelCategory``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -2943,26 +2944,26 @@ class Client(ClientUserPBase):
         ------
         TypeError
             - If the given `channel` is not ``ChannelGuildBase``, `int`.
-            - If `region` was not given neither as `None`, `str` nor ``VoiceRegion`` instance.
+            - If `region` was not given neither as `None`, `str` nor ``VoiceRegion``.
             - If `video_quality_mode` was not given neither as ``VideoQualityMode` nor as `int`.
         AssertionError
             - If `name` was not given as `str`.
             - If `name`'s length is out of range `[1:100]`.
             - If `topic` was not given as `str`.
             - If `topic`'s length is over `1024`, `120` depending on channel type.
-            - If `topic` was given, but the given channel is not ``ChannelText`` nor ``ChannelStage`` instance.
-            - If `type_` was given, but the given channel is not ``ChannelText`` instance.
+            - If `topic` was given, but the given channel is not ``ChannelText`` nor ``ChannelStage``.
+            - If `type_` was given, but the given channel is not ``ChannelText``.
             - If `type_` was not given as `int`.
             - If `type_` cannot be interchanged to the given value.
-            - If `nsfw` was given meanwhile the channel is not ``ChannelText``, ``ChannelStore`` instance.
+            - If `nsfw` was given meanwhile the channel is not ``ChannelText``, ``ChannelStore``.
             - If `nsfw` was not given as `bool`.
-            - If `slowmode` was given, but the channel is not ``ChannelText`` instance.
+            - If `slowmode` was given, but the channel is not ``ChannelText``.
             - If `slowmode` was not given as `int`.
             - If `slowmode` was given, but it's value is less than `0` or greater than `21600`.
-            - If `bitrate` was given, but the channel is not ``ChannelVoiceBase`` instance.
+            - If `bitrate` was given, but the channel is not ``ChannelVoiceBase``.
             - If `bitrate` was not given as `int`.
             - If `bitrate`'s value is out of the expected range.
-            - If `user_limit` was given, but the channel is not ``ChannelVoiceBase`` instance.
+            - If `user_limit` was given, but the channel is not ``ChannelVoiceBase``.
             - If `user_limit` was not given as `int`.
             - If `user_limit` was given, but is out of the expected [0:99] range.
             - If `region` was given, but the respective channel type is not ``ChannelVoiceBase``.
@@ -2999,7 +3000,7 @@ class Client(ClientUserPBase):
                     if not isinstance(channel, (ChannelText, ChannelStage)):
                         raise AssertionError(
                             f'`topic` is a valid parameter only for `{ChannelText.__name__}` and for '
-                            f'`{ChannelStage.__name__}` instances, got {channel.__class__.__name__}; {channel!r}.'
+                            f'`{ChannelStage.__name__}`, got {channel.__class__.__name__}; {channel!r}.'
                         )
                 
                 if not isinstance(topic, str):
@@ -3052,7 +3053,7 @@ class Client(ClientUserPBase):
                     if not isinstance(channel, (ChannelText, ChannelStore)):
                         raise AssertionError(
                             f'`nsfw` is a valid parameter only for `{ChannelText.__name__}` and '
-                            f'`{ChannelStore.__name__}` instances, got {channel.__class__.__name__}; {channel!r}.'
+                            f'`{ChannelStore.__name__}`, got {channel.__class__.__name__}; {channel!r}.'
                         )
                 
                 if not isinstance(nsfw, bool):
@@ -3163,7 +3164,7 @@ class Client(ClientUserPBase):
                 if (channel is not None):
                     if not isinstance(channel, ChannelVoice):
                         raise AssertionError(
-                            f'`video_quality_mode` is a valid parameter only for `{ChannelVoice.__name__}` instances, '
+                            f'`video_quality_mode` is a valid parameter only for `{ChannelVoice.__name__}`, '
                             f'got {channel.__class__.__name__}; {channel!r}.'
                         )
             
@@ -3252,16 +3253,16 @@ class Client(ClientUserPBase):
         
         Returns
         -------
-        channel : `None`, ``ChannelGuildBase`` instance
+        channel : `None`, ``ChannelGuildBase``
             The created channel. Returns `None` if the respective `guild` is not cached.
         
         Raises
         ------
         TypeError
             - If `guild` was not given as ``Guild``, `int`.
-            - If `type_` was not passed as `int`, ``ChannelGuildBase`` instance.
+            - If `type_` was not passed as `int`, ``ChannelGuildBase``.
             - If `parent` was not given as `None`, ``ChannelCategory``, `int`.
-            - If `region` was not given either as `None`, `str` nor ``VoiceRegion`` instance.
+            - If `region` was not given either as `None`, `str` nor ``VoiceRegion``.
         AssertionError
             - If `type_` was given as `int`, and is less than `0`.
             - If `type_` was given as `int` and exceeds the defined channel type limit.
@@ -3382,7 +3383,7 @@ class Client(ClientUserPBase):
     async def message_get_chunk(self, channel, limit=100, *, after=None, around=None, before=None):
         """
         Requests messages from the given text channel. The `after`, `around` and the `before` parameters are mutually
-        exclusive and they can be `int`, or as a ``DiscordEntity`` instance or as a `datetime` object.
+        exclusive and they can be `int`, or as a ``DiscordEntity`` or as a `datetime` object.
         If there is at least 1 message overlap between the received and the loaded messages, the wrapper will chain
         the channel's message history up. If this happens the channel will get on a queue to have it's messages again
         limited to the default one, but requesting old messages more times, will cause it to extend.
@@ -3472,7 +3473,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase`` instance
+        channel : ``ChannelTextBase``
             The channel from where we want to request the messages.
         limit : `int`, Optional
             The amount of messages to request. Can be between 1 and 100.
@@ -3574,19 +3575,19 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase`` instance, `int`, ``Message``, ``MessageRepr``, ``MessageReference``,
+        channel : ``ChannelTextBase``, `int`, ``Message``, ``MessageRepr``, ``MessageReference``,
                 `tuple` (`int`, `int`)
             The text channel where the message will be sent, or the message on what you want to reply.
         content : `str`, ``EmbedBase``, `Any`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
-            if any other non `str`, ``EmbedBase`` instance is given, then will be casted to string.
+            if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
             
-            If given as ``EmbedBase`` instance, then is sent as the message's embed.
+            If given as ``EmbedBase``, then is sent as the message's embed.
             
-        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
+        embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
             The embedded content of the message.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
             
             If embeds are given as a list, then the first embed is picked up.
         file : `Any`, Optional (Keyword only)
@@ -3616,9 +3617,9 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase`` instances.
+            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase``-s.
             - If `allowed_mentions` contains an element of invalid type.
-            - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
+            - `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
             - If invalid file type would be sent.
             - If `channel`'s type is incorrect.
             - If `sticker` was not given neither as `None`, ``Sticker``, `int`, (`list`, `tuple`) of \
@@ -3867,7 +3868,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If `messages` was not given neither as `list`, `set` nor as `tuple` instance.
+            If `messages` was not given neither as `list`, `set` nor as `tuple`.
         
         Notes
         -----
@@ -3971,7 +3972,7 @@ class Client(ClientUserPBase):
     async def message_delete_sequence(self, channel, *, after=None, before=None, limit=None, filter=None, reason=None):
         """
         Deletes messages between an interval determined by `before` and `after`. They can be `int`, or as
-        a ``DiscordEntity`` instance or as a `datetime` object.
+        a ``DiscordEntity`` or as a `datetime` object.
         
         If the client has no `manage_messages` permission at the channel, then returns instantly.
         
@@ -3979,7 +3980,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase`` instance
+        channel : ``ChannelTextBase``
             The channel, where the deletion should take place.
         after : `int`, ``DiscordEntity``, `datetime`, Optional (Keyword only)
             The timestamp after the messages were created, which will be deleted.
@@ -4001,7 +4002,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If `channel` was not given as ``ChannelTextBase`` instance.
+            If `channel` was not given as ``ChannelTextBase``.
         
         Notes
         -----
@@ -4314,7 +4315,7 @@ class Client(ClientUserPBase):
             reason=None):
         """
         Deletes messages between an interval determined by `before` and `after`. They can be `int`, or as
-        a ``DiscordEntity`` instance or as a `datetime` object.
+        a ``DiscordEntity`` or as a `datetime` object.
         
         Not like ``.message_delete_sequence``, this method uses up all he clients at the respective channel to delete
         messages an not only the one from what it was called from.
@@ -4325,7 +4326,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase`` instance
+        channel : ``ChannelTextBase``
             The channel, where the deletion should take place.
         after : `int`, ``DiscordEntity``, `datetime`, Optional (Keyword only)
             The timestamp after the messages were created, which will be deleted.
@@ -4347,7 +4348,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If `channel` is not ``ChannelTextBase`` instance.
+            If `channel` is not ``ChannelTextBase``.
         
         Notes
         -----
@@ -4725,11 +4726,11 @@ class Client(ClientUserPBase):
             If given as `str` then the message's content will be edited with it. If given as any non ``EmbedBase``
             instance, then it will be cased to string first.
             
-            If given as ``EmbedBase`` instance, then the message's embeds will be edited with it.
-        embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
+            If given as ``EmbedBase``, then the message's embeds will be edited with it.
+        embed : `None`, ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `AssertionError` is
+            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
             raised.
             
             If embeds are given as a list, then the first embed is picked up.
@@ -4752,9 +4753,9 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase`` instances.
+            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase``-s.
             - If `allowed_mentions` contains an element of invalid type.
-            - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
+            - `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
             - If `message`'s type is incorrect.
             - If `components` type is incorrect.
         ValueError
@@ -4978,7 +4979,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase`` instance
+        channel : ``ChannelTextBase``
             The channel from where the messages will be requested.
         index : `int`
             Till which index the messages should be requested at the given channel.
@@ -5824,8 +5825,8 @@ class Client(ClientUserPBase):
         TypeError
             - If `guild` was not given neither as ``Guild`` nor `int`.
             - If `welcome_channels` was not given neither as `None`, ``WelcomeChannel`` nor as (`tuple`, `list`) of
-                ``WelcomeChannel`` instances.
-            - If `welcome_channels` contains a non ``WelcomeChannel`` instance.
+                ``WelcomeChannel``-s.
+            - If `welcome_channels` contains a non ``WelcomeChannel``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -5985,8 +5986,8 @@ class Client(ClientUserPBase):
         TypeError
             - If `guild` was not given neither as ``Guild`` nor `int`.
             - If `steps` was not given neither as `None`, ``VerificationScreenStep`` nor as (`tuple`, `list`) of
-                ``VerificationScreenStep`` instances.
-            - If `steps` contains a non ``VerificationScreenStep`` instance.
+                ``VerificationScreenStep``-s.
+            - If `steps` contains a non ``VerificationScreenStep``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -6109,7 +6110,7 @@ class Client(ClientUserPBase):
         if __debug__:
             if not isinstance(delete_message_days, int):
                 raise AssertionError(
-                    f'`delete_message_days` can be`int`, got {delete_message_days.__class__.__name__}; '
+                    f'`delete_message_days` can be `int`, got {delete_message_days.__class__.__name__}; '
                     f'{delete_message_days!r}.'
                 )
         
@@ -6477,8 +6478,8 @@ class Client(ClientUserPBase):
             verification_level_value = verification_level
         else:
             raise TypeError(
-                f'`verification_level` can be `{VerificationLevel.__name__}`, `int` '
-                f', got {verification_level.__class__.__name__}; {verification_level!r}.'
+                f'`verification_level` can be `{VerificationLevel.__name__}`, `int`, got '
+                f'{verification_level.__class__.__name__}; {verification_level!r}.'
             )
         
         
@@ -6812,7 +6813,7 @@ class Client(ClientUserPBase):
             - If `guild` was not given neither as ``Guild``, `str`.
             - If `icon`, `invite_splash`, `discovery_splash`, `banner` is neither `None`, `bytes-like`.
             - If `add_feature`, `remove_feature` was not given neither as `str`, ``GuildFeature``,
-                `iterable` of `str`, ``GuildFeature`` instances.
+                `iterable` of `str`, ``GuildFeature``-s.
             - If `afk_channel` was given, but not as `None`, ``ChannelVoice``, neither as `int`.
             - If `system_channel`, `rules_channel`, `public_updates_channel` was given, but not as `None`,
                 ``ChannelText``, neither as `int`.
@@ -7026,8 +7027,10 @@ class Client(ClientUserPBase):
             else:
                 rules_channel_id = maybe_snowflake(rules_channel)
                 if rules_channel_id is None:
-                    raise TypeError(f'`rules_channel` can be `None`, `{ChannelText.__name__}`, `int` '
-                        f', got {rules_channel.__class__.__name__}.')
+                    raise TypeError(
+                        f'`rules_channel` can be `None`, `{ChannelText.__name__}`, `int` , got '
+                        f'{rules_channel.__class__.__name__}.'
+                    )
             
             data['rules_channel_id'] = rules_channel_id
         
@@ -7111,8 +7114,8 @@ class Client(ClientUserPBase):
                 verification_level_value = verification_level
             else:
                 raise TypeError(
-                    f'`verification_level` can be `{VerificationLevel.__name__}`, `int` '
-                    f', got {verification_level.__class__.__name__}; {verification_level!r}.'
+                    f'`verification_level` can be `{VerificationLevel.__name__}`, `int`, got '
+                    f'{verification_level.__class__.__name__}; {verification_level!r}.'
                 )
             
             data['verification_level'] = verification_level_value
@@ -7125,8 +7128,8 @@ class Client(ClientUserPBase):
                 content_filter_value = content_filter
             else:
                 raise TypeError(
-                    f'`content_filter` can be `{ContentFilterLevel.__name__}`, `int` '
-                    f', got {content_filter.__class__.__name__}; {content_filter!r}.'
+                    f'`content_filter` can be `{ContentFilterLevel.__name__}`, `int`, got '
+                    f'{content_filter.__class__.__name__}; {content_filter!r}.'
                 )
             
             data['explicit_content_filter'] = content_filter_value
@@ -7461,7 +7464,7 @@ class Client(ClientUserPBase):
             No internet connection.
         TypeError
             - If `guild` was neither given as ``Guild``, ``GuildDiscovery``, `int`.
-            - If `primary_category_id` was not given neither as `None`, `int`, ``DiscoveryCategory`` instance.
+            - If `primary_category_id` was not given neither as `None`, `int`, ``DiscoveryCategory``.
             - If `keywords` was not passed neither as `None`, `iterable` of `str`.
             - If `emoji_discovery` was not given as `None`, `bool`.
         ValueError
@@ -7943,7 +7946,7 @@ class Client(ClientUserPBase):
     async def audit_log_get_chunk(self, guild, limit=100, *, before=None, after=None, user=None, event=None):
         """
         Request a batch of audit logs of the guild and returns them. The `after`, `around` and the `before` parameters
-        are mutually exclusive and they can be `int`, or as a ``DiscordEntity`` instance or as a `datetime`
+        are mutually exclusive and they can be `int`, or as a ``DiscordEntity`` or as a `datetime`
         object.
         
         This method is a coroutine.
@@ -8106,7 +8109,7 @@ class Client(ClientUserPBase):
             - If `nick` length is out of the expected range [0:32].
             - If `deaf` was not given as `bool`.
             - If `mute` was not given as `bool`.
-            - If `roles` is not `None`, `set`, `tuple`, `list` instance.
+            - If `roles` is not `None`, `set`, `tuple`, `list`.
             - If `timed_out_until` is neither `None` nor `datetime`.
         """
         guild, guild_id = get_guild_and_id(guild)
@@ -8708,7 +8711,7 @@ class Client(ClientUserPBase):
             
             if (end is not None) and (not isinstance(end, datetime)):
                 raise AssertionError(
-                    f'`end` can be either `None`, `datetime`, got {end.__class__.__name__}; {end!r}.'
+                    f'`end` can be `None`, `datetime`, got {end.__class__.__name__}; {end!r}.'
                 )
         
         if isinstance(privacy_level, PrivacyLevel):
@@ -8897,7 +8900,7 @@ class Client(ClientUserPBase):
             if __debug__:
                 if (end is not None) and (not isinstance(end, datetime)):
                     raise AssertionError(
-                        f'`end` can be either `None`, `datetime`, got {end.__class__.__name__}; {end!r}.'
+                        f'`end` can be `None`, `datetime`, got {end.__class__.__name__}; {end!r}.'
                     )
             
             data['scheduled_end_time'] = None if end is None else datetime_to_timestamp(end)
@@ -9378,7 +9381,7 @@ class Client(ClientUserPBase):
             if __debug__:
                 if not isinstance(auto_archive_after, int):
                     raise AssertionError(
-                        f'`auto_archive_after` can be `None` or `datetime`, got '
+                        f'`auto_archive_after` can be `None`, `datetime`, got '
                         f'{auto_archive_after.__class__.__name__}; {auto_archive_after!r}.'
                     )
                 
@@ -9751,7 +9754,7 @@ class Client(ClientUserPBase):
         
         Returns
         -------
-        user : ``ClientUserBase`` instance
+        user : ``ClientUserBase``
         
         Raises
         ------
@@ -10050,7 +10053,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `integration` was not given as ``Integration`` instance.
+            - If `integration` was not given as ``Integration``.
             - If `expire_behavior` was not given neither as `None` nor as `int`.
             - If `expire_grace_period` was not given neither as `None` nor as `int`.
             - If `expire_behavior` is not any of: `(0, 1)`.
@@ -10136,7 +10139,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If `integration` was not given as ``Integration`` instance.
+            If `integration` was not given as ``Integration``.
         """
         if __debug__:
             if not isinstance(integration, Integration):
@@ -10174,7 +10177,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If `integration` was not given as ``Integration`` instance.
+            If `integration` was not given as ``Integration``.
         """
         if __debug__:
             if not isinstance(integration, Integration):
@@ -10222,7 +10225,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `permission_overwrite` was not given as ``PermissionOverwrite`` instance.
+            - If `permission_overwrite` was not given as ``PermissionOverwrite``.
             - If `allow` was not given neither as `None`, ``Permission`` not other `int`.
             - If `deny` was not given neither as `None`, ``Permission`` not other `int`.
         """
@@ -10231,8 +10234,8 @@ class Client(ClientUserPBase):
         if __debug__:
             if not isinstance(permission_overwrite, PermissionOverwrite):
                 raise AssertionError(
-                    f'`permission_overwrite` can be `{PermissionOverwrite.__name__}` '
-                    f', got {overwrite.__class__.__name__}; {overwrite!r}.'
+                    f'`permission_overwrite` can be `{PermissionOverwrite.__name__}`, got '
+                    f'{overwrite.__class__.__name__}; {overwrite!r}.'
                 )
         
         if allow is None:
@@ -10272,7 +10275,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ˙˙ChannelGuildMainBase`` instance
+        channel : ˙˙ChannelGuildMainBase``
             The channel where the permission overwrite is.
         permission_overwrite : ``PermissionOverwrite``
             The permission overwrite to delete.
@@ -10288,7 +10291,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If `permission_overwrite` was not given as ``PermissionOverwrite`` instance.
+            If `permission_overwrite` was not given as ``PermissionOverwrite``.
         """
         channel_id = get_channel_id(channel, ChannelGuildMainBase)
         
@@ -10312,7 +10315,7 @@ class Client(ClientUserPBase):
         ----------
         channel : ``ChannelGuildMainBase``, `int`
             The channel to what the permission overwrite will be added.
-        target : ``Role``, ``ClientUserBase`` instance
+        target : ``Role``, ``ClientUserBase``
             The permission overwrite's target.
         allow : ``Permission``, `int`
             The permission overwrite's allowed permission's value.
@@ -10330,7 +10333,7 @@ class Client(ClientUserPBase):
         ------
         TypeError
             - If `channel` was not given neither as ``ChannelGuildMainBase`` nor as `int`.
-            - If `target` was not passed neither as ``Role``,``User``, neither as ``Client`` instance.
+            - If `target` was not passed neither as ``Role``,``User``, neither as ``Client``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -10568,7 +10571,7 @@ class Client(ClientUserPBase):
             > `Forbidden (403), code=50001: Missing Access`.
         
         AssertionError
-            If `channel` was given as a channel's identifier but it detectably not refers to a ``ChannelText`` instance.
+            If `channel` was given as a channel's identifier but it detectably not refers to a ``ChannelText``.
         
         Notes
         -----
@@ -10863,7 +10866,7 @@ class Client(ClientUserPBase):
             else:
                 if not isinstance(avatar, (bytes, bytearray, memoryview)):
                     raise TypeError(
-                        f'`avatar` can be `None` or `bytes-like`, got {avatar.__class__.__name__}; '
+                        f'`avatar` can be `None`, `bytes-like`, got {avatar.__class__.__name__}; '
                         f'{reprlib.repr(avatar)}.'
                     )
                 
@@ -10911,14 +10914,14 @@ class Client(ClientUserPBase):
             The webhook through what will the message be sent.
         content : `str`, ``EmbedBase``, `Any`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
-            if any other non `str`, ``EmbedBase`` instance is given, then will be casted to string.
+            if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
             
-            If given as ``EmbedBase`` instance, then is sent as the message's embed.
+            If given as ``EmbedBase``, then is sent as the message's embed.
             
-        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
+        embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
             The embedded content of the message.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `AssertionError` is
+            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
             raised.
         file : `Any`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
@@ -10951,8 +10954,8 @@ class Client(ClientUserPBase):
         TypeError
             - If `webhook` was not given neither as ``Webhook`` neither as a `tuple` (`int`, `str`).
             - If `allowed_mentions` contains an element of invalid type.
-            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase`` instances.
-            - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
+            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase``-s.
+            - `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
             - If invalid file type would be sent.
             - If `thread` was not given either as `None`, ``ChannelThread`` nor as `int`.
             - If `components` type is incorrect.
@@ -11107,11 +11110,11 @@ class Client(ClientUserPBase):
             If given as `str` then the message's content will be edited with it. If given as any non ``EmbedBase``
             instance, then it will be cased to string first.
             
-            If given as ``EmbedBase`` instance, then the message's embeds will be edited with it.
-        embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
+            If given as ``EmbedBase``, then the message's embeds will be edited with it.
+        embed : `None`, ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
-            > If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `AssertionError` is
+            > If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
             raised.
         file : `Any`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
@@ -11128,8 +11131,8 @@ class Client(ClientUserPBase):
         TypeError
             - If `webhook` was not given neither as ``Webhook`` neither as a `tuple` (`int`, `str`).
             - If `allowed_mentions` contains an element of invalid type.
-            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase`` instances.
-            - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
+            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase``-s.
+            - `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
             - `message` was given as `None`. Make sure to use ``Client.webhook_message_create`` with `wait=True` and by
                 giving any content to it as well.
             - `message` was not given neither as ``Message``, ``MessageRepr``  or `int`.
@@ -11468,7 +11471,7 @@ class Client(ClientUserPBase):
         AssertionError
             - If `name` was not given as `str`.
             - If `name` length is out of the expected range [1:32].
-            - If `roles` was not given neither as `None`, `list`, `tuple`, `set` instance.
+            - If `roles` was not given neither as `None`, `list`, `tuple`, `set`.
         Notes
         -----
         Only some characters can be in the emoji's name, so every other character is filtered out.
@@ -11549,7 +11552,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If `emoji` was not given as ``Emoji`` instance.
+            If `emoji` was not given as ``Emoji``.
         """
         snowflake_pair = get_guild_id_and_emoji_id(emoji)
         if (snowflake_pair is None):
@@ -11585,10 +11588,10 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `emoji` was not given as ``Emoji`` instance.
+            - If `emoji` was not given as ``Emoji``.
             - If `name` was not given as `str`.
             - If `name` length is out of the expected range [1:32].
-            - If `roles` was not given neither as `None`, `list`, `tuple`, `set` instance.
+            - If `roles` was not given neither as `None`, `list`, `tuple`, `set`.
         """
         if __debug__:
             if not isinstance(emoji, Emoji):
@@ -11667,7 +11670,7 @@ class Client(ClientUserPBase):
         Returns
         -------
         invite : `None`, ``Invite``
-            The vanity invite of the `guild`, or `None` if it has no vanity invite.
+            The vanity invite of the `guild`, `None` if it has no vanity invite.
         
         Raises
         ------
@@ -11865,7 +11868,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `guild` was not given as ``Guild`` instance.
+            - If `guild` was not given as ``Guild``.
             - If `max_age` was not given as `int`.
             - If `max_uses` was not given as `int`.
             - If `unique` was not given as `bool`.
@@ -11976,7 +11979,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `guild` was not given as ``Guild`` instance.
+            - If `guild` was not given as ``Guild``.
             - If `max_age` was not given as `int`.
             - If `max_uses` was not given as `int`.
             - If `unique` was not given as `bool`.
@@ -12073,7 +12076,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `guild` was not given as ``Guild`` instance.
+            - If `guild` was not given as ``Guild``.
             - If `max_age` was not given as `int`.
             - If `max_uses` was not given as `int`.
             - If `unique` was not given as `bool`.
@@ -12358,7 +12361,7 @@ class Client(ClientUserPBase):
             - If `name` length is out of range [2:32].
             - If `color` was not given as `None`, ``Color`` nor as other `int`.
             - If `separated` was not given as `None`, nor as `bool`.
-            - If `mentionable` was not given as `None`, nor as `bool˛` instance.
+            - If `mentionable` was not given as `None`, nor as `bool˛`.
             - If `permissions` was not given as `None`, ``Permission``, neither as other `int`.
             - If `icon` was passed as `bytes-like`, but it's format is not any of the expected formats.
         """
@@ -12538,7 +12541,7 @@ class Client(ClientUserPBase):
             - If `name` length is out of range [2:32].
             - If `color` was not given as `None`, ``Color`` nor as other `int`.
             - If `separated` was not given as `None`, nor as `bool`.
-            - If `mentionable` was not given as `None`, nor as `bool˛` instance.
+            - If `mentionable` was not given as `None`, nor as `bool˛`.
             - If `permissions` was not given as `None`, ``Permission``, neither as other `int`.
             - If `icon` is passed as `bytes-like`, but it's format is not a valid image format.
         """
@@ -12723,7 +12726,7 @@ class Client(ClientUserPBase):
         Parameters
         ----------
         item : `tuple` (``Role`` or (`tuple` (`int, `int`), `int`) items or `Any`
-            A `dict`, `list`, `set`, or `tuple`, which contains role-position items.
+            A `dict`, `list`, `set`, `tuple`, which contains role-position items.
         
         Returns
         -------
@@ -12791,7 +12794,7 @@ class Client(ClientUserPBase):
         Parameters
         ----------
         `roles`: (`dict` like or `iterable`) of `tuple` (``Role`` or (`tuple` (`int, `int`), `int`) items
-            A `dict`, `list`, `set`, or `tuple`, which contains role-position items.
+            A `dict`, `list`, `set`, `tuple`, which contains role-position items.
         
         Yields
         ------
@@ -12828,7 +12831,7 @@ class Client(ClientUserPBase):
         Parameters
         ----------
         roles : (`dict` like or `iterable`) of `tuple` (``Role`` or (`tuple` (`int, `int`), `int`) items
-            A `dict`, `list`, `set`, or `tuple`, which contains role-position items.
+            A `dict`, `list`, `set`, `tuple`, which contains role-position items.
         reason : `None`, `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
@@ -13072,8 +13075,8 @@ class Client(ClientUserPBase):
             application_command_id = maybe_snowflake(application_command)
             if application_command_id is None:
                 raise TypeError(
-                    f'`application_command` can be `{ApplicationCommand.__name__}`, `int` '
-                    f', got {application_command.__class__.__name__}; {application_command!r}.'
+                    f'`application_command` can be `{ApplicationCommand.__name__}`, `int`, got '
+                    f'{application_command.__class__.__name__}; {application_command!r}.'
                 )
             
             application_command = APPLICATION_COMMANDS.get(application_command_id, None)
@@ -13148,7 +13151,7 @@ class Client(ClientUserPBase):
             If any exception was received from the Discord API.
         AssertionError
             - If the client's application is not yet synced.
-            - If `application_command` was not given as ``ApplicationCommand`` instance.
+            - If `application_command` was not given as ``ApplicationCommand``.
         
         Notes
         -----
@@ -13201,7 +13204,7 @@ class Client(ClientUserPBase):
             If any exception was received from the Discord API.
         AssertionError
             - If the client's application is not yet synced.
-            - If `new_application_command` was not given as ``ApplicationCommand`` instance.
+            - If `new_application_command` was not given as ``ApplicationCommand``.
         
         Notes
         -----
@@ -13276,8 +13279,8 @@ class Client(ClientUserPBase):
             application_command_id = maybe_snowflake(application_command)
             if application_command_id is None:
                 raise TypeError(
-                    f'`application_command` can be `{ApplicationCommand.__name__}`, `int` '
-                    f', got {application_command.__class__.__name__}; {application_command!r}.'
+                    f'`application_command` can be `{ApplicationCommand.__name__}`, `int`, got '
+                    f'{application_command.__class__.__name__}; {application_command!r}.'
                 )
         
         await self.http.application_command_global_delete(application_id, application_command_id)
@@ -13313,7 +13316,7 @@ class Client(ClientUserPBase):
             If any exception was received from the Discord API.
         AssertionError
             - If the client's application is not yet synced.
-            - If an application command was not given as ``ApplicationCommand`` instance.
+            - If an application command was not given as ``ApplicationCommand``.
             - If `application_commands` is not iterable.
         
         Notes
@@ -13406,8 +13409,8 @@ class Client(ClientUserPBase):
             application_command_id = maybe_snowflake(application_command)
             if application_command_id is None:
                 raise TypeError(
-                    f'`application_command` can be `{ApplicationCommand.__name__}`, `int` '
-                    f', got {application_command.__class__.__name__}; {application_command!r}.'
+                    f'`application_command` can be `{ApplicationCommand.__name__}`, `int`, got '
+                    f'{application_command.__class__.__name__}; {application_command!r}.'
                 )
             
             application_command = APPLICATION_COMMANDS.get(application_command_id, None)
@@ -13495,7 +13498,7 @@ class Client(ClientUserPBase):
             If any exception was received from the Discord API.
         AssertionError
             - If the client's application is not yet synced.
-            - If `application_command` was not given as ``ApplicationCommand`` instance.
+            - If `application_command` was not given as ``ApplicationCommand``.
         """
         application_id = self.application.id
         if __debug__:
@@ -13544,7 +13547,7 @@ class Client(ClientUserPBase):
             If any exception was received from the Discord API.
         AssertionError
             - If the client's application is not yet synced.
-            - If `new_application_command` was not given as ``ApplicationCommand`` instance.
+            - If `new_application_command` was not given as ``ApplicationCommand``.
         """
         if isinstance(old_application_command, ApplicationCommand):
             application_command_id = old_application_command.id
@@ -13552,8 +13555,8 @@ class Client(ClientUserPBase):
             application_command_id = maybe_snowflake(old_application_command)
             if application_command_id is None:
                 raise TypeError(
-                    f'`old_application_command` can be `{ApplicationCommand.__name__}`, `int` '
-                    f', got {old_application_command.__class__.__name__}; {old_application_command!r}.'
+                    f'`old_application_command` can be `{ApplicationCommand.__name__}`, `int`, got '
+                    f'{old_application_command.__class__.__name__}; {old_application_command!r}.'
                 )
             
             old_application_command = None
@@ -13660,7 +13663,7 @@ class Client(ClientUserPBase):
             If any exception was received from the Discord API.
         AssertionError
             - If the client's application is not yet synced.
-            - If an application command was not given as ``ApplicationCommand`` instance.
+            - If an application command was not given as ``ApplicationCommand``.
             - If `application_commands` is not iterable.
         """
         application_id = self.application.id
@@ -13765,8 +13768,8 @@ class Client(ClientUserPBase):
             application_command_id = maybe_snowflake(application_command)
             if application_command_id is None:
                 raise TypeError(
-                    f'`application_command` can be `{ApplicationCommand.__name__}`, `int` '
-                    f', got {application_command.__class__.__name__}; {application_command!r}.'
+                    f'`application_command` can be `{ApplicationCommand.__name__}`, `int`, got '
+                    f'{application_command.__class__.__name__}; {application_command!r}.'
                 )
         
         permission_data = await self.http.application_command_permission_get(application_id, guild_id,
@@ -13831,8 +13834,8 @@ class Client(ClientUserPBase):
             application_command_id = maybe_snowflake(application_command)
             if application_command_id is None:
                 raise TypeError(
-                    f'`application_command` can be `{ApplicationCommand.__name__}`, `int` '
-                    f', got {application_command.__class__.__name__}; {application_command!r}.'
+                    f'`application_command` can be `{ApplicationCommand.__name__}`, `int`, got '
+                    f'{application_command.__class__.__name__}; {application_command!r}.'
                 )
         
         permission_overwrite_datas = []
@@ -14040,8 +14043,8 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `interaction` is not ``InteractionEvent`` instance.
-            - If `form` is not is not ``InteractionForm`` instance.
+            - If `interaction` is not ``InteractionEvent``.
+            - If `form` is not is not ``InteractionForm``.
         
         Notes
         -----
@@ -14119,14 +14122,14 @@ class Client(ClientUserPBase):
             Interaction to respond to.
         content : `str`, ``EmbedBase``, `Any`, Optional
             The interaction response's content if given. If given as `str` or empty string, then no content will be
-            sent, meanwhile if any other non `str`, ``EmbedBase`` instance is given, then will be casted to string.
+            sent, meanwhile if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
             
-            If given as ``EmbedBase`` instance, then is sent as the message's embed.
+            If given as ``EmbedBase``, then is sent as the message's embed.
         
-        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
+        embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
             The embedded content of the interaction response.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `AssertionError` is
+            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
             raised.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
@@ -14145,8 +14148,8 @@ class Client(ClientUserPBase):
         ------
         TypeError
             - If `allowed_mentions` contains an element of invalid type.
-            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase`` instances.
-            - If `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
+            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase``-s.
+            - If `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
             - If `components` type is incorrect.
         ValueError
             If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
@@ -14331,11 +14334,11 @@ class Client(ClientUserPBase):
         content : `str`, ``EmbedBase``, `Any`, Optional
             The new content of the message.
             
-            If given as ``EmbedBase`` instance, then the message's embeds will be edited with it.
-        embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
+            If given as ``EmbedBase``, then the message's embeds will be edited with it.
+        embed : `None`, ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `AssertionError` is
+            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
             raised.
         file : `Any`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
@@ -14352,8 +14355,8 @@ class Client(ClientUserPBase):
         ------
         TypeError
             - If `allowed_mentions` contains an element of invalid type.
-            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase`` instances.
-            - If `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
+            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase``-s.
+            - If `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
         ValueError
             If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
         ConnectionError
@@ -14441,11 +14444,11 @@ class Client(ClientUserPBase):
         content : `str`, ``EmbedBase``, `Any`, Optional
             The new content of the message.
             
-            If given as ``EmbedBase`` instance, then the message's embeds will be edited with it.
-        embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
+            If given as ``EmbedBase``, then the message's embeds will be edited with it.
+        embed : `None`, ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `AssertionError` is
+            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
             raised.
         allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
@@ -14455,8 +14458,8 @@ class Client(ClientUserPBase):
         ------
         TypeError
             - If `allowed_mentions` contains an element of invalid type.
-            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase`` instances.
-            - If `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
+            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase``-s.
+            - If `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
         ValueError
             If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
         ConnectionError
@@ -14608,14 +14611,14 @@ class Client(ClientUserPBase):
             Interaction to create followup message with.
         content : `str`, ``EmbedBase``, `Any`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
-            if any other non `str`, ``EmbedBase`` instance is given, then will be casted to string.
+            if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
             
-            If given as ``EmbedBase`` instance, then is sent as the message's embed.
+            If given as ``EmbedBase``, then is sent as the message's embed.
             
-        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
+        embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
             The embedded content of the message.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
         file : `Any`, Optional
             A file to send. Check ``create_file_form`` for details.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
@@ -14643,8 +14646,8 @@ class Client(ClientUserPBase):
         ------
         TypeError
             - If `allowed_mentions` contains an element of invalid type.
-            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase`` instances.
-            - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
+            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase``-s.
+            - `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
             - If invalid file type would be sent.
             - If `components` type is incorrect.
         ValueError
@@ -14765,11 +14768,11 @@ class Client(ClientUserPBase):
             
             By passing it as empty string, you can remove the message's content.
             
-            If given as ``EmbedBase`` instance, then the message's embeds will be edited with it.
-        embed : `None`, ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
+            If given as ``EmbedBase``, then the message's embeds will be edited with it.
+        embed : `None`, ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
         file : `Any`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
@@ -14786,8 +14789,8 @@ class Client(ClientUserPBase):
         ------
         TypeError
             - If `allowed_mentions` contains an element of invalid type.
-            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase`` instances.
-            - If `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
+            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase``-s.
+            - If `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
             - If `message` was not given neither as ``Message``, ``MessageRepr``  or `int`.
         ValueError
             If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
@@ -15180,7 +15183,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            - If `emoji_representation` is neither `str` nor ``Emoji`` instance.
+            - If `emoji_representation` is neither `str` nor ``Emoji``.
             - If `guild` is neither ``Guild`` nor `int`.
         ValueError
             If `image`s media type is neither `image/png` nor `application/json`.
@@ -15293,7 +15296,7 @@ class Client(ClientUserPBase):
         ------
         TypeError
             - If `sticker` is neither ``Sticker``, nor `int`.
-            - If `emoji_representation` is neither `str` nor ``Emoji`` instance.
+            - If `emoji_representation` is neither `str` nor ``Emoji``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -15783,7 +15786,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        house : `int`, ``HypesquadHouse`` instance
+        house : `int`, ``HypesquadHouse``
             The hypesquad house to join.
         
         Raises
@@ -15796,7 +15799,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            `house` was not given as `int`  neither as ``HypesquadHouse`` instance.
+            `house` was not given as `int`  neither as ``HypesquadHouse``.
         
         Notes
         -----
@@ -16210,8 +16213,8 @@ class Client(ClientUserPBase):
             snowflake_pair = maybe_snowflake_pair(channel)
             if snowflake_pair is None:
                 raise TypeError(
-                    f'`channel` can be `{ChannelStage.__name__}`, `tuple`(`int`, `int`) '
-                    f', got {channel.__class__.__name__}; {channel!r}.'
+                    f'`channel` can be `{ChannelStage.__name__}`, `tuple`(`int`, `int`), got '
+                    f'{channel.__class__.__name__}; {channel!r}.'
                 )
             
             guild_id, channel_id = snowflake_pair
@@ -16584,7 +16587,7 @@ class Client(ClientUserPBase):
         if __debug__:
             if not isinstance(name, str):
                 raise AssertionError(
-                    f'`name` should have be given as `str`, got {name.__class__.__name__}; {name!r}.'
+                    f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
                 )
             
             name_length = len(name)
@@ -16663,7 +16666,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        *users : `int`, ``UserBase`` instances
+        *users : `int`, ``UserBase``
             The `.id` of the a user or the user itself to be added.
         
         Raises
@@ -16711,7 +16714,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        *users : `int`, ``UserBase`` instances
+        *users : `int`, ``UserBase``
             The `.id` of the a user or the user itself to be removed.
         
         Raises
@@ -16900,15 +16903,15 @@ class Client(ClientUserPBase):
         +===================+===============================+
         | avatar            | ``Icon``                      |
         +-------------------+-------------------------------+
-        | boosts_since      | `None`, `datetime`          |
+        | boosts_since      | `None`, `datetime`            |
         +-------------------+-------------------------------+
-        | nick              | `None`, `str`               |
+        | nick              | `None`, `str`                 |
         +-------------------+-------------------------------+
         | pending           | `bool`                        |
         +-------------------+-------------------------------+
-        | role_ids          | `None`, `tuple` of `int`    |
+        | role_ids          | `None`, `tuple` of `int`      |
         +-------------------+-------------------------------+
-        | timed_out_until   | `None` ot `datetime`          |
+        | timed_out_until   | `None`, `datetime`            |
         +-------------------+-------------------------------+
         """
         try:
@@ -17029,7 +17032,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         RuntimeError
-            Not applicable for ``Client`` instances.
+            Not applicable for ``Client``-s.
         """
         raise RuntimeError('Cannot create client copy from client.')
     
@@ -17047,6 +17050,6 @@ class Client(ClientUserPBase):
         Raises
         ------
         RuntimeError
-            Not applicable for ``Client`` instances.
+            Not applicable for ``Client``-s.
         """
         raise RuntimeError('Cannot create empty client.')

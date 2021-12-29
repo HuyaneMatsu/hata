@@ -23,7 +23,7 @@ class WebhookRepr(WebhookBase):
         The webhook representation's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The webhook representation's avatar's type.
-    banner_color : `None` or ``Color``
+    banner_color : `None`, ``Color``
         The user's banner color if has any.
     banner_hash : `int`
         The user's banner's hash in `uint128`.

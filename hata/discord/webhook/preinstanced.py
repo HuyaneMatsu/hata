@@ -16,7 +16,7 @@ class WebhookType(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``WebhookType``) items
-        Stores the predefined ``WebhookType`` instances. These can be accessed with their `value` as key.
+        Stores the predefined ``WebhookType``-s. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The webhook types' values' type.
     DEFAULT_NAME : `str` = `'Undefined'`

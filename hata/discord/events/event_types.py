@@ -21,7 +21,7 @@ class GuildUserChunkEvent(EventBase):
         The guild's identifier, what received the user chunk.
     index : `int`
         The index of the received chunk response (0 <= index < count).
-    nonce : `None` or `str`
+    nonce : `None`, `str`
         A nonce to identify guild user chunk response.
     users : `list` of ``ClientUserBase``
         The received users.
@@ -183,11 +183,11 @@ class VoiceServerUpdateEvent(EventBase):
     
     Attributes
     ----------
-    endpoint : `None` or `str`
+    endpoint : `None`, `str`
         The voice server's host.
     guild_id : `int`
         The respective guild's identifier.
-    token : `None` or `str`
+    token : `None`, `str`
         Voice connection token.
     """
     __slots__ = ('endpoint', 'guild_id', 'token')

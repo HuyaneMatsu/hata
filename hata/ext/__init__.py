@@ -91,9 +91,9 @@ class SetupFunction:
         The represented extension's full name.
     extension_short_name : `str`
         The represented extension's short name.
-    optional_parameters : `None` or `tuple` of `str`
+    optional_parameters : `None`, `tuple` of `str`
         Optional parameters of the `setup_function`.
-    required_parameters : `None` or `tuple` of `str`
+    required_parameters : `None`, `tuple` of `str`
         Required parameters by the `setup_function`.
     setup_function : ``FunctionType``
         The setup function itself.
@@ -103,7 +103,7 @@ class SetupFunction:
     
     def __new__(cls, extension_name, setup_function, required_parameters, optional_parameters):
         """
-        Creates a new ``SetupFunction`` instance from the given parameters.
+        Creates a new ``SetupFunction`` from the given parameters.
         
         Parameters
         ----------
@@ -111,9 +111,9 @@ class SetupFunction:
             The represented extension's full name.
         setup_function : ``FunctionType``
             The setup function itself.
-        required_parameters : `None` or `tuple` of `str`
+        required_parameters : `None`, `tuple` of `str`
             Required parameters by the `setup_function`.
-        optional_parameters : `None` or `tuple` of `str`
+        optional_parameters : `None`, `tuple` of `str`
             Optional parameters of the `setup_function`.
         """
         dot_index = extension_name.find('.')
@@ -171,9 +171,9 @@ def register_setup_function(extension_name, setup_function, required_parameters,
         The extension's system name.
     setup_function : `FunctionType``
         The setup function of the extension.
-    required_parameters : `None` or `tuple` of `str`
+    required_parameters : `None`, `tuple` of `str`
         Required parameters by the `setup_function`.
-    optional_parameters : `None` or `tuple` of `str`
+    optional_parameters : `None`, `tuple` of `str`
         Optional parameters of the `setup_function`.
     """
     setup_function = SetupFunction(extension_name, setup_function, required_parameters, optional_parameters)
@@ -193,7 +193,7 @@ def _try_get_setup_function(extension_name, extension_short_name):
     
     Returns
     -------
-    setup_function : `None` or ``SetupFunction``
+    setup_function : `None`, ``SetupFunction``
         A function to setup the respective extension on a client.
     """
     try:
@@ -280,7 +280,7 @@ def get_and_validate_setup_functions(extensions, kwargs):
     
     Returns
     -------
-    setup_functions : `None` or `set` of ``SetupFunction``
+    setup_functions : `None`, `set` of ``SetupFunction``
         Setup functions to setup on a client.
     
     Raises
@@ -313,8 +313,10 @@ def get_and_validate_setup_functions(extensions, kwargs):
         else:
             iter_ = getattr(type(extensions), '__iter__', None)
             if iter_ is None:
-                raise TypeError(f'`extensions` can be given as `str` or as `iterable` of `str`-s, got '
-                    f'{extensions.__class__.__name__}.')
+                raise TypeError(
+                    f'`extensions` can be `str`, `iterable` of `str`, got '
+                    f'{extensions.__class__.__name__}; {extensions!r}.'
+                )
             
             for extension in iter_(extensions):
                 if type(extension) is str:
@@ -322,8 +324,10 @@ def get_and_validate_setup_functions(extensions, kwargs):
                 elif isinstance(extension, str):
                     extension = str(extension)
                 else:
-                    raise TypeError(f'`extensions` contains a non-`str` element, got '
-                        f'{extension.__class__.__name__}.')
+                    raise TypeError(
+                        f'`extensions` can contain `str` elements, got '
+                        f'{extension.__class__.__name__}; {extension!r}; extensions={extensions!r}.'
+                    )
                 
                 if extensions_to_setup is None:
                     extensions_to_setup = set()
@@ -351,8 +355,10 @@ def get_and_validate_setup_functions(extensions, kwargs):
                 
                 for required_parameter in required_parameters:
                     if required_parameter not in kwargs:
-                        raise RuntimeError(f'`{required_parameter!r}` parameter is required by '
-                            f'`{setup_function.extension_short_name}`.')
+                        raise RuntimeError(
+                            f'`{required_parameter}` parameter is required by '
+                            f'`{setup_function.extension_short_name}`.'
+                        )
             
             optional_parameters = setup_function.optional_parameters
             if (optional_parameters is not None):
@@ -360,9 +366,12 @@ def get_and_validate_setup_functions(extensions, kwargs):
         
     if exhaustible_parameters:
         warnings.warn(
-            f'`get_and_validate_setup_functions` received unused parameters: '
-            f'{", ".join(f"{name}={kwargs[name]!r}" for name in exhaustible_parameters)}.',
-            RuntimeWarning)
+            (
+                f'`get_and_validate_setup_functions` received unused parameters: '
+                f'{", ".join(f"{name}={kwargs[name]!r}" for name in exhaustible_parameters)}.'
+            ),
+            RuntimeWarning,
+        )
     
     return setup_functions
 
@@ -375,7 +384,7 @@ def run_setup_functions(client, setup_functions, kwargs):
     ----------
     client : ``Client``
         The client on who the extensions should be setupped.
-    setup_functions : `None` or `set` of ``SetupFunction``
+    setup_functions : `None`, `set` of ``SetupFunction``
         The setup functions to run with the client.
     kwargs : `dict` of (`str`, `Any`) items
         Keyword parameters to get the extensions's parameters from.

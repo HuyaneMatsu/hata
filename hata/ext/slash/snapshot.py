@@ -16,9 +16,9 @@ def take_slasher_snapshot(client):
     
     Returns
     -------
-    collected : `None` or `tuple` of (`dict` of (`int`, `list` of `tuple` \
-            (`bool`, ``SlasherApplicationCommand``)) items, `None` or `set` of ``ComponentCommand``, \
-            `None` or `set` of ``FormSubmitCommand``)
+    collected : `None`, `tuple` of (`dict` of (`int`, `list` of `tuple` \
+            (`bool`, ``SlasherApplicationCommand``)) items, `None`, `set` of ``ComponentCommand``, \
+            `None`, `set` of ``FormSubmitCommand``)
         The collected commands of the slasher.
     """
     slasher = getattr(client, 'slasher', None)
@@ -85,20 +85,20 @@ def calculate_slasher_snapshot_difference(client, snapshot_old, snapshot_new):
     ----------
     client : ``Client``
         The respective client.
-    snapshot_old :  `None` or `tuple` of (`dict` of (`int`, `list` of `tuple` \
-            (`bool`, ``SlasherApplicationCommand``)) items, `None` or `set` of ``ComponentCommand``, \
-            `None` or `set` of ``FormSubmitCommand``)
+    snapshot_old :  `None`, `tuple` of (`dict` of (`int`, `list` of `tuple` \
+            (`bool`, ``SlasherApplicationCommand``)) items, `None`, `set` of ``ComponentCommand``, \
+            `None`, `set` of ``FormSubmitCommand``)
         An old snapshot taken.
-    snapshot_new :  `None` or `tuple` of (`dict` of (`int`, `list` of `tuple` \
-            (`bool`, ``SlasherApplicationCommand``)) items, `None` or `set` of ``ComponentCommand``, \
-            `None` or `set` of ``FormSubmitCommand``)
+    snapshot_new :  `None`, `tuple` of (`dict` of (`int`, `list` of `tuple` \
+            (`bool`, ``SlasherApplicationCommand``)) items, `None`, `set` of ``ComponentCommand``, \
+            `None`, `set` of ``FormSubmitCommand``)
         A new snapshot.
     
     Returns
     -------
-    snapshot_difference : `None` or `tuple` (`tuple` (`None` or `set` of ``SlasherApplicationCommand``, `None` or
-            `set` of ``SlasherApplicationCommand``), `tuple` (`None` or `set` of ``ComponentCommand``, `None` or \
-            `set` of ``ComponentCommand``), `tuple` (`None` or `set` of ``FormSubmitCommand``, `None` or \
+    snapshot_difference : `None`, `tuple` (`tuple` (`None`, `set` of ``SlasherApplicationCommand``, `None` or
+            `set` of ``SlasherApplicationCommand``), `tuple` (`None`, `set` of ``ComponentCommand``, `None` or \
+            `set` of ``ComponentCommand``), `tuple` (`None`, `set` of ``FormSubmitCommand``, `None` or \
             `set` of ``FormSubmitCommand``))
         The difference between the two snapshots.
     """
@@ -257,9 +257,9 @@ def revert_slasher_snapshot(client, snapshot_difference):
     ----------
     client : ``Client``
         The respective client instance.
-    snapshot_difference : `None` or `tuple` (`tuple` (`None` or `set` of ``SlasherApplicationCommand``, `None` or
-            `set` of ``SlasherApplicationCommand``), `tuple` (`None` or `set` of ``ComponentCommand``, `None` or \
-            `set` of ``ComponentCommand``), `tuple` (`None` or `set` of ``FormSubmitCommand``, `None` or \
+    snapshot_difference : `None`, `tuple` (`tuple` (`None`, `set` of ``SlasherApplicationCommand``, `None` or
+            `set` of ``SlasherApplicationCommand``), `tuple` (`None`, `set` of ``ComponentCommand``, `None` or \
+            `set` of ``ComponentCommand``), `tuple` (`None`, `set` of ``FormSubmitCommand``, `None` or \
             `set` of ``FormSubmitCommand``))
         The taken snapshot.
     """

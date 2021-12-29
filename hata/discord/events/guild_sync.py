@@ -22,7 +22,7 @@ async def sync_task(queue_id, coroutine, queue):
         The respective guild's id to identify queued up unhandled dispatch event when de-sync happened.
     coroutine : `CoroutineType`
         ``Client.guild_sync`` coroutine.
-    queue : `list` of `tuple` (``Client``, `Any`, (`str` or `tuple` (`str`, `function`, `Any`)))
+    queue : `list` of `tuple` (``Client``, `Any`, (`str`, `tuple` (`str`, `function`, `Any`)))
         A queue of events to call with the specified parameters.
         
         First element of the queue is always the respective client of the received dispatch event. The second is the
@@ -81,7 +81,7 @@ def guild_sync(client, data, parser_and_checker):
         The respective client of the dispatch event.
     data : `Any`
         The payload of the dispatch event.
-    parser_and_checker : `None` or `str` or `tuple` (`str`, `function`, `Any`)
+    parser_and_checker : `None`, `str`, `tuple` (`str`, `function`, `Any`)
         - Is passed as `None` if only the syncer task should run.
         - Is passed as `str`, if the respective parser should be called when syncing is done.
         - Is passed as `tuple` of 3 elements : `str`, `function`, `Any`; if the respective parser's calling is bound to

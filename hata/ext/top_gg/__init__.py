@@ -58,9 +58,9 @@ def setup_ext_top_gg(client, *args, **kwargs):
     RuntimeError
         If the client has an attribute set what the top.gg client would use.
     TypeError
-        - If `client` is not ``Client`` instance.
-        - If `top_gg_token` is not `str` instance.
-        - If `auto_post_bot_stats` is not `bool` instance.
+        - If `client` is not ``Client``.
+        - If `top_gg_token` is not `str`.
+        - If `auto_post_bot_stats` is not `bool`.
         - If `raise_on_top_gg_global_rate_limit` is not `bool` isinstance.
     """
     if hasattr(client, 'top_gg'):

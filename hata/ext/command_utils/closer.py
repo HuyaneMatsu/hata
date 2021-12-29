@@ -19,7 +19,7 @@ class Closer(PaginationBase):
     
     Attributes
     ----------
-    _canceller : `None` or `function`
+    _canceller : `None`, `function`
         The function called when the ``Closer`` is cancelled or when it expires. This is a onetime use and after
         it was used, is set as `None`.
     
@@ -43,19 +43,19 @@ class Closer(PaginationBase):
         |                           |       | but expected.                                                         |
         +---------------------------+-------+-----------------------------------------------------------------------+
     
-    _timeouter : `None` or ``Timeouter``
+    _timeouter : `None`, ``Timeouter``
         Executes the timing out feature on the ``Closer``.
     
-    channel : ``ChannelTextBase`` instance
+    channel : ``ChannelTextBase``
         The channel where the ``Closer`` is executed.
     
     client : ``Client`` of ``Embed`` (or any compatible)
         The client who executes the ``Closer``.
     
-    message : `None` or ``Message``
+    message : `None`, ``Message``
         The message on what the ``Closer`` is executed.
     
-    check : `None` or `callable`
+    check : `None`, `callable`
         A callable what decides whether the ``Closer`` should process a received reaction event. Defaults to
         `None`.
         
@@ -63,7 +63,7 @@ class Closer(PaginationBase):
         +-----------+---------------------------------------------------+
         | Name      | Type                                              |
         +===========+===================================================+
-        | event     | ``ReactionAddEvent`` or ``ReactionDeleteEvent``   |
+        | event     | ``ReactionAddEvent``, ``ReactionDeleteEvent``     |
         +-----------+---------------------------------------------------+
         
         Note, that ``ReactionDeleteEvent`` is only given, when the client has no `manage_messages` permission.
@@ -94,8 +94,8 @@ class Closer(PaginationBase):
         ----------
         client : ``Client``
             The client who will execute the ``Closer``.
-        channel : ``ChannelTextBase`` instance, ``Message``, ``InteractionEvent``
-            The channel where the ``Closer`` will be executed.  Pass it as a ``Message`` instance to send a reply.
+        channel : ``ChannelTextBase``, ``Message``, ``InteractionEvent``
+            The channel where the ``Closer`` will be executed.  Pass it as a ``Message`` to send a reply.
         
             If given as ``InteractionEvent``, then will acknowledge it and create a new message with it as well.
             Although will not acknowledge it if `message` is given.
@@ -104,10 +104,10 @@ class Closer(PaginationBase):
             The displayed content.
         timeout : `float`, Optional (Keyword Only)
             The timeout of the ``Closer`` in seconds. Defaults to `240.0`.
-        message : `None` or ``Message``, Optional (Keyword Only)
+        message : `None`, ``Message``, Optional (Keyword Only)
             The message on what the ``Closer`` will be executed. If not given a new message will be created.
             Defaults to `None`.
-        check : `None` or `callable`, Optional (Keyword Only)
+        check : `None`, `callable`, Optional (Keyword Only)
             A callable what decides whether the ``Closer`` should process a received reaction event. Defaults to
             `None`.
             
@@ -115,7 +115,7 @@ class Closer(PaginationBase):
             +-----------+---------------------------------------------------+
             | Name      | Type                                              |
             +===========+===================================================+
-            | event     | ``ReactionAddEvent`` or ``ReactionDeleteEvent``   |
+            | event     | ``ReactionAddEvent``, ``ReactionDeleteEvent``   |
             +-----------+---------------------------------------------------+
             
             Note, that ``ReactionDeleteEvent`` is only given, when the client has no `manage_messages` permission.
@@ -129,7 +129,7 @@ class Closer(PaginationBase):
         
         Returns
         -------
-        self : `None` or ``Closer``
+        self : `None`, ``Closer``
         
         Raises
         ------
@@ -146,8 +146,10 @@ class Closer(PaginationBase):
             target_channel = channel.channel
             received_interaction = True
         else:
-            raise TypeError(f'`channel` can be given only as `{ChannelTextBase.__name__}`, `{Message.__name__}` '
-                f'of as {InteractionEvent.__name__} instance, got {channel.__class__.__name__}.')
+            raise TypeError(
+                f'`channel` can be `{ChannelTextBase.__name__}`, `{Message.__name__}`, `{InteractionEvent.__name__}`, '
+                f'got {channel.__class__.__name__}; {channel!r}.'
+            )
         
         self = object.__new__(cls)
         self.check = check
@@ -177,12 +179,12 @@ class Closer(PaginationBase):
             
             if isinstance(err, DiscordException):
                 if err.code in (
-                        ERROR_CODES.unknown_message, # message deleted
-                        ERROR_CODES.unknown_channel, # message's channel deleted
-                        ERROR_CODES.missing_access, # client removed
-                        ERROR_CODES.missing_permissions, # permissions changed meanwhile
-                        ERROR_CODES.cannot_message_user, # user has dm-s disallowed
-                            ):
+                    ERROR_CODES.unknown_message, # message deleted
+                    ERROR_CODES.unknown_channel, # message's channel deleted
+                    ERROR_CODES.missing_access, # client removed
+                    ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                    ERROR_CODES.cannot_message_user, # user has dm-s disallowed
+                ):
                     return self
             
             raise
@@ -201,12 +203,12 @@ class Closer(PaginationBase):
             
             if isinstance(err, DiscordException):
                 if err.code in (
-                        ERROR_CODES.unknown_message, # message deleted
-                        ERROR_CODES.unknown_channel, # message's channel deleted
-                        ERROR_CODES.max_reactions, # reached reaction 20, some1 is trolling us.
-                        ERROR_CODES.missing_access, # client removed
-                        ERROR_CODES.missing_permissions, # permissions changed meanwhile
-                            ):
+                    ERROR_CODES.unknown_message, # message deleted
+                    ERROR_CODES.unknown_channel, # message's channel deleted
+                    ERROR_CODES.max_reactions, # reached reaction 20, some1 is trolling us.
+                    ERROR_CODES.missing_access, # client removed
+                    ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                ):
                     return self
             
             raise

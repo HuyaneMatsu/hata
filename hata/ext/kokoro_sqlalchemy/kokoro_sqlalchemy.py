@@ -50,7 +50,7 @@ class KOKOROEngine:
         return self._engine._should_log_info()
     
     def connect(self):
-        return ConnectionCM(self._connect())
+        return ConnectionContextManager(self._connect())
     
     async def _connect(self):
         executor = self._worker
@@ -63,7 +63,7 @@ class KOKOROEngine:
         executor=self._worker
         if executor is None:
             executor = current_thread().claim_executor()
-        return EngineTransactionCM(self, close_with_result, executor)
+        return EngineTransactionContextManager(self, close_with_result, executor)
     
     async def execute(self, *args, **kwargs):
         executor = self._worker
@@ -121,14 +121,14 @@ class AsyncConnection:
         return self._connection.closed
     
     def begin(self):
-        return TransactionCM(self._begin())
+        return TransactionContextManager(self._begin())
     
     async def _begin(self):
         transaction = await self.executor.execute(self._connection.begin)
         return AsyncTransaction(transaction, self.executor)
     
     def begin_nested(self):
-        return TransactionCM(self._begin_nested())
+        return TransactionContextManager(self._begin_nested())
     
     async def _begin_nested(self):
         transaction = await self.executor.execute(self._connection.begin_nested)
@@ -213,7 +213,7 @@ class AsyncResultProxy:
         return self._result_proxy.inserted_primary_key
 
 
-class EngineTransactionCM:
+class EngineTransactionContextManager:
     __slots__ = ('_close_with_result', '_context', '_engine', 'executor',)
 
     def __init__(self, engine, close_with_result, executor):
@@ -230,7 +230,7 @@ class EngineTransactionCM:
         return await self.executor.execute(alchemy_incendiary(self._context.__exit__, (exc_type, exc_val, exc_tb),))
 
 
-class ConnectionCM:
+class ConnectionContextManager:
     __slots__ = ('result', 'task',)
     def __init__(self, task):
         self.task = task
@@ -247,7 +247,7 @@ class ConnectionCM:
         await self.result.close()
 
 
-class TransactionCM(ConnectionCM):
+class TransactionContextManager(ConnectionContextManager):
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         if exc_type is None and self.result._transaction.is_active:

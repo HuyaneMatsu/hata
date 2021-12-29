@@ -459,14 +459,14 @@ The following checks are implemented:
 | release_at                     | release_at, *roles       | Whether the command is already released. Users with the given roles and the bot owners bypass the check.  |
 | nsfw_channel_only              | N/A                      | Whether the message's channel is nsfw.                                                                    |
 | owner_only                     | N/A                      | Whether the message's author is an owner of the client.                                                   |
-| owner_or_guild_owner_only      | N/A                      | `owner_only` or `guild_owner` (Fails in private channels.)                                                |
-| owner_or_has_any_role          | *roles                   | `owner_only` or `has_any_role`                                                                            |
-| owner_or_has_guild_permissions | permissions, **kwargs    | `owner_only` or `has_guild_permissions` (Fails in private channels.)                                      |
-| owner_or_has_permissions       | permissions, **kwargs    | `owner_only` or `has_permissions`                                                                         |
-| owner_or_has_role              | role                     | `owner_only` or `has_role`                                                                                |
+| owner_or_guild_owner_only      | N/A                      | `owner_only`, `guild_owner` (Fails in private channels.)                                                  |
+| owner_or_has_any_role          | *roles                   | `owner_only`, `has_any_role`                                                                              |
+| owner_or_has_guild_permissions | permissions, **kwargs    | `owner_only`, `has_guild_permissions` (Fails in private channels.)                                        |
+| owner_or_has_permissions       | permissions, **kwargs    | `owner_only`, `has_permissions`                                                                           |
+| owner_or_has_role              | role                     | `owner_only`, `has_role`                                                                                  |
 | private_only                   | N/A                      | Whether the message's channel is a private channel.                                                       |
 | user_account_only              | N/A                      | Whether the message's author is a user account.                                                           |
-| user_account_or_client_only    | N/A                      | Whether the message's author is a user account or a ``Client`` instance.                                  |
+| user_account_or_client_only    | N/A                      | Whether the message's author is a user account or a ``Client``.                                           |
 
 
 ### Category checks

@@ -18,9 +18,9 @@ class CommandContext(object):
         The client who received the message.
     command : ``Command``
         The command to invoke.
-    command_category_trace : `None` or `tuple` of ``CommandCategory``
+    command_category_trace : `None`, `tuple` of ``CommandCategory``
         Trace of command categories till to the command to invoke if applicable.
-    command_function : `None` or ``CommandFunction``
+    command_function : `None`, ``CommandFunction``
         The command's function to run.
     command_keyword_parameters : `dict` of (`str`, `Any`) items
         Keyword parameters to pass to the command function.
@@ -30,7 +30,7 @@ class CommandContext(object):
         The message's content after prefix.
     message : ``Message``
         The received message.
-    parameters : `None` or `dict` of (`str`, `Any`)
+    parameters : `None`, `dict` of (`str`, `Any`)
         The parsed parameters.
     prefix : `str`
         The matched prefix or the client's prefix for the given respective message.
@@ -111,7 +111,7 @@ class CommandContext(object):
         
         Returns
         -------
-        guild : `None` or ``Guild``
+        guild : `None`, ``Guild``
         """
         return self.message.guild
     
@@ -135,7 +135,7 @@ class CommandContext(object):
         
         Returns
         -------
-        voice_state : `None` or ``VoiceState``
+        voice_state : `None`, ``VoiceState``
         """
         message = self.message
         guild = message.guild
@@ -150,7 +150,7 @@ class CommandContext(object):
         
         Returns
         -------
-        voice_client : `None` or ``VoiceClient``
+        voice_client : `None`, ``VoiceClient``
         """
         guild_id = self.message.guild_id
         if guild_id:
@@ -172,14 +172,14 @@ class CommandContext(object):
         ----------
         content : `str`, ``EmbedBase``, `Any`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
-            if any other non `str` or ``EmbedBase`` instance is given, then will be casted to string.
+            if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
             
-            If given as ``EmbedBase`` instance, then is sent as the message's embed.
+            If given as ``EmbedBase``, then is sent as the message's embed.
             
-        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
+        embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
             The embedded content of the message.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
             
             If embeds are given as a list, then the first embed is picked up.
         file : `Any`, Optional (Keyword only)
@@ -202,15 +202,15 @@ class CommandContext(object):
         
         Returns
         -------
-        message : ``Message`` or `None`
+        message : ``Message``, `None`
             Returns `None` if there is nothing to send.
         
         Raises
         ------
         TypeError
-            - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
+            - If `embed` was given as `list`, but it contains not only ``EmbedBase``-s.
             - If `allowed_mentions` contains an element of invalid type.
-            - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
+            - `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
             - If invalid file type would be sent.
             - If `sticker` was not given neither as `None`, ``Sticker``, `int`, (`list`, `tuple`, `set`) of \
                 (``Sticker``, `int).
@@ -222,9 +222,9 @@ class CommandContext(object):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `tts` was not given as `bool` instance.
-            - If `nonce` was not given neither as `None` nor as `str` instance.
-            - If `reply_fail_fallback` was not given as `bool` instance.
+            - If `tts` was not given as `bool`.
+            - If `nonce` was not given neither as `None` nor as `str`.
+            - If `reply_fail_fallback` was not given as `bool`.
         """
         return await self.client.message_create(self.message, *args, **kwargs)
         
@@ -239,14 +239,14 @@ class CommandContext(object):
         ----------
         content : `str`, ``EmbedBase``, `Any`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
-            if any other non `str` or ``EmbedBase`` instance is given, then will be casted to string.
+            if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
             
-            If given as ``EmbedBase`` instance, then is sent as the message's embed.
+            If given as ``EmbedBase``, then is sent as the message's embed.
             
-        embed : ``EmbedBase`` instance or `list` of ``EmbedBase`` instances, Optional (Keyword only)
+        embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
             The embedded content of the message.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase`` instance, then `TypeError` is raised.
+            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
             
             If embeds are given as a list, then the first embed is picked up.
         file : `Any`, Optional (Keyword only)
@@ -267,15 +267,15 @@ class CommandContext(object):
         
         Returns
         -------
-        message : ``Message`` or `None`
+        message : ``Message``, `None`
             Returns `None` if there is nothing to send.
         
         Raises
         ------
         TypeError
-            - If `embed` was given as `list`, but it contains not only ``EmbedBase`` instances.
+            - If `embed` was given as `list`, but it contains not only ``EmbedBase``-s.
             - If `allowed_mentions` contains an element of invalid type.
-            - `content` parameter was given as ``EmbedBase`` instance, meanwhile `embed` parameter was given as well.
+            - `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
             - If invalid file type would be sent.
             - If `sticker` was not given neither as `None`, ``Sticker``, `int`, (`list`, `tuple`, `set`) of \
                 (``Sticker``, `int).
@@ -287,9 +287,9 @@ class CommandContext(object):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `tts` was not given as `bool` instance.
-            - If `nonce` was not given neither as `None` nor as `str` instance.
-            - If `reply_fail_fallback` was not given as `bool` instance.
+            - If `tts` was not given as `bool`.
+            - If `nonce` was not given neither as `None` nor as `str`.
+            - If `reply_fail_fallback` was not given as `bool`.
         """
         return await self.client.message_create(self.message.channel, *args, **kwargs)
     
@@ -303,7 +303,7 @@ class CommandContext(object):
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelTextBase`` nor `int` instance.
+            If `channel` was not given neither as ``ChannelTextBase`` nor `int`.
         ConnectionError
             No internet connection.
         DiscordException

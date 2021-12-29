@@ -25,7 +25,7 @@ class PaginationBase:
     
     Attributes
     ----------
-    _canceller : `None` or `Function`
+    _canceller : `None`, `Function`
         The function called when the ``Pagination`` is cancelled or when it expires. This is a onetime use and after
         it was used, is set as `None`.
     
@@ -49,16 +49,16 @@ class PaginationBase:
         |                           |       | but expected.                                                         |
         +---------------------------+-------+-----------------------------------------------------------------------+
     
-    _timeouter : `None` or ``Timeouter``
+    _timeouter : `None`, ``Timeouter``
         Executes the timing out feature on the ``Pagination``.
     
-    channel : ``ChannelTextBase`` instance
+    channel : ``ChannelTextBase``
         The channel where the ``Pagination`` is executed.
     
     client : ``Client`` of ``Embed`` (or any compatible)
         The client who executes the ``Pagination``.
     
-    message : `None` or ``Message``
+    message : `None`, ``Message``
         The message on what the ``Pagination`` is executed.
     """
     __slots__ = ('_canceller', '_task_flag', '_timeouter', 'channel', 'client', 'message')
@@ -107,7 +107,7 @@ class PaginationBase:
         
         Parameters
         ----------
-        exception : `None` or ``BaseException`` instance
+        exception : `None`, ``BaseException``
             Exception to cancel the ``Pagination`` with.
         """
         client = self.client
@@ -134,7 +134,7 @@ class PaginationBase:
         
         Parameters
         ----------
-        exception : `None` or `BaseException`
+        exception : `None`, `BaseException`
             The close exception to handle.
         
         Returns
@@ -204,12 +204,12 @@ class PaginationBase:
         
         Parameters
         ----------
-        exception : `None` or ``BaseException`` instance, Optional
+        exception : `None`, ``BaseException``, Optional
             Exception to cancel the pagination with. Defaults to `None`
         
         Returns
         -------
-        canceller_task : `None` or ``Task``
+        canceller_task : `None`, ``Task``
         """
         if self._task_flag in (GUI_STATE_READY, GUI_STATE_SWITCHING_PAGE, GUI_STATE_CANCELLING):
             self._task_flag = GUI_STATE_CANCELLED

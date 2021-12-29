@@ -41,11 +41,11 @@ class Emoji(DiscordEntity, immortal=True):
         Whether the emoji is managed by an integration.
     name : `int`
         The emoji's name.
-    role_ids : `None` or `tuple` of `int`
+    role_ids : `None`, `tuple` of `int`
         A set of role identifiers for which the custom emoji is whitelisted to. If the emoji is not limited for specific roles,
         then this value is set to `None`. If the emoji is a builtin (unicode) emoji, then this attribute is set to
         `None` as  well.
-    unicode : `None` or `str`
+    unicode : `None`, `str`
         At the case of custom emojis this attribute is always `None`, but at the case of builtin (unicode) emojis this
         attribute stores the emoji's unicode representation.
     user : ``ClientUserBase``
@@ -169,7 +169,7 @@ class Emoji(DiscordEntity, immortal=True):
             The emoji's ``.name``. Can be between length `2` and `32`.
         require_colons : `bool`, Optional (Keyword only)
              The emoji's ``.require_colons``.
-        roles : `None` or `iterable` of (``Role``, `int`), Optional (Keyword only)
+        roles : `None`, `iterable` of (``Role``, `int`), Optional (Keyword only)
             The emoji's ``.roles``.
         user : ``ClientUserBase`, `int`, Optional (Keyword only)
             The emoji's ``.user``.
@@ -493,7 +493,7 @@ class Emoji(DiscordEntity, immortal=True):
         +-------------------+-------------------------------+
         | require_colons    | `bool`                        |
         +-------------------+-------------------------------+
-        | role_ids          | `None` or `tuple` of ``Role`` |
+        | role_ids          | `None`, `tuple` of ``Role`` |
         +-------------------+-------------------------------+
         """
         old_attributes = {}
@@ -661,7 +661,7 @@ class Emoji(DiscordEntity, immortal=True):
         
         Returns
         -------
-        guild : `None` or ``Guild``
+        guild : `None`, ``Guild``
             The emoji's guild.
         """
         guild_id = self.guild_id
@@ -676,7 +676,7 @@ class Emoji(DiscordEntity, immortal=True):
         
         Returns
         -------
-        roles : `None` or `tuple` of ``Role``
+        roles : `None`, `tuple` of ``Role``
         """
         role_ids = self.role_ids
         if role_ids is None:

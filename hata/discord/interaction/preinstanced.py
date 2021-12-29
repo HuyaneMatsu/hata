@@ -21,7 +21,7 @@ class ApplicationCommandOptionType(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``ApplicationCommandOptionType``) items
-        Stores the predefined ``ApplicationCommandOptionType`` instances. These can be accessed with their `value` as
+        Stores the predefined ``ApplicationCommandOptionType``-s. These can be accessed with their `value` as
         key.
     VALUE_TYPE : `type` = `int`
         The application command option types' values' type.
@@ -93,7 +93,7 @@ class InteractionType(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``InteractionType``) items
-        Stores the predefined ``InteractionType`` instances. These can be accessed with their `value` as
+        Stores the predefined ``InteractionType``-s. These can be accessed with their `value` as
         key.
     VALUE_TYPE : `type` = `int`
         The application command option types' values' type.
@@ -146,7 +146,7 @@ class ApplicationCommandPermissionOverwriteTargetType(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``ApplicationCommandPermissionOverwriteTargetType``) items
-        Stores the predefined ``ApplicationCommandPermissionOverwriteTargetType`` instances. These can be accessed with their
+        Stores the predefined ``ApplicationCommandPermissionOverwriteTargetType``-s. These can be accessed with their
         `value` as key.
     VALUE_TYPE : `type` = `int`
         The application command permission overwrite types' values' type.
@@ -191,7 +191,7 @@ class ComponentType(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``ComponentType``) items
-        Stores the predefined ``ComponentType`` instances. These can be accessed with their `value` as key.
+        Stores the predefined ``ComponentType``-s. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The component type's type.
     DEFAULT_NAME : `str` = `'UNDEFINED'`
@@ -240,7 +240,7 @@ class ButtonStyle(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``ButtonStyle``) items
-        Stores the predefined ``ButtonStyle`` instances. These can be accessed with their `value` as key.
+        Stores the predefined ``ButtonStyle``-s. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The button style's type.
     DEFAULT_NAME : `str` = `'UNDEFINED'`
@@ -292,7 +292,7 @@ class TextInputStyle(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``ButtonStyle``) items
-        Stores the predefined ``TextInputStyle`` instances. These can be accessed with their `value` as key.
+        Stores the predefined ``TextInputStyle``-s. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The text input style's type.
     DEFAULT_NAME : `str` = `'UNDEFINED'`
@@ -335,7 +335,7 @@ class ApplicationCommandTargetType(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``ApplicationCommandTargetType``) items
-        Stores the predefined ``ApplicationCommandTargetType`` instances. These can be accessed with their `value` as
+        Stores the predefined ``ApplicationCommandTargetType``-s. These can be accessed with their `value` as
         key.
     VALUE_TYPE : `type` = `int`
         The application command targets' values' type.

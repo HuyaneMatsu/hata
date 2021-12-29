@@ -21,7 +21,7 @@ async def default_error_event_handler(client, name, err):
     name : `str`
         Identifier name of the place where the error occurred.
     err : `Any`
-        The caught exception. Can be given as non `BaseException` instance as well.
+        The caught exception. Can be given as non `BaseException` as well.
     """
     extracted = [
         client.full_name,
@@ -173,7 +173,7 @@ async def default_voice_client_update_event_handler(client, voice_state, old_att
         +-----------------------+-----------------------+
         | mute                  | `bool`                |
         +-----------------------+-----------------------+
-        | requested_to_speak_at | `None` or `datetime`  |
+        | requested_to_speak_at | `None`, `datetime`    |
         +-----------------------+-----------------------+
         | self_deaf             | `bool`                |
         +-----------------------+-----------------------+

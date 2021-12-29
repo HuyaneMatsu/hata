@@ -25,7 +25,7 @@ class OpusError(Exception):
             If opus is not loaded.
         """
         if opus is None:
-            raise RuntimeError(f'{cls.__name__} cannot be created if opus is not loaded')
+            raise RuntimeError(f'{cls.__name__} cannot be created if opus is not loaded.')
         
         return Exception.__new__(cls)
     
@@ -196,6 +196,7 @@ class OpusEncoder:
         Pointer to the C level encoder.
     """
     __slots__ = ('_buffer', '_encoder', )
+    
     def __new__(cls):
         """
         Creates a new opus decoder.
@@ -210,7 +211,7 @@ class OpusEncoder:
             If opus is not loaded.
         """
         if opus is None:
-            raise RuntimeError(f'{cls.__name__} cannot be created if opus is not loaded')
+            raise RuntimeError(f'{cls.__name__} cannot be created if opus is not loaded.')
         
         encoder = opus.opus_encoder_create(SAMPLING_RATE, CHANNELS, APPLICATION_AUDIO, ctypes.byref(ctypes.c_int()))
         
@@ -370,7 +371,7 @@ class OpusDecoder:
             If opus is not loaded.
         """
         if opus is None:
-            raise RuntimeError(f'{cls.__name__} cannot be created if opus is not loaded')
+            raise RuntimeError(f'{cls.__name__} cannot be created if opus is not loaded.')
         
         decoder = opus.opus_decoder_create(SAMPLING_RATE, CHANNELS, ctypes.byref(ctypes.c_int()))
         

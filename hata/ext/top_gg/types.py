@@ -55,21 +55,21 @@ class BotInfo(metaclass=Slotted):
         The bot's avatar hash.
     avatar_type : ``IconType``
         The bot's avatar's type.
-    banner_url : `None` or `str`
+    banner_url : `None`, `str`
         Url for the bot's banner image.
-    certified_at : `None` or `datetime`
+    certified_at : `None`, `datetime`
         When the bot was approved. Set as `None` if was not yet.
     discriminator : `int`
         The bot's discriminator.
     donate_bot_guild_id : `int`
         The guild id for the donate bot setup(?).
-    featured_guild_ids : `None` or `tuple` of `int`
+    featured_guild_ids : `None`, `tuple` of `int`
         The featured guild's identifiers on the bot's page.
-    github_url : `None` or `str`
+    github_url : `None`, `str`
         Link to the github repo of the bot.
     id : `int`
         The bot's identifier.
-    invite_url : `None` or `str`
+    invite_url : `None`, `str`
         Custom bot invite url.
     long_description : `str`
         The long description of the bot.
@@ -83,17 +83,17 @@ class BotInfo(metaclass=Slotted):
         Prefix of the bot.
     short_description : `str`
         The short description of the bot.
-    support_server_invite_url : `None` or `str`
+    support_server_invite_url : `None`, `str`
         Url to the bot's support server.
-    tags : `None` or `tuple` of `str`
+    tags : `None`, `tuple` of `str`
         The tags of the bot.
     upvotes : `int`
         The amount of upvotes the bot has.
     upvotes_monthly : `int`
         The amount of upvotes the bot has this month.
-    vanity_url : `None` or `str`
+    vanity_url : `None`, `str`
         Vanity url of the bot.
-    website_url : `None` or `str`
+    website_url : `None`, `str`
         The website url of the bot.
     """
     __slots__ = ('banner_url', 'certified_at', 'discriminator', 'donate_bot_guild_id', 'featured_guild_ids',
@@ -275,9 +275,9 @@ class UserInfo(metaclass=Slotted):
         The bot's avatar hash.
     avatar_type : ``IconType``
         The bot's avatar's type.
-    banner_url : `None` or `str`
+    banner_url : `None`, `str`
         Url for the user's banner image.
-    bio : `None` or `str`
+    bio : `None`, `str`
         The user's bio.
     color : ``Color``
         The custom color of the user.
@@ -383,15 +383,15 @@ class UserConnections:
     
     Attributes
     ----------
-    github : `None` or `str`
+    github : `None`, `str`
         The github user name of the user.
-    instagram : `None` or `str`
+    instagram : `None`, `str`
         The instagram user name of the user.
-    reddit : `None` or `str`
+    reddit : `None`, `str`
         The reddit user name of the user.
-    twitter : `None` or `str`
+    twitter : `None`, `str`
         The twitter user name of the user.
-    youtube : `None` or `str`
+    youtube : `None`, `str`
         The youtube user name of the user.
     """
     __slots__ = ('github', 'instagram', 'reddit', 'twitter', 'youtube')
@@ -509,7 +509,7 @@ class BotsQueryResult:
         The limit used.
     offset : `int`
         The off set used.
-    results : `None` or `tuple` of ``BotInfo``
+    results : `None`, `tuple` of ``BotInfo``
         The matched bots.
     total : `int`
         The total number of bots matching the query.
@@ -596,7 +596,7 @@ class VoteBase:
     query : `str`
         Query used to redirect to vote.
     type : `str`
-        The vote's type. Can be either `'upvote'` or `'test'`.
+        The vote's type. Can be either `'upvote'`, `'test'`.
     user_id : `int`
         The user's identifier, who voted.
     """
@@ -643,7 +643,7 @@ class BotVote(VoteBase):
     query : `str`
         Query used to redirect to vote.
     type : `str`
-        The vote's type. Can be either `'upvote'` or `'test'`.
+        The vote's type. Can be either `'upvote'`, `'test'`.
     user_id : `int`
         The user's identifier, who voted.
     bot_id : `int`
@@ -678,7 +678,7 @@ class GuildVote(VoteBase):
     query : `str`
         Query used to redirect to vote.
     type : `str`
-        The vote's type. Can be either `'upvote'` or `'test'`.
+        The vote's type. Can be either `'upvote'`, `'test'`.
     user_id : `int`
         The user's identifier, who voted.
     guild_id : `int`

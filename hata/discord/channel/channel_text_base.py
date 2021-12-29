@@ -53,11 +53,11 @@ class MessageHistoryCollector:
     """
     Attributes
     ----------
-    channel_reference : ``WeakReferer`` to ``ChannelTextBase`` instance
+    channel_reference : ``WeakReferer`` to ``ChannelTextBase``
         Reference to the parent channel.
     delay : `float`
         Additional message collection delay.
-    handle : `None` or ``TimerHandle``
+    handle : `None`, ``TimerHandle``
         Handle calling the history collector.
     """
     __slots__ = ('channel_reference', 'delay', 'handle', )
@@ -144,7 +144,7 @@ class MessageHistory:
     ----------
     _message_keep_limit : `int`
         The channel's own limit of how much messages it should keep before removing their reference.
-    _message_history_collector :  `None` or ``MessageHistoryCollector``
+    _message_history_collector :  `None`, ``MessageHistoryCollector``
         Collector for the channel's message history.
     message_history_reached_end : `bool`
         Whether the channel's message's are loaded till their end. If the channel's message history reach it's end
@@ -202,7 +202,7 @@ class ChannelTextBase:
     
     Attributes
     ----------
-    _message_history : `None` or ``MessageHistory``
+    _message_history : `None`, ``MessageHistory``
         The channel's message history if any.
     """
     __slots__ = ()
@@ -495,7 +495,7 @@ class ChannelTextBase:
         
         Returns
         -------
-        messages : `deque` or `None`
+        messages : `deque`, `None`
         """
         messages = self.messages
         if messages is None:
@@ -551,7 +551,7 @@ class ChannelTextBase:
         
         Returns
         -------
-        message : `None` or ``Message``
+        message : `None`, ``Message``
         """
         messages = self.messages
         if (messages is not None):

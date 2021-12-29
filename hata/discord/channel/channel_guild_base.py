@@ -28,7 +28,7 @@ class ChannelGuildBase(ChannelBase):
     ----------
     id : `int`
         Unique identifier of the channel.
-    _permission_cache : `None` or `dict` of (`int`, ``Permission``) items
+    _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     parent_id : `int`
         The channel's parent's identifier.
@@ -276,7 +276,7 @@ class ChannelGuildBase(ChannelBase):
         
         Returns
         -------
-        guild : ``Guild`` or `None`
+        guild : ``Guild``, `None`
         """
         guild_id = self.guild_id
         if guild_id:
@@ -290,7 +290,7 @@ class ChannelGuildBase(ChannelBase):
         
         Returns
         -------
-        parent : `None` or ``ChannelGuildBase``
+        parent : `None`, ``ChannelGuildBase``
         """
         parent_id = self.parent_id
         if parent_id:
@@ -352,7 +352,7 @@ class ChannelGuildMainBase(ChannelGuildBase):
         The channel's guild's identifier.
     name : `str`
         The channel's name.
-    _permission_cache : `None` or `dict` of (`int`, ``Permission``) items
+    _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
         The channel's permission overwrites.
@@ -580,7 +580,7 @@ class ChannelGuildMainBase(ChannelGuildBase):
         
         Parameters
         ----------
-        user : ``UserBase`` instance
+        user : ``UserBase``
             The user to calculate it's permissions of.
         
         Returns

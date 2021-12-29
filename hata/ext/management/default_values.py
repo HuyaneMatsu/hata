@@ -1,4 +1,5 @@
 __all__ = ('get_client_application_id', 'get_client_id', 'get_client_secret', 'get_client_token')
+
 from ...env import get_str_env, get_int_env
 from scarletio import RichAnalyzer
 from ...discord.client import Client
@@ -33,8 +34,10 @@ def get_client_token(environmental_variable_prefix):
     environmental_variable_name = environmental_variable_prefix+'_TOKEN'
     client_token = get_str_env(environmental_variable_name, warn_if_empty=False)
     if client_token is None:
-        raise RuntimeError(f'Required `token` environmental variable with name: {environmental_variable_name!r} could'
-            f'not be detected')
+        raise RuntimeError(
+            f'Required `token` environmental variable with name: {environmental_variable_name!r} could not be '
+            f'detected.'
+        )
     
     return client_token
 

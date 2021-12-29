@@ -10,7 +10,7 @@ from .slasher import Slasher
 
 def interactions_getter(manager_router):
     """
-    Gets the slash command processer using `Client.slasher` of an ``_EventHandlerManagerRouter``.
+    Gets the slash command processor using `Client.slasher` of an ``_EventHandlerManagerRouter``.
     
     Parameters
     ----------
@@ -19,7 +19,7 @@ def interactions_getter(manager_router):
     
     Returns
     -------
-    handlers : `list` of ``Slasher`` instances
+    handlers : `list` of ``Slasher``
     """
     handlers = []
     for client in manager_router.parent.clients:
@@ -52,7 +52,7 @@ class ClientWrapper:
     @property
     def interactions(self):
         """
-        Returns a ``_EventHandlerManagerRouter`` instance, with what slash commands can be added to more clients at the
+        Returns a ``_EventHandlerManagerRouter``, with what slash commands can be added to more clients at the
         same time.
         
         Returns

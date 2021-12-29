@@ -16,9 +16,9 @@ class WelcomeScreen:
     
     Attributes
     ----------
-    description : `None` or `str`
+    description : `None`, `str`
         Description, of what is the server about.
-    welcome_channels : `None` or `tuple` of ``WelcomeChannel``
+    welcome_channels : `None`, `tuple` of ``WelcomeChannel``
         The featured channels by the welcome screen.
     """
     __slots__ = ('description', 'welcome_channels', )
@@ -159,7 +159,7 @@ class WelcomeChannel:
         
         Other Parameters
         ----------------
-        channel : ``ChannelTextBase`` or `int`, Optional
+        channel : ``ChannelTextBase``, `int`, Optional
             The channel of the welcome screen.
         channel_id : `int`, optional
             Alias of `channel`, tho it accepts only snowflake.
@@ -178,8 +178,8 @@ class WelcomeChannel:
         ------
         TypeError
             - If `channel` parameter was given as a channel, but not as ``ChannelText``.
-            - If `channel` parameter was not given neither as ``ChannelText`` or `int`.
-            - If `channel_id` was given but neither as `int` or `str`.
+            - If `channel` parameter was not given neither as ``ChannelText``, `int`.
+            - If `channel_id` was given but neither as `int`, `str`.
             - If `description` was not given as `str`.
             - If `emoji` was not given as ``Emoji``.
         ValueError
@@ -199,7 +199,7 @@ class WelcomeChannel:
                     channel_id = channel.id
                 elif isinstance(channel, ChannelBase):
                     raise TypeError(
-                        f'`channel` can be `{ChannelText.__name__}` or `int`, got {channel.__class__.__name__}; '
+                        f'`channel` can be `{ChannelText.__name__}`, `int`, got {channel.__class__.__name__}; '
                         f'{channel!r}.'
                     )
                 else:
@@ -217,7 +217,7 @@ class WelcomeChannel:
             
             if base is None:
                 raise TypeError(
-                    f'Either `channel` or `channel_id` parameters are required if `{cls.__name__}.custom`'
+                    f'Either `channel`, `channel_id` parameters are required if `{cls.__name__}.custom`'
                     f'is called as a classmethod.'
                 )
             

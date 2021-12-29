@@ -65,7 +65,7 @@ def thread_user_update(thread_channel, user, thread_user_data):
     
     Returns
     -------
-    old_attributes : `None` or `dict` of (`str`, `Any`) items
+    old_attributes : `None`, `dict` of (`str`, `Any`) items
     """
     thread_users = thread_channel.thread_users
     if thread_users is None:
@@ -136,7 +136,7 @@ def thread_user_pop(thread_channel, user_id, me):
     
     Returns
     -------
-    popped : `None` or `tuple` (``ClientUserBase``, ``ThreadProfile``) item
+    popped : `None`, `tuple` (``ClientUserBase``, ``ThreadProfile``) item
         The removed user and it's profile if any.
     """
     thread_users = thread_channel.thread_users
@@ -192,7 +192,7 @@ class ThreadProfile:
     
     def __init__(self, data):
         """
-        Creates a new ``ThreadProfile`` instance from the given data.
+        Creates a new ``ThreadProfile`` from the given data.
         
         Parameters
         ----------

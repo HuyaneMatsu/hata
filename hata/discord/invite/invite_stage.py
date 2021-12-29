@@ -14,7 +14,7 @@ class InviteStage:
         The users inside of the stage.
     speaker_count : int`
         The number of speakers in the stage.
-    topic : `None` or `str`
+    topic : `None`, `str`
         The stage's topic if any.
     """
     __slots__ = ('participant_count', 'participants', 'speaker_count', 'topic',)
@@ -22,13 +22,13 @@ class InviteStage:
     
     def __new__(cls, data, guild):
         """
-        Creates a new ``InviteStage`` instance from the given data.
+        Creates a new ``InviteStage`` from the given data.
         
         Parameters
         ----------
         data : `str`
             Data received from Discord.
-        guild : ``Guild`` or `None`
+        guild : ``Guild``, `None`
             The respective guild if any.
         """
         user_datas = data['members']

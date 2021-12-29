@@ -32,10 +32,10 @@ class VoiceState:
     
     mute : `bool`
         Whether the user is muted.
-    requested_to_speak_at : `None` or `datetime`
+    requested_to_speak_at : `None`, `datetime`
         When the user requested to speak.
         
-        Only applicable if the user is connected to a ``ChannelStage`` instance.
+        Only applicable if the user is connected to a ``ChannelStage``.
     
     self_deaf : `bool`
         Whether the user muted everyone else.
@@ -143,7 +143,7 @@ class VoiceState:
         
         Returns
         -------
-        channel : `None` or ``ChannelVoiceBase``
+        channel : `None`, ``ChannelVoiceBase``
         """
         channel_id = self.channel_id
         if channel_id:
@@ -157,7 +157,7 @@ class VoiceState:
         
         Returns
         -------
-        guild : `None` or ``Guild``
+        guild : `None`, ``Guild``
         """
         channel = self.channel
         if (channel is not None):
@@ -223,7 +223,7 @@ class VoiceState:
         +-----------------------+-----------------------+
         | mute                  | `bool`                |
         +-----------------------+-----------------------+
-        | requested_to_speak_at | `None` or `datetime`  |
+        | requested_to_speak_at | `None`, `datetime`  |
         +-----------------------+-----------------------+
         | self_deaf             | `bool`                |
         +-----------------------+-----------------------+

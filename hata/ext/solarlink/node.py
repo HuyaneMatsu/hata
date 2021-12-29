@@ -28,7 +28,7 @@ class SolarNode:
         The password used for authentication.
     _port : `int`
         Port of a lavalink node to connect to.
-    _resume_key : `None` or `str`
+    _resume_key : `None`, `str`
         A resume key to resume websocket connection with lavalink.
     client : ``Client``
         The parent client of the node.
@@ -39,11 +39,11 @@ class SolarNode:
         
         Defaults to `3`. If defined as a negative number, the node will try to reconnect infinitely.
     
-    region : `None` or ``VoiceRegion``
+    region : `None`, ``VoiceRegion``
         The respective voice region of the node's players.
     stats : `None` or  ``Stats``
         The statistics of the node.
-    websocket : `None` or ``WSClient``
+    websocket : `None`, ``WebSocketClient``
         The connected websocket.
     """
     __slots__ = ('_host', '_password', '_port', '_resume_key', 'client', 'players', 'reconnect_attempts', 'region',
@@ -63,9 +63,9 @@ class SolarNode:
             The port of the lavalink node to connect to.
         password : `str`
             The password used for authentication.
-        region : `None` or ``VoiceRegion``
+        region : `None`, ``VoiceRegion``
             The respective voice region of the node's players.
-        resume_key : `None` or `str`
+        resume_key : `None`, `str`
             A resume key to resume websocket connection with lavalink.
         reconnect_attempts : `int`
             How much times the gateway should try to reconnect before erroring out.
@@ -73,53 +73,65 @@ class SolarNode:
         Raises
         ------
         TypeError
-            - If `host` is not `str` instance.
-            - If `port` is not `int` instance.
-            - If `password is not `str` instance.
-            - If `region` is neither `None`, nor ``VoiceRegion`` instance.
-            - If `resume_key` is neither `None`, nor `str` instance.
-            - If `reconnect_attempts` is not `int` instance.
+            - If `host` is not `str`.
+            - If `port` is not `int`.
+            - If `password is not `str`.
+            - If `region` is neither `None`, nor ``VoiceRegion``.
+            - If `resume_key` is neither `None`, nor `str`.
+            - If `reconnect_attempts` is not `int`.
         """
         if type(host) is str:
             pass
         elif isinstance(host, str):
             host = str(host)
         else:
-            raise TypeError(f'`host` can be `str` instance, got `{host.__class__.__name__}`.')
+            raise TypeError(
+                f'`host` can be `str`, got {host.__class__.__name__}; {host!r}.'
+            )
         
         if type(port) is int:
             pass
         elif isinstance(port, int):
             port = int(port)
         else:
-            raise TypeError(f'`port` can be `int` instance, got `{port.__class__.__name__}`.')
+            raise TypeError(
+                f'`port` can be `int`, got {port.__class__.__name__}; {port!r}.'
+            )
         
         if type(password) is str:
             pass
         elif isinstance(password, str):
             password = str(password)
         else:
-            raise TypeError(f'`password` can be given as `str` instance, got `{password.__class__.__name__}`.')
+            raise TypeError(
+                f'`password` can be `str`, got {password.__class__.__name__}; {password!r}.'
+            )
         
         if (region is not None) and (not isinstance(region, VoiceRegion)):
-            raise TypeError(f'`region` can be either `None` or `{VoiceRegion.__name__}` instance, got '
-                f'`{region.__class__.__name__}`.')
+            raise TypeError(
+                f'`region` can be `None`, `{VoiceRegion.__name__}`, got '
+                f'{region.__class__.__name__}; {region!r}.'
+            )
         
         if (resume_key is None) or (type(resume_key) is str):
             pass
         elif isinstance(resume_key, str):
             resume_key = str(resume_key)
         else:
-            raise TypeError(f'`resume_key` can be either `None` or `str` instance, got '
-                f'`{resume_key.__class__.__name__}`.')
+            raise TypeError(
+                f'`resume_key` can be `None`, `str`, got '
+                f'{resume_key.__class__.__name__}; {resume_key!r}.'
+            )
         
         if type(reconnect_attempts) is int:
             pass
         elif isinstance(reconnect_attempts, int):
             reconnect_attempts = int(reconnect_attempts)
         else:
-            raise TypeError(f'`reconnect_attempts` can be given as `int` instance, got '
-                f'`{reconnect_attempts.__class__.__name__}`.')
+            raise TypeError(
+                f'`reconnect_attempts` can be `int`, got '
+                f'{reconnect_attempts.__class__.__name__}; {reconnect_attempts!r}.'
+            )
         
         self = object.__new__(cls)
         
@@ -324,11 +336,14 @@ class SolarNode:
                         sleep_amount = 1.0
                     
                     if not reconnect_attempts:
-                        await KOKORO.render_exception_async(err, [
-                            'Failed to connect to lavalink az ',
-                            repr(self),
-                            '.run:\n',
-                        ],)
+                        await KOKORO.render_exception_async(
+                            err,
+                            [
+                                'Failed to connect to lavalink node ',
+                                repr(self),
+                                '.run:\n',
+                            ],
+                        )
                         
                         if (waiter is not None):
                             waiter.set_result_if_pending(False)
@@ -430,11 +445,11 @@ class SolarNode:
             except KeyError:
                 Task(
                     client.events.error(
-                            client,
-                            f'{self.__class__.__name__}._received_message',
-                            f'Unknown dispatch event {event}\nData: {message!r}'
-                        ),
-                        KOKORO,
+                        client,
+                        f'{self.__class__.__name__}._received_message',
+                        f'Unknown dispatch event {event}\nData: {message!r}',
+                    ),
+                    KOKORO,
                 )
                 return False
             
@@ -450,7 +465,7 @@ class SolarNode:
             client.events.error(
                 client,
                 f'{self.__class__.__name__}._received_message',
-                f'Unknown operation {operation}\nData: {message!r}'
+                f'Unknown operation {operation}\nData: {message!r}',
             ),
             KOKORO,
         )

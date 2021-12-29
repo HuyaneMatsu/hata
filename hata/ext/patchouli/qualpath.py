@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 __all__ = ('QualPath',)
 
 class QualPath:
@@ -7,9 +6,9 @@ class QualPath:
     
     Attributes
     ----------
-    _hash : `None` or `int`
+    _hash : `None`, `int`
         Cached slot for the hash of the qual-path.
-    _str : `None` or `str`
+    _str : `None`, `str`
         Cached slot for `str` of the qual-path.
     parts : `list` of `str`
         Broken down parts of the module path.
@@ -22,7 +21,7 @@ class QualPath:
         
         Parameters
         ----------
-        *paths : `str` or ``QualPath`` instances
+        *paths : `str`, ``QualPath``
             Paths to create the qual-path from.
         
         Returns
@@ -32,9 +31,9 @@ class QualPath:
         Raises
         ------
         TypeError
-            A path was given neither as `str` or as ``QualPath`` instance.
+            A path was given neither as `str`, ``QualPath``.
         ValueError
-            A path was given as `str` instance, but it contains an empty sub-path.
+            A path was given as `str`, but it contains an empty sub-path.
         """
         parts = []
         for path in paths:
@@ -53,17 +52,23 @@ class QualPath:
                 
                 for sub_part in sub_parts:
                     if not sub_part:
-                        raise ValueError(f'`{path!r}` contains empty sub-path.')
+                        raise ValueError(
+                            f'{path!r} contains empty sub-path.'
+                        )
+                    
                 parts.extend(sub_parts)
                 continue
             
-            raise TypeError(f'`path` passed neither as `str`, or `{cls.__name__} instance: {path.__class__.__name__}.')
+            raise TypeError(
+                f'`path` can be `str`, `{cls.__name__}`, got {path.__class__.__name__}; {path!r}.'
+            )
         
         self = object.__new__(cls)
         self.parts = parts
         self._hash = None
         self._str = None
         return self
+    
     
     def __str__(self):
         """Returns the qual-path's parts joined together."""
@@ -73,12 +78,13 @@ class QualPath:
         
         return str_
     
+    
     def __repr__(self):
         """Returns the qual-path's representation."""
-        result = [
+        repr_parts = [
             self.__class__.__name__,
             '(',
-                ]
+        ]
         
         parts = self.parts
         limit = len(parts)
@@ -86,25 +92,27 @@ class QualPath:
             index = 0
             while True:
                 part = parts[index]
-                result.append(part)
+                repr_parts.append(part)
                 index +=1
                 if index == limit:
                     break
                 
-                result.append(', ')
+                repr_parts.append(', ')
                 continue
         
-        result.append(')')
-        
-        return ''.join(result)
+        repr_parts.append(')')
+        return ''.join(repr_parts)
+    
     
     def __truediv__(self, other):
         """Adds the two qual-path together returning a new one."""
         return type(self)(self, other)
     
+    
     def __rtruediv__(self, other):
         """Adds the two qual-path together returning a new one."""
         return type(self)(other, self)
+    
     
     def __eq__(self, other):
         """Returns whether the two values are the same."""
@@ -115,6 +123,7 @@ class QualPath:
             return (str(self) == other)
         
         return NotImplemented
+    
     
     def __sub__(self, other):
         """Subtracts from self's end the given other if applicable."""
@@ -137,6 +146,7 @@ class QualPath:
             return NotImplemented
         
         return other._do_sub(self)
+    
     
     def _do_sub(self, other):
         """
@@ -186,6 +196,7 @@ class QualPath:
         
         return hash_
     
+    
     def __contains__(self, value):
         """Returns whether self contains other."""
         if type(value) is type(self):
@@ -197,9 +208,11 @@ class QualPath:
         
         return (value in str(self))
     
+    
     def __bool__(self):
         """Returns whether the path has any parts."""
         return (True if self.parts else False)
+    
     
     @property
     def parent(self):

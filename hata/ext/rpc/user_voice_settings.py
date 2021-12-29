@@ -7,13 +7,13 @@ class UserVoiceSettings:
     """
     Attributes
     ----------
-    mute : `None` or `bool`
+    mute : `None`, `bool`
         Whether the user is muted.
-    audio_balance : `None` or ``AudioBalance``
+    audio_balance : `None`, ``AudioBalance``
         Audio balance.
-    user_id : `None` or `int`
+    user_id : `None`, `int`
         The user's identifier.
-    volume : `None` or `float`
+    volume : `None`, `float`
         The user's volume.
         
         Can be in range [0.0:2.0].
@@ -59,12 +59,12 @@ class AudioBalance:
     
     Attributes
     ----------
-    left : `None` or `float`
+    left : `None`, `float`
         Left balance of the user.
         
         Can be in range [0.0:1.0].
     
-    right : `None` or `float`
+    right : `None`, `float`
         Right balance of the user.
         
         Can be in range [0.0:1.0].
@@ -73,15 +73,15 @@ class AudioBalance:
     
     def __new__(cls, *, left=None, right=None):
         """
-        Creates a new ``AudioBalance`` instance from the given parameters.
+        Creates a new ``AudioBalance`` from the given parameters.
         
         Parameters
         ----------
-        left : `None` or `float`, Optional (Keyword only)
+        left : `None`, `float`, Optional (Keyword only)
             Left balance of the user.
             
             Can be in range [0.0:1.0].
-        right : `None` or `float`, Optional (Keyword only)
+        right : `None`, `float`, Optional (Keyword only)
             Right balance of the user.
             
             Can be in range [0.0:1.0].
@@ -89,8 +89,8 @@ class AudioBalance:
         Raises
         ------
         TypeError
-            - If `left` is not `None` nor `float` instance.
-            - If `right` is not `None` nor `float` instance.
+            - If `left` is not `None` nor `float`.
+            - If `right` is not `None` nor `float`.
         ValueError
             - If `left` is out of range [0.0:1.0].
             - If `right` is out of range [0.0:1.0].
@@ -157,7 +157,7 @@ class AudioBalance:
     @classmethod
     def from_data(cls, data):
         """
-        Creates a new ``AudioBalance`` instance frm the given data.
+        Creates a new ``AudioBalance`` frm the given data.
         
         Parameters
         ----------

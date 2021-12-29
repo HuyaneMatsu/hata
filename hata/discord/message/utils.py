@@ -14,7 +14,7 @@ def try_resolve_interaction_message(message, interaction):
     ----------
     message : ``Message``
         Received message.
-    interaction : ``MessageInteraction`` or ``InteractionEvent``
+    interaction : ``MessageInteraction``, ``InteractionEvent``
         Received message interaction.
     """
     try:
@@ -42,7 +42,7 @@ def process_message_chunk(message_datas, channel):
     ----------
     message_datas : `list` of (`dict` of (`str`, `Any`) items) elements
         A list of message's data received from Discord.
-    channel : ``ChannelTextBase`` or `None`
+    channel : ``ChannelTextBase``, `None`
         The channels to which the messages are bound to if any.
     
     Returns

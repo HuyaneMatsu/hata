@@ -35,35 +35,35 @@ class VoiceClient:
         An identifier sent by Discord what should be sent back with every voice packet.
     _audio_sources : `dict` of (`int`, `int`) items
         `user_id` - `audio_source` mapping used by ``AudioStream``-s.
-    _audio_streams : `None` or `dict` of (`int`, (``AudioStream`` or (`list` of ``AudioStream``)) items
+    _audio_streams : `None`, `dict` of (`int`, (``AudioStream`` or (`list` of ``AudioStream``)) items
         `user_id` - ``AudioStream``(s) mapping for linking ``AudioStream`` to their respective user.
     _encoder : ``OpusEncoder``
         Encode not opus encoded audio data.
-    _endpoint : `None` or `str`
+    _endpoint : `None`, `str`
         The endpoint, where the voice client sends the audio data.
-    _endpoint_ip : `None` or `tuple` of `int`
+    _endpoint_ip : `None`, `tuple` of `int`
         The ip version of the `._endpoint` attribute.
     _handshake_complete : ``Future``
         Used for awaiting the connecting handshake with Discord.
-    _ip : `None` or `tuple` of `int`
+    _ip : `None`, `tuple` of `int`
         The ip to what the voice client's gateway connects.
-    _port : `None` or `int`
+    _port : `None`, `int`
         The port to what the voice client's gateway connects.
     _pref_volume : `float`
         The preferred volume of the voice client. can be between `0.0` and `2.0`.
-    _protocol : `None` or ``DatagramMergerReadProtocol``
+    _protocol : `None`, ``DatagramMergerReadProtocol``
         Asynchronous protocol of the voice client to communicate with it's socket.
     _reconnecting : `bool`
         Whether the voice client plans to reconnect and it's reader and player should not be stopped.
-    _secret_box : `None` or `nacl.secret.SecretBox`
+    _secret_box : `None`, `nacl.secret.SecretBox`
         Data encoder of the voice client.
     _sequence : `int`
         Counter to define the sent data's sequence for Discord.
-    _session_id : `None` or `str`
+    _session_id : `None`, `str`
         The session id of the voice client's owner client's shard.
-    _set_speaking_task : `None` or ``Task``
+    _set_speaking_task : `None`, ``Task``
         Synchronization task for the `.set_speaking` coroutine.
-    _socket : `None` or `socket.socket`
+    _socket : `None`, `socket.socket`
         The socket through what the ``VoiceClient`` sends the voice data to Discord. Created by the ``._create_socket``
         method, when the client's gateway receives response after connecting. If the client leaves the voice channel,
         then the socket is closed and set back to `None`.
@@ -71,7 +71,7 @@ class VoiceClient:
         A timestamp identifier to tell Discord how much frames we sent to it.
     _token : `str`
         Token received by the voice client's owner client's gateway. Used to authorize the voice client.
-    _transport : `None` or ``_SelectorDatagramTransport``
+    _transport : `None`, ``_SelectorDatagramTransport``
         Asynchronous transport of the voice client to communicate with it's socket.
     _video_source : `int`
         An identifier sent by Discord what should be sent back with every video packet.
@@ -88,7 +88,7 @@ class VoiceClient:
          +==================+===========================+
          | client           | ``VoiceClient``           |
          +------------------+---------------------------+
-         | last_source      | `None` or ``AudioSource`` |
+         | last_source      | `None`, ``AudioSource`` |
          +------------------+---------------------------+
          
          The ``VoiceClient`` also includes some other predefined function for setting as `call_after`:
@@ -110,10 +110,10 @@ class VoiceClient:
         A lock used meanwhile changing the currently playing audio to not modifying it parallelly.
     player : ``AudioPlayer``
         The actual player of the ``VoiceClient``. If the voice client is not playing nor paused, then set as `None`.
-    queue : `list` of ``AudioSource`` instances
+    queue : `list` of ``AudioSource``
         A list of the scheduled audios.
-    reader : `None` or ``AudioReader``
-        Meanwhile the received audio is collected, this attribute is set to a running ``AudioReader`` instance.
+    reader : `None`, ``AudioReader``
+        Meanwhile the received audio is collected, this attribute is set to a running ``AudioReader``.
     region : ``VoiceRegion``
         The actual voice region of the voice client.
     speaking : `int`
@@ -128,7 +128,7 @@ class VoiceClient:
     
     def __new__(cls, client, guild_id, channel_id):
         """
-        Creates a ``VoiceClient`` instance. If any of the required libraries are not present, raises `RuntimeError`.
+        Creates a ``VoiceClient``. If any of the required libraries are not present, raises `RuntimeError`.
         
         If the voice client was successfully created, returns a ``Future``, what is a waiter for it's ``._connect``
         method. If connecting failed, then the future will raise `TimeoutError`.
@@ -232,7 +232,7 @@ class VoiceClient:
         
         Returns
         -------
-        source : `None` or ``AudioSource`` instance
+        source : `None`, ``AudioSource``
         """
         player = self.player
         if player is None:
@@ -279,7 +279,7 @@ class VoiceClient:
         
         Parameters
         ----------
-        user : ``UserBase`` instance
+        user : ``UserBase``
             The user, who's voice will be captured.
         **kwargs : Keyword parameters
             Additional keyword parameters.
@@ -547,7 +547,7 @@ class VoiceClient:
         
         Returns
         -------
-        voice_state : `None` or ``VoiceState``
+        voice_state : `None`, ``VoiceState``
         """
         try:
             guild = GUILDS[self.guild_id]
@@ -565,21 +565,23 @@ class VoiceClient:
         
         Parameters
         ---------
-        channel : ``ChannelVoiceBase`` or `int` instance
+        channel : ``ChannelVoiceBase``, `int`
             The channel where the voice client will move to.
         
         Raises
         ------
         TypeError
-            If  `channel` was not given as ``ChannelVoiceBase`` not `int` instance.
+            If  `channel` was not given as ``ChannelVoiceBase`` not `int`.
         """
         if isinstance(channel, ChannelVoiceBase):
             channel_id = channel.id
         else:
             channel_id = maybe_snowflake(channel)
             if channel_id is None:
-                raise TypeError(f'`channel` can be given as {ChannelVoiceBase.__name__}, or as `int` instance, got '
-                    f'{channel.__class__.__name__}.')
+                raise TypeError(
+                    f'`channel` can `{ChannelVoiceBase.__name__}`, `int`, got '
+                    f'{channel.__class__.__name__}; {channel!r}.'
+                )
         
         if self.channel_id == channel_id:
             return
@@ -675,7 +677,7 @@ class VoiceClient:
         
         Parameters
         ---------
-        source : ``AudioSource`` instance
+        source : ``AudioSource``
             The audio source to put on the queue.
         
         Returns
@@ -683,9 +685,10 @@ class VoiceClient:
         started_playing : `bool`
             Whether the source is started playing and not put on queue.
         """
-        source_type = source.__class__
-        if not issubclass(source_type, AudioSource):
-            raise TypeError(f'Expected {AudioSource.__name__} instance, received {source_type.__name__}.')
+        if not isinstance(source, AudioSource):
+            raise TypeError(
+                f'Expected `{AudioSource.__name__}`, got {source.__class__.__name__}; {source!r}.'
+            )
         
         player = self.player
         if player is None:
@@ -716,7 +719,7 @@ class VoiceClient:
         
         Returns
         -------
-        source : `None` or ``AudioSource`` instance
+        source : `None`, ``AudioSource``
         """
         if index == 0:
             player = self.player
@@ -834,7 +837,7 @@ class VoiceClient:
         
         Parameters
         ----------
-        waiter : `None` or ``Future``, Optional
+        waiter : `None`, ``Future``, Optional
             A Waiter what's result is set (or is raised to), when the voice client connects (or failed to connect).
         """
         try:
@@ -1050,7 +1053,7 @@ class VoiceClient:
         ----------
         self : ``VoiceClient``
             The respective voice client.
-        last_source : `None` or ``AudioSource`` instance
+        last_source : `None`, ``AudioSource``
             The audio what was played.
         """
         player = self.player
@@ -1091,7 +1094,7 @@ class VoiceClient:
         ----------
         self : ``VoiceClient``
             The respective voice client.
-        last_source : `None` or ``AudioSource`` instance
+        last_source : `None`, ``AudioSource``
             The audio what was played.
         """
         if (last_source is None) or (not last_source.REPEATABLE):
@@ -1123,7 +1126,7 @@ class VoiceClient:
         ----------
         self : ``VoiceClient``
             The respective voice client.
-        last_source : `None` or ``AudioSource`` instance
+        last_source : `None`, ``AudioSource``
             The audio what was played.
         """
         if (last_source is not None) and last_source.REPEATABLE:
@@ -1323,7 +1326,7 @@ class VoiceClient:
         
         Returns
         -------
-        channel : `None` or ``ChannelVoiceBase``
+        channel : `None`, ``ChannelVoiceBase``
         """
         return CHANNELS.get(self.channel_id, None)
     
@@ -1334,6 +1337,6 @@ class VoiceClient:
         
         Returns
         -------
-        guild : `None` or ``Guild``
+        guild : `None`, ``Guild``
         """
         return GUILDS.get(self.guild_id, None)

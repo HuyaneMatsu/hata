@@ -13,11 +13,11 @@ class VoiceSettingsInput:
     ----------
     _available_devices_set : `bool`
         Whether `.available_devices` is set.
-    available_devices : `None` or `tuple` of ``AvailableDevice``
+    available_devices : `None`, `tuple` of ``AvailableDevice``
         Voice device objects.
-    device_id : `None` or `str`
+    device_id : `None`, `str`
         The device's identifier.
-    volume : `None` or `float`
+    volume : `None`, `float`
         Input voice level. Can be in range [0.0:1.0]
     """
     __slots__ = ('_available_devices_set', 'available_devices', 'device_id', 'volume')
@@ -32,16 +32,16 @@ class VoiceSettingsInput:
             The device's identifier.
         volume : `float`, Optional (Keyword only)
             Input voice level. Can be in range [0.0:1.0]
-        available_devices : `None` or `iterable` of ``AvailableDevice``, Optional (Keyword only)
+        available_devices : `None`, `iterable` of ``AvailableDevice``, Optional (Keyword only)
             Voice device objects.
         
         Raises
         ------
         TypeError
-            - If `device_id` is not `str` instance.
-            - If `volume` is not `float` instance.
+            - If `device_id` is not `str`.
+            - If `volume` is not `float`.
             - If `available_devices` is neither `None` nor `iterable`
-            - If `available_devices` contains a non ``AvailableDevice`` instance.
+            - If `available_devices` contains a non ``AvailableDevice``.
         ValueError
             - If `device_id`'s length is out of range [1:2048].
             - If `volume` is out of range [0.0:1.0]
@@ -64,13 +64,18 @@ class VoiceSettingsInput:
                 
                 available_devices_iterator = getattr(type(available_devices), '__iter__', None)
                 if (available_devices_iterator is None):
-                    raise TypeError(f'`available_devices` can be `None` or an `iterable`, got '
-                        f'{available_devices.__class__.__name__}.')
+                    raise TypeError(
+                        f'`available_devices` can be `None`, `iterable`, got '
+                        f'{available_devices.__class__.__name__}; {available_devices!r}.'
+                    )
                 
                 for available_device in available_devices_iterator(available_devices):
                     if not isinstance(available_device, AvailableDevice):
-                        raise TypeError(f'`available_devices` can contain {AvailableDevice.__name__} instances, got '
-                            f'{available_device.__class__.__name__}.')
+                        raise TypeError(
+                            f'`available_devices` can contain `{AvailableDevice.__name__}` elements, got '
+                            f'{available_device.__class__.__name__}; {available_device!r}; '
+                            f'available_devices={available_devices!r}.'
+                        )
                     
                     available_devices_processed.append(available_device)
                 
@@ -150,7 +155,7 @@ class VoiceSettingsInput:
     
     def to_data(self):
         """
-        Converts the voice settings input to json serializible object.
+        Converts the voice settings input to json serializable object.
         
         Returns
         -------
@@ -235,8 +240,8 @@ class AvailableDevice:
         Raises
         ------
         TypeError
-            - If `id_` is not `str` instance.
-            - If `name` is not `str` instance`.
+            - If `id_` is not `str`.
+            - If `name` is not `str``.
         ValueError
             - If `id_`'s length is out of range [1:2048].
             - If `name`'s length is out of range [1:2048].
@@ -297,11 +302,11 @@ class VoiceSettingsOutput:
     ----------
     _available_devices_set : `bool`
         Whether `.available_devices` is set.
-    available_devices : `None` or `tuple` of ``AvailableDevice``
+    available_devices : `None`, `tuple` of ``AvailableDevice``
         Voice device objects.
-    device_id : `None` or `str`
+    device_id : `None`, `str`
         The device's identifier.
-    volume : `None` or `float`
+    volume : `None`, `float`
         Output voice level. Can be in range [0.0:2.0]
     """
     __slots__ = ('_available_devices_set', 'available_devices', 'device_id', 'volume')
@@ -316,16 +321,16 @@ class VoiceSettingsOutput:
             The device's identifier.
         volume : `float`, Optional (Keyword only)
             Output voice level. Can be in range [0.0:2.0]
-        available_devices : `None` or `iterable` of ``AvailableDevice``, Optional (Keyword only)
+        available_devices : `None`, `iterable` of ``AvailableDevice``, Optional (Keyword only)
             Voice device objects.
         
         Raises
         ------
         TypeError
-            - If `device_id` is not `str` instance.
-            - If `volume` is not `float` instance.
+            - If `device_id` is not `str`.
+            - If `volume` is not `float`.
             - If `available_devices` is neither `None` nor `iterable`
-            - If `available_devices` contains a non ``AvailableDevice`` instance.
+            - If `available_devices` contains a non ``AvailableDevice``.
         ValueError
             - If `device_id`'s length is out of range [1:2048].
             - If `volume` is out of range [0.0:2.0]
@@ -348,13 +353,18 @@ class VoiceSettingsOutput:
                 
                 available_devices_iterator = getattr(type(available_devices), '__iter__', None)
                 if (available_devices_iterator is None):
-                    raise TypeError(f'`available_devices` can be `None` or an `iterable`, got '
-                        f'{available_devices.__class__.__name__}.')
+                    raise TypeError(
+                        f'`available_devices` can be `None`, `iterable`, got '
+                        f'{available_devices.__class__.__name__}; {available_devices!r}.'
+                    )
                 
                 for available_device in available_devices_iterator(available_devices):
                     if not isinstance(available_device, AvailableDevice):
-                        raise TypeError(f'`available_devices` can contain {AvailableDevice.__name__} instances, got '
-                            f'{available_device.__class__.__name__}.')
+                        raise TypeError(
+                            f'`available_devices` can contain `{AvailableDevice.__name__}` elements, got '
+                            f'{available_device.__class__.__name__}; {available_device!r}; '
+                            f'available_devices={available_devices!r}.'
+                        )
                     
                     available_devices_processed.append(available_device)
                 
@@ -500,15 +510,15 @@ class VoiceSettingsMode:
     ----------
     _shortcut_combination_set : `bool`
         Whether the shortcut attribute is set.
-    auto_threshold : `None` or `bool`
+    auto_threshold : `None`, `bool`
         Whether the voice activity should automatically set it's threshold.
-    delay : `None` or `float`
+    delay : `None`, `float`
         The push to talk release delay in seconds. Can be in range [0.0:2.0].
-    shortcut_combination : `None` or `tuple` of ``ShortcutKey``
+    shortcut_combination : `None`, `tuple` of ``ShortcutKey``
         Shortcut key combo for push to talk.
-    threshold : `None` or `float`
+    threshold : `None`, `float`
         Threshold  for voice activity in dB. Can be in range [-100.0:0.0].
-    type : `None` or ``VoiceSettingsModeType``
+    type : `None`, ``VoiceSettingsModeType``
         Voice setting mode type.
     """
     __slots__ = ('_shortcut_combination_set', 'auto_threshold', 'delay', 'shortcut_combination', 'threshold', 'type')
@@ -519,7 +529,7 @@ class VoiceSettingsMode:
         
         Parameters
         ----------
-        type_ : ``VoiceSettingsModeType`` or `str`, Optional (Keyword only)
+        type_ : ``VoiceSettingsModeType``, `str`, Optional (Keyword only)
             Voice setting mode type.
         auto_threshold : `bool`, Optional (Keyword only)
             Whether the voice activity should automatically set it's threshold.
@@ -533,23 +543,25 @@ class VoiceSettingsMode:
         Raises
         ------
         TypeError
-            - If `type` is neither `str`, nor ``VoiceSettingsModeType`` instance.
-            - If `threshold` is not `float` instance.
+            - If `type` is neither `str`, nor ``VoiceSettingsModeType``.
+            - If `threshold` is not `float`.
             - If `shortcut_combination` is not `None`, ``ShortcutKey`` nor `iterable` of ``ShortcutKey``.
-            - If `delay` is not `float` instance.
+            - If `delay` is not `float`.
         ValueError
             - If `threshold` is out of range [-100.0:0]
             - If `delay` is out of range [0.0:2.0]
         AssertionError
-            If `auto_threshold` is not `bool` instance.
+            If `auto_threshold` is not `bool`.
         """
         if (type_ is not None):
             type_ = preconvert_preinstanced_type(type_, 'type_', VoiceSettingsModeType)
         
         if __debug__:
             if (auto_threshold is not None) and (not isinstance(auto_threshold, bool)):
-                raise AssertionError(f'`auto_threshold` can be given as `bool` instance, got '
-                    f'{auto_threshold.__class__.__name__}')
+                raise AssertionError(
+                    f'`auto_threshold` can be `bool`, got '
+                    f'{auto_threshold.__class__.__name__}; {auto_threshold!r}.'
+                )
         
         if (threshold is not None):
             threshold = preconvert_float(threshold, 'threshold', -100.0, 0.0)
@@ -566,15 +578,20 @@ class VoiceSettingsMode:
             else:
                 shortcut_combination_iterator = getattr(type(shortcut_combination), '__iter__', None)
                 if (shortcut_combination_iterator is None):
-                    raise TypeError(f'`shortcut_combination` can be given as `None`, `{ShortcutKey.__name__}` '
-                        f'instance, or as an `iterable` of `{ShortcutKey.__name__}` instances, got '
-                        f'{shortcut_combination.__class__.__name__}.')
+                    raise TypeError(
+                        f'`shortcut_combination` can be `None`, `{ShortcutKey.__name__}` '
+                        f', `iterable` of `{ShortcutKey.__name__}`, got '
+                        f'{shortcut_combination.__class__.__name__}; {shortcut_combination!r}.'
+                    )
                 
                 shortcut_combination_processed = []
                 for shortcut in shortcut_combination_iterator(shortcut_combination):
                     if not isinstance(shortcut, ShortcutKey):
-                        raise TypeError(f'`shortcut_combination` contains non `{ShortcutKey.__name__}` instance, got '
-                            f'{shortcut.__class__.__name__}.')
+                        raise TypeError(
+                            f'`shortcut_combination` can contain `{ShortcutKey.__name__}` elements, got '
+                            f'{shortcut.__class__.__name__}; {shortcut!r}; '
+                            f'shortcut_combination={shortcut_combination!r}.'
+                        )
                     
                     shortcut_combination_processed.append(shortcut)
                 
@@ -770,7 +787,7 @@ class ShortcutKey:
         
         Parameters
         ----------
-        type_ : ``ShortcutKeyType`` or `int`
+        type_ : ``ShortcutKeyType``, `int`
             The key's type.
         code : `int`
             The key's code.
@@ -780,9 +797,9 @@ class ShortcutKey:
         Raises
         ------
         TypeError
-            - If `type_` is neither ``ShortcutKeyType`` nor `int` instance.
-            - If `code` is not `int` instance.
-            - If `name` is not `str` instance.
+            - If `type_` is neither ``ShortcutKeyType`` nor `int`.
+            - If `code` is not `int`.
+            - If `name` is not `str`.
         ValueError
             - If `code` is out of int64 range.
             - If `name`'s length is out of range [1:2048].

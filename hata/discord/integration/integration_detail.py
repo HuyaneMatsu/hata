@@ -15,7 +15,7 @@ class IntegrationDetail:
     expire_behavior : ``IntegrationExpireBehavior``
         The behavior of expiring subscription.
     expire_grace_period : `int`
-        The grace period in days for expiring subscribers. Can be `1`, `3`, `7`, `14` or `30`. If the integration is
+        The grace period in days for expiring subscribers. Can be `1`, `3`, `7`, `14`, `30`. If the integration is
         partial, or is not applicable for it, then is set as `-1`.
     role_id : `int`
         The role's identifier what the integration uses for subscribers.
@@ -67,7 +67,7 @@ class IntegrationDetail:
         
         Returns
         -------
-        role : `None` or ``Role``
+        role : `None`, ``Role``
         """
         role_id = self.role_id
         if role_id:

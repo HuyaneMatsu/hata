@@ -139,7 +139,7 @@ class GuildJoinRequestDeleteEvent(EventBase):
         
         Returns
         -------
-        guild : `None` or ``Guild``
+        guild : `None`, ``Guild``
         """
         return GUILDS.get(self.guild_id)
     
@@ -164,15 +164,15 @@ class GuildJoinRequest(GuildJoinRequestDeleteEvent):
     ----------
     guild_id : `int`
         The respective guild's identifier.
-    actioned_by : `None` or ``ClientUserBase``
+    actioned_by : `None`, ``ClientUserBase``
         The user who action the join request.
-    actioned_at : `None` or `datetime`
+    actioned_at : `None`, `datetime`
         When the join request was actioned at.
     created_at : `datetime`
         When the join request was created.
-    last_seen : `None` or `datetime`
+    last_seen : `None`, `datetime`
         When the user was last seen.
-    rejection_reason : `None` or `str`
+    rejection_reason : `None`, `str`
         The reason why the join request was rejected.
     status : ``GuildJoinRequestStatus``
         The join request's status.

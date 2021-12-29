@@ -12,16 +12,16 @@ def _merge_to_type(iterable_1, iterable_2, type_):
     
     Parameters
     ----------
-    iterable_1 : `None` or `iterable`
+    iterable_1 : `None`, `iterable`
         the first iterable to merge.
-    iterable_2 : `None` or `iterable`
+    iterable_2 : `None`, `iterable`
         the second iterable to merge.
     type_ : `type`
         The expected output type.
     
     Returns
     -------
-    merged : `None` or `type_`
+    merged : `None`, `type_`
         Returns `None` if both `iterable_1` and `iterable_2` are `None`.
     """
     if iterable_1 is None:
@@ -55,9 +55,9 @@ class Event:
     
     Attributes
     ----------
-    callback : `None` or `callable`
+    callback : `None`, `callable`
         Optional function to run when an event handler is added or removed.
-    default_handler : `None` or `async-callable`
+    default_handler : `None`, `async-callable`
         Default handler to add by default.
     instance_default_handler : `bool`
         Whether `default_handler` should be instanced.
@@ -74,15 +74,15 @@ class Event:
         ---------
         parameter_count : `int`
             How much parameters does the event handler should accept.
-        default_handler : `None` or `async-callable`, Optional
+        default_handler : `None`, `async-callable`, Optional
             Default handler to add by default.
-        callback : `None` or `callable`, Optional
+        callback : `None`, `callable`, Optional
             Optional function to run when an event handler is added or removed.
         
         Raises
         ------
         TypeError
-            - If `parameter_count` is not `int` instance.
+            - If `parameter_count` is not `int`.
             - If `default_handler` is neither `None`, `async-callable` and cannot be instanced to async callable either.
             - If `default_handler` accepts different amount of parameters as `parameter_count` defined.
         ValueError
@@ -204,13 +204,13 @@ class EventHandlerPluginType(type):
     """
     def __new__(cls, class_name, class_parents, class_attributes):
         """
-        Creates a new ``Slotted`` instance.
+        Creates a new ``Slotted``.
         
         Parameters
         ----------
         class_name : `str`
             The created class's name.
-        class_parents : `tuple` of `type` instances
+        class_parents : `tuple` of `type`
             The superclasses of the creates type.
         class_attributes : `dict` of (`str`, `Any`) items
             The class attributes of the created type.

@@ -28,7 +28,7 @@ class AudioStream(AudioSource):
         A queue of received voice packets.
     done : `bool`
         Whether the audio stream is stopped.
-    source : `None` or `int`
+    source : `None`, `int`
         Identifier value of the respective user.
     user : ``ClientUserBase``
         The user, who's audio is received.
@@ -51,7 +51,7 @@ class AudioStream(AudioSource):
         Parameters
         ----------
         voice_client : ``VoiceClient``
-            Parent ``AudioReader`` instance.
+            Parent ``AudioReader``.
         user : ``ClientUserBase``
             The user, who's audio is received.
         auto_decode : `bool`
@@ -133,7 +133,7 @@ class AudioStream(AudioSource):
         
         Returns
         -------
-        frame : `None` or `bytes`
+        frame : `None`, `bytes`
         """
         buffer = self.buffer
         if buffer:
@@ -179,7 +179,7 @@ class AudioReader:
         `source` - ``AudioStream`` relation to store the receiving audio streams.
     done : `bool`
         Whether the audio reader is done receiving and should stop.
-    task : `None` or ``Task``
+    task : `None`, ``Task``
         Audio reader task. Set as `None` if the reader is stopped.
     voice_client : ``VoiceClient``
         The parent voice client.
@@ -188,7 +188,7 @@ class AudioReader:
     
     def __init__(self, voice_client):
         """
-        Creates an ``AudioReader`` instance bound to the given voice client.
+        Creates an ``AudioReader`` bound to the given voice client.
         
         Parameters
         ----------
@@ -273,11 +273,14 @@ class AudioReader:
                     if isinstance(err, CancelledError) and self.done:
                         return
                     
-                    await KOKORO.render_exception_async(err, before=[
-                        'Exception occurred at decoding voice packet at\n',
-                        repr(self),
-                        '\n',
-                    ])
+                    await KOKORO.render_exception_async(
+                        err,
+                        before = [
+                            'Exception occurred at decoding voice packet at\n',
+                            repr(self),
+                            '\n',
+                        ],
+                    )
         
         except GeneratorExit:
             self.stop()
@@ -287,11 +290,14 @@ class AudioReader:
             if isinstance(err, CancelledError) and self.done:
                 return
             
-            await KOKORO.render_exception_async(err, before=[
-                'Exception occurred at \n',
-                repr(self),
-                '\n',
-            ])
+            await KOKORO.render_exception_async(
+                err,
+                before = [
+                    'Exception occurred at\n',
+                    repr(self),
+                    '\n',
+                ],
+            )
         
         self.stop()
     

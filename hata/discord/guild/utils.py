@@ -16,12 +16,12 @@ def create_partial_guild_from_data(data):
     
     Parameters
     ----------
-    data : `None` or `dict` of (`str`, `Any`) items
+    data : `None`, `dict` of (`str`, `Any`) items
         Partial channel data received from Discord.
     
     Returns
     -------
-    channel : `None` or ``Guild`` instance
+    channel : `None`, ``Guild``
         The created partial guild, or `None`, if no data was received.
     """
     if (data is None) or (not data):

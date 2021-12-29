@@ -13,7 +13,7 @@ User menu factorizes the wrapped classes, picking up special methods and other a
 
 ##### close_emoji
 
-Emoji used to close the menu. Can be either `None` or `Emoji` instance. If the user reacts with it, the
+Emoji used to close the menu. Can be either `None`, `Emoji` instance. If the user reacts with it, the
 `.close(CancelledError()` will be called.
 
 > Defaults to `None`.
@@ -47,7 +47,7 @@ The following parameters will be passed to it:
 
 | Name      | Type                                              |
 |-----------|---------------------------------------------------|
-| event     | ``ReactionAddEvent`` or ``ReactionDeleteEvent``   |
+| event     | ``ReactionAddEvent``, ``ReactionDeleteEvent``     |
 
 It will return the following values:
 
@@ -79,7 +79,7 @@ The following parameters will be passed to it:
 
 | Name      | Type                                              |
 |-----------|---------------------------------------------------|
-| event     | ``ReactionAddEvent`` or ``ReactionDeleteEvent``   |
+| event     | ``ReactionAddEvent``, ``ReactionDeleteEvent``     |
 
 It will return the following values:
 
@@ -97,7 +97,7 @@ The following parameters will be passed to it:
 
 | Name      | Type                      |
 |-----------|---------------------------|
-| exception | `None` or `BaseException` |
+| exception | `None`, `BaseException`   |
 
 The exceptions value depends on how the menu was closed:
 - `None` : The factorized class called `menu.close()` without passing any exception.

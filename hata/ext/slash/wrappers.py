@@ -79,7 +79,7 @@ class SlasherCommandWrapper:
         -------
         function : `Any`
             The wrapped function.
-        wrappers : `list` of ``SlasherCommandWrapper`` instances
+        wrappers : `list` of ``SlasherCommandWrapper``
             The fetched back wrappers.
         """
         wrappers = [self]
@@ -117,17 +117,17 @@ class SlasherApplicationCommandPermissionOverwriteWrapper(SlasherCommandWrapper)
         
         Parameters
         ----------
-        guild : ``Guild`` or `int`
+        guild : ``Guild``, `int`
             The guild's identifier where the overwrite is applied.
-        target : ``ClientUserBase`` or ``Role``, `tuple` ((``ClientUserBase``, ``Role`` type) or \
+        target : ``ClientUserBase``, ``Role``, `tuple` ((``ClientUserBase``, ``Role`` type) or \
                 `str` (`'Role'`, `'role'`, `'User'`, `'user'`), `int`)
             The target entity of the overwrite
             
             The expected type & value might be pretty confusing, but the target was it to allow relaxing creation.
             To avoid confusing, here is a list of the expected structures:
             
-            - ``Role`` instance
-            - ``ClientUserBase`` instance
+            - ``Role``
+            - ``ClientUserBase``
             - `tuple` (``Role`` type, `int`)
             - `tuple` (``ClientUserBase``, `int`)
             - `tuple` (`'Role'`, `int`)
@@ -148,8 +148,9 @@ class SlasherApplicationCommandPermissionOverwriteWrapper(SlasherCommandWrapper)
         elif isinstance(guild, (int, str)):
             guild_id = preconvert_snowflake(guild, 'guild')
         else:
-            raise TypeError(f'`guild` can be given neither as `{Guild.__class__.__name__}`, and as `int` instance, '
-                f'got {guild.__class__.__name__}.')
+            raise TypeError(
+                f'`guild` can be `{Guild.__class__.__name__}`, `int`, got {guild.__class__.__name__}; {guild!r}.'
+            )
         
         overwrite = ApplicationCommandPermissionOverwrite(target, allow)
         
@@ -206,11 +207,11 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
     ----------
     _wrapped : `Any`
         The slash command or other wrapper to wrap.
-    _channel_types : `None` or `tuple` of `int`
+    _channel_types : `None`, `tuple` of `int`
         The accepted channel types.
-    _choices : `None` or `dict` of (`str` or `int`, `str`) items
+    _choices : `None`, `dict` of (`str`, `int`, `str`) items
         Parameter's choices.
-    _description : `None` or `str`
+    _description : `None`, `str`
         Parameter's description.
     _max_value : `None`, `int`, `float`
         The maximal accepted value by the parameter.
@@ -237,11 +238,11 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
             The parameter's name to modify.
         type_or_choice : `str`, `type`, `list`, `dict`
             The annotation's value to use.
-        description : `None` or `str`, Optional
+        description : `None`, `str`, Optional
             Description for the annotation.
-        name : `None` or `str`, Optional
+        name : `None`, `str`, Optional
             Name to use instead of the parameter's.
-        channel_types : `None` or `iterable` of `int`, Optional (Keyword only)
+        channel_types : `None`, `iterable` of `int`, Optional (Keyword only)
             The accepted channel types.
         max_value : `None`, `int`, `float`, Optional (Keyword only)
             The maximal accepted value by the parameter.
@@ -256,18 +257,18 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         Raises
         ------
         TypeError
-            - If `description`'s is not `None` nor `str` instance.
-            - If `parameter_type_or_choice` is `list` instance, but it's elements do not match the `tuple`
-                (`str`, `str` or `int`) pattern.
-            - If `parameter_type_or_choice` is `dict` instance, but it's items do not match the (`str`, `str` or `int`)
+            - If `description`'s is not `None` nor `str`.
+            - If `parameter_type_or_choice` is `list`, but it's elements do not match the `tuple`
+                (`str`, `str`, `int`) pattern.
+            - If `parameter_type_or_choice` is `dict`, but it's items do not match the (`str`, `str`, `int`)
                 pattern.
             - If `parameter_type_or_choice` is unexpected.
-            - If `name`'s is neither `None` or `str` instance.
+            - If `name`'s is neither `None`, `str`.
             - If `channel_types` is neither `None` nor `iterable` of `int`.
         ValueError
             - If `description`'s length is out of the expected range [2:100].
-            - If `parameter_type_or_choice` is `str` instance, but not any of the expected ones.
-            - If `parameter_type_or_choice` is `type` instance, but not any of the expected ones.
+            - If `parameter_type_or_choice` is `str`, but not any of the expected ones.
+            - If `parameter_type_or_choice` is `type`, but not any of the expected ones.
             - If `choice` amount is out of the expected range [1:25].
             - If `type_or_choice` is a choice, and a `choice` name is duped.
             - If `type_or_choice` is a choice, and a `choice` values are mixed types.
@@ -278,7 +279,9 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         elif isinstance(parameter_name, str):
             parameter_name = str(parameter_name)
         else:
-            raise TypeError(f'`parameter_name` can be `str`, got {parameter_name.__class__.__name__}.')
+            raise TypeError(
+                f'`parameter_name` can be `str`, got {parameter_name.__class__.__name__}; {parameter_name!r}.'
+            )
         
         type_, choices, parsed_channel_types = parse_annotation_type_and_choice(type_or_choice, parameter_name)
         
@@ -302,7 +305,7 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         
         Parameters
         ----------
-        choices : `None` or `dict` of (`str` or `int`, `str`) items
+        choices : `None`, `dict` of (`str`, `int`, `str`) items
             Parameter's choices.
         description : `str`
             Parameter's description.
@@ -312,7 +315,7 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
             The parameter's internal name.
         type_ : `int`
             The parameter's internal type identifier.
-        channel_types : `None` or `tuple` of `int`
+        channel_types : `None`, `tuple` of `int`
             The accepted channel types.
         max_value : `None`, `int`, `float`
             The maximal accepted value by the parameter.
@@ -396,12 +399,12 @@ def get_parameter_configurers(wrappers):
     
     Parameters
     ----------
-    wrappers : `None` or `list` of ``SlasherCommandWrapper``
+    wrappers : `None`, `list` of ``SlasherCommandWrapper``
         The fetched back wrappers if any.
     
     Returns
     -------
-    parameter_configurers : `None` or `dict` of (`str`, ``SlasherApplicationCommandParameterConfigurerWrapper``) items
+    parameter_configurers : `None`, `dict` of (`str`, ``SlasherApplicationCommandParameterConfigurerWrapper``) items
         The collected parameter configurers if any.
     """
     parameter_configurers = None

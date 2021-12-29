@@ -7,7 +7,7 @@
     'now_as_id', 'parse_message_reference', 'parse_rdelta', 'parse_tdelta', 'random_id', 'sanitize_content',
     'sanitize_mentions', 'unix_time_to_id')
 
-import sys, warnings
+import sys, warnings, reprlib
 from random import random
 from re import compile as re_compile, I as re_ignore_case, U as re_unicode
 from datetime import datetime, timedelta, timezone
@@ -118,7 +118,7 @@ def image_to_base64(data):
     elif data.startswith(b'\x47\x49\x46\x38\x37\x61') or data.startswith(b'\x47\x49\x46\x38\x39\x61'):
         media_type = 'image/gif'
     else:
-        raise ValueError('Unsupported image type given.')
+        raise ValueError(f'Unsupported image type given, got {reprlib.repr(data)}.')
     
     return ''.join(['data:', media_type, ';base64,', b64encode(data).decode('ascii')])
 
@@ -345,7 +345,7 @@ def log_time_converter(value):
     
     Parameters
     ----------
-    value : `int`, ``DiscordEntity`` instance or `datetime`
+    value : `int`, ``DiscordEntity``, `datetime`
         If the value is given as `int`, returns it. If given as a ``DiscordEntity``, then returns it's id and if it
         is given as a `datetime` object, then converts that to snowflake then returns it.
     
@@ -367,8 +367,10 @@ def log_time_converter(value):
     if isinstance(value, datetime):
         return datetime_to_id(value)
     
-    raise TypeError(f'Expected `int`, `{DiscordEntity.__name__}` instance, or a `datetime` object, got '
-        f'`{value.__class__.__name__}`.')
+    raise TypeError(
+        f'Expected `int`, `{DiscordEntity.__name__}`, `datetime`, got '
+        f'{value.__class__.__name__}; {value!r}.'
+    )
 
 APPLICATION_COMMAND_NAME_RP = re_compile('[a-zA-Z0-9_\-]{1,32}')
 
@@ -628,7 +630,9 @@ def chunkify(lines, limit=2000):
         If limit is less than `500`.
     """
     if limit < 500:
-        raise ValueError(f'Minimal limit should be at least 500, got {limit!r}.')
+        raise ValueError(
+            f'Minimal limit should be at least 500, got {limit!r}.'
+        )
     
     result = []
     chunk_length = 0
@@ -698,7 +702,9 @@ def cchunkify(lines, lang='', limit=2000):
         If limit is less than `500`.
     """
     if limit < 500:
-        raise ValueError(f'Minimal limit should be at least 500, got {limit!r}.')
+        raise ValueError(
+            f'Minimal limit should be at least 500, got {limit!r}.'
+        )
     
     starter = f'```{lang}'
     limit = limit-len(starter)-5
@@ -757,19 +763,24 @@ def cchunkify(lines, lang='', limit=2000):
 if relativedelta is None:
     elapsed_time = None
 else:
-    def elapsed_time(delta, limit=3, names=(
+    def elapsed_time(
+        delta,
+        limit = 3,
+        names = (
             ('year', 'years',),
             ('month', 'months'),
             ('day', 'days', ),
             ('hour', 'hours'),
             ('minute', 'minutes'),
-            ('second', 'seconds'),)):
+            ('second', 'seconds'),
+        )
+    ):
         """
         Generates an elapsed time formula from the given time delta.
         
         Parameters
         ----------
-        delta : `datetime` or `relativedelta`
+        delta : `datetime`, `relativedelta`
             The time delta. If given as `datetime`, then the delta will be based on the difference between the given
             datetime and the actual time. If given as `relativedelta`, then that will be used directly.
         limit : `int`, Optional
@@ -786,17 +797,20 @@ else:
         Raises
         ------
         TypeError
-            If delta was neither passed as `datetime` or as `relativedelta` instance.
+            If delta was neither passed as `datetime`, `relativedelta`.
         """
         if isinstance(delta, datetime):
             delta = relativedelta(datetime.utcnow(), delta)
         elif isinstance(delta, relativedelta):
             pass
         else:
-            raise TypeError(f'Expected, `relativedelta` or `datetime`, got {delta.__class__.__name__}.')
+            raise TypeError(f'Expected, `relativedelta`, `datetime`, got {delta.__class__.__name__}; {delta!r}.')
         
         parts = []
-        for value, name_pair in zip((delta.years, delta.months, delta.days, delta.hours, delta.minutes, delta.seconds), names):
+        for value, name_pair in zip(
+            (delta.years, delta.months, delta.days, delta.hours, delta.minutes, delta.seconds),
+            names,
+        ):
             if limit == 0:
                 break
             
@@ -993,6 +1007,7 @@ class Unknown(DiscordEntity):
         
         return (self.id < other.id)
 
+
 class Gift:
     """
     Represents a Discord gift.
@@ -1005,6 +1020,7 @@ class Gift:
         The amount how much time the gift can be used.
     """
     __slots__ = ('code', 'uses', )
+    
     def __init__(self, data):
         """
         Creates a new ``Gift`` object from the given data.
@@ -1117,7 +1133,7 @@ def parse_tdelta(text):
     
     Returns
     -------
-    tdelta : `None` or `datetime.timedelta`
+    tdelta : `None`, `datetime.timedelta`
     """
     text = text.lower()
     
@@ -1150,7 +1166,7 @@ else:
         
         Returns
         -------
-        rdelta : `None` or `dateutil.relativedelta.relativedelta`
+        rdelta : `None`, `dateutil.relativedelta.relativedelta`
         """
         text = text.lower()
         
@@ -1187,7 +1203,7 @@ def parse_message_reference(text):
     
     Returns
     -------
-    reference : `None` or `tuple` (`int`, `int`, `int`)
+    reference : `None`, `tuple` (`int`, `int`, `int`)
         On successful parsing returns a tuple of 3 elements:
         +-------------------+-------------------+-------------------------------+-------------------+---------------+
         | Respective name   | Parse-able from   | Parse-able from               | Parse-able from   | Default value |
@@ -1255,14 +1271,14 @@ def sanitize_mentions(content, guild=None):
     
     Parameters
     ----------
-    content : `None` or `str`
+    content : `None`, `str`
         The content to sanitize.
-    guild : `None` or ``Guild``, Optional
+    guild : `None`, ``Guild``, Optional
         Respective context to look up guild specific names of entities.
     
     Returns
     -------
-    content : `None` or `str`
+    content : `None`, `str`
     """
     if (content is None):
         return
@@ -1312,14 +1328,14 @@ def sanitize_content(content, guild=None):
     
     Parameters
     ----------
-    content : `None` or `str`
+    content : `None`, `str`
         The content to sanitize.
-    guild : `None` or ``Guild``, Optional
+    guild : `None`, ``Guild``, Optional
         Respective context to look up guild specific names of entities.
     
     Returns
     -------
-    content : `None` or `str`
+    content : `None`, `str`
     """
     content = escape_markdown(content)
     content = sanitize_mentions(content, guild=guild)
@@ -1332,12 +1348,12 @@ def escape_markdown(content):
     
     Parameters
     ----------
-    content : `None` or `str`
+    content : `None`, `str`
         The content to sanitize.
     
     Returns
     -------
-    content : `None` or `str`
+    content : `None`, `str`
     """
     if (content is None):
         return
@@ -1539,7 +1555,7 @@ def format_datetime(date_time, style=None):
     ----------
     date_time : `datetime`
         The datetime to format.
-    style : `None` or `str`, `optional
+    style : `None`, `str`, `optional
         Format code to use. They are listed within ``TIMESTAMP_STYLES``.
     
     Returns
@@ -1559,7 +1575,7 @@ def format_id(id_, style=None):
     ----------
     id_ : `int`
         The Discord identifier to format.
-    style : `None` or `str`, `optional
+    style : `None`, `str`, `optional
         Format code to use. They are listed within ``TIMESTAMP_STYLES``.
     
     Returns
@@ -1579,7 +1595,7 @@ def format_loop_time(loop_time, style=None):
     ----------
     loop_time : `float`
         Monotonic loop time.
-    style : `None` or `str`, `optional
+    style : `None`, `str`, `optional
         Format code to use. They are listed within ``TIMESTAMP_STYLES``.
     
     Returns
@@ -1599,7 +1615,7 @@ def format_unix_time(unix_time, style=None):
     ----------
     unix_time : `int`
         The datetime to format.
-    style : `None` or `str`, `optional
+    style : `None`, `str`, `optional
         Format code to use. They are listed within ``TIMESTAMP_STYLES``.
     
     Returns

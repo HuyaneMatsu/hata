@@ -24,12 +24,12 @@ def _validate_custom_id(custom_id):
     
     Parameters
     ----------
-    custom_id : `str` or `re.Pattern`
+    custom_id : `str`, `re.Pattern`
         The `custom_id` to validate.
     
     Returns
     -------
-    custom_id : `str`or `re.Pattern`
+    custom_id : `str`, `re.Pattern`
         The validated custom_id.
     
     Raises
@@ -43,8 +43,10 @@ def _validate_custom_id(custom_id):
         
         custom_id_length = len(custom_id)
         if (custom_id_length < 1) or (custom_id_length > COMPONENT_CUSTOM_ID_LENGTH_MAX):
-            raise ValueError(f'`custom_id` length can be in range [1:{COMPONENT_CUSTOM_ID_LENGTH_MAX}], got '
-                f'{custom_id_length}; {custom_id!r}.')
+            raise ValueError(
+                f'`custom_id` length can be in range [1:{COMPONENT_CUSTOM_ID_LENGTH_MAX}], got '
+                f'{custom_id_length}; {custom_id!r}.'
+            )
     
     return custom_id
 
@@ -55,12 +57,12 @@ def _validate_custom_ids(custom_id):
     
     Parameters
     ----------
-    custom_id : `str`, (`list` or `set`) of `str`.
+    custom_id : `str`, (`list`, `set`) of `str`.
         The `custom_id` to validate.
     
     Returns
     -------
-    custom_id : `set` of (`str` or `re.Pattern`)
+    custom_id : `set` of (`str`, `re.Pattern`)
         The non-duped custom-ids.
     
     Raises
@@ -74,8 +76,13 @@ def _validate_custom_ids(custom_id):
     if isinstance(custom_id, (str, Pattern)):
         custom_id = _validate_custom_id(custom_id)
         custom_ids.add(custom_id)
+    
     elif isinstance(custom_id, (list, set)):
         
+        if not custom_id:
+            raise ValueError(
+                f'`custom_id` received as empty {custom_id.__class__.__name__}.'
+            )
         
         for sub_custom_id in custom_id:
             if isinstance(sub_custom_id, (str, Pattern)):
@@ -83,14 +90,16 @@ def _validate_custom_ids(custom_id):
                 custom_ids.add(sub_custom_id)
                 continue
             
-            raise TypeError(f'`custom_id` contains a non `str` element, got: {custom_id.__class__.__name__}.')
-        
-        if not custom_id:
-            raise ValueError(f'`custom_id` received as empty {custom_id.__class__.__name__}.')
+            raise TypeError(
+                f'`custom_id` contains a non `str` element, got: '
+                f'{sub_custom_id.__class__.__name__}; {sub_custom_id!r}; custom_id={custom_id!r}.'
+            )
     
     else:
-        raise TypeError(f'`custom_id` can be given as `str`, (`list`, `set`) of `str`, got '
-            f'{custom_id.__class__.__name__}.')
+        raise TypeError(
+            f'`custom_id` can be `str`, (`list`, `set`) of `str`, got '
+            f'{custom_id.__class__.__name__}; {custom_id!r}.'
+        )
     
     return custom_ids
 
@@ -101,18 +110,18 @@ def _validate_name(name):
     
     Parameters
     ----------
-    name : `None` or `str`
+    name : `None`, `str`
         A command's respective name.
     
     Returns
     -------
-    name : `None` or `str`
+    name : `None`, `str`
         The validated name.
     
     Raises
     ------
     TypeError
-        If `name` is not given as `None` neither as `str` instance.
+        If `name` is not given as `None` neither as `str`.
     """
     if name is not None:
         name_type = name.__class__
@@ -121,8 +130,9 @@ def _validate_name(name):
         elif issubclass(name_type, str):
             name = str(name)
         else:
-            raise TypeError(f'`name` can be only given as `None` or as `str` instance, got {name_type.__name__}; '
-                f'{name!r}.')
+            raise TypeError(
+                f'`name` can be `None`, `str`, got {name_type.__name__}; {name!r}.'
+            )
     
     return name
 
@@ -133,16 +143,16 @@ def split_and_check_satisfaction(custom_ids, parameter_converters):
     
     Parameters
     ----------
-    custom_ids : `set` of (`str` or `re.Pattern`)
+    custom_ids : `set` of (`str`, `re.Pattern`)
         The custom-ids to split and validate.
     parameter_converters : `tuple` of ``ParameterConverter``
         The parameter converters generated from a component command.
     
     Returns
     -------
-    string_custom_ids : `None` or `tuple` of `str`
+    string_custom_ids : `None`, `tuple` of `str`
         String custom ids.
-    regex_custom_ids : `None` or `tuple` of ``RegexMatcher``
+    regex_custom_ids : `None`, `tuple` of ``RegexMatcher``
         Regex custom ids.
     
     Raises
@@ -192,18 +202,18 @@ class CustomIdBasedCommand:
     ----------
     _command_function : `async-callable˛
         The command's function to call.
-    _exception_handlers : `None` or `list` of `CoroutineFunction`
+    _exception_handlers : `None`, `list` of `CoroutineFunction`
         Exception handlers added with ``.error`` to the interaction handler.
         
         Same as ``Slasher._exception_handlers``.
     
-    _parent_reference : `None` or ``WeakReferer`` to ``SlasherApplicationCommand``
+    _parent_reference : `None`, ``WeakReferer`` to ``SlasherApplicationCommand``
         The parent slasher of the component command.
     _parameter_converters : `tuple` of ``ParameterConverter``
         Parsers to parse command parameters.
-    _string_custom_ids : `None` or `tuple` of `str`
+    _string_custom_ids : `None`, `tuple` of `str`
         The custom id-s to wait for.
-    _regex_custom_ids : `None` or `tuple` of `re.Pattern`.
+    _regex_custom_ids : `None`, `tuple` of `re.Pattern`.
         Regex pattern to match custom-ids.
     name : `str`
         The component commands name.
@@ -239,7 +249,7 @@ class CustomIdBasedCommand:
         
         Returns
         -------
-        self : ``CustomIdBasedCommand`` or ``Router``
+        self : ``CustomIdBasedCommand``, ``Router``
         
         Raises
         ------
@@ -260,16 +270,16 @@ class CustomIdBasedCommand:
         
         Parameters
         ----------
-        func : `None` or `async-callable`, Optional
+        func : `None`, `async-callable`, Optional
             The function used as the command when using the respective slash command.
-        custom_id : `str`, (`list` or `set`) of `str`, `tuple` of (`str`, (`list` or `set`) of `str`)
+        custom_id : `str`, (`list`, `set`) of `str`, `tuple` of (`str`, (`list`, `set`) of `str`)
             Custom id to match by the component command.
-        name : `str` or `None`, Optional
+        name : `str`, `None`, Optional
             The name of the component command.
         
         Returns
         -------
-        self : ``CustomIdBasedCommand`` or ``Router``
+        self : ``CustomIdBasedCommand``, ``Router``
         
         Raises
         ------
@@ -337,7 +347,7 @@ class CustomIdBasedCommand:
             The respective client who received the event.
         interaction_event : ``InteractionEvent``
             The received interaction event.
-        regex_match : `None` or ``RegexMatch``
+        regex_match : `None`, ``RegexMatch``
             The matched regex if applicable.
         """
         return
@@ -414,7 +424,7 @@ class CustomIdBasedCommand:
         
         Parameters
         ----------
-        exception_handler : `None` or `CoroutineFunction`, Optional
+        exception_handler : `None`, `CoroutineFunction`, Optional
             Exception handler to register.
         first : `bool`, Optional (Keyword Only)
             Whether the exception handler should run first.

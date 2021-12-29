@@ -19,7 +19,7 @@ class GuildPreview(DiscordEntity):
         Approximate amount of online users at the guild.
     approximate_user_count : `int`
         Approximate amount of users at the guild.
-    description : `None` or `str`
+    description : `None`, `str`
         Description of the guild. The guild must have `PUBLIC` feature.
     discovery_splash_hash : `int`
         The guild's discovery splash's hash in `uint128`. The guild must have `DISCOVERABLE` feature to have

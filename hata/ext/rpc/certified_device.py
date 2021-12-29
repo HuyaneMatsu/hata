@@ -32,7 +32,7 @@ class CertifiedDevice:
         Whether the device's native noise suppression is enabled.
         
         > Only applicable for `DeviceType.audio_input` devices.
-    related : `None` or `tuple` of ``UUID``
+    related : `None`, `tuple` of ``UUID``
         UUID-s of related devices.
     type : ``DeviceType``
         The type of the device.
@@ -49,7 +49,7 @@ class CertifiedDevice:
         
         Parameters
         ----------
-        type_ : `str` or ``DeviceType``
+        type_ : `str`, ``DeviceType``
             The type of the device.
         id_ : `str`, `uuid.UUID`
             The device's Windows (?) UUID.
@@ -58,7 +58,7 @@ class CertifiedDevice:
             The hardware's vendor.
         model : ``Model``
             Model of the product.
-        related : `None`, `str`, ``UUID`` or `iterable` of ``UUID``
+        related : `None`, `str`, ``UUID``, `iterable` of ``UUID``
             UUID-s of related devices.
         echo_cancellation : `bool`, Optional (Keyword only)
             Whether the device's native echo cancellation is enabled. Defaults to `False`.
@@ -81,18 +81,18 @@ class CertifiedDevice:
         ------
         TypeError
             - If `type` is neither `str` nor ``DeviceType``.
-            - If `id_` is neither `str`, nor `uuid.UUID` instance.
-            - If `related` is neither `None`, `str`, `uuid.UUID`, nor iterable of `str` or `uuid.UUID`.
+            - If `id_` is neither `str`, nor `uuid.UUID`.
+            - If `related` is neither `None`, `str`, `uuid.UUID`, nor iterable of `str`, `uuid.UUID`.
         ValueError
             - If `id_` is not a valid UUID.
             - If `related` is or contains invalid UUID.
         AssertionError
-            - If `vendor` is not ``Vendor`` instance.
-            - If `model` is not ``Model`` instance.
-            - If `echo_cancellation` is not `bool` instance.
-            - If `noise_suppression` is not `bool` instance.
-            - If `automatic_gain_control` is not `bool` instance.
-            - If `hardware_mute` is not `bool` instance.
+            - If `vendor` is not ``Vendor``.
+            - If `model` is not ``Model``.
+            - If `echo_cancellation` is not `bool`.
+            - If `noise_suppression` is not `bool`.
+            - If `automatic_gain_control` is not `bool`.
+            - If `hardware_mute` is not `bool`.
         """
         type_ = preconvert_preinstanced_type(type_, 'type_', DeviceType)
         
@@ -102,16 +102,24 @@ class CertifiedDevice:
             try:
                 id_ = UUID(id_)
             except ValueError:
-                raise ValueError(f'`id_` is not a valid `UUID`, got {id_!r}.') from None
+                raise ValueError(
+                    f'`id_` is not a valid `UUID`, got {id_!r}.'
+                ) from None
         else:
-            raise TypeError(f'`id_` can be either `{UUID.__name__}` or `str` instance, got {id_.__class__.__name__}.')
+            raise TypeError(
+                f'`id_` can be `{UUID.__name__}`, `str`, got {id_.__class__.__name__}; {id_!r}.'
+            )
         
         if __debug__:
             if not isinstance(vendor, Vendor):
-                raise AssertionError(f'`vendor` can be `{Vendor.__name__}`, got {vendor.__class__.__name__}.')
+                raise AssertionError(
+                    f'`vendor` can be `{Vendor.__name__}`, got {vendor.__class__.__name__}; {vendor!r}.'
+                )
             
             if not isinstance(model, Model):
-                raise AssertionError(f'`model` can be `{Model.__name__}`, got {model.__class__.__name__}.')
+                raise AssertionError(
+                    f'`model` can be `{Model.__name__}`, got {model.__class__.__name__}; {model!r}.'
+                )
 
         if (related is None):
             related_device_uuids = None
@@ -123,7 +131,9 @@ class CertifiedDevice:
             try:
                 related = UUID(related)
             except ValueError:
-                raise ValueError(f'`related` is not a valid `UUID`, got {related!r}.') from None
+                raise ValueError(
+                    f'`related` is not a valid `UUID`, got {related!r}.'
+                ) from None
             
             
             related_device_uuids = (related, )
@@ -131,8 +141,10 @@ class CertifiedDevice:
         else:
             iterator = getattr(type(related), '__iter__', None)
             if iterator is None:
-                raise TypeError(f'`related` can be given either as `None`, `str`, `{UUID.__name__}`, or `iterable` of '
-                    f'`str`, `{UUID.__name__}`, got {related.__class__.__name__}.')
+                raise TypeError(
+                    f'`related` can be `None`, `str`, `{UUID.__name__}`, `iterable` of '
+                    f'`str`, `{UUID.__name__}`, got {related.__class__.__name__}; {related!r}.'
+                )
             
             related_device_uuids = set()
             for related_element in iterator(related):
@@ -142,10 +154,14 @@ class CertifiedDevice:
                     try:
                         related_element = UUID(related_element)
                     except ValueError:
-                        raise ValueError(f'`related` contains a not valid `UUID`, got {related_element!r}.') from None
+                        raise ValueError(
+                            f'`related` contains a not valid `UUID`, got {related_element!r}.'
+                        ) from None
                 else:
-                    raise TypeError(f'`related` can contain `{UUID.__name__}` and `str` instance, got '
-                        f'{related_element.__class__.__name__}.')
+                    raise TypeError(
+                        f'`related` can contain `{UUID.__name__}`, `str` elements, got '
+                        f'{related_element.__class__.__name__}; {related_element!r}; related={related!r}.'
+                    )
             
                 related_device_uuids.add(related_element)
             
@@ -156,17 +172,28 @@ class CertifiedDevice:
             
         if __debug__:
             if not isinstance(echo_cancellation, bool):
-                raise AssertionError(f'`echo_cancellation` can be `bool`, got {echo_cancellation.__class__.__name__}.')
+                raise AssertionError(
+                    f'`echo_cancellation` can be `bool`, got {echo_cancellation.__class__.__name__}; '
+                    f'{echo_cancellation!r}.'
+                )
             
             if not isinstance(noise_suppression, bool):
-                raise AssertionError(f'`noise_suppression` can be `bool`, got {noise_suppression.__class__.__name__}.')
+                raise AssertionError(
+                    f'`noise_suppression` can be `bool`, got {noise_suppression.__class__.__name__};'
+                    f'{noise_suppression!r}.'
+                )
             
             if not isinstance(automatic_gain_control, bool):
-                raise AssertionError(f'`automatic_gain_control` can be `bool`, got '
-                    f'{automatic_gain_control.__class__.__name__}.')
+                raise AssertionError(
+                    f'`automatic_gain_control` can be `bool`, got '
+                    f'{automatic_gain_control.__class__.__name__}; {automatic_gain_control!r}.'
+                )
             
             if not isinstance(hardware_mute, bool):
-                raise AssertionError(f'`echo_cancellation` can be `bool`, got {hardware_mute.__class__.__name__}.')
+                raise AssertionError(
+                    f'`echo_cancellation` can be `bool`, got {hardware_mute.__class__.__name__}'
+                    f'{echo_cancellation!r}.'
+                )
         
         self = object.__new__(cls)
         self.automatic_gain_control = automatic_gain_control
@@ -188,7 +215,7 @@ class CertifiedDevice:
     
     def to_data(self):
         """
-        Converts the device to json serializible object.
+        Converts the device to json serializable object.
         
         Returns
         -------
@@ -283,20 +310,22 @@ class Vendor:
         Raises
         ------
         TypeError
-            - If `name` is not `str` instance.
-            - If `url` is not `str` instance.
+            - If `name` is not `str`.
+            - If `url` is not `str`.
         ValueError
             - If `name`'s length is out of the expected range [1:2048].
             - If `url`'s length is out of the expected range [1:2048].
         AssertionError
-            If `url` is not `str` instance.
+            If `url` is not `str`.
         """
         name = preconvert_str(name, 'name', 1, 2048)
         url = preconvert_str(url, 'url', 1, 2048)
         
         if __debug__:
             if not is_url(url):
-                raise AssertionError(f'`url` is not a valid url, got: {url!r}.')
+                raise AssertionError(
+                    f'`url` is not a valid, got: {url!r}.'
+                )
         
         self = object.__new__(cls)
         self.name = name
@@ -311,7 +340,7 @@ class Vendor:
     
     def to_data(self):
         """
-        Converts the vendor to json serializible object.
+        Converts the vendor to json serializable object.
         
         Returns
         -------
@@ -370,20 +399,22 @@ class Model:
         Raises
         ------
         TypeError
-            - If `name` is not `str` instance.
-            - If `url` is not `str` instance.
+            - If `name` is not `str`.
+            - If `url` is not `str`.
         ValueError
             - If `name`'s length is out of the expected range [1:2048].
             - If `url`'s length is out of the expected range [1:2048].
         AssertionError
-            If `url` is not `str` instance.
+            If `url` is not `str`.
         """
         name = preconvert_str(name, 'name', 1, 2048)
         url = preconvert_str(url, 'url', 1, 2048)
         
         if __debug__:
             if not is_url(url):
-                raise AssertionError(f'`url` is not a valid url, got: {url!r}.')
+                raise AssertionError(
+                    f'`url` is not a valid, got: {url!r}.'
+                )
         
         self = object.__new__(cls)
         self.name = name
@@ -398,7 +429,7 @@ class Model:
     
     def to_data(self):
         """
-        Converts the model to json serializible object.
+        Converts the model to json serializable object.
         
         Returns
         -------

@@ -19,7 +19,7 @@ class SolarPlayer(SolarPlayerBase):
     
     Attributes
     ----------
-    _forward_data : `None` or `dict` of (`str`, `Any`) items
+    _forward_data : `None`, `dict` of (`str`, `Any`) items
         Json to forward to the player's node as necessary.
     _position : `float`
         The position of the current track.
@@ -33,11 +33,11 @@ class SolarPlayer(SolarPlayerBase):
         The node that the player is connected to. Defaults to `None`.
     _bands : `list` of `float`
         The bands of the player.
-    _current_track : `None` or ``ConfiguredTrack``
+    _current_track : `None`, ``ConfiguredTrack``
         The currently played track if any.
     _paused : `bool`
         Whether the player is paused.
-    _paused_track : `None` or ``ConfiguredTrack``
+    _paused_track : `None`, ``ConfiguredTrack``
         The paused track.
     _repeat_current : `bool`
         Whether the current track should be repeated. Defaults to `False`.
@@ -132,7 +132,7 @@ class SolarPlayer(SolarPlayerBase):
         Raises
         ------
         TypeError
-            If `track` is neither ``Track``, nor ``ConfiguredTrack`` instance.
+            If `track` is neither ``Track``, nor ``ConfiguredTrack``.
         ValueError
             - If `start_time` is out of the expected [0.0:duration] range.
             - If `end_time` is out of the expected [0.0:duration] range.
@@ -206,7 +206,7 @@ class SolarPlayer(SolarPlayerBase):
         
         Returns
         -------
-        track : `None` or ``ConfiguredTrack``
+        track : `None`, ``ConfiguredTrack``
         """
         queue = self.queue
         
@@ -295,7 +295,7 @@ class SolarPlayer(SolarPlayerBase):
         
         Returns
         -------
-        track : `None` or ``ConfiguredTrack``
+        track : `None`, ``ConfiguredTrack``
         """
         queue = self.queue
         
@@ -529,13 +529,17 @@ class SolarPlayer(SolarPlayerBase):
         
         for band_gain_pair in band_gain_pairs:
             if not isinstance(band_gain_pair, tuple):
-                raise TypeError(f'`band_gain_pairs` can contain only `tuple` elements, got '
-                    f'{band_gain_pair.__class__.__name__}; {band_gain_pair!r}.')
+                raise TypeError(
+                    f'`band_gain_pairs` can contain `tuple` elements, got '
+                    f'{band_gain_pair.__class__.__name__}; {band_gain_pair!r}; band_gain_pairs={band_gain_pairs!r}.'
+                )
             
             band, gain = band_gain_pair
             
             if (band < 0) or (band > 14):
-                raise ValueError(f'`band`, can be in range [0:14], got {band}.')
+                raise ValueError(
+                    f'`band`, can be in range [0:14], got {band!r}.'
+                )
             
             if gain > 1.0:
                 gain = 1.0

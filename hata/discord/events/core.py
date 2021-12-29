@@ -44,7 +44,7 @@ def _iter_name(name):
     
     Parameters
     ----------
-    name : `str` or `tuple` of (`str` or ...)
+    name : `str`, `tuple` of (`str` or ...)
         The name or names of the dispatch events.
     
     Yields
@@ -132,7 +132,7 @@ def get_plugin_event_handler_and_parser_names(event_handler_manager, name):
     -------
     plugin : `None`, ``EventHandlerManager``, ``EventHandlerPlugin``
         The event handler or the plugin owning the event.
-    parser_names : `None` or `tuple` of `str`
+    parser_names : `None`, `tuple` of `str`
         Dispatch event parser's names relating to the event.
     """
     try:
@@ -290,7 +290,7 @@ class ParserSettingOption:
     
     def __new__(cls, name):
         """
-        Creates new ``ParserSettingOption`` instances from the given name.
+        Creates new ``ParserSettingOption``-s from the given name.
         
         This method is a generator.
         
@@ -560,7 +560,7 @@ def add_parser(name, parser_cal_sc, parser_cal_mc, parser_opt_sc, parser_opt_mc)
     
     Parameters
     ----------
-    name : `str` or `tuple` of (`str`, ...)
+    name : `str`, `tuple` of (`str`, ...)
         The parser's name also known as the dispatch event's.
     parser_cal_sc : `function`
         Single client parser what calculates the differences between the previous and the current state and calls

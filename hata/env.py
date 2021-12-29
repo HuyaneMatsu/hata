@@ -121,7 +121,7 @@ def get_str_env(name, default=None, *, warn_if_empty=True):
     
     Returns
     -------
-    variable : `str` or `default`
+    variable : `str`, `default`
     """
     env_variable = get_environmental_variable(name)
     if env_variable is None:
@@ -153,7 +153,7 @@ def get_int_env(name, default, *, warn_if_empty=True):
     
     Returns
     -------
-    variable : `int` or `default`
+    variable : `int`, `default`
     """
     env_variable = get_environmental_variable(name)
     if env_variable is None:
@@ -209,7 +209,7 @@ if API_VERSION not in (7, 8):
         warnings.warn(f'`API_VERSION` given with a value greater than `10`, got {API_VERSION!r}, defaulting to {9!r}!')
         API_VERSION = 9
     elif API_VERSION == 6:
-        warnings.warn('`API_VERSION` given as 6, please use version `7` or `8`.', FutureWarning)
+        warnings.warn('`API_VERSION` given as 6, please use version `7`, `8`.', FutureWarning)
 
 LIBRARY_URL = get_str_env('HATA_LIBRARY_URL', 'https://github.com/HuyaneMatsu/hata')
 

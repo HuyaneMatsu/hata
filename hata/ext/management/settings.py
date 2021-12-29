@@ -47,7 +47,9 @@ class ProjectSettings:
             return cls._create_empty(file_path)
         
         if not is_file(file_path):
-            raise RuntimeError(f'Settings path is not a file: {file_path!r}.')
+            raise RuntimeError(
+                f'Settings path is not a file: {file_path!r}.'
+            )
         
         with open(file_path, 'r') as file:
             file_content = file.read()

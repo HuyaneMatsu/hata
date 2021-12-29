@@ -9,9 +9,9 @@ class MessageReference:
     
     Attributes
     ----------
-    _channel : `object`, `None` or ``ChannelBase``
+    _channel : `object`, `None`, ``ChannelBase``
         Internal slot used by the ``.channel`` property.
-    _guild : `object`, `None` or ``Guild``
+    _guild : `object`, `None`, ``Guild``
         Internal used by the ``.guild`` property.
     _message : `object`. `None`, ``Message``
         Internal slot used by the ``.message`` property.
@@ -37,7 +37,7 @@ class MessageReference:
         
         Returns
         -------
-        self / message : ``MessageReference`` or ``Message``
+        self / message : ``MessageReference``, ``Message``
         """
         message_id = data.get('message_id', None)
         if message_id is None:
@@ -81,7 +81,7 @@ class MessageReference:
         
         Returns
         -------
-        channel : `None` or ``ChannelBase`` instance
+        channel : `None`, ``ChannelBase``
         """
         channel = self._channel
         if channel is ...:
@@ -102,7 +102,7 @@ class MessageReference:
         
         Returns
         -------
-        guild : `None` or ``Guild``
+        guild : `None`, ``Guild``
         """
         guild = self.guild
         if guild is ...:
@@ -123,7 +123,7 @@ class MessageReference:
         
         Returns
         -------
-        message : `None` or ``Message``
+        message : `None`, ``Message``
         """
         message = self.message
         if message is ...:

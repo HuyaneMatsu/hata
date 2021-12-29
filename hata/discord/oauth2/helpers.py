@@ -92,7 +92,7 @@ def parse_locale_optional(data):
     
     Returns
     -------
-    locale : `None` or `str`
+    locale : `None`, `str`
     """
     try:
         locale = data['locale']
@@ -120,7 +120,7 @@ def parse_oauth2_redirect_url(url):
 
     Returns
     -------
-    result : `None` or `tuple` (`str`, `str`)
+    result : `None`, `tuple` (`str`, `str`)
     """
     result = OAUTH2_REQUEST_URL_RP.fullmatch(url)
     if result is None:

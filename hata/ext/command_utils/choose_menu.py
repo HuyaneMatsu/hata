@@ -26,7 +26,7 @@ class ChooseMenu(PaginationBase):
     
     Attributes
     ----------
-    _canceller : `None` or `function`
+    _canceller : `None`, `function`
         The function called when the ``ChooseMenu`` is cancelled or when it expires. This is a onetime use and after
         it was used, is set as `None`.
     
@@ -50,18 +50,18 @@ class ChooseMenu(PaginationBase):
         |                           |       | but expected.                                                         |
         +---------------------------+-------+-----------------------------------------------------------------------+
     
-    _timeouter : `None` or ``Timeouter``
+    _timeouter : `None`, ``Timeouter``
         Executes the timing out feature on the ``ChooseMenu``.
     
-    channel : ``ChannelTextBase`` instance
+    channel : ``ChannelTextBase``
         The channel where the ``ChooseMenu`` is executed.
     
     client : ``Client``
         The client who executes the ``ChooseMenu``.
-    message : `None` or ``Message``
+    message : `None`, ``Message``
         The message on what the ``ChooseMenu`` is executed.
     
-    check : `None` or `callable`
+    check : `None`, `callable`
         A callable what decides whether the ``ChooseMenu`` should process a received reaction event. Defaults to
         `None`.
         
@@ -69,7 +69,7 @@ class ChooseMenu(PaginationBase):
         +-----------+---------------------------------------------------+
         | Name      | Type                                              |
         +===========+===================================================+
-        | event     | ``ReactionAddEvent`` or ``ReactionDeleteEvent``   |
+        | event     | ``ReactionAddEvent``, ``ReactionDeleteEvent``     |
         +-----------+---------------------------------------------------+
         
         Note, that ``ReactionDeleteEvent`` is only given, when the client has no `manage_messages` permission.
@@ -81,7 +81,7 @@ class ChooseMenu(PaginationBase):
         | should_process    | `bool`    |
         +-------------------+-----------+
     
-    embed : ``EmbedBase`` instance
+    embed : ``EmbedBase``
         An embed base, what's description and footer will be rendered with the given choices and with information
         about the respective page.
 
@@ -94,20 +94,20 @@ class ChooseMenu(PaginationBase):
         It's elements's type can be different from each other, and different structures act differently as well.
         There are the following cases:
         
-        - If an element is `str` instance, then it will be used as an option's title and when selecting it, only that
+        - If an element is `str`, then it will be used as an option's title and when selecting it, only that
             variable will be passed to the respective function when selected.
         
-        - If an element is neither `str` or `tuple`, then it's `repr` will be used as an option's title, and only that
+        - If an element is neither `str`, `tuple`, then it's `repr` will be used as an option's title, and only that
             variable will be passed to the respective function when selected.
         
-        - If an element is `tuple` instance, then it's first element will be displayed as title. If it is `str`, then
+        - If an element is `tuple`, then it's first element will be displayed as title. If it is `str`, then
             will be just simply added, however if not, then it's `repr` will be used. If selecting a `tuple` option,
             then it's element will be passed to the respective function.
     
     timeout : `float`
         The timeout of the ``ChooseMenu`` in seconds.
     
-    prefix : `None` or `str`
+    prefix : `None`, `str`
         A prefix displayed before each option.
     
     selector : `async-callable`
@@ -123,13 +123,13 @@ class ChooseMenu(PaginationBase):
         +===================+===============================+
         | client            | ``Client``                    |
         +-------------------+-------------------------------+
-        | channel           | ``ChannelTextBase`` instance  |
+        | channel           | ``ChannelTextBase``           |
         +-------------------+-------------------------------+
-        | message           | ``Message`` or `None`         |
+        | message           | ``Message``, `None`           |
         +-------------------+-------------------------------+
         
         The rest of the parameters depend on the respective choice (an elements of ``choices``). If the element is a
-        `tuple` instance, then it's element will be passed, however if the choice is any other type, then only that
+        `tuple`, then it's element will be passed, however if the choice is any other type, then only that
         object will be passed.
     
     Class Attributes
@@ -173,8 +173,8 @@ class ChooseMenu(PaginationBase):
         ----------
         client : ``Client``
             The client who executes the ``ChooseMenu``.
-        channel : ``ChannelTextBase`` instance or ``Message``
-            The channel where the ``ChooseMenu`` is executed. Pass it as a ``Message`` instance to send a reply.
+        channel : ``ChannelTextBase``, ``Message``
+            The channel where the ``ChooseMenu`` is executed. Pass it as a ``Message`` to send a reply.
             
             If given as ``InteractionEvent``, then will acknowledge it and create a new message with it as well.
             Although will not acknowledge it if `message` is given.
@@ -185,13 +185,13 @@ class ChooseMenu(PaginationBase):
             It's elements's type can be different from each other, and different structures act differently as well.
             There are the following cases:
             
-            - If an element is `str` instance, then it will be used as an option's title and when selecting it, only
+            - If an element is `str`, then it will be used as an option's title and when selecting it, only
                 that variable will be passed to the respective function when selected.
             
-            - If an element is neither `str` or `tuple`, then it's `repr` will be used as an option's title, and only
+            - If an element is neither `str`, `tuple`, then it's `repr` will be used as an option's title, and only
                 that variable will be passed to the respective function when selected.
             
-            - If an element is `tuple` instance, then it's first element will be displayed as title. If it is `str`,
+            - If an element is `tuple`, then it's first element will be displayed as title. If it is `str`,
                 then will be just simply added, however if not, then it's `repr` will be used. If selecting a `tuple`
                 option, then it's element will be passed to the respective function.
         selector : `async-callable`
@@ -207,25 +207,25 @@ class ChooseMenu(PaginationBase):
             +===================+===========================================================+
             | client            | ``Client``                                                |
             +-------------------+-----------------------------------------------------------+
-            | channel           | ``ChannelTextBase``, ``Message`` or ``InteractionEvent``  |
+            | channel           | ``ChannelTextBase``, ``Message``, ``InteractionEvent``    |
             +-------------------+-----------------------------------------------------------+
-            | message           | ``Message`` or `None`                                     |
+            | message           | ``Message``, `None`                                       |
             +-------------------+-----------------------------------------------------------+
             
             The rest of the parameters depend on the respective choice (an elements of ``choices``). If the element is a
-            `tuple` instance, then it's elements will be passed, however if the choice is any other type, then only that
+            `tuple`, then it's elements will be passed, however if the choice is any other type, then only that
             object will be passed.
         embed : ``EmbedBase``
             An embed base, what's description and footer will be rendered with the given choices and with information
-            about the respective page. Defaults to an empty ``Embed`` instance.
+            about the respective page. Defaults to an empty ``Embed``.
         timeout : `float`, Optional (Keyword only)
             The timeout of the ``ChooseMenu`` in seconds. Defaults to `240.0`.
-        message : `None` or ``Message``, Optional (Keyword only)
+        message : `None`, ``Message``, Optional (Keyword only)
             The message on what the ``ChooseMenu`` will be executed. If not given a new message will be created.
             Defaults to `None`.
-        prefix : `None` or `str`, Optional (Keyword only)
+        prefix : `None`, `str`, Optional (Keyword only)
             A prefix displayed before each option. Defaults to `None`.
-        check : `None` or `callable`, Optional (Keyword only)
+        check : `None`, `callable`, Optional (Keyword only)
             A callable what decides whether the ``ChooseMenu`` should process a received reaction event. Defaults to
             `None`.
             
@@ -233,7 +233,7 @@ class ChooseMenu(PaginationBase):
             +-----------+---------------------------------------------------+
             | Name      | Type                                              |
             +===========+===================================================+
-            | event     | ``ReactionAddEvent`` or ``ReactionDeleteEvent``   |
+            | event     | ``ReactionAddEvent``, ``ReactionDeleteEvent``     |
             +-----------+---------------------------------------------------+
             
             Note, that ``ReactionDeleteEvent`` is only given, when the client has no `manage_messages` permission.
@@ -247,7 +247,7 @@ class ChooseMenu(PaginationBase):
         
         Returns
         -------
-        self : `None` or ``ChooseMenu``
+        self : `None`, ``ChooseMenu``
             If `choices`'s length is less than `2`, then returns `None`.
         
         Raises
@@ -258,7 +258,9 @@ class ChooseMenu(PaginationBase):
             If `prefix` was not given as `None` and it's length is over `64` characters.
         """
         if (prefix is not None) and (len(prefix) > 100):
-            raise ValueError(f'Please pass a prefix, what is shorter than 100 characters, got {prefix!r}.')
+            raise ValueError(
+                f'Please a shorter 100 character long prefix, got {len(prefix)!r}, {prefix!r}.'
+            )
         
         if isinstance(channel, ChannelTextBase):
             target_channel = channel
@@ -270,8 +272,10 @@ class ChooseMenu(PaginationBase):
             target_channel = channel.channel
             received_interaction = True
         else:
-            raise TypeError(f'`channel` can be given only as `{ChannelTextBase.__name__}`, `{Message.__name__}` '
-                f'of as {InteractionEvent.__name__} instance, got {channel.__class__.__name__}.')
+            raise TypeError(
+                f'`channel` can be `{ChannelTextBase.__name__}`, `{Message.__name__}`, `{InteractionEvent.__name__}`, '
+                f'got {channel.__class__.__name__}; {channel!r}.'
+            )
         
         result_length = len(choices)
         if result_length < 2:
@@ -318,13 +322,13 @@ class ChooseMenu(PaginationBase):
             
             if isinstance(err, DiscordException):
                 if err.code in (
-                        ERROR_CODES.unknown_message, # message deleted
-                        ERROR_CODES.unknown_channel, # message's channel deleted
-                        ERROR_CODES.max_reactions, # reached reaction 20, some1 is trolling us.
-                        ERROR_CODES.missing_access, # client removed
-                        ERROR_CODES.missing_permissions, # permissions changed meanwhile
-                        ERROR_CODES.cannot_message_user, # user has dm-s disallowed
-                            ):
+                    ERROR_CODES.unknown_message, # message deleted
+                    ERROR_CODES.unknown_channel, # message's channel deleted
+                    ERROR_CODES.max_reactions, # reached reaction 20, some1 is trolling us.
+                    ERROR_CODES.missing_access, # client removed
+                    ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                    ERROR_CODES.cannot_message_user, # user has dm-s disallowed
+                ):
                     return self
             
             raise
@@ -345,12 +349,12 @@ class ChooseMenu(PaginationBase):
             
             if isinstance(err, DiscordException):
                 if err.code in (
-                        ERROR_CODES.unknown_message, # message deleted
-                        ERROR_CODES.unknown_channel, # message's channel deleted
-                        ERROR_CODES.max_reactions, # reached reaction 20, some1 is trolling us.
-                        ERROR_CODES.missing_access, # client removed
-                        ERROR_CODES.missing_permissions, # permissions changed meanwhile
-                            ):
+                    ERROR_CODES.unknown_message, # message deleted
+                    ERROR_CODES.unknown_channel, # message's channel deleted
+                    ERROR_CODES.max_reactions, # reached reaction 20, some1 is trolling us.
+                    ERROR_CODES.missing_access, # client removed
+                    ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                ):
                     return self
             
             raise

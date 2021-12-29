@@ -25,7 +25,7 @@ class reaction_mapping(dict):
         
         Parameters
         ----------
-        data : `None` or `dict` of (`str`, `Any`) items
+        data : `None`, `dict` of (`str`, `Any`) items
         """
         if (data is None) or (not data):
             self.fully_loaded = True
@@ -141,7 +141,7 @@ class reaction_mapping(dict):
         
         Returns
         -------
-        line : `None` or ``reaction_mapping_line``
+        line : `None`, ``reaction_mapping_line``
         """
         line = self.pop(emoji, None)
         if line is None:

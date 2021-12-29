@@ -30,7 +30,7 @@ set_docs(PermissionOverwriteTargetType,
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``PermissionOverwriteTargetType``) items
-        Stores the predefined ``PermissionOverwriteTargetType`` instances. These can be accessed with their `value` as key.
+        Stores the predefined ``PermissionOverwriteTargetType``-s. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `str`
         The permission overwrite target types' values' type.
     DEFAULT_NAME : `str` = `'UNDEFINED'`
@@ -60,7 +60,7 @@ set_docs(PermissionOverwriteTargetType,
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``PermissionOverwriteTargetType``) items
-        Stores the predefined ``PermissionOverwriteTargetType`` instances. These can be accessed with their `value` as
+        Stores the predefined ``PermissionOverwriteTargetType``-s. These can be accessed with their `value` as
         key.
     VALUE_TYPE : `type` = `int`
         The permission overwrite target types' values' type.

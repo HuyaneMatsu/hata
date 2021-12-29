@@ -39,7 +39,7 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
     ----------
     id : `int`
         Unique identifier of the channel.
-    _permission_cache : `None` or `dict` of (`int`, ``Permission``) items
+    _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
     parent_id : `int`
         The channel's parent's identifier.
@@ -51,7 +51,7 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         The channel's permission overwrites.
     position : `int`
         The channel's position.
-    _message_history :  `None` or ``MessageHistory``
+    _message_history :  `None`, ``MessageHistory``
         The message history of the channel if any.
     banner_hash : `int`
         The channel's banner's hash in `uint128`.
@@ -64,8 +64,8 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         Whether the channel is marked as non safe for work.
     slowmode : `int`
         The amount of time in seconds what a user needs to wait between it's each message. Bots and user accounts with
-        `manage_messages` or `manage_channel` permissions are unaffected.
-    topic : `None` or `str`
+        `manage_messages`, `manage_channel` permissions are unaffected.
+    topic : `None`, `str`
         The channel's topic.
     type : `int`
         The channel's Discord side type. Can be any of `.INTERCHANGE`.
@@ -101,7 +101,7 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data receive from Discord.
-        client : `None` or ``Client``
+        client : `None`, ``Client``
             The client, who received the channel's data, if any.
         guild_id : `int`
             The channel's guild's identifier.
@@ -252,7 +252,7 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         +-------------------------------+---------------------------------------------------+
         | slowmode                      | `int`                                             |
         +-------------------------------+---------------------------------------------------+
-        | topic                         | `None` or `str`                                   |
+        | topic                         | `None`, `str`                                     |
         +-------------------------------+---------------------------------------------------+
         | type                          | `int`                                             |
         +-------------------------------+---------------------------------------------------+
@@ -359,14 +359,14 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
         
         Parameters
         ----------
-        channel_id : `int` or `str`
+        channel_id : `int`, `str`
             The channel's id.
         **kwargs : keyword parameters
             Additional predefined attributes for the channel.
         
         Other Parameters
         ----------------
-        banner : `None`, ``Icon`` or `str`, Optional (Keyword only)
+        banner : `None`, ``Icon``, `str`, Optional (Keyword only)
             The channel's banner.
             
             > Mutually exclusive with `banner_type` and `banner_hash` parameters.
@@ -385,7 +385,7 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
             The channel's ``.default_auto_archive_after``.
         name : `str`, Optional (Keyword only)
             The channel's ``.name``.
-        topic : `None` or `str`, Optional (Keyword only)
+        topic : `None`, `str`, Optional (Keyword only)
             The channel's ``.topic``.
         slowmode : `int`, Optional (Keyword only)
             The channel's ``.slowmode``.

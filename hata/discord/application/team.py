@@ -43,11 +43,11 @@ class Team(DiscordEntity, immortal=True):
     
     def __new__(cls, data):
         """
-        Creates a new ``Team`` instance from the data received from Discord.
+        Creates a new ``Team`` from the data received from Discord.
         
         Parameters
         ----------
-        data : `None` or `dict` of (`str`, `Any`) items
+        data : `None`, `dict` of (`str`, `Any`) items
             Team data received from Discord.
         
         Returns
@@ -139,7 +139,7 @@ class TeamMember:
         
         Parameters
         ----------
-        data : `None` or `dict` of (`str`, `Any`) items
+        data : `None`, `dict` of (`str`, `Any`) items
             Team member data received from Discord.
         """
         permissions = data['permissions']

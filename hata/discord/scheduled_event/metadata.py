@@ -14,7 +14,7 @@ def try_get_scheduled_event_metadata_type_from_data(data):
     
     Returns
     -------
-    metadata_type : `None` or `type`
+    metadata_type : `None`, `type`
     """
     if 'location' in data:
         metadata_type = LocationEntityMetadata
@@ -81,18 +81,18 @@ class ScheduledEventEntityMetadata:
 
 class StageEntityMetadata(ScheduledEventEntityMetadata):
     """
-    Stage entity metadata of ``ScheduledEvent`` instances.
+    Stage entity metadata of ``ScheduledEvent``-s.
     
     Attributes
     ----------
-    speaker_ids : `None` or `tuple` of `int`
+    speaker_ids : `None`, `tuple` of `int`
         The speakers' identifier of the stage channel.
     """
     __slots__ = ('speaker_ids', )
     
     def __new__(cls, speakers):
         """
-        Creates a new stage entity metadata for ``ScheduledEvent`` instances.
+        Creates a new stage entity metadata for ``ScheduledEvent``-s.
         
         Parameters
         ----------
@@ -121,8 +121,10 @@ class StageEntityMetadata(ScheduledEventEntityMetadata):
         else:
             iterator = getattr(type(speakers), '__iter__', None)
             if iterator is None:
-                raise TypeError(f'`speakers` can be given as `None`, `int`, `{ClientUserBase.__name__}` or as a '
-                    f'`tuple` of `int`, `{ClientUserBase.__name__}`, got {speakers.__class__.__name__}.')
+                raise TypeError(
+                    f'`speakers` can be `None`, `int`, `{ClientUserBase.__name__}`, `tuple` of (`int`, '
+                    f'`{ClientUserBase.__name__}`), got {speakers.__class__.__name__}; {speakers!r}.'
+                )
             
             speaker_ids = []
             
@@ -134,8 +136,10 @@ class StageEntityMetadata(ScheduledEventEntityMetadata):
                 elif isinstance(speaker, int):
                     user_id = int(speaker)
                 else:
-                    raise TypeError(f'`speakers` contains a non `int`, or ``{ClientUserBase.__name__}`` instance, '
-                        f'got {speaker.__class__.__name__}.')
+                    raise TypeError(
+                        f'`speakers` can contain `int`, `{ClientUserBase.__name__}` elements, got '
+                        f'{speaker.__class__.__name__}; {speaker!r}.'
+                    )
                 
                 speaker_ids.append(user_id)
             
@@ -195,7 +199,7 @@ class StageEntityMetadata(ScheduledEventEntityMetadata):
         
         Returns
         -------
-        speakers : `None` or `tuple` of ``ClientUserBase``
+        speakers : `None`, `tuple` of ``ClientUserBase``
         """
         speaker_ids = self.speaker_ids
         if (speaker_ids is not None):
@@ -205,18 +209,18 @@ class StageEntityMetadata(ScheduledEventEntityMetadata):
 
 class LocationEntityMetadata(ScheduledEventEntityMetadata):
     """
-    Location entity metadata of ``ScheduledEvent`` instances.
+    Location entity metadata of ``ScheduledEvent``-s.
     
     Attributes
     ----------
-    location : `None` or `str`
+    location : `None`, `str`
         The place where the event will take place.
     """
     __slots__ = ('location', )
     
     def __new__(cls, location):
         """
-        Creates a new location entity metadata for ``ScheduledEvent`` instances.
+        Creates a new location entity metadata for ``ScheduledEvent``-s.
         
         Parameters
         ----------
@@ -231,10 +235,14 @@ class LocationEntityMetadata(ScheduledEventEntityMetadata):
             If `location` is an empty string.
         """
         if not isinstance(location, str):
-            raise TypeError(f'`location can be only `str` instance, got `{location.__class__.__name__}`.')
+            raise TypeError(
+                f'`location` can be `str`, got {location.__class__.__name__}; {location!r}.'
+            )
         
         if not location:
-            raise ValueError(f'`location` cannot be empty string.')
+            raise ValueError(
+                f'`location` cannot be empty string.'
+            )
         
         self = object.__new__(cls)
         self.location = location

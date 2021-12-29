@@ -31,8 +31,9 @@ def extension_setup_hook(client, command_processor):
     elif type(event_message_create) is asynclist:
         for event in list.__iter__(event_message_create):
             if isinstance(event, CommandProcessor):
-                raise RuntimeError(f'The client already has a `{CommandProcessor.__name__}` instance added as '
-                    f'event.')
+                raise RuntimeError(
+                    f'The client already has a `{CommandProcessor.__name__}` added as event handler.'
+                )
             
             if isinstance(event, MessageCreateWaitfor):
                 break
@@ -41,8 +42,9 @@ def extension_setup_hook(client, command_processor):
     else:
         event = event_message_create
         if isinstance(event, CommandProcessor):
-            raise RuntimeError(f'The client already has a `{CommandProcessor.__name__}` instance added as '
-                f'event.')
+            raise RuntimeError(
+                f'The client already has a `{CommandProcessor.__name__}` added as event handler.'
+            )
         
         if not isinstance(event, MessageCreateWaitfor):
             event = None

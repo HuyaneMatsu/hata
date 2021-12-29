@@ -155,7 +155,7 @@ class TopGGClient:
     
     Attributes
     ----------
-    _auto_post_handler : `None` or ``TimerHandle``
+    _auto_post_handler : `None`, ``TimerHandle``
         Handle to repeat the auto poster.
     _auto_post_running : `bool`
         Whether auto posting is still running.
@@ -173,7 +173,7 @@ class TopGGClient:
         When the last ``.get_weekend_status`` was done.
     _weekend_status_cache_value : `bool`
         The response of the last ``get_weekend_status`` call.
-    _weekend_status_request_task : `None` or ``Task``
+    _weekend_status_request_task : `None`, ``Task``
         Synchronization task for requesting weekend status.
     client_id : `int`
         The client's identifier.
@@ -211,25 +211,32 @@ class TopGGClient:
         Raises
         ------
         TypeError
-            - If `client` is not ``Client`` instance.
-            - If `top_gg_token` is not `str` instance.
-            - If `auto_post_bot_stats` is not `bool` instance.
+            - If `client` is not ``Client``.
+            - If `top_gg_token` is not `str`.
+            - If `auto_post_bot_stats` is not `bool`.
             - If `raise_on_top_gg_global_rate_limit` is not `bool` isinstance.
         """
         if not isinstance(client, Client):
-            raise TypeError(f'`client` can be `{Client.__class__.__name__}` instance, got '
-                f'{client.__class__.__name__}.')
+            raise TypeError(
+                f'`client` can be `{Client.__name__}`, got {client.__class__.__name__}; {client!r}.'
+            )
         
         if not isinstance(top_gg_token, str):
-            raise TypeError(f'`top_gg_token` can be `str` instance, got {top_gg_token.__class__.__name__}.')
+            raise TypeError(
+                f'`top_gg_token` can be `str`, got {top_gg_token.__class__.__name__}; {top_gg_token!r}.'
+            )
         
         if not isinstance(auto_post_bot_stats, bool):
-            raise TypeError(f'`auto_post_bot_stats` can be `bool` instance, got '
-                f'{auto_post_bot_stats.__class__.__name__}.')
+            raise TypeError(
+                f'`auto_post_bot_stats` can be `bool`, got '
+                f'{auto_post_bot_stats.__class__.__name__}; {auto_post_bot_stats!r}.'
+            )
         
         if not isinstance(raise_on_top_gg_global_rate_limit, bool):
-            raise TypeError(f'`raise_on_top_gg_global_rate_limit` can be `bool` instance, got '
-                f'{raise_on_top_gg_global_rate_limit.__class__.__name__}.')
+            raise TypeError(
+                f'`raise_on_top_gg_global_rate_limit` can be `bool`, got '
+                f'{raise_on_top_gg_global_rate_limit.__class__.__name__}; {raise_on_top_gg_global_rate_limit!r}.'
+            )
         
         
         client_reference = WeakReferer(client)
@@ -436,9 +443,9 @@ class TopGGClient:
             The amount of bots to query. Defaults to `50`.
         offset : `int`, Optional (Keyword only)
             Query offset. Defaults to `0`
-        sort_by : `None` or `str`, Optional (Keyword only)
+        sort_by : `None`, `str`, Optional (Keyword only)
             Which field to sort by the bots. Defaults to `None`.
-        search : `None` or `dict` of (`str`, `Any`) items, Optional (Keyword only)
+        search : `None`, `dict` of (`str`, `Any`) items, Optional (Keyword only)
             Fields an expected values to search for.
         
         Returns
@@ -782,11 +789,11 @@ class TopGGClient:
             Http method.
         url : `str`
             Endpoint to do request towards.
-        data : `None` or `Any`, Optional
+        data : `None`, `Any`, Optional
             Json serializable data.
         rate_limit_handler : ``RateLimitHandlerBase`
             Rate limit handle to handle rate limit as.
-        query_parameters : `None` or `Any`, Optional
+        query_parameters : `None`, `Any`, Optional
             Query parameters.
         
         Raises
@@ -818,7 +825,9 @@ class TopGGClient:
             
             async with rate_limit_handler.ctx():
                 try:
-                    async with RequestContextManager(self.http._request(method, url, headers, data, query_parameters)) as response:
+                    async with RequestContextManager(
+                        self.http._request(method, url, headers, data, query_parameters)
+                    ) as response:
                         response_data = await response.text(encoding='utf-8')
                 except OSError as err:
                     if not try_again:

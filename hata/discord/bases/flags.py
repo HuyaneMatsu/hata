@@ -59,7 +59,7 @@ class FlagEnabler:
     
     Attributes
     ----------
-    instance : ``FlagMeta`` instance's instance
+    instance : ``FlagMeta``'s instance
         The source value, what will be modified.
     shift : `int`
         The bitwise position, what will be modified.
@@ -108,7 +108,7 @@ class FlagDisabler:
     
     Attributes
     ----------
-    instance : ``FlagMeta`` instance's instance
+    instance : ``FlagMeta``'s instance
         The source value, what will be modified.
     shift : `int`
         The bitwise position, what will be modified.
@@ -166,7 +166,7 @@ class FlagMeta(type):
         ----------
         class_name : `str`
             The created class's name.
-        class_parents : `tuple` of `type` instances
+        class_parents : `tuple` of `type`
             The superclasses of the creates type.
         class_attributes : `dict` of (`str`, `Any`) items
             The class attributes of the created type.
@@ -193,7 +193,7 @@ class FlagMeta(type):
         
         Returns
         -------
-        type : ``FlagMeta`` instance
+        type : ``FlagMeta``
         
         Raises
         ------
@@ -253,13 +253,13 @@ class FlagMeta(type):
         for name, shift in keys.items():
             if not isinstance(name, str):
                 raise TypeError(
-                    f'`__keys__`\'s keys should be `str` instances, meanwhile got at least 1 non `str`: '
+                    f'`__keys__`\'s keys should be `str`-s, meanwhile got at least 1 non `str`: '
                     f'{name.__class__.__name__}; {name!r}.'
                 )
             
             if not isinstance(shift, int):
                 raise TypeError(
-                    f'`__keys__`\'s values should be `int` instances, meanwhile got at least 1 non `int`: '
+                    f'`__keys__`\'s values should be `int`-s, meanwhile got at least 1 non `int`: '
                     f'{shift.__class__.__name__}; {shift!r}.'
                 )
             
@@ -364,7 +364,7 @@ class FlagBase(int, metaclass = FlagMeta, base_class=True):
         ------
         name : `str`
             The name of the specific flag
-        enabled : `int` (`0` or `1`)
+        enabled : `int` (`0`, `1`)
             Whether the specific bitwise value is enabled.
         """
         for name, shift in self.__keys__.items():
@@ -411,7 +411,7 @@ class FlagBase(int, metaclass = FlagMeta, base_class=True):
         
         Returns
         -------
-        flag : ``FlagBase`` instance
+        flag : ``FlagBase``
         
         Raises
         ------
@@ -506,7 +506,7 @@ class ReverseFlagBase(FlagBase, base_class=True):
         -------
         name : `str`
             The name of the specific flag
-        enabled : `int` (`0` or `1`)
+        enabled : `int` (`0`, `1`)
             Whether the specific bitwise value is enabled.
         """
         for name, shift in self.__keys__.items():
@@ -553,7 +553,7 @@ class ReverseFlagBase(FlagBase, base_class=True):
         
         Returns
         -------
-        flag : ``ReverseFlagBase`` instance
+        flag : ``ReverseFlagBase``
         
         Examples
         --------

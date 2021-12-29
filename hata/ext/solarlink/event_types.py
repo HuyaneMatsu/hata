@@ -92,7 +92,7 @@ class TrackEndEvent(EventBase):
     ----------
     player : ``SolarPlayerBase``
         The player associated with the event.
-    reason : `None` or `str`
+    reason : `None`, `str`
         The reason why the track ended.
     track : ``ConfiguredTrack``
         The started track.
@@ -107,7 +107,7 @@ class TrackEndEvent(EventBase):
         ----------
         player : ``SolarPlayerBase``
             The player associated with the event.
-        reason : `None` or `str`
+        reason : `None`, `str`
             The reason why the track ended.
         track : ``ConfiguredTrack``
             The started track.
@@ -411,7 +411,7 @@ class PlayerWebsocketClosedEvent(EventBase):
         Websocket close code.
     player : ``SolarPlayerBase``
         The player associated with the event.
-    reason : `None` or `str`
+    reason : `None`, `str`
         Websocket close reason.
     """
     __slots__ = ('by_remote', 'code', 'player', 'reason', )
@@ -426,7 +426,7 @@ class PlayerWebsocketClosedEvent(EventBase):
             The player associated with the event.
         code : `int`
             Websocket close code.
-        reason : `None` or `str`
+        reason : `None`, `str`
             Websocket close reason.
         by_remote : `bool`
             Whether the websocket was closed remotely.

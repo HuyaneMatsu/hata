@@ -547,7 +547,7 @@ def check_factorial_validity(token, value):
     ----------
     token : ``Token``
         The parent token.
-    value : `int` or `float`
+    value : `int`, `float`
         The value to use factorial on.
     
     Raises
@@ -1416,7 +1416,7 @@ class ParserPostfixCheck(ParserBase):
     
     def __new__(cls, parser, message):
         """
-        Creates a new ``ParserPostfixCheck`` instance.
+        Creates a new ``ParserPostfixCheck``.
         
         Parameters
         ----------
@@ -1468,7 +1468,7 @@ class ParserCharRange(ParserBase):
     
     def __new__(cls, start, end):
         """
-        Creates a new ``ParserCharRange`` instance from the given parameters.
+        Creates a new ``ParserCharRange`` from the given parameters.
         
         Parameters
         ----------
@@ -1558,7 +1558,7 @@ class ParserRepeat(ParserBase):
     
     def __new__(cls, parser):
         """
-        Creates a new ``ParserRepeat`` instance with the given parameters.
+        Creates a new ``ParserRepeat`` with the given parameters.
         
         Parameters
         ----------
@@ -1597,7 +1597,7 @@ class ParserCharOne(ParserBase):
     
     def __new__(cls, value):
         """
-        Creates a new ``ParserCharOne`` instance with the given character.
+        Creates a new ``ParserCharOne`` with the given character.
         
         Parameters
         ----------
@@ -1738,7 +1738,7 @@ class ParserSequence(ParserBase):
     
     def __new__(cls, parsers):
         """
-        Creates a new ``ParserSequence`` instance from the given parsers.
+        Creates a new ``ParserSequence`` from the given parsers.
         
         Parameters
         ----------
@@ -1749,8 +1749,10 @@ class ParserSequence(ParserBase):
         if __debug__:
             for parser in parsers:
                 if not isinstance(parser, ParserBase):
-                    raise AssertionError(f'`{ParserSequence}.__new__` creates with an iterable of not only '
-                        f'{ParserBase.__name__} instance, got: {parser.__class__.__name__}; {parser!r}; {parsers!r}.')
+                    raise AssertionError(
+                        f'`{ParserSequence}.__new__` can be created with an `iterable` of only '
+                        f'`{ParserBase.__name__}`-s, got {parser.__class__.__name__}; {parser!r}; parsers={parsers!r}.'
+                    )
         
         self = object.__new__(cls)
         self.parsers = parsers
@@ -1787,7 +1789,7 @@ class ParserAny(ParserBase):
     
     def __new__(cls, parsers):
         """
-        Creates a new ``ParserAny`` instance from the given parsers.
+        Creates a new ``ParserAny`` from the given parsers.
         
         Parameters
         ----------
@@ -2226,9 +2228,9 @@ class EvaluationError(SlasherCommandError):
     
     Attributes
     ----------
-    _pretty_repr : `None` or `str`
+    _pretty_repr : `None`, `str`
         generated pretty representation of the exception.
-    _repr : `None` or `str`
+    _repr : `None`, `str`
         The generated error message.
     array : `tuple` of `int`
         Source parsed array.
@@ -2239,7 +2241,7 @@ class EvaluationError(SlasherCommandError):
     """
     def __init__(self, array, highlight_groups, message):
         """
-        Creates a new ``EvaluationError`` instance from the given parameters.
+        Creates a new ``EvaluationError`` from the given parameters.
         
         Parameters
         ----------
@@ -2516,16 +2518,16 @@ class Token:
         The token's end index inside of the array.
     start : `int`
         The token's start index inside of the array.
-    value : `None` or `Any`
+    value : `None`, `Any`
         The evaluated value.
-    sub_tokens : `None` or `list` of ``Token``
+    sub_tokens : `None`, `list` of ``Token``
         Sub tokens of the tokens if applicable.
     """
     __slots__ = ('array', 'end', 'id', 'start', 'value', 'sub_tokens')
     
     def __new__(cls, array, start, end, identifier, sub_tokens, value):
         """
-        Creates a new ``Token`` instance with the given parameters
+        Creates a new ``Token`` with the given parameters
         
         Parameters
         ----------
@@ -2537,9 +2539,9 @@ class Token:
             The token's end+1 index in the array.
         identifier : `int`
             The token's end index inside of the array.
-        sub_tokens : `None` or `list` of ``Token``
+        sub_tokens : `None`, `list` of ``Token``
             Sub tokens of the tokens if applicable.
-        value : `None` or `Any`
+        value : `None`, `Any`
             The evaluated value.
         """
         self = object.__new__(cls)
@@ -2664,7 +2666,7 @@ class ParsingState:
 
 def parse_cycle(state):
     """
-    Runs parsing trough a ``ParsingState`` instance.
+    Runs parsing trough a ``ParsingState``.
     
     Parameters
     ----------
@@ -3192,7 +3194,7 @@ def evaluate_text(text):
     
     Returns
     -------
-    value : `int` or `float`
+    value : `int`, `float`
         The evaluation's result.
     
     Raises

@@ -11,7 +11,7 @@ Caches
 ------
 - `CLIENTS` : ``dict``
     
-    Contains the created ``Client`` instances.
+    Contains the created ``Client``.
     
     Clients are only available for garbage collection after calling ``Client._delete``.
 
@@ -20,17 +20,17 @@ Weak Caches
 -----------
 - `APPLICATIONS` : ``WeakValueDictionary``
     
-    Stores the requested or received ``Application`` instanced.
+    Stores the requested or received ``Application``-s.
     
     Only here to avoid duplication.
 
 - `APPLICATION_COMMANDS` : ``WeakValueDictionary``
 
-    Stores the created ``ApplicationCommand`` instances.
+    Stores the created ``ApplicationCommand``.
 
 - `CHANNELS` : ``WeakValueDictionary``
     
-    Contains various ``ChannelBase`` instances.
+    Contains various ``ChannelBase``.
 
 - `DISCOVERY_CATEGORIES` : ``WeakValueDictionary``
     
@@ -45,25 +45,25 @@ Weak Caches
 - `EMOJIS` : ``WeakValueDictionary``
     
     Contains all the emojis stored by the wrapper. Unicode emojis are never garbage collected, because they are present
-    in their own specific containers, like `BUILTIN_EMOJIS` or `UNICODE_TO_EMOJI`.
+    in their own specific containers, like `BUILTIN_EMOJIS` / `UNICODE_TO_EMOJI`.
 
 - `EULAS` : ``WeakValueDictionary``
     
-    Stores the ``Eula`` instances.
+    Stores the ``Eula``.
     
     When requesting an eula, querying from the cache is always preferred over requesting it.
 
 - `GUILDS` : ``WeakValueDictionary``
 
-    Contains the created ``Guild`` instances.
+    Contains the created ``Guild``.
     
 - `INTEGRATIONS` : ``WeakValueDictionary``
     
-    Contains ``Integration`` instances.
+    Contains ``Integration``.
 
 - `INVITES` : ``WeakValueDictionary``
     
-    Stores the created ``Invite`` instances. They keys are the invites' code.
+    Stores the created ``Invite``. They keys are the invites' code.
     
     Only here to avoid duplication.
 
@@ -77,19 +77,19 @@ Weak Caches
 
 - `ROLES` : ``WeakValueDictionary``
     
-    Stores the created ``Role`` instanced.
+    Stores the created ``Role``d.
 
 - `SCHEDULED_EVENTS` : ``WeakValueDictionary``
     
-    Storage for ``ScheduledEvent`` instances.
+    Storage for ``ScheduledEvent``.
     
 - `STAGES` : ``WeakValueDictionary``
     
-    Stores the created ``Stage`` instanced.
+    Stores the created ``Stage``d.
 
 - `STICKERS` : ``WeakValueDictionary``
     
-    Stores the created ``Sticker`` instances.
+    Stores the created ``Sticker``.
 
 - `STICKER_PACKS` : ``WeakValueDictionary``
     
@@ -97,7 +97,7 @@ Weak Caches
 
 - `TEAMS` : ``WeakValueDictionary``
     
-    Stores the created application ``Team`` instances.
+    Stores the created application ``Team``.
     
     Only here to avoid duplication.
 

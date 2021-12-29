@@ -22,7 +22,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
     ----------
     id : `int`
         Unique identifier of the channel.
-    _message_history :  `None` or ``MessageHistory``
+    _message_history :  `None`, ``MessageHistory``
         The message history of the channel if any.
     users : `list` of ``ClientUserBase`` objects
         The channel's recipient.
@@ -52,7 +52,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data receive from Discord.
-        client : `None` or ``Client``
+        client : `None`, ``Client``
             The client, who received the channel's data, if any.
         guild_id : `int`
             The channel's guild's identifier.
@@ -203,7 +203,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
         
         Parameters
         ----------
-        channel_id : `int` or `str`
+        channel_id : `int`, `str`
             The channel's id.
         **kwargs : keyword parameters
             Additional predefined attributes for the channel.
@@ -252,7 +252,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
     ----------
     id : `int`
         Unique identifier of the channel.
-    _message_history :  `None` or ``MessageHistory``
+    _message_history :  `None`, ``MessageHistory``
         The message history of the channel if any.
     users : `list` of ``ClientUserBase`` objects
         The channel's recipient.
@@ -293,7 +293,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data receive from Discord.
-        client : `None` or ``Client``
+        client : `None`, ``Client``
             The client, who received the channel's data, if any.
         guild_id : `int`
             The channel's guild's identifier.
@@ -483,7 +483,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         
         Parameters
         ----------
-        channel_id : `int` or `str`
+        channel_id : `int`, `str`
             The channel's id.
         **kwargs : keyword parameters
             Additional predefined attributes for the channel.

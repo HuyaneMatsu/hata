@@ -66,7 +66,7 @@ class WaitAndContinue:
     
     Attributes
     -----------
-    _canceller : `None` or `function`
+    _canceller : `None`, `function`
         The canceller function of the ``WaitAndContinue``, what is set to ``._canceller_function`` by default.
         When ``.cancel`` is called, then this instance attribute is set to `None`.
     _timeouter : ``TimeOuter``
@@ -80,10 +80,11 @@ class WaitAndContinue:
     target : ``DiscordEntity``
         The target entity on what the waiting is executed.
     """
-    __slots__ = ('_canceller', 'check', 'event', 'future', 'target', '_timeouter', )
+    __slots__ = ('_canceller', 'check', 'event', 'future', 'target', '_timeouter',
+    
     def __init__(self, future, check, target, event, timeout):
         """
-        Creates a new ``WaitAndContinue`` instance with the given parameters.
+        Creates a new ``WaitAndContinue`` with the given parameters.
         
         Parameters
         ----------
@@ -105,6 +106,7 @@ class WaitAndContinue:
         self.target = target
         self._timeouter = Timeouter(self, timeout)
         event.append(target, self)
+    
     
     async def __call__(self, client, *args):
         """
@@ -142,14 +144,14 @@ class WaitAndContinue:
     
     async def _canceller_function(self, exception):
         """
-        Cancels the ``WaitAndContinue`` with the given exception. If the given `exception` is `BaseException` instance,
+        Cancels the ``WaitAndContinue`` with the given exception. If the given `exception` is `BaseException`,
         then raises it to the waiter future.
         
         This method is a coroutine.
         
         Parameters
         ----------
-        exception : `None` or `BaseException`
+        exception : `None`, `BaseException`
             Exception to cancel the ``WaitAndContinue``'s ``.future`` with.
         """
         if exception is None:
@@ -173,7 +175,7 @@ class WaitAndContinue:
         
         Parameters
         ----------
-        exception : `None` or ``BaseException``
+        exception : `None`, ``BaseException``
             Exception to cancel the ``WaitAndContinue``'s ``.future`` with.
         """
         canceller = self._canceller
@@ -193,7 +195,7 @@ class WaitAndContinue:
 
 def wait_for_reaction(client, message, check, timeout):
     """
-    Executes waiting for reaction on a message with a ``Future`` instance.
+    Executes waiting for reaction on a message with a ``Future``.
     
     Parameters
     ----------
@@ -218,7 +220,7 @@ def wait_for_reaction(client, message, check, timeout):
 
 def wait_for_message(client, channel, check, timeout):
     """
-    Executes waiting for messages at a channel with a ``Future`` instance.
+    Executes waiting for messages at a channel with a ``Future``.
     
     Parameters
     ----------

@@ -13,7 +13,7 @@ def _validate_entry_or_exit(point):
     
     Parameters
     ----------
-    point : `None`, `str` or `callable`
+    point : `None`, `str`, `callable`
         The point to validate.
     
     Raises
@@ -31,8 +31,10 @@ def _validate_entry_or_exit(point):
         analyzer = CallableAnalyzer(point)
         min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
         if min_ > 1:
-            raise TypeError(f'`{point!r}` excepts at least `{min_!r}` non reserved parameters, meanwhile the event '
-                'expects to pass `1`.')
+            raise TypeError(
+                f'`{point!r}` excepts at least `{min_!r}` non reserved parameters, meanwhile the event '
+                f'expects to pass `1`, got {point!r}'
+            )
         
         if min_ == 1:
             return True
@@ -44,8 +46,10 @@ def _validate_entry_or_exit(point):
         if analyzer.accepts_args():
             return True
         
-        raise TypeError(f'`{point!r}` expects maximum `{max_!r}` non reserved parameters  meanwhile the event expects '
-            'to pass `1`.')
+        raise TypeError(
+            f'`{point!r}` expects maximum `{max_!r}` non reserved parameters  meanwhile the event expects '
+            f'to pass `1`., got {point!r}'
+        )
     
     return False
 
@@ -57,9 +61,9 @@ def validate_extension_parameters(entry_point=None, exit_point=None, extend_defa
     
     Parameters
     ----------
-    entry_point : `None`, `str` or `callable`, Optional
+    entry_point : `None`, `str`, `callable`, Optional
         Extension specific entry point, to use over the extension loader's default.
-    exit_point : `None`, `str` or `callable`, Optional
+    exit_point : `None`, `str`, `callable`, Optional
         Extension specific exit point, to use over the extension loader's default.
     locked : `bool`, Optional
         Whether the given extension(s) should not be affected by `.{}_all` methods.
@@ -71,23 +75,23 @@ def validate_extension_parameters(entry_point=None, exit_point=None, extend_defa
     Raises
     ------
     TypeError
-        - If `entry_point` was not given as `None`, `str` or as `callable`.
+        - If `entry_point` was not given as `None`, `str`, `callable`.
         - If `entry_point` was given as `callable`, but accepts less or more positional parameters, as would be
             given.
-        - If `exit_point` was not given as `None`, `str` or as `callable`.
+        - If `exit_point` was not given as `None`, `str`, `callable`.
         - If `exit_point` was given as `callable`, but accepts less or more positional parameters, as would be
             given.
         - If `extend_default_variables` was not given as `bool`.
         - If `locked` was not given as `bool`.
-        - If `name` was not given as `str` or as `iterable` of `str`.
+        - If `name` was not given as `str`, `iterable` of `str`.
     ValueError
         If a variable name is would be used, what is `module` attribute.
     
     Returns
     -------
-    entry_point : `None`, `str` or `callable`
+    entry_point : `None`, `str`, `callable`
         Extension specific entry point, to use over the extension loader's default.
-    exit_point : `None`, `str` or `callable`
+    exit_point : `None`, `str`, `callable`
         Extension specific exit point, to use over the extension loader's default.
     extend_default_variables : `bool`
         Whether the extension should use the loader's default variables or just it's own's.
@@ -95,23 +99,29 @@ def validate_extension_parameters(entry_point=None, exit_point=None, extend_defa
         Whether the given extension(s) should not be affected by `.{}_all` methods.
     take_snapshot_difference : `bool`
         Whether snapshot feature should be used.
-    default_variables : `None` or `HybridValueDictionary` of (`str`, `Any`) items
+    default_variables : `None`, `HybridValueDictionary` of (`str`, `Any`) items
         An optionally weak value dictionary to store objects for assigning them to modules before loading them.
         If would be empty, is set as `None` instead.
     """
     if not _validate_entry_or_exit(entry_point):
-        raise TypeError(f'`validate_extension_parameters` expected `None`, `str` or a `callable` as '
-            f'`entry_point`, got {entry_point.__class__.__name__}.')
+        raise TypeError(
+            f'`validate_extension_parameters` expected `None`, `str` or a `callable` as `entry_point`, got '
+            f'{entry_point.__class__.__name__}; {entry_point!r}.'
+        )
     
     if not _validate_entry_or_exit(exit_point):
-        raise TypeError(f'`validate_extension_parameters` expected `None`, `str` or a `callable` as `exit_point`, '
-            f'got {exit_point.__class__.__name__}.')
+        raise TypeError(
+            f'`validate_extension_parameters` expected `None`, `str` or a `callable` as `exit_point`, got '
+            f'{exit_point.__class__.__name__}; {exit_point!r}.'
+        )
     
     if variables:
         default_variables = HybridValueDictionary(variables)
         for key, value in variables.items():
             if key in PROTECTED_NAMES:
-                raise ValueError(f'The passed {key!r} is a protected variable name of module type.')
+                raise ValueError(
+                    f'The passed {key!r} is a protected variable name of module type.'
+                )
             default_variables[key] = value
     else:
         default_variables = None
@@ -122,8 +132,10 @@ def validate_extension_parameters(entry_point=None, exit_point=None, extend_defa
     elif issubclass(extend_default_variables_type, int):
         extend_default_variables = bool(extend_default_variables)
     else:
-        raise TypeError(f'`extend_default_variables` should have been passed as `bool`, got: '
-            f'{extend_default_variables_type.__name__}.')
+        raise TypeError(
+            f'`extend_default_variables` can be `bool`, got {extend_default_variables_type.__name__}; '
+            f'{extend_default_variables!r}.'
+        )
     
     locked_type = type(locked)
     if locked_type is bool:
@@ -131,7 +143,9 @@ def validate_extension_parameters(entry_point=None, exit_point=None, extend_defa
     elif issubclass(locked_type, int):
         locked = bool(locked)
     else:
-        raise TypeError(f'`locked` should have been passed as `bool`, got: {locked_type.__name__}.')
+        raise TypeError(
+            f'`locked` can be `bool`, got {locked_type.__name__}; {locked!r}.'
+        )
     
     return entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference, default_variables
 
@@ -193,7 +207,7 @@ def _iter_extension_names_and_paths(name):
     
     Parameters
     ----------
-    name : `str` or `iterable` of `str`
+    name : `str`, `iterable` of `str`
         The name to fetch to single strings.
     
     Yields
@@ -208,7 +222,7 @@ def _iter_extension_names_and_paths(name):
     ImportError
         If a name could not be detected as an extension.
     TypeError
-        If `name` is not `str` nor an `iterable` of `str` instances.
+        If `name` is not `str` nor an `iterable` of `str`.
     """
     for name in _iter_name_maybe_iterable(name):
         if name.startswith(ABSOLUTE_PATH_EXTENSION_NAME_PREFIX):
@@ -225,7 +239,7 @@ def _iter_name_maybe_iterable(name):
     
     Parameters
     ----------
-    name : `str` or `iterable` of `str`
+    name : `str`, `iterable` of `str`
         The name to fetch to single strings.
     
     Yields
@@ -236,7 +250,7 @@ def _iter_name_maybe_iterable(name):
     Raises
     ------
     TypeError
-        If `name` is not `str` nor an `iterable` of `str` instances.
+        If `name` is not `str` nor an `iterable` of `str`.
     """
     name_type = type(name)
     if name_type is str:
@@ -251,11 +265,13 @@ def _iter_name_maybe_iterable(name):
             elif issubclass(sub_name_type, str):
                 yield str(sub_name)
             else:
-                raise TypeError(f'`name` can be given as an `str` or as `iterable` of `str`, got an `iterable`, which '
-                    f'contains an: {sub_name_type.__name__} element.')
+                raise TypeError(
+                    f'`name` contains a non `str` element, got {sub_name_type.__name__}; {sub_name!r}; name={name!r}.'
+                )
     else:
-        raise TypeError(f'`name` can be given as an `str` or as `iterable` of `str`, got an `iterable`, got '
-            f'{name_type.__name__}.')
+        raise TypeError(
+            f'`name` can be `str`, `iterable` of `str`, got {name_type.__name__}; {name!r}.'
+        )
 
 
 def _lookup_path(import_name_or_path):
@@ -271,7 +287,7 @@ def _lookup_path(import_name_or_path):
     
     Yields
     ------
-    import_name : `None` or `str`
+    import_name : `None`, `str`
         Import name to an extension file.
     path : `str`
         Path of the file.
@@ -304,8 +320,10 @@ def _lookup_path(import_name_or_path):
                     yield import_name_or_path, file_path
                     return
     
-    raise ImportError(f'The given `import_name_or_path` could not be detected as an extension nor an absolute path, '
-        f'got {import_name_or_path!r}.')
+    raise ImportError(
+        f'The given `import_name_or_path` could not be detected as an extension nor an absolute path, '
+        f'got {import_name_or_path!r}.'
+    )
 
 
 def _iter_folder(import_name, folder_path):
@@ -314,14 +332,14 @@ def _iter_folder(import_name, folder_path):
     
     Parameters
     ----------
-    import_name : `None` or `str`
+    import_name : `None`, `str`
         The name of the extension if we would import it.
     folder_path : `str`
         Path to the folder
     
     Yields
     ------
-    import_name : `None` or `str`
+    import_name : `None`, `str`
         Detected import names for each applicable file in the folder.
     path : `str`
         Path of the file.

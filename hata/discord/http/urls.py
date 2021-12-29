@@ -55,7 +55,7 @@ def message_jump_url(message):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     """
     channel_id = message.channel_id
     guild_id = message.guild_id
@@ -123,12 +123,12 @@ def guild_icon_url(guild):
     
     Parameters
     ----------
-    guild : ``Guild`` or ``GuildPreview``
+    guild : ``Guild``, ``GuildPreview``
         The respective guild.
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     """
     icon_type = guild.icon_type
     if icon_type is ICON_TYPE_NONE:
@@ -150,7 +150,7 @@ def guild_icon_url_as(guild, ext=None, size=None):
     
     Parameters
     ----------
-    guild : ``Guild`` or ``GuildPreview``
+    guild : ``Guild``, ``GuildPreview``
         The respective guild.
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If the guild has
@@ -160,12 +160,12 @@ def guild_icon_url_as(guild, ext=None, size=None):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     
     Raises
     ------
     ValueError
-        If `ext` or `size` was not passed as any of the expected values.
+        If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = guild.icon_type
     if icon_type is ICON_TYPE_NONE:
@@ -205,12 +205,12 @@ def guild_invite_splash_url(guild):
     
     Parameters
     ----------
-    guild : ``Guild`` or ``GuildPreview``
+    guild : ``Guild``, ``GuildPreview``
         The respective guild.
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     """
     icon_type = guild.invite_splash_type
     if icon_type is ICON_TYPE_NONE:
@@ -232,7 +232,7 @@ def guild_invite_splash_url_as(guild, ext=None, size=None):
     
     Parameters
     ----------
-    guild : ``Guild`` or ``GuildPreview``
+    guild : ``Guild``, ``GuildPreview``
         The respective guild.
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
@@ -241,12 +241,12 @@ def guild_invite_splash_url_as(guild, ext=None, size=None):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     
     Raises
     ------
     ValueError
-        If `ext` or `size` was not passed as any of the expected values.
+        If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = guild.invite_splash_type
     if icon_type is ICON_TYPE_NONE:
@@ -286,12 +286,12 @@ def guild_discovery_splash_url(guild):
     
     Parameters
     ----------
-    guild : ``Guild`` or ``GuildPreview``
+    guild : ``Guild``, ``GuildPreview``
         The respective guild.
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     """
     icon_type = guild.discovery_splash_type
     if icon_type is ICON_TYPE_NONE:
@@ -313,7 +313,7 @@ def guild_discovery_splash_url_as(guild, ext=None, size=None):
     
     Parameters
     ----------
-    guild : ``Guild`` or ``GuildPreview``
+    guild : ``Guild``, ``GuildPreview``
         The respective guild.
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
@@ -322,12 +322,12 @@ def guild_discovery_splash_url_as(guild, ext=None, size=None):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     
     Raises
     ------
     ValueError
-        If `ext` or `size` was not passed as any of the expected values.
+        If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = guild.discovery_splash_type
     if icon_type is ICON_TYPE_NONE:
@@ -372,7 +372,7 @@ def guild_banner_url(guild):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     """
     icon_type = guild.banner_type
     if icon_type is ICON_TYPE_NONE:
@@ -403,12 +403,12 @@ def guild_banner_url_as(guild, ext=None, size=None):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     
     Raises
     ------
     ValueError
-        If `ext` or `size` was not passed as any of the expected values.
+        If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = guild.banner_type
     if icon_type is ICON_TYPE_NONE:
@@ -448,7 +448,7 @@ def guild_widget_url(guild, style='shield'):
     
     Parameters
     ----------
-    guild : ``Guild`` or ``GuildPreview``
+    guild : ``Guild``, ``GuildPreview``
         The respective guild.
     style : `str`
         The widget image's style. Can be any of: `'shield'`, `'banner1'`, `'banner2'`, `'banner3'`, `'banner4'`.
@@ -474,7 +474,7 @@ def guild_widget_json_url(guild):
     
     Parameters
     ----------
-    guild : ``Guild`` or ``GuildPreview``
+    guild : ``Guild``, ``GuildPreview``
         The respective guild.
     
     Returns
@@ -495,7 +495,7 @@ def channel_group_icon_url(channel):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     """
     icon_type = channel.icon_type
     if icon_type is ICON_TYPE_NONE:
@@ -526,12 +526,12 @@ def channel_group_icon_url_as(channel, ext=None, size=None):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     
     Raises
     ------
     ValueError
-        If `ext` or `size` was not passed as any of the expected values.
+        If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = channel.icon_type
     if icon_type is ICON_TYPE_NONE:
@@ -576,7 +576,7 @@ def emoji_url(emoji):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     """
     if emoji.is_unicode_emoji():
         return None
@@ -605,12 +605,12 @@ def emoji_url_as(emoji, ext=None, size=None):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     
     Raises
     ------
     ValueError
-        If `ext` or `size` was not passed as any of the expected values.
+        If `ext`, `size` was not passed as any of the expected values.
     """
     if emoji.is_unicode_emoji():
         return None
@@ -689,7 +689,7 @@ def activity_asset_image_large_url(activity):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     """
     application_id = activity.application_id
     if not application_id:
@@ -722,12 +722,12 @@ def activity_asset_image_large_url_as(activity, ext=None, size=None):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     
     Raises
     ------
     ValueError
-        If `ext` or `size` was not passed as any of the expected values.
+        If `ext`, `size` was not passed as any of the expected values.
     """
     application_id = activity.application_id
     if not application_id:
@@ -765,7 +765,7 @@ def activity_asset_image_small_url(activity):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     """
     application_id = activity.application_id
     if not application_id:
@@ -797,12 +797,12 @@ def activity_asset_image_small_url_as(activity, ext=None, size=None):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     
     Raises
     ------
     ValueError
-        If `ext` or `size` was not passed as any of the expected values.
+        If `ext`, `size` was not passed as any of the expected values.
     """
     application_id = activity.application_id
     if not application_id:
@@ -840,7 +840,7 @@ def user_avatar_url(user):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     """
     icon_type = user.avatar_type
     if icon_type is ICON_TYPE_NONE:
@@ -872,12 +872,12 @@ def user_avatar_url_as(user, ext=None, size=None):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     
     Raises
     ------
     ValueError
-        If `ext` or `size` was not passed as any of the expected values.
+        If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = user.avatar_type
     if icon_type is ICON_TYPE_NONE:
@@ -922,7 +922,7 @@ def user_banner_url(user):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     """
     icon_type = user.banner_type
     if icon_type is ICON_TYPE_NONE:
@@ -954,12 +954,12 @@ def user_banner_url_as(user, ext=None, size=None):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     
     Raises
     ------
     ValueError
-        If `ext` or `size` was not passed as any of the expected values.
+        If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = user.banner_type
     if icon_type is ICON_TYPE_NONE:
@@ -1001,12 +1001,12 @@ def user_avatar_url_for(user, guild):
     ----------
     user : ``UserBase``
         The Respective user.
-    guild : ``Guild`` or `int`
+    guild : ``Guild``, `int`
         The respective guild or it's identifier.
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     """
     guild_id = _try_get_guild_id(guild)
     
@@ -1037,7 +1037,7 @@ def user_avatar_url_for_as(user, guild, ext=None, size=None):
     ----------
     user : ``UserBase``
         The Respective user.
-    guild : ``Guild`` or `int`
+    guild : ``Guild``, `int`
         The respective guild or it's identifier.
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If the user has
@@ -1047,12 +1047,12 @@ def user_avatar_url_for_as(user, guild, ext=None, size=None):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     
     Raises
     ------
     ValueError
-        If `ext` or `size` was not passed as any of the expected values.
+        If `ext`, `size` was not passed as any of the expected values.
     """
     guild_id = _try_get_guild_id(guild)
     
@@ -1102,12 +1102,12 @@ def user_avatar_url_at(user, guild):
     ----------
     user : ``UserBase``
         The Respective user.
-    guild : ``Guild`` or `int`
+    guild : ``Guild``, `int`
         The respective guild or it's identifier.
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     """
     avatar_url = user_avatar_url_for(user, guild)
     if avatar_url is None:
@@ -1124,7 +1124,7 @@ def user_avatar_url_at_as(user, guild, ext=None, size=None):
     ----------
     user : ``UserBase``
         The Respective user.
-    guild : ``Guild`` or `int`
+    guild : ``Guild``, `int`
         The respective guild or it's identifier.
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If the user has
@@ -1134,12 +1134,12 @@ def user_avatar_url_at_as(user, guild, ext=None, size=None):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     
     Raises
     ------
     ValueError
-        If `ext` or `size` was not passed as any of the expected values.
+        If `ext`, `size` was not passed as any of the expected values.
     """
     avatar_url = user_avatar_url_for_as(user, guild, ext=ext, size=size)
     if avatar_url is None:
@@ -1175,7 +1175,7 @@ def application_icon_url(application):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     """
     icon_type = application.icon_type
     if icon_type is ICON_TYPE_NONE:
@@ -1206,12 +1206,12 @@ def application_icon_url_as(application, ext=None, size=None):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     
     Raises
     ------
     ValueError
-        If `ext` or `size` was not passed as any of the expected values.
+        If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = application.icon_type
     if icon_type is ICON_TYPE_NONE:
@@ -1256,7 +1256,7 @@ def application_cover_url(application):
         
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     """
     icon_type = application.cover_type
     if icon_type is ICON_TYPE_NONE:
@@ -1287,12 +1287,12 @@ def application_cover_url_as(application, ext=None, size=None):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     
     Raises
     ------
     ValueError
-        If `ext` or `size` was not passed as any of the expected values.
+        If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = application.cover_type
     if icon_type is ICON_TYPE_NONE:
@@ -1337,7 +1337,7 @@ def team_icon_url(team):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     """
     icon_type = team.icon_type
     if icon_type is ICON_TYPE_NONE:
@@ -1368,12 +1368,12 @@ def team_icon_url_as(team, ext=None, size=None):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     
     Raises
     ------
     ValueError
-        If `ext` or `size` was not passed as any of the expected values.
+        If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = team.icon_type
     if icon_type is ICON_TYPE_NONE:
@@ -1418,7 +1418,7 @@ def achievement_icon_url(achievement):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     """
     icon_type = achievement.icon_type
     if icon_type is ICON_TYPE_NONE:
@@ -1450,12 +1450,12 @@ def achievement_icon_url_as(achievement, ext=None, size=None):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     
     Raises
     ------
     ValueError
-        If `ext` or `size` was not passed as any of the expected values.
+        If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = achievement.icon_type
     if icon_type is ICON_TYPE_NONE:
@@ -1501,7 +1501,7 @@ def sticker_url(sticker):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     """
     format = sticker.format
     if format is StickerFormat.none:
@@ -1525,7 +1525,7 @@ def sticker_url_as(sticker, size=None, preview=False):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     
     Raises
     ------
@@ -1567,7 +1567,7 @@ def sticker_pack_banner(sticker_pack):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     """
     return f'{CDN_ENDPOINT}/app-assets/710982414301790216/store/{sticker_pack.banner_id}.png'
 
@@ -1587,12 +1587,12 @@ def sticker_pack_banner_as(sticker_pack, ext=None, size=None):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     
     Raises
     ------
     ValueError
-        If `ext` or `size` was not passed as any of the expected values.
+        If `ext`, `size` was not passed as any of the expected values.
     """
     if size is None:
         end = ''
@@ -1622,7 +1622,7 @@ def role_icon_url(role):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     """
     icon_type = role.icon_type
     if icon_type is ICON_TYPE_NONE:
@@ -1653,12 +1653,12 @@ def role_icon_url_as(role, ext=None, size=None):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     
     Raises
     ------
     ValueError
-        If `ext` or `size` was not passed as any of the expected values.
+        If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = role.icon_type
     if icon_type is ICON_TYPE_NONE:
@@ -1703,7 +1703,7 @@ def channel_banner_url(channel):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     """
     banner_type = channel.banner_type
     if banner_type is ICON_TYPE_NONE:
@@ -1734,12 +1734,12 @@ def channel_banner_url_as(channel, ext=None, size=None):
     
     Returns
     -------
-    url : `None` or `str`
+    url : `None`, `str`
     
     Raises
     ------
     ValueError
-        If `ext` or `size` was not passed as any of the expected values.
+        If `ext`, `size` was not passed as any of the expected values.
     """
     banner_type = channel.banner_type
     if banner_type is ICON_TYPE_NONE:

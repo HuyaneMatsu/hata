@@ -16,9 +16,9 @@ class ActivityCustom(ActivityBase):
     ----------
     created : `int`
         When the status was created as Unix time in milliseconds. Defaults to `0`.
-    emoji : `None` or ``Emoji``
+    emoji : `None`, ``Emoji``
         The emoji of the activity. If it has no emoji, then set as `None`.
-    state : `None` or `str`
+    state : `None`, `str`
         The activity's text under it's emoji. Defaults to `None`.
     
     Class Attributes
@@ -35,7 +35,7 @@ class ActivityCustom(ActivityBase):
     @classmethod
     def from_data(cls, activity_data):
         """
-        Creates a new ``ActivityCustom`` instance from the given activity data.
+        Creates a new ``ActivityCustom`` from the given activity data.
         
         Parameters
         ----------
@@ -136,9 +136,9 @@ class ActivityCustom(ActivityBase):
             +===============+=======================+
             | created_at    | `datetime`            |
             +---------------+-----------------------+
-            | emoji         | `None` or ``Emoji``   |
+            | emoji         | `None`, ``Emoji``     |
             +---------------+-----------------------+
-            | state         | `None` or `str`       |
+            | state         | `None`, `str`         |
             +---------------+-----------------------+
         """
         old_attributes = {}

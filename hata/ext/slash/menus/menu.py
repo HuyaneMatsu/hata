@@ -43,7 +43,7 @@ class ComponentSourceIdentityHasher:
     __slots__ = ('component', )
     def __init__(self, component):
         """
-        Creates a new ``ComponentSourceIdentityHasher`` instance with the given parameters.
+        Creates a new ``ComponentSourceIdentityHasher`` with the given parameters.
         
         Parameters
         ----------
@@ -72,7 +72,7 @@ class ComponentAttributeDescriptor:
     ----------
     _debugger : `callable`
         Debugger to check whether the given value is correct.
-    _is_collection : `None` or ``ComponentBase``
+    _is_collection : `None`, ``ComponentBase``
         Sub-component type if applicable.
     _supported_types : `tuple` of `type`
         The supported types of the respective component.
@@ -82,7 +82,7 @@ class ComponentAttributeDescriptor:
     __slots__ = ('_debugger', '_is_collection', '_supported_types', '_name')
     def __new__(cls, name, supported_types, debugger, is_collection):
         """
-        Creates a new ``ComponentAttributeDescriptor`` instance with the given parameters.
+        Creates a new ``ComponentAttributeDescriptor`` with the given parameters.
         
         Parameters
         ----------
@@ -129,7 +129,9 @@ class ComponentAttributeDescriptor:
         
         if __debug__:
             if (not isinstance(component, self._supported_types)):
-                raise AssertionError(f'{self._name} is not supported for {component.__class__.__name__}.')
+                raise AssertionError(
+                    f'{self._name} not supports {component.__class__.__name__}, got {component!r}.'
+                )
         
         attribute_value = getattr(component, self._name)
         if is_collection and (attribute_value is not None):
@@ -159,7 +161,9 @@ class ComponentAttributeDescriptor:
         
         if __debug__:
             if (not isinstance(component, self._supported_types)):
-                raise AssertionError(f'{self._name} is not supported for {component.__class__.__name__}.')
+                raise AssertionError(
+                    f'{self._name} not supports {component.__class__.__name__}, got {component!r}.'
+                )
         
         
         setattr(component, self._name, value)
@@ -193,7 +197,7 @@ class ComponentDescriptorState(ComponentBase):
         The wrapped component instance.
     _source_component : ``ComponentBase``
         The source component from which the descriptor is created from.
-    _sub_components : `None` or `list` of ``ComponentDescriptor``
+    _sub_components : `None`, `list` of ``ComponentDescriptor``
         Sub components applicable to the component.
     
     Class Attributes
@@ -205,13 +209,13 @@ class ComponentDescriptorState(ComponentBase):
     
     def __new__(cls, source, sub_components):
         """
-        Creates a new ``ComponentDescriptor`` instance from the given component.
+        Creates a new ``ComponentDescriptor`` from the given component.
         
         Parameters
         ----------
-        source : ``ComponentBase`` instance
+        source : ``ComponentBase``
             The source component to create the descriptor from.
-        sub_components : `None` or `list` of ``ComponentDescriptor``
+        sub_components : `None`, `list` of ``ComponentDescriptor``
             A list of sub components added
         """
         component = source.copy()
@@ -334,7 +338,7 @@ class ComponentDescriptor(ComponentDescriptorState):
         The wrapped component instance.
     _source_component : ``ComponentBase``
         The source component from which the descriptor is created from.
-    _sub_components : `None` or `list` of ``ComponentDescriptor``
+    _sub_components : `None`, `list` of ``ComponentDescriptor``
         Sub components applicable to the component.
     _identifier : `int`
         The descriptor's identifier.
@@ -350,11 +354,11 @@ class ComponentDescriptor(ComponentDescriptorState):
     __slots__ = ('_identifier',)
     def __new__(cls, source, sub_components):
         """
-        Creates a new ``ComponentDescriptor`` instance from the given component.
+        Creates a new ``ComponentDescriptor`` from the given component.
         
         Parameters
         ----------
-        source : ``ComponentBase`` instance
+        source : ``ComponentBase``
             The source component to create the descriptor from.
         sub_components : `list` of ``ComponentDescriptor``
             A list of sub components added
@@ -422,7 +426,7 @@ class ComponentProxy(ComponentBase):
     
     Attributes
     ----------
-    _component_overwrite : `None` or ``Component``
+    _component_overwrite : `None`, ``Component``
         Default component's overwrite.
     _descriptor : ``ComponentDescriptor``
         The creator descriptor, which describes the component's default values.
@@ -685,18 +689,24 @@ def validate_check(check):
     
     analyzer = CallableAnalyzer(check)
     if analyzer.is_async():
-        raise TypeError('`check` should have NOT be be `async` function.')
+        raise TypeError(
+            f'`check` should have NOT be an `async` function, got {check!r}.'
+        )
     
     min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if min_ > 2:
-        raise TypeError(f'`check` should accept `2` parameters, meanwhile the given callable expects at '
-            f'least `{min_!r}`, got `{check!r}`.')
+        raise TypeError(
+            f'`check` should accept `2` parameters, meanwhile the given one expects at '
+            f'least `{min_!r}`, got {check!r}.'
+        )
     
     if min_ != 2:
         if max_ < 2:
             if not analyzer.accepts_args():
-                raise TypeError(f'`check` should accept `2` parameters, meanwhile the given callable expects '
-                    f'up to `{max_!r}`, got `{check!r}`.')
+                raise TypeError(
+                    f'`check` should accept `2` parameters, meanwhile the given one expects '
+                    f'up to `{max_!r}`, got {check!r}.'
+                )
 
 
 def validate_invoke(invoke):
@@ -705,7 +715,7 @@ def validate_invoke(invoke):
     
     Parameters
     ----------
-    invoke : `None` or `async-callable`
+    invoke : `None`, `async-callable`
         The invoker to validate.
     
     Raises
@@ -718,19 +728,25 @@ def validate_invoke(invoke):
     
     analyzer = CallableAnalyzer(invoke)
     if not analyzer.is_async():
-        raise TypeError('`invoke` should have be `async` function.')
+        raise TypeError(
+            f'`invoke` should be an `async` function, got {invoke!r}.'
+        )
     
     min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     
     if min_ > 2:
-        raise TypeError(f'`invoke` should accept `2` parameters, meanwhile the given callable expects at '
-            f'least `{min_!r}`, got `{invoke!r}`.')
+        raise TypeError(
+            f'`invoke` should accept `2` parameters, meanwhile the given one expects at '
+            f'least `{min_!r}`, got {invoke!r}.'
+        )
     
     if min_ != 2:
         if max_ < 2:
             if not analyzer.accepts_args():
-                raise TypeError(f'`invoke` should accept `2` parameters, meanwhile the given callable expects '
-                    f'up to `{max_!r}`, got `{invoke!r}`.')
+                raise TypeError(
+                    f'`invoke` should accept `2` parameters, meanwhile the given one expects '
+                    f'up to `{max_!r}`, got {invoke!r}.'
+                )
 
 
 def validate_initial_invoke(initial_invoke):
@@ -739,7 +755,7 @@ def validate_initial_invoke(initial_invoke):
     
     Parameters
     ----------
-    initial_invoke : `None` or `async-callable`
+    initial_invoke : `None`, `async-callable`
         The default content getter to validate.
     
     Raises
@@ -752,18 +768,24 @@ def validate_initial_invoke(initial_invoke):
     
     analyzer = CallableAnalyzer(initial_invoke)
     if not analyzer.is_async():
-        raise TypeError('`initial_invoke` should have be `async` function.')
+        raise TypeError(
+            f'`initial_invoke` should be an `async` function, got {initial_invoke!r}'
+        )
     
     min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if min_ > 1:
-        raise TypeError(f'`initial_invoke` should accept `1` parameters, meanwhile the given callable expects at '
-            f'least `{min_!r}`, got `{initial_invoke!r}`.')
+        raise TypeError(
+            f'`initial_invoke` should accept `1` parameters, meanwhile the given one expects at '
+            f'least `{min_!r}`, got {initial_invoke!r}.'
+        )
     
     if min_ != 1:
         if max_ < 1:
             if not analyzer.accepts_args():
-                raise TypeError(f'`initial_invoke` should accept `1` parameters, meanwhile the given callable '
-                    f'expects up to `{max_!r}`, got `{initial_invoke!r}`.')
+                raise TypeError(
+                    f'`initial_invoke` should accept `1` parameters, meanwhile the given callable '
+                    f'expects up to `{max_!r}`, got {initial_invoke!r}.'
+                )
 
 
 def validate_get_timeout(get_timeout):
@@ -772,7 +794,7 @@ def validate_get_timeout(get_timeout):
     
     Parameters
     ----------
-    get_timeout : `None` or `callable`
+    get_timeout : `None`, `callable`
         Timeout getter.
     
     Raises
@@ -785,18 +807,24 @@ def validate_get_timeout(get_timeout):
     
     analyzer = CallableAnalyzer(get_timeout)
     if analyzer.is_async():
-        raise TypeError('`get_timeout` should have be not be async function.')
+        raise TypeError(
+            f'`get_timeout` should not be an `async` function, got {get_timeout!r}.'
+        )
     
     min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if min_ > 1:
-        raise TypeError(f'`get_timeout` should accept `1` parameters, meanwhile the given callable expects at '
-            f'least `{min_!r}`, got `{get_timeout!r}`.')
+        raise TypeError(
+            f'`get_timeout` should accept `1` parameter, meanwhile the given one expects at '
+            f'least `{min_!r}`, got {get_timeout!r}.'
+        )
     
     if min_ != 1:
         if max_ < 1:
             if not analyzer.accepts_args():
-                raise TypeError(f'`get_timeout` should accept `1` parameters, meanwhile the given callable '
-                    f'expects up to `{max_!r}`, got `{get_timeout!r}`.')
+                raise TypeError(
+                    f'`get_timeout` should accept `1` parameters, meanwhile the given callable '
+                    f'expects up to `{max_!r}`, got {get_timeout!r}.'
+                )
 
 
 def validate_close(close):
@@ -818,18 +846,24 @@ def validate_close(close):
     
     analyzer = CallableAnalyzer(close)
     if not analyzer.is_async():
-        raise TypeError('`close` should have be `async` function.')
+        raise TypeError(
+            f'`close` should be an `async` function, got {close!r}.'
+        )
     
     min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if min_ > 2:
-        raise TypeError(f'`close` should accept `2` parameters, meanwhile the given callable expects at '
-            f'least `{min_!r}`, got `{close!r}`.')
+        raise TypeError(
+            f'`close` should accept `2` parameters, meanwhile the given one expects at '
+            f'least `{min_!r}`, got {close!r}.'
+        )
     
     if min_ != 2:
         if max_ < 2:
             if not analyzer.accepts_args():
-                raise TypeError(f'`close` should accept `2` parameters, meanwhile the given callable expects '
-                    f'up to `{max_!r}`, got `{close!r}`.')
+                raise TypeError(
+                    f'`close` should accept `2` parameters, meanwhile the given one expects '
+                    f'up to `{max_!r}`, got {close!r}.'
+                )
 
 
 def validate_init(init):
@@ -851,12 +885,15 @@ def validate_init(init):
     
     analyzer = CallableAnalyzer(init)
     if analyzer.is_async():
-        raise TypeError('`close` should have be `async` function.')
+        raise TypeError(
+            f'`init` should not be an `async` function, got {init!r}.')
     
     min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if min_ < 3:
-        raise TypeError(f'`close` should accept `3` parameters, meanwhile the given callable expects at '
-            f'least `{min_!r}`, got `{init!r}`.')
+        raise TypeError(
+            f'`init` should accept at least `3` parameters, meanwhile the given one expects at '
+            f'least `{min_!r}`, got {init!r}.'
+        )
 
 
 class MenuStructure:
@@ -865,7 +902,7 @@ class MenuStructure:
     
     Attributes
     ----------
-    check : `None` or `function`
+    check : `None`, `function`
         The function to call when checking whether an event should be called.
         
         Should accept the following parameters:
@@ -887,7 +924,7 @@ class MenuStructure:
         | should_process    | `bool`    |
         +-------------------+-----------+
     
-    get_timeout : `None` or `Function`
+    get_timeout : `None`, `Function`
         Return the time after the menu should be closed.
         
         > Define it as non-positive to never timeout. Not recommended.
@@ -909,7 +946,7 @@ class MenuStructure:
         | timeout       | `int`     |
         +---------------+-----------+
     
-    close : `None` or `CoroutineFunction`
+    close : `None`, `CoroutineFunction`
         Function to call when the menu is closed.
         
         Should accept the following parameters:
@@ -919,10 +956,10 @@ class MenuStructure:
         +===========+===========================+
         | self      | ``Menu``                  |
         +-----------+---------------------------+
-        | exception | `None` or `BaseException` |
+        | exception | `None`, `BaseException` |
         +-----------+---------------------------+
     
-    init : `None` or `Function`
+    init : `None`, `Function`
         Initializer function.
     
         Should accept the following parameters:
@@ -939,7 +976,7 @@ class MenuStructure:
         | **kwargs          | Keyword parameters        |
         +-------------------+---------------------------+
     
-    initial_invoke : `None` or `CoroutineFunction`
+    initial_invoke : `None`, `CoroutineFunction`
         Function to generate the default page of the menu.
         
         Should accept the following parameters:
@@ -953,7 +990,7 @@ class MenuStructure:
     is_final : `bool`
         Whether the Menu has all the required fields fulfilled.
     
-    invoke : `None` or `CoroutineFunction`
+    invoke : `None`, `CoroutineFunction`
         The function call for result when invoking the menu.
         
         Should accept the following parameters:
@@ -1203,7 +1240,7 @@ Menu = None
 
 class MenuType(type):
     """
-    Meta type for ``Menu`` instances.
+    Meta type for ``Menu``-s.
     """
     def __new__(cls, class_name, class_parents, class_attributes):
         """
@@ -1213,14 +1250,14 @@ class MenuType(type):
         ----------
         class_name : `str`
             The created class's name.
-        class_parents : `tuple` of `type` instances
+        class_parents : `tuple` of `type`
             The superclasses of the creates type.
         class_attributes : `dict` of (`str`, `Any`) items
             The class attributes of the created type.
         
         Returns
         -------
-        type : ``MenuType`` instance
+        type : ``MenuType``
         """
         if (Menu is not None):
             for attribute_name in DISALLOWED_MENU_ATTRIBUTE_NAMES:
@@ -1231,7 +1268,9 @@ class MenuType(type):
                     class_attributes[attribute_name] = menu_attribute
                 else:
                     if (actual_attribute is not menu_attribute):
-                        raise TypeError(f'Overwriting `{attribute_name}` is disallowed.')
+                        raise TypeError(
+                            f'Overwriting `{attribute_name}` is disallowed.'
+                        )
         
         old_menu_structure = None
         for class_parent in reversed(class_parents):
@@ -1345,11 +1384,11 @@ class Menu(metaclass=MenuType):
     
     Attributes
     ----------
-    _allowed_mentions : ``Ellipsis``, `None` or `list` of `Any`
+    _allowed_mentions : ``Ellipsis``, `None`, `list` of `Any`
         The used allowed mentions when editing the respective message.
-    _canceller : None` or `CoroutineFunction`
+    _canceller : None`, `CoroutineFunction`
         Canceller set as `._canceller_function``, meanwhile the gui is not cancelled.
-    _components : `None` or `tuple` of ``ComponentBase``
+    _components : `None`, `tuple` of ``ComponentBase``
         Rendered components of the menu.
     _component_proxy_cache : `dict` of (`int`, ``ComponentProxy``) items
         A dictionary of component proxy identifiers and component proxies.
@@ -1373,15 +1412,15 @@ class Menu(metaclass=MenuType):
         +-------------------------------+-------+
         | GUI_STATE_SWITCHING_CONTEXT   | 5     |
         +-------------------------------+-------+
-    _timeouter : `None` or ``Timeouter``
+    _timeouter : `None`, ``Timeouter``
         Executes the timeout feature on the menu.
     _tracked_changes : `dict` of (`str`, `Any`) items
         The tracked changes by parameter name.
-    channel : ``ChannelTextBase`` instance
+    channel : ``ChannelTextBase``
         The channel where the menu is executed.
     client : ``Client``
         The executor client instance.
-    message : `None` or ``Message``
+    message : `None`, ``Message``
         The message which executes the menu.
     
     Class Attributes
@@ -1417,8 +1456,10 @@ class Menu(metaclass=MenuType):
         """
         menu_structure = cls._menu_structure
         if not menu_structure.is_final:
-            raise RuntimeError(f'{cls.__class__.__name__} has not every required fields fulfilled. Required fields: '
-                f'initial_invoke, invoke')
+            raise RuntimeError(
+                f'{cls.__class__.__name__} has not every required fields fulfilled. Required fields: '
+                f'`initial_invoke`, `invoke`.'
+            )
         
         # use goto
         while True:
@@ -1447,9 +1488,11 @@ class Menu(metaclass=MenuType):
                 break
                 
                 
-            raise TypeError(f'`target` can be given as `{InteractionEvent.__name__}`, '
-                f'`{Message.__name__}`, `{ChannelTextBase.__name__}` or as `int` instance, got '
-                f'{target.__class__.__name__}.')
+            raise TypeError(
+                f'`target` can be `{InteractionEvent.__name__}`, '
+                f'`{Message.__name__}`, `{ChannelTextBase.__name__}`, `int`, got '
+                f'{target.__class__.__name__}; {target!r}.'
+            )
         
         
         self = object.__new__(cls)
@@ -1471,8 +1514,10 @@ class Menu(metaclass=MenuType):
         
         tracked_changes = self._tracked_changes
         if not tracked_changes:
-            raise RuntimeError(f'{cls.__class__.__name__}\'s `initial_invoke` method: '
-                f'{menu_structure.initial_invoke!r} did not change any parameters.')
+            raise RuntimeError(
+                f'{cls.__class__.__name__}\'s `initial_invoke` method: '
+                f'{menu_structure.initial_invoke!r} did not change any parameters.'
+            )
         
         kwargs = tracked_changes.copy()
         tracked_changes.clear()
@@ -1616,12 +1661,12 @@ class Menu(metaclass=MenuType):
         
         Parameters
         ----------
-        exception : `None` or ``BaseException`` instance, Optional
+        exception : `None`, ``BaseException``, Optional
             Exception to cancel the pagination with. Defaults to `None`
         
         Returns
         -------
-        canceller_task : `None` or ``Task``
+        canceller_task : `None`, ``Task``
         """
         if self._gui_state in (GUI_STATE_READY, GUI_STATE_EDITING, GUI_STATE_CANCELLING):
             self._gui_state = GUI_STATE_CANCELLED
@@ -1684,7 +1729,7 @@ class Menu(metaclass=MenuType):
         
         Parameters
         ----------
-        exception : `None` or `BaseException`
+        exception : `None`, `BaseException`
             The close exception to handle.
         
         Returns
@@ -1804,8 +1849,10 @@ class Menu(metaclass=MenuType):
     @embed.setter
     def embed(self, embed):
         if (embed is not None) and (not isinstance(embed, EmbedBase)):
-            raise TypeError(f'`embed` can be given as `None` or as `{EmbedBase.__name__}` instance, got '
-                f'{embed.__class__.__name__}.')
+            raise TypeError(
+                f'`embed` can be `None`, `{EmbedBase.__name__}`, got '
+                f'{embed.__class__.__name__}; {embed!r}.'
+            )
         
         self._tracked_changes['embed'] =  embed
     
@@ -1974,13 +2021,17 @@ class Menu(metaclass=MenuType):
                     for raw_nested_sub_component in raw_sub_component:
                         if isinstance(raw_nested_sub_component, ComponentProxy):
                             if raw_nested_sub_component.type is ComponentType.row:
-                                raise TypeError(f'Cannot double-nest row components.')
+                                raise TypeError(
+                                    f'Cannot double-nest row components, got {raw_components!r}.'
+                                )
                             
                             sub_component_descriptors.append(raw_nested_sub_component)
                         
                         elif isinstance(raw_nested_sub_component, ComponentBase):
                             if raw_nested_sub_component.type is ComponentType.row:
-                                raise TypeError(f'Cannot double-nest row components.')
+                                raise TypeError(
+                                    f'Cannot double-nest row components, got {raw_components!r}.'
+                                )
                             
                             sub_component_hasher = ComponentSourceIdentityHasher(raw_nested_sub_component)
                             
@@ -1996,8 +2047,11 @@ class Menu(metaclass=MenuType):
                             sub_component_descriptors.append(sub_component_descriptor)
                         
                         else:
-                            raise TypeError(f'Nested-sub components can be either `{ComponentProxy.__name__}` or  '
-                                f'`{ComponentBase.__name__}`, got {raw_nested_sub_component.__class__.__name__}.')
+                            raise TypeError(
+                                f'Nested-sub components can be `{ComponentProxy.__name__}`,  '
+                                f'`{ComponentBase.__name__}`, got {raw_nested_sub_component.__class__.__name__}; '
+                                f'{raw_nested_sub_component!r}; raw_components={raw_components!r}.'
+                            )
                     
                     component_descriptor = ComponentDescriptorState(
                         ComponentRow(*raw_components),
@@ -2009,8 +2063,11 @@ class Menu(metaclass=MenuType):
                     components.append(component_proxy)
         
         else:
-            raise TypeError(f'`raw_components` can be `None`, `{ComponentProxy.__name__}`, `{ComponentBase.__name__}`, '
-                f'(`list`, `tuple`) of repeat, no triple nesting, got {raw_components.__class__.__name__}.')
+            raise TypeError(
+                f'`raw_components` can be `None`, `{ComponentProxy.__name__}`, `{ComponentBase.__name__}`, '
+                f'(`list`, `tuple`) of repeat, no triple nesting, got {raw_components.__class__.__name__}; '
+                f'{raw_components!r}.'
+            )
         
         if not components:
             components = None

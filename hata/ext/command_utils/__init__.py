@@ -36,7 +36,9 @@ def setup_ext_command_utils(client):
         The client to setup the extension on.
     """
     if not isinstance(client, Client):
-        raise TypeError(f'Expected type `{Client.__name__}` as client, meanwhile got `{client.__class__.__name__}`.')
+        raise TypeError(
+            f'Expected type `{Client.__name__}` as client, got {client.__class__.__name__}; {client!r}.'
+        )
     
     event_reaction_add = client.events.reaction_add
     while True:

@@ -4,7 +4,7 @@ class Preinstance:
     """
     name : `str`
         The instance's name.
-    value : `str` or `int`
+    value : `str`, `int`
         The instance's value.
     args : `tuple` of `Any`
         Additional parameters to preinstance with.
@@ -13,11 +13,11 @@ class Preinstance:
     
     def __new__(cls, value, name, *args):
         """
-        Creates a new ``Preinstance`` instance with the given parameters.
+        Creates a new ``Preinstance`` with the given parameters.
         
         Parameters
         ----------
-        value : `str` or `int`
+        value : `str`, `int`
             The instance's value.
         name : `str`
             The instance's name.
@@ -49,7 +49,7 @@ class Preinstance:
 
 class PreinstancedMeta(type):
     """
-    Metaclass for ``PreinstancedBase`` instances.
+    Metaclass for ``PreinstancedBase``.
     """
     def __new__(cls, class_name, class_parents, class_attributes):
         """
@@ -59,14 +59,14 @@ class PreinstancedMeta(type):
         ----------
         class_name : `str`
             The created class's name.
-        class_parents : `tuple` of `type` instances
+        class_parents : `tuple` of `type`
             The superclasses of the creates type.
         class_attributes : `dict` of (`str`, `Any`) items
             The class attributes of the created type.
         
         Returns
         -------
-        type : ``PreinstancedMeta`` instance
+        type : ``PreinstancedMeta``
         """
         post_instance = []
         new_class_attributes = {}
@@ -111,12 +111,12 @@ class PreinstancedBase(metaclass=PreinstancedMeta):
         
         Parameters
         ----------
-        value : `None` or ``.VALUE_TYPE``
+        value : `None`, ``.VALUE_TYPE``
             The value to get it's representation.
         
         Returns
         -------
-        obj_ : ``PreinstancedBase`` instance
+        obj_ : ``PreinstancedBase``
         """
         if value is None:
             value = 0
@@ -141,7 +141,7 @@ class PreinstancedBase(metaclass=PreinstancedMeta):
         
         Returns
         -------
-        self : ``PreinstancedBase`` instance
+        self : ``PreinstancedBase``
             The created object.
         """
         self = object.__new__(cls)

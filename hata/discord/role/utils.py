@@ -5,9 +5,7 @@ from scarletio import export
 from ..core import ROLES
 from ..color import Color
 from ..permission import Permission
-from ..permission.permission import PERMISSION_NONE
 from ..utils import random_id, ROLE_MENTION_RP, ID_RP
-from ..bases import ICON_TYPE_NONE
 
 from .preinstanced import RoleManagerType
 from .role import Role
@@ -47,7 +45,7 @@ def cr_p_role_object(name, role_id=None, color=Color(), separated=False, positio
     ----------
     name : `str`
         The name of the role.
-    role_id : `None` or `int`,`optional
+    role_id : `None`, `int`,`optional
         The role's unique identifier number. If given as `None`, then a random `id` will be generated.
     color : ``Color``, Optional
         The role's color. Defaults to `Color(0)`
@@ -92,7 +90,7 @@ def parse_role_mention(text):
     
     Returns
     -------
-    role : `None` or ``Role``
+    role : `None`, ``Role``
         The found role if any.
     """
     parsed = ROLE_MENTION_RP.fullmatch(text)
@@ -111,12 +109,12 @@ def parse_role(text, message=None):
     ----------
     text : `str`
         The text to parse the role out.
-    message : `None` or ``Message``, Optional
+    message : `None`, ``Message``, Optional
         Context for name based parsing.
     
     Returns
     -------
-    role : `None` or ``Role``
+    role : `None`, ``Role``
         The found role if any.
     """
     parsed = ID_RP.fullmatch(text)

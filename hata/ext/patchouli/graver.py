@@ -29,7 +29,7 @@ class DocWarning:
     
     def __new__(cls, path, reason):
         """
-        Creates a new ``DocWarning`` instance with the given parameters.
+        Creates a new ``DocWarning`` with the given parameters.
         
         Parameters
         ----------
@@ -223,7 +223,7 @@ def build_graves(text):
     
     Returns
     -------
-    content : `list` of `str` or ``Grave``
+    content : `list` of `str`, ``Grave``
         Broke down content.
     warnings : `list` of `str`
         Detected graving mistakes inside of the given text.
@@ -351,7 +351,7 @@ def build_graves_on_subsection(sub_section, path):
     
     Returns
     -------
-    result : `None` or `list` of `Any`
+    result : `None`, `list` of `Any`
         If would have return an empty list, returns `None` instead.
     """
     result = []
@@ -377,11 +377,11 @@ def graved_to_source_text(graved):
     
     Parameters
     ----------
-    graved : `None` or `list` of (`str`, ``Grave``) elements
+    graved : `None`, `list` of (`str`, ``Grave``) elements
     
     Returns
     -------
-    text : `None` or `str`
+    text : `None`, `str`
     """
     if graved is None:
         return None
@@ -452,7 +452,7 @@ class GravedDescription:
         
         Returns
         -------
-        self : `None` or ``GravedDescription``
+        self : `None`, ``GravedDescription``
             Returns `None`, if would have been creating an empty description.
         """
         content, warnings = build_graves(parent._content)
@@ -487,7 +487,7 @@ class GravedAttributeDescription:
     
     def __new__(cls, name, separator, content):
         """
-        Creates a ``GravedAttributeDescription`` instance with the given parameters.
+        Creates a ``GravedAttributeDescription`` with the given parameters.
         
         Attributes
         ----------
@@ -520,7 +520,7 @@ class GravedCodeBlock:
     
     Attributes
     ----------
-    language : `None` or `str`
+    language : `None`, `str`
         The language of the code if applicable.
     lines : `list` of `str`
         The lines of the code-block
@@ -602,7 +602,7 @@ class GravedTable:
         
         Returns
         -------
-        self : `None` or ``GravedTable``
+        self : `None`, ``GravedTable``
             Returns `None` if would return an empty table.
         """
         array = []
@@ -709,9 +709,9 @@ class GravedListingElement:
     
     Attributes
     ----------
-    content : `None` or `list` of (`str`, ``Grave``)
+    content : `None`, `list` of (`str`, ``Grave``)
         The graved content of the listing element.
-    head : `None` or `list` of (`str`, ``Grave``)
+    head : `None`, `list` of (`str`, ``Grave``)
         The graved head of the element.
     """
     __slots__ = ('content', 'head',)
@@ -728,7 +728,7 @@ class GravedListingElement:
         
         Returns
         -------
-        self : `None` or ``GravedListingElement``
+        self : `None`, ``GravedListingElement``
             Returns `None`, if would have been creating an empty listing element.
         """
         content = parent._content
@@ -798,7 +798,7 @@ class GravedListing:
         
         Returns
         -------
-        self : `None` or ``GravedListing``
+        self : `None`, ``GravedListing``
             Returns `None`, if would have been creating an empty listing.
         """
         elements = []
@@ -845,7 +845,7 @@ class GravedBlockQuote:
         
         Returns
         -------
-        self : `None` or ``GravedBlockQuote``
+        self : `None`, ``GravedBlockQuote``
             Returns `None`, if would have been creating an empty graved block quote,
         """
         graved_descriptions = []

@@ -34,32 +34,32 @@ class SlasherApplicationCommandParameterConversionError(SlasherCommandError):
     
     Attributes
     ----------
-    _pretty_repr : `None` or `str`
+    _pretty_repr : `None`, `str`
         generated pretty representation of the exception.
-    _repr : `None` or `str`
+    _repr : `None`, `str`
         The generated error message.
-    parameter_name : `None` or `str`
+    parameter_name : `None`, `str`
         The parameter's name, which failed to be parsed.
-    received_value : `None` or `str`
+    received_value : `None`, `str`
         The parameter's received value.
-    excepted_type : `None` or `str`
+    excepted_type : `None`, `str`
         The parameter's expected type's name.
-    expected_values : `None` or `list` of `Any`
+    expected_values : `None`, `list` of `Any`
         Expected values.
     """
     def __init__(self, parameter_name, received_value, excepted_type, expected_values):
         """
-        Creates a new ``SlasherApplicationCommandParameterConversionError`` instance with the given parameters.
+        Creates a new ``SlasherApplicationCommandParameterConversionError`` with the given parameters.
         
         Parameters
         ----------
-        parameter_name : `None` or `str`
+        parameter_name : `None`, `str`
             The parameter's name, which failed to be parsed.
-        received_value : `None` or `str`
+        received_value : `None`, `str`
             The parameter's received value.
-        excepted_type : `None` or `str`
+        excepted_type : `None`, `str`
             The parameter's expected type's name.
-        expected_values : `None` or `list` of `Any`
+        expected_values : `None`, `list` of `Any`
             Expected values.
         """
         self.parameter_name = parameter_name
@@ -251,12 +251,16 @@ def _validate_random_error_message_getter(random_error_message_getter):
     """
     analyzer = CallableAnalyzer(random_error_message_getter)
     if analyzer.is_async():
-        raise TypeError(f'`random_error_message_getter` cannot be async, got {random_error_message_getter!r}.')
+        raise TypeError(
+            f'`random_error_message_getter` cannot be async, got {random_error_message_getter!r}.'
+        )
     
     min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if (min_ > 0):
-        raise TypeError(f'A `{random_error_message_getter}` should accept `0` parameters, meanwhile '
-            f'{random_error_message_getter!r} accepts between `{min_}` and `{max_}`.')
+        raise TypeError(
+            f'A `random_error_message_getter` should accept `0` parameters, meanwhile '
+            f'{random_error_message_getter!r} accepts between `{min_}` and `{max_}`.'
+        )
 
 
 async def default_slasher_exception_handler(client, interaction_event, command, exception):
@@ -271,7 +275,7 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
         The respective client.
     interaction_event : ``InteractionEvent``
         The received interaction event.
-    command : ``SlasherApplicationCommand`` or ``ComponentCommand``
+    command : ``SlasherApplicationCommand``, ``ComponentCommand``
         The command, which raised.
     exception : `BaseException`
         The occurred exception.
@@ -302,7 +306,8 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
             if isinstance(err, ConnectionError):
                 pass
             elif (
-                isinstance(err, DiscordException) and (
+                isinstance(err, DiscordException) and
+                (
                     (err.status == 500) or
                     (err.code == ERROR_CODES.unknown_interaction)
                 )
@@ -325,7 +330,7 @@ async def _render_application_command_exception(client, command, exception):
     ----------
     client : ``Client``
         The respective client.
-    command : ``SlasherApplicationCommand`` or ``ComponentCommand``
+    command : ``SlasherApplicationCommand``, ``ComponentCommand``
         The command, which raised.
     exception : `BaseException`
         The occurred exception.
@@ -406,18 +411,24 @@ def test_exception_handler(exception_handler):
     """
     analyzer = CallableAnalyzer(exception_handler)
     if not analyzer.is_async():
-        raise TypeError('`exception_handler` should be given as `async` function.')
+        raise TypeError(
+            f'`exception_handler` should be given as `async` function, got {exception_handler!r}.'
+        )
     
     min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if min_ > 4:
-        raise TypeError(f'`exception_handler` should accept `4` parameters, meanwhile the given callable expects at '
-            f'least `{min_!r}`, got `{exception_handler!r}`.')
+        raise TypeError(
+            f'`exception_handler` should accept `4` parameters, meanwhile the given callable expects at '
+            f'least `{min_!r}`, got {exception_handler!r}.'
+        )
     
     if min_ != 4:
         if max_ < 4:
             if not analyzer.accepts_args():
-                raise TypeError(f'`exception_handler` should accept `4` parameters, meanwhile the given callable '
-                    f'expects up to `{max_!r}`, got `{exception_handler!r}`.')
+                raise TypeError(
+                    f'`exception_handler` should accept `4` parameters, meanwhile the given callable '
+                    f'expects up to `{max_!r}`, got {exception_handler!r}.'
+                )
 
 
 def _register_exception_handler(parent, first, exception_handler):

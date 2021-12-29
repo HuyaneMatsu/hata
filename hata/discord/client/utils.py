@@ -86,7 +86,7 @@ class BanEntry:
     ----------
     user : ``ClientUserBase``
         The banned user.
-    reason : `None` or `str`
+    reason : `None`, `str`
         The ban reason if applicable.
     """
     __slots__ = ('user', 'reason')
@@ -99,7 +99,7 @@ class BanEntry:
         ----------
         user : ``ClientUserBase``
             The banned user.
-        reason : `None` or `str`
+        reason : `None`, `str`
             The ban reason if applicable.
         """
         self.user = user
@@ -163,12 +163,12 @@ class Typer:
     ----------
     client : ``Client``
         The client what will send the typing events.
-    channel_id : `int` instance
+    channel_id : `int`
         The channel's id where typing will be triggered.
     timeout : `float`
         The leftover timeout till the typer will send typing events. Is reduced every time, when the typer sent a typing
         event. If goes under `0.0` the typer stops sending more events.
-    waiter : ``Future`` or `None`
+    waiter : ``Future``, `None`
         The sleeping future what will wake_up ``.run``.
     """
     __slots__ = ('channel_id', 'client', 'timeout', 'waiter',)
@@ -179,7 +179,7 @@ class Typer:
         ----------
         client : ``Client``
             The client what will send the typing events.
-        channel_id : `int` instance
+        channel_id : `int`
             The channel's id where typing will be triggered.
         timeout : `float`, Optional
             The maximal amount of time till the client will keep sending typing events. Defaults to `300.0`.
@@ -265,7 +265,7 @@ class ClientWrapper:
     
     def __new__(cls, *clients):
         """
-        Creates a new ``ClientWrapper`` instance with the given clients. If no clients are given, then will wrap
+        Creates a new ``ClientWrapper`` with the given clients. If no clients are given, then will wrap
         all the clients.
         
         Parameters
@@ -276,13 +276,13 @@ class ClientWrapper:
         Raises
         ------
         TypeError
-            A non ``Client`` instance was given.
+            A non ``Client`` was given.
         """
         if clients:
             for client in clients:
                 if not isinstance(client, Client):
                     raise TypeError(
-                        f'{cls.__name__} expects only `{Client.__name__}` instances, got '
+                        f'{cls.__name__} expects only `{Client.__name__}`, got '
                         f'{client.__class__.__name__}; {client!r}.'
                     )
         else:
@@ -321,7 +321,7 @@ class ClientWrapper:
         """
         Adds the given `func` as event handler to the contained clients's with the given parameters.
         
-        If `func` parameter is not given, returns an ``._events_wrapper`` instance, what allows using this method
+        If `func` parameter is not given, returns an ``._events_wrapper``, what allows using this method
         as a decorator with passing additional keyword parameters at the same time.
         
         Parameters
@@ -332,7 +332,7 @@ class ClientWrapper:
         Returns
         -------
         func : `callable`
-            The given `func`, or ``._events_wrapper`` instance if `func` was not given.
+            The given `func`. ``._events_wrapper`` if `func` was not given.
         
         Raises
         ------

@@ -59,12 +59,12 @@ set_docs(get_ipc_path,
     
     Parameters
     ----------
-    pipe : `None` or `str`
+    pipe : `None`, `str`
         # TODO
     
     Returns
     -------
-    path : `None` or `str`
+    path : `None`, `str`
     """)
 
 

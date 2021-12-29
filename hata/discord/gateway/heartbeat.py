@@ -15,13 +15,13 @@ class Kokoro:
     
     Attributes
     ----------
-    beat_task : `None` or ``Task``
+    beat_task : `None`, ``Task``
         The beat task of kokoro's gateway. Set by ``._task`` meanwhile it's gateway is connected.
-    beat_waiter : `None` or ``Future``
+    beat_waiter : `None`, ``Future``
         `.beater` task's waiter. Sleeps `.beater` between two beat.
-    beater : `None` or ``Task`` of ``._keep_beating``
+    beater : `None`, ``Task`` of ``._keep_beating``
         A task what sends a beating payload to Discord. Set only meanwhile kokoro is in the middle of a beat.
-    gateway : ``DiscordGateway`` or ``DiscordGatewayVoice``
+    gateway : ``DiscordGateway``, ``DiscordGatewayVoice``
         Kokoro's owner gateway.
     interval : `float`
         The time needed to be waited between two beats.
@@ -36,9 +36,9 @@ class Kokoro:
         Whether the kokoro should run and restart itself.
     should_beat : `bool`
         Whether the kokoro should keep beating.
-    task : `None` or ``Task`` of ``._start``
+    task : `None`, ``Task`` of ``._start``
         The main keep alive task of kokoro.
-    ws_waiter : `None` or ``Future``
+    ws_waiter : `None`, ``Future``
         The waiter of kokoro, what waits for it's gateway to connect it's websocket.
     
     Class Attributes
@@ -53,13 +53,13 @@ class Kokoro:
     
     async def __new__(cls, gateway):
         """
-        Creates a ``Kokoro`` instance bound to it's gateway.
+        Creates a ``Kokoro`` bound to it's gateway.
         
         This method is a coroutine.
         
         Parameters
         ----------
-        gateway : ``DiscordGateway`` or ``DiscordGatewayVoice``
+        gateway : ``DiscordGateway``, ``DiscordGatewayVoice``
             The gateway of kokoro.
         
         Returns

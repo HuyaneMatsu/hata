@@ -83,24 +83,24 @@ The implemented checks are the following:
 +--------------------------------+-----------------+--------------------------------------------------------------+
 | owner_only                     | N/A             | Whether the message's author is an owner of the client.      |
 +--------------------------------+-----------------+--------------------------------------------------------------+
-| owner_or_guild_owner_only      | N/A             | `owner_only` or `guild_owner` (Fails in private channels.)   |
+| owner_or_guild_owner_only      | N/A             | `owner_only`, `guild_owner` (Fails in private channels.)   |
 +--------------------------------+-----------------+--------------------------------------------------------------+
-| owner_or_has_any_role          | *roles          | `owner_only` or `has_any_role`                               |
+| owner_or_has_any_role          | *roles          | `owner_only`, `has_any_role`                               |
 +--------------------------------+-----------------+--------------------------------------------------------------+
-| owner_or_has_guild_permissions | permissions,    | `owner_only` or `has_guild_permissions`                      |
+| owner_or_has_guild_permissions | permissions,    | `owner_only`, `has_guild_permissions`                      |
 |                                | **kwargs        | (Fails in private channels.)                                 |
 +--------------------------------+-----------------+--------------------------------------------------------------+
-| owner_or_has_permissions       | permissions,    | `owner_only` or `has_permissions`                            |
+| owner_or_has_permissions       | permissions,    | `owner_only`, `has_permissions`                            |
 |                                | **kwargs        |                                                              |
 +--------------------------------+-----------------+--------------------------------------------------------------+
-| owner_or_has_role              | role            | `owner_only` or `has_role`                                   |
+| owner_or_has_role              | role            | `owner_only`, `has_role`                                   |
 +--------------------------------+-----------------+--------------------------------------------------------------+
 | private_only                   | N/A             | Whether the message's channel is a private channel.          |
 +--------------------------------+-----------------+--------------------------------------------------------------+
 | user_account_only              | N/A             | Whether the message's author is a user account.              |
 +--------------------------------+-----------------+--------------------------------------------------------------+
 | user_account_or_client_only    | N/A             | Whether the message's author is a user account or a          |
-|                                |                 | ``Client`` instance.                                         |
+|                                |                 | ``Client``.                                                  |
 +--------------------------------+-----------------+--------------------------------------------------------------+
 
 To handle a failed check, do:
@@ -186,7 +186,7 @@ def _convert_permission(permission):
     
     Parameters
     ----------
-    permission : `None`, ``Permission`` or `int` instance.
+    permission : `None`, ``Permission``, `int`.
         Permission to validate.
     
     Returns
@@ -196,7 +196,7 @@ def _convert_permission(permission):
     Raises
     ------
     TypeError
-        If `permissions` was not given as `None`, ``Permission`` nor as `int` instance.
+        If `permissions` was not given as `None`, ``Permission`` nor as `int`.
     """
     if permission is None:
         permission = Permission()
@@ -206,8 +206,10 @@ def _convert_permission(permission):
         elif isinstance(permission, int):
             permission = Permission(permission)
         else:
-            raise TypeError(f'`permission` can be given as `None`, `{Permission.__name__}` or as `int` instance, got '
-                f'{permission.__class__.__name__}.')
+            raise TypeError(
+                f'`permission` can be `None`, `{Permission.__name__}`, `int`, got '
+                f'{permission.__class__.__name__}; {permission!r}.'
+            )
     
     return permission
 
@@ -222,14 +224,14 @@ class CheckMeta(type):
         ----------
         class_name : `str`
             The created class's name.
-        class_parents : `tuple` of `type` instances
+        class_parents : `tuple` of `type`
             The superclasses of the creates type.
         class_attributes : `dict` of (`str`, `Any`) items
             The class attributes of the created type.
         
         Returns
         -------
-        type : ``CheckMeta`` instance
+        type : ``CheckMeta``
         """
         if class_parents:
             parent = class_parents[0]
@@ -371,6 +373,7 @@ class CheckInvert(CheckBase):
         The check to invert.
     """
     __slots__ = ('check', )
+    
     def __new__(cls, check):
         """
         Checks whether a respective condition passes.
@@ -383,10 +386,12 @@ class CheckInvert(CheckBase):
         Raises
         ------
         TypeError
-            If `check` was not given as ``CheckBase`` instance.
+            If `check` was not given as ``CheckBase``.
         """
         if not isinstance(check, CheckBase):
-            raise TypeError(f'`check` can be given as `{CheckBase.__name__}` instance, got {check.__class__.__name__}.')
+            raise TypeError(
+                f'`check` can be `{CheckBase.__name__}`, got {check.__class__.__name__}; {check!r}.'
+            )
         
         self = object.__new__(cls)
         self.check = check
@@ -407,6 +412,7 @@ class CheckRelationBase(CheckBase):
         The check to connect.
     """
     __slots__ = ('checks', )
+    
     def __new__(cls, *checks):
         """
         Checks whether a respective condition passes.
@@ -419,12 +425,13 @@ class CheckRelationBase(CheckBase):
         Raises
         ------
         TypeError
-            If a `check` was not given as ``CheckBase`` instance.
+            If a `check` was not given as ``CheckBase``.
         """
         for check in checks:
             if not isinstance(check, CheckBase):
-                raise TypeError(f'`check` can be given as `{CheckBase.__name__}` instance, got '
-                    f'{check.__class__.__name__}.')
+                raise TypeError(
+                    f'`check` can be `{CheckBase.__name__}`, got {check.__class__.__name__}; {check!r}.'
+                )
         
         self = object.__new__(cls)
         self.checks = checks
@@ -645,15 +652,15 @@ class CheckHasRole(CheckHasRoleBase):
         
         Parameters
         ----------
-        role : `str`, `int` or ``Role``
+        role : `str`, `int`, ``Role``
             The role what the message's author should have.
         
         Raises
         ------
         TypeError
-            If `role` was not given neither as ``Role``, `str` or `int` instance.
+            If `role` was not given neither as ``Role``, `str`, `int`.
         ValueError
-            If `role` was given as `str` or as `int` instance, but not as a valid snowflake, so ``Role`` instance
+            If `role` was given as `str`, `int`, but not as a valid snowflake, so ``Role``
             cannot be precreated with it.
         """
         role = instance_or_id_to_instance(role, Role, 'role')
@@ -713,15 +720,15 @@ class CheckHasAnyRole(CheckHasRoleBase):
         
         Parameters
         ----------
-        *roles : `str`, `int` or ``Role``
+        *roles : `str`, `int`, ``Role``
             Role from which the message's author should have at least one.
         
         Raises
         ------
         TypeError
-            If a role was not given neither as ``Role``, `str` or `int` instance.
+            If a role was not given neither as ``Role``, `str`, `int`.
         ValueError
-            If a role was given as `str` or as `int` instance, but not as a valid snowflake, so a ``Role`` instance
+            If a role was given as `str`, `int`, but not as a valid snowflake, so a ``Role``
             cannot be precreated with it.
         """
         roles_processed = set()
@@ -771,15 +778,15 @@ class HasAnyRoleCheckOrRelationIsOwner(CheckHasAnyRole, CheckIsOwner):
         
         Parameters
         ----------
-        *roles : `str`, `int` or ``Role``
+        *roles : `str`, `int`, ``Role``
             Role from which the message's author should have at least one.
         
         Raises
         ------
         TypeError
-            If an element of role was not given neither as ``Role``, `str` or `int` instance.
+            If an element of role was not given neither as ``Role``, `str`, `int`.
         ValueError
-            If a role was given as `str` or as `int` instance, but not as a valid snowflake, so a ``Role`` instance
+            If a role was given as `str`, `int`, but not as a valid snowflake, so a ``Role``
             cannot be precreated with it.
         """
         roles_processed = set()
@@ -926,7 +933,7 @@ class CheckHasPermissionBase(CheckBase):
         
         Parameters
         ----------
-        permissions : `None`, ``Permission`` or `int` instance, Optional
+        permissions : `None`, ``Permission``, `int`, Optional
             The permission, which the respective user should have. Defaults to `None`
         **kwargs : Keyword parameters
             `permission-name` - `bool` relations.
@@ -936,7 +943,7 @@ class CheckHasPermissionBase(CheckBase):
         LookupError
             If a keyword is not a valid permission name.
         TypeError
-            If `permission` was not given neither as `None`, ``Permission`` nor as `int` instance.
+            If `permission` was not given neither as `None`, ``Permission`` nor as `int`.
         """
         permission = _convert_permission(permission)
         permission = permission.update_by_keys(**kwargs)
@@ -1321,15 +1328,15 @@ class CheckIsGuild(CheckIsGuildBase):
         
         Parameters
         ----------
-        guild : `str`, `int` or ``Guild``
+        guild : `str`, `int`, ``Guild``
             The guild where the message should be sent.
         
         Raises
         ------
         TypeError
-            If `guild` was not given neither as ``Guild``, `str` or `int` instance.
+            If `guild` was not given neither as ``Guild``, `str`, `int`.
         ValueError
-            If `guild` was given as `str` or as `int` instance, but not as a valid snowflake.
+            If `guild` was given as `str`, `int`, but not as a valid snowflake.
         """
         guild_id = instance_or_id_to_snowflake(guild, Guild, 'guild')
         
@@ -1369,15 +1376,15 @@ class CheckIsAnyGuild(CheckIsGuildBase):
         
         Parameters
         ----------
-        *guilds : `str`, `int` or ``Guild``
+        *guilds : `str`, `int`, ``Guild``
             The guilds where the message should be sent.
         
         Raises
         ------
         TypeError
-            If a guild was not given neither as ``Guild``, `str` or `int` instance.
+            If a guild was not given neither as ``Guild``, `str`, `int`.
         ValueError
-            If a guild was given as `str` or as `int` instance, but not as a valid snowflake.
+            If a guild was given as `str`, `int`, but not as a valid snowflake.
         """
         guild_ids_processed = set()
         
@@ -1442,13 +1449,15 @@ class CheckCustom(CheckBase):
         
         Notes
         -----
-        Only `int` instances are evaluated to boolean.
+        Only `int`-s are evaluated to boolean.
         """
         analyzer = CallableAnalyzer(check)
         non_reserved_positional_parameter_count = analyzer.get_non_reserved_positional_parameter_count()
         if  non_reserved_positional_parameter_count != 1:
-            raise TypeError(f'The passed check: {check!r} should have accept `1` non reserved, positional, '
-                f'non default parameters, meanwhile it accepts `{non_reserved_positional_parameter_count}`.')
+            raise TypeError(
+                f'`check` should accept `1` non reserved, positional, non default parameters, meanwhile it accepts '
+                f'{non_reserved_positional_parameter_count}, got {check!r}.'
+            )
         
         is_async = analyzer.is_async()
         
@@ -1545,15 +1554,15 @@ class CheckIsChannel(CheckIsChannelBase):
         
         Parameters
         ----------
-        channel : `str`, `int` or ``Guild``
+        channel : `str`, `int`, ``Guild``
             The guild where the message should be sent.
         
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelBase``, `str` or `int` instance.
+            If `channel` was not given neither as ``ChannelBase``, `str`, `int`.
         ValueError
-            If `channel` was given as `str` or as `int` instance, but not as a valid snowflake.
+            If `channel` was given as `str`, `int`, but not as a valid snowflake.
         """
         channel_id = instance_or_id_to_snowflake(channel, ChannelBase, 'channel')
         
@@ -1589,15 +1598,15 @@ class CheckIsAnyChannel(CheckIsChannelBase):
         
         Parameters
         ----------
-        *channels : `str`, `int` or ``ChannelBase``
+        *channels : `str`, `int`, ``ChannelBase``
             The channel where the message should be sent.
         
         Raises
         ------
         TypeError
-            If a channel was not given neither as ``ChannelBase``, `str` or `int` instance.
+            If a channel was not given neither as ``ChannelBase``, `str`, `int`.
         ValueError
-            If a channel was given as `str` or as `int` instance, but not as a valid snowflake.
+            If a channel was given as `str`, `int`, but not as a valid snowflake.
         """
         channel_ids_processed = set()
         
@@ -1928,7 +1937,7 @@ class CheckIsCategory(CheckIsCategoryBase):
         
         Parameters
         ----------
-        category : `str`, `int`, ``ChannelCategory`` or ``Guild``
+        category : `str`, `int`, ``ChannelCategory``, ``Guild``
             The category, within sent messages pass the check.
             
             If you want to check whether the channel is not in a category, pass the parameter as the respective guild
@@ -1937,9 +1946,9 @@ class CheckIsCategory(CheckIsCategoryBase):
         Raises
         ------
         TypeError
-            If `category` was not given neither as ``ChannelCategory``, ``Guild``, `str` or `int` instance.
+            If `category` was not given neither as ``ChannelCategory``, ``Guild``, `str`, `int`.
         ValueError
-            If `category` was given as `str` or as `int` instance, but not as a valid snowflake.
+            If `category` was given as `str`, `int`, but not as a valid snowflake.
         """
         category_id = instance_or_id_to_snowflake(category, (ChannelCategory, Guild), 'category')
         
@@ -1990,7 +1999,7 @@ class CheckIsAnyCategory(CheckIsCategoryBase):
         
         Parameters
         ----------
-        *categories : `str`, `int`, ``ChannelCategory`` or ``Guild``
+        *categories : `str`, `int`, ``ChannelCategory``, ``Guild``
             The categories, within sent messages pass the check.
             
             If you want to check whether the channel is not in a category, pass the parameter as the respective guild
@@ -1999,9 +2008,9 @@ class CheckIsAnyCategory(CheckIsCategoryBase):
         Raises
         ------
         TypeError
-            If a category was not given neither as ``ChannelCategory``, ``Guild``, `str` or `int` instance.
+            If a category was not given neither as ``ChannelCategory``, ``Guild``, `str`, `int`.
         ValueError
-            If a category was given as `str` or as `int` instance, but not as a valid snowflake.
+            If a category was given as `str`, `int`, but not as a valid snowflake.
         """
         category_ids_processed = set()
         
@@ -2032,7 +2041,7 @@ class CheckReleaseAt(CheckBase):
     ----------
     release_at : `int`
         The time in snowflake, when the command will be released.
-    pre_access_roles : `None` or `set` of ``Role``
+    pre_access_roles : `None`, `set` of ``Role``
         The roles, who are bypassed by the check.
     """
     def __new__(cls, release_at, *roles):
@@ -2043,19 +2052,21 @@ class CheckReleaseAt(CheckBase):
         ----------
         release_at : `datetime`
             When the command is released.
-        *roles : `str`, `int` or ``Role``
+        *roles : `str`, `int`, ``Role``
             Role from which the message's author should have at least one.
         
         Raises
         ------
         TypeError
-            If an element of role was not given neither as ``Role``, `str` or `int` instance.
+            If an element of role was not given neither as ``Role``, `str`, `int`.
         ValueError
-            If a role was given as `str` or as `int` instance, but not as a valid snowflake, so a ``Role`` instance
+            If a role was given as `str`, `int`, but not as a valid snowflake, so a ``Role``
             cannot be precreated with it.
         """
         if not isinstance(release_at, datetime):
-            raise TypeError(f'`release_at` can be given as `datetime` instance, got {release_at.__class__.__name__}.')
+            raise TypeError(
+                f'`release_at` can be `datetime`, got {release_at.__class__.__name__}; {release_at!r}.'
+            )
         
         roles_processed = set()
         for role in roles:

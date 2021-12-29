@@ -14,7 +14,7 @@ async def _delete_reaction_with_task(reaction_add_event, client):
     
     Parameters
     ----------
-    reaction_add_event : ``ReactionAddEvent`` or ``ReactionDeleteEvent``
+    reaction_add_event : ``ReactionAddEvent``, ``ReactionDeleteEvent``
         The respective reaction event.
     client : ``Client``
         The client who should remove the reaction if applicable.
@@ -46,11 +46,11 @@ class ReactionAddEvent(EventBase):
     
     Attributes
     ----------
-    message : ``Message`` or ``MessageRepr``
+    message : ``Message``, ``MessageRepr``
         The message on what the reaction is added.
         
         If `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, then message might be given as
-        ``MessageRepr`` instance, if the respective event was received on an uncached message.
+        ``MessageRepr``, if the respective event was received on an uncached message.
     emoji : ``Emoji``
         The emoji used as reaction.
     user : ``ClientUserBase``
@@ -71,11 +71,11 @@ class ReactionAddEvent(EventBase):
     
     def __new__(cls, message, emoji, user):
         """
-        Creates a new ``ReactionAddEvent`` instance (or it's subclass's instance).
+        Creates a new ``ReactionAddEvent`` (or it's subclass's instance).
         
         Parameters
         ----------
-        message : ``Message`` or ``MessageRepr``
+        message : ``Message``, ``MessageRepr``
             The respective message.
         emoji : ``Emoji``
             The emoji used.
@@ -171,11 +171,11 @@ class ReactionDeleteEvent(ReactionAddEvent):
     
     Attributes
     ----------
-    message : ``Message`` or ``MessageRepr``
+    message : ``Message``, ``MessageRepr``
         The message from what the reaction was removed.
         
         If `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, then message might be given as
-        ``MessageRepr`` instance, if the respective event was received on an uncached message.
+        ``MessageRepr``, if the respective event was received on an uncached message.
     emoji : ``Emoji``
         The removed emoji.
     user : ``ClientUserBase``

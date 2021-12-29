@@ -31,7 +31,7 @@ async def run_checks(checks, command_context):
     
     Returns
     -------
-    failed : `None` or ``CheckBase``
+    failed : `None`, ``CheckBase``
         The failed check if any.
     
     Notes
@@ -97,9 +97,9 @@ def get_command_category_trace(command, content, index):
     
     Returns
     -------
-    command_category_trace : `None` or `tuple` of ``CommandCategory``
+    command_category_trace : `None`, `tuple` of ``CommandCategory``
         Trace to the actual command.
-    command_function : ``CommandFunction`` or `None`
+    command_function : ``CommandFunction``, `None`
         The command function, which should be called.
     index : `int`
         The index till the command's parameters may start from.
@@ -205,18 +205,24 @@ def test_precheck(precheck):
     """
     analyzer = CallableAnalyzer(precheck)
     if analyzer.is_async():
-        raise TypeError('`precheck` should not be given as `async` function.')
+        raise TypeError(
+            f'`precheck` should not be given as `async` function, got {precheck!r}.'
+        )
     
     min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if min_ > 2:
-        raise TypeError(f'`precheck` should accept `2` parameters, meanwhile the given callable expects at '
-            f'least `{min_!r}`, got `{precheck!r}`.')
+        raise TypeError(
+            f'`precheck` should accept `2` parameters, meanwhile the given callable expects at '
+            f'least `{min_!r}`, got {precheck!r}.'
+        )
     
     if min_ != 2:
         if max_ < 2:
             if not analyzer.accepts_args():
-                raise TypeError(f'`precheck` should accept `2` parameters, meanwhile the given callable expects '
-                    f'up to `{max_!r}`, got `{precheck!r}`.')
+                raise TypeError(
+                    f'`precheck` should accept `2` parameters, meanwhile the given callable expects '
+                    f'up to `{max_!r}`, got {precheck!r}.'
+                )
 
 
 def test_error_handler(error_handler):
@@ -254,18 +260,24 @@ def test_error_handler(error_handler):
     """
     analyzer = CallableAnalyzer(error_handler)
     if not analyzer.is_async():
-        raise TypeError('`error_handler` should be given as `async` function.')
+        raise TypeError(
+            f'`error_handler` should be given as `async` function, got {error_handler!r}'
+        )
     
     min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if min_ > 2:
-        raise TypeError(f'`error_handler` should accept `2` parameters, meanwhile the given callable expects at '
-            f'least `{min_!r}`, got `{error_handler!r}`.')
+        raise TypeError(
+            f'`error_handler` should accept `2` parameters, meanwhile the given callable expects at '
+            f'least `{min_!r}`, got {error_handler!r}'
+        )
     
     if min_ != 2:
         if max_ < 2:
             if not analyzer.accepts_args():
-                raise TypeError(f'`error_handler` should accept `2` parameters, meanwhile the given callable expects '
-                    f'up to `{max_!r}`, got `{error_handler!r}`.')
+                raise TypeError(
+                    f'`error_handler` should accept `2` parameters, meanwhile the given callable expects '
+                    f'up to `{max_!r}`, got {error_handler!r}.'
+                )
 
 
 def validate_error_handlers(error_handlers):
@@ -274,12 +286,12 @@ def validate_error_handlers(error_handlers):
     
     Parameters
     ----------
-    error_handlers : `None`, `async-callable` or (`list`, `tuple` or `set`) of `async-callable`
+    error_handlers : `None`, `async-callable` or (`list`, `tuple`, `set`) of `async-callable`
         The error_handler(s) to validate.
     
     Returns
     -------
-    error_handlers_validated : `None` or `list` of `async-callable`
+    error_handlers_validated : `None`, `list` of `async-callable`
         The validated error handlers.
     
     Raises
@@ -318,7 +330,7 @@ def test_name_rule(rule, rule_name):
     
     Parameters
     ----------
-    rule : `None` or `function`
+    rule : `None`, `function`
         The rule to test.
         
         A name rule should accept the following parameters:
@@ -343,7 +355,7 @@ def test_name_rule(rule, rule_name):
     Raises
     ------
     TypeError
-        - If `rule` is not `None` or `function` instance.
+        - If `rule` is not `None`, `function`.
         - If `rule` is `async` `function`.
         - If `rule` accepts bad amount of parameters.
         - If `rule` raised exception when `str` was passed to it.
@@ -356,37 +368,51 @@ def test_name_rule(rule, rule_name):
     
     rule_type = rule.__class__
     if (rule_type is not FunctionType):
-        raise TypeError(f'`{rule_name}` should have been given as `{FunctionType.__name__}`, got '
-            f'{rule_type.__name__}.')
+        raise TypeError(
+            f'`{rule_name}` can be `{FunctionType.__name__}`, got {rule_type.__name__}; {rule!r}.'
+        )
     
     analyzed = CallableAnalyzer(rule)
     if analyzed.is_async():
-        raise TypeError(f'`{rule_name}` should have been given as an non async function, got {rule!r}.')
+        raise TypeError(
+            f'`{rule_name}` can be a non async function, got {rule!r}.'
+        )
     
     non_reserved_positional_parameter_count = analyzed.get_non_reserved_positional_parameter_count()
     if non_reserved_positional_parameter_count != 1:
-        raise TypeError(f'`{rule_name}` should accept `1` non reserved positional parameters, meanwhile it expects '
-            f'{non_reserved_positional_parameter_count}.')
+        raise TypeError(
+            f'`{rule_name}` should accept `1` non reserved positional parameters, meanwhile it expects '
+            f'{non_reserved_positional_parameter_count}, got {rule!r}.'
+        )
     
     if analyzed.accepts_args():
-        raise TypeError(f'`{rule_name}` should accept not expect args, meanwhile it does.')
+        raise TypeError(
+            f'`{rule_name}` should accept not expect args, meanwhile it does, got {rule!r}.'
+        )
     
     if analyzed.accepts_kwargs():
-        raise TypeError(f'`{rule_name}` should accept not expect kwargs, meanwhile it does.')
+        raise TypeError(
+            f'`{rule_name}` should accept not expect kwargs, meanwhile it does, got {rule!r}.'
+        )
     
     non_default_keyword_only_parameter_count = analyzed.get_non_default_keyword_only_parameter_count()
     if non_default_keyword_only_parameter_count:
-        raise TypeError(f'`{rule_name}` should accept `0` keyword only parameters, meanwhile it expects '
-            f'{non_default_keyword_only_parameter_count}.')
+        raise TypeError(
+            f'`{rule_name}` should accept `0` keyword only parameters, meanwhile it expects '
+            f'{non_default_keyword_only_parameter_count}, got {rule!r}.'
+        )
     
     try:
         result = rule('test-this-name')
     except BaseException as err:
-        raise TypeError(f'Got unexpected exception meanwhile testing the given {rule_name}: {rule!r}.') from err
+        raise TypeError(
+            f'Got unexpected exception meanwhile testing the given {rule_name}: {rule!r}.'
+        ) from err
     
     if (type(result) is not str):
-        raise TypeError(f'{rule_name}: {rule!r} did not return `str` instance, meanwhile testing it, got '
-            f'{result.__class__.__name__}')
+        raise TypeError(
+            f'{rule_name}: {rule!r} did not return `str`, meanwhile testing it, got {result.__class__.__name__}.'
+        )
 
 
 def validate_category_or_command_name(name):
@@ -406,7 +432,7 @@ def validate_category_or_command_name(name):
     Raises
     ------
     TypeError
-        If `name` was not given as `str` instance.
+        If `name` was not given as `str`.
     ValueError
         If `name`'s length is out of range [1:128] characters.
     """
@@ -416,11 +442,15 @@ def validate_category_or_command_name(name):
     elif issubclass(name_type, str):
         name = str(name)
     else:
-        raise TypeError(f'Category and command names can be given as `str` instance, got {name_type.__name__}.')
+        raise TypeError(
+            f'Category and command names can be `str`, got {name_type.__name__}; {name!r}.'
+        )
     
     name_length = len(name)
     if (name_length < 1) or (name_length > 128):
-        raise ValueError(f'`Category and command name length can be in range [0:128], got {name_length};{name!r}.')
+        raise ValueError(
+            f'`Category and command name length can be in range [0:128], got {name_length}; {name!r}.'
+        )
     
     return name
 
@@ -442,7 +472,7 @@ async def prefix_wrapper_async_callable(prefix_factory, re_flags, message):
     
     Returns
     -------
-    prefix : `None` or `str`
+    prefix : `None`, `str`
         The prefix used by the user. Returned as `None` of parsing failed.
     end : `int`
         The start of the content after the prefix. Returned as `-1` if parsing failed.
@@ -486,7 +516,7 @@ async def prefix_getter_async_callable(prefix_factory, message):
     
     Returns
     -------
-    prefix : `None` or `str`
+    prefix : `None`, `str`
         The respective prefix for the message. Returns `None` of non could be identified.
     """
     prefix = await prefix_factory(message)
@@ -517,7 +547,7 @@ async def prefix_wrapper_sync_callable(prefix_factory, re_flags, message):
     
     Returns
     -------
-    prefix : `None` or `str`
+    prefix : `None`, `str`
         The prefix used by the user. Returned as `None` of parsing failed.
     end : `int`
         The start of the content after the prefix. Returned as `-1` if parsing failed.
@@ -561,7 +591,7 @@ async def prefix_getter_sync_callable(prefix_factory, message):
     
     Returns
     -------
-    prefix : `None` or `str`
+    prefix : `None`, `str`
         The respective prefix for the message. Returns `None` of non could be identified.
     """
     prefix = prefix_factory(message)
@@ -590,7 +620,7 @@ async def prefix_wrapper_regex(re_pattern, message):
     
     Returns
     -------
-    prefix : `None` or `str`
+    prefix : `None`, `str`
         The prefix used by the user. Returned as `None` of parsing failed.
     end : `int`
         The start of the content after the prefix. Returned as `-1` if parsing failed.
@@ -673,7 +703,7 @@ def get_prefix_parser(prefix, prefix_ignore_case):
         +-----------+-------------------+
         | Name      | Type              |
         +===========+===================+
-        | prefix    | `None` or `str`   |
+        | prefix    | `None`, `str`     |
         +-----------+-------------------+
         | end       | `int`             |
         +-----------+-------------------+
@@ -693,7 +723,7 @@ def get_prefix_parser(prefix, prefix_ignore_case):
         +-----------+-------------------+
         | Name      | Type              |
         +===========+===================+
-        | prefix    | `None` or `str`   |
+        | prefix    | `None`, `str`     |
         +-----------+-------------------+
     
     Raises
@@ -713,8 +743,10 @@ def get_prefix_parser(prefix, prefix_ignore_case):
         analyzed = CallableAnalyzer(prefix)
         non_reserved_positional_parameter_count = analyzed.get_non_reserved_positional_parameter_count()
         if non_reserved_positional_parameter_count != 1:
-            raise TypeError(f'Callable `prefix` should accept `1` non reserved positional parameter, meanwhile it '
-                f'accepts: `{non_reserved_positional_parameter_count}`.')
+            raise TypeError(
+                f'Callable `prefix` should accept `1` non reserved positional parameter, meanwhile it '
+                f'accepts: {non_reserved_positional_parameter_count}, got {prefix!r}.'
+            )
         
         if analyzed.is_async():
             prefix_wrapper_function = prefix_wrapper_async_callable
@@ -731,13 +763,17 @@ def get_prefix_parser(prefix, prefix_ignore_case):
             escaped_prefix = re_escape(prefix)
         elif isinstance(prefix, tuple):
             if len(prefix) == 0:
-                raise ValueError(f'Empty prefix tuple.')
+                raise ValueError(
+                    f'`prefix` cannot be an empty `tuple`.'
+                )
             
             escaped_prefix = '|'.join(re_escape(prefix_part) for prefix_part in prefix)
             prefix = prefix[0]
         else:
-            raise TypeError(f'`prefix` can be either given as `callable`, `async-callable`, `str` or as `tuple` of '
-                f'`str`, got {prefix.__class__.__name__}.')
+            raise TypeError(
+                f'`prefix` can be `callable`, `async-callable`, `str`, `tuple` of `str`, got '
+                f'{prefix.__class__.__name__}; {prefix!r}.'
+            )
         
         compiled_prefix = re_compile(escaped_prefix, re_flags)
         
@@ -753,7 +789,7 @@ def _unwrap_check(check):
     
     Parameters
     ----------
-    check : ``CheckBase`` or ``CommandCheckWrapper``
+    check : ``CheckBase``, ``CommandCheckWrapper``
         The check to unwrap.
     
     Returns
@@ -764,7 +800,7 @@ def _unwrap_check(check):
     Raises
     ------
     TypeError
-        If `check` is neither ``CheckBase`` nor ``CommandCheckWrapper`` instance.
+        If `check` is neither ``CheckBase`` nor ``CommandCheckWrapper``.
     """
     if isinstance(check, CheckBase):
         return check
@@ -772,8 +808,10 @@ def _unwrap_check(check):
     if isinstance(check, CommandCheckWrapper):
         return check._check
     
-    raise TypeError(f'`check` can be either `{CheckBase.__name__}` or `{CommandCheckWrapper.__name__}` instance, got '
-        f'{check.__class__.__name__}.')
+    raise TypeError(
+        f'`check` can be `{CheckBase.__name__}`, `{CommandCheckWrapper.__name__}`, got '
+        f'{check.__class__.__name__}; {check!r}.'
+    )
 
 
 def validate_checks(checks):
@@ -782,13 +820,13 @@ def validate_checks(checks):
     
     Parameters
     ----------
-    checks : `None`, ``CheckBase``, ``CommandCheckWrapper`` or (`list`, `tuple` or `set`) of \
-            (``CheckBase`` or ``CommandCheckWrapper``)
+    checks : `None`, ``CheckBase``, ``CommandCheckWrapper`` or (`list`, `tuple`, `set`) of \
+            (``CheckBase``, ``CommandCheckWrapper``)
         The check(s) to validate.
     
     Returns
     -------
-    checks_validated : `None` or `tuple` of ``CheckBase``
+    checks_validated : `None`, `tuple` of ``CheckBase``
         The validated checks.
     
     Raises
@@ -848,15 +886,21 @@ def test_unknown_command(unknown_command):
     """
     analyzer = CallableAnalyzer(unknown_command)
     if not analyzer.is_async():
-        raise TypeError('`unknown_command` should be given as `async` function.')
+        raise TypeError(
+            f'`unknown_command` can be given as `async` function, got {unknown_command!r}.'
+        )
     
     min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
     if min_ > 3:
-        raise TypeError(f'`unknown_command` should accept `2` parameters, meanwhile the given callable expects at '
-            f'least `{min_!r}`, got `{unknown_command!r}`.')
+        raise TypeError(
+            f'`unknown_command` should accept `2` parameters, meanwhile the given callable expects at '
+            f'least `{min_!r}`, got {unknown_command!r}.'
+        )
     
     if min_ != 3:
         if max_ < 3:
             if not analyzer.accepts_args():
-                raise TypeError(f'`unknown_command` should accept `2` parameters, meanwhile the given callable expects '
-                    f'up to `{max_!r}`, got `{unknown_command!r}`.')
+                raise TypeError(
+                    f'`unknown_command` should accept `2` parameters, meanwhile the given callable expects '
+                    f'up to `{max_!r}`, got {unknown_command!r}.'
+                )

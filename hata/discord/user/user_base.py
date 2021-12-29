@@ -55,7 +55,7 @@ def _try_get_guild_and_id(guild):
     
     Returns
     -------
-    guild : `None` or ``Guild``
+    guild : `None`, ``Guild``
         The guild if found.
     guild_id : `int`
         The guild's identifier. Defaults to `0`.
@@ -90,7 +90,7 @@ class UserBase(DiscordEntity, immortal=True):
         The user's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The user's avatar's type.
-    banner_color : `None` or ``Color``
+    banner_color : `None`, ``Color``
         The user's banner color if has any.
     banner_hash : `int`
         The user's banner's hash in `uint128`.
@@ -165,7 +165,7 @@ class UserBase(DiscordEntity, immortal=True):
         +---------------+-----------------------+
         | banner        | ``Icon``              |
         +---------------+-----------------------+
-        | banner_color  | `None` or ``Color``   |
+        | banner_color  | `None`, ``Color``   |
         +---------------+-----------------------+
         | discriminator | `int`                 |
         +---------------+-----------------------+
@@ -443,7 +443,7 @@ class UserBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        thread_profiles : `None` or `dict` (``ChannelThread``, ``ThreadProfile``) items
+        thread_profiles : `None`, `dict` (``ChannelThread``, ``ThreadProfile``) items
         """
         return None
     
@@ -492,7 +492,7 @@ class UserBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        activity : ``ActivityRich`` or `None`
+        activity : ``ActivityRich``, `None`
         """
         return None
     
@@ -504,7 +504,7 @@ class UserBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        activity : ``ActivityCustom`` or `None`
+        activity : ``ActivityCustom``, `None`
         """
         return None
     
@@ -545,7 +545,7 @@ class UserBase(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        guild : `None`, ``Guild`` or `int`
+        guild : `None`, ``Guild``, `int`
             The guild, where the user's nick will be checked.
             
             Can be given as `None`.
@@ -617,7 +617,7 @@ class UserBase(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        guild : ``Guild``, `None` or `int`
+        guild : ``Guild``, `None`, `int`
             The guild where the user's top role will be looked up.
             
             Can be given as `None`.
@@ -627,7 +627,7 @@ class UserBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        top_role ``Role`` or `default`
+        top_role ``Role``, `default`
         """
         return default
     
@@ -677,7 +677,7 @@ class UserBase(DiscordEntity, immortal=True):
         ----------
         user : ``User``
             The other user to check.
-        guild : ``Guild``, `None` or `int`
+        guild : ``Guild``, `None`, `int`
             The guild where the users' top roles will be checked.
             
             Can be given as `None`.
@@ -695,12 +695,12 @@ class UserBase(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        guild : `None`, ``Guild`` or `int`
+        guild : `None`, ``Guild``, `int`
             The guild to get guild profile for.
         
         Returns
         -------
-        guild_profile : `None` or ``Guild``
+        guild_profile : `None`, ``Guild``
         """
         return None
     

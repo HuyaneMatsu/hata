@@ -16,13 +16,13 @@ class Category:
     
     Parameters
     ----------
-    _checks : `None` or `tuple` of ``CheckBase``
+    _checks : `None`, `tuple` of ``CheckBase``
         The checks of the category.
-    _command_processor_reference : `None` or ``WeakReferer`` to ``CommandProcessor``.
+    _command_processor_reference : `None`, ``WeakReferer`` to ``CommandProcessor``.
         Weak reference to the category's command processor.
-    _error_handlers : `None` or `list` of `FunctionType`
+    _error_handlers : `None`, `list` of `FunctionType`
         Error handlers bind to the category.
-    _self_reference : `None` or ``WeakReferer`` to ``Category``
+    _self_reference : `None`, ``WeakReferer`` to ``Category``
         Reference to the command processor itself.
     command_instances : `set` of ``Command``
         The registered commands to the category.
@@ -52,8 +52,8 @@ class Category:
         ----------
         name : `str`
             The category's name.
-        checks : `None`, ``CheckBase``, ``CommandCheckWrapper`` or (`list`, `tuple` or `set`) of \
-                (``CheckBase`` or ``CommandCheckWrapper``), Optional (Keyword only)
+        checks : `None`, ``CheckBase``, ``CommandCheckWrapper`` or (`list`, `tuple`, `set`) of \
+                (``CheckBase``, ``CommandCheckWrapper``), Optional (Keyword only)
             The checks of the category.
         description : `Any`, Optional (Keyword only)
             Description of the category.
@@ -65,11 +65,11 @@ class Category:
         Raises
         ------
         TypeError
-            - If `name` is not `str` instance.
+            - If `name` is not `str`.
             - If `checks`'s type is incorrect.
             - If a `check`'s type is incorrect.
-            - If `hidden` was not given as `bool` instance.
-            - If `hidden_if_checks_fail` was not given as `bool` instance.
+            - If `hidden` was not given as `bool`.
+            - If `hidden_if_checks_fail` was not given as `bool`.
         """
         name_type = type(name)
         if name_type is str:
@@ -77,14 +77,20 @@ class Category:
         elif issubclass(name_type, str):
             name = str(name)
         else:
-            raise TypeError(f'`name` can be give as `str` instance, got {name_type.__name__}.')
+            raise TypeError(
+                f'`name` can be `str`, got {name_type.__name__}; {name!r}.'
+            )
         
         if not isinstance(hidden, bool):
-            raise TypeError(f'`hidden` can be given as `bool` instance, got {hidden.__class__.__name__}.')
+            raise TypeError(
+                f'`hidden` can be `bool`, got {hidden.__class__.__name__}; {hidden!r}.'
+            )
         
         if not isinstance(hidden_if_checks_fail, bool):
-            raise TypeError(f'`hidden_if_checks_fail` can be given as `bool` instance, got '
-                f'{hidden_if_checks_fail.__class__.__name__}.')
+            raise TypeError(
+                f'`hidden_if_checks_fail` can be `bool`, got '
+                f'{hidden_if_checks_fail.__class__.__name__}; {hidden_if_checks_fail!r}.'
+            )
         
         name = raw_name_to_display(name)
         
@@ -114,7 +120,7 @@ class Category:
         
         Returns
         -------
-        command_processor : `None` or ``CommandProcessor``
+        command_processor : `None`, ``CommandProcessor``
         """
         command_processor_reference = self._command_processor_reference
         if command_processor_reference is None:
@@ -276,28 +282,28 @@ class Category:
         ----------
         command : ``Command``, ``Router``, `None`, `async-callable`
             Async callable to add as a command.
-        name : `None` or `str`
+        name : `None`, `str`
             The command's name.
-        name : `None`, `str` or `tuple` of (`None`, `Ellipsis`, `str`)
+        name : `None`, `str`, `tuple` of (`None`, `Ellipsis`, `str`)
             The name to be used instead of the passed `command`'s.
-        description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`), Optional
+        description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`), Optional
             Description added to the command. If no description is provided, then it will check the commands's
             `.__doc__` attribute for it. If the description is a string instance, then it will be normalized with the
             ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
             description.
-        aliases : `None`, `str`, `list` of `str` or `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`), Optional
+        aliases : `None`, `str`, `list` of `str`, `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`), Optional
             The aliases of the command.
-        category : `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``, `str`), Optional
+        category : `None`, ``Category``, `str`, `tuple` of (`None`, `Ellipsis`, ``Category``, `str`), Optional
             The category of the command. Can be given as the category itself, or as a category's name. If given as
             `None`, then the command will go under the command processer's default category.
         checks : `None`, ``CommandCheckWrapper``, ``CheckBase``, `list` of ``CommandCheckWrapper``, ``CheckBase`` \
-                instances or `tuple` of (`None`, `Ellipsis`, ``CommandCheckWrapper``, ``CheckBase`` or `list` of \
+                instances or `tuple` of (`None`, `Ellipsis`, ``CommandCheckWrapper``, ``CheckBase``, `list` of \
                 ``CommandCheckWrapper``, ``CheckBase``), Optional
             Checks to decide in which circumstances the command should be called.
         error_handlers : `None`, `async-callable`, `list` of `async-callable`, `tuple` of (`None`, `async-callable`, \
                 `list` of `async-callable`), Optional
             Error handlers for the command.
-        separator : `None`, `str` or `tuple` (`str`, `str`), Optional
+        separator : `None`, `str`, `tuple` (`str`, `str`), Optional
             The parameter separator of the command's parser.
         assigner : `None`, `str`, Optional
             Parameter assigner sign of the command's parser.
@@ -372,4 +378,6 @@ class Category:
                 command_processor._add_command(command)
                 return
         
-        raise RuntimeError(f'The category: {self!r} is linked to a command processor.')
+        raise RuntimeError(
+            f'The category: {self!r} is not linked to a command processor.'
+        )

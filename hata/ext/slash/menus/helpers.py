@@ -51,7 +51,7 @@ def get_auto_check(event):
     
     Returns
     -------
-    check : `None` or `functools.partial`
+    check : `None`, `functools.partial`
     """
     if isinstance(event, InteractionEvent):
         user = event.user

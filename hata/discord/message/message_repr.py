@@ -51,7 +51,7 @@ class MessageRepr(DiscordEntity):
         
         Returns
         -------
-        channel : `None` or ``ChannelBase``
+        channel : `None`, ``ChannelBase``
         """
         return CHANNELS.get(self.channel_id, None)
     
@@ -63,7 +63,7 @@ class MessageRepr(DiscordEntity):
         
         Returns
         -------
-        guild : `None` or ``Guild``
+        guild : `None`, ``Guild``
         """
         guild_id = self.guild_id
         if guild_id:

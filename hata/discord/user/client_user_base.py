@@ -31,7 +31,7 @@ class ClientUserBase(UserBase):
         The user's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The user's avatar's type.
-    banner_color : `None` or ``Color``
+    banner_color : `None`, ``Color``
         The user's banner color if has any.
     banner_hash : `int`
         The user's banner's hash in `uint128`.
@@ -44,7 +44,7 @@ class ClientUserBase(UserBase):
         Whether the user is a bot or a user account.
     flags : ``UserFlag``
         The user's user flags.
-    thread_profiles : `None` or `dict` (``ChannelThread``, ``ThreadProfile``) items
+    thread_profiles : `None`, `dict` (``ChannelThread``, ``ThreadProfile``) items
         A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
         Defaults to `None`.
     """
@@ -90,7 +90,7 @@ class ClientUserBase(UserBase):
         +---------------+-----------------------+
         | banner        | ``Icon``              |
         +---------------+-----------------------+
-        | banner_color  | `None` or ``Color``   |
+        | banner_color  | `None`, ``Color``     |
         +---------------+-----------------------+
         | discriminator | `int`                 |
         +---------------+-----------------------+
@@ -125,7 +125,7 @@ class ClientUserBase(UserBase):
 
         Returns
         -------
-        user : ``user`` or ``Client``
+        user : ``user``, ``Client``
             The respective user.
         old_attributes : `dict` of (`str`, `Any`) items
             The changed attributes of the respective guild profile as a `dict` with `attribute-name` - `old-attribute`
@@ -137,15 +137,15 @@ class ClientUserBase(UserBase):
             +===================+===============================+
             | avatar            | ``Icon``                      |
             +-------------------+-------------------------------+
-            | boosts_since      | `None` or `datetime`          |
+            | boosts_since      | `None`, `datetime`            |
             +-------------------+-------------------------------+
-            | nick              | `None` or `str`               |
+            | nick              | `None`, `str`                 |
             +-------------------+-------------------------------+
             | pending           | `bool`                        |
             +-------------------+-------------------------------+
-            | role_ids          | `None` or `tuple` of `int`    |
+            | role_ids          | `None`, `tuple` of `int`      |
             +-------------------+-------------------------------+
-            | timed_out_until   | `None` ot `datetime`          |
+            | timed_out_until   | `None`, `datetime`            |
             +-------------------+-------------------------------+
         """
         user_id = int(data['user']['id'])
@@ -287,7 +287,7 @@ class ClientUserBase(UserBase):
     def _difference_update_presence(self, data):
         """
         Updates the user's presence and returns it's overwritten attributes as a `dict` with a `attribute-name` -
-        `old-value` relation. An exception from this is `activities`, because that's a ``ActivityChange`` instance
+        `old-value` relation. An exception from this is `activities`, because that's a ``ActivityChange``
         containing all the changes of the user's activities.
         
         Parameters
@@ -562,7 +562,7 @@ class ClientUserPBase(ClientUserBase):
         The user's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The user's avatar's type.
-    banner_color : `None` or ``Color``
+    banner_color : `None`, ``Color``
         The user's banner color if has any.
     banner_hash : `int`
         The user's banner's hash in `uint128`.
@@ -575,10 +575,10 @@ class ClientUserPBase(ClientUserBase):
         Whether the user is a bot or a user account.
     flags : ``UserFlag``
         The user's user flags.
-    thread_profiles : `None` or `dict` (``ChannelThread``, ``ThreadProfile``) items
+    thread_profiles : `None`, `dict` (``ChannelThread``, ``ThreadProfile``) items
         A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
         Defaults to `None`.
-    activities : `None` or `list` of ``ActivityBase`` instances
+    activities : `None`, `list` of ``ActivityBase``
         A list of the client's activities. Defaults to `None`
     status : `Status`
         The user's display status.

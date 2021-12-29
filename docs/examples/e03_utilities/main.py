@@ -12,7 +12,7 @@ async def message_create(client, message):
         # calls. Usually each high level `Client` method has a low level http method as well. Lets take
         # `Client.message_create(...)` and it's low level `Client.http.message_create(...)` methods as examples.
         #
-        # You cannot call api methods on simple `User` instances, since if you have multiple clients it won't know
+        # You cannot call api methods on simple `User`-s, since if you have multiple clients it won't know
         # which client to use thus it should not decide which one to use - you need to specify the client.
         channel = await client.channel_private_create(message.author)
         

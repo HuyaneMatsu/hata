@@ -57,23 +57,23 @@ The implemented checks are the following:
 +--------------------------------+-----------------+--------------------------------------------------------------+
 | owner_only                     | N/A             | Whether the message's author is an owner of the client.      |
 +--------------------------------+-----------------+--------------------------------------------------------------+
-| owner_or_guild_owner           | N/A             | `owner_only` or `guild_owner` (Fails in private channels.)   |
+| owner_or_guild_owner           | N/A             | `owner_only`, `guild_owner` (Fails in private channels.)     |
 +--------------------------------+-----------------+--------------------------------------------------------------+
-| owner_or_has_any_role          | roles           | `owner_only` or `has_any_role`                               |
+| owner_or_has_any_role          | roles           | `owner_only`, `has_any_role`                                 |
 +--------------------------------+-----------------+--------------------------------------------------------------+
-| owner_or_has_guild_permissions | permissions     | `owner_only` or `has_guild_permissions`                      |
+| owner_or_has_guild_permissions | permissions     | `owner_only`, `has_guild_permissions`                        |
 |                                |                 | (Fails in private channels.)                                 |
 +--------------------------------+-----------------+--------------------------------------------------------------+
-| owner_or_has_permissions       | permissions     | `owner_only` or `has_permissions`                            |
+| owner_or_has_permissions       | permissions     | `owner_only`, `has_permissions`                              |
 +--------------------------------+-----------------+--------------------------------------------------------------+
-| owner_or_has_role              | role            | `owner_only` or `has_any_role`                               |
+| owner_or_has_role              | role            | `owner_only`, `has_any_role`                                 |
 +--------------------------------+-----------------+--------------------------------------------------------------+
 | private_only                   | N/A             | Whether the message's channel is a private channel.          |
 +--------------------------------+-----------------+--------------------------------------------------------------+
 | user_account_only              | N/A             | Whether the message's author is a user account.              |
 +--------------------------------+-----------------+--------------------------------------------------------------+
 | user_account_or_client         | N/A             | Whether the message's author is a user account or a          |
-|                                |                 | ``Client`` instance.                                         |
+|                                |                 | ``Client``.                                                  |
 +--------------------------------+-----------------+--------------------------------------------------------------+
 
 Every check also accepts an additional keyword parameter, called `handler`, what is called, when the respective
@@ -88,12 +88,12 @@ To a check's handler the following parameters are passed:
 +-------------------+---------------------------+
 | message           | ``Message``               |
 +-------------------+---------------------------+
-| command           | ``Command`` or `str`      |
+| command           | ``Command``, `str`        |
 +-------------------+---------------------------+
-| check             | ``_check_base`` instance  |
+| check             | ``_check_base``           |
 +-------------------+---------------------------+
 
-If a command's check fails, then `command` is given as `Command` instance, tho checks can be added not only to
+If a command's check fails, then `command` is given as `Command`, tho checks can be added not only to
 commands and at those cases, `command` is given as `str`.
 """
 
@@ -115,18 +115,18 @@ def validate_checks(checks_):
     
     Parameters
     ----------
-    checks_ : `None`, ``_check_base`` instance or `list` of ``_check_base`` instances
+    checks_ : `None`, ``_check_base``, `list` of ``_check_base``
         Checks to define in which circumstances a command should be called.
         
     Returns
     -------
-    checks_processed : `None` or `list` of ``_check_base``
+    checks_processed : `None`, `list` of ``_check_base``
         Will never return an empty list.
     
     Raises
     ------
     TypeError
-        If `checks_` was not given as `None` or as `list` of ``_check_base`` instances.
+        If `checks_` was not given as `None`, `list` of ``_check_base``-s.
     """
     if checks_ is None:
         checks_processed = None
@@ -141,14 +141,18 @@ def validate_checks(checks_):
                 checks_processed.append(check)
                 continue
             
-            raise TypeError(f'`checks` element {index} was not given as `{_check_base.__name__}`, got '
-                f'`{check_type.__name__}`.')
+            raise TypeError(
+                f'`checks[{index!r}]` is not `{_check_base.__name__}`, got '
+                f'{check_type.__name__}; {check!r}; checks_={checks_!r}.'
+            )
         
         if not checks_processed:
             checks_processed = None
     else:
-        raise TypeError(f'`checks_` should have been given as `None`, `{_check_base.__name__}` instance or as '
-            f'`list` of `{_check_base.__name__}` instances, got: {checks_.__class__.__name__}; {checks_!r}.')
+        raise TypeError(
+            f'`checks_` can be `None`, `{_check_base.__name__}`, `list` of `{_check_base.__name__}`, '
+            f'got {checks_.__class__.__name__}; {checks_!r}.'
+        )
     
     # Unwrap `and` checks
     if (checks_processed is not None):
@@ -177,7 +181,7 @@ def _convert_handler(handler):
     
     Parameters
     ----------
-    handler : `None` or `async-callable` or instantiable to `async-callable`
+    handler : `None`, `async-callable` or instantiable to `async-callable`
         The handler to convert.
         
         If the handler is `async-callable` or if it would be instanced to it, then it should accept the following
@@ -189,14 +193,14 @@ def _convert_handler(handler):
         +-------------------+---------------------------+
         | message           | ``Message``               |
         +-------------------+---------------------------+
-        | command           | ``Command`` or `str`      |
+        | command           | ``Command``, `str`        |
         +-------------------+---------------------------+
-        | check             | ``_check_base`` instance  |
+        | check             | ``_check_base``           |
         +-------------------+---------------------------+
     
     Returns
     -------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
     
     Raises
     ------
@@ -208,13 +212,14 @@ def _convert_handler(handler):
             '`handler` expects to pass 4 parameters (client, message, command, check).')
     return handler
 
+
 def _convert_permissions(permissions):
     """
     Validates the given `permissions`.
     
     Parameters
     ----------
-    permissions : ``Permission`` or `int` instance
+    permissions : ``Permission``, `int`
         Permission to validate.
     
     Returns
@@ -224,7 +229,7 @@ def _convert_permissions(permissions):
     Raises
     ------
     TypeError
-        `permissions` was not given as `int` instance.
+        `permissions` was not given as `int`.
     """
     permission_type = permissions.__class__
     if permission_type is Permission:
@@ -232,10 +237,12 @@ def _convert_permissions(permissions):
     elif issubclass(permission_type, int):
         permissions = Permission(permissions)
     else:
-        raise TypeError(f'`permissions` should have been passed as a `{Permission.__name__}` object or as an '
-            f'`int` instance, got {permission_type.__name__}.')
+        raise TypeError(
+            f'`permissions` can be `{Permission.__name__}`, `int`, got {permission_type.__name__}; {permissions!r}.'
+        )
     
     return permissions
+
 
 class _check_meta(type):
     """
@@ -247,14 +254,14 @@ class _check_meta(type):
         ----------
         class_name : `str`
             The created class's name.
-        class_parents : `tuple` of `type` instances
+        class_parents : `tuple` of `type`
             The superclasses of the creates type.
         class_attributes : `dict` of (`str`, `Any`) items
             The class attributes of the created type.
         
         Returns
         -------
-        type : ``_check_meta`` instance
+        type : ``_check_meta``
         """
         if class_parents:
             parent = class_parents[0]
@@ -275,13 +282,14 @@ class _check_meta(type):
         
         return type.__new__(cls, class_name, class_parents, class_attributes)
 
+
 class _check_base(metaclass=_check_meta):
     """
     Base class for checks.
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     """
     __slots__ = ('handler',)
@@ -292,7 +300,7 @@ class _check_base(metaclass=_check_meta):
         
         Parameters
         ----------
-        handler : `None` or `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable`
             Will be called when the check fails.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -304,9 +312,9 @@ class _check_base(metaclass=_check_meta):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command`` or `str`      |
+            | command           | ``Command``, `str`        |
             +-------------------+---------------------------+
-            | check             | ``_check_base`` instance  |
+            | check             | ``_check_base``           |
             +-------------------+---------------------------+
         
         Raises
@@ -341,12 +349,13 @@ class _check_base(metaclass=_check_meta):
         """
         return False
     
+    
     def __repr__(self):
         """Returns the check's representation."""
-        result = [
+        repr_parts = [
             self.__class__.__name__,
             '(',
-                ]
+        ]
         
         slots = self.SLOTS
         limit = len(slots)
@@ -370,27 +379,27 @@ class _check_base(metaclass=_check_meta):
                 else:
                     display_name = name
                 
-                result.append(display_name)
-                result.append('=')
-                attr = getattr(self,name)
-                result.append(repr(attr))
+                repr_parts.append(display_name)
+                repr_parts.append('=')
+                attribute = getattr(self,name)
+                repr_parts.append(repr(attribute))
                 
                 if index == limit:
                     break
                 
-                result.append(', ')
+                repr_parts.append(', ')
                 continue
         
         handler = self.handler
         if (handler is not None):
             if limit:
-                result.append(', ')
-            result.append('handler=')
-            result.append(repr(handler))
+                repr_parts.append(', ')
+            
+            repr_parts.append('handler=')
+            repr_parts.append(repr(handler))
         
-        result.append(')')
-        
-        return ''.join(result)
+        repr_parts.append(')')
+        return ''.join(repr_parts)
     
     if NEEDS_DUMMY_INIT:
         def __init__(self, *args, **kwargs):
@@ -420,9 +429,9 @@ class _invert_op_check(_check_base):
     
     Attributes
     ----------
-    check : ``_check_base`` instance
+    check : ``_check_base``
         The inverted check.
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     """
     __slots__ = ('check',)
@@ -433,12 +442,12 @@ class _invert_op_check(_check_base):
         
         Parameters
         ----------
-        check : ``_check_base`` instance
+        check : ``_check_base``
             The check to invert.
         
         Returns
         -------
-        self : ``_check_base`` instance
+        self : ``_check_base``
             The reverted check.
             
             If the check is already inverted, reverts it and returns the original one.
@@ -487,9 +496,9 @@ class _or_op_check(_check_base):
     
     Attributes
     ----------
-    checks : `tuple` or ``_check_base`` instances
+    checks : `tuple`, ``_check_base``
         The or-ed checks.
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     """
     __slots__ = ('checks', )
@@ -499,14 +508,14 @@ class _or_op_check(_check_base):
         
         Parameters
         ----------
-        check_1 : ``_check_base`` instance
+        check_1 : ``_check_base``
             The first check to connect.
-        check_2 : ``_check_base`` instance
+        check_2 : ``_check_base``
             The second check to connect.
         
         Returns
         -------
-        self : ``_check_base`` instance
+        self : ``_check_base``
             The or-ed check.
             
             If the check has natural or relation with an other check, will return that one instead.
@@ -643,9 +652,9 @@ class _and_op_check(_check_base):
     
     Attributes
     ----------
-    checks : `tuple` or ``_check_base`` instances
+    checks : `tuple`, ``_check_base``
         The or-ed checks.
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     """
     __slots__ = ('checks', )
@@ -655,14 +664,14 @@ class _and_op_check(_check_base):
         
         Parameters
         ----------
-        check_1 : ``_check_base`` instance
+        check_1 : ``_check_base``
             The first check to connect.
-        check_2 : ``_check_base`` instance
+        check_2 : ``_check_base``
             The second check to connect.
         
         Returns
         -------
-        self : ``_check_base`` instance
+        self : ``_check_base``
             The and-ed check.
             
             If the check has natural and relation with an other check, will return that one instead.
@@ -675,8 +684,10 @@ class _and_op_check(_check_base):
         check_1_handler = check_1.handler
         check_2_handler = check_2.handler
         if check_1_handler != check_2_handler:
-            raise ValueError(f'The two checks have different handlers: check_1={check_1!r}, check_2={check_2!r}. '
-                'Please make sure they have the same when creating `and` connection between them.')
+            raise ValueError(
+                f'The two checks have different handlers: check_1={check_1!r}, check_2={check_2!r}. '
+                'Please make sure they have the same when creating `and` connection between them.'
+            )
         
         handler = check_1_handler
         
@@ -796,7 +807,7 @@ class has_role(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     role : ``Role``
         The role, what the user should have.
@@ -808,9 +819,9 @@ class has_role(_check_base):
         
         Parameters
         ----------
-        role : `str`, `int` or ``Role``
+        role : `str`, `int`, ``Role``
             The role what the message's author should have.
-        handler : `None` or `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable`
             Will be called when the check fails.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -822,18 +833,18 @@ class has_role(_check_base):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command`` or `str`      |
+            | command           | ``Command``, `str`      |
             +-------------------+---------------------------+
-            | check             | ``_check_base`` instance  |
+            | check             | ``_check_base``  |
             +-------------------+---------------------------+
         
         Raises
         ------
         TypeError
-            - If `role` was not given neither as ``Role``, `str` or `int` instance.
+            - If `role` was not given neither as ``Role``, `str`, `int`.
             - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         ValueError
-            If `role` was given as `str` or as `int` instance, but not as a valid snowflake, so ``Role``
+            If `role` was given as `str`, `int`, but not as a valid snowflake, so ``Role``
                 instance cannot be precreated with it.
         """
         role = instance_or_id_to_instance(role, Role, 'role')
@@ -874,7 +885,7 @@ class owner_or_has_role(has_role):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     role : ``Role``
         The role, what the user should have.
@@ -913,7 +924,7 @@ class has_any_role(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     roles : `set` of ``Role``
         The roles from what the user should have at least 1.
@@ -925,9 +936,9 @@ class has_any_role(_check_base):
         
         Parameters
         ----------
-        roles : `iterable` of (`str`, `int` or ``Role``)
+        roles : `iterable` of (`str`, `int`, ``Role``)
             Role from what the message's author should have at least 1.
-        handler : `None` or `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -939,25 +950,27 @@ class has_any_role(_check_base):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command`` or `str`      |
+            | command           | ``Command``, `str`      |
             +-------------------+---------------------------+
-            | check             | ``_check_base`` instance  |
+            | check             | ``_check_base``  |
             +-------------------+---------------------------+
         
         Raises
         ------
         TypeError
             - If `roles` was not given as an `iterable`.
-            - If an element of `roles` was not given neither as ``Role``, `str` or `int` instance.
+            - If an element of `roles` was not given neither as ``Role``, `str`, `int`.
             - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         ValueError
-            If an element of `roles` was given as `str` or as `int` instance, but not as a valid snowflake, so
-                ``Role`` instance cannot be precreated with it.
+            If an element of `roles` was given as `str`, `int`, but not as a valid snowflake, so
+                ``Role`` cannot be precreated with it.
         """
         roles_type = roles.__class__
         if not hasattr(roles_type,'__iter__'):
-            raise TypeError(f'`roles` can be given as `iterable` of (`str`, `int` or `{Role.__name__}`), got '
-                f'{roles_type.__name__}.')
+            raise TypeError(
+                f'`roles` can be `iterable` of (`str`, `int`, `{Role.__name__}`), got '
+                f'{roles_type.__name__}; {roles!r}.'
+            )
         
         roles_processed = set()
         for role in roles:
@@ -976,6 +989,7 @@ class has_any_role(_check_base):
         self.roles = roles_processed
         self.handler = handler
         return self
+    
     
     async def __call__(self, client, message):
         """
@@ -1009,7 +1023,7 @@ class owner_or_has_any_role(has_any_role):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     roles : `set` of ``Role``
         The roles from what the user should have at least 1.
@@ -1020,9 +1034,9 @@ class owner_or_has_any_role(has_any_role):
         
         Parameters
         ----------
-        roles : `iterable` of (`str`, `int` or ``Role``)
+        roles : `iterable` of (`str`, `int`, ``Role``)
             Role from what the message's author should have at least 1.
-        handler : `None` or `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1034,25 +1048,27 @@ class owner_or_has_any_role(has_any_role):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command`` or `str`      |
+            | command           | ``Command``, `str`      |
             +-------------------+---------------------------+
-            | check             | ``_check_base`` instance  |
+            | check             | ``_check_base``  |
             +-------------------+---------------------------+
         
         Raises
         ------
         TypeError
             - If `roles` was not given as an `iterable`.
-            - If an element of `roles` was not given neither as ``Role``, `str` or `int` instance.
+            - If an element of `roles` was not given neither as ``Role``, `str`, `int`.
             - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         ValueError
-            If an element of `roles` was given as `str` or as `int` instance, but not as a valid snowflake, so
-                ``Role`` instance cannot be precreated with it.
+            If an element of `roles` was given as `str`, `int`, but not as a valid snowflake, so
+                ``Role`` cannot be precreated with it.
         """
         roles_type = roles.__class__
         if not hasattr(roles_type,'__iter__'):
-            raise TypeError(f'`roles` can be given as `iterable` of (`str`, `int` or `{Role.__name__}`), got '
-                f'{roles_type.__name__}.')
+            raise TypeError(
+                f'`roles` can be `iterable` of (`str`, `int`, `{Role.__name__}`), got '
+                f'{roles_type.__name__}; {roles!r}.'
+            )
         
         roles_processed = set()
         for role in roles:
@@ -1104,7 +1120,7 @@ class guild_only(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     """
     __slots__ = ()
@@ -1139,7 +1155,7 @@ class private_only(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     """
     __slots__ = ()
@@ -1172,7 +1188,7 @@ class owner_only(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     """
     __slots__ = ()
@@ -1206,7 +1222,7 @@ class guild_owner(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     """
     __slots__ = ()
@@ -1244,7 +1260,7 @@ class owner_or_guild_owner(guild_owner):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     """
     __slots__ = ()
@@ -1286,7 +1302,7 @@ class has_permissions(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     permissions : ``Permission``
         The permission what the message's author should have at message's channel.
@@ -1298,9 +1314,9 @@ class has_permissions(_check_base):
         
         Parameters
         ----------
-        permissions : ``Permission`` or `int` instance
+        permissions : ``Permission``, `int`
             The permission, what the message's author should have at the message's channel.
-        handler : `None` or `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1312,15 +1328,15 @@ class has_permissions(_check_base):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command`` or `str`      |
+            | command           | ``Command``, `str`      |
             +-------------------+---------------------------+
-            | check             | ``_check_base`` instance  |
+            | check             | ``_check_base``  |
             +-------------------+---------------------------+
         
         Raises
         ------
         TypeError
-            - `permissions` was not given as `int` instance.
+            - `permissions` was not given as `int`.
             - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         """
         permissions = _convert_permissions(permissions)
@@ -1362,7 +1378,7 @@ class owner_or_has_permissions(has_permissions):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     permissions : ``Permission``
         The permission what the message's author should have at message's channel.
@@ -1401,7 +1417,7 @@ class has_guild_permissions(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     permissions : ``Permission``
         The permission what the message's author should have at message's guild.
@@ -1413,9 +1429,9 @@ class has_guild_permissions(_check_base):
         
         Parameters
         ----------
-        permissions : ``Permission`` or `int` instance
+        permissions : ``Permission``, `int`
             The permission, what the message's author should have at the message's guild.
-        handler : `None` or `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1427,15 +1443,15 @@ class has_guild_permissions(_check_base):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command`` or `str`      |
+            | command           | ``Command``, `str`      |
             +-------------------+---------------------------+
-            | check             | ``_check_base`` instance  |
+            | check             | ``_check_base``  |
             +-------------------+---------------------------+
         
         Raises
         ------
         TypeError
-            - `permissions` was not given as `int` instance.
+            - `permissions` was not given as `int`.
             - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         """
         permissions = _convert_permissions(permissions)
@@ -1481,7 +1497,7 @@ class owner_or_has_guild_permissions(has_permissions):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     permissions : ``Permission``
         The permission what the message's author should have at message's guild.
@@ -1526,7 +1542,7 @@ class client_has_permissions(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     permissions : ``Permission``
         The permission what the client should have at message's channel.
@@ -1538,9 +1554,9 @@ class client_has_permissions(_check_base):
         
         Parameters
         ----------
-        permissions : ``Permission`` or `int` instance
+        permissions : ``Permission``, `int`
             The permission, what the client should have at the message's channel.
-        handler : `None` or `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1552,15 +1568,15 @@ class client_has_permissions(_check_base):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command`` or `str`      |
+            | command           | ``Command``, `str`      |
             +-------------------+---------------------------+
-            | check             | ``_check_base`` instance  |
+            | check             | ``_check_base``  |
             +-------------------+---------------------------+
         
         Raises
         ------
         TypeError
-            - `permissions` was not given as `int` instance.
+            - `permissions` was not given as `int`.
             - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         """
         permissions = _convert_permissions(permissions)
@@ -1601,7 +1617,7 @@ class client_has_guild_permissions(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     permissions : ``Permission``
         The permission what the client should have at message's guild.
@@ -1613,9 +1629,9 @@ class client_has_guild_permissions(_check_base):
         
         Parameters
         ----------
-        permissions : ``Permission`` or `int` instance
+        permissions : ``Permission``, `int`
             The permission, what the client should have at the message's guild.
-        handler : `None` or `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1627,15 +1643,15 @@ class client_has_guild_permissions(_check_base):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command`` or `str`      |
+            | command           | ``Command``, `str`      |
             +-------------------+---------------------------+
-            | check             | ``_check_base`` instance  |
+            | check             | ``_check_base``  |
             +-------------------+---------------------------+
         
         Raises
         ------
         TypeError
-            - `permissions` was not given as `int` instance.
+            - `permissions` was not given as `int`.
             - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         """
         permissions = _convert_permissions(permissions)
@@ -1680,7 +1696,7 @@ class is_guild(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     guild_id : `int`
         The respective guild's id.
@@ -1692,9 +1708,9 @@ class is_guild(_check_base):
         
         Parameters
         ----------
-        guild : `str`, `int` or ``Guild``
+        guild : `str`, `int`, ``Guild``
             The guild where the message should be sent.
-        handler : `None` or `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1706,18 +1722,18 @@ class is_guild(_check_base):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command`` or `str`      |
+            | command           | ``Command``, `str`      |
             +-------------------+---------------------------+
-            | check             | ``_check_base`` instance  |
+            | check             | ``_check_base``  |
             +-------------------+---------------------------+
         
         Raises
         ------
         TypeError
-            - If `guild` was not given neither as ``Guild``, `str` or `int` instance.
+            - If `guild` was not given neither as ``Guild``, `str`, `int`.
             - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         ValueError
-            If `guild` was given as `str` or as `int` instance, but not as a valid snowflake.
+            If `guild` was given as `str`, `int`, but not as a valid snowflake.
         """
         guild_id = instance_or_id_to_snowflake(guild, Guild, 'guild')
         handler = _convert_handler(handler)
@@ -1761,7 +1777,7 @@ class is_any_guild(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     guild_ids : `set of `int`
         The respective guilds' ids.
@@ -1773,9 +1789,9 @@ class is_any_guild(_check_base):
         
         Parameters
         ----------
-        guilds : `iterable` of (`str`, `int` or ``Guild``)
+        guilds : `iterable` of (`str`, `int`, ``Guild``)
             Guilds to where the message should be sent.
-        handler : `None` or `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1787,24 +1803,26 @@ class is_any_guild(_check_base):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command`` or `str`      |
+            | command           | ``Command``, `str`      |
             +-------------------+---------------------------+
-            | check             | ``_check_base`` instance  |
+            | check             | ``_check_base``  |
             +-------------------+---------------------------+
         
         Raises
         ------
         TypeError
             - If `guilds` was not given as an `iterable`.
-            - If an element of `guilds` was not given neither as ``Guild``, `str` or `int` instance.
+            - If an element of `guilds` was not given neither as ``Guild``, `str`, `int`.
             - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         ValueError
-            If an element of `guilds` was given as `str` or as `int` instance, but not as a valid snowflake.
+            If an element of `guilds` was given as `str`, `int`, but not as a valid snowflake.
         """
         guild_type = guilds.__class__
         if not hasattr(guild_type, '__iter__'):
-            raise TypeError(f'`guilds` can be given as `iterable` of (`str`, `int` or `{Guild.__name__}`), got '
-                f'{guild_type.__name__}.')
+            raise TypeError(
+                f'`guilds` can be `iterable` of (`str`, `int`, `{Guild.__name__}`), got '
+                f'{guild_type.__name__}; {guilds!r}.'
+            )
         
         guild_ids_processed = set()
         for guild in guilds:
@@ -1858,7 +1876,7 @@ class custom(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     _is_async : `bool`
         Whether ``.function`` is async.
@@ -1866,6 +1884,7 @@ class custom(_check_base):
         The custom check's function.
     """
     __slots__ = ('_is_async', 'function')
+    
     def __new__(cls, function, handler=None):
         """
         Creates a check, what will validate whether the a received message of a client passes the given condition.
@@ -1874,7 +1893,7 @@ class custom(_check_base):
         ----------
         function : `callable`
             The custom check what should pass. Can be async.
-        handler : `None` or `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1886,9 +1905,9 @@ class custom(_check_base):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command`` or `str`      |
+            | command           | ``Command``, `str`      |
             +-------------------+---------------------------+
-            | check             | ``_check_base`` instance  |
+            | check             | ``_check_base``  |
             +-------------------+---------------------------+
         
         Raises
@@ -1900,13 +1919,15 @@ class custom(_check_base):
         
         Notes
         -----
-        Only `int` instances are evaluated to boolean.
+        Only `int`-s are evaluated to boolean.
         """
         analyzer = CallableAnalyzer(function)
         non_reserved_positional_parameter_count = analyzer.get_non_reserved_positional_parameter_count()
         if  non_reserved_positional_parameter_count != 2:
-            raise TypeError(f'The passed function: {function!r} should have accept `2` non reserved, positional, '
-                f'non default parameters, meanwhile it accepts `{non_reserved_positional_parameter_count}`.')
+            raise TypeError(
+                f'The passed function: {function!r} should have accept `2` non reserved, positional, '
+                f'non default parameters, meanwhile it accepts `{non_reserved_positional_parameter_count}`.'
+            )
         
         is_async = analyzer.is_async()
         handler = _convert_handler(handler)
@@ -1958,21 +1979,22 @@ class is_channel(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     channel_id : `int`
         The respective channel's id.
     """
     __slots__ = ('channel_id', )
+    
     def __new__(cls, channel, handler=None):
         """
         Creates a check, what will validate whether the a received message of a client passes the given condition.
         
         Parameters
         ----------
-        channel : `str`, `int` or ``ChannelBase``
+        channel : `str`, `int`, ``ChannelBase``
             The channel where the message should be sent.
-        handler : `None` or `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1984,18 +2006,18 @@ class is_channel(_check_base):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command`` or `str`      |
+            | command           | ``Command``, `str`      |
             +-------------------+---------------------------+
-            | check             | ``_check_base`` instance  |
+            | check             | ``_check_base``  |
             +-------------------+---------------------------+
         
         Raises
         ------
         TypeError
-            - If `channel` was not given neither as ``ChannelBase``, `str` or `int` instance.
+            - If `channel` was not given neither as ``ChannelBase``, `str`, `int`.
             - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         ValueError
-            If `channel` was given as `str` or as `int` instance, but not as a valid snowflake.
+            If `channel` was given as `str`, `int`, but not as a valid snowflake.
         """
         channel_id = instance_or_id_to_snowflake(channel, ChannelBase, 'channel')
         handler = _convert_handler(handler)
@@ -2035,21 +2057,22 @@ class is_any_channel(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     channel_ids : `set` of `int`
         The respective channels' ids.
     """
     __slots__ = ('channel_ids', )
+    
     def __new__(cls, channels, handler=None):
         """
         Creates a check, what will validate whether the a received message of a client passes the given condition.
         
         Parameters
         ----------
-        channels : `iterable` of (`str`, `int` or ``ChannelBase``)
+        channels : `iterable` of (`str`, `int`, ``ChannelBase``)
             Channels to where the message should be sent.
-        handler : `None` or `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -2061,24 +2084,26 @@ class is_any_channel(_check_base):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command`` or `str`      |
+            | command           | ``Command``, `str`      |
             +-------------------+---------------------------+
-            | check             | ``_check_base`` instance  |
+            | check             | ``_check_base``  |
             +-------------------+---------------------------+
         
         Raises
         ------
         TypeError
             - If `channels` was not given as an `iterable`.
-            - If an element of `channels` was not given neither as ``ChannelBase``, `str` or `int` instance.
+            - If an element of `channels` was not given neither as ``ChannelBase``, `str`, `int`.
             - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         ValueError
-            If an element of `channels` was given as `str` or as `int` instance, but not as a valid snowflake.
+            If an element of `channels` was given as `str`, `int`, but not as a valid snowflake.
         """
         channels_type = channels.__class__
         if not hasattr(channels_type, '__iter__'):
-            raise TypeError(f'`channels` can be given as `iterable` of (`str`, `int` or `{ChannelBase.__name__}`), '
-                f'got {channels_type.__name__}.')
+            raise TypeError(
+                f'`channels` can be `iterable` of (`str`, `int`, `{ChannelBase.__name__}`), '
+                f'got {channels_type.__name__}; {channels!r}.'
+            )
         
         channel_ids_processed = set()
         for channel in channels:
@@ -2128,7 +2153,7 @@ class nsfw_channel_only(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     """
     __slots__ = ()
@@ -2163,7 +2188,7 @@ class announcement_channel_only(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     """
     __slots__ = ()
@@ -2199,7 +2224,7 @@ class is_in_voice(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     """
     __slots__ = ()
@@ -2238,7 +2263,7 @@ class booster_only(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     """
     __slots__ = ()
@@ -2282,7 +2307,7 @@ class client_only(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     """
     __slots__ = ()
@@ -2317,7 +2342,7 @@ class user_account_only(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     """
     __slots__ = ()
@@ -2352,7 +2377,7 @@ class bot_account_only(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     """
     __slots__ = ()
@@ -2383,11 +2408,11 @@ class bot_account_only(_check_base):
 
 class user_account_or_client(_check_base):
     """
-    Checks whether the message was sent by a user account or by a ``Client`` instance.
+    Checks whether the message was sent by a user account or by a ``Client``.
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     """
     __slots__ = ()
@@ -2426,7 +2451,7 @@ class is_in_category(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     category_id : `int`
         The respective category's id.
@@ -2438,12 +2463,12 @@ class is_in_category(_check_base):
         
         Parameters
         ----------
-        category : `str`, `int`, ``ChannelCategory`` or ``Guild``
+        category : `str`, `int`, ``ChannelCategory``, ``Guild``
             The category, within sent messages pass the check.
             
             If you want to check those channels, which are not in any category, pass the respective ``Guild`` instead.
         
-        handler : `None` or `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -2455,18 +2480,18 @@ class is_in_category(_check_base):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command`` or `str`      |
+            | command           | ``Command``, `str`      |
             +-------------------+---------------------------+
-            | check             | ``_check_base`` instance  |
+            | check             | ``_check_base``  |
             +-------------------+---------------------------+
         
         Raises
         ------
         TypeError
-            - If `category` was not given neither as ``ChannelCategory``, ``Guild``, `str` or `int` instance.
+            - If `category` was not given neither as ``ChannelCategory``, ``Guild``, `str`, `int`.
             - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         ValueError
-            If `category` was given as `str` or as `int` instance, but not as a valid snowflake.
+            If `category` was given as `str`, `int`, but not as a valid snowflake.
         """
         category_id = instance_or_id_to_snowflake(category, (ChannelCategory, Guild), 'category')
         handler = _convert_handler(handler)
@@ -2520,7 +2545,7 @@ class is_in_any_category(_check_base):
     
     Attributes
     ----------
-    handler : `None` or `async-callable`
+    handler : `None`, `async-callable`
         An async callable what will be called when the check fails.
     category_ids : `set` of `int`
         The respective category's id.
@@ -2532,12 +2557,12 @@ class is_in_any_category(_check_base):
         
         Parameters
         ----------
-        categories : `iterable` of (`str`, `int`, ``ChannelCategory`` or ``Guild``)
+        categories : `iterable` of (`str`, `int`, ``ChannelCategory``, ``Guild``)
             The categories, within sent messages pass the check.
             
             If you want to check those channels, which are not in any category, pass the respective ``Guild`` instead.
         
-        handler : `None` or `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable`
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -2549,25 +2574,27 @@ class is_in_any_category(_check_base):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command`` or `str`      |
+            | command           | ``Command``, `str`      |
             +-------------------+---------------------------+
-            | check             | ``_check_base`` instance  |
+            | check             | ``_check_base``  |
             +-------------------+---------------------------+
         
         Raises
         ------
         TypeError
             - If `categories` was not given as an `iterable`.
-            - If an element of `categories` was not given neither as ``ChannelCategory``, ``Guild``, `str` or `int`
+            - If an element of `categories` was not given neither as ``ChannelCategory``, ``Guild``, `str`, `int`
                 instance.
             - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         ValueError
-            If an element of `categories` was given as `str` or as `int` instance, but not as a valid snowflake.
+            If an element of `categories` was given as `str`, `int`, but not as a valid snowflake.
         """
         categories_type = categories.__class__
         if not hasattr(categories_type, '__iter__'):
-            raise TypeError(f'`categories` can be given as `iterable` of (`str`, `int`, `{ChannelCategory.__name__}`, '
-                f'or `{Guild.__name__}`), got {categories_type.__name__}.')
+            raise TypeError(
+                f'`categories` can be `iterable` of (`str`, `int`, `{ChannelCategory.__name__}`, `{Guild.__name__}`), '
+                f'got {categories_type.__name__}; {categories!r}.'
+            )
         
         category_ids_processed = set()
         for category in categories:
@@ -2586,6 +2613,7 @@ class is_in_any_category(_check_base):
         self.category_ids = category_ids_processed
         self.handler = handler
         return self
+    
     
     async def __call__(self, client, message):
         """

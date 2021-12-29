@@ -21,7 +21,7 @@ class StickerFormat(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``StickerFormat``) items
-        Stores the predefined ``StickerFormat`` instances. These can be accessed with their `value` as key.
+        Stores the predefined ``StickerFormat``-s. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The message sticker format type' values' type.
     DEFAULT_NAME : `str` = `'UNDEFINED'`
@@ -112,7 +112,7 @@ class StickerType(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``StickerType``) items
-        Stores the predefined ``StickerType`` instances. These can be accessed with their `value` as key.
+        Stores the predefined ``StickerType``-s. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The message sticker types' values' type.
     DEFAULT_NAME : `str` = `'UNDEFINED'`

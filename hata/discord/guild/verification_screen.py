@@ -182,7 +182,7 @@ class VerificationScreenStep:
         TypeError
             - If `type_` was not given neither as ``VerificationScreenStepType`` nor as `str`.
             - If `title` was not given as `str`.
-            - If `values` is not given neither as `None`, or `tuple`, `list`.
+            - If `values` is not given neither as `None`, `tuple`, `list`.
             - If `values` contains not only `str`s.
             - If `required` was not given as `bool`.
         ValueError

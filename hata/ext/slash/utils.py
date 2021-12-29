@@ -36,12 +36,12 @@ def normalize_description(description):
     
     Parameters
     ----------
-    description : `None` or `str`
+    description : `None`, `str`
         The docstring to clear.
     
     Returns
     -------
-    cleared : `None` or `str`
+    cleared : `None`, `str`
         The cleared docstring. If `docstring` was given as `None` or is detected as empty, will return `None`.
     """
     if description is None:
@@ -75,7 +75,7 @@ def _check_maybe_route(variable_name, variable_value, route_to, validator):
     route_to : `int`
         The value how much times the routing should happen. by default should be given as `0` if no routing was
         done yet.
-    validator : `callable` or `None`
+    validator : `callable`, `None`
         A callable, what validates the given `variable_value`'s value and converts it as well if applicable.
     
     Returns
@@ -112,8 +112,10 @@ def _check_maybe_route(variable_name, variable_value, route_to, validator):
             elif route_to == route_count:
                 pass
             else:
-                raise ValueError(f'`{variable_name}` is routed to `{route_count}`, meanwhile something else is '
-                    f'already routed to `{route_to}`.')
+                raise ValueError(
+                    f'`{variable_name}` is routed to `{route_count}`, meanwhile something else is '
+                    f'already routed to `{route_to}`.'
+                )
             
             if validator is None:
                 processed_value = variable_value

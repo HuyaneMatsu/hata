@@ -17,9 +17,9 @@ class EmbedThumbnail:
     ----------
     height : `int`
         The height of the thumbnail. Defaults to `0`.
-    proxy_url : `None` or `str`
+    proxy_url : `None`, `str`
         A proxied url of the thumbnail.
-    url : `None` or `str`
+    url : `None`, `str`
         The url of the thumbnail.
     width : `int`
         The width of the thumbnail. Defaults to `0`.
@@ -174,9 +174,9 @@ class EmbedVideo:
     ----------
     height : `int`
         The height of the video. Defaults to `0`.
-    proxy_url : `None` or `str`
+    proxy_url : `None`, `str`
         A proxied url of the video.
-    url : `None` or `str`
+    url : `None`, `str`
         The url of the video.
     width : `int`
         The width of the video. Defaults to `0`.
@@ -309,9 +309,9 @@ class EmbedImage:
     ----------
     height : `int`
         The height of the image. Defaults to `0`.
-    proxy_url : `None` or `str`
+    proxy_url : `None`, `str`
         A proxied url of the image.
-    url : `None` or `str`
+    url : `None`, `str`
         The url of the image.
     width : `int`
         The width of the image. Defaults to `0`.
@@ -465,9 +465,9 @@ class EmbedProvider:
     
     Attributes
     ----------
-    name : `None` or `str`
+    name : `None`, `str`
         The name of the provider.
-    url : `None` or `str`
+    url : `None`, `str`
         The url of the provider.
     """
     __slots__ = ('name', 'url',)
@@ -598,13 +598,13 @@ class EmbedAuthor:
     
     Attributes
     ----------
-    icon_url : `None` or `str`
+    icon_url : `None`, `str`
         Url of the author's icon.
-    name : `None` or `str`
+    name : `None`, `str`
         The name of the author.
-    proxy_icon_url : `None` or `str`
+    proxy_icon_url : `None`, `str`
         A proxied url to the url of the author's icon.
-    url : `None` or `str`
+    url : `None`, `str`
         The url of the author.
     """
     __slots__ = ('icon_url', 'name', 'proxy_icon_url', 'url',)
@@ -809,9 +809,9 @@ class EmbedFooter:
     
     Attributes
     ----------
-    icon_url :`None` or `str`
+    icon_url :`None`, `str`
         Url of the embed footer's icon.
-    proxy_icon_url : `None` or `str`
+    proxy_icon_url : `None`, `str`
         A proxied url of the embed footer's icon.
     text : `str`
         The embed footer's text.
@@ -1165,31 +1165,31 @@ class EmbedBase:
     
     Abstract Attributes
     -------------------
-    author : `None` or ``EmbedAuthor``
+    author : `None`, ``EmbedAuthor``
         Author information.
-    color : `None`, ``Color`` or `int`
+    color : `None`, ``Color``, `int`
         The color code of the embed. Passing `0` means black, not like at the case of roles.
-    description : `None` or `str`
+    description : `None`, `str`
         The main content of the embed.
     fields : `list` of ``EmbedField``
         Fields' information.
-    footer : `None` or ``EmbedFooter``
+    footer : `None`, ``EmbedFooter``
         Footer information.
-    image : `None` or ``EmbedImage``
+    image : `None`, ``EmbedImage``
         Image information.
-    provider : `None` or ``EmbedProvider``
+    provider : `None`, ``EmbedProvider``
         Provider information.
-    thumbnail : `None` or ``EmbedThumbnail``
+    thumbnail : `None`, ``EmbedThumbnail``
         Thumbnail information.
-    timestamp : `None` or `datetime`
+    timestamp : `None`, `datetime`
         Timestamp of the embed's content. Shows up next to the ``.footer`` separated with a `'|'` character.
-    title : `None` or `str`
+    title : `None`, `str`
         The title of the embed. Shows at the top with intense white characters.
-    type : `None` or `str`
+    type : `None`, `str`
         The type of the embed. Can be one of `EXTRA_EMBED_TYPES`'s elements. Webhook embeds' type must be `'rich'`.
-    url : `None` or `str`
+    url : `None`, `str`
         Url of the embed. If defined, the embed's `title` will show up as a hyper link pointing to the `url`.
-    video : `None` or `EmbedVideo`
+    video : `None`, `EmbedVideo`
         Video information.
     """
     
@@ -1417,31 +1417,31 @@ class EmbedBase:
          
         Other Parameters
         ----------------
-        author : `None` or ``EmbedAuthor``, Optional (Keyword only)
+        author : `None`, ``EmbedAuthor``, Optional (Keyword only)
             Author information.
-        color : `None`, ``Color`` or `int`, Optional (Keyword only)
+        color : `None`, ``Color``, `int`, Optional (Keyword only)
             The color code of the embed. Passing `0` means black, not like at the case of roles.
-        description : `None` or `str`, Optional (Keyword only)
+        description : `None`, `str`, Optional (Keyword only)
             The main content of the embed.
         fields : `list` of ``EmbedField``, Optional (Keyword only)
             Fields' information.
-        footer : `None` or ``EmbedFooter``, Optional (Keyword only)
+        footer : `None`, ``EmbedFooter``, Optional (Keyword only)
             Footer information.
-        image : `None` or ``EmbedImage``, Optional (Keyword only)
+        image : `None`, ``EmbedImage``, Optional (Keyword only)
             Image information.
-        provider : `None` or ``EmbedProvider``, Optional (Keyword only)
+        provider : `None`, ``EmbedProvider``, Optional (Keyword only)
             Provider information.
-        thumbnail : `None` or ``EmbedThumbnail``, Optional (Keyword only)
+        thumbnail : `None`, ``EmbedThumbnail``, Optional (Keyword only)
             Thumbnail information.
-        timestamp : `None` or `datetime`, Optional (Keyword only)
+        timestamp : `None`, `datetime`, Optional (Keyword only)
             Timestamp of the embed's content. Shows up next to the ``.footer`` separated with a `'|'` character.
-        title : `None` or `str`, Optional (Keyword only)
+        title : `None`, `str`, Optional (Keyword only)
             The title of the embed. Shows at the top with intense white characters.
-        type : `None` or `str`, Optional (Keyword only)
+        type : `None`, `str`, Optional (Keyword only)
             The type of the embed. Can be one of `EXTRA_EMBED_TYPES`'s elements. Webhook embeds' type must be `'rich'`.
-        url : `None` or `str`, Optional (Keyword only)
+        url : `None`, `str`, Optional (Keyword only)
             Url of the embed. If defined, the embed's `title` will show up as a hyper link pointing to the `url`.
-        video : `None` or `EmbedVideo`, Optional (Keyword only)
+        video : `None`, `EmbedVideo`, Optional (Keyword only)
             Video information.
         
         Returns

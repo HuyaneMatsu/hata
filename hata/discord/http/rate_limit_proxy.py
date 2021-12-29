@@ -43,7 +43,7 @@ class RateLimitProxy:
             Who's rate limits will be looked up.
         group : ``RateLimitGroup``
             The proxy's rate limit group to pull additional information.
-        limiter : ``DiscordEntity`` instance, Optional
+        limiter : ``DiscordEntity``, Optional
             What's rate limits will be looked up.
             
             The accepted types depend on the group's limiter:
@@ -75,7 +75,7 @@ class RateLimitProxy:
             If the given `group`'s limiter is not any of the predefined ones. Note that limiters are compared by memory
             address and not by value.
         TypeError
-            If `group` was not given as ``RateLimitGroup`` instance.
+            If `group` was not given as ``RateLimitGroup``.
         ValueError
             If the given `limiter` cannot be casted to `limiter_id` with the specified `group` .
         """
@@ -342,7 +342,7 @@ class RateLimitProxy:
         
         Returns
         -------
-        handler : `None` or ``RateLimitHandler``
+        handler : `None`, ``RateLimitHandler``
         """
         handler = self._handler
         if (handler is not None):

@@ -3,7 +3,6 @@ __all__ = ('UserOA2',)
 from scarletio import copy_docs
 
 from ..user import UserFlag, UserBase, PremiumType
-from ..user.helpers import get_banner_color_from_data
 from ..color import Color
 
 from .helpers import parse_locale
@@ -26,13 +25,13 @@ class UserOA2(UserBase):
         The user's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The user's avatar's type.
-    banner_color : `None` or ``Color``
+    banner_color : `None`, ``Color``
         The user's banner color if has any.
     banner_hash : `int`
         The user's banner's hash in `uint128`.
     banner_type : ``IconType``
         The user's banner's type.
-    email : `None` or `str`
+    email : `None`, `str`
         The user's email. Defaults to empty string.
     flags : ``UserFlag``
         The user's user flags.
@@ -94,11 +93,11 @@ class UserOA2(UserBase):
             +-----------------------+-----------------------+
             | banner                | ``Icon``              |
             +-----------------------+-----------------------+
-            | banner_color          | `None` or ``Color``   |
+            | banner_color          | `None`, ``Color``     |
             +-----------------------+-----------------------+
             | discriminator         | `int`                 |
             +-----------------------+-----------------------+
-            | email                 | `None` or `str`       |
+            | email                 | `None`, `str`         |
             +-----------------------+-----------------------+
             | flags                 | ``UserFlag``          |
             +-----------------------+-----------------------+

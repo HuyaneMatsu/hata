@@ -20,7 +20,7 @@ class Integration(DiscordEntity, immortal=True):
     account : ``IntegrationAccount``, ``ClientUserBase``
         The integration's respective account. If the integration type is `'discord'`, then set as a discord user
         itself.
-    application : `None` or ``Application``
+    application : `None`, ``Application``
         The application of the integration if applicable.
     enabled : `bool`
         Whether this integration is enabled.

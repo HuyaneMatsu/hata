@@ -10,9 +10,9 @@ class GuildDiscovery:
     
     Attributes
     ----------
-    application_actioned : `None` or `datetime`
+    application_actioned : `None`, `datetime`
         When the guild's application was accepted or rejected.
-    application_requested : `None` or `datetime`
+    application_requested : `None`, `datetime`
         When the guild applied to guild discovery. Only set if pending.
     emoji_discovery : `bool`
         Whether guild info is shown when the respective guild's emojis are clicked.
@@ -132,7 +132,7 @@ class DiscoveryCategory(DiscordEntity, immortal=True):
     ----------
     id : `int`
         The unique identifier number of the discovery category.
-    local_names : `None` or `dict` of (`str`, `str`) items
+    local_names : `None`, `dict` of (`str`, `str`) items
         The category's name in other languages.
     name : `str`
         The category's name.

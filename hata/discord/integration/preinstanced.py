@@ -17,7 +17,7 @@ class IntegrationExpireBehavior(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``IntegrationExpireBehavior``) items
-        Stores the predefined ``IntegrationExpireBehavior`` instances. These can be accessed with their `value` as key.
+        Stores the predefined ``IntegrationExpireBehavior``-s. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The integration expire behavior' values' type.
     DEFAULT_NAME : `str` = `'Undefined'`

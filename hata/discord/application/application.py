@@ -20,7 +20,7 @@ class Application(DiscordEntity, immortal=True):
     
     Attributes
     ----------
-    aliases : `None` or `list` of `str`
+    aliases : `None`, `list` of `str`
         Aliases of the application's name. Defaults to `None`.
     bot_public : `bool`.
         Whether not only the application's owner can join the application's bot to guilds. Defaults to `False`
@@ -32,15 +32,15 @@ class Application(DiscordEntity, immortal=True):
         will be used at the store.
     cover_type : ``IconType``
         The application's store cover image's type.
-    custom_install_url : `None` or `str`
+    custom_install_url : `None`, `str`
         The application's default custom authorization link, if enabled.
     description : `str`
         The description of the application. Defaults to empty string.
-    developers : `None` or `list` of ``ApplicationSubEntity``
+    developers : `None`, `list` of ``ApplicationSubEntity``
         A list of the application's games' developers. Defaults to `None`.
     eula_id : `int`
         The end-user license agreement's id of the application. Defaults to `0` if not applicable.
-    executables : `None` or `list` of ``ApplicationExecutable``
+    executables : `None`, `list` of ``ApplicationExecutable``
         A list of the application's executables. Defaults to `None`.
     flags : ``ApplicationFlag``
         The application's public flags.
@@ -49,7 +49,7 @@ class Application(DiscordEntity, immortal=True):
         Defaults to `0` if not applicable.
     hook : `bool`
         Defaults to `False`.
-    install_parameters : `None` or ``ApplicationInstallParameters``
+    install_parameters : `None`, ``ApplicationInstallParameters``
         Settings for the application's default in-app authorization link, if enabled.
     icon_hash : `int`
         The application's icon's hash as `uint128`.
@@ -63,18 +63,18 @@ class Application(DiscordEntity, immortal=True):
         Defaults to `False`.
     overlay_compatibility_hook : `bool`
         Defaults to `False`.
-    owner : ``ClientUserBase`` or ``Team``
+    owner : ``ClientUserBase``, ``Team``
         The application's owner. Defaults to `ZEROUSER`.
     primary_sku_id : `int`
         If the application is a game sold on Discord, this field will be the id of the created `Game SKU`.
         Defaults to `0`.
-    privacy_policy_url : `None` or `str`
+    privacy_policy_url : `None`, `str`
         The url of the application's privacy policy. Defaults to `None`.
-    publishers : `None` or `list` of ``ApplicationSubEntity``
+    publishers : `None`, `list` of ``ApplicationSubEntity``
         A list of the application's games' publishers. Defaults to `None`.
-    rpc_origins : `None` or `list` of `str`
+    rpc_origins : `None`, `list` of `str`
         A list of `rpc` origin urls, if `rpc` is enabled. Set as `None` if would be an empty list.
-    slug : `None` or `str`
+    slug : `None`, `str`
         If this application is a game sold on Discord, this field will be the url slug that links to the store page.
         Defaults to `None`.
     splash_hash : `int`
@@ -84,11 +84,11 @@ class Application(DiscordEntity, immortal=True):
     summary : `str`
         If this application is a game sold on Discord, this field will be the summary field for the store page of its
         primary sku. Defaults to empty string.
-    tags : `None` or `tuple` of `str`
+    tags : `None`, `tuple` of `str`
         Up to 5 tags describing the content and functionality of the application.
-    terms_of_service_url : `None` or `str`
+    terms_of_service_url : `None`, `str`
         The url of the application's terms of service. Defaults to `None`.
-    third_party_skus : `None` or `list` of ``ThirdPartySKU``
+    third_party_skus : `None`, `list` of ``ThirdPartySKU``
          A list of the application's third party stock keeping units. Defaults to `None`.
     verify_key : `str`
         A base64 encoded key for the GameSDK's `GetTicket`. Defaults to empty string.
@@ -285,7 +285,7 @@ class Application(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        data : `None` or `dict` of (`str`, `Any`) items
+        data : `None`, `dict` of (`str`, `Any`) items
             Application data received from Discord.
         set_owner : `bool`, Optional
             Whether the application's owner should be set from the given data. Defaults to `False`.
@@ -434,7 +434,7 @@ class Application(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        application_id : `int` or `str`
+        application_id : `int`, `str`
             The application's id.
         **kwargs : keyword parameters
             Additional predefined attributes for the application.
@@ -447,9 +447,9 @@ class Application(DiscordEntity, immortal=True):
             Whether the application's bot will only join a guild, when completing the full `oauth2` code grant flow.
         description : `str`, Optional (Keyword only)
             The description of the application.
-        flags : `int` or ``ApplicationFlag``, Optional (Keyword only)
-            The application's public flags. If not given as ``ApplicationFlag`` instance, then is converted to it.
-        icon : `None`, ``Icon`` or `str`, Optional (Keyword only)
+        flags : `int`, ``ApplicationFlag``, Optional (Keyword only)
+            The application's public flags. If not given as ``ApplicationFlag``, then is converted to it.
+        icon : `None`, ``Icon``, `str`, Optional (Keyword only)
             The application's icon.
             
             > Mutually exclusive with `icon_type` and `icon_hash`.
@@ -461,16 +461,16 @@ class Application(DiscordEntity, immortal=True):
             The application's icon's hash.
             
             > Mutually exclusive with `icon`.
-        owner : ``ClientUserBase`` or ``Team``
+        owner : ``ClientUserBase``, ``Team``
             The application's owner. Defaults to `ZEROUSER`.
             
-            This field cannot be given as `snowflake`, because it might represent both ``UserBase`` instances  and
+            This field cannot be given as `snowflake`, because it might represent both ``UserBase``-s  and
             ``Team``-s as well.
-        privacy_policy_url : `None` or `str`, Optional (Keyword only)
+        privacy_policy_url : `None`, `str`, Optional (Keyword only)
             The url of the application's privacy policy.
-        slug : `None` or `str`
+        slug : `None`, `str`
             If this application is a game sold on Discord, this field will be the url slug that links to the store page.
-        splash : `None`, ``Icon`` or `str`, Optional (Keyword only)
+        splash : `None`, ``Icon``, `str`, Optional (Keyword only)
             The application's splash.
             
             > Mutually exclusive with `icon_type` and `icon_hash`.
@@ -486,7 +486,7 @@ class Application(DiscordEntity, immortal=True):
         summary : `str`, Optional (Keyword only)
             If this application is a game sold on Discord, this field will be the summary field for the store page of
             its primary sku.
-        terms_of_service_url : `None` or `str`, Optional (Keyword only)
+        terms_of_service_url : `None`, `str`, Optional (Keyword only)
             The url of the application's terms of service.
         
         Returns
@@ -540,7 +540,7 @@ class Application(DiscordEntity, immortal=True):
             else:
                 if not isinstance(owner, (ClientUserBase, Team)):
                     raise TypeError(
-                        f'`owner` can be given as `{ClientUserBase.__name__}` or as `{Team.__name__}` instance, got '
+                        f'`owner` can be `{ClientUserBase.__name__}`, `{Team.__name__}`, got '
                         f'{owner.__class__.__name__}; {owner!r}.'
                     )
                 

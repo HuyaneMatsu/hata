@@ -30,7 +30,9 @@ def element_validator_none(container_name, element, empty_elements_allowed):
     RuntimeError
         The container has any elements.
     """
-    raise RuntimeError(f'{container_name} excepts no elements.')
+    raise RuntimeError(
+        f'`{container_name}` excepts no elements.'
+    )
 
 
 def element_validator_string(container_name, element, empty_elements_allowed):
@@ -49,14 +51,18 @@ def element_validator_string(container_name, element, empty_elements_allowed):
     Raises
     ------
     RuntimeError
-        - `element` is not `str` instance.
+        - `element` is not `str`.
         - `empty_elements_allowed` is `False`, but `element` is an empty string.
     """
     if not isinstance(element, str):
-        raise RuntimeError(f'{container_name} excepts only string elements, got: {element!r}.')
+        raise RuntimeError(
+            f'`{container_name}` excepts `str` elements, got: {element.__class__.__name__}; {element!r}.'
+        )
     
     if (not empty_elements_allowed) and (not element):
-        raise RuntimeError(f'{container_name} contains empty string meanwhile it should not.')
+        raise RuntimeError(
+            f'`{container_name}` contains empty string meanwhile it should not.'
+        )
 
 
 def element_validator_integer(container_name, element, empty_elements_allowed):
@@ -75,10 +81,12 @@ def element_validator_integer(container_name, element, empty_elements_allowed):
     Raises
     ------
     RuntimeError
-        `element` is not `int` instance.
+        `element` is not `int`.
     """
     if not isinstance(element, int):
-        raise RuntimeError(f'{container_name} excepts only integer elements, got: {element!r}.')
+        raise RuntimeError(
+            f'`{container_name}` excepts only integer elements, got {element.__class__.__name__}; {element!r}.'
+        )
     
 def element_validator_float(container_name, element, empty_elements_allowed):
     """
@@ -96,10 +104,12 @@ def element_validator_float(container_name, element, empty_elements_allowed):
     Raises
     ------
     RuntimeError
-        `element` is not `float` instance.
+        `element` is not `float`.
     """
     if not isinstance(element, float):
-        raise RuntimeError(f'{container_name} excepts only float elements, got: {element!r}.')
+        raise RuntimeError(
+            f'`{container_name}` excepts only float elements, got {element.__class__.__name__}; {element!r}.'
+        )
 
 
 ELEMENT_TYPE_IDENTIFIER_TO_VALIDATOR = {
@@ -126,25 +136,31 @@ def checkout_list_structure(root, name, nullable, element_type_identifier, empty
     
     Returns
     -------
-    root : `None` or `list`
+    root : `None`, `list`
     
     Raises
     ------
     TypeError
-        - `root` is not `list` instance, or neither `None` if nullable.
+        - `root` is not `list`, or neither `None` if nullable.
         - `root` element type incorrect.
     """
     if nullable:
         if (root is not None) and (not isinstance(root, list)):
-           raise RuntimeError(f'{name} can be list instance (nullable), got {root.__class__.__name__}.')
+           raise RuntimeError(
+               f'`{name}` can be list instance (nullable), got {root.__class__.__name__}; {root!r}.'
+           )
     else:
         if (not isinstance(root, list)):
-           raise RuntimeError(f'{name} can be list instance, got {root.__class__.__name__}.')
+           raise RuntimeError(
+               f'{name} can be list instance, got {root.__class__.__name__}; {root!r}.'
+           )
     
     try:
         element_validator = ELEMENT_TYPE_IDENTIFIER_TO_VALIDATOR[element_type_identifier]
     except KeyError:
-        raise RuntimeError(f'Unknown element validator identifier: {element_type_identifier!r}.') from None
+        raise RuntimeError(
+            f'Unknown element validator identifier: {element_type_identifier!r}.'
+        ) from None
     
     if (root is not None):
         if root:

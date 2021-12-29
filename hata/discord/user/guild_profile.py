@@ -21,19 +21,19 @@ class GuildProfile(metaclass=Slotted):
         The respective user's avatar hash at the guild in `uint128`.
     avatar_type : `bool`
         The respective user's avatar type at the guild.
-    boosts_since : `None` or `datetime`
+    boosts_since : `None`, `datetime`
         Since when the user uses it's Nitro to boost the respective guild. If the user does not boost the guild, this
         attribute is set to `None`.
-    joined_at : `None` or `datetime`
+    joined_at : `None`, `datetime`
         The date, since the user is the member of the guild. If this field was not included with the initial data, then
         it is set to `None`.
-    nick : `None` or `str`
+    nick : `None`, `str`
         The user's nick at the guild if it has.
     pending : `bool`
         Whether the user has not yet passed the guild's membership screening requirements. Defaults to `False`.
-    role_ids : `None` or `tuple` of ``Role``
+    role_ids : `None`, `tuple` of ``Role``
         The user's roles at the guild.
-    timed_out_until : `None` or `datetime`
+    timed_out_until : `None`, `datetime`
         Till when the user is timed out, and cannot interact with the guild.
     """
     __slots__ = ('boosts_since', 'joined_at', 'nick', 'pending', 'role_ids', 'timed_out_until')
@@ -58,7 +58,7 @@ class GuildProfile(metaclass=Slotted):
     
     def __init__(self, data):
         """
-        Creates a ``GuildProfile`` instance from the received guild profile data and from it's respective guild.
+        Creates a ``GuildProfile`` from the received guild profile data and from it's respective guild.
         
         Parameters
         ----------
@@ -158,15 +158,15 @@ class GuildProfile(metaclass=Slotted):
         +===================+===============================+
         | avatar            | ``Icon``                      |
         +-------------------+-------------------------------+
-        | boosts_since      | `None` or `datetime`          |
+        | boosts_since      | `None`, `datetime`            |
         +-------------------+-------------------------------+
-        | nick              | `None` or `str`               |
+        | nick              | `None`, `str`                 |
         +-------------------+-------------------------------+
         | pending           | `bool`                        |
         +-------------------+-------------------------------+
-        | role_ids          | `None` or `tuple` of `int`    |
+        | role_ids          | `None`, `tuple` of `int`      |
         +-------------------+-------------------------------+
-        | timed_out_until   | `None` ot `datetime`          |
+        | timed_out_until   | `None`, `datetime`            |
         +-------------------+-------------------------------+
         """
         old_attributes = {}
@@ -220,7 +220,7 @@ class GuildProfile(metaclass=Slotted):
         
         Returns
         -------
-        top_role : ``Role`` or `default`
+        top_role : ``Role``, `default`
         """
         top_role = default
         
@@ -251,7 +251,7 @@ class GuildProfile(metaclass=Slotted):
         
         Returns
         -------
-        roles : `None` or `list` of ``Role``
+        roles : `None`, `list` of ``Role``
         """
         role_ids = self.role_ids
         if role_ids is None:

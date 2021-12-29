@@ -307,14 +307,14 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
     
     def __new__(cls, int_=-1):
         """
-        Creates a new ``IntentFlag`` instance from the passed `int_`. If any invalid intent flag is passed, those
+        Creates a new ``IntentFlag`` from the passed `int_`. If any invalid intent flag is passed, those
         will be removed. If the wrapper is started up without presence caching, then `.guild_presences` will be
         set to `False` by default.
         
         Parameters
         ----------
-        int_ : `int` instance, Optional
-            The value what will be converted ``IntentFlag`` instance. If not passed or passed as a negative value,
+        int_ : `int`, Optional
+            The value what will be converted ``IntentFlag``. If not passed or passed as a negative value,
             then returns an ``IntentFlag`` what contains all the enabled flags.
         
         Returns
@@ -324,7 +324,7 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
         Raises
         ------
         TypeError
-            If `int_` was not passed as `int` instance.
+            If `int_` was not passed as `int`.
         
         Notes
         -----

@@ -54,7 +54,7 @@ def _validate_show_for_invoking_user_only(show_for_invoking_user_only):
     
     Parameters
     ----------
-    show_for_invoking_user_only : `None` or `bool`
+    show_for_invoking_user_only : `None`, `bool`
         The `show_for_invoking_user_only` value to validate.
     
     Returns
@@ -65,7 +65,7 @@ def _validate_show_for_invoking_user_only(show_for_invoking_user_only):
     Raises
     ------
     TypeError
-        If `show_for_invoking_user_only` was not given as `None` nor as `bool` instance.
+        If `show_for_invoking_user_only` was not given as `None` nor as `bool`.
     """
     if show_for_invoking_user_only is None:
         show_for_invoking_user_only = False
@@ -81,7 +81,7 @@ def _validate_is_global(is_global):
     
     Parameters
     ----------
-    is_global : `None` or `bool`
+    is_global : `None`, `bool`
         The `is_global` value to validate.
     
     Returns
@@ -92,7 +92,7 @@ def _validate_is_global(is_global):
     Raises
     ------
     TypeError
-        If `is_global` was not given as `None` nor as `bool` instance.
+        If `is_global` was not given as `None` nor as `bool`.
     """
     if is_global is None:
         is_global = False
@@ -108,18 +108,18 @@ def _validate_1_guild(guild):
     
     Parameters
     ----------
-    guild : ``Guild`` or `int`
+    guild : ``Guild``, `int`
         The guild value to validate.
     
     Returns
     -------
     guild_id : `int`
-        Validated guild value converted to `int` instance.
+        Validated guild value converted to `int`.
     
     Raises
     ------
     TypeError
-        If `guild` was not given neither as ``Guild`` nor `int` instance.
+        If `guild` was not given neither as ``Guild`` nor `int`.
     ValueError
         If `guild` is an integer out of uint64 value range.
     """
@@ -128,8 +128,9 @@ def _validate_1_guild(guild):
     elif isinstance(guild, (int, str)):
         guild_id = preconvert_snowflake(guild, 'guild')
     else:
-        raise TypeError(f'`guild` was not given neither as `{Guild.__class__.__name__}`, neither as `int` '
-            f'instance, got {guild.__class__.__name__}.')
+        raise TypeError(
+            f'`guild`can be `{Guild.__class__.__name__}`, `int`, got {guild.__class__.__name__}; {guild!r}.'
+        )
     
     return guild_id
 
@@ -145,7 +146,7 @@ def _validate_guild(guild):
     
     Returns
     -------
-    guild_ids : `None` or `set` of `int`
+    guild_ids : `None`, `set` of `int`
         The validated `guild` value.
     
     Raises
@@ -169,7 +170,9 @@ def _validate_guild(guild):
             guild_ids.add(guild_id)
         
         if not guild_ids:
-            raise ValueError(f'`guild` cannot be given as empty container, got {guild!r}.')
+            raise ValueError(
+                f'`guild` cannot be empty container, got {guild!r}.'
+            )
     
     return guild_ids
 
@@ -180,18 +183,18 @@ def _validate_name(name):
     
     Parameters
     ----------
-    name : `None` or `str`
+    name : `None`, `str`
         A command's respective name.
     
     Returns
     -------
-    name : `None` or `str`
+    name : `None`, `str`
         The validated name.
     
     Raises
     ------
     TypeError
-        If `name` is not given as `None` neither as `str` instance.
+        If `name` is not given as `None` neither as `str`.
     ValueError
         If `name` length is out of the expected range [1:32].
     """
@@ -202,15 +205,20 @@ def _validate_name(name):
         elif issubclass(name_type, str):
             name = str(name)
         else:
-            raise TypeError(f'`name` can be only given as `None` or as `str` instance, got {name_type.__name__}; '
-                f'{name!r}.')
+            raise TypeError(
+                f'`name` can be `None`, `str`, got {name_type.__name__}; {name!r}.'
+            )
         
         name_length = len(name)
-        if name_length < APPLICATION_COMMAND_NAME_LENGTH_MIN or \
-                name_length > APPLICATION_COMMAND_NAME_LENGTH_MAX:
-            raise ValueError(f'`name` length is out of the expected range '
+        if (
+            name_length < APPLICATION_COMMAND_NAME_LENGTH_MIN or
+            name_length > APPLICATION_COMMAND_NAME_LENGTH_MAX
+        ):
+            raise ValueError(
+                f'`name` length is out of the expected range '
                 f'[{APPLICATION_COMMAND_NAME_LENGTH_MIN}:'
-                f'{APPLICATION_COMMAND_NAME_LENGTH_MAX}], got {name_length!r}; {name!r}.')
+                f'{APPLICATION_COMMAND_NAME_LENGTH_MAX}], got {name_length!r}; {name!r}.'
+            )
     
     return name
 
@@ -221,7 +229,7 @@ def _validate_is_default(is_default):
     
     Parameters
     ----------
-    is_default : `None` or `bool`
+    is_default : `None`, `bool`
         The `is_default` value to validate.
     
     Returns
@@ -232,7 +240,7 @@ def _validate_is_default(is_default):
     Raises
     ------
     TypeError
-        If `is_default` was not given as `None` nor as `bool` instance.
+        If `is_default` was not given as `None` nor as `bool`.
     """
     if is_default is None:
         is_default = False
@@ -248,7 +256,7 @@ def _validate_delete_on_unload(delete_on_unload):
     
     Parameters
     ----------
-    delete_on_unload : `None` or `bool`
+    delete_on_unload : `None`, `bool`
         The `delete_on_unload` value to validate.
     
     Returns
@@ -259,7 +267,7 @@ def _validate_delete_on_unload(delete_on_unload):
     Raises
     ------
     TypeError
-        If `delete_on_unload` was not given as `None` nor as `bool` instance.
+        If `delete_on_unload` was not given as `None` nor as `bool`.
     """
     if delete_on_unload is None:
         unloading_behaviour = UNLOADING_BEHAVIOUR_INHERIT
@@ -279,7 +287,7 @@ def _validate_allow_by_default(allow_by_default):
     
     Parameters
     ----------
-    allow_by_default : `None` or `bool`
+    allow_by_default : `None`, `bool`
         The `allow_by_default` value to validate.
     
     Returns
@@ -290,7 +298,7 @@ def _validate_allow_by_default(allow_by_default):
     Raises
     ------
     TypeError
-        If `allow_by_default` was not given as `None` nor as `bool` instance.
+        If `allow_by_default` was not given as `None` nor as `bool`.
     """
     if allow_by_default is None:
         allow_by_default = True
@@ -332,7 +340,7 @@ def _validate_target(target):
     ValueError
         - If `target` could not be matched by any expected target type name or value.
     TypeError
-        - If `target` is neither `None`, `int`, `str`, nor ``ApplicationCommandTargetType`` instance.
+        - If `target` is neither `None`, `int`, `str`, nor ``ApplicationCommandTargetType``.
     """
     if target is None:
         target = ApplicationCommandTargetType.none
@@ -349,7 +357,9 @@ def _validate_target(target):
         try:
             target = APPLICATION_COMMAND_TARGET_TYPES_BY_NAME[target]
         except KeyError:
-            raise ValueError(f'Unknown `target` name: {target!r}.') from None
+            raise ValueError(
+                f'Unknown `target` name: {target!r}.'
+            ) from None
     
     elif isinstance(target, int):
         if type(target) is not int:
@@ -358,11 +368,15 @@ def _validate_target(target):
         try:
             target = APPLICATION_COMMAND_TARGET_TYPES_BY_NAME[target]
         except KeyError:
-            raise ValueError(f'Unknown `target` value: {target!r}.') from None
+            raise ValueError(
+                f'Unknown `target` value: {target!r}.'
+            ) from None
     
     else:
-        raise TypeError(f'`target` can be given as `None`, `{ApplicationCommandTargetType.__name__}`, `str` or '
-            f'as `int` instance, got {target.__class__.__name__}.')
+        raise TypeError(
+            f'`target` can be `None`, `{ApplicationCommandTargetType.__name__}`, `str`,  `int`, got '
+            f'{target.__class__.__name__}; {target!r}.'
+        )
     
     if target is ApplicationCommandTargetType.none:
         target = DEFAULT_APPLICATION_COMMAND_TARGET_TYPE
@@ -377,9 +391,9 @@ def _generate_description_from(command, name, description):
     
     Parameters
     ----------
-    command : `None` or `callable`
+    command : `None`, `callable`
         The command's function.
-    name : `None` or `str`
+    name : `None`, `str`
         The command's name, if name defaulting should be applied.
     description : `Any`
         The command's description.
@@ -416,11 +430,15 @@ def _generate_description_from(command, name, description):
     else:
         description_length = len(description)
     
-    if description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or \
-            description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX:
-        raise ValueError(f'`description` length is out of the expected range '
+    if (
+        description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or
+        description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX
+    ):
+        raise ValueError(
+            f'`description` length is out of the expected range '
             f'[{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], got '
-            f'{description_length!r}; {description!r}.')
+            f'{description_length!r}; {description!r}.'
+        )
     
     return description
 
@@ -442,7 +460,7 @@ def _checkout_auto_complete_parameter_name(parameter_name):
     Raises
     ------
     TypeError
-        If `parameter_name` is not `str` instance.
+        If `parameter_name` is not `str`.
     ValueError
         If `parameter_name` is an empty string.
     """
@@ -451,11 +469,15 @@ def _checkout_auto_complete_parameter_name(parameter_name):
     elif isinstance(parameter_name, str):
         parameter_name = str(parameter_name)
     else:
-        raise TypeError(f'`parameter_name` parameters can only be given as `str`, got '
-            f'{parameter_name.__class__.__name__}')
+        raise TypeError(
+            f'`parameter_name` can be `str`, got '
+            f'{parameter_name.__class__.__name__}; {parameter_name!r}'
+        )
     
     if not parameter_name:
-        raise ValueError(f'`parameter_name` cannot be empty string.')
+        raise ValueError(
+            f'`parameter_name` cannot be empty string.'
+        )
     
     return parameter_name
 
@@ -479,7 +501,7 @@ def _build_auto_complete_parameter_names(parameter_name, parameter_names):
     Raises
     ------
     TypeError
-        If `parameter_name` is not `str` instance.
+        If `parameter_name` is not `str`.
     ValueError
         If `parameter_name` is an empty string.
     """
@@ -525,7 +547,9 @@ def _register_autocomplete_function(parent, parameter_names, function):
         If `function` is not an asynchronous.
     """
     if (function is None):
-        raise RuntimeError(f'`function` cannot be `None`.')
+        raise RuntimeError(
+            f'`function` cannot be `None`.'
+        )
     
     return parent._add_autocomplete_function(parameter_names, function)
 
@@ -536,7 +560,7 @@ def _reset_parent_schema(entity):
     
     Parameters
     ----------
-    entity : ``SlasherApplicationCommandFunction`` or ``SlasherApplicationCommandCategory``
+    entity : ``SlasherApplicationCommandFunction``, ``SlasherApplicationCommandCategory``
         The category or function to reset it's parent's schema.
     """
     # Reset the parent's schema recursively
@@ -581,28 +605,28 @@ class SlasherApplicationCommand:
     
     Attributes
     ----------
-    _auto_completers : `None` or `list` of ``SlasherApplicationCommandParameterAutoCompleter``
+    _auto_completers : `None`, `list` of ``SlasherApplicationCommandParameterAutoCompleter``
         Auto completer functions.
-    _command : `None` or ``SlasherApplicationCommandFunction``
+    _command : `None`, ``SlasherApplicationCommandFunction``
         The command of the slash command.
-    _exception_handlers : `None` or `list` of `CoroutineFunction`
+    _exception_handlers : `None`, `list` of `CoroutineFunction`
         Exception handlers added with ``.error`` to the interaction handler.
         
         Same as ``Slasher._exception_handlers``.
     
-    _parent_reference : `None` or ``WeakReferer`` to ``Slasher``
+    _parent_reference : `None`, ``WeakReferer`` to ``Slasher``
         Reference to the slasher application command's parent.
     
-    _permission_overwrites : `None` or `dict` of (`int`, `list` of ``ApplicationCommandPermissionOverwrite``)
+    _permission_overwrites : `None`, `dict` of (`int`, `list` of ``ApplicationCommandPermissionOverwrite``)
         Permission overwrites applied to the slash command.
-    _registered_application_command_ids : `None` or `dict` of (`int`, `int`) items
+    _registered_application_command_ids : `None`, `dict` of (`int`, `int`) items
         The registered application command ids, which are matched by the command's schema.
         
         If empty set as `None`, if not then the keys are the respective guild's id and the values are the application
         command id.
-    _schema : `None` or ``ApplicationCommand``
+    _schema : `None`, ``ApplicationCommand``
         Internal slot used by the ``.get_schema`` method.
-    _self_reference : `None` or ``WeakReferer`` to ``SlasherApplicationCommand``
+    _self_reference : `None`, ``WeakReferer`` to ``SlasherApplicationCommand``
         Back reference to the slasher application command.
         
         Used by sub commands to access the parent entity.
@@ -622,7 +646,7 @@ class SlasherApplicationCommand:
         | UNLOADING_BEHAVIOUR_INHERIT   | 2     |
         +-------------------------------+-------+
     
-    _sub_commands : `None` or `dict` of (`str`, (``SlasherApplicationCommandFunction`` or \
+    _sub_commands : `None`, `dict` of (`str`, (``SlasherApplicationCommandFunction`` or \
             ``SlasherApplicationCommandCategory``)) items
         Sub-commands of the slash command.
         
@@ -632,7 +656,7 @@ class SlasherApplicationCommand:
         Whether the command is enabled by default for everyone who has `use_application_commands` permission.
     description : `str`
         Application command description. It's length can be in range [2:100].
-    guild_ids : `None` or `set` of `int`
+    guild_ids : `None`, `set` of `int`
         The ``Guild``'s id to which the command is bound to.
     is_default : `bool`
         Whether the command is the default command in it's category.
@@ -649,7 +673,7 @@ class SlasherApplicationCommand:
     
     Notes
     -----
-    ``SlasherApplicationCommand`` instances are weakreferable.
+    ``SlasherApplicationCommand``-s are weakreferable.
     """
     __slots__ = ('__weakref__', '_auto_completers', '_command', '_exception_handlers', '_parent_reference',
         '_permission_overwrites', '_registered_application_command_ids', '_schema', '_self_reference', '_sub_commands',
@@ -791,7 +815,7 @@ class SlasherApplicationCommand:
     @classmethod
     def from_class(cls, klass):
         """
-        Creates a new ``SlasherApplicationCommand`` instance from the given `klass`.
+        Creates a new ``SlasherApplicationCommand`` from the given `klass`.
         
         Parameters
         ----------
@@ -800,7 +824,7 @@ class SlasherApplicationCommand:
         
         Returns
         -------
-        self : ``SlasherApplicationCommand`` or ``Router``
+        self : ``SlasherApplicationCommand``, ``Router``
         
         Raises
         ------
@@ -816,29 +840,29 @@ class SlasherApplicationCommand:
     def __new__(cls, func, name=None, description=None, show_for_invoking_user_only=None, is_global=None,
             guild=None, is_default=None, delete_on_unload=None, allow_by_default=None, target=None):
         """
-        Creates a new ``SlasherApplicationCommand`` instance with the given parameters.
+        Creates a new ``SlasherApplicationCommand`` with the given parameters.
         
         Parameters
         ----------
-        func : `None` or `async-callable`, Optional
+        func : `None`, `async-callable`, Optional
             The function used as the command when using the respective slash command.
         name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`), Optional
             The command's name if applicable. If not given or if given as `None`, the `func`'s name will be use
             instead.
-        description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`), Optional
+        description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`), Optional
             Description to use instead of the function's docstring.
-        show_for_invoking_user_only : `None`, `bool` or `tuple` of (`bool`, `Ellipsis`), Optional
+        show_for_invoking_user_only : `None`, `bool`, `tuple` of (`bool`, `Ellipsis`), Optional
             Whether the response message should only be shown for the invoking user. Defaults to `False`.
-        is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
+        is_global : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the slash command is global. Defaults to `False`.
         guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
                 `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``)), Optional
             To which guild(s) the command is bound to.
-        is_global : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
+        is_global : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the slash command is the default command in it's category.
-        delete_on_unload : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
+        delete_on_unload : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the command should be deleted from Discord when removed.
-        allow_by_default : `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`), Optional
+        allow_by_default : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
         target : `None`, `int`, `str`, ``ApplicationCommandTargetType``, Optional
             The target type of the slash command.
@@ -847,14 +871,14 @@ class SlasherApplicationCommand:
         
         Returns
         -------
-        self : ``SlasherApplicationCommand`` or ``Router``
+        self : ``SlasherApplicationCommand``, ``Router``
         
         Raises
         ------
         TypeError
             - If a value is routed but to a bad count amount.
-            - If `show_for_invoking_user_only` was not given as `None` or `bool` instance.
-            - If `is_global` was not given as `None` or `bool` instance.
+            - If `show_for_invoking_user_only` was not given as `None`, `bool`.
+            - If `is_global` was not given as `None`, `bool`.
             - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
             - If `func` is not async callable, neither cannot be instanced to async.
             - If `func` accepts keyword only parameters.
@@ -863,24 +887,24 @@ class SlasherApplicationCommand:
             - If `func` accepts more than `27` parameters.
             - If `func`'s 0th parameter is annotated, but not as ``Client``.
             - If `func`'s 1th parameter is annotated, but not as ``InteractionEvent``.
-            - If `name` was not given neither as `None` or `str` instance.
-            - If a parameter's `annotation_value` is `list` instance, but it's elements do not match the
-                `tuple` (`str`, `str` or `int`) pattern.
-            - If a parameter's `annotation_value` is `dict` instance, but it's items do not match the
-                (`str`, `str` or `int`) pattern.
+            - If `name` was not given neither as `None`, `str`.
+            - If a parameter's `annotation_value` is `list`, but it's elements do not match the
+                `tuple` (`str`, `str`, `int`) pattern.
+            - If a parameter's `annotation_value` is `dict`, but it's items do not match the
+                (`str`, `str`, `int`) pattern.
             - If a parameter's `annotation_value` is unexpected.
-            - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str` instance.
+            - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str`.
             - If `is_global` and `guild` contradicts each other.
-            - If `is_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `delete_on_unload` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `allow_by_default` was not given neither as `None`, `bool` or `tuple` of (`None`, `bool`,
+            - If `is_default` was not given neither as `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`).
+            - If `delete_on_unload` was not given neither as `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`).
+            - If `allow_by_default` was not given neither as `None`, `bool`, `tuple` of (`None`, `bool`,
                 `Ellipsis`).
-            - If `target` was not given neither as `None`, `int`, `str` or ``ApplicationCommandTargetType``.
+            - If `target` was not given neither as `None`, `int`, `str`, ``ApplicationCommandTargetType``.
         ValueError
             - If `guild` is or contains an integer out of uint64 value range.
             - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
-            - If a parameter's `annotation_value` is `str` instance, but not any of the expected ones.
-            - If a parameter's `annotation_value` is `type` instance, but not any of the expected ones.
+            - If a parameter's `annotation_value` is `str`, but not any of the expected ones.
+            - If a parameter's `annotation_value` is `type`, but not any of the expected ones.
             - If a parameter's `choice` amount is out of the expected range [1:25].
             - If a parameter's `choice` name is duped.
             - If a parameter's `choice` values are mixed types.
@@ -936,11 +960,15 @@ class SlasherApplicationCommand:
             name = check_name(command, name)
             
             sub_name_length = len(name)
-            if sub_name_length < APPLICATION_COMMAND_NAME_LENGTH_MIN or \
-                    sub_name_length > APPLICATION_COMMAND_NAME_LENGTH_MAX:
-                raise ValueError(f'`name` length is out of the expected range '
+            if (
+                sub_name_length < APPLICATION_COMMAND_NAME_LENGTH_MIN or
+                sub_name_length > APPLICATION_COMMAND_NAME_LENGTH_MAX
+            ):
+                raise ValueError(
+                    f'`name` length is out of the expected range '
                     f'[{APPLICATION_COMMAND_NAME_LENGTH_MIN}:'
-                    f'{APPLICATION_COMMAND_NAME_LENGTH_MAX}], got {sub_name_length!r}; {name!r}.')
+                    f'{APPLICATION_COMMAND_NAME_LENGTH_MAX}], got {sub_name_length!r}; {name!r}.'
+                )
             
             name = raw_name_to_display(name)
             
@@ -948,7 +976,9 @@ class SlasherApplicationCommand:
         
         if target in APPLICATION_COMMAND_CONTEXT_TARGET_TYPES:
             if command is None:
-                raise ValueError(f'For context commands `command` parameter is required (cannot be `None`).')
+                raise ValueError(
+                    f'For context commands `command` parameter is required (cannot be `None`).'
+                )
             
             command, parameter_converters = get_context_command_parameter_converters(command)
         else:
@@ -970,8 +1000,10 @@ class SlasherApplicationCommand:
             ):
                 
                 if is_global and (guild_ids is not None):
-                    raise TypeError(f'`is_guild` and `guild` contradict each other, got is_global={is_global!r}, '
-                        f'guild={guild!r}')
+                    raise TypeError(
+                        f'`is_global` and `guild` contradict each other, got is_global={is_global!r}, '
+                        f'guild={guild!r}.'
+                    )
                 
                 if (command is None):
                     command_function = None
@@ -1012,8 +1044,10 @@ class SlasherApplicationCommand:
             return Router(router)
         else:
             if is_global and (guild_ids is not None):
-                raise TypeError(f'`is_guild` and `guild` contradict each other, got is_global={is_global!r}, '
-                    f'guild={guild!r}')
+                raise TypeError(
+                    f'`is_global` and `guild` contradict each other, got is_global={is_global!r}, '
+                    f'guild={guild!r}.'
+                )
             
             if (command is None):
                 sub_commands = {}
@@ -1238,7 +1272,7 @@ class SlasherApplicationCommand:
         
         Returns
         -------
-        new : ``SlasherApplicationCommandFunction`` or ``SlasherApplicationCommandCategory``
+        new : ``SlasherApplicationCommandFunction``, ``SlasherApplicationCommandCategory``
         """
         command = self._command
         if (command is not None):
@@ -1324,7 +1358,9 @@ class SlasherApplicationCommand:
             The ``SlasherApplicationCommand`` is not a category.
         """
         if self._command is not None:
-            raise RuntimeError(f'The {self.__class__.__name__} is not a category.')
+            raise RuntimeError(
+                f'The {self.__class__.__name__} is not a category.'
+            )
         
         return _EventHandlerManager(self)
     
@@ -1344,7 +1380,7 @@ class SlasherApplicationCommand:
         
         Returns
         -------
-        self : ``SlasherApplicationCommandFunction`` or ``SlasherApplicationCommandCategory``
+        self : ``SlasherApplicationCommandFunction``, ``SlasherApplicationCommandCategory``
         
         Raises
         ------
@@ -1358,7 +1394,7 @@ class SlasherApplicationCommand:
             - If the command to add is a default sub-command meanwhile the category already has one.
         """
         if self._command is not None:
-            raise RuntimeError(f'The {self.__class__.__name__} is not a category.')
+            raise RuntimeError(f'The {self!r} is not a category.')
         
         if isinstance(func, Router):
             func = func[0]
@@ -1386,7 +1422,7 @@ class SlasherApplicationCommand:
         
         Returns
         -------
-        self : ``SlasherApplicationCommandFunction`` or ``SlasherApplicationCommandCategory``
+        self : ``SlasherApplicationCommandFunction``, ``SlasherApplicationCommandCategory``
          
         Raises
         ------
@@ -1424,13 +1460,17 @@ class SlasherApplicationCommand:
         """
         sub_commands = self._sub_commands
         if len(sub_commands) == APPLICATION_COMMAND_OPTIONS_MAX and (command.name not in sub_commands):
-            raise RuntimeError(f'The {self.__class__.__name__} reached the maximal amount of children '
-                f'({APPLICATION_COMMAND_OPTIONS_MAX}).')
+            raise RuntimeError(
+                f'The {self!r} reached the maximal amount of children '
+                f'({APPLICATION_COMMAND_OPTIONS_MAX}).'
+            )
         
         if command.is_default:
             for sub_command in sub_commands.values():
                 if sub_command.is_default:
-                    raise RuntimeError(f'The category can have only 1 default command.')
+                    raise RuntimeError(
+                        f'{self!r} already has a default command.'
+                    )
         
         as_sub = command.as_sub(APPLICATION_COMMAND_CATEGORY_DEEPNESS_START)
         as_sub._parent_reference = self._get_self_reference()
@@ -1501,7 +1541,7 @@ class SlasherApplicationCommand:
         ----------
         guild_id : `int`
             The guild's id where the overwrite will be applied.
-        permission_overwrite : ``ApplicationCommandPermissionOverwrite`` or `None`
+        permission_overwrite : ``ApplicationCommandPermissionOverwrite``, `None`
             The permission overwrite to add
         
         Raises
@@ -1516,10 +1556,14 @@ class SlasherApplicationCommand:
         permission_overwrites_for_guild = permission_overwrites.get(guild_id, None)
         
         if __debug__:
-            if (permission_overwrites_for_guild is not None) and \
-                    (len(permission_overwrites_for_guild) >= APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX):
-                raise AssertionError(f'`Each command in each guild can have up to '
-                    f'{APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX} permission overwrites which is already reached.')
+            if (
+                (permission_overwrites_for_guild is not None) and
+                (len(permission_overwrites_for_guild) >= APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX)
+            ):
+                raise AssertionError(
+                    f'`Each command in each guild can have up to '
+                    f'{APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX} permission overwrites which is already reached.'
+                )
         
         if (permission_overwrites_for_guild is not None) and (permission_overwrite is not None):
             target_id = permission_overwrite.target_id
@@ -1556,7 +1600,7 @@ class SlasherApplicationCommand:
         
         Returns
         -------
-        permission_overwrites : `None` or `list` of ``ApplicationCommandPermissionOverwrite``
+        permission_overwrites : `None`, `list` of ``ApplicationCommandPermissionOverwrite``
             Returns `None` instead of an empty list.
         """
         permission_overwrites = self._permission_overwrites
@@ -1646,12 +1690,12 @@ class SlasherApplicationCommand:
             The parameter's name.
         *parameter_names : `str`
             Additional parameter names to autocomplete
-        function : `None` or `async-callable`, Optional (Keyword only)
+        function : `None`, `async-callable`, Optional (Keyword only)
             The function to register as auto completer.
         
         Returns
         -------
-        function / wrapper : `async-callable` or `functools.partial`
+        function / wrapper : `async-callable`, `functools.partial`
             The registered function if given or a wrapper to register the function with.
         
         Raises
@@ -1735,7 +1779,7 @@ class SlasherApplicationCommand:
         
         Parameters
         ----------
-        exception_handler : `None` or `CoroutineFunction`, Optional
+        exception_handler : `None`, `CoroutineFunction`, Optional
             Exception handler to register.
         first : `bool`, Optional (Keyword Only)
             Whether the exception handler should run first.
@@ -1833,21 +1877,21 @@ class SlasherApplicationCommandFunction:
     
     Attributes
     ----------
-    _auto_completers : `None` or `list` of ``SlasherApplicationCommandParameterAutoCompleter``
+    _auto_completers : `None`, `list` of ``SlasherApplicationCommandParameterAutoCompleter``
         Auto completer functions.
     _command : `async-callable˛
         The command's function to call.
-    _exception_handlers : `None` or `list` of `CoroutineFunction`
+    _exception_handlers : `None`, `list` of `CoroutineFunction`
         Exception handlers added with ``.error`` to the interaction handler.
         
         Same as ``Slasher._exception_handlers``.
     
     _parameter_converters : `tuple` of ``ParameterConverter``
         Parsers to parse command parameters.
-    _parent_reference : `None` or ``WeakReferer`` to (``SlasherApplicationCommand``,
+    _parent_reference : `None`, ``WeakReferer`` to (``SlasherApplicationCommand``,
             ``SlasherApplicationCommandCategory``)
         Reference to the parent application command or category.
-    _self_reference : `None` or ``WeakReferer`` to ``SlasherApplicationCommandFunction``
+    _self_reference : `None`, ``WeakReferer`` to ``SlasherApplicationCommandFunction``
         Back reference to the slasher application command function.
         
         Used by auto completers to access the parent entity.
@@ -1867,7 +1911,7 @@ class SlasherApplicationCommandFunction:
     
     def __new__(cls, command, parameter_converters, name, description, show_for_invoking_user_only, is_default):
         """
-        Creates a new ``SlasherApplicationCommandFunction`` instance with the given parameters.
+        Creates a new ``SlasherApplicationCommandFunction`` with the given parameters.
         
         Parameters
         ----------
@@ -1911,7 +1955,7 @@ class SlasherApplicationCommandFunction:
             The respective client who received the event.
         interaction_event : ``InteractionEvent``
             The received interaction event.
-        options : `None` or `list` of ``InteractionEventChoice``
+        options : `None`, `list` of ``InteractionEventChoice``
             Options bound to the function.
         
         Raises
@@ -2140,12 +2184,12 @@ class SlasherApplicationCommandFunction:
             The parameter's name.
         *parameter_names : `str`
             Additional parameter names to autocomplete
-        function : `None` or `callable`, Optional (Keyword only)
+        function : `None`, `callable`, Optional (Keyword only)
             The function to register as auto completer.
         
         Returns
         -------
-        function / wrapper : `callable` or `functools.partial`
+        function / wrapper : `callable`, `functools.partial`
             The registered function if given or a wrapper to register the function with.
         
         Raises
@@ -2180,8 +2224,10 @@ class SlasherApplicationCommandFunction:
         auto_completable_parameters = self._get_auto_completable_parameters()
         matched_auto_completable_parameters = auto_completer._difference_match_parameters(auto_completable_parameters)
         if not matched_auto_completable_parameters:
-            raise RuntimeError(f'Application command function `{self.name}` has no parameter matching any '
-                f'parameters of `{auto_completer!r}`.')
+            raise RuntimeError(
+                f'Application command function `{self.name}` has no parameter matching any '
+                f'parameters of `{auto_completer!r}`.'
+            )
         
         auto_completers = self._auto_completers
         if (auto_completers is None):
@@ -2226,7 +2272,7 @@ class SlasherApplicationCommandFunction:
         
         Parameters
         ----------
-        exception_handler : `None` or `CoroutineFunction`, Optional
+        exception_handler : `None`, `CoroutineFunction`, Optional
             Exception handler to register.
         first : `bool`, Optional (Keyword Only)
             Whether the exception handler should run first.
@@ -2293,11 +2339,11 @@ class SlasherApplicationCommandCategory:
     
     Attributes
     ----------
-    _auto_completers : `None` or `list` of ``SlasherApplicationCommandParameterAutoCompleter``
+    _auto_completers : `None`, `list` of ``SlasherApplicationCommandParameterAutoCompleter``
         Auto completer functions by.
     _deepness : `int`
         How nested the category is.
-    _exception_handlers : `None` or `list` of `CoroutineFunction`
+    _exception_handlers : `None`, `list` of `CoroutineFunction`
         Exception handlers added with ``.error`` to the interaction handler.
         
         Same as ``Slasher._exception_handlers``.
@@ -2309,7 +2355,7 @@ class SlasherApplicationCommandCategory:
     
     _sub_commands : `dict` of (`str`, ``SlasherApplicationCommandFunction``) items
         The sub-commands of the category.
-    _parent_reference : `None` or ``WeakReferer`` to ``SlasherApplicationCommand``
+    _parent_reference : `None`, ``WeakReferer`` to ``SlasherApplicationCommand``
         The parent slash command of the category if any.
     description : `str`
         The slash command's description.
@@ -2323,7 +2369,7 @@ class SlasherApplicationCommandCategory:
     
     def __new__(cls, slasher_application_command, deepness):
         """
-        Creates a new ``SlasherApplicationCommandCategory`` instance with the given parameters.
+        Creates a new ``SlasherApplicationCommandCategory`` with the given parameters.
         
         Parameters
         ----------
@@ -2359,7 +2405,7 @@ class SlasherApplicationCommandCategory:
             The respective client who received the event.
         interaction_event : ``InteractionEvent``
             The received interaction event.
-        options : `None` or `list` of ``InteractionEventChoice``
+        options : `None`, `list` of ``InteractionEventChoice``
             Options bound to the category.
         """
         if (options is None) or len(options) != 1:
@@ -2556,7 +2602,7 @@ class SlasherApplicationCommandCategory:
         
         Returns
         -------
-        as_sub : ``SlasherApplicationCommandFunction`` or ``SlasherApplicationCommandCategory``
+        as_sub : ``SlasherApplicationCommandFunction``, ``SlasherApplicationCommandCategory``
             The command as sub-command.
         
         Raises
@@ -2568,15 +2614,19 @@ class SlasherApplicationCommandCategory:
         """
         sub_commands = self._sub_commands
         if len(sub_commands) == APPLICATION_COMMAND_OPTIONS_MAX and (command.name not in sub_commands):
-            raise RuntimeError(f'The {self.__class__.__name__} reached the maximal amount of children '
-                f'({APPLICATION_COMMAND_OPTIONS_MAX}).')
+            raise RuntimeError(
+                f'The {self.__class__.__name__} reached the maximal amount of children '
+                f'({APPLICATION_COMMAND_OPTIONS_MAX}).'
+            )
         
         as_sub = command.as_sub(self._deepness+1)
         
         if command.is_default:
             for sub_command in sub_commands.values():
                 if sub_command.is_default:
-                    raise RuntimeError(f'The category can have only 1 default command.')
+                    raise RuntimeError(
+                        f'{self!r} already ha  default command.'
+                    )
         
         as_sub._parent_reference = self._get_self_reference()
         sub_commands[command.name] = as_sub
@@ -2640,12 +2690,12 @@ class SlasherApplicationCommandCategory:
             The parameter's name.
         *parameter_names : `str`
             Additional parameter names to autocomplete
-        function : `None` or `callable`, Optional (Keyword only)
+        function : `None`, `callable`, Optional (Keyword only)
             The function to register as auto completer.
         
         Returns
         -------
-        function / wrapper : `async-callable` or `functools.partial`
+        function / wrapper : `async-callable`, `functools.partial`
             The registered function if given or a wrapper to register the function with.
         """
         parameter_names = _build_auto_complete_parameter_names(parameter_name, parameter_names)
@@ -2713,7 +2763,7 @@ class SlasherApplicationCommandCategory:
         
         Parameters
         ----------
-        exception_handler : `None` or `CoroutineFunction`, Optional
+        exception_handler : `None`, `CoroutineFunction`, Optional
             Exception handler to register.
         first : `bool`, Optional (Keyword Only)
             Whether the exception handler should run first.
@@ -2782,15 +2832,15 @@ class SlasherApplicationCommandParameterAutoCompleter:
     ----------
     _command : `async-callable˛
         The command's function to call.
-    _exception_handlers : `None` or `list` of `CoroutineFunction`
+    _exception_handlers : `None`, `list` of `CoroutineFunction`
         Exception handlers added with ``.error`` to the interaction handler.
         
         Same as ``Slasher._exception_handlers``.
     
     _parameter_converters : `tuple` of ``ParameterConverter``
         Parsers to parse command parameters.
-    _parent_reference : `None` or ``WeakReferer`` to (``SlasherApplicationCommand``,
-            ``SlasherApplicationCommandFunction`` or ``SlasherApplicationCommandCategory``)
+    _parent_reference : `None`, ``WeakReferer`` to (``SlasherApplicationCommand``,
+            ``SlasherApplicationCommandFunction``, ``SlasherApplicationCommandCategory``)
         The parent slash command of the auto completer, where it was registered to.
     name_pairs : `frozenset` of `tuple` (`str`, `str`)
         Raw - display parameter names, to which the converter should autocomplete.
@@ -2801,7 +2851,7 @@ class SlasherApplicationCommandParameterAutoCompleter:
     
     def __new__(cls, function, parameter_names, deepness, parent):
         """
-        Creates a new ``SlasherApplicationCommandParameterAutoCompleter`` instance with the given parameters.
+        Creates a new ``SlasherApplicationCommandParameterAutoCompleter`` with the given parameters.
         
         Parameters
         ----------
@@ -2875,6 +2925,7 @@ class SlasherApplicationCommandParameterAutoCompleter:
         )
         return
     
+    
     def __repr__(self):
         """Returns the parameter auto completer's representation."""
         repr_parts = ['<', self.__class__.__name__, '>']
@@ -2947,13 +2998,14 @@ class SlasherApplicationCommandParameterAutoCompleter:
         
         return matched
     
+    
     def error(self, exception_handler=None, *, first=False):
         """
         Registers an exception handler to the ``SlasherApplicationCommandParameterAutoCompleter``.
         
         Parameters
         ----------
-        exception_handler : `None` or `CoroutineFunction`, Optional
+        exception_handler : `None`, `CoroutineFunction`, Optional
             Exception handler to register.
         first : `bool`, Optional (Keyword Only)
             Whether the exception handler should run first.

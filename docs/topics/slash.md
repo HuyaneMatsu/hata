@@ -61,7 +61,7 @@ The parameter types can be the following:
 
 `user`, `channel` and `role` data may not be included within the interaction. However users can be requested from
 Discord, but channels and roles can not be. It means `role` and `channel` conversions can fail and the command wont be
-called. To avoid this case, you may use `role_id` or `channel_id` parameter types instead.
+called. To avoid this case, you may use `role_id` / `channel_id` parameter types instead.
 
 ##### mentionable
 
@@ -88,7 +88,7 @@ critical security vulnerabilities.
 
 `client` (`c`) and `event` (`e`, `interaction_event`) parameters are picked up as internal parameters.
 
-> They can be also linted as `Client` or `InteractionEvent`.
+> They can be also linted as `Client` / `InteractionEvent`.
 
 Internal parameters are not propagated towards discord, instead they are auto-fulfilled internally. They can be used
 to access information about the command's context if required.
@@ -211,11 +211,11 @@ An interaction event has the following top level attributes, which you may use u
 
 | Name              | Type                                                          | Notes                                                                                                         |
 |-------------------|---------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
-| channel           | `None`, `ChannelText`, `ChannelThread` or `ChannelPrivate`    | The channel from where the interaction was called. Might be a partial or `None`.                              |
+| channel           | `None`, `ChannelText`, `ChannelThread`, `ChannelPrivate`      | The channel from where the interaction was called. Might be a partial or `None`.                              |
 | channel_id        | `int`                                                         | The interaction event's channel's identifier.                                                                 |
-| guild             | `None` or `Guild`                                             | The channel's guild. Might be partial or `None`                                                               |
+| guild             | `None`, `Guild`                                               | The channel's guild. Might be partial or `None`                                                               |
 | guild_id          | `int`                                                         | The interaction event's guild's identifier. Set as `0` if the interaction is received from a private channel. |
-| user              | `Client` or `User`                                            | The user who called the interaction.                                                                          |
+| user              | `Client`, `User`                                              | The user who called the interaction.                                                                          |
 | user_permissions  | `Permission`                                                  | The user's permissions in the respective channel.                                                             |
 
 > The rest of the attributes should be ignored if you are **not** writing your own interaction handler.
@@ -883,7 +883,7 @@ The decorator accepts 3 parameters:
 | Name              | Type                                                          | Description                                                   |
 |-------------------|---------------------------------------------------------------|---------------------------------------------------------------|
 | guild             | `Guild`  or `int`                                             | The guild where the overwrite is applied in.                  |
-| target            | `User`, `Role`, `Client`, `tuple` (`str` or `type`, `int`)    | The target entity. Can be either role or user.                |
+| target            | `User`, `Role`, `Client`, `tuple` (`str`, `type`, `int`)      | The target entity. Can be either role or user.                |
 | allow             | `bool`                                                        | Whether the command should be allowed for the target entity.  |
 
 The `target` parameter can be given in many ways to allow relaxing definitions:
@@ -1290,7 +1290,7 @@ async def character_popularity(
 ## Context commands
 
 Context commands can be defined by passing the `target` parameter when registering a command with the `.interactions`
-decorator. The `target` parameter can be given either as `'user'` or `'message'`.
+decorator. The `target` parameter can be given either as `'user'` / `'message'`.
 
 > `'chat'` target works as well, but that refers to regular slash commands and will ot make any difference.
 

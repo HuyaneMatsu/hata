@@ -45,7 +45,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data receive from Discord.
-        client : `None` or ``Client``
+        client : `None`, ``Client``
             The client, who received the channel's data, if any.
         guild_id : `int`
             The guild's identifier of the channel.
@@ -179,7 +179,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        user : ``ClientUserBase`` or `default`
+        user : ``ClientUserBase``, `default`
         """
         if (not 1 < len(name) < 38):
             return default
@@ -220,7 +220,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        user : ``ClientUserBase`` or `default`
+        user : ``ClientUserBase``, `default`
         """
         if (not 1 < len(name) < 38):
             return default
@@ -411,7 +411,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channel : ``ChannelBase`` instance
+        channel : ``ChannelBase``
         """
         if name.startswith('#'):
             name = name[1:]
@@ -432,7 +432,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        user : ``UserBase`` instance
+        user : ``UserBase``
             The user to calculate it's permissions of.
         
         Returns
@@ -459,7 +459,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        user : ``UserBase`` instance
+        user : ``UserBase``
             The user to calculate it's permissions of.
         
         Returns
@@ -607,7 +607,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channel : ``ChannelBase`` instance
+        channel : ``ChannelBase``
             The created partial channel.
         """
         self = object.__new__(cls)

@@ -30,7 +30,7 @@ class SolarClient:
         Weakreference to the extended client instance.
     _events : ``SolarLinkEventManager``
         Event plugin for solarlink specific events.
-    _player_queue : `None` or `list` of ``SolarPlayerBase``
+    _player_queue : `None`, `list` of ``SolarPlayerBase``
         Solar players to join back to a node.
     nodes : `set` of ``SolarNode``
         All nodes the client is connected to.
@@ -49,7 +49,9 @@ class SolarClient:
             Hata client instance to extend.
         """
         if not isinstance(client, Client):
-            raise TypeError(f'`client` parameter can be ``Client`` instance, got {client.__class__.__name__}.')
+            raise TypeError(
+                f'`client` parameter can be `{Client.__name__}`, got {client.__class__.__name__}; {client!r}.'
+            )
         
         event_plugin = SolarLinkEventManager()
         client.events.register_plugin(event_plugin)
@@ -89,7 +91,7 @@ class SolarClient:
         
         Returns
         -------
-        task : `bool`, ``Task`` or ``FutureAsyncWrapper``
+        task : `bool`, ``Task``, ``FutureAsyncWrapper``
             - If the method was called from the client's thread (KOKORO), then returns a ``Task``. The task will return
                 `True`, if connecting was successful.
             - If the method was called from an ``EventThread``, but not from the client's, then returns a
@@ -102,11 +104,11 @@ class SolarClient:
         RuntimeError
             If the ``SolarClient``'s client is already deconstructed.
         TypeError
-            - If `host` is not `str` instance.
-            - If `port` is not `int` instance.
-            - If `password is not `str` instance.
-            - If `region` is neither `None`, nor ``VoiceRegion`` instance.
-            - If `resume_key` is neither `None`, nor `str` instance.
+            - If `host` is not `str`.
+            - If `port` is not `int`.
+            - If `password is not `str`.
+            - If `region` is neither `None`, nor ``VoiceRegion``.
+            - If `resume_key` is neither `None`, nor `str`.
         """
         client = self._client_reference()
         if client is None:
@@ -149,7 +151,7 @@ class SolarClient:
         
         Returns
         -------
-        tracks : `None` or ``GetTracksResult``
+        tracks : `None`, ``GetTracksResult``
             Decoded tracks.
         
         Raises
@@ -207,7 +209,7 @@ class SolarClient:
         
         Returns
         -------
-        track : `None` or ``Track``
+        track : `None`, ``Track``
             Decoded track data.
         
         Raises
@@ -310,6 +312,7 @@ class SolarClient:
         
         return tracks
     
+    
     async def routeplanner_status(self, node):
         """
         Gets the routeplanner status of the target node.
@@ -323,7 +326,7 @@ class SolarClient:
         
         Returns
         -------
-        route_planner : `None` or ``RoutePlannerBase`` instance
+        route_planner : `None`, ``RoutePlannerBase``
         
         Raises
         ------
@@ -490,12 +493,12 @@ class SolarClient:
         
         Parameters
         ----------
-        region : `None` or ``VoiceRegion``, Optional
+        region : `None`, ``VoiceRegion``, Optional
             The region to find a node in. Defaults to `None`.
         
         Returns
         -------
-        node : `None` or ``SolarNode``
+        node : `None`, ``SolarNode``
         """
         nodes = self.available_nodes
         if not nodes:
@@ -570,7 +573,7 @@ class SolarClient:
         
         Returns
         -------
-        player : `None` or ``Player``
+        player : `None`, ``Player``
             Returns `None` if the guild has no player.
         """
         return self.players.get(guild_id, None)
@@ -585,7 +588,7 @@ class SolarClient:
         
         Parameters
         ----------
-        channel : ``ChannelVoiceBase`` or `tuple` (`int`, `int`)
+        channel : ``ChannelVoiceBase``, `tuple` (`int`, `int`)
             The channel to join to.
         cls : ``SolarPlayerBase`` subclass, Optional (Keyword only)
             The player's class to create.
@@ -605,7 +608,9 @@ class SolarClient:
             - If the ``SolarClient``'s client is already deconstructed.
         """
         if (cls is not SolarPlayer) and (not issubclass(cls, SolarPlayerBase)):
-            raise TypeError(f'`cls` can be given as `{SolarPlayerBase.__name__}` subclass, got {cls!r}.')
+            raise TypeError(
+                f'`cls` can be `{SolarPlayerBase.__name__}` subclass, got {cls!r}.'
+            )
         
         if isinstance(channel, ChannelVoiceBase):
             guild_id = channel.guild_id
@@ -613,8 +618,10 @@ class SolarClient:
         else:
             snowflake_pair = maybe_snowflake_pair(channel)
             if snowflake_pair is None:
-                raise TypeError(f'`channel` can be given as `{ChannelVoiceBase.__name__}` or `tuple` (`int`, `int`)'
-                    f'instance, got {channel.__class__.__name__}.')
+                raise TypeError(
+                    f'`channel` can be `{ChannelVoiceBase.__name__}`, `tuple` (`int`, `int`)'
+                    f', got {channel.__class__.__name__}; {channel!r}.'
+                )
             
             guild_id, channel_id = snowflake_pair
         

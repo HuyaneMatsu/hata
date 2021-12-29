@@ -71,7 +71,7 @@ class CommandWrapper:
         -------
         function : `Any`
             The wrapped function.
-        wrappers : `list` of ``CommandWrapper`` instances
+        wrappers : `list` of ``CommandWrapper``
             The fetched back wrappers.
         """
         wrappers = [self]
@@ -98,9 +98,9 @@ class CommandConverterConfigurerWrapper(CommandWrapper):
         The wrapped object.
     _detail : ``ContentParserParameterDetail``
         Parsing detail example to match and modify of the source command.
-    _flags : `None` or ``ConverterFlag``
+    _flags : `None`, ``ConverterFlag``
         New flag to set to the parameter detail if any.
-    _modifiers : `None` or `dict` of (`str`, `bool`) items
+    _modifiers : `None`, `dict` of (`str`, `bool`) items
         Converter flag modifiers.
     """
     __slots__ = ('_detail', '_flags', '_modifiers', )
@@ -112,23 +112,26 @@ class CommandConverterConfigurerWrapper(CommandWrapper):
         Raises
         ------
         TypeError
-            - Modifier values can be `bool` instances.
-            - If `annotation` was not given neither as `type` non as `bool` instance.
+            - Modifier values can be `bool`.
+            - If `annotation` was not given neither as `type` non as `bool`.
         ValueError
             - Invalid modifier name.
             - If `annotation`'s type is correct, but there is specified converter for it.
         """
         detail = get_detail_for_value(annotation)
         if (detail is None):
-            raise TypeError(f'`annotation` can be given either as `type` or `str` instance, got '
-                f'{annotation.__class__.__name__}.')
+            raise TypeError(
+                f'`annotation` can be `type`, `str`, got {annotation.__class__.__name__}; {annotation!r}.'
+            )
         
         if (flags is not None) and not isinstance(flags, ConverterFlag):
             if isinstance(flags, int):
                 flags = ConverterFlag(flags)
             else:
-                raise TypeError(f'`flag` can be given as `None`, `{ConverterFlag.__name__}` or as other `int` '
-                    f'instance, got {flags.__class__.__name__}.')
+                raise TypeError(
+                    f'`flag` can be `None`, `{ConverterFlag.__name__}` or as other `int` , got '
+                    f'{flags.__class__.__name__}.'
+                )
         
         if modifiers:
             for key in modifiers.keys():
@@ -137,7 +140,9 @@ class CommandConverterConfigurerWrapper(CommandWrapper):
             
             for key, value in modifiers.items():
                 if not isinstance(value, bool):
-                    raise TypeError(f'Modifier value can only be given as `bool` instance, got {key!r}={value!r}.')
+                    raise TypeError(
+                        f'Modifier value can only be given as `bool`, got {key!r}={value!r}.'
+                    )
             
             if (flags is not None):
                 flags = flags.update_by_keys(**modifiers)
@@ -188,7 +193,7 @@ class CommandCheckWrapper(CommandWrapper):
     ----------
     _wrapped : `Any`
         The wrapped object.
-    _check : ``CheckBase`` instance
+    _check : ``CheckBase``
         Check to add to the respective command.
     """
     __slots__ = ('_check',)
@@ -294,10 +299,10 @@ class CommandCooldownWrapper(CommandWrapper):
         Raises
         ------
         TypeError
-            - If `str` is not given as `str` instance.
-            - If `weight` is not numeric convertable to `int`.
-            - If `reset` is not numeric convertable to `float`.
-            - If `limit` is not numeric convertable to `int`.
+            - If `str` is not given as `str`.
+            - If `weight` is not numeric convertible to `int`.
+            - If `reset` is not numeric convertible to `float`.
+            - If `limit` is not numeric convertible to `int`.
         ValueError
             - If `for_` is not given as any of the expected value.
         """

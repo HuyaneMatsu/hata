@@ -80,11 +80,11 @@ def preview_string(graved):
     
     Parameters
     ----------
-    graved : `None` or `list` of (`str`, ``Grave``) elements
+    graved : `None`, `list` of (`str`, ``Grave``) elements
     
     Returns
     ------
-    content : `None` or `str`
+    content : `None`, `str`
     """
     if graved is None:
         return None
@@ -128,11 +128,11 @@ def graved_to_single_graved_words(graved):
     
     Parameters
     ----------
-    graved : `None` or `list` of (`str`, ``Grave``) elements
+    graved : `None`, `list` of (`str`, ``Grave``) elements
     
     Returns
     -------
-    words : `None` or `list` of `str`
+    words : `None`, `list` of `str`
     """
     if graved is None:
         return None
@@ -170,11 +170,11 @@ def graved_to_source_words(graved):
     
     Parameters
     ----------
-    graved : `None` or `list` of (`str`, ``Grave``) elements
+    graved : `None`, `list` of (`str`, ``Grave``) elements
     
     Returns
     -------
-    words : `None` or `list` of `str`
+    words : `None`, `list` of `str`
     """
     if graved is None:
         return None
@@ -217,11 +217,11 @@ def graved_to_escaped_words(graved):
     
     Parameters
     ----------
-    graved : `None` or `list` of (`str`, ``Grave``) elements
+    graved : `None`, `list` of (`str`, ``Grave``) elements
     
     Returns
     -------
-    words : `None` or `list` of `str`
+    words : `None`, `list` of `str`
     """
     if graved is None:
         return None
@@ -649,7 +649,7 @@ class TableConverter:
         
         Returns
         -------
-        best_fit : `None` or `tuple` (``TableConverter``, ``TableConverter``)
+        best_fit : `None`, `tuple` (``TableConverter``, ``TableConverter``)
             The best fitting 2 table shard, if there is any optimal case. If there is non, returns `None` instead.
         """
         best_fit = None
@@ -991,7 +991,7 @@ class CodeBlockConverter:
         
         Returns
         -------
-        best_fit : `None` or `tuple` (``CodeBlockConverter``, ``CodeBlockConverter``)
+        best_fit : `None`, `tuple` (``CodeBlockConverter``, ``CodeBlockConverter``)
             The best fitting 2 code block shard, if there is any optimal case. If there is non, returns `None` instead.
         """
         
@@ -1198,7 +1198,7 @@ class DescriptionConverter:
 
         Returns
         -------
-        best_fit : `None` or `tuple` (``DescriptionConverter``, ``DescriptionConverter``)
+        best_fit : `None`, `tuple` (``DescriptionConverter``, ``DescriptionConverter``)
             The best fitting 2 description shard, if there is any optimal case. If there is non, returns `None` instead.
         """
         lines = self.lines
@@ -1405,7 +1405,7 @@ class BlockQuoteConverter:
         
         Returns
         -------
-        best_fit : `None` or `tuple` (``BlockQuoteConverter``, ``BlockQuoteConverter``)
+        best_fit : `None`, `tuple` (``BlockQuoteConverter``, ``BlockQuoteConverter``)
             The best fitting 2 block quote shards, if there is any optimal case. If there is non, returns `None`
             instead.
         """
@@ -1577,7 +1577,7 @@ class ListingHeadConverter(DescriptionConverter):
         
         Parameters
         ----------
-        head : `None` or `list` of (`str`, ``Grave``)
+        head : `None`, `list` of (`str`, ``Grave``)
             The head of a listing.
         indent_level : `int`
             The number of how far is the listing element indented.
@@ -1672,12 +1672,12 @@ class SectionTitleConverter(DescriptionConverter):
         
         Parameters
         ----------
-        title : `None` or `str`
+        title : `None`, `str`
             The respective section's title.
         
         Yields
         ------
-        self : `None` or ``DescriptionConverter``
+        self : `None`, ``DescriptionConverter``
         """
         if title is None:
             return
@@ -1767,7 +1767,7 @@ class SectionConverter:
         
         Parameters
         ----------
-        section : `tuple` ((`None` or `str`), `list` of `Any`)
+        section : `tuple` ((`None`, `str`), `list` of `Any`)
             The section to represent.
         builder_context : ``BuilderContext``
             Context to define some building details.
@@ -1861,7 +1861,7 @@ class SectionConverter:
         
         Returns
         -------
-        sections : `None` or `tuple` (``SectionConverter``, ``SectionConverter``)
+        sections : `None`, `tuple` (``SectionConverter``, ``SectionConverter``)
             Returns `None`, if the middle part cannot be broken correctly.
         """
         parts = self.parts
@@ -1921,7 +1921,7 @@ class SectionConverter:
         
         Returns
         -------
-        best_fit : `None` or `tuple` (``SectionConverter``, ``SectionConverter``)
+        best_fit : `None`, `tuple` (``SectionConverter``, ``SectionConverter``)
             The best fitting 2 section shard, if there is any optimal case. If there is non, returns `None` instead.
         """
         best_fit = None

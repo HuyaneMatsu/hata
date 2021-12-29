@@ -58,9 +58,9 @@ def check_name(func, name):
     
     Parameters
     ----------
-    func : `None` or `callable`
+    func : `None`, `callable`
         The function, what preferred name we are looking for.
-    name : `None` or `str`
+    name : `None`, `str`
         A directly given name value by the user. Defaults to `None` by caller (or at least sit should).
     
     Returns
@@ -71,7 +71,7 @@ def check_name(func, name):
     Raises
     ------
     TypeError
-        - If a checked name is not `None` or `str` instance.
+        - If a checked name is not `None`, `str`.
         - If a metaclass was given.
         - If both `name` and `func` are given as `None`.
     """
@@ -271,8 +271,8 @@ def _convert_unsafe_event_iterable(iterable, type_=None):
     compatible `list` to avoid handling the same cases everywhere.
     
     `iterable`'s element's can be:
-    - ``EventListElement`` instance.
-    - `type_` instance if given.
+    - ``EventListElement``.
+    - `type_` if given.
     - `tuple` of `1`-`3` elements (`func`, `args`, `kwargs`).
     - `func` itself.
     
@@ -280,7 +280,7 @@ def _convert_unsafe_event_iterable(iterable, type_=None):
     ----------
     iterable : `iterable`
         The iterable, what's elements will be checked.
-    type_ : `None `or `type`
+    type_ : `None `, `type`
         If `type_` was passed, then each element is pre-validated with the given type. Some extension classes might
         support behaviour.
         
@@ -288,7 +288,7 @@ def _convert_unsafe_event_iterable(iterable, type_=None):
     
     Returns
     -------
-    result : `list` of (``EventListElement`` or ``type_``)
+    result : `list` of (``EventListElement``, ``type_``)
     
     Raises
     ------
@@ -362,7 +362,7 @@ def create_event_from_class(constructor, klass, parameter_names, name_name, even
         The type to work with.
     parameter_names : `tuple` of `str`
         The parameters names to pass to the constructor.
-    name_name : `None` or `str`
+    name_name : `None`, `str`
         The event's name's name.
     event_name : `str`
         The event's name. If event is nto found, then defaults to `name_name`'s found value if any.
@@ -465,7 +465,7 @@ class _EventHandlerManager(RichAttributeErrorBaseType):
         -------
         func : `callable`
             - The created instance by the respective event handler.
-            - If `func` was not passed, then returns a ``._wrapper`` instance.
+            - If `func` was not passed, then returns a ``._wrapper``.
         """
         if func is ...:
             return partial_func(self, *args, **kwargs)
@@ -676,7 +676,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         | event_handlers                | `Any`                             |
         +-------------------------------+-----------------------------------+
     
-    _from_class_constructor : `callable` or `None`
+    _from_class_constructor : `callable`, `None`
         Whether the extension supports `.from_class` method and how exactly it does. If set as `None`, means it not
         supports it.
         
@@ -729,7 +729,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
             | event_handlers                | `Any`                             |
             +-------------------------------+-----------------------------------+
         
-        from_class_constructor : `None` or `callable`
+        from_class_constructor : `None`, `callable`
             Whether the extension supports `.from_class` method and how exactly it does. If given as `None`, then it
             means it not supports it.
             
@@ -857,7 +857,7 @@ class _EventHandlerManagerRouter(_EventHandlerManager):
         ----------
         func : ``Router``, `callable`
             The event to be removed to the respective event handlers.
-        *args : `None` or `str`
+        *args : `None`, `str`
             Additional positional parameters.
         **kwargs : Keyword parameters
             Additional keyword parameters.
@@ -1052,9 +1052,9 @@ class EventListElement:
     ----------
     func : `callable`
         The event of the event-list element.
-    args : `None` or `tuple` of `Any`
+    args : `None`, `tuple` of `Any`
         Additional positional parameters for `func`.
-    kwargs : `None` or `dict` of (`str`, `Any`) items
+    kwargs : `None`, `dict` of (`str`, `Any`) items
         Additional key word parameters for `func`.
     """
     __slots__ = ('func', 'args', 'kwargs', )
@@ -1067,9 +1067,9 @@ class EventListElement:
         ----------
         func : `callable`
             The event of the eventlist element.
-        args : `None` or `str`
+        args : `None`, `str`
             Additional positional parameters for `func`.
-        kwargs : `None` or `dict` of (`str`, `Any`) items
+        kwargs : `None`, `dict` of (`str`, `Any`) items
             Additional key word parameters for `func`.
         """
         self.func = func
@@ -1190,7 +1190,7 @@ def route_parameter(parameter, count):
     Raises
     ------
     ValueError
-        A value is a `tuple` instance, but it's length is different from `count`.
+        A value is a `tuple`, but it's length is different from `count`.
     """
     if isinstance(parameter, tuple):
         if len(parameter) != count:
@@ -1219,7 +1219,7 @@ def route_kwargs(kwargs, count):
     """
     Routes the given `kwargs` to the given `count` amount of copies.
     
-    If a value of a keyword is given as a `tuple` instance, then it will be routed by element for each applicable
+    If a value of a keyword is given as a `tuple`, then it will be routed by element for each applicable
     client.
     
     Parameters
@@ -1236,7 +1236,7 @@ def route_kwargs(kwargs, count):
     Raises
     ------
     ValueError
-        A value is a `tuple` instance, but it's length is different from `count`.
+        A value is a `tuple`, but it's length is different from `count`.
     """
     result = tuple({} for _ in range(count))
     
@@ -1266,7 +1266,7 @@ def route_args(args, count):
     Raises
     ------
     ValueError
-        A value is a `tuple` instance, but it's length is different from `count`.
+        A value is a `tuple`, but it's length is different from `count`.
     """
     if (args is None):
         result = tuple(tuple() for _ in range(count))
@@ -1297,7 +1297,7 @@ def route_name(name, count):
     
     Returns
     -------
-    result : `list` of (`None` or `str`)
+    result : `list` of (`None`, `str`)
     
     Raises
     ------
@@ -1385,9 +1385,9 @@ class eventlist(list):
     
     Attributes
     ----------
-    kwargs : `None` or `dict` of (`str`, `Any`) items
+    kwargs : `None`, `dict` of (`str`, `Any`) items
         Keyword parameters used for each element when extending the client's events with the event-list.
-    type : `None` or `type`
+    type : `None`, `type`
         If `type_` was passed when creating the eventlist, then each added element is pre-validated with the given type
         before adding them. Some extension classes might support behaviour.
     
@@ -1430,14 +1430,14 @@ class eventlist(list):
         Raises
         ------
         TypeError
-            If `type_` was passed as not as `type` instance, or if it has no `from_args_kwargs` method.
+            If `type_` was passed as not as `type`, or if it has no `from_args_kwargs` method.
         ValueError
             - If `iterable` was passed as ``eventlist`` and it's `.type` attribute is different.
             - If `iterable` was not passed as type ``eventlist`` and any of it's element's format is incorrect.
         """
         if (type_ is not None) and (not isinstance(type_, type)):
             raise TypeError(
-                f'`type_` can be `None`, `type` instance, got {type_!r}.'
+                f'`type_` can be `None`, `type`, got {type_!r}.'
             )
         
         if not kwargs:
@@ -1574,7 +1574,7 @@ class eventlist(list):
         func : `callable`
             - If `func` was passed and the eventlist has no `.type` then returns the passed `func`.
             - If `func` was passed and the eventlist has `.type` set, then returns an instance of that.
-            - If `func` was not passed, then returns a ``._wrapper`` instance.
+            - If `func` was not passed, then returns a ``._wrapper``.
         """
         own_kwargs = self.kwargs
         if (own_kwargs is not None) and own_kwargs:
@@ -1801,7 +1801,7 @@ class EventWaitforMeta(type):
         """
         Instances the type.
         
-        Auto-adds a `.waitfors` instance attribute to them and also sets it as a `WeakKeyDictionary`, so you would not
+        Auto-adds a `.waitfors` attribute to them and also sets it as a `WeakKeyDictionary`, so you would not
         need to bother with that.
         
         Parameters
@@ -2001,9 +2001,9 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
     
     Class Attributes
     ----------------
-    __event_name__ : `None` or `str` = `None`
+    __event_name__ : `None`, `str` = `None`
         Predefined name to what the event handler will be added.
-    call_waitfors : `None` or `async callable` = `None`
+    call_waitfors : `None`, `async callable` = `None`
         An added method to subclasses to ensure the waitfors if overwrite `__call__` is overwritten. Subclasses can
         also overwrite `call_waitfors` method as well.
     """
@@ -2019,7 +2019,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         
         Parameters
         ----------
-        target : ``DiscordEntity`` instance
+        target : ``DiscordEntity``
             The target entity, to what relative waiters will be called.
         waiter : `async callable`
             Waiter to call every time a respective event to `target` is received.
@@ -2041,7 +2041,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         
         Parameters
         ----------
-        target : ``DiscordEntity`` instance
+        target : ``DiscordEntity``
             The entity on what the given waiter waits for the respective event.
         waiter : `async callable`
             The waiter, what is called with the respective parameters if the respective event occurs related to the
@@ -2073,7 +2073,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         
         Parameters
         ----------
-        target : ``DiscordEntity`` instance
+        target : ``DiscordEntity``
             The target entity.
         waiter : `Any`
             The waiter. `by_type` and `is_method` overwrite the behaviour of checking it.
@@ -2138,7 +2138,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         
         Parameters
         ----------
-        target : ``DiscordEntity`` instance
+        target : ``DiscordEntity``
             The target entity.
         waiter : `Any`
             The waiter. `by_type` and `is_method` overwrite the behaviour of checking it.
@@ -2199,7 +2199,7 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         
         Parameters
         ----------
-        target : ``DiscordEntity`` instance
+        target : ``DiscordEntity``
             The target entity.
         args : `tuple` of `Any`
             Parameters to ensure the waitfors with.
@@ -2224,14 +2224,14 @@ def EventWaitforMeta__new__(cls, class_name, class_parents, class_attributes):
     ----------
     class_name : `str`
         The created class's name.
-    class_parents : `tuple` of `type` instances
+    class_parents : `tuple` of `type`
         The superclasses of the creates type.
     class_attributes : `dict` of (`str`, `Any`) items
         The class attributes of the created type.
     
     Returns
     -------
-    type : ``EventWaitforMeta`` instance
+    type : ``EventWaitforMeta``
         The created type.
     
     Raises
@@ -2351,7 +2351,7 @@ class WaitForHandler:
     
     def __init__(self):
         """
-        Creates a new ``WaitForHandler`` instance.
+        Creates a new ``WaitForHandler``.
         """
         self.waiters = {}
     

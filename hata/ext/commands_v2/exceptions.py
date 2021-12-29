@@ -19,7 +19,7 @@ class CommandParameterParsingError(CommandProcessingError):
     """
     def __init__(self, content_parser_parameter):
         """
-        Creates a new ``CommandParameterParsingError`` instance.
+        Creates a new ``CommandParameterParsingError``.
         
         Parameters
         ----------
@@ -41,7 +41,7 @@ class CommandCheckError(CommandProcessingError):
     """
     def __init__(self, check):
         """
-        Creates a new ``CommandCheckError`` instance.
+        Creates a new ``CommandCheckError``.
         
         Parameters
         ----------
@@ -68,7 +68,7 @@ class CommandCooldownError(CommandProcessingError):
     """
     def __init__(self, cooldown_handler, expires_after):
         """
-        Creates a new ``CommandCheckError`` instance.
+        Creates a new ``CommandCheckError``.
         
         Parameters
         ----------

@@ -14,7 +14,7 @@ def get_banner_color_from_data(data):
     
     Returns
     -------
-    banner_color : `None` or `str`
+    banner_color : `None`, `str`
     """
     banner_color = data.get('accent_color', None)
     

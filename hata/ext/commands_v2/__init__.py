@@ -1,6 +1,3 @@
-# Upgraded commands extension for hata.
-# Work in progress.
-
 from .category import *
 from . import checks
 from .command import *
@@ -54,18 +51,18 @@ def setup_ext_commands_v2(client, prefix, **kwargs):
     
     And the following event handlers are added as well:
     - `message_create` : ``CommandProcessor``
-    - `reaction_add` : ``ReactionAddWaitfor`` (Except if other ``EventWaitforBase`` instance is already added.)
-    - `reaction_delete` : ``ReactionDeleteWaitfor`` (Except if other ``EventWaitforBase`` instance is already added.)
+    - `reaction_add` : ``ReactionAddWaitfor`` (Except if other ``EventWaitforBase`` is already added.)
+    - `reaction_delete` : ``ReactionDeleteWaitfor`` (Except if other ``EventWaitforBase`` is already added.)
     
     Parameters
     ----------
     client : ``Client`
         The client on what the extension will be setuped.
-    prefix : `str`, (`tuple`, `list`, `deque`) of `str`, or `callable` -> `str`, Optional
+    prefix : `str`, (`tuple`, `list`, `deque`) of `str`, `callable` -> `str`, Optional
         The prefix of the client's command processor.
         
-        Can be given as `str`, as `tuple`, `list` or `deque` of `str`, or as a `callable`, what accepts `1` parameter,
-        the respective ``Message`` instance and returns `str`.
+        Can be given as `str`, as `tuple`, `list`, `deque` of `str`, or as a `callable`, what accepts `1` parameter,
+        the respective ``Message`` and returns `str`.
     **kwargs : Keyword parameters
         Additional keyword parameters to be passed to the created ``CommandProcessor``.
     
@@ -77,11 +74,11 @@ def setup_ext_commands_v2(client, prefix, **kwargs):
     Raises
     ------
     TypeError
-        - If `client` was not given as ``Client`` instance.
+        - If `client` was not given as ``Client``.
         - If `prefix` was not given meanwhile `lite` is `False`.
     RuntimeError
-        - If the given `client` already has `command_processor` or `commands` attribute.
-        - If the given `client` has a ``CommandProcessor`` instance added as `message_create` event,
+        - If the given `client` already has `command_processor` / `commands` attribute.
+        - If the given `client` has a ``CommandProcessor`` added as `message_create` event,
     """
     if not isinstance(client, Client):
         raise TypeError(f'Expected type `{Client.__name__}` as client, meanwhile got `{client.__class__.__name__}`.')

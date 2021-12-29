@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 __all__ = ('Pagination',)
 
 from scarletio import copy_docs, CancelledError
@@ -24,7 +23,7 @@ class Pagination(PaginationBase):
     
     Attributes
     ----------
-    _canceller : `None` or `function`
+    _canceller : `None`, `function`
         The function called when the ``Pagination`` is cancelled or when it expires. This is a onetime use and after
         it was used, is set as `None`.
     
@@ -48,19 +47,19 @@ class Pagination(PaginationBase):
         |                           |       | but expected.                                                         |
         +---------------------------+-------+-----------------------------------------------------------------------+
     
-    _timeouter : `None` or ``Timeouter``
+    _timeouter : `None`, ``Timeouter``
         Executes the timing out feature on the ``Pagination``.
     
-    channel : ``ChannelTextBase`` instance
+    channel : ``ChannelTextBase``
         The channel where the ``Pagination`` is executed.
     
     client : ``Client`` of ``Embed`` (or any compatible)
         The client who executes the ``Pagination``.
     
-    message : `None` or ``Message``
+    message : `None`, ``Message``
         The message on what the ``Pagination`` is executed.
     
-    check : `None` or `callable`
+    check : `None`, `callable`
         A callable what decides whether the ``Pagination`` should process a received reaction event. Defaults to
         `None`.
         
@@ -68,7 +67,7 @@ class Pagination(PaginationBase):
         +-----------+---------------------------------------------------+
         | Name      | Type                                              |
         +===========+===================================================+
-        | event     | ``ReactionAddEvent`` or ``ReactionDeleteEvent``   |
+        | event     | ``ReactionAddEvent``, ``ReactionDeleteEvent``     |
         +-----------+---------------------------------------------------+
         
         > ``ReactionDeleteEvent`` is only given, when the client has no `manage_messages` permission.
@@ -123,8 +122,8 @@ class Pagination(PaginationBase):
         ----------
         client : ``Client``
             The client who will execute the ``Pagination``.
-        channel : ``ChannelTextBase`` instance, ``Message``, ``InteractionEvent``
-            The channel where the ``Pagination`` will be executed. Pass it as a ``Message`` instance to send a reply.
+        channel : ``ChannelTextBase``, ``Message``, ``InteractionEvent``
+            The channel where the ``Pagination`` will be executed. Pass it as a ``Message`` to send a reply.
             
             If given as ``InteractionEvent``, then will acknowledge it and create a new message with it as well.
             Although will not acknowledge it if `message` is given.
@@ -133,10 +132,10 @@ class Pagination(PaginationBase):
             An indexable container, what stores the displayable pages.
         timeout : `float`, Optional (Keyword only)
             The timeout of the ``Pagination`` in seconds. Defaults to `240.0`.
-        message : `None` or ``Message``, Optional (Keyword only)
+        message : `None`, ``Message``, Optional (Keyword only)
             The message on what the ``Pagination`` will be executed. If not given a new message will be created.
             Defaults to `None`.
-        check : `None` or `callable`, Optional (Keyword only)
+        check : `None`, `callable`, Optional (Keyword only)
             A callable what decides whether the ``Pagination`` should process a received reaction event. Defaults to
             `None`.
             
@@ -144,7 +143,7 @@ class Pagination(PaginationBase):
             +-----------+---------------------------------------------------+
             | Name      | Type                                              |
             +===========+===================================================+
-            | event     | ``ReactionAddEvent`` or ``ReactionDeleteEvent``   |
+            | event     | ``ReactionAddEvent``, ``ReactionDeleteEvent``     |
             +-----------+---------------------------------------------------+
             
             Note, that ``ReactionDeleteEvent`` is only given, when the client has no `manage_messages` permission.
@@ -158,7 +157,7 @@ class Pagination(PaginationBase):
         
         Returns
         -------
-        self : `None` or ``Pagination``
+        self : `None`, ``Pagination``
             If `pages` is an empty container, returns `None`.
         
         Raises
@@ -179,8 +178,10 @@ class Pagination(PaginationBase):
             target_channel = channel.channel
             received_interaction = True
         else:
-            raise TypeError(f'`channel` can be given only as `{ChannelTextBase.__name__}`, `{Message.__name__}` '
-                f'of as {InteractionEvent.__name__} instance, got {channel.__class__.__name__}.')
+            raise TypeError(
+                f'`channel` can be `{ChannelTextBase.__name__}`, `{Message.__name__}`, `{InteractionEvent.__name__}`, '
+                f'got {channel.__class__.__name__}; {channel!r}.'
+            )
         
         self = object.__new__(cls)
         self.check = check
@@ -213,12 +214,12 @@ class Pagination(PaginationBase):
             
             if isinstance(err, DiscordException):
                 if err.code in (
-                        ERROR_CODES.unknown_message, # message deleted
-                        ERROR_CODES.unknown_channel, # message's channel deleted
-                        ERROR_CODES.missing_access, # client removed
-                        ERROR_CODES.missing_permissions, # permissions changed meanwhile
-                        ERROR_CODES.cannot_message_user, # user has dm-s disallowed
-                            ):
+                    ERROR_CODES.unknown_message, # message deleted
+                    ERROR_CODES.unknown_channel, # message's channel deleted
+                    ERROR_CODES.missing_access, # client removed
+                    ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                    ERROR_CODES.cannot_message_user, # user has dm-s disallowed
+                ):
                     return self
             
             raise
@@ -240,12 +241,12 @@ class Pagination(PaginationBase):
             
             if isinstance(err, DiscordException):
                 if err.code in (
-                        ERROR_CODES.unknown_message, # message deleted
-                        ERROR_CODES.unknown_channel, # message's channel deleted
-                        ERROR_CODES.max_reactions, # reached reaction 20, some1 is trolling us.
-                        ERROR_CODES.missing_access, # client removed
-                        ERROR_CODES.missing_permissions, # permissions changed meanwhile
-                            ):
+                    ERROR_CODES.unknown_message, # message deleted
+                    ERROR_CODES.unknown_channel, # message's channel deleted
+                    ERROR_CODES.max_reactions, # reached reaction 20, some1 is trolling us.
+                    ERROR_CODES.missing_access, # client removed
+                    ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                ):
                     return self
             
             raise

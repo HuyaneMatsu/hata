@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from .graver import *
 from .module_mapper import *
 from .parser import *

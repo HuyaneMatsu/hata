@@ -12,7 +12,7 @@ ChannelBase = include('ChannelBase')
 class UnknownCrossMention(DiscordEntity):
     """
     Represents an unknown channel mentioned by a cross guild mention. These mentions are stored at ``Message``'s
-    `.cross_mentions` instance attribute.
+    `.cross_mentions` attribute.
     
     Attributes
     ----------
@@ -26,6 +26,7 @@ class UnknownCrossMention(DiscordEntity):
         The channel type value of the respective channel.
     """
     __slots__ = ('guild_id', 'name', 'type',)
+    
     def __new__(cls, data):
         """
         Tries to find the referenced channel by `id`. If it fails creates and returns an ``UnknownCrossMention``
@@ -38,7 +39,7 @@ class UnknownCrossMention(DiscordEntity):
         
         Returns
         -------
-        channel : ``UnknownCrossMention`` or ``ChannelGuildBase`` instance
+        channel : ``UnknownCrossMention``, ``ChannelGuildBase``
         """
         channel_id = int(data['id'])
         try:
@@ -121,6 +122,7 @@ class UnknownCrossMention(DiscordEntity):
             return self.created_at.__format__(DATETIME_FORMAT_CODE)
         
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
+    
     
     @property
     def clients(self):

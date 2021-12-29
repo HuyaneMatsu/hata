@@ -18,7 +18,7 @@ class ScheduledEventStatus(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``ScheduledEventStatus``) items
-        Stores the predefined ``ScheduledEventStatus`` instances. These can be accessed with their `value` as key.
+        Stores the predefined ``ScheduledEventStatus``-s. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The scheduled event status' values' type.
     DEFAULT_NAME : `str` = `'UNDEFINED'`
@@ -63,13 +63,13 @@ class ScheduledEventEntityType(PreinstancedBase):
         The name of the scheduled event's entity's type.
     value : `int`
         The identifier value the scheduled event's entity type.
-    metadata_type : `None` or ``ScheduledEventEntityMetadata`` subclass
+    metadata_type : `None`, ``ScheduledEventEntityMetadata`` subclass
         The scheduled event's metadata's applicable type.
     
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``ScheduledEventEntityType``) items
-        Stores the predefined ``ScheduledEventEntityType`` instances. These can be accessed with their `value` as key.
+        Stores the predefined ``ScheduledEventEntityType``-s. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The scheduled event's entity's type's values' type.
     DEFAULT_NAME : `str` = `'UNDEFINED'`
@@ -130,7 +130,7 @@ class ScheduledEventEntityType(PreinstancedBase):
             The unique identifier of the scheduled event entity type.
         name : `str`
             The name of the scheduled event entity type.
-        metadata_type : `None` or ``ScheduledEventEntityMetadata`` subclass
+        metadata_type : `None`, ``ScheduledEventEntityMetadata`` subclass
             The scheduled event's metadata's applicable type.
         """
         self.name = name
@@ -160,7 +160,7 @@ class PrivacyLevel(PreinstancedBase):
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``PrivacyLevel``) items
-        Stores the predefined ``PrivacyLevel`` instances. These can be accessed with their `value` as key.
+        Stores the predefined ``PrivacyLevel``-s. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The privacy level' values' type.
     DEFAULT_NAME : `str` = `'UNDEFINED'`

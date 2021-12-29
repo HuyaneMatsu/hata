@@ -4,7 +4,6 @@ from scarletio import export, include, copy_docs
 
 from ..core import USERS
 from ..user import User, ZEROUSER, ClientUserBase, UserBase
-from ..user.helpers import get_banner_color_from_data
 from ..exceptions import DiscordException, ERROR_CODES
 from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_preinstanced_type
 from ..bases import ICON_TYPE_NONE, Icon, instance_or_id_to_instance
@@ -39,7 +38,7 @@ class Webhook(WebhookBase):
         The webhook's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The webhook's avatar's type.
-    banner_color : `None` or ``Color``
+    banner_color : `None`, ``Color``
         The user's banner color if has any.
     banner_hash : `int`
         The user's banner's hash in `uint128`.
@@ -51,9 +50,9 @@ class Webhook(WebhookBase):
         The webhook's type.
     application_id : `int`
         The application's id what created the webhook. Defaults to `0` if not applicable.
-    source_channel : `None` or ``WebhookSourceChannel``
+    source_channel : `None`, ``WebhookSourceChannel``
         The webhook's source channel. Applicable for ``WebhookType.server`` webhooks.
-    source_guild : `None` or ``WebhookSourceGuild``
+    source_guild : `None`, ``WebhookSourceGuild``
         The webhook's source guild. Applicable for ``WebhookType.server`` webhooks.
     token : `str`
         The webhooks's token. You need an `id` and a `token` to send webhook message. Defaults to empty string.
@@ -129,7 +128,7 @@ class Webhook(WebhookBase):
         
         Returns
         -------
-        webhook : `None` or ``Webhook``
+        webhook : `None`, ``Webhook``
         """
         result = WEBHOOK_URL_PATTERN.fullmatch(url)
         if result is None:
@@ -168,7 +167,7 @@ class Webhook(WebhookBase):
         
         Parameters
         ----------
-        webhook_id : `int` or `str`
+        webhook_id : `int`, `str`
             The webhook's id.
         **kwargs : keyword parameters
             Additional predefined attributes for the webhook.
@@ -180,7 +179,7 @@ class Webhook(WebhookBase):
         token : `str`, Optional (Keyword only)
             The webhook's ``.token``.
         
-        avatar : `None`, ``Icon`` or `str`, Optional (Keyword only)
+        avatar : `None`, ``Icon``, `str`, Optional (Keyword only)
             The webhook's avatar.
             
             > Mutually exclusive with `avatar_type` and `avatar_hash`.
@@ -195,7 +194,7 @@ class Webhook(WebhookBase):
             
             > Mutually exclusive with `avatar`.
         
-        banner : `None`, ``Icon`` or `str`, Optional (Keyword only)
+        banner : `None`, ``Icon``, `str`, Optional (Keyword only)
             The webhook's banner.
             
             > Mutually exclusive with `banner_type` and `banner_hash`.
@@ -271,7 +270,7 @@ class Webhook(WebhookBase):
                 processable.append(('application_id', application_id))
         
             if kwargs:
-                raise TypeError(f'Unused or unsettable attributes: {kwargs}')
+                raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
         
         else:
             processable = None
@@ -308,7 +307,7 @@ class Webhook(WebhookBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Received webhook data.
-        source_channel : ``ChannelText`` instance
+        source_channel : ``ChannelText``
             The followed channel.
         target_channel_id : `int`
             The target channel's identifier where the webhook messages will be sent.

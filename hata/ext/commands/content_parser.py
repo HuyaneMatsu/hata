@@ -53,26 +53,26 @@ class ContentParameterSeparator:
         - ``._rule_inter``
     _rp : `_sre.SRE_Pattern`
         The regex pattern what is passed and used by the caller.
-    separator : `str` or `tuple` (`str`, `str`)
-        The executed separator by the ``ContentParameterSeparator`` instance.
+    separator : `str`, `tuple` (`str`, `str`)
+        The executed separator by the ``ContentParameterSeparator``.
     """
     __slots__ = ('_caller', '_rp', 'separator', )
     
     def __new__(cls, separator):
         """
-        Creates a new ``ContentParameterSeparator`` instance. If one already exists with the given parameters, returns
+        Creates a new ``ContentParameterSeparator``. If one already exists with the given parameters, returns
         that instead.
         
         Parameters
         ----------
         separator : `str`, `tuple` (`str`, `str`)
-            The executed separator by the ``ContentParameterSeparator`` instance.
+            The executed separator by the ``ContentParameterSeparator``.
         
         Raises
         ------
         TypeError
-            - If `separator` is not given as `None`, ``ContentParameterSeparator``, `str`, neither as `tuple` instance.
-            - If `separator` was given as `tuple`, but it's element are not `str` instances.
+            - If `separator` is not given as `None`, ``ContentParameterSeparator``, `str`, neither as `tuple`.
+            - If `separator` can be `tuple`, but it's element are not `str`.
         ValueError
             - If `separator` is given as `str`, but it's length is not 1.
             - If `separator` is given as `str`, but it is a space character.
@@ -97,21 +97,28 @@ class ContentParameterSeparator:
             processed_separator = list(separator)
             separator_type = tuple
         else:
-            raise TypeError(f'`separator` should have be given as `str` or as `tuple` instance, got '
-                f'{separator_type.__name__}.')
+            raise TypeError(
+                f'`separator` can be `str`, `tuple`, got {separator_type.__name__}; {separator!r}.'
+            )
         
         if separator_type is str:
             if len(processed_separator) != 1:
-                raise ValueError(f'`str` separator length can be only `1`, got {separator!r}.')
+                raise ValueError(
+                    f'`str` separator length can be only `1`, got {len(processed_separator)!r}; {separator!r}.'
+            )
             
             if processed_separator.isspace():
-                raise ValueError(f'`str` separator cannot be a space character`, meanwhile it is, got {separator!r}.')
+                raise ValueError(
+                    f'`str` separator cannot be a space character`, meanwhile it is, got {separator!r}.'
+                )
             
             separator = processed_separator
         
         else:
             if len(processed_separator) != 2:
-                raise ValueError(f'`tuple` separator length can be only `2`, got {separator!r}.')
+                raise ValueError(
+                    f'`tuple` separator length can be only `2`, got {len(processed_separator)!r}; {separator!r}.'
+                )
             
             for index in range(2):
                 element = processed_separator[index]
@@ -123,16 +130,21 @@ class ContentParameterSeparator:
                     processed_element  = str(element)
                     processed_separator[index] = processed_element
                 else:
-                    raise TypeError(f'`tuple` separator\'s elements can be only `str` instances, meanwhile it\'s '
-                        f'element under index `{index}` is type {element_type.__name__!r}.')
+                    raise TypeError(
+                        f'`separator[{index}]` is not `str`, got {element_type.__name__}; {element!r}; '
+                        f'separator={processed_separator!r}.'
+                    )
                 
                 if len(processed_element) != 1:
-                    raise ValueError(f'`tuple` separator\'s elements can be only `str` with length of `1`, meanwhile '
-                        f'it\'s element under index `{index}` is not, got {element!r}.')
+                    raise ValueError(
+                        f'`separator[{index}]`\' length can be only `1`, got {len(processed_element)!r}; '
+                        f'{element!r}; separator={processed_separator!r}.'
+                    )
                 
                 if processed_element.isspace():
-                    raise ValueError(f'`tuple` separator\'s elements cannot be space character`, meanwhile it\'s '
-                        f'element under index `{index}` is, got {element!r}.')
+                    raise ValueError(
+                        f'`separator[{index}]`\' cannot be space character, got separator={processed_separator!r}.'
+                    )
             
             separator = tuple(processed_separator)
         
@@ -194,6 +206,7 @@ class ContentParameterSeparator:
         
         return content[index:searched.start()], searched.end()
     
+    
     @staticmethod
     def _rule_inter(rp, content, index):
         """
@@ -223,6 +236,7 @@ class ContentParameterSeparator:
         
         return part, parsed.end()
     
+    
     def __call__(self, content, index):
         """
         Calls the content parameter separator to get the next part of the given content.
@@ -243,13 +257,16 @@ class ContentParameterSeparator:
         """
         return self._caller(self._rp, content, index)
     
+    
     def __repr__(self):
         """Returns the content parameter separator's representation."""
         return f'{self.__class__.__name__}({self.separator!r})'
     
+    
     def __hash__(self):
         """Returns the content parameter parser's hash."""
         return hash(self.separator)
+    
     
     def __eq__(self, other):
         """Returns whether the two content parameter separator are the same."""
@@ -274,7 +291,7 @@ def parse_user_mention(part, message):
     
     Returns
     -------
-    user : `None` or ``UserBase`` instance
+    user : `None`, ``UserBase``
     """
     user_mentions = message.user_mentions
     if user_mentions is None:
@@ -302,7 +319,7 @@ def parse_role_mention(part, message):
     
     Returns
     -------
-    role : `None` or ``Role`` instance
+    role : `None`, ``Role``
     """
     role_mentions = message.role_mentions
     if role_mentions is None:
@@ -317,6 +334,7 @@ def parse_role_mention(part, message):
         if role.id == role_id:
             return role
 
+
 def parse_channel_mention(part, message):
     """
     If the message's given part is a channel mention, returns the respective channel.
@@ -330,7 +348,7 @@ def parse_channel_mention(part, message):
         
     Returns
     -------
-    channel : `None` or ``ChannelBase`` instance
+    channel : `None`, ``ChannelBase``
     """
     channel_mentions = message.channel_mentions
     if channel_mentions is None:
@@ -408,7 +426,7 @@ class ConverterFlag(FlagBase):
     Note, if you use for example a `'user'` parser, then by default it will use the `user_default` flags, and it
     will ignore everything else, than `user_all`.
     
-    Some events, like `int`, or `str` do not have any flags, what means, their behaviour cannot be altered.
+    Some events, like `int`, `str` do not have any flags, what means, their behaviour cannot be altered.
     """
     __keys__ = {
         'url': 0,
@@ -473,7 +491,7 @@ class ContentParserContext:
         A message's content after it's prefix.
     index : `int`
         The index, of the last character's end.
-    last_part : `None` or `str`
+    last_part : `None`, `str`
         The last parsed part.
     last_start : `bool`
         When the last returned string started
@@ -490,7 +508,7 @@ class ContentParserContext:
     
     def __init__(self, separator, client, message, content):
         """
-        Creates a new ``ContentParserContext`` instance.
+        Creates a new ``ContentParserContext``.
         
         Parameters
         ----------
@@ -519,7 +537,7 @@ class ContentParserContext:
         
         Returns
         -------
-        next_ : `None` or `str`
+        next_ : `None`, `str`
             Returns `None` if the message has no more parts left.
         """
         index = self.index
@@ -700,7 +718,7 @@ class ParserContext(ParserContextBase):
         A function, what converts a part of the a respective message's content.
     flags : ``ConverterFlag``
         Flags which describe what details should the parser function check.
-    type : `None` or `type`
+    type : `None`, `type`
         Type info about the entity to parse.
     """
     __slots__ = ('converter', 'flags', 'type')
@@ -717,12 +735,14 @@ class ParserContext(ParserContextBase):
         Raises
         ------
         TypeError
-            If `flagged_annotation` was given as `tuple`.
+            If `flagged_annotation` can be `tuple`.
         """
         type_ = flagged_annotation.annotation
         if type(type_) is tuple:
-            raise TypeError(f'`flagged_annotation` cannot be given as `tuple`, when creating a `{cls.__name__}` '
-                f'instance, got {flagged_annotation!r}.')
+            raise TypeError(
+                f'`flagged_annotation` cannot be given as `tuple`, when creating a `{cls.__name__}` , got '
+                f'{flagged_annotation!r}.'
+            )
         
         self = object.__new__(cls)
         self.flags = flagged_annotation.flags
@@ -789,7 +809,7 @@ class SingleArgsParserContext(ParserContext):
         A function, what converts a part of the a respective message's content.
     flags : ``ConverterFlag``
         Flags which describe what details should the parser function check.
-    type : `None` or `type`
+    type : `None`, `type`
         Type info about the entity to parse.
     """
     __slots__ = ()
@@ -820,6 +840,7 @@ class SingleArgsParserContext(ParserContext):
         
         return True
 
+
 class ChainedArgsParserContext(ParserContextBase):
     """
     A chained converter *args used, when parts can represent more types.
@@ -846,8 +867,10 @@ class ChainedArgsParserContext(ParserContextBase):
             If `flagged_annotation` was given not given as `tuple` or it contains only 1 (or less) element.
         """
         if (type(flagged_annotations) is not tuple) or (len(flagged_annotations) < 2):
-            raise TypeError(f'`flagged_annotations` cannot be given as not `tuple`, or as `tuple` with 1 (or less) '
-                f'elements, when creating a `{cls.__name__}` instance, got {flagged_annotations!r}.')
+            raise TypeError(
+                f'`flagged_annotations` cannot be given as not `tuple`, `tuple` with 1 (or less) '
+                f'elements, when creating a `{cls.__name__}`, got {flagged_annotations!r}.'
+            )
         
         parser_contexts = []
         for flagged_annotation in flagged_annotations:
@@ -925,7 +948,7 @@ class SingleParserContext(ParserContext):
         A function, what converts a part of the a respective message's content.
     flags : ``ConverterFlag``
         Flags which describe what details should the parser function check.
-    type : `None` or `type_`
+    type : `None`, `type_`
         Type info about the entity to parse.
     default : `Any`
         The default object to return if the parser fails
@@ -972,12 +995,14 @@ class SingleParserContext(ParserContext):
         Raises
         ------
         TypeError
-            If `flagged_annotation` was given as `tuple`.
+            If `flagged_annotation` can be `tuple`.
         """
         type_ = flagged_annotation.annotation
         if type(type_) is tuple:
-            raise TypeError(f'`flagged_annotation` cannot be given as `tuple`, when creating a `{cls.__name__}` '
-                f'instance, got {flagged_annotation!r}.')
+            raise TypeError(
+                f'`flagged_annotation` cannot be given as `tuple`, when creating a `{cls.__name__}`, got '
+                f'{flagged_annotation!r}.'
+            )
         
         self = object.__new__(cls)
         self.flags = flagged_annotation.flags
@@ -1116,8 +1141,10 @@ class ChainedParserContext(ChainedArgsParserContext):
             If `flagged_annotation` was given not given as `tuple` or it contains only 1 (or less) element.
         """
         if (type(flagged_annotations) is not tuple) or (len(flagged_annotations) < 2):
-            raise TypeError(f'`flagged_annotations` cannot be given as not `tuple`, or as `tuple` with 1 (or less) '
-                f'elements, when creating a `{cls.__name__}` instance, got {flagged_annotations!r}.')
+            raise TypeError(
+                f'`flagged_annotations` cannot be given as not `tuple`, `tuple` with 1 (or less) '
+                f'elements, when creating a `{cls.__name__}`, got {flagged_annotations!r}.'
+            )
         
         parser_contexts = []
         for flagged_annotation in flagged_annotations:
@@ -1214,15 +1241,15 @@ class ConverterSetting:
     ----------
     all_flags : ``ConverterFlag``
         All the flags which the converter picks up.
-    alternative_type_name : `None` or `str`
+    alternative_type_name : `None`, `str`
         Alternative string name for the parser, what allows picking up a respective converter.
-    alternative_types : `None` or `list` of `type` instances
+    alternative_types : `None`, `list` of `type`
         Alternative type specifications, which are supported by the parser.
     converter : `async-function`
         The converter function.
     default_flags : ``ConverterFlag``
         The default flags with what the converter will be used if not defining any specific.
-    default_type : `None` or `type`
+    default_type : `None`, `type`
         The default annotation type of the converter.
     uses_flags : `bool`
         Whether the converter processes any flags.
@@ -1233,7 +1260,7 @@ class ConverterSetting:
     def __new__(cls, converter, uses_flags, default_flags, all_flags, alternative_type_name, default_type,
             alternative_types):
         """
-        Creates a new ``ConverterSetting`` instance to store settings related to a converter function.
+        Creates a new ``ConverterSetting`` to store settings related to a converter function.
         
         Parameters
         ----------
@@ -1245,9 +1272,9 @@ class ConverterSetting:
             The default flags with what the converter will be used if not defining any specific.
         all_flags : ``ConverterFlag``
              All the flags which the converter picks up.
-        alternative_type_name : `None` or `str`
+        alternative_type_name : `None`, `str`
             Alternative string name for the parser, what allows picking up a respective converter.
-        default_type : `None` or `type`
+        default_type : `None`, `type`
             The default annotation type of the converter.
         alternative_types : `None` `iterable` of `type`
             A list of the alternatively accepted types.
@@ -1258,10 +1285,10 @@ class ConverterSetting:
             - If `converter` is not `function` type.
             - If `converter` is not `async`.
             - If `converter` accepts bad amount of parameters.
-            - If `uses_flags` was not given as `bool`, nether as `int` as `0` or `1`.
-            - If `default_flags` or `all_flags` was not given as `ConverterFlag` instance.
-            - If `alternative_type_name` was not given as `None`, neither as `str` instance.
-            - If `default_type` was not given as `None`, neither as `type` instance.
+            - If `uses_flags` was not given as `bool`, nether as `int` as `0`, `1`.
+            - If `default_flags`, `all_flags` was not given as `ConverterFlag`.
+            - If `alternative_type_name` was not given as `None`, neither as `str`.
+            - If `default_type` was not given as `None`, neither as `type`.
             - If `alternative_types` was not given as `None`, neither as `iterable` of `type`.
         ValueError
             If `uses_flags` is given as `true`, but at the same time `all_flags` was not given as
@@ -1269,29 +1296,40 @@ class ConverterSetting:
         """
         converter_type = converter.__class__
         if (converter_type is not FunctionType):
-            raise TypeError(f'`converter` should have been given as `{FunctionType.__name__}` instance, got '
-                f'{converter_type.__name__}.')
+            raise TypeError(
+                f'`converter` can be `{FunctionType.__name__}`, got '
+                f'{converter_type.__name__}; {converter!r}.'
+            )
         
         analyzed = CallableAnalyzer(converter)
         if (not analyzed.is_async()):
-            raise TypeError(f'`converter` should have been given as an async function instance, got '
-                f'{converter!r}.')
+            raise TypeError(
+                f'`converter` can be an async function, got {converter!r}.'
+            )
         
         non_reserved_positional_parameter_count = analyzed.get_non_reserved_positional_parameter_count()
         if non_reserved_positional_parameter_count != 2:
-            raise TypeError(f'`converter` should accept `2` non reserved positional parameters, meanwhile it expects '
-                f'{non_reserved_positional_parameter_count}.')
+            raise TypeError(
+                f'`converter` should accept `2` non reserved positional parameters, meanwhile it expects '
+                f'{non_reserved_positional_parameter_count!r}; {converter!r}.'
+            )
         
         if analyzed.accepts_args():
-            raise TypeError(f'`converter` should accept not expect args, meanwhile it does.')
+            raise TypeError(
+                f'`converter` should accept not expect args, meanwhile it does, got {converter!r}.'
+            )
         
         if analyzed.accepts_kwargs():
-            raise TypeError(f'`converter` should accept not expect kwargs, meanwhile it does.')
+            raise TypeError(
+                f'`converter` should accept not expect kwargs, meanwhile it does, got {converter!r}.'
+            )
         
         non_default_keyword_only_parameter_count = analyzed.get_non_default_keyword_only_parameter_count()
         if non_default_keyword_only_parameter_count:
-            raise TypeError(f'`converter` should accept `0` keyword only parameters, meanwhile it expects '
-                f'{non_default_keyword_only_parameter_count}.')
+            raise TypeError(
+                f'`converter` should accept `0` keyword only parameters, meanwhile it expects '
+                f'{non_default_keyword_only_parameter_count}, got {converter!r}'
+            )
         
         uses_flags_type = uses_flags.__class__
         if uses_flags_type is bool:
@@ -1300,20 +1338,28 @@ class ConverterSetting:
             if uses_flags in (0, 1):
                 uses_flags = bool(uses_flags)
             else:
-                raise TypeError(f'`uses_flags` was given as `int` instance, but not as `0`, or `1`, got '
-                    f'{uses_flags_type.__name__}. Next time please pass a `bool` instance.')
+                raise TypeError(
+                    f'`uses_flags` is given as `int`, but not as `0`, `1`, got '
+                    f'{uses_flags_type.__name__}; {uses_flags!r}. Next time please pass a `bool`.'
+                )
         else:
-            raise TypeError(f'`uses_flags` should have been given as `bool` instance, got {uses_flags_type.__name__}.')
+            raise TypeError(
+                f'`uses_flags` can be `bool`, got {uses_flags_type.__name__}; {uses_flags!r}.'
+            )
         
         default_flags_type = default_flags.__class__
         if default_flags_type is not ConverterFlag:
-            raise TypeError(f'`default_flags` should have be given as `{ConverterFlag.__name__}` instance, got '
-                f'{default_flags_type.__name__}.')
+            raise TypeError(
+                f'`default_flags` can be `{ConverterFlag.__name__}`, got '
+                f'{default_flags_type.__name__}; {default_flags!r}.'
+            )
         
         all_flags_type = all_flags.__class__
         if all_flags_type is not ConverterFlag:
-            raise TypeError(f'`all_flags` should have be given as `{ConverterFlag.__name__}` instance, got '
-                f'{all_flags_type.__name__}.')
+            raise TypeError(
+                f'`all_flags` can be `{ConverterFlag.__name__}`, got '
+                f'{all_flags_type.__name__}; {all_flags!r}.'
+            )
         
         if (alternative_type_name is not None):
             alternative_type_name_type = alternative_type_name.__class__
@@ -1322,12 +1368,16 @@ class ConverterSetting:
             elif issubclass(alternative_type_name_type, str):
                 alternative_type_name = str(alternative_type_name)
             else:
-                raise TypeError(f'`alternative_type_name` should have be given as `None` or as `str` instance, got '
-                    f'{alternative_type_name_type.__class__}.')
+                raise TypeError(
+                    f'`alternative_type_name` can be `None`, `str`, got '
+                    f'{alternative_type_name_type.__class__}; {alternative_type_name!r}.'
+                )
         
         if (default_type is not None) and (not isinstance(default_type, type)):
-            raise TypeError(f'`default_type` was not given as `None`, neither as `type` instance, got '
-                f'{default_type.__class__.__name__}.')
+            raise TypeError(
+                f'`default_type` was not given as `None`, neither as `type`, got '
+                f'{default_type.__class__.__name__}; {default_type!r}.'
+            )
         
         if (alternative_types is None):
             alternative_types_processed = None
@@ -1335,16 +1385,20 @@ class ConverterSetting:
         else:
             alternative_types_type = alternative_types.__class__
             if not hasattr(alternative_types_type, '__iter__'):
-                raise TypeError(f'`alternative_types` can be given as `None` or as `iterable` of `type`, got '
-                    f'{alternative_types_type.__name__}.')
+                raise TypeError(
+                    f'`alternative_types` can be `None`, `iterable` of `type`, got '
+                    f'{alternative_types_type.__name__}; {alternative_types!r}.'
+                )
             
             alternative_types_processed = []
             
             index = 1
             for alternative_type in alternative_types:
                 if not isinstance(alternative_type, type):
-                    raise TypeError(f'`alternative_types` can be given as `None`, or as `iterable` of `type`, got '
-                        f'`iterable`, but it\'s {index} element is {alternative_type.__class__.__name__}.')
+                    raise TypeError(
+                        f'`alternative_types` can be `None`, `iterable` of `type`, got '
+                        f'`iterable`, but it\'s {index} element is {alternative_type.__class__.__name__}.'
+                    )
                 
                 alternative_types_processed.append(alternative_type)
                 index +=1
@@ -1353,8 +1407,10 @@ class ConverterSetting:
                  alternative_types_processed = None
         
         if (not uses_flags) and all_flags:
-            raise ValueError(f'If `uses_flags` is given as `true`, then `all_flags` should be given as '
-                f'`{ConverterFlag.__name__}(0)`, got {all_flags!r}.')
+            raise ValueError(
+                f'If `uses_flags` is given as `true`, then `all_flags` should be given as '
+                f'`{ConverterFlag.__name__}(0)`, got {all_flags!r}.'
+            )
         
         self = object.__new__(cls)
         self.converter = converter
@@ -2268,7 +2324,7 @@ def validate_default_code(default_code):
     
     Parameters
     ----------
-    default_code : `str` or `async-callable` `function`
+    default_code : `str`, `async-callable` `function`
         A default code function, or a `str` representing a predefined one.
     
     Returns
@@ -2278,9 +2334,9 @@ def validate_default_code(default_code):
     Raises
     ------
     LookupError
-        If `default_code` is given as `str` instance, but not as an identifier of any of the predefined ones.
+        If `default_code` is given as `str`, but not as an identifier of any of the predefined ones.
     TypeError
-        - If `default_code` is neither `str` or `function`.
+        - If `default_code` is neither `str`, `function`.
         - If `default_code` is given as `function`, but not as `async`
         - If `default_code` is given as `function`, but accepts bad amount of parameters.
     """
@@ -2292,38 +2348,51 @@ def validate_default_code(default_code):
     elif callable(default_code):
         analyzed = CallableAnalyzer(default_code)
         if (not analyzed.is_async()):
-            raise TypeError(f'`default_code` should have been given as `str`, or as an `async-callable` `function`, '
-                f'got a function, but not an `async` one: an async function instance, got {default_code!r}.')
+                raise TypeError(
+                    f'`default_code` can be `str`, `async-callable` `function`, '
+                    f'got a function, but not an `async` one: an async function instance, got {default_code!r}.'
+                )
         
         non_reserved_positional_parameter_count = analyzed.get_non_reserved_positional_parameter_count()
         if non_reserved_positional_parameter_count!=1:
-            raise TypeError(f'`default_code` should accept `1` non reserved positional parameters, meanwhile it expects '
-                f'{non_reserved_positional_parameter_count}.')
+            raise TypeError(
+                f'`default_code` should accept `1` non reserved positional parameters, meanwhile it expects '
+                f'{non_reserved_positional_parameter_count!r}; {default_code!r}.'
+            )
         
         if analyzed.accepts_args():
-            raise TypeError(f'`default_code` should accept not expect args, meanwhile it does.')
+            raise TypeError(
+                f'`default_code` should not accept args, meanwhile it does, got {default_code!r}.'
+            )
         
         if analyzed.accepts_kwargs():
-            raise TypeError(f'`default_code` should accept not expect kwargs, meanwhile it does.')
+            raise TypeError(
+                f'`default_code` should not accept kwargs, meanwhile it does, got {default_code!r}'
+            )
         
         non_default_keyword_only_parameter_count = analyzed.get_non_default_keyword_only_parameter_count()
         if non_default_keyword_only_parameter_count:
-            raise TypeError(f'`default_code` should accept `0` keyword only parameters, meanwhile it expects '
-                f'{non_default_keyword_only_parameter_count}.')
+            raise TypeError(
+                f'`default_code` should accept `0` keyword only parameters, meanwhile it expects '
+                f'{non_default_keyword_only_parameter_count!r}; {default_code!r}.'
+            )
         
         return default_code
     
     else:
-        raise TypeError(f'`default_code` can be given as `str` instance, identifying a predefined default code '
-            f'function, or as an `async-callable` `function` type, got {default_code_type.__name__}.')
+        raise TypeError(
+            f'`default_code` can be `str`, `async-callable`, got {default_code_type.__name__}; {default_code!r}.'
+        )
     
     try:
         default_code = PREREGISTERED_DEFAULT_CODES[default_code]
     except KeyError:
-        raise LookupError(f'`default_code` was given as `str` instance, but not as 1 of the predefined default codes, '
-              f'got {default_code!r}') from None
+        raise LookupError(
+            f'`default_code` can be `str`, but not as 1 of the predefined default codes, got {default_code!r}'
+        ) from None
     
     return default_code
+
 
 def validate_annotation_type(annotation):
     """
@@ -2331,7 +2400,7 @@ def validate_annotation_type(annotation):
     
     Parameters
     ----------
-    annotation : `type` or `str`
+    annotation : `type`, `str`
         The annotation to validate.
     
     Returns
@@ -2341,10 +2410,10 @@ def validate_annotation_type(annotation):
     Raises
     ------
     LookupError
-        - If `annotation` was given as `type` instance, but that specified type has no parser settings added to it.
-        - If `annotation` was given as `str` instance, but there is no added type representation to it.
+        - If `annotation` can be `type`, but that specified type has no parser settings added to it.
+        - If `annotation` can be `str`, but there is no added type representation to it.
     TypeError
-        - If `annotation` was not given as `str`, neither as `type` instance.
+        - If `annotation` was not given as `str`, neither as `type`.
     """
     annotation_type = annotation.__class__
     if annotation_type is str:
@@ -2355,18 +2424,24 @@ def validate_annotation_type(annotation):
     else:
         if (annotation_type is type) or issubclass(annotation_type, type):
             if (annotation not in CONVERTER_SETTING_TYPE_RELATION_MAP):
-                raise LookupError(f'`annotation` was given as `type` instance, but there is no parser for it, got '
-                    f'{annotation.__name__}.')
+                raise LookupError(
+                    f'`annotation` is a `type`, but there is no parser for it, got '
+                    f'{annotation.__name__}; {annotation!r}.'
+                )
             
             return annotation
         
-        raise TypeError(f'Expected `str` or `type` instance as `annotation`, got {annotation_type.__name__}.')
+        raise TypeError(
+            f'`annotation` can be `str`, `type`, got {annotation_type.__name__}.'
+        )
     
     try:
         annotation = CONVERTER_SETTING_NAME_TO_TYPE[annotation]
     except KeyError:
-        raise LookupError(f'`annotation` was given as `str` instance, but there is no parser for it, got '
-            f'{annotation!r}.') from None
+        raise LookupError(
+            f'`annotation` is a `str`, but there is no parser for it, got '
+            f'{annotation!r}.'
+        ) from None
     
     return annotation
 
@@ -2377,42 +2452,51 @@ def validate_annotation_type_flags(annotation, flags):
     LookupError
         If the given `annotation` has no linked parser setting for it.
     TypeError
-        - If `annotation` is not given as `type` instance.
-        - If `flags` is not given as ``ConverterFlag`` instance.
+        - If `annotation` is not given as `type`.
+        - If `flags` is not given as ``ConverterFlag``.
         - If `annotation`'s setting allows flags, and given, but the given flags have no interception with the allowed
             ones.
         - If `annotation`'s setting do not allows any flags, meanwhile given.
     """
     if not isinstance(annotation, type):
-        raise TypeError(f'`annotation` should have be given as `type` instance, got {annotation.__class__.__name__}.')
+        raise TypeError(
+            f'`annotation` can be `type`, got {annotation.__class__.__name__}; {annotation!r}.'
+        )
     
     if not isinstance(flags, ConverterFlag):
-        raise TypeError(f'`flags` should have be given as `{ConverterFlag.__name__}` instance, got '
-            f'{flags.__class__.__name__}.')
+        raise TypeError(
+            f'`flags` can be `{ConverterFlag.__name__}`, got {flags.__class__.__name__}; {flags!r}.'
+        )
     
     try:
         setting = CONVERTER_SETTING_TYPE_RELATION_MAP[annotation]
     except KeyError:
-        raise LookupError(f'The given `annotation` has no settings linked to it, got: {annotation.__name__}.') \
-            from None
+        raise LookupError(
+            f'The given `annotation` has no settings linked to it, got: {annotation.__name__}; {annotation!r}.'
+        ) from None
     
     if setting.uses_flags:
         if flags:
             new_flags = ConverterFlag(setting.all_flags&flags)
             if not new_flags:
-                raise TypeError(f'Flags was given as `{flags!r}`, meanwhile the {annotation!r} annotation\'s setting '
-                    f'allows: {setting.all_flags!r}. The two has no interception.')
+                raise TypeError(
+                    f'`flags` can be `{flags!r}`, meanwhile the {annotation!r} annotation\'s setting '
+                    f'allows: {setting.all_flags!r}. The two has no interception.'
+                )
         else:
             new_flags = setting.default_flags
     
     else:
         if flags:
-            raise TypeError(f'The annotation {annotation!r}\'s setting do not allows flags, meanwhile given: '
-                f'{flags!r}.')
+            raise TypeError(
+                f'The annotation {annotation!r}\'s setting do not allows flags, but given: '
+                f'{flags!r}.'
+            )
         
         new_flags = flags
     
     return new_flags
+
 
 class FlaggedAnnotation:
     """
@@ -2444,15 +2528,15 @@ class FlaggedAnnotation:
         Raises
         ------
         LookupError
-            - If `annotation` was given as `type` instance, but that specified type has no parser settings added to it.
-            - If `annotation` was given as `str` instance, but there is no added type representation to it.
+            - If `annotation` can be `type`, but that specified type has no parser settings added to it.
+            - If `annotation` can be `str`, but there is no added type representation to it.
         TypeError
-            - If `annotation` was not given as `str`, neither as `type` instance.
-            - If `flags` is not given as ``ConverterFlag`` instance, neither as `int`.
+            - If `annotation` was not given as `str`, neither as `type`.
+            - If `flags` is not given as ``ConverterFlag``, neither as `int`.
             - If `annotation`'s setting allows flags, and given, but the given flags have no interception with the
                 allowed ones.
             - If `annotation`'s setting do not allows any flags, meanwhile given.
-            - If `annotation` is given as ``Converter`` instance with default set.
+            - If `annotation` is given as ``Converter`` with default set.
         """
         # First check if the type is the same
         if type(annotation) is cls:
@@ -2461,8 +2545,9 @@ class FlaggedAnnotation:
         # Second check type ``Converter``
         if type(annotation) is Converter:
             if annotation.default_type:
-                raise TypeError(f'`annotation` is given as `{Converter.__name__}` instance with default set, got '
-                    f'{annotation!r}.')
+                raise TypeError(
+                    f'`annotation` is given as `{Converter.__name__}` with default set, got {annotation!r}.'
+                )
         
         # Real annotation
         annotation = validate_annotation_type(annotation)
@@ -2480,6 +2565,7 @@ class FlaggedAnnotation:
     def __repr__(self):
         """Returns the flagged annotation's representation."""
         return f'{self.__class__.__name__}(annotation={self.annotation!r}, flags={self.flags!r})'
+
 
 def unnest_tuple(tuple_):
     """
@@ -2502,6 +2588,7 @@ def unnest_tuple(tuple_):
         else:
             yield element
 
+
 def validate_annotation(annotation, flags=None):
     """
     Validates a given annotation.
@@ -2521,10 +2608,10 @@ def validate_annotation(annotation, flags=None):
     Raises
     ------
     LookupError
-        If `annotation` was given as `type` or `str` instance, but there is no parser for it.
+        If `annotation` can be `type`, `str`, but there is no parser for it.
     TypeError
-        - If `annotation` was given as `tuple`, but contains no real annotation.
-        - If `annotation` is given as a ``Converter`` instance with default set.
+        - If `annotation` can be `tuple`, but contains no real annotation.
+        - If `annotation` is given as a ``Converter`` with default set.
     
     Notes
     -----
@@ -2547,8 +2634,9 @@ def validate_annotation(annotation, flags=None):
         result_length = len(result)
         if result_length < 2:
             if result_length == 0:
-                raise TypeError(f'`annotation` is given as a `tuple`, but it contains no real annotation, got '
-                    f'{annotation!r}.')
+                raise TypeError(
+                    f'`annotation` is given as a `tuple`, but as empty one.'
+                )
             if result_length == 1:
                 result = result[0]
     else:
@@ -2563,7 +2651,7 @@ class Converter:
     
     Parameters
     ----------
-    annotation : ``FlaggedAnnotation`` or `tuple` of ``FlaggedAnnotation``
+    annotation : ``FlaggedAnnotation``, `tuple` of ``FlaggedAnnotation``
         Type and flag infos about the entity to parse.
     default : `Any`
         The default object to return if the parser fails
@@ -2582,22 +2670,23 @@ class Converter:
         +-----------------------+-------+
     """
     __slots__ = ('annotation', 'default_type', 'default', )
+    
     def __new__(cls, annotation, flags=None, default=..., default_code=...):
         """
-        Creates a ``Converter`` instance with the given parameters.
+        Creates a ``Converter`` with the given parameters.
         
         Parameters
         ----------
-        annotation : `str`, `type`, ``Converter``, ``FlaggedAnnotation`` or `tuple` (repeat)
+        annotation : `str`, `type`, ``Converter``, ``FlaggedAnnotation``, `tuple` (repeat)
             The type or a type-hint to what type the respective value should be converted.
         flags : ``ConverterFlag``, Optional
             Flags to use with the specified type's converter.
         default : `Any`, Optional
             Default object returned if conversion fails.
-        default_code : `str` or `async-function`, Optional
+        default_code : `str`, `async-function`, Optional
             Default code, what will be called, when the conversion fails. Mutually exclusive with `default`.
             
-            Can be given as an `async-function`, or as a `str` representing an already precreated one.
+            Can be given as an `async-function`, a `str` representing an already precreated one.
             
             The precreated ones are the following:
             
@@ -2633,13 +2722,13 @@ class Converter:
         Raises
         ------
         LookupError
-            - If `annotation` was given as `type` or `str` instance, but there is no parser for it.
-            - If `default_code` is given as `str` instance, but not as an identifier of any of the predefined ones.
+            - If `annotation` can be `type`, `str`, but there is no parser for it.
+            - If `default_code` is given as `str`, but not as an identifier of any of the predefined ones.
         TypeError
-            - If `annotation` is given as a ``Converter`` instance with default set.
-            - If `flags` was not given as ``ConverterFlag`` instance.
+            - If `annotation` is given as a ``Converter`` with default set.
+            - If `flags` was not given as ``ConverterFlag``.
             - If `default` and `default_code` parameters were given at the same time.
-            - If `default_code` is given, but neither as `str` or `function`.
+            - If `default_code` is given, but neither as `str`, `function`.
             - If `default_code` is given as `function`, but not as `async`.
             - If `default_code` is given as `function`, but accepts bad amount of parameters.
         """
@@ -2657,8 +2746,10 @@ class Converter:
         
         if (default_code is not ...):
             if default_type:
-                raise TypeError(f'`default` and `default_code` are mutually exclusive, meanwhile both was given,'
-                    f'default = {default!r}, default_code = {default_code!r}.')
+                raise TypeError(
+                    f'`default` and `default_code` are mutually exclusive, meanwhile both was given,'
+                    f'default={default!r}, default_code={default_code!r}.'
+                )
             
             default_type = DEFAULT_TYPE_CALL
             default_value = validate_default_code(default_code)
@@ -2786,7 +2877,7 @@ class CommandContentParser:
     
     Parameters
     ----------
-    _parsers : `None` or `list` of ``ParserContextBase`` instances
+    _parsers : `None`, `list` of ``ParserContextBase``
         The events of the command content parser. Set as `None` if it would be an empty `list`.
     _separator : ``ContentParameterSeparator``
         The parameter separator of the parser.
@@ -2799,13 +2890,13 @@ class CommandContentParser:
         ----------
         func : `async-callable`
             The callable function.
-        separator : `None`, ``ContentParameterSeparator``, `str` or `tuple` (`str`, `str`)
+        separator : `None`, ``ContentParameterSeparator``, `str`, `tuple` (`str`, `str`)
             The parameter separator of the parser.
         
         Raises
         ------
         LookupError
-            If `annotation` was given as `type` or `str` instance, but there is no parser for it.
+            If `annotation` can be `type`, `str`, but there is no parser for it.
         TypeError
             - If `func` is not given as `callable`
             - If `func` is not given as `async-callable`, and cannot be instanced to one neither.
@@ -2816,14 +2907,14 @@ class CommandContentParser:
             - If `func`'s (or it's converted form's) first parameter has annotation set, but not as type ``Client``.
             - If `func`'s (or it's converted form's) second parameter has default value set.
             - If `func`'s (or it's converted form's) second parameter has annotation set, but not as type ``Message``.
-            - If an parameter has annotation as a ``Converter`` instance with default value, meanwhile the parameter
+            - If an parameter has annotation as a ``Converter`` with default value, meanwhile the parameter
                 itself also has it's own default value.
-            - If an annotation was given as `None` or as empty `tuple` meanwhile.
-            - If an annotation was given as `tuple`, but any of it's element is not `None`, or `str`, `type` or `tuple`
+            - If an annotation can be `None` or as empty `tuple` meanwhile.
+            - If an annotation can be `tuple`, but any of it's element is not `None`, `str`, `type`, `tuple`
                 instance.
-            - If `*args` parameter's annotation was given as ``Converter`` instance with default value set.
-            - If `separator` is not given as `None`, ``ContentParameterSeparator``, `str`, neither as `tuple` instance.
-            - If `separator was given as `tuple`, but it's element are not `str` instances.
+            - If `*args` parameter's annotation can be ``Converter`` with default value set.
+            - If `separator` is not given as `None`, ``ContentParameterSeparator``, `str`, neither as `tuple`.
+            - If `separator can be `tuple`, but it's element are not `str`.
         ValueError
             - If `separator` is given as `str`, but it's length is not 1.
             - If `separator` is given as `str`, but it is a space character.
@@ -2840,45 +2931,62 @@ class CommandContentParser:
         elif analyzer.can_instance_to_async_callable() or analyzer.can_instance_to_async_generator():
             real_analyzer = CallableAnalyzer(func.__call__, as_method=True)
             if (not real_analyzer.is_async()) and (not real_analyzer.is_async_generator()):
-                raise TypeError(f'`func` is not `async-callable` and cannot be instanced to `async` either, got '
-                    f'{func!r}.')
+                raise TypeError(
+                    f'`func` is not `async-callable` and cannot be instanced to `async` either, got {func!r}.'
+                )
             
             should_instance = True
         
         else:
-            raise TypeError(f'`func` is not `async-callable` and cannot be instanced to `async` either, got {func!r}.')
+            raise TypeError(
+                f'`func` is not `async-callable` and cannot be instanced to `async` either, got {func!r}.'
+            )
         
         keyword_only_parameter_count = real_analyzer.get_non_default_keyword_only_parameter_count()
         if keyword_only_parameter_count:
-            raise TypeError(f'`{real_analyzer.real_function!r}` accepts keyword only parameters.')
+            raise TypeError(
+                f'`{real_analyzer.real_function!r}` accepts keyword only parameters.'
+            )
         
         if real_analyzer.accepts_kwargs():
-            raise TypeError(f'`{real_analyzer.real_function!r}` accepts **kwargs.')
+            raise TypeError(
+                f'`{real_analyzer.real_function!r}` accepts **kwargs.'
+            )
         
         parameters = real_analyzer.get_non_reserved_positional_parameters()
         
         parameter_count = len(parameters)
         if parameter_count<2:
-            raise TypeError(f'`{real_analyzer.real_function!r}` should accept at least 2 parameters (without *args): '
-                f'`client` and `message`, meanwhile it accepts only {parameter_count}.')
+            raise TypeError(
+                f'`{real_analyzer.real_function!r}` should accept at least 2 parameters (without *args): '
+                f'`client` and `message`, meanwhile it accepts only {parameter_count}.'
+            )
         
         client_parameter = parameters[0]
         if client_parameter.has_default:
-            raise TypeError(f'`{real_analyzer.real_function!r}` has default parameter set as it\'s first not '
-                'reserved, meanwhile it should not have.')
+            raise TypeError(
+                f'`{real_analyzer.real_function!r}` has default parameter set as it\'s first not '
+                'reserved, meanwhile it should not have.'
+            )
         
         if client_parameter.has_annotation and (client_parameter.annotation is not Client):
-            raise TypeError(f'`{real_analyzer.real_function!r}` has annotation at the client\'s parameter slot, '
-                f'what is not `{Client.__name__}`.')
+            raise TypeError(
+                f'`{real_analyzer.real_function!r}` has annotation at the client\'s parameter slot, '
+                f'what is not `{Client.__name__}`.'
+            )
         
         message_parameter = parameters[1]
         if message_parameter.has_default:
-            raise TypeError(f'`{real_analyzer.real_function!r}` has default parameter set as it\'s first not '
-                f'reserved, meanwhile it should not have.')
+            raise TypeError(
+                f'`{real_analyzer.real_function!r}` has default parameter set as it\'s first not '
+                f'reserved, meanwhile it should not have.'
+            )
         
         if message_parameter.has_annotation and (message_parameter.annotation is not Message):
-            raise TypeError(f'`{real_analyzer.real_function!r}` has annotation at the message\'s parameter slot '
-                f'what is not `{Message.__name__}`.')
+            raise TypeError(
+                f'`{real_analyzer.real_function!r}` has annotation at the message\'s parameter slot '
+                f'what is not `{Message.__name__}`.'
+            )
         
         hinters = []
         to_check = parameters[2:]
@@ -2902,9 +3010,11 @@ class CommandContentParser:
                 
                     if parameter.has_default:
                         if hinter_default_type:
-                            raise TypeError(f'`annotation` of `{parameter.name}` is given as '
-                                f'`{Converter.__class__.__name__}` instance, as {Converter!r} (with default value '
-                                f'set), meanwhile the parameter has default value set as well: {parameter.default!r}.')
+                            raise TypeError(
+                                f'`annotation` of `{parameter.name}` is given as '
+                                f'`{Converter.__class__.__name__}`, as {Converter!r} (with default value '
+                                f'set), meanwhile the parameter has default value set as well: {parameter.default!r}.'
+                            )
                         
                         hinter_default = parameter.default
                         hinter_default_type = DEFAULT_TYPE_OBJ
@@ -2953,8 +3063,10 @@ class CommandContentParser:
                 annotation = args_parameter.annotation
                 if type(annotation) is Converter:
                     if annotation.default_type:
-                        raise TypeError(f'`*args` annotation is given as `{Converter.__class__.__name__} as '
-                            f'{Converter!r}, so with default value set, do not do that!')
+                        raise TypeError(
+                            f'`*args` annotation is given as `{Converter.__class__.__name__} as '
+                            f'{Converter!r}, so with default value set, do not do that!'
+                        )
                     
                     hinter_annotation = annotation.annotation
                 else:
@@ -3024,7 +3136,7 @@ class CommandContentParser:
         -------
         passed : `bool`
             Whether the parsing all the parameters of the message succeeded.
-        args : `None` or `list` of `Any`
+        args : `None`, `list` of `Any`
             The parsed out entities. Can be empty list.
         """
         parsers = self._parsers
@@ -3079,13 +3191,13 @@ class ContentParser(CommandContentParser):
     
     Parameters
     ----------
-    _parsers : `None` or `list` of ``ParserContextBase`` instances
+    _parsers : `None`, `list` of ``ParserContextBase``
         The events of the command content parser. Set as`None` if it would be an empty `list`.
     _separator : ``ContentParameterSeparator``
         The parameter separator of the parser.
     _func : `async-callable`
         The wrapped function.
-    _handler : `None` or `async-callable`
+    _handler : `None`, `async-callable`
         A coroutine function what is ensured, when parsing the parameters fail.
     _is_method : `bool`
         Whether the ``ContentParser`` should act like a method descriptor.
@@ -3119,7 +3231,7 @@ class ContentParser(CommandContentParser):
         
         is_method : `bool`, Optional
             Whether the content parser should act like a method. Default to `False`.
-        separator : `None`, ``ContentParameterSeparator``, `str` or `tuple` (`str`, `str`), Optional
+        separator : `None`, ``ContentParameterSeparator``, `str`, `tuple` (`str`, `str`), Optional
             The parameter separator of the parser.
         
         Returns
@@ -3131,11 +3243,11 @@ class ContentParser(CommandContentParser):
         Raises
         ------
         TypeError
-            - If `is_method` is not given as `bool` instance.
+            - If `is_method` is not given as `bool`.
             - If `handler` is not async, neither cannot be instanced to async.
             - If `handler` (or it's converted form) would accept bad amount of parameters.
-            - If `separator` is not given as `None`, ``ContentParameterSeparator``, `str`, neither as `tuple` instance.
-            - If `separator was given as `tuple`, but it's element are not `str` instances.
+            - If `separator` is not given as `None`, ``ContentParameterSeparator``, `str`, neither as `tuple`.
+            - If `separator can be `tuple`, but it's element are not `str`.
         ValueError
             - If `separator` is given as `str`, but it's length is not 1.
             - If `separator` is given as `str`, but it is a space character.
@@ -3233,7 +3345,7 @@ class ContentParser(CommandContentParser):
         
         def __call__(self, func):
             """
-            Calls the content parser wrapper to create a ``ContentParser`` instance.
+            Calls the content parser wrapper to create a ``ContentParser``.
             
             Parameters
             ----------
@@ -3247,10 +3359,12 @@ class ContentParser(CommandContentParser):
             Raises
             ------
             TypeError
-                If `func` was given as `None`.
+                If `func` can be `None`.
             """
             if func is None:
-                raise TypeError(f'`func` cannot be given as `None`, got {func!r}.')
+                raise TypeError(
+                    f'`func` cannot be given as `None`, got {func!r}.'
+                )
             
             return ContentParser(func=func, handler=self._handler, is_method=self._is_method, separator=self._separator)
     
@@ -3292,7 +3406,9 @@ class ContentParser(CommandContentParser):
         args_count = len(args)
         if self._is_method:
             if args_count < 3 or args_count > 4:
-                raise TypeError(f'{self!r} expects 3-4 positional parameters to be given, got {args_count}.')
+                raise TypeError(
+                    f'{self!r} expects 3-4 positional parameters to be given, got {args_count}.'
+                )
             
             if args_count == 3:
                 parent, client, message = args
@@ -3402,7 +3518,7 @@ class ContentParserMethod(MethodLike):
     
     def __new__(cls, content_parser, obj):
         """
-        Creates a new ``ContentParserMethod`` instance with the given content parser and the parent object.
+        Creates a new ``ContentParserMethod`` with the given content parser and the parent object.
         
         Parameters
         ----------

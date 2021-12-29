@@ -13,7 +13,7 @@ class Color(int):
     Class Attributes
     ----------------
     _random : `random.Random`
-        ``Color`` class uses it's own random seeding, so it has it's own `random.Random` instance to do it.
+        ``Color`` class uses it's own random seeding, so it has it's own `random.Random` to do it.
         
         To get a random color, use ``.random` and to set seed use ``.set_seed``
     
@@ -122,7 +122,9 @@ class Color(int):
                     blue = (color_value&0xf)*17
                     return Color((red<<16)|(green<<8)|blue)
         
-        raise ValueError('The given value has invalid length or is not hexadecimal')
+        raise ValueError(
+            f'The given value has invalid length or is not hexadecimal, got {value!r}'
+        )
     
     @property
     def as_html(self):
@@ -134,6 +136,7 @@ class Color(int):
         color : `str`
         """
         return f'#{self:06X}'
+    
     
     @classmethod
     def from_rgb_tuple(cls, rgb_tuple):
@@ -156,7 +159,9 @@ class Color(int):
             - Channel value out of expected range.
         """
         if len(rgb_tuple) != 3:
-            raise ValueError(f'Rgb tuple should have length `3`, got: {rgb_tuple!r}.')
+            raise ValueError(
+                f'Rgb tuple should have length `3`, got {len(rgb_tuple)!r}; {rgb_tuple!r}.'
+            )
         
         return cls.from_rgb(*rgb_tuple)
     
@@ -197,7 +202,9 @@ class Color(int):
             - Channel value out of expected range.
         """
         if len(rgb_tuple) != 3:
-            raise ValueError(f'Rgb tuple should have length `3`, got: {rgb_tuple!r}.')
+            raise ValueError(
+                f'Rgb tuple should have length `3`, got {len(rgb_tuple)!r}; {rgb_tuple!r}.'
+            )
         
         return cls.from_rgb_float(*rgb_tuple)
     
@@ -242,11 +249,19 @@ class Color(int):
             Channel value out of expected range.
         """
         if red > 255 or red < 0:
-            raise ValueError(f'Red channel value out of [0, 255] expected range, got {red!r}.')
+            raise ValueError(
+                f'Red channel value out of [0, 255] expected range, got {red!r}.'
+            )
+        
         if green > 255 or green < 0:
-            raise ValueError(f'Green channel value out of [0, 255] expected range, got {green!r}.')
+            raise ValueError(
+                f'Green channel value out of [0, 255] expected range, got {green!r}.'
+            )
+        
         if blue > 255 or blue < 0:
-            raise ValueError(f'Blue channel value out of [0, 255] expected range, got {blue!r}.')
+            raise ValueError(
+                f'Blue channel value out of [0, 255] expected range, got {blue!r}.'
+            )
         
         return cls((red<<16)|(green<<8)|blue)
     
@@ -276,11 +291,19 @@ class Color(int):
             Channel value out of expected range.
         """
         if red > 1.0 or red < 0.0:
-            raise ValueError(f'Red channel value out of [0.0, 1.0] expected range, got {red!r}.')
+            raise ValueError(
+                f'Red channel value out of [0.0, 1.0] expected range, got {red!r}.'
+            )
+        
         if green > 1.0 or green < 0.0:
-            raise ValueError(f'Green channel value out of [0.0, 1.0] expected range, got {green!r}.')
+            raise ValueError(
+                f'Green channel value out of [0.0, 1.0] expected range, got {green!r}.'
+            )
+        
         if blue > 1.0 or blue < 0.0:
-            raise ValueError(f'Blue channel value out of [0.0, 1.0] expected range, got {blue!r}.')
+            raise ValueError(
+                f'Blue channel value out of [0.0, 1.0] expected range, got {blue!r}.'
+            )
         
         # Convert float values to 8 bit ints.
         red = floor(red*255.0)
@@ -358,9 +381,9 @@ class Color(int):
             > or `bytearray`.
             
         version : `int`, Optional
-            Can be given either as `1` or `2`.
+            Can be given either as `1`, `2`.
             
-            If given as `2` (so by default), a `str`, `bytes`, or `bytearray` object gets converted to an `int` and all
+            If given as `2` (so by default), a `str`, `bytes`, `bytearray` object gets converted to an `int` and all
             of its bits are used.
             
             If given as `1` (provided for reproducing random sequences from older versions of Python), the algorithm
@@ -556,7 +579,7 @@ def parse_color(text):
     
     Returns
     -------
-    color : `None` or ``Color``
+    color : `None`, ``Color``
     """
     text = text.lower()
     

@@ -45,18 +45,18 @@ def setup_ext_commands(client, prefix=None, lite=False, **kwargs):
     
     And the following event handlers are added as well:
     - `message_create` : ``CommandProcesser``
-    - `reaction_add` : ``ReactionAddWaitfor`` (Except if other ``EventWaitforBase`` instance is already added.)
-    - `reaction_delete` : ``ReactionDeleteWaitfor`` (Except if other ``EventWaitforBase`` instance is already added.)
+    - `reaction_add` : ``ReactionAddWaitfor`` (Except if other ``EventWaitforBase`` is already added.)
+    - `reaction_delete` : ``ReactionDeleteWaitfor`` (Except if other ``EventWaitforBase`` is already added.)
     
     Parameters
     ----------
     client : ``Client`
         The client on what the extension will be setuped.
-    prefix : `str`, (`tuple`, `list`, `deque`) of `str`, or `callable` -> `str`, Optional
+    prefix : `str`, (`tuple`, `list`, `deque`) of `str`, `callable` -> `str`, Optional
         The prefix of the client's command processer.
         
-        Can be given as `str`, as `tuple`, `list` or `deque` of `str`, or as a `callable`, what accepts `1` parameter,
-        the respective ``Message`` instance and returns `str`.
+        Can be given as `str`, as `tuple`, `list`, `deque` of `str`, or as a `callable`, what accepts `1` parameter,
+        the respective ``Message`` and returns `str`.
     lite : `bool`, Optional
         Whether only the extensions utility feature should be setup. May be useful for example when the client uses
         only slash commands. Defaults to `False`.
@@ -70,15 +70,15 @@ def setup_ext_commands(client, prefix=None, lite=False, **kwargs):
     mention_prefix : `bool`, Optional (Keyword only)
         Whether user mentioning the client as first word in a message's content should be interpreted as a prefix.
         Defaults to `true`
-    default_category_name : `None` or `str`, Optional (Keyword only)
+    default_category_name : `None`, `str`, Optional (Keyword only)
         The command processer's default category's name. Defaults to `None`.
-    category_name_rule : `None` or `function`, Optional (Keyword only)
+    category_name_rule : `None`, `function`, Optional (Keyword only)
         Function to generate display names for categories.
-        Should accept only 1 parameter, what can be `str`  or `None` and should return a `str` instance as well.
-    command_name_rule : `None` or `function`, Optional (Keyword only)
+        Should accept only 1 parameter, what can be `str`  or `None` and should return a `str` as well.
+    command_name_rule : `None`, `function`, Optional (Keyword only)
         Function to generate display names for commands.
-        Should accept only 1 parameter, what is `str` instance and should return a `str` instance as well.
-    precheck : `None` or `callable`, Optional (Keyword only)
+        Should accept only 1 parameter, what is `str` and should return a `str` as well.
+    precheck : `None`, `callable`, Optional (Keyword only)
         Function, which decides whether a received message should be processed
         
         The default one filters out every message what's author is a bot account and the channels where the client
@@ -102,17 +102,17 @@ def setup_ext_commands(client, prefix=None, lite=False, **kwargs):
         
     Returns
     -------
-    command_processer : ``CommandProcesser`` or `None`
+    command_processer : ``CommandProcesser``, `None`
         The created command processer. Returns `None` if `lite` is given as `True`.
     
     Raises
     ------
     TypeError
-        - If `client` was not given as ``Client`` instance.
+        - If `client` was not given as ``Client``.
         - If `prefix` was not given meanwhile `lite` is `False`.
     RuntimeError
-        - If the given `client` already has `command_processer` or `commands` attribute.
-        - If the given `client` has a ``CommandProcesser`` instance added as `message_create` event,
+        - If the given `client` already has `command_processer`, `commands` attribute.
+        - If the given `client` has a ``CommandProcesser`` added as `message_create` event,
     """
     if not isinstance(client, Client):
         raise TypeError(f'Expected type `{Client.__name__}` as client, meanwhile got `{client.__class__.__name__}`.')
@@ -137,7 +137,7 @@ def setup_ext_commands(client, prefix=None, lite=False, **kwargs):
                 for index in range(list.__len__(event_message_create)):
                     event = list.__getitem__(event_message_create, index)
                     if isinstance(event, CommandProcesser):
-                        raise RuntimeError(f'The client already has a `{CommandProcesser.__name__}` instance added as '
+                        raise RuntimeError(f'The client already has a `{CommandProcesser.__name__}` added as '
                             f'event.')
                     
                     if isinstance(event, MessageCreateWaitfor):
@@ -149,7 +149,7 @@ def setup_ext_commands(client, prefix=None, lite=False, **kwargs):
                 break
             
             if isinstance(event_message_create, CommandProcesser):
-                raise RuntimeError(f'The client already has a `{CommandProcesser.__name__}` instance added as event.')
+                raise RuntimeError(f'The client already has a `{CommandProcesser.__name__}` added as event.')
             
             if isinstance(event_message_create, MessageCreateWaitfor):
                 replace_index = -2

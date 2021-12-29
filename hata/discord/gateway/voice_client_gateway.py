@@ -73,12 +73,12 @@ class DiscordGatewayVoice:
     ----------
     client : ``VoiceClient``
         The owner voice client of the gateway.
-    kokoro : `None` or `Kokoro`
+    kokoro : `None`, `Kokoro`
         The heart of the gateway, sends beat-data at set intervals. If does not receives answer in time, restarts
         the gateway.
     rate_limit_handler : ``GatewayRateLimiter``
         The rate limit handler of the gateway.
-    websocket : `None` or `WSClient`
+    websocket : `None`, ``WebSocketClient``
         The websocket client of the gateway.
     """
     __slots__ = ('client', 'kokoro', 'rate_limit_handler', 'websocket')

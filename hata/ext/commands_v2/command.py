@@ -30,7 +30,7 @@ def _check_maybe_route(variable_name, variable_value, route_to, validator):
     route_to : `int`
         The value how much times the routing should happen. by default should be given as `0` if no routing was
         done yet.
-    validator : `callable` or `None`
+    validator : `callable`, `None`
         A callable, what validates the given `variable_value`'s value and converts it as well if applicable.
     
     Returns
@@ -67,8 +67,10 @@ def _check_maybe_route(variable_name, variable_value, route_to, validator):
             elif route_to == route_count:
                 pass
             else:
-                raise ValueError(f'`{variable_name}` is routed to `{route_count}`, meanwhile something else is '
-                    f'already routed to `{route_to}`.')
+                raise ValueError(
+                    f'`{variable_name}` is routed to `{route_count}`, meanwhile something else is '
+                    f'already routed to `{route_to}`.'
+                )
             
             if validator is None:
                 processed_value = variable_value
@@ -97,7 +99,7 @@ def _validate_hidden(hidden):
     
     Parameters
     ----------
-    hidden : `None` or `bool`
+    hidden : `None`, `bool`
         The `hidden` value to validate.
     
     Returns
@@ -108,7 +110,7 @@ def _validate_hidden(hidden):
     Raises
     ------
     TypeError
-        If `hidden` was not given as `None` nor as `bool` instance.
+        If `hidden` was not given as `None` nor as `bool`.
     """
     if hidden is None:
         hidden = False
@@ -124,7 +126,7 @@ def _validate_hidden_if_checks_fail(hidden_if_checks_fail):
     
     Parameters
     ----------
-    hidden_if_checks_fail : `None` or `bool`
+    hidden_if_checks_fail : `None`, `bool`
         The `hidden_if_checks_fail` value to validate.
     
     Returns
@@ -135,7 +137,7 @@ def _validate_hidden_if_checks_fail(hidden_if_checks_fail):
     Raises
     ------
     TypeError
-        If `hidden_if_checks_fail` was not given as `None` nor as `bool` instance.
+        If `hidden_if_checks_fail` was not given as `None` nor as `bool`.
     """
     if hidden_if_checks_fail is None:
         hidden_if_checks_fail = True
@@ -151,18 +153,18 @@ def _validate_name(name):
     
     Parameters
     ----------
-    name : `None` or `str`
+    name : `None`, `str`
         A command's respective name.
     
     Returns
     -------
-    name : `None` or `str`
+    name : `None`, `str`
         The validated name.
     
     Raises
     ------
     TypeError
-        If `name` is not given as `str` instance.
+        If `name` is not given as `str`.
     """
     if name is not None:
         name_type = name.__class__
@@ -171,8 +173,9 @@ def _validate_name(name):
         elif issubclass(name_type, str):
             name = str(name)
         else:
-            raise TypeError(f'`name` can be only given as `None` or as `str` instance, got {name_type.__name__}; '
-                f'{name!r}.')
+            raise TypeError(
+                f'`name` can be `None`, `str`, got {name_type.__name__}; {name!r}.'
+            )
     
     return name
 
@@ -183,18 +186,18 @@ def _validate_aliases(aliases):
     
     Parameters
     ----------
-    aliases : `None`, `str` or `list` of `str`
+    aliases : `None`, `str`, `list` of `str`
         Command aliases.
     
     Returns
     -------
-    aliases : `None` or `set` of `str`
+    aliases : `None`, `set` of `str`
         The validated aliases.
     
     Raises
     ------
     TypeError
-        `aliases` was not given as `None`, `str`, neither as `list` of `str` instances.
+        `aliases` was not given as `None`, `str`, neither as `list` of `str`-s.
     ValueError
         `aliases` contains an empty string.
     """
@@ -202,10 +205,14 @@ def _validate_aliases(aliases):
         if isinstance(aliases, list):
             for alias in aliases:
                 if not isinstance(alias, str):
-                    raise TypeError(f'A non `str` instance alias is given: {alias!r}, got {aliases!r}.')
+                    raise TypeError(
+                        f'Aliases can be `str`, got {alias.__class__.__name__}; {alias!r}; aliases={aliases!r}.'
+                    )
                 
                 if not alias:
-                    raise ValueError(f'An alias cannot be empty string, got {aliases!r}.')
+                    raise ValueError(
+                        f'Alias cannot be empty strings, got aliases={aliases!r}.'
+                    )
             
             aliases_processed = set()
             for alias in aliases:
@@ -219,13 +226,16 @@ def _validate_aliases(aliases):
         
         elif isinstance(aliases, str):
             if not aliases:
-                raise ValueError(f'An alias cannot be empty string, got {aliases!r}.')
+                raise ValueError(
+                    f'Alias cannot be empty strings, got aliases={aliases!r}.'
+                )
             
             aliases = raw_name_to_display(aliases)
             aliases = {aliases}
         else:
-            raise TypeError('Aliases can be given as `str`, or `list` of `str` instances, got '
-                f'{aliases.__class__.__name__}; {aliases!r}')
+            raise TypeError(
+                '`aliases` can be `str`, `list` of `str`, got {aliases.__class__.__name__}; {aliases!r}'
+            )
     
     return aliases
 
@@ -241,13 +251,13 @@ def _validate_category(category):
     
     Returns
     -------
-    category : `str` or ``Category``
+    category : `str`, ``Category``
         The validated category.
     
     Raises
     ------
     TypeError
-        Category is not given either as `None`, `str` instance, or ``Category``.
+        Category is not given either as `None`, `str`, ``Category``.
     """
     if (category is not None):
         category_type = category.__class__
@@ -258,8 +268,10 @@ def _validate_category(category):
         elif issubclass(category_type, str):
             category = str(category)
         else:
-            raise TypeError(f'`category` should be `None`, type `str` or `{Category.__name__}`, got '
-                f'{category_type.__name__}.')
+            raise TypeError(
+                f'`category` can be `None`, `str`, `{Category.__name__}`, got '
+                f'{category_type.__name__}.'
+            )
     
     return category
 
@@ -295,18 +307,18 @@ def _generate_category_hint_from(category):
     
     Parameters
     ----------
-    category : `None`, `str` or ``Category``
+    category : `None`, `str`, ``Category``
         The respective category.
     
     Returns
     -------
-    category_hint : `None` or `str`
+    category_hint : `None`, `str`
         The category's string representation if applicable.
     
     Raises
     ------
     TypError
-        Category is not given as `None`, `str`, neither as ``Category`` instance.
+        Category is not given as `None`, `str`, neither as ``Category``.
     """
     if category is None:
         category_hint = None
@@ -319,8 +331,10 @@ def _generate_category_hint_from(category):
         elif issubclass(category_type, str):
             category_hint = str(category)
         else:
-            raise TypeError(f'`category` should be `None`, type `str` or `{Category.__name__}`, got '
-                f'{category_type.__name__}.')
+            raise TypeError(
+                f'`category` can be `None`, `str`, `{Category.__name__}`, got '
+                f'{category_type.__name__}; {category!r}.'
+            )
     
     return category_hint
 
@@ -331,12 +345,12 @@ def _fetch_check_from_wrappers(wrappers):
     
     Parameters
     ----------
-    wrappers : `None` or `list` of ``CommandWrapper``
+    wrappers : `None`, `list` of ``CommandWrapper``
         Command wrappers.
     
     Returns
     -------
-    checks : `None` or `list` of ``CheckBase``
+    checks : `None`, `list` of ``CheckBase``
         The fetched down checks.
     """
     checks = None
@@ -359,7 +373,7 @@ def _iter_merge_checks(checks_1, checks_2):
     
     Parameters
     ----------
-    checks_1 : `None` or `list` of ``CheckBase``
+    checks_1 : `None`, `list` of ``CheckBase``
         Checks to merge.
     checks_2: `None` or`list` of ``CheckBase``
         Checks to merge.
@@ -381,14 +395,14 @@ def _merge_checks(checks_1, checks_2):
     
     Parameters
     ----------
-    checks_1 : `None` or `list` of ``CheckBase``
+    checks_1 : `None`, `list` of ``CheckBase``
         Checks to merge.
     checks_2: `None` or`list` of ``CheckBase``
         Checks to merge.
     
     Returns
     -------
-    checks : `None` or `tuple` of ``CheckBase``
+    checks : `None`, `tuple` of ``CheckBase``
         The fetched down checks.
     """
     if (checks_1 is None) and (checks_2 is None):
@@ -403,27 +417,27 @@ class Command:
     
     Attributes
     ----------
-    _category_hint : `None` or `str`
+    _category_hint : `None`, `str`
         Hint for the command processor to detect under which category the command should go.
-    _category_reference : `None` or ``WeakReferer`` to ``Category``.
+    _category_reference : `None`, ``WeakReferer`` to ``Category``.
         Weak reference to the command's category.
-    _checks : `None` or `tuple` of ``CheckBase``
+    _checks : `None`, `tuple` of ``CheckBase``
         The checks of the commands.
-    _command_categories : `None` or `set` of ``CommandCategory``
+    _command_categories : `None`, `set` of ``CommandCategory``
         Sub command categories of the command.
-    _command_function : `None` or ``CommandFunction``
+    _command_function : `None`, ``CommandFunction``
         The actual command of the command to maybe call.
-    _command_processor_reference : `None` or ``WeakReferer`` to ``CommandProcessor``.
+    _command_processor_reference : `None`, ``WeakReferer`` to ``CommandProcessor``.
         Weak reference to the command's command processor.
-    _error_handlers : `None` or `list` of `FunctionType`
+    _error_handlers : `None`, `list` of `FunctionType`
         Error handlers bind to the command.
-    _self_reference = `None` or ``WeakReferer`` to ``Command``
+    _self_reference = `None`, ``WeakReferer`` to ``Command``
         Reference to the command itself.
     _wrappers : `None`, `list` of `async-callable`
         Additional wrappers, which run before the command is executed.
-    aliases : `None` or `tuple` of `str`
+    aliases : `None`, `tuple` of `str`
         Name aliases of the command if any. They are always lower case.
-    command_category_name_to_command_category : `None` or `dict` of (`str`, ``CommandCategory``) items
+    command_category_name_to_command_category : `None`, `dict` of (`str`, ``CommandCategory``) items
         Sub-command categories by name.
     description : `Any`
         The command's description if any.
@@ -547,7 +561,7 @@ class Command:
         
         Returns
         -------
-        category : `None` or ``Category``
+        category : `None`, ``Category``
         """
         category_reference = self._category_reference
         if category_reference is None:
@@ -638,8 +652,10 @@ class Command:
         
         for would_overwrite_command in would_overwrite_commands:
             if not names.issubset(would_overwrite_command._iter_names()):
-                raise RuntimeError(f'{Command.__name__}: {self!r} would partially overwrite an other command: '
-                    f'{would_overwrite_command!r}.')
+                raise RuntimeError(
+                    f'`{Command.__name__}`: {self!r} would partially overwrite an other command: '
+                    f'{would_overwrite_command!r}.'
+                )
         
         for name in names:
             command_name_to_command[name] = self
@@ -651,7 +667,7 @@ class Command:
         
         Returns
         -------
-        command_processor : `None` or ``CommandProcessor``
+        command_processor : `None`, ``CommandProcessor``
         """
         command_processor_reference = self._command_processor_reference
         if command_processor_reference is None:
@@ -724,7 +740,7 @@ class Command:
         
         Returns
         -------
-        self : ``Command`` or ``Router``
+        self : ``Command``, ``Router``
         
         Raises
         ------
@@ -746,26 +762,26 @@ class Command:
         ----------
         command : `None`, `async-callable`
             The async callable added as the command itself.
-        name : `None`, `str` or `tuple` of (`None`, `Ellipsis`, `str`), Optional
+        name : `None`, `str`, `tuple` of (`None`, `Ellipsis`, `str`), Optional
             The name to be used instead of the passed `command`'s.
-        description : `None`, `Any` or `tuple` of (`None`, `Ellipsis`, `Any`), Optional
+        description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`), Optional
             Description added to the command. If no description is provided, then it will check the commands's
             `.__doc__` attribute for it. If the description is a string instance, then it will be normalized with the
             ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
             description.
-        aliases : `None`, `str`, `list` of `str` or `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`), Optional
+        aliases : `None`, `str`, `list` of `str`, `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`), Optional
             The aliases of the command.
-        category : `None`, ``Category``, `str` or `tuple` of (`None`, `Ellipsis`, ``Category``, `str`), Optional
+        category : `None`, ``Category``, `str`, `tuple` of (`None`, `Ellipsis`, ``Category``, `str`), Optional
             The category of the command. Can be given as the category itself, or as a category's name. If given as
             `None`, then the command will go under the command processer's default category.
         checks : `None`, ``CommandCheckWrapper``, ``CheckBase``, `list` of ``CommandCheckWrapper``, ``CheckBase`` \
-                instances or `tuple` of (`None`, `Ellipsis`, ``CommandCheckWrapper``, ``CheckBase`` or `list` of \
+                instances or `tuple` of (`None`, `Ellipsis`, ``CommandCheckWrapper``, ``CheckBase``, `list` of \
                 ``CommandCheckWrapper``, ``CheckBase``), Optional
             Checks to decide in which circumstances the command should be called.
         error_handlers : `None`, `async-callable`, `list` of `async-callable`, `tuple` of (`None`, `async-callable`, \
                 `list` of `async-callable`), Optional
             Error handlers for the command.
-        separator : `None`, `str` or `tuple` (`str`, `str`), Optional
+        separator : `None`, `str`, `tuple` (`str`, `str`), Optional
             The parameter separator of the command's parser.
         assigner : `None`, `str`, Optional
             Parameter assigner sign of the command's parser.
@@ -1132,7 +1148,9 @@ class Command:
         else:
             for name in command_category._iter_names():
                 if name in command_category_name_to_command_category:
-                    raise RuntimeError(f'Duped `{CommandCategory.__name__}` name: {name!r}.')
+                    raise RuntimeError(
+                        f'Duped `{CommandCategory.__name__}` name: {name!r}.'
+                    )
         
         command_categories.add(command_category)
         for name in command_category._iter_names():
@@ -1160,8 +1178,10 @@ class Command:
             The added command category instance.
         """
         if isinstance(command, (Command, Router)):
-            raise TypeError(f'`{Command.__name__}` and `{Router.__name__}` instances cannot be added as sub-commands, '
-                f'got {command!r}.')
+            raise TypeError(
+                f'`{Command.__name__}` and `{Router.__name__}`-s cannot be added as sub-commands, '
+                f'got {command!r}.'
+            )
         
         command = Command(command, *args, **kwargs)
         
@@ -1242,7 +1262,7 @@ class CommandFunction:
     
     Attributes
     ----------
-    _command_category_reference : `None` or ``WeakReferer`` to (``Command`` or ``CommandCategory``)
+    _command_category_reference : `None`, ``WeakReferer`` to (``Command``, ``CommandCategory``)
         Reference to the command function's parent.
     _function : `Any`
         The command's function to call.
@@ -1341,19 +1361,19 @@ class CommandCategory:
     
     Attributes
     ----------
-    _command_categories : `None` or `set` of ``CommandCategory``
+    _command_categories : `None`, `set` of ``CommandCategory``
         Sub command categories of the command.
-    _command_category_reference : `None` or ``WeakReferer`` to (``Command`` or ``CommandCategory``)
+    _command_category_reference : `None`, ``WeakReferer`` to (``Command``, ``CommandCategory``)
         Reference to the command category's parent.
-    _command_function : `None` or ``CommandFunction``
+    _command_function : `None`, ``CommandFunction``
         The actual command of the command to maybe call.
-    _self_reference : `None` or ``WeakReferer`` to ``CommandCategory``
+    _self_reference : `None`, ``WeakReferer`` to ``CommandCategory``
         Reference to the command category itself.
-    _error_handlers : `None` or `list` of `FunctionType`
+    _error_handlers : `None`, `list` of `FunctionType`
         Error handlers bind to the command.
     _wrappers : `None`, `list` of `async-callable`
         Additional wrappers, which run before the command is executed.
-    aliases : `None` or `tuple` of `str`
+    aliases : `None`, `tuple` of `str`
         Name aliases of the command category.
     command_category_name_to_command_category : `None` of `dict` of (`str`, `Any`) items
         Command categories by name.
@@ -1649,7 +1669,9 @@ class CommandCategory:
         else:
             for name in command_category._iter_names():
                 if name in command_category_name_to_command_category:
-                    raise RuntimeError(f'Duped `{CommandCategory.__name__}` name: {name!r}.')
+                    raise RuntimeError(
+                        f'Duped `{CommandCategory.__name__}` name: {name!r}.'
+                    )
         
         command_categories.add(command_category)
         for name in command_category._iter_names():
@@ -1677,8 +1699,10 @@ class CommandCategory:
             The added command category instance.
         """
         if isinstance(command, (Command, Router)):
-            raise TypeError(f'`{Command.__name__}` and `{Router.__name__}` instances cannot be added as sub-commands, '
-                f'got {command!r}.')
+            raise TypeError(
+                f'`{Command.__name__}` and `{Router.__name__}`-s cannot be added as sub-commands, '
+                f'got {command!r}.'
+            )
         
         command = Command(command, *args, **kwargs)
         

@@ -293,18 +293,25 @@ class EventThread:
             if __debug__:
                 if (local_address is not None):
                     if not isinstance(local_address, (str, bytes)):
-                        raise TypeError('`local_address` should be given as `None` or as `str` or `bytes` '
-                            f'instance, if `socket_family` is given as `AF_UNIX`, got '
-                            f'{local_address.__class__.__name__}')
+                        raise TypeError(
+                            f'`local_address` should be given as `None`, `str`, `bytes` '
+                            f', if `socket_family` is given as `AF_UNIX`, got '
+                            f'{local_address.__class__.__name__}; {local_address!r}.'
+                        )
                 
                 if (remote_address is not None):
                     if not isinstance(remote_address, (str, bytes)):
-                        raise TypeError('`remote_address` should be given as `None` or as `str` or `bytes` '
-                            f'instance, if `socket_family` is given as `AF_UNIX`, got '
-                            f'{remote_address.__class__.__name__}')
+                        raise TypeError(
+                            f'`remote_address` should be given as `None`, `str`, `bytes` '
+                            f', if `socket_family` is given as `AF_UNIX`, got '
+                            f'{remote_address.__class__.__name__}; {remote_address!r}.'
+                        )
             
-            if (local_address is not None) and local_address and \
-                    (local_address[0] != (0 if isinstance(local_address, bytes) else '\x00')):
+            if (
+                (local_address is not None) and
+                local_address and
+                (local_address[0] != (0 if isinstance(local_address, bytes) else '\x00'))
+            ):
                 try:
                     if S_ISSOCK(os.stat(local_address).st_mode):
                         os.remove(local_address)
@@ -1383,12 +1390,12 @@ async def staggered_race(coroutine_functions, delay, *, loop=None):
         tuple *(winner_result, winner_index, exceptions)* where
         
         - *winner_result*: the result of the winning coroutine, or `None` if no coroutines won.
-        - *winner_index*: the index of the winning coroutine in `coroutine_functions`, or `None` if no coroutines won. If the
-            winning coroutine may return None on success, *winner_index* can be used to definitively determine whether
-            any coroutine won.
+        - *winner_index*: the index of the winning coroutine in `coroutine_functions`, or `None` if no coroutines won.
+            If the winning coroutine may return None on success, *winner_index* can be used to definitively determine
+            whether any coroutine won.
         - *exceptions*: list of exceptions returned by the coroutines. `len(exceptions)` is equal to the number of
-            coroutines actually started, and the order is the same as in `coroutine_functions`. The winning coroutine's entry
-            is `None`.
+            coroutines actually started, and the order is the same as in `coroutine_functions`. The winning coroutine's
+            entry is `None`.
     """
     raise NotImplementedError
 
@@ -2054,8 +2061,9 @@ class Task(HataTask, metaclass=TaskMeta, ignore=True):
             loop = get_event_loop()
         else:
             if not isinstance(loop, EventThread):
-                raise TypeError(f'`loop` was not given es `{EventThread.__name__}` instance, got '
-                    f'{loop.__class__.__name__}.')
+                raise TypeError(
+                    f'`loop` can be `{EventThread.__name__}`, got {loop.__class__.__name__}; {loop!r}.'
+                )
         
         task = loop.current_task
         if (task is not None):

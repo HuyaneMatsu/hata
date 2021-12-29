@@ -8,7 +8,7 @@ class ExtensionError(Exception):
     
     Attributes
     ----------
-    _message : `str` or `list` of `str`
+    _message : `str`, `list` of `str`
         The error's message.
     """
     
@@ -18,7 +18,7 @@ class ExtensionError(Exception):
         
         Parameters
         ----------
-        message : `str` or `list` of `str`
+        message : `str`, `list` of `str`
             The error's message.
         """
         self._message = message

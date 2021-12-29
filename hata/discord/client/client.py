@@ -12897,7 +12897,7 @@ class Client(ClientUserPBase):
                 # Role cannot be moved to default position
                 if position == 0:
                     raise ValueError(
-                        f'Role cannot be moved to position `0`, got {role!r}; roles={roles!}.'
+                        f'Role cannot be moved to position `0`, got {role!r}; roles={roles!r}.'
                     )
             
             index += 1

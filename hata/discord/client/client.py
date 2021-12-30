@@ -15720,7 +15720,7 @@ class Client(ClientUserPBase):
             return self._gateway_url
         
         data = await self.client_gateway()
-        self._gateway_url = gateway_url = f'{data["url"]}?encoding=json & v={API_VERSION}&compress=zlib-stream'
+        self._gateway_url = gateway_url = f'{data["url"]}?encoding=json&v={API_VERSION}&compress=zlib-stream'
         self._gateway_time = LOOP_TIME()
         
         return gateway_url
@@ -15749,7 +15749,7 @@ class Client(ClientUserPBase):
             If any exception was received from the Discord API.
         """
         data = await self.client_gateway()
-        self._gateway_url = f'{data["url"]}?encoding=json & v={API_VERSION}&compress=zlib-stream'
+        self._gateway_url = f'{data["url"]}?encoding=json&v={API_VERSION}&compress=zlib-stream'
         self._gateway_time = LOOP_TIME()
         
         old_shard_count = self.shard_count

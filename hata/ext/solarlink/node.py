@@ -41,7 +41,7 @@ class SolarNode:
     
     region : `None`, ``VoiceRegion``
         The respective voice region of the node's players.
-    stats : `None` or  ``Stats``
+    stats : `None`, ``Stats``
         The statistics of the node.
     websocket : `None`, ``WebSocketClient``
         The connected websocket.

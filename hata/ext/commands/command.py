@@ -2981,7 +2981,7 @@ class CommandProcesser(EventWaitforBase):
         ----------
         func : ``Command``
             The command to remove.
-        name : `None` or  `str`, Optional
+        name : `None`, `str`, Optional
             The command's respective name. Defaults to `None`.
         
         Raises

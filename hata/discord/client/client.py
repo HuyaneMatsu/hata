@@ -12334,7 +12334,7 @@ class Client(ClientUserPBase):
             The new permission value of the role.
         position : `None`, `int`, Optional (Keyword only)
             The role's new position.
-        icon : `None`, ``Emoji`` or  `bytes-like`, Optional (Keyword only)
+        icon : `None`, ``Emoji``, `bytes-like`, Optional (Keyword only)
             The new icon of the role. Can be `'jpg'`, `'png'`, `'webp'`, `'gif'` image's raw data.
             
             Pass it as an ``Emoji`` to set role's icon to it.

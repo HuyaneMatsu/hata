@@ -261,7 +261,7 @@ def test_error_handler(error_handler):
     analyzer = CallableAnalyzer(error_handler)
     if not analyzer.is_async():
         raise TypeError(
-            f'`error_handler` should be given as `async` function, got {error_handler!r}'
+            f'`error_handler` can be `async` function, got {error_handler!r}'
         )
     
     min_, max_ = analyzer.get_non_reserved_positional_parameter_range()
@@ -887,7 +887,7 @@ def test_unknown_command(unknown_command):
     analyzer = CallableAnalyzer(unknown_command)
     if not analyzer.is_async():
         raise TypeError(
-            f'`unknown_command` can be given as `async` function, got {unknown_command!r}.'
+            f'`unknown_command` can be `async` function, got {unknown_command!r}.'
         )
     
     min_, max_ = analyzer.get_non_reserved_positional_parameter_range()

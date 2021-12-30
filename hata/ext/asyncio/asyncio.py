@@ -292,25 +292,23 @@ class EventThread:
         elif hasattr(module_socket, 'AF_UNIX') and socket_family == module_socket.AF_UNIX:
             if __debug__:
                 if (local_address is not None):
-                    if not isinstance(local_address, (str, bytes)):
+                    if not isinstance(local_address,bytes):
                         raise TypeError(
-                            f'`local_address` should be given as `None`, `str`, `bytes` '
-                            f', if `socket_family` is given as `AF_UNIX`, got '
+                            f'`local_address` can be `None`, `str` if `socket_family` is `AF_UNIX`, got '
                             f'{local_address.__class__.__name__}; {local_address!r}.'
                         )
                 
                 if (remote_address is not None):
-                    if not isinstance(remote_address, (str, bytes)):
+                    if not isinstance(remote_address, str):
                         raise TypeError(
-                            f'`remote_address` should be given as `None`, `str`, `bytes` '
-                            f', if `socket_family` is given as `AF_UNIX`, got '
+                            f'`remote_address` can be `None`, `str` if `socket_family` is `AF_UNIX`, got '
                             f'{remote_address.__class__.__name__}; {remote_address!r}.'
                         )
             
             if (
                 (local_address is not None) and
                 local_address and
-                (local_address[0] != (0 if isinstance(local_address, bytes) else '\x00'))
+                (local_address[0] != '\x00')
             ):
                 try:
                     if S_ISSOCK(os.stat(local_address).st_mode):

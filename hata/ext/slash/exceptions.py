@@ -412,7 +412,7 @@ def test_exception_handler(exception_handler):
     analyzer = CallableAnalyzer(exception_handler)
     if not analyzer.is_async():
         raise TypeError(
-            f'`exception_handler` should be given as `async` function, got {exception_handler!r}.'
+            f'`exception_handler` can be `async` function, got {exception_handler!r}.'
         )
     
     min_, max_ = analyzer.get_non_reserved_positional_parameter_range()

@@ -1551,7 +1551,7 @@ class Slasher(EventHandlerBase):
             self._remove_application_command(func)
         else:
             raise TypeError(
-                f'`func` ca be `{SlasherApplicationCommand.__name__}`, `{Router.__name__}` of '
+                f'`func` can be `{SlasherApplicationCommand.__name__}`, `{Router.__name__}` of '
                 f'`{SlasherApplicationCommand.__name__}`, got {func!r}.'
             )
     

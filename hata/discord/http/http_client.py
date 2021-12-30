@@ -180,7 +180,7 @@ class DiscordHTTPClient(HTTPClient):
         except KeyError:
             pass
         else:
-            connector_ref_counter.count = count = connector_ref_counter.count-1
+            connector_ref_counter.count = count = connector_ref_counter.count - 1
             if count:
                 return
             
@@ -262,7 +262,7 @@ class DiscordHTTPClient(HTTPClient):
                         raise ConnectionError('Invalid address or no connection with Discord.') from err
                     
                     # os can not handle more, need to wait for the blocking job to be done. This can happen on Windows.
-                    await sleep(0.5/try_again, self.loop)
+                    await sleep(0.5 / try_again, self.loop)
                     # Invalid address causes OSError too, but we will let it run 5 times, then raise a ConnectionError
                     try_again -= 1
                     continue
@@ -294,7 +294,7 @@ class DiscordHTTPClient(HTTPClient):
                     continue
                 
                 if try_again and (status in (500, 502, 503)):
-                    await sleep(10.0/try_again, self.loop)
+                    await sleep(10.0 / try_again, self.loop)
                     try_again -= 1
                     continue
                 

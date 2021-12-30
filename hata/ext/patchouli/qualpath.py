@@ -175,9 +175,9 @@ class QualPath:
         other_to_find = other_parts[0]
         
         limit = len(self_parts)
-        index = limit-len(other_parts)
+        index = limit - len(other_parts)
         while True:
-            if (self_parts[index] == other_to_find) and (self_parts[index:] == other_parts[:limit-index]):
+            if (self_parts[index] == other_to_find) and (self_parts[index:] == other_parts[:limit - index]):
                 new = object.__new__(type(self))
                 new.parts = self_parts[:index]
                 new._hash = None

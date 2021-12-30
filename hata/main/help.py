@@ -55,7 +55,7 @@ def list_commands():
     output_parts.append('Available commands:\n\n')
     
     command_count = len(COMMAND_NAMES)
-    index_adjust = floor(log10(command_count))+1
+    index_adjust = floor(log10(command_count)) + 1
     index = 0
     while index != command_count:
         command_name = COMMAND_NAMES[index]

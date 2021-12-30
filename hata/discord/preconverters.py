@@ -44,7 +44,7 @@ def preconvert_snowflake(snowflake, name):
             f'`{name}` can be `int`, `str`, got {snowflake_type.__name__}; {snowflake!r}.'
         )
     
-    if snowflake < 0 or snowflake > ((1<<64)-1):
+    if snowflake < 0 or snowflake > ((1 << 64) - 1):
         raise ValueError(
             f'`{name}` can be only uint64, got {snowflake!r}.'
         )
@@ -106,7 +106,7 @@ def preconvert_snowflake_array(snowflake_array, name):
                     f'{snowflake_type.__name__}; {snowflake!r}; snowflake_array={snowflake_array!r}.'
                 )
             
-            if snowflake < 0 or snowflake > ((1<<64)-1):
+            if snowflake < 0 or snowflake > ((1 << 64) - 1):
                 raise ValueError(
                     f'`{name}`\'s elements can be only uint64, got '
                     f'{snowflake!r}; snowflake_array={snowflake_array!r}.'
@@ -405,7 +405,7 @@ def preconvert_flag(flag, name, type_):
             f'`{name}` can be `{type_.__name__}`, got {flag_type.__name__}; {flag!r}.'
         )
     
-    if flag < 0 or flag > ((1<<64)-1):
+    if flag < 0 or flag > ((1 << 64) - 1):
         raise ValueError(
             f'`{name}` can be only uint64, got {flag!r}.'
         )

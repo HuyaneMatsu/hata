@@ -65,7 +65,7 @@ class GuildCreateEvent(EventBase):
     
     @copy_docs(EventBase.__hash__)
     def __hash__(self):
-        return self.id^hash(self.name)
+        return self.id ^ hash(self.name)
 
 
 class ChannelCreateEvent(EventBase):
@@ -139,7 +139,7 @@ class ChannelCreateEvent(EventBase):
     
     @copy_docs(EventBase.__hash__)
     def __hash__(self):
-        return self.id^hash(self.name)^self.type
+        return self.id ^ hash(self.name) ^ self.type
 
 
 class ChannelVoiceSelectEvent(EventBase):
@@ -204,4 +204,4 @@ class ChannelVoiceSelectEvent(EventBase):
     
     @copy_docs(EventBase.__hash__)
     def __hash__(self):
-        return self.guild_id^self.channel_id
+        return self.guild_id ^ self.channel_id

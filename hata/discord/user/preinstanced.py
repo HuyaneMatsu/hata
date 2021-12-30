@@ -70,7 +70,7 @@ class DefaultAvatar(PreinstancedBase):
         default_avatar : ``DefaultAvatar``
         """
         INSTANCES = cls.INSTANCES
-        return INSTANCES[user.discriminator%len(INSTANCES)]
+        return INSTANCES[user.discriminator % len(INSTANCES)]
     
     @classmethod
     def _from_value(cls, value):
@@ -571,7 +571,7 @@ class FriendRequestFlag(PreinstancedBase):
             mutual_guilds = data.get('mutual_guilds', False)
             mutual_friends = data.get('mutual_friends', False)
             
-            key = mutual_guilds+(mutual_friends<<1)
+            key = mutual_guilds + (mutual_friends << 1)
         
         return cls.INSTANCES[key]
     
@@ -586,12 +586,12 @@ class FriendRequestFlag(PreinstancedBase):
         """
         value = self.value
         result = {}
-        if (value>>2)&1:
+        if (value >> 2) & 1:
             result['all'] = True
         else:
-            if (value>>1)&1:
+            if (value >> 1) & 1:
                 result['mutual_friends'] = True
-            if value&1:
+            if value & 1:
                 result['mutual_guilds'] = True
         
         return result

@@ -12,7 +12,7 @@ DO_NOT_PREVIEW_RP = re.compile('this [a-z]+ is a [a-z]+\.?', re.I)
 SPACE_CHAR_DEFAULT = ' '
 SPACE_CHAR_UNICODE = (b'\xe2\xa0\x80').decode()
 
-DEFAULT_LISTING_HEAD = '-'*(INDENT_SIZE_DEFAULT<<4)
+DEFAULT_LISTING_HEAD = '-'*(INDENT_SIZE_DEFAULT << 4)
 
 EMBED_DESCRIPTION_MAX_SIZE = 4096
 
@@ -276,7 +276,7 @@ class BuilderContext:
         self.space_char = space_char
         self.word_converter = word_converter
         self.max_line_length = max_line_length
-        self.indent = indent_size*space_char
+        self.indent = indent_size * space_char
     
     def __repr__(self):
         """Returns the builder context's representation."""
@@ -335,22 +335,22 @@ class TableLine:
                 result_line.append(builder_context.space_char)
                 part = line[column_index]
                 if part is None:
-                    result_line.append(builder_context.space_char*sizes[column_index])
+                    result_line.append(builder_context.space_char * sizes[column_index])
                 
                 if type(part) is str:
                     if index:
-                        result_line.append(builder_context.space_char*sizes[column_index])
+                        result_line.append(builder_context.space_char * sizes[column_index])
                     else:
                         result_line.append(part)
-                        result_line.append(builder_context.space_char*(sizes[column_index]-len(part)))
+                        result_line.append(builder_context.space_char * (sizes[column_index]-len(part)))
                         continue
                 
                 if len(part) <= index:
-                    result_line.append(builder_context.space_char*sizes[column_index])
+                    result_line.append(builder_context.space_char * sizes[column_index])
                 else:
                     part = part[index]
                     result_line.append(part)
-                    result_line.append(builder_context.space_char*(sizes[column_index]-len(part)))
+                    result_line.append(builder_context.space_char * (sizes[column_index]-len(part)))
                 
                 result_line.append(builder_context.space_char)
                 result_line.append('|')
@@ -437,14 +437,14 @@ class TableConverter:
                 if part is None:
                     continue
                 
-                length = len(part) -1
+                length = len(part) - 1
                 for word in part:
                     length +=len(word)
                 
                 if longest_lengths[index] < length:
                     longest_lengths[index] = length
         
-        fillable_chars = optimal_fit - (x+1) - ((x-1)<<1)
+        fillable_chars = optimal_fit - (x + 1) - ((x - 1) << 1)
         
         # do we fit?
         if sum(longest_lengths) <= fillable_chars:
@@ -482,7 +482,7 @@ class TableConverter:
                     if part is None:
                         continue
                     
-                    length = len(line) -1
+                    length = len(line) - 1
                     for word in part:
                         length +=len(word)
                     
@@ -494,7 +494,7 @@ class TableConverter:
                 average_lengths[index] = length
             
             size_factors = [
-                (((average_lengths[index]<<1) + longest_lengths[index])*shortest_lengths[index])**.5 \
+                (((average_lengths[index]<<1) + longest_lengths[index]) * shortest_lengths[index])**.5 \
                     for index in range(x)]
             
             factorizable_chars = fillable_chars - sum(shortest_lengths)
@@ -526,7 +526,7 @@ class TableConverter:
         
         for length in sizes:
             result_line.append('+')
-            result_line.append('='*(length+2))
+            result_line.append('='*(length + 2))
         
         result_line.append('+\n')
         
@@ -537,7 +537,7 @@ class TableConverter:
         
         for length in sizes:
             result_line.append('+')
-            result_line.append('-'*(length+2))
+            result_line.append('-'*(length + 2))
         
         result_line.append('+\n')
         
@@ -559,7 +559,7 @@ class TableConverter:
         length : `int`
         """
         lines = self.lines
-        length = (len(lines)+1)*len(self.separator_line)
+        length = (len(lines) + 1) * len(self.separator_line)
         for line in lines:
             length += line.character_count
         
@@ -586,7 +586,7 @@ class TableConverter:
         length : `int`
         """
         lines = self.lines
-        length = len(lines)+1
+        length = len(lines) + 1
         for line in lines:
             length += line.line_count
         
@@ -653,7 +653,7 @@ class TableConverter:
             The best fitting 2 table shard, if there is any optimal case. If there is non, returns `None` instead.
         """
         best_fit = None
-        for number_of_rows in range(1, len(self.lines)-2):
+        for number_of_rows in range(1, len(self.lines) - 2):
             tables = self._do_break(number_of_rows)
             table_1, table_2 = tables
             if table_1.character_count > number_of_chars:
@@ -734,7 +734,7 @@ class CodeBlockConverter:
         ------
         self : ``CodeBlockConverter``
         """
-        indent = builder_context.indent*indent_level
+        indent = builder_context.indent * indent_level
         self = object.__new__(cls)
         self.lines = [f'{indent}{line}\n' for line in code_block.lines]
         ender = indent+'```'
@@ -742,7 +742,7 @@ class CodeBlockConverter:
         if language is None:
             starter = ender
         else:
-            starter = ender+language
+            starter = ender + language
         
         self.starter = starter
         self.ender = ender
@@ -758,7 +758,7 @@ class CodeBlockConverter:
         length : `int`
         """
         lines = self.lines
-        length = len(self.starter)+len(self.ender)
+        length = len(self.starter) + len(self.ender)
         for line in lines:
             length += len(line)
         
@@ -813,7 +813,7 @@ class CodeBlockConverter:
         -------
         length : `int`
         """
-        return 2+len(self.lines)
+        return 2 + len(self.lines)
     
     @classmethod
     def _create_remove_empty_lines(cls, lines, starter, ender):
@@ -1002,7 +1002,7 @@ class CodeBlockConverter:
         if length > 2:
             best_fit = None
             
-            for x in range(1, length-1):
+            for x in range(1, length - 1):
                 code_blocks = self._do_interactive_break(x)
                 code_block_1, code_block_2 = code_blocks
                 
@@ -1026,7 +1026,7 @@ class CodeBlockConverter:
             if length > 2:
                 best_fit = None
                 
-                for x in range(1, length-1):
+                for x in range(1, length - 1):
                     code_blocks = self._do_code_break(x)
                     code_block_1, code_block_2 = code_blocks
                     
@@ -1050,7 +1050,7 @@ class CodeBlockConverter:
         
         best_fit = None
         
-        for x in range(3, len(self.lines)-3):
+        for x in range(3, len(self.lines) - 3):
             code_blocks = self._do_line_break(x)
             
             if code_blocks[0].character_count > number_of_chars:
@@ -1118,7 +1118,7 @@ class DescriptionConverter:
         words = builder_context.word_converter(description.content)
         lines = sizify(words, optimal_fit)
         
-        indention = builder_context.indent*indent_level
+        indention = builder_context.indent * indent_level
         lines = [f'{indention}{line}\n' for line in lines]
         
         self = object.__new__(cls)
@@ -1203,7 +1203,7 @@ class DescriptionConverter:
         """
         lines = self.lines
         best_fit = None
-        for x in range(4, len(lines)-4):
+        for x in range(4, len(lines) - 4):
             descriptions = self._do_break(x)
             description_1, description_2 = descriptions
             
@@ -1276,7 +1276,7 @@ class BlockQuoteConverter:
         self : ``BlockQuoteConverter``
         """
         lines_by_paragraph = []
-        indention = builder_context.indent*indent_level
+        indention = builder_context.indent * indent_level
         
         for description in block_quote.descriptions:
             description_words = builder_context.word_converter(description)
@@ -1300,7 +1300,7 @@ class BlockQuoteConverter:
         length : `int`
         """
         lines_by_paragraphs = self.lines_by_paragraph
-        length = (len(lines_by_paragraphs)-1)*len(self.empty_line)
+        length = (len(lines_by_paragraphs) - 1) * len(self.empty_line)
         
         for lines in lines_by_paragraphs:
             for line in lines:
@@ -1318,7 +1318,7 @@ class BlockQuoteConverter:
         length : `int`
         """
         lines_by_paragraphs = self.lines_by_paragraph
-        length = len(lines_by_paragraphs)-1
+        length = len(lines_by_paragraphs) - 1
         for lines in lines_by_paragraphs:
             length += len(lines)
         
@@ -1425,7 +1425,7 @@ class BlockQuoteConverter:
         if end_index > 4:
             end_index = 4
         
-        for x in range(start_index, line_count_without_separators-end_index):
+        for x in range(start_index, line_count_without_separators - end_index):
             block_quotes = self._do_break(x)
             block_quote_1, block_quote_2 = block_quotes
             
@@ -1520,7 +1520,7 @@ class AttributeDescriptionConverter(DescriptionConverter):
         words.extend(builder_context.word_converter(attribute_description.content))
         lines = sizify(words, optimal_fit)
         
-        indention = builder_context.indent*indent_level
+        indention = builder_context.indent * indent_level
         lines = [f'{indention}{line}\n' for line in lines]
         
         self = object.__new__(cls)
@@ -1555,7 +1555,7 @@ def listing_converter(listing, indent_level, optimal_fit, builder_context):
         if content is None:
             continue
         
-        yield from sub_section_converter(content, indent_level+1, optimal_fit-builder_context.indent_size, builder_context)
+        yield from sub_section_converter(content, indent_level + 1, optimal_fit - builder_context.indent_size, builder_context)
 
 
 class ListingHeadConverter(DescriptionConverter):
@@ -1595,12 +1595,12 @@ class ListingHeadConverter(DescriptionConverter):
             lines = [DEFAULT_LISTING_HEAD]
         else:
             words = builder_context.word_converter(head)
-            lines = sizify(words, optimal_fit-builder_context.indent_size)
+            lines = sizify(words, optimal_fit - builder_context.indent_size)
         
-        new_lines.append(f'{(builder_context.indent*indent_level)}- {lines[0]}\n')
+        new_lines.append(f'{(builder_context.indent * indent_level)}- {lines[0]}\n')
         
         if len(lines)>1:
-            indention = builder_context.indent*(indent_level+1)
+            indention = builder_context.indent * (indent_level + 1)
             for line in lines[1:]:
                 new_lines.append(f'{indention}{line}\n')
         
@@ -1635,8 +1635,8 @@ def sub_section_converter(sub_section, indent_level, optimal_fit, builder_contex
         # If the converter is a sub section converter, indent it
         converter = CONVERTER_TABLE[type(element)]
         if converter is sub_section_converter:
-            local_indent_level = indent_level+1
-            local_optimal_fit = optimal_fit-builder_context.indent_size
+            local_indent_level = indent_level + 1
+            local_optimal_fit = optimal_fit - builder_context.indent_size
         else:
             local_indent_level = indent_level
             local_optimal_fit = optimal_fit
@@ -1711,7 +1711,7 @@ def should_insert_linebreak(part_1, part_2):
     if not isinstance(part_2, DescriptionConverter):
         return False
     
-    if part_1.indent+1 == part_2.indent:
+    if part_1.indent + 1 == part_2.indent:
         return False
     
     return True
@@ -1746,7 +1746,7 @@ def should_accept_section_break(section_1, section_2):
     if not isinstance(section_2_first, DescriptionConverter):
         return True
     
-    if section_1_last.indent+1 == section_2_first.indent:
+    if section_1_last.indent + 1 == section_2_first.indent:
         return False
     
     return True
@@ -1879,7 +1879,7 @@ class SectionConverter:
             return None
         
         section_2 = object.__new__(type(self))
-        section_2.parts = [middle_broken[1], *parts[middle_part_index+1:]]
+        section_2.parts = [middle_broken[1], *parts[middle_part_index + 1:]]
         if not section_2._test_break():
             return None
         
@@ -2004,7 +2004,7 @@ def serialize_docs_embed_sized(docs):
         if actual_chunk:
             limit -= 1
         
-        if actual_chunk_size+section_character_count <= limit:
+        if actual_chunk_size + section_character_count <= limit:
             if actual_chunk:
                 actual_chunk.append('\n')
                 actual_chunk_size += 1
@@ -2013,7 +2013,7 @@ def serialize_docs_embed_sized(docs):
             actual_chunk_size += section_character_count
             continue
         
-        leftover = limit-actual_chunk_size-1
+        leftover = limit - actual_chunk_size - 1
         sections = section.do_break(leftover)
         if sections is None:
             result_chunks.append(''.join(actual_chunk))
@@ -2108,7 +2108,7 @@ def generate_preview_for(docs, length=200, min_cut_off=20, end='...'):
     -------
     preview : `str`
     """
-    min_cut_off = min_cut_off+len(end)+2
+    min_cut_off = min_cut_off + len(end) + 2
     
     name, sub_section = docs.sections[0]
     if name is not None:
@@ -2132,7 +2132,7 @@ def generate_preview_for(docs, length=200, min_cut_off=20, end='...'):
         
         length -= len(preview_part)
         if length < 0:
-            preview_part = preview_part[:length-len(end)]
+            preview_part = preview_part[:length - len(end)]
             generated_parts.append(preview_part)
             generated_parts.append(end)
             break

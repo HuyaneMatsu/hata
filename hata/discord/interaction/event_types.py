@@ -24,18 +24,18 @@ from .components import ComponentBase
 from .preinstanced import ApplicationCommandOptionType, InteractionType, ComponentType
 
 
-RESPONSE_FLAG_DEFERRING = 1<<0
-RESPONSE_FLAG_DEFERRED = 1<<1
-RESPONSE_FLAG_RESPONDING = 1<<2
-RESPONSE_FLAG_RESPONDED = 1<<3
-RESPONSE_FLAG_EPHEMERAL = 1<<4
+RESPONSE_FLAG_DEFERRING = 1 << 0
+RESPONSE_FLAG_DEFERRED = 1 << 1
+RESPONSE_FLAG_RESPONDING = 1 << 2
+RESPONSE_FLAG_RESPONDED = 1 << 3
+RESPONSE_FLAG_EPHEMERAL = 1 << 4
 
 RESPONSE_FLAG_NONE = 0
-RESPONSE_FLAG_ACKNOWLEDGING = RESPONSE_FLAG_DEFERRING|RESPONSE_FLAG_RESPONDING
-RESPONSE_FLAG_ACKNOWLEDGED = RESPONSE_FLAG_DEFERRED|RESPONSE_FLAG_RESPONDED
-RESPONSE_FLAG_DEFERRING_OR_DEFERRED = RESPONSE_FLAG_DEFERRING|RESPONSE_FLAG_DEFERRED
-RESPONSE_FLAG_RESPONDING_OR_RESPONDED = RESPONSE_FLAG_RESPONDING|RESPONSE_FLAG_RESPONDED
-RESPONSE_FLAG_ACKNOWLEDGING_OR_ACKNOWLEDGED = RESPONSE_FLAG_ACKNOWLEDGING|RESPONSE_FLAG_ACKNOWLEDGED
+RESPONSE_FLAG_ACKNOWLEDGING = RESPONSE_FLAG_DEFERRING | RESPONSE_FLAG_RESPONDING
+RESPONSE_FLAG_ACKNOWLEDGED = RESPONSE_FLAG_DEFERRED | RESPONSE_FLAG_RESPONDED
+RESPONSE_FLAG_DEFERRING_OR_DEFERRED = RESPONSE_FLAG_DEFERRING | RESPONSE_FLAG_DEFERRED
+RESPONSE_FLAG_RESPONDING_OR_RESPONDED = RESPONSE_FLAG_RESPONDING | RESPONSE_FLAG_RESPONDED
+RESPONSE_FLAG_ACKNOWLEDGING_OR_ACKNOWLEDGED = RESPONSE_FLAG_ACKNOWLEDGING | RESPONSE_FLAG_ACKNOWLEDGED
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 
@@ -328,7 +328,7 @@ class ApplicationCommandInteraction(DiscordEntity):
         # resolved_attachments
         resolved_attachments = self.resolved_attachments
         if (resolved_attachments is not None):
-            hash_value ^= (len(resolved_attachments)<<24)
+            hash_value ^= (len(resolved_attachments) << 24)
             
             for attachment_id in resolved_attachments.keys():
                 hash_value ^= attachment_id
@@ -336,7 +336,7 @@ class ApplicationCommandInteraction(DiscordEntity):
         # resolved_channels
         resolved_channels = self.resolved_channels
         if (resolved_channels is not None):
-            hash_value ^= (len(resolved_channels)<<8)
+            hash_value ^= (len(resolved_channels) << 8)
             
             for channel_id in resolved_channels.keys():
                 hash_value ^= channel_id
@@ -344,7 +344,7 @@ class ApplicationCommandInteraction(DiscordEntity):
         # resolved_roles
         resolved_roles = self.resolved_roles
         if (resolved_roles is not None):
-            hash_value ^= (len(resolved_roles)<<12)
+            hash_value ^= (len(resolved_roles) << 12)
             
             for role_id in resolved_roles.keys():
                 hash_value ^= role_id
@@ -352,7 +352,7 @@ class ApplicationCommandInteraction(DiscordEntity):
         # resolved_messages
         resolved_messages = self.resolved_messages
         if (resolved_messages is not None):
-            hash_value ^= (len(resolved_messages)<<16)
+            hash_value ^= (len(resolved_messages) << 16)
             
             for message_id in resolved_messages.keys():
                 hash_value ^= message_id
@@ -360,7 +360,7 @@ class ApplicationCommandInteraction(DiscordEntity):
         # resolved_users
         resolved_users = self.resolved_users
         if (resolved_users is not None):
-            hash_value ^= (len(resolved_users)<<20)
+            hash_value ^= (len(resolved_users) << 20)
             
             for user_id in resolved_users.keys():
                 hash_value ^= user_id
@@ -600,7 +600,7 @@ class ApplicationCommandInteractionOption:
                 hash_value ^= hash(option)
         
         # type
-        hash_value ^= (self.type.value<<8)
+        hash_value ^= (self.type.value << 8)
         
         # value
         value = self.value
@@ -741,7 +741,7 @@ class ComponentInteraction:
         # options
         options = self.options
         if (options is not None):
-            hash_value ^ len(options)<<8
+            hash_value ^ len(options) << 8
             for option in options:
                 hash_value ^ hash(option)
         
@@ -872,7 +872,7 @@ class ApplicationCommandAutocompleteInteractionOption:
         hash_value = 0
         
         # focused
-        hash_value ^= (self.focused<<16)
+        hash_value ^= (self.focused << 16)
         
         # name
         hash_value ^= hash(self.name)
@@ -880,7 +880,7 @@ class ApplicationCommandAutocompleteInteractionOption:
         # options
         options = self.options
         if (options is not None):
-            hash_value ^= (len(options)<<8)
+            hash_value ^= (len(options) << 8)
             
             for option in options:
                 hash_value ^= hash(option)
@@ -1072,7 +1072,7 @@ class ApplicationCommandAutocompleteInteraction:
         # options
         options = self.options
         if (options is not None):
-            hash_value ^= (len(options)<<8)
+            hash_value ^= (len(options) << 8)
             
             for option in options:
                 hash_value ^= hash(option)
@@ -1262,7 +1262,7 @@ class FormSubmitInteraction:
         # options
         options = self.options
         if (options is not None):
-            hash_value ^= (len(options)<<8)
+            hash_value ^= (len(options) << 8)
             
             for option in options:
                 hash_value ^= hash(option)
@@ -1531,7 +1531,7 @@ class FormSubmitInteractionOption:
         # options
         options = self.options
         if (options is not None):
-            hash_value ^= (len(options)<<8)
+            hash_value ^= (len(options) << 8)
             
             for option in options:
                 hash_value ^= hash(option)
@@ -2207,11 +2207,11 @@ class InteractionResponseContext:
         response_flag = interaction._response_flag
         
         if self.is_deferring:
-            if not (response_flag&RESPONSE_FLAG_ACKNOWLEDGING_OR_ACKNOWLEDGED):
+            if not (response_flag & RESPONSE_FLAG_ACKNOWLEDGING_OR_ACKNOWLEDGED):
                 response_flag |= RESPONSE_FLAG_DEFERRING
         else:
-            if (not response_flag&RESPONSE_FLAG_RESPONDING_OR_RESPONDED) and \
-                    (not response_flag&RESPONSE_FLAG_DEFERRING_OR_DEFERRED):
+            if (not response_flag & RESPONSE_FLAG_RESPONDING_OR_RESPONDED) and \
+                    (not response_flag & RESPONSE_FLAG_DEFERRING_OR_DEFERRED):
                 response_flag |= RESPONSE_FLAG_RESPONDING
         
         interaction._response_flag = response_flag
@@ -2224,24 +2224,24 @@ class InteractionResponseContext:
         response_flag = interaction._response_flag
         if exc_type is None:
             if self.is_ephemeral:
-                if not response_flag&RESPONSE_FLAG_ACKNOWLEDGED:
+                if not response_flag & RESPONSE_FLAG_ACKNOWLEDGED:
                     response_flag ^= RESPONSE_FLAG_EPHEMERAL
             
             if self.is_deferring:
-                if response_flag&RESPONSE_FLAG_DEFERRING:
+                if response_flag & RESPONSE_FLAG_DEFERRING:
                     response_flag ^= RESPONSE_FLAG_DEFERRING
                     response_flag |= RESPONSE_FLAG_DEFERRED
             else:
-                if response_flag&RESPONSE_FLAG_RESPONDING:
+                if response_flag & RESPONSE_FLAG_RESPONDING:
                     response_flag ^= RESPONSE_FLAG_RESPONDING
                     response_flag |= RESPONSE_FLAG_RESPONDED
         
         else:
             if self.is_deferring:
-                if response_flag&RESPONSE_FLAG_DEFERRING:
+                if response_flag & RESPONSE_FLAG_DEFERRING:
                     response_flag ^= RESPONSE_FLAG_DEFERRING
             else:
-                if response_flag&RESPONSE_FLAG_RESPONDING:
+                if response_flag & RESPONSE_FLAG_RESPONDING:
                     response_flag ^= RESPONSE_FLAG_RESPONDING
         
         interaction._response_flag = response_flag

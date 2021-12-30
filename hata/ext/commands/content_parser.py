@@ -155,19 +155,19 @@ class ContentParameterSeparator:
         
         if separator_type is str:
             escaped = re.escape(separator)
-            rp = re.compile(f'[^{escaped}\S]*(?:{escaped}[^{escaped}\S]*)+', re.M|re.S)
+            rp = re.compile(f'[^{escaped}\S]*(?:{escaped}[^{escaped}\S]*)+', re.M | re.S)
             caller = cls._rule_single
         
         else:
             start, end = separator
             if start == end:
                 escaped = re.escape(start)
-                rp = re.compile(f'(?:{escaped}(.+?){escaped}|(\S+))[^{escaped}\S]*', re.M|re.S)
+                rp = re.compile(f'(?:{escaped}(.+?){escaped}|(\S+))[^{escaped}\S]*', re.M | re.S)
             
             else:
                 start_escaped = re.escape(start)
                 end_escaped = re.escape(end)
-                rp = re.compile(f'(?:{start_escaped}(.+?){end_escaped}|(\S+))[^{start_escaped}\S]*', re.M|re.S)
+                rp = re.compile(f'(?:{start_escaped}(.+?){end_escaped}|(\S+))[^{start_escaped}\S]*', re.M | re.S)
             
             caller = cls._rule_inter
         
@@ -1501,12 +1501,12 @@ if CACHE_USER:
         flags = parser_ctx.flags
         message = content_parser_ctx.message
         
-        if flags&CONVERTER_FLAG_ID:
+        if flags & CONVERTER_FLAG_ID:
             parsed = ID_RP.fullmatch(part)
             if (parsed is not None):
                 id_ = int(parsed.group(1))
                 
-                if flags&CONVERTER_FLAG_EVERYWHERE:
+                if flags & CONVERTER_FLAG_EVERYWHERE:
                     try:
                         user = USERS[id_]
                     except KeyError:
@@ -1541,12 +1541,12 @@ if CACHE_USER:
                         else:
                             return user
         
-        if flags&CONVERTER_FLAG_MENTION:
+        if flags & CONVERTER_FLAG_MENTION:
             user = parse_user_mention(part, message)
             if (user is not None):
                 return user
         
-        if flags&CONVERTER_FLAG_NAME:
+        if flags & CONVERTER_FLAG_NAME:
             channel = message.channel
             guild = channel.guild
             if (guild is None):
@@ -1570,13 +1570,13 @@ else:
         flags = parser_ctx.flags
         message = content_parser_ctx.message
         
-        if flags&CONVERTER_FLAG_ID:
+        if flags & CONVERTER_FLAG_ID:
             parsed = ID_RP.fullmatch(part)
             if (parsed is not None):
                 id_ = int(parsed.group(1))
                 
-                if flags&CONVERTER_FLAG_EVERYWHERE:
-                    if flags&CONVERTER_FLAG_PROFILE:
+                if flags & CONVERTER_FLAG_EVERYWHERE:
+                    if flags & CONVERTER_FLAG_PROFILE:
                         guild = message.guild
                         if (guild is not None):
                             try:
@@ -1625,12 +1625,12 @@ else:
                         else:
                             return user
         
-        if flags&CONVERTER_FLAG_MENTION:
+        if flags & CONVERTER_FLAG_MENTION:
             user = parse_user_mention(part, message)
             if (user is not None):
                 return user
         
-        if flags&CONVERTER_FLAG_NAME:
+        if flags & CONVERTER_FLAG_NAME:
             channel = message.channel
             guild = channel.guild
             if (guild is None):
@@ -1674,7 +1674,7 @@ async def client_converter(parser_ctx, content_parser_ctx):
     flags = parser_ctx.flags
     message = content_parser_ctx.message
     
-    if flags&CONVERTER_FLAG_ID:
+    if flags & CONVERTER_FLAG_ID:
         parsed = ID_RP.fullmatch(part)
         if (parsed is not None):
             id_ = int(parsed.group(1))
@@ -1684,20 +1684,20 @@ async def client_converter(parser_ctx, content_parser_ctx):
             except KeyError:
                 pass
             else:
-                if flags&CONVERTER_FLAG_EVERYWHERE:
+                if flags & CONVERTER_FLAG_EVERYWHERE:
                     return client
                 
                 else:
                     if client in message.channel.clients:
                         return client
     
-    if flags&CONVERTER_FLAG_MENTION:
+    if flags & CONVERTER_FLAG_MENTION:
         client = parse_user_mention(part, message)
         if (client is not None) and isinstance(client, Client):
             return client
     
-    if flags&CONVERTER_FLAG_NAME:
-        if flags&CONVERTER_FLAG_EVERYWHERE:
+    if flags & CONVERTER_FLAG_NAME:
+        if flags & CONVERTER_FLAG_EVERYWHERE:
             clients = list(CLIENTS.values())
         else:
             clients = message.channel.clients
@@ -1759,12 +1759,12 @@ async def channel_converter(parser_ctx, content_parser_ctx):
     channel_type = parser_ctx.type
     message = content_parser_ctx.message
     
-    if flags&CONVERTER_FLAG_ID:
+    if flags & CONVERTER_FLAG_ID:
         parsed = ID_RP.fullmatch(part)
         if (parsed is not None):
             id_ = int(parsed.group(1))
             
-            if flags&CONVERTER_FLAG_EVERYWHERE:
+            if flags & CONVERTER_FLAG_EVERYWHERE:
                 try:
                     channel = CHANNELS[id_]
                 except KeyError:
@@ -1789,13 +1789,13 @@ async def channel_converter(parser_ctx, content_parser_ctx):
                         if ((channel_type is None) or isinstance(channel, channel_type)):
                             return channel
     
-    if flags&CONVERTER_FLAG_MENTION:
+    if flags & CONVERTER_FLAG_MENTION:
         channel = parse_channel_mention(part, message)
         if (channel is not None):
             if ((channel_type is None) or isinstance(channel, channel_type)):
                 return channel
     
-    if flags&CONVERTER_FLAG_NAME:
+    if flags & CONVERTER_FLAG_NAME:
         channel = message.channel
         guild = channel.guild
         if guild is None:
@@ -1837,12 +1837,12 @@ async def role_converter(parser_ctx, content_parser_ctx):
     flags = parser_ctx.flags
     message = content_parser_ctx.message
     
-    if flags&CONVERTER_FLAG_ID:
+    if flags & CONVERTER_FLAG_ID:
         parsed = ID_RP.fullmatch(part)
         if (parsed is not None):
             id_ = int(parsed.group(1))
             
-            if flags&CONVERTER_FLAG_EVERYWHERE:
+            if flags & CONVERTER_FLAG_EVERYWHERE:
                 try:
                     role = ROLES[id_]
                 except KeyError:
@@ -1860,12 +1860,12 @@ async def role_converter(parser_ctx, content_parser_ctx):
                     else:
                         return role
     
-    if flags&CONVERTER_FLAG_MENTION:
+    if flags & CONVERTER_FLAG_MENTION:
         role = parse_role_mention(part, message)
         if (role is not None):
             return role
     
-    if flags&CONVERTER_FLAG_NAME:
+    if flags & CONVERTER_FLAG_NAME:
         guild = message.guild
         if (guild is not None):
             role = guild.get_role_like(part)
@@ -1890,18 +1890,18 @@ async def emoji_converter(parser_ctx, content_parser_ctx):
         return None
     
     flags = parser_ctx.flags
-    if flags&CONVERTER_FLAG_MENTION:
+    if flags & CONVERTER_FLAG_MENTION:
         emoji = parse_emoji(part)
         if (emoji is not None):
             return emoji
     
     message = content_parser_ctx.message
-    if flags&CONVERTER_FLAG_ID:
+    if flags & CONVERTER_FLAG_ID:
         parsed = ID_RP.fullmatch(part)
         if (parsed is not None):
             id_ = int(parsed.group(1))
             
-            if flags&CONVERTER_FLAG_EVERYWHERE:
+            if flags & CONVERTER_FLAG_EVERYWHERE:
                 try:
                     emoji = EMOJIS[id_]
                 except KeyError:
@@ -1919,7 +1919,7 @@ async def emoji_converter(parser_ctx, content_parser_ctx):
                     else:
                         return emoji
     
-    if flags&CONVERTER_FLAG_NAME:
+    if flags & CONVERTER_FLAG_NAME:
         guild = message.guild
         if (guild is not None):
             emoji = guild.get_emoji_like(part)
@@ -1954,7 +1954,7 @@ async def guild_converter(parser_ctx, content_parser_ctx):
     except KeyError:
         return None
     
-    if parser_ctx.flags&CONVERTER_FLAG_EVERYWHERE:
+    if parser_ctx.flags & CONVERTER_FLAG_EVERYWHERE:
         return guild
     
     if guild in content_parser_ctx.client.guild_profiles:
@@ -1978,7 +1978,7 @@ async def _message_converter_m_id(parser_ctx, content_parser_ctx, message_id):
     channel = content_parser_ctx.message.channel
     if (message is not None):
         # Message found
-        if parser_ctx.flags&CONVERTER_FLAG_EVERYWHERE:
+        if parser_ctx.flags & CONVERTER_FLAG_EVERYWHERE:
             return message
         else:
             # Only local message can be yielded, so check if it is local
@@ -2025,7 +2025,7 @@ async def _message_converter_cm_id(parser_ctx, content_parser_ctx, channel_id, m
     message = MESSAGES.get(message_id, None)
     if (message is not None):
         # Message found
-        if parser_ctx.flags&CONVERTER_FLAG_EVERYWHERE:
+        if parser_ctx.flags & CONVERTER_FLAG_EVERYWHERE:
             return message
         else:
             # Only local message can be yielded, so check if it is local
@@ -2040,7 +2040,7 @@ async def _message_converter_cm_id(parser_ctx, content_parser_ctx, channel_id, m
     if (message_channel is None):
         return None
 
-    if parser_ctx.flags&CONVERTER_FLAG_EVERYWHERE:
+    if parser_ctx.flags & CONVERTER_FLAG_EVERYWHERE:
         # Lets use that multi client core
         for client in message_channel.clients:
             if message_channel.cached_permissions_for(client).can_read_message_history:
@@ -2098,7 +2098,7 @@ async def message_converter(parser_ctx, content_parser_ctx):
     if (part is None):
         return None
     
-    if parser_ctx.flags&CONVERTER_FLAG_ID:
+    if parser_ctx.flags & CONVERTER_FLAG_ID:
         parsed = ID_RP.fullmatch(part)
         if (parsed is not None):
             message_id = int(parsed.group(1))
@@ -2111,7 +2111,7 @@ async def message_converter(parser_ctx, content_parser_ctx):
             message_id = int(message_id)
             return await _message_converter_cm_id(parser_ctx, content_parser_ctx, channel_id, message_id)
     
-    if parser_ctx.flags&CONVERTER_FLAG_URL:
+    if parser_ctx.flags & CONVERTER_FLAG_URL:
         parsed = MESSAGE_JUMP_URL_RP.fullmatch(part)
         if (parsed is not None):
             _, channel_id, message_id = parsed.groups()
@@ -2140,12 +2140,12 @@ async def invite_converter(parser_ctx, content_parser_ctx):
     
     # It would not be a Huyane code without some GOTO
     while True:
-        if flags&CONVERTER_FLAG_URL:
+        if flags & CONVERTER_FLAG_URL:
             parsed = INVITE_URL_RP.fullmatch(part)
             if parsed is not None:
                 break
         
-        if flags&CONVERTER_FLAG_ID:
+        if flags & CONVERTER_FLAG_ID:
             parsed = INVITE_CODE_RP.fullmatch(part)
             if (parsed is not None):
                 break
@@ -2477,7 +2477,7 @@ def validate_annotation_type_flags(annotation, flags):
     
     if setting.uses_flags:
         if flags:
-            new_flags = ConverterFlag(setting.all_flags&flags)
+            new_flags = ConverterFlag(setting.all_flags & flags)
             if not new_flags:
                 raise TypeError(
                     f'`flags` can be `{flags!r}`, meanwhile the {annotation!r} annotation\'s setting '
@@ -2627,7 +2627,7 @@ def validate_annotation(annotation, flags=None):
             except KeyError:
                 annotations_by_type[annotation_type] = flagged_annotation
             else:
-                flagged_annotation.flags = ConverterFlag(actual_flagged_annotation.flags|flagged_annotation.flags)
+                flagged_annotation.flags = ConverterFlag(actual_flagged_annotation.flags | flagged_annotation.flags)
         
         result = tuple(annotations_by_type.values())
         

@@ -1124,7 +1124,7 @@ class CommandLineCommandCategory:
                     return command_function(parameters, index)
             
             else:
-                return command_category(parameters, index+1)
+                return command_category(parameters, index + 1)
 
 
 class CommandLineCommandFunction:

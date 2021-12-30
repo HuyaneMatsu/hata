@@ -20,7 +20,7 @@ except ImportError:
 try:
     from ast import PyCF_ALLOW_TOP_LEVEL_AWAIT
 except ImportError:
-    PyCF_ALLOW_TOP_LEVEL_AWAIT = 1<<13
+    PyCF_ALLOW_TOP_LEVEL_AWAIT = 1 << 13
     AWAIT_AVAILABLE = False
 else:
     AWAIT_AVAILABLE = True

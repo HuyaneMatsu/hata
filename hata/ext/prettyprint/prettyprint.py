@@ -67,7 +67,7 @@ class Pretty_line:
         return len(self.text)
     @property
     def text_form(self):
-        return f'{" "*(self.back<<2)}{self.text}'
+        return f'{" "*(self.back << 2)}{self.text}'
     def __call__(self, amount):
         self.back += amount
         return self
@@ -82,7 +82,7 @@ class PrettyIgnorePush:
     def __repr__(self):
         return f'<{self.__class__.__name__} back={self.back} text_length={len(self.text)}>'
     def __len__(self):
-        return (self.back<<2)+len(self.text)
+        return (self.back << 2) + len(self.text)
     @property
     def text_form(self):
         return self.text
@@ -103,9 +103,9 @@ class PrettyBlock:
         elif back < 0:
             value = PrettyIgnorePush(content)
         elif type(content) == str:
-            value = Pretty_line(content, self.back+back)
+            value = Pretty_line(content, self.back + back)
         else:
-            value = content(self.back+back)
+            value = content(self.back + back)
         self.container.append(value)
         
     def __repr__(self):
@@ -159,7 +159,7 @@ def str_message(message, index=None, **kwargs):
         result.append(f'- content: (len={content_length})', 1)
         if content_length > 500:
             content = content[:500].replace('`', '\\`')
-            result.append(f'--------------------\n{content}\n... +{content_length-500} more\n--------------------', -1)
+            result.append(f'--------------------\n{content}\n... +{content_length - 500} more\n--------------------', -1)
         else:
             content = content.replace('`', '\\`')
             result.append(f'--------------------\n{content}\n--------------------', -1)
@@ -357,7 +357,7 @@ def str_message_application(application, index=None, **kwargs): #ignore index, 1
     
     description = application.description
     if len(description)>32:
-        result.append(f'- description: {description[:26]}...(+{len(description)-26})', 1)
+        result.append(f'- description: {description[:26]}...(+{len(description) - 26})', 1)
     else:
         result.append(f'- description: {description}', 1)
     
@@ -443,7 +443,7 @@ def str_embed_core(embed, index=None, **kwargs):
         result.append(f'- description: (len={content_length})', 1)
         if content_length > 500:
             content = content[:500].replace('`', '\\`')
-            result.append(f'--------------------\n{content}\n... +{content_length-500} more\n--------------------', -1)
+            result.append(f'--------------------\n{content}\n... +{content_length - 500} more\n--------------------', -1)
         else:
             content = content.replace('`', '\\`')
             result.append(f'--------------------\n{content}\n--------------------', -1)
@@ -469,7 +469,7 @@ def str_embed_core(embed, index=None, **kwargs):
         result.append(f'- text : {content_length}', 2)
         if content_length > 500:
             content=content[:500].replace('`', '\\`')
-            result.append(f'--------------------\n{content}\n... +{content_length-500} more\n--------------------', -1)
+            result.append(f'--------------------\n{content}\n... +{content_length - 500} more\n--------------------', -1)
         else:
             content=content.replace('`', '\\`')
             result.append(f'--------------------\n{content}\n--------------------', -1)
@@ -587,7 +587,7 @@ def str_embed_core(embed, index=None, **kwargs):
             result.append(f'- value : {content_length}', 2)
             if content_length > 500:
                 content = content[:500].replace('`', '\\`')
-                result.append(f'--------------------\n{content}\n... +{content_length-500} more\n--------------------', -1)
+                result.append(f'--------------------\n{content}\n... +{content_length - 500} more\n--------------------', -1)
             else:
                 content = content.replace('`', '\\`')
                 result.append(f'--------------------\n{content}\n--------------------', -1)
@@ -930,7 +930,7 @@ def str_guild(guild, index=None, **kwargs):
     
     public_updates_channel = guild.public_updates_channel
     if (public_updates_channel is not None):
-        result.append(f'-public updates channel : {public_updates_channel.name} {public_updates_channel.id}', 1)
+        result.append(f' - public updates channel : {public_updates_channel.name} {public_updates_channel.id}', 1)
     
     if guild.booster_count:
         result.append(f'- boosters : {guild.booster_count}', 1)
@@ -980,9 +980,9 @@ def str_PermissionOverwrite(overwrite, index=None, detailed=True, **kwargs):
     if detailed:
         result.append('Permission changes:', 1)
         for name, push in Permission.__keys__.items():
-            if (allow>>push)&1:
+            if (allow >> push) & 1:
                 v='allow'
-            elif (deny>>push)&1:
+            elif (deny >> push) & 1:
                 v='deny'
             else:
                 continue
@@ -1038,7 +1038,7 @@ def str_invite(invite, index=None,write_parents=True, **kwargs):
                 result.append(f'- max_age : {max_age}')
             else:
                 result.append('- time left : '
-                  f'{elapsed_time(relativedelta(created_at+timedelta(0, max_age), datetime.utcnow()))}', 1)
+                  f'{elapsed_time(relativedelta(created_at + timedelta(0, max_age), datetime.utcnow()))}', 1)
     
     target_user = invite.target_user
     if target_user is not ZEROUSER:
@@ -1356,13 +1356,13 @@ def str_integration_application(application, index=None, head_line=True, **kwarg
     
     description = application.description
     if len(description) > 32:
-        result.append(f'- description: {description[:26]}...(+{len(description)-26})', 1)
+        result.append(f'- description: {description[:26]}...(+{len(description) - 26})', 1)
     else:
         result.append(f'- description : {description}', 1)
     
     summary = application.summary
     if len(description) > 32:
-        result.append(f'- summary: {summary[:26]}...(+{len(summary)-26})', 1)
+        result.append(f'- summary: {summary[:26]}...(+{len(summary) - 26})', 1)
     else:
         result.append(f'- summary : {summary}', 1)
     

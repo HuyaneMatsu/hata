@@ -77,8 +77,8 @@ from as well), what equals to float64. It means integers over 53 bit will lose f
 
 ##### expression
 
-Hata implements a mathematical expression field as well. For example, you can enter `3*2` or `10/5+4` instead of `6`.
-Even constants like `pi` or functions like `sqrt(2)` may be used. The field idea is based on
+Hata implements a mathematical expression field as well. For example, you can enter `3 * 2` or `10 / 5 + 4` instead of
+`6`. Even constants like `pi` or functions like `sqrt(2)` may be used. The field idea is based on
 [Blender](https://www.blender.org/)'s numeric field.
 
 The evaluation of these fields are completely safe, do not uses `eval` or other cheaped out solutions, which have
@@ -346,10 +346,10 @@ async def guild_icon(event,
         hash_value = guild.invite_splash_hash
     
     if url is None:
-        color = (event.id>>22)&0xFFFFFF
+        color = (event.id >> 22) & 0xFFFFFF
         return Embed(f'{guild.name} has no {name}', color=color)
     
-    color = hash_value&0xFFFFFF
+    color = hash_value & 0xFFFFFF
     return Embed(f'{guild.name}\'s {name}', color=color, url=url).add_image(url)
 ```
 
@@ -668,7 +668,7 @@ IMPROVISATION_CHOICES = [
 async def improvise():
     """Improvises some derpage"""
     yield '*Thinks*'
-    await sleep(1.0+random()*4.0)
+    await sleep(1.0 + random()*4.0)
     yield choice(IMPROVISATION_CHOICES)
 ```
 
@@ -1038,7 +1038,7 @@ async def get_image_embed(client, tags, name, color):
     if image_urls is None:
         
         # Request image information
-        async with client.http.get(SAFE_BOORU+tags) as response:
+        async with client.http.get(SAFE_BOORU + tags) as response:
             if response.status != 200:
                 return Embed('Error', 'Safe-booru unavailable', color=color)
             

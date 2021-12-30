@@ -81,7 +81,7 @@ class TrackStartEvent(EventBase):
     
     @copy_docs(EventBase.__hash__)
     def __hash__(self):
-        return hash(self.player)^hash(self.track)
+        return hash(self.player) ^ hash(self.track)
 
 
 class TrackEndEvent(EventBase):
@@ -508,7 +508,7 @@ class PlayerWebsocketClosedEvent(EventBase):
         hash_value ^= self.by_remote
         
         # code
-        hash_value ^= (self.code<<8)
+        hash_value ^= (self.code << 8)
         
         # player
         hash_value ^= hash(self.player)

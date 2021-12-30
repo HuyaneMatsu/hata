@@ -799,7 +799,7 @@ class DiscordGatewaySharder:
             count += 1
         
         if count:
-            return total/count
+            return total / count
         
         return Kokoro.DEFAULT_LATENCY
     

@@ -1035,7 +1035,7 @@ class Command:
         
         checks = self._checks
         if (checks is not None):
-            hash_value ^= len(checks)<<6
+            hash_value ^= len(checks) << 6
             for check in checks:
                 hash_value ^= hash(check)
         
@@ -1049,19 +1049,19 @@ class Command:
         
         error_handlers = self._error_handlers
         if (error_handlers is not None):
-            hash_value ^= len(error_handlers)<<12
+            hash_value ^= len(error_handlers) << 12
             for error_handler in error_handlers:
                 hash_value ^= hash(error_handler)
         
         command_categories = self._command_categories
         if (command_categories is not None):
-            hash_value ^= len(command_categories)<<18
+            hash_value ^= len(command_categories) << 18
             for command_category in command_categories:
                 hash_value ^= hash(command_category)
         
         aliases = self.aliases
         if (aliases is not None):
-            hash_value ^= len(aliases)<<24
+            hash_value ^= len(aliases) << 24
             for alias in aliases:
                 hash_value ^= hash(alias)
         
@@ -1074,13 +1074,13 @@ class Command:
             
             hash_value ^= description_hash
         
-        hash_value ^= self.hidden<<30
-        hash_value ^= self.hidden_if_checks_fail<<31
+        hash_value ^= self.hidden << 30
+        hash_value ^= self.hidden_if_checks_fail << 31
         hash_value ^= hash(self.name)
         
         wrappers = self._wrappers
         if (wrappers is not None):
-            hash_value ^= len(wrappers)<<28
+            hash_value ^= len(wrappers) << 28
             for wrapper in wrappers:
                 try:
                     wrapper_hash = hash(wrapper)
@@ -1529,19 +1529,19 @@ class CommandCategory:
         
         error_handlers = self._error_handlers
         if (error_handlers is not None):
-            hash_value ^= len(error_handlers)<<12
+            hash_value ^= len(error_handlers) << 12
             for error_handler in error_handlers:
                 hash_value ^= hash(error_handler)
         
         command_categories = self._command_categories
         if (command_categories is not None):
-            hash_value ^= len(command_categories)<<18
+            hash_value ^= len(command_categories) << 18
             for command_category in command_categories:
                 hash_value ^= hash(command_category)
         
         aliases = self.aliases
         if (aliases is not None):
-            hash_value ^= len(aliases)<<24
+            hash_value ^= len(aliases) << 24
             for alias in aliases:
                 hash_value ^= hash(alias)
         
@@ -1556,7 +1556,7 @@ class CommandCategory:
         
         wrappers = self._wrappers
         if (wrappers is not None):
-            hash_value ^= len(wrappers)<<28
+            hash_value ^= len(wrappers) << 28
             for wrapper in wrappers:
                 try:
                     wrapper_hash = hash(wrapper)

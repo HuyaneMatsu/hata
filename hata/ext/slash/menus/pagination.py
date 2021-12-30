@@ -51,12 +51,12 @@ class Pagination(Menu):
             self.cancel(CancelledError())
             return False
         
-        pages_index_limit = len(self.pages)-1
+        pages_index_limit = len(self.pages) - 1
         
         if interaction == self.BUTTON_LEFT:
-            page_index = self.page_index-1
+            page_index = self.page_index - 1
         elif interaction == self.BUTTON_RIGHT:
-            page_index = self.page_index+1
+            page_index = self.page_index + 1
         elif interaction == self.BUTTON_LEFT_2:
             page_index = 0
         elif interaction == self.BUTTON_RIGHT_2:

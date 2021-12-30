@@ -289,7 +289,7 @@ class VerificationScreenStep:
     
     def __hash__(self):
         """Returns the verification screen step's hash value."""
-        return hash(self.title) ^ hash(self.values) ^ ((self.required)<<16) ^ hash(self.type)
+        return hash(self.title) ^ hash(self.values) ^ ((self.required) << 16) ^ hash(self.type)
     
     
     def __eq__(self, other):

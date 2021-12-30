@@ -86,7 +86,7 @@ class CooldownWrapper(CommandWrapper):
         new_wrapper.reset = source_wrapper.reset
         new_wrapper.cache = source_wrapper.cache
         new_wrapper.weight = weight
-        new_wrapper.limit = source_wrapper.limit+source_wrapper.weight-weight
+        new_wrapper.limit = source_wrapper.limit + source_wrapper.weight - weight
         
         if func is None:
             wrapper = source_wrapper._wrapper(new_wrapper, self.handler)
@@ -348,7 +348,7 @@ class Cooldown:
         self.checker = checker
         self.reset = reset
         self.weight = weight
-        self.limit = limit-weight
+        self.limit = limit - weight
         self.cache = {}
         
         if func is None:
@@ -460,7 +460,7 @@ class Cooldown:
             return
         
         yield False
-        yield value-LOOP_TIME()
+        yield value - LOOP_TIME()
         return
     
     @staticmethod
@@ -486,14 +486,14 @@ class Cooldown:
         try:
             unit = cache[id_]
         except KeyError:
-            at_ = LOOP_TIME()+self.reset
+            at_ = LOOP_TIME() + self.reset
             cache[id_] = _CDUnit(at_, self.limit)
             KOKORO.call_at(at_, dict.__delitem__, cache, id_)
             return 0.
         
         left = unit.uses_left
         if left > 0:
-            unit.uses_left = left-self.weight
+            unit.uses_left = left - self.weight
             return 0.
         return unit.expires_at
     
@@ -520,14 +520,14 @@ class Cooldown:
         try:
             unit = cache[id_]
         except KeyError:
-            at_ = LOOP_TIME()+self.reset
+            at_ = LOOP_TIME() + self.reset
             cache[id_] = _CDUnit(at_, self.limit)
             KOKORO.call_at(at_, dict.__delitem__, cache, id_)
             return 0.
         
         left = unit.uses_left
         if left>0:
-            unit.uses_left = left-self.weight
+            unit.uses_left = left - self.weight
             return 0.
         return unit.expires_at
     
@@ -561,13 +561,13 @@ class Cooldown:
         try:
             unit = cache[id_]
         except KeyError:
-            at_ = LOOP_TIME()+self.reset
+            at_ = LOOP_TIME() + self.reset
             cache[id_] = _CDUnit(at_,self.limit)
             KOKORO.call_at(at_, dict.__delitem__, cache, id_)
             return 0.
         
         left = unit.uses_left
         if left > 0:
-            unit.uses_left = left-self.weight
+            unit.uses_left = left - self.weight
             return 0.
         return unit.expires_at

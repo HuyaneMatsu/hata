@@ -808,7 +808,7 @@ class SlasherApplicationCommand:
         registered_application_command_ids = self._registered_application_command_ids
         if registered_application_command_ids is not None:
             for sync_id in registered_application_command_ids:
-                if sync_id > (1<<22):
+                if sync_id > (1 << 22):
                     yield sync_id
     
     
@@ -2619,7 +2619,7 @@ class SlasherApplicationCommandCategory:
                 f'({APPLICATION_COMMAND_OPTIONS_MAX}).'
             )
         
-        as_sub = command.as_sub(self._deepness+1)
+        as_sub = command.as_sub(self._deepness + 1)
         
         if command.is_default:
             for sub_command in sub_commands.values():

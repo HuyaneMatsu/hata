@@ -713,7 +713,7 @@ class VoiceSettingsMode:
         
         delay = self.delay
         if (delay is not None):
-            data['delay'] = delay*1000.0
+            data['delay'] = delay * 1000.0
         
         if self._shortcut_combination_set:
             shortcut_combination = self.shortcut_combination
@@ -805,7 +805,7 @@ class ShortcutKey:
             - If `name`'s length is out of range [1:2048].
         """
         type_ = preconvert_preinstanced_type(type_, 'type_', ShortcutKey)
-        code = preconvert_int(code, 'code', -(1<<63), (1<<63)-1)
+        code = preconvert_int(code, 'code', -(1 << 63), (1 << 63) - 1)
         name = preconvert_str(name, 'name', 1, 2048)
         
         self = object.__new__(cls)

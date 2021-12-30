@@ -143,7 +143,7 @@ class ChannelOutputStream:
                         if last_action is None:
                             last_action = message.created_at
                         
-                        if (last_action+MESSAGE_EDIT_TIMEDELTA > datetime.utcnow()):
+                        if (last_action + MESSAGE_EDIT_TIMEDELTA > datetime.utcnow()):
                             un_poll = self._last_chunk
                             should_edit = True
                         else:
@@ -177,7 +177,7 @@ class ChannelOutputStream:
                         self._last_message = None
                         self._last_chunk = None
                     
-                    sleep_time = request_start-LOOP_TIME()+REQUEST_RATE_LIMIT
+                    sleep_time = request_start - LOOP_TIME() + REQUEST_RATE_LIMIT
                     
                     if sleep_time > 0.0:
                         await sleep(sleep_time, KOKORO)

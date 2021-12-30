@@ -343,7 +343,7 @@ class RPCClient:
         -------
         nonce : `str`
         """
-        self._auto_nonce = nonce = self._auto_nonce+1
+        self._auto_nonce = nonce = self._auto_nonce + 1
         return nonce.__format__('0>16x')
     
     
@@ -781,7 +781,7 @@ class RPCClient:
                     f'`volume` can be in range [0.0:2.0], got {volume!r}.'
                 )
             
-            parameters['volume'] = floor(volume*100.0)
+            parameters['volume'] = floor(volume * 100.0)
         
         data = {
             PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_USER_VOICE_SETTINGS_SET,

@@ -422,7 +422,7 @@ class RateLimitProxy:
     
     def __hash__(self):
         """Hashes the rate limit proxy."""
-        return self.group.group_id^self._key.limiter_id
+        return self.group.group_id ^ self._key.limiter_id
     
     
     class _wait_till_limits_expire_callback:
@@ -519,4 +519,4 @@ class RateLimitProxy:
         if (drops is None) or (not drops):
             return 0.0
         
-        return drops[0].drop-LOOP_TIME()
+        return drops[0].drop - LOOP_TIME()

@@ -1400,7 +1400,7 @@ async def staggered_race(coroutine_functions, delay, *, loop=None):
 # asyncio.streams
 # Include: StreamReader, StreamWriter, StreamReaderProtocol, open_connection, start_server, start_unix_server
 
-_DEFAULT_LIMIT = 1<<16
+_DEFAULT_LIMIT = 1 << 16
 
 def protocol_itself_factory(protocol):
     """
@@ -1813,7 +1813,7 @@ class StreamReader:
         self._buffer.extend(data)
         self._wake_up_waiter()
         
-        if (self._transport is not None) and (not self._paused) and (len(self._buffer) > (self._limit<<1)):
+        if (self._transport is not None) and (not self._paused) and (len(self._buffer) > (self._limit << 1)):
             try:
                 self._transport.pause_reading()
             except NotImplementedError:

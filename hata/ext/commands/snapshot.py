@@ -66,7 +66,7 @@ def calculate_command_processer_snapshot_difference(client, snapshot_old, snapsh
     
     categories_old = set(element_categories_old)
     categories_new = set(element_categories_new)
-    category_interception = categories_old&categories_new
+    category_interception = categories_old & categories_new
     categories_old -= category_interception
     categories_new -= category_interception
     
@@ -83,7 +83,7 @@ def calculate_command_processer_snapshot_difference(client, snapshot_old, snapsh
     
     commands_old = set(element_commands_old)
     command_new = set(element_commands_new)
-    command_interception = commands_old&command_new
+    command_interception = commands_old & command_new
     commands_old -= command_interception
     command_new -= command_interception
     

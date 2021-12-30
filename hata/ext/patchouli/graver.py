@@ -195,13 +195,13 @@ def get_part_around(content, index):
     """
     result = []
     
-    low_limit = index-25
+    low_limit = index - 25
     if low_limit < 0:
         low_limit = 0
     elif low_limit > 0:
         result.append('... ')
     
-    high_limit = index+25
+    high_limit = index + 25
     if high_limit > len(content):
         high_limit = len(content)
     
@@ -241,7 +241,7 @@ def build_graves(text):
                     last = content[-1]
                     if type(last) is str:
                         del content[-1]
-                        section = last+section
+                        section = last + section
                 
                 content.append(section)
             break
@@ -259,7 +259,7 @@ def build_graves(text):
                 last = content[-1]
                 if type(last) is str:
                     del content[-1]
-                    section = last+section
+                    section = last + section
             content.append(section)
         
         grave_start +=1
@@ -276,20 +276,20 @@ def build_graves(text):
                 last = content[-1]
                 if type(last) is str:
                     del content[-1]
-                    section = last+section
+                    section = last + section
                     
             content.append(section)
             warnings.append(f'Not ended grave section: {get_part_around(text, len(section))!r}')
             break
         
         if double_grave:
-            if grave_end > len(text)-2 or text[grave_end+1] != '`':
+            if grave_end > len(text) - 2 or text[grave_end + 1] != '`':
                 section = text[grave_start:grave_end]
                 if content:
                     last = content[-1]
                     if type(last) is str:
                         del content[-1]
-                        section = last+section
+                        section = last + section
                 
                 content.append(section)
                 warnings.append(f'Not ended double grave section: {get_part_around(text, len(section))!r}')

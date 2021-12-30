@@ -93,7 +93,7 @@ async def volume_(event,
         return 'There is no voice client at your guild.'
     
     if volume is None:
-        return f'{voice_client.volume*100.:.0f}%'
+        return f'{voice_client.volume * 100.:.0f}%'
     
     # Volume can be between 0.0 and 2.0, but it is more natural to ask for percentage
     if volume <= 0:
@@ -104,7 +104,7 @@ async def volume_(event,
         volume /= 100.0
     
     voice_client.volume = volume
-    return f'Volume set to {volume*100.:.0f}%'
+    return f'Volume set to {volume * 100.:.0f}%'
 
 
 @Sakuya.interactions(guild=MY_GUILD)

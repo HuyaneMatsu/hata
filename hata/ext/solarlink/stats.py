@@ -115,17 +115,17 @@ class Stats:
         penalty : `float`
         """
         player_penalty = self.playing_player_count
-        cpu_penalty = 1.05**(100*self.cpu_system_load)*10-10
+        cpu_penalty = 1.05 ** (100 * self.cpu_system_load) * 10 - 10
         
         frame_nulled = self.frame_nulled
         if frame_nulled:
-            null_frame_penalty = ((1.03**(frame_nulled/6))*300-300)*2
+            null_frame_penalty = ((1.03 ** (frame_nulled / 6)) * 300 - 300) * 2
         else:
             null_frame_penalty = 0
         
         frame_deficit = self.frame_deficit
         if frame_deficit:
-            deficit_frame_penalty = (1.03**((frame_deficit/6)))*600-600
+            deficit_frame_penalty = (1.03 ** ((frame_deficit / 6))) * 600 - 600
         else:
             deficit_frame_penalty = 0.0
         

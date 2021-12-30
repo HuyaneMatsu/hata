@@ -110,7 +110,7 @@ class MessageIterator:
         self.channel = channel
         self.chunk_size = chunk_size
         self._index = 0
-        self._can_read_history = channel.cached_permissions_for(client)&PERMISSION_MASK_READ_MESSAGE_HISTORY
+        self._can_read_history = channel.cached_permissions_for(client) & PERMISSION_MASK_READ_MESSAGE_HISTORY
         return self
     
     def __aiter__(self):
@@ -131,14 +131,14 @@ class MessageIterator:
         index = self._index
         messages = channel.messages
         if (messages is not None) and (len(messages) > index):
-            self._index = index+1
+            self._index = index + 1
             return channel.messages[index]
         
         if channel.message_history_reached_end or (not self._can_read_history):
             raise StopAsyncIteration
         
         try:
-            await self.client._load_messages_till(channel, index+self.chunk_size)
+            await self.client._load_messages_till(channel, index + self.chunk_size)
         except BaseException as err:
             if isinstance(err, ConnectionError):
                 pass
@@ -156,7 +156,7 @@ class MessageIterator:
         
         messages = channel.messages
         if (messages is not None) and (len(channel.messages) > index):
-            self._index = index+1
+            self._index = index + 1
             return channel.messages[index]
         
         raise StopAsyncIteration

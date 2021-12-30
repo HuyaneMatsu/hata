@@ -130,7 +130,7 @@ class ApplicationExecutable:
             result ^= hash(parameters)
         
         if self.is_launcher:
-            result ^= (1<<15)
+            result ^= (1 << 15)
         
         return result
 

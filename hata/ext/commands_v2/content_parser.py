@@ -328,19 +328,19 @@ class ContentParameterParser:
         assigner_escaped = re.escape(assigner)
         if separator_type is str:
             escaped_separator = re.escape(separator)
-            rp = re.compile(f'[{escaped_separator}\s]*((?:([^\s{assigner_escaped}]+?)\s*{assigner_escaped}\s+)?(.+?))\s*(?:$|[{escaped_separator})]+)', re.M|re.S)
+            rp = re.compile(f'[{escaped_separator}\s]*((?:([^\s{assigner_escaped}]+?)\s*{assigner_escaped}\s+)?(.+?))\s*(?:$|[{escaped_separator})]+)', re.M | re.S)
             
             context_class = ContentParameterParserContextSeparator
         else:
             start, end = separator
             if start == end:
                 escaped_separator = re.escape(start)
-                rp = re.compile(f'\s*(?:([^\s{assigner_escaped}]+?)\s*{assigner_escaped}\s+)?(?:(?:{escaped_separator}(.+?)(?:$|{escaped_separator}))|(?:(.+?)(?:$|[{escaped_separator}\s]+)))', re.M|re.S)
+                rp = re.compile(f'\s*(?:([^\s{assigner_escaped}]+?)\s*{assigner_escaped}\s+)?(?:(?:{escaped_separator}(.+?)(?:$|{escaped_separator}))|(?:(.+?)(?:$|[{escaped_separator}\s]+)))', re.M | re.S)
             
             else:
                 separator_start_escaped = re.escape(start)
                 separator_end_escaped = re.escape(end)
-                rp = re.compile(f'\s*(?:([^\s{assigner_escaped}]+?)\s*{assigner_escaped}\s+)?(?:(?:{separator_start_escaped}(.+?)(?:$|{separator_end_escaped}))|(?:(.+?)(?:$|[{separator_start_escaped}\s]+)))', re.M|re.S)
+                rp = re.compile(f'\s*(?:([^\s{assigner_escaped}]+?)\s*{assigner_escaped}\s+)?(?:(?:{separator_start_escaped}(.+?)(?:$|{separator_end_escaped}))|(?:(.+?)(?:$|[{separator_start_escaped}\s]+)))', re.M | re.S)
             
             context_class = ContentParameterParserContextEncapsulator
         
@@ -456,7 +456,7 @@ def parse_channel_mention(part, message):
         if channel.id == channel_id:
             return channel
 
-REST_PARSER_RP = re.compile('\s*(.*?)\s*', re.M|re.S)
+REST_PARSER_RP = re.compile('\s*(.*?)\s*', re.M | re.S)
 
 
 def parse_rest_content(content, index):
@@ -931,12 +931,12 @@ if CACHE_USER:
         flags = content_parser_parameter_detail.flags
         message = command_context.message
         
-        if flags&CONVERTER_FLAG_ID:
+        if flags & CONVERTER_FLAG_ID:
             parsed = ID_RP.fullmatch(part)
             if (parsed is not None):
                 id_ = int(parsed.group(1))
                 
-                if flags&CONVERTER_FLAG_EVERYWHERE:
+                if flags & CONVERTER_FLAG_EVERYWHERE:
                     try:
                         user = USERS[id_]
                     except KeyError:
@@ -977,12 +977,12 @@ if CACHE_USER:
                         else:
                             return user
         
-        if flags&CONVERTER_FLAG_MENTION:
+        if flags & CONVERTER_FLAG_MENTION:
             user = parse_user_mention(part, message)
             if (user is not None):
                 return user
         
-        if flags&CONVERTER_FLAG_NAME:
+        if flags & CONVERTER_FLAG_NAME:
             channel = message.channel
             guild = channel.guild
             if (guild is None):
@@ -1002,13 +1002,13 @@ else:
         flags = content_parser_parameter_detail.flags
         message = command_context.message
         
-        if flags&CONVERTER_FLAG_ID:
+        if flags & CONVERTER_FLAG_ID:
             parsed = ID_RP.fullmatch(part)
             if (parsed is not None):
                 id_ = int(parsed.group(1))
                 
-                if flags&CONVERTER_FLAG_EVERYWHERE:
-                    if flags&CONVERTER_FLAG_PROFILE:
+                if flags & CONVERTER_FLAG_EVERYWHERE:
+                    if flags & CONVERTER_FLAG_PROFILE:
                         guild = message.guild
                         if (guild is not None):
                             try:
@@ -1072,12 +1072,12 @@ else:
                         else:
                             return user
         
-        if flags&CONVERTER_FLAG_MENTION:
+        if flags & CONVERTER_FLAG_MENTION:
             user = parse_user_mention(part, message)
             if (user is not None):
                 return user
         
-        if flags&CONVERTER_FLAG_NAME:
+        if flags & CONVERTER_FLAG_NAME:
             channel = message.channel
             guild = channel.guild
             if (guild is None):
@@ -1123,7 +1123,7 @@ async def client_converter(command_context, content_parser_parameter_detail, par
     flags = content_parser_parameter_detail.flags
     message = command_context.message
     
-    if flags&CONVERTER_FLAG_ID:
+    if flags & CONVERTER_FLAG_ID:
         parsed = ID_RP.fullmatch(part)
         if (parsed is not None):
             id_ = int(parsed.group(1))
@@ -1133,20 +1133,20 @@ async def client_converter(command_context, content_parser_parameter_detail, par
             except KeyError:
                 pass
             else:
-                if flags&CONVERTER_FLAG_EVERYWHERE:
+                if flags & CONVERTER_FLAG_EVERYWHERE:
                     return client
                 
                 else:
                     if client in message.channel.clients:
                         return client
     
-    if flags&CONVERTER_FLAG_MENTION:
+    if flags & CONVERTER_FLAG_MENTION:
         client = parse_user_mention(part, message)
         if (client is not None) and isinstance(client, Client):
             return client
     
-    if flags&CONVERTER_FLAG_NAME:
-        if flags&CONVERTER_FLAG_EVERYWHERE:
+    if flags & CONVERTER_FLAG_NAME:
+        if flags & CONVERTER_FLAG_EVERYWHERE:
             clients = list(CLIENTS.values())
         else:
             clients = message.channel.clients
@@ -1205,12 +1205,12 @@ async def channel_converter(command_context, content_parser_parameter_detail, pa
     channel_type = content_parser_parameter_detail.type
     message = command_context.message
     
-    if flags&CONVERTER_FLAG_ID:
+    if flags & CONVERTER_FLAG_ID:
         parsed = ID_RP.fullmatch(part)
         if (parsed is not None):
             id_ = int(parsed.group(1))
             
-            if flags&CONVERTER_FLAG_EVERYWHERE:
+            if flags & CONVERTER_FLAG_EVERYWHERE:
                 try:
                     channel = CHANNELS[id_]
                 except KeyError:
@@ -1235,13 +1235,13 @@ async def channel_converter(command_context, content_parser_parameter_detail, pa
                         if ((channel_type is None) or isinstance(channel, channel_type)):
                             return channel
     
-    if flags&CONVERTER_FLAG_MENTION:
+    if flags & CONVERTER_FLAG_MENTION:
         channel = parse_channel_mention(part, message)
         if (channel is not None):
             if ((channel_type is None) or isinstance(channel, channel_type)):
                 return channel
     
-    if flags&CONVERTER_FLAG_NAME:
+    if flags & CONVERTER_FLAG_NAME:
         channel = message.channel
         guild = channel.guild
         if guild is None:
@@ -1282,12 +1282,12 @@ async def role_converter(command_context, content_parser_parameter_detail, part)
     flags = content_parser_parameter_detail.flags
     message = command_context.message
     
-    if flags&CONVERTER_FLAG_ID:
+    if flags & CONVERTER_FLAG_ID:
         parsed = ID_RP.fullmatch(part)
         if (parsed is not None):
             id_ = int(parsed.group(1))
             
-            if flags&CONVERTER_FLAG_EVERYWHERE:
+            if flags & CONVERTER_FLAG_EVERYWHERE:
                 try:
                     role = ROLES[id_]
                 except KeyError:
@@ -1305,12 +1305,12 @@ async def role_converter(command_context, content_parser_parameter_detail, part)
                     else:
                         return role
     
-    if flags&CONVERTER_FLAG_MENTION:
+    if flags & CONVERTER_FLAG_MENTION:
         role = parse_role_mention(part)
         if (role is not None):
             return role
     
-    if flags&CONVERTER_FLAG_NAME:
+    if flags & CONVERTER_FLAG_NAME:
         guild = message.guild
         if (guild is not None):
             role = guild.get_role_like(part)
@@ -1332,18 +1332,18 @@ CONVERTER_ROLE = ConverterSetting(
 
 async def emoji_converter(command_context, content_parser_parameter_detail, part):
     flags = content_parser_parameter_detail.flags
-    if flags&CONVERTER_FLAG_MENTION:
+    if flags & CONVERTER_FLAG_MENTION:
         emoji = parse_emoji(part)
         if (emoji is not None):
             return emoji
     
     message = command_context.message
-    if flags&CONVERTER_FLAG_ID:
+    if flags & CONVERTER_FLAG_ID:
         parsed = ID_RP.fullmatch(part)
         if (parsed is not None):
             id_ = int(parsed.group(1))
             
-            if flags&CONVERTER_FLAG_EVERYWHERE:
+            if flags & CONVERTER_FLAG_EVERYWHERE:
                 try:
                     emoji = EMOJIS[id_]
                 except KeyError:
@@ -1361,7 +1361,7 @@ async def emoji_converter(command_context, content_parser_parameter_detail, part
                     else:
                         return emoji
     
-    if flags&CONVERTER_FLAG_NAME:
+    if flags & CONVERTER_FLAG_NAME:
         guild = message.guild
         if (guild is not None):
             emoji = guild.get_emoji_like(part)
@@ -1386,12 +1386,12 @@ async def sticker_converter(command_context, content_parser_parameter_detail, pa
     flags = content_parser_parameter_detail.flags
     
     message = command_context.message
-    if flags&CONVERTER_FLAG_ID:
+    if flags & CONVERTER_FLAG_ID:
         parsed = ID_RP.fullmatch(part)
         if (parsed is not None):
             id_ = int(parsed.group(1))
             
-            if flags&CONVERTER_FLAG_EVERYWHERE:
+            if flags & CONVERTER_FLAG_EVERYWHERE:
                 try:
                     sticker = await command_context.client.sticker_get(id_)
                 except BaseException as err:
@@ -1423,7 +1423,7 @@ async def sticker_converter(command_context, content_parser_parameter_detail, pa
                     else:
                         return sticker
     
-    if flags&CONVERTER_FLAG_NAME:
+    if flags & CONVERTER_FLAG_NAME:
         guild = message.guild
         if (guild is not None):
             sticker = guild.get_sticker_like(part)
@@ -1456,7 +1456,7 @@ async def guild_converter(command_context, part, content_parser_parameter_detail
     except KeyError:
         return None
     
-    if content_parser_parameter_detail.flags&CONVERTER_FLAG_EVERYWHERE:
+    if content_parser_parameter_detail.flags & CONVERTER_FLAG_EVERYWHERE:
         return guild
     
     if guild in command_context.client.guild_profiles:
@@ -1481,7 +1481,7 @@ async def _message_converter_m_id(command_context, content_parser_parameter_deta
     channel = command_context.message.channel
     if (message is not None):
         # Message found
-        if content_parser_parameter_detail.flags&CONVERTER_FLAG_EVERYWHERE:
+        if content_parser_parameter_detail.flags & CONVERTER_FLAG_EVERYWHERE:
             return message
         else:
             # Only local message can be yielded, so check if it is local
@@ -1533,7 +1533,7 @@ async def _message_converter_cm_id(command_context, content_parser_parameter_det
     message = MESSAGES.get(message_id, None)
     if (message is not None):
         # Message found
-        if content_parser_parameter_detail.flags&CONVERTER_FLAG_EVERYWHERE:
+        if content_parser_parameter_detail.flags & CONVERTER_FLAG_EVERYWHERE:
             return message
         else:
             # Only local message can be yielded, so check if it is local
@@ -1548,7 +1548,7 @@ async def _message_converter_cm_id(command_context, content_parser_parameter_det
     if (message_channel is None):
         return None
 
-    if content_parser_parameter_detail.flags&CONVERTER_FLAG_EVERYWHERE:
+    if content_parser_parameter_detail.flags & CONVERTER_FLAG_EVERYWHERE:
         # Lets use that multi client core
         for client in message_channel.clients:
             if message_channel.cached_permissions_for(client).can_read_message_history:
@@ -1607,7 +1607,7 @@ async def _message_converter_cm_id(command_context, content_parser_parameter_det
         return None
 
 async def message_converter(command_context, content_parser_parameter_detail, part):
-    if content_parser_parameter_detail.flags&CONVERTER_FLAG_ID:
+    if content_parser_parameter_detail.flags & CONVERTER_FLAG_ID:
         parsed = ID_RP.fullmatch(part)
         if (parsed is not None):
             message_id = int(parsed.group(1))
@@ -1621,7 +1621,7 @@ async def message_converter(command_context, content_parser_parameter_detail, pa
             return await _message_converter_cm_id(command_context, content_parser_parameter_detail, channel_id,
                 message_id)
     
-    if content_parser_parameter_detail.flags&CONVERTER_FLAG_URL:
+    if content_parser_parameter_detail.flags & CONVERTER_FLAG_URL:
         parsed = MESSAGE_JUMP_URL_RP.fullmatch(part)
         if (parsed is not None):
             _, channel_id, message_id = parsed.groups()
@@ -1648,12 +1648,12 @@ async def invite_converter(command_context, part, content_parser_parameter_detai
     
     # It would not be a Huyane code without some GOTO
     while True:
-        if flags&CONVERTER_FLAG_URL:
+        if flags & CONVERTER_FLAG_URL:
             parsed = INVITE_URL_RP.fullmatch(part)
             if parsed is not None:
                 break
         
-        if flags&CONVERTER_FLAG_ID:
+        if flags & CONVERTER_FLAG_ID:
             parsed = INVITE_CODE_RP.fullmatch(part)
             if (parsed is not None):
                 break

@@ -35,12 +35,12 @@ def create_file_structure(directory, structure):
     for paths, file_content in structure:
         paths_length = len(paths)
         
-        file_name = paths[paths_length-1]
+        file_name = paths[paths_length - 1]
         
         if paths_length == 1:
             paths = None
         else:
-            paths = paths[:paths_length-1]
+            paths = paths[:paths_length - 1]
         
         if (paths is None):
             folder_path = directory

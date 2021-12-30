@@ -1725,7 +1725,7 @@ class Guild(DiscordEntity, immortal=True):
             for role in roles:
                 permissions |= role.permissions
         
-        if permissions&PERMISSION_MASK_ADMINISTRATOR:
+        if permissions & PERMISSION_MASK_ADMINISTRATOR:
             return PERMISSION_ALL
         
         return Permission(permissions)
@@ -1798,7 +1798,7 @@ class Guild(DiscordEntity, immortal=True):
             if role.guild is self:
                 permissions |= role.permissions
         
-        if permissions&PERMISSION_MASK_ADMINISTRATOR:
+        if permissions & PERMISSION_MASK_ADMINISTRATOR:
             return PERMISSION_ALL
         
         return Permission(permissions)

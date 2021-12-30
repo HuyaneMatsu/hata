@@ -450,17 +450,17 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
             return PERMISSION_NONE
         
         result = parent._permissions_for(user)
-        if not result&PERMISSION_MASK_VIEW_CHANNEL:
+        if not result & PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
         # text channels don't have voice permissions
         result &= PERMISSION_VOICE_DENY
         
-        if self.type and (not result&PERMISSION_MASK_MANAGE_MESSAGES):
-            result = result&PERMISSION_TEXT_DENY
+        if self.type and (not result & PERMISSION_MASK_MANAGE_MESSAGES):
+            result = result & PERMISSION_TEXT_DENY
             return Permission(result)
         
-        if result&PERMISSION_MASK_SEND_MESSAGES:
+        if result & PERMISSION_MASK_SEND_MESSAGES:
             result &= PERMISSION_DENY_SEND_MESSAGES_ONLY
         else:
             result &= PERMISSION_TEXT_DENY
@@ -475,17 +475,17 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
             return PERMISSION_NONE
         
         result = parent._permissions_for_roles(roles)
-        if not result&PERMISSION_MASK_VIEW_CHANNEL:
+        if not result & PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
         # text channels don't have voice permissions
         result &= PERMISSION_VOICE_DENY
         
-        if self.type and (not result&PERMISSION_MASK_MANAGE_MESSAGES):
-            result = result&PERMISSION_TEXT_DENY
+        if self.type and (not result & PERMISSION_MASK_MANAGE_MESSAGES):
+            result = result & PERMISSION_TEXT_DENY
             return Permission(result)
         
-        if result&PERMISSION_MASK_SEND_MESSAGES:
+        if result & PERMISSION_MASK_SEND_MESSAGES:
             result &= PERMISSION_DENY_SEND_MESSAGES_ONLY
         else:
             result &= PERMISSION_TEXT_DENY
@@ -628,7 +628,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         
         thread_data['archived'] = self.archived
         
-        thread_data['auto_archive_duration'] = self.auto_archive_after//60
+        thread_data['auto_archive_duration'] = self.auto_archive_after // 60
         
         archive_timestamp = self.archive_timestamp
         if (archive_timestamp is not None):

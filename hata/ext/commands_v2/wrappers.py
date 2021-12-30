@@ -238,7 +238,7 @@ class CommandCheckWrapper(CommandWrapper):
             return NotImplemented
         
         new = object.__new__(type(self))
-        new._check = self._check|other._check
+        new._check = self._check | other._check
         new._wrapped = None
         return new
     
@@ -248,7 +248,7 @@ class CommandCheckWrapper(CommandWrapper):
             return NotImplemented
         
         new = object.__new__(type(self))
-        new._check = self._check&other._check
+        new._check = self._check & other._check
         new._wrapped = None
         return new
 

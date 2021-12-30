@@ -377,8 +377,8 @@ class ChooseMenu(PaginationBase):
         """
         selected = self.selected
         choices = self.choices
-        index = (selected//10)*10
-        end = index+10
+        index = (selected // 10) * 10
+        end = index + 10
         if len(choices) < end:
             end = len(choices)
         
@@ -400,9 +400,9 @@ class ChooseMenu(PaginationBase):
                 title = str(title)
             
             if len(title) > left_length:
-                space_position = title.rfind(' ', left_length-25, left_length)
+                space_position = title.rfind(' ', left_length - 25, left_length)
                 if space_position == -1:
-                    space_position = left_length-3
+                    space_position = left_length - 3
                 
                 title = title[:space_position]+'...'
             
@@ -428,17 +428,17 @@ class ChooseMenu(PaginationBase):
         embed = self.embed
         embed.description = ''.join(parts)
         
-        current_page = (selected//10)+1
+        current_page = (selected // 10) + 1
         limit = len(choices)
-        page_limit = (limit//10)+1
-        start = end-9
+        page_limit = (limit // 10) + 1
+        start = end - 9
         if start < 1:
             start = 1
         if end == len(choices):
             end -= 1
         limit -= 1
         
-        embed.add_footer(f'Page {current_page}/{page_limit}, {start} - {end} / {limit}, selected: {selected+1}')
+        embed.add_footer(f'Page {current_page}/{page_limit}, {start} - {end} / {limit}, selected: {selected + 1}')
         return embed
     
     @copy_docs(PaginationBase.__call__)
@@ -478,19 +478,19 @@ class ChooseMenu(PaginationBase):
         while True:
             emoji = event.emoji
             if emoji is self.UP:
-                selected = self.selected-1
+                selected = self.selected - 1
                 break
             
             if emoji is self.DOWN:
-                selected = self.selected+1
+                selected = self.selected + 1
                 break
             
             if emoji is self.LEFT:
-                selected = self.selected-10
+                selected = self.selected - 10
                 break
             
             if emoji is self.RIGHT:
-                selected = self.selected+10
+                selected = self.selected + 10
                 break
             
             if emoji is self.CANCEL:
@@ -544,7 +544,7 @@ class ChooseMenu(PaginationBase):
         if selected < 0:
             selected = 0
         elif selected >= len(self.choices):
-            selected = len(self.choices)-1
+            selected = len(self.choices) - 1
         
         if self.selected == selected:
             return

@@ -85,7 +85,7 @@ def load_opus():
     """
     try:
         if sys.platform == 'win32':
-            filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', f'libopus-0.{"x64" if sys.maxsize>(1<<36) else "x86"}.dll')
+            filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', f'libopus-0.{"x64" if sys.maxsize>(1 << 36) else "x86"}.dll')
         else:
             filename = ctypes.util.find_library('opus')
         
@@ -179,10 +179,10 @@ SAMPLING_RATE = 48000 #this is the max sadly
 CHANNELS = 2
 FRAME_LENGTH = 20
 SAMPLE_SIZE = 4 # (bit_rate / 8) * CHANNELS (bit_rate == 16)
-SAMPLES_PER_FRAME = int(SAMPLING_RATE/1000*FRAME_LENGTH)
-FRAME_SIZE = SAMPLES_PER_FRAME*SAMPLE_SIZE
+SAMPLES_PER_FRAME = int(SAMPLING_RATE / 1000 * FRAME_LENGTH)
+FRAME_SIZE = SAMPLES_PER_FRAME * SAMPLE_SIZE
 BUFFER_SIZE = 3840
-BUFFER_TYPE = ctypes.c_char*BUFFER_SIZE
+BUFFER_TYPE = ctypes.c_char * BUFFER_SIZE
 
 class OpusEncoder:
     """
@@ -245,7 +245,7 @@ class OpusEncoder:
         elif kbps > 512:
             kbps = 512
         
-        opus.opus_encoder_control(self._encoder, SET_BITRATE, kbps<<10)
+        opus.opus_encoder_control(self._encoder, SET_BITRATE, kbps << 10)
 
     def set_bandwidth(self, bandwidth):
         """
@@ -321,7 +321,7 @@ class OpusEncoder:
         elif percentage > 1.0:
             percentage = 100
         else:
-            percentage = int(percentage*100.0)
+            percentage = int(percentage * 100.0)
         
         opus.opus_encoder_control(self._encoder, SET_PACKET_LOSS_PERCENTAGE, percentage)
     
@@ -439,7 +439,7 @@ class OpusDecoder:
         ----------
         adjustment : `float`
         """
-        adjustment = int(256*adjustment)
+        adjustment = int(256 * adjustment)
         if adjustment > 32767:
             adjustment = 32767
         elif adjustment < -32768:
@@ -455,7 +455,7 @@ class OpusDecoder:
         ----------
         percent : `float`
         """
-        return self.set_gain(20.0*log10(percent)) # amplitude ratio
+        return self.set_gain(20.0 * log10(percent)) # amplitude ratio
     
     def _get_last_packet_duration(self):
         """
@@ -481,10 +481,10 @@ class OpusDecoder:
         -------
         data : `bytes`
         """
-        frame_size = self.packet_get_frame_count(data)*self.packet_get_samples_per_frame(data)
+        frame_size = self.packet_get_frame_count(data) * self.packet_get_samples_per_frame(data)
         
         buffer = self._buffer
         buffer_ptr = ctypes.cast(buffer, ctypes.POINTER(ctypes.c_int16))
         
         end = opus.opus_decode(self._decoder, data, len(data), buffer_ptr, frame_size, True)
-        return bytes(buffer[:((end<<1)*CHANNELS)])
+        return bytes(buffer[:((end << 1) * CHANNELS)])

@@ -31,11 +31,11 @@ def _iter_configured_track_attributes(configured_track):
     
     start_time = configured_track.start_time
     if start_time:
-        yield LAVALINK_KEY_START_TIME, floor(start_time*1000.0)
+        yield LAVALINK_KEY_START_TIME, floor(start_time * 1000.0)
     
     end_time = configured_track.end_time
     if end_time:
-        yield LAVALINK_KEY_END_TIME, floor(end_time*1000.0)
+        yield LAVALINK_KEY_END_TIME, floor(end_time * 1000.0)
 
 
 class Track:
@@ -116,7 +116,7 @@ class Track:
         
         # read version
         
-        if flags&1:
+        if flags & 1:
             version = data[4]
             cursor_start = 5
         else:
@@ -125,7 +125,7 @@ class Track:
         
         # read title
         
-        cursor_end = cursor_start+2
+        cursor_end = cursor_start + 2
         title_length = int.from_bytes(data[cursor_start:cursor_end], 'big')
         
         cursor_start = cursor_end
@@ -173,8 +173,8 @@ class Track:
         # read url
         
         if data[cursor_end]:
-            cursor_start = cursor_end+1
-            cursor_end = cursor_start+2
+            cursor_start = cursor_end + 1
+            cursor_end = cursor_start + 2
             
             url_length = int.from_bytes(data[cursor_start:cursor_end], 'big')
             
@@ -466,12 +466,12 @@ class ConfiguredTrack(RichAttributeErrorBaseType):
         
         start_time = self.start_time
         if start_time:
-            hash_value ^= (1<<7)
+            hash_value ^= (1 << 7)
             hash_value ^= hash(start_time)
         
         end_time = self.end_time
         if end_time:
-            hash_value ^= (1<<14)
+            hash_value ^= (1 << 14)
             hash_value ^= hash(end_time)
         
         hash_value ^= hash(self.track)
@@ -656,11 +656,11 @@ class GetTracksResult:
         
         selected_track_index = self.selected_track_index
         if (selected_track_index != -1):
-            hash_value ^= (selected_track_index+1)
+            hash_value ^= (selected_track_index + 1)
         
         tracks = self.tracks
         if (tracks is not None):
-            hash_value ^= (len(tracks)<<8)
+            hash_value ^= (len(tracks) << 8)
             
             for track in tracks:
                 hash_value ^= hash(track)

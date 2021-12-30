@@ -538,7 +538,7 @@ class CheckIsOwner(CheckSingleBase):
             return self
         
         # Let the other check decide
-        return other|self
+        return other | self
     
     @copy_docs(CheckBase.__and__)
     def __and__(self, other):
@@ -998,7 +998,7 @@ class CheckHasPermission(CheckHasPermissionBase):
         else:
             owner_allowed = False
         
-        permission = Permission(self.permission&other.permission)
+        permission = Permission(self.permission & other.permission)
         
         if owner_allowed:
             check_type = CheckHasPermissionOrIsOwner
@@ -1025,7 +1025,7 @@ class CheckHasPermission(CheckHasPermissionBase):
         else:
             owner_required = False
         
-        permission = Permission(self.permission|other.permission)
+        permission = Permission(self.permission | other.permission)
         if permission:
             if owner_required:
                 check_type = CheckHasPermissionOrIsOwner
@@ -1107,7 +1107,7 @@ class CheckHasGuildPermission(CheckHasPermissionBase):
         else:
             owner_allowed = False
         
-        permission = Permission(self.permission&other.permission)
+        permission = Permission(self.permission & other.permission)
         
         if owner_allowed:
             check_type = CheckHasGuildPermissionOrIsOwner
@@ -1134,7 +1134,7 @@ class CheckHasGuildPermission(CheckHasPermissionBase):
         else:
             owner_required = False
         
-        permission = Permission(self.permission|other.permission)
+        permission = Permission(self.permission | other.permission)
         if permission:
             if owner_required:
                 check_type = CheckHasGuildPermissionOrIsOwner
@@ -1212,7 +1212,7 @@ class CheckHasClientPermission(CheckHasPermissionBase):
         if type(self) is not other_type:
             return CheckOrRelation(self, other)
         
-        permission = Permission(self.permission&other.permission)
+        permission = Permission(self.permission & other.permission)
         
         return type(self)(permission)
     
@@ -1229,7 +1229,7 @@ class CheckHasClientPermission(CheckHasPermissionBase):
         if type(self) is not other_type:
             return CheckOrRelation(self, other)
         
-        permission = Permission(self.permission|other.permission)
+        permission = Permission(self.permission | other.permission)
         
         if not permission:
             return CheckBase()

@@ -242,7 +242,7 @@ class reaction_mapping_line(set):
     
     def __len__(self):
         """Returns the amount of users, who reacted with the given emoji on the respective message."""
-        return set.__len__(self)+self.unknown
+        return set.__len__(self) + self.unknown
     
     
     def __repr__(self):
@@ -304,7 +304,7 @@ class reaction_mapping_line(set):
         ln_old = len(self)
         set.update(self,users)
         ln_new = len(self)
-        self.unknown -= (ln_new-ln_old)
+        self.unknown -= (ln_new - ln_old)
     
     
     def copy(self):
@@ -340,15 +340,15 @@ class reaction_mapping_line(set):
         """
         list_form = sorted(self)
         
-        after = after+1 # do not include the specified id
+        after = after + 1 # do not include the specified id
         
         bot = 0
         top = len(list_form)
         while True:
             if bot < top:
-                half = (bot+top)>>1
+                half = (bot + top) >> 1
                 if list_form[half].id < after:
-                    bot = half+1
+                    bot = half + 1
                 else:
                     top = half
                 continue

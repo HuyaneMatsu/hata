@@ -32,7 +32,7 @@ class SingleUserChunker:
     
     def __init__(self, ):
         self.waiter = Future(KOKORO)
-        self.timer = KOKORO.call_at(LOOP_TIME()+USER_CHUNK_TIMEOUT, type(self)._cancel, self)
+        self.timer = KOKORO.call_at(LOOP_TIME() + USER_CHUNK_TIMEOUT, type(self)._cancel, self)
     
     def __call__(self, event):
         """
@@ -126,7 +126,7 @@ class MassUserChunker:
         """
         self.waiter = Future(KOKORO)
         self.last = now = LOOP_TIME()
-        self.timer = KOKORO.call_at(now+USER_CHUNK_TIMEOUT, type(self)._cancel, self)
+        self.timer = KOKORO.call_at(now + USER_CHUNK_TIMEOUT, type(self)._cancel, self)
     
     def __call__(self, event):
         """
@@ -145,7 +145,7 @@ class MassUserChunker:
             Whether the last chunk was received.
         """
         self.last = LOOP_TIME()
-        if event.index+1 != event.count:
+        if event.index + 1 != event.count:
             return False
         
         self.waiter.set_result_if_pending(None)
@@ -628,7 +628,7 @@ class MultiClientMessageDeleteSequenceSharder:
             If the respective client could not contribute to any task, returns `None`.
         """
         permissions = channel.cached_permissions_for(client)
-        if not permissions&PERMISSION_MASK_VIEW_CHANNEL:
+        if not permissions & PERMISSION_MASK_VIEW_CHANNEL:
             return None
         
         self = object.__new__(cls)
@@ -753,7 +753,7 @@ async def _message_delete_multiple_task(client, channel_id, groups, reason):
             if message_limit:
                 message_ids = []
                 message_count = 0
-                limit = int((time_now()-1209590.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks - 10s
+                limit = int((time_now() - 1209590.0) * 1000.0 - DISCORD_EPOCH) << 22 # 2 weeks - 10s
                 
                 while message_group_new:
                     own, message_id = message_group_new.popleft()
@@ -764,7 +764,7 @@ async def _message_delete_multiple_task(client, channel_id, groups, reason):
                             break
                         continue
                     
-                    if (message_id+20971520000) < limit:
+                    if (message_id + 20971520000) < limit:
                         continue
                     
                     # If the message is really older than the limit, with ignoring the 10 second, then we move it.

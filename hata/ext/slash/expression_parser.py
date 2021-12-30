@@ -8,11 +8,11 @@ from ...discord.utils import sanitize_content
 
 from .exceptions import SlasherCommandError
 
-LIMIT_LEFT_SHIFT_MAX = 64*8
-LIMIT_RIGHT_SHIFT_MIN = -64*8
+LIMIT_LEFT_SHIFT_MAX = 64 * 8
+LIMIT_RIGHT_SHIFT_MIN = -64 * 8
 LIMIT_POWER_MAX = 64
-LIMIT_INTEGER_BIT_LENGTH = 64*32
-LIMIT_INTEGER_MAX = 1<<LIMIT_INTEGER_BIT_LENGTH
+LIMIT_INTEGER_BIT_LENGTH = 64 * 32
+LIMIT_INTEGER_MAX = 1 << LIMIT_INTEGER_BIT_LENGTH
 LIMIT_INTEGER_MIN = -LIMIT_INTEGER_MAX
 LIMIT_FACTORIAL_MAX = 80
 
@@ -328,7 +328,7 @@ def get_numeric_postfix_multiplier(array, start, end):
     multiplier : `int`
         Multiplier to multiply the value with,
     """
-    index = end-1
+    index = end - 1
     
     while True:
         character = array[index]
@@ -402,7 +402,7 @@ def evaluate_numeric_decimal(array, start, end):
     EvaluationError
         Integer conversion over limit.
     """
-    if end-start > LIMIT_INTEGER_DECIMAL_MAX:
+    if end - start > LIMIT_INTEGER_DECIMAL_MAX:
         raise EvaluationError(
             array,
             [
@@ -413,7 +413,7 @@ def evaluate_numeric_decimal(array, start, end):
     
     end, multiplier = get_numeric_postfix_multiplier(array, start, end)
     raw_value = bytes(array[start:end])
-    value = int(raw_value)*multiplier
+    value = int(raw_value) * multiplier
     
     if isinstance(multiplier, int):
         token_id = STATIC_NUMERIC_DECIMAL_ID
@@ -448,7 +448,7 @@ def evaluate_numeric_hexadecimal(array, start, end):
     EvaluationError
         Integer conversion over limit.
     """
-    if end-start > LIMIT_INTEGER_HEXADECIMAL_MAX:
+    if end - start > LIMIT_INTEGER_HEXADECIMAL_MAX:
         raise EvaluationError(
             array,
             [
@@ -487,7 +487,7 @@ def evaluate_numeric_octal(array, start, end):
     EvaluationError
         Integer conversion over limit.
     """
-    if end-start > LIMIT_INTEGER_OCTAL_MAX:
+    if end - start > LIMIT_INTEGER_OCTAL_MAX:
         raise EvaluationError(
             array,
             [
@@ -525,7 +525,7 @@ def evaluate_numeric_binary(array, start, end):
     EvaluationError
         Integer conversion over limit.
     """
-    if end-start > LIMIT_INTEGER_BINARY_MAX:
+    if end - start > LIMIT_INTEGER_BINARY_MAX:
         raise EvaluationError(
             array,
             [
@@ -1291,7 +1291,7 @@ def evaluate_2_sided_power(token_1, token_2, token_3):
         )
     
     if isinstance(value_1, int) and isinstance(value_2, int) and \
-            value_1.bit_length()*value_2.bit_length() > LIMIT_INTEGER_BIT_LENGTH:
+            value_1.bit_length() * value_2.bit_length() > LIMIT_INTEGER_BIT_LENGTH:
         raise EvaluationError(
             token_2.array,
             [
@@ -1443,7 +1443,7 @@ class ParserPostfixCheck(ParserBase):
         raise EvaluationError(
             state.array,
             [
-                HighlightGroup(index, index+1, True),
+                HighlightGroup(index, index + 1, True),
             ],
             self.message,
         )
@@ -1497,7 +1497,7 @@ class ParserCharRange(ParserBase):
         value = state.array[index]
         
         if (value >= self.start) and (value <= self.end):
-            state.index = index+1
+            state.index = index + 1
             return True
         
         return False
@@ -1618,7 +1618,7 @@ class ParserCharOne(ParserBase):
         
         value = state.array[index]
         if value == self.value:
-            state.index = index+1
+            state.index = index + 1
             return True
         
         return False
@@ -1715,7 +1715,7 @@ class ParserCharAny(ParserBase):
         value = state.array[index]
         
         if value in self.values:
-            state.index = index+1
+            state.index = index + 1
             return True
         
         return False
@@ -2200,7 +2200,7 @@ def render_highlight_groups_within_range_into(highlight_groups, start_at, end_at
         if end > end_at:
             end = end_at
         
-        space_count = start-last_end
+        space_count = start - last_end
         
         # Add extra start space if applicable
         if space_at_start:
@@ -2212,12 +2212,12 @@ def render_highlight_groups_within_range_into(highlight_groups, start_at, end_at
         else:
             pointer = HIGHLIGHT_POINTER_SECONDARY
         
-        pointer_count = end-start
+        pointer_count = end - start
         if pointer_count > 0:
             if space_count:
                 into.append(' '*space_count)
             
-            into.append(pointer*pointer_count)
+            into.append(pointer * pointer_count)
         
         last_end = end
 
@@ -2363,7 +2363,7 @@ class EvaluationError(SlasherCommandError):
         start, end = get_highlight_group_range(self.highlight_groups)
         array = self.array
         length = len(array)
-        if (end-start) <= EXCEPTION_MESSAGE_MAX_LINE_LENGTH:
+        if (end - start) <= EXCEPTION_MESSAGE_MAX_LINE_LENGTH:
             if length <= EXCEPTION_MESSAGE_MAX_LINE_LENGTH:
                 # cakes are great
                 #       ^^^
@@ -2376,9 +2376,9 @@ class EvaluationError(SlasherCommandError):
             else:
                 # ... cakes are great ...
                 #           ^^^
-                cut_over = (EXCEPTION_MESSAGE_MAX_LINE_LENGTH-(end-start))>>1
+                cut_over = (EXCEPTION_MESSAGE_MAX_LINE_LENGTH - (end - start)) >> 1
                 
-                start_at = start-cut_over
+                start_at = start - cut_over
                 if start_at > 0:
                     start_cut = 3
                 else:
@@ -2386,7 +2386,7 @@ class EvaluationError(SlasherCommandError):
                     if start_at < 0:
                         start_at = 0
                 
-                end_at = end+cut_over
+                end_at = end + cut_over
                 if end_at < length:
                     end_cut = 3
                 else:
@@ -2397,22 +2397,22 @@ class EvaluationError(SlasherCommandError):
                 if start_cut:
                     repr_parts.append('...')
                 
-                for character in array[start_at+start_cut:end_at-end_cut]:
+                for character in array[start_at + start_cut:end_at - end_cut]:
                     repr_parts.append(chr(character))
                 
                 if end_cut:
                     repr_parts.append('...')
                 
                 repr_parts.append('\n')
-                render_highlight_groups_within_range_into(self.highlight_groups, start_at-start_cut, end, repr_parts)
+                render_highlight_groups_within_range_into(self.highlight_groups, start_at - start_cut, end, repr_parts)
         
-        elif length < (EXCEPTION_MESSAGE_MAX_LINE_LENGTH<<1)-6:
+        elif length < (EXCEPTION_MESSAGE_MAX_LINE_LENGTH << 1) - 6:
             # cakes are great ...
             #       ^^^
             # ... cakes are great
             #           ^^^
             chunk_start = 0
-            chunk_end = EXCEPTION_MESSAGE_MAX_LINE_LENGTH-3
+            chunk_end = EXCEPTION_MESSAGE_MAX_LINE_LENGTH - 3
             for character in array[chunk_start:chunk_end]:
                 repr_parts.append(chr(character))
             
@@ -2420,12 +2420,12 @@ class EvaluationError(SlasherCommandError):
             render_highlight_groups_within_range_into(
                 self.highlight_groups,
                 chunk_start,
-                chunk_end+3,
+                chunk_end + 3,
                 repr_parts,
             )
             repr_parts.append('\n...')
             
-            chunk_start = EXCEPTION_MESSAGE_MAX_LINE_LENGTH-3
+            chunk_start = EXCEPTION_MESSAGE_MAX_LINE_LENGTH - 3
             chunk_end = end
             for character in array[chunk_start:chunk_end]:
                 repr_parts.append(chr(character))
@@ -2433,7 +2433,7 @@ class EvaluationError(SlasherCommandError):
             repr_parts.append('\n')
             render_highlight_groups_within_range_into(
                 self.highlight_groups,
-                chunk_start-3,
+                chunk_start - 3,
                 chunk_end,
                 repr_parts,
             )
@@ -2443,29 +2443,29 @@ class EvaluationError(SlasherCommandError):
             #            ^^^^^^^^^^^^^
             # ... cakes are great ...
             # ^^^^^^^^^^^^^
-            start_start = start-(EXCEPTION_MESSAGE_MAX_LINE_LENGTH>>1)
+            start_start = start - (EXCEPTION_MESSAGE_MAX_LINE_LENGTH >> 1)
             if start_start <= 0:
                 start_start = 0
                 start_end = EXCEPTION_MESSAGE_MAX_LINE_LENGTH
                 start_cut = 0
             else:
-                start_end = start_start+EXCEPTION_MESSAGE_MAX_LINE_LENGTH
+                start_end = start_start + EXCEPTION_MESSAGE_MAX_LINE_LENGTH
                 start_cut = 3
             
-            end_end = end+(EXCEPTION_MESSAGE_MAX_LINE_LENGTH>>1)
+            end_end = end + (EXCEPTION_MESSAGE_MAX_LINE_LENGTH >> 1)
             if end_end > length:
                 end_end = length
                 end_start = length - EXCEPTION_MESSAGE_MAX_LINE_LENGTH
                 end_cut = 0
             else:
-                end_start = end_end-EXCEPTION_MESSAGE_MAX_LINE_LENGTH
+                end_start = end_end - EXCEPTION_MESSAGE_MAX_LINE_LENGTH
                 end_cut = 3
             
             if start_cut:
                 repr_parts.append('...')
             
-            chunk_start = start_start+start_cut
-            chunk_end = start_end-3
+            chunk_start = start_start + start_cut
+            chunk_end = start_end - 3
             for character in array[chunk_start:chunk_end]:
                 repr_parts.append(chr(character))
             
@@ -2473,15 +2473,15 @@ class EvaluationError(SlasherCommandError):
             
             render_highlight_groups_within_range_into(
                 self.highlight_groups,
-                chunk_start-start_cut*3,
+                chunk_start - start_cut * 3,
                 chunk_end,
                 repr_parts,
             )
             
             repr_parts.append('\n...')
             
-            chunk_start = end_start+3
-            chunk_end = end_end-end_cut
+            chunk_start = end_start + 3
+            chunk_end = end_end - end_cut
             for character in array[chunk_start:chunk_end]:
                 repr_parts.append(chr(character))
             
@@ -2492,7 +2492,7 @@ class EvaluationError(SlasherCommandError):
             
             render_highlight_groups_within_range_into(
                 self.highlight_groups,
-                chunk_start-3,
+                chunk_start - 3,
                 chunk_end,
                 repr_parts,
             )
@@ -2513,7 +2513,7 @@ class Token:
     array : `list` of `int`
         The parent array.
     end : `int`
-        The token's end+1 index in the array.
+        The token's end + 1 index in the array.
     id : `int`
         The token's end index inside of the array.
     start : `int`
@@ -2536,7 +2536,7 @@ class Token:
         start : `int`
             The token's start index inside of the array.
         end : `int`
-            The token's end+1 index in the array.
+            The token's end + 1 index in the array.
         identifier : `int`
             The token's end index inside of the array.
         sub_tokens : `None`, `list` of ``Token``
@@ -2686,7 +2686,7 @@ def parse_cycle(state):
             raise EvaluationError(
                 state.array,
                 [
-                    HighlightGroup(state.index, state.index+1, True),
+                    HighlightGroup(state.index, state.index + 1, True),
                 ],
                 'Unexpected character.',
             )
@@ -2789,10 +2789,10 @@ def build_parentheses(state):
                 value = None
                 start = token.start
             else:
-                maybe_function_token = tokens[index-1]
+                maybe_function_token = tokens[index - 1]
                 if maybe_function_token.id == VARIABLE_FUNCTION:
                     is_function_call = True
-                    value = tokens[index-1].value
+                    value = tokens[index - 1].value
                     start = maybe_function_token.start
                 else:
                     is_function_call = False
@@ -2800,11 +2800,11 @@ def build_parentheses(state):
                     start = token.start
             
             
-            parentheses_difference = parentheses_end_index-index
+            parentheses_difference = parentheses_end_index - index
             if (not is_function_call) and (parentheses_difference == 2):
-                token = tokens[index+1]
+                token = tokens[index + 1]
             else:
-                sub_tokens = tokens[index+1:parentheses_end_index]
+                sub_tokens = tokens[index + 1:parentheses_end_index]
                 parentheses_end_token = tokens[parentheses_end_index]
                 
                 if is_function_call:
@@ -2817,8 +2817,8 @@ def build_parentheses(state):
             index -= is_function_call
             
             tokens[index] = token
-            del tokens[index+1:parentheses_end_index+1]
-            parentheses_difference = parentheses_end_index-index
+            del tokens[index + 1:parentheses_end_index + 1]
+            parentheses_difference = parentheses_end_index - index
             for parentheses_index in range(len(parentheses_end_indexes)):
                 parentheses_end_indexes[parentheses_index] -= parentheses_difference
             
@@ -2880,7 +2880,7 @@ def check_followance(state):
         token = tokens[index]
         token_id = token.id
         if token_id in unrepeatable_ids:
-            last_token = tokens[index-1]
+            last_token = tokens[index - 1]
             raise EvaluationError(
                 token.array,
                 [
@@ -2903,18 +2903,18 @@ def create_prefixes(tokens):
     tokens : `list` of ``Token``
         The tokens to iterate trough.
     """
-    for index in range(len(tokens)-1):
+    for index in range(len(tokens) - 1):
         token = tokens[index]
         try:
             new_token_id = PREFIX_TRANSFER[token.id]
         except KeyError:
             continue
         
-        if tokens[index+1].id not in CAN_EXECUTE_PREFIX_PATTERN_3:
+        if tokens[index + 1].id not in CAN_EXECUTE_PREFIX_PATTERN_3:
             continue
         
         if index:
-            if tokens[index-1].id not in CAN_EXECUTE_PREFIX_PATTERN_1:
+            if tokens[index - 1].id not in CAN_EXECUTE_PREFIX_PATTERN_1:
                 continue
         
         token.id = new_token_id
@@ -2929,13 +2929,13 @@ def merge_prefixes(tokens):
     tokens : `list` of ``Token``
         The tokens to iterate trough.
     """
-    for index in reversed(range(1, len(tokens)-1)):
+    for index in reversed(range(1, len(tokens) - 1)):
         token = tokens[index]
         token_id = token.id
         if token_id not in PREFIX_OPERATORS:
             continue
         
-        before_token = tokens[index-1]
+        before_token = tokens[index - 1]
         before_token_id = before_token.id
         
         if before_token_id not in PREFIXABLE:
@@ -2947,7 +2947,7 @@ def merge_prefixes(tokens):
             continue
         
         new_token = Token(token.array, token.start, token.end, new_token_id, None, None)
-        tokens[index-1] = new_token
+        tokens[index - 1] = new_token
         del tokens[index]
 
 def remove_unused_prefixes(tokens):
@@ -2959,7 +2959,7 @@ def remove_unused_prefixes(tokens):
     tokens : `list` of ``Token``
         The tokens to iterate trough.
     """
-    for index in reversed(range(len(tokens)-1)):
+    for index in reversed(range(len(tokens) - 1)):
         if tokens[index].id == OPERATION_POSITIVATE_ID:
             del tokens[index]
 
@@ -2988,7 +2988,7 @@ def evaluate_prefix_operations(tokens):
     tokens : `list` of ``Token``
         Tokens to evaluate.
     """
-    for index in reversed(range(0, len(tokens)-1)):
+    for index in reversed(range(0, len(tokens) - 1)):
         token = tokens[index]
         token_id = token.id
         try:
@@ -2996,9 +2996,9 @@ def evaluate_prefix_operations(tokens):
         except KeyError:
             continue
         
-        token = evaluator(token, tokens[index+1])
+        token = evaluator(token, tokens[index + 1])
         tokens[index] = token
-        del tokens[index+1]
+        del tokens[index + 1]
         continue
 
 
@@ -3011,11 +3011,11 @@ def evaluate_powered_prefix(tokens):
     tokens : `list` of ``Token``
         Tokens to evaluate.
     """
-    for index in reversed(range(1, len(tokens)-2)):
+    for index in reversed(range(1, len(tokens) - 2)):
         if tokens[index].id != OPERATION_POWER_ID:
             continue
         
-        token = tokens[index+1]
+        token = tokens[index + 1]
         token_id = token.id
         
         try:
@@ -3023,9 +3023,9 @@ def evaluate_powered_prefix(tokens):
         except KeyError:
             continue
         
-        token = evaluator(token, tokens[index+2])
-        tokens[index+1] = token
-        del tokens[index+2]
+        token = evaluator(token, tokens[index + 2])
+        tokens[index + 1] = token
+        del tokens[index + 2]
         continue
 
 
@@ -3038,7 +3038,7 @@ def evaluate_power(tokens):
     tokens : `list` of ``Token``
         Tokens to evaluate.
     """
-    limit = len(tokens)-1
+    limit = len(tokens) - 1
     index = 1
     while index < limit:
         token = tokens[index]
@@ -3046,9 +3046,9 @@ def evaluate_power(tokens):
             index += 1
             continue
         
-        token = evaluate_2_sided_power(tokens[index-1], token, tokens[index+1])
-        tokens[index-1] = token
-        del tokens[index:index+2]
+        token = evaluate_2_sided_power(tokens[index - 1], token, tokens[index + 1])
+        tokens[index - 1] = token
+        del tokens[index:index + 2]
         limit -= 2
         continue
 
@@ -3067,7 +3067,7 @@ def evaluate_two_sided_operations(tokens):
     token : ``Token``
         The final evaluated token.
     """
-    limit = len(tokens)-1
+    limit = len(tokens) - 1
     for evaluable_tokens in CAN_EXECUTE_TWO_SIDED_ORDERED:
         index = 1
         while index < limit:
@@ -3077,9 +3077,9 @@ def evaluate_two_sided_operations(tokens):
                 index += 2
                 continue
             
-            token = EVALUATE_2_SIDED_OPERATION[token_id](tokens[index-1], token, tokens[index+1])
-            tokens[index-1] = token
-            del tokens[index:index+2]
+            token = EVALUATE_2_SIDED_OPERATION[token_id](tokens[index - 1], token, tokens[index + 1])
+            tokens[index - 1] = token
+            del tokens[index:index + 2]
             limit -= 2
             continue
         

@@ -833,7 +833,7 @@ class TopGGClient:
                     if not try_again:
                         raise ConnectionError('Invalid address or no connection with Top.gg.') from err
                     
-                    await sleep(0.5/try_again, KOKORO)
+                    await sleep(0.5 / try_again, KOKORO)
                     
                     try_again -= 1
                     continue
@@ -860,7 +860,7 @@ class TopGGClient:
                         except ValueError:
                             retry_after = RATE_LIMIT_GLOBAL_DEFAULT_DURATION
                     
-                    self._global_rate_limit_expires_at = LOOP_TIME()+retry_after
+                    self._global_rate_limit_expires_at = LOOP_TIME() + retry_after
                     
                     if self._raise_on_top_gg_global_rate_limit:
                         raise TopGGGloballyRateLimited(None)
@@ -874,7 +874,7 @@ class TopGGClient:
                     raise TopGGHttpException(response, response_data)
                 
                 if try_again and (status >= 500):
-                    await sleep(10.0/try_again, KOKORO)
+                    await sleep(10.0 / try_again, KOKORO)
                     try_again -= 1
                     continue
                 

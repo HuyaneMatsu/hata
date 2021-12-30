@@ -86,7 +86,7 @@ class ScheduledEventSubscribeEvent(EventBase):
     
     @copy_docs(EventBase.__hash__)
     def __hash__(self):
-        return self.guild_id^self.scheduled_event_id^self.user_id
+        return self.guild_id ^ self.scheduled_event_id ^ self.user_id
 
 
 class ScheduledEventUnsubscribeEvent(ScheduledEventSubscribeEvent):

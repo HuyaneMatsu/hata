@@ -742,7 +742,7 @@ class ActivityRich(ActivityBase):
         if end is None:
             return None
         
-        return end-start
+        return end - start
     
     
     @property

@@ -51,13 +51,13 @@ class GatewayRateLimiter:
         """
         now = LOOP_TIME()
         if now >= self.resets_at:
-            self.resets_at = now+GATEWAY_RATE_LIMIT_RESET
+            self.resets_at = now + GATEWAY_RATE_LIMIT_RESET
             remaining = GATEWAY_RATE_LIMIT_LIMIT
         else:
             remaining = self.remaining
         
         if remaining:
-            self.remaining = remaining-1
+            self.remaining = remaining - 1
             return False
         
         if self.wake_upper is None:

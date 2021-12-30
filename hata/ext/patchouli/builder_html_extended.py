@@ -450,7 +450,7 @@ class SimpleSection:
             else:
                 prefix = anchor_escape(title)
             
-            tier = get_tier_for(path)+1
+            tier = get_tier_for(path) + 1
             
             yield '<h'
             yield str(tier)
@@ -725,7 +725,7 @@ class UnitSection:
         else:
             prefix = anchor_escape(title)
         
-        tier = get_tier_for(path)+1
+        tier = get_tier_for(path) + 1
         
         yield '<h'
         yield str(tier)
@@ -739,7 +739,7 @@ class UnitSection:
         yield '<div class="unit_section">'
         for name, unit in self.units:
             serializer_type = UNIT_CONVERSION_TABLE[type(unit)]
-            serializer = serializer_type(unit, path/name)
+            serializer = serializer_type(unit, path / name)
             yield from serializer.serialize()
         
         yield '</div>'
@@ -760,7 +760,7 @@ class UnitSection:
         
         for name, unit in self.units:
             serializer_type = UNIT_CONVERSION_TABLE[type(unit)]
-            serializer = serializer_type(unit, path/name)
+            serializer = serializer_type(unit, path / name)
             child = serializer.structurize()
             children.append(child)
         
@@ -863,7 +863,7 @@ class AttributeSection:
         path = self.path
         prefix = get_anchor_prefix_for(path)
         
-        tier = get_tier_for(path)+1
+        tier = get_tier_for(path) + 1
         parent_path = get_parent_path_of(path)
         
         if prefix:
@@ -1610,7 +1610,7 @@ class UnitListerSection:
         else:
             prefix = anchor_escape(title)
         
-        tier = get_tier_for(path)+1
+        tier = get_tier_for(path) + 1
         
         yield '<h'
         yield str(tier)

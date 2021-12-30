@@ -137,8 +137,8 @@ def parse_sections(lines):
         line = lines[index]
         
         # If there are at least 2 lines and we can match:
-        if (limit-index) > 2 and (SECTION_NAME_RP.fullmatch(line) is not None) and \
-                (SECTION_UNDERLINE_RP.fullmatch(lines[index+1]) is not None):
+        if (limit - index) > 2 and (SECTION_NAME_RP.fullmatch(line) is not None) and \
+                (SECTION_UNDERLINE_RP.fullmatch(lines[index + 1]) is not None):
             # Get the current line out.
             while section_lines:
                 if section_lines[-1]:
@@ -188,9 +188,9 @@ def detect_table(lines, index, limit):
         The index where the table is over. If there was no table, returns the initial index.
     """
     line = lines[index]
-    if index+2 <= limit:
+    if index + 2 <= limit:
         if (TABLE_ANY_RP.fullmatch(line) is not None):
-            line2 = lines[index+1]
+            line2 = lines[index + 1]
             if (TABLE_ANY_RP.fullmatch(line2) is not None):
                 index += 2
                 while True:
@@ -756,7 +756,7 @@ class TextCodeBlock:
         if first_line is None:
             start += 1
         
-        line = lines[end-1]
+        line = lines[end - 1]
         if len(line) == 3:
             last_line = None
         else:
@@ -947,7 +947,7 @@ def parse_section(lines):
     
     # If a description is indented alone by 2 behind an other one, connect them.
     index = 0
-    limit = len(builts)-1
+    limit = len(builts) - 1
     while True:
         if index >= limit:
             break
@@ -1487,7 +1487,7 @@ def parse_docstring(text, path):
 
 
 def convert_extra_attribute_section_name(name):
-    return '___'+name.lower().replace(' ', '_')
+    return '___' + name.lower().replace(' ', '_')
 
 def get_attribute_docs_from(sections):
     """

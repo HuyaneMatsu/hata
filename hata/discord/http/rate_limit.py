@@ -68,7 +68,7 @@ class RateLimitGroup:
     """
     __slots__ = ('group_id', 'limiter', 'size', )
     
-    _auto_next_id = 105<<8
+    _auto_next_id = 105 << 8
     _unlimited = None
     
     @classmethod
@@ -81,7 +81,7 @@ class RateLimitGroup:
         group_id : `int`
         """
         group_id = cls._auto_next_id
-        cls._auto_next_id = group_id+(7<<8)
+        cls._auto_next_id = group_id + (7 << 8)
         return group_id
     
     
@@ -116,7 +116,7 @@ class RateLimitGroup:
         """
         self = object.__new__(cls)
         self.limiter = limiter
-        self.size = (-1 if optimistic else 0)
+        self.size = ( -1 if optimistic else 0)
         self.group_id = cls.generate_next_id()
         return self
     
@@ -222,7 +222,7 @@ class RateLimitUnit:
             The time of the next rate limit reset in LOOP_TIME time.
         """
         actual_drop = self.drop
-        new_drop_max = drop+RATE_LIMIT_DROP_ROUND
+        new_drop_max = drop + RATE_LIMIT_DROP_ROUND
         if new_drop_max < actual_drop:
             new = object.__new__(type(self))
             new.drop = self.drop
@@ -233,7 +233,7 @@ class RateLimitUnit:
             self.next = new
             return
         
-        new_drop_min = drop-RATE_LIMIT_DROP_ROUND
+        new_drop_min = drop - RATE_LIMIT_DROP_ROUND
         if new_drop_min > actual_drop:
             last = self
             while True:
@@ -472,7 +472,7 @@ class RateLimitHandler:
     
     def __hash__(self):
         """Hashes the rate limit handler."""
-        return self.parent.group_id+self.limiter_id
+        return self.parent.group_id + self.limiter_id
     
     
     def is_unlimited(self):
@@ -512,7 +512,7 @@ class RateLimitHandler:
             self.queue = queue = deque()
         
         active = self.active
-        left = size-active
+        left = size - active
         
         if left <= 0:
             future = Future(KOKORO)
@@ -524,7 +524,7 @@ class RateLimitHandler:
         
         left -= self.count_drops()
         if left > 0:
-            self.active = active+1
+            self.active = active + 1
             return
         
         future = Future(KOKORO)
@@ -591,9 +591,9 @@ class RateLimitHandler:
                 if current_size == -1 or current_size == 0:
                     current_size = 1
                     # We might have cooldowns from before as well
-                    allocates = size-int(headers[RATE_LIMIT_REMAINING])
+                    allocates = size - int(headers[RATE_LIMIT_REMAINING])
                 
-                can_free = size-current_size
+                can_free = size - current_size
                 queue = self.queue
                 queue_length = len(queue)
                 
@@ -620,7 +620,7 @@ class RateLimitHandler:
             else:
                 delay = delay2
         
-        drop = LOOP_TIME()+delay
+        drop = LOOP_TIME() + delay
         
         drops = self.drops
         if (drops is None):
@@ -673,7 +673,7 @@ class RateLimitHandler:
         if size < 0:
             size = -size
         
-        can_free = size-self.active-self.count_drops()
+        can_free = size - self.active - self.count_drops()
         
         if can_free > queue_length:
             can_free = queue_length
@@ -990,7 +990,7 @@ class StaticRateLimitHandler:
     
     def __hash__(self):
         """Hashes the rate limit handler."""
-        return self.parent.group_id+self.limiter_id
+        return self.parent.group_id + self.limiter_id
     
     
     def is_unlimited(self):

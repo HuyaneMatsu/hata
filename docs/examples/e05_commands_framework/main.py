@@ -36,7 +36,7 @@ async def about():
 @Sakuya.commands
 async def latency(ctx):
     """Returns my gateway latency."""
-    return f'{ctx.client.gateway.latency*1000.:.0f} ms'
+    return f'{ctx.client.gateway.latency * 1000.:.0f} ms'
 
 
 # If the last parameter is positional and not annotated, the messages unused content will be passed to it.
@@ -91,7 +91,7 @@ async def about_role_error_handler(ctx, exception):
 @Sakuya.commands(aliases='*')
 async def multiply(first:int, second:int):
     """Multiplies the two numbers."""
-    return first*second
+    return first * second
 
 
 # Limit commands usage to owner only.

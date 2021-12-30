@@ -39,7 +39,7 @@ def create_relative_link(source, target):
                 url = last_removed
         elif len(target_parts) == 1:
             if last_removed is None:
-                url = '/'+target_parts[0]
+                url = '/' + target_parts[0]
             else:
                 url = '/'.join([last_removed, target_parts[0]])
         else:
@@ -52,7 +52,7 @@ def create_relative_link(source, target):
             if last_removed is None:
                 url = '/'
             else:
-                url = '../'+last_removed
+                url = '../' + last_removed
         elif len(target_parts) == 1:
             url = target_parts[0]
         else:
@@ -64,9 +64,9 @@ def create_relative_link(source, target):
             else:
                 url = '../'*(len(source_parts)) + last_removed
         elif len(target_parts) == 1:
-            url = '../'*(len(source_parts)-1) + target_parts[0]
+            url = '../'*(len(source_parts) - 1) + target_parts[0]
         else:
-            url = '../'*(len(source_parts)-1) + '/'.join(target_parts)
+            url = '../'*(len(source_parts) - 1) + '/'.join(target_parts)
     
     return quote(url, safe=':@', protected='/')
 

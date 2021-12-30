@@ -42,7 +42,7 @@ class VoiceConnectionStatus:
         self = object.__new__(cls)
         self.state = VoiceConnectionState.get(data['state'])
         self.hostname = data['hostname']
-        self.pings = tuple(ping*0.001 for ping in data['pings'])
+        self.pings = tuple(ping * 0.001 for ping in data['pings'])
         self.average_ping = data['average_ping']*0.001
         self.last_ping = data['last_ping']*0.001
         return self

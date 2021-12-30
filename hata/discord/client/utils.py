@@ -219,9 +219,9 @@ class Typer:
             if timeout <= 0.0:
                 break
             
-            self.timeout = new_timeout = timeout -8.0
+            self.timeout = new_timeout = timeout - 8.0
             if new_timeout < 0.0:
-                sleep_duration = 8.0+new_timeout
+                sleep_duration = 8.0 + new_timeout
             else:
                 sleep_duration = 8.0
             

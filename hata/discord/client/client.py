@@ -94,7 +94,7 @@ _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
 
 MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY = MessageFlag().update_by_keys(invoking_user_only=True)
 
-AUTO_CLIENT_ID_LIMIT = 1<<22
+AUTO_CLIENT_ID_LIMIT = 1 << 22
 
 STICKER_PACK_CACHE = ForceUpdateCache()
 
@@ -546,7 +546,7 @@ class Client(ClientUserPBase):
         
         if client_id < AUTO_CLIENT_ID_LIMIT:
             client_id = cls._next_auto_id
-            cls._next_auto_id = client_id+1
+            cls._next_auto_id = client_id + 1
         
         self = object.__new__(cls)
         
@@ -1278,7 +1278,7 @@ class Client(ClientUserPBase):
                 activity = activity.user_dict()
         
         if status == 'idle':
-            since = int(time_now()*1000.)
+            since = int(time_now() * 1000.)
         else:
             since = 0
         
@@ -3200,7 +3200,7 @@ class Client(ClientUserPBase):
                         f'{AUTO_ARCHIVE_OPTIONS}, got {default_auto_archive_after}.'
                     )
             
-            channel_data['default_auto_archive_duration'] = default_auto_archive_after//60
+            channel_data['default_auto_archive_duration'] = default_auto_archive_after // 60
         
         await self.http.channel_edit(channel_id, data, reason)
     
@@ -3832,7 +3832,7 @@ class Client(ClientUserPBase):
             
             author = message.author
         
-        if (author is self) or (message_id > int((time_now()-1209590.)*1000.-DISCORD_EPOCH)<<22):
+        if (author is self) or (message_id > int((time_now() - 1209590.) * 1000.-DISCORD_EPOCH) << 22):
             # own or new
             coroutine = self.http.message_delete(channel_id, message_id, reason)
         else:
@@ -3883,7 +3883,7 @@ class Client(ClientUserPBase):
         if not messages:
             return
         
-        bulk_delete_limit = int((time_now()-1209600.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks
+        bulk_delete_limit = int((time_now() - 1209600.) * 1000.-DISCORD_EPOCH) << 22 # 2 weeks
         
         by_channel = {}
         
@@ -4016,7 +4016,7 @@ class Client(ClientUserPBase):
         
         # Check permissions
         permissions = channel.cached_permissions_for(self)
-        if not permissions&PERMISSION_MASK_MANAGE_MESSAGES:
+        if not permissions & PERMISSION_MASK_MANAGE_MESSAGES:
             return
         
         before = 9223372036854775807 if before is None else log_time_converter(before)
@@ -4036,7 +4036,7 @@ class Client(ClientUserPBase):
         message_group_old_own = deque()
         
         # Check if we can request more messages
-        if channel.message_history_reached_end or (not permissions&PERMISSION_MASK_READ_MESSAGE_HISTORY):
+        if channel.message_history_reached_end or (not permissions & PERMISSION_MASK_READ_MESSAGE_HISTORY):
             should_request = False
         else:
             should_request = True
@@ -4048,7 +4048,7 @@ class Client(ClientUserPBase):
             before_index = message_relative_index(messages_, before)
             after_index = message_relative_index(messages_, after)
             if before_index != after_index:
-                time_limit = int((time_now()-1209600.)*1000.-DISCORD_EPOCH)<<22
+                time_limit = int((time_now() - 1209600.) * 1000.-DISCORD_EPOCH) << 22
                 while True:
                     if before_index == after_index:
                         break
@@ -4106,7 +4106,7 @@ class Client(ClientUserPBase):
                 message_limit = len(message_group_new)
                 # If there are more messages, we are waiting for other tasks
                 if message_limit:
-                    time_limit = int((time_now()-1209590.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks -10s
+                    time_limit = int((time_now() - 1209590.) * 1000.-DISCORD_EPOCH) << 22 # 2 weeks -10s
                     collected = 0
                     
                     while True:
@@ -4149,7 +4149,7 @@ class Client(ClientUserPBase):
                     message_limit = len(message_group_new)
                     if message_limit:
                         # time limit -> 2 week
-                        time_limit = time_limit-20971520000
+                        time_limit = time_limit - 20971520000
                         
                         while True:
                             # Cannot start at index = len(...), so we instantly do -1
@@ -4229,7 +4229,7 @@ class Client(ClientUserPBase):
                             continue
                     
                     # We don't really care about the limit, because we check message id when we delete too.
-                    time_limit = int((time_now()-1209600.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks
+                    time_limit = int((time_now() - 1209600.) * 1000.-DISCORD_EPOCH) << 22 # 2 weeks
                     
                     for message_data in result:
                         if (filter is None):
@@ -4418,7 +4418,7 @@ class Client(ClientUserPBase):
             before_index = message_relative_index(messages_, before)
             after_index = message_relative_index(messages_, after)
             if before_index != after_index:
-                time_limit = int((time_now()-1209600.)*1000.-DISCORD_EPOCH)<<22
+                time_limit = int((time_now() - 1209600.) * 1000.-DISCORD_EPOCH) << 22
                 while True:
                     if before_index == after_index:
                         break
@@ -4487,7 +4487,7 @@ class Client(ClientUserPBase):
                     message_limit = len(message_group_new)
                     # If there are more messages, we are waiting for other tasks
                     if message_limit:
-                        time_limit = int((time_now()-1209590.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks -10s
+                        time_limit = int((time_now() - 1209590.) * 1000.-DISCORD_EPOCH) << 22 # 2 weeks -10s
                         collected = 0
                         
                         while True:
@@ -4534,7 +4534,7 @@ class Client(ClientUserPBase):
                         message_limit = len(message_group_new)
                         if message_limit:
                             # time limit -> 2 week
-                            time_limit = time_limit-20971520000
+                            time_limit = time_limit - 20971520000
                             
                             while True:
                                 # Cannot start at index = len(...), so we instantly do -1
@@ -4628,7 +4628,7 @@ class Client(ClientUserPBase):
                             continue
                     
                     # We don't really care about the limit, because we check message id when we delete too.
-                    time_limit = int((time_now()-1209600.)*1000.-DISCORD_EPOCH)<<22 # 2 weeks
+                    time_limit = int((time_now() - 1209600.) * 1000.-DISCORD_EPOCH) << 22 # 2 weeks
                     
                     for message_data in result:
                         if (filter is None):
@@ -5011,7 +5011,7 @@ class Client(ClientUserPBase):
             else:
                 ln = len(channel.messages)
             
-            load_to = index-ln
+            load_to = index - ln
             
             # we want to load it till the exact index, so if `load_to` is `0`, that's not enough!
             if load_to < 0:
@@ -5019,12 +5019,12 @@ class Client(ClientUserPBase):
                 break
             
             if load_to < 98:
-                planned = load_to+2
+                planned = load_to + 2
             else:
                 planned = 100
             
             if ln:
-                result = await self.message_get_chunk(channel, planned, before=messages[ln-1].id+1)
+                result = await self.message_get_chunk(channel, planned, before=messages[ln - 1].id + 1)
             else:
                 result = await self.message_get_chunk_from_zero(channel, planned)
             
@@ -5082,7 +5082,7 @@ class Client(ClientUserPBase):
         
         channel, channel_id = get_channel_and_id(channel, ChannelTextBase)
         if channel is None:
-            messages = await self.message_get_chunk_from_zero(channel_id, min(index+1, 100))
+            messages = await self.message_get_chunk_from_zero(channel_id, min(index + 1, 100))
             
             if messages:
                 channel = messages[0].channel
@@ -5164,7 +5164,7 @@ class Client(ClientUserPBase):
         
         channel, channel_id = get_channel_and_id(channel, ChannelTextBase)
         if channel is None:
-            messages = await self.message_get_chunk_from_zero(channel_id, min(end+1, 100))
+            messages = await self.message_get_chunk_from_zero(channel_id, min(end + 1, 100))
             
             if messages:
                 channel = messages[0].channel
@@ -5181,7 +5181,7 @@ class Client(ClientUserPBase):
             ln = len(messages)
         
         if (end >= ln) and (not channel.message_history_reached_end) and \
-               channel.cached_permissions_for(self)&PERMISSION_MASK_READ_MESSAGE_HISTORY:
+               channel.cached_permissions_for(self) & PERMISSION_MASK_READ_MESSAGE_HISTORY:
             
             try:
                 await self._load_messages_till(channel, end)
@@ -9403,7 +9403,7 @@ class Client(ClientUserPBase):
         
         data = {
             'name': name,
-            'auto_archive_duration': auto_archive_after//60,
+            'auto_archive_duration': auto_archive_after // 60,
             'type': type_,
         }
         
@@ -12121,7 +12121,7 @@ class Client(ClientUserPBase):
             break
         
         # Check permission, because it can save a lot of time >.>
-        if not channel.cached_permissions_for(self)&PERMISSION_MASK_CREATE_INSTANT_INVITE:
+        if not channel.cached_permissions_for(self) & PERMISSION_MASK_CREATE_INSTANT_INVITE:
             return None
         
         try:
@@ -12942,7 +12942,7 @@ class Client(ClientUserPBase):
             else:
                 
                 if negate_position:
-                    roles_valid[index] = (role, position-negate_position)
+                    roles_valid[index] = (role, position - negate_position)
                 
                 index += 1
         
@@ -12957,7 +12957,7 @@ class Client(ClientUserPBase):
                 increase_position += 1
             
             if increase_position:
-                roles_valid[index] = (role, position+increase_position)
+                roles_valid[index] = (role, position + increase_position)
             
             last_position = position
             index += 1
@@ -13014,8 +13014,8 @@ class Client(ClientUserPBase):
                 continue
             
             role = roles_leftover[index_leftover]
-            position_target = position_target+1
-            index_leftover = index_leftover+1
+            position_target = position_target + 1
+            index_leftover = index_leftover + 1
             target_order.append(role)
             continue
         
@@ -15716,11 +15716,11 @@ class Client(ClientUserPBase):
         gateway_url : `str`
             The url to what the gateways' websocket will be connected.
         """
-        if self._gateway_time > (LOOP_TIME()-60.0):
+        if self._gateway_time > (LOOP_TIME() - 60.0):
             return self._gateway_url
         
         data = await self.client_gateway()
-        self._gateway_url = gateway_url = f'{data["url"]}?encoding=json&v={API_VERSION}&compress=zlib-stream'
+        self._gateway_url = gateway_url = f'{data["url"]}?encoding=json & v={API_VERSION}&compress=zlib-stream'
         self._gateway_time = LOOP_TIME()
         
         return gateway_url
@@ -15749,7 +15749,7 @@ class Client(ClientUserPBase):
             If any exception was received from the Discord API.
         """
         data = await self.client_gateway()
-        self._gateway_url = f'{data["url"]}?encoding=json&v={API_VERSION}&compress=zlib-stream'
+        self._gateway_url = f'{data["url"]}?encoding=json & v={API_VERSION}&compress=zlib-stream'
         self._gateway_time = LOOP_TIME()
         
         old_shard_count = self.shard_count
@@ -16363,7 +16363,7 @@ class Client(ClientUserPBase):
         """
         event_handler = self.events.guild_user_chunk
         
-        self._user_chunker_nonce = nonce = self._user_chunker_nonce+1
+        self._user_chunker_nonce = nonce = self._user_chunker_nonce + 1
         nonce = nonce.__format__('0>16x')
         
         event_handler.waiters[nonce] = waiter = MassUserChunker()
@@ -16456,7 +16456,7 @@ class Client(ClientUserPBase):
         
         event_handler = self.events.guild_user_chunk
         
-        self._user_chunker_nonce = nonce = self._user_chunker_nonce+1
+        self._user_chunker_nonce = nonce = self._user_chunker_nonce + 1
         nonce = nonce.__format__('0>16x')
         
         event_handler.waiters[nonce] = waiter = SingleUserChunker()
@@ -17014,7 +17014,7 @@ class Client(ClientUserPBase):
         gateway = self.gateway
         shard_count = self.shard_count
         if shard_count:
-            gateway = gateway.gateways[(guild_id>>22)%shard_count]
+            gateway = gateway.gateways[(guild_id >> 22) % shard_count]
         
         return gateway
     

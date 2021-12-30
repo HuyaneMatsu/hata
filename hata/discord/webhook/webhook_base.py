@@ -114,7 +114,7 @@ class WebhookBase(UserBase):
             return False
         
         default_role = guild.default_role
-        if default_role&PERMISSION_MASK_USE_EXTERNAL_EMOJIS:
+        if default_role & PERMISSION_MASK_USE_EXTERNAL_EMOJIS:
             return True
         
         return False

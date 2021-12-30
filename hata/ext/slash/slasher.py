@@ -1279,7 +1279,7 @@ class Slasher(EventHandlerBase):
             else:
                 raise ValueError(
                     f'Unknown command target: {target!r}; If `custom_id` parameter is given, `target` '
-                    f'can be any of: `{COMMAND_TARGETS_COMPONENT_COMMAND|COMMAND_TARGETS_FORM_COMPONENT_COMMAND}`.'
+                    f'can be any of: `{COMMAND_TARGETS_COMPONENT_COMMAND | COMMAND_TARGETS_FORM_COMPONENT_COMMAND}`.'
                 )
         
         else:

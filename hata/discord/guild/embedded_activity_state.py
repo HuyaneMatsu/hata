@@ -365,4 +365,4 @@ class EmbeddedActivityState:
         old_user_ids = self.user_ids
         self.user_ids = new_user_ids
         
-        return new_user_ids-old_user_ids, old_user_ids-new_user_ids
+        return new_user_ids - old_user_ids, old_user_ids - new_user_ids

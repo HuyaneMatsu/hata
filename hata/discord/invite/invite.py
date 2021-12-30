@@ -496,7 +496,7 @@ class Invite(DiscordEntity, immortal=True):
                     pass
                 else:
                     if (value is not None):
-                        value = preconvert_int(value, key, 0, (1<<64)-1)
+                        value = preconvert_int(value, key, 0, (1 << 64) - 1)
                         processable.append((key, value))
             
             try:
@@ -532,7 +532,7 @@ class Invite(DiscordEntity, immortal=True):
                 except KeyError:
                     pass
                 else:
-                    value = preconvert_int(value, key, 0, (1<<64)-1)
+                    value = preconvert_int(value, key, 0, (1 << 64) - 1)
                     processable.append((key, value))
             
             for key, type_ in (

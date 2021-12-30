@@ -22,9 +22,9 @@ STATUS_ENDPOINT = 'https://status.discord.com/api/v2' if (CUSTOM_STATUS_ENDPOINT
 del CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DISCORD_ENDPOINT, CUSTOM_STATUS_ENDPOINT, API_VERSION
 
 VALID_ICON_SIZES = frozenset((
-    *( 1<<x    for x in range(4, 13)),
-    *((1<<x)*3 for x in range(9, 11)),
-    *((1<<x)*5 for x in range(2,  9)),
+    *( 1 << x      for x in range(4, 13)),
+    *((1 << x) * 3 for x in range(9, 11)),
+    *((1 << x) * 5 for x in range(2,  9)),
 ))
 
 VALID_ICON_FORMATS = frozenset(('jpg', 'jpeg', 'png', 'webp'))

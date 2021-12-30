@@ -105,7 +105,7 @@ class PermissionOverwrite:
     
     def __hash__(self):
         """Returns the permission overwrite's hash."""
-        return self.target_id^self.allow^self.deny^(self.target_type.value<<16)
+        return self.target_id ^ self.allow ^ self.deny ^ (self.target_type.value << 16)
     
     def __repr__(self):
         """Returns the permission overwrite's representation."""
@@ -151,9 +151,9 @@ class PermissionOverwrite:
         allow = self.allow
         deny = self.deny
         for index in Permission.__keys__.values():
-            if (allow>>index)&1:
+            if (allow >> index) & 1:
                 state = +1
-            elif (deny>>index)&1:
+            elif (deny >> index) & 1:
                 state = -1
             else:
                 state = 0
@@ -189,9 +189,9 @@ class PermissionOverwrite:
         allow = self.allow
         deny = self.deny
         for key, index in Permission.__keys__.items():
-            if (allow>>index)&1:
+            if (allow >> index) & 1:
                 state = +1
-            elif (deny>>index)&1:
+            elif (deny >> index) & 1:
                 state = -1
             else:
                 state = 0
@@ -202,9 +202,9 @@ class PermissionOverwrite:
     def __getitem__(self, key):
         """Returns the permission's state for the given permission name."""
         index = Permission.__keys__[key]
-        if (self.allow>>index)&1:
+        if (self.allow >> index) & 1:
             state = +1
-        elif (self.deny>>index)&1:
+        elif (self.deny >> index) & 1:
             state = -1
         else:
             state = 0

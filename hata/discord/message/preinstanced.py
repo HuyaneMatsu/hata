@@ -147,7 +147,7 @@ def convert_welcome(self):
         'Roses are red, violets are blue, {0} joined this server with you',
     )
 
-    return join_messages[int(self.created_at.timestamp())%len(join_messages)].format(self.author.name)
+    return join_messages[int(self.created_at.timestamp()) % len(join_messages)].format(self.author.name)
 
 def convert_new_guild_sub(self):
     guild = self.channel.guild

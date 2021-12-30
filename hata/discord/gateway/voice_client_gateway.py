@@ -443,7 +443,7 @@ class DiscordGatewayVoice:
         """
         data = {
             'op': HEARTBEAT,
-            'd': int(time_now()*1000),
+            'd': int(time_now() * 1000),
         }
         
         await self.send_as_json(data)

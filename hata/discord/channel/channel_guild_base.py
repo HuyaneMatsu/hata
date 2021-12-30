@@ -67,7 +67,7 @@ class ChannelGuildBase(ChannelBase):
         guild = self.guild
         if (guild is not None):
             for user in guild.users.values():
-                if self.permissions_for(user)&PERMISSION_MASK_VIEW_CHANNEL:
+                if self.permissions_for(user) & PERMISSION_MASK_VIEW_CHANNEL:
                     yield user
     
     
@@ -146,7 +146,7 @@ class ChannelGuildBase(ChannelBase):
             else:
                 name_ = name[:-5]
                 for user in guild.users.values():
-                    if not self.permissions_for(user)&PERMISSION_MASK_VIEW_CHANNEL:
+                    if not self.permissions_for(user) & PERMISSION_MASK_VIEW_CHANNEL:
                         continue
                     
                     if (user.discriminator == discriminator) and (user.name == name_):
@@ -160,7 +160,7 @@ class ChannelGuildBase(ChannelBase):
         guild_id = guild.id
         
         for user in guild.users.values():
-            if not self.permissions_for(user)&PERMISSION_MASK_VIEW_CHANNEL:
+            if not self.permissions_for(user) & PERMISSION_MASK_VIEW_CHANNEL:
                 continue
             
             if pattern.match(user.name) is not None:
@@ -205,7 +205,7 @@ class ChannelGuildBase(ChannelBase):
             else:
                 name_ = name[:-5]
                 for user in users:
-                    if not self.permissions_for(user)&PERMISSION_MASK_VIEW_CHANNEL:
+                    if not self.permissions_for(user) & PERMISSION_MASK_VIEW_CHANNEL:
                         continue
                     
                     if (user.discriminator == discriminator) and (user.name == name_):
@@ -219,7 +219,7 @@ class ChannelGuildBase(ChannelBase):
         
         guild_id = guild.id
         for user in guild.users.values():
-            if not self.permissions_for(user)&PERMISSION_MASK_VIEW_CHANNEL:
+            if not self.permissions_for(user) & PERMISSION_MASK_VIEW_CHANNEL:
                 continue
             
             if pattern.match(user.name) is not None:
@@ -676,7 +676,7 @@ class ChannelGuildMainBase(ChannelGuildBase):
             permissions |= permission_overwrite_user.allow
         
         # Are we admin?
-        if permissions&PERMISSION_MASK_ADMINISTRATOR:
+        if permissions & PERMISSION_MASK_ADMINISTRATOR:
             return PERMISSION_ALL
         
         return Permission(permissions)
@@ -685,7 +685,7 @@ class ChannelGuildMainBase(ChannelGuildBase):
     @copy_docs(ChannelBase.permissions_for)
     def permissions_for(self, user):
         result = self._permissions_for(user)
-        if not result&PERMISSION_MASK_VIEW_CHANNEL:
+        if not result & PERMISSION_MASK_VIEW_CHANNEL:
             result = PERMISSION_NONE
         
         return result
@@ -726,7 +726,7 @@ class ChannelGuildMainBase(ChannelGuildBase):
             if role.guild_id == guild_id:
                 permissions |= role.permissions
         
-        if permissions&PERMISSION_MASK_ADMINISTRATOR:
+        if permissions & PERMISSION_MASK_ADMINISTRATOR:
             return PERMISSION_ALL
         
         permission_overwrites = self.permission_overwrites
@@ -759,7 +759,7 @@ class ChannelGuildMainBase(ChannelGuildBase):
     @copy_docs(ChannelBase.permissions_for_roles)
     def permissions_for_roles(self, *roles):
         permissions = self._permissions_for_roles(roles)
-        if not permissions&PERMISSION_MASK_VIEW_CHANNEL:
+        if not permissions & PERMISSION_MASK_VIEW_CHANNEL:
             permissions = PERMISSION_NONE
         
         return permissions

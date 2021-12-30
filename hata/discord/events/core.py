@@ -407,7 +407,7 @@ class ParserSetting:
             if (intent_shift == INTENT_SHIFT_DEFAULT_EVENT):
                 break
             
-            if (client.intents>>intent_shift)&1:
+            if (client.intents >> intent_shift) & 1:
                 break
         
         else:
@@ -436,7 +436,7 @@ class ParserSetting:
             if (intent_shift == INTENT_SHIFT_DEFAULT_EVENT):
                 break
             
-            if (client.intents>>intent_shift)&1:
+            if (client.intents >> intent_shift) & 1:
                 break
         
         else:

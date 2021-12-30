@@ -484,7 +484,7 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
                     f'`auto_archive_after` can be any of: {AUTO_ARCHIVE_OPTIONS}, got {auto_archive_after}.'
                 )
         
-        channel_data['auto_archive_duration'] = auto_archive_after//60
+        channel_data['auto_archive_duration'] = auto_archive_after // 60
     
     
     if (default_auto_archive_after is not None):
@@ -507,7 +507,7 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
                     f'{default_auto_archive_after}.'
                 )
         
-        channel_data['default_auto_archive_duration'] = default_auto_archive_after//60
+        channel_data['default_auto_archive_duration'] = default_auto_archive_after // 60
     
     
     if (open_ is not None):

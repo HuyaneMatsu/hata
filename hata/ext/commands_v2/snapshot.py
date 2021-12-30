@@ -76,14 +76,14 @@ def calculate_command_processor_snapshot_difference(client, snapshot_old, snapsh
     if (new_commands is None) or (old_commands is None):
         command_interception = None
     else:
-        command_interception = old_commands&new_commands
+        command_interception = old_commands & new_commands
     
     if command_interception is None:
         old_commands = None
         new_commands = None
     else:
-        old_commands = old_commands-command_interception
-        new_commands = new_commands-command_interception
+        old_commands = old_commands - command_interception
+        new_commands = new_commands - command_interception
         
         if not old_commands:
             old_commands = None
@@ -100,14 +100,14 @@ def calculate_command_processor_snapshot_difference(client, snapshot_old, snapsh
     if (old_categories is None) or (new_categories is None):
         category_interception = None
     else:
-        category_interception = old_categories&new_categories
+        category_interception = old_categories & new_categories
     
     if category_interception is None:
         old_categories = None
         new_categories = None
     else:
-        old_categories = old_categories-category_interception
-        new_categories = new_categories-category_interception
+        old_categories = old_categories - category_interception
+        new_categories = new_categories - category_interception
         
         if not old_categories:
             old_categories = None

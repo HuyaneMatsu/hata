@@ -193,7 +193,7 @@ class ShardUserRequester:
 
 if CACHE_PRESENCE:
     def should_request_users_of(client, guild):
-        if client.intents&INTENT_MASK_GUILD_PRESENCES:
+        if client.intents & INTENT_MASK_GUILD_PRESENCES:
             return guild.is_large
         else:
             return True
@@ -284,7 +284,7 @@ class ReadyState:
         
         guild_ids = set(int(guild_data['id']) for guild_data in guild_datas)
         
-        can_request_users = client.intents&INTENT_MASK_GUILD_USERS
+        can_request_users = client.intents & INTENT_MASK_GUILD_USERS
         
         if can_request_users:
             READY_STATE_TO_DO_GUILD_IDS.update(guild_ids)
@@ -330,7 +330,7 @@ class ReadyState:
         if shard_count == 0:
             shard_id = 0
         else:
-            shard_id = (guild_id>>22)%shard_count
+            shard_id = (guild_id >> 22) % shard_count
         
         try:
             shard_user_requester = self.shard_user_requesters[shard_id]
@@ -434,7 +434,7 @@ class ReadyState:
         if shard_count == 0:
             shard_id = 0
         else:
-            shard_id = (guild_id>>22)%shard_count
+            shard_id = (guild_id >> 22) % shard_count
         
         try:
             shard_user_requester = self.shard_user_requesters[shard_id]

@@ -315,7 +315,7 @@ def _lookup_path(import_name_or_path):
                 return
             
             for python_extension_name in PYTHON_EXTENSION_NAMES:
-                file_path = path+python_extension_name
+                file_path = path + python_extension_name
                 if exists(file_path) and is_file(file_path):
                     yield import_name_or_path, file_path
                     return
@@ -433,4 +433,4 @@ def _get_path_extension_name(path):
     if dot_index != -1:
         file_name = file_name[:dot_index]
     
-    return ABSOLUTE_PATH_EXTENSION_NAME_PREFIX+file_name
+    return ABSOLUTE_PATH_EXTENSION_NAME_PREFIX + file_name

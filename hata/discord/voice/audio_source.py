@@ -9,7 +9,7 @@ from scarletio import alchemy_incendiary, Task, CancelledError
 from ..core import KOKORO
 from .opus import FRAME_LENGTH, FRAME_SIZE
 
-PLAYER_DELAY = FRAME_LENGTH/1000.0
+PLAYER_DELAY = FRAME_LENGTH / 1000.0
 
 del FRAME_LENGTH
 

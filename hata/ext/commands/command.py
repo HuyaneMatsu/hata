@@ -16,7 +16,7 @@ from ...discord.permission.permission import PERMISSION_CAN_SEND_MESSAGES_ALL
 from .content_parser import CommandContentParser
 from .checks import validate_checks
 
-COMMAND_RP = re.compile('[ \t\\n]*([^ \t\\n]*)[ \t\\n]*(.*)', re.M|re.S)
+COMMAND_RP = re.compile('[ \t\\n]*([^ \t\\n]*)[ \t\\n]*(.*)', re.M | re.S)
 
 AUTO_DASH_MAIN_CHAR = '-'
 AUTO_DASH_APPLICABLES = ('-', '_')
@@ -123,7 +123,7 @@ def generate_alters_for(name):
                 continue
             
             count = len(generated)
-            for _ in range(len(AUTO_DASH_APPLICABLES)-1):
+            for _ in range(len(AUTO_DASH_APPLICABLES) - 1):
                 for index in range(count):
                     generated_sub = generated[index]
                     generated_sub = generated_sub.copy()
@@ -222,7 +222,7 @@ async def process_command_coroutine(client, channel, coroutine):
         response = await coroutine
     
     if (response is not None) and isinstance(response, (str, EmbedBase)) and \
-            channel.cached_permissions_for(client)&PERMISSION_CAN_SEND_MESSAGES_ALL:
+            channel.cached_permissions_for(client) & PERMISSION_CAN_SEND_MESSAGES_ALL:
         
         try:
             await client.message_create(channel, response)
@@ -2473,7 +2473,7 @@ class CommandProcesser(EventWaitforBase):
         else:
             flag = 0
         
-        flag |= re.M|re.S
+        flag |= re.M | re.S
         
         while True:
             if callable(prefix):
@@ -2678,7 +2678,7 @@ class CommandProcesser(EventWaitforBase):
         if message.author.is_bot:
             return False
         
-        if not message.channel.cached_permissions_for(client)&PERMISSION_CAN_SEND_MESSAGES_ALL:
+        if not message.channel.cached_permissions_for(client) & PERMISSION_CAN_SEND_MESSAGES_ALL:
             return False
         
         return True

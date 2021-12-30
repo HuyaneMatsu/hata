@@ -332,13 +332,13 @@ class ChannelVoice(ChannelVoiceBase):
     @copy_docs(ChannelBase.permissions_for)
     def permissions_for(self, user):
         result = self._permissions_for(user)
-        if not result&PERMISSION_MASK_VIEW_CHANNEL:
+        if not result & PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
         #voice channels don't have text permissions
         result &= PERMISSION_TEXT_AND_STAGE_DENY
         
-        if not result&PERMISSION_MASK_CONNECT:
+        if not result & PERMISSION_MASK_CONNECT:
             result &= PERMISSION_VOICE_DENY_CONNECTION
         
         return Permission(result)
@@ -347,13 +347,13 @@ class ChannelVoice(ChannelVoiceBase):
     @copy_docs(ChannelBase.permissions_for_roles)
     def permissions_for_roles(self, *roles):
         result = self._permissions_for_roles(roles)
-        if not result&PERMISSION_MASK_VIEW_CHANNEL:
+        if not result & PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
         # voice channels don't have text permissions
         result &= PERMISSION_TEXT_AND_STAGE_DENY
         
-        if not result&PERMISSION_MASK_CONNECT:
+        if not result & PERMISSION_MASK_CONNECT:
             result &= PERMISSION_VOICE_DENY_CONNECTION
         
         return Permission(result)
@@ -688,13 +688,13 @@ class ChannelStage(ChannelVoiceBase):
     @copy_docs(ChannelBase.permissions_for)
     def permissions_for(self, user):
         result = self._permissions_for(user)
-        if not result&PERMISSION_MASK_VIEW_CHANNEL:
+        if not result & PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
         # voice channels don't have text permissions
         result &= PERMISSION_TEXT_DENY
         
-        if not result&PERMISSION_MASK_CONNECT:
+        if not result & PERMISSION_MASK_CONNECT:
             result &= PERMISSION_VOICE_DENY_CONNECTION
         
         return Permission(result)
@@ -703,13 +703,13 @@ class ChannelStage(ChannelVoiceBase):
     @copy_docs(ChannelBase.permissions_for_roles)
     def permissions_for_roles(self, *roles):
         result = self._permissions_for_roles(roles)
-        if not result&PERMISSION_MASK_VIEW_CHANNEL:
+        if not result & PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
         # voice channels don't have text permissions
         result &= PERMISSION_TEXT_DENY
         
-        if not result&PERMISSION_MASK_CONNECT:
+        if not result & PERMISSION_MASK_CONNECT:
             result &= PERMISSION_VOICE_DENY_CONNECTION
         
         return Permission(result)

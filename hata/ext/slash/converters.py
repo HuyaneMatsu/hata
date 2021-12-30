@@ -292,7 +292,7 @@ async def converter_snowflake(client, interaction_event, value):
     except ValueError:
         snowflake = None
     else:
-        if (snowflake < (1<<22)) or (snowflake > ((1<<64)-1)):
+        if (snowflake < (1 << 22)) or (snowflake > ((1 << 64) - 1)):
             snowflake = None
     
     return snowflake

@@ -311,17 +311,17 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
     @copy_docs(ChannelBase.permissions_for)
     def permissions_for(self, user):
         result = self._permissions_for(user)
-        if not result&PERMISSION_MASK_VIEW_CHANNEL:
+        if not result & PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
         # text channels don't have voice permissions
         result &= PERMISSION_VOICE_DENY
         
-        if self.type and (not result&PERMISSION_MASK_MANAGE_MESSAGES):
-            result = result&PERMISSION_TEXT_DENY
+        if self.type and (not result & PERMISSION_MASK_MANAGE_MESSAGES):
+            result = result & PERMISSION_TEXT_DENY
             return Permission(result)
         
-        if result&PERMISSION_MASK_SEND_MESSAGES:
+        if result & PERMISSION_MASK_SEND_MESSAGES:
             result &= PERMISSION_DENY_SEND_MESSAGES_IN_THREADS_ONLY
         else:
             result &= PERMISSION_TEXT_DENY
@@ -332,17 +332,17 @@ class ChannelText(ChannelGuildMainBase, ChannelTextBase):
     @copy_docs(ChannelBase.permissions_for_roles)
     def permissions_for_roles(self, *roles):
         result = self._permissions_for_roles(roles)
-        if not result&PERMISSION_MASK_VIEW_CHANNEL:
+        if not result & PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
         # text channels don't have voice permissions
         result &= PERMISSION_VOICE_DENY
         
-        if self.type and (not result&PERMISSION_MASK_MANAGE_MESSAGES):
-            result = result&PERMISSION_TEXT_DENY
+        if self.type and (not result & PERMISSION_MASK_MANAGE_MESSAGES):
+            result = result & PERMISSION_TEXT_DENY
             return Permission(result)
         
-        if result&PERMISSION_MASK_SEND_MESSAGES:
+        if result & PERMISSION_MASK_SEND_MESSAGES:
             result &= PERMISSION_DENY_SEND_MESSAGES_IN_THREADS_ONLY
         else:
             result &= PERMISSION_TEXT_DENY

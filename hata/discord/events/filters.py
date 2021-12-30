@@ -37,7 +37,7 @@ def filter_clients(clients, flag_mask):
             return
         
         client = clients[index]
-        if client.intents&flag_mask:
+        if client.intents & flag_mask:
             yield client
             break
         
@@ -52,7 +52,7 @@ def filter_clients(clients, flag_mask):
             return
         
         client = clients[index]
-        if client.intents&flag_mask:
+        if client.intents & flag_mask:
             yield client
         
         index += 1
@@ -104,7 +104,7 @@ def filter_clients_or_me(clients, flag_mask, me):
             return
         
         client = clients[index]
-        if client.intents&flag_mask:
+        if client.intents & flag_mask:
             user = yield client
             break
         
@@ -121,7 +121,7 @@ def filter_clients_or_me(clients, flag_mask, me):
             break
         
         client = clients[index]
-        if client.intents&flag_mask:
+        if client.intents & flag_mask:
             yield client
         
         index += 1
@@ -131,7 +131,7 @@ def filter_clients_or_me(clients, flag_mask, me):
     if not isinstance(user, Client):
         return
     
-    if user.intents&flag_mask:
+    if user.intents & flag_mask:
         return
     
     yield user
@@ -178,7 +178,7 @@ def first_client(clients, flag_mask):
             return None
         
         client = clients[index]
-        if client.intents&flag_mask:
+        if client.intents & flag_mask:
             return client
             break
         
@@ -211,7 +211,7 @@ def first_client_or_me(clients, flag_mask, me):
             return me
         
         client = clients[index]
-        if client.intents&flag_mask:
+        if client.intents & flag_mask:
             return client
             break
         

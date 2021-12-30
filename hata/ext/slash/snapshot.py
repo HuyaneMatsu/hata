@@ -198,8 +198,8 @@ def calculate_slasher_snapshot_difference(client, snapshot_old, snapshot_new):
         removed_component_commands = component_command_snapshot_old
         added_component_commands = component_command_snapshot_new
     else:
-        removed_component_commands = component_command_snapshot_old-component_command_snapshot_new
-        added_component_commands = component_command_snapshot_new-component_command_snapshot_old
+        removed_component_commands = component_command_snapshot_old - component_command_snapshot_new
+        added_component_commands = component_command_snapshot_new - component_command_snapshot_old
         
         if (not removed_component_commands):
             removed_component_commands = None
@@ -217,8 +217,8 @@ def calculate_slasher_snapshot_difference(client, snapshot_old, snapshot_new):
         removed_form_submit_commands = form_submit_command_snapshot_old
         added_form_submit_commands = form_submit_command_snapshot_new
     else:
-        removed_form_submit_commands = form_submit_command_snapshot_old-form_submit_command_snapshot_new
-        added_form_submit_commands = form_submit_command_snapshot_new-form_submit_command_snapshot_old
+        removed_form_submit_commands = form_submit_command_snapshot_old - form_submit_command_snapshot_new
+        added_form_submit_commands = form_submit_command_snapshot_new - form_submit_command_snapshot_old
         
         if (not removed_form_submit_commands):
             removed_form_submit_commands = None

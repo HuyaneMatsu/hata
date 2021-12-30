@@ -197,15 +197,15 @@ def reconstruct_string_into(value, into, indent, is_file):
         if length > STRING_BREAK_TO_MULTI_LINE_OVER:
             into.append('(\n')
             
-            string_indent = indent+1
+            string_indent = indent + 1
             
-            chunk_size = STRING_MAX_LINE_LENGTH-string_indent*len(VALUE_INDENT)
+            chunk_size = STRING_MAX_LINE_LENGTH - string_indent * len(VALUE_INDENT)
             if chunk_size < STRING_MIN_LINE_LENGTH:
                 chunk_size = STRING_MIN_LINE_LENGTH
             
             start_index = 0
             while True:
-                end_index = start_index+chunk_size
+                end_index = start_index + chunk_size
                 if end_index >= length:
                     end_index = length
                     should_break = True

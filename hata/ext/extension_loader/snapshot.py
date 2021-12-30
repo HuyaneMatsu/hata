@@ -174,7 +174,7 @@ def calculate_snapshot_difference(snapshot_old, snapshot_new):
         `snapshot-type-name`, `type-specific-snapshot-difference` pairs.
     """
     # First check client difference. We will ignore clients which weren't present before or after.
-    snapshot_clients_interception = set(e[0] for e in snapshot_old)&set(e[0] for e in snapshot_new)
+    snapshot_clients_interception = set(e[0] for e in snapshot_old) & set(e[0] for e in snapshot_new)
     
     # Place snapshots next to each other depending on clients.
     parallel_snapshots = []
@@ -197,7 +197,7 @@ def calculate_snapshot_difference(snapshot_old, snapshot_new):
         client_snapshot_difference = None
         
         # Collect snapshot type names, which are present.
-        snapshot_types_name_interception = set(e[0] for e in client_snapshot_old)&set(e[0] for e in client_snapshot_new)
+        snapshot_types_name_interception = set(e[0] for e in client_snapshot_old) & set(e[0] for e in client_snapshot_new)
         
         client_snapshot_old = dict(client_snapshot_old)
         client_snapshot_new = dict(client_snapshot_new)

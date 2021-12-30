@@ -14,7 +14,7 @@ from ..http import urls as module_urls
 Client = include('Client')
 Guild = include('Guild')
 
-UNICODE_EMOJI_LIMIT = 1<<21
+UNICODE_EMOJI_LIMIT = 1 << 21
 
 
 @export
@@ -627,7 +627,7 @@ class Emoji(DiscordEntity, immortal=True):
         self : ``Emoji``
             The created emoji.
         """
-        emoji_id = cls._last_unicode_id+1
+        emoji_id = cls._last_unicode_id + 1
         cls._last_unicode_id = emoji_id
         
         self = object.__new__(cls)

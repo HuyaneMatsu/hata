@@ -272,7 +272,7 @@ class SolarPlayer(SolarPlayerBase):
             if index > len(queue):
                 track = None
             else:
-                track = queue.pop(index-1)
+                track = queue.pop(index - 1)
                 
                 if self._repeat_queue and (not self._repeat_current):
                     queue.append(track)
@@ -323,7 +323,7 @@ class SolarPlayer(SolarPlayerBase):
         elif index > len(queue):
             track = None
         else:
-            track = queue.pop(index-1)
+            track = queue.pop(index - 1)
         
         return track
     

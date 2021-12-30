@@ -176,7 +176,7 @@ class ChannelStore(ChannelGuildMainBase):
     @copy_docs(ChannelBase.permissions_for)
     def permissions_for(self, user):
         result = self._permissions_for(user)
-        if not result&PERMISSION_MASK_VIEW_CHANNEL:
+        if not result & PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
         # store channels do not have text and voice related permissions
@@ -188,7 +188,7 @@ class ChannelStore(ChannelGuildMainBase):
     @copy_docs(ChannelBase.permissions_for_roles)
     def permissions_for_roles(self, *roles):
         result = self._permissions_for_roles(roles)
-        if not result&PERMISSION_MASK_VIEW_CHANNEL:
+        if not result & PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
         # store channels do not have text and voice related permissions

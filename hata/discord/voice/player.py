@@ -8,7 +8,7 @@ from scarletio import Task, Event, sleep, CancelledError
 from ..core import KOKORO
 from .opus import FRAME_LENGTH, SAMPLES_PER_FRAME
 
-PLAYER_DELAY = FRAME_LENGTH/1000.0
+PLAYER_DELAY = FRAME_LENGTH / 1000.0
 
 del FRAME_LENGTH
 
@@ -122,17 +122,17 @@ class AudioPlayer:
                     voice_client._audio_source.to_bytes(4, 'big'),
                 ])
                 
-                nonce = header+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-                packet = bytearray(header)+voice_client._secret_box.encrypt(bytes(data), nonce).ciphertext
+                nonce = header + b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+                packet = bytearray(header) + voice_client._secret_box.encrypt(bytes(data), nonce).ciphertext
                 
                 voice_client.send_packet(packet)
                 
-                timestamp = voice_client._timestamp+SAMPLES_PER_FRAME
+                timestamp = voice_client._timestamp + SAMPLES_PER_FRAME
                 if timestamp > 4294967295:
                     timestamp = 0
                 voice_client._timestamp = timestamp
                 
-                delay = PLAYER_DELAY+((start+PLAYER_DELAY*loops)-perf_counter())
+                delay = PLAYER_DELAY + ((start + PLAYER_DELAY * loops) - perf_counter())
                 if delay < 0.0:
                     continue
                 await sleep(delay, KOKORO)

@@ -901,7 +901,7 @@ class ComponentRow(ComponentBase):
         # components
         components = self.components
         if (components is not None):
-            hash_value ^= len(components)<<12
+            hash_value ^= len(components) << 12
             for component in components:
                 hash_value ^= hash(component)
         
@@ -1394,7 +1394,7 @@ class ComponentButton(ComponentBase):
         
         # enabled
         if self.enabled:
-            hash_value ^= 1<<8
+            hash_value ^= 1 << 8
         
         # emoji
         emoji = self.emoji
@@ -1728,7 +1728,7 @@ class ComponentSelectOption(ComponentBase):
         
         # default
         if self.default:
-            hash_value ^= 1<<8
+            hash_value ^= 1 << 8
         
         # description
         description = self.description
@@ -2186,12 +2186,12 @@ class ComponentSelect(ComponentBase):
         
         # enabled
         if self.enabled:
-            hash_value ^= 1<<8
+            hash_value ^= 1 << 8
         
         # options
         options = self.options
         if (options is not None):
-            hash_value ^= len(options)<<12
+            hash_value ^= len(options) << 12
             for option in options:
                 hash_value ^= hash(option)
         
@@ -2824,7 +2824,7 @@ class ComponentTextInput(ComponentBase):
         
         # enabled
         if self.enabled:
-            hash_value ^= 1<<8
+            hash_value ^= 1 << 8
         
         # label
         label = self.label
@@ -2834,12 +2834,12 @@ class ComponentTextInput(ComponentBase):
         # max_length
         max_length = self.max_length
         if max_length:
-            hash_value ^= max_length<<12
+            hash_value ^= max_length << 12
         
         # min_length
         min_length = self.min_length
         if min_length:
-            hash_value ^= min_length<<20
+            hash_value ^= min_length << 20
         
         # placeholder
         placeholder = self.placeholder
@@ -2848,7 +2848,7 @@ class ComponentTextInput(ComponentBase):
         
         # required
         if self.required:
-            hash_value ^= (1<<28)
+            hash_value ^= (1 << 28)
         
         # style
         style = self.style

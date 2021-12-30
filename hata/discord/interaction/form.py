@@ -299,7 +299,7 @@ class InteractionForm(ComponentBase):
         # components
         components = self.components
         if (components is not None):
-            hash_value ^= len(components)<<12
+            hash_value ^= len(components) << 12
             for component in components:
                 hash_value ^= hash(component)
         

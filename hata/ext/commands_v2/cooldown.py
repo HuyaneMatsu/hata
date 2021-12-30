@@ -62,14 +62,14 @@ def _check_user(cooldown_handler, command_context):
     try:
         unit = cache[user_id]
     except KeyError:
-        at_ = LOOP_TIME()+cooldown_handler.reset
+        at_ = LOOP_TIME() + cooldown_handler.reset
         cache[user_id] = CooldownUnit(at_, cooldown_handler.limit)
         KOKORO.call_at(at_, dict.__delitem__, cache, user_id)
         return 0.
     
     left = unit.uses_left
     if left > 0:
-        unit.uses_left = left-cooldown_handler.weight
+        unit.uses_left = left - cooldown_handler.weight
         return 0.
     
     return unit.expires_at
@@ -99,14 +99,14 @@ def _check_channel(cooldown_handler, command_context):
     try:
         unit = cache[channel_id]
     except KeyError:
-        at_ = LOOP_TIME()+cooldown_handler.reset
+        at_ = LOOP_TIME() + cooldown_handler.reset
         cache[channel_id] = CooldownUnit(at_, cooldown_handler.limit)
         KOKORO.call_at(at_, dict.__delitem__, cache, channel_id)
         return 0.
     
     left = unit.uses_left
     if left > 0:
-        unit.uses_left = left-cooldown_handler.weight
+        unit.uses_left = left - cooldown_handler.weight
         return 0.
     
     return unit.expires_at
@@ -142,14 +142,14 @@ def _check_guild(cooldown_handler, command_context):
     try:
         unit = cache[guild_id]
     except KeyError:
-        at_ = LOOP_TIME()+cooldown_handler.reset
+        at_ = LOOP_TIME() + cooldown_handler.reset
         cache[guild_id] = CooldownUnit(at_, command_context.self.limit)
         KOKORO.call_at(at_, dict.__delitem__, cache, guild_id)
         return 0.
     
     left = unit.uses_left
     if left > 0:
-        unit.uses_left = left-cooldown_handler.weight
+        unit.uses_left = left - cooldown_handler.weight
         return 0.
     
     return unit.expires_at
@@ -264,7 +264,7 @@ class CooldownHandler:
         self.checker = checker
         self.reset = reset
         self.weight = weight
-        self.limit = limit-weight
+        self.limit = limit - weight
         self.cache = {}
         
         return self
@@ -292,6 +292,6 @@ class CooldownHandler:
             if expires_at == -1:
                 expires_after = -1
             else:
-                expires_after = expires_at-LOOP_TIME()
+                expires_after = expires_at - LOOP_TIME()
             
             raise CommandCooldownError(self, expires_after)

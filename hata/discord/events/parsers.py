@@ -1319,7 +1319,7 @@ if CACHE_PRESENCE:
             return
         
         for client_ in CLIENTS.values():
-            if client_.intents&INTENT_MASK_GUILD_PRESENCES:
+            if client_.intents & INTENT_MASK_GUILD_PRESENCES:
                 if presence:
                     event_handler = client_.events.user_presence_update
                 else:
@@ -2464,7 +2464,7 @@ if CACHE_PRESENCE:
         
         ready_state = client.ready_state
         if (ready_state is None) or (not ready_state.feed_guild(client, guild)):
-            if (client.intents&INTENT_SHIFT_GUILD_USERS) and guild.is_large:
+            if (client.intents & INTENT_SHIFT_GUILD_USERS) and guild.is_large:
                 Task(client._request_members(guild.id), KOKORO)
             
             Task(client.events.guild_create(client, guild), KOKORO)
@@ -2479,7 +2479,7 @@ if CACHE_PRESENCE:
         
         ready_state = client.ready_state
         if (ready_state is None) or (not ready_state.feed_guild(client, guild)):
-            if (client.intents&INTENT_SHIFT_GUILD_USERS) and guild.is_large:
+            if (client.intents & INTENT_SHIFT_GUILD_USERS) and guild.is_large:
                 Task(client._request_members(guild.id), KOKORO)
 
 elif CACHE_USER:
@@ -2492,7 +2492,7 @@ elif CACHE_USER:
         
         ready_state = client.ready_state
         if (ready_state is None) or (not ready_state.feed_guild(client, guild)):
-            if (client.intents&INTENT_SHIFT_GUILD_USERS):
+            if (client.intents & INTENT_SHIFT_GUILD_USERS):
                 Task(client._request_members(guild.id), KOKORO)
             
             Task(client.events.guild_create(client, guild), KOKORO)
@@ -2506,7 +2506,7 @@ elif CACHE_USER:
         
         ready_state = client.ready_state
         if (ready_state is None) or (not ready_state.feed_guild(client, guild)) and \
-                (client.intents&INTENT_SHIFT_GUILD_USERS):
+                (client.intents & INTENT_SHIFT_GUILD_USERS):
             Task(client._request_members(guild.id), KOKORO)
 
 else:
@@ -4024,7 +4024,7 @@ def THREAD_MEMBERS_UPDATE__CAL_MC(client, data):
     except KeyError:
         return
     
-    if client.intents&INTENT_MASK_GUILD_USERS:
+    if client.intents & INTENT_MASK_GUILD_USERS:
         clients = filter_clients(thread_channel.clients, INTENT_MASK_GUILD_USERS)
     
         if clients.send(None) is not client:

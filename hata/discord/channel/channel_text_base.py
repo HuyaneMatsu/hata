@@ -38,9 +38,9 @@ def message_relative_index(messages, message_id):
     top = len(messages)
     while True:
         if bot < top:
-            half = (bot+top)>>1
+            half = (bot + top) >> 1
             if messages[half].id > message_id:
-                bot = half+1
+                bot = half + 1
             else:
                 top = half
             continue
@@ -122,7 +122,7 @@ class MessageHistoryCollector:
             repr_parts.append(' cancelled')
         else:
             repr_parts.append(' scheduled: ')
-            timestamp = datetime.utcfromtimestamp(current_time()+handle.when+self.delay-LOOP_TIME())
+            timestamp = datetime.utcfromtimestamp(current_time() + handle.when + self.delay - LOOP_TIME())
             repr_parts.append(timestamp.__format__(DATETIME_FORMAT_CODE))
         
         repr_parts.append('>')

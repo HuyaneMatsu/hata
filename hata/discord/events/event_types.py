@@ -159,7 +159,7 @@ class GuildUserChunkEvent(EventBase):
         hash_value ^= self.guild_id
         
         # index
-        hash_value ^= (self.index<<12)
+        hash_value ^= (self.index << 12)
         
         # nonce
         nonce = self.nonce
@@ -169,7 +169,7 @@ class GuildUserChunkEvent(EventBase):
         # users
         users = self.users
         if users:
-            hash_value ^= (len(users)<<24)
+            hash_value ^= (len(users) << 24)
             
             for user in users:
                 hash_value ^= user.id

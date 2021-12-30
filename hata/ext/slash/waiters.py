@@ -97,13 +97,13 @@ class Timeouter:
         now = LOOP_TIME()
         next_step = handle.when
         
-        planed_end = now+value
+        planed_end = now + value
         if planed_end < next_step:
             handle.cancel()
             self._handle = KOKORO.call_at(planed_end, type(self)._step, self)
             return
         
-        self._timeout = planed_end-next_step
+        self._timeout = planed_end - next_step
     
     
     def get_expiration_delay(self):
@@ -120,7 +120,7 @@ class Timeouter:
         if handle is None:
             return 0.0
         
-        return handle.when-LOOP_TIME()+self._timeout
+        return handle.when - LOOP_TIME() + self._timeout
 
 
 class ComponentInteractionWaiter:
@@ -373,7 +373,7 @@ class ComponentInteractionIterator:
         if (timeout is not None) and (timeouter is not None):
             self._timeouter.set_timeout(timeout)
         
-        count = self.count-1
+        count = self.count - 1
         if count:
             self.count = count
         else:

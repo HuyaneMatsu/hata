@@ -45,15 +45,15 @@ class Array_uint_32b: #TODO : ask python to implement arrays already
         """Returns the array's length"""
         limit = self._limit
         offset = self._offset
-        value = (limit-offset)>>2
+        value = (limit - offset) >> 2
         
         return value
     
     def __getitem__(self, index):
         """Returns the element of the array at the given index."""
-        index = index<<2
-        offset = self._offset+index
-        value = int.from_bytes(self._data[offset:offset+4], 'big')
+        index = index << 2
+        offset = self._offset + index
+        value = int.from_bytes(self._data[offset:offset + 4], 'big')
         
         return value
     
@@ -66,10 +66,10 @@ class Array_uint_32b: #TODO : ask python to implement arrays already
         while True:
             if offset == limit:
                 break
-            value = int.from_bytes(data[offset:offset+4], 'big')
+            value = int.from_bytes(data[offset:offset + 4], 'big')
             yield value
             
-            offset = offset+4
+            offset = offset + 4
 
 
 class PacketBase:
@@ -129,7 +129,7 @@ class RTPPacket(PacketBase):
         offset = 12
         cc = self.cc
         if cc:
-            offset = offset+(cc<<2)
+            offset = offset + (cc << 2)
         self._offset1 = offset
         
         nonce = data[:12]+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
@@ -138,7 +138,7 @@ class RTPPacket(PacketBase):
         
         if self.extended:
             extension = int.from_bytes(decrypted[2:4], 'big')
-            offset = (extension<<2)+4
+            offset = (extension << 2) + 4
         else:
             offset = 0
         
@@ -185,11 +185,11 @@ class RTPPacket(PacketBase):
     
     @property
     def padding(self):
-        return (self._data[0]&0b00100000)>>5
+        return (self._data[0]&0b00100000) >> 5
     
     @property
     def extended(self):
-        return (self._data[0]&0b00010000)>>4
+        return (self._data[0]&0b00010000) >> 4
     
     @property
     def cc(self):
@@ -197,7 +197,7 @@ class RTPPacket(PacketBase):
     
     @property
     def marker(self):
-        return (self._data[1]&0b10000000)>>7
+        return (self._data[1]&0b10000000) >> 7
     
     @property
     def payload(self):
@@ -239,7 +239,7 @@ class RTPPacket(PacketBase):
 ##
 ##    @property
 ##    def padding(self):
-##        return (self._data[0]&0b00100000)>>5
+##        return (self._data[0]&0b00100000) >> 5
 ##
 ##    @property
 ##    def length(self):
@@ -262,37 +262,37 @@ class RTPPacket(PacketBase):
 ##    @property
 ##    def source(self):
 ##        offset = self._offset
-##        return int.from_bytes(self._data[offset:offset+4], 'big')
+##        return int.from_bytes(self._data[offset:offset + 4], 'big')
 ##
 ##    @property
 ##    def loss_percent(self):
 ##        offset = self._offset
-##        return self._data[offset+4]
+##        return self._data[offset + 4]
 ##
 ##    @property
 ##    def loss_total(self):
-##        offset = self._offset+5
-##        return int.from_bytes(self._data[offset:offset+3], 'big')
+##        offset = self._offset + 5
+##        return int.from_bytes(self._data[offset:offset + 3], 'big')
 ##
 ##    @property
 ##    def last_sequence(self):
-##        offset = self._offset+8
-##        return int.from_bytes(self._data[offset:offset+4], 'big')
+##        offset = self._offset + 8
+##        return int.from_bytes(self._data[offset:offset + 4], 'big')
 ##
 ##    @property
 ##    def jitter(self):
-##        offset = self._offset+12
-##        return int.from_bytes(self._data[offset:offset+4], 'big')
+##        offset = self._offset + 12
+##        return int.from_bytes(self._data[offset:offset + 4], 'big')
 ##
 ##    @property
 ##    def lsr(self):
-##        offset = self._offset+16
-##        return int.from_bytes(self._data[offset:offset+4], 'big')
+##        offset = self._offset + 16
+##        return int.from_bytes(self._data[offset:offset + 4], 'big')
 ##
 ##    @property
 ##    def dlsr(self):
-##        offset = self._offset+20
-##        return int.from_bytes(self._data[offset:offset+4], 'big')
+##        offset = self._offset + 20
+##        return int.from_bytes(self._data[offset:offset + 4], 'big')
 ##
 ###http://www.rfcreader.com/#rfc3550_line1614
 ##class SenderReportPacket(RTCPPacket):
@@ -303,12 +303,12 @@ class RTPPacket(PacketBase):
 ##        data_shard = data[:8]
 ##        self._data = data_shard
 ##
-##        nonce = data_shard+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+##        nonce = data_shard + b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 ##        decrypted = voice_client._secret_box.decrypt(data[8:], nonce)
 ##        self._decrypted = decrypted
 ##
 ##        report_count = data_shard[0]&0b00011111
-##        offset = (report_count*24)+20
+##        offset = (report_count*24) + 20
 ##        self._offset1 = offset
 ##
 ##    def __repr__(self):
@@ -330,11 +330,11 @@ class RTPPacket(PacketBase):
 ##    @property
 ##    def info_ntp_ts(self):
 ##        low = int.from_bytes(self._decrypted[4:8], 'big')
-##        low = low/(1<<low.bit_length())
+##        low = low / (1 << low.bit_length())
 ##
 ##        high = int.from_bytes(self._decrypted[0:4], 'big')
 ##
-##        return high+low
+##        return high + low
 ##
 ##    @property
 ##    def info_rtp_ts(self):
@@ -357,7 +357,7 @@ class RTPPacket(PacketBase):
 ##            return memoryview(decrypted)[offset:]
 ##
 ##    def report_get(self,index):
-##        offset = (index*24)+20
+##        offset = (index*24) + 20
 ##        obj = _RPReport(self._decrypted, offset)
 ##
 ##        return obj
@@ -384,7 +384,7 @@ class RTPPacket(PacketBase):
 ##        data_shard = data[:8]
 ##        self._data = data_shard
 ##
-##        nonce = data_shard+b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+##        nonce = data_shard + b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 ##        decrypted = voice_client._secret_box.decrypt(data[8:], nonce)
 ##        self._decrypted = decrypted
 ##

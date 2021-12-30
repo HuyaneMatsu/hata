@@ -291,11 +291,11 @@ class Pagination(PaginationBase):
         
         while True:
             if emoji is self.LEFT:
-                page_index = self.page_index-1
+                page_index = self.page_index - 1
                 break
             
             if emoji is self.RIGHT:
-                page_index = self.page_index+1
+                page_index = self.page_index + 1
                 break
             
             if emoji is self.CANCEL:
@@ -330,7 +330,7 @@ class Pagination(PaginationBase):
                 break
             
             if emoji is self.RIGHT2:
-                page_index = len(self.pages)-1
+                page_index = len(self.pages) - 1
                 break
             
             return
@@ -338,7 +338,7 @@ class Pagination(PaginationBase):
         if page_index < 0:
             page_index = 0
         elif page_index >= len(self.pages):
-            page_index = len(self.pages)-1
+            page_index = len(self.pages) - 1
         
         if self.page_index == page_index:
             return

@@ -129,7 +129,7 @@ class GuildJoinRequestDeleteEvent(EventBase):
     
     @copy_docs(EventBase.__hash__)
     def __hash__(self):
-        return self.guild_id^self.user_id
+        return self.guild_id ^ self.user_id
     
     
     @property

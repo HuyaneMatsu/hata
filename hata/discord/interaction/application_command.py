@@ -2184,7 +2184,7 @@ class ApplicationCommandPermissionOverwrite:
     
     def __hash__(self):
         """Returns the application command permission overwrite's hash value."""
-        return self.target_type.value^(self.allow<<8)^self.target_id
+        return self.target_type.value^(self.allow << 8)^self.target_id
     
     
     def copy(self):

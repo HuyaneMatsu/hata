@@ -819,15 +819,15 @@ class UserPagination:
         if emoji is self.left2:
             page_index = 0
         elif emoji is self.left:
-            page_index = self.page_index-1
+            page_index = self.page_index - 1
             if page_index < 0:
                 page_index = 0
         elif emoji is self.right:
-            page_index = self.page_index+1
+            page_index = self.page_index + 1
             if page_index >= len(self.pages):
-                page_index = len(self.pages)-1
+                page_index = len(self.pages) - 1
         elif emoji is self.right2:
-            page_index = len(self.pages)-1
+            page_index = len(self.pages) - 1
         else:
             return
         

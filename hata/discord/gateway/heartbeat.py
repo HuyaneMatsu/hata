@@ -186,7 +186,7 @@ class Kokoro:
             finally:
                 self.beat_waiter = None
             
-            if (self.last_answer+self.interval+HEARTBEAT_TIMEOUT)-perf_counter() <= 0.0:
+            if (self.last_answer + self.interval + HEARTBEAT_TIMEOUT) - perf_counter() <= 0.0:
                 self.should_beat = False
                 Task(gateway.terminate(), KOKORO)
                 break
@@ -265,7 +265,7 @@ class Kokoro:
         """
         now_ = perf_counter()
         self.last_answer = now_
-        self.latency = now_-self.last_send
+        self.latency = now_ - self.last_send
     
     
     def terminate(self):

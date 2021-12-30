@@ -103,7 +103,7 @@ class Icon:
         else:
             icon = self.hash.__format__('0>32x')
             if icon_type is ICON_TYPE_ANIMATED:
-                icon = 'a_'+icon
+                icon = 'a_' + icon
         
         return icon
     
@@ -116,13 +116,13 @@ class Icon:
                 hash_value = 0
             else:
                 icon_hash = self.hash
-                hash_value = (icon_hash>>96)^ \
-                             ((icon_hash>>64)&((1<<32)-1))^ \
-                             ((icon_hash>>32)&((1<<32)-1))^ \
-                             (icon_hash&((1<<32)-1))
+                hash_value = (icon_hash >> 96) ^ \
+                             ((icon_hash >> 64) & ((1 << 32) - 1)) ^ \
+                             ((icon_hash >> 32) & ((1 << 32) - 1)) ^ \
+                             (icon_hash & ((1 << 32) - 1))
                 
                 if icon_type is ICON_TYPE_ANIMATED:
-                    hash_value ^= ((1<<32)-1)
+                    hash_value ^= ((1 << 32) - 1)
             
             return hash_value
     
@@ -134,9 +134,9 @@ class Icon:
                 hash_value = 0
             else:
                 icon_hash = self.hash
-                hash_value = (icon_hash>>64)^(icon_hash&((1<<64)-1))
+                hash_value = (icon_hash >> 64) ^ (icon_hash & ((1 << 64) - 1))
                 if icon_type is ICON_TYPE_ANIMATED:
-                    hash_value ^= ((1<<64)-1)
+                    hash_value ^= ((1 << 64) - 1)
             return hash_value
     
     else:
@@ -148,7 +148,7 @@ class Icon:
             else:
                 hash_value = self.hash
                 if icon_type is ICON_TYPE_ANIMATED:
-                    hash_value ^= ((1<<128)-1)
+                    hash_value ^= ((1 << 128) - 1)
             
             return hash_value
     
@@ -417,7 +417,7 @@ class IconSlot:
                     f'`{icon_hash_name}` can be `int`, got {icon_hash.__class__.__name__}; {icon_hash!r}.'
                 )
             
-            if icon_hash < 0 or icon_hash > ((1<<128)-1):
+            if icon_hash < 0 or icon_hash > ((1 << 128) - 1):
                 raise ValueError(
                     f'`{icon_hash_name}` cannot be negative or longer than 128 bits, got {icon_hash!r}.'
                 )

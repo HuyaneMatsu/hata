@@ -530,20 +530,20 @@ class AllowedMentionProxy:
     def __hash__(self):
         """Returns the allowed mention proxy's hash value."""
         hash_value = 0
-        hash_value ^= self._allow_users<<3
-        hash_value ^= self._allow_roles<<6
-        hash_value ^= self._allow_everyone<<9
-        hash_value ^= self.self._allow_replied_user<<12
+        hash_value ^= self._allow_users << 3
+        hash_value ^= self._allow_roles << 6
+        hash_value ^= self._allow_everyone << 9
+        hash_value ^= self.self._allow_replied_user << 12
         
         allowed_roles = self._allowed_roles
         if (allowed_roles is not None):
-            hash_value ^= len(allowed_roles)<<24
+            hash_value ^= len(allowed_roles) << 24
             for role in allowed_roles:
                 hash_value ^= role.id
 
         allowed_users = self._allowed_users
         if (allowed_users is not None):
-            hash_value ^= len(allowed_users)<<24
+            hash_value ^= len(allowed_users) << 24
             for user in allowed_users:
                 hash_value ^= user.id
         

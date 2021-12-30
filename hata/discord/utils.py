@@ -45,10 +45,10 @@ def endswith_xFFxD9(data):
     -------
     result : `bool`
     """
-    index = len(data)-1
+    index = len(data) - 1
     while index > 1:
         actual = data[index]
-        if actual == b'\xD9'[0] and data[index-1] == b'\xFF'[0]:
+        if actual == b'\xD9'[0] and data[index - 1] == b'\xFF'[0]:
             return True
         
         if actual:
@@ -215,7 +215,7 @@ def id_to_datetime(id_):
     -------
     date_time : `datetime`
     """
-    return datetime.utcfromtimestamp(((id_>>22)+DISCORD_EPOCH)/1000.)
+    return datetime.utcfromtimestamp(((id_ >> 22) + DISCORD_EPOCH) / 1000.0)
 
 
 DISCORD_EPOCH_START = id_to_datetime(0)
@@ -233,7 +233,7 @@ def id_to_unix_time(id_):
     -------
     unix_time : `int`
     """
-    return ((id_>>22)+DISCORD_EPOCH)//1000
+    return ((id_ >> 22) + DISCORD_EPOCH) // 1000
 
 
 def unix_time_to_id(unix_time):
@@ -249,7 +249,7 @@ def unix_time_to_id(unix_time):
     -------
     id_ : `int`
     """
-    return (floor(unix_time*1000.)-DISCORD_EPOCH)<<22
+    return (floor(unix_time * 1000.0) - DISCORD_EPOCH) << 22
 
 
 def unix_time_to_datetime(unix_time):
@@ -266,7 +266,7 @@ def unix_time_to_datetime(unix_time):
     date_time : `datetime`
     """
     try:
-        return datetime.utcfromtimestamp(unix_time/1000.0)
+        return datetime.utcfromtimestamp(unix_time / 1000.0)
     except ValueError:
         # Can happen if max or min year is passed.
         if unix_time >= UNIX_TIME_MAX:
@@ -288,16 +288,16 @@ def datetime_to_id(date_time):
     -------
     id_ `int`
     """
-    return (floor(date_time.timestamp()*1000.)-DISCORD_EPOCH)<<22
+    return (floor(date_time.timestamp() * 1000.) - DISCORD_EPOCH) << 22
 
 
 if IS_UNIX:
     def datetime_to_unix_time(date_time):
-        return floor(date_time.timestamp()*1000.0)
+        return floor(date_time.timestamp() * 1000.0)
 else:
     def datetime_to_unix_time(date_time):
         try:
-            return floor(date_time.timestamp()*1000.0)
+            return floor(date_time.timestamp() * 1000.0)
         except OSError:
             if date_time <= DATETIME_MIN:
                 return UNIX_TIME_MIN
@@ -336,7 +336,7 @@ def random_id():
     -------
     id_ `int`
     """
-    return ((floor(time_now()*1000.)-DISCORD_EPOCH)<<22)+floor(random()*4194304.0)
+    return ((floor(time_now() * 1000.) - DISCORD_EPOCH) << 22) + floor(random() * 4194304.0)
 
 
 def log_time_converter(value):
@@ -385,7 +385,7 @@ APPLICATION_COMMAND_MENTION_RP = re_compile('</([a-zA-Z0-9_\-]{3,32}):(\d{7,21})
 EMOJI_RP = re_compile('<(a)?:([a-zA-Z0-9_]{2,32})(?:~[1-9])?:(\d{7,21})>')
 REACTION_RP = re_compile('([a-zA-Z0-9_]{2,32}):(\d{7,21})')
 EMOJI_NAME_RP = re_compile(':?([a-zA-Z0-9_\\-~]{1,32}):?')
-FILTER_RP = re_compile('("(.+?)"|\S+)')
+FILTER_RP = re_compile('("(.+?)"|\S + )')
 INVITE_CODE_RP = re_compile('([a-zA-Z0-9-]+)')
 
 
@@ -589,7 +589,7 @@ def now_as_id():
     -------
     snowflake : `int`
     """
-    return (floor(time_now()*1000.)-DISCORD_EPOCH)<<22
+    return (floor(time_now() * 1000.) - DISCORD_EPOCH) << 22
 
 
 def filter_content(content):
@@ -639,9 +639,9 @@ def chunkify(lines, limit=2000):
     chunk = []
     for line in lines:
         while True:
-            ln = len(line)+1
-            if chunk_length+ln > limit:
-                position = limit-chunk_length
+            ln = len(line) + 1
+            if chunk_length + ln > limit:
+                position = limit - chunk_length
                 if position < 250:
                     result.append('\n'.join(chunk))
                     chunk.clear()
@@ -649,12 +649,12 @@ def chunkify(lines, limit=2000):
                     chunk_length=ln
                     break
                 
-                position = line.rfind(' ', position-250, position-3)
+                position = line.rfind(' ', position - 250, position - 3)
                 if position == -1:
-                    position = limit-chunk_length-3
+                    position = limit - chunk_length - 3
                     post_part = line[position:]
                 else:
-                    post_part = line[position+1:]
+                    post_part = line[position + 1:]
                 
                 pre_part = line[:position]+'...'
                 
@@ -667,7 +667,7 @@ def chunkify(lines, limit=2000):
                     continue
                 
                 chunk.append(post_part)
-                chunk_length = len(post_part)+1
+                chunk_length = len(post_part) + 1
                 break
             
             chunk.append(line)
@@ -707,16 +707,16 @@ def cchunkify(lines, lang='', limit=2000):
         )
     
     starter = f'```{lang}'
-    limit = limit-len(starter)-5
+    limit = limit - len(starter) - 5
     
     result = []
     chunk_length = 0
     chunk = [starter]
     for line in lines:
         while True:
-            ln = len(line)+1
-            if chunk_length+ln > limit:
-                position = limit-chunk_length
+            ln = len(line) + 1
+            if chunk_length + ln > limit:
+                position = limit - chunk_length
                 if position < 250:
                     chunk.append('```')
                     result.append('\n'.join(chunk))
@@ -726,12 +726,12 @@ def cchunkify(lines, lang='', limit=2000):
                     chunk_length = ln
                     break
                 
-                position = line.rfind(' ', position-250, position-3)
+                position = line.rfind(' ', position - 250, position - 3)
                 if position == -1:
-                    position = limit-chunk_length-3
+                    position = limit - chunk_length - 3
                     post_part = line[position:]
                 else:
-                    post_part = line[position+1:]
+                    post_part = line[position + 1:]
                 
                 pre_part = line[:position]+'...'
                 
@@ -747,7 +747,7 @@ def cchunkify(lines, lang='', limit=2000):
                     continue
                 
                 chunk.append(post_part)
-                chunk_length = len(post_part)+1
+                chunk_length = len(post_part) + 1
                 break
             
             chunk.append(line)
@@ -1083,30 +1083,30 @@ def url_cutter(url):
     
     while True:
         value = positions[index]
-        if value+from_end > 47:
-            if from_start+from_end < 33:
-                from_start = 47-from_end
+        if value + from_end > 47:
+            if from_start + from_end < 33:
+                from_start = 47 - from_end
                 break
             else:
                 index +=1
                 if index == len(positions):
                     value  =0
                 else:
-                    value = positions[len(positions)-index]
-                value = top_limit-value
-                if value+from_start>47:
+                    value = positions[len(positions) - index]
+                value = top_limit - value
+                if value + from_start>47:
                     break
                 else:
                     from_end = value
                     break
         from_start = value
         
-        index = index+1
-        value = positions[len(positions)-index]
-        value = top_limit-value
-        if value+from_start > 47:
-            if from_start+from_end < 33:
-                from_end = 47-from_start
+        index = index + 1
+        value = positions[len(positions) - index]
+        value = top_limit - value
+        if value + from_start > 47:
+            if from_start + from_end < 33:
+                from_end = 47 - from_start
                 break
             else:
                 if index == len(positions):
@@ -1114,14 +1114,14 @@ def url_cutter(url):
                 else:
                     value = positions[index]
                 
-                if value+from_end > 47:
+                if value + from_end > 47:
                     break
                 else:
                     from_start = value
                     break
         from_end = value
         
-    return f'{url[:from_start]}...{url[top_limit-from_end-1:]}'
+    return f'{url[:from_start]}...{url[top_limit - from_end - 1:]}'
 
 DELTA_RP = re_compile('([\+\-]?\d+)[ \t]*([a-zA-Z]+)')
 TDELTA_KEYS = ('weeks', 'days', 'hours', 'minutes', 'seconds', 'microseconds')
@@ -1294,7 +1294,7 @@ def sanitize_mentions(content, guild=None):
         if (user is None) or user.partial:
             sanitized_mention = '@invalid-user'
         else:
-            sanitized_mention = '@'+user.name_at(guild)
+            sanitized_mention = '@' + user.name_at(guild)
         
         transformations[f'<@{id_}>'] = sanitized_mention
         transformations[f'<@!{id_}>'] = sanitized_mention
@@ -1305,7 +1305,7 @@ def sanitize_mentions(content, guild=None):
         if (channel is None) or channel.partial:
             sanitized_mention = '@deleted channel'
         else:
-            sanitized_mention = '#'+channel.name
+            sanitized_mention = '#' + channel.name
         
         transformations[f'<#{id_}>'] = sanitized_mention
     
@@ -1315,7 +1315,7 @@ def sanitize_mentions(content, guild=None):
         if (role is None) or role.partial:
             sanitized_mention = '@deleted role'
         else:
-            sanitized_mention = '@'+role.name
+            sanitized_mention = '@' + role.name
         
         transformations[f'<@&{id_}>'] = sanitized_mention
     
@@ -1387,9 +1387,9 @@ def parse_date_header_to_datetime(date_data):
     """
     *date_tuple, tz = parse_date_timezone(date_data)
     if tz is None:
-        date = datetime(*date_tuple[:6])
+        date = datetime( * date_tuple[:6])
     else:
-        date = datetime(*date_tuple[:6], tzinfo=timezone(timedelta(seconds=tz)))
+        date = datetime( * date_tuple[:6], tzinfo=timezone(timedelta(seconds=tz)))
     return date
 
 
@@ -1465,7 +1465,7 @@ URL_RP = re_compile(
     '(?:\?\S*)?'
     # fragment
     '(?:#\S*)?',
-    re_unicode|re_ignore_case
+    re_unicode | re_ignore_case
 )
 
 def is_url(url):
@@ -1602,7 +1602,7 @@ def format_loop_time(loop_time, style=None):
     -------
     formatted_string : `str`
     """
-    return format_unix_time(loop_time-LOOP_TIME()+time_now(), style)
+    return format_unix_time(loop_time - LOOP_TIME() + time_now(), style)
 
 
 def format_unix_time(unix_time, style=None):

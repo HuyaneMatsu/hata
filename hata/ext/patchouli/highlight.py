@@ -311,9 +311,9 @@ class WordNode:
                 except KeyError:
                     pass
                 else:
-                    match_index = node._match_index(string, index+1)
+                    match_index = node._match_index(string, index + 1)
                     if match_index != -1:
-                        return match_index+1
+                        return match_index + 1
         
         if self.is_final:
             return 1
@@ -346,9 +346,9 @@ class WordNode:
                 except KeyError:
                     pass
                 else:
-                    match_index = node._match_index(string, index+1)
+                    match_index = node._match_index(string, index + 1)
                     if match_index != -1:
-                        return string[index:index+match_index]
+                        return string[index:index + match_index]
         
         if self.is_final:
             return ''
@@ -670,7 +670,7 @@ build_type_token_nodes({
 
 
 MERGE_TOKEN_TYPES = {
-    # Strings are usually added as 3 parts, prefix+encapsulator | content | prefix+encapsulator
+    # Strings are usually added as 3 parts, prefix + encapsulator | content | prefix + encapsulator
     TOKEN_TYPE_STRING,
     TOKEN_TYPE_STRING_BINARY,
     TOKEN_TYPE_STRING_UNICODE,
@@ -744,7 +744,7 @@ def _merge_tokens(tokens, start_index, end_index):
     
     value = ''.join(values)
     
-    del tokens[start_index+1:end_index]
+    del tokens[start_index + 1:end_index]
     tokens[start_index].value = value
 
 
@@ -1056,7 +1056,7 @@ class HighlightContext(HighlightContextBase):
         # Optimize tokens with merging sames into each other if applicable
         same_count = 1
         last_type = TOKEN_TYPE_ALL
-        token_index = len(tokens)-1
+        token_index = len(tokens) - 1
         
         while True:
             if token_index <= 0:
@@ -1081,7 +1081,7 @@ class HighlightContext(HighlightContextBase):
             
             if same_count > 1:
                 # Merge tokens
-                _merge_tokens(tokens, token_index+1, token_index+same_count+1)
+                _merge_tokens(tokens, token_index + 1, token_index + same_count + 1)
             
             same_count = 1
             last_type = token_type
@@ -1236,7 +1236,7 @@ class FormatStringContext(HighlightContextBase):
                     token_type = TOKEN_TYPE_STRING_UNICODE_FORMAT
                 else:
                     is_in_code = self.is_in_code
-                    if brace_level <= is_in_code+1:
+                    if brace_level <= is_in_code + 1:
                         token_type = TOKEN_TYPE_STRING_UNICODE_FORMAT_MARK
                         if (brace_level == 1) and is_in_code:
                             self.is_in_code = False
@@ -1527,7 +1527,7 @@ def _try_match_punctuation(context):
     
     context.add_token(TOKEN_TYPE_SPECIAL_PUNCTUATION, matched)
     
-    end = index+len(matched)
+    end = index + len(matched)
     context.set_line_character_index(end)
     return True
 
@@ -1561,7 +1561,7 @@ def _try_match_operator(context):
     
     context.add_token(token_type, matched)
     
-    end = index+len(matched)
+    end = index + len(matched)
     context.set_line_character_index(end)
     return True
 
@@ -1738,7 +1738,7 @@ def _try_match_comment(context):
         content = line[index:line_break_index]
         context.add_token(TOKEN_TYPE_COMMENT, content)
         context.add_token(TOKEN_TYPE_LINEBREAK, None)
-        context.set_line_character_index(line_break_index+1)
+        context.set_line_character_index(line_break_index + 1)
     
     return True
 
@@ -1760,7 +1760,7 @@ def _try_match_anything(context):
     index = context.get_line_character_index()
     content = line[index]
     context.add_token(TOKEN_TYPE_NON_SPACE_UNIDENTIFIED, content)
-    context.set_line_character_index(index+1)
+    context.set_line_character_index(index + 1)
     return True
 
 def _try_match_empty_line(context):
@@ -1875,34 +1875,34 @@ def _try_match_till_format_string_expression(context):
             # Escaped `{`
             context.add_token(TOKEN_TYPE_STRING_UNICODE_FORMAT, content)
             context.add_token(TOKEN_TYPE_STRING_UNICODE_FORMAT, ender)
-            index += len(content)+2
+            index += len(content) + 2
             continue
         
         if ender == '\n':
             # Multi-line string line break, need to add a linebreak.
             context.add_token(TOKEN_TYPE_STRING_UNICODE_FORMAT, content)
             context.add_token(TOKEN_TYPE_LINEBREAK, None)
-            index += len(content)+1
+            index += len(content) + 1
             continue
         
         if ender == '{':
             context.add_token(TOKEN_TYPE_STRING_UNICODE_FORMAT, content)
             context.add_token(TOKEN_TYPE_SPECIAL_PUNCTUATION, ender)
-            index += len(content)+1
+            index += len(content) + 1
             context.set_line_character_index(index)
             break
         
         if ender == '}}':
             context.add_token(TOKEN_TYPE_STRING_UNICODE_FORMAT, content)
             context.add_token(TOKEN_TYPE_STRING_UNICODE_FORMAT, ender)
-            index += len(content)+2
+            index += len(content) + 2
             context.set_line_character_index(index)
             continue
         
         if ender == '}':
             context.add_token(TOKEN_TYPE_STRING_UNICODE_FORMAT, content)
             context.add_token(TOKEN_TYPE_SPECIAL_PUNCTUATION, ender)
-            index += len(content)+1
+            index += len(content) + 1
             context.set_line_character_index(index)
             break
     
@@ -1929,7 +1929,7 @@ def _try_match_linebreak(context):
         return False
     
     context.add_token(TOKEN_TYPE_LINEBREAK, None)
-    context.set_line_character_index(index+1)
+    context.set_line_character_index(index + 1)
     
     return True
 

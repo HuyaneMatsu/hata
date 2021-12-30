@@ -363,7 +363,7 @@ class ComponentDescriptor(ComponentDescriptorState):
         sub_components : `list` of ``ComponentDescriptor``
             A list of sub components added
         """
-        identifier = cls._identifier_counter+1
+        identifier = cls._identifier_counter + 1
         cls._identifier_counter = identifier
         
         self = ComponentDescriptorState.__new__(cls, source, sub_components)

@@ -118,7 +118,7 @@ class SetupFunction:
         """
         dot_index = extension_name.find('.')
         if dot_index != -1:
-            extension_short_name = extension_name[dot_index+1:]
+            extension_short_name = extension_name[dot_index + 1:]
         else:
             extension_short_name = extension_name
         
@@ -234,7 +234,7 @@ def _get_setup_function(extension_name):
     if dot_index == -1:
         short_name = None
     else:
-        short_name = extension_name[dot_index+1:]
+        short_name = extension_name[dot_index + 1:]
     
     setup_function = _try_get_setup_function(extension_name, short_name)
     if (setup_function is not None):

@@ -532,7 +532,7 @@ class _EventHandlerManager(RichAttributeErrorBaseType):
     
     def __dir__(self):
         """Returns the attribute names of the object."""
-        return sorted(set(object.__dir__(self))|set(dir(self.parent)))
+        return sorted(set(object.__dir__(self)) | set(dir(self.parent)))
         
     
     def extend(self, iterable):

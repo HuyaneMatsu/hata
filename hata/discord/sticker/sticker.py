@@ -464,7 +464,7 @@ class Sticker(DiscordEntity, immortal=True):
             except KeyError:
                 pass
             else:
-                sort_value = preconvert_int(sort_value, 'sort_value', 0, (1<<16)-1)
+                sort_value = preconvert_int(sort_value, 'sort_value', 0, (1 << 16) - 1)
                 processable.append(('sort_value', sort_value))
             
             try:

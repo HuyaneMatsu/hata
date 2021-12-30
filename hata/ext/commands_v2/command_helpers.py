@@ -14,7 +14,7 @@ CheckBase = include('CheckBase')
 CommandCheckWrapper = include('CommandCheckWrapper')
 
 SUB_COMMAND_NAME_RP = re_compile('([a-zA-Z0-9_\-]+)\s*')
-COMMAND_NAME_RP = re_compile('\s*([^\s]*)\s*', re_multi_line|re_dotall)
+COMMAND_NAME_RP = re_compile('\s*([^\s]*)\s*', re_multi_line | re_dotall)
 
 async def run_checks(checks, command_context):
     """
@@ -164,7 +164,7 @@ def default_precheck(client, message):
     if message.author.is_bot:
         return False
     
-    if not message.channel.cached_permissions_for(client)&PERMISSION_CAN_SEND_MESSAGES_ALL:
+    if not message.channel.cached_permissions_for(client) & PERMISSION_CAN_SEND_MESSAGES_ALL:
         return False
     
     return True
@@ -737,7 +737,7 @@ def get_prefix_parser(prefix, prefix_ignore_case):
     else:
         re_flags = 0
     
-    re_flags |= re_multi_line|re_dotall
+    re_flags |= re_multi_line | re_dotall
     
     if callable(prefix):
         analyzed = CallableAnalyzer(prefix)

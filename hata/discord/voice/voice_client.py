@@ -738,7 +738,7 @@ class VoiceClient:
             if index > len(queue):
                 source = None
             else:
-                source = queue.pop(index-1)
+                source = queue.pop(index - 1)
         
         return source
     
@@ -889,7 +889,7 @@ class VoiceClient:
                             return
                     
                     if not (isinstance(err, ConnectionClosed) and (err.code == VOICE_CLIENT_RECONNECT_CLOSE_CODE)):
-                        await sleep(1+(tries<<1), KOKORO)
+                        await sleep(1 + (tries << 1), KOKORO)
                     
                     self._maybe_change_voice_region()
                     

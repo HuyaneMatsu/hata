@@ -314,7 +314,7 @@ class SolarPlayerBase:
             await node._send({
                 LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_VOLUME,
                 LAVALINK_KEY_GUILD_ID: str(self.guild_id),
-                LAVALINK_KEY_VOLUME: floor(volume*100.0),
+                LAVALINK_KEY_VOLUME: floor(volume * 100.0),
             })
     
     
@@ -358,7 +358,7 @@ class SolarPlayerBase:
             await node._send({
                 LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_SEEK,
                 LAVALINK_KEY_GUILD_ID: str(self.guild_id),
-                LAVALINK_KEY_POSITION_MS: floor(position*1000.0),
+                LAVALINK_KEY_POSITION_MS: floor(position * 1000.0),
         })
     
     
@@ -409,7 +409,7 @@ class SolarPlayerBase:
         except KeyError:
             position = 0.0
         else:
-            position = position*1000.0
+            position = position * 1000.0
         
         self._position = position
         self._position_update = monotonic()
@@ -502,9 +502,9 @@ class SolarPlayerBase:
                 LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_PLAY,
                 LAVALINK_KEY_GUILD_ID: str(self.guild_id),
                 **current_track.un_pack(),
-                LAVALINK_KEY_START_TIME: floor(self.position*1000.0),
+                LAVALINK_KEY_START_TIME: floor(self.position * 1000.0),
                 LAVALINK_KEY_PAUSE: (self._paused_track is current_track),
-                LAVALINK_KEY_VOLUME: floor(self._volume*100.0),
+                LAVALINK_KEY_VOLUME: floor(self._volume * 100.0),
             })
         
         

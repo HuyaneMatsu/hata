@@ -295,7 +295,7 @@ class AuditLogIterator:
             except StopAsyncIteration:
                 return
             
-            if len(entries)%100:
+            if len(entries) % 100:
                 return
     
     
@@ -334,12 +334,12 @@ class AuditLogIterator:
             self._index += 1
             return self.entries[index]
         
-        if index%100:
+        if index % 100:
             raise StopAsyncIteration
         
         data = self._data
         if ln:
-            data['before'] = self.entries[ln-1].id
+            data['before'] = self.entries[ln - 1].id
         
         log_data = await self.client.http.audit_log_get_chunk(self.guild.id, data)
         self._process_data(log_data)
@@ -786,7 +786,7 @@ class AuditLogEntry:
         self.changes = changes
         
         try:
-            conversion = CONVERSIONS[self.type.value//10]
+            conversion = CONVERSIONS[self.type.value // 10]
         except KeyError:
             target = None
         else:

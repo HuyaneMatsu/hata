@@ -550,7 +550,7 @@ class Extension:
         if dot_index == -1:
             short_name = None
         else:
-            short_name = name[dot_index+1:]
+            short_name = name[dot_index + 1:]
         
         return short_name
     

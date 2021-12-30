@@ -143,13 +143,13 @@ class Timeouter:
         now = LOOP_TIME()
         next_step = self.handle.when
         
-        planed_end = now+value
+        planed_end = now + value
         if planed_end < next_step:
             handle.cancel()
             self.handle = KOKORO.call_at(planed_end, type(self)._step, self)
             return
         
-        self.timeout = planed_end-next_step
+        self.timeout = planed_end - next_step
     
     
     def get_expiration_delay(self):
@@ -166,4 +166,4 @@ class Timeouter:
         if handle is None:
             return 0.0
         
-        return handle.when-LOOP_TIME()+self.timeout
+        return handle.when - LOOP_TIME() + self.timeout

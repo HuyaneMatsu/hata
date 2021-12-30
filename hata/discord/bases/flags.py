@@ -17,10 +17,10 @@ class FlagGetDescriptor:
         if instance is None:
             return self
         else:
-            return (instance>>self.shift)&1
+            return (instance >> self.shift) & 1
     
     def __call__(self, value):
-        return (value>>self.shift)&1
+        return (value >> self.shift) & 1
     
     def __set__(self, obj, value):
         raise AttributeError('can\'t set attribute')
@@ -45,10 +45,10 @@ class ReverseFlagGetDescriptor(FlagGetDescriptor):
         if instance is None:
             return self
         else:
-            return ((instance>>self.shift)&1)^1
+            return ((instance >> self.shift) & 1)^1
     
     def __call__(self, value):
-        return ((value>>self.shift)&1)^1
+        return ((value >> self.shift) & 1)^1
 
 
 class FlagEnabler:
@@ -72,7 +72,7 @@ class FlagEnabler:
     
     def __call__(self):
         instance = self.instance
-        return int.__new__(type(instance), (instance|(1<<self.shift)))
+        return int.__new__(type(instance), (instance | (1 << self.shift)))
 
 
 class FlagEnableDescriptor(FlagGetDescriptor):
@@ -122,8 +122,8 @@ class FlagDisabler:
     def __call__(self):
         instance = self.instance
         shift = self.shift
-        if (instance>>shift)&1:
-            return int.__new__(type(instance), (instance^(1<<shift)))
+        if (instance >> shift) & 1:
+            return int.__new__(type(instance), (instance^(1 << shift)))
         else:
             return instance
 
@@ -322,7 +322,7 @@ class FlagBase(int, metaclass = FlagMeta, base_class=True):
     
     def __getitem__(self, key):
         """Returns whether a specific flag of the given name is enabled."""
-        return (self>>self.__keys__[key])&1
+        return (self >> self.__keys__[key]) & 1
     
     def keys(self):
         """
@@ -335,7 +335,7 @@ class FlagBase(int, metaclass = FlagMeta, base_class=True):
         name : `str`
         """
         for name, shift in self.__keys__.items():
-            if (self>>shift)&1:
+            if (self >> shift) & 1:
                 yield name
     
     __iter__ = keys
@@ -351,7 +351,7 @@ class FlagBase(int, metaclass = FlagMeta, base_class=True):
         shift : `int`
         """
         for shift in self.__keys__.values():
-            if (self>>shift)&1:
+            if (self >> shift) & 1:
                 yield shift
     
     def items(self):
@@ -368,7 +368,7 @@ class FlagBase(int, metaclass = FlagMeta, base_class=True):
             Whether the specific bitwise value is enabled.
         """
         for name, shift in self.__keys__.items():
-            yield name, (self>>shift)&1
+            yield name, (self >> shift) & 1
     
     def __contains__(self, key):
         """Returns whether the specific flag of the given name is enabled."""
@@ -377,23 +377,23 @@ class FlagBase(int, metaclass = FlagMeta, base_class=True):
         except KeyError:
             return 0
         
-        return (self>>position)&1
+        return (self >> position) & 1
     
     def is_subset(self, other):
         """Returns whether self has the same amount or more flags disabled than other."""
-        return (self&other) == self
+        return (self & other) == self
     
     def is_superset(self, other):
         """Returns whether self has the same amount or more flags enabled than other."""
-        return (self|other) == self
+        return (self | other) == self
     
     def is_strict_subset(self, other):
         """Returns whether self has more flags disabled than other."""
-        return self != other and (self&other) == self
+        return self != other and (self & other) == self
     
     def is_strict_superset(self, other):
         """Returns whether self has more flags enabled than other."""
-        return self != other and (self|other) == self
+        return self != other and (self | other) == self
     
     __ge__ = is_superset
     __gt__ = is_strict_superset
@@ -438,10 +438,10 @@ class FlagBase(int, metaclass = FlagMeta, base_class=True):
                 raise LookupError(f'Invalid key: {key!r}.') from None
             
             if value:
-                new |= (1<<shift)
+                new |= (1 << shift)
             else:
-                if (new>>shift)&1:
-                    new ^= (1<<shift)
+                if (new >> shift) & 1:
+                    new ^= (1 << shift)
         
         return int.__new__(type(self), new)
 
@@ -464,7 +464,7 @@ class ReverseFlagBase(FlagBase, base_class=True):
     
     def __getitem__(self, key):
         """Returns whether a specific flag of the given name is enabled."""
-        return ((self>>self.__keys__[key])&1)^1
+        return ((self >> self.__keys__[key]) & 1)^1
     
     def keys(self):
         """
@@ -477,7 +477,7 @@ class ReverseFlagBase(FlagBase, base_class=True):
         name : `str`
         """
         for name, shift in self.__keys__.items():
-            if ((self>>shift)&1)^1:
+            if ((self >> shift) & 1)^1:
                 yield name
     
     __iter__ = keys
@@ -493,7 +493,7 @@ class ReverseFlagBase(FlagBase, base_class=True):
         shift : `int`
         """
         for shift in self.__keys__.values():
-            if ((self>>shift)&1)^1:
+            if ((self >> shift) & 1)^1:
                 yield shift
     
     def items(self):
@@ -510,7 +510,7 @@ class ReverseFlagBase(FlagBase, base_class=True):
             Whether the specific bitwise value is enabled.
         """
         for name, shift in self.__keys__.items():
-            yield name, ((self>>shift)&1)^1
+            yield name, ((self >> shift) & 1)^1
     
     def __contains__(self, key):
         """Returns whether the specific flag of the given name is enabled."""
@@ -519,23 +519,23 @@ class ReverseFlagBase(FlagBase, base_class=True):
         except KeyError:
             return 0
         
-        return ((self>>position)&1)^1
+        return ((self >> position) & 1)^1
     
     def is_subset(self, other):
         """Returns whether self has the same amount or more flags disabled than other."""
-        return (self|other) == self
+        return (self | other) == self
     
     def is_superset(self, other):
         """Returns whether self has the same amount or more flags enabled than other."""
-        return (self&other) == self
+        return (self & other) == self
     
     def is_strict_subset(self, other):
         """Returns whether self has more flags disabled than other."""
-        return self != other and (self|other) == self
+        return self != other and (self | other) == self
     
     def is_strict_superset(self, other):
         """Returns whether self has more flags enabled than other."""
-        return self != other and (self&other) == self
+        return self != other and (self & other) == self
     
     __ge__ = is_superset
     __gt__ = is_strict_superset
@@ -576,9 +576,9 @@ class ReverseFlagBase(FlagBase, base_class=True):
                 raise
             
             if value:
-                if (new>>shift)&1:
-                    new ^= (1<<shift)
+                if (new >> shift) & 1:
+                    new ^= (1 << shift)
             else:
-                new |= (1<<shift)
+                new |= (1 << shift)
         
         return int.__new__(type(self), new)

@@ -1012,7 +1012,7 @@ class EmbedField:
     
     def __len__(self):
         """Returns the embed field's contents' length."""
-        return len(self.name)+len(self.value)
+        return len(self.name) + len(self.value)
     
     
     def __bool__(self):

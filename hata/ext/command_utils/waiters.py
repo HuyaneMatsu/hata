@@ -80,7 +80,7 @@ class WaitAndContinue:
     target : ``DiscordEntity``
         The target entity on what the waiting is executed.
     """
-    __slots__ = ('_canceller', 'check', 'event', 'future', 'target', '_timeouter',
+    __slots__ = ('_canceller', 'check', 'event', 'future', 'target', '_timeouter',)
     
     def __init__(self, future, check, target, event, timeout):
         """

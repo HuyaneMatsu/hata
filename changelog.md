@@ -9,10 +9,10 @@
 - Fix a logic error in `Client.role_edit` when editing `icon`.
 - Fix an `AttributeError` in `ApplicationCommandPermission.__repr__`.
 - Fix a `TypeError` in `Stage._difference_update_attributes`.
+- `UserBase.avatar_url_for` was a property (instead of method).
 
 ##### ext.top_gg
-
-- Fix `TopGGGloballyRateLimited` accepted +1 parameters causing `TypeError`-s
+- `TopGGGloballyRateLimited` accepted +1 parameters causing `TypeError`-s
     (luckily this exception was never dropped).
 
 ## 1.1.129 *\[2021-12-24\]*

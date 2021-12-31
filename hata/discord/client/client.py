@@ -7956,8 +7956,8 @@ class Client(ClientUserPBase):
         guild : ``Guild``, `int`
             The guild, what's audit logs will be requested.
         limit : `int`, Optional
-            The amount of audit logs to request. Can b between 1 and 100. Defaults to 100.
-        before : `int`, ``DiscordEntity`, `datetime`, Optional (Keyword only)
+            The amount of audit logs to request. Can be between 1 and 100. Defaults to 100.
+        before : `int`, ``DiscordEntity``, `datetime`, Optional (Keyword only)
             The timestamp before the audit log entries wer created.
         after : `int`, ``DiscordEntity``, `datetime`, Optional (Keyword only)
             The timestamp after the audit log entries wer created.
@@ -11948,7 +11948,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : channel : ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``, ``ChannelStore``,
+        channel : ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``, ``ChannelStore``,
                 ``ChannelDirectory``, `int
             The target channel of the invite.
         application : ``Application``, `int`

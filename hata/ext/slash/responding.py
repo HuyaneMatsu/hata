@@ -93,7 +93,10 @@ async def get_request_coroutines(client, interaction_event, show_for_invoking_us
                 )
         
         elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
-            yield client.interaction_component_message_edit(interaction_event, response)
+            if interaction_event.is_unanswered():
+                yield client.interaction_component_message_edit(interaction_event, response)
+            else:
+                yield client.interaction_response_message_edit(interaction_event, response)
         
         # No more cases
         return
@@ -516,12 +519,16 @@ class InteractionResponse:
             
             return
         
-        elif interaction_event.type is INTERACTION_TYPE_MESSAGE_COMPONENT:
+        elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
             response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'components'))
-            if response_parameters:
-                yield client.interaction_component_message_edit(interaction_event, **response_parameters)
+            if interaction_event.is_unanswered():
+                if response_parameters:
+                    yield client.interaction_component_message_edit(interaction_event, **response_parameters)
+                else:
+                    yield client.interaction_component_acknowledge(interaction_event)
             else:
-                yield client.interaction_component_acknowledge(interaction_event)
+                if response_parameters:
+                    yield client.interaction_response_message_edit(interaction_event, **response_parameters)
             
             return
         

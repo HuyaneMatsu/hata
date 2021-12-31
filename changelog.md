@@ -15,6 +15,9 @@
 - `TopGGGloballyRateLimited` accepted +1 parameters causing `TypeError`-s
     (luckily this exception was never dropped).
 
+##### ext.slash
+- Bad method was called for acknowledged component interaction commands.
+
 ## 1.1.129 *\[2021-12-24\]*
 
 #### Improvements

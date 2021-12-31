@@ -1099,7 +1099,7 @@ class ParameterSubSection:
             mask |= PARAMETER_MASK_DESCRIPTION
         
         if self.keyword_only:
-            mask |= PARAMETER_MASK_TYPE
+            mask |= PARAMETER_MASK_KEYWORD_ONLY
         
         if self.optional:
             mask |= PARAMETER_MASK_OPTIONAL
@@ -1120,7 +1120,7 @@ class ParameterSubSection:
         ----------
         parent : ``ParameterSerializer``
             The parent parameter serialiser.
-        mask : `str`
+        mask : `int`
             Mask to serialise the mask based of.
         
         Yields

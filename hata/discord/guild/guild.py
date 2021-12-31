@@ -222,7 +222,7 @@ class Guild(DiscordEntity, immortal=True):
     -----
     When a guild is loaded first time, some of it's attributes might not reflect their real value. These are the
     following:
-    - ``.max_presences_``
+    - ``.max_presences``
     - ``.max_users``
     - ``.widget_channel_id``
     - ``.widget_enabled``

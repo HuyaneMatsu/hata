@@ -42,16 +42,13 @@ export(MESSAGE_JUMP_URL_RP, 'MESSAGE_JUMP_URL_RP')
 
 _try_get_guild_id = include('_try_get_guild_id')
 
-#returns a URL that allows the client to jump to this message
-#guild is guild's id, or @me if there is no guild
+# returns a URL that allows the client to jump to this message
+# guild is guild's id, or @me if there is no guild
 def message_jump_url(message):
     """
     Returns a jump url to the message. If the message's channel is a partial guild channel, returns `None`.
     
-    Parameters
-    ----------
-    message : ``Message``
-        The respective message.
+    This function is a shared property of ``Message``-s.
     
     Returns
     -------
@@ -121,10 +118,7 @@ def guild_icon_url(guild):
     """
     Returns the guild's icon's image's url. If the guild has no icon, then returns `None`.
     
-    Parameters
-    ----------
-    guild : ``Guild``, ``GuildPreview``
-        The respective guild.
+    This function is a shared property of ``Guild``, ``GuildPreview``.
     
     Returns
     -------
@@ -148,10 +142,10 @@ def guild_icon_url_as(guild, ext=None, size=None):
     """
     Returns the guild's icon's url. If the guild has no icon, then returns `None`.
     
+    This function is a shared method of ``Guild``, ``GuildPreview``.
+    
     Parameters
     ----------
-    guild : ``Guild``, ``GuildPreview``
-        The respective guild.
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If the guild has
         animated icon, it can `'gif'` as well.
@@ -203,10 +197,7 @@ def guild_invite_splash_url(guild):
     """
     Returns the guild's invite splash's image's url. If the guild has no invite splash, then returns `None`.
     
-    Parameters
-    ----------
-    guild : ``Guild``, ``GuildPreview``
-        The respective guild.
+    This function is a shared property of ``Guild``, ``GuildPreview``.
     
     Returns
     -------
@@ -230,10 +221,10 @@ def guild_invite_splash_url_as(guild, ext=None, size=None):
     """
     Returns the guild's invite splash's image's url. If the guild has no invite splash, then returns `None`.
     
+    This function is a shared method of ``Guild``, ``GuildPreview``.
+    
     Parameters
     ----------
-    guild : ``Guild``, ``GuildPreview``
-        The respective guild.
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
     size : `int`, Optional
@@ -284,10 +275,7 @@ def guild_discovery_splash_url(guild):
     """
     Returns the guild's discovery splash's image's url. If the guild has no discovery splash, then returns `None`.
     
-    Parameters
-    ----------
-    guild : ``Guild``, ``GuildPreview``
-        The respective guild.
+    This function is a shared property of ``Guild``-s.
     
     Returns
     -------
@@ -311,10 +299,10 @@ def guild_discovery_splash_url_as(guild, ext=None, size=None):
     """
     Returns the guild's discovery splash's image's url. If the guild has no discovery splash, then returns `None`.
     
+    This function is a shared method of ``Guild``-s.
+    
     Parameters
     ----------
-    guild : ``Guild``, ``GuildPreview``
-        The respective guild.
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
     size : `int`, Optional
@@ -365,10 +353,7 @@ def guild_banner_url(guild):
     """
     Returns the guild's banner's image's url. If the guild has no banner, then returns `None`.
     
-    Parameters
-    ----------
-    guild : ``Guild``
-        The respective guild.
+    This function is a shared property of ``Guild``-s.
     
     Returns
     -------
@@ -392,10 +377,10 @@ def guild_banner_url_as(guild, ext=None, size=None):
     """
     Returns the guild's banner's image's url. If the guild has no banner, then returns `None`.
     
+    This function is a shared method of ``Guild``-s.
+    
     Parameters
     ----------
-    guild : ``Guild``
-        The respective guild.
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`, `'gif'`.
     size : `int`, Optional
@@ -446,10 +431,10 @@ def guild_widget_url(guild, style='shield'):
     """
     Returns the guild's widget image's url in `.png` format.
     
+    This function is a shared method of ``Guild``, ``GuildPreview``.
+    
     Parameters
     ----------
-    guild : ``Guild``, ``GuildPreview``
-        The respective guild.
     style : `str`
         The widget image's style. Can be any of: `'shield'`, `'banner1'`, `'banner2'`, `'banner3'`, `'banner4'`.
     
@@ -472,10 +457,7 @@ def guild_widget_json_url(guild):
     """
     Returns an url to request a ``Guild``'s widget data.
     
-    Parameters
-    ----------
-    guild : ``Guild``, ``GuildPreview``
-        The respective guild.
+    This function is a shared property of ``Guild``, ``GuildPreview``.
     
     Returns
     -------
@@ -488,10 +470,7 @@ def channel_group_icon_url(channel):
     """
     Returns the group channel's icon's image's url. If the channel has no icon, then returns `None`.
     
-    Parameters
-    ----------
-    channel : ``ChannelGroup``
-        The respective channel.
+    This function is a shared property of ``ChannelGroup``-s.
     
     Returns
     -------
@@ -515,10 +494,10 @@ def channel_group_icon_url_as(channel, ext=None, size=None):
     """
     Returns the group channel's icon's image's url. If the channel has no icon, then returns `None`.
     
+    This function is a shared method of ``ChannelGroup``-s.
+    
     Parameters
     ----------
-    channel : ``ChannelGroup``
-        The respective channel.
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
     size : `int`, Optional
@@ -569,6 +548,8 @@ def emoji_url(emoji):
     """
     Returns the emoji's image's url. If the emoji is unicode emoji, then returns `None` instead.
     
+    This function is a shared property of ``Emoji``-s.
+    
     Parameters
     ----------
     emoji : ``Emoji``
@@ -593,10 +574,10 @@ def emoji_url_as(emoji, ext=None, size=None):
     """
     Returns the emoji's image's url. If the emoji is unicode emoji, then returns `None` instead.
     
+    This function is a shared method of ``Emoji``-s.
+    
     Parameters
     ----------
-    emoji : ``Emoji``
-        The respective emoji.
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If emoji is
         animated, it can `'gif'` as well.
@@ -642,10 +623,7 @@ def webhook_url(webhook):
     """
     Returns the webhook's url.
     
-    Parameters
-    ----------
-    webhook : `Webhook``
-        The respective webhook.
+    This function is a shared property of ``Webhook``-s.
     
     Returns
     -------
@@ -663,10 +641,7 @@ def invite_url(invite):
     """
     Returns the invite's url.
     
-    Parameters
-    ----------
-    invite : ``Invite``
-        The respective invite.
+    This function is a shared property of ``Invite``-s.
     
     Returns
     -------
@@ -682,10 +657,7 @@ def activity_asset_image_large_url(activity):
     """
     Returns the activity's large asset image's url. If the activity has no large asset image, then returns `None`.
     
-    Parameters
-    ----------
-    activity : ``ActivityRich``
-        The respective activity.
+    This function is a shared property of ``ActivityRich``-s.
     
     Returns
     -------
@@ -709,12 +681,11 @@ def activity_asset_image_large_url(activity):
 def activity_asset_image_large_url_as(activity, ext=None, size=None):
     """
     Returns the activity's large asset image's url. If the activity has no large asset image, then returns `None`.
-
+    
+    This function is a shared method of ``ActivityRich``-s.
     
     Parameters
     ----------
-    activity : ``ActivityRich``
-        The respective activity.
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
     size : `int`, Optional
@@ -758,10 +729,7 @@ def activity_asset_image_small_url(activity):
     """
     Returns the activity's small asset image's url. If the activity has no small asset image, then returns `None`.
     
-    Parameters
-    ----------
-    activity : ``ActivityRich``
-        The respective activity.
+    This function is a shared property of ``ActivityRich``-s.
     
     Returns
     -------
@@ -786,10 +754,10 @@ def activity_asset_image_small_url_as(activity, ext=None, size=None):
     """
     Returns the activity's small asset image's url. If the activity has no small asset image, then returns `None`.
     
+    This function is a shared method of ``ActivityRich``-s.
+    
     Parameters
     ----------
-    activity : ``ActivityRich``
-        The respective activity.
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
     size : `int`, Optional
@@ -833,10 +801,7 @@ def user_avatar_url(user):
     """
     Returns the user's avatar's url. If the user has no avatar, then returns it's default avatar's url.
     
-    Parameters
-    ----------
-    user : ``UserBase``
-        The respective user.
+    This function is a shared property of ``UserBase``-s.
     
     Returns
     -------
@@ -860,10 +825,10 @@ def user_avatar_url_as(user, ext=None, size=None):
     """
     Returns the user's avatar's url. If the user has no avatar, then returns it's default avatar's url.
     
+    This function is a shared method of ``UserBase``-s.
+    
     Parameters
     ----------
-    user : ``UserBase``
-        The respective user.
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If the user has
         animated avatar, it can `'gif'` as well.
@@ -915,10 +880,7 @@ def user_banner_url(user):
     """
     Returns the user's banner's url. If the user has no banner, then returns `None`.
     
-    Parameters
-    ----------
-    user : ``UserBase``
-        The respective user.
+    This function is a shared property of ``UserBase``-s.
     
     Returns
     -------
@@ -942,10 +904,10 @@ def user_banner_url_as(user, ext=None, size=None):
     """
     Returns the user's banner's url. If the user has no banner, then returns `None`.
     
+    This function is a shared method of ``UserBase``-s.
+    
     Parameters
     ----------
-    user : ``UserBase``
-        The respective user.
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`. If the user has
         animated banner, it can `'gif'` as well.
@@ -997,10 +959,10 @@ def user_avatar_url_for(user, guild):
     """
     Returns the user's guild specific avatar. If the user has no guild specific avatar, returns `None`.
     
+    This function is a shared method of ``UserBase``-s.
+    
     Parameters
     ----------
-    user : ``UserBase``
-        The Respective user.
     guild : ``Guild``, `int`
         The respective guild or it's identifier.
     
@@ -1033,10 +995,10 @@ def user_avatar_url_for_as(user, guild, ext=None, size=None):
     """
     Returns the user's guild specific avatar. If the user has no avatar, then returns it's default avatar's url.
     
+    This function is a shared method of ``UserBase``-s.
+    
     Parameters
     ----------
-    user : ``UserBase``
-        The Respective user.
     guild : ``Guild``, `int`
         The respective guild or it's identifier.
     ext : `str`, Optional
@@ -1098,10 +1060,11 @@ def user_avatar_url_at(user, guild):
     """
     Returns the user's avatar's url at the guild.
     
+    
+    This function is a shared method of ``UserBase``-s.
+    
     Parameters
     ----------
-    user : ``UserBase``
-        The Respective user.
     guild : ``Guild``, `int`
         The respective guild or it's identifier.
     
@@ -1120,10 +1083,10 @@ def user_avatar_url_at_as(user, guild, ext=None, size=None):
     """
     Returns the user's avatar's url at the guild. If the user has no avatar, then returns it's default avatar's url.
     
+    This function is a shared method of ``UserBase``-s.
+    
     Parameters
     ----------
-    user : ``UserBase``
-        The Respective user.
     guild : ``Guild``, `int`
         The respective guild or it's identifier.
     ext : `str`, Optional
@@ -1152,10 +1115,7 @@ def default_avatar_url(default_avatar):
     """
     Returns the user's default avatar's url.
     
-    Parameters
-    ----------
-    user : ``UserBase``
-        The Respective user.
+    This function is a shared property of ``UserBase``-s.
     
     Returns
     -------
@@ -1168,10 +1128,7 @@ def application_icon_url(application):
     """
     Returns the application's icon's url. If the application has no icon, then returns `None`.
     
-    Parameters
-    ----------
-    application : ``Application``, ``MessageApplication``, ``IntegrationApplication``
-        The respective application.
+    This function is a shared property of ``Application``, ``MessageApplication``, ``IntegrationApplication``.
     
     Returns
     -------
@@ -1195,10 +1152,10 @@ def application_icon_url_as(application, ext=None, size=None):
     """
     Returns the application's icon's url. If the application has no icon, then returns `None`.
     
+    This function is a shared method of ``Application``, ``MessageApplication``, ``IntegrationApplication``.
+    
     Parameters
     ----------
-    application : ``Application``, ``MessageApplication``, ``IntegrationApplication``
-        The respective application.
     ext : `str`, Optional
         The extension of the icon's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
     size : `int`, Optional
@@ -1249,11 +1206,8 @@ def application_cover_url(application):
     """
     Returns the application's cover image's url. If the application has no cover image, then returns `None`.
     
-    Parameters
-    ----------
-    application : ``Application``, ``MessageApplication``
-        The respective application.
-        
+    This function is a shared property of ``Application``, ``MessageApplication``.
+    
     Returns
     -------
     url : `None`, `str`
@@ -1276,10 +1230,10 @@ def application_cover_url_as(application, ext=None, size=None):
     """
     Returns the application's cover image's url. If the application has no cover image, then returns `None`.
     
+    This function is a shared method of ``Application``, ``MessageApplication``.
+    
     Parameters
     ----------
-    application : ``Application``, ``MessageApplication``
-        The respective application.
     ext : `str`, Optional
         The extension of the cover's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
     size : `int`, Optional
@@ -1330,10 +1284,7 @@ def team_icon_url(team):
     """
     Returns the team's icon's url. If the team has no icon, then returns `None`.
     
-    Parameters
-    ----------
-    team : ``Team``
-        The respective team.
+    This function is a shared property of ``Team``-s.
     
     Returns
     -------
@@ -1357,10 +1308,10 @@ def team_icon_url_as(team, ext=None, size=None):
     """
     Returns the team's icon's url. If the team has no icon, then returns `None`.
     
+    This function is a shared method of ``Team``-s.
+    
     Parameters
     ----------
-    team : ``Team``
-        The respective team.
     ext : `str`, Optional
         The extension of the icon's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
     size : `int`, Optional
@@ -1411,10 +1362,7 @@ def achievement_icon_url(achievement):
     """
     Returns the achievement's icon's url.
     
-    Parameters
-    ----------
-    achievement : ``Achievement``
-        The respective achievements
+    This function is a shared property of ``Achievement``-s.
     
     Returns
     -------
@@ -1439,10 +1387,10 @@ def achievement_icon_url_as(achievement, ext=None, size=None):
     """
     Returns the achievement's icon's url.
     
+    This function is a shared method of ``Achievement``-s.
+    
     Parameters
     ----------
-    achievement : ``Achievement``
-        The respective achievements
     ext : `str`, Optional
         The extension of the icon's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
     size : `int`, Optional
@@ -1494,10 +1442,7 @@ def sticker_url(sticker):
     """
     Returns the sticker's url.
     
-    Parameters
-    ----------
-    sticker : ``Sticker``
-        The respective sticker.
+    This function is a shared method of ``property``-s.
     
     Returns
     -------
@@ -1514,10 +1459,10 @@ def sticker_url_as(sticker, size=None, preview=False):
     """
     Returns the sticker's url.
     
+    This function is a shared method of ``Sticker``-s.
+    
     Parameters
     ----------
-    sticker : ``Sticker``
-        The respective sticker.
     size : `int`, Optional
         The preferred minimal size of the icon's url.
     preview : `bool`, Optional
@@ -1560,10 +1505,7 @@ def sticker_pack_banner(sticker_pack):
     """
     Returns the sticker pack banner's url.
     
-    Parameters
-    ----------
-    sticker_pack : `StickerPack``
-        The respective sticker pack.
+    This function is a shared property of ``StickerPack``-s.
     
     Returns
     -------
@@ -1576,10 +1518,10 @@ def sticker_pack_banner_as(sticker_pack, ext=None, size=None):
     """
     Returns the achievement's icon's url.
     
+    This function is a shared method of ``StickerPack``-s.
+    
     Parameters
     ----------
-    sticker_pack : `StickerPack``
-        The respective sticker pack.
     ext : `str`, Optional
         The extension of the banner's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
     size : `int`, Optional
@@ -1615,10 +1557,7 @@ def role_icon_url(role):
     """
     Returns the role's icon's image's url. If the role has no icon, then returns `None`.
     
-    Parameters
-    ----------
-    role : ``Role``
-        The respective role.
+    This function is a shared property of ``Role``-s.
     
     Returns
     -------
@@ -1642,10 +1581,10 @@ def role_icon_url_as(role, ext=None, size=None):
     """
     Returns the role's icon's image's url. If the role has no icon, then returns `None`.
     
+    This function is a shared method of ``Role``-s.
+    
     Parameters
     ----------
-    role : ``Role``
-        The respective role.
     ext : `str`, Optional
         The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`, `'gif'`.
     size : `int`, Optional
@@ -1696,10 +1635,7 @@ def channel_banner_url(channel):
     """
     Returns the channel's banner's url. If the channel has no banner, then returns `None`.
     
-    Parameters
-    ----------
-    channel : ``ChannelText`
-        The respective channel.
+    This function is a shared property of ``ChannelText``-s.
     
     Returns
     -------
@@ -1723,10 +1659,10 @@ def channel_banner_url_as(channel, ext=None, size=None):
     """
     Returns the channel's banner's url. If the channel has no banner, then returns `None`.
     
+    This function is a shared method of ``ChannelText``-s.
+    
     Parameters
     ----------
-    channel : ``ChannelText``
-        The respective channel.
     ext : `str`, Optional
         The extension of the banner's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
     size : `int`, Optional

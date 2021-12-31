@@ -497,7 +497,7 @@ class FunctionOrPropertySerializer:
     ----------
     content : `list` of `Any`
         Contained section part.
-    object : ``TypeUnit``
+    object : ``PropertyUnit``, ``FunctionUnit``
         The owner type-unit.
     parameter_section : `None`, ``ParameterSection``
         The parameter section of the serialiser.
@@ -573,6 +573,7 @@ class FunctionOrPropertySerializer:
         
         self.content = content
     
+    
     def serialize(self):
         """
         Serializes the represented method or property to html parts.
@@ -595,26 +596,32 @@ class FunctionOrPropertySerializer:
         yield from anchor_for_serializer(anchor_escape(prefix))
         yield html_escape(name)
         
-        parameter_section = self.parameter_section
-        if (parameter_section is not None):
-            parameter_section_started = False
-            
-            for parameter_sub_section in parameter_section.parameter_sub_sections:
-                if parameter_sub_section.optional:
-                    if parameter_section_started:
-                        yield ', ...'
-                    break
+        is_function = isinstance(self.object, FunctionUnit)
+        
+        if is_function:
+            yield '<span class="function_parameter">('
+        
+            parameter_section = self.parameter_section
+            if (parameter_section is not None):
+                parameter_added = False
                 
-                if parameter_section_started:
-                    yield ', '
-                else:
-                    yield '<span class="function_parameter">('
-                    parameter_section_started = True
-                
-                yield html_escape(parameter_sub_section.name)
+                for parameter_sub_section in parameter_section.parameter_sub_sections:
+                    if parameter_sub_section.optional:
+                        if parameter_added:
+                            yield ', '
+                        
+                        yield '...'
+                        break
+                        
+                    if parameter_added:
+                        yield ', '
+                    else:
+                        parameter_added = True
+                    
+                    yield html_escape(parameter_sub_section.name)
             
-            if parameter_section_started:
-                yield ')</span>'
+            yield ')</span>'
+        
         
         yield '</h'
         yield str(tier)

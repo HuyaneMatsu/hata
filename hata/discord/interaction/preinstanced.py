@@ -155,15 +155,17 @@ class ApplicationCommandPermissionOverwriteTargetType(PreinstancedBase):
     
     Every predefined application command permission overwrite type can be accessed as class attribute as well:
     
-    +-----------------------+-------+-------+
-    | Class attribute name  | Name  | Value |
-    +=======================+=======+=======+
-    | none                  | none  | 0     |
-    +-----------------------+-------+-------+
-    | role                  | role  | 1     |
-    +-----------------------+-------+-------+
-    | user                  | user  | 2     |
-    +-----------------------+-------+-------+
+    +-----------------------+-----------+-------+
+    | Class attribute name  | Name      | Value |
+    +=======================+===========+=======+
+    | none                  | none      | 0     |
+    +-----------------------+-----------+-------+
+    | role                  | role      | 1     |
+    +-----------------------+-----------+-------+
+    | user                  | user      | 2     |
+    +-----------------------+-----------+-------+
+    | channel               | channel   | 3     |
+    +-----------------------+-----------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -174,6 +176,7 @@ class ApplicationCommandPermissionOverwriteTargetType(PreinstancedBase):
     none = P(0, 'none',)
     role = P(1, 'role',)
     user = P(2, 'user',)
+    channel = P(3, 'channel',)
 
 
 @export

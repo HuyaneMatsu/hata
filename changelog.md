@@ -3,6 +3,7 @@
 #### Improvements
 
 - Add `GuildPreview.stickers`.
+- Add `ApplicationCommandPermissionOverwriteTargetType.channel`.
 
 #### Bug Fixes
 

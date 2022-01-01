@@ -2,17 +2,19 @@ __all__ = ('ApplicationCommand', 'ApplicationCommandOption', 'ApplicationCommand
      'ApplicationCommandPermission', 'ApplicationCommandPermissionOverwrite', )
 
 from ..bases import DiscordEntity, maybe_snowflake
-from ..core import APPLICATION_COMMANDS, ROLES
+from ..core import APPLICATION_COMMANDS, ROLES, CHANNELS
 from ..preconverters import preconvert_preinstanced_type
 from ..utils import is_valid_application_command_name, DATETIME_FORMAT_CODE
-from ..user import User, UserBase, ClientUserBase, create_partial_user_from_id
+from ..user import ClientUserBase, create_partial_user_from_id
 from ..role import Role, create_partial_role_from_id
+from ..channel import ChannelBase
 
 from .preinstanced import ApplicationCommandOptionType, ApplicationCommandPermissionOverwriteTargetType, \
     ApplicationCommandTargetType, APPLICATION_COMMAND_CONTEXT_TARGET_TYPES
 
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER = ApplicationCommandPermissionOverwriteTargetType.user
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_ROLE = ApplicationCommandPermissionOverwriteTargetType.role
+APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_CHANNEL = ApplicationCommandPermissionOverwriteTargetType.channel
 
 # ApplicationCommand
 APPLICATION_COMMAND_LIMIT_GLOBAL = 100
@@ -2007,12 +2009,16 @@ class ApplicationCommandPermissionOverwrite:
             
             - ``Role``
             - ``ClientUserBase``
-            - `tuple` (``Role`` type, `int`)
+            - ``ChannelBase``
+            - `tuple` (``Role``, `int`)
             - `tuple` (``ClientUserBase``, `int`)
+            - `tuple` (``ChannelBase``, `int`)
             - `tuple` (`'Role'`, `int`)
             - `tuple` (`'role'`, `int`)
             - `tuple` (`'User'`, `int`)
             - `tuple` (`'user'`, `int`)
+            - `tuple` (`'Channel'`, `int`)
+            - `tuple` (`'channel'`, `int`)
         
         allow : `bool`
             Whether the respective application command should be enabled for the respective entity.
@@ -2038,6 +2044,12 @@ class ApplicationCommandPermissionOverwrite:
                 target_lookup_failed = False
                 break
             
+            if isinstance(target, ChannelBase):
+                target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_CHANNEL
+                target_id = target.id
+                target_lookup_failed = False
+                break
+            
             if isinstance(target, tuple) and len(target) == 2:
                 target_maybe, target_id_maybe = target
                 
@@ -2046,6 +2058,8 @@ class ApplicationCommandPermissionOverwrite:
                         target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_ROLE
                     elif issubclass(target_maybe, ClientUserBase):
                         target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER
+                    elif issubclass(target_maybe, ChannelBase):
+                        target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_CHANNEL
                     else:
                         target_lookup_failed = True
                         break
@@ -2055,6 +2069,8 @@ class ApplicationCommandPermissionOverwrite:
                         target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_ROLE
                     elif target_maybe in ('User', 'user'):
                         target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER
+                    elif target_maybe in ('Channel', 'channel'):
+                        target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_CHANNEL
                     else:
                         target_lookup_failed = True
                         break
@@ -2079,8 +2095,9 @@ class ApplicationCommandPermissionOverwrite:
         
         if target_lookup_failed:
             raise TypeError(
-                f'`target` can be `{Role.__name__}`, `{ClientUserBase.__name__}`, `tuple` ((`{Role.__name__}`, '
-                f'`{ClientUserBase.__name__}`, `str` (`\'Role\'`, `\'role\'`, `\'User\'`, `\'user\'`)), `int`), '
+                f'`target` can be `{Role.__name__}`, `{ClientUserBase.__name__}`, `{ChannelBase.__name__}`, '
+                f'`tuple` ((`{Role.__name__}`, `{ClientUserBase.__name__}`, `{ChannelBase.__name__}`, `str` '
+                f'(`\'Role\'`, `\'role\'`, `\'User\'`, `\'user\'`, `\'Channel\'`, `\'channel\'`)), `int`), '
                 f'got {target.__class__.__name__}: {target!r}.'
             )
         
@@ -2095,6 +2112,7 @@ class ApplicationCommandPermissionOverwrite:
         self.target_id = target_id
         self.target_type = target_type
         return self
+    
     
     @classmethod
     def from_data(cls, data):
@@ -2140,7 +2158,7 @@ class ApplicationCommandPermissionOverwrite:
         
         Returns
         -------
-        target : `None`, ``Role``, ``ClientUserBase``
+        target : `None`, ``Role``, ``ClientUserBase``, ``ChannelBase``
         """
         target_type = self.target_type
         target_id = self.target_id
@@ -2150,6 +2168,9 @@ class ApplicationCommandPermissionOverwrite:
         
         elif target_type is APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER:
             target = create_partial_user_from_id(target_id)
+        
+        elif target_type is APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_CHANNEL:
+            target = CHANNELS.get(target_id)
         
         else:
             target = None
@@ -2218,7 +2239,7 @@ class ApplicationCommandPermissionOverwrite:
         if self_type_value < other_type_value:
             return False
         
-        if self_type_value == APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_ROLE:
+        if self_type_value == APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_ROLE.value:
             self_target_id = self.target_id
             other_target_id = other.target_id
             
@@ -2235,8 +2256,25 @@ class ApplicationCommandPermissionOverwrite:
                 else:
                     return (self_role > other_role)
         
-        if self_type_value == APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER:
+        if self_type_value == APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER.value:
             return (self.target_id > other.target_id)
+        
+        if self_type_value == APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_CHANNEL.value:
+            self_target_id = self.target_id
+            other_target_id = other.target_id
+            
+            self_channel = CHANNELS.get(self_target_id, None)
+            other_channel = CHANNELS.get(other_target_id, None)
+            if self_channel is None:
+                if other_channel is None:
+                    return (self_target_id > other_target_id)
+                else:
+                    return False
+            else:
+                if other_channel is None:
+                    return True
+                else:
+                    return (self_channel.name > other_channel.name)
         
         # Should not happen
         return False
@@ -2256,7 +2294,7 @@ class ApplicationCommandPermissionOverwrite:
         if self_type_value < other_type_value:
             return True
         
-        if self_type_value == APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_ROLE:
+        if self_type_value == APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_ROLE.value:
             self_target_id = self.target_id
             other_target_id = other.target_id
             
@@ -2273,8 +2311,25 @@ class ApplicationCommandPermissionOverwrite:
                 else:
                     return (self_role < other_role)
         
-        if self_type_value == APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER:
+        if self_type_value == APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER.value:
             return (self.target_id < other.target_id)
+        
+        if self_type_value == APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_CHANNEL.value:
+            self_target_id = self.target_id
+            other_target_id = other.target_id
+            
+            self_channel = CHANNELS.get(self_target_id, None)
+            other_channel = CHANNELS.get(other_target_id, None)
+            if self_channel is None:
+                if other_channel is None:
+                    return (self_target_id < other_target_id)
+                else:
+                    return True
+            else:
+                if other_channel is None:
+                    return False
+                else:
+                    return (self_channel.name < other_channel.name)
         
         # Should not happen
         return True

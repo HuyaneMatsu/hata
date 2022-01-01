@@ -2000,8 +2000,8 @@ class ApplicationCommandPermissionOverwrite:
         
         Parameters
         ----------
-        target : ``ClientUserBase``, ``Role``, `tuple` ((``ClientUserBase``, ``Role`` type) or \
-                `str` (`'Role'`, `'role'`, `'User'`, `'user'`), `int`)
+        target : ``ClientUserBase``, ``Role``, ``ChannelBase``, `tuple` ((``ClientUserBase``, ``Role``, \
+                ``ChannelBase``, `str` (`'Role'`, `'role'`, `'User'`, `'user'`, `'Channel'`, `'channel'`)), `int`)
             The target entity of the application command permission overwrite.
             
             The expected type & value might be pretty confusing, but the target was it to allow relaxing creation.

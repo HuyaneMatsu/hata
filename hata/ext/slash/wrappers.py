@@ -119,8 +119,8 @@ class SlasherApplicationCommandPermissionOverwriteWrapper(SlasherCommandWrapper)
         ----------
         guild : ``Guild``, `int`
             The guild's identifier where the overwrite is applied.
-        target : ``ClientUserBase``, ``Role``, `tuple` ((``ClientUserBase``, ``Role`` type) or \
-                `str` (`'Role'`, `'role'`, `'User'`, `'user'`), `int`)
+        target : ``ClientUserBase``, ``Role``, ``ChannelBase``, `tuple` ((``ClientUserBase``, ``Role``, \
+                ``ChannelBase``, `str` (`'Role'`, `'role'`, `'User'`, `'user'`, `'Channel'`, `'channel'`)), `int`)
             The target entity of the overwrite
             
             The expected type & value might be pretty confusing, but the target was it to allow relaxing creation.
@@ -128,12 +128,16 @@ class SlasherApplicationCommandPermissionOverwriteWrapper(SlasherCommandWrapper)
             
             - ``Role``
             - ``ClientUserBase``
-            - `tuple` (``Role`` type, `int`)
+            - ``ChannelBase``
+            - `tuple` (``Role``, `int`)
             - `tuple` (``ClientUserBase``, `int`)
+            - `tuple` (``ChannelBase``, `int`)
             - `tuple` (`'Role'`, `int`)
             - `tuple` (`'role'`, `int`)
             - `tuple` (`'User'`, `int`)
             - `tuple` (`'user'`, `int`)
+            - `tuple` (`'Channel'`, `int`)
+            - `tuple` (`'channel'`, `int`)
         
         allow : `bool`
             Whether the respective application command should be enabled for the respective entity.
@@ -195,8 +199,10 @@ class SlasherApplicationCommandPermissionOverwriteWrapper(SlasherCommandWrapper)
     
     def __repr__(self):
         """Returns the slash command wrapper's representation."""
-        return f'<{self.__class__.__name__} wrapped={self._wrapped!r}, guild_id={self._guild_id!r}, ' \
+        return (
+            f'<{self.__class__.__name__} wrapped={self._wrapped!r}, guild_id={self._guild_id!r}, '
             f'overwrite={self._permission_overwrite!r}>'
+        )
 
 
 class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper):

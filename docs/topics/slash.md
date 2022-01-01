@@ -880,11 +880,11 @@ permission overwrite for up to 10 users or roles in each guild!
 
 The decorator accepts 3 parameters:
 
-| Name              | Type                                                          | Description                                                   |
-|-------------------|---------------------------------------------------------------|---------------------------------------------------------------|
-| guild             | `Guild`  or `int`                                             | The guild where the overwrite is applied in.                  |
-| target            | `User`, `Role`, `Client`, `tuple` (`str`, `type`, `int`)      | The target entity. Can be either role or user.                |
-| allow             | `bool`                                                        | Whether the command should be allowed for the target entity.  |
+| Name              | Type                                                                              | Description                                                   |
+|-------------------|-----------------------------------------------------------------------------------|---------------------------------------------------------------|
+| guild             | `Guild`  or `int`                                                                 | The guild where the overwrite is applied in.                  |
+| target            | `ClientUserBase`, `Role`, `ChannelBase`, `tuple` ((`str`, `type`), `int`)         | The target entity. Can be either role or user.                |
+| allow             | `bool`                                                                            | Whether the command should be allowed for the target entity.  |
 
 The `target` parameter can be given in many ways to allow relaxing definitions:
 

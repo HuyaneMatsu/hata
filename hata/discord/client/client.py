@@ -13844,7 +13844,7 @@ class Client(ClientUserPBase):
                 if not isinstance(permission_overwrites, (list, set, tuple)):
                     raise AssertionError(
                         f'`permission_overwrites` can be `None`, `list`, `tuple` or '
-                        f'`set`, got {permission_overwrites.__class__.__name__}.'
+                        f'`set`, got {permission_overwrites.__class__.__name__}; {permission_overwrites!r}.'
                     )
             
             for permission_overwrite in permission_overwrites:
@@ -13855,6 +13855,13 @@ class Client(ClientUserPBase):
                             f'elements, got {permission_overwrite.__class__.__name__}; {permission_overwrite!r}; '
                             f'permission_overwrites={permission_overwrites!r}.'
                         )
+                
+                # We update channel permission overwrites with id of 0
+                if (
+                        permission_overwrite.target_type is ApplicationCommandPermissionOverwriteTargetType.channel and
+                        permission_overwrite.target_id == 0
+                ):
+                    permission_overwrite.target_id = guild_id - 1
                 
                 permission_overwrite_datas.append(permission_overwrite.to_data())
             

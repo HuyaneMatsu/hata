@@ -2,9 +2,10 @@ __all__ = ()
 
 from time import perf_counter
 
-from scarletio import sleep, Task, future_or_timeout, Future, CancelledError, skip_ready_cycle
+from scarletio import CancelledError, Future, Task, future_or_timeout, skip_ready_cycle, sleep
 
 from ..core import KOKORO
+
 
 HEARTBEAT_TIMEOUT = 20.0
 

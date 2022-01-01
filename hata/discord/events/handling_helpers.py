@@ -3,14 +3,17 @@ __all__ = ('EventHandlerBase', 'EventWaitforBase', 'eventlist', )
 from functools import partial as partial_func
 from types import FunctionType
 
-from scarletio import RemovedDescriptor, MethodLike, WeakKeyDictionary, Task, is_coroutine_function, WaitTillAll, \
-    CallableAnalyzer, RichAttributeErrorBaseType
+from scarletio import (
+    CallableAnalyzer, MethodLike, RemovedDescriptor, RichAttributeErrorBaseType, Task, WaitTillAll, WeakKeyDictionary,
+    is_coroutine_function
+)
 from scarletio.utils.compact import NEEDS_DUMMY_INIT
 
 from ..core import KOKORO
 from ..message import Message
 
-from .core import EVENT_HANDLER_NAME_TO_PARSER_NAMES, DEFAULT_EVENT_HANDLER
+from .core import DEFAULT_EVENT_HANDLER, EVENT_HANDLER_NAME_TO_PARSER_NAMES
+
 
 def _check_name_should_break(name):
     """

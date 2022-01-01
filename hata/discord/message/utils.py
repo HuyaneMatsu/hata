@@ -2,7 +2,8 @@ __all__ = ()
 
 from scarletio import include
 
-from ..core import INTERACTION_EVENT_RESPONSE_WAITERS, INTERACTION_EVENT_MESSAGE_WAITERS
+from ..core import INTERACTION_EVENT_MESSAGE_WAITERS, INTERACTION_EVENT_RESPONSE_WAITERS
+
 
 Message = include('Message')
 

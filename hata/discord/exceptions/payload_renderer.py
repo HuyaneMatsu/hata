@@ -6,6 +6,7 @@ from json import JSONDecodeError
 from scarletio import from_json
 from scarletio.web_common import Formdata
 
+
 TYPE_NAME_UNEXPECTED = 'object'
 TYPE_NAME_STRING = 'string'
 TYPE_NAME_BINARY = 'binary'

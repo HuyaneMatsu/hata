@@ -1,9 +1,11 @@
 __all__ = ()
 
 from scarletio import KeepType
+
 from ...discord.client import Client
 
 from .extension import EXTENSIONS, EXTENSION_STATE_LOADED
+
 
 @KeepType(Client)
 class Client:

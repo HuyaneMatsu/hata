@@ -1,15 +1,20 @@
 __all__ = ()
 
-from re import compile as re_compile, escape as re_escape, M as re_multi_line, S as re_dotall, I as re_ignore_case, \
-    match as re_match
 from functools import partial as partial_func
+from re import (
+    I as re_ignore_case, M as re_multi_line, S as re_dotall, compile as re_compile, escape as re_escape,
+    match as re_match
+)
 from types import FunctionType
+
 from scarletio import CallableAnalyzer, include
 
 from ...discord.permission.permission import PERMISSION_CAN_SEND_MESSAGES_ALL
 
-from .exceptions import CommandProcessingError, CommandCheckError
+from .exceptions import CommandCheckError, CommandProcessingError
 from .utils import raw_name_to_display
+
+
 CheckBase = include('CheckBase')
 CommandCheckWrapper = include('CommandCheckWrapper')
 

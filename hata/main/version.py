@@ -1,6 +1,9 @@
 import sys
-from platform import platform as get_platform
+
 from .. import __package__ as PACKAGE_NAME, __version__ as VERSION
+
+from platform import platform as get_platform
+
 
 NAME = 'version'
 USAGE = 'v | version'

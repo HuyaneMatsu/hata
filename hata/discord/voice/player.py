@@ -1,12 +1,14 @@
 __all__ = ()
 
-from time import perf_counter
 from audioop import mul as audio_mul
+from time import perf_counter
 
-from scarletio import Task, Event, sleep, CancelledError
+from scarletio import CancelledError, Event, Task, sleep
 
 from ..core import KOKORO
+
 from .opus import FRAME_LENGTH, SAMPLES_PER_FRAME
+
 
 PLAYER_DELAY = FRAME_LENGTH / 1000.0
 

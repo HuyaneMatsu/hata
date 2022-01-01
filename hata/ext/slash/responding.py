@@ -2,9 +2,9 @@ __all__ = ('abort', 'InteractionResponse',)
 
 from scarletio import is_coroutine_generator
 
-from ...discord.embed import EmbedBase
 from ...discord.client import Client
-from ...discord.interaction import InteractionType, InteractionForm
+from ...discord.embed import EmbedBase
+from ...discord.interaction import InteractionForm, InteractionType
 
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
@@ -487,14 +487,14 @@ class InteractionResponse:
                 show_for_invoking_user_only,
             )
             
-            if ('file' in self._parameters):
+            if (not interaction_event.is_unanswered()):
+                need_acknowledging = False
+            elif ('file' in self._parameters):
                 need_acknowledging = True
             elif self._is_abort:
                 need_acknowledging = False
             elif is_return:
                 need_acknowledging = False
-            elif interaction_event.is_unanswered():
-                need_acknowledging = True
             else:
                 need_acknowledging = False
             
@@ -508,7 +508,11 @@ class InteractionResponse:
                 'file', 'tts', 'components'))
             
             if need_acknowledging or (not interaction_event.is_unanswered()):
-                yield client.interaction_followup_message_create(interaction_event, **response_parameters)
+                yield client.interaction_followup_message_create(
+                    interaction_event,
+                    **response_parameters,
+                    show_for_invoking_user_only = show_for_invoking_user_only,
+                )
             
             else:
                 yield client.interaction_response_message_create(

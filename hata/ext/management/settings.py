@@ -1,8 +1,10 @@
-from scarletio import from_json, to_json
-from os.path import exists, isfile as is_file, join as join_paths, isdir, isdir as is_directory
 from os import getcwd as get_current_working_directory, listdir as list_directory
+from os.path import exists, isdir as is_directory, isfile as is_file, join as join_paths
 
-from .checkout import checkout_list_structure, ELEMENT_TYPE_IDENTIFIER_STRING
+from scarletio import from_json, to_json
+
+from .checkout import ELEMENT_TYPE_IDENTIFIER_STRING, checkout_list_structure
+
 
 KEY_BOT_DIRECTORIES = 'BOT_DIRECTORIES'
 SETTINGS_FILE_NAME = '.settings.json'

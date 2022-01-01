@@ -1,17 +1,21 @@
 __all__ = ('CommandProcessor', )
 
 from scarletio import WeakReferer
+
 from ...discord.events.handling_helpers import EventWaitforBase
+from ...discord.events.handling_helpers import Router, compare_converted
 from ...discord.preconverters import preconvert_bool
 from ...discord.utils import USER_MENTION_RP
-from ...discord.events.handling_helpers import Router, compare_converted
 
-from .command_helpers import default_precheck, test_precheck, test_error_handler, test_name_rule, \
-    validate_category_or_command_name, get_prefix_parser, COMMAND_NAME_RP, test_unknown_command
-from .utils import raw_name_to_display
-from .context import CommandContext
 from .category import Category
 from .command import Command
+from .command_helpers import (
+    COMMAND_NAME_RP, default_precheck, get_prefix_parser, test_error_handler, test_name_rule, test_precheck,
+    test_unknown_command, validate_category_or_command_name
+)
+from .context import CommandContext
+from .utils import raw_name_to_display
+
 
 DEFAULT_CATEGORY_NAME = 'UNCATEGORIZED'
 
@@ -506,7 +510,7 @@ class CommandProcessor(EventWaitforBase):
     def get_category(self, category_name):
         """
         Returns the category for the given name. If the name is passed as `None`, then will return the default category
-        of the command processer.
+        of the command processor.
         
         Returns `None` if there is no category with the given name.
         
@@ -895,7 +899,7 @@ class CommandProcessor(EventWaitforBase):
             The aliases of the command.
         category : `None`, ``Category``, `str`, `tuple` of (`None`, `Ellipsis`, ``Category``, `str`), Optional
             The category of the command. Can be given as the category itself, or as a category's name. If given as
-            `None`, then the command will go under the command processer's default category.
+            `None`, then the command will go under the command processor's default category.
         checks : `None`, ``CommandCheckWrapper``, ``CheckBase``, `list` of ``CommandCheckWrapper``, ``CheckBase`` \
                 instances or `tuple` of (`None`, `Ellipsis`, ``CommandCheckWrapper``, ``CheckBase``, `list` of \
                 ``CommandCheckWrapper``, ``CheckBase``), Optional

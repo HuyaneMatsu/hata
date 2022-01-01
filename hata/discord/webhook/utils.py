@@ -7,6 +7,7 @@ from ..core import USERS
 from .preinstanced import WebhookType
 from .webhook import Webhook
 
+
 @export
 def create_partial_webhook_from_id(webhook_id, token, *, type_=WebhookType.bot, channel_id=0):
     """

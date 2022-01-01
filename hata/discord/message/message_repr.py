@@ -3,7 +3,8 @@ __all__ = ('MessageRepr', )
 from scarletio import include
 
 from ..bases import DiscordEntity
-from ..core import GUILDS, CHANNELS
+from ..core import CHANNELS, GUILDS
+
 
 Message = include('Message')
 

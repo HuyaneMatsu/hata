@@ -1,7 +1,8 @@
 __all__ = ('MessageApplication', )
 
-from ..bases import IconSlot, DiscordEntity
+from ..bases import DiscordEntity, IconSlot
 from ..http import urls as module_urls
+
 
 class MessageApplication(DiscordEntity):
     """

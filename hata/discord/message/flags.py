@@ -2,6 +2,7 @@ __all__ = ('MessageFlag',)
 
 from ..bases import FlagBase
 
+
 class MessageFlag(FlagBase):
     """
     Bitwise flags of a ``Message``.

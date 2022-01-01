@@ -3,30 +3,33 @@ __all__ = ('COMMUNITY_FEATURES', 'EMOJI_UPDATE_DELETE', 'EMOJI_UPDATE_EDIT', 'EM
     'STICKER_UPDATE_CREATE', 'STICKER_UPDATE_NONE', 'VOICE_STATE_JOIN', 'VOICE_STATE_LEAVE', 'VOICE_STATE_NONE',
     'VOICE_STATE_MOVE', 'VOICE_STATE_UPDATE')
 
-from re import compile as re_compile, I as re_ignore_case, escape as re_escape
+from re import I as re_ignore_case, compile as re_compile, escape as re_escape
 
-from ...env import CACHE_PRESENCE, CACHE_USER
 from scarletio import WeakValueDictionary, export, include
 
-from ..bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
-from ..core import GUILDS
-from ..utils import EMOJI_NAME_RP, DATETIME_FORMAT_CODE
-from ..user import User, create_partial_user_from_id, VoiceState, ZEROUSER, ClientUserBase
-from ..role import Role
-from ..channel import CHANNEL_TYPE_MAP, ChannelCategory, ChannelText, ChannelGuildUndefined
-from ..permission import Permission
-from ..permission.permission import PERMISSION_NONE, PERMISSION_ALL, PERMISSION_MASK_ADMINISTRATOR
-from ..emoji import Emoji
-from ..oauth2.helpers import parse_preferred_locale, DEFAULT_LOCALE
-from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_preinstanced_type, preconvert_bool
-from .preinstanced import GuildFeature, VoiceRegion, VerificationLevel, MessageNotificationLevel, MFA, \
-    ContentFilterLevel, NsfwLevel
-from ..sticker import Sticker, StickerFormat
-from ..http import urls as module_urls
-from ..scheduled_event import ScheduledEvent
+from ...env import CACHE_PRESENCE, CACHE_USER
 
-from .flags import SystemChannelFlag
+from ..bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
+from ..channel import CHANNEL_TYPE_MAP, ChannelCategory, ChannelGuildUndefined, ChannelText
+from ..core import GUILDS
+from ..emoji import Emoji
+from ..http import urls as module_urls
+from ..oauth2.helpers import DEFAULT_LOCALE, parse_preferred_locale
+from ..permission import Permission
+from ..permission.permission import PERMISSION_ALL, PERMISSION_MASK_ADMINISTRATOR, PERMISSION_NONE
+from ..preconverters import preconvert_bool, preconvert_preinstanced_type, preconvert_snowflake, preconvert_str
+from ..role import Role
+from ..scheduled_event import ScheduledEvent
+from ..sticker import Sticker, StickerFormat
+from ..user import ClientUserBase, User, VoiceState, ZEROUSER, create_partial_user_from_id
+from ..utils import DATETIME_FORMAT_CODE, EMOJI_NAME_RP
+
 from .embedded_activity_state import EmbeddedActivityState
+from .flags import SystemChannelFlag
+from .preinstanced import (
+    ContentFilterLevel, GuildFeature, MFA, MessageNotificationLevel, NsfwLevel, VerificationLevel, VoiceRegion
+)
+
 
 VoiceClient = include('VoiceClient')
 Client = include('Client')

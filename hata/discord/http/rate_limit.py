@@ -1,14 +1,15 @@
 __all__ = ()
 
-from datetime import datetime, timezone
 from collections import deque
+from datetime import datetime, timezone
 
-from scarletio import Future, ScarletLock, LOOP_TIME
+from scarletio import Future, LOOP_TIME, ScarletLock
 from scarletio.web_common.headers import DATE
 
 from ..core import KOKORO
-from .headers import RATE_LIMIT_RESET, RATE_LIMIT_RESET_AFTER, RATE_LIMIT_REMAINING, RATE_LIMIT_LIMIT
 from ..utils import parse_date_header_to_datetime
+
+from .headers import RATE_LIMIT_LIMIT, RATE_LIMIT_REMAINING, RATE_LIMIT_RESET, RATE_LIMIT_RESET_AFTER
 
 
 GLOBALLY_LIMITED = 0x4000000000000000

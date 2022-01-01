@@ -2,6 +2,7 @@ __all__ = ('VoiceConnectionStatus',)
 
 from .preinstanced import VoiceConnectionState
 
+
 class VoiceConnectionStatus:
     """
     Called when the client's voice connection status changes.

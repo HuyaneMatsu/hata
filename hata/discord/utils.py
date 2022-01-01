@@ -7,25 +7,26 @@
     'now_as_id', 'parse_message_reference', 'parse_rdelta', 'parse_tdelta', 'random_id', 'sanitize_content',
     'sanitize_mentions', 'unix_time_to_id')
 
-import sys, warnings, reprlib
-from random import random
-from re import compile as re_compile, I as re_ignore_case, U as re_unicode
-from datetime import datetime, timedelta, timezone
+import reprlib, sys
 from base64 import b64encode
-from time import time as time_now
-from math import floor
+from datetime import datetime, timedelta, timezone
 from email._parseaddr import _parsedate_tz as parse_date_timezone
 from functools import partial as partial_func
+from math import floor
+from random import random
+from re import I as re_ignore_case, U as re_unicode, compile as re_compile
+from time import time as time_now
+
+from scarletio import IS_UNIX, LOOP_TIME, export, include, modulize, set_docs
+
+from .bases import DiscordEntity
+from .core import CHANNELS, ROLES, USERS
+
 
 try:
     from dateutil.relativedelta import relativedelta
 except ImportError:
     relativedelta = None
-
-from scarletio import export, include, modulize, IS_UNIX, set_docs, LOOP_TIME
-
-from .bases import DiscordEntity
-from .core import USERS, CHANNELS, ROLES
 
 MESSAGE_JUMP_URL_RP = include('MESSAGE_JUMP_URL_RP')
 create_partial_user_from_id = include('create_partial_user_from_id')

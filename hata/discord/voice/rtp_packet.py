@@ -2,6 +2,7 @@ __all__ = ()
 
 from .opus import OpusDecoder, opus
 
+
 if opus is None:
     DECODER = None
 else:

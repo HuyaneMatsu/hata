@@ -1,15 +1,16 @@
 __all__ = ('EXTENSIONS', )
 
 import sys
-from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from importlib import reload as reload_module
+from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from py_compile import compile as compile_module
 
 from scarletio import HybridValueDictionary, WeakValueDictionary, include
 
-from .snapshot import take_snapshot, calculate_snapshot_difference, revert_snapshot
-from .utils import _validate_entry_or_exit, PROTECTED_NAMES, _get_path_extension_name
 from .exceptions import DoNotLoadExtension
+from .snapshot import calculate_snapshot_difference, revert_snapshot, take_snapshot
+from .utils import PROTECTED_NAMES, _get_path_extension_name, _validate_entry_or_exit
+
 
 EXTENSION_LOADER = include('EXTENSION_LOADER')
 

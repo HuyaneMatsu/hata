@@ -1,5 +1,5 @@
-from .category import *
 from . import checks
+from .category import *
 from .command import *
 from .command_helpers import *
 from .command_processor import *

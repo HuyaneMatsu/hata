@@ -1,10 +1,11 @@
 __all__ = ('Closer', )
 
 from scarletio import CancelledError
+
 from ....discord.interaction import ComponentButton, ComponentRow
 
+from .helpers import CUSTOM_ID_CANCEL, EMOJI_CANCEL, get_auto_check, top_level_check, top_level_get_timeout
 from .menu import Menu
-from .helpers import EMOJI_CANCEL, top_level_check, top_level_get_timeout, CUSTOM_ID_CANCEL, get_auto_check
 
 
 class Closer(Menu):

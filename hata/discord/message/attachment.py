@@ -2,6 +2,7 @@ __all__ = ('Attachment', )
 
 from ..bases import DiscordEntity
 
+
 class Attachment(DiscordEntity):
     """
     Represents an attachment of a ``Message``.

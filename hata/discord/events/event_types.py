@@ -1,12 +1,12 @@
 __all__ = ('GuildUserChunkEvent', 'VoiceServerUpdateEvent',)
 
+from scarletio import copy_docs, set_docs
+
 from ...env import CACHE_PRESENCE
 
-from scarletio import set_docs, copy_docs
-
 from ..bases import EventBase
-from ..user import User
 from ..core import GUILDS
+from ..user import User
 
 
 class GuildUserChunkEvent(EventBase):

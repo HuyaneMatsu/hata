@@ -3,10 +3,11 @@ __all__ = ('ActivityAssets', 'ActivityBase', 'ActivityParty', 'ActivitySecrets',
 
 from datetime import datetime
 
-from ..utils import DISCORD_EPOCH_START, DATETIME_FORMAT_CODE, unix_time_to_datetime, datetime_to_unix_time
 from ..color import Color
+from ..utils import DATETIME_FORMAT_CODE, DISCORD_EPOCH_START, datetime_to_unix_time, unix_time_to_datetime
 
 from . import activity_types as ACTIVITY_TYPES
+
 
 DEFAULT_CUSTOM_ID = 'UNKNOWN'
 

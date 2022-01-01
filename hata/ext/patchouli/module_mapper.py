@@ -2,18 +2,21 @@ __all__ = ('AttributeUnitBase', 'ClassAttributeUnit', 'FolderedUnit', 'FunctionU
     'MAPPED_OBJECTS', 'ModuleUnit', 'ObjectedUnitBase', 'PropertyUnit', 'TypeUnit', 'UnitBase', 'map_module',
     'search_paths')
 
-import sys, re, warnings
-from types import FunctionType, BuiltinFunctionType, BuiltinMethodType, MethodType, GetSetDescriptorType, \
-    MemberDescriptorType
+import re, sys, warnings
 from difflib import get_close_matches
+from types import (
+    BuiltinFunctionType, BuiltinMethodType, FunctionType, GetSetDescriptorType, MemberDescriptorType, MethodType
+)
 
-from scarletio import cached_property, MethodLike, module_property, BaseMethodType, weak_method, include
+from scarletio import BaseMethodType, MethodLike, cached_property, include, module_property, weak_method
+
 from ...discord.bases import IconSlot
 
-from .qualpath import QualPath
-from .parser import DocString
-from .builder_text import serialize_docs_embed_sized, serialize_docs, serialize_docs_source_text, generate_preview_for
 from .builder_html import html_serialize_docs
+from .builder_text import generate_preview_for, serialize_docs, serialize_docs_embed_sized, serialize_docs_source_text
+from .parser import DocString
+from .qualpath import QualPath
+
 
 html_serialize_docs_extended = include('html_serialize_docs_extended')
 

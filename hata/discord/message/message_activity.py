@@ -2,6 +2,7 @@ __all__ = ('MessageActivity', )
 
 from .preinstanced import MessageActivityType
 
+
 class MessageActivity:
     """
     Might be sent with a ``Message``, if it has rich presence-related chat embeds.

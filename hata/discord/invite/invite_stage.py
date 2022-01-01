@@ -2,6 +2,7 @@ __all__ = ('InviteStage', )
 
 from ..user import User
 
+
 class InviteStage:
     """
     Represents an invite's stage.

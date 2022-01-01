@@ -1,6 +1,7 @@
 __all__ = ('DiscordEntity', 'Slotted', )
 
-from scarletio import include, RichAttributeErrorBaseType
+from scarletio import RichAttributeErrorBaseType, include
+
 
 id_to_datetime = include('id_to_datetime')
 

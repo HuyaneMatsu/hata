@@ -2,9 +2,10 @@ __all__ = ('MessageType', 'MessageActivityType')
 
 from scarletio import any_to_any
 
-from ..bases import PreinstancedBase, Preinstance as P
-from ..utils import sanitize_mentions
 from ..activity import ACTIVITY_TYPES
+from ..bases import Preinstance as P, PreinstancedBase
+from ..utils import sanitize_mentions
+
 
 class MessageActivityType(PreinstancedBase):
     """

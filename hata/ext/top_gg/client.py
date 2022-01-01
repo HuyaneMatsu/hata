@@ -1,24 +1,26 @@
 __all__ = ('TopGGClient', )
 
-from scarletio import WeakReferer, IgnoreCaseMultiValueDictionary, to_json, from_json, LOOP_TIME
-from scarletio import Task, sleep, Future, shield
-from scarletio.web_common.headers import RETRY_AFTER, METHOD_GET, METHOD_POST, AUTHORIZATION, CONTENT_TYPE, USER_AGENT
+from scarletio import Future, Task, shield, sleep
+from scarletio import IgnoreCaseMultiValueDictionary, LOOP_TIME, WeakReferer, from_json, to_json
 from scarletio.http_client import RequestContextManager
+from scarletio.web_common.headers import AUTHORIZATION, CONTENT_TYPE, METHOD_GET, METHOD_POST, RETRY_AFTER, USER_AGENT
 
 from ...discord.client import Client
 from ...discord.core import KOKORO
 from ...discord.http import LIBRARY_USER_AGENT
 
-from .constants import JSON_KEY_POST_BOT_STATS_GUILD_COUNT, JSON_KEY_POST_BOT_STATS_SHARD_ID, \
-    JSON_KEY_POST_BOT_STATS_SHARD_COUNT, JSON_KEY_WEEKEND_STATUS, QUERY_KEY_GET_BOTS_LIMIT, \
-    QUERY_KEY_GET_BOTS_OFFSET, QUERY_KEY_GET_BOTS_SORT_BY, QUERY_KEY_GET_BOTS_SEARCH_QUERY, \
-    QUERY_KEY_GET_BOTS_FIELDS, JSON_KEY_VOTED, QUERY_KEY_GET_USER_VOTE_USER_ID, RATE_LIMIT_GLOBAL_SIZE, \
-    RATE_LIMIT_GLOBAL_RESET_AFTER, RATE_LIMIT_BOTS_SIZE, RATE_LIMIT_BOTS_RESET_AFTER, \
-    RATE_LIMIT_GLOBAL_DEFAULT_DURATION
-from .types import UserInfo, BotInfo, BotsQueryResult
-from .bots_query import get_bots_query_sort_by_value, create_bots_query_search_value, BOTS_QUERY_FIELDS_VALUE
+from .bots_query import create_bots_query_search_value, get_bots_query_sort_by_value
+from .constants import (
+    JSON_KEY_POST_BOT_STATS_GUILD_COUNT, JSON_KEY_POST_BOT_STATS_SHARD_COUNT, JSON_KEY_POST_BOT_STATS_SHARD_ID,
+    JSON_KEY_VOTED, JSON_KEY_WEEKEND_STATUS, QUERY_KEY_GET_BOTS_LIMIT, QUERY_KEY_GET_BOTS_OFFSET,
+    QUERY_KEY_GET_BOTS_SEARCH_QUERY, QUERY_KEY_GET_BOTS_SORT_BY, QUERY_KEY_GET_USER_VOTE_USER_ID,
+    RATE_LIMIT_BOTS_RESET_AFTER, RATE_LIMIT_BOTS_SIZE, RATE_LIMIT_GLOBAL_DEFAULT_DURATION,
+    RATE_LIMIT_GLOBAL_RESET_AFTER, RATE_LIMIT_GLOBAL_SIZE
+)
+from .exceptions import TopGGGloballyRateLimited, TopGGHttpException
 from .rate_limit_handling import RateLimitGroup, RateLimitHandler, StackedRateLimitHandler
-from .exceptions import TopGGHttpException, TopGGGloballyRateLimited
+from .types import BotInfo, BotsQueryResult, UserInfo
+
 
 AUTO_POST_INTERVAL = 1800.0
 WEEKEND_STATE_UPDATE_INTERVAL = 300.0

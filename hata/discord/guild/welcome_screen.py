@@ -4,8 +4,8 @@ import reprlib
 
 from scarletio import BaseMethodDescriptor
 
+from ..channel import ChannelBase, ChannelText
 from ..core import CHANNELS
-from ..channel import ChannelText, ChannelBase
 from ..emoji import Emoji, create_partial_emoji_from_data
 from ..preconverters import preconvert_snowflake
 

@@ -1,7 +1,8 @@
 __all__ = ()
 
-from ...discord.events.core import EVENT_HANDLER_NAME_TO_PARSER_NAMES
 from ...discord.core import CLIENTS
+from ...discord.events.core import EVENT_HANDLER_NAME_TO_PARSER_NAMES
+
 
 SNAPSHOT_TAKERS = {}
 

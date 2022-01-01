@@ -1,20 +1,23 @@
 __all__ = ('ChannelTextBase', 'message_relative_index',)
 
 from collections import deque
-from time import time as current_time
 from datetime import datetime
+from time import time as current_time
+
+from scarletio import LOOP_TIME, WeakReferer, export
+
+from ...env import MESSAGE_CACHE_SIZE
+
+from ..core import KOKORO, MESSAGES
+from ..message import Message
+from ..utils import DATETIME_FORMAT_CODE
+
+
 try:
     from _weakref import WeakSet
 except ImportError:
     from weakref import WeakSet
 
-from ...env import MESSAGE_CACHE_SIZE
-
-from scarletio import WeakReferer, LOOP_TIME, export
-
-from ..core import MESSAGES, KOKORO
-from ..message import Message
-from ..utils import DATETIME_FORMAT_CODE
 
 # searches the relative index of a message in a list
 def message_relative_index(messages, message_id):

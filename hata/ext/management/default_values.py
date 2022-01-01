@@ -1,8 +1,10 @@
 __all__ = ('get_client_application_id', 'get_client_id', 'get_client_secret', 'get_client_token')
 
-from ...env import get_str_env, get_int_env
 from scarletio import RichAnalyzer
+
 from ...discord.client import Client
+from ...env import get_int_env, get_str_env
+
 
 CLIENT_ANALYZER_PARAMETERS = RichAnalyzer(Client.__new__).parameters
 

@@ -2,9 +2,10 @@ __all__ = ('WebhookRepr',)
 
 from scarletio import export
 
+from .preinstanced import WebhookType
 from .utils import create_partial_webhook_from_id
 from .webhook_base import WebhookBase
-from .preinstanced import WebhookType
+
 
 @export
 class WebhookRepr(WebhookBase):

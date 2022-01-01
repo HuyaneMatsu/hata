@@ -1,7 +1,7 @@
 __all__ = ('StickerPack', )
 
-from ..core import STICKER_PACKS
 from ..bases import DiscordEntity
+from ..core import STICKER_PACKS
 
 from .sticker import Sticker
 

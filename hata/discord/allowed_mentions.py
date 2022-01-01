@@ -1,7 +1,7 @@
 __all__ = ('AllowedMentionProxy', 'parse_allowed_mentions')
 
-from .user import UserBase, create_partial_user_from_id
 from .role import Role, create_partial_role_from_id
+from .user import UserBase, create_partial_user_from_id
 
 
 def parse_allowed_mentions(allowed_mentions):

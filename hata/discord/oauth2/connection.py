@@ -1,7 +1,7 @@
 __all__ = ('Connection', )
 
-from ..integration import Integration
 from ..bases import DiscordEntity
+from ..integration import Integration
 
 
 class Connection(DiscordEntity):

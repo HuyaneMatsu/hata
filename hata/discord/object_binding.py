@@ -2,6 +2,7 @@ __all__ = ('bind',)
 
 from scarletio import WeakKeyDictionary, copy_docs
 
+
 def bind(bind_to, bind_with, name):
     """
     A cool hata features, that lets you bind object to existing one.

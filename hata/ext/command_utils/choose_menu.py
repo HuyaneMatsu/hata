@@ -1,16 +1,18 @@
-# -*- coding: utf-8 -*-
 __all__ = ('ChooseMenu', )
 
 from scarletio import CancelledError, copy_docs
+
+from ...discord.channel import ChannelTextBase
 from ...discord.core import BUILTIN_EMOJIS
+from ...discord.embed import Embed
+from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.interaction import InteractionEvent
 from ...discord.message import Message
-from ...discord.channel import ChannelTextBase
-from ...discord.exceptions import DiscordException, ERROR_CODES
-from ...discord.embed import Embed
 
-from .bases import GUI_STATE_READY, GUI_STATE_SWITCHING_PAGE, GUI_STATE_CANCELLING, GUI_STATE_SWITCHING_CTX, \
-    GUI_STATE_VALUE_TO_NAME, PaginationBase
+from .bases import (
+    GUI_STATE_CANCELLING, GUI_STATE_READY, GUI_STATE_SWITCHING_CTX, GUI_STATE_SWITCHING_PAGE, GUI_STATE_VALUE_TO_NAME,
+    PaginationBase
+)
 from .utils import Timeouter
 
 

@@ -1,9 +1,11 @@
 __all__ = ('GUI_STATE_CANCELLED', 'GUI_STATE_CANCELLING', 'GUI_STATE_READY', 'GUI_STATE_SWITCHING_CTX',
     'GUI_STATE_SWITCHING_PAGE', 'PaginationBase')
 
-from scarletio import Task, CancelledError
+from scarletio import CancelledError, Task
+
 from ...discord.core import KOKORO
 from ...discord.exceptions import DiscordException, ERROR_CODES
+
 
 GUI_STATE_READY = 0
 GUI_STATE_SWITCHING_PAGE = 1

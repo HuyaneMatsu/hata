@@ -4,6 +4,7 @@ from ...env import CACHE_PRESENCE
 
 from ..bases import FlagBase
 
+
 INTENT_SHIFT_GUILDS = 0
 INTENT_SHIFT_GUILD_USERS = 1
 INTENT_SHIFT_GUILD_BANS = 2

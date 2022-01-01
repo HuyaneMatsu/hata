@@ -2,8 +2,9 @@ __all__ = ('CommandCooldownWrapper', 'CommandCheckWrapper', 'CommandConverterCon
 
 from scarletio import copy_docs, export
 
-from .content_parser import get_detail_for_value, ConverterFlag
+from .content_parser import ConverterFlag, get_detail_for_value
 from .cooldown import CooldownHandler
+
 
 class CommandWrapper:
     """
@@ -15,6 +16,7 @@ class CommandWrapper:
         The wrapped object.
     """
     __slots__ = ('_wrapped',)
+    
     def __new__(cls):
         """
         Creates a partial function to wrap a command.

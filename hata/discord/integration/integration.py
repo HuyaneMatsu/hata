@@ -4,9 +4,9 @@ from ..bases import DiscordEntity
 from ..core import INTEGRATIONS
 from ..user import User, ZEROUSER
 
-from .integration_detail import IntegrationDetail
+from .integration_account import INTEGRATION_TYPE_DISCORD, IntegrationAccount
 from .integration_application import IntegrationApplication
-from .integration_account import IntegrationAccount, INTEGRATION_TYPE_DISCORD
+from .integration_detail import IntegrationDetail
 
 
 class Integration(DiscordEntity, immortal=True):

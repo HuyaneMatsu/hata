@@ -4,6 +4,7 @@ from ...discord.user import User
 
 from .user_voice_settings import AudioBalance
 
+
 class RichVoiceState:
     """
     Rich voice state containing user, and it's voice state and other related attributes.

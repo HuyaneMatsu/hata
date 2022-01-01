@@ -1,24 +1,30 @@
-# -*- coding: utf-8 -*-
 __all__ = ('SubterraneanHelpCommand', )
 
 from functools import partial as partial_func
 
-from scarletio import DOCS_ENABLED, docs_property, is_awaitable, CallableAnalyzer
+from scarletio import CallableAnalyzer, DOCS_ENABLED, docs_property, is_awaitable
+
+from ....discord.channel import (
+    ChannelBase, ChannelCategory, ChannelDirectory, ChannelGroup, ChannelGuildBase, ChannelPrivate, ChannelStore,
+    ChannelText, ChannelTextBase, ChannelThread, ChannelVoice
+)
 from ....discord.embed import Embed
-from ....discord.utils import chunkify
-from ....discord.preconverters import preconvert_color, preconvert_str
-from ....discord.user import UserBase, User
-from ....discord.channel import ChannelBase, ChannelGuildBase, ChannelTextBase, ChannelText, ChannelPrivate, \
-    ChannelVoice, ChannelGroup, ChannelCategory, ChannelStore, ChannelThread, ChannelDirectory
-from ....discord.role import Role
 from ....discord.emoji.emoji import Emoji
 from ....discord.guild import Guild
-from ....discord.message import Message
 from ....discord.invite import Invite
+from ....discord.message import Message
+from ....discord.preconverters import preconvert_color, preconvert_str
+from ....discord.role import Role
+from ....discord.user import User, UserBase
+from ....discord.utils import chunkify
 
-from ...command_utils import Pagination, Closer
-from ..content_parser import DEFAULT_TYPE_NONE, RestParserContext, SingleArgsParserContext, ChainedArgsParserContext, \
-    SingleParserContext, ChainedParserContext, timedelta, relativedelta
+from ...command_utils import Closer, Pagination
+
+from ..content_parser import (
+    ChainedArgsParserContext, ChainedParserContext, DEFAULT_TYPE_NONE, RestParserContext, SingleArgsParserContext,
+    SingleParserContext, relativedelta, timedelta
+)
+
 
 MAX_LINE_PER_PAGE = 24
 DEFAULT_PREFIX = '**>>**'

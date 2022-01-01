@@ -1,12 +1,15 @@
 import sys
-from os.path import dirname as get_directory_name, realpath as get_real_path, join as join_paths, \
-    normpath as normalize_path, expanduser as get_user_home_directory
 from os import getcwd as get_current_work_directory
+from os.path import (
+    dirname as get_directory_name, expanduser as get_user_home_directory, join as join_paths,
+    normpath as normalize_path, realpath as get_real_path
+)
+
 
 try:
     from . import __package__ as PACKAGE_NAME
 except ImportError:
-    # If we have hata not setuped
+    # If we have hata not setupped
     PACKAGE_NAME = sys.path[0]
     
     sys.path.append(

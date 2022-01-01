@@ -4,23 +4,25 @@ import socket as module_socket
 from datetime import datetime
 from functools import partial as partial_func
 
-from scarletio import DOCS_ENABLED, Future, Task, sleep, future_or_timeout, Lock, Event, DatagramMergerReadProtocol, \
-    export
-from scarletio.web_common import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
+from scarletio import (
+    DOCS_ENABLED, DatagramMergerReadProtocol, Event, Future, Lock, Task, export, future_or_timeout, sleep
+)
+from scarletio.web_common import ConnectionClosed, InvalidHandshake, WebSocketProtocolError
 
-from ..core import KOKORO, GUILDS, CHANNELS
-from ..gateway.voice_client_gateway import DiscordGatewayVoice, SecretBox
-from ..channel import ChannelVoiceBase, ChannelStage
+from ..bases import maybe_snowflake
+from ..channel import ChannelVoiceBase
+from ..core import CHANNELS, GUILDS, KOKORO
 from ..exceptions import VOICE_CLIENT_DISCONNECT_CLOSE_CODE, VOICE_CLIENT_RECONNECT_CLOSE_CODE
+from ..gateway.voice_client_gateway import DiscordGatewayVoice, SecretBox
 from ..user import User
 from ..utils import datetime_to_timestamp
-from ..bases import maybe_snowflake
 
 from .audio_source import AudioSource
 from .opus import OpusEncoder
 from .player import AudioPlayer
 from .reader import AudioReader, AudioStream
 from .utils import try_get_voice_region
+
 
 @export
 class VoiceClient:

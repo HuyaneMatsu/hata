@@ -1,13 +1,12 @@
 __all__ = ('VoiceState', )
 
-from datetime import datetime
-
 from scarletio import include
 
-from ..utils import timestamp_to_datetime
 from ..core import CHANNELS, GUILDS
+from ..utils import timestamp_to_datetime
 
 from .utils import create_partial_user_from_id
+
 
 create_partial_role_from_id = include('create_partial_role_from_id')
 

@@ -4,6 +4,7 @@ from scarletio import copy_docs
 
 from ..bases import EventBase
 
+
 class ScheduledEventSubscribeEvent(EventBase):
     """
     Represents a `GUILD_SCHEDULED_EVENT_USER_ADD` event.

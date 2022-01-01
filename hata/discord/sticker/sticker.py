@@ -2,15 +2,18 @@ __all__ = ('Sticker', )
 
 from scarletio import include
 
-from ..core import STICKERS, GUILDS, STICKER_PACKS
 from ..bases import DiscordEntity
-from ..user import ZEROUSER, User
-from ..http import urls as module_urls
-from ..preconverters import preconvert_str, preconvert_int, preconvert_snowflake, preconvert_preinstanced_type, \
-    preconvert_iterable_of_str, preconvert_bool
 from ..bases import instance_or_id_to_instance
+from ..core import GUILDS, STICKERS, STICKER_PACKS
+from ..http import urls as module_urls
+from ..preconverters import (
+    preconvert_bool, preconvert_int, preconvert_iterable_of_str, preconvert_preinstanced_type, preconvert_snowflake,
+    preconvert_str
+)
+from ..user import User, ZEROUSER
 
 from .preinstanced import StickerFormat, StickerType
+
 
 Client = include('Client')
 

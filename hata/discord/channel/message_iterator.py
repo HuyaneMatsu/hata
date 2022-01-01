@@ -7,6 +7,7 @@ from ..permission.permission import PERMISSION_MASK_READ_MESSAGE_HISTORY
 
 from .channel_text_base import ChannelTextBase
 
+
 # sounds funny, but this is a class
 # the chunk_size is 99, because it means 1 request for _load_messages_till
 

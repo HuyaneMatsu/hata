@@ -2,9 +2,11 @@ __all__ = ('CertifiedDevice',)
 
 from uuid import UUID
 
+from ...discord.preconverters import preconvert_preinstanced_type, preconvert_str
 from ...discord.utils import is_url
-from ...discord.preconverters import preconvert_str, preconvert_preinstanced_type
+
 from .preinstanced import DeviceType
+
 
 class CertifiedDevice:
     """

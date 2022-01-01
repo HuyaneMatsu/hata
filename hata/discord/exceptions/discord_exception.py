@@ -2,10 +2,12 @@ __all__ = ('DiscordException',)
 
 import warnings
 
-from ...env import RICH_DISCORD_EXCEPTION
-from scarletio.web_common.headers import RETRY_AFTER, DATE
+from scarletio.web_common.headers import DATE, RETRY_AFTER
 
-from ..utils import parse_date_header_to_datetime, DATETIME_FORMAT_CODE
+from ...env import RICH_DISCORD_EXCEPTION
+
+from ..utils import DATETIME_FORMAT_CODE, parse_date_header_to_datetime
+
 
 if RICH_DISCORD_EXCEPTION:
     from .payload_renderer import reconstruct_payload

@@ -1,38 +1,41 @@
-﻿# -*- coding: utf-8 -*-
-__all__ = ('Converter', 'ConverterFlag', 'ContentParser', 'FlaggedAnnotation')
+﻿__all__ = ('Converter', 'ConverterFlag', 'ContentParser', 'FlaggedAnnotation')
 
-#TODO: ask python for GOTO already
+
 import re
 from datetime import timedelta
+from types import FunctionType, MethodType
+
+from scarletio import CallableAnalyzer, MethodLike, module_property
+
+from ...discord.bases import FlagBase
+from ...discord.channel import (
+    ChannelBase, ChannelCategory, ChannelDirectory, ChannelGroup, ChannelGuildBase, ChannelPrivate, ChannelStore,
+    ChannelText, ChannelTextBase, ChannelThread, ChannelVoice
+)
+from ...discord.client import Client
+from ...discord.color import Color, parse_color
+from ...discord.core import CHANNELS, CLIENTS, EMOJIS, GUILDS, MESSAGES, ROLES, USERS
+from ...discord.emoji import Emoji, parse_emoji
+from ...discord.events.handling_helpers import check_parameter_count_and_convert
+from ...discord.exceptions import DiscordException, ERROR_CODES
+from ...discord.guild import Guild
+from ...discord.http import INVITE_URL_RP, MESSAGE_JUMP_URL_RP
+from ...discord.invite import Invite
+from ...discord.message import Message
+from ...discord.preconverters import preconvert_bool, preconvert_flag
+from ...discord.role import Role
+from ...discord.user import User, UserBase
+from ...discord.utils import (
+    CHANNEL_MENTION_RP, CHANNEL_MESSAGE_RP, ID_RP, INVITE_CODE_RP, ROLE_MENTION_RP, USER_MENTION_RP, parse_rdelta,
+    parse_tdelta
+)
+from ...env import CACHE_USER
+
 
 try:
     from dateutil.relativedelta import relativedelta
 except ImportError:
     relativedelta = None
-
-from types import MethodType, FunctionType
-
-from ...env import CACHE_USER
-from scarletio import MethodLike, module_property,  CallableAnalyzer
-
-from ...discord.bases import FlagBase
-from ...discord.utils import USER_MENTION_RP, ROLE_MENTION_RP, CHANNEL_MENTION_RP, ID_RP, INVITE_CODE_RP, parse_rdelta,\
-    parse_tdelta, CHANNEL_MESSAGE_RP
-from ...discord.client import Client
-from ...discord.exceptions import DiscordException, ERROR_CODES
-from ...discord.emoji import parse_emoji, Emoji
-from ...discord.core import USERS, CHANNELS, ROLES, GUILDS, MESSAGES, CLIENTS, EMOJIS
-from ...discord.message import Message
-from ...discord.channel import ChannelBase, ChannelGuildBase, ChannelTextBase, ChannelText, ChannelPrivate, \
-    ChannelVoice, ChannelGroup, ChannelCategory, ChannelStore, ChannelThread, ChannelDirectory
-from ...discord.user import User, UserBase
-from ...discord.role import Role
-from ...discord.events.handling_helpers import check_parameter_count_and_convert
-from ...discord.preconverters import preconvert_flag, preconvert_bool
-from ...discord.guild import Guild
-from ...discord.http import MESSAGE_JUMP_URL_RP, INVITE_URL_RP
-from ...discord.invite import Invite
-from ...discord.color import Color, parse_color
 
 NUMERIC_CONVERSION_LIMIT = 100
 

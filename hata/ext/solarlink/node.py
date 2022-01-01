@@ -1,17 +1,21 @@
 __all__ = ('SolarNode', )
 
-from scarletio.web_common import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
-from scarletio import sleep, Task, future_or_timeout, Future,  to_json, from_json, repeat_timeout
+from scarletio import Future, Task, from_json, future_or_timeout, repeat_timeout, sleep, to_json
+from scarletio.web_common import ConnectionClosed, InvalidHandshake, WebSocketProtocolError
+
 from ...discord.core import KOKORO
 from ...discord.guild import VoiceRegion
 
-from .constants import HEADER_USER_ID, HEADER_CLIENT_NAME, HEADER_SHARD_COUNT, HEADER_RESUME_KEY, \
-    HEADER_AUTHORIZATION, LAVALINK_KEY_NODE_OPERATION, LAVALINK_KEY_GATEWAY_OPERATION_STATS, LAVALINK_KEY_GUILD_ID, \
-    LAVALINK_KEY_GATEWAY_OPERATION_PLAYER_UPDATE, LAVALINK_KEY_GATEWAY_OPERATION_EVENT, LAVALINK_KEY_PLAYER_STATE, \
-    LAVALINK_KEY_EVENT_TYPE, LAVALINK_KEY_NODE_OPERATION_SET_RESUME_KEY, LAVALINK_KEY_NODE_RESUME_KEY
+from .constants import (
+    HEADER_AUTHORIZATION, HEADER_CLIENT_NAME, HEADER_RESUME_KEY, HEADER_SHARD_COUNT, HEADER_USER_ID,
+    LAVALINK_KEY_EVENT_TYPE, LAVALINK_KEY_GATEWAY_OPERATION_EVENT, LAVALINK_KEY_GATEWAY_OPERATION_PLAYER_UPDATE,
+    LAVALINK_KEY_GATEWAY_OPERATION_STATS, LAVALINK_KEY_GUILD_ID, LAVALINK_KEY_NODE_OPERATION,
+    LAVALINK_KEY_NODE_OPERATION_SET_RESUME_KEY, LAVALINK_KEY_NODE_RESUME_KEY, LAVALINK_KEY_PLAYER_STATE
+)
 from .exceptions import SolarAuthenticationError
-from .stats import Stats
 from .parsers import PARSERS
+from .stats import Stats
+
 
 EXTENSION_USER_AGENT = 'hata.ext.solarlink'
 DEFAULT_PENALTY = 9e30

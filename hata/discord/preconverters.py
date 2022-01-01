@@ -2,6 +2,7 @@ __all__ = ()
 
 from .color import Color
 
+
 def preconvert_snowflake(snowflake, name):
     """
     Converts the given `snowflake` to an acceptable value by the wrapper.

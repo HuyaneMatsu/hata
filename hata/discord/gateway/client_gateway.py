@@ -2,20 +2,24 @@ __all__ = ()
 
 import sys, zlib
 
+from scarletio import (
+    Future, Task, WaitContinuously, WaitTillAll, WaitTillExc, from_json, future_or_timeout, repeat_timeout, sleep,
+    to_json
+)
+from scarletio.web_common import ConnectionClosed, InvalidHandshake, WebSocketProtocolError
+
 from ...env import CACHE_PRESENCE
-from scarletio import sleep, Task, future_or_timeout, WaitTillExc, WaitTillAll, Future, WaitContinuously, \
-    repeat_timeout, to_json, from_json
-from scarletio.web_common import ConnectionClosed, WebSocketProtocolError, InvalidHandshake
 
 from ..activity import ACTIVITY_UNKNOWN
+from ..core import KOKORO
 from ..events.core import PARSERS
 from ..events.handling_helpers import call_unknown_dispatch_event_event_handler
-from ..guild import LARGE_GUILD_LIMIT
-from ..core import KOKORO
 from ..exceptions import DiscordGatewayException, GATEWAY_EXCEPTION_CODE_TABLE
+from ..guild import LARGE_GUILD_LIMIT
 
 from .heartbeat import Kokoro
 from .rate_limit import GatewayRateLimiter
+
 
 TIMEOUT_GATEWAY_CONNECT = 30.0
 TIMEOUT_POLL = 60.0

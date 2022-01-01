@@ -1,6 +1,7 @@
 __all__ = ('RoleManagerType',)
 
-from ..bases import PreinstancedBase, Preinstance as P
+from ..bases import Preinstance as P, PreinstancedBase
+
 
 class RoleManagerType(PreinstancedBase):
     """

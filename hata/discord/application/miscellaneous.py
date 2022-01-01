@@ -4,6 +4,7 @@ from ..bases import DiscordEntity
 from ..core import EULAS
 from ..permission import Permission
 
+
 class ApplicationSubEntity(DiscordEntity):
     """
     An un-typed entity stored inside of an ``Application``, as one of it's `.developers`, `.publishers`.

@@ -1,15 +1,18 @@
 __all__ = ('Command', )
 
-from scarletio import export, WeakReferer
-from ...discord.events.handling_helpers import route_value, check_name, Router, route_name, _EventHandlerManager, \
-    create_event_from_class
+from scarletio import WeakReferer, export
+
+from ...discord.events.handling_helpers import (
+    Router, _EventHandlerManager, check_name, create_event_from_class, route_name, route_value
+)
 from ...discord.preconverters import preconvert_bool
 
-from .wrappers import CommandWrapper, CommandCheckWrapper
 from .category import Category
-from .utils import  raw_name_to_display, normalize_description
 from .command_helpers import test_error_handler, validate_checks, validate_error_handlers
 from .content_parser import CommandContentParser
+from .utils import normalize_description, raw_name_to_display
+from .wrappers import CommandCheckWrapper, CommandWrapper
+
 
 COMMAND_PARAMETER_NAMES = ('command', 'name', 'description', 'aliases', 'category', 'checks', 'error_handlers',
     'separator', 'assigner', 'hidden', 'hidden_if_checks_fail')

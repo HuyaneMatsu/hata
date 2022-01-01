@@ -1,12 +1,13 @@
 __all__ = ('EvaluationError', 'evaluate_text', )
 
-import math
-import warnings
+import math, warnings
 
 from scarletio import copy_docs
+
 from ...discord.utils import sanitize_content
 
 from .exceptions import SlasherCommandError
+
 
 LIMIT_LEFT_SHIFT_MAX = 64 * 8
 LIMIT_RIGHT_SHIFT_MIN = -64 * 8

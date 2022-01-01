@@ -1,13 +1,13 @@
 __all__ = ('GuildPreview', )
 
-
 from ..bases import DiscordEntity, IconSlot
-from ..utils import DATETIME_FORMAT_CODE
 from ..emoji import Emoji
-from ..sticker import Sticker
 from ..http import urls as module_urls
+from ..sticker import Sticker
+from ..utils import DATETIME_FORMAT_CODE
 
 from .preinstanced import GuildFeature
+
 
 class GuildPreview(DiscordEntity):
     """

@@ -1,11 +1,16 @@
 __all__ = ('require', )
 
-from sys import path as route_paths, _getframe as get_frame
-from os.path import join as join_paths, isdir as is_folder, isfile as is_file, exists, basename as base_name, \
-    isabs as is_absolute_path_name
 from os import listdir as list_directory
-from scarletio import HybridValueDictionary, CallableAnalyzer
+from os.path import (
+    basename as base_name, exists, isabs as is_absolute_path_name, isdir as is_folder, isfile as is_file,
+    join as join_paths
+)
+from sys import _getframe as get_frame, path as route_paths
+
+from scarletio import CallableAnalyzer, HybridValueDictionary
+
 from .exceptions import DoNotLoadExtension
+
 
 def _validate_entry_or_exit(point):
     """

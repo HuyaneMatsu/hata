@@ -1,6 +1,6 @@
 __all__ = ('MessageReference',)
 
-from ..core import GUILDS, MESSAGES, CHANNELS
+from ..core import CHANNELS, GUILDS, MESSAGES
 
 
 class MessageReference:

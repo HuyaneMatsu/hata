@@ -1,10 +1,12 @@
-import scarletio
-from scarletio import web_common as scarletio_web_common
-from scarletio import http_client as scarletio_http_client
-from scarletio import websocket as scarletio_websocket
-import warnings
 import sys
+import warnings
 from types import ModuleType
+
+import scarletio
+from scarletio import http_client as scarletio_http_client
+from scarletio import web_common as scarletio_web_common
+from scarletio import websocket as scarletio_websocket
+
 
 class deprecate(ModuleType):
     def __new__(cls):

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 The token types for coloring are the following:
 
@@ -120,6 +119,7 @@ __all__ = ('set_highlight_html_class', )
 
 import re
 from html import escape as html_escape
+
 
 PYTHON_IDENTIFIERS = {'python', 'py', 'sage', 'python3', 'py3'}
 

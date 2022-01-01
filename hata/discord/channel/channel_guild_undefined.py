@@ -4,11 +4,12 @@ from scarletio import copy_docs, export, include
 
 from ..core import CHANNELS
 from ..permission import Permission
-from ..permission.permission import PERMISSION_NONE, PERMISSION_MASK_VIEW_CHANNEL
-from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_int
+from ..permission.permission import PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE
+from ..preconverters import preconvert_int, preconvert_snowflake, preconvert_str
 
 from .channel_base import ChannelBase
 from .channel_guild_base import ChannelGuildMainBase
+
 
 parse_permission_overwrites = include('parse_permission_overwrites')
 

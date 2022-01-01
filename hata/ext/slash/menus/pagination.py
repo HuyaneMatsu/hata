@@ -1,11 +1,15 @@
 __all__ = ('Pagination', )
 
 from scarletio import CancelledError
+
 from ....discord.interaction import ComponentButton, ComponentRow
 
+from .helpers import (
+    CUSTOM_ID_CANCEL, EMOJI_CANCEL, EMOJI_LEFT, EMOJI_LEFT_2, EMOJI_RIGHT, EMOJI_RIGHT_2, get_auto_check,
+    top_level_check, top_level_get_timeout
+)
 from .menu import Menu
-from .helpers import EMOJI_LEFT_2, EMOJI_LEFT, EMOJI_RIGHT, EMOJI_RIGHT_2, EMOJI_CANCEL, get_auto_check, \
-    CUSTOM_ID_CANCEL, top_level_check, top_level_get_timeout
+
 
 class Pagination(Menu):
     BUTTON_LEFT_2 = ComponentButton(emoji=EMOJI_LEFT_2)

@@ -1,7 +1,9 @@
 __all__ = ()
 
-from scarletio import copy_docs, ScarletLock
+from scarletio import ScarletLock, copy_docs
+
 from ...discord.core import KOKORO
+
 
 class RateLimitContextBase:
     """

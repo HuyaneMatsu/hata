@@ -2,7 +2,8 @@ __all__ = ('reaction_mapping', 'reaction_mapping_line',)
 
 from scarletio import include, set_docs
 
-from .utils import create_partial_emoji_from_data, create_partial_emoji_data
+from .utils import create_partial_emoji_data, create_partial_emoji_from_data
+
 
 Client = include('Client')
 

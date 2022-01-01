@@ -4,6 +4,7 @@ import reprlib
 
 from .constants import JSON_KEY_EXCEPTION_MESSAGE
 
+
 class TopGGGloballyRateLimited(Exception):
     """
     response : ``ClientResponse``, `None`

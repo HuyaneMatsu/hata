@@ -5,9 +5,10 @@ from datetime import datetime
 from scarletio import include
 
 from ..bases import IconSlot, Slotted
-from ..utils import timestamp_to_datetime, DISCORD_EPOCH_START
 from ..color import Color
 from ..core import ROLES
+from ..utils import DISCORD_EPOCH_START, timestamp_to_datetime
+
 
 create_partial_role_from_id = include('create_partial_role_from_id')
 

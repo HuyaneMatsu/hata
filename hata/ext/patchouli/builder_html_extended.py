@@ -1,14 +1,16 @@
 __all__ = ()
 
 import re, reprlib
-from html import escape as html_escape
 
 from scarletio import export
 
-from .graver import GravedDescription, GravedAttributeDescription
-from .parser import ATTRIBUTE_SECTION_NAME_RP, ATTRIBUTE_NAME_RP
-from .builder_html import sub_section_serializer, create_relative_link, graved_to_escaped, description_serializer
-from .module_mapper import TypeUnit, ModuleUnit, PropertyUnit, InstanceAttributeUnit, FunctionUnit, MAPPED_OBJECTS
+from .builder_html import create_relative_link, description_serializer, graved_to_escaped, sub_section_serializer
+from .graver import GravedAttributeDescription, GravedDescription
+from .module_mapper import FunctionUnit, InstanceAttributeUnit, MAPPED_OBJECTS, ModuleUnit, PropertyUnit, TypeUnit
+from .parser import ATTRIBUTE_NAME_RP, ATTRIBUTE_SECTION_NAME_RP
+
+from html import escape as html_escape
+
 
 class Structure:
     """

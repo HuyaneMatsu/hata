@@ -4,6 +4,7 @@ from scarletio import copy_docs
 
 from ...discord.bases import EventBase
 
+
 class GuildCreateEvent(EventBase):
     """
     Represents a processed guild create rpc dispatch event.

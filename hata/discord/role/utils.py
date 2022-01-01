@@ -2,13 +2,14 @@ __all__ = ('create_partial_role_from_id', 'cr_p_role_object', 'parse_role', 'par
 
 from scarletio import export
 
-from ..core import ROLES
 from ..color import Color
+from ..core import ROLES
 from ..permission import Permission
-from ..utils import random_id, ROLE_MENTION_RP, ID_RP
+from ..utils import ID_RP, ROLE_MENTION_RP, random_id
 
 from .preinstanced import RoleManagerType
 from .role import Role
+
 
 ROLE_MANAGER_TYPE_NONE = RoleManagerType.none
 

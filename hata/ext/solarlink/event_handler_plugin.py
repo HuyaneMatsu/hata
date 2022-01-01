@@ -1,7 +1,9 @@
 __all__ = ()
 
-from ...discord import EventHandlerPlugin, Event
+from ...discord import Event, EventHandlerPlugin
+
 from . import track_end_reasons as TRACK_END_REASONS
+
 
 async def default_track_exception_event_handler(client, event):
     """

@@ -6,6 +6,7 @@ import os.path
 from math import log10
 from types import ModuleType
 
+
 opus = None
 
 class OpusError(Exception):

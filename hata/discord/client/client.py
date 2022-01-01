@@ -1,94 +1,120 @@
 __all__ = ('Client', )
 
-import re, sys, warnings, reprlib
-from time import time as time_now
+import re, reprlib, sys, warnings
 from collections import deque
-from threading import current_thread
-from math import inf
 from datetime import datetime
 from json import JSONDecodeError
+from math import inf
+from threading import current_thread
+from time import time as time_now
 
-from ...env import CACHE_USER, CACHE_PRESENCE, API_VERSION
-from ...ext import get_and_validate_setup_functions, run_setup_functions
-from scarletio import IgnoreCaseMultiValueDictionary, methodize, change_on_switch, from_json, Future, Task, sleep, \
-    CancelledError, WaitTillAll, WaitTillFirst, future_or_timeout, EventThread, LOOP_TIME, export
+from scarletio import (
+    CancelledError, EventThread, Future, IgnoreCaseMultiValueDictionary, LOOP_TIME, Task, WaitTillAll, WaitTillFirst,
+    change_on_switch, export, from_json, future_or_timeout, methodize, sleep
+)
+from scarletio.web_common import BasicAuth, Formdata
 from scarletio.web_common.headers import AUTHORIZATION
-from scarletio.web_common import URL, Formdata, BasicAuth
 
+from ...env import API_VERSION, CACHE_PRESENCE, CACHE_USER
+from ...ext import get_and_validate_setup_functions, run_setup_functions
 
-from ..utils import log_time_converter, DISCORD_EPOCH, image_to_base64, get_image_media_type, Relationship, \
-    MEDIA_TYPE_TO_EXTENSION, datetime_to_timestamp
-from ..user import User, GuildProfile, UserBase, UserFlag, create_partial_user_from_id, thread_user_create, \
-    ClientUserBase, ClientUserPBase, Status, PremiumType, HypesquadHouse, RelationshipType
-from ..emoji import Emoji
-from ..channel import ChannelCategory, ChannelGuildBase, ChannelPrivate, ChannelText, ChannelGroup, ChannelStore, \
-    message_relative_index, cr_pg_channel_object, MessageIterator, CHANNEL_TYPE_MAP, ChannelTextBase, ChannelVoice, \
-    ChannelGuildUndefined, ChannelVoiceBase, ChannelStage, ChannelThread, create_partial_channel_from_id, \
-    ChannelGuildMainBase, VideoQualityMode, AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS, ChannelDirectory, \
-    CHANNEL_TYPES, ChannelBase
-from ..guild import Guild, create_partial_guild_from_data, GuildWidget, GuildFeature, GuildPreview, GuildDiscovery, \
-    DiscoveryCategory, COMMUNITY_FEATURES, WelcomeScreen, SystemChannelFlag, VerificationScreen, WelcomeChannel, \
-    VerificationScreenStep, create_partial_guild_from_id, AuditLog, AuditLogIterator, AuditLogEvent, VoiceRegion, \
-    ContentFilterLevel, VerificationLevel, MessageNotificationLevel
-from ..http import DiscordHTTPClient, RateLimitProxy, rate_limit_groups, VALID_ICON_MEDIA_TYPES, \
-    VALID_ICON_MEDIA_TYPES_EXTENDED, is_media_url, VALID_STICKER_IMAGE_MEDIA_TYPES
-from ..role import Role
-from ..webhook import Webhook, create_partial_webhook_from_id
-from ..gateway.client_gateway import DiscordGateway, DiscordGatewaySharder, \
-    PRESENCE as GATEWAY_OPERATION_CODE_PRESENCE, REQUEST_MEMBERS as GATEWAY_OPERATION_CODE_REQUEST_MEMBERS
-from ..events.event_handler_manager import EventHandlerManager
-from ..events.handling_helpers import ensure_shutdown_event_handlers, ensure_voice_client_shutdown_event_handlers, \
-    WaitForHandler
-from ..events.intent import IntentFlag
-from ..events.core import register_client, unregister_client
-from ..invite import Invite, InviteTargetType
-from ..message import Message, MessageRepr, MessageReference, Attachment, MessageFlag
-from ..sticker import Sticker, StickerPack
-from ..message.utils import try_resolve_interaction_message
-from ..oauth2 import Connection, OA2Access, UserOA2, Achievement
-from ..oauth2.helpers import parse_locale, DEFAULT_LOCALE
-from ..exceptions import DiscordException, DiscordGatewayException, ERROR_CODES, InvalidToken, INTENT_ERROR_CODES, \
-    RESHARD_ERROR_CODES
-from ..core import CLIENTS, KOKORO, GUILDS, DISCOVERY_CATEGORIES, EULAS, CHANNELS, EMOJIS, APPLICATIONS, ROLES, \
-    MESSAGES, APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, USERS, SCHEDULED_EVENTS
-from ..voice import VoiceClient
 from ..activity import ACTIVITY_UNKNOWN, ActivityBase, ActivityCustom
-from ..integration import Integration
-from ..application import Application, Team, EULA
-from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_bool, preconvert_discriminator, \
-    preconvert_flag, preconvert_preinstanced_type, preconvert_color
-from ..permission import Permission, PermissionOverwrite, PermissionOverwriteTargetType
-from ..permission.permission import PERMISSION_MASK_READ_MESSAGE_HISTORY, PERMISSION_MASK_MANAGE_MESSAGES, \
-    PERMISSION_MASK_CREATE_INSTANT_INVITE
-from ..bases import ICON_TYPE_NONE
-from ..embed import EmbedImage
-from ..interaction import ApplicationCommand, INTERACTION_RESPONSE_TYPES, ApplicationCommandPermission, \
-    ApplicationCommandPermissionOverwrite, InteractionEvent, InteractionResponseContext, InteractionForm, \
-    InteractionType
-from ..interaction.application_command import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, \
-    APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
-from ..color import Color
-from ..stage import Stage
 from ..allowed_mentions import parse_allowed_mentions
+from ..application import Application, EULA, Team
 from ..bases import maybe_snowflake, maybe_snowflake_pair
-from ..scheduled_event import PrivacyLevel, ScheduledEvent, ScheduledEventEntityType, ScheduledEventStatus
+from ..channel import (
+    AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS, CHANNEL_TYPES, CHANNEL_TYPE_MAP, ChannelBase, ChannelCategory,
+    ChannelDirectory, ChannelGroup, ChannelGuildBase, ChannelGuildMainBase, ChannelGuildUndefined, ChannelPrivate,
+    ChannelStage, ChannelStore, ChannelText, ChannelTextBase, ChannelThread, ChannelVoice, ChannelVoiceBase,
+    MessageIterator, VideoQualityMode, cr_pg_channel_object, create_partial_channel_from_id, message_relative_index
+)
+from ..color import Color
+from ..core import (
+    APPLICATIONS, APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, CHANNELS, CLIENTS, DISCOVERY_CATEGORIES, EMOJIS,
+    EULAS, GUILDS, KOKORO, MESSAGES, ROLES, SCHEDULED_EVENTS, USERS
+)
+from ..embed import EmbedImage
+from ..emoji import Emoji
+from ..events.core import register_client, unregister_client
+from ..events.event_handler_manager import EventHandlerManager
+from ..events.handling_helpers import (
+    WaitForHandler, ensure_shutdown_event_handlers, ensure_voice_client_shutdown_event_handlers
+)
+from ..events.intent import IntentFlag
+from ..exceptions import (
+    DiscordException, DiscordGatewayException, ERROR_CODES, INTENT_ERROR_CODES, InvalidToken, RESHARD_ERROR_CODES
+)
+from ..gateway.client_gateway import (
+    DiscordGateway, DiscordGatewaySharder, PRESENCE as GATEWAY_OPERATION_CODE_PRESENCE,
+    REQUEST_MEMBERS as GATEWAY_OPERATION_CODE_REQUEST_MEMBERS
+)
+from ..guild import (
+    AuditLog, AuditLogEvent, AuditLogIterator, COMMUNITY_FEATURES, ContentFilterLevel, DiscoveryCategory, Guild,
+    GuildDiscovery, GuildFeature, GuildPreview, GuildWidget, MessageNotificationLevel, SystemChannelFlag,
+    VerificationLevel, VerificationScreen, VerificationScreenStep, VoiceRegion, WelcomeChannel, WelcomeScreen,
+    create_partial_guild_from_data, create_partial_guild_from_id
+)
+from ..http import (
+    DiscordHTTPClient, RateLimitProxy, VALID_ICON_MEDIA_TYPES, VALID_ICON_MEDIA_TYPES_EXTENDED,
+    VALID_STICKER_IMAGE_MEDIA_TYPES, is_media_url, rate_limit_groups
+)
+from ..integration import Integration
+from ..interaction import (
+    ApplicationCommand, ApplicationCommandPermission, ApplicationCommandPermissionOverwrite, INTERACTION_RESPONSE_TYPES,
+    InteractionEvent, InteractionForm, InteractionResponseContext, InteractionType
+)
+from ..interaction.application_command import (
+    APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
+)
+from ..invite import Invite, InviteTargetType
+from ..message import Attachment, Message, MessageFlag, MessageReference, MessageRepr
 from ..message.utils import process_message_chunk
+from ..message.utils import try_resolve_interaction_message
+from ..oauth2 import Achievement, Connection, OA2Access, UserOA2
+from ..oauth2.helpers import DEFAULT_LOCALE, parse_locale
+from ..permission import Permission, PermissionOverwrite, PermissionOverwriteTargetType
+from ..permission.permission import (
+    PERMISSION_MASK_CREATE_INSTANT_INVITE, PERMISSION_MASK_MANAGE_MESSAGES, PERMISSION_MASK_READ_MESSAGE_HISTORY
+)
+from ..preconverters import (
+    preconvert_bool, preconvert_color, preconvert_discriminator, preconvert_flag, preconvert_preinstanced_type,
+    preconvert_snowflake, preconvert_str
+)
+from ..role import Role
+from ..scheduled_event import PrivacyLevel, ScheduledEvent, ScheduledEventEntityType, ScheduledEventStatus
+from ..stage import Stage
+from ..sticker import Sticker, StickerPack
+from ..user import (
+    ClientUserBase, ClientUserPBase, GuildProfile, HypesquadHouse, PremiumType, RelationshipType, Status, User,
+    UserBase, UserFlag, create_partial_user_from_id, thread_user_create
+)
+from ..utils import (
+    DISCORD_EPOCH, MEDIA_TYPE_TO_EXTENSION, Relationship, datetime_to_timestamp, get_image_media_type, image_to_base64,
+    log_time_converter
+)
+from ..voice import VoiceClient
+from ..webhook import Webhook, create_partial_webhook_from_id
 
-from .functionality_helpers import SingleUserChunker, MassUserChunker, DiscoveryCategoryRequestCacher, \
-    DiscoveryTermRequestCacher, MultiClientMessageDeleteSequenceSharder, _check_is_client_duped, \
-    _message_delete_multiple_private_task, _message_delete_multiple_task, request_channel_thread_channels, \
-    ForceUpdateCache, channel_move_sort_key, role_move_key, role_reorder_valid_roles_sort_key, \
-    application_command_autocomplete_choice_parser, try_get_user_id_from_token
-from .request_helpers import  get_components_data, validate_message_to_delete,validate_content_and_embed, \
-    add_file_to_message_data, get_user_id, get_channel_and_id, get_channel_id_and_message_id, get_role_id, \
-    get_channel_id, get_guild_and_guild_text_channel_id, get_guild_and_id, get_user_id_nullable, get_user_and_id, \
-    get_guild_id, get_achievement_id, get_achievement_and_id, get_guild_discovery_and_id, get_guild_id_and_role_id, \
-    get_guild_id_and_channel_id, get_stage_channel_id, get_webhook_and_id, get_webhook_and_id_token, get_webhook_id, \
-    get_webhook_id_token, get_reaction, get_emoji_from_reaction, get_guild_id_and_emoji_id, get_sticker_and_id, \
-    get_sticker_pack_and_id, get_scheduled_event_guild_id_and_id, get_guild_and_id_and_scheduled_event_id, \
-    get_guild_id_and_scheduled_event_id
-from .utils import UserGuildPermission, Typer, BanEntry
+from .functionality_helpers import (
+    DiscoveryCategoryRequestCacher, DiscoveryTermRequestCacher, ForceUpdateCache, MassUserChunker,
+    MultiClientMessageDeleteSequenceSharder, SingleUserChunker, _check_is_client_duped,
+    _message_delete_multiple_private_task, _message_delete_multiple_task,
+    application_command_autocomplete_choice_parser, channel_move_sort_key, request_channel_thread_channels,
+    role_move_key, role_reorder_valid_roles_sort_key, try_get_user_id_from_token
+)
 from .ready_state import ReadyState
+from .request_helpers import (
+    add_file_to_message_data, get_achievement_and_id, get_achievement_id, get_channel_and_id, get_channel_id,
+    get_channel_id_and_message_id, get_components_data, get_emoji_from_reaction, get_guild_and_guild_text_channel_id,
+    get_guild_and_id, get_guild_and_id_and_scheduled_event_id, get_guild_discovery_and_id, get_guild_id,
+    get_guild_id_and_channel_id, get_guild_id_and_emoji_id, get_guild_id_and_role_id,
+    get_guild_id_and_scheduled_event_id, get_reaction, get_role_id, get_scheduled_event_guild_id_and_id,
+    get_stage_channel_id, get_sticker_and_id, get_sticker_pack_and_id, get_user_and_id, get_user_id,
+    get_user_id_nullable, get_webhook_and_id, get_webhook_and_id_token, get_webhook_id, get_webhook_id_token,
+    validate_content_and_embed, validate_message_to_delete
+)
+from .utils import BanEntry, Typer, UserGuildPermission
+
 
 _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
 

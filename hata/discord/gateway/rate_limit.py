@@ -6,6 +6,7 @@ from scarletio import Future, LOOP_TIME
 
 from ..core import KOKORO
 
+
 GATEWAY_RATE_LIMIT_LIMIT = 120
 GATEWAY_RATE_LIMIT_RESET = 60.0
 

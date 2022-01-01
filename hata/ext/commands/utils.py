@@ -1,7 +1,7 @@
-﻿# -*- coding: utf-8 -*-
-__all__ = ('Cooldown', )
+﻿__all__ = ('Cooldown', )
 
 from scarletio import LOOP_TIME
+
 from ...discord.core import KOKORO
 from ...discord.message import Message
 

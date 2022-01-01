@@ -1,38 +1,42 @@
 __all__ = ('RPCClient', )
 
 import sys
-from sys import platform as PLATFORM
-from os import  getpid as get_process_identifier
-from threading import current_thread
 from math import floor
+from os import getpid as get_process_identifier
+from sys import platform as PLATFORM
+from threading import current_thread
 
-from scarletio import to_json, from_json, EventThread, Task, Future, future_or_timeout, sleep
-from ...discord.core import KOKORO
-from ...discord.preconverters import preconvert_snowflake
-from ...discord.client.request_helpers import get_user_id, get_guild_id, get_channel_id
+from scarletio import EventThread, Future, Task, from_json, future_or_timeout, sleep, to_json
+
 from ...discord.activity import ActivityRich
-from ...discord.user import ZEROUSER
-from ...discord.channel import ChannelTextBase, ChannelVoiceBase, CHANNEL_TYPE_MAP, ChannelGuildUndefined, ChannelBase
-from ...discord.message.utils import process_message_chunk
+from ...discord.channel import CHANNEL_TYPE_MAP, ChannelBase, ChannelGuildUndefined, ChannelTextBase, ChannelVoiceBase
+from ...discord.client.request_helpers import get_channel_id, get_guild_id, get_user_id
+from ...discord.core import KOKORO
 from ...discord.guild import create_partial_guild_from_data
+from ...discord.message.utils import process_message_chunk
+from ...discord.preconverters import preconvert_snowflake
+from ...discord.user import ZEROUSER
 
-from .certified_device import CertifiedDevice
-from .constants import OPERATION_CLOSE, PAYLOAD_KEY_COMMAND, PAYLOAD_KEY_NONCE, OPERATION_FRAME, IPC_VERSION, \
-    OPERATION_VALUE_TO_NAME, DEFAULT_OPERATION_NAME, OPERATION_HANDSHAKE, REQUEST_TIMEOUT, CLOSE_PAYLOAD_KEY_CODE, \
-    PAYLOAD_COMMAND_CERTIFIED_DEVICES_SET, CLOSE_PAYLOAD_KEY_MESSAGE, PAYLOAD_KEY_PARAMETERS, PAYLOAD_KEY_EVENT, \
-    PAYLOAD_COMMAND_ACTIVITY_JOIN_ACCEPT, PAYLOAD_COMMAND_ACTIVITY_SET, PAYLOAD_COMMAND_ACTIVITY_JOIN_REJECT, \
-    PAYLOAD_COMMAND_UNSUBSCRIBE, PAYLOAD_COMMAND_SUBSCRIBE, RECONNECT_INTERVAL, RECONNECT_RATE_LIMITED_INTERVAL, \
-    CLOSE_CODES_RECONNECT, CLOSE_CODE_RATE_LIMITED, CLOSE_CODES_FATAL, PAYLOAD_COMMAND_VOICE_SETTINGS_SET, \
-    PAYLOAD_COMMAND_VOICE_SETTINGS_GET, PAYLOAD_COMMAND_CHANNEL_TEXT_SELECT, PAYLOAD_COMMAND_CHANNEL_VOICE_GET, \
-    PAYLOAD_COMMAND_CHANNEL_VOICE_SELECT, PAYLOAD_COMMAND_USER_VOICE_SETTINGS_SET, PAYLOAD_COMMAND_CHANNEL_GET, \
-    PAYLOAD_COMMAND_GUILD_CHANNEL_GET_ALL, PAYLOAD_COMMAND_GUILD_GET, PAYLOAD_COMMAND_GUILD_GET_ALL, \
-    PAYLOAD_COMMAND_AUTHENTICATE, PAYLOAD_COMMAND_AUTHORIZE
-from .command_handling import COMMAND_HANDLERS
-from .utils import get_ipc_path, check_for_error
-from .voice_settings import VoiceSettingsInput, VoiceSettingsOutput, VoiceSettingsMode, VoiceSettings
-from .user_voice_settings import AudioBalance, UserVoiceSettings
-from .rich_voice_state import RichVoiceState
 from .authenticate import AuthenticateResponse
+from .certified_device import CertifiedDevice
+from .command_handling import COMMAND_HANDLERS
+from .constants import (
+    CLOSE_CODES_FATAL, CLOSE_CODES_RECONNECT, CLOSE_CODE_RATE_LIMITED, CLOSE_PAYLOAD_KEY_CODE,
+    CLOSE_PAYLOAD_KEY_MESSAGE, DEFAULT_OPERATION_NAME, IPC_VERSION, OPERATION_CLOSE, OPERATION_FRAME,
+    OPERATION_HANDSHAKE, OPERATION_VALUE_TO_NAME, PAYLOAD_COMMAND_ACTIVITY_JOIN_ACCEPT,
+    PAYLOAD_COMMAND_ACTIVITY_JOIN_REJECT, PAYLOAD_COMMAND_ACTIVITY_SET, PAYLOAD_COMMAND_AUTHENTICATE,
+    PAYLOAD_COMMAND_AUTHORIZE, PAYLOAD_COMMAND_CERTIFIED_DEVICES_SET, PAYLOAD_COMMAND_CHANNEL_GET,
+    PAYLOAD_COMMAND_CHANNEL_TEXT_SELECT, PAYLOAD_COMMAND_CHANNEL_VOICE_GET, PAYLOAD_COMMAND_CHANNEL_VOICE_SELECT,
+    PAYLOAD_COMMAND_GUILD_CHANNEL_GET_ALL, PAYLOAD_COMMAND_GUILD_GET, PAYLOAD_COMMAND_GUILD_GET_ALL,
+    PAYLOAD_COMMAND_SUBSCRIBE, PAYLOAD_COMMAND_UNSUBSCRIBE, PAYLOAD_COMMAND_USER_VOICE_SETTINGS_SET,
+    PAYLOAD_COMMAND_VOICE_SETTINGS_GET, PAYLOAD_COMMAND_VOICE_SETTINGS_SET, PAYLOAD_KEY_COMMAND, PAYLOAD_KEY_EVENT,
+    PAYLOAD_KEY_NONCE, PAYLOAD_KEY_PARAMETERS, RECONNECT_INTERVAL, RECONNECT_RATE_LIMITED_INTERVAL, REQUEST_TIMEOUT
+)
+from .rich_voice_state import RichVoiceState
+from .user_voice_settings import AudioBalance, UserVoiceSettings
+from .utils import check_for_error, get_ipc_path
+from .voice_settings import VoiceSettings, VoiceSettingsInput, VoiceSettingsMode, VoiceSettingsOutput
+
 
 PROCESS_IDENTIFIER = get_process_identifier()
 

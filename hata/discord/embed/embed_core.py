@@ -2,11 +2,13 @@ __all__ = ('EmbedCore', )
 
 from scarletio import copy_docs
 
-from ..utils import timestamp_to_datetime, sanitize_mentions, datetime_to_timestamp
 from ..color import Color
+from ..utils import datetime_to_timestamp, sanitize_mentions, timestamp_to_datetime
 
-from .embed_base import EmbedBase, EmbedFooter, EmbedImage, EmbedThumbnail, EmbedVideo, EmbedProvider, EmbedAuthor, \
-    EmbedField
+from .embed_base import (
+    EmbedAuthor, EmbedBase, EmbedField, EmbedFooter, EmbedImage, EmbedProvider, EmbedThumbnail, EmbedVideo
+)
+
 
 class EmbedCore(EmbedBase):
     """

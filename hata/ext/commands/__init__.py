@@ -5,13 +5,15 @@ warnings.warn(
     FutureWarning,
 )
 
+from ...ext import command_utils as module_command_utils
+from ...ext.command_utils import *
+
 from . import checks
+from .client_wrapper_extension import *
 from .command import *
 from .content_parser import *
 from .utils import *
-from .client_wrapper_extension import *
-from ...ext.command_utils import *
-from ...ext import command_utils as module_command_utils
+
 __all__ = (
     'checks',
     'setup_ext_commands',

@@ -2,6 +2,7 @@ __all__ = ()
 
 from .slasher import Slasher
 
+
 async def _do_initial_sync(client):
     """
     `ready` event handler added to the respective client by the ``setup_ext_slash`` function.
@@ -13,7 +14,7 @@ async def _do_initial_sync(client):
     Parameters
     ----------
     client : ``Client``
-        The client who has the extension setuped and received the ready event.
+        The client who has the extension setupped and received the ready event.
     """
     slasher = getattr(client, 'slasher', None)
     if (slasher is not None) and isinstance(slasher, Slasher):

@@ -3,20 +3,25 @@ __all__ = ()
 import warnings
 from functools import partial as partial_func
 
-from scarletio import WeakReferer, Task, RichAttributeErrorBaseType
+from scarletio import RichAttributeErrorBaseType, Task, WeakReferer
 
 from ..core import KOKORO
 
-from .core import DEFAULT_EVENT_HANDLER, EVENT_HANDLER_NAME_TO_PARSER_NAMES, \
-    get_plugin_event_handler_and_parameter_count, PARSER_SETTINGS, EVENT_HANDLER_NAMES, \
-    get_plugin_event_handler_and_parser_names, get_plugin_event_handler
-from .handling_helpers import ChunkWaiter, check_parameter_count_and_convert, asynclist, \
-    check_name, _iterate_event_handler
-from .default_event_handlers import default_error_event_handler, default_voice_server_update_event_handler, \
-    default_voice_client_ghost_event_handler, default_voice_client_join_event_handler, \
-    default_voice_client_move_event_handler, default_voice_client_leave_event_handler, \
-    default_voice_client_update_event_handler, default_voice_client_shutdown_event_handler
+from .core import (
+    DEFAULT_EVENT_HANDLER, EVENT_HANDLER_NAMES, EVENT_HANDLER_NAME_TO_PARSER_NAMES, PARSER_SETTINGS,
+    get_plugin_event_handler, get_plugin_event_handler_and_parameter_count, get_plugin_event_handler_and_parser_names
+)
+from .default_event_handlers import (
+    default_error_event_handler, default_voice_client_ghost_event_handler, default_voice_client_join_event_handler,
+    default_voice_client_leave_event_handler, default_voice_client_move_event_handler,
+    default_voice_client_shutdown_event_handler, default_voice_client_update_event_handler,
+    default_voice_server_update_event_handler
+)
 from .event_handler_plugin import EventHandlerPlugin
+from .handling_helpers import (
+    ChunkWaiter, _iterate_event_handler, asynclist, check_name, check_parameter_count_and_convert
+)
+
 
 DEFAULT_EVENT_HANDLERS = (
     ('error', default_error_event_handler, False),

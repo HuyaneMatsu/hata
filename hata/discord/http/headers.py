@@ -2,6 +2,7 @@ __all__ = ()
 
 from scarletio import IgnoreCaseString
 
+
 AUDIT_LOG_REASON = IgnoreCaseString('X-Audit-Log-Reason')
 
 RATE_LIMIT_REMAINING = IgnoreCaseString('X-RateLimit-Remaining')

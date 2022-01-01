@@ -1,8 +1,8 @@
 __all__ = ('IntegrationApplication',)
 
 from ..bases import DiscordEntity, IconSlot
-from ..user import User, ZEROUSER
 from ..http import urls as module_urls
+from ..user import User, ZEROUSER
 
 
 class IntegrationApplication(DiscordEntity):

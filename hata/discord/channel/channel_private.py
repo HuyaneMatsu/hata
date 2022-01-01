@@ -2,16 +2,18 @@ __all__ = ('ChannelPrivate', 'ChannelGroup', )
 
 from scarletio import copy_docs, export
 
-from ..bases import IconSlot, ICON_TYPE_NONE
+from ..bases import ICON_TYPE_NONE, IconSlot
 from ..core import CHANNELS
-from ..permission.permission import PERMISSION_NONE, PERMISSION_PRIVATE, PERMISSION_PRIVATE_BOT, \
-    PERMISSION_GROUP, PERMISSION_GROUP_OWNER
-from ..user import User, ZEROUSER, create_partial_user_from_id
-from ..preconverters import preconvert_snowflake, preconvert_str
 from ..http import urls as module_urls
+from ..permission.permission import (
+    PERMISSION_GROUP, PERMISSION_GROUP_OWNER, PERMISSION_NONE, PERMISSION_PRIVATE, PERMISSION_PRIVATE_BOT
+)
+from ..preconverters import preconvert_snowflake, preconvert_str
+from ..user import User, ZEROUSER, create_partial_user_from_id
 
 from .channel_base import ChannelBase
 from .channel_text_base import ChannelTextBase
+
 
 @export
 class ChannelPrivate(ChannelBase, ChannelTextBase):

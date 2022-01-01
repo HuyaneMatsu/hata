@@ -1,25 +1,28 @@
 ﻿__all__ = ('pretty_print', 'pchunkify', 'pconnect', )
 
 from datetime import datetime, timedelta
+
+from scarletio import MultiValueDictionary
+
+from ...discord.channel import ChannelGuildMainBase
+from ...discord.integration import IntegrationAccount
+from ...discord.message import Message, MessageType
+from ...discord.permission import Permission
+from ...discord.role import Role
+from ...discord.user import ZEROUSER
+from ...discord.utils import DATETIME_FORMAT_CODE, DISCORD_EPOCH_START, cchunkify
+
+
 try:
     from dateutil.relativedelta import relativedelta
 except ImportError:
     relativedelta = None
 
-from scarletio import MultiValueDictionary
-
-from ...discord.utils import cchunkify, DISCORD_EPOCH_START, DATETIME_FORMAT_CODE
 if (relativedelta is not None):
     from ...discord.utils import elapsed_time
-from ...discord.permission import Permission
-from ...discord.user import ZEROUSER
-from ...discord.message import MessageType, Message
-from ...discord.role import Role
-from ...discord.integration import IntegrationAccount
-from ...discord.channel import ChannelGuildMainBase
 
-#testerfile for events
-#later embeds will be added in plan
+# tester file for events
+# later embeds will be added in plan
 
 PRETTY_PRINTERS = {}
 

@@ -7,6 +7,7 @@ from ...discord.core import KOKORO
 
 from .exceptions import CommandCooldownError
 
+
 class CooldownUnit:
     """
     A cooldown unit stored by a ``CommandCooldownWrapper``-s.
@@ -19,6 +20,7 @@ class CooldownUnit:
         How much uses are left till the respective entity will be locked by cooldown.
     """
     __slots__ = ('expires_at', 'uses_left',)
+    
     def __init__(self, expires_at, uses_left):
         """
         Creates a new ``CooldownUnit`` with the given parameters.

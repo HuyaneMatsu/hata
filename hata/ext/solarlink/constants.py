@@ -1,7 +1,8 @@
 __all__ = ()
 
-from scarletio.web_common.headers import AUTHORIZATION as HEADER_AUTHORIZATION
 from scarletio import IgnoreCaseString
+from scarletio.web_common.headers import AUTHORIZATION as HEADER_AUTHORIZATION
+
 
 LAVALINK_KEY_STATS_UPTIME = 'uptime'
 LAVALINK_KEY_STATS_PLAYER_COUNT = 'players'

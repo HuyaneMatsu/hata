@@ -1,4 +1,4 @@
-import re, pathlib
+import pathlib, re
 from ast import literal_eval
 from setuptools import setup
 

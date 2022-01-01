@@ -2,9 +2,11 @@ __all__ = ('Event', 'EventHandlerPlugin', )
 
 
 from scarletio import CallableAnalyzer
+
 from ..bases.entity import _get_direct_parents_and_merge_slots
 
 from .core import DEFAULT_EVENT_HANDLER
+
 
 def _merge_to_type(iterable_1, iterable_2, type_):
     """

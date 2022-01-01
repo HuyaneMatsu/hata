@@ -7,7 +7,7 @@ from scarletio import export
 
 from ..utils import EMOJI_RP, REACTION_RP
 
-from .emoji import UNICODE_TO_EMOJI, Emoji
+from .emoji import Emoji, UNICODE_TO_EMOJI
 
 
 @export

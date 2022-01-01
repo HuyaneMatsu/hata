@@ -1,12 +1,12 @@
 __all__ = ('Category',)
 
-from scarletio import include, WeakReferer
+from scarletio import WeakReferer, include
 
-from .command_helpers import validate_checks, test_error_handler
-from ...discord.events.handling_helpers import route_value, check_name, Router, route_name, _EventHandlerManager, \
-    create_event_from_class
+from ...discord.events.handling_helpers import Router, _EventHandlerManager
 
+from .command_helpers import test_error_handler, validate_checks
 from .utils import normalize_description, raw_name_to_display
+
 
 Command = include('Command')
 
@@ -295,7 +295,7 @@ class Category:
             The aliases of the command.
         category : `None`, ``Category``, `str`, `tuple` of (`None`, `Ellipsis`, ``Category``, `str`), Optional
             The category of the command. Can be given as the category itself, or as a category's name. If given as
-            `None`, then the command will go under the command processer's default category.
+            `None`, then the command will go under the command processor's default category.
         checks : `None`, ``CommandCheckWrapper``, ``CheckBase``, `list` of ``CommandCheckWrapper``, ``CheckBase`` \
                 instances or `tuple` of (`None`, `Ellipsis`, ``CommandCheckWrapper``, ``CheckBase``, `list` of \
                 ``CommandCheckWrapper``, ``CheckBase``), Optional

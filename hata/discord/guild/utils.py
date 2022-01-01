@@ -5,7 +5,8 @@ from scarletio import export
 from ..core import GUILDS
 
 from .guild import Guild
-from .preinstanced import VerificationLevel, GuildFeature
+from .preinstanced import GuildFeature, VerificationLevel
+
 
 # We need to ignore client adding, because clients count to being not partial.
 # If a guild is not partial it wont get update on Guild.__new__

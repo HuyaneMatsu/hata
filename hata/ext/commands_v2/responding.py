@@ -2,8 +2,9 @@ __all__ = ()
 
 from scarletio import is_coroutine_generator
 
-from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.embed import EmbedBase
+from ...discord.exceptions import DiscordException, ERROR_CODES
+
 
 def is_only_embed(maybe_embeds):
     """

@@ -2,13 +2,14 @@ __all__ = ()
 
 from collections import deque
 
-from scarletio import Task, CancelledError, sleep
+from scarletio import CancelledError, Task, sleep
 
 from ..core import KOKORO
 
-from .opus import OpusDecoder, opus
 from .audio_source import AudioSource
+from .opus import OpusDecoder, opus
 from .rtp_packet import EMPTY_VOICE_FRAME_DECODED, EMPTY_VOICE_FRAME_ENCODED, RTPPacket, VoicePacket
+
 
 if opus is None:
     DECODER = None

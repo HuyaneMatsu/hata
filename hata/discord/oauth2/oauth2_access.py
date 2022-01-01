@@ -5,6 +5,7 @@ from time import time as time_now
 
 from .helpers import OAUTH2_SCOPES
 
+
 class OA2Access:
     """
     Represents a Discord oauth2 access object, what is returned by ``Client.activate_authorization_code`` if

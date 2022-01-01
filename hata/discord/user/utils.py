@@ -6,6 +6,7 @@ from ..core import USERS
 
 from .user import User
 
+
 @export
 def create_partial_user_from_id(user_id):
     """

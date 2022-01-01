@@ -1,6 +1,6 @@
 __all__ = ('DeviceType', 'ShortcutKeyType', 'VoiceConnectionState', 'VoiceSettingsModeType')
 
-from ...discord.bases import PreinstancedBase, Preinstance as P
+from ...discord.bases import Preinstance as P, PreinstancedBase
 
 
 class DeviceType(PreinstancedBase):

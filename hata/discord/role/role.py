@@ -2,18 +2,20 @@ __all__ = ('Role', )
 
 from scarletio import export, include
 
-from ..bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
-from ..core import ROLES, GUILDS
-from ..utils import DATETIME_FORMAT_CODE
+from ..bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
 from ..color import Color
-from ..user import create_partial_user_from_id
-from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_color, preconvert_int, preconvert_bool, \
-    preconvert_flag
-from ..permission.utils import PERMISSION_KEY
-from ..permission.permission import Permission, PERMISSION_NONE
+from ..core import GUILDS, ROLES
 from ..http import urls as module_urls
+from ..permission.permission import PERMISSION_NONE, Permission
+from ..permission.utils import PERMISSION_KEY
+from ..preconverters import (
+    preconvert_bool, preconvert_color, preconvert_flag, preconvert_int, preconvert_snowflake, preconvert_str
+)
+from ..user import create_partial_user_from_id
+from ..utils import DATETIME_FORMAT_CODE
 
 from .preinstanced import RoleManagerType
+
 
 create_partial_integration_from_id = include('create_partial_integration_from_id')
 create_unicode_emoji = include('create_unicode_emoji')

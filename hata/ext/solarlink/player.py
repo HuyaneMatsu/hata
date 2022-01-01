@@ -1,16 +1,16 @@
 __all__ = ('SolarPlayer', )
 
-from random import randrange
 from datetime import datetime
+from random import randrange
 
 from scarletio import copy_docs
 
 from ...discord.core import GUILDS
 from ...discord.utils import datetime_to_timestamp
 
-from .track import Track, ConfiguredTrack
-from .player_base import SolarPlayerBase
 from .constants import LAVALINK_BAND_COUNT
+from .player_base import SolarPlayerBase
+from .track import ConfiguredTrack, Track
 
 
 class SolarPlayer(SolarPlayerBase):

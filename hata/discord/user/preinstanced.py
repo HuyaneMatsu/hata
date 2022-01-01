@@ -3,9 +3,8 @@ __all__ = ('DefaultAvatar', 'FriendRequestFlag', 'HypesquadHouse', 'PremiumType'
 
 from scarletio import export
 
-from ..bases import PreinstancedBase, Preinstance as P
+from ..bases import Preinstance as P, PreinstancedBase
 from ..color import Color
-
 from ..http import urls as module_urls
 
 

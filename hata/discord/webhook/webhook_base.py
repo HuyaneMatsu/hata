@@ -2,11 +2,12 @@ __all__ = ('WebhookBase',)
 
 from scarletio import copy_docs
 
-from ..user import UserBase
 from ..core import CHANNELS
 from ..permission.permission import PERMISSION_MASK_USE_EXTERNAL_EMOJIS
+from ..user import UserBase
 
 from .preinstanced import WebhookType
+
 
 class WebhookBase(UserBase):
     """

@@ -1,6 +1,7 @@
 __all__ = ('EntitlementType', 'SKUAccessType', 'SKUFeatureType', 'SKUGenre', 'SKUType', 'TeamMembershipState', )
 
-from ..bases import PreinstancedBase, Preinstance as P
+from ..bases import Preinstance as P, PreinstancedBase
+
 
 class TeamMembershipState(PreinstancedBase):
     """

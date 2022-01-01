@@ -5,6 +5,7 @@ from scarletio import include
 from ..bases import DiscordEntity
 from ..user import User
 
+
 InteractionType = include('InteractionType')
 
 

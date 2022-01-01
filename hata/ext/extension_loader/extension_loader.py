@@ -3,14 +3,16 @@ __all__ = ('EXTENSION_LOADER', 'ExtensionLoader', )
 from io import StringIO
 from threading import current_thread
 
-from scarletio import EventThread, alchemy_incendiary, HybridValueDictionary, is_coroutine_function, Task, export
+from scarletio import EventThread, HybridValueDictionary, Task, alchemy_incendiary, export, is_coroutine_function
 
 from ...discord.core import KOKORO
 
-from .extension import EXTENSIONS, Extension, EXTENSION_STATE_LOADED
-from .utils import PROTECTED_NAMES, _iter_extension_names_and_paths, _validate_entry_or_exit, \
-    validate_extension_parameters, _get_path_extension_name
 from .exceptions import ExtensionError
+from .extension import EXTENSIONS, EXTENSION_STATE_LOADED, Extension
+from .utils import (
+    PROTECTED_NAMES, _get_path_extension_name, _iter_extension_names_and_paths, _validate_entry_or_exit,
+    validate_extension_parameters
+)
 
 
 def _get_extensions(name):

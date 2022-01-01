@@ -2,10 +2,10 @@ __all__ = ('UserOA2',)
 
 from scarletio import copy_docs
 
-from ..user import UserFlag, UserBase, PremiumType
-from ..color import Color
+from ..user import PremiumType, UserBase, UserFlag
 
 from .helpers import parse_locale
+
 
 class UserOA2(UserBase):
     """

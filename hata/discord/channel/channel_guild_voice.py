@@ -1,24 +1,26 @@
 __all__ = ('ChannelStage', 'ChannelVoice', 'ChannelVoiceBase')
 
-try:
-    from _weakref import WeakSet
-except ImportError:
-    from weakref import WeakSet
 
 from scarletio import copy_docs, export, include
 
 from ..core import CHANNELS
 from ..permission import Permission
-from ..permission.permission import PERMISSION_NONE, PERMISSION_TEXT_DENY, PERMISSION_STAGE_MODERATOR, \
-    PERMISSION_VOICE_DENY_CONNECTION, PERMISSION_TEXT_AND_STAGE_DENY, PERMISSION_MASK_VIEW_CHANNEL, \
-    PERMISSION_MASK_CONNECT, PERMISSION_MASK_VIEW_CHANNEL
+from ..permission.permission import (
+    PERMISSION_MASK_CONNECT, PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE, PERMISSION_STAGE_MODERATOR,
+    PERMISSION_TEXT_AND_STAGE_DENY, PERMISSION_TEXT_DENY, PERMISSION_VOICE_DENY_CONNECTION
+)
+from ..preconverters import preconvert_int, preconvert_preinstanced_type, preconvert_snowflake, preconvert_str
 
-from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_int, preconvert_preinstanced_type
-
-from .preinstanced import VideoQualityMode
-from .channel_guild_base import ChannelGuildMainBase
 from .channel_base import ChannelBase
+from .channel_guild_base import ChannelGuildMainBase
 from .channel_text_base import ChannelTextBase
+from .preinstanced import VideoQualityMode
+
+
+try:
+    from _weakref import WeakSet
+except ImportError:
+    from weakref import WeakSet
 
 VoiceRegion = include('VoiceRegion')
 parse_permission_overwrites = include('parse_permission_overwrites')

@@ -2,7 +2,8 @@ __all__ = ('AuditLogEvent', 'ContentFilterLevel', 'GuildFeature', 'GuildJoinRequ
     'MessageNotificationLevel', 'NsfwLevel', 'VerificationLevel', 'VerificationScreenStepType', 'VoiceRegion', )
 
 from scarletio import export
-from ..bases import PreinstancedBase, Preinstance as P
+
+from ..bases import Preinstance as P, PreinstancedBase
 
 
 class AuditLogEvent(PreinstancedBase):

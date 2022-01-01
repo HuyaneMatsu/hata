@@ -1,7 +1,7 @@
 __all__ = ('EmbeddedActivityState',)
 
 from ..activity import ActivityRich
-from ..core import GUILDS, CHANNELS, EMBEDDED_ACTIVITY_STATES
+from ..core import CHANNELS, EMBEDDED_ACTIVITY_STATES, GUILDS
 from ..user import create_partial_user_from_id
 
 

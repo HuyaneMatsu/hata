@@ -4,29 +4,38 @@ from functools import partial as partial_func
 
 from scarletio import WeakReferer, copy_docs, export, include
 
-from ...discord.events.handling_helpers import route_value, check_name, Router, route_name, _EventHandlerManager, \
-    create_event_from_class
-from ...discord.guild import Guild
-from ...discord.preconverters import preconvert_snowflake, preconvert_bool
 from ...discord.client import Client
-from ...discord.interaction import ApplicationCommandOption, ApplicationCommand, InteractionEvent, \
-    ApplicationCommandPermissionOverwrite, ApplicationCommandOptionType, ApplicationCommandTargetType, \
-    APPLICATION_COMMAND_CONTEXT_TARGET_TYPES
-from ...discord.interaction.application_command import APPLICATION_COMMAND_OPTIONS_MAX, \
-    APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN, \
-    APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN, \
-    APPLICATION_COMMAND_NAME_LENGTH_MAX
+from ...discord.events.handling_helpers import (
+    Router, _EventHandlerManager, check_name, create_event_from_class, route_name, route_value
+)
+from ...discord.guild import Guild
+from ...discord.interaction import (
+    APPLICATION_COMMAND_CONTEXT_TARGET_TYPES, ApplicationCommand, ApplicationCommandOption,
+    ApplicationCommandOptionType, ApplicationCommandTargetType, InteractionEvent
+)
+from ...discord.interaction.application_command import (
+    APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN,
+    APPLICATION_COMMAND_NAME_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_OPTIONS_MAX,
+    APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
+)
+from ...discord.preconverters import preconvert_bool, preconvert_snowflake
 
-
-from .responding import process_command_coroutine, process_auto_completer_coroutine
-from .utils import raw_name_to_display, UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_KEEP, _check_maybe_route, \
-    UNLOADING_BEHAVIOUR_INHERIT, SYNC_ID_GLOBAL, SYNC_ID_NON_GLOBAL, normalize_description
+from .converters import (
+    InternalParameterConverter, SlashCommandParameterConverter,
+    get_application_command_parameter_auto_completer_converters, get_context_command_parameter_converters,
+    get_slash_command_parameter_converters
+)
+from .exceptions import (
+    SlasherApplicationCommandParameterConversionError, _register_exception_handler, handle_command_exception,
+    test_exception_handler
+)
+from .responding import process_auto_completer_coroutine, process_command_coroutine
+from .utils import (
+    SYNC_ID_GLOBAL, SYNC_ID_NON_GLOBAL, UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_INHERIT,
+    UNLOADING_BEHAVIOUR_KEEP, _check_maybe_route, normalize_description, raw_name_to_display
+)
 from .wrappers import SlasherCommandWrapper, get_parameter_configurers
-from .converters import get_slash_command_parameter_converters, InternalParameterConverter, \
-    get_context_command_parameter_converters, SlashCommandParameterConverter, \
-    get_application_command_parameter_auto_completer_converters
-from .exceptions import SlasherApplicationCommandParameterConversionError, _register_exception_handler, \
-    test_exception_handler, handle_command_exception
+
 
 Slasher = include('Slasher')
 

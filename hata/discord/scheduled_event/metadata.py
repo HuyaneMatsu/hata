@@ -1,7 +1,9 @@
 __all__ = ('LocationEntityMetadata', 'ScheduledEventEntityMetadata', 'StageEntityMetadata')
 
-from ..user import ClientUserBase, create_partial_user_from_id
 from scarletio import copy_docs
+
+from ..user import ClientUserBase, create_partial_user_from_id
+
 
 def try_get_scheduled_event_metadata_type_from_data(data):
     """

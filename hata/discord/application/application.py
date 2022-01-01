@@ -1,15 +1,15 @@
 __all__ = ('Application', )
 
-from ..bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
-from ..user import ZEROUSER, User, ClientUserBase
+from ..bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
 from ..core import APPLICATIONS
-from ..preconverters import preconvert_snowflake, preconvert_bool, preconvert_str, preconvert_flag
-
 from ..http import urls as module_urls
+from ..preconverters import preconvert_bool, preconvert_flag, preconvert_snowflake, preconvert_str
+from ..user import ClientUserBase, User, ZEROUSER
 
 from .flags import ApplicationFlag
+from .miscellaneous import ApplicationExecutable, ApplicationInstallParameters, ApplicationSubEntity, ThirdPartySKU
 from .team import Team
-from .miscellaneous import ApplicationExecutable, ApplicationSubEntity, ThirdPartySKU, ApplicationInstallParameters
+
 
 class Application(DiscordEntity, immortal=True):
     """

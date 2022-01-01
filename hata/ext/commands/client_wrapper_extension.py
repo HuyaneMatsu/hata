@@ -5,7 +5,7 @@ from scarletio import KeepType
 from ...discord.client.utils import ClientWrapper
 from ...discord.events.handling_helpers import _EventHandlerManagerRouter
 
-from .command import CommandProcesser, Command
+from .command import Command, CommandProcesser
 
 
 def commands_getter(manager_router):

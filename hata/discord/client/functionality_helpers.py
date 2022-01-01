@@ -1,19 +1,20 @@
 __all__ = ()
 
-from math import inf
-from datetime import datetime
 from base64 import b64decode
 from binascii import Error as Base64DecodeError
+from datetime import datetime
+from math import inf
 
-from scarletio import BaseMethodType, LOOP_TIME, Future, Task, WaitTillFirst
+from scarletio import BaseMethodType, Future, LOOP_TIME, Task, WaitTillFirst
 
-from ..core import KOKORO, CLIENTS, CHANNELS
-from ..http import RateLimitProxy
-from ..utils import time_now, DISCORD_EPOCH
-from ..exceptions import DiscordException
 from ..channel import ChannelThread
-from ..user import create_partial_user_from_id, thread_user_create
+from ..core import CHANNELS, CLIENTS, KOKORO
+from ..exceptions import DiscordException
+from ..http import RateLimitProxy
 from ..permission.permission import PERMISSION_MASK_VIEW_CHANNEL
+from ..user import create_partial_user_from_id, thread_user_create
+from ..utils import DISCORD_EPOCH, time_now
+
 
 USER_CHUNK_TIMEOUT = 2.5
 

@@ -1,15 +1,17 @@
 __all__ = ('ChannelGuildBase', 'ChannelGuildMainBase')
 
-import re, warnings
+import re
 
-from scarletio import copy_docs,  export, include
+from scarletio import copy_docs, export, include
 
+from ..core import CHANNELS, GUILDS
 from ..permission import Permission, PermissionOverwriteTargetType
-from ..permission.permission import PERMISSION_NONE, PERMISSION_ALL, PERMISSION_MASK_ADMINISTRATOR, \
-    PERMISSION_MASK_VIEW_CHANNEL
+from ..permission.permission import (
+    PERMISSION_ALL, PERMISSION_MASK_ADMINISTRATOR, PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE
+)
 from ..permission.utils import PERMISSION_ALLOW_KEY, PERMISSION_DENY_KEY
-from ..core import GUILDS, CHANNELS
 from ..user import ClientUserBase
+
 
 PERMISSION_OVERWRITE_TYPE_ROLE = PermissionOverwriteTargetType.role
 PERMISSION_OVERWRITE_TYPE_USER = PermissionOverwriteTargetType.user

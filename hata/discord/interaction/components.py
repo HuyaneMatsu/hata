@@ -1,18 +1,19 @@
 __all__ = ('ComponentBase', 'ComponentButton', 'ComponentRow', 'ComponentSelect', 'ComponentSelectOption',
     'ComponentTextInput', 'create_auto_custom_id', 'create_component')
 
-from os import urandom as random_bytes
-from base64 import b85encode as to_base85
 import reprlib
+from base64 import b85encode as to_base85
+from os import urandom as random_bytes
 
-from scarletio import copy_docs, export, RichAttributeErrorBaseType
+from scarletio import RichAttributeErrorBaseType, copy_docs, export
 
 from ..bases import PreinstancedBase
+from ..emoji import Emoji, create_partial_emoji_data, create_partial_emoji_from_data
 from ..preconverters import preconvert_preinstanced_type
 from ..utils import url_cutter
-from ..emoji import create_partial_emoji_from_data, Emoji, create_partial_emoji_data
 
-from .preinstanced import ComponentType, ButtonStyle, TextInputStyle
+from .preinstanced import ButtonStyle, ComponentType, TextInputStyle
+
 
 COMPONENT_TYPE_ROW = ComponentType.row
 COMPONENT_TYPE_BUTTON = ComponentType.button

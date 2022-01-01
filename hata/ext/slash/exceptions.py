@@ -2,11 +2,12 @@ __all__ = ('SlasherCommandError', 'SlasherApplicationCommandParameterConversionE
 
 from random import choice
 
+from scarletio import CallableAnalyzer, include
 from scarletio import copy_docs
-from scarletio import include, CallableAnalyzer
 
-from ...discord.interaction import InteractionType
 from ...discord.exceptions import DiscordException, ERROR_CODES
+from ...discord.interaction import InteractionType
+
 
 SlasherApplicationCommand = include('SlasherApplicationCommand')
 Slasher = include('Slasher')
@@ -27,6 +28,7 @@ class SlasherCommandError(Exception):
         representation : `str`
         """
         return ''
+
 
 class SlasherApplicationCommandParameterConversionError(SlasherCommandError):
     """

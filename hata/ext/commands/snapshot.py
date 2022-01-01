@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 from ..extension_loader.snapshot import SNAPSHOT_TAKERS
+
 from .command import CommandProcesser
 
 def take_command_processer_snapshot(client):

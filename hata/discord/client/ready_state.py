@@ -2,13 +2,14 @@ __all__ = ()
 
 from collections import deque
 
+from scarletio import CancelledError, Future, Task, WaitTillAll, WeakReferer, future_or_timeout, set_docs, sleep
+
 from ...env import CACHE_PRESENCE, CACHE_USER
 
-from scarletio import WeakReferer, set_docs,  Future, sleep, Task, WaitTillAll, CancelledError, future_or_timeout
-
 from ..core import KOKORO
+from ..events.intent import INTENT_MASK_GUILD_PRESENCES, INTENT_MASK_GUILD_USERS
 from ..gateway.client_gateway import REQUEST_MEMBERS as GATEWAY_OPERATION_CODE_REQUEST_MEMBERS
-from ..events.intent import INTENT_MASK_GUILD_USERS, INTENT_MASK_GUILD_PRESENCES
+
 
 READY_STATE_TO_DO_GUILD_IDS = set()
 GUILD_RECEIVE_TIMEOUT = 5.0

@@ -3,6 +3,7 @@ __all__ = ('TrackEndEvent', 'TrackExceptionEvent', 'TrackStartEvent', 'TrackStuc
 import reprlib
 
 from scarletio import copy_docs
+
 from ...discord.bases.event_types import EventBase
 
 

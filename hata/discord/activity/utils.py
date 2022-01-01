@@ -1,9 +1,10 @@
 __all__ = ('create_activity_from_data', )
 
 from . import activity_types as ACTIVITY_TYPES
-from .activity_unknown import ACTIVITY_UNKNOWN
 from .activity_custom import ActivityCustom
-from . activity_rich import ActivityRich
+from .activity_rich import ActivityRich
+from .activity_unknown import ACTIVITY_UNKNOWN
+
 
 def create_activity_from_data(activity_data):
     """

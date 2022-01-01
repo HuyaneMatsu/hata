@@ -2,7 +2,8 @@
     'EMBEDDED_ACTIVITY_STATES', 'EMOJIS', 'EULAS', 'GUILDS', 'INTEGRATIONS', 'INVITES', 'KOKORO', 'MESSAGES', 'ROLES',
     'SCHEDULED_EVENTS', 'STAGES', 'STICKERS', 'STICKER_PACKS', 'TEAMS', 'UNICODE_TO_EMOJI', 'USERS')
 
-from scarletio import WeakValueDictionary, WeakKeyDictionary, get_event_loop, EventThread
+from scarletio import EventThread, WeakKeyDictionary, WeakValueDictionary, get_event_loop
+
 
 __doc__ = """
 Contains core cache and other objects relative to hata.

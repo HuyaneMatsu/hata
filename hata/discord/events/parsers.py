@@ -2,39 +2,48 @@ __all__ = ()
 
 from datetime import datetime
 
-from ...env import CACHE_USER, CACHE_PRESENCE, ALLOW_DEAD_EVENTS
-
 from scarletio import Task, include
 
-from ..core import CLIENTS, CHANNELS, GUILDS, MESSAGES, KOKORO, APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, \
-    STAGES, USERS, SCHEDULED_EVENTS
-from ..user import User, create_partial_user_from_id, thread_user_create, thread_user_update, thread_user_pop, \
-    thread_user_delete
-from ..channel import CHANNEL_TYPE_MAP, ChannelGuildBase, ChannelPrivate, ChannelGuildUndefined, ChannelThread
-from ..utils import Relationship, Gift
-from ..guild import EMOJI_UPDATE_CREATE, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, VOICE_STATE_NONE, VOICE_STATE_JOIN, \
-    VOICE_STATE_LEAVE, VOICE_STATE_UPDATE, Guild, STICKER_UPDATE_EDIT, STICKER_UPDATE_CREATE, STICKER_UPDATE_DELETE, \
-    VOICE_STATE_MOVE, GuildJoinRequestDeleteEvent, GuildJoinRequest
-from ..guild.embedded_activity_state import EMBEDDED_ACTIVITY_UPDATE_NONE, EMBEDDED_ACTIVITY_UPDATE_CREATE, \
-    EMBEDDED_ACTIVITY_UPDATE_DELETE, EMBEDDED_ACTIVITY_UPDATE_UPDATE, EMBEDDED_ACTIVITY_UPDATE_USER_ADD, \
-    EMBEDDED_ACTIVITY_UPDATE_USER_DELETE, difference_handle_embedded_activity_update_event, \
-    handle_embedded_update_event
-from ..role import Role
+from ...env import ALLOW_DEAD_EVENTS, CACHE_PRESENCE, CACHE_USER
+
+from ..channel import CHANNEL_TYPE_MAP, ChannelGuildBase, ChannelGuildUndefined, ChannelPrivate, ChannelThread
+from ..core import (
+    APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, CHANNELS, CLIENTS, GUILDS, KOKORO, MESSAGES, SCHEDULED_EVENTS,
+    STAGES, USERS
+)
+from ..emoji import ReactionAddEvent, ReactionDeleteEvent, create_partial_emoji_from_data
+from ..guild import (
+    EMOJI_UPDATE_CREATE, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, Guild, GuildJoinRequest, GuildJoinRequestDeleteEvent,
+    STICKER_UPDATE_CREATE, STICKER_UPDATE_DELETE, STICKER_UPDATE_EDIT, VOICE_STATE_JOIN, VOICE_STATE_LEAVE,
+    VOICE_STATE_MOVE, VOICE_STATE_UPDATE
+)
+from ..guild.embedded_activity_state import (
+    EMBEDDED_ACTIVITY_UPDATE_CREATE, EMBEDDED_ACTIVITY_UPDATE_DELETE, EMBEDDED_ACTIVITY_UPDATE_UPDATE,
+    EMBEDDED_ACTIVITY_UPDATE_USER_ADD, EMBEDDED_ACTIVITY_UPDATE_USER_DELETE,
+    difference_handle_embedded_activity_update_event, handle_embedded_update_event
+)
+from ..integration import Integration
+from ..interaction import ApplicationCommand, ApplicationCommandPermission, InteractionEvent
 from ..invite import Invite
 from ..message import EMBED_UPDATE_NONE, Message, MessageRepr
-from ..interaction import ApplicationCommand, ApplicationCommandPermission, InteractionEvent
-from ..integration import Integration
-from ..stage import Stage
-from ..emoji import ReactionDeleteEvent, ReactionAddEvent, create_partial_emoji_from_data
+from ..role import Role
 from ..scheduled_event import ScheduledEvent, ScheduledEventSubscribeEvent, ScheduledEventUnsubscribeEvent
+from ..stage import Stage
+from ..user import (
+    User, create_partial_user_from_id, thread_user_create, thread_user_delete, thread_user_pop, thread_user_update
+)
+from ..utils import Gift, Relationship
 
-from .core import maybe_ensure_launch, add_parser, DEFAULT_EVENT_HANDLER
-from .filters import filter_clients, filter_clients_or_me, first_client, first_client_or_me, filter_just_me
-from .intent import INTENT_MASK_GUILDS, INTENT_MASK_GUILD_USERS, INTENT_MASK_GUILD_EMOJIS_AND_STICKERS, \
-    INTENT_MASK_GUILD_VOICE_STATES, INTENT_MASK_GUILD_PRESENCES, INTENT_MASK_GUILD_MESSAGES, \
-    INTENT_MASK_GUILD_REACTIONS, INTENT_MASK_DIRECT_MESSAGES, INTENT_MASK_DIRECT_REACTIONS, INTENT_SHIFT_GUILD_USERS
+from .core import DEFAULT_EVENT_HANDLER, add_parser, maybe_ensure_launch
 from .event_types import GuildUserChunkEvent, VoiceServerUpdateEvent
-from .guild_sync import guild_sync, check_channel
+from .filters import filter_clients, filter_clients_or_me, filter_just_me, first_client, first_client_or_me
+from .guild_sync import check_channel, guild_sync
+from .intent import (
+    INTENT_MASK_DIRECT_MESSAGES, INTENT_MASK_DIRECT_REACTIONS, INTENT_MASK_GUILDS,
+    INTENT_MASK_GUILD_EMOJIS_AND_STICKERS, INTENT_MASK_GUILD_MESSAGES, INTENT_MASK_GUILD_PRESENCES,
+    INTENT_MASK_GUILD_REACTIONS, INTENT_MASK_GUILD_USERS, INTENT_MASK_GUILD_VOICE_STATES, INTENT_SHIFT_GUILD_USERS
+)
+
 
 Client = include('Client')
 

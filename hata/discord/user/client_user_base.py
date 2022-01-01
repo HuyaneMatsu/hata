@@ -2,17 +2,15 @@ __all__ = ('ClientUserBase', 'ClientUserPBase',)
 
 from scarletio import copy_docs
 
-from ..core import USERS, GUILDS
-
+from ..activity import ActivityCustom, ActivityRich, create_activity_from_data
 from ..color import Color
-from ..activity import create_activity_from_data, ActivityRich, ActivityCustom
+from ..core import GUILDS, USERS
 
-from .preinstanced import Status
-
-from .user_base import UserBase, _try_get_guild_id, _try_get_guild_and_id
+from .activity_change import ActivityChange, ActivityUpdate
 from .flags import UserFlag
 from .guild_profile import GuildProfile
-from .activity_change import ActivityChange, ActivityUpdate
+from .preinstanced import Status
+from .user_base import UserBase, _try_get_guild_and_id, _try_get_guild_id
 
 
 class ClientUserBase(UserBase):

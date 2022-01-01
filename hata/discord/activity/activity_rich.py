@@ -3,14 +3,16 @@ __all__ = ('ActivityRich',)
 from datetime import datetime
 
 from ..color import Color
-from ..preconverters import preconvert_str, preconvert_int_options, preconvert_snowflake, preconvert_flag
 from ..http import urls as module_urls
-from ..utils import is_url, DISCORD_EPOCH_START, unix_time_to_datetime, datetime_to_unix_time
+from ..preconverters import preconvert_flag, preconvert_int_options, preconvert_snowflake, preconvert_str
+from ..utils import DISCORD_EPOCH_START, datetime_to_unix_time, is_url, unix_time_to_datetime
 
 from . import activity_types as ACTIVITY_TYPES
-from .activity_base import ActivityBase, ACTIVITY_TYPE_NAMES, ActivityAssets, ActivityParty, ActivitySecrets, \
-    ActivityTimestamps, CUSTOM_IDS
+from .activity_base import (
+    ACTIVITY_TYPE_NAMES, ActivityAssets, ActivityBase, ActivityParty, ActivitySecrets, ActivityTimestamps, CUSTOM_IDS
+)
 from .flags import ActivityFlag
+
 
 ACTIVITY_TYPE_NAME_UNKNOWN = 'unknown'
 

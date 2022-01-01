@@ -1,6 +1,6 @@
 __all__ = ('AudioBalance', 'UserVoiceSettings')
 
-from ...discord.preconverters import preconvert_str, preconvert_preinstanced_type, preconvert_float, preconvert_int
+from ...discord.preconverters import preconvert_float
 
 
 class UserVoiceSettings:

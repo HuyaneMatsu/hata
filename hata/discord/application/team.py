@@ -1,11 +1,11 @@
 __all__ = ('Team', 'TeamMember', )
 
 from ..bases import DiscordEntity, IconSlot
-from ..user import ZEROUSER, User, ClientUserBase
 from ..core import TEAMS, USERS
-from .preinstanced import TeamMembershipState
-
 from ..http import urls as module_urls
+from ..user import ClientUserBase, User, ZEROUSER
+
+from .preinstanced import TeamMembershipState
 
 
 class Team(DiscordEntity, immortal=True):

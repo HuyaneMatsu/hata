@@ -1,7 +1,8 @@
 __all__ = ('show_warnings',)
 
-import sys, re
+import re, sys
 from ast import literal_eval
+
 
 GRAVE_TYPE_BUILTIN = 0
 GRAVE_TYPE_EXPRESSION = 1

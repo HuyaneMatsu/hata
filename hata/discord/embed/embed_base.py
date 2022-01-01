@@ -3,8 +3,9 @@ __all__ = ('EXTRA_EMBED_TYPES', 'EmbedAuthor', 'EmbedBase', 'EmbedField', 'Embed
 
 from datetime import datetime
 
-from ..utils import url_cutter
 from ..color import Color
+from ..utils import url_cutter
+
 
 EXTRA_EMBED_TYPES = frozenset(('application_news', 'article', 'gifv', 'image', 'link', 'tweet', 'video'))
 

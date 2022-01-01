@@ -2,11 +2,10 @@ __all__ = ('KOKORO_STRATEGY', )
 
 from threading import current_thread
 
+from scarletio import ExecutorThread, alchemy_incendiary
 from sqlalchemy import util
 from sqlalchemy.engine import Engine
 from sqlalchemy.engine.strategies import DefaultEngineStrategy
-
-from scarletio import alchemy_incendiary, ExecutorThread
 
 
 class KOKOROEngine:

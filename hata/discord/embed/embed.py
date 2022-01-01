@@ -2,10 +2,12 @@ __all__ = ('Embed', )
 
 from scarletio import copy_docs
 
-from ..utils import timestamp_to_datetime, datetime_to_timestamp
+from ..utils import datetime_to_timestamp, timestamp_to_datetime
 
-from .embed_base import EmbedBase, EmbedFooter, EmbedImage, EmbedThumbnail, EmbedVideo, EmbedProvider, EmbedAuthor, \
-    EmbedField
+from .embed_base import (
+    EmbedAuthor, EmbedBase, EmbedField, EmbedFooter, EmbedImage, EmbedProvider, EmbedThumbnail, EmbedVideo
+)
+
 
 RICH_EMBED_FIELDS = frozenset((
     'author',

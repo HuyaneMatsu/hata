@@ -3,10 +3,11 @@ __all__ = ('GuildWidget', 'GuildWidgetChannel', 'GuildWidgetUser',)
 from scarletio import cached_property
 
 from ..bases import DiscordEntity
+from ..http import urls as module_urls
 from ..user import Status
 
-from ..http import urls as module_urls
 from .guild import Guild
+
 
 class GuildWidgetUser(DiscordEntity):
     """

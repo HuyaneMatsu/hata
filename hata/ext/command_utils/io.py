@@ -4,9 +4,11 @@ import reprlib
 from collections import deque
 from datetime import datetime, timedelta
 
-from scarletio import Task, sleep, shield, future_or_timeout, Future, CancelledError, LOOP_TIME
+from scarletio import CancelledError, Future, LOOP_TIME, Task, future_or_timeout, shield, sleep
+
 from ...discord.core import KOKORO
 from ...discord.utils import sanitize_content
+
 
 MESSAGE_EDIT_TIMEDELTA = timedelta(seconds=10)
 REQUEST_RATE_LIMIT = 1.2

@@ -8,6 +8,7 @@ from ..utils import timestamp_to_datetime
 
 from .flags import ThreadProfileFlag
 
+
 create_partial_role_from_id = include('create_partial_role_from_id')
 Client = include('Client')
 

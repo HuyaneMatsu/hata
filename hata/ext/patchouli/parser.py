@@ -2,8 +2,11 @@ __all__ = ('DocString', )
 
 import re, sys
 
-from .graver import build_graves_on_subsection, GravedListing, GravedListingElement, GravedTable, GravedDescription, \
-    GravedCodeBlock, DocWarning, GravedAttributeDescription, GravedBlockQuote
+from .graver import (
+    DocWarning, GravedAttributeDescription, GravedBlockQuote, GravedCodeBlock, GravedDescription, GravedListing,
+    GravedListingElement, GravedTable, build_graves_on_subsection
+)
+
 
 SECTION_NAME_RP = re.compile('(?:[A-Z][a-z]*)(?: [A-Z][a-z]*)*')
 SECTION_UNDERLINE_RP = re.compile('[\-]+')

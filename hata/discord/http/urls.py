@@ -4,12 +4,14 @@ __all__ = ('API_ENDPOINT', 'CDN_ENDPOINT', 'DISCORD_ENDPOINT', 'INVITE_URL_RP', 
 
 import re
 
-from ...env import CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DISCORD_ENDPOINT, CUSTOM_STATUS_ENDPOINT, \
-    API_VERSION
-
 from scarletio import export, include
 
+from ...env import (
+    API_VERSION, CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DISCORD_ENDPOINT, CUSTOM_STATUS_ENDPOINT
+)
+
 from ..bases import ICON_TYPE_NONE, ICON_TYPE_STATIC
+
 
 ChannelGuildBase = include('ChannelGuildBase')
 StickerFormat = include('StickerFormat')

@@ -4,6 +4,7 @@ from scarletio import call
 
 from .emoji import Emoji
 
+
 @call
 def generate_builtin_emojis():
     for element in (

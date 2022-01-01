@@ -4,7 +4,9 @@ __all__ = ('ICON_TYPE_ANIMATED', 'ICON_TYPE_NONE', 'ICON_TYPE_STATIC', 'Icon', '
 import sys
 
 from scarletio import DOCS_ENABLED, docs_property
-from .preinstanced import PreinstancedBase, Preinstance as P
+
+from .preinstanced import Preinstance as P, PreinstancedBase
+
 
 class IconType(PreinstancedBase):
     """

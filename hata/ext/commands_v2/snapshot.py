@@ -1,5 +1,7 @@
 from ..extension_loader.snapshot import SNAPSHOT_TAKERS
+
 from .command_processor import CommandProcessor
+
 
 def take_command_processor_snapshot(client):
     """

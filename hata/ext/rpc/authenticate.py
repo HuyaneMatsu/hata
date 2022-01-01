@@ -1,10 +1,11 @@
 __all__ = ('AuthenticateResponse', 'Oauth2Application', )
 
-from ...discord.oauth2.helpers import OAUTH2_SCOPES
-from ...discord.utils import timestamp_to_datetime
-from ...discord.user import User
 from ...discord.bases import DiscordEntity, IconSlot
 from ...discord.http import urls as module_urls
+from ...discord.oauth2.helpers import OAUTH2_SCOPES
+from ...discord.user import User
+from ...discord.utils import timestamp_to_datetime
+
 
 class AuthenticateResponse:
     """

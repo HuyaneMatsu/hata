@@ -1,9 +1,10 @@
 __all__ = ('AvailableDevice', 'ShortcutKey', 'VoiceSettings', 'VoiceSettingsMode', 'VoiceSettingsInput',
     'VoiceSettingsOutput')
 
-from ...discord.preconverters import preconvert_str, preconvert_preinstanced_type, preconvert_float, preconvert_int
+from ...discord.preconverters import preconvert_float, preconvert_int, preconvert_preinstanced_type, preconvert_str
 
-from .preinstanced import VoiceSettingsModeType, ShortcutKeyType
+from .preinstanced import ShortcutKeyType, VoiceSettingsModeType
+
 
 class VoiceSettingsInput:
     """

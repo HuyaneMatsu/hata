@@ -1,15 +1,16 @@
-# -*- coding: utf-8 -*-
 __all__ = ('Closer', )
 
-from scarletio import CancelledError,  copy_docs
+from scarletio import CancelledError, copy_docs
+
+from ...discord import ChannelTextBase
 from ...discord.core import BUILTIN_EMOJIS
+from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.interaction import InteractionEvent
 from ...discord.message import Message
-from ...discord import ChannelTextBase
-from ...discord.exceptions import DiscordException, ERROR_CODES
 
 from .bases import GUI_STATE_READY, PaginationBase
 from .utils import Timeouter
+
 
 class Closer(PaginationBase):
     """

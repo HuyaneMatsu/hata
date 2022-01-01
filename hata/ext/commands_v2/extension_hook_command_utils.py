@@ -1,8 +1,7 @@
 __all__ = ()
 
-from ...discord.events.handling_helpers import asynclist
 from ...discord.events.core import DEFAULT_EVENT_HANDLER
-
+from ...discord.events.handling_helpers import asynclist
 from ...ext.command_utils import MessageCreateWaitfor
 
 from . import EXTENSION_SETUP_HOOKS

@@ -2,23 +2,25 @@ __all__ = ('DiscordHTTPClient', 'LIBRARY_USER_AGENT',)
 
 import sys
 
-from scarletio import IgnoreCaseMultiValueDictionary, WeakMap, WeakKeyDictionary, to_json, from_json, call, \
-    LOOP_TIME, sleep, Future
+from scarletio import (
+    Future, IgnoreCaseMultiValueDictionary, LOOP_TIME, WeakKeyDictionary, WeakMap, call, from_json, sleep, to_json
+)
+from scarletio.http_client import HTTPClient, RequestContextManager, TCPConnector
 from scarletio.web_common import Formdata, quote
-from scarletio.http_client import TCPConnector, HTTPClient, RequestContextManager
-from scarletio.web_common.headers import METHOD_PATCH, METHOD_GET, METHOD_DELETE, METHOD_POST, METHOD_PUT, CONTENT_TYPE, \
-    USER_AGENT, AUTHORIZATION
+from scarletio.web_common.headers import (
+    AUTHORIZATION, CONTENT_TYPE, METHOD_DELETE, METHOD_GET, METHOD_PATCH, METHOD_POST, METHOD_PUT, USER_AGENT
+)
 
+from ... import __version__
 from ...env import API_VERSION, LIBRARY_URL
 
-from ..exceptions import DiscordException
 from ..core import KOKORO
-from ... import __version__
-from .urls import API_ENDPOINT, DISCORD_ENDPOINT, STATUS_ENDPOINT
+from ..exceptions import DiscordException
 
-from .headers import AUDIT_LOG_REASON, RATE_LIMIT_PRECISION, DEBUG_OPTIONS
-from .rate_limit import RateLimitHandler, NO_SPECIFIC_RATE_LIMITER, StackedStaticRateLimitHandler
 from . import rate_limit_groups as RATE_LIMIT_GROUPS
+from .headers import AUDIT_LOG_REASON, DEBUG_OPTIONS, RATE_LIMIT_PRECISION
+from .rate_limit import NO_SPECIFIC_RATE_LIMITER, RateLimitHandler, StackedStaticRateLimitHandler
+from .urls import API_ENDPOINT, DISCORD_ENDPOINT, STATUS_ENDPOINT
 
 
 LIBRARY_USER_AGENT_BASE = f'DiscordBot ({LIBRARY_URL}, {__version__}) Python'

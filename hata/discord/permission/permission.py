@@ -2,6 +2,7 @@ __all__ = ('Permission', )
 
 from ..bases import FlagBase
 
+
 PERMISSION_SHIFT_CREATE_INSTANT_INVITE = 0
 PERMISSION_SHIFT_KICK_USERS = 1
 PERMISSION_SHIFT_BAN_USERS = 2

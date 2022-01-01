@@ -2,6 +2,15 @@ __all__ = ()
 
 from time import time as time_now
 
+from scarletio import from_json, to_json
+from scarletio.web_common import ConnectionClosed
+
+from ..exceptions import VOICE_CLIENT_DISCONNECT_CLOSE_CODE
+
+from .heartbeat import Kokoro
+from .rate_limit import GatewayRateLimiter
+
+
 try:
     import nacl.secret
 except ImportError:
@@ -9,15 +18,6 @@ except ImportError:
 else:
     SecretBox = nacl.secret.SecretBox
     del nacl
-
-from scarletio.web_common import ConnectionClosed
-from scarletio import to_json, from_json
-
-from ..exceptions import VOICE_CLIENT_DISCONNECT_CLOSE_CODE
-
-from .heartbeat import Kokoro
-from .rate_limit import GatewayRateLimiter
-
 
 IDENTIFY = 0
 SELECT_PROTOCOL = 1

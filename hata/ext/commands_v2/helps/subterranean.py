@@ -2,23 +2,28 @@ __all__ = ('SubterraneanHelpCommand', )
 
 from functools import partial as partial_func
 
-from scarletio import DOCS_ENABLED, docs_property,  CallableAnalyzer
+from scarletio import CallableAnalyzer, DOCS_ENABLED, docs_property
+
+from ....discord.channel import (
+    ChannelBase, ChannelCategory, ChannelDirectory, ChannelGroup, ChannelGuildBase, ChannelPrivate, ChannelStore,
+    ChannelText, ChannelTextBase, ChannelThread, ChannelVoice
+)
 from ....discord.embed import Embed, EmbedBase
-from ....discord.utils import chunkify
-from ....discord.preconverters import preconvert_str
-from ....discord.user import UserBase, User
-from ....discord.channel import ChannelBase, ChannelGuildBase, ChannelTextBase, ChannelText, ChannelPrivate, \
-    ChannelVoice, ChannelGroup, ChannelCategory, ChannelStore, ChannelThread, ChannelDirectory
-from ....discord.role import Role
 from ....discord.emoji.emoji import Emoji
 from ....discord.guild import Guild
-from ....discord.message import Message
 from ....discord.invite import Invite
+from ....discord.message import Message
+from ....discord.preconverters import preconvert_str
+from ....discord.role import Role
+from ....discord.user import User, UserBase
+from ....discord.utils import chunkify
 
-from ...command_utils import Pagination, Closer
-from ..content_parser import timedelta, relativedelta
-from ..utils import raw_name_to_display
+from ...command_utils import Closer, Pagination
+
 from ..command_helpers import run_checks
+from ..content_parser import relativedelta, timedelta
+from ..utils import raw_name_to_display
+
 
 MAX_SUB_COMMAND_DEEPNESS = 5
 

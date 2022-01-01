@@ -2,7 +2,8 @@ __all__ = ('StickerFormat', 'StickerType', )
 
 from scarletio import export
 
-from ..bases import PreinstancedBase, Preinstance as P
+from ..bases import Preinstance as P, PreinstancedBase
+
 
 @export
 class StickerFormat(PreinstancedBase):

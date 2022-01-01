@@ -3,23 +3,27 @@ __all__ = ('Menu',)
 from collections import OrderedDict
 from types import MemberDescriptorType
 
-from scarletio import CallableAnalyzer, copy_docs, Task, CancelledError, RichAttributeErrorBaseType
+from scarletio import CallableAnalyzer, CancelledError, RichAttributeErrorBaseType, Task, copy_docs
 
-from ....discord.core import KOKORO
-from ....discord.interaction.components import _debug_component_components, _debug_component_custom_id, \
-    _debug_component_emoji, _debug_component_label, _debug_component_enabled, _debug_component_url, \
-    _debug_component_description, _debug_component_default, _debug_component_options, _debug_component_placeholder, \
-    _debug_component_min_values, _debug_component_max_values
-from ....discord.interaction import ComponentBase, ComponentRow, ComponentButton, ComponentSelect, InteractionEvent, \
-    ComponentSelectOption, ComponentType, InteractionType
-from ....discord.message import Message
-from ....discord.channel import ChannelTextBase
-from ....discord.embed import EmbedBase
 from ....discord.allowed_mentions import AllowedMentionProxy
+from ....discord.channel import ChannelTextBase
 from ....discord.client import Client
+from ....discord.core import KOKORO
+from ....discord.embed import EmbedBase
 from ....discord.exceptions import DiscordException, ERROR_CODES
+from ....discord.interaction import (
+    ComponentBase, ComponentButton, ComponentRow, ComponentSelect, ComponentSelectOption, ComponentType,
+    InteractionEvent, InteractionType
+)
+from ....discord.interaction.components import (
+    _debug_component_components, _debug_component_custom_id, _debug_component_default, _debug_component_description,
+    _debug_component_emoji, _debug_component_enabled, _debug_component_label, _debug_component_max_values,
+    _debug_component_min_values, _debug_component_options, _debug_component_placeholder, _debug_component_url
+)
+from ....discord.message import Message
 
-from ..waiters import get_client_from_message, get_client_from_interaction_event, Timeouter
+from ..waiters import Timeouter
+
 
 GUI_STATE_NONE = 0
 GUI_STATE_READY = 1

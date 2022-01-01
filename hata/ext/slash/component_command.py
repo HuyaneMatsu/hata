@@ -1,23 +1,25 @@
 __all__ = ('ComponentCommand', )
 
+from scarletio import copy_docs
+
+from ...discord.events.handling_helpers import Router, check_name, route_name, route_value
+
+from .converters import get_component_command_parameter_converters
+from .custom_id_based_command import (
+    CustomIdBasedCommand, _validate_custom_ids, _validate_name, split_and_check_satisfaction
+)
+from .exceptions import handle_command_exception
+from .responding import process_command_coroutine
+from .utils import _check_maybe_route
+from .wrappers import SlasherCommandWrapper
+
+
 try:
     # CPython
     from re import Pattern
 except ImportError:
     # ChadPython (PyPy)
     from re import _pattern_type as Pattern
-
-from scarletio import copy_docs
-
-from ...discord.events.handling_helpers import route_value, Router, check_name, route_name
-
-from .wrappers import SlasherCommandWrapper
-from .utils import _check_maybe_route
-from .converters import get_component_command_parameter_converters
-from .responding import process_command_coroutine
-from .exceptions import handle_command_exception
-from .custom_id_based_command import _validate_name, _validate_custom_ids, split_and_check_satisfaction, \
-    CustomIdBasedCommand
 
 COMMAND_TARGETS_COMPONENT_COMMAND = frozenset((
     'component',

@@ -1,17 +1,17 @@
 __all__ = ('UserBase', )
 
-from scarletio import include, export
+from scarletio import export, include
 
-from ..bases import DiscordEntity, IconSlot, ICON_TYPE_NONE
-from ..utils import DATETIME_FORMAT_CODE
+from ..bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
 from ..color import Color
-
-from ..http import urls as module_urls
 from ..core import GUILDS
+from ..http import urls as module_urls
+from ..utils import DATETIME_FORMAT_CODE
 
-from .preinstanced import Status, DefaultAvatar
 from .flags import UserFlag
 from .helpers import get_banner_color_from_data
+from .preinstanced import DefaultAvatar, Status
+
 
 create_partial_role_from_id = include('create_partial_role_from_id')
 Client = include('Client')

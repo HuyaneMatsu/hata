@@ -1,5 +1,5 @@
-from ..extension_loader.snapshot import SNAPSHOT_TAKERS
 from ..extension_loader.extension_loader import EXTENSION_LOADER
+from ..extension_loader.snapshot import SNAPSHOT_TAKERS
 
 from .application_command import SYNC_ID_NON_GLOBAL
 from .slasher import Slasher

@@ -4,7 +4,7 @@ __all__ = ('ApplicationCommandOptionType', 'ApplicationCommandPermissionOverwrit
 
 from scarletio import export
 
-from ..bases import PreinstancedBase, Preinstance as P
+from ..bases import Preinstance as P, PreinstancedBase
 
 
 class ApplicationCommandOptionType(PreinstancedBase):

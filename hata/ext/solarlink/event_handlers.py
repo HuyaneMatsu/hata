@@ -4,8 +4,8 @@ from scarletio import Task, WaitTillAll
 
 from ...discord.core import KOKORO
 
-from .constants import LAVALINK_KEY_SESSION_ID, LAVALINK_KEY_NODE_OPERATION, LAVALINK_KEY_VOICE_SERVER_UPDATE_EVENT, \
-    LAVALINK_KEY_NODE_OPERATION_VOICE_UPDATE, LAVALINK_KEY_GUILD_ID
+from .constants import LAVALINK_KEY_SESSION_ID, LAVALINK_KEY_VOICE_SERVER_UPDATE_EVENT
+
 
 async def handle_voice_client_join(client, voice_state):
     """

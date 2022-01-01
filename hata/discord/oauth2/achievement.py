@@ -1,9 +1,9 @@
 __all__ = ('Achievement', )
 
 from ..bases import DiscordEntity, IconSlot
+from ..http import urls as module_urls
 from ..utils import DATETIME_FORMAT_CODE
 
-from ..http import urls as module_urls
 
 class Achievement(DiscordEntity):
     """

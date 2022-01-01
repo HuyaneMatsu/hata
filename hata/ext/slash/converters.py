@@ -2,32 +2,39 @@ __all__ = ('SlashParameter', )
 
 import reprlib
 
+from scarletio import CallableAnalyzer, copy_docs, un_map_pack
+
+from ...discord.channel import (
+    CHANNEL_TYPES, ChannelBase, ChannelCategory, ChannelDirectory, ChannelGroup, ChannelGuildBase, ChannelGuildMainBase,
+    ChannelPrivate, ChannelStage, ChannelStore, ChannelText, ChannelTextBase, ChannelThread, ChannelVoice,
+    ChannelVoiceBase
+)
+from ...discord.client import Client
+from ...discord.core import CHANNELS, ROLES
+from ...discord.exceptions import DiscordException, ERROR_CODES
+from ...discord.interaction import (
+    ApplicationCommandOption, ApplicationCommandOptionChoice, ApplicationCommandOptionType, InteractionEvent,
+    InteractionType
+)
+from ...discord.interaction.application_command import (
+    APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN,
+    APPLICATION_COMMAND_OPTIONS_MAX
+)
+from ...discord.message import Attachment
+from ...discord.role import Role
+from ...discord.user import User, UserBase
+
+from .exceptions import SlasherApplicationCommandParameterConversionError
+from .expression_parser import evaluate_text
+from .utils import normalize_description, raw_name_to_display
+
+
 try:
     # CPython
     from re import Pattern
 except ImportError:
     # ChadPython (PyPy)
     from re import _pattern_type as Pattern
-
-from scarletio import CallableAnalyzer, un_map_pack, copy_docs, include
-
-from ...discord.core import ROLES, CHANNELS
-from ...discord.exceptions import DiscordException, ERROR_CODES
-from ...discord.client import Client
-from ...discord.user import UserBase, User
-from ...discord.role import Role
-from ...discord.channel import ChannelBase, ChannelGuildBase, CHANNEL_TYPES, ChannelCategory, ChannelDirectory, \
-    ChannelGuildMainBase, ChannelStore, ChannelText, ChannelVoiceBase, ChannelVoice, ChannelStage, ChannelPrivate, \
-    ChannelGroup, ChannelThread, ChannelTextBase
-from ...discord.interaction import ApplicationCommandOption, ApplicationCommandOptionChoice, InteractionType, \
-    ApplicationCommandOptionType, InteractionEvent
-from ...discord.interaction.application_command import APPLICATION_COMMAND_OPTIONS_MAX, \
-    APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX
-from ...discord.message import Attachment
-
-from .utils import raw_name_to_display, normalize_description
-from .exceptions import SlasherApplicationCommandParameterConversionError
-from .expression_parser import evaluate_text
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 INTERACTION_TYPE_APPLICATION_COMMAND_AUTOCOMPLETE = InteractionType.application_command_autocomplete

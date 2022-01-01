@@ -1,17 +1,19 @@
 __all__ = ('User', 'ZEROUSER')
 
-from ...env import CACHE_USER, CACHE_PRESENCE
+from scarletio import include, set_docs
 
-from scarletio import set_docs, include
+from ...env import CACHE_PRESENCE, CACHE_USER
 
 from ..core import USERS
+from ..preconverters import (
+    preconvert_bool, preconvert_color, preconvert_discriminator, preconvert_flag, preconvert_snowflake, preconvert_str
+)
 
-from ..preconverters import preconvert_snowflake, preconvert_str, preconvert_bool, preconvert_discriminator, \
-    preconvert_flag, preconvert_color
-from .preinstanced import Status
-from .guild_profile import GuildProfile
-from .client_user_base import ClientUserPBase, ClientUserBase
+from .client_user_base import ClientUserBase, ClientUserPBase
 from .flags import UserFlag
+from .guild_profile import GuildProfile
+from .preinstanced import Status
+
 
 create_partial_role_from_id = include('create_partial_role_from_id')
 create_partial_user_from_id = include('create_partial_user_from_id')

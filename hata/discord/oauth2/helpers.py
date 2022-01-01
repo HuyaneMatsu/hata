@@ -2,6 +2,7 @@ __all__ = ('parse_oauth2_redirect_url',)
 
 import re
 
+
 DEFAULT_LOCALE = 'en-US'
 LOCALES = {DEFAULT_LOCALE: DEFAULT_LOCALE}
 

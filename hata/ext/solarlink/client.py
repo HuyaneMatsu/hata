@@ -3,22 +3,23 @@ __all__ = ('SolarClient', )
 from random import choice
 from threading import current_thread
 
-from scarletio import to_json, WeakReferer, Task, WaitTillAll, EventThread
+from scarletio import EventThread, Task, WaitTillAll, WeakReferer, to_json
 from scarletio.web_common.headers import AUTHORIZATION, CONTENT_TYPE
 
-from ...discord.core import KOKORO
-from ...discord.voice.utils import try_get_voice_region
 from ...discord.bases import maybe_snowflake_pair
 from ...discord.channel import ChannelVoiceBase
 from ...discord.client import Client
+from ...discord.core import KOKORO
+from ...discord.voice.utils import try_get_voice_region
 
 from .event_handler_plugin import SolarLinkEventManager
 from .exceptions import SolarAuthenticationError
 from .node import SolarNode
 from .player import SolarPlayer
-from .track import Track, GetTracksResult
-from .route_planner import get_route_planner
 from .player_base import SolarPlayerBase
+from .route_planner import get_route_planner
+from .track import GetTracksResult, Track
+
 
 class SolarClient:
     """

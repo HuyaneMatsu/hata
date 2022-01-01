@@ -1,10 +1,11 @@
 __all__ = ('IntegrationDetail', )
 
 from ..core import ROLES
-from ..utils import timestamp_to_datetime, DISCORD_EPOCH_START
 from ..role import create_partial_role_from_id
+from ..utils import DISCORD_EPOCH_START, timestamp_to_datetime
 
 from .preinstanced import IntegrationExpireBehavior
+
 
 class IntegrationDetail:
     """

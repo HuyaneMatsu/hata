@@ -1,12 +1,15 @@
 __all__ = ('ActivityCustom',)
 
 from scarletio import include
-from ..utils import DISCORD_EPOCH_START, unix_time_to_datetime, datetime_to_unix_time
 
-from .activity_base import ActivityBase
+from ..utils import DISCORD_EPOCH_START, datetime_to_unix_time, unix_time_to_datetime
+
 from . import activity_types as ACTIVITY_TYPES
+from .activity_base import ActivityBase
+
 
 create_partial_emoji_from_data = include('create_partial_emoji_from_data')
+
 
 class ActivityCustom(ActivityBase):
     """

@@ -2,6 +2,7 @@ __all__ = ()
 
 from ..core import CHANNELS, GUILDS
 
+
 def try_get_voice_region(guild_id, channel_id):
     """
     Tries to get the voice region of the given channel and guild's id-s.

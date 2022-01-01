@@ -58,12 +58,14 @@ HATA_STATUS_ENDPOINT : `None`, `str` = `None`
 import warnings
 from os import getenv as get_environmental_variable
 
+
 try:
     from dotenv import load_dotenv
 except ModuleNotFoundError:
     pass
 else:
     load_dotenv()
+
 
 __all__ = ('ALLOW_DEAD_EVENTS', 'API_VERSION', 'CACHE_PRESENCE', 'CACHE_USER', 'CUSTOM_API_ENDPOINT',
     'CUSTOM_CDN_ENDPOINT', 'CUSTOM_DISCORD_ENDPOINT', 'CUSTOM_STATUS_ENDPOINT', 'DOCS_ENABLED', 'LIBRARY_URL',

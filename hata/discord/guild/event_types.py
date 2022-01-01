@@ -7,7 +7,7 @@ from scarletio import copy_docs
 from ..bases import EventBase
 from ..core import GUILDS
 from ..user import User, create_partial_user_from_id
-from ..utils import timestamp_to_datetime, DATETIME_FORMAT_CODE
+from ..utils import DATETIME_FORMAT_CODE, timestamp_to_datetime
 
 from .preinstanced import GuildJoinRequestStatus
 

@@ -1,8 +1,11 @@
 import sys
-from math import log10, floor
+from math import floor, log10
+
+from scarletio import get_short_executable
+
 from .. import __package__ as PACKAGE_NAME
 from ..__main__ import COMMAND_MAP, COMMAND_NAMES
-from scarletio import get_short_executable
+
 
 PACKAGE = __import__(PACKAGE_NAME)
 

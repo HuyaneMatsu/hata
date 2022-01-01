@@ -4,6 +4,7 @@ from ..bases import DiscordEntity
 from ..core import DISCOVERY_CATEGORIES
 from ..utils import DISCORD_EPOCH_START, timestamp_to_datetime
 
+
 class GuildDiscovery:
     """
     Represent a guild's Discovery settings.

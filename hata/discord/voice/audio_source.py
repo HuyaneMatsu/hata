@@ -1,13 +1,14 @@
 __all__ = ('AudioSource', 'DownloadError', 'LocalAudio', 'YTAudio')
 
-
-import os, sys, subprocess, shlex
+import os, shlex, subprocess
 from pathlib import Path
 
-from scarletio import alchemy_incendiary, Task, CancelledError
+from scarletio import CancelledError, Task, alchemy_incendiary
 
 from ..core import KOKORO
+
 from .opus import FRAME_LENGTH, FRAME_SIZE
+
 
 PLAYER_DELAY = FRAME_LENGTH / 1000.0
 

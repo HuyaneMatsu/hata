@@ -5,11 +5,14 @@ import reprlib
 from functools import partial as partial_func
 
 from ...discord.guild import Guild
-from ...discord.preconverters import preconvert_snowflake
 from ...discord.interaction import ApplicationCommandPermissionOverwrite
+from ...discord.preconverters import preconvert_snowflake
 
-from .converters import parse_annotation_description, parse_annotation_type_and_choice, parse_annotation_name, \
-    ANNOTATION_TYPE_TO_STR_ANNOTATION, process_max_and_min_value, postprocess_channel_types, preprocess_channel_types
+from .converters import (
+    ANNOTATION_TYPE_TO_STR_ANNOTATION, parse_annotation_description, parse_annotation_name,
+    parse_annotation_type_and_choice, postprocess_channel_types, preprocess_channel_types, process_max_and_min_value
+)
+
 
 class SlasherCommandWrapper:
     """

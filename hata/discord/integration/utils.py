@@ -5,9 +5,10 @@ from scarletio import export
 from ..core import INTEGRATIONS
 from ..user import ZEROUSER
 
-from .integration_detail import IntegrationDetail
 from .integration import Integration
 from .integration_account import IntegrationAccount
+from .integration_detail import IntegrationDetail
+
 
 @export
 def create_partial_integration_from_id(integration_id, role=None):

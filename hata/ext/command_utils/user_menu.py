@@ -1,17 +1,21 @@
 __all__ = ('UserMenuFactory', 'UserMenuRunner', 'UserPagination',)
 
-from scarletio import CancelledError, copy_docs, CallableAnalyzer
+from scarletio import CallableAnalyzer, CancelledError, copy_docs
+
+from ...discord import ChannelTextBase
 from ...discord.core import BUILTIN_EMOJIS
 from ...discord.emoji import Emoji
+from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.interaction import InteractionEvent
 from ...discord.message import Message
-from ...discord import ChannelTextBase
-from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.preconverters import preconvert_bool
 
-from .bases import GUI_STATE_READY, GUI_STATE_SWITCHING_PAGE, GUI_STATE_CANCELLING, GUI_STATE_CANCELLED, \
-    GUI_STATE_SWITCHING_CTX, GUI_STATE_VALUE_TO_NAME, PaginationBase
+from .bases import (
+    GUI_STATE_CANCELLED, GUI_STATE_CANCELLING, GUI_STATE_READY, GUI_STATE_SWITCHING_CTX, GUI_STATE_SWITCHING_PAGE,
+    GUI_STATE_VALUE_TO_NAME, PaginationBase
+)
 from .utils import Timeouter
+
 
 def validate_check(check):
     """

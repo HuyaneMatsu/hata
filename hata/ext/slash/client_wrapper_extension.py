@@ -8,6 +8,7 @@ from ...discord.events.handling_helpers import _EventHandlerManagerRouter
 from .application_command import SlasherApplicationCommand
 from .slasher import Slasher
 
+
 def interactions_getter(manager_router):
     """
     Gets the slash command processor using `Client.slasher` of an ``_EventHandlerManagerRouter``.

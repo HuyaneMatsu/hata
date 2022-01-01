@@ -1,6 +1,6 @@
 __all__ = ('IntegrationExpireBehavior',)
 
-from ..bases import PreinstancedBase, Preinstance as P
+from ..bases import Preinstance as P, PreinstancedBase
 
 
 class IntegrationExpireBehavior(PreinstancedBase):

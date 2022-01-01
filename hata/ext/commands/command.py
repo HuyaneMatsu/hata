@@ -1,20 +1,22 @@
-﻿# -*- coding: utf-8 -*-
-__all__ = ('Category', 'Command', 'CommandProcesser', 'normalize_description', )
+﻿__all__ = ('Category', 'Command', 'CommandProcesser', 'normalize_description', )
 
 import re, reprlib
 from types import FunctionType
 
-from scarletio import SortedList, DOCS_ENABLED, name_property, CallableAnalyzer, is_coroutine_generator
+from scarletio import CallableAnalyzer, DOCS_ENABLED, SortedList, is_coroutine_generator, name_property
 
-from ...discord.utils import USER_MENTION_RP
-from ...discord.events.handling_helpers import EventWaitforBase, compare_converted, check_name, \
-    check_parameter_count_and_convert, Router, route_name, route_value, create_event_from_class
-from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.embed import EmbedBase
+from ...discord.events.handling_helpers import (
+    EventWaitforBase, Router, check_name, check_parameter_count_and_convert, compare_converted, create_event_from_class,
+    route_name, route_value
+)
+from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.permission.permission import PERMISSION_CAN_SEND_MESSAGES_ALL
+from ...discord.utils import USER_MENTION_RP
 
-from .content_parser import CommandContentParser
 from .checks import validate_checks
+from .content_parser import CommandContentParser
+
 
 COMMAND_RP = re.compile('[ \t\\n]*([^ \t\\n]*)[ \t\\n]*(.*)', re.M | re.S)
 

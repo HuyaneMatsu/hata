@@ -2,10 +2,10 @@ __all__ = ('ReactionAddEvent', 'ReactionDeleteEvent', )
 
 from scarletio import Task, copy_docs
 
-from ..core import KOKORO
 from ..bases import EventBase
-from ..permission.permission import PERMISSION_MASK_MANAGE_MESSAGES
+from ..core import KOKORO
 from ..exceptions import DiscordException, ERROR_CODES
+from ..permission.permission import PERMISSION_MASK_MANAGE_MESSAGES
 
 
 async def _delete_reaction_with_task(reaction_add_event, client):

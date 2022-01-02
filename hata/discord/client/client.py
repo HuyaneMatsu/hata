@@ -60,8 +60,9 @@ from ..http import (
 )
 from ..integration import Integration
 from ..interaction import (
-    ApplicationCommand, ApplicationCommandPermission, ApplicationCommandPermissionOverwrite, INTERACTION_RESPONSE_TYPES,
-    InteractionEvent, InteractionForm, InteractionResponseContext, InteractionType
+    ApplicationCommand, ApplicationCommandPermission, ApplicationCommandPermissionOverwrite,
+    ApplicationCommandPermissionOverwriteTargetType, INTERACTION_RESPONSE_TYPES, InteractionEvent, InteractionForm,
+    InteractionResponseContext, InteractionType
 )
 from ..interaction.application_command import (
     APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX

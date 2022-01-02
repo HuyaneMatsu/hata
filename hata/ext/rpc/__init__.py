@@ -4,6 +4,7 @@ from .client import *
 from .command_handling import *
 from .constants import *
 from .dispatch_handling import *
+from .event_handler_manager import *
 from .event_types import *
 from .exceptions import *
 from .preinstanced import *
@@ -20,6 +21,7 @@ __all__ = (
     *command_handling.__all__,
     *constants.__all__,
     *dispatch_handling.__all__,
+    *event_handler_manager.__all__,
     *event_types.__all__,
     *exceptions.__all__,
     *preinstanced.__all__,

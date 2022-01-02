@@ -111,7 +111,7 @@ def handle_dispatch_message_edit(rpc_client, data):
             message._update_embed_no_return(data)
             return
     
-    Task(rpc_client.events.message_create(rpc_client, message, old_attributes), KOKORO)
+    Task(rpc_client.events.message_edit(rpc_client, message, old_attributes), KOKORO)
 
 
 def handle_dispatch_message_delete(rpc_client, data):

@@ -928,7 +928,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     
     def __call__(self, func=None, name=None, overwrite=False):
         """
-        Adds the given `func` to the event descriptor as en event handler.
+        Adds the given `func` as an event handler.
         
         Parameters
         ----------
@@ -1024,7 +1024,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     
     def clear(self):
         """
-        Clears the ``EventHandlerManager`` to the same state as it were just created.
+        Clears the ``EventHandlerManager`` to it's initial state.
         """
         delete = type(self).__delattr__
         for name in EVENT_HANDLER_NAME_TO_PARSER_NAMES:
@@ -1108,7 +1108,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     
     def __delattr__(self, name):
         """
-        Removes the event with switching it to `DEFAULT_EVENT_HANDLER`, and updates the event's parser if needed.
+        Removes the event handler with switching it to `DEFAULT_EVENT_HANDLER`, and updates the event's parser if
+        needed.
         
         Parameters
         ----------

@@ -4,6 +4,7 @@
 
 - Add `GuildPreview.stickers`.
 - Add `ApplicationCommandPermissionOverwriteTargetType.channel`.
+- `Emoji.__new__`'s second parameter modified from `Guild` to `int`.
 
 #### Bug Fixes
 

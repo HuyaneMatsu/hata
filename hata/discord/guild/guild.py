@@ -345,7 +345,7 @@ class Guild(DiscordEntity, immortal=True):
             else:
                 emojis = self.emojis
                 for emoji_data in emoji_datas:
-                    emoji = Emoji(emoji_data, self)
+                    emoji = Emoji(emoji_data, guild_id)
                     emojis[emoji.id] = emoji
             
             try:
@@ -2322,7 +2322,7 @@ class Guild(DiscordEntity, immortal=True):
             try:
                 emoji = emojis[emoji_id]
             except KeyError:
-                emoji = Emoji(emoji_data, self)
+                emoji = Emoji(emoji_data, self.id)
                 emojis[emoji_id] = emoji
                 changes.append((EMOJI_UPDATE_CREATE, emoji, None),)
             else:
@@ -2359,7 +2359,7 @@ class Guild(DiscordEntity, immortal=True):
             try:
                 emoji = emojis[emoji_id]
             except KeyError:
-                emoji = Emoji(emoji_data, self)
+                emoji = Emoji(emoji_data, self.id)
                 emojis[emoji_id] = emoji
             else:
                 emoji._update_attributes(emoji_data)

@@ -76,6 +76,8 @@ class GuildPreview(DiscordEntity):
         data : `dict` of (`str`, `Any`) items
             Received guild preview data.
         """
+        guild_id = int(data['id'])
+        
         self.description = data.get('description',None)
         
         self._set_discovery_splash(data)
@@ -88,7 +90,7 @@ class GuildPreview(DiscordEntity):
             pass
         else:
             for emoji_data in emoji_datas:
-                emoji = Emoji(emoji_data, None)
+                emoji = Emoji(emoji_data, guild_id)
                 emojis[emoji.id] = emoji
         
         stickers = {}
@@ -117,7 +119,7 @@ class GuildPreview(DiscordEntity):
         
         self._set_icon(data)
         
-        self.id = int(data['id'])
+        self.id = guild_id
         
         self.name = data['name']
         

@@ -11424,7 +11424,7 @@ class Client(ClientUserPBase):
             if guild is None:
                 guild = create_partial_guild_from_id(guild_id)
         
-            emoji = Emoji(emoji_data, guild)
+            emoji = Emoji(emoji_data, guild_id)
         else:
             emoji._update_attributes(emoji_data)
         
@@ -11553,7 +11553,7 @@ class Client(ClientUserPBase):
         if guild is None:
             guild = create_partial_guild_from_id(guild_id)
         
-        emoji = Emoji(data, guild)
+        emoji = Emoji(data, guild_id)
         emoji.user = self
         return emoji
     

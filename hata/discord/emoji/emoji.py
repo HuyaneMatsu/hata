@@ -68,7 +68,7 @@ class Emoji(DiscordEntity, immortal=True):
     
     _last_unicode_id = 0
     
-    def __new__(cls, data, guild):
+    def __new__(cls, data, guild_id):
         """
         Creates a new emoji object from emoji data included with it's guild's. If the emoji already exists, picks that
         up instead of creating a new one.
@@ -79,8 +79,8 @@ class Emoji(DiscordEntity, immortal=True):
         ----------
         data : `dict` of (`str`, `Any`) items
             Emoji data received from Discord.
-        guild : ``Guild``
-            The guild of the emoji.
+        guild_id : ``int``
+            The emoji's guild's identifier.
         
         Returns
         -------
@@ -127,7 +127,7 @@ class Emoji(DiscordEntity, immortal=True):
         self.animated = data.get('animated', False)
         self.require_colons= data.get('require_colons', True)
         self.managed = data.get('managed', False)
-        self.guild_id = guild.id
+        self.guild_id = guild_id
         self.available = data.get('available', True)
         self.user = ZEROUSER
         

@@ -132,9 +132,15 @@ class UserGuildPermission:
         The user's permissions at the guild.
     """
     __slots__ = ('owner', 'permission', )
+    
     def __init__(self, data):
         """
         Creates a ``GuildPermission`` object form user guild data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`)
+            Guild permission data.
         """
         self.owner = data['owner']
         self.permission = Permission(data[PERMISSION_KEY])

@@ -61,8 +61,10 @@ class ActivityRich(ActivityBase):
     url : `None`, `str`
         The url of the stream (Twitch or Youtube only). Defaults to `None`.
     """
-    __slots__ = ('application_id', 'assets', 'created_at', 'details', 'flags', 'id', 'name', 'party', 'secrets',
-        'session_id', 'state', 'sync_id', 'timestamps', 'type', 'url', )
+    __slots__ = (
+        'application_id', 'assets', 'created_at', 'details', 'flags', 'id', 'name', 'party', 'secrets', 'session_id',
+        'state', 'sync_id', 'timestamps', 'type', 'url'
+    )
     
     def __new__(cls, name, *, application_id=..., assets=None, created_at=..., details=None, flags=..., id_=...,
             party=None, secrets=None, session_id=None, state=None, sync_id=None, timestamps=None, type_=..., url=None):

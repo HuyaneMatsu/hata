@@ -551,6 +551,7 @@ class TextDescription:
         The content of the description.
     """
     __slots__ = ('_content', )
+    
     def __new__(cls, lines, start, end):
         """
         Creates a new description from the given lines's start:end range.
@@ -716,6 +717,7 @@ class TextCodeBlock:
         The internal lines of the code block.
     """
     __slots__ = ('_language', '_lines',)
+    
     def __new__(cls, lines, start, end):
         """
         Creates a new code block from the given lines's start:end range.
@@ -1048,6 +1050,7 @@ class TextListingElement:
         The head content of the listing. If would be set as empty string, is set as `None` instead.
     """
     __slots__ = ('_content', '_head')
+    
     def __new__(cls, lines):
         """
         Creates a new listing element from the given lines.
@@ -1173,6 +1176,7 @@ class TextListing:
         The elements of the listing.
     """
     __slots__ = ('_elements')
+    
     def __new__(cls, lines, start, end):
         """
         Creates a new listing instance.

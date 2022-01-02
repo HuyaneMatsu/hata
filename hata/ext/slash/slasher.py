@@ -902,12 +902,14 @@ class Slasher(EventHandlerBase):
     -----
     ``Slasher``-s are weakreferable.
     """
-    __slots__ = ('__weakref__', '_auto_completers', '_call_later', '_client_reference', '_command_states',
+    __slots__ = (
+        '__weakref__', '_auto_completers', '_call_later', '_client_reference', '_command_states',
         '_command_unloading_behaviour', '_component_commands', '_component_interaction_waiters', '_exception_handlers',
         '_form_submit_commands', '_random_error_message_getter', '_regex_custom_id_to_component_command',
         '_regex_custom_id_to_form_submit_command', '_self_reference', '_string_custom_id_to_component_command',
         '_string_custom_id_to_form_submit_command', '_sync_done', '_sync_permission_tasks', '_sync_should', '_sync_tasks',
-        '_synced_permissions', 'command_id_to_command')
+        '_synced_permissions', 'command_id_to_command'
+    )
     
     __event_name__ = 'interaction_create'
     

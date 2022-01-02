@@ -49,8 +49,10 @@ class VoiceState:
     user_id : `int`
         The voice state's respective user's identifier.
     """
-    __slots__ = ('_cache_user', 'channel_id', 'deaf', 'guild_id', 'is_speaker', 'mute', 'requested_to_speak_at',
-        'self_deaf', 'self_mute', 'self_stream', 'self_video', 'session_id', 'user_id')
+    __slots__ = (
+        '_cache_user', 'channel_id', 'deaf', 'guild_id', 'is_speaker', 'mute', 'requested_to_speak_at', 'self_deaf',
+        'self_mute', 'self_stream', 'self_video', 'session_id', 'user_id'
+    )
     
     def __new__(cls, data, guild_id):
         """

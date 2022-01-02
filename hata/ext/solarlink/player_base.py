@@ -49,8 +49,7 @@ class SolarPlayerBase:
     - ``.get_bands``.
     
     """
-    __slots__ = ('_forward_data', '_position', '_position_update', 'channel_id', 'guild_id',
-        'node',)
+    __slots__ = ('_forward_data', '_position', '_position_update', 'channel_id', 'guild_id', 'node',)
     
     def __new__(cls, node, guild_id, channel_id):
         """

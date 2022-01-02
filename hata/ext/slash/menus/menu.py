@@ -45,6 +45,7 @@ class ComponentSourceIdentityHasher:
         The stored component by the hasher.
     """
     __slots__ = ('component', )
+    
     def __init__(self, component):
         """
         Creates a new ``ComponentSourceIdentityHasher`` with the given parameters.
@@ -84,6 +85,7 @@ class ComponentAttributeDescriptor:
         The attribute's name.
     """
     __slots__ = ('_debugger', '_is_collection', '_supported_types', '_name')
+    
     def __new__(cls, name, supported_types, debugger, is_collection):
         """
         Creates a new ``ComponentAttributeDescriptor`` with the given parameters.
@@ -352,10 +354,11 @@ class ComponentDescriptor(ComponentDescriptorState):
     _identifier_counter : `int`
         Identifier counter for caching.
     """
+    __slots__ = ('_identifier',)
+    
     _identifier_counter = 0
     
     
-    __slots__ = ('_identifier',)
     def __new__(cls, source, sub_components):
         """
         Creates a new ``ComponentDescriptor`` from the given component.
@@ -1432,8 +1435,10 @@ class Menu(metaclass=MenuType):
     _menu_structure : ``MenuStructure``
         Factorized methods added by the user used by the menu itself.
     """
-    __slots__ = ('_allowed_mentions', '_canceller', '_component_proxy_cache', '_gui_state', '_timeouter',
-        '_tracked_changes', 'channel', 'client', 'message', '_components',)
+    __slots__ = (
+        '_allowed_mentions', '_canceller', '_component_proxy_cache', '_gui_state', '_timeouter', '_tracked_changes',
+        'channel', 'client', 'message', '_components',
+    )
     
     async def __new__(cls, client, target, *args, **kwargs):
         """

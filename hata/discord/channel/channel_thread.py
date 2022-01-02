@@ -83,8 +83,10 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
     REPRESENTED_TYPES : `tuple` = (`10`, `11`, `12`,)
         The type values which ``ChannelThread`` might represent.
     """
-    __slots__ = ('archived', 'archived_at', 'auto_archive_after', 'invitable', 'open', 'owner_id', 'slowmode',
-        'thread_users', 'type')
+    __slots__ = (
+        'archived', 'archived_at', 'auto_archive_after', 'invitable', 'open', 'owner_id', 'slowmode', 'thread_users',
+        'type'
+    )
     
     DEFAULT_TYPE = CHANNEL_TYPES.guild_thread_private
     ORDER_GROUP = CHANNEL_TYPES.thread

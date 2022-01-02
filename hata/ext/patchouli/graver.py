@@ -152,6 +152,7 @@ class Grave:
         +-------------------------------+-------+
     """
     __slots__ = ('content', 'type', )
+    
     def __init__(self, content, type_):
         """
         Creates a new ``Grave`` from the given parameters.
@@ -511,8 +512,10 @@ class GravedAttributeDescription:
     
     def __repr__(self):
         """Returns the graved description's representation."""
-        return (f'<{self.__class__.__name__} name={self.name!r}, separator={self.separator!r}, content='
-            f'{graved_to_source_text(self.content)!r}>')
+        return (
+            f'<{self.__class__.__name__} name={self.name!r}, separator={self.separator!r}, content='
+            f'{graved_to_source_text(self.content)!r}>'
+        )
 
 
 class GravedCodeBlock:
@@ -527,6 +530,7 @@ class GravedCodeBlock:
         The lines of the code-block
     """
     __slots__ = ('language', 'lines', )
+    
     def __new__(cls, parent, path):
         """
         Creates a new graved code block..
@@ -590,6 +594,7 @@ class GravedTable:
         The size of the table.
     """
     __slots__ = ('array', 'size', )
+    
     def __new__(cls, parent, path):
         """
         Creates a new graved table instance.

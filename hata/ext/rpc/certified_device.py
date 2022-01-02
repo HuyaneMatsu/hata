@@ -41,8 +41,10 @@ class CertifiedDevice:
     vendor : ``Vendor``
         The hardware's vendor.
     """
-    __slots__ = ('automatic_gain_control', 'echo_cancellation', 'hardware_mute', 'id', 'model', 'noise_suppression',
-        'related', 'type', 'vendor')
+    __slots__ = (
+        'automatic_gain_control', 'echo_cancellation', 'hardware_mute', 'id', 'model', 'noise_suppression', 'related',
+        'type', 'vendor'
+    )
     
     def __new__(cls, type_, id_, vendor, model, related, *, echo_cancellation=False, noise_suppression=False,
             automatic_gain_control=False, hardware_mute=False):

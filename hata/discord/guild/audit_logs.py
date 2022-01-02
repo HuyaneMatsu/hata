@@ -174,8 +174,10 @@ class AuditLogIterator:
         A dictionary what contains the mentioned webhook by the audit log's entries. They keys are the `id`-s of the
         webhooks, meanwhile the values are the values themselves.
     """
-    __slots__ = ('_data', '_index', 'client', 'entries', 'guild', 'integrations', 'scheduled_events', 'threads',
-        'users', 'webhooks')
+    __slots__ = (
+        '_data', '_index', 'client', 'entries', 'guild', 'integrations', 'scheduled_events', 'threads', 'users',
+        'webhooks'
+    )
     
     async def __new__(cls, client, guild, user=None, event=None):
         """

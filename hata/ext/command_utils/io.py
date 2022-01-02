@@ -39,8 +39,10 @@ class ChannelOutputStream:
     _transfer_task : `None`, ``Task``
         Transfer task set meanwhile data is transferred to ``._channel``.
     """
-    __slots__ = ('_channel', '_chunk_size', '_client', '_close_waiter', '_closed', '_chunks', '_last_chunk',
-        '_last_message', '_sanitize', '_transfer_task')
+    __slots__ = (
+        '_channel', '_chunk_size', '_client', '_close_waiter', '_closed', '_chunks', '_last_chunk', '_last_message',
+        '_sanitize', '_transfer_task'
+    )
     
     def __init__(self, client, channel, chunk_size, sanitize):
         """
@@ -344,8 +346,9 @@ class ChannelInputStream:
         
         If cancelled or marked by done or any other methods, the payload reader will not be cancelled.
     """
-    __slots__ = ('_channel', '_check', '_client', '_close_waiter', '_closed', '_chunks', '_payload_reader',
-        '_payload_waiter')
+    __slots__ = (
+        '_channel', '_check', '_client', '_close_waiter', '_closed', '_chunks', '_payload_reader', '_payload_waiter'
+    )
     
     def __init__(self, client, channel, check):
         """

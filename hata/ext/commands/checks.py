@@ -503,6 +503,7 @@ class _or_op_check(_check_base):
         An async callable what will be called when the check fails.
     """
     __slots__ = ('checks', )
+    
     def __new__(cls, check_1, check_2):
         """
         Creates a new or-ed check.
@@ -659,6 +660,7 @@ class _and_op_check(_check_base):
         An async callable what will be called when the check fails.
     """
     __slots__ = ('checks', )
+    
     def __new__(cls, check_1, check_2):
         """
         Creates a new and-ed check.
@@ -814,6 +816,7 @@ class has_role(_check_base):
         The role, what the user should have.
     """
     __slots__ = ('role', )
+    
     def __new__(cls, role, handler=None):
         """
         Creates a check, what will validate whether the a received message of a client passes the given condition.
@@ -931,6 +934,7 @@ class has_any_role(_check_base):
         The roles from what the user should have at least 1.
     """
     __slots__ = ('roles', )
+    
     def __new__(cls, roles, handler=None):
         """
         Creates a check, what will validate whether the a received message of a client passes the given condition.
@@ -1309,6 +1313,7 @@ class has_permissions(_check_base):
         The permission what the message's author should have at message's channel.
     """
     __slots__ = ('permissions', )
+    
     def __new__(cls, permissions, handler=None):
         """
         Creates a check, what will validate whether the a received message of a client passes the given condition.
@@ -1424,6 +1429,7 @@ class has_guild_permissions(_check_base):
         The permission what the message's author should have at message's guild.
     """
     __slots__ = ('permissions', )
+    
     def __new__(cls, permissions, handler=None):
         """
         Creates a check, what will validate whether the a received message of a client passes the given condition.
@@ -1504,6 +1510,7 @@ class owner_or_has_guild_permissions(has_permissions):
         The permission what the message's author should have at message's guild.
     """
     __slots__ = ('permissions', )
+    
     async def __call__(self, client, message):
         """
         Calls the check to validate whether it passes with the given conditions.
@@ -1549,6 +1556,7 @@ class client_has_permissions(_check_base):
         The permission what the client should have at message's channel.
     """
     __slots__ = ('permissions', )
+    
     def __new__(cls, permissions, handler=None):
         """
         Creates a check, what will validate whether the a received message of a client passes the given condition.
@@ -1624,6 +1632,7 @@ class client_has_guild_permissions(_check_base):
         The permission what the client should have at message's guild.
     """
     __slots__ = ('permissions', )
+    
     def __new__(cls, permissions, handler=None):
         """
         Creates a check, what will validate whether the a received message of a client passes the given condition.
@@ -1703,6 +1712,7 @@ class is_guild(_check_base):
         The respective guild's id.
     """
     __slots__ = ('guild_id', )
+    
     def __new__(cls, guild, handler=None):
         """
         Creates a check, what will validate whether the a received message of a client passes the given condition.
@@ -1784,6 +1794,7 @@ class is_any_guild(_check_base):
         The respective guilds' ids.
     """
     __slots__ = ('guild_ids', )
+    
     def __new__(cls, guilds, handler=None):
         """
         Creates a check, what will validate whether the a received message of a client passes the given condition.
@@ -2458,6 +2469,7 @@ class is_in_category(_check_base):
         The respective category's id.
     """
     __slots__ = ('category_id', )
+    
     def __new__(cls, category, handler=None):
         """
         Creates a check, what will validate whether the a received message of a client passes the given condition.
@@ -2552,6 +2564,7 @@ class is_in_any_category(_check_base):
         The respective category's id.
     """
     __slots__ = ('category_ids', )
+    
     def __new__(cls, categories, handler=None):
         """
         Creates a check, what will validate whether the a received message of a client passes the given condition.

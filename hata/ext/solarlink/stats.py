@@ -45,9 +45,11 @@ class Stats:
     uptime : `float`
         How long the node has been running for in seconds.
     """
-    __slots__ = ('_total_penalty', 'cpu_cores', 'cpu_lavalink_load', 'cpu_system_load', 'frame_deficit', 'frame_nulled',
+    __slots__ = (
+        '_total_penalty', 'cpu_cores', 'cpu_lavalink_load', 'cpu_system_load', 'frame_deficit', 'frame_nulled',
         'frame_sent', 'memory_allocated', 'memory_free', 'memory_reservable', 'memory_used', 'player_count',
-        'playing_player_count', 'uptime')
+        'playing_player_count', 'uptime'
+    )
     
     def __init__(self, data):
         """

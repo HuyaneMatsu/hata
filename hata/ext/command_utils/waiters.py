@@ -1,5 +1,7 @@
-__all__ = ('ReactionAddWaitfor', 'ReactionDeleteWaitfor', 'MessageCreateWaitfor', 'WaitAndContinue',
-    'wait_for_message', 'wait_for_reaction')
+__all__ = (
+    'ReactionAddWaitfor', 'ReactionDeleteWaitfor', 'MessageCreateWaitfor', 'WaitAndContinue',
+    'wait_for_message', 'wait_for_reaction'
+)
 
 from scarletio import Future, Task
 

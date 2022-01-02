@@ -1,6 +1,8 @@
-__all__ = ('AttributeUnitBase', 'ClassAttributeUnit', 'FolderedUnit', 'FunctionUnit', 'InstanceAttributeUnit',
+__all__ = (
+    'AttributeUnitBase', 'ClassAttributeUnit', 'FolderedUnit', 'FunctionUnit', 'InstanceAttributeUnit',
     'MAPPED_OBJECTS', 'ModuleUnit', 'ObjectedUnitBase', 'PropertyUnit', 'TypeUnit', 'UnitBase', 'map_module',
-    'search_paths')
+    'search_paths'
+)
 
 import re, sys, warnings
 from difflib import get_close_matches
@@ -919,8 +921,10 @@ class FolderedUnit(ObjectedUnitBase):
     
     def __repr__(self):
         """Returns the foldered unit's representation."""
-        return (f'<{self.__class__.__name__} name={self.name!r}, path={self.path!s}, reference count='
-            f'{len(self.references)!r}>')
+        return (
+            f'<{self.__class__.__name__} name={self.name!r}, path={self.path!s}, reference count='
+            f'{len(self.references)!r}>'
+        )
 
 
 class TypeUnit(FolderedUnit):

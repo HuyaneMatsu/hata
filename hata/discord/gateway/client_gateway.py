@@ -95,8 +95,10 @@ class DiscordGateway:
     websocket : `None`, `WebSocketClient`
         The websocket client of the gateway.
     """
-    __slots__ = ('_buffer', '_decompressor', 'client', 'kokoro', 'rate_limit_handler', 'sequence', 'session_id',
-        'shard_id', 'websocket')
+    __slots__ = (
+        '_buffer', '_decompressor', 'client', 'kokoro', 'rate_limit_handler', 'sequence', 'session_id', 'shard_id',
+        'websocket',
+    )
 
     
     def __init__(self, client, shard_id=0):

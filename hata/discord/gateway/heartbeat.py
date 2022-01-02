@@ -47,8 +47,10 @@ class Kokoro:
     DEFAULT_LATENCY : `float` = `9999.0`
         The default latency of kokoro. Better than using `inf`.
     """
-    __slots__ = ('beat_task', 'beat_waiter', 'beater', 'gateway', 'interval', 'last_answer', 'last_send', 'latency',
-        'running', 'should_beat', 'task', 'ws_waiter')
+    __slots__ = (
+        'beat_task', 'beat_waiter', 'beater', 'gateway', 'interval', 'last_answer', 'last_send', 'latency', 'running',
+        'should_beat', 'task', 'ws_waiter'
+    )
     
     DEFAULT_LATENCY = 9999.0
     

@@ -58,9 +58,10 @@ class ScheduledEvent(DiscordEntity):
     -----
     Scheduled event instances support weakreferencing.
     """
-    __slots__ = ('__weakref__', 'channel_id', 'creator', 'description', 'end', 'entity_id', 'entity_metadata',
-        'entity_type', 'guild_id', 'name', 'privacy_level', 'send_start_notification', 'sku_ids', 'start', 'status',
-        'user_count' )
+    __slots__ = (
+        '__weakref__', 'channel_id', 'creator', 'description', 'end', 'entity_id', 'entity_metadata', 'entity_type',
+        'guild_id', 'name', 'privacy_level', 'send_start_notification', 'sku_ids', 'start', 'status', 'user_count'
+    )
     
     image = IconSlot('image', 'image', None, None)
     

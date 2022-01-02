@@ -122,11 +122,13 @@ class VoiceClient:
         Whether the client is showed by Discord as `speaking`, then this attribute should is set as `1`. Can be
         modified, with the ``.set_speaking``, however it is always adjusted to the voice client's current playing state.
     """
-    __slots__ = ('_audio_port', '_audio_source', '_audio_sources', '_audio_streams', '_encoder', '_endpoint',
-        '_endpoint_ip', '_handshake_complete', '_ip', '_port', '_pref_volume', '_protocol', '_reconnecting',
-        '_secret_box', '_sequence', '_session_id', '_set_speaking_task', '_socket', '_timestamp', '_token',
-        '_transport', '_video_source', '_video_sources', 'call_after', 'channel_id', 'client', 'connected', 'gateway',
-        'guild_id', 'lock', 'player', 'queue', 'reader', 'region', 'speaking',)
+    __slots__ = (
+        '_audio_port', '_audio_source', '_audio_sources', '_audio_streams', '_encoder', '_endpoint', '_endpoint_ip',
+        '_handshake_complete', '_ip', '_port', '_pref_volume', '_protocol', '_reconnecting', '_secret_box',
+        '_sequence', '_session_id', '_set_speaking_task', '_socket', '_timestamp', '_token', '_transport',
+        '_video_source', '_video_sources', 'call_after', 'channel_id', 'client', 'connected', 'gateway', 'guild_id',
+        'lock', 'player', 'queue', 'reader', 'region', 'speaking'
+    )
     
     def __new__(cls, client, guild_id, channel_id):
         """

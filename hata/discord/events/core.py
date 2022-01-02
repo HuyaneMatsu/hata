@@ -352,8 +352,10 @@ class ParserSetting:
     client_count : `int`
         How much running clients expect the respective parser to call their events. Used in `sc` - `mc` optimizations.
     """
-    __slots__ = ('options', 'parser_cal_sc',  'parser_opt_sc', 'parser_cal_mc', 'parser_opt_mc', 'mention_count',
-        'client_count',)
+    __slots__ = (
+        'options', 'parser_cal_sc',  'parser_opt_sc', 'parser_cal_mc', 'parser_opt_mc', 'mention_count', 'client_count'
+    )
+    
     def __new__(cls, names, parser_cal_sc, parser_cal_mc, parser_opt_sc, parser_opt_mc):
         """
         Creates a new parser defaults object with the given name and with the given events.

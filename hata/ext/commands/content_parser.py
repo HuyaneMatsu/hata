@@ -1257,8 +1257,10 @@ class ConverterSetting:
     uses_flags : `bool`
         Whether the converter processes any flags.
     """
-    __slots__ = ('all_flags', 'alternative_type_name', 'alternative_types', 'converter', 'default_flags',
-        'default_type', 'uses_flags')
+    __slots__ = (
+        'all_flags', 'alternative_type_name', 'alternative_types', 'converter', 'default_flags', 'default_type',
+        'uses_flags'
+    )
     
     def __new__(cls, converter, uses_flags, default_flags, all_flags, alternative_type_name, default_type,
             alternative_types):
@@ -3206,6 +3208,7 @@ class ContentParser(CommandContentParser):
         Whether the ``ContentParser`` should act like a method descriptor.
     """
     __slots__ = ('_func', '_handler', '_is_method',)
+    
     def __new__(cls, func=None, handler=None, is_method=False, separator=None):
         """
         Parameters
@@ -3517,6 +3520,7 @@ class ContentParserMethod(MethodLike):
         The parent content parser, what was called as a method.
     """
     __slots__ = ('__self__', '_content_parser', )
+    
     __reserved_argcount__ = 2
     
     def __new__(cls, content_parser, obj):

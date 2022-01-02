@@ -25,6 +25,7 @@ class MessageInteraction(DiscordEntity):
         Who invoked the interaction.
     """
     __slots__ = ('name', 'type', 'user')
+    
     def __new__(cls, data):
         """
         Creates a new ``MessageInteraction`` from the received data.

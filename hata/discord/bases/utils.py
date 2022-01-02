@@ -1,6 +1,8 @@
-﻿__all__ = ('id_sort_key', 'instance_or_id_to_instance', 'instance_or_id_to_snowflake',
+﻿__all__ = (
+    'id_sort_key', 'instance_or_id_to_instance', 'instance_or_id_to_snowflake',
     'iterable_of_instance_or_id_to_instances', 'iterable_of_instance_or_id_to_snowflakes', 'maybe_snowflake',
-    'maybe_snowflake_pair', 'maybe_snowflake_token_pair')
+    'maybe_snowflake_pair', 'maybe_snowflake_token_pair'
+)
 
 
 def id_sort_key(entity):

@@ -1,5 +1,7 @@
-__all__ = ('create_partial_emoji_data', 'create_partial_emoji_from_data', 'create_unicode_emoji',
-    'parse_custom_emojis', 'parse_emoji', 'parse_reaction')
+__all__ = (
+    'create_partial_emoji_data', 'create_partial_emoji_from_data', 'create_unicode_emoji', 'parse_custom_emojis',
+    'parse_emoji', 'parse_reaction'
+)
 
 import warnings
 

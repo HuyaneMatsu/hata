@@ -1,4 +1,4 @@
-__all__ = ('create_partial_guild_from_data', 'create_partial_guild_from_id' )
+__all__ = ('create_partial_guild_from_data', 'create_partial_guild_from_id')
 
 from scarletio import export
 

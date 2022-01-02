@@ -111,6 +111,7 @@ class ColorGetter:
         +-------------------------------+-------+
     """
     __slots__ = ('getter', 'type',)
+    
     def __new__(cls, color):
         """
         Creates a new ``ColorGetter`` with the given parameter.

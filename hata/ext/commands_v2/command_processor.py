@@ -191,10 +191,12 @@ class CommandProcessor(EventWaitforBase):
     ``CommandProcessor`` supports weakreferencing.
     """
     
-    __slots__ = ('__weakref__', '_category_name_rule', '_command_name_rule', '_default_category',
-        '_error_handlers', '_mention_prefix_enabled', '_precheck', '_prefix_getter', '_prefix_ignore_case',
-        '_prefix_parser', '_prefix_raw', '_self_reference', 'category_name_to_category', '_unknown_command',
-        'categories', 'command_name_to_command', 'commands')
+    __slots__ = (
+        '__weakref__', '_category_name_rule', '_command_name_rule', '_default_category', '_error_handlers',
+        '_mention_prefix_enabled', '_precheck', '_prefix_getter', '_prefix_ignore_case', '_prefix_parser',
+        '_prefix_raw', '_self_reference', 'category_name_to_category', '_unknown_command', 'categories',
+        'command_name_to_command', 'commands'
+    )
     
     __event_name__ = 'message_create'
     SUPPORTED_TYPES = (Command, )

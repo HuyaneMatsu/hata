@@ -41,8 +41,10 @@ Slasher = include('Slasher')
 
 # Routers
 
-SLASH_COMMAND_PARAMETER_NAMES = ('command', 'name', 'description', 'show_for_invoking_user_only', 'is_global', 'guild',
-    'is_default', 'delete_on_unload', 'allow_by_default', 'target')
+SLASH_COMMAND_PARAMETER_NAMES = (
+    'command', 'name', 'description', 'show_for_invoking_user_only', 'is_global', 'guild', 'is_default',
+    'delete_on_unload', 'allow_by_default', 'target'
+)
 
 SLASH_COMMAND_NAME_NAME = 'name'
 SLASH_COMMAND_COMMAND_NAME = 'command'
@@ -684,10 +686,12 @@ class SlasherApplicationCommand:
     -----
     ``SlasherApplicationCommand``-s are weakreferable.
     """
-    __slots__ = ('__weakref__', '_auto_completers', '_command', '_exception_handlers', '_parent_reference',
+    __slots__ = (
+        '__weakref__', '_auto_completers', '_command', '_exception_handlers', '_parent_reference',
         '_permission_overwrites', '_registered_application_command_ids', '_schema', '_self_reference', '_sub_commands',
         '_unloading_behaviour', 'allow_by_default', 'description', 'guild_ids', 'is_default', 'is_global', 'name',
-        'target')
+        'target'
+    )
     
     def _register_guild_and_application_command_id(self, guild_id, application_command_id):
         """
@@ -1914,9 +1918,11 @@ class SlasherApplicationCommandFunction:
     show_for_invoking_user_only : `bool`
         Whether the response message should only be shown for the invoker user.
     """
-    __slots__ = ('__weakref__', '_auto_completers', '_command', '_exception_handlers', '_parameter_converters',
+    __slots__ = (
+        '__weakref__', '_auto_completers', '_command', '_exception_handlers', '_parameter_converters',
         '_parent_reference', '_self_reference', 'category', 'description', 'is_default', 'name',
-        'show_for_invoking_user_only')
+        'show_for_invoking_user_only'
+    )
     
     def __new__(cls, command, parameter_converters, name, description, show_for_invoking_user_only, is_default):
         """
@@ -2373,8 +2379,10 @@ class SlasherApplicationCommandCategory:
     name : `str`
         The name of the slash sub-category.
     """
-    __slots__ = ('__weakref__', '_auto_completers', '_deepness', '_exception_handlers', '_self_reference',
-        '_sub_commands', '_parent_reference', 'description', 'is_default', 'name')
+    __slots__ = (
+        '__weakref__', '_auto_completers', '_deepness', '_exception_handlers', '_self_reference', '_sub_commands',
+        '_parent_reference', 'description', 'is_default', 'name'
+    )
     
     def __new__(cls, slasher_application_command, deepness):
         """
@@ -2856,7 +2864,9 @@ class SlasherApplicationCommandParameterAutoCompleter:
     deepness : `int`
         How deep the auto completer was created. Deeper auto completers always overwrite higher ones.
     """
-    __slots__ = ('_command', '_exception_handlers', '_parameter_converters', '_parent_reference', 'deepness', 'name_pairs')
+    __slots__ = (
+        '_command', '_exception_handlers', '_parameter_converters', '_parent_reference', 'deepness', 'name_pairs'
+    )
     
     def __new__(cls, function, parameter_names, deepness, parent):
         """

@@ -38,6 +38,7 @@ class OA2Access:
     TOKEN_TYPE = 'Bearer'
     
     __slots__ = ('access_token', 'created_at', 'expires_in', 'redirect_url', 'refresh_token', 'scopes',)
+    
     def __init__(self, data, redirect_url):
         """
         Creates an ``OA2Access``.

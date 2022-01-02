@@ -50,8 +50,10 @@ class SolarPlayer(SolarPlayerBase):
     queue : `list` of ``ConfiguredTrack``
         The queue of the tracks to play.
     """
-    __slots__ = ('_bands', '_current_track', '_paused', '_paused_track', '_repeat_current', '_repeat_queue',
-        '_shuffle', '_volume', 'queue')
+    __slots__ = (
+        '_bands', '_current_track', '_paused', '_paused_track', '_repeat_current', '_repeat_queue', '_shuffle',
+        '_volume', 'queue'
+    )
     
     @copy_docs(SolarPlayerBase.__new__)
     def __new__(cls, node, guild_id, channel_id):

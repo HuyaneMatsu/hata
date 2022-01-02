@@ -199,6 +199,7 @@ class CommandCheckWrapper(CommandWrapper):
         Check to add to the respective command.
     """
     __slots__ = ('_check',)
+    
     def __new__(cls, check_type, *args, **kwargs):
         """
         Creates a partial function to wrap a command.

@@ -36,6 +36,7 @@ class RateLimitProxy:
         The proxy's rate limit group to pull additional information.
     """
     __slots__ = ('_handler', '_key', 'client', 'group',)
+    
     def __new__(cls, client, group, limiter=None, keep_alive=False):
         """
         Creates a new rate limit proxy.
@@ -431,8 +432,14 @@ class RateLimitProxy:
     class _wait_till_limits_expire_callback:
         """
         `WeakReferer` callback used at ``.wait_till_limits_expire`` for waking it up.
+        
+        Attributes
+        ----------
+        future : ``Future``
+            The future to set it's result of.
         """
-        __slots__ = ('future')
+        __slots__ = ('future',)
+        
         def __init__(self, future):
             self.future = future
         

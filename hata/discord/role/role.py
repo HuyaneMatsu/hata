@@ -73,8 +73,10 @@ class Role(DiscordEntity, immortal=True):
         
         Mutually exclusive with ``.icon_hash`` and ``.icon_type``.
     """
-    __slots__ = ('color', 'guild_id', 'manager_id', 'manager_type', 'mentionable', 'name', 'permissions', 'position',
-        'separated', 'unicode_emoji')
+    __slots__ = (
+        'color', 'guild_id', 'manager_id', 'manager_type', 'mentionable', 'name', 'permissions', 'position',
+        'separated', 'unicode_emoji'
+    )
     
     icon = IconSlot(
         'icon',

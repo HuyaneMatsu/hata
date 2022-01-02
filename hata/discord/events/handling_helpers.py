@@ -2011,7 +2011,9 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         also overwrite `call_waitfors` method as well.
     """
     __slots__ = ('waitfors', )
+    
     __event_name__ = None
+    
     call_waitfors = None
     
     def append(self, target, waiter):
@@ -2287,7 +2289,9 @@ del EventWaitforMeta__new__
 
 class ChunkWaiter(EventHandlerBase):
     __slots__ = ('waiters',)
+    
     __event_name__ = 'guild_user_chunk'
+    
     def __init__(self):
         self.waiters = {}
     

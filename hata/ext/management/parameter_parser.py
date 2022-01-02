@@ -690,8 +690,10 @@ class CommandLineParameter:
     name : `str`
         The parameter's name.
     """
-    __slots__ = ('default_value', 'expected_type_identifier', 'has_default', 'modifier', 'keyword', 'keyword_only',
-        'multi', 'name')
+    __slots__ = (
+        'default_value', 'expected_type_identifier', 'has_default', 'modifier', 'keyword', 'keyword_only', 'multi',
+        'name'
+    )
     
     def __new__(cls, name, *, default=DEFAULT_DEFAULT_VALUE, keyword=None, multi=False, expected_type=None,
             modifier=False):
@@ -990,8 +992,9 @@ class CommandLineCommandCategory:
     name : `None`, `str`
         The sub command category's name.
     """
-    __slots__ = ('__weakref__', '_command_categories', '_command_function', '_parent_reference', '_self_reference',
-        'name')
+    __slots__ = (
+        '__weakref__', '_command_categories', '_command_function', '_parent_reference', '_self_reference', 'name'
+    )
     
     def __new__(cls, parent, name):
         """
@@ -1146,8 +1149,10 @@ class CommandLineCommandFunction:
     _parameters_positional_only : `None`, `list` of ``CommandLineParameter``
         Positional only parameters.
     """
-    __slots__ = ('_function', '_parent_reference', '_parameters_keyword_only', '_parameters_modifier',
-        '_parameters_positional_only',)
+    __slots__ = (
+        '_function', '_parent_reference', '_parameters_keyword_only', '_parameters_modifier',
+        '_parameters_positional_only'
+    )
     
     def __new__(cls, parent, function):
         """

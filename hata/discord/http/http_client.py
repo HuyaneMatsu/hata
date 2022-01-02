@@ -109,8 +109,10 @@ class DiscordHTTPClient(HTTPClient):
         Container to store the connector(s) for Discord http clients. One connector is used by each Discord http client
         running on the same loop.
     """
-    __slots__ = ('connector', 'cookie_jar', 'global_rate_limit_expires_at', 'handlers', 'headers', 'loop',
-        'proxy_auth', 'proxy_url',)
+    __slots__ = (
+        'connector', 'cookie_jar', 'global_rate_limit_expires_at', 'handlers', 'headers', 'loop', 'proxy_auth',
+        'proxy_url'
+    )
     
     CONNECTOR_REFERENCE_COUNTS = WeakKeyDictionary()
     

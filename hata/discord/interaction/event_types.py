@@ -1,7 +1,9 @@
-__all__ = ('ApplicationCommandAutocompleteInteraction', 'ApplicationCommandAutocompleteInteractionOption',
+__all__ = (
+    'ApplicationCommandAutocompleteInteraction', 'ApplicationCommandAutocompleteInteractionOption',
     'ApplicationCommandInteraction', 'ApplicationCommandInteractionOption', 'ComponentInteraction',
     'FormSubmitInteraction', 'FormSubmitInteractionOption', 'InteractionEvent', 'InteractionResponseContext',
-    'InteractionType')
+    'InteractionType'
+)
 
 
 import reprlib, warnings
@@ -67,8 +69,10 @@ class ApplicationCommandInteraction(DiscordEntity):
     target_id : `int`
         The interaction's target's identifier.
     """
-    __slots__ = ('name', 'options', 'resolved_attachments', 'resolved_channels', 'resolved_roles', 'resolved_messages',
-        'resolved_users', 'target_id',)
+    __slots__ = (
+        'name', 'options', 'resolved_attachments', 'resolved_channels', 'resolved_roles', 'resolved_messages',
+        'resolved_users', 'target_id'
+    )
     
     def __new__(cls, data, interaction_event):
         """
@@ -1679,8 +1683,10 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
     
     ˙˙InteractionEvent˙˙ instances are weakreferable.
     """
-    __slots__ = ('_cached_users', '_response_flag', 'application_id', 'channel_id', 'guild_id', 'guild_locale',
-        'interaction', 'locale', 'message', 'token', 'type', 'user', 'user_permissions')
+    __slots__ = (
+        '_cached_users', '_response_flag', 'application_id', 'channel_id', 'guild_id', 'guild_locale', 'interaction',
+        'locale', 'message', 'token', 'type', 'user', 'user_permissions'
+    )
     
     _USER_GUILD_CACHE = {}
     

@@ -59,6 +59,7 @@ class ContentParameterParserContextBase:
         The parsed regex.
     """
     __slots__ = ('_cache', '_parsed')
+    
     def __new__(cls, parsed):
         """
         Creates a new ``ContentParameterParserContext`` with the given match.
@@ -635,8 +636,10 @@ class ConverterSetting:
     uses_flags : `bool`
         Whether the converter processes any flags.
     """
-    __slots__ = ('all_flags', 'alternative_type_name', 'alternative_types', 'converter', 'default_flags',
-        'default_type', 'requires_part', 'uses_flags')
+    __slots__ = (
+        'all_flags', 'alternative_type_name', 'alternative_types', 'converter', 'default_flags', 'default_type',
+        'requires_part', 'uses_flags'
+    )
     
     def __new__(cls, converter, uses_flags, default_flags, all_flags, alternative_type_name, default_type,
             alternative_types, requires_part):
@@ -1869,8 +1872,10 @@ class ContentParserParameter:
     name : `str`
         The parameter's name.
     """
-    __slots__ = ('converter', 'default', 'description', 'detail', 'details', 'display_name', 'flags', 'has_default',
-        'index', 'is_args', 'is_keyword', 'is_kwargs', 'is_positional', 'is_rest', 'name')
+    __slots__ = (
+        'converter', 'default', 'description', 'detail', 'details', 'display_name', 'flags', 'has_default', 'index',
+        'is_args', 'is_keyword', 'is_kwargs', 'is_positional', 'is_rest', 'name'
+    )
     
     def __new__(cls, parameter, index):
         """
@@ -2568,6 +2573,7 @@ class ParameterParsingStateBase:
         The respective parameter.
     """
     __slots__ = ('content_parser_parameter', )
+    
     def __new__(cls, content_parser_parameter):
         """
         Creates a new ``ParameterParsingState`` from the given ``content_parser_parameter``.

@@ -63,8 +63,9 @@ class Emoji(DiscordEntity, immortal=True):
     - ``create_partial_emoji`` : A function to create an emoji object from partial emoji data.
     - ``parse_emoji`` : Parses a partial emoji object out from text.
     """
-    __slots__ = ('animated', 'available', 'guild_id', 'managed', 'name', 'require_colons', 'role_ids', 'unicode',
-        'user', )
+    __slots__ = (
+        'animated', 'available', 'guild_id', 'managed', 'name', 'require_colons', 'role_ids', 'unicode', 'user'
+    )
     
     _last_unicode_id = 0
     

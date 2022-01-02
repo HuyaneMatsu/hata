@@ -142,6 +142,7 @@ class ComponentInteractionWaiter:
         Executes the timeout feature on the waiter.
     """
     __slots__ = ('_check', '_finished', '_future', '_message', '_timeouter')
+    
     def __new__(cls, client, message, check, timeout):
         """
         Creates a new ``ComponentInteractionWaiter`` with the given parameters.
@@ -272,8 +273,9 @@ class ComponentInteractionIterator:
     timeout : `None`, `float`
         The timeout after `TimeoutError` should be raised if no sufficient event is received.
     """
-    __slots__ = ('_check', '_exception', '_finished', '_future', '_message', '_queue', '_timeouter', 'count',
-        'timeout')
+    __slots__ = (
+        '_check', '_exception', '_finished', '_future', '_message', '_queue', '_timeouter', 'count', 'timeout'
+    )
     
     def __new__(cls, client, message, check, timeout, count):
         """

@@ -35,8 +35,10 @@ class CommandContext(object):
     prefix : `str`
         The matched prefix or the client's prefix for the given respective message.
     """
-    __slots__ = ('client', 'command', 'command_category_trace', 'command_function', 'command_keyword_parameters',
-        'command_positional_parameters', 'content', 'message', 'parameters', 'prefix')
+    __slots__ = (
+        'client', 'command', 'command_category_trace', 'command_function', 'command_keyword_parameters',
+        'command_positional_parameters', 'content', 'message', 'parameters', 'prefix'
+    )
     
     def __new__(cls, client, message, prefix, content, command):
         """

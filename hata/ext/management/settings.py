@@ -1,3 +1,5 @@
+__all__ = ()
+
 from os import getcwd as get_current_working_directory, listdir as list_directory
 from os.path import exists, isdir as is_directory, isfile as is_file, join as join_paths
 

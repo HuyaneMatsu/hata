@@ -1,5 +1,7 @@
-__all__ = ('BotInfo', 'BotStats', 'BotVote', 'BotsQueryResult', 'BriefUserInfo', 'GuildVote', 'UserConnections',
-    'UserInfo', 'VoteBase')
+__all__ = (
+    'BotInfo', 'BotStats', 'BotVote', 'BotsQueryResult', 'BriefUserInfo', 'GuildVote', 'UserConnections', 'UserInfo',
+    'VoteBase'
+)
 
 from scarletio import copy_docs
 
@@ -81,10 +83,11 @@ class BotInfo(metaclass=Slotted):
     website_url : `None`, `str`
         The website url of the bot.
     """
-    __slots__ = ('banner_url', 'certified_at', 'discriminator', 'donate_bot_guild_id', 'featured_guild_ids',
-        'github_url', 'id', 'invite_url', 'long_description', 'name', 'owner_id', 'owner_ids', 'prefix',
-        'short_description', 'support_server_invite_url', 'tags', 'upvotes', 'upvotes_monthly', 'vanity_url',
-        'website_url')
+    __slots__ = (
+        'banner_url', 'certified_at', 'discriminator', 'donate_bot_guild_id', 'featured_guild_ids', 'github_url', 'id',
+        'invite_url', 'long_description', 'name', 'owner_id', 'owner_ids', 'prefix', 'short_description',
+        'support_server_invite_url', 'tags', 'upvotes', 'upvotes_monthly', 'vanity_url', 'website_url'
+    )
     
     avatar = IconSlot(
         'avatar',
@@ -285,8 +288,10 @@ class UserInfo(metaclass=Slotted):
     name : `str`
         The user's name.
     """
-    __slots__ = ('banner_url', 'bio', 'color', 'connections', 'discriminator', 'id', 'is_admin',
-        'is_certified_developer', 'is_moderator', 'is_supporter', 'is_website_moderator', 'name')
+    __slots__ = (
+        'banner_url', 'bio', 'color', 'connections', 'discriminator', 'id', 'is_admin', 'is_certified_developer',
+        'is_moderator', 'is_supporter', 'is_website_moderator', 'name'
+    )
 
     avatar = IconSlot(
         'avatar',

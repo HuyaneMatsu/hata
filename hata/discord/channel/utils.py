@@ -1,5 +1,6 @@
-__all__ = ('CHANNEL_TYPE_MAP', 'cr_pg_channel_object', 'create_partial_channel_from_data',
-    'create_partial_channel_from_id')
+__all__ = (
+    'CHANNEL_TYPE_MAP', 'cr_pg_channel_object', 'create_partial_channel_from_data', 'create_partial_channel_from_id'
+)
 
 from datetime import datetime
 

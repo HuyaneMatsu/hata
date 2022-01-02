@@ -10,6 +10,7 @@ from sqlalchemy.engine.strategies import DefaultEngineStrategy
 
 class KOKOROEngine:
     __slots__=('_engine', '_worker',)
+    
     def __init__(self, pool, dialect, u, single_worker=True, **kwargs):
         if single_worker:
             worker = ExecutorThread()
@@ -139,6 +140,7 @@ class AsyncConnection:
 
 class AsyncTransaction:
     __slots__ = ('_transaction', 'executor',)
+    
     def __init__(self, transaction, executor):
         self._transaction = transaction
         self.executor = executor
@@ -155,6 +157,7 @@ class AsyncTransaction:
 
 class AsyncResultProxyIterator:
     __slots__ = ('_result_proxy', 'executor',)
+    
     def __init__(self, result_proxy, executor):
         self._result_proxy = result_proxy
         self.executor = executor
@@ -171,6 +174,7 @@ class AsyncResultProxyIterator:
 
 class AsyncResultProxy:
     __slots__ = ('_result_proxy', 'executor',)
+    
     def __init__(self, result_proxy, executor):
         self._result_proxy = result_proxy
         self.executor = executor
@@ -231,6 +235,7 @@ class EngineTransactionContextManager:
 
 class ConnectionContextManager:
     __slots__ = ('result', 'task',)
+    
     def __init__(self, task):
         self.task = task
         self.result = None

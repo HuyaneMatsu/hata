@@ -646,6 +646,7 @@ class CheckHasRole(CheckHasRoleBase):
         The legend itself.
     """
     __slots__ = ('role', )
+    
     def __new__(cls, role):
         """
         Checks whether a respective condition passes.
@@ -1322,6 +1323,7 @@ class CheckIsGuild(CheckIsGuildBase):
         The respective guild's id.
     """
     __slots__ = ('guild_id', )
+    
     def __new__(cls, guild):
         """
         Checks whether a respective condition passes.
@@ -1370,6 +1372,7 @@ class CheckIsAnyGuild(CheckIsGuildBase):
         The respective guilds' identifiers.
     """
     __slots__ = ('guild_ids', )
+    
     def __new__(cls, *guilds):
         """
         Checks whether a respective condition passes.
@@ -1548,6 +1551,7 @@ class CheckIsChannel(CheckIsChannelBase):
         The respective channel's id.
     """
     __slots__ = ('channel_id', )
+    
     def __new__(cls, channel):
         """
         Checks whether a respective condition passes.
@@ -1592,6 +1596,7 @@ class CheckIsAnyChannel(CheckIsChannelBase):
         The respective channels' identifiers.
     """
     __slots__ = ('channel_ids', )
+    
     def __new__(cls, *channels):
         """
         Checks whether a respective condition passes.
@@ -1931,6 +1936,7 @@ class CheckIsCategory(CheckIsCategoryBase):
         The respective category's id.
     """
     __slots__ = ('category_id', )
+    
     def __new__(cls, category):
         """
         Checks whether a respective condition passes.

@@ -36,8 +36,9 @@ class RichVoiceState:
         
         Can be in range [0.0:2.0].
     """
-    __slots__ = ('audio_balance', 'deaf', 'is_speaker', 'mute', 'nick', 'self_deaf', 'self_mute', 'user',
-        'volume')
+    __slots__ = (
+        'audio_balance', 'deaf', 'is_speaker', 'mute', 'nick', 'self_deaf', 'self_mute', 'user', 'volume'
+    )
     
     def __repr__(self):
         """Returns the rich voice state's representation."""

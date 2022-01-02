@@ -1,5 +1,6 @@
-__all__ = ('AvailableDevice', 'ShortcutKey', 'VoiceSettings', 'VoiceSettingsMode', 'VoiceSettingsInput',
-    'VoiceSettingsOutput')
+__all__ = (
+    'AvailableDevice', 'ShortcutKey', 'VoiceSettings', 'VoiceSettingsMode', 'VoiceSettingsInput', 'VoiceSettingsOutput'
+)
 
 from ...discord.preconverters import preconvert_float, preconvert_int, preconvert_preinstanced_type, preconvert_str
 
@@ -905,8 +906,10 @@ class VoiceSettings:
     silence_warning : `bool`
         Whether silence warning notice is enabled.
     """
-    __slots__ = ('automatic_gain_control', 'deaf', 'echo_cancellation', 'input', 'mode', 'mute', 'noise_suppression',
-        'output', 'quality_of_service', 'silence_warning')
+    __slots__ = (
+        'automatic_gain_control', 'deaf', 'echo_cancellation', 'input', 'mode', 'mute', 'noise_suppression', 'output',
+        'quality_of_service', 'silence_warning'
+    )
     
     def __repr__(self):
         """Returns the voice setting's representation"""

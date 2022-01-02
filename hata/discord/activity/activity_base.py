@@ -1,5 +1,6 @@
-__all__ = ('ActivityAssets', 'ActivityBase', 'ActivityParty', 'ActivitySecrets', 'ActivityTimestamps',
-    'ACTIVITY_TYPES',)
+__all__ = (
+    'ActivityAssets', 'ActivityBase', 'ActivityParty', 'ActivitySecrets', 'ActivityTimestamps', 'ACTIVITY_TYPES'
+)
 
 from datetime import datetime
 

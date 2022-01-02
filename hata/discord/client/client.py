@@ -267,7 +267,8 @@ class Client(ClientUserPBase):
         '__dict__', '_additional_owner_ids', '_activity', '_gateway_requesting', '_gateway_time', '_gateway_url',
         '_gateway_max_concurrency', '_gateway_waiter', '_status', '_user_chunker_nonce', 'application', 'events',
         'gateway', 'guilds', 'http', 'intents', 'private_channels', 'ready_state', 'group_channels', 'relationships',
-        'running', 'secret', 'shard_count', 'token', 'voice_clients', )
+        'running', 'secret', 'shard_count', 'token', 'voice_clients'
+    )
     
     loop = KOKORO
     _next_auto_id = 1

@@ -26,8 +26,11 @@ class GuildDiscovery:
     sub_category_ids : `set` of `int`
         Guild Discovery sub-category id-s. Can be maximum 5.
     """
-    __slots__ = ('application_actioned', 'application_requested', 'emoji_discovery', 'guild', 'keywords',
-        'primary_category', 'sub_categories')
+    __slots__ = (
+        'application_actioned', 'application_requested', 'emoji_discovery', 'guild', 'keywords', 'primary_category',
+        'sub_categories'
+    )
+    
     def __init__(self, data, guild):
         """
         Creates a new ``GuildDiscovery`` from the requested data.

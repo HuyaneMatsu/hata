@@ -97,10 +97,12 @@ class Application(DiscordEntity, immortal=True):
     -----
     The instances of the class support weakreferencing.
     """
-    __slots__ = ('aliases', 'bot_public', 'bot_require_code_grant', 'custom_install_url', 'description', 'developers',
+    __slots__ = (
+        'aliases', 'bot_public', 'bot_require_code_grant', 'custom_install_url', 'description', 'developers',
         'eula_id', 'executables', 'flags', 'guild_id', 'hook', 'install_parameters', 'name', 'overlay',
         'overlay_compatibility_hook', 'owner', 'primary_sku_id', 'privacy_policy_url', 'publishers', 'rpc_origins',
-        'slug', 'summary', 'tags', 'terms_of_service_url', 'third_party_skus', 'verify_key')
+        'slug', 'summary', 'tags', 'terms_of_service_url', 'third_party_skus', 'verify_key'
+    )
     
     cover = IconSlot(
         'cover',

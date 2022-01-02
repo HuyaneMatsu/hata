@@ -61,8 +61,9 @@ class RPCClient:
         
         Set after connection. Defaults to `ZEROUSER`.
     """
-    __slots__ = ('_auto_nonce', '_connection_waiter', '_protocol', '_response_waiters', 'application_id', 'running',
-        'user')
+    __slots__ = (
+        '_auto_nonce', '_connection_waiter', '_protocol', '_response_waiters', 'application_id', 'running', 'user'
+    )
     
     def __new__(cls, application_id):
         """

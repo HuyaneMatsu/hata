@@ -14,8 +14,10 @@ from .utils import normalize_description, raw_name_to_display
 from .wrappers import CommandCheckWrapper, CommandWrapper
 
 
-COMMAND_PARAMETER_NAMES = ('command', 'name', 'description', 'aliases', 'category', 'checks', 'error_handlers',
-    'separator', 'assigner', 'hidden', 'hidden_if_checks_fail')
+COMMAND_PARAMETER_NAMES = (
+    'command', 'name', 'description', 'aliases', 'category', 'checks', 'error_handlers', 'separator', 'assigner',
+    'hidden', 'hidden_if_checks_fail'
+)
 
 COMMAND_NAME_NAME = 'name'
 COMMAND_COMMAND_NAME = 'command'
@@ -453,10 +455,12 @@ class Command:
     name : `str`
         The command's name. Always lower case.
     """
-    __slots__ = ('__weakref__', '_category_hint', '_category_reference', '_checks', '_command_categories',
-        '_command_function', '_command_processor_reference', '_error_handlers', '_self_reference', '_wrappers',
-        'aliases', 'command_category_name_to_command_category', 'description', 'display_name', 'hidden',
-        'hidden_if_checks_fail', 'name')
+    __slots__ = (
+        '__weakref__', '_category_hint', '_category_reference', '_checks', '_command_categories', '_command_function',
+        '_command_processor_reference', '_error_handlers', '_self_reference', '_wrappers', 'aliases',
+        'command_category_name_to_command_category', 'description', 'display_name', 'hidden', 'hidden_if_checks_fail',
+        'name'
+    )
     
     def _iter_checks(self):
         """
@@ -1273,6 +1277,7 @@ class CommandFunction:
         Content parser for the command.
     """
     __slots__ = ('_command_category_reference', '_content_parser', '_function', )
+    
     def __new__(cls, function, content_parser):
         """
         Creates a new ``CommandFunction`` with the given parameters.
@@ -1387,9 +1392,11 @@ class CommandCategory:
     name : `str`
         The command's name. Always lower case.
     """
-    __slots__ = ('__weakref__', '_command_categories', '_command_category_reference', '_command_function',
-        '_error_handlers', '_self_reference', '_wrappers', 'aliases', 'command_category_name_to_command_category',
-        'description', 'display_name', 'name',)
+    __slots__ = (
+        '__weakref__', '_command_categories', '_command_category_reference', '_command_function', '_error_handlers',
+        '_self_reference', '_wrappers', 'aliases', 'command_category_name_to_command_category', 'description',
+        'display_name', 'name'
+    )
     
     @classmethod
     def _from_command(cls, source_command):

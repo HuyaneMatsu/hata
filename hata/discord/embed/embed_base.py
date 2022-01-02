@@ -1,5 +1,7 @@
-__all__ = ('EXTRA_EMBED_TYPES', 'EmbedAuthor', 'EmbedBase', 'EmbedField', 'EmbedFooter', 'EmbedImage', 'EmbedProvider',
-    'EmbedThumbnail', 'EmbedVideo', )
+__all__ = (
+    'EXTRA_EMBED_TYPES', 'EmbedAuthor', 'EmbedBase', 'EmbedField', 'EmbedFooter', 'EmbedImage', 'EmbedProvider',
+    'EmbedThumbnail', 'EmbedVideo'
+)
 
 from datetime import datetime
 
@@ -608,7 +610,8 @@ class EmbedAuthor:
     url : `None`, `str`
         The url of the author.
     """
-    __slots__ = ('icon_url', 'name', 'proxy_icon_url', 'url',)
+    __slots__ = ('icon_url', 'name', 'proxy_icon_url', 'url')
+    
     def __init__(self, icon_url=None, name=None, url=None):
         """
         Creates an embed author with the given parameters.

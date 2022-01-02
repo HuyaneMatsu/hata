@@ -277,8 +277,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
     type : `int` = `3`
         The channel's Discord side type.
     """
-    __slots__ = ('users', # private channel related
-        'name', 'owner_id',) # group channel related
+    __slots__ = ('users', 'name', 'owner_id')
     
     icon = IconSlot('icon', 'icon', module_urls.channel_group_icon_url, module_urls.channel_group_icon_url_as)
     

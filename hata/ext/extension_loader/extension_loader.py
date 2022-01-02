@@ -361,11 +361,13 @@ class ExtensionLoader:
     _instance : `None`, ``ExtensionLoader``
         The already created instance of the ``ExtensionLoader`` if there is any.
     """
-    __slots__ = ('_default_entry_point', '_default_exit_point', '_default_variables', '_execute_counter',
-        '_extensions_by_name', )
+    __slots__ = (
+        '_default_entry_point', '_default_exit_point', '_default_variables', '_execute_counter', '_extensions_by_name'
+    )
     
     _instance = None
-    def __new__(cls,):
+    
+    def __new__(cls):
         """
         Creates an ``ExtensionLoader``. If the `ExtensionLoader` was instanced already, then returns that
         instead.

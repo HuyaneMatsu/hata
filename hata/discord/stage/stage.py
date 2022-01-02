@@ -37,8 +37,10 @@ class Stage(DiscordEntity):
     topic : `str`
         The topic of the stage. Can be empty string.
     """
-    __slots__ = ('__weakref__', 'channel', 'discoverable', 'guild', 'invite_code', 'privacy_level',
-        'scheduled_event_id', 'topic')
+    __slots__ = (
+        '__weakref__', 'channel', 'discoverable', 'guild', 'invite_code', 'privacy_level', 'scheduled_event_id',
+        'topic'
+    )
     
     def __new__(cls, data):
         """

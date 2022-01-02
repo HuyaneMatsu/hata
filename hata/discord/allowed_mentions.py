@@ -168,8 +168,9 @@ class AllowedMentionProxy:
     _allowed_users : `None`, `list` of ``UserBase``
         The enabled users by the proxy.
     """
-    __slots__ = ('_allow_everyone', '_allow_replied_user', '_allow_roles', '_allow_users', '_allowed_roles',
-        '_allowed_users')
+    __slots__ = (
+        '_allow_everyone', '_allow_replied_user', '_allow_roles', '_allow_users', '_allowed_roles', '_allowed_users'
+    )
     
     def __new__(cls, *allowed_mentions):
         """

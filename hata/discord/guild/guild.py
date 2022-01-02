@@ -1,7 +1,9 @@
-__all__ = ('COMMUNITY_FEATURES', 'EMOJI_UPDATE_DELETE', 'EMOJI_UPDATE_EDIT', 'EMOJI_UPDATE_CREATE',
-    'EMOJI_UPDATE_NONE', 'Guild', 'LARGE_GUILD_LIMIT', 'STICKER_UPDATE_DELETE', 'STICKER_UPDATE_EDIT',
-    'STICKER_UPDATE_CREATE', 'STICKER_UPDATE_NONE', 'VOICE_STATE_JOIN', 'VOICE_STATE_LEAVE', 'VOICE_STATE_NONE',
-    'VOICE_STATE_MOVE', 'VOICE_STATE_UPDATE')
+__all__ = (
+    'COMMUNITY_FEATURES', 'EMOJI_UPDATE_DELETE', 'EMOJI_UPDATE_EDIT', 'EMOJI_UPDATE_CREATE', 'EMOJI_UPDATE_NONE',
+    'Guild', 'LARGE_GUILD_LIMIT', 'STICKER_UPDATE_DELETE', 'STICKER_UPDATE_EDIT', 'STICKER_UPDATE_CREATE',
+    'STICKER_UPDATE_NONE', 'VOICE_STATE_JOIN', 'VOICE_STATE_LEAVE', 'VOICE_STATE_NONE', 'VOICE_STATE_MOVE',
+    'VOICE_STATE_UPDATE'
+)
 
 from re import I as re_ignore_case, compile as re_compile, escape as re_escape
 
@@ -230,14 +232,16 @@ class Guild(DiscordEntity, immortal=True):
     - ``.widget_channel_id``
     - ``.widget_enabled``
     """
-    __slots__ = ('_boosters', '_embedded_activity_states', '_permission_cache', 'afk_channel_id', 'afk_timeout',
+    __slots__ = (
+        '_boosters', '_embedded_activity_states', '_permission_cache', 'afk_channel_id', 'afk_timeout',
         'approximate_online_count', 'approximate_user_count', 'available', 'boost_progress_bar_enabled',
         'booster_count', 'channels', 'clients', 'content_filter', 'description', 'emojis', 'features', 'is_large',
         'max_presences', 'max_users', 'max_video_channel_users', 'message_notification', 'mfa', 'name', 'nsfw_level',
         'owner_id', 'preferred_locale', 'premium_tier', 'public_updates_channel_id', 'region', 'roles', 'roles',
         'rules_channel_id', 'scheduled_events', 'stages', 'stickers', 'system_channel_flags', 'system_channel_id',
         'threads', 'user_count', 'users', 'vanity_code', 'verification_level', 'voice_states', 'widget_channel_id',
-        'widget_enabled')
+        'widget_enabled'
+    )
     
     banner = IconSlot(
         'banner',

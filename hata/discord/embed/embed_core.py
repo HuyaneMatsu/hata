@@ -47,8 +47,10 @@ class EmbedCore(EmbedBase):
     video : `None`, `EmbedVideo`
         Video information.
     """
-    __slots__ = ('author', 'color', 'description', 'fields', 'footer', 'image', 'provider', 'thumbnail', 'timestamp',
-        'title', 'type', 'url', 'video',)
+    __slots__ = (
+        'author', 'color', 'description', 'fields', 'footer', 'image', 'provider', 'thumbnail', 'timestamp', 'title',
+        'type', 'url', 'video'
+    )
     
     def __init__(self, title=None, description=None, color=None, url=None, timestamp=None, type_='rich'):
         """

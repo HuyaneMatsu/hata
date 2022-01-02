@@ -81,9 +81,11 @@ class Invite(DiscordEntity, immortal=True):
     uses : `None`, `int`
         The amount how much times the invite was used. If not included, set as `None`.
     """
-    __slots__ = ('approximate_user_count', 'approximate_online_count', 'channel', 'code', 'created_at', 'guild',
-        'inviter', 'max_age', 'max_uses', 'partial', 'target_application', 'stage', 'target_type', 'target_user',
-        'temporary', 'uses',)
+    __slots__ = (
+        'approximate_user_count', 'approximate_online_count', 'channel', 'code', 'created_at', 'guild', 'inviter',
+        'max_age', 'max_uses', 'partial', 'target_application', 'stage', 'target_type', 'target_user', 'temporary',
+        'uses'
+    )
     
     def __new__(cls, data, data_partial):
         """

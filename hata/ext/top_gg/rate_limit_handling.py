@@ -66,7 +66,7 @@ class RateLimitContext(RateLimitContextBase):
     rate_limit_group : ``RateLimitGroup``
         The parent rate limit group.
     """
-    __slots__ = ('rate_limit_group')
+    __slots__ = ('rate_limit_group',)
     
     def __new__(cls, rate_limit_group):
         """
@@ -109,7 +109,7 @@ class StackedRateLimitContext(RateLimitContextBase):
     rate_limit_groups : `tuple` of ``RateLimitGroup``
         The parent rate limit groups.
     """
-    __slots__ = ('rate_limit_groups')
+    __slots__ = ('rate_limit_groups',)
     
     def __new__(cls, rate_limit_groups):
         """

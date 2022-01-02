@@ -2366,8 +2366,10 @@ class SlashCommandParameterConverter(ParameterConverter):
     type : `int`
         Internal identifier of the converter.
     """
-    __slots__ = ('auto_completer', 'channel_types', 'choices', 'converter', 'default', 'description', 'max_value',
-        'min_value', 'name', 'required', 'type')
+    __slots__ = (
+        'auto_completer', 'channel_types', 'choices', 'converter', 'default', 'description', 'max_value', 'min_value',
+        'name', 'required', 'type'
+    )
     
     def __new__(cls, parameter_name, type_, converter, name, description, default, required, choices, channel_types,
             max_value, min_value):

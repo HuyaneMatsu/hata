@@ -274,6 +274,7 @@ class BuilderContext:
         Converter to transform graved content to words.
     """
     __slots__ = ('indent', 'indent_size', 'max_line_length', 'space_char', 'word_converter')
+    
     def __init__(self, indent_size, space_char, max_line_length, word_converter):
         self.indent_size = indent_size
         self.space_char = space_char
@@ -283,8 +284,10 @@ class BuilderContext:
     
     def __repr__(self):
         """Returns the builder context's representation."""
-        return (f'{self.__class__.__name__}(indent_size={self.indent_size!r}, max_line_length='
-            f'{self.max_line_length!r}, space_char={self.space_char!r}, word_converter={self.word_converter!r})')
+        return (
+            f'{self.__class__.__name__}(indent_size={self.indent_size!r}, max_line_length='
+            f'{self.max_line_length!r}, space_char={self.space_char!r}, word_converter={self.word_converter!r})'
+        )
 
 EMBED_SIZED_BUILDER_CONTEXT = BuilderContext(INDENT_SIZE_DEFAULT, SPACE_CHAR_UNICODE, 79, graved_to_escaped_words)
 TEXT_BUILDER_CONTEXT = BuilderContext(INDENT_SIZE_DEFAULT, SPACE_CHAR_DEFAULT, 120, graved_to_single_graved_words)
@@ -404,6 +407,7 @@ class TableConverter:
         Separator line between all lines of the table (expect the first two).
     """
     __slots__ = ('head_under_line', 'lines', 'separator_line')
+    
     def __new__(cls, table, indent_level, optimal_fit, builder_context):
         """
         Creates a new table to text converter.
@@ -716,6 +720,7 @@ class CodeBlockConverter:
         The first line of the code block.
     """
     __slots__ = ('ender', 'lines', 'starter')
+    
     def __new__(cls, code_block, indent_level, optimal_fit, builder_context):
         """
         Creates a new code block to text converter.
@@ -1097,6 +1102,7 @@ class DescriptionConverter:
         The indent level of the description.
     """
     __slots__ = ('indent', 'lines', )
+    
     def __new__(cls, description, indent_level, optimal_fit, builder_context):
         """
         Creates a new description to text converter.
@@ -1257,6 +1263,7 @@ class BlockQuoteConverter:
         The lines of the block quote.
     """
     __slots__ = ('empty_line', 'indent', 'lines_by_paragraph', )
+    
     def __new__(cls, block_quote, indent_level, optimal_fit, builder_context):
         """
         Creates a new block quote to text converter.
@@ -1764,6 +1771,7 @@ class SectionConverter:
         The parts of the section to render.
     """
     __slots__ = ('parts', )
+    
     def __new__(cls, section, builder_context):
         """
         Creates a new section converter.
@@ -1783,7 +1791,7 @@ class SectionConverter:
         parts = [
             *SectionTitleConverter(section_name),
             *sub_section_converter(section_parts, 0, builder_context.max_line_length, builder_context)
-                ]
+        ]
         
         self = object.__new__(cls)
         self.parts = parts

@@ -25,6 +25,7 @@ class Array_uint_32b: #TODO : ask python to implement arrays already
         The first byte, what is not inside of the array after `._offset`.
     """
     __slots__ = ('_data', '_offset', '_limit')
+    
     def __init__(self, data, offset, limit):
         """
         Creates a new uint32 array from the given parameters.

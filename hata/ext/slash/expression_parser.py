@@ -1369,6 +1369,7 @@ class ParserIdentifier(ParserBase):
         When parsing success, add a new token to the state.
     """
     __slots__ = ('id', 'parser',)
+    
     def __new__(cls, parser, identifier):
         """
         Creates a new ``ParserIdentifier`` from the given parameters.

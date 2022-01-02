@@ -1,5 +1,7 @@
-__all__ = ('ApplicationCommand', 'ApplicationCommandOption', 'ApplicationCommandOptionChoice',
-     'ApplicationCommandPermission', 'ApplicationCommandPermissionOverwrite', )
+__all__ = (
+    'ApplicationCommand', 'ApplicationCommandOption', 'ApplicationCommandOptionChoice', 'ApplicationCommandPermission',
+    'ApplicationCommandPermissionOverwrite',
+)
 
 from ..bases import DiscordEntity, maybe_snowflake
 from ..channel import ChannelBase
@@ -829,8 +831,10 @@ class ApplicationCommandOption:
     type : ``ApplicationCommandOptionType``
         The option's type.
     """
-    __slots__ = ('autocomplete', 'channel_types', 'choices', 'default', 'description', 'max_value', 'min_value',
-        'name', 'options', 'required', 'type')
+    __slots__ = (
+        'autocomplete', 'channel_types', 'choices', 'default', 'description', 'max_value', 'min_value', 'name',
+        'options', 'required', 'type'
+    )
     
     def __new__(cls, name, description, type_, *, autocomplete=False, channel_types=None, default=False,
             required=False, max_value=None, min_value=None, choices=None, options=None):

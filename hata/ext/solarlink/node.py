@@ -50,8 +50,10 @@ class SolarNode:
     websocket : `None`, ``WebSocketClient``
         The connected websocket.
     """
-    __slots__ = ('_host', '_password', '_port', '_resume_key', 'client', 'players', 'reconnect_attempts', 'region',
-        'stats', 'websocket')
+    __slots__ = (
+        '_host', '_password', '_port', '_resume_key', 'client', 'players', 'reconnect_attempts', 'region', 'stats',
+        'websocket'
+    )
     
     def __new__(cls, client, host, port, password, region, resume_key, reconnect_attempts):
         """

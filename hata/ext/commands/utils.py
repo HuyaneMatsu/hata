@@ -20,6 +20,7 @@ class _CDUnit:
         How much uses are left till the respective entity will be locked by cooldown.
     """
     __slots__ = ('expires_at', 'uses_left',)
+    
     def __init__(self, expires_at, uses_left):
         """
         Creates a new ``_CDUnit`` with the given parameters.
@@ -384,6 +385,7 @@ class Cooldown:
             +-------------------+---------------+
         """
         __slots__ = ('parent', 'handler')
+        
         def __init__(self, parent, handler):
             """
             Creates a new ``Cooldown._wrapper`` with the given parameters.

@@ -502,7 +502,7 @@ class FunctionOrPropertySerializer:
     object : ``PropertyUnit``, ``FunctionUnit``
         The owner type-unit.
     parameter_section : `None`, ``ParameterSection``
-        The parameter section of the serialiser.
+        The parameter section of the serializer.
     path : ``QualPath``
         Path to use instead of the object's.
     """

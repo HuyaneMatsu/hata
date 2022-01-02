@@ -231,8 +231,10 @@ class CustomIdBasedCommand:
     COMMAND_NAME_NAME : `str`
         The command's command defining parameter's name.
     """
-    __slots__ = ('_command_function', '_exception_handlers', '_parent_reference', '_parameter_converters',
-        '_regex_custom_ids', '_string_custom_ids', 'name')
+    __slots__ = (
+        '_command_function', '_exception_handlers', '_parent_reference', '_parameter_converters', '_regex_custom_ids',
+        '_string_custom_ids', 'name'
+    )
     
     COMMAND_PARAMETER_NAMES = ('command', 'custom_id', 'name')
 

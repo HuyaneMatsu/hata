@@ -179,8 +179,9 @@ class GuildJoinRequest(GuildJoinRequestDeleteEvent):
     user : ``ClientUserBase``
         The user in context.
     """
-    __slots__ = ('actioned_by', 'actioned_at', 'created_at', 'form_responses', 'last_seen', 'rejection_reason',
-        'status', 'user',)
+    __slots__ = (
+        'actioned_by', 'actioned_at', 'created_at', 'form_responses', 'last_seen', 'rejection_reason', 'status', 'user'
+    )
     
     def __new__(cls, data):
         """

@@ -43,8 +43,9 @@ class ShardUserRequester:
     task : `None`, ``Task`` of ``._runner``
         A task executing the user requesting.
     """
-    __slots__ = ('can_request_users', 'gateway', 'guild_create_waiter', 'guild_ids', 'received_guild_ids', 'state',
-        'task')
+    __slots__ = (
+        'can_request_users', 'gateway', 'guild_create_waiter', 'guild_ids', 'received_guild_ids', 'state', 'task'
+    )
     
     def __new__(cls, gateway, guild_ids, can_request_users):
         """

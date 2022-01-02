@@ -1,11 +1,13 @@
-﻿__all__ = ('CHANNEL_MENTION_RP', 'DATETIME_FORMAT_CODE', 'DISCORD_EPOCH', 'EMOJI_NAME_RP', 'EMOJI_RP', 'Gift', 'ID_RP',
+﻿__all__ = (
+    'CHANNEL_MENTION_RP', 'DATETIME_FORMAT_CODE', 'DISCORD_EPOCH', 'EMOJI_NAME_RP', 'EMOJI_RP', 'Gift', 'ID_RP',
     'IS_MENTION_RP', 'REACTION_RP', 'ROLE_MENTION_RP', 'Relationship', 'TIMESTAMP_STYLES', 'USER_MENTION_RP', 'Unknown',
     'cchunkify', 'chunkify', 'datetime_to_id', 'datetime_to_timestamp', 'datetime_to_unix_time', 'elapsed_time',
     'escape_markdown', 'filter_content', 'format_datetime', 'format_id', 'format_loop_time', 'format_unix_time',
     'id_to_datetime', 'id_to_unix_time', 'is_id', 'is_invite_code', 'is_mention', 'is_role_mention', 'is_url',
     'is_user_mention', 'mention_channel_by_id', 'mention_role_by_id', 'mention_user_by_id', 'mention_user_nick_by_id',
     'now_as_id', 'parse_message_reference', 'parse_rdelta', 'parse_tdelta', 'random_id', 'sanitize_content',
-    'sanitize_mentions', 'unix_time_to_id')
+    'sanitize_mentions', 'unix_time_to_id'
+)
 
 import reprlib, sys
 from base64 import b64encode
@@ -851,6 +853,7 @@ class Relationship:
         The target user of the relationship.
     """
     __slots__ = ('type', 'user',)
+    
     def __init__(self, client, data, user_id):
         """
         Creates a relationship instance with the given parameters.

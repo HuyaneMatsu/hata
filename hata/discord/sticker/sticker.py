@@ -50,8 +50,9 @@ class Sticker(DiscordEntity, immortal=True):
     user : ``ClientUserBase``
         The user who uploaded the emoji. Defaults to ``ZEROUSER``.
     """
-    __slots__ = ('available', 'description', 'format', 'guild_id', 'name', 'pack_id', 'sort_value', 'tags',
-        'type', 'user')
+    __slots__ = (
+        'available', 'description', 'format', 'guild_id', 'name', 'pack_id', 'sort_value', 'tags', 'type', 'user'
+    )
     
     def __new__(cls, data):
         """

@@ -43,8 +43,9 @@ class GuildPreview(DiscordEntity):
     name : `str`
         The name of the guild.
     """
-    __slots__ = ('approximate_online_count', 'approximate_user_count','description', 'emojis', 'features', 'name',
-        'stickers')
+    __slots__ = (
+        'approximate_online_count', 'approximate_user_count','description', 'emojis', 'features', 'name', 'stickers'
+    )
     
     icon = IconSlot(
         'icon',

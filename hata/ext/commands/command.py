@@ -29,8 +29,9 @@ assert (len(AUTO_DASH_APPLICABLES)==0) or (AUTO_DASH_APPLICABLES != AUTO_DASH_AP
 
 DEFAULT_CATEGORY_DEFAULT_DISPLAY_NAME = 'general'
 
-COMMAND_PARAMETER_NAMES = ('command', 'name', 'description', 'aliases', 'category', 'checks',
-    'parser_failure_handler', 'separator')
+COMMAND_PARAMETER_NAMES = (
+    'command', 'name', 'description', 'aliases', 'category', 'checks', 'parser_failure_handler', 'separator'
+)
 COMMAND_NAME_NAME = 'name'
 COMMAND_COMMAND_NAME = 'command'
 
@@ -1603,7 +1604,8 @@ class Category:
     display_name : `str`
         The category's display name.
     name : `None`, `str`
-        The name of the category. Only a command processer's default category can have it's name as `None`. (Always lower case.)
+        The name of the category. Only a command processer's default category can have it's name as `None`.
+        (Always lower case.)
     """
     __slots__ = ('_checks', 'commands', 'description', 'display_name', 'name', )
     
@@ -2074,10 +2076,12 @@ class CommandProcesser(EventWaitforBase):
     SUPPORTED_TYPES : `tuple` (``Command``, )
         Tells to ``eventlist`` what exact types the ``CommandProcesser`` accepts.
     """
-    __slots__ = ('_command_error', '_category_name_rule', '_command_error_checks', '_command_name_rule',
+    __slots__ = (
+        '_command_error', '_category_name_rule', '_command_error_checks', '_command_name_rule',
         '_default_category_name', '_default_event', '_default_event_checks', '_ignorecase', '_invalid_command',
         '_invalid_command_checks', '_precheck', 'categories', 'commands', 'get_prefix_for', 'mention_prefix', 'prefix',
-        'prefix_filter', )
+        'prefix_filter'
+    )
     
     __event_name__ = 'message_create'
     

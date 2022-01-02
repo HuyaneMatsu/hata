@@ -1,4 +1,5 @@
-__all__ = ('ALL_COMPLETED', 'AbstractChildWatcher', 'AbstractEventLoop', 'AbstractEventLoopPolicy', 'AbstractServer',
+__all__ = (
+    'ALL_COMPLETED', 'AbstractChildWatcher', 'AbstractEventLoop', 'AbstractEventLoopPolicy', 'AbstractServer',
     'BaseEventLoop', 'BaseProactorEventLoop', 'BaseProtocol', 'BaseSelectorEventLoop', 'BaseTransport',
     'BoundedSemaphore', 'BufferedProtocol', 'CancelledError', 'Condition', 'DatagramProtocol', 'DatagramTransport',
     'DefaultEventLoopPolicy', 'Event', 'FIRST_COMPLETED', 'FIRST_EXCEPTION', 'FastChildWatcher', 'Future', 'Handle',
@@ -13,7 +14,8 @@ __all__ = ('ALL_COMPLETED', 'AbstractChildWatcher', 'AbstractEventLoop', 'Abstra
     'ensure_future', 'gather', 'get_child_watcher', 'get_event_loop', 'get_event_loop_policy', 'get_running_loop',
     'iscoroutine', 'iscoroutinefunction', 'isfuture', 'new_event_loop', 'open_connection', 'pipe', 'run',
     'run_coroutine_threadsafe', 'set_child_watcher', 'set_event_loop', 'set_event_loop_policy', 'shield', 'sleep',
-    'staggered_race', 'start_server', 'start_unix_server', 'to_thread', 'wait', 'wait_for', 'wrap_future', )
+    'staggered_race', 'start_server', 'start_unix_server', 'to_thread', 'wait', 'wait_for', 'wrap_future'
+)
 
 import os, sys, warnings
 import socket as module_socket
@@ -2277,13 +2279,17 @@ def ensure_future(coroutine_or_future, *, loop=None):
     if loop is None:
         loop = get_running_loop()
     else:
-        warnings.warn('The loop parameter is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
-                      DeprecationWarning, stacklevel=2)
+        warnings.warn(
+            'The loop parameter is deprecated since Python 3.8, and scheduled for removal in Python 3.10.',
+            DeprecationWarning,
+            stacklevel = 2,
+        )
     
     return loop.ensure_future(coroutine_or_future)
 
 class _gatherer_done_cb_return_exceptions:
     __slots__ = ('future', )
+    
     def __init__(self, future):
         self.future = future
     
@@ -2351,6 +2357,7 @@ class _gatherer_done_cb_raise:
 
 class _getherer_cancel_cb:
     __slots__ = ('gatherer',)
+    
     def __init__(self, gatherer):
         self.gatherer = gatherer
     
@@ -2495,6 +2502,7 @@ def current_task(loop=None):
 
 class TaskWrapperCallback:
     __slots__ = ('task_wrapper_additional_attributes', )
+    
     def __new__(cls, task_wrapper_additional_attributes):
         self = object.__new__(cls)
         self.task_wrapper_additional_attributes = task_wrapper_additional_attributes

@@ -355,10 +355,13 @@ class TimedCacheUnit:
         The monotonic time when this unit was last time used.
     """
     __slots__ = ('creation_time', 'last_usage_time', 'result')
+    
     def __repr__(self):
         """Returns the timed cache unit's representation."""
-        return (f'<{self.__class__.__name__} creation_time={self.creation_time!r}, last_usage_time='
-                f'{self.last_usage_time!r}, result={self.result!r}>')
+        return (
+            f'<{self.__class__.__name__} creation_time={self.creation_time!r}, last_usage_time='
+            f'{self.last_usage_time!r}, result={self.result!r}>'
+        )
 
 
 class DiscoveryTermRequestCacher:
@@ -609,8 +612,10 @@ class MultiClientMessageDeleteSequenceSharder:
     delete_old_task : `None`, ``Task``
         task of deleting other's old messages.
     """
-    __slots__ = ('can_manage_messages', 'can_read_message_history', 'client', 'delete_mass_task', 'delete_new_task',
-        'delete_old_task', )
+    __slots__ = (
+        'can_manage_messages', 'can_read_message_history', 'client', 'delete_mass_task', 'delete_new_task',
+        'delete_old_task'
+    )
     
     def __new__(cls, client, channel):
         """

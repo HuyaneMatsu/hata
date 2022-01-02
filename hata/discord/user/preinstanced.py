@@ -1,5 +1,6 @@
-__all__ = ('DefaultAvatar', 'FriendRequestFlag', 'HypesquadHouse', 'PremiumType', 'RelationshipType', 'Status',
-    'Theme', )
+__all__ = (
+    'DefaultAvatar', 'FriendRequestFlag', 'HypesquadHouse', 'PremiumType', 'RelationshipType', 'Status', 'Theme'
+)
 
 from scarletio import export
 

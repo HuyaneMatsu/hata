@@ -216,6 +216,7 @@ class WordNode:
         The parent node.
     """
     __slots__ = ('character', 'is_final', 'nodes', 'parent')
+    
     def __new__(cls, character, is_final, parent):
         """
         Creates a new ``WordNode`` with the given `character`.
@@ -948,6 +949,7 @@ class HighlightContext(HighlightContextBase):
         The lines to highlight.
     """
     __slots__ = ('line_character_index', 'line_index', 'lines')
+    
     def __new__(cls, lines):
         """
         Creates a new ``HighlightContext``.
@@ -1138,6 +1140,7 @@ class FormatStringContext(HighlightContextBase):
         The index of the character of the processed line.
     """
     __slots__ = ('brace_level', 'is_in_code', 'line', 'line_character_index', )
+    
     def __new__(cls, line):
         """
         Creates a new ``FormatStringContext``.

@@ -1,5 +1,6 @@
-__all__ = ('ICON_TYPE_ANIMATED', 'ICON_TYPE_NONE', 'ICON_TYPE_STATIC', 'Icon', 'IconType', 'IconSlot',
-    'PreinstancedBase', )
+__all__ = (
+    'ICON_TYPE_ANIMATED', 'ICON_TYPE_NONE', 'ICON_TYPE_STATIC', 'Icon', 'IconType', 'IconSlot', 'PreinstancedBase'
+)
 
 import sys
 

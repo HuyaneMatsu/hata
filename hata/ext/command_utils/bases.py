@@ -1,5 +1,7 @@
-__all__ = ('GUI_STATE_CANCELLED', 'GUI_STATE_CANCELLING', 'GUI_STATE_READY', 'GUI_STATE_SWITCHING_CTX',
-    'GUI_STATE_SWITCHING_PAGE', 'PaginationBase')
+__all__ = (
+    'GUI_STATE_CANCELLED', 'GUI_STATE_CANCELLING', 'GUI_STATE_READY', 'GUI_STATE_SWITCHING_CTX',
+    'GUI_STATE_SWITCHING_PAGE', 'PaginationBase'
+)
 
 from scarletio import CancelledError, Task
 

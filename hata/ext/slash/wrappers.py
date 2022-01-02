@@ -1,5 +1,7 @@
-__all__ = ('SlasherApplicationCommandParameterConfigurerWrapper',
-    'SlasherApplicationCommandPermissionOverwriteWrapper', 'SlasherCommandWrapper')
+__all__ = (
+    'SlasherApplicationCommandParameterConfigurerWrapper', 'SlasherApplicationCommandPermissionOverwriteWrapper',
+    'SlasherCommandWrapper'
+)
 
 import reprlib
 from functools import partial as partial_func
@@ -233,8 +235,9 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
     _type : `int`
         The parameter's internal type identifier.
     """
-    __slots__ = ('_channel_types', '_choices', '_description', '_max_value', '_min_value', '_name', '_parameter_name',
-        '_type')
+    __slots__ = (
+        '_channel_types', '_choices', '_description', '_max_value', '_min_value', '_name', '_parameter_name', '_type'
+    )
     
     def __new__(cls, parameter_name, type_or_choice, description=None, name=None, *, channel_types=None,
             max_value=None, min_value=None):

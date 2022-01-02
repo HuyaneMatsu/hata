@@ -41,8 +41,10 @@ class Category:
     -----
     ``Category`` supports weakreferencing.
     """
-    __slots__ = ('__weakref__', '_checks', '_command_processor_reference', '_error_handlers', '_self_reference',
-        'command_instances', 'description', 'display_name', 'hidden', 'hidden_if_checks_fail', 'name')
+    __slots__ = (
+        '__weakref__', '_checks', '_command_processor_reference', '_error_handlers', '_self_reference',
+        'command_instances', 'description', 'display_name', 'hidden', 'hidden_if_checks_fail', 'name'
+    )
     
     def __new__(cls, name, *, checks=None, description=None, hidden=False, hidden_if_checks_fail=True):
         """

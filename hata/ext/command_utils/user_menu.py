@@ -263,8 +263,10 @@ class UserMenuFactory:
         
         > Define it as non-positive to never timeout. Not recommended.
     """
-    __slots__ = ('allow_third_party_emojis', 'check', 'close', 'close_emoji', 'emojis', 'initial_invoke', 'invoke',
-        'klass', 'timeout')
+    __slots__ = (
+        'allow_third_party_emojis', 'check', 'close', 'close_emoji', 'emojis', 'initial_invoke', 'invoke',
+        'klass', 'timeout'
+    )
     
     def __new__(cls, klass):
         """

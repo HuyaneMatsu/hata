@@ -186,10 +186,12 @@ class TopGGClient:
     top_gg_token : `str`
         Top.gg api token.
     """
-    __slots__ = ('__weakref__', '_auto_post_handler', '_auto_post_running', '_global_rate_limit_expires_at',
-        '_headers', '_raise_on_top_gg_global_rate_limit', '_rate_limit_handler_bots', '_rate_limit_handler_global',
+    __slots__ = (
+        '__weakref__', '_auto_post_handler', '_auto_post_running', '_global_rate_limit_expires_at', '_headers',
+        '_raise_on_top_gg_global_rate_limit', '_rate_limit_handler_bots', '_rate_limit_handler_global',
         '_weekend_status_cache_time', '_weekend_status_cache_value', '_weekend_status_request_task', 'client_id',
-        'client_reference', 'http', 'top_gg_token',)
+        'client_reference', 'http', 'top_gg_token'
+    )
     
     def __new__(cls, client, top_gg_token, auto_post_bot_stats=True, raise_on_top_gg_global_rate_limit=False):
         """

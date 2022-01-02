@@ -69,9 +69,10 @@ class Extension:
     _take_snapshot : `bool`
         Whether snapshot difference should be taken.
     """
-    __slots__ = ('__weakref__', '_added_variable_names', '_default_variables', '_entry_point', '_exit_point',
-        '_extend_default_variables', '_lib', '_locked', '_snapshot_difference', '_spec', '_state',
-        '_take_snapshot', )
+    __slots__ = (
+        '__weakref__', '_added_variable_names', '_default_variables', '_entry_point', '_exit_point',
+        '_extend_default_variables', '_lib', '_locked', '_snapshot_difference', '_spec', '_state', '_take_snapshot'
+    )
     
     def __new__(cls, name, path, entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference,
             default_variables, ):

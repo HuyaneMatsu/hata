@@ -1,5 +1,7 @@
-__all__ = ('ComponentBase', 'ComponentButton', 'ComponentRow', 'ComponentSelect', 'ComponentSelectOption',
-    'ComponentTextInput', 'create_auto_custom_id', 'create_component')
+__all__ = (
+    'ComponentBase', 'ComponentButton', 'ComponentRow', 'ComponentSelect', 'ComponentSelectOption',
+    'ComponentTextInput', 'create_auto_custom_id', 'create_component'
+)
 
 import reprlib
 from base64 import b85encode as to_base85
@@ -2285,8 +2287,9 @@ class ComponentTextInput(ComponentBase):
     default_style = TextInputStyle.short
     type = ComponentType.text_input
     
-    __slots__ = ('custom_id', 'enabled', 'label', 'max_length', 'min_length', 'placeholder', 'required', 'style',
-        'value')
+    __slots__ = (
+        'custom_id', 'enabled', 'label', 'max_length', 'min_length', 'placeholder', 'required', 'style', 'value'
+    )
     
     def __new__(cls, label=None, *, custom_id=None, enabled=True, max_length=0, min_length=0, placeholder=None,
             required=None, style=None, value=None):

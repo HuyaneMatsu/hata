@@ -3916,9 +3916,9 @@ def THREAD_LIST_SYNC(client, data):
     
     thread_user_datas = data['members']
     for thread_user_data in thread_user_datas:
-        thread_chanel_id = int(data['id'])
+        thread_channel_id = int(data['id'])
         try:
-            thread_channel = CHANNELS[thread_chanel_id]
+            thread_channel = CHANNELS[thread_channel_id]
         except KeyError:
             return
         
@@ -3938,9 +3938,9 @@ del THREAD_LIST_SYNC
 
 
 def THREAD_MEMBER_UPDATE__CAL_SC(client, data):
-    thread_chanel_id = int(data['id'])
+    thread_channel_id = int(data['id'])
     try:
-        thread_channel = CHANNELS[thread_chanel_id]
+        thread_channel = CHANNELS[thread_channel_id]
     except KeyError:
         return
     
@@ -3952,9 +3952,9 @@ def THREAD_MEMBER_UPDATE__CAL_SC(client, data):
 
 
 def THREAD_MEMBER_UPDATE__CAL_MC(client, data):
-    thread_chanel_id = int(data['id'])
+    thread_channel_id = int(data['id'])
     try:
-        thread_channel = CHANNELS[thread_chanel_id]
+        thread_channel = CHANNELS[thread_channel_id]
     except KeyError:
         return
     
@@ -3975,9 +3975,9 @@ def THREAD_MEMBER_UPDATE__CAL_MC(client, data):
 
 
 def THREAD_MEMBER_UPDATE__OPT(client, data):
-    thread_chanel_id = int(data['id'])
+    thread_channel_id = int(data['id'])
     try:
-        thread_channel = CHANNELS[thread_chanel_id]
+        thread_channel = CHANNELS[thread_channel_id]
     except KeyError:
         return
     
@@ -3996,9 +3996,9 @@ del THREAD_MEMBER_UPDATE__CAL_SC, \
 
 
 def THREAD_MEMBERS_UPDATE__CAL_SC(client, data):
-    thread_chanel_id = int(data['id'])
+    thread_channel_id = int(data['id'])
     try:
-        thread_channel = CHANNELS[thread_chanel_id]
+        thread_channel = CHANNELS[thread_channel_id]
     except KeyError:
         return
     
@@ -4027,9 +4027,9 @@ def THREAD_MEMBERS_UPDATE__CAL_SC(client, data):
 
 
 def THREAD_MEMBERS_UPDATE__CAL_MC(client, data):
-    thread_chanel_id = int(data['id'])
+    thread_channel_id = int(data['id'])
     try:
-        thread_channel = CHANNELS[thread_chanel_id]
+        thread_channel = CHANNELS[thread_channel_id]
     except KeyError:
         return
     
@@ -4090,9 +4090,9 @@ def THREAD_MEMBERS_UPDATE__CAL_MC(client, data):
 
 
 def THREAD_MEMBERS_UPDATE__OPT_SC(client, data):
-    thread_chanel_id = int(data['id'])
+    thread_channel_id = int(data['id'])
     try:
-        thread_channel = CHANNELS[thread_chanel_id]
+        thread_channel = CHANNELS[thread_channel_id]
     except KeyError:
         return
     
@@ -4113,9 +4113,9 @@ def THREAD_MEMBERS_UPDATE__OPT_SC(client, data):
 
 
 def THREAD_MEMBERS_UPDATE__OPT_MC(client, data):
-    thread_chanel_id = int(data['id'])
+    thread_channel_id = int(data['id'])
     try:
-        thread_channel = CHANNELS[thread_chanel_id]
+        thread_channel = CHANNELS[thread_channel_id]
     except KeyError:
         return
     

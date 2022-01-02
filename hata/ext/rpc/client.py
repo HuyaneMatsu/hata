@@ -22,15 +22,22 @@ from .certified_device import CertifiedDevice
 from .command_handling import COMMAND_HANDLERS
 from .constants import (
     CLOSE_CODES_FATAL, CLOSE_CODES_RECONNECT, CLOSE_CODE_RATE_LIMITED, CLOSE_PAYLOAD_KEY_CODE,
-    CLOSE_PAYLOAD_KEY_MESSAGE, DEFAULT_OPERATION_NAME, IPC_VERSION, OPERATION_CLOSE, OPERATION_FRAME,
-    OPERATION_HANDSHAKE, OPERATION_VALUE_TO_NAME, PAYLOAD_COMMAND_ACTIVITY_JOIN_ACCEPT,
-    PAYLOAD_COMMAND_ACTIVITY_JOIN_REJECT, PAYLOAD_COMMAND_ACTIVITY_SET, PAYLOAD_COMMAND_AUTHENTICATE,
-    PAYLOAD_COMMAND_AUTHORIZE, PAYLOAD_COMMAND_CERTIFIED_DEVICES_SET, PAYLOAD_COMMAND_CHANNEL_GET,
-    PAYLOAD_COMMAND_CHANNEL_TEXT_SELECT, PAYLOAD_COMMAND_CHANNEL_VOICE_GET, PAYLOAD_COMMAND_CHANNEL_VOICE_SELECT,
-    PAYLOAD_COMMAND_GUILD_CHANNEL_GET_ALL, PAYLOAD_COMMAND_GUILD_GET, PAYLOAD_COMMAND_GUILD_GET_ALL,
-    PAYLOAD_COMMAND_SUBSCRIBE, PAYLOAD_COMMAND_UNSUBSCRIBE, PAYLOAD_COMMAND_USER_VOICE_SETTINGS_SET,
-    PAYLOAD_COMMAND_VOICE_SETTINGS_GET, PAYLOAD_COMMAND_VOICE_SETTINGS_SET, PAYLOAD_KEY_COMMAND, PAYLOAD_KEY_EVENT,
-    PAYLOAD_KEY_NONCE, PAYLOAD_KEY_PARAMETERS, RECONNECT_INTERVAL, RECONNECT_RATE_LIMITED_INTERVAL, REQUEST_TIMEOUT
+    CLOSE_PAYLOAD_KEY_MESSAGE, DEFAULT_OPERATION_NAME, DISPATCH_EVENT_ACTIVITY_JOIN,
+    DISPATCH_EVENT_ACTIVITY_JOIN_REQUEST, DISPATCH_EVENT_ACTIVITY_SPECTATE, DISPATCH_EVENT_CHANNEL_CREATE,
+    DISPATCH_EVENT_CHANNEL_VOICE_SELECT, DISPATCH_EVENT_GUILD_CREATE, DISPATCH_EVENT_GUILD_STATUS_UPDATE,
+    DISPATCH_EVENT_MESSAGE_CREATE, DISPATCH_EVENT_MESSAGE_DELETE, DISPATCH_EVENT_MESSAGE_EDIT,
+    DISPATCH_EVENT_NOTIFICATION_CREATE, DISPATCH_EVENT_READY, DISPATCH_EVENT_SPEAKING_START,
+    DISPATCH_EVENT_SPEAKING_STOP, DISPATCH_EVENT_USER_VOICE_CREATE, DISPATCH_EVENT_USER_VOICE_DELETE,
+    DISPATCH_EVENT_USER_VOICE_UPDATE, DISPATCH_EVENT_VOICE_CONNECTION_STATUS,
+    DISPATCH_EVENT_VOICE_SETTINGS_UPDATE, IPC_VERSION, OPERATION_CLOSE, OPERATION_FRAME, OPERATION_HANDSHAKE,
+    OPERATION_VALUE_TO_NAME, PAYLOAD_COMMAND_ACTIVITY_JOIN_ACCEPT, PAYLOAD_COMMAND_ACTIVITY_JOIN_REJECT,
+    PAYLOAD_COMMAND_ACTIVITY_SET, PAYLOAD_COMMAND_AUTHENTICATE, PAYLOAD_COMMAND_AUTHORIZE,
+    PAYLOAD_COMMAND_CERTIFIED_DEVICES_SET, PAYLOAD_COMMAND_CHANNEL_GET, PAYLOAD_COMMAND_CHANNEL_TEXT_SELECT,
+    PAYLOAD_COMMAND_CHANNEL_VOICE_GET, PAYLOAD_COMMAND_CHANNEL_VOICE_SELECT, PAYLOAD_COMMAND_GUILD_CHANNEL_GET_ALL,
+    PAYLOAD_COMMAND_GUILD_GET, PAYLOAD_COMMAND_GUILD_GET_ALL, PAYLOAD_COMMAND_SUBSCRIBE, PAYLOAD_COMMAND_UNSUBSCRIBE,
+    PAYLOAD_COMMAND_USER_VOICE_SETTINGS_SET, PAYLOAD_COMMAND_VOICE_SETTINGS_GET, PAYLOAD_COMMAND_VOICE_SETTINGS_SET,
+    PAYLOAD_KEY_COMMAND, PAYLOAD_KEY_EVENT, PAYLOAD_KEY_NONCE, PAYLOAD_KEY_PARAMETERS, RECONNECT_INTERVAL,
+    RECONNECT_RATE_LIMITED_INTERVAL, REQUEST_TIMEOUT
 )
 from .rich_voice_state import RichVoiceState
 from .user_voice_settings import AudioBalance, UserVoiceSettings
@@ -39,6 +46,34 @@ from .voice_settings import VoiceSettings, VoiceSettingsInput, VoiceSettingsMode
 
 
 PROCESS_IDENTIFIER = get_process_identifier()
+
+channel_key_transformer = lambda channel_id: {'channel_id': str(channel_id)}
+guild_key_transformer = lambda guild_id: {'guild_id': str(guild_id)}
+
+SUBSCRIPTION_KEY_TO_PARAMETERS_DATA = {
+    DISPATCH_EVENT_GUILD_STATUS_UPDATE: guild_key_transformer,
+    DISPATCH_EVENT_GUILD_CREATE: None,
+    DISPATCH_EVENT_CHANNEL_CREATE: None,
+    DISPATCH_EVENT_CHANNEL_VOICE_SELECT: None,
+    DISPATCH_EVENT_VOICE_SETTINGS_UPDATE: None,
+    DISPATCH_EVENT_USER_VOICE_CREATE: channel_key_transformer,
+    DISPATCH_EVENT_USER_VOICE_UPDATE: channel_key_transformer,
+    DISPATCH_EVENT_USER_VOICE_DELETE: channel_key_transformer,
+    DISPATCH_EVENT_VOICE_CONNECTION_STATUS: None,
+    DISPATCH_EVENT_MESSAGE_CREATE: channel_key_transformer,
+    DISPATCH_EVENT_MESSAGE_EDIT: channel_key_transformer,
+    DISPATCH_EVENT_MESSAGE_DELETE: channel_key_transformer,
+    DISPATCH_EVENT_SPEAKING_START: channel_key_transformer,
+    DISPATCH_EVENT_SPEAKING_STOP: channel_key_transformer,
+    DISPATCH_EVENT_NOTIFICATION_CREATE: None,
+    DISPATCH_EVENT_ACTIVITY_JOIN: None,
+    DISPATCH_EVENT_ACTIVITY_SPECTATE: None,
+    DISPATCH_EVENT_ACTIVITY_JOIN_REQUEST: None,
+}
+
+del channel_key_transformer
+del guild_key_transformer
+
 
 class RPCClient:
     """
@@ -52,6 +87,8 @@ class RPCClient:
         The connected protocol if any.
     _response_waiters : `dict` of (`str`, ``Future``) items
         Waiters for each request response.
+    _subscriptions : `dict` of (`str`, (`None`, `set`)) items
+        The events to which the client is already subscribed to.
     application_id : `int`
         The respective application's identifier.
     running : `bool`
@@ -62,7 +99,8 @@ class RPCClient:
         Set after connection. Defaults to `ZEROUSER`.
     """
     __slots__ = (
-        '_auto_nonce', '_connection_waiter', '_protocol', '_response_waiters', 'application_id', 'running', 'user'
+        '_auto_nonce', '_connection_waiter', '_protocol', '_response_waiters', '_subscriptions', 'application_id',
+        'running', 'user'
     )
     
     def __new__(cls, application_id):
@@ -90,6 +128,7 @@ class RPCClient:
         self._response_waiters = {}
         self._auto_nonce = 0
         self._connection_waiter = None
+        self._subscriptions = {}
         self.user = ZEROUSER
         return self
     
@@ -261,8 +300,9 @@ class RPCClient:
                     
                     else:
                         operation_name = OPERATION_VALUE_TO_NAME.get(operation, DEFAULT_OPERATION_NAME)
-                        sys.stderr.write(f'Received unexpected operation in handshake, got {operation_name}, '
-                            f'({operation}).')
+                        sys.stderr.write(
+                            f'Received unexpected operation in handshake, got {operation_name}, ({operation}).'
+                        )
         
         except:
             self.running = False
@@ -381,6 +421,96 @@ class RPCClient:
                 del self._response_waiters[nonce]
             except KeyError:
                 pass
+    
+    
+    def _is_subscribed_to(self, event, key):
+        """
+        Returns whether the client is already subscribed to the given event.
+        
+        Parameters
+        ----------
+        event : `str`
+            The event's name.
+        key : `Any`
+            The key used to detect whether the client is subscribed.
+        
+        Returns
+        -------
+        is_subscribed_to : `bool`
+            Whether the client is subscribed to the event.
+        """
+        try:
+            keys = self._subscriptions[event]
+        except KeyError:
+            is_subscribed_to = False
+        else:
+            if key is None:
+                is_subscribed_to = True
+            else:
+                is_subscribed_to = key in keys
+        
+        return is_subscribed_to
+    
+    
+    def _subscribe_to(self, event, key):
+        """
+        Subscribed to the given event.
+        
+        Parameters
+        ----------
+        event : `str`
+            The event's name.
+        key : `Any`
+            The key used to detect whether the client is subscribed.
+        """
+        try:
+            keys = self._subscriptions[event]
+        except KeyError:
+            if key is None:
+                keys = None
+            else:
+                keys = set()
+            
+            self._subscriptions[event] = keys
+        
+        else:
+            if (key is not None):
+                if keys is None:
+                    keys = {}
+                    self._subscriptions[event] = keys
+                
+                keys.add(key)
+    
+    
+    def _unsubscribe_from(self, event, key):
+        """
+        Unsubscribed from the given event.
+        
+        Parameters
+        ----------
+        event : `str`
+            The event's name.
+        key : `Any`
+            The key used to detect whether the client is subscribed.
+        """
+        try:
+            keys = self._subscriptions[event]
+        except KeyError:
+            pass
+        else:
+            if key is None:
+                if keys is None:
+                    del self._subscriptions[event]
+            
+            else:
+                if (keys is not None):
+                    try:
+                        del keys[key]
+                    except ValueError:
+                        pass
+                    else:
+                        if not keys:
+                            del self._subscriptions[event]
     
     
     def stop(self, data):
@@ -640,11 +770,12 @@ class RPCClient:
             Any exception dropped back by the discord client.
         """
         channel_id = get_channel_id(channel, ChannelBase)
+        channel_id = str(channel_id)
         
         data = {
             PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_CHANNEL_GET,
             PAYLOAD_KEY_PARAMETERS: {
-                'channel_id': str(channel_id),
+                'channel_id': channel_id,
             },
         }
         
@@ -819,7 +950,7 @@ class RPCClient:
         Raises
         ------
         TypeError
-            If `channel` is neither `None`, ``ChannelVoiceBase`` nor `int`.
+            If `channel` is neither `None`, ``ChannelVoiceBase``, `int`.
         ConnectionError
             RPC client is not connected.
         TimeoutError
@@ -829,8 +960,11 @@ class RPCClient:
         AssertionError
             If `force` is not `bool`.
         """
-        channel_id = get_channel_id(channel, ChannelVoiceBase)
-        channel_id = str(channel_id)
+        if channel is None:
+            channel_id = None
+        else:
+            channel_id = get_channel_id(channel, ChannelVoiceBase)
+            channel_id = str(channel_id)
         
         if __debug__:
             if not isinstance(force, bool):
@@ -923,11 +1057,12 @@ class RPCClient:
             channel_id = None
         else:
             channel_id = get_channel_id(channel, ChannelTextBase)
+            channel_id = str(channel_id)
         
         data = {
             PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_CHANNEL_TEXT_SELECT,
             PAYLOAD_KEY_PARAMETERS: {
-                'channel_id': str(channel_id),
+                'channel_id': channel_id,
                 'timeout': REQUEST_TIMEOUT,
             },
         }
@@ -1136,26 +1271,20 @@ class RPCClient:
         data = await self._send_request(data)
         return VoiceSettings.from_data(data)
     
-    async def subscribe_ready(self, event_handler):
-        """
-        Subscribes to ready dispatch event handler.
-        """
     
-    async def subscribe(self, event, guild):
+    async def _subscribe(self, event, key):
         """
-        Subscribes to an event.
+        Subscribes to the given event.
         
         Parameters
-        ----------
+        ---------
         event : `str`
-            The event's name to unsubscribe from.
-        guild : ``Guild``, `int`
-            The guild where to subscribe for the event.
+            The event to subscribe to.
+        key : `Any`
+            The key used to detect whether the client is subscribed.
         
         Raises
         ------
-        TypeError
-            If `guild` is neither ``Guild``, nor `int`.
         ConnectionError
             RPC client is not connected.
         TimeoutError
@@ -1163,34 +1292,77 @@ class RPCClient:
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        guild_id = get_guild_id(guild)
+        if self._is_subscribed_to(event, key):
+            return
+        
+        transformer = SUBSCRIPTION_KEY_TO_PARAMETERS_DATA.get(PAYLOAD_COMMAND_UNSUBSCRIBE, None)
+        if transformer is None:
+            parameters_data = {}
+        else:
+            parameters_data = transformer(key)
         
         data = {
             PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_SUBSCRIBE,
-            PAYLOAD_KEY_PARAMETERS: {
-                'guild_id': guild_id,
-            },
+            PAYLOAD_KEY_PARAMETERS: parameters_data,
             PAYLOAD_KEY_EVENT: event,
         }
         
-        return await self._send_request(data)
+        await self._send_request(data)
+        self._subscribe_to(event, key)
     
     
-    async def unsubscribe(self, event, guild):
+    async def _unsubscribe(self, event, key):
         """
-        Unsubscribes from an event.
+        Subscribes to the given event.
         
         Parameters
-        ----------
+        ---------
         event : `str`
-            The event's name to unsubscribe from.
-        guild : ``Guild``, `int`
-            The guild where to subscribe for the event.
+            The event to unsubscribe to.
+        key : `Any`
+            The key used to detect whether the client is subscribed.
         
         Raises
         ------
-        TypeError
-            If `guild` is neither ``Guild``, nor `int`.
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        if not self._is_subscribed_to(event, key):
+            return
+        
+        transformer = SUBSCRIPTION_KEY_TO_PARAMETERS_DATA.get(PAYLOAD_COMMAND_UNSUBSCRIBE, None)
+        if transformer is None:
+            parameters_data = {}
+        else:
+            parameters_data = transformer(key)
+        
+        data = {
+            PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_UNSUBSCRIBE,
+            PAYLOAD_KEY_PARAMETERS: parameters_data,
+            PAYLOAD_KEY_EVENT: event,
+        }
+        
+        await self._send_request(data)
+        self._unsubscribe_from(event, key)
+    
+    
+    async def subscribe_guild_status_update(self, guild):
+        """
+        Subscribes to `guild_status_update` events of the given guild.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild``, `int`
+            The guild to subscribe for the event to.
+        
+        Raises
+        ------
         ConnectionError
             RPC client is not connected.
         TimeoutError
@@ -1200,16 +1372,865 @@ class RPCClient:
         """
         guild_id = get_guild_id(guild)
         
-        data = {
-            PAYLOAD_KEY_COMMAND: PAYLOAD_COMMAND_UNSUBSCRIBE,
-            PAYLOAD_KEY_PARAMETERS: {
-                'guild_id': guild_id,
-            },
-            PAYLOAD_KEY_EVENT: event,
-        }
+        await self._subscribe(
+            DISPATCH_EVENT_GUILD_STATUS_UPDATE,
+            guild_id,
+        )
+    
+    
+    async def unsubscribe_guild_status_update(self, guild):
+        """
+        Unsubscribes from `guild_status_update` events of the given guild.
         
-        return await self._send_request(data)
+        This method is a coroutine.
         
+        Parameters
+        ----------
+        guild : ``Guild``, `int`
+            The guild to unsubscribe for the event to.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        guild_id = get_guild_id(guild)
+        
+        await self._unsubscribe(
+            DISPATCH_EVENT_GUILD_STATUS_UPDATE,
+            guild_id,
+        )
+    
+    
+    async def subscribe_guild_create(self):
+        """
+        Subscribes to `guild_create` events.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        await self._subscribe(
+            DISPATCH_EVENT_GUILD_CREATE,
+            None,
+        )
+    
+    
+    async def unsubscribe_guild_create(self):
+        """
+        Unsubscribes from `guild_create` events.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        await self._unsubscribe(
+            DISPATCH_EVENT_GUILD_CREATE,
+            None,
+        )
+    
+    
+    async def subscribe_channel_create(self):
+        """
+        Subscribes to `channel_create` events.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        await self._subscribe(
+            DISPATCH_EVENT_CHANNEL_CREATE,
+            None,
+        )
+    
+    
+    async def unsubscribe_channel_create(self):
+        """
+        Unsubscribes from `channel_create` events.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        await self._unsubscribe(
+            DISPATCH_EVENT_CHANNEL_CREATE,
+            None,
+        )
+    
+    
+    async def subscribe_channel_voice_select(self):
+        """
+        Subscribes to `channel_voice_select` events.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        await self._subscribe(
+            DISPATCH_EVENT_CHANNEL_VOICE_SELECT,
+            None,
+        )
+    
+    
+    async def unsubscribe_channel_voice_select(self):
+        """
+        Unsubscribes from `channel_voice_select` events.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        await self._unsubscribe(
+            DISPATCH_EVENT_CHANNEL_VOICE_SELECT,
+            None,
+        )
+    
+    
+    async def subscribe_voice_settings_update(self):
+        """
+        Subscribes to `voice_settings_update` events.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        await self._subscribe(
+            DISPATCH_EVENT_VOICE_SETTINGS_UPDATE,
+            None,
+        )
+    
+    
+    async def unsubscribe_voice_settings_update(self):
+        """
+        Unsubscribes from `voice_settings_update` events.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        await self._unsubscribe(
+            DISPATCH_EVENT_VOICE_SETTINGS_UPDATE,
+            None,
+        )
+    
+    
+    async def subscribe_voice_state_create(self, channel):
+        """
+        Subscribes to `voice_state_create` events.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``ChannelTextBase``, `int`
+            The channel to subscribe to.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        channel_id = get_channel_id(channel, ChannelVoiceBase)
+        
+        await self._subscribe(
+            DISPATCH_EVENT_USER_VOICE_CREATE,
+            channel_id,
+        )
+    
+    
+    async def unsubscribe_voice_state_create(self, channel):
+        """
+        Unsubscribes from `voice_state_create` events.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``ChannelTextBase``, `int`
+            The channel to unsubscribe from.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        channel_id = get_channel_id(channel, ChannelVoiceBase)
+
+        await self._unsubscribe(
+            DISPATCH_EVENT_USER_VOICE_CREATE,
+            channel_id,
+        )
+    
+    
+    async def subscribe_voice_state_update(self, channel):
+        """
+        Subscribes to `voice_state_update` events.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``ChannelTextBase``, `int`
+            The channel to subscribe to.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        channel_id = get_channel_id(channel, ChannelVoiceBase)
+        
+        await self._subscribe(
+            DISPATCH_EVENT_USER_VOICE_UPDATE,
+            channel_id,
+        )
+    
+    
+    async def unsubscribe_voice_state_update(self, channel):
+        """
+        Unsubscribes from `voice_state_update` events.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``ChannelTextBase``, `int`
+            The channel to unsubscribe from.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        channel_id = get_channel_id(channel, ChannelVoiceBase)
+
+        await self._unsubscribe(
+            DISPATCH_EVENT_USER_VOICE_UPDATE,
+            channel_id,
+        )
+    
+    
+    async def subscribe_voice_state_delete(self, channel):
+        """
+        Subscribes to `voice_state_delete` events.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``ChannelTextBase``, `int`
+            The channel to subscribe to.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        channel_id = get_channel_id(channel, ChannelVoiceBase)
+        
+        await self._subscribe(
+            DISPATCH_EVENT_USER_VOICE_DELETE,
+            channel_id,
+        )
+    
+    
+    async def unsubscribe_voice_state_delete(self, channel):
+        """
+        Unsubscribes from `voice_state_delete` events.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``ChannelTextBase``, `int`
+            The channel to unsubscribe from.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        channel_id = get_channel_id(channel, ChannelVoiceBase)
+
+        await self._unsubscribe(
+            DISPATCH_EVENT_USER_VOICE_DELETE,
+            channel_id,
+        )
+    
+    
+    async def subscribe_voice_connection_status(self):
+        """
+        Subscribes to `voice_connection_status` events.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        await self._subscribe(
+            DISPATCH_EVENT_VOICE_CONNECTION_STATUS,
+            None,
+        )
+    
+    
+    async def unsubscribe_voice_connection_status(self):
+        """
+        Unsubscribes from `voice_connection_status` events.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        await self._unsubscribe(
+            DISPATCH_EVENT_VOICE_CONNECTION_STATUS,
+            None,
+        )
+    
+    
+    async def subscribe_message_create(self, channel):
+        """
+        Subscribes to `message_create` events.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``ChannelTextBase``, `int`
+            The channel to subscribe to.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        channel_id = get_channel_id(channel, ChannelTextBase)
+        
+        await self._subscribe(
+            DISPATCH_EVENT_MESSAGE_CREATE,
+            channel_id,
+        )
+    
+    
+    async def unsubscribe_message_create(self, channel):
+        """
+        Unsubscribes from `message_create` events.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``ChannelTextBase``, `int`
+            The channel to unsubscribe from.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        channel_id = get_channel_id(channel, ChannelTextBase)
+
+        await self._unsubscribe(
+            DISPATCH_EVENT_MESSAGE_CREATE,
+            channel_id,
+        )
+    
+    
+    async def subscribe_message_edit(self, channel):
+        """
+        Subscribes to `message_edit` events.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``ChannelTextBase``, `int`
+            The channel to subscribe to.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        channel_id = get_channel_id(channel, ChannelTextBase)
+        
+        await self._subscribe(
+            DISPATCH_EVENT_MESSAGE_EDIT,
+            channel_id,
+        )
+    
+    
+    async def unsubscribe_message_edit(self, channel):
+        """
+        Unsubscribes from `message_edit` events.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``ChannelTextBase``, `int`
+            The channel to unsubscribe from.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        channel_id = get_channel_id(channel, ChannelTextBase)
+
+        await self._unsubscribe(
+            DISPATCH_EVENT_MESSAGE_EDIT,
+            channel_id,
+        )
+    
+    
+    async def subscribe_message_delete(self, channel):
+        """
+        Subscribes to `message_delete` events.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``ChannelTextBase``, `int`
+            The channel to subscribe to.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        channel_id = get_channel_id(channel, ChannelTextBase)
+        
+        await self._subscribe(
+            DISPATCH_EVENT_MESSAGE_DELETE,
+            channel_id,
+        )
+    
+    
+    async def unsubscribe_message_delete(self, channel):
+        """
+        Unsubscribes from `message_delete` events.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``ChannelTextBase``, `int`
+            The channel to unsubscribe from.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        channel_id = get_channel_id(channel, ChannelTextBase)
+
+        await self._unsubscribe(
+            DISPATCH_EVENT_MESSAGE_DELETE,
+            channel_id,
+        )
+    
+    
+    async def subscribe_speaking_start(self, channel):
+        """
+        Subscribes to `speaking_start` events.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``ChannelTextBase``, `int`
+            The channel to subscribe to.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        channel_id = get_channel_id(channel, ChannelVoiceBase)
+        
+        await self._subscribe(
+            DISPATCH_EVENT_SPEAKING_START,
+            channel_id,
+        )
+    
+    
+    async def unsubscribe_speaking_start(self, channel):
+        """
+        Unsubscribes from `speaking_start` events.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``ChannelTextBase``, `int`
+            The channel to unsubscribe from.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        channel_id = get_channel_id(channel, ChannelVoiceBase)
+
+        await self._unsubscribe(
+            DISPATCH_EVENT_SPEAKING_START,
+            channel_id,
+        )
+    
+    
+    async def subscribe_speaking_stop(self, channel):
+        """
+        Subscribes to `speaking_stop` events.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``ChannelTextBase``, `int`
+            The channel to subscribe to.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        channel_id = get_channel_id(channel, ChannelVoiceBase)
+        
+        await self._subscribe(
+            DISPATCH_EVENT_SPEAKING_STOP,
+            channel_id,
+        )
+    
+    
+    async def unsubscribe_speaking_stop(self, channel):
+        """
+        Unsubscribes from `speaking_stop` events.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        channel : ``ChannelTextBase``, `int`
+            The channel to unsubscribe from.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        channel_id = get_channel_id(channel, ChannelVoiceBase)
+        
+        await self._unsubscribe(
+            DISPATCH_EVENT_SPEAKING_STOP,
+            channel_id,
+        )
+    
+    
+    async def subscribe_notification_create(self):
+        """
+        Subscribes to `notification_create` events.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        await self._subscribe(
+            DISPATCH_EVENT_NOTIFICATION_CREATE,
+            None,
+        )
+    
+    
+    async def unsubscribe_notification_create(self):
+        """
+        Unsubscribes from `notification_create` events.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        await self._unsubscribe(
+            DISPATCH_EVENT_NOTIFICATION_CREATE,
+            None,
+        )
+    
+    
+    async def subscribe_activity_join(self):
+        """
+        Subscribes to `activity_join` events.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        await self._subscribe(
+            DISPATCH_EVENT_ACTIVITY_JOIN,
+            None,
+        )
+    
+    
+    async def unsubscribe_activity_join(self):
+        """
+        Unsubscribes from `activity_join` events.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        await self._unsubscribe(
+            DISPATCH_EVENT_ACTIVITY_JOIN,
+            None,
+        )
+    
+    
+    async def subscribe_activity_spectate(self):
+        """
+        Subscribes to `activity_spectate` events.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        await self._subscribe(
+            DISPATCH_EVENT_ACTIVITY_SPECTATE,
+            None,
+        )
+    
+    
+    async def unsubscribe_activity_spectate(self):
+        """
+        Unsubscribes from `activity_spectate` events.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        await self._unsubscribe(
+            DISPATCH_EVENT_ACTIVITY_SPECTATE,
+            None,
+        )
+    
+    
+    async def subscribe_activity_join_request(self):
+        """
+        Subscribes to `activity_join_request` events.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        await self._subscribe(
+            DISPATCH_EVENT_ACTIVITY_JOIN_REQUEST,
+            None,
+        )
+    
+    
+    async def unsubscribe_activity_join_request(self):
+        """
+        Unsubscribes from `activity_join_request` events.
+        
+        This method is a coroutine.
+        
+        Raises
+        ------
+        ConnectionError
+            RPC client is not connected.
+        TimeoutError
+            No response received within timeout interval.
+        DiscordRPCError
+            Any exception dropped back by the discord client.
+        """
+        await self._unsubscribe(
+            DISPATCH_EVENT_ACTIVITY_JOIN_REQUEST,
+            None,
+        )
+    
     
     async def set_certified_devices(self, *devices):
         """
@@ -1235,7 +2256,7 @@ class RPCClient:
             for device in devices:
                 if not isinstance(device, CertifiedDevice):
                     raise AssertionError(
-                        f'Devices can be `{CertifiedDevice.__name__}`, got '
+                        f'`devices` can be `{CertifiedDevice.__name__}`, got '
                         f'{device.__class__.__name__}; {device!r}.'
                     )
         
@@ -1249,8 +2270,7 @@ class RPCClient:
             },
         }
         
-        data = await self._send_request(data)
-        return None
+        await self._send_request(data)
     
     
     async def activity_set(self, activity):

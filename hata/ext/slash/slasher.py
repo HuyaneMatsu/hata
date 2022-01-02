@@ -3164,9 +3164,12 @@ class Slasher(EventHandlerBase):
         instead. Will be removed in 2022 February.
         """
         warnings.warn(
-            f'`{cls.__name__}.regex_custom_id_to_component_command` is deprecated, and will be removed in 2022'
-            f'February. Please use `{cls.__name__}._regex_custom_id_to_component_command` instead.',
-            FutureWarning)
+            (
+                f'`{cls.__name__}.regex_custom_id_to_component_command` is deprecated, and will be removed in 2022 '
+                f'February. Please use `{cls.__name__}._regex_custom_id_to_component_command` instead.'
+            ),
+            FutureWarning,
+        )
         
         return cls._regex_custom_id_to_component_command
     
@@ -3177,8 +3180,11 @@ class Slasher(EventHandlerBase):
         ``._string_custom_id_to_component_command`` instead. Will be removed in 2022 February.
         """
         warnings.warn(
-            f'`{cls.__name__}.string_custom_id_to_component_command` is deprecated, and will be removed in 2022 '
-            f'February. Please use `{cls.__name__}._string_custom_id_to_component_command` instead.',
-            FutureWarning)
+            (
+                f'`{cls.__name__}.string_custom_id_to_component_command` is deprecated, and will be removed in 2022 '
+                f'February. Please use `{cls.__name__}._string_custom_id_to_component_command` instead.'
+            ),
+            FutureWarning,
+        )
         
         return cls._string_custom_id_to_component_command

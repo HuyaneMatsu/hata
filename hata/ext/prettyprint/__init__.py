@@ -1,3 +1,10 @@
+import warnings
+
+warnings.warn(
+    '`hata.ext.prettyprint` is discontinued and will be removed in 2020 Jun.',
+    FutureWarning,
+)
+
 from .prettyprint import *
 
 __all__ = prettyprint.__all__

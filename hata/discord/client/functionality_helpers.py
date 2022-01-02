@@ -903,9 +903,9 @@ async def request_channel_thread_channels(client, guild, channel_id, request_fun
         
         thread_user_datas = data['members']
         for thread_user_data in thread_user_datas:
-            thread_chanel_id = int(thread_user_data['id'])
+            thread_channel_id = int(thread_user_data['id'])
             try:
-                thread_channel = CHANNELS[thread_chanel_id]
+                thread_channel = CHANNELS[thread_channel_id]
             except KeyError:
                 continue
     

@@ -642,7 +642,7 @@ class VoiceClient:
     
     async def join_audience(self):
         """
-        Joins the audience in the voice client's voice chanel. Only applicable for stage channels.
+        Joins the audience in the voice client's voice channel. Only applicable for stage channels.
         
         This method is a coroutine.
         

@@ -1,3 +1,9 @@
+## 1.1.131 *\[2022-01-??\]*
+
+- Add `banner` parameter to `Client.channel_edit`.
+- Add `banner` parameter to `client.channel_create`.
+- Add `banner` parameter to `cr_pg_channel_object`.
+
 ## 1.1.130 *\[2022-01-02\]*
 
 #### Improvements

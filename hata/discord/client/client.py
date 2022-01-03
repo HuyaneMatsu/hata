@@ -2930,7 +2930,7 @@ class Client(ClientUserPBase):
     
     
     async def channel_edit(self, channel, *, name=None, topic=None, nsfw=None, slowmode=None, user_limit=None,
-            bitrate=None, region=..., video_quality_mode=None, type_=None, default_auto_archive_after=None,
+            bitrate=None, region=..., video_quality_mode=None, type_=None, default_auto_archive_after=None, banner=...,
             reason=None):
         """
         Edits the given guild channel. Different channel types accept different parameters, so make sure to not pass
@@ -2965,6 +2965,9 @@ class Client(ClientUserPBase):
         default_auto_archive_after : `None`, `int`
             The default duration (in seconds) for newly created threads to automatically archive the themselves. Can be
             one of: `3600`, `86400`, `259200`, `604800`.
+        banner : `None`, `bytes-like`, Optional (Keyword only)
+             The new banner of the channel. Can be `'jpg'`, `'png'`, `'webp'` image's raw data. by passing it as
+            `None`, you can remove the current one.
         reason : `None`, `str`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
@@ -3058,8 +3061,8 @@ class Client(ClientUserPBase):
                 if (channel is not None):
                     if not isinstance(channel, ChannelText):
                         raise AssertionError(
-                            f'`type_` is a valid parameter only for `{ChannelText.__name__}` '
-                            f's, got {channel.__class__.__name__}; {channel!r}.'
+                            f'`type_` is a valid parameter only for `{ChannelText.__name__}`-s'
+                            f', got {channel.__class__.__name__}; {channel!r}.'
                         )
                 
                 if not isinstance(type_, int):
@@ -3097,8 +3100,8 @@ class Client(ClientUserPBase):
                 if (channel is not None):
                     if not isinstance(channel, ChannelText):
                         raise AssertionError(
-                            f'`slowmode` is a valid parameter only for `{ChannelText.__name__}` '
-                            f's, got {channel.__class__.__name__}; {channel!r}.'
+                            f'`slowmode` is a valid parameter only for `{ChannelText.__name__}`-s'
+                            f', got {channel.__class__.__name__}; {channel!r}.'
                         )
                 
                 if not isinstance(slowmode, int):
@@ -3119,8 +3122,8 @@ class Client(ClientUserPBase):
                 if (channel is not None):
                     if not isinstance(channel, ChannelVoiceBase):
                         raise AssertionError(
-                            f'`bitrate` is a valid parameter only for `{ChannelVoiceBase.__name__}` '
-                            f's, got {channel.__class__.__name__}; {channel!r}.'
+                            f'`bitrate` is a valid parameter only for `{ChannelVoiceBase.__name__}`-s'
+                            f', got {channel.__class__.__name__}; {channel!r}.'
                         )
                     
                 if not isinstance(bitrate, int):
@@ -3151,8 +3154,8 @@ class Client(ClientUserPBase):
                 if (channel is not None):
                     if not isinstance(channel, ChannelVoiceBase):
                         raise AssertionError(
-                            f'`user_limit` is a valid parameter only for `{ChannelVoiceBase.__name__}` '
-                            f's, got {channel.__class__.__name__}; {channel!r}.'
+                            f'`user_limit` is a valid parameter only for `{ChannelVoiceBase.__name__}`-s'
+                            f', got {channel.__class__.__name__}; {channel!r}.'
                         )
                 
                 if user_limit < 0 or user_limit > 99:
@@ -3168,8 +3171,8 @@ class Client(ClientUserPBase):
                 if (channel is not None):
                     if not isinstance(channel, ChannelVoiceBase):
                         raise AssertionError(
-                            f'`region` is a valid parameter only for `{ChannelVoiceBase.__name__}` '
-                            f's, got {channel.__class__.__name__}; {channel!r}.'
+                            f'`region` is a valid parameter only for `{ChannelVoiceBase.__name__}`-s'
+                            f', got {channel.__class__.__name__}; {channel!r}.'
                         )
             
             if region is None:
@@ -3212,8 +3215,8 @@ class Client(ClientUserPBase):
             if __debug__:
                 if not issubclass(channel_type, (ChannelText, ChannelForum)):
                     raise AssertionError(
-                        f'`default_auto_archive_after` is a valid parameter only for `{ChannelText.__name__}` '
-                        f's, got {channel_type.__name__}; {channel!r}.'
+                        f'`default_auto_archive_after` is a valid parameter only for `{ChannelText.__name__}`-s'
+                        f', got {channel_type.__name__}; {channel!r}.'
                     )
                 
                 if not isinstance(default_auto_archive_after, int):
@@ -3229,6 +3232,36 @@ class Client(ClientUserPBase):
                     )
             
             channel_data['default_auto_archive_duration'] = default_auto_archive_after // 60
+        
+        if (banner is not ...):
+            if __debug__:
+                if (channel is not None):
+                    if not isinstance(channel, ChannelText):
+                        raise AssertionError(
+                            f'`banner` is a valid parameter only for `{ChannelText.__name__}`-s'
+                            f', got {channel.__class__.__name__}; {channel!r}.'
+                        )
+            
+            if banner is None:
+                banner_data = None
+            else:
+                if not isinstance(banner, (bytes, bytearray, memoryview)):
+                    raise TypeError(
+                        f'`banner` can be `None`, `bytes-like`, got '
+                        f'{banner.__class__.__name__}; got {reprlib.repr(banner)}.'
+                    )
+                
+                if __debug__:
+                    media_type = get_image_media_type(banner)
+                    if media_type not in VALID_ICON_MEDIA_TYPES:
+                        raise AssertionError(
+                            f'Invalid `banner` type: {media_type}; got {reprlib.repr(banner)}.'
+                        )
+                
+                banner_data = image_to_base64(banner)
+            
+            data['banner'] = banner_data
+        
         
         await self.http.channel_edit(channel_id, data, reason)
     
@@ -3278,6 +3311,8 @@ class Client(ClientUserPBase):
         default_auto_archive_after : `None`, `int`
             The default duration (in seconds) for newly created threads to automatically archive the themselves. Can be
             one of: `3600`, `86400`, `259200`, `604800`.
+        banner : `None`, `bytes-like`, Optional (Keyword only)
+             The new banner of the channel. Can be `'jpg'`, `'png'`, `'webp'` image's raw data.
         
         Returns
         -------
@@ -6791,7 +6826,7 @@ class Client(ClientUserPBase):
             The new splash of the guild. Can be `'jpg'`, `'png'`, `'webp'` image's raw data. The guild must have
             `DISCOVERABLE` feature. By passing it as `None` you can remove the current one.
         banner : `None`, `bytes-like`, Optional (Keyword only)
-            The new splash of the guild. Can be `'jpg'`, `'png'`, `'webp'` image's raw data. The guild must have
+            The new banner of the guild. Can be `'jpg'`, `'png'`, `'webp'` image's raw data. The guild must have
             `BANNER` feature. By passing it as `None` you can remove the current one.
         afk_channel : `None`, ``ChannelVoice``, `int`, Optional (Keyword only)
             The new afk channel of the guild. You can remove the current one by passing is as `None`.

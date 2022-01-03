@@ -2,6 +2,7 @@ __all__ = (
     'CHANNEL_TYPE_MAP', 'cr_pg_channel_object', 'create_partial_channel_from_data', 'create_partial_channel_from_id'
 )
 
+import reprlib
 from datetime import datetime
 
 from scarletio import export, include
@@ -108,7 +109,8 @@ def create_partial_channel_from_id(channel_id, channel_type, guild_id):
 
 def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None, nsfw=None, slowmode=None, bitrate=None,
         user_limit=None, region=None, video_quality_mode=None, archived=None, archived_at=None,
-        auto_archive_after=None, open_=None, default_auto_archive_after=None, parent=None, guild=None, overwrites=None):
+        auto_archive_after=None, open_=None, default_auto_archive_after=None, banner=None, parent=None, guild=None,
+        overwrites=None):
     """
     Creates a json serializable object representing a ``GuildChannelBase``.
     
@@ -147,6 +149,8 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
     default_auto_archive_after : `None`, `int`
         The default duration (in seconds) for newly created threads to automatically archive the themselves. Can be
         one of: `3600`, `86400`, `259200`, `604800`.
+    banner : `None`, `bytes-like`, Optional (Keyword only)
+         The new banner of the channel. Can be `'jpg'`, `'png'`, `'webp'` image's raw data.
     parent : `None`, ``ChannelCategory``, `int`, Optional (Keyword only)
         The channel's parent. If the parent is under a guild, leave it empty.
     category : `None`, ``ChannelCategory``, `int`, Optional (Keyword only)
@@ -341,6 +345,32 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
                 )
         
         channel_data['rate_limit_per_user'] = slowmode
+    
+    
+    if (banner is not None):
+        if __debug__:
+            if not issubclass(channel_type, ChannelText):
+                raise AssertionError(
+                    f'`banner` is a valid parameter only for `{ChannelText.__name__}`, got '
+                    f'{channel_type.__name__}; {type_!r}.'
+                )
+            
+        if not isinstance(banner, (bytes, bytearray, memoryview)):
+            raise TypeError(
+                f'`banner` can be `None`, `bytes-like`, got '
+                f'{banner.__class__.__name__}; got {reprlib.repr(banner)}.'
+            )
+        
+        if __debug__:
+            media_type = get_image_media_type(banner)
+            if media_type not in VALID_ICON_MEDIA_TYPES:
+                raise AssertionError(
+                    f'Invalid `banner` type: {media_type}; got {reprlib.repr(banner)}.'
+                )
+        
+        banner_data = image_to_base64(banner)
+    
+        data['banner'] = banner_data
     
     
     if (bitrate is not None):
@@ -549,6 +579,7 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
                 )
         
         channel_data['parent_id'] = parent_id
+    
     
     return channel_data
 

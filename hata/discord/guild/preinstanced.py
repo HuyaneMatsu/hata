@@ -619,7 +619,7 @@ class GuildFeature(PreinstancedBase):
     
     
     # predefined
-    animated_banner = P('ANIMATED_BANNER', 'animated_banner')
+    animated_banner = P('ANIMATED_BANNER', 'animated banner')
     animated_icon = P('ANIMATED_ICON', 'animated icon')
     announcement_channels = P('NEWS', 'announcement channels')
     banner = P('BANNER', 'banner')

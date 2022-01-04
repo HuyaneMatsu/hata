@@ -52,7 +52,7 @@ An improved example using the `commands` extension to handle common use cases.
 ```py
 from hata import Client, wait_for_interruption
 
-Saki = Client('TOKEN', extensions='commands', prefix='s!')
+Saki = Client('TOKEN', extensions='commands_v2', prefix='s!')
 
 @Saki.events
 async def ready(client):

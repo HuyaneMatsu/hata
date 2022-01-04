@@ -496,10 +496,10 @@ class InteractionResponse:
             elif is_return:
                 need_acknowledging = False
             else:
-                need_acknowledging = False
+                need_acknowledging = True
             
             if need_acknowledging:
-                yield client.interaction_response_message_create(
+                yield client.interaction_application_command_acknowledge(
                     interaction_event,
                     show_for_invoking_user_only = show_for_invoking_user_only,
                 )

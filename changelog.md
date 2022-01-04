@@ -1,8 +1,15 @@
-## 1.1.131 *\[2022-01-??\]*
+## 1.1.131 *\[2022-01-04\]*
+
+#### Improvements
 
 - Add `banner` parameter to `Client.channel_edit`.
 - Add `banner` parameter to `client.channel_create`.
 - Add `banner` parameter to `cr_pg_channel_object`.
+
+#### Bug Fixes
+
+##### ext.slash
+- `InteractionResponse` could not `yield` back a `Message` if expected.
 
 ## 1.1.130 *\[2022-01-02\]*
 

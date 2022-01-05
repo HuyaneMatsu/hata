@@ -408,13 +408,11 @@ class SolarPlayerBase:
         except KeyError:
             position = 0.0
         else:
-            position = position * 1000.0
+            position = position * 0.001
         
         self._position = position
         self._position_update = monotonic()
-        # There is also a time key, but dunno why i would use it.
-    
-    
+        # There is also a time key, but dunno why I would use it.
     
     
     async def disconnect(self):

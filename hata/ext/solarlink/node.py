@@ -293,7 +293,7 @@ class SolarNode:
                         try:
                             with repeat_timeout(60.0) as loop:
                                 for _ in loop:
-                                    should_reconnect = await self.self._poll_event()
+                                    should_reconnect = await self._poll_event()
                                     if should_reconnect:
                                         break
                         except TimeoutError:
@@ -318,6 +318,7 @@ class SolarNode:
                 
                 except (OSError, TimeoutError, ConnectionError, ConnectionClosed, WebSocketProtocolError,
                         InvalidHandshake, ValueError) as err:
+                    
                     if not client.running:
                         return
                     
@@ -374,7 +375,8 @@ class SolarNode:
             if (waiter is not None):
                 waiter.set_exception_if_pending(err)
                 waiter = None
-        
+            
+            raise
         finally:
             await client.solarlink._node_disconnected(self)
             

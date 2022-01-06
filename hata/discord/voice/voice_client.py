@@ -572,6 +572,11 @@ class VoiceClient:
         channel : ``ChannelVoiceBase``, `int`
             The channel where the voice client will move to.
         
+        Returns
+        -------
+        moved : `bool`
+            Returns `False` if the voice client is already in the channel.
+        
         Raises
         ------
         TypeError
@@ -583,15 +588,16 @@ class VoiceClient:
             channel_id = maybe_snowflake(channel)
             if channel_id is None:
                 raise TypeError(
-                    f'`channel` can `{ChannelVoiceBase.__name__}`, `int`, got '
+                    f'`channel` can be `{ChannelVoiceBase.__name__}`, `int`, got '
                     f'{channel.__class__.__name__}; {channel!r}.'
                 )
         
         if self.channel_id == channel_id:
-            return
+            return False
         
         gateway = self.client.gateway_for(self.guild_id)
         await gateway.change_voice_state(self.guild_id, channel_id)
+        return True
     
     
     async def join_speakers(self, *, request=False):

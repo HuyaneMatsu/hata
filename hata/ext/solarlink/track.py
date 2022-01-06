@@ -289,8 +289,6 @@ class Track:
         return False
 
 
-TRACK_ATTRIBUTE_GETTERS = {attribute_name: getattr(Track, attribute_name) for attribute_name in Track.__slots__}
-
 class ConfiguredTrack(RichAttributeErrorBaseType):
     """
     Represents a track added to a player. Not like generic tracks, this supports additional attributes as well.
@@ -389,6 +387,7 @@ class ConfiguredTrack(RichAttributeErrorBaseType):
     
         return self
     
+    
     def __getattr__(self, attribute_name):
         """Tries to find the attributes from the added attributes."""
         added_attributes = self._added_attributes
@@ -397,13 +396,6 @@ class ConfiguredTrack(RichAttributeErrorBaseType):
                 return added_attributes[attribute_name]
             except KeyError:
                 pass
-        
-        try:
-            getter = TRACK_ATTRIBUTE_GETTERS[attribute_name]
-        except KeyError:
-            pass
-        else:
-            return getter.__get__(self.track, Track)
         
         RichAttributeErrorBaseType.__getattr__(self, attribute_name)
     
@@ -414,8 +406,6 @@ class ConfiguredTrack(RichAttributeErrorBaseType):
         added_attributes = self._added_attributes
         if (added_attributes is not None):
             directory.update(added_attributes.keys())
-        
-        directory.update(TRACK_ATTRIBUTE_GETTERS.keys())
         
         return sorted(directory)
     
@@ -507,8 +497,116 @@ class ConfiguredTrack(RichAttributeErrorBaseType):
             return False
         
         return True
-
     
+    
+    @property
+    def author(self):
+        """
+        Returns the track's uploader.
+        
+        Returns
+        -------
+        author : `str`
+        """
+        return self.track.author
+    
+    
+    @property
+    def base64(self):
+        """
+        Returns the track's base 64 version.
+        
+        Returns
+        -------
+        base64 : `str`
+        """
+        return self.track.base64
+    
+    
+    @property
+    def duration(self):
+        """
+        Returns the track's duration in seconds.
+        
+        Returns
+        -------
+        duration : `float`
+        """
+        return self.track.duration
+    
+    
+    @property
+    def identifier(self):
+        """
+        Returns the track's identifier.
+        
+        Returns
+        -------
+        identifier : `str`
+        """
+        return self.track.identifier
+    
+    
+    @property
+    def is_stream(self):
+        """
+        Returns whether the track is a live-stream.
+        
+        Returns
+        -------
+        is_stream : `bool`
+        """
+        return self.track.is_stream
+    
+    
+    @property
+    def is_seekable(self):
+        """
+        Returns whether the track supports seeking.
+        
+        Returns
+        -------
+        is_seekable : `bool`
+        """
+        return self.track.is_seekable
+    
+    
+    @property
+    def position(self):
+        """
+        Returns the position of the track.
+        
+        Returns
+        -------
+        position : `float`
+        """
+        return self.track.position
+    
+    
+    @property
+    def title(self):
+        """
+        Returns the track's title.
+        
+        Returns
+        -------
+        title : `str`
+        """
+        return self.track.title
+    
+    
+    @property
+    def url(self):
+        """
+        Returns the track's url.
+        
+        Returns
+        -------
+        url : `None`, `str`
+        """
+        return self.track.url
+
+
 class GetTracksResult:
     """
     Returned by ``SolarClient.get_tracks`` if the request succeeded.

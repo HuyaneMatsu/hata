@@ -1,3 +1,9 @@
+## 1.1.132 *\[2022-01-??\]*
+
+#### Improvements
+
+- Add `ERROR_CODES.community_and_rules_channel_cannot_be_changed_to_announcement`.
+
 ## 1.1.131 *\[2022-01-04\]*
 
 #### Improvements

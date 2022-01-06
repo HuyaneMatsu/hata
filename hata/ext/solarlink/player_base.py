@@ -451,6 +451,12 @@ class SolarPlayerBase:
         channel : ``ChannelVoiceBase``, `int`
             The channel where the voice client will move to.
         
+        Returns
+        -------
+        moved : `bool`
+            Returns `False` if the voice client is already in the channel or if the voice client is already
+            disconnected (should not happen).
+        
         Raises
         ------
         TypeError
@@ -459,7 +465,7 @@ class SolarPlayerBase:
         node = self.node
         if node is None:
             # Already disconnected.
-            return
+            return False
         
         if isinstance(channel, ChannelVoiceBase):
             channel_id = channel.id
@@ -472,10 +478,11 @@ class SolarPlayerBase:
                 )
         
         if self.channel_id == channel_id:
-            return
+            return False
         
         gateway = node.client.gateway_for(self.guild_id)
         await gateway.change_voice_state(self.guild_id, channel_id)
+        return True
     
     
     async def change_node(self, node):

@@ -186,7 +186,7 @@ class ComponentCommand(CustomIdBasedCommand):
         command_coroutine = self._command_function(*parameters)
         
         try:
-            await process_command_coroutine(client, interaction_event, False, command_coroutine)
+            await process_command_coroutine(client, interaction_event, None, command_coroutine)
         except BaseException as err:
             exception = err
         else:

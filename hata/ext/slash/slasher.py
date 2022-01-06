@@ -1239,8 +1239,6 @@ class Slasher(EventHandlerBase):
             instead.
         description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`), Optional
             Description to use instead of the function's docstring.
-        show_for_invoking_user_only : `None`, `bool`, `tuple` of (`bool`, `Ellipsis`), Optional
-            Whether the response message should only be shown for the invoking user. Defaults to `False`.
         is_global : `None`, `bool`, `tuple` of (`bool`, `Ellipsis`), Optional
             Whether the slash command is global. Defaults to `False`.
         guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
@@ -1254,6 +1252,11 @@ class Slasher(EventHandlerBase):
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
         custom_id : `str`, (`list`, `set`) of `str`, `tuple` of (`str`, (`list`, `set`) of `str`)
             Custom id to match by the component command.
+        allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, ``AllowedMentionProxy``, \
+                `list` of (`str`, ``UserBase``, ``Role`` ), Optional (Keyword only)
+            Which user or role can the response message ping (or everyone).
+        show_for_invoking_user_only : `bool`, Optional (Keyword only)
+            Whether the response message should only be shown for the invoking user.
         
         Returns
         -------

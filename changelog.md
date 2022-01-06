@@ -4,6 +4,11 @@
 
 - Add `ERROR_CODES.community_and_rules_channel_cannot_be_changed_to_announcement`.
 
+##### ext.slash
+- `show_for_invoking_user_only` parameter of `SlasherApplicationCommand.__new__` is now keyword only and is not routed
+    anymore.
+- Add `allowed_mentions` parameter to `SlasherApplicationCommand.__new__`.
+
 ## 1.1.131 *\[2022-01-04\]*
 
 #### Improvements

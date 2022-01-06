@@ -11,6 +11,7 @@ from .exceptions import *
 from .expression_parser import *
 from .form_submit_command import *
 from .responding import *
+from .response_modifier import *
 from .slasher import *
 from .utils import *
 from .waiters import *
@@ -31,6 +32,7 @@ __all__ = (
     *expression_parser.__all__,
     *form_submit_command.__all__,
     *responding.__all__,
+    *response_modifier.__all__,
     *slasher.__all__,
     *utils.__all__,
     *waiters.__all__,

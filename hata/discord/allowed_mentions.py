@@ -178,7 +178,7 @@ class AllowedMentionProxy:
         
         Parameters
         ----------
-        *allowed_mentions : `str`, ``UserBase``, ``Role``, ``AllowedMentionProxy`
+        *allowed_mentions : `str`, ``UserBase``, ``Role``, ``AllowedMentionProxy``
             Which user or role can the message ping (or everyone).
         
         Raises
@@ -557,7 +557,7 @@ class AllowedMentionProxy:
         
         Parameters
         ----------
-        other : `str`, ``UserBase``, ``Role``, ``AllowedMentionProxy` or (`list`, `tuple`, `set`) of \
+        other : `str`, ``UserBase``, ``Role``, ``AllowedMentionProxy`` or (`list`, `tuple`, `set`) of \
                 (`str`, ``UserBase``, ``Role``)
             Which user or role can the message ping (or everyone).
         

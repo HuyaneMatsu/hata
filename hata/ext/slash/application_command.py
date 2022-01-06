@@ -30,6 +30,7 @@ from .exceptions import (
     test_exception_handler
 )
 from .responding import process_auto_completer_coroutine, process_command_coroutine
+from .response_modifier import ResponseModifier
 from .utils import (
     SYNC_ID_GLOBAL, SYNC_ID_NON_GLOBAL, UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_INHERIT,
     UNLOADING_BEHAVIOUR_KEEP, _check_maybe_route, normalize_description, raw_name_to_display
@@ -43,7 +44,7 @@ Slasher = include('Slasher')
 
 SLASH_COMMAND_PARAMETER_NAMES = (
     'command', 'name', 'description', 'show_for_invoking_user_only', 'is_global', 'guild', 'is_default',
-    'delete_on_unload', 'allow_by_default', 'target'
+    'delete_on_unload', 'allow_by_default', 'target', 'allowed_mentions'
 )
 
 SLASH_COMMAND_NAME_NAME = 'name'
@@ -57,33 +58,6 @@ APPLICATION_COMMAND_HANDLER_DEEPNESS = 0
 APPLICATION_COMMAND_DEEPNESS = 1
 APPLICATION_COMMAND_CATEGORY_DEEPNESS_START = 2
 APPLICATION_COMMAND_CATEGORY_DEEPNESS_MAX = 3
-
-
-def _validate_show_for_invoking_user_only(show_for_invoking_user_only):
-    """
-    Validates the given `show_for_invoking_user_only` value.
-    
-    Parameters
-    ----------
-    show_for_invoking_user_only : `None`, `bool`
-        The `show_for_invoking_user_only` value to validate.
-    
-    Returns
-    -------
-    show_for_invoking_user_only : `bool`
-        The validated `show_for_invoking_user_only` value.
-    
-    Raises
-    ------
-    TypeError
-        If `show_for_invoking_user_only` was not given as `None` nor as `bool`.
-    """
-    if show_for_invoking_user_only is None:
-        show_for_invoking_user_only = False
-    else:
-        show_for_invoking_user_only = preconvert_bool(show_for_invoking_user_only, 'show_for_invoking_user_only')
-    
-    return show_for_invoking_user_only
 
 
 def _validate_is_global(is_global):
@@ -482,7 +456,7 @@ def _checkout_auto_complete_parameter_name(parameter_name):
     else:
         raise TypeError(
             f'`parameter_name` can be `str`, got '
-            f'{parameter_name.__class__.__name__}; {parameter_name!r}'
+            f'{parameter_name.__class__.__name__}; {parameter_name!r}.'
         )
     
     if not parameter_name:
@@ -850,8 +824,10 @@ class SlasherApplicationCommand:
             SLASH_COMMAND_COMMAND_NAME)
     
     
-    def __new__(cls, func, name=None, description=None, show_for_invoking_user_only=None, is_global=None,
-            guild=None, is_default=None, delete_on_unload=None, allow_by_default=None, target=None):
+    def __new__(cls, func, name=None, description=None, is_global=None,
+            guild=None, is_default=None, delete_on_unload=None, allow_by_default=None, target=None,
+            **kwargs,
+        ):
         """
         Creates a new ``SlasherApplicationCommand`` with the given parameters.
         
@@ -864,8 +840,6 @@ class SlasherApplicationCommand:
             instead.
         description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`), Optional
             Description to use instead of the function's docstring.
-        show_for_invoking_user_only : `None`, `bool`, `tuple` of (`bool`, `Ellipsis`), Optional
-            Whether the response message should only be shown for the invoking user. Defaults to `False`.
         is_global : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the slash command is global. Defaults to `False`.
         guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
@@ -882,6 +856,17 @@ class SlasherApplicationCommand:
             
             Defaults to `ApplicationCommandTargetType.chat`.
         
+        **kwargs : Keyword parameters
+            Additional keyword parameters.
+        
+        Other parameters
+        ----------------
+        allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, ``AllowedMentionProxy``, \
+                `list` of (`str`, ``UserBase``, ``Role`` ), Optional (Keyword only)
+            Which user or role can the response message ping (or everyone).
+        show_for_invoking_user_only : `bool`, Optional (Keyword only)
+            Whether the response message should only be shown for the invoking user.
+        
         Returns
         -------
         self : ``SlasherApplicationCommand``, ``Router``
@@ -889,44 +874,9 @@ class SlasherApplicationCommand:
         Raises
         ------
         TypeError
-            - If a value is routed but to a bad count amount.
-            - If `show_for_invoking_user_only` was not given as `None`, `bool`.
-            - If `is_global` was not given as `None`, `bool`.
-            - If `guild` was not given neither as `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``)
-            - If `func` is not async callable, neither cannot be instanced to async.
-            - If `func` accepts keyword only parameters.
-            - If `func` accepts `*args`.
-            - If `func` accepts `**kwargs`.
-            - If `func` accepts more than `27` parameters.
-            - If `func`'s 0th parameter is annotated, but not as ``Client``.
-            - If `func`'s 1th parameter is annotated, but not as ``InteractionEvent``.
-            - If `name` was not given neither as `None`, `str`.
-            - If a parameter's `annotation_value` is `list`, but it's elements do not match the
-                `tuple` (`str`, `str`, `int`) pattern.
-            - If a parameter's `annotation_value` is `dict`, but it's items do not match the
-                (`str`, `str`, `int`) pattern.
-            - If a parameter's `annotation_value` is unexpected.
-            - If a parameter's `annotation` is `tuple`, but it's 1th element is neither `None` nor `str`.
-            - If `is_global` and `guild` contradicts each other.
-            - If `is_default` was not given neither as `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `delete_on_unload` was not given neither as `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`).
-            - If `allow_by_default` was not given neither as `None`, `bool`, `tuple` of (`None`, `bool`,
-                `Ellipsis`).
-            - If `target` was not given neither as `None`, `int`, `str`, ``ApplicationCommandTargetType``.
+            If a parameter's type is incorrect.
         ValueError
-            - If `guild` is or contains an integer out of uint64 value range.
-            - If a parameter's `annotation` is a `tuple`, but it's length is out of the expected range [0:2].
-            - If a parameter's `annotation_value` is `str`, but not any of the expected ones.
-            - If a parameter's `annotation_value` is `type`, but not any of the expected ones.
-            - If a parameter's `choice` amount is out of the expected range [1:25].
-            - If a parameter's `choice` name is duped.
-            - If a parameter's `choice` values are mixed types.
-            - If `description` length is out of range [2:100].
-            - If `guild` is given as an empty container.
-            - If `name` length is out of the expected range [1:32].
-            - If `target` could not be matched by any expected target type name or value.
-            - For context commands `command` parameter is required (cannot be `None`).
-        
+            If a parameter's value is incorrect.
         """
         if (func is not None) and isinstance(func, SlasherCommandWrapper):
             command, wrappers = func.fetch_function_and_wrappers_back()
@@ -939,8 +889,6 @@ class SlasherApplicationCommand:
         route_to = 0
         name, route_to = _check_maybe_route('name', name, route_to, _validate_name)
         description, route_to = _check_maybe_route('description', description, route_to, None)
-        show_for_invoking_user_only, route_to = _check_maybe_route('show_for_invoking_user_only',
-            show_for_invoking_user_only, route_to, _validate_show_for_invoking_user_only)
         is_global, route_to = _check_maybe_route('is_global', is_global, route_to, _validate_is_global)
         guild_ids, route_to = _check_maybe_route('guild', guild, route_to, _validate_guild)
         is_default, route_to = _check_maybe_route('is_default', is_default, route_to, _validate_is_default)
@@ -956,7 +904,6 @@ class SlasherApplicationCommand:
             name = [raw_name_to_display(check_name(command, sub_name)) for sub_name in name]
             
             default_description = _generate_description_from(command, None, None)
-            show_for_invoking_user_only = route_value(show_for_invoking_user_only, route_to)
             is_global = route_value(is_global, route_to)
             guild_ids = route_value(guild_ids, route_to)
             is_default = route_value(is_default, route_to)
@@ -1000,16 +947,22 @@ class SlasherApplicationCommand:
             else:
                 parameter_configurers = get_parameter_configurers(wrappers)
                 command, parameter_converters = get_slash_command_parameter_converters(command, parameter_configurers)
-            
+        
+        
+        # Check extra parameters
+        response_modifier = ResponseModifier(kwargs)
+        
+        if kwargs:
+            raise TypeError(f'Extra or unused parameters: {kwargs!r}.')
+        
+        
         if route_to:
             router = []
             
             for (
-                name, description, show_for_invoking_user_only, is_global, guild_ids, is_default, unloading_behaviour,\
-                allow_by_default
+                name, description, is_global, guild_ids, is_default, unloading_behaviour, allow_by_default
             ) in zip(
-                name, description, show_for_invoking_user_only, is_global, guild_ids, is_default, unloading_behaviour,
-                allow_by_default
+                name, description, is_global, guild_ids, is_default, unloading_behaviour, allow_by_default
             ):
                 
                 if is_global and (guild_ids is not None):
@@ -1023,7 +976,7 @@ class SlasherApplicationCommand:
                     sub_commands = {}
                 else:
                     command_function = SlasherApplicationCommandFunction(command, parameter_converters, name,
-                        description, show_for_invoking_user_only, is_default)
+                        description, response_modifier, is_default)
                     sub_commands = None
                 
                 self = object.__new__(cls)
@@ -1067,7 +1020,7 @@ class SlasherApplicationCommand:
                 command_function = None
             else:
                 command_function = SlasherApplicationCommandFunction(command, parameter_converters, name, description,
-                    show_for_invoking_user_only, is_default)
+                    response_modifier, is_default)
                 sub_commands = None
             
             self = object.__new__(cls)
@@ -1915,16 +1868,16 @@ class SlasherApplicationCommandFunction:
         Whether the command is the default command in it's category.
     name : `str`
         The name of the slash command. It's length can be in range [1:32].
-    show_for_invoking_user_only : `bool`
-        Whether the response message should only be shown for the invoker user.
+    response_modifier : `None`, ``ResponseModifier``
+        Modifies values returned and yielded to command coroutine processor.
     """
     __slots__ = (
         '__weakref__', '_auto_completers', '_command', '_exception_handlers', '_parameter_converters',
         '_parent_reference', '_self_reference', 'category', 'description', 'is_default', 'name',
-        'show_for_invoking_user_only'
+        'response_modifier'
     )
     
-    def __new__(cls, command, parameter_converters, name, description, show_for_invoking_user_only, is_default):
+    def __new__(cls, command, parameter_converters, name, description, response_modifier, is_default):
         """
         Creates a new ``SlasherApplicationCommandFunction`` with the given parameters.
         
@@ -1938,8 +1891,8 @@ class SlasherApplicationCommandFunction:
             The name of the slash command.
         description : `str`
             The slash command's description.
-        show_for_invoking_user_only : `bool`
-            Whether the response message should only be shown for the invoking user.
+        response_modifier : `None`, ``ResponseModifier``
+            Modifies values returned and yielded to command coroutine processor.
         is_default : `bool`
             Whether the command is the default command in it's category.
         """
@@ -1947,7 +1900,7 @@ class SlasherApplicationCommandFunction:
         self._auto_completers = None
         self._command = command
         self._parameter_converters = parameter_converters
-        self.show_for_invoking_user_only = show_for_invoking_user_only
+        self.response_modifier = response_modifier
         self.description = description
         self.name = name
         self.is_default = is_default
@@ -2014,7 +1967,7 @@ class SlasherApplicationCommandFunction:
             await process_command_coroutine(
                 client,
                 interaction_event,
-                self.show_for_invoking_user_only,
+                self.response_modifier,
                 command_coroutine,
             )
         except BaseException as err:
@@ -2095,8 +2048,10 @@ class SlasherApplicationCommandFunction:
         if self.is_default:
             repr_parts.append(', is_default=True')
         
-        if self.show_for_invoking_user_only:
-            repr_parts.append(', show_for_invoking_user_only=True')
+        response_modifier = self.response_modifier
+        if (response_modifier is not None):
+            repr_parts.append(', response_modifier')
+            repr_parts.append(repr(response_modifier))
         
         repr_parts.append('>')
         
@@ -2136,7 +2091,7 @@ class SlasherApplicationCommandFunction:
         new = object.__new__(type(self))
         new._command = self._command
         new._parameter_converters = self._parameter_converters
-        new.show_for_invoking_user_only = self.show_for_invoking_user_only
+        new.response_modifier = self.response_modifier
         new.description = self.description
         new.name = self.name
         new.is_default = self.is_default
@@ -2168,7 +2123,7 @@ class SlasherApplicationCommandFunction:
         if self._parameter_converters != other._parameter_converters:
             return False
         
-        if self.show_for_invoking_user_only != other.show_for_invoking_user_only:
+        if self.response_modifier != other.response_modifier:
             return False
         
         if self.description != other.description:

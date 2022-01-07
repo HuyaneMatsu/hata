@@ -1,28 +1,26 @@
 __all__ = (
     'ChannelMix', 'Distortion', 'Equalizer', 'Filter', 'Karaoke', 'LowPass', 'Rotation', 'Timescale', 'Tremolo',
-    'Vibrato'
+    'Vibrato', 'Volume'
 )
-
-# TODO: bozosort
 
 from scarletio import copy_docs
 
 from .constants import (
-    LAVALINK_BAND_COUNT, LAVALINK_KEY_FILTER_EQUALIZER_BAND, LAVALINK_KEY_FILTER_EQUALIZER_GAIN,
-    LAVALINK_KEY_FILTER_KARAOKE_LEVEL, LAVALINK_KEY_FILTER_KARAOKE_MONO_LEVEL, LAVALINK_KEY_FILTER_KARAOKE_FILTER_BAND,
-    LAVALINK_KEY_FILTER_KARAOKE_FILTER_WIDTH, LAVALINK_KEY_FILTER_TIMESCALE, LAVALINK_KEY_FILTER_TIMESCALE_PITCH,
-    LAVALINK_KEY_FILTER_TIMESCALE_RATE, LAVALINK_KEY_FILTER_TIMESCALE_SPEED, LAVALINK_KEY_FILTER_TREMOLO,
-    LAVALINK_KEY_FILTER_TREMOLO_DEPTH, LAVALINK_KEY_FILTER_TREMOLO_FREQUENCY, LAVALINK_KEY_FILTER_EQUALIZER,
-    LAVALINK_KEY_FILTER_KARAOKE, LAVALINK_KEY_FILTER_VIBRATO, LAVALINK_KEY_FILTER_VIBRATO_DEPTH,
-    LAVALINK_KEY_FILTER_VIBRATO_FREQUENCY, LAVALINK_KEY_FILTER_ROTATION, LAVALINK_KEY_FILTER_ROTATION_ROTATION_HZ,
-    LAVALINK_KEY_FILTER_DISTORTION, LAVALINK_KEY_FILTER_DISTORTION_COS_OFFSET,
-    LAVALINK_KEY_FILTER_DISTORTION_COS_SCALE, LAVALINK_KEY_FILTER_DISTORTION_SIN_OFFSET,
-    LAVALINK_KEY_FILTER_DISTORTION_SIN_SCALE, LAVALINK_KEY_FILTER_DISTORTION_TAN_OFFSET,
-    LAVALINK_KEY_FILTER_DISTORTION_TAN_SCALE, LAVALINK_KEY_FILTER_DISTORTION_OFFSET,
-    LAVALINK_KEY_FILTER_DISTORTION_SCALE, LAVALINK_KEY_FILTER_CHANNEL_MIX, LAVALINK_KEY_FILTER_CHANNEL_MIX_LEFT_TO_LEFT,
+    LAVALINK_BAND_COUNT, LAVALINK_KEY_FILTER_CHANNEL_MIX, LAVALINK_KEY_FILTER_CHANNEL_MIX_LEFT_TO_LEFT,
     LAVALINK_KEY_FILTER_CHANNEL_MIX_LEFT_TO_RIGHT, LAVALINK_KEY_FILTER_CHANNEL_MIX_RIGHT_TO_LEFT,
-    LAVALINK_KEY_FILTER_CHANNEL_MIX_RIGHT_TO_RIGHT, LAVALINK_KEY_FILTER_LOW_PASS,
-    LAVALINK_KEY_FILTER_LOW_PASS_SMOOTHING
+    LAVALINK_KEY_FILTER_CHANNEL_MIX_RIGHT_TO_RIGHT, LAVALINK_KEY_FILTER_DISTORTION,
+    LAVALINK_KEY_FILTER_DISTORTION_COS_OFFSET, LAVALINK_KEY_FILTER_DISTORTION_COS_SCALE,
+    LAVALINK_KEY_FILTER_DISTORTION_OFFSET, LAVALINK_KEY_FILTER_DISTORTION_SCALE,
+    LAVALINK_KEY_FILTER_DISTORTION_SIN_OFFSET, LAVALINK_KEY_FILTER_DISTORTION_SIN_SCALE,
+    LAVALINK_KEY_FILTER_DISTORTION_TAN_OFFSET, LAVALINK_KEY_FILTER_DISTORTION_TAN_SCALE, LAVALINK_KEY_FILTER_EQUALIZER,
+    LAVALINK_KEY_FILTER_EQUALIZER_BAND, LAVALINK_KEY_FILTER_EQUALIZER_GAIN, LAVALINK_KEY_FILTER_KARAOKE,
+    LAVALINK_KEY_FILTER_KARAOKE_FILTER_BAND, LAVALINK_KEY_FILTER_KARAOKE_FILTER_WIDTH,
+    LAVALINK_KEY_FILTER_KARAOKE_LEVEL, LAVALINK_KEY_FILTER_KARAOKE_MONO_LEVEL, LAVALINK_KEY_FILTER_LOW_PASS,
+    LAVALINK_KEY_FILTER_LOW_PASS_SMOOTHING, LAVALINK_KEY_FILTER_ROTATION, LAVALINK_KEY_FILTER_ROTATION_ROTATION_HZ,
+    LAVALINK_KEY_FILTER_TIMESCALE, LAVALINK_KEY_FILTER_TIMESCALE_PITCH, LAVALINK_KEY_FILTER_TIMESCALE_RATE,
+    LAVALINK_KEY_FILTER_TIMESCALE_SPEED, LAVALINK_KEY_FILTER_TREMOLO, LAVALINK_KEY_FILTER_TREMOLO_DEPTH,
+    LAVALINK_KEY_FILTER_TREMOLO_FREQUENCY, LAVALINK_KEY_FILTER_VIBRATO, LAVALINK_KEY_FILTER_VIBRATO_DEPTH,
+    LAVALINK_KEY_FILTER_VIBRATO_FREQUENCY, LAVALINK_KEY_FILTER_VOLUME
 )
 
 FILTER_IDENTIFIER_NONE = 0
@@ -35,7 +33,7 @@ FILTER_IDENTIFIER_ROTATION = 6
 FILTER_IDENTIFIER_DISTORTION = 7
 FILTER_IDENTIFIER_CHANNEL_MIX = 8
 FILTER_IDENTIFIER_LOW_PASS = 9
-
+FILTER_IDENTIFIER_VOLUME = 10
 
 # Use these as references:
 #
@@ -253,13 +251,13 @@ class Karaoke(Filter):
     Attributes
     ----------
     _filter_band : `float`
-        TODO
+        Filter band.
     _filter_width : `float`
-        TODO
+        Filter width.
     _level : `float`
-        TODO
+        Effect level.
     _mono_level : `float`
-        TODO
+        Effect mono level.
     
     Class Attributes
     ----------------
@@ -280,22 +278,22 @@ class Karaoke(Filter):
         Parameters
         ----------
         level : `float`, Optional (Keyword only)
-            TODO
+            Effect level.
             
             Defaults to `1.0`.
         
         mono_level : `float`, Optional (Keyword only)
-            TODO
+            Effect mono level.
             
             Defaults to `1.0`.
             
         filter_band : `float`, Optional (Keyword only)
-            TODO
+            Filter band.
             
             Defaults to `220.0`.
             
         filter_width : `float`, Optional (Keyword only)
-            TODO
+            Filter width.
             
             Defaults to `100.0`.
         
@@ -408,11 +406,11 @@ class Timescale(Filter):
     Attributes
     ----------
     _pitch : `float`
-        TODO
+        Audio pitch.
     _rate : `float`
-        TODO
+        Playback rate.
     _speed : `float`
-        TODO
+        Playback speed.
     
     Class Attributes
     ----------------
@@ -433,17 +431,17 @@ class Timescale(Filter):
         Parameters
         ----------
         speed : `float`, Optional (Keyword only)
-            TODO
+            Playback speed.
             
             Defaults to `1.0`.
         
         pitch : `float`, Optional (Keyword only):
-            TODO
+            Audio pitch.
             
             Defaults to `1.0`.
         
         rate : `float`, Optional (Keyword only):
-            TODO
+            Playback rate.
             
             Defaults to `1.0`.
         
@@ -581,7 +579,7 @@ class Tremolo(Filter):
     _depth : `float`
         TODO
     _frequency : `float`
-        TODO
+        Effect frequency.
     
     Class Attributes
     ----------------
@@ -602,7 +600,7 @@ class Tremolo(Filter):
         Parameters
         ----------
         frequency : `float`
-            TODO
+            Effect frequency.
         depth : `float`
             TODO
         
@@ -1469,7 +1467,7 @@ class ChannelMix(Filter):
 
 class LowPass(Filter):
     """
-     Higher frequencies get suppressed, while lower frequencies pass through this filter, thus the name low pass.
+    Higher frequencies get suppressed, while lower frequencies pass through this filter, thus the name low pass.
     
     Attributes
     ----------
@@ -1501,7 +1499,6 @@ class LowPass(Filter):
         ------
         TypeError
             - If `smoothing` is not `float`.
-            
         """
         if not isinstance(smoothing, float):
             raise TypeError(
@@ -1561,3 +1558,90 @@ class LowPass(Filter):
         return {
             LAVALINK_KEY_FILTER_LOW_PASS_SMOOTHING: self._smoothing,
         }
+
+
+class Volume(Filter):
+    """
+    Float value where `1.0` is 100%.
+    
+    Values `> 1.0` may cause clipping.
+    
+    Attributes
+    ----------
+    _volume : `float`
+        The volume to set.
+    
+    Class Attributes
+    ----------------
+    identifier : `int`
+        The filter type's internal identifier.
+    json_key : `str`
+        The key of the filter used when serializing it.
+    """
+    identifier = FILTER_IDENTIFIER_VOLUME
+    json_key = LAVALINK_KEY_FILTER_VOLUME
+    
+    __slots__ = ('_volume',)
+    
+    def __new__(cls, volume):
+        """
+        Creates a new volume filter.
+        
+        Parameters
+        ----------
+        volume : `float`
+        The volume to set.
+        
+        Raises
+        ------
+        TypeError
+            - If `volume` is not `float`.
+        """
+        if not isinstance(volume, float):
+            raise TypeError(
+                f'`volume` can be `float`, got {volume.__class__.__name__}; {volume!r}.'
+            )
+        
+        self = object.__new__(cls)
+        self._volume = volume
+        return self
+    
+    
+    @copy_docs(Filter.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self._volume != other._volume:
+            return False
+        
+        return True
+    
+    
+    @copy_docs(Filter.__hash__)
+    def __hash__(self):
+        return hash(self._volume)
+    
+    
+    @copy_docs(Filter.__repr__)
+    def __repr__(self):
+        repr_parts = ['<', self.__class__.__name__]
+        
+        repr_parts.append(' volume=')
+        repr_parts.append(format(self._volume, '.02f'))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    @copy_docs
+    def __bool__(self):
+        if self._volume != 1.0:
+            return True
+        
+        return False
+    
+    
+    @copy_docs(Filter.to_data)
+    def to_data(self):
+        return self._volume

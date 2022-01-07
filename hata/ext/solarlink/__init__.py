@@ -14,6 +14,7 @@ from .event_handler_plugin import *
 from .event_handlers import *
 from .event_types import *
 from .exceptions import *
+from .filters import *
 from .node import *
 from .parsers import *
 from .player import *
@@ -33,6 +34,7 @@ __all__ = (
     *event_handlers.__all__,
     *event_types.__all__,
     *exceptions.__all__,
+    *filters.__all__,
     *node.__all__,
     *parsers.__all__,
     *player.__all__,

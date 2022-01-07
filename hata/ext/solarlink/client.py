@@ -67,6 +67,7 @@ class SolarClient:
         self._events = event_plugin
         return self
     
+    
     def add_node(self, host, port, password, region, resume_key=None, reconnect_attempts=3):
         """
         Adds a node to Lavalink's node manager.

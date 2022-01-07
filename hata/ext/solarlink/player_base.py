@@ -507,8 +507,8 @@ class SolarPlayerBase:
                 LAVALINK_KEY_GUILD_ID: str(self.guild_id),
                 **current_track.un_pack(),
                 LAVALINK_KEY_START_TIME: floor(self.position * 1000.0),
-                LAVALINK_KEY_PAUSE: (self._paused_track is current_track),
-                LAVALINK_KEY_VOLUME: floor(self._volume * 100.0),
+                LAVALINK_KEY_PAUSE: self.is_paused(),
+                LAVALINK_KEY_VOLUME: floor(self.get_volume() * 100.0),
             })
         
         

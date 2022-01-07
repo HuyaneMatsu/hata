@@ -6,6 +6,13 @@ from scarletio import copy_docs
 
 from ...discord.bases.event_types import EventBase
 
+from .constants import (
+    LAVALINK_KEY_END_REASON, LAVALINK_KEY_EXCEPTION_REASON_DEPRECATED, LAVALINK_KEY_EXCEPTION_REASON_OBJECT,
+    LAVALINK_KEY_EXCEPTION_REASON_OBJECT_MESSAGE, LAVALINK_KEY_EXCEPTION_REASON_OBJECT_SEVERITY,
+    LAVALINK_KEY_THRESHOLD_MS, LAVALINK_KEY_WEBSOCKET_CLOSE_BY_REMOTE, LAVALINK_KEY_WEBSOCKET_CLOSE_CODE,
+    LAVALINK_KEY_WEBSOCKET_CLOSE_REASON
+)
+
 
 class TrackStartEvent(EventBase):
     """
@@ -20,7 +27,7 @@ class TrackStartEvent(EventBase):
     """
     __slots__ = ('player', 'track', )
     
-    def __new__(cls, player, track):
+    def __new__(cls, player, data):
         """
         Creates a new ``TrackStartEvent`` event from the given parameters.
         
@@ -28,9 +35,11 @@ class TrackStartEvent(EventBase):
         ----------
         player : ``SolarPlayerBase``
             The player associated with the event.
-        track : ``ConfiguredTrack``
-            The started track.
+        data : `dict` of (`str`, `Any`) items
+            Event payload.
         """
+        track = player.get_current()
+        
         self = object.__new__(cls)
         self.player = player
         self.track = track
@@ -100,7 +109,7 @@ class TrackEndEvent(EventBase):
     """
     __slots__ = ('player', 'reason', 'track', )
     
-    def __new__(cls, player, track, reason):
+    def __new__(cls, player, data):
         """
         Creates a new ``TrackEndEvent`` event from the given parameters.
         
@@ -108,11 +117,12 @@ class TrackEndEvent(EventBase):
         ----------
         player : ``SolarPlayerBase``
             The player associated with the event.
-        reason : `None`, `str`
-            The reason why the track ended.
-        track : ``ConfiguredTrack``
-            The started track.
+        data : `dict` of (`str`, `Any`) items
+            Event payload.
         """
+        track = player.get_current()
+        reason = data[LAVALINK_KEY_END_REASON]
+        
         self = object.__new__(cls)
         self.player = player
         self.track = track
@@ -207,7 +217,7 @@ class TrackStuckEvent(EventBase):
     """
     __slots__ = ('player', 'threshold', 'track', )
     
-    def __new__(cls, player, track, threshold):
+    def __new__(cls, player, data):
         """
         Creates a new ``TrackStuckEvent`` event from the given parameters.
         
@@ -215,11 +225,12 @@ class TrackStuckEvent(EventBase):
         ----------
         player : ``SolarPlayerBase``
             The player associated with the event.
-        track : ``ConfiguredTrack``
-            The stucking track.
-        threshold : `float`
-            The amount of time till the time is stuck in seconds.
+        data : `dict` of (`str`, `Any`) items
+            Event payload.
         """
+        track = player.get_current()
+        threshold = data[LAVALINK_KEY_THRESHOLD_MS]*1000.0
+        
         self = object.__new__(cls)
         self.player = player
         self.track = track
@@ -305,12 +316,14 @@ class TrackExceptionEvent(EventBase):
         The player associated with the event.
     reason : `str`
         Error reason.
+    severity : `str`
+        The exception's severity.
     track : ``ConfiguredTrack``
         The stucking track.
     """
-    __slots__ = ('player', 'reason', 'track', )
+    __slots__ = ('player', 'reason', 'severity', 'track')
     
-    def __new__(cls, player, track, reason):
+    def __new__(cls, player, data):
         """
         Creates a new ``TrackExceptionEvent`` event from the given parameters.
         
@@ -318,15 +331,25 @@ class TrackExceptionEvent(EventBase):
         ----------
         player : ``SolarPlayerBase``
             The player associated with the event.
-        track : ``ConfiguredTrack``
-            The stucking track.
-        reason : `str`
-            Error reason.
+        data : `dict` of (`str`, `Any`) items
+            Event payload.
         """
+        try:
+            reason_object = data[LAVALINK_KEY_EXCEPTION_REASON_OBJECT]
+        except KeyError:
+            reason = data[LAVALINK_KEY_EXCEPTION_REASON_DEPRECATED]
+            severity = ''
+        else:
+            reason = reason_object[LAVALINK_KEY_EXCEPTION_REASON_OBJECT_MESSAGE]
+            severity = reason_object[LAVALINK_KEY_EXCEPTION_REASON_OBJECT_SEVERITY]
+        
+        track = player.get_current()
+        
         self = object.__new__(cls)
         self.player = player
         self.track = track
         self.reason = reason
+        self.severity = severity
         return self
     
     
@@ -343,11 +366,15 @@ class TrackExceptionEvent(EventBase):
         repr_parts.append(', track=')
         repr_parts.append(repr(self.track))
         
+        severity = self.severity
+        if severity:
+            repr_parts.append(', severity=')
+            repr_parts.append(repr(severity))
+        
         repr_parts.append(', reason=')
         repr_parts.append(reprlib.repr(self.reason))
         
         repr_parts.append('>')
-        
         return ''.join(repr_parts)
     
     
@@ -374,6 +401,9 @@ class TrackExceptionEvent(EventBase):
         if self.reason != other.reason:
             return False
         
+        if self.severity != other.severity:
+            return False
+        
         if self.track != other.track:
             return False
         
@@ -391,6 +421,11 @@ class TrackExceptionEvent(EventBase):
         reason = self.reason
         if (reason is not None):
             hash_value ^= hash(reason)
+        
+        # severity
+        severity = self.severity
+        if severity:
+            hash_value ^= hash(severity)
         
         # track
         hash_value ^= hash(self.track)
@@ -417,7 +452,7 @@ class PlayerWebsocketClosedEvent(EventBase):
     """
     __slots__ = ('by_remote', 'code', 'player', 'reason', )
     
-    def __new__(cls, player, code, reason, by_remote):
+    def __new__(cls, player, data):
         """
         Creates a new ``PlayerWebsocketClosedEvent`` event from the given parameters.
         
@@ -425,18 +460,18 @@ class PlayerWebsocketClosedEvent(EventBase):
         ----------
         player : ``SolarPlayerBase``
             The player associated with the event.
-        code : `int`
-            Websocket close code.
-        reason : `None`, `str`
-            Websocket close reason.
-        by_remote : `bool`
-            Whether the websocket was closed remotely.
+        data : `dict` of (`str`, `Any`) items
+            Event payload.
         """
+        close_code = data[LAVALINK_KEY_WEBSOCKET_CLOSE_CODE]
+        close_reason = data[LAVALINK_KEY_WEBSOCKET_CLOSE_REASON]
+        close_by_remote = data[LAVALINK_KEY_WEBSOCKET_CLOSE_BY_REMOTE]
+        
         self = object.__new__(cls)
         self.player = player
-        self.code = code
-        self.reason = reason
-        self.by_remote = by_remote
+        self.code = close_code
+        self.reason = close_reason
+        self.by_remote = close_by_remote
         return self
     
     

@@ -5,10 +5,8 @@ from scarletio import Task
 from ...discord.core import KOKORO
 
 from .constants import (
-    LAVALINK_KEY_END_REASON, LAVALINK_KEY_EVENT_PLAYER_WEBSOCKET_CLOSED, LAVALINK_KEY_EVENT_TRACK_END,
-    LAVALINK_KEY_EVENT_TRACK_EXCEPTION, LAVALINK_KEY_EVENT_TRACK_START, LAVALINK_KEY_EVENT_TRACK_STUCK,
-    LAVALINK_KEY_EXCEPTION_REASON, LAVALINK_KEY_GUILD_ID, LAVALINK_KEY_THRESHOLD_MS,
-    LAVALINK_KEY_WEBSOCKET_CLOSE_BY_REMOTE, LAVALINK_KEY_WEBSOCKET_CLOSE_CODE, LAVALINK_KEY_WEBSOCKET_CLOSE_REASON
+    LAVALINK_KEY_EVENT_PLAYER_WEBSOCKET_CLOSED, LAVALINK_KEY_EVENT_TRACK_END, LAVALINK_KEY_EVENT_TRACK_EXCEPTION,
+    LAVALINK_KEY_EVENT_TRACK_START, LAVALINK_KEY_EVENT_TRACK_STUCK, LAVALINK_KEY_GUILD_ID
 )
 from .event_types import (
     PlayerWebsocketClosedEvent, TrackEndEvent, TrackExceptionEvent, TrackStartEvent, TrackStuckEvent
@@ -23,10 +21,7 @@ def parse_track_end(client, data):
     except KeyError:
         return
     
-    track = player.get_current()
-    reason = data[LAVALINK_KEY_END_REASON]
-    
-    event = TrackEndEvent(player, track, reason)
+    event = TrackEndEvent(player, data)
     
     Task(client.solarlink._events.track_end(client, event), KOKORO)
     
@@ -39,10 +34,7 @@ def parse_track_exception(client, data):
     except KeyError:
         return
     
-    track = player.get_current()
-    reason = data[LAVALINK_KEY_EXCEPTION_REASON]
-    
-    event = TrackExceptionEvent(player, track, reason)
+    event = TrackExceptionEvent(player, data)
     
     Task(client.solarlink._events.track_exception(client, event), KOKORO)
 
@@ -55,8 +47,7 @@ def parse_track_start(client, data):
     except KeyError:
         return
     
-    track = player.get_current()
-    event = TrackStartEvent(player, track)
+    event = TrackStartEvent(player, data)
     Task(client.solarlink._events.track_start(client, event), KOKORO)
 
 
@@ -69,10 +60,7 @@ def parse_track_stuck(client, data):
     except KeyError:
         return
     
-    track = player.get_current()
-    threshold = data[LAVALINK_KEY_THRESHOLD_MS]*1000.0
-    
-    event = TrackStuckEvent(player, track, threshold)
+    event = TrackStuckEvent(player, data)
     Task(client.solarlink._events.track_stuck(client, event), KOKORO)
 
 
@@ -84,11 +72,7 @@ def parse_player_websocket_closed(client, data):
     except KeyError:
         return
     
-    close_code = data[LAVALINK_KEY_WEBSOCKET_CLOSE_CODE]
-    close_reason = data[LAVALINK_KEY_WEBSOCKET_CLOSE_REASON]
-    close_by_remote = data[LAVALINK_KEY_WEBSOCKET_CLOSE_BY_REMOTE]
-    
-    event = PlayerWebsocketClosedEvent(player, close_code, close_reason, close_by_remote)
+    event = PlayerWebsocketClosedEvent(player, data)
     Task(client.solarlink._events.player_websocket_closed(client, event), KOKORO)
 
 

@@ -92,8 +92,14 @@ class SolarPlayer(SolarPlayerBase):
         return self._current_track
     
     
-    @copy_docs(SolarPlayerBase.get_volume)
     def get_volume(self):
+        """
+        Returns the player's volume.
+        
+        Returns
+        -------
+        volume : `float`
+        """
         filter = self.get_filter(Volume)
         if filter is None:
             volume = 1.0

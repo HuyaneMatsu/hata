@@ -10,13 +10,11 @@ from ...discord.channel import ChannelVoiceBase
 from ...discord.core import CHANNELS, GUILDS, KOKORO
 
 from .constants import (
-    LAVALINK_BAND_COUNT, LAVALINK_KEY_BAND, LAVALINK_KEY_BANDS, LAVALINK_KEY_GAIN, LAVALINK_KEY_GUILD_ID,
-    LAVALINK_KEY_NODE_OPERATION, LAVALINK_KEY_NODE_OPERATION_PLAYER_DESTROY,
-    LAVALINK_KEY_NODE_OPERATION_PLAYER_EDIT_BANDS, LAVALINK_KEY_NODE_OPERATION_PLAYER_PAUSE,
+    LAVALINK_BAND_COUNT, LAVALINK_KEY_GUILD_ID, LAVALINK_KEY_NODE_OPERATION, LAVALINK_KEY_NODE_OPERATION_PLAYER_DESTROY,
+    LAVALINK_KEY_NODE_OPERATION_PLAYER_FILTER, LAVALINK_KEY_NODE_OPERATION_PLAYER_PAUSE,
     LAVALINK_KEY_NODE_OPERATION_PLAYER_PLAY, LAVALINK_KEY_NODE_OPERATION_PLAYER_SEEK,
-    LAVALINK_KEY_NODE_OPERATION_PLAYER_STOP, LAVALINK_KEY_NODE_OPERATION_PLAYER_VOLUME,
-    LAVALINK_KEY_NODE_OPERATION_VOICE_UPDATE, LAVALINK_KEY_NO_REPLACE, LAVALINK_KEY_PAUSE, LAVALINK_KEY_POSITION_MS,
-    LAVALINK_KEY_START_TIME, LAVALINK_KEY_VOLUME
+    LAVALINK_KEY_NODE_OPERATION_PLAYER_STOP, LAVALINK_KEY_NODE_OPERATION_VOICE_UPDATE, LAVALINK_KEY_NO_REPLACE,
+    LAVALINK_KEY_PAUSE, LAVALINK_KEY_POSITION_MS, LAVALINK_KEY_START_TIME
 )
 from .track import ConfiguredTrack
 
@@ -27,6 +25,8 @@ class SolarPlayerBase:
     
     Attributes
     ----------
+    _filters : `dict` of (`int`, ``Filter``) items
+        The applied filters to the player if any.
     _forward_data : `None`, `dict` of (`str`, `Any`) items
         Json to forward to the player's node as necessary.
     _position : `float`
@@ -45,11 +45,9 @@ class SolarPlayerBase:
     
     - ``.is_paused``
     - ``.get_current``
-    - ``.get_volume``
-    - ``.get_bands``.
     
     """
-    __slots__ = ('_forward_data', '_position', '_position_update', 'channel_id', 'guild_id', 'node',)
+    __slots__ = ('_filters', '_forward_data', '_position', '_position_update', 'channel_id', 'guild_id', 'node',)
     
     def __new__(cls, node, guild_id, channel_id):
         """
@@ -73,6 +71,7 @@ class SolarPlayerBase:
         """
         self = object.__new__(cls)
         
+        self._filters = {}
         self._position = 0.0
         self._position_update = 0.0
         self._forward_data = None
@@ -206,26 +205,63 @@ class SolarPlayerBase:
         raise NotImplementedError
     
     
-    def get_volume(self):
+    def add_filter(self, filter):
         """
-        Returns the player's volume.
+        Adds a filter to the player.
+        
+        Parameters
+        ----------
+        filter : ``Filter``
+            The filter to add.
+        """
+        if filter:
+            self._filters[filter.identifier] = filter
+        else:
+            try:
+                del self._filters[filter.identifier]
+            except KeyError:
+                pass
+    
+    
+    def get_filter(self, filter_type):
+        """
+        Gets the filter of the given type.
         
         Returns
         -------
-        volume : `float`
+        filter : `None`, ``Filter``
         """
-        raise NotImplementedError
+        return self._filters.get(filter_type.identifier, None)
     
     
-    def get_bands(self):
+    def remove_filter(self, filter_type):
         """
-        Returns the bands of the player.
+        Removes the filter of the given type and returns it.
         
         Returns
         -------
-        bands : `list` of `float`
+        filter : `None`, ``Filter``
         """
-        raise NotImplementedError
+        return self._filters.pop(filter_type.identifier, None)
+    
+    
+    async def apply_filters(self):
+        """
+        Applies the filters added to the player.
+        
+        This method is a coroutine.
+        """
+        node = self.node
+        if (node is not None):
+            data = {
+                LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_FILTER,
+                LAVALINK_KEY_GUILD_ID: str(self.guild_id),
+            }
+            
+            for filter in self._filters.values():
+                data[filter.json_key] = filter.to_data()
+            
+            await node._send(data)
     
     
     async def _play(self, configured_track, replace=True):
@@ -296,50 +332,6 @@ class SolarPlayerBase:
                 LAVALINK_KEY_PAUSE: False,
             })
     
-    
-    async def _set_volume(self, volume):
-        """
-        Sends a a set volume payload to the player's node.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        volume : `float`
-            The new volume level. Can be in range [0.0:10.0].
-        """
-        node = self.node
-        if (node is not None):
-            await node._send({
-                LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_VOLUME,
-                LAVALINK_KEY_GUILD_ID: str(self.guild_id),
-                LAVALINK_KEY_VOLUME: floor(volume * 100.0),
-            })
-    
-    
-    async def _set_gains(self, band_gain_pairs):
-        """
-        Sends a band edit update to the player's node.
-        
-        This method is a coroutine
-        
-        Parameters
-        ----------
-        band_gain_pairs : `list` (`int`, `float`)
-            `band` - `gain` tuples.
-        """
-        node = self.node
-        if (node is not None):
-            await node._send({
-                LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_EDIT_BANDS,
-                LAVALINK_KEY_GUILD_ID: str(self.guild_id),
-                LAVALINK_KEY_BANDS: [
-                    {
-                        LAVALINK_KEY_BAND: band,
-                        LAVALINK_KEY_GAIN: gain,
-                    } for band, gain in band_gain_pairs
-                ],
-            })
     
     async def _seek(self, position):
         """
@@ -508,8 +500,20 @@ class SolarPlayerBase:
                 **current_track.un_pack(),
                 LAVALINK_KEY_START_TIME: floor(self.position * 1000.0),
                 LAVALINK_KEY_PAUSE: self.is_paused(),
-                LAVALINK_KEY_VOLUME: floor(self.get_volume() * 100.0),
             })
+        
+        
+        filters = self._filters
+        if filters:
+            data = {
+                LAVALINK_KEY_NODE_OPERATION: LAVALINK_KEY_NODE_OPERATION_PLAYER_FILTER,
+                LAVALINK_KEY_GUILD_ID: str(self.guild_id),
+            }
+            
+            for filter in filters.values():
+                data[filter.json_key] = filter.to_data()
+            
+            await node._send(data)
         
         
         modified_bands = None

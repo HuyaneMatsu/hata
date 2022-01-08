@@ -8,7 +8,7 @@ from scarletio import copy_docs
 from ...discord.core import GUILDS
 from ...discord.utils import datetime_to_timestamp
 
-from .constants import LAVALINK_BAND_COUNT
+from .filters import Volume
 from .player_base import SolarPlayerBase
 from .track import ConfiguredTrack, Track
 
@@ -31,8 +31,6 @@ class SolarPlayer(SolarPlayerBase):
         The guild's identifier, where the player is.
     node : ``SolarNode``
         The node that the player is connected to. Defaults to `None`.
-    _bands : `list` of `float`
-        The bands of the player.
     _current_track : `None`, ``ConfiguredTrack``
         The currently played track if any.
     _paused : `bool`
@@ -45,14 +43,11 @@ class SolarPlayer(SolarPlayerBase):
         Whether tracks should be repeated.
     _shuffle : `bool`
         Whether tracks should be shuffled.
-    _volume : `float`
-        The player's volume.
     queue : `list` of ``ConfiguredTrack``
         The queue of the tracks to play.
     """
     __slots__ = (
-        '_bands', '_current_track', '_paused', '_paused_track', '_repeat_current', '_repeat_queue', '_shuffle',
-        '_volume', 'queue'
+        '_current_track', '_paused', '_paused_track', '_repeat_current', '_repeat_queue', '_shuffle', 'queue'
     )
     
     @copy_docs(SolarPlayerBase.__new__)
@@ -83,8 +78,6 @@ class SolarPlayer(SolarPlayerBase):
         self._paused = None
         self._paused_track = None
         self.queue = []
-        self._bands = [0.0 for band_index in range(LAVALINK_BAND_COUNT)]
-        self._volume = 1.0
         
         return self, waiter
     
@@ -101,12 +94,13 @@ class SolarPlayer(SolarPlayerBase):
     
     @copy_docs(SolarPlayerBase.get_volume)
     def get_volume(self):
-        return self._volume
-    
-    
-    @copy_docs(SolarPlayerBase.get_bands)
-    def get_bands(self):
-        return self._bands
+        filter = self.get_filter(Volume)
+        if filter is None:
+            volume = 1.0
+        else:
+            volume = filter._volume
+        
+        return volume
     
     
     async def append(self, track, start_time=0.0, end_time=0.0, **added_attributes):
@@ -461,14 +455,8 @@ class SolarPlayer(SolarPlayerBase):
         volume : `float`
             The new volume level. Can be in range [0.0:10.0].
         """
-        if volume < 0.0:
-            volume = 0.0
-        elif volume > 10.0:
-            volume = 10.0
-        
-        await self._set_volume(volume)
-        
-        self._volume = volume
+        self.add_filter(Volume(volume))
+        await self.apply_filters()
     
     
     async def seek(self, position):
@@ -486,86 +474,6 @@ class SolarPlayer(SolarPlayerBase):
             return
         
         await self._seek(position)
-    
-    
-    async def set_gain(self, band, gain):
-        """
-        Sets the band gain to the given amount.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        band : `int`
-            Band number [0:14].
-        gain : `float`
-            A float representing gain of a band [-0.25:1.0]. Defaults to `0.0`.
-        
-        Raises
-        ------
-        ValueError
-            If `band` is out of range [0:14].
-        """
-        await self.set_gains((band, gain))
-    
-    
-    async def set_gains(self, *band_gain_pairs):
-        """
-        Modifies the player's band settings.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        *band_gain_pairs : `list` of `tuple` of (`int`, `float`)
-            `band` - `gain` tuples.
-        
-        Raises
-        ------
-        TypeError
-            If `band_gain_pairs` contains a non-tuple element.
-        ValueError
-            If `band` is out of range [0:14].
-        """
-        to_update = []
-        
-        for band_gain_pair in band_gain_pairs:
-            if not isinstance(band_gain_pair, tuple):
-                raise TypeError(
-                    f'`band_gain_pairs` can contain `tuple` elements, got '
-                    f'{band_gain_pair.__class__.__name__}; {band_gain_pair!r}; band_gain_pairs={band_gain_pairs!r}.'
-                )
-            
-            band, gain = band_gain_pair
-            
-            if (band < 0) or (band > 14):
-                raise ValueError(
-                    f'`band`, can be in range [0:14], got {band!r}.'
-                )
-            
-            if gain > 1.0:
-                gain = 1.0
-            elif gain < -0.25:
-                gain = -0.25
-            
-            to_update.append((band, gain))
-        
-        await self._set_gains(to_update)
-        
-        for band, gain in to_update:
-            self._bands[band] = gain
-    
-    
-    async def reset_gains(self):
-        """
-        Resets all bands of the player to their default value.
-        
-        This method is a coroutine.
-        """
-        await self._set_gains([(band, 0.0) for band in range(LAVALINK_BAND_COUNT)])
-        
-        for band in LAVALINK_BAND_COUNT:
-            self._bands[band] = 0.0
     
     
     async def join_speakers(self, *, request=False):

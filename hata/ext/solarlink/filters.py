@@ -39,6 +39,7 @@ FILTER_IDENTIFIER_VOLUME = 10
 #
 # https://github.com/freyacodes/Lavalink/blob/master/LavalinkServer/src/main/java/lavalink/server/player/filters/filterConfigs.kt
 # https://github.com/freyacodes/Lavalink/blob/master/IMPLEMENTATION.md#using-filters
+# https://github.com/natanbc/lavadsp/tree/master/src/main/java/com/github/natanbc/lavadsp
 
 class Filter:
     """
@@ -577,7 +578,7 @@ class Tremolo(Filter):
     Attributes
     ----------
     _depth : `float`
-        TODO
+        Effect depth.
     _frequency : `float`
         Effect frequency.
     
@@ -602,7 +603,7 @@ class Tremolo(Filter):
         frequency : `float`
             Effect frequency.
         depth : `float`
-            TODO
+            Effect depth.
         
         Raises
         ------
@@ -707,9 +708,9 @@ class Vibrato(Filter):
     Attributes
     ----------
     _depth : `float`
-        TODO
+        Effect depth.
     _frequency : `float`
-        TODO
+        Effect frequency.
     
     Class Attributes
     ----------------
@@ -730,9 +731,9 @@ class Vibrato(Filter):
         Parameters
         ----------
         frequency : `float`
-            TODO
+            Effect frequency.
         depth : `float`
-            TODO
+            Effect depth.
         
         Raises
         ------
@@ -939,21 +940,21 @@ class Distortion(Filter):
     Attributes
     ----------
     _cos_offset : `float`
-        TODO
+        Cos offset.
     _cos_scale : `float`
-        TODO
+        Cos scale.
     _offset : `float`
-        TODO
+        Offset.
     _scale : `float`
-        TODO
+        Scale.
     _sin_offset : `float`
-        TODO
+        Sin offset.
     _sin_scale : `float`
-        TODO
+        Sin scale.
     _tan_offset : `float`
-        TODO
+        Tan offset.
     _tan_scale : `float`
-        TODO
+        Tan scale.
     
     Class Attributes
     ----------------
@@ -977,42 +978,42 @@ class Distortion(Filter):
         Parameters
         ----------
         sin_offset : `float`, Optional (Keyword only)
-            TODO
+            Sin offset.
             
             Defaults to `0.0`.
         
         sin_scale : `float`, Optional (Keyword only)
-            TODO
+            Sin scale.
             
             Defaults to `1.0`.
         
         cos_offset : `float`, Optional (Keyword only)
-            TODO
+            Cos offset.
             
             Defaults to `0.0`.
         
         cos_scale : `float`, Optional (Keyword only)
-            TODO
+            Cos scale.
             
             Defaults to `1.0`.
         
         tan_offset : `float`, Optional (Keyword only)
-            TODO
+            Tan offset
             
             Defaults to `0.0`.
         
         tan_scale : `float`, Optional (Keyword only)
-            TODO
+            Tan scale.
             
             Defaults to `1.0`.
             
         offset : `float`, Optional (Keyword only)
-            TODO
+            Offset.
             
             Defaults to `0.0`.
         
         scale : `float`, Optional (Keyword only)
-            TODO
+            Scale.
             
             Defaults to `1.0`.
         
@@ -1299,13 +1300,13 @@ class ChannelMix(Filter):
     Attributes
     ----------
     _left_to_left : `float`
-        TODO
+        Left-to-left factor.
     _left_to_right : `float`
-        TODO
+        Left-to-right factor.
     _right_to_left : `float`
-        TODO
+        Right-to-left factor.
     _right_to_right : `float`
-        TODO
+        Right-to-right factor.
     
     Class Attributes
     ----------------
@@ -1326,13 +1327,13 @@ class ChannelMix(Filter):
         Parameters
         ----------
         left_to_left : `float`
-            TODO
+            Left-to-left factor.
         left_to_right : `float`
-            TODO
+            Left-to-right factor.
         right_to_right : `float`
-            TODO
+            Right-to-right factor.
         right_to_left : `float`
-            TODO
+            Right-to-left factor.
         
         Raises
         ------
@@ -1472,7 +1473,7 @@ class LowPass(Filter):
     Attributes
     ----------
     _smoothing : `float`
-        TODO
+        Smoothing.
     
     Class Attributes
     ----------------
@@ -1493,7 +1494,7 @@ class LowPass(Filter):
         Parameters
         ----------
         smoothing : `float`
-            TODO
+            Smoothing.
         
         Raises
         ------

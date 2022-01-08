@@ -509,6 +509,7 @@ class SolarNode:
         self.websocket = None
         await websocket.close(1000)
     
+    
     def __repr__(self):
         """Returns the node's representation."""
         repr_parts = ['<', self.__class__.__name__]

@@ -327,8 +327,26 @@ set_docs(datetime_to_unix_time,
 UNIX_TIME_MIN = 0
 DATETIME_MIN = unix_time_to_datetime(UNIX_TIME_MIN)
 
-DATETIME_MAX = datetime(year=3000, month=1, day=1)
-UNIX_TIME_MAX = datetime_to_unix_time(DATETIME_MAX)
+while True:
+    try:
+        DATETIME_MAX = datetime(year=3000, month=1, day=1)
+        UNIX_TIME_MAX = datetime_to_unix_time(DATETIME_MAX)
+    except OverflowError:
+        pass
+    else:
+        break
+    
+    try:
+        DATETIME_MAX = datetime(year=2300, month=1, day=1)
+        UNIX_TIME_MAX = datetime_to_unix_time(DATETIME_MAX)
+    except OverflowError:
+        pass
+    else:
+        break
+
+    DATETIME_MAX = datetime(year=2038, month=1, day=1)
+    UNIX_TIME_MAX = datetime_to_unix_time(DATETIME_MAX)
+    break
 
 
 def random_id():

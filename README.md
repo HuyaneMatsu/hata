@@ -16,14 +16,18 @@
 
 <h1></h1>
 
-### About
+<h3 align="center">
+    About
+</h3>
 
 Hata is an *async* [Discord API](https://discord.com/developers/docs/intro) wrapper written in Python named after
 [Hata no Kokoro](https://en.touhouwiki.net/wiki/Hata_no_Kokoro).
 
 <h1></h1>
 
-#### Why hata?
+<h3 align="center">
+    Why hata?
+</h3>
 
 - Multiple simultaneous clients
 
@@ -41,13 +45,11 @@ Hata is an *async* [Discord API](https://discord.com/developers/docs/intro) wrap
 
     Built in Python! Easy to code, easy to read, easy to maintain.
 
+<h1></h1>
 
-## [Documentation](https://github.com/HuyaneMatsu/hata/tree/master/docs)
-
-The library reference is available [*here*](https://www.astil.dev/project/hata/docs/hata) & the tutorials are
-available [*here*](https://github.com/HuyaneMatsu/hata/blob/master/docs/topics/README.md).
-
-## Usage
+<h3 align="center">
+    Usage
+</h3>
 
 The following example answers on `ping` message.
 
@@ -131,7 +133,11 @@ can still use the `start_clients()` function, what as it says, starts up all the
 want to use `wait_for_interruption()`, which disconnects the clients gracefully and closes the event loop on keyboard
 interrupt.*
 
-## Installation
+<h1></h1>
+
+<h3 align="center">
+    Installation
+</h3>
 
 To install Hata simply do
 
@@ -146,9 +152,12 @@ $ python -m pip install hata
 $ python -m pip install hata[voice]
 ```
 And you are good to go! Hata has native pypy support as well if you need some more speed!
+
 <h1></h1>
 
-## Dependencies
+<h3 align="center">
+    Dependencies
+</h3>
 
 #### Requirements
 
@@ -161,13 +170,21 @@ And you are good to go! Hata has native pypy support as well if you need some mo
 - [PyNaCl](https://pypi.org/project/PyNaCl/) (for voice support)
 - [brotli](https://pypi.org/project/Brotli/) / [brotlipy](https://pypi.org/project/brotlipy/)
 
-## Get in touch
+<h1></h1>
 
-If you have issues, suggestions, want to contribute, or just want to send cute neko pictures, join our discord server.
+<h3 align="center">
+    Get in touch
+</h3>
+
+If you have issues, suggestions, want to contribute, or just want to hang out, join our discord server.
 
 [![](https://discordapp.com/api/v9/guilds/388267636661682178/widget.png?style=banner1)](https://discord.gg/3cH2r5d)
 
-## Acknowledgements
+<h1></h1>
+
+<h3 align="center">
+    Acknowledgements
+</h3>
 
 Shout-Out to our brave testers, who are helping the most to improve Hata!
 

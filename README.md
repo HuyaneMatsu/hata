@@ -1,10 +1,16 @@
 <h1 align="center">
-    <b><a href="https://github.com/HuyaneMatsu/hata">Hata</a></b>
+    <b>
+        <a href="https://github.com/HuyaneMatsu/hata">
+            Hata
+        </a>
+    </b>
 </h1>
 
-<h5 align="center">
-    A blazing fast Discord API wrapper that you can't deny
-</h5>
+<p align="center">
+    <b>
+        A blazing fast Discord API wrapper that you can't deny
+    </b>
+</p>
 
 <p align="center">
     <a href="https://discord.gg/3cH2r5d">Support Guild</a> |

@@ -127,10 +127,83 @@ def create_track_repr(track, index):
     return ''.join(repr_parts)
 
 
+# Move player
+
+@Okuu.interactions(guild=TEST_GUILD)
+async def move_player(
+    client,
+    event,
+    channel: ('channel_group_connectable', 'Select a channel.'),
+):
+    """Change channel of the player."""
+    player = get_player(client, event)
+    await player.move_to(channel)
+    return f'Player moved to {channel:m}.'
+
+
+# Move track
+
+@Okuu.interactions(guild=TEST_GUILD)
+async def move_track(
+    client,
+    event,
+    old_position: ('int', 'The position of the track.'),
+    new_position: ('int', 'The new position for the track.'),
+):
+    """Change position of a track"""
+    player = get_player(client, event)
+    
+    track = payer.move_track(old_position, new_position)
+    
+    if track is None:
+        return 'Nothing was moved.'
+    
+    return f'Track moved: {create_track_repr(track, None)}'
+
+
+# Next
+
+@Okuu.interactions(guild=TEST_GUILD)
+async def next_(
+    client,
+    event,
+):
+    """Plays the next song."""
+    player = get_player(client, event)
+    
+    track = player.get_current()
+    if track is None:
+        abort('Nothing to skip.')
+    
+    
+    if trackuser is not event.user:
+        abort('Sorry, the track was added by {event.user:m}, so only they can skip.')
+    
+    
+    await player.skip()
+    return f'Track skipped: {create_track_repr(track, None)}'
+
+
+# Pause
+
+@Okuu.interactions(guild=TEST_GUILD)
+async def pause(
+    client,
+    event,
+):
+    """Pases the currently playing track."""
+    player = get_player(client, event)
+    
+    if not player.is_paused():
+        await player.pause()
+    
+    return 'Playing paused.'
+
+
 # Play
 
 @Okuu.interactions(guild=TEST_GUILD)
-async def queue(
+async def play(
     client,
     event,
     song_name: ('str', 'The name of the song to play'),
@@ -153,11 +226,15 @@ async def queue(
     yield
     
     result = await client.solarlink.get_tracks(name)
+    
+    # No result?
     if result is None:
         track = None
     
     else:
         tracks = result.tracks
+        
+        # If we received a playlist, it can be empty as well
         if tracks:
             selected_track_index = result.selected_track_index
             if selected_track_index == -1:
@@ -166,17 +243,17 @@ async def queue(
             track = tracks[selected_track_index]
         
         else:
+            # It is empty
             track = None
     
     if track is None:
-        abort( 'No songs found. Please try again!')
+        abort('No songs found. Please try again!')
     
     player = client.solarlink.get_player(event.guild_id)
     if player is None:
-    
-    
-    await player.append(track)
         player = await client.solarlink.join_voice(state.channel)
+    
+    await player.append(track, user=user)
     
     yield (
         f'Track added to queue!\n'

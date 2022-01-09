@@ -121,7 +121,7 @@ class SolarPlayer(SolarPlayerBase):
             The track to play.
         start_time : `float`, Optional
             Where the track will start in seconds.
-        **end_time : `float`. Optional
+        **end_time : `float`, Optional
             Where the track will start in seconds.
         added_attributes : `dict` of (`str`, `Any`)
             Additional user defined attributes.
@@ -157,6 +157,65 @@ class SolarPlayer(SolarPlayerBase):
             started_playing = False
         
         return started_playing
+    
+    
+    def move_track(self, source_index, target_index):
+        """
+        Moves the track to the target index.
+        
+        Parameters
+        ----------
+        source_index : `int`
+            The track's current index.
+        target_index : `int`
+            the track's new index.
+        
+        Returns
+        -------
+        track : `None`, ``ConfiguredTrack``
+            The moved track if any.
+        
+        Raises
+        ------
+        AssertionError
+            - If `source_index` is not `int`.
+            - If `target_index` is not `int`.
+        """
+        if __debug__:
+            if not isinstance(source_index, int):
+                raise AssertionError(
+                    f'`source_index` can be `int`, got {source_index.__class__.__name__}; {source_index!r}.'
+                )
+            
+            if not isinstance(target_index, int):
+                raise AssertionError(
+                    f'`target_index` can be `int`, got {target_index.__class__.__name__}; {target_index!r}.'
+                )
+        
+        queue = self.queue
+        if queue:
+            queue_length = len(queue)
+            
+            if source_index < 0:
+                source_index = 0
+            elif source_index >= queue_length:
+                source_index = queue_length-1
+            
+            if target_index < 0:
+                target_index = 0
+            
+            
+            if target_index == source_index:
+                track = None
+            
+            else:
+                track = queue.pop(source_index)
+                queue.insert(target_index, track)
+        
+        else:
+            track = None
+        
+        return track
     
     
     def iter_all_track(self):

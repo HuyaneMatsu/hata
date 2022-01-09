@@ -18,7 +18,7 @@ async def default_track_exception_event_handler(client, event):
     event : ``TrackExceptionEvent``
         The exception event received.
     """
-    await event.player.skip(0)
+    await event.player.remove(0)
 
 
 async def default_track_stuck_event_handler(client, event):

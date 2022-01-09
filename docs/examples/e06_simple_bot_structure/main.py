@@ -1,5 +1,5 @@
 from dotenv import dotenv_values
-from hata import Client
+from hata import Client, wait_for_interruption
 from hata.ext.extension_loader import EXTENSION_LOADER
 
 config = dotenv_values('.env')
@@ -23,3 +23,5 @@ EXTENSION_LOADER.load_all()
 
 
 Sakuya.start()
+
+wait_for_interruption()

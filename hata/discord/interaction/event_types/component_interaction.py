@@ -26,16 +26,6 @@ class ComponentInteraction(InteractionFieldBase):
     
     @copy_docs(InteractionFieldBase.__new__)
     def __new__(cls, data, interaction_event):
-        """
-        Creates a new component interaction with the given data.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            The received application command interaction data.
-        interaction_event : ``InteractionEvent``
-            The parent interaction event.
-        """
         # custom_id
         custom_id = data.get('custom_id', None)
         
@@ -154,8 +144,11 @@ class ComponentInteraction(InteractionFieldBase):
         February.
         """
         warnings.warn(
-            f'`{cls.__name__}.component_type` is deprecated, and will be removed in 2022 February. '
-            f'Please use `{cls.__name__}.type` instead.',
-            FutureWarning)
+            (
+                f'`{cls.__name__}.component_type` is deprecated, and will be removed in 2022 February. '
+                f'Please use `{cls.__name__}.type` instead.'
+            ),
+            FutureWarning,
+        )
         
         return cls.type

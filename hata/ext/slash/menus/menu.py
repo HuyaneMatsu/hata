@@ -15,7 +15,7 @@ from ....discord.interaction import (
     ComponentBase, ComponentButton, ComponentRow, ComponentSelect, ComponentSelectOption, ComponentType,
     InteractionEvent, InteractionType
 )
-from ....discord.interaction.components import (
+from ....discord.interaction.components.debug import (
     _debug_component_components, _debug_component_custom_id, _debug_component_default, _debug_component_description,
     _debug_component_emoji, _debug_component_enabled, _debug_component_label, _debug_component_max_values,
     _debug_component_min_values, _debug_component_options, _debug_component_placeholder, _debug_component_url

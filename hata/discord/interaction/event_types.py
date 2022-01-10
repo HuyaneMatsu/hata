@@ -24,8 +24,8 @@ from ..permission.permission import PERMISSION_PRIVATE
 from ..role import Role
 from ..user import ClientUserBase, User
 
-from .components import ComponentBase
-from .preinstanced import ApplicationCommandOptionType, ComponentType, InteractionType
+from .components import ComponentBase, ComponentType
+from .preinstanced import ApplicationCommandOptionType, InteractionType
 
 
 RESPONSE_FLAG_DEFERRING = 1 << 0

@@ -2,12 +2,16 @@ __all__ = ('InteractionForm',)
 
 import reprlib
 
-from scarletio import copy_docs
+from scarletio import copy_docs, include
 
-from .components import (
-    ComponentBase, ComponentRow, _debug_component_components, _debug_component_custom_id, _debug_component_title,
-    create_auto_custom_id, create_component
-)
+from .component_base import ComponentBase
+from .component_row import ComponentRow
+
+from .debug import _debug_component_components, _debug_component_custom_id, _debug_component_title
+
+
+create_auto_custom_id = include('create_auto_custom_id')
+create_component = include('create_component')
 
 
 class InteractionForm(ComponentBase):

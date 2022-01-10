@@ -37,6 +37,7 @@ setup(
         'hata.discord.http',
         'hata.discord.integration',
         'hata.discord.interaction',
+        'hata.discord.interaction.components',
         'hata.discord.invite',
         'hata.discord.message',
         'hata.discord.oauth2',

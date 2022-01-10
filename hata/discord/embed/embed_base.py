@@ -124,6 +124,7 @@ class EmbedThumbnail:
             'url' : self.url,
         }
     
+    
     def copy(self):
         """
         Copies the ``EmbedThumbnail`` returning a new one.
@@ -330,9 +331,9 @@ class EmbedImage:
         url : `str`
             The url of the image. Can be http(s) or attachment.
         """
-        self.url = url
-        self.proxy_url = None
         self.height = 0
+        self.proxy_url = None
+        self.url = url
         self.width = 0
     
     
@@ -343,7 +344,11 @@ class EmbedImage:
     
     def __bool__(self):
         """Returns whether the embed image is not empty."""
-        return (self.url is not None)
+        # url
+        if (self.url is not None):
+            return True
+        
+        return False
     
     
     def __repr__(self):
@@ -378,7 +383,11 @@ class EmbedImage:
         if type(self) is not type(other):
             return NotImplemented
         
-        return (self.url == other.url)
+        # url
+        if self.url != other.url:
+            return False
+        
+        return True
     
     
     @classmethod
@@ -396,9 +405,17 @@ class EmbedImage:
         embed_image : ``EmbedImage``
         """
         self = object.__new__(cls)
-        self.url = data.get('url', None)
-        self.proxy_url = data.get('proxy_url', None)
+        
+        # height
         self.height = data.get('height', 0)
+        
+        # proxy_url
+        self.proxy_url = data.get('proxy_url', None)
+        
+        # url
+        self.url = data.get('url', None)
+        
+        # width
         self.width = data.get('width', 0)
         
         return self
@@ -412,6 +429,7 @@ class EmbedImage:
         -------
         image_data : `dict` of (`str`, `Any`) items
         """
+        # url
         return {
             'url' : self.url,
         }
@@ -427,9 +445,9 @@ class EmbedImage:
         """
         new = object.__new__(type(self))
         
-        new.url = self.url
-        new.proxy_url = None
         new.height = 0
+        new.proxy_url = None
+        new.url = self.url
         new.width = 0
         
         return self
@@ -448,13 +466,14 @@ class EmbedImage:
         -------
         new : ``EmbedImage``
         """
+        # url
         if url is ...:
             url = self.url
         
         new = object.__new__(type(self))
-        new.url = url
-        new.proxy_url = None
         new.height = 0
+        new.proxy_url = None
+        new.url = url
         new.width = 0
         
         return self
@@ -482,20 +501,25 @@ class EmbedProvider:
     
     def __len__(self):
         """Returns the embed provider's contents' length."""
-        name = self.name
-        if name is None:
-            return 0
+        length = 0
         
-        return len(name)
+        # name
+        name = self.name
+        if (name is not None):
+            length += len(name)
+        
+        return length
     
     
     def __bool__(self):
         """Returns whether the embed provider is not empty."""
-        if (self.url is not None):
-            return True
-        
+        # name
         name = self.name
         if (name is not None) and name:
+            return True
+        
+        # url
+        if (self.url is not None):
             return True
         
         return False
@@ -530,9 +554,11 @@ class EmbedProvider:
         if type(self) is not type(other):
             return NotImplemented
         
+        # name
         if self.name != other.name:
             return False
         
+        # url
         if self.url != other.url:
             return False
         
@@ -550,7 +576,11 @@ class EmbedProvider:
         self : ``EmbedProvider``
         """
         self = object.__new__(cls)
+        
+        # name
         self.name = data.get('name', None)
+        
+        # url
         self.url = data.get('url', None)
         
         return self
@@ -627,29 +657,38 @@ class EmbedAuthor:
         """
         self.icon_url = icon_url
         self.name = name
-        self.url = url
         self.proxy_icon_url = None
+        self.url = url
     
     
     def __len__(self):
         """Returns the embed author's contents' length."""
-        name = self.name
-        if name is None:
-            return 0
+        length = 0
         
-        return len(name)
+        # name
+        name = self.name
+        if (name is not None):
+            length += len(name)
+        
+        return length
     
     
     def __bool__(self):
         """Returns whether the embed author is not empty."""
         name = self.name
+        # icon_url
+        if (self.icon_url is not None):
+            return True
+        
+        # name
         if (name is not None) and name:
             return True
         
-        if (self.url is not None):
-            return True
+        # proxy_icon_url
+        # Receive only | check `.icon_url` instead
         
-        if (self.icon_url is not None):
+        # url
+        if (self.url is not None):
             return True
         
         return False
@@ -693,12 +732,18 @@ class EmbedAuthor:
         if type(self) is not type(other):
             return NotImplemented
         
+        # icon_url
         if self.icon_url != other.icon_url:
             return False
         
+        # name
         if self.name != other.name:
             return False
         
+        # proxy_icon_url
+        # Receive only | check `.icon_url` instead
+        
+        # url
         if self.url != other.url:
             return False
         
@@ -720,10 +765,18 @@ class EmbedAuthor:
         embed_author : ``EmbedAuthor``
         """
         self = object.__new__(cls)
-        self.name = data.get('name', None)
-        self.url = data.get('url', None)
+        
+        # icon_url
         self.icon_url = data.get('icon_url', None)
+        
+        # name
+        self.name = data.get('name', None)
+        
+        # proxy_icon_url
         self.proxy_icon_url = data.get('proxy_icon_url', None)
+        
+        # url
+        self.url = data.get('url', None)
         
         return self
     

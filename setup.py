@@ -38,6 +38,7 @@ setup(
         'hata.discord.integration',
         'hata.discord.interaction',
         'hata.discord.interaction.components',
+        'hata.discord.interaction.event_types',
         'hata.discord.invite',
         'hata.discord.message',
         'hata.discord.oauth2',

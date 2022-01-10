@@ -2,10 +2,13 @@ __all__ = ('ApplicationCommandAutocompleteInteraction', 'ApplicationCommandAutoc
 
 import reprlib, warnings
 
+from scarletio import copy_docs
+
 from ..preinstanced import ApplicationCommandOptionType
 
+from .interaction_field_base import InteractionFieldBase
 
-class ApplicationCommandAutocompleteInteraction:
+class ApplicationCommandAutocompleteInteraction(InteractionFieldBase):
     """
     Represents an ``ApplicationCommand``'s auto completion interaction.
     
@@ -20,17 +23,8 @@ class ApplicationCommandAutocompleteInteraction:
     """
     __slots__ = ('id', 'name', 'options',)
     
+    @copy_docs(InteractionFieldBase.__new__)
     def __new__(cls, data, interaction_event):
-        """
-        Creates a new ``ApplicationCommandAutocompleteInteraction`` from the data received from Discord.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            The received application command interaction data.
-        interaction_event : ``InteractionEvent``
-            The parent interaction event.
-        """
         # id
         id_ = int(data['id'])
         
@@ -55,8 +49,8 @@ class ApplicationCommandAutocompleteInteraction:
         return self
     
     
+    @copy_docs(InteractionFieldBase.__repr__)
     def __repr__(self):
-        """Returns the application command interaction auto completion's representation."""
         repr_parts = [
             '<', self.__class__.__name__,
             ' id=', repr(self.id),
@@ -87,8 +81,8 @@ class ApplicationCommandAutocompleteInteraction:
         return ''.join(repr_parts)
     
     
+    @copy_docs(InteractionFieldBase.__hash__)
     def __hash__(self):
-        """Returns the application command autocomplete interaction hash value."""
         hash_value = 0
         
         # id
@@ -108,8 +102,8 @@ class ApplicationCommandAutocompleteInteraction:
         return hash_value
     
     
+    @copy_docs(InteractionFieldBase.__eq__)
     def __eq__(self, other):
-        """Returns whether the two application command autocomplete interaction are equal."""
         if type(self) is not type(other):
             return NotImplemented
         

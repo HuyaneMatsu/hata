@@ -1,5 +1,7 @@
 __all__ = ('ApplicationCommandInteraction', 'ApplicationCommandInteractionOption')
 
+from scarletio import copy_docs
+
 from ...bases import DiscordEntity
 from ...channel import create_partial_channel_from_data
 from ...message import Attachment, Message
@@ -8,8 +10,10 @@ from ...user import User
 
 from ..preinstanced import ApplicationCommandOptionType
 
+from .interaction_field_base import InteractionFieldBase
 
-class ApplicationCommandInteraction(DiscordEntity):
+
+class ApplicationCommandInteraction(DiscordEntity, InteractionFieldBase):
     """
     Represents an ``ApplicationCommand`` invoked by a user.
     
@@ -39,17 +43,9 @@ class ApplicationCommandInteraction(DiscordEntity):
         'resolved_users', 'target_id'
     )
     
+    
+    @copy_docs(InteractionFieldBase.__eq__)
     def __new__(cls, data, interaction_event):
-        """
-        Creates a new ``ApplicationCommandInteraction`` from the data received from Discord.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            The received application command interaction data.
-        interaction_event : ``InteractionEvent``
-            The parent interaction event.
-        """
         # id
         id_ = int(data['id'])
         
@@ -195,8 +191,8 @@ class ApplicationCommandInteraction(DiscordEntity):
         return self
     
     
+    @copy_docs(InteractionFieldBase.__repr__)
     def __repr__(self):
-        """Returns the application command interaction's representation."""
         repr_parts = [
             '<', self.__class__.__name__,
             ' id=', repr(self.id),
@@ -234,8 +230,8 @@ class ApplicationCommandInteraction(DiscordEntity):
         return ''.join(repr_parts)
     
     
+    @copy_docs(InteractionFieldBase.__eq__)
     def __eq__(self, other):
-        """Returns whether the two application command interactions are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -278,8 +274,8 @@ class ApplicationCommandInteraction(DiscordEntity):
         return True
     
     
+    @copy_docs(InteractionFieldBase.__hash__)
     def __hash__(self):
-        """Returns the hash value of the application command interaction."""
         hash_value = 0
         
         # id

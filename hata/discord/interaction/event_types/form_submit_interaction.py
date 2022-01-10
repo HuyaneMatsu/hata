@@ -2,10 +2,14 @@ __all__ = ('FormSubmitInteraction', 'FormSubmitInteractionOption',)
 
 import reprlib, warnings
 
+from scarletio import copy_docs
+
 from ..components import ComponentType
 
+from .interaction_field_base import InteractionFieldBase
 
-class FormSubmitInteraction:
+
+class FormSubmitInteraction(InteractionFieldBase):
     """
     Represents a response to a ``InteractionForm``.
     
@@ -18,17 +22,8 @@ class FormSubmitInteraction:
     """
     __slots__ = ('custom_id', 'options', )
     
+    @copy_docs(InteractionFieldBase.__new__)
     def __new__(cls, data, interaction_event):
-        """
-        Creates a new component interaction with the given data.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            The received form submit interaction data.
-        interaction_event : ``InteractionEvent``
-            The parent interaction event.
-        """
         # custom_id
         custom_id = data.get('custom_id', None)
         if (custom_id is not None) and (not custom_id):
@@ -50,8 +45,8 @@ class FormSubmitInteraction:
         return self
 
 
+    @copy_docs(InteractionFieldBase.__repr__)
     def __repr__(self):
-        """Returns the form submit interaction's representation."""
         repr_parts = ['<', self.__class__.__name__,]
         
         repr_parts.append('custom_id=')
@@ -81,8 +76,8 @@ class FormSubmitInteraction:
         return ''.join(repr_parts)
     
     
+    @copy_docs(InteractionFieldBase.__hash__)
     def __hash__(self):
-        """Returns the form submit interaction's hash value."""
         hash_value = 0
         
         # custom_id
@@ -101,8 +96,8 @@ class FormSubmitInteraction:
         return hash_value
     
     
+    @copy_docs(InteractionFieldBase.__eq__)
     def __eq__(self, other):
-        """Returns whether the two submit interactions are equal."""
         if type(self) is not type(other):
             return NotImplemented
         

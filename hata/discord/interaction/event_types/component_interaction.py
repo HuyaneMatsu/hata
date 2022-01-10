@@ -2,10 +2,14 @@ __all__ = ('ComponentInteraction',)
 
 import reprlib, warnings
 
+from scarletio import copy_docs
+
 from ..components import ComponentBase, ComponentType
 
+from .interaction_field_base import InteractionFieldBase
 
-class ComponentInteraction:
+
+class ComponentInteraction(InteractionFieldBase):
     """
     A component interaction of an ``InteractionEvent``.
     
@@ -20,6 +24,7 @@ class ComponentInteraction:
     """
     __slots__ = ('type', 'custom_id', 'components', 'options')
     
+    @copy_docs(InteractionFieldBase.__new__)
     def __new__(cls, data, interaction_event):
         """
         Creates a new component interaction with the given data.
@@ -51,8 +56,8 @@ class ComponentInteraction:
         return self
     
     
+    @copy_docs(InteractionFieldBase.__repr__)
     def __repr__(self):
-        """Returns the component interaction's representation."""
         repr_parts = ['<', self.__class__.__name__]
         
         # type
@@ -91,8 +96,8 @@ class ComponentInteraction:
         return ''.join(repr_parts)
     
     
+    @copy_docs(InteractionFieldBase.__eq__)
     def __eq__(self, other):
-        """Compares the two component or component interaction."""
         other_type = type(other)
         # Compare with self type.
         if other_type is type(self):
@@ -123,8 +128,8 @@ class ComponentInteraction:
         return NotImplemented
     
     
+    @copy_docs(InteractionFieldBase.__hash__)
     def __hash__(self):
-        """Returns the component interaction's hash value."""
         hash_value = 0
         
         # type

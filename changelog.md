@@ -9,6 +9,11 @@
     anymore.
 - Add `allowed_mentions` parameter to `SlasherApplicationCommand.__new__`.
 
+#### Bug Fixes
+
+- `EmbedBase.__bool__` could return incorrect value.
+- `EmbedBase.__len__` could return incorrect value.
+
 ## 1.1.131 *\[2022-01-04\]*
 
 #### Improvements

@@ -38,9 +38,9 @@ class EmbedThumbnail:
         url : `str`
             The url of the thumbnail. Can be http(s) or attachment.
         """
-        self.url = url
-        self.proxy_url = None
         self.height = 0
+        self.proxy_url = None
+        self.url = url
         self.width = 0
     
     
@@ -51,7 +51,11 @@ class EmbedThumbnail:
     
     def __bool__(self):
         """Returns whether the embed thumbnail is not empty."""
-        return (self.url is not None)
+        # url
+        if self.url is not None:
+            return True
+        
+        return False
     
     
     def __repr__(self):
@@ -86,7 +90,20 @@ class EmbedThumbnail:
         if type(self) is not type(other):
             return NotImplemented
         
-        return (self.url == other.url)
+        # height
+        # Receive only | check `.url` instead
+        
+        # proxy_url
+        # Receive only | check `.url` instead
+        
+        # url
+        if self.url != other.url:
+            return False
+        
+        # width
+        # Receive only | check `.url` instead
+        
+        return True
     
     
     @classmethod
@@ -104,9 +121,17 @@ class EmbedThumbnail:
         embed_thumbnail : ``EmbedThumbnail``
         """
         self = object.__new__(cls)
-        self.url = data.get('url', None)
-        self.proxy_url = data.get('proxy_url', None)
+        
+        # height
         self.height = data.get('height', 0)
+        
+        # proxy_url
+        self.proxy_url = data.get('proxy_url', None)
+        
+        # url
+        self.url = data.get('url', None)
+        
+        # width
         self.width = data.get('width', 0)
         
         return self
@@ -120,9 +145,21 @@ class EmbedThumbnail:
         -------
         thumbnail_data : `dict` of (`str`, `Any`) items
         """
-        return {
-            'url' : self.url,
-        }
+        thumbnail_data = {}
+        
+        # height
+        # receive only
+        
+        # proxy_url
+        # receive only
+        
+        # url
+        thumbnail_data['url'] = self.url
+        
+        # width
+        # receive only
+        
+        return thumbnail_data
     
     
     def copy(self):
@@ -135,9 +172,9 @@ class EmbedThumbnail:
         """
         new = object.__new__(type(self))
         
-        new.url = self.url
-        new.proxy_url = None
         new.height = 0
+        new.proxy_url = None
+        new.url = self.url
         new.width = 0
         
         return self
@@ -156,13 +193,15 @@ class EmbedThumbnail:
         -------
         new : ``EmbedThumbnail``
         """
+        # url
         if url is ...:
             url = self.url
         
         new = object.__new__(type(self))
-        new.url = url
-        new.proxy_url = None
+        
         new.height = 0
+        new.proxy_url = None
+        new.url = url
         new.width = 0
         
         return self
@@ -192,9 +231,9 @@ class EmbedVideo:
         Creates a new embed video object. Because embed videos cannot be sent, it accepts no parameters and just creates
         an empty embed video object with default attributes.
         """
-        self.url = None
-        self.proxy_url = None
         self.height = 0
+        self.proxy_url = None
+        self.url = None
         self.width = 0
     
     
@@ -205,7 +244,11 @@ class EmbedVideo:
     
     def __bool__(self):
         """Returns whether the embed video is not empty."""
-        return (self.url is not None)
+        # url
+        if self.url is not None:
+            return True
+        
+        return False
     
     
     def __repr__(self):
@@ -240,7 +283,20 @@ class EmbedVideo:
         if type(self) is not type(other):
             return NotImplemented
         
-        return (self.url == other.url)
+        # height
+        # Receive only | check `.url` instead
+        
+        # proxy_url
+        # Receive only | check `.url` instead
+        
+        # url
+        if self.url != other.url:
+            return False
+        
+        # width
+        # Receive only | check `.url` instead
+        
+        return True
     
     
     @classmethod
@@ -258,9 +314,17 @@ class EmbedVideo:
         embed_video : ``EmbedVideo``
         """
         self = object.__new__(cls)
-        self.url = data.get('url', None)
-        self.proxy_url = data.get('proxy_url', None)
+        
+        # height
         self.height = data.get('height', 0)
+        
+        # proxy_url
+        self.proxy_url = data.get('proxy_url', None)
+        
+        # url
+        self.url = data.get('url', None)
+        
+        # width
         self.width = data.get('width', 0)
         
         return self
@@ -276,6 +340,7 @@ class EmbedVideo:
         -------
         video_data : `dict` of (`str`, `Any`) items
         """
+        # all fields are receive only
         return {}
     
     
@@ -429,12 +494,23 @@ class EmbedImage:
         -------
         image_data : `dict` of (`str`, `Any`) items
         """
+        image_data = {}
+        
+        # height
+        # receive only
+        
+        # proxy_url
+        # receive only
+        
         # url
-        return {
-            'url' : self.url,
-        }
+        image_data['url'] = self.url
+        
+        # width
+        # receive only
+        
+        return image_data
     
-
+    
     def copy(self):
         """
         Copies the ``EmbedImage`` returning a new one.
@@ -471,6 +547,7 @@ class EmbedImage:
             url = self.url
         
         new = object.__new__(type(self))
+        
         new.height = 0
         new.proxy_url = None
         new.url = url
@@ -596,9 +673,10 @@ class EmbedProvider:
         -------
         provider_data : `dict` of (`str`, `Any`) items
         """
+        # receive only
         return {}
-
-
+    
+    
     def copy(self):
         """
         Copies the ``EmbedProvider`` returning a new one.
@@ -727,6 +805,7 @@ class EmbedAuthor:
         
         return ''.join(repr_parts)
     
+    
     def __eq__(self, other):
         """Returns whether the two embed authors are equal."""
         if type(self) is not type(other):
@@ -790,18 +869,25 @@ class EmbedAuthor:
         author_data : `dict` of (`str`, `Any`) items
         """
         author_data = {}
-    
+        
+        # icon_url
+        icon_url = self.icon_url
+        if (icon_url is not None):
+            author_data['icon_url'] = icon_url
+        
+        # name
         name = self.name
         if (name is not None):
             author_data['name'] = name
         
+        # proxy_icon_url
+        # receive only
+        
+        # url
         url = self.url
         if (url is not None):
             author_data['url'] = url
         
-        icon_url = self.icon_url
-        if (icon_url is not None):
-            author_data['icon_url'] = icon_url
         
         return author_data
     
@@ -818,8 +904,8 @@ class EmbedAuthor:
         
         new.icon_url = self.icon_url
         new.name = self.name
-        new.url = self.url
         new.proxy_icon_url = None
+        new.url = self.url
         
         return self
     
@@ -841,12 +927,15 @@ class EmbedAuthor:
         -------
         new : ``EmbedAuthor``
         """
+        # icon_url
         if icon_url is ...:
             icon_url = self.icon_url
         
+        # name
         if name is ...:
             name = self.name
         
+        # url
         if url is ...:
             url = self.url
         
@@ -854,8 +943,8 @@ class EmbedAuthor:
         
         new.icon_url = icon_url
         new.name = name
-        new.url = url
         new.proxy_icon_url = None
+        new.url = url
         
         return self
     
@@ -887,9 +976,9 @@ class EmbedFooter:
         icon_url : `str`, Optional
             An url of the footer's icon. Can be http(s) or attachment.
         """
-        self.text = text
         self.icon_url = icon_url
         self.proxy_icon_url = None
+        self.text = text
     
     
     def __len__(self):
@@ -899,10 +988,15 @@ class EmbedFooter:
     
     def __bool__(self):
         """Returns whether the embed footer is not empty."""
-        if self.text:
+        # icon_url
+        if (self.icon_url is not None):
             return True
         
-        if (self.icon_url is not None):
+        # proxy_icon_url
+        # Receive only | check `.icon_url` instead
+        
+        # text
+        if self.text:
             return True
         
         return False
@@ -937,9 +1031,14 @@ class EmbedFooter:
         if type(self) is not type(other):
             return NotImplemented
         
+        # icon_url
         if self.icon_url != other.icon_url:
             return False
         
+        # proxy_icon_url
+        # Receive only | check `.icon_url` instead
+        
+        # text
         if self.text != other.text:
             return False
         
@@ -961,9 +1060,15 @@ class EmbedFooter:
         embed_footer : ``EmbedFooter``
         """
         self = object.__new__(cls)
-        self.text = data['text']
+        
+        # icon_url
         self.icon_url = data.get('icon_url', None)
+        
+        # proxy_icon_url
         self.proxy_icon_url = data.get('proxy_icon_url', None)
+        
+        # text
+        self.text = data['text']
         
         return self
     
@@ -976,13 +1081,18 @@ class EmbedFooter:
         -------
         footer_data : `dict` of (`str`, `Any`) items
         """
-        footer_data = {
-            'text' : self.text,
-        }
+        footer_data = {}
         
+        # icon_url
         icon_url = self.icon_url
         if (icon_url is not None):
             footer_data['icon_url'] = icon_url
+        
+        # proxy_icon_url
+        # receive only
+        
+        # text
+        footer_data['text'] = self.text
             
         return footer_data
     
@@ -997,9 +1107,9 @@ class EmbedFooter:
         """
         new = object.__new__(type(self))
         
-        new.text = self.text
         new.icon_url = self.icon_url
         new.proxy_icon_url = None
+        new.text = self.text
         
         return self
     
@@ -1019,17 +1129,19 @@ class EmbedFooter:
         -------
         new : ``EmbedFooter``
         """
-        if text is ...:
-            text = self.text
-        
+        # icon_url
         if icon_url is ...:
             icon_url = self.icon_url
         
+        # text
+        if text is ...:
+            text = self.text
+        
         new = object.__new__(type(self))
         
-        new.text = text
         new.icon_url = icon_url
         new.proxy_icon_url = None
+        new.text = text
         
         return self
 
@@ -1062,9 +1174,9 @@ class EmbedField:
         inline : `bool`, Optional
             Whether this field should display inline.
         """
+        self.inline = inline
         self.name = name
         self.value = value
-        self.inline = inline
     
     
     def __len__(self):
@@ -1074,11 +1186,16 @@ class EmbedField:
     
     def __bool__(self):
         """Returns whether the embed field is not empty."""
+        # name
         if self.name:
             return True
         
+        # value
         if self.value:
             return True
+        
+        # inline
+        # doesnt matter, not text / image field
         
         return False
     
@@ -1093,13 +1210,16 @@ class EmbedField:
         if type(self) is not type(other):
             return NotImplemented
         
+        # inline
+        if self.inline != other.inline:
+            return False
+        
+        # name
         if self.name != other.name:
             return False
         
+        # value
         if self.value != other.value:
-            return False
-        
-        if self.inline != other.inline:
             return False
         
         return True
@@ -1121,9 +1241,14 @@ class EmbedField:
         """
         self = object.__new__(cls)
         
+        # inline
+        self.inline = data.get('inline', False)
+        
+        # name
         self.name = data['name']
+        
+        # value
         self.value = data['value']
-        self.inline = data.get('inline',False)
         
         return self
     
@@ -1136,14 +1261,18 @@ class EmbedField:
         -------
         field_data : `dict` of (`str`, `Any`) items
         """
-        field_data = {
-            'name': self.name,
-            'value': self.value,
-        }
+        field_data = {}
         
+        # inline
         inline = self.inline
         if inline:
             field_data['inline'] = inline
+        
+        # name
+        field_data['name'] = self.name
+        
+        # value
+        field_data['value'] = self.value
         
         return field_data
 
@@ -1158,9 +1287,9 @@ class EmbedField:
         """
         new = object.__new__(type(self))
         
+        new.inline = self.inline
         new.name = self.name
         new.value = self.value
-        new.inline = self.inline
         
         return self
     
@@ -1182,20 +1311,23 @@ class EmbedField:
         -------
         new : ``EmbedField``
         """
-        if name is ...:
-            name = self.name
-        
-        if value is ...:
-            value = self.value
-        
+        # inline
         if inline is ...:
             inline = self.inline
         
+        # name
+        if name is ...:
+            name = self.name
+        
+        # value
+        if value is ...:
+            value = self.value
+        
         new = object.__new__(type(self))
         
+        new.inline = inline
         new.name = name
         new.value = value
-        new.inline = inline
         
         return self
 
@@ -1252,96 +1384,140 @@ class EmbedBase:
     
     __slots__ = ()
     
-    author : {None, EmbedAuthor}
-    color : {None, Color, int}
-    description : {None, str}
-    fields : (list, EmbedField)
-    footer : {None, EmbedFooter}
-    image : {None, EmbedImage}
-    provider : {None, EmbedProvider}
-    thumbnail : {None, EmbedThumbnail}
-    timestamp : {None, datetime}
-    title : {None, str}
-    type : {None, str}
-    url : {None, str}
-    video : {None, EmbedVideo}
+    author: {None, EmbedAuthor}
+    color: {None, Color, int}
+    description: {None, str}
+    fields: {None, (list, EmbedField)}
+    footer: {None, EmbedFooter}
+    image: {None, EmbedImage}
+    provider: {None, EmbedProvider}
+    thumbnail: {None, EmbedThumbnail}
+    timestamp: {None, datetime}
+    title: {None, str}
+    type: {None, str}
+    url: {None, str}
+    video: {None, EmbedVideo}
     
     
     def __len__(self):
         """Returns the embed's contents' length."""
-        result = 0
+        length = 0
         
-        title = self.title
-        if (title is not None):
-            result += len(title)
-        
-        description = self.description
-        if (description is not None):
-            result += len(description)
-        
-        title = self.title
-        if (title is not None):
-            result += len(title)
-        
-        footer = self.footer
-        if (footer is not None):
-            result += len(footer.text)
-        
+        # author
         author = self.author
         if (author is not None):
-            name = author.name
-            if (name is not None):
-                result += len(name)
+            length += len(author)
         
-        for field in self.fields:
-            result += len(field.name)
-            result += len(field.value)
+        # color
+        # not applicable
         
-        return result
+        # description
+        description = self.description
+        if (description is not None):
+            length += len(description)
+        
+        # fields
+        fields = self.fields
+        if (fields is not None):
+            for field in fields:
+                length += len(field)
+        
+        # footer
+        footer = self.footer
+        if (footer is not None):
+            length += len(footer)
+        
+        # image
+        # Not applicable
+        
+        # provider
+        provider = self.provider
+        if (provider is not None):
+            length += len(provider)
+        
+        # thumbnail
+        # Not applicable
+        
+        # timestamp
+        # Not applicable
+        
+        # title
+        title = self.title
+        if (title is not None):
+            length += len(title)
+        
+        # type
+        # Not applicable
+        
+        # url
+        # Not applicable
+        
+        # video
+        # Not applicable
+        
+        return length
     
     
     def __bool__(self):
         """Returns whether the embed is not empty."""
+        # author
         author = self.author
         if (author is not None) and author:
             return True
         
+        # color
         if (self.color is not None):
             return True
         
+        # description
         description = self.description
         if (description is not None) and description:
             return True
         
-        if self.fields:
-            return True
+        # fields
+        fields = self.fields
+        if (fields is not None) and fields:
+            for field in fields:
+                if field:
+                    return True
         
+        # footer
         footer = self.footer
         if (footer is not None) and footer:
             return True
         
+        # image
         image = self.image
         if (image is not None) and image:
             return True
         
+        # provider
         provider = self.provider
         if (provider is not None) and provider:
             return True
         
+        # thumbnail
         thumbnail = self.thumbnail
         if (thumbnail is not None) and thumbnail:
             return True
         
+        # timestamp
         if (self.timestamp is not None):
             return True
         
+        # title
         title = self.title
         if (title is not None) and title:
             return True
         
+        # type
+        # Not applicable
+        
+        # url
         if (self.url is not None):
             return True
         
+        # video
         video = self.video
         if (video is not None) and video:
             return True
@@ -1359,40 +1535,56 @@ class EmbedBase:
         if not isinstance(other, EmbedBase):
             return NotImplemented
         
-        if self.title != other.title:
-            return False
-            
-        if self.description != other.description:
-            return False
-        
-        if self.color != other.color:
-            return False
-        
-        if self.url != other.url:
-            return False
-            
-        if self.timestamp != other.timestamp:
-            return False
-            
-        if self.type != other.type:
-            return False
-        
-        if self.footer != other.footer:
-            return False
-            
-        if self.image != other.image:
-            return False
-            
-        if self.thumbnail != other.thumbnail:
-            return False
-        
-        if self.video != other.video:
-            return False
-        
+        # author
         if self.author != other.author:
             return False
         
+        # color
+        if self.color != other.color:
+            return False
+        
+        # description
+        if self.description != other.description:
+            return False
+        
+        # fields
         if self.fields != other.fields:
+            return False
+        
+        # footer
+        if self.footer != other.footer:
+            return False
+        
+        # image
+        if self.image != other.image:
+            return False
+        
+        # provider
+        if self.provider != other.provider:
+            return False
+        
+        # thumbnail
+        if self.thumbnail != other.thumbnail:
+            return False
+        
+        # timestamp
+        if self.timestamp != other.timestamp:
+            return False
+        
+        # title
+        if self.title != other.title:
+            return False
+        
+        # type
+        if self.type != other.type:
+            return False
+        
+        # url
+        if self.url != other.url:
+            return False
+        
+        # video
+        if self.video != other.video:
             return False
         
         return True

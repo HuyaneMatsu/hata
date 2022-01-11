@@ -7,8 +7,8 @@ from scarletio import copy_docs, include
 from .component_base import ComponentBase
 from .component_select_option import ComponentSelectOption
 from .debug import (
-    _debug_component_custom_id, _debug_component_enabled, _debug_component_options, _debug_component_placeholder,
-    _debug_component_min_values, _debug_component_max_values
+    _debug_component_custom_id, _debug_component_enabled, _debug_component_max_values, _debug_component_min_values,
+    _debug_component_options, _debug_component_placeholder
 )
 from .preinstanced import ComponentType
 

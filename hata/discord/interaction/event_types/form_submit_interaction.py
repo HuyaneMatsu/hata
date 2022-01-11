@@ -1,6 +1,6 @@
 __all__ = ('FormSubmitInteraction', 'FormSubmitInteractionOption',)
 
-import reprlib, warnings
+import reprlib
 
 from scarletio import copy_docs
 

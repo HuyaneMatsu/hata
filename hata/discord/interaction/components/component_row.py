@@ -2,10 +2,10 @@ __all__ = ('ComponentRow',)
 
 from scarletio import copy_docs, export, include
 
-from .preinstanced import ComponentType
-
 from .component_base import ComponentBase
 from .debug import _debug_component_components
+from .preinstanced import ComponentType
+
 
 create_component = include('create_component')
 

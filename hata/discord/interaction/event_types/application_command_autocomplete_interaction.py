@@ -1,12 +1,13 @@
 __all__ = ('ApplicationCommandAutocompleteInteraction', 'ApplicationCommandAutocompleteInteractionOption')
 
-import reprlib, warnings
+import reprlib
 
 from scarletio import copy_docs
 
 from ..preinstanced import ApplicationCommandOptionType
 
 from .interaction_field_base import InteractionFieldBase
+
 
 class ApplicationCommandAutocompleteInteraction(InteractionFieldBase):
     """

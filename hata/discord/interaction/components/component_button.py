@@ -10,8 +10,8 @@ from ...utils import url_cutter
 
 from .component_base import ComponentBase
 from .debug import (
-    _debug_component_custom_id, _debug_component_enabled, _debug_component_emoji,
-    _debug_component_label, _debug_component_url
+    _debug_component_custom_id, _debug_component_emoji, _debug_component_enabled, _debug_component_label,
+    _debug_component_url
 )
 from .preinstanced import ButtonStyle, ComponentType
 

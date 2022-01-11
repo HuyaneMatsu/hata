@@ -15,13 +15,13 @@ from ...permission.permission import PERMISSION_PRIVATE
 from ...user import ClientUserBase, User
 
 from ..interaction_response_context import (
-    RESPONSE_FLAG_DEFERRING, RESPONSE_FLAG_DEFERRED, RESPONSE_FLAG_RESPONDING, RESPONSE_FLAG_RESPONDED,
-    RESPONSE_FLAG_EPHEMERAL, RESPONSE_FLAG_NONE, RESPONSE_FLAG_ACKNOWLEDGING, RESPONSE_FLAG_ACKNOWLEDGED
+    RESPONSE_FLAG_ACKNOWLEDGED, RESPONSE_FLAG_ACKNOWLEDGING, RESPONSE_FLAG_DEFERRED, RESPONSE_FLAG_DEFERRING,
+    RESPONSE_FLAG_EPHEMERAL, RESPONSE_FLAG_NONE, RESPONSE_FLAG_RESPONDED, RESPONSE_FLAG_RESPONDING
 )
 
+from .application_command_autocomplete_interaction import ApplicationCommandAutocompleteInteraction
 from .application_command_interaction import ApplicationCommandInteraction
 from .component_interaction import ComponentInteraction
-from .application_command_autocomplete_interaction import ApplicationCommandAutocompleteInteraction
 from .form_submit_interaction import FormSubmitInteraction
 from .preinstanced import InteractionType
 

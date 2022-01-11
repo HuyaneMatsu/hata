@@ -8,9 +8,8 @@ from ...bases import PreinstancedBase
 from ...emoji import create_partial_emoji_data, create_partial_emoji_from_data
 from ...preconverters import preconvert_preinstanced_type
 
-from .preinstanced import ComponentType
-
 from .component_base import ComponentBase
+from .preinstanced import ComponentType
 
 
 def dynamic_component_style_serializer(style):

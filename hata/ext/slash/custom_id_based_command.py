@@ -4,7 +4,7 @@ __all__ = ('CustomIdBasedCommand', )
 from functools import partial as partial_func
 
 from ...discord.events.handling_helpers import create_event_from_class
-from ...discord.interaction.components import COMPONENT_CUSTOM_ID_LENGTH_MAX
+from ...discord.interaction.components.constants import COMPONENT_CUSTOM_ID_LENGTH_MAX
 
 from .converters import (
     RegexMatcher, check_component_converters_satisfy_regex, check_component_converters_satisfy_string

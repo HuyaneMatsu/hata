@@ -2,7 +2,7 @@ __all__ = ('ComponentSelectOption',)
 
 import reprlib
 
-from scarletio import copy_docs
+from scarletio import copy_docs, export
 
 from ...emoji import create_partial_emoji_data, create_partial_emoji_from_data
 
@@ -13,6 +13,7 @@ from .debug import (
 )
 
 
+@export
 class ComponentSelectOption(ComponentBase):
     """
     An option of a select component.

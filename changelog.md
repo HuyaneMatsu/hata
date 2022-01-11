@@ -13,6 +13,7 @@
 
 - `EmbedBase.__bool__` could return incorrect value.
 - `EmbedBase.__len__` could return incorrect value.
+- `EmbedBase.contents` excluded `.provider.name`
 
 ## 1.1.131 *\[2022-01-04\]*
 

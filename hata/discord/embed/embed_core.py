@@ -71,19 +71,19 @@ class EmbedCore(EmbedBase):
         type_ : `None`, `str`, Optional
             The type of the embed. Defaults to `'rich'`.
         """
-        self.title = title
-        self.description = description
+        self.author = None
         self.color = color
-        self.url = url
-        self.timestamp = timestamp
-        self.type = type_ # must be `rich` for webhook embeds
+        self.description = description
+        self.fields = []
         self.footer = None
         self.image = None
-        self.thumbnail = None
-        self.video = None
         self.provider = None
-        self.author = None
-        self.fields = []
+        self.thumbnail = None
+        self.timestamp = timestamp
+        self.title = title
+        self.type = type_ # must be `rich` for webhook embeds
+        self.url = url
+        self.video = None
     
     
     @classmethod
@@ -102,67 +102,7 @@ class EmbedCore(EmbedBase):
         """
         self = cls.__new__(cls)
         
-        self.title = data.get('title', None)
-        self.type = data.get('type', None)
-        self.description = data.get('description', None)
-        self.url = data.get('url', None)
-
-        try:
-            timestamp_data = data['timestamp']
-        except KeyError:
-            timestamp = None
-        else:
-           timestamp = timestamp_to_datetime(timestamp_data)
-        self.timestamp = timestamp
-        
-        try:
-            color_data = data['color']
-        except KeyError:
-            color = None
-        else:
-            color = Color(color_data)
-        self.color = color
-
-        try:
-            footer_data = data['footer']
-        except KeyError:
-            footer = None
-        else:
-            footer = EmbedFooter.from_data(footer_data)
-        self.footer = footer
-        
-        try:
-            image_data = data['image']
-        except KeyError:
-            image = None
-        else:
-            image = EmbedImage.from_data(image_data)
-        self.image = image
-        
-        try:
-            thumbnail_data = data['thumbnail']
-        except KeyError:
-            thumbnail = None
-        else:
-            thumbnail = EmbedThumbnail.from_data(thumbnail_data)
-        self.thumbnail = thumbnail
-        
-        try:
-            video_data = data['video']
-        except KeyError:
-            video = None
-        else:
-            video = EmbedVideo.from_data(video_data)
-        self.video = video
-        
-        try:
-            provider_data = data['provider']
-        except KeyError:
-            provider = None
-        else:
-            provider = EmbedProvider.from_data(provider_data)
-        self.provider = provider
-        
+        # author
         try:
             author_data = data['author']
         except KeyError:
@@ -171,6 +111,19 @@ class EmbedCore(EmbedBase):
             author = EmbedAuthor.from_data(author_data)
         self.author = author
         
+        # color
+        try:
+            color_data = data['color']
+        except KeyError:
+            color = None
+        else:
+            color = Color(color_data)
+        self.color = color
+        
+        # description
+        self.description = data.get('description', None)
+        
+        #fields
         try:
             field_datas = data['fields']
         except KeyError:
@@ -178,6 +131,69 @@ class EmbedCore(EmbedBase):
         else:
             fields = [EmbedField.from_data(field_data) for field_data in field_datas]
         self.fields = fields
+        
+        # footer
+        try:
+            footer_data = data['footer']
+        except KeyError:
+            footer = None
+        else:
+            footer = EmbedFooter.from_data(footer_data)
+        self.footer = footer
+        
+        # image
+        try:
+            image_data = data['image']
+        except KeyError:
+            image = None
+        else:
+            image = EmbedImage.from_data(image_data)
+        self.image = image
+        
+        # provider
+        try:
+            provider_data = data['provider']
+        except KeyError:
+            provider = None
+        else:
+            provider = EmbedProvider.from_data(provider_data)
+        self.provider = provider
+        
+        # thumbnail
+        try:
+            thumbnail_data = data['thumbnail']
+        except KeyError:
+            thumbnail = None
+        else:
+            thumbnail = EmbedThumbnail.from_data(thumbnail_data)
+        self.thumbnail = thumbnail
+        
+        # timestamp
+        try:
+            timestamp_data = data['timestamp']
+        except KeyError:
+            timestamp = None
+        else:
+           timestamp = timestamp_to_datetime(timestamp_data)
+        self.timestamp = timestamp
+        
+        # title
+        self.title = data.get('title', None)
+        
+        # type
+        self.type = data.get('type', None)
+        
+        # url
+        self.url = data.get('url', None)
+        
+        # video
+        try:
+            video_data = data['video']
+        except KeyError:
+            video = None
+        else:
+            video = EmbedVideo.from_data(video_data)
+        self.video = video
         
         return self
     
@@ -192,49 +208,66 @@ class EmbedCore(EmbedBase):
         """
         data = {}
         
-        type_ = self.type
-        if (type_ is not None):
-            data['type'] = type_
-        
-        title = self.title
-        if (title is not None):
-            data['title'] = title
-        
-        description = self.description
-        if (description is not None):
-            data['description'] = description
-            
-        color = self.color
-        if (color is not None):
-            data['color'] = color
-        
-        url = self.url
-        if (url is not None):
-            data['url'] = url
-        
-        timestamp = self.timestamp
-        if (timestamp is not None):
-            data['timestamp'] = datetime_to_timestamp(timestamp)
-        
-        footer = self.footer
-        if (footer is not None):
-            data['footer'] = footer.to_data()
-        
-        image = self.image
-        if (image is not None):
-            data['image'] = image.to_data()
-        
-        thumbnail = self.thumbnail
-        if (thumbnail is not None):
-            data['thumbnail'] = thumbnail.to_data()
-        
+        # author
         author = self.author
         if (author is not None):
             data['author'] = author.to_data()
         
+        # color
+        color = self.color
+        if (color is not None):
+            data['color'] = color
+        
+        # description
+        description = self.description
+        if (description is not None):
+            data['description'] = description
+        
+        # fields
         fields = self.fields
-        if fields:
+        if (fields is not None) and fields:
             data['fields'] = [field.to_data() for field in fields]
+        
+        # footer
+        footer = self.footer
+        if (footer is not None):
+            data['footer'] = footer.to_data()
+        
+        # image
+        image = self.image
+        if (image is not None):
+            data['image'] = image.to_data()
+        
+        # provider
+        # Receive only
+        
+        # thumbnail
+        thumbnail = self.thumbnail
+        if (thumbnail is not None):
+            data['thumbnail'] = thumbnail.to_data()
+        
+        # timestamp
+        timestamp = self.timestamp
+        if (timestamp is not None):
+            data['timestamp'] = datetime_to_timestamp(timestamp)
+        
+        # title
+        title = self.title
+        if (title is not None):
+            data['title'] = title
+        
+        # type
+        type_ = self.type
+        if (type_ is not None):
+            data['type'] = type_
+        
+        # url
+        url = self.url
+        if (url is not None):
+            data['url'] = url
+        
+        # video
+        # Receive only
         
         return data
     
@@ -264,12 +297,13 @@ class EmbedCore(EmbedBase):
         Returns the embed's contents.
         
         The embed's contents are the following:
-        - `.title`
-        - `.description`
         - `.author.name`
-        - `.footer.text`
+        - `.description`
         - `.fields[n].name`
         - `.fields[n].value`
+        - `.title`
+        - `.footer.text`
+        - `.provider.name`
         
         Returns
         -------
@@ -277,27 +311,65 @@ class EmbedCore(EmbedBase):
         """
         contents = []
         
-        title = self.title
-        if (title is not None):
-            contents.append(title)
-        
-        description = self.description
-        if (description is not None):
-            contents.append(description)
-        
+        # author
         author = self.author
         if (author is not None):
             name = author.name
             if (name is not None):
                 contents.append(name)
         
+        # color
+        # Not a text field
+        
+        # description
+        description = self.description
+        if (description is not None):
+            contents.append(description)
+        
+        # fields
+        fields = self.fields
+        if (fields is not None):
+            for field in fields:
+                contents.append(field.name)
+                contents.append(field.value)
+        
+        # footer
         footer = self.footer
         if (footer is not None):
             contents.append(footer.text)
         
-        for field in self.fields:
-            contents.append(field.name)
-            contents.append(field.value)
+        # image
+        # Has no text fields
+        
+        # provider
+        provider = self.provider
+        if (provider is not None):
+            name = provider.name
+            if (name is not None):
+                contents.append(name)
+                
+        # thumbnail
+        # Has no text fields
+        
+        # title
+        title = self.title
+        if (title is not None):
+            contents.append(title)
+        
+        # type
+        # Not a text field
+        
+        # url
+        # Not a text field
+        
+        # type
+        # Not a text field
+        
+        # url
+        # Not a text field
+        
+        # video
+        # Has no text fields
         
         return contents
     
@@ -429,23 +501,50 @@ class EmbedCore(EmbedBase):
         """
         new = object.__new__(type(self))
         
-        new.title = self.title
-        description = self.description
-        new.description = None if (description is None) else sanitize_mentions(description, message.guild)
+        # author
+        new.author = self.author
+        
+        # color
         new.color = self.color
-        new.url = self.url
+        
+        # description
+        description = self.description
+        if (description is not None):
+            description = sanitize_mentions(description, message.guild)
+        new.description = description
+        
+        # fields
+        new.fields = [
+            type(field)(field.name, sanitize_mentions(field.value, message.guild), inline=field.inline)
+            for field in self.fields
+        ]
+        
+        # footer
+        new.footer = self.footer
+        
+        # image
+        new.image = self.image
+        
+        # provider
+        new.provider = self.provider
+        
+        # thumbnail
+        new.thumbnail = self.thumbnail
+        
+        # timestamp
         new.timestamp = self.timestamp
+        
+        # title
+        new.title = self.title
+        
+        # type
         new.type = self.type
         
-        new.footer = self.footer
-        new.image = self.image
-        new.thumbnail = self.thumbnail
+        # url
+        new.url = self.url
+        
+        # video
         new.video = self.video
-        new.provider = self.provider
-        new.author = self.author
-        new.fields = [
-            type(field)(field.name, sanitize_mentions(field. value, message.guild), inline=field.inline) \
-                for field in self.fields]
         
         return new
     
@@ -478,6 +577,7 @@ class EmbedCore(EmbedBase):
     
     @copy_docs(EmbedBase.copy_with)
     def copy_with(self, **kwargs):
+        # author
         try:
             author = kwargs.pop('author')
         except KeyError:
@@ -485,16 +585,19 @@ class EmbedCore(EmbedBase):
             if (author is not None):
                 author = author.copy()
         
+        # color
         try:
             color = kwargs.pop('color')
         except KeyError:
             color = self.color
         
+        # description
         try:
             description = kwargs.pop('description')
         except KeyError:
             description = self.description
         
+        # fields
         try:
             fields = kwargs.pop('fields')
         except KeyError:
@@ -502,6 +605,7 @@ class EmbedCore(EmbedBase):
             if (fields is not None):
                 fields = [field.copy() for field in fields]
         
+        # footer
         try:
             footer = kwargs.pop('footer')
         except KeyError:
@@ -509,6 +613,7 @@ class EmbedCore(EmbedBase):
             if (footer is not None):
                 footer = footer.copy()
         
+        # image
         try:
             image = kwargs.pop('image')
         except KeyError:
@@ -516,6 +621,7 @@ class EmbedCore(EmbedBase):
             if (image is not None):
                 image = image.copy()
         
+        # provider
         try:
             provider = kwargs.pop('provider')
         except KeyError:
@@ -523,6 +629,7 @@ class EmbedCore(EmbedBase):
             if (provider is not None):
                 provider = provider.copy()
         
+        # thumbnail
         try:
             thumbnail = kwargs.pop('thumbnail')
         except KeyError:
@@ -530,26 +637,31 @@ class EmbedCore(EmbedBase):
             if (thumbnail is not None):
                 thumbnail = thumbnail.copy()
         
+        # timestamp
         try:
             timestamp = kwargs.pop('timestamp')
         except KeyError:
             timestamp = self.timestamp
         
+        # title
         try:
             title = kwargs.pop('title')
         except KeyError:
             title = self.title
         
+        # type_
         try:
             type_ = kwargs.pop('type')
         except KeyError:
             type_ = self.type
         
+        # url
         try:
             url = kwargs.pop('url')
         except KeyError:
             url = self.url
         
+        # video
         try:
             video = kwargs.pop('video')
         except KeyError:

@@ -77,50 +77,43 @@ class Embed(EmbedBase):
         """
         self._data = data = {}
         
-        if (title is not None):
-            if not isinstance(title, str):
-                title = str(title)
-            
-            data['title'] = title
-            
+        # color
+        if (color is not None):
+            data['color'] = color
+        
+        # description
         if (description is not None):
             if not isinstance(description, str):
                 description = str(description)
             
             data['description'] = description
         
-        if (color is not None):
-            data['color'] = color
+        # title
+        if (title is not None):
+            if not isinstance(title, str):
+                title = str(title)
             
-        if (url is not None):
-            data['url'] = url
+            data['title'] = title
             
-        if (timestamp is not None):
-            data['timestamp'] = datetime_to_timestamp(timestamp)
-            
+        # type
         if (type_ is not None):
             data['type'] = type_
+        
+        # url
+        if (url is not None):
+            data['url'] = url
+        
+        # timestamp
+        if (timestamp is not None):
+            data['timestamp'] = datetime_to_timestamp(timestamp)
     
     
     @copy_docs(EmbedBase.__len__)
     def __len__(self):
         data = self._data
-        result = 0
+        length = 0
         
-        try:
-            title = data['title']
-        except KeyError:
-            pass
-        else:
-            result += len(title)
-        
-        try:
-            description = data['description']
-        except KeyError:
-            pass
-        else:
-            result += len(description)
-        
+        # author
         try:
             author_data = data['author']
         except KeyError:
@@ -131,31 +124,85 @@ class Embed(EmbedBase):
             except KeyError:
                 pass
             else:
-                result += len(author_name)
+                length += len(author_name)
         
+        # color
+        # Not applicable
+        
+        
+        # description
         try:
-            footer_data = data['footer']
+            description = data['description']
         except KeyError:
             pass
         else:
-            result += len(footer_data['text'])
+            length += len(description)
         
+        # fields
         try:
             field_datas = data['fields']
         except KeyError:
             pass
         else:
             for field_data in field_datas:
-                result += len(field_data['name'])
-                result += len(field_data['value'])
+                length += len(field_data['name'])
+                length += len(field_data['value'])
         
-        return result
+        # footer
+        try:
+            footer_data = data['footer']
+        except KeyError:
+            pass
+        else:
+            length += len(footer_data['text'])
+        
+        # image
+        # Not applicable
+        
+        # provider
+        try:
+            provider_data = data['provider']
+        except KeyError:
+            pass
+        else:
+            try:
+                provider_name = provider_data['name']
+            except KeyError:
+                pass
+            else:
+                length += len(provider_name)
+        
+        # thumbnail
+        # Not applicable
+        
+        # timestamp
+        # Not applicable
+        
+        # title
+        try:
+            title = data['title']
+        except KeyError:
+            pass
+        else:
+            length += len(title)
+        
+        # type
+        # Not applicable
+        
+        # url
+        # Not applicable
+        
+        # video
+        # Not applicable
+        
+        return length
     
     
     @copy_docs(EmbedBase.__bool__)
     def __bool__(self):
         data = self._data
         data_length = len(data) - ('type' in data)
+        
         if data_length == 0:
             return False
         
@@ -172,39 +219,12 @@ class Embed(EmbedBase):
     
     
     @property
+    @copy_docs(EmbedBase.contents)
     def contents(self):
-        """
-        Returns the embed's contents.
-        
-        The embeds contents are the following:
-        - `.title`
-        - `.description`
-        - `.author.name`
-        - `.footer.text`
-        - `.fields[n].name`
-        - `.fields[n].value`
-        
-        Returns
-        -------
-        contents : `list` of `str`
-        """
         data = self._data
-        result = []
+        contents = []
         
-        try:
-            title = data['title']
-        except KeyError:
-            pass
-        else:
-            result.append(title)
-        
-        try:
-            description = data['description']
-        except KeyError:
-            pass
-        else:
-            result.append(description)
-        
+        # author
         try:
             author_data = data['author']
         except KeyError:
@@ -215,25 +235,81 @@ class Embed(EmbedBase):
             except KeyError:
                 pass
             else:
-                result.append(author_name)
+                contents.append(author_name)
         
+        # color
+        # Not a text field
+        
+        # description
         try:
-            footer_data = data['footer']
+            description = data['description']
         except KeyError:
             pass
         else:
-            result.append(footer_data['text'])
+            contents.append(description)
         
+        # fields
         try:
             field_datas = data['fields']
         except KeyError:
             pass
         else:
             for field_data in field_datas:
-                result.append(field_data['name'])
-                result.append(field_data['value'])
+                contents.append(field_data['name'])
+                contents.append(field_data['value'])
         
-        return result
+        # footer
+        try:
+            footer_data = data['footer']
+        except KeyError:
+            pass
+        else:
+            contents.append(footer_data['text'])
+        
+
+        # image
+        # Has no text fields
+        
+        # provider
+        try:
+            provider_data = data['provider']
+        except KeyError:
+            pass
+        else:
+            try:
+                provider_name = provider_data['name']
+            except KeyError:
+                pass
+            else:
+                contents.append(provider_name)
+                
+        # thumbnail
+        # Has no text fields
+        
+        # title
+        try:
+            title = data['title']
+        except KeyError:
+            pass
+        else:
+            contents.append(title)
+        
+        # type
+        # Not a text field
+        
+        # url
+        # Not a text field
+        
+        # type
+        # Not a text field
+        
+        # url
+        # Not a text field
+        
+        # video
+        # Has no text fields
+        
+        return contents
     
     
     @classmethod
@@ -305,6 +381,7 @@ class Embed(EmbedBase):
     def copy_with(self, **kwargs):
         data = self._data
         
+        # author
         try:
             author = kwargs.pop('author')
         except KeyError:
@@ -317,16 +394,19 @@ class Embed(EmbedBase):
             else:
                 author_data = author.to_data()
         
+        # color
         try:
             color = kwargs.pop('color')
         except KeyError:
             color = data.get('color', None)
         
+        # description
         try:
             description = kwargs.pop('description')
         except KeyError:
             description = data.get('description', None)
         
+        # fields
         try:
             fields = kwargs.pop('fields')
         except KeyError:
@@ -339,6 +419,7 @@ class Embed(EmbedBase):
             else:
                 field_datas = [field.to_data() for field in fields]
         
+        # footer
         try:
             footer = kwargs.pop('footer')
         except KeyError:
@@ -351,6 +432,7 @@ class Embed(EmbedBase):
             else:
                 footer_data = footer.to_data()
         
+        # image
         try:
             image = kwargs.pop('image')
         except KeyError:
@@ -363,6 +445,7 @@ class Embed(EmbedBase):
             else:
                 image_data = image.to_data()
         
+        # provider
         try:
             provider = kwargs.pop('provider')
         except KeyError:
@@ -375,6 +458,7 @@ class Embed(EmbedBase):
             else:
                 provider_data = provider.to_data()
         
+        # thumbnail
         try:
             thumbnail = kwargs.pop('thumbnail')
         except KeyError:
@@ -387,6 +471,7 @@ class Embed(EmbedBase):
             else:
                 thumbnail_data  = thumbnail.to_data()
         
+        # timestamp
         try:
             timestamp = kwargs.pop('timestamp')
         except KeyError:
@@ -397,21 +482,25 @@ class Embed(EmbedBase):
             else:
                 timestamp_data = datetime_to_timestamp(timestamp)
         
+        # title
         try:
             title = kwargs.pop('title')
         except KeyError:
             title = data.get('title', None)
         
+        # type
         try:
             type_ = kwargs.pop('type')
         except KeyError:
             type_ = data.get('type_', None)
         
+        # url
         try:
             url = kwargs.pop('url')
         except KeyError:
             url = data.get('url', None)
         
+        # video
         try:
             video = kwargs.pop('video')
         except KeyError:
@@ -430,48 +519,61 @@ class Embed(EmbedBase):
         
         new_data = {}
         
+        # author
         if (author_data is not None):
             new_data['author'] = author_data
         
+        # color
         if (color is not None):
             new_data['color'] = color
         
+        #description
         if (description is not None):
             if not isinstance(description, str):
                 description = str(description)
             
             new_data['description'] = description
         
+        # fields
         if (field_datas is not None):
             new_data['fields'] = field_datas
         
+        # footer
         if (footer_data is not None):
             new_data['footer'] = footer_data
         
+        # image
         if (image_data is not None):
             new_data['image'] = image_data
         
+        # provider
         if (provider_data is not None):
             new_data['provider'] = provider_data
         
+        # thumbnail
         if (thumbnail_data is not None):
             new_data['thumbnail'] = thumbnail_data
         
+        # timestamp
         if (timestamp_data is not None):
             new_data['timestamp'] = timestamp_data
         
+        # title
         if (title is not None):
             if not isinstance(title, str):
                 title = str(title)
             
             new_data['title'] = title
         
+        # type
         if (type_ is not None):
-            new_data['type_'] = type_
+            new_data['type'] = type_
         
+        # url
         if (url is not None):
             new_data['url'] = url
         
+        # video
         if (video_data is not None):
             new_data['video'] = video_data
         

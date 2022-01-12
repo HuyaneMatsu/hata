@@ -1409,7 +1409,7 @@ class EmbedBase:
             length += len(author)
         
         # color
-        # not applicable
+        # Not applicable
         
         # description
         description = self.description
@@ -1622,26 +1622,88 @@ class EmbedBase:
         """
     
     
+
     @property
     def contents(self):
         """
         Returns the embed's contents.
         
-        > Subclasses should overwrite this method.
-        
         The embed's contents are the following:
-        - `.title`
-        - `.description`
         - `.author.name`
-        - `.footer.text`
+        - `.description`
         - `.fields[n].name`
         - `.fields[n].value`
+        - `.title`
+        - `.footer.text`
+        - `.provider.name`
         
         Returns
         -------
         contents : `list` of `str`
         """
-        return []
+        contents = []
+        
+        # author
+        author = self.author
+        if (author is not None):
+            author_name = author.name
+            if (author_name is not None):
+                contents.append(author_name)
+        
+        # color
+        # Not a text field
+        
+        # description
+        description = self.description
+        if (description is not None):
+            contents.append(description)
+        
+        # fields
+        fields = self.fields
+        if (fields is not None):
+            for field in fields:
+                contents.append(field.name)
+                contents.append(field.value)
+        
+        # footer
+        footer = self.footer
+        if (footer is not None):
+            contents.append(footer.text)
+        
+        # image
+        # Has no text fields
+        
+        # provider
+        provider = self.provider
+        if (provider is not None):
+            provider_name = provider.name
+            if (provider_name is not None):
+                contents.append(provider_name)
+                
+        # thumbnail
+        # Has no text fields
+        
+        # title
+        title = self.title
+        if (title is not None):
+            contents.append(title)
+        
+        # type
+        # Not a text field
+        
+        # url
+        # Not a text field
+        
+        # type
+        # Not a text field
+        
+        # url
+        # Not a text field
+        
+        # video
+        # Has no text fields
+        
+        return contents
     
     
     def copy(self):

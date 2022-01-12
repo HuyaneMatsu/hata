@@ -291,89 +291,6 @@ class EmbedCore(EmbedBase):
         self.video = None
     
     
-    @property
-    def contents(self):
-        """
-        Returns the embed's contents.
-        
-        The embed's contents are the following:
-        - `.author.name`
-        - `.description`
-        - `.fields[n].name`
-        - `.fields[n].value`
-        - `.title`
-        - `.footer.text`
-        - `.provider.name`
-        
-        Returns
-        -------
-        contents : `list` of `str`
-        """
-        contents = []
-        
-        # author
-        author = self.author
-        if (author is not None):
-            name = author.name
-            if (name is not None):
-                contents.append(name)
-        
-        # color
-        # Not a text field
-        
-        # description
-        description = self.description
-        if (description is not None):
-            contents.append(description)
-        
-        # fields
-        fields = self.fields
-        if (fields is not None):
-            for field in fields:
-                contents.append(field.name)
-                contents.append(field.value)
-        
-        # footer
-        footer = self.footer
-        if (footer is not None):
-            contents.append(footer.text)
-        
-        # image
-        # Has no text fields
-        
-        # provider
-        provider = self.provider
-        if (provider is not None):
-            name = provider.name
-            if (name is not None):
-                contents.append(name)
-                
-        # thumbnail
-        # Has no text fields
-        
-        # title
-        title = self.title
-        if (title is not None):
-            contents.append(title)
-        
-        # type
-        # Not a text field
-        
-        # url
-        # Not a text field
-        
-        # type
-        # Not a text field
-        
-        # url
-        # Not a text field
-        
-        # video
-        # Has no text fields
-        
-        return contents
-    
-    
     def _update_sizes(self, data):
         """
         Updates the size information of the embed.
@@ -649,7 +566,7 @@ class EmbedCore(EmbedBase):
         except KeyError:
             title = self.title
         
-        # type_
+        # type
         try:
             type_ = kwargs.pop('type')
         except KeyError:

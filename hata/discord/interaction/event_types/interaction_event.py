@@ -13,6 +13,7 @@ from ...oauth2.helpers import parse_guild_locale, parse_locale
 from ...permission import Permission
 from ...permission.permission import PERMISSION_PRIVATE
 from ...user import ClientUserBase, User
+from ...utils import now_as_id, seconds_to_id_difference
 
 from ..interaction_response_context import (
     RESPONSE_FLAG_ACKNOWLEDGED, RESPONSE_FLAG_ACKNOWLEDGING, RESPONSE_FLAG_DEFERRED, RESPONSE_FLAG_DEFERRING,
@@ -34,6 +35,9 @@ INTERACTION_TYPE_TABLE = {
     InteractionType.form_submit: FormSubmitInteraction,
 }
 
+
+INTERACTION_EVENT_EXPIRE_AFTER = 900 # 15 min
+INTERACTION_EVENT_EXPIRE_AFTER_ID_DIFFERENCE = seconds_to_id_difference(INTERACTION_EVENT_EXPIRE_AFTER)
 
 @export
 class InteractionEvent(DiscordEntity, EventBase, immortal=True):
@@ -468,7 +472,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
     
     def is_responding(self):
         """
-        Returns whether the even it being responded.
+        Returns whether the event it being responded.
         
         Returns
         -------
@@ -486,6 +490,17 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         is_responded : `bool`
         """
         return True if (self._response_flag & RESPONSE_FLAG_RESPONDED) else False
+    
+    
+    def is_expired(self):
+        """
+        Returns whether the event is already expired.
+        
+        Returns
+        -------
+        is_expired : `bool`
+        """
+        return now_as_id() > (self.id + INTERACTION_EVENT_EXPIRE_AFTER_ID_DIFFERENCE)
     
     
     def __len__(self):

@@ -6,7 +6,7 @@
     'id_to_datetime', 'id_to_unix_time', 'is_id', 'is_invite_code', 'is_mention', 'is_role_mention', 'is_url',
     'is_user_mention', 'mention_channel_by_id', 'mention_role_by_id', 'mention_user_by_id', 'mention_user_nick_by_id',
     'now_as_id', 'parse_message_reference', 'parse_rdelta', 'parse_tdelta', 'random_id', 'sanitize_content',
-    'sanitize_mentions', 'unix_time_to_id'
+    'sanitize_mentions', 'seconds_to_id_difference', 'unix_time_to_id'
 )
 
 import reprlib, sys
@@ -347,6 +347,22 @@ while True:
     DATETIME_MAX = datetime(year=2038, month=1, day=1)
     UNIX_TIME_MAX = datetime_to_unix_time(DATETIME_MAX)
     break
+
+
+def seconds_to_id_difference(seconds):
+    """
+    Converts the given seconds to difference between two id-s.
+    
+    Parameters
+    ----------
+    seconds : `int`, `float`
+        The seconds to convert to id difference.
+    
+    Returns
+    -------
+    id_difference : `int`
+    """
+    return floor(seconds * 1000.0) << 22
 
 
 def random_id():

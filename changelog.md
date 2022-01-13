@@ -5,6 +5,8 @@
 - Add `ERROR_CODES.community_and_rules_channel_cannot_be_changed_to_announcement`.
 - Add `seconds_to_id_difference`.
 - Add `InteractionEvent.is_expired`.
+- Add `timedelta_to_id_difference`.
+- Add `id_difference_to_timedelta`.
 
 ##### ext.slash
 - `show_for_invoking_user_only` parameter of `SlasherApplicationCommand.__new__` is now keyword only and is not routed

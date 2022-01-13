@@ -3,10 +3,11 @@
     'IS_MENTION_RP', 'REACTION_RP', 'ROLE_MENTION_RP', 'Relationship', 'TIMESTAMP_STYLES', 'USER_MENTION_RP', 'Unknown',
     'cchunkify', 'chunkify', 'datetime_to_id', 'datetime_to_timestamp', 'datetime_to_unix_time', 'elapsed_time',
     'escape_markdown', 'filter_content', 'format_datetime', 'format_id', 'format_loop_time', 'format_unix_time',
-    'id_to_datetime', 'id_to_unix_time', 'is_id', 'is_invite_code', 'is_mention', 'is_role_mention', 'is_url',
-    'is_user_mention', 'mention_channel_by_id', 'mention_role_by_id', 'mention_user_by_id', 'mention_user_nick_by_id',
-    'now_as_id', 'parse_message_reference', 'parse_rdelta', 'parse_tdelta', 'random_id', 'sanitize_content',
-    'sanitize_mentions', 'seconds_to_id_difference', 'unix_time_to_id'
+    'id_difference_to_seconds', 'id_difference_to_timedelta', 'id_to_datetime', 'id_to_unix_time', 'is_id',
+    'is_invite_code', 'is_mention', 'is_role_mention', 'is_url', 'is_user_mention', 'mention_channel_by_id',
+    'mention_role_by_id', 'mention_user_by_id', 'mention_user_nick_by_id', 'now_as_id', 'parse_message_reference',
+    'parse_rdelta', 'parse_tdelta', 'random_id', 'sanitize_content', 'sanitize_mentions', 'seconds_to_id_difference',
+    'timedelta_to_id_difference', 'unix_time_to_id'
 )
 
 import reprlib, sys
@@ -363,6 +364,54 @@ def seconds_to_id_difference(seconds):
     id_difference : `int`
     """
     return floor(seconds * 1000.0) << 22
+
+
+def timedelta_to_id_difference(time_delta):
+    """
+    Converts the given time delta to difference between two id-s.
+    
+    Parameters
+    ----------
+    time_delta : `timedelta`
+        The timedelta to convert to id difference.
+    
+    Returns
+    -------
+    id_difference : `int`
+    """
+    return seconds_to_id_difference(time_delta.seconds)
+
+
+def id_difference_to_seconds(id_difference):
+    """
+    Converts the given id difference to seconds.
+    
+    Parameters
+    ----------
+    id_difference : `int`
+        Difference between two id-s.
+    
+    Returns
+    -------
+    seconds : `float`
+    """
+    return (id_difference >> 22) * 0.001
+
+
+def id_difference_to_timedelta(id_difference):
+    """
+    Converts the given id difference to time delta.
+    
+    Parameters
+    ----------
+    id_difference : `int`
+        Difference between two id-s.
+    
+    Returns
+    -------
+    time_delta : `timedelta`
+    """
+    return timedelta(seconds=id_difference_to_seconds(id_difference))
 
 
 def random_id():

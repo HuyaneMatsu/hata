@@ -130,11 +130,11 @@ class ResponseModifier:
         """
         allowed_mentions = self.allowed_mentions
         if (allowed_mentions is not None):
-            parameters.set_default('allowed_mentions', allowed_mentions)
+            parameters.setdefault('allowed_mentions', allowed_mentions)
         
         show_for_invoking_user_only = self.show_for_invoking_user_only
         if (show_for_invoking_user_only is not None):
-            parameters.set_default('show_for_invoking_user_only', show_for_invoking_user_only)
+            parameters.setdefault('show_for_invoking_user_only', show_for_invoking_user_only)
     
     
     def __repr__(self):

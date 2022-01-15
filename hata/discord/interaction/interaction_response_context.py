@@ -1,5 +1,10 @@
 __all__ = ('InteractionResponseContext',)
 
+from scarletio import Task
+
+from ..core import KOKORO
+
+
 RESPONSE_FLAG_DEFERRING = 1 << 0
 RESPONSE_FLAG_DEFERRED = 1 << 1
 RESPONSE_FLAG_RESPONDING = 1 << 2
@@ -16,40 +21,73 @@ RESPONSE_FLAG_ACKNOWLEDGING_OR_ACKNOWLEDGED = RESPONSE_FLAG_ACKNOWLEDGING | RESP
 
 class InteractionResponseContext:
     """
-    Interaction response context manager for managing the interaction's response flag.
+    Interaction response context manager for managing the interaction event's response flag.
     
     Attributes
     ----------
-    interaction : ``InteractionEvent``
-        The respective interaction event.
+    interaction_event : ``InteractionEvent``
+        The respective interaction event event.
     is_deferring : `bool`
-        Whether the request just deferring the interaction.
+        Whether the request just deferring the interaction event.
     is_ephemeral : `bool`
         Whether the request is ephemeral.
     """
-    __slots__ = ('interaction', 'is_deferring', 'is_ephemeral',)
+    __slots__ = ('interaction_event', 'is_deferring', 'is_ephemeral',)
     
-    def __new__(cls, interaction, is_deferring, is_ephemeral):
+    def __new__(cls, interaction_event, is_deferring, is_ephemeral):
         """
         Creates a new ``InteractionResponseContext`` with the given parameters.
         
         Parameters
         ----------
         is_deferring : `bool`
-            Whether the request just deferring the interaction.
+            Whether the request just deferring the interaction event.
         is_ephemeral : `bool`
             Whether the request is ephemeral.
         """
         self = object.__new__(cls)
-        self.interaction = interaction
+        self.interaction_event = interaction_event
         self.is_deferring = is_deferring
         self.is_ephemeral = is_ephemeral
         return self
     
-    def __enter__(self):
-        """Enters the context manager as deferring or responding if applicable."""
-        interaction = self.interaction
-        response_flag = interaction._response_flag
+    
+    def ensure(self, coroutine):
+        """
+        Ensures the coroutine within the interaction response context
+        
+        Parameters
+        ----------
+        coroutine : ``CoroutineType``
+        """
+        Task(self._async(coroutine), KOKORO)
+    
+    
+    async def _async(self, coroutine):
+        """
+        Ensures the coroutine within the interaction response context. Wrapped into a task by ``.ensure``.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        coroutine : ``CoroutineType``
+        """
+        async with self:
+            self.interaction_event._set_async_task()
+            await coroutine
+    
+    
+    async def __aenter__(self):
+        """
+        Enters the context manager as deferring or responding if applicable.
+        
+        This method is a coroutine.
+        """
+        interaction_event = self.interaction_event
+        await interaction_event._wait_for_async_task_completion()
+        
+        response_flag = interaction_event._response_flag
         
         if self.is_deferring:
             if not (response_flag & RESPONSE_FLAG_ACKNOWLEDGING_OR_ACKNOWLEDGED):
@@ -61,14 +99,19 @@ class InteractionResponseContext:
             ):
                 response_flag |= RESPONSE_FLAG_RESPONDING
         
-        interaction._response_flag = response_flag
+        interaction_event._response_flag = response_flag
         
         return self
     
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        """Exits the context manager, marking the interaction as deferred or responded if no exception occurred."""
-        interaction = self.interaction
-        response_flag = interaction._response_flag
+    
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        """
+        Exits the context manager, marking the interaction event as deferred or responded if no exception occurred.
+        
+        This method is a coroutine.
+        """
+        interaction_event = self.interaction_event
+        response_flag = interaction_event._response_flag
         if exc_type is None:
             if self.is_ephemeral:
                 if not response_flag & RESPONSE_FLAG_ACKNOWLEDGED:
@@ -91,5 +134,5 @@ class InteractionResponseContext:
                 if response_flag & RESPONSE_FLAG_RESPONDING:
                     response_flag ^= RESPONSE_FLAG_RESPONDING
         
-        interaction._response_flag = response_flag
+        interaction_event._response_flag = response_flag
         return False

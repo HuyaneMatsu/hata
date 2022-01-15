@@ -48,6 +48,8 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
     ----------
     id : `int`
         The interaction's id.
+    _async_task : `None`, ``Task``
+        Task set if interaction event is acknowledged asynchronously.
     _cached_users : `None`, `list` of ``ClientUserBase``
         A list of users, which are temporary cached.
     _response_flag : `bool`
@@ -79,7 +81,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         from a private channel.
     guild_locale : `str`
         The guild's preferred locale if invoked from guild.
-    interaction : `None`, ``ApplicationCommandInteraction``, ``ComponentInteraction`` or \
+    interaction : `None`, ``ApplicationCommandInteraction``, ``ComponentInteraction``, \
             ``ApplicationCommandAutocompleteInteraction``
         
         The called interaction by it's route by the user.
@@ -114,8 +116,8 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
     ˙˙InteractionEvent˙˙ instances are weakreferable.
     """
     __slots__ = (
-        '_cached_users', '_response_flag', 'application_id', 'channel_id', 'guild_id', 'guild_locale', 'interaction',
-        'locale', 'message', 'token', 'type', 'user', 'user_permissions'
+        '_async_task', '_cached_users', '_response_flag', 'application_id', 'channel_id', 'guild_id', 'guild_locale',
+        'interaction', 'locale', 'message', 'token', 'type', 'user', 'user_permissions'
     )
     
     _USER_GUILD_CACHE = {}
@@ -192,6 +194,9 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         
         
         self = object.__new__(cls)
+        self._async_task = None
+        self._cached_users = None
+        self._response_flag = RESPONSE_FLAG_NONE
         self.id = id_
         self.application_id = application_id
         self.type = type_
@@ -203,8 +208,6 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         self.token = token
         self.user = user
         self.user_permissions = user_permissions
-        self._response_flag = RESPONSE_FLAG_NONE
-        self._cached_users = None
         self.message = message
         
         # Cache our user if called from guild. This is required to kill references to the user in the guild.
@@ -617,3 +620,23 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         """
         INTERACTION_EVENT_RESPONSE_WAITERS[self.id] = self
     
+    
+    async def _wait_for_async_task_completion(self):
+        """
+        Waits for async task's completion.
+        
+        This method is a coroutine.
+        """
+        async_task = self._async_task
+        if (async_task is not None):
+            try:
+                await async_task
+            finally:
+                self._async_task = None
+    
+    
+    def _set_async_task(self):
+        """
+        Sets the interaction event's async task to the currently running task.
+        """
+        self._async_task = KOKORO.current_task

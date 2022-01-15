@@ -13985,7 +13985,8 @@ class Client(ClientUserPBase):
         return [ApplicationCommandPermission.from_data(permission_data) for permission_data in permission_datas]
     
     
-    async def interaction_application_command_acknowledge(self, interaction, *, show_for_invoking_user_only=False):
+    async def interaction_application_command_acknowledge(self, interaction, wait=True, *,
+            show_for_invoking_user_only=False):
         """
         Acknowledges the given application command interaction.
         
@@ -13995,6 +13996,8 @@ class Client(ClientUserPBase):
         ----------
         interaction : ``InteractionEvent``
             Interaction to acknowledge
+        wait : `bool`, Optional
+            Whether the interaction should be ensured asynchronously.
         show_for_invoking_user_only : `bool`, Optional (Keyword only)
             Whether the sent message should only be shown to the invoking user. Defaults to `False`.
         
@@ -14031,8 +14034,14 @@ class Client(ClientUserPBase):
         if show_for_invoking_user_only:
             data['data'] = {'flags': MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY}
         
-        with InteractionResponseContext(interaction, True, show_for_invoking_user_only):
-            await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
+        context = InteractionResponseContext(interaction, True, show_for_invoking_user_only)
+        coroutine = self.http.interaction_response_message_create(interaction.id, interaction.token, data)
+        
+        if wait:
+            async with context:
+                await coroutine
+        else:
+            context.ensure(coroutine)
     
     
     async def interaction_application_command_autocomplete(self, interaction, choices):
@@ -14087,7 +14096,7 @@ class Client(ClientUserPBase):
             },
         }
         
-        with InteractionResponseContext(interaction, True, False):
+        async with InteractionResponseContext(interaction, True, False):
             await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
     
     
@@ -14163,7 +14172,7 @@ class Client(ClientUserPBase):
             'type': INTERACTION_RESPONSE_TYPES.form
         }
         
-        with InteractionResponseContext(interaction, False, True):
+        async with InteractionResponseContext(interaction, False, True):
             await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
         
         return None
@@ -14334,14 +14343,14 @@ class Client(ClientUserPBase):
         
         data['type'] = response_type
         
-        with InteractionResponseContext(interaction, is_deferring, show_for_invoking_user_only):
+        async with InteractionResponseContext(interaction, is_deferring, show_for_invoking_user_only):
             await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
         
         # No message data is returned by Discord, return `None`.
         return None
     
     
-    async def interaction_component_acknowledge(self, interaction):
+    async def interaction_component_acknowledge(self, interaction, wait=True):
         """
         Acknowledges the given component interaction.
         
@@ -14351,6 +14360,8 @@ class Client(ClientUserPBase):
         ----------
         interaction : ``InteractionEvent``
             Interaction to acknowledge
+        wait : `bool`, Optional
+            Whether the interaction should be ensured asynchronously.
         
         Raises
         ------
@@ -14382,8 +14393,15 @@ class Client(ClientUserPBase):
         
         data = {'type': INTERACTION_RESPONSE_TYPES.component}
         
-        with InteractionResponseContext(interaction, True, False):
-            await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
+        context = InteractionResponseContext(interaction, True, False)
+        coroutine = self.http.interaction_response_message_create(interaction.id, interaction.token, data)
+        
+        
+        if wait:
+            async with context:
+                await coroutine
+        else:
+            context.ensure(coroutine)
     
     
     async def interaction_response_message_edit(self, interaction, content=..., *, embed=..., file=None,
@@ -14495,7 +14513,7 @@ class Client(ClientUserPBase):
         
         message_data = add_file_to_message_data(message_data, file, True)
         
-        with InteractionResponseContext(interaction, False, False):
+        async with InteractionResponseContext(interaction, False, False):
             await self.http.interaction_response_message_edit(application_id, interaction.id, interaction.token,
                 message_data)
     
@@ -14577,7 +14595,7 @@ class Client(ClientUserPBase):
         }
         
         
-        with InteractionResponseContext(interaction, False, False):
+        async with InteractionResponseContext(interaction, False, False):
             await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
     
     
@@ -14808,7 +14826,7 @@ class Client(ClientUserPBase):
         if message_data is None:
             return
         
-        with InteractionResponseContext(interaction, False, show_for_invoking_user_only):
+        async with InteractionResponseContext(interaction, False, show_for_invoking_user_only):
             message_data = await self.http.interaction_followup_message_create(application_id, interaction.id,
                 interaction.token, message_data)
         
@@ -14942,7 +14960,7 @@ class Client(ClientUserPBase):
         
         message_data = add_file_to_message_data(message_data, file, True)
         
-        with InteractionResponseContext(interaction, False, False):
+        async with InteractionResponseContext(interaction, False, False):
             # We receive the new message data, but we do not update the message, so dispatch events can get the
             # difference.
             await self.http.interaction_followup_message_edit(application_id, interaction.id, interaction.token,

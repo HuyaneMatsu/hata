@@ -5,6 +5,11 @@
 - Add `wait` parameter to `client.interaction_application_command_acknowledge`.
 - Add `wait` parameter to `client.interaction_component_acknowledge`.
 
+##### ext.slash
+- Component commands now support response modifier parameters as well.
+- Interaction commands are now all acknowledged asynchronously.
+- Add `ResponseModifier.wait_for_acknowledgement`.
+
 ## 1.1.132 *\[2022-01-15\]*
 
 #### Improvements

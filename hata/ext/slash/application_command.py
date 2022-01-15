@@ -866,6 +866,8 @@ class SlasherApplicationCommand:
             Which user or role can the response message ping (or everyone).
         show_for_invoking_user_only : `bool`, Optional (Keyword only)
             Whether the response message should only be shown for the invoking user.
+        wait_for_acknowledgement : `bool`, Optional (Keyword only)
+            Whether acknowledge tasks should be ensure asynchronously.
         
         Returns
         -------

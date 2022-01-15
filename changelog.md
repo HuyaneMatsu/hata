@@ -1,5 +1,9 @@
 ## 1.1.133 *\[2022-01-??\]*
 
+#### Improvements
+
+- Add `wait` parameter to `client.interaction_application_command_acknowledge`.
+- Add `wait` parameter to `client.interaction_component_acknowledge`.
 
 ## 1.1.132 *\[2022-01-15\]*
 

@@ -54,6 +54,30 @@ def _validate_allowed_mentions(allowed_mentions):
     return allowed_mention_proxy
 
 
+def _validate_wait_for_acknowledgement(wait_for_acknowledgement):
+    """
+    Validates the given `wait_for_acknowledgement` value.
+    
+    Parameters
+    ----------
+    wait_for_acknowledgement : `bool`
+        The `wait_for_acknowledgement` value to validate.
+    
+    Returns
+    -------
+    wait_for_acknowledgement : `None` or `bool`
+        The validated `wait_for_acknowledgement` value.
+    
+    Raises
+    ------
+    TypeError
+        If `wait_for_acknowledgement` was not given as `bool`.
+    """
+    wait_for_acknowledgement = preconvert_bool(wait_for_acknowledgement, 'wait_for_acknowledgement')
+    
+    return wait_for_acknowledgement
+
+
 class ResponseModifier:
     """
     Modifies values returned and yielded to command coroutine processor.
@@ -62,10 +86,12 @@ class ResponseModifier:
     ----------
     allowed_mentions : `None`, ``AllowedMentionProxy``
          Which user or role can the response message ping (or everyone).
+    wait_for_acknowledgement : `bool`
+        Whether acknowledge tasks should be ensure asynchronously.
     show_for_invoking_user_only : `None`, `bool`
         Whether the response message should only be shown for the invoking user.
     """
-    __slots__ = ('allowed_mentions', 'show_for_invoking_user_only',)
+    __slots__ = ('allowed_mentions', 'wait_for_acknowledgement', 'show_for_invoking_user_only',)
     
     def __new__(cls, kwargs):
         """
@@ -107,10 +133,19 @@ class ResponseModifier:
                 show_for_invoking_user_only = _validate_show_for_invoking_user_only(show_for_invoking_user_only)
                 parameters_found = True
             
+            try:
+                wait_for_acknowledgement = kwargs.pop('wait_for_acknowledgement')
+            except KeyError:
+                wait_for_acknowledgement = None
+            else:
+                wait_for_acknowledgement = _validate_wait_for_acknowledgement(wait_for_acknowledgement)
+                parameters_found = True
+            
             if parameters_found:
                 self = object.__new__(cls)
-                self.show_for_invoking_user_only = show_for_invoking_user_only
                 self.allowed_mentions = allowed_mentions
+                self.wait_for_acknowledgement = wait_for_acknowledgement
+                self.show_for_invoking_user_only = show_for_invoking_user_only
             else:
                 self = None
         else:
@@ -151,13 +186,29 @@ class ResponseModifier:
         else:
             field_added = True
         
+        
         show_for_invoking_user_only = self.show_for_invoking_user_only
         if (show_for_invoking_user_only is not None):
             if field_added:
                 repr_parts.append(',')
+            else:
+                field_added = True
             
             repr_parts.append(' show_for_invoking_user_only=')
             repr_parts.append(repr(show_for_invoking_user_only))
+        
+        
+
+        wait_for_acknowledgement = self.wait_for_acknowledgement
+        if (wait_for_acknowledgement is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' wait_for_acknowledgement=')
+            repr_parts.append(repr(wait_for_acknowledgement))
+        
         
         repr_parts.append('>')
         return ''.join(repr_parts)
@@ -169,11 +220,15 @@ class ResponseModifier:
         
         allowed_mentions = self.allowed_mentions
         if (allowed_mentions is not None):
-            hash_value ^= allowed_mentions
+            hash_value ^= hash(allowed_mentions)
         
         show_for_invoking_user_only = self.show_for_invoking_user_only
         if (show_for_invoking_user_only is not None):
-            hash_value ^= hash(show_for_invoking_user_only)
+            hash_value ^= show_for_invoking_user_only
+
+        wait_for_acknowledgement = self.wait_for_acknowledgement
+        if (wait_for_acknowledgement is not None):
+            hash_value ^= wait_for_acknowledgement << 4
         
         return hash_value
     
@@ -184,6 +239,9 @@ class ResponseModifier:
             return NotImplemented
         
         if self.allowed_mentions != other.allowed_mentions:
+            return False
+        
+        if self.wait_for_acknowledgement != other.wait_for_acknowledgement:
             return False
         
         if self.show_for_invoking_user_only != other.show_for_invoking_user_only:
@@ -235,3 +293,24 @@ def get_show_for_invoking_user_only_from(parameters, response_modifier):
         show_for_invoking_user_only = get_show_for_invoking_user_only_of(response_modifier)
     
     return show_for_invoking_user_only
+
+
+def get_wait_for_acknowledgement_of(response_modifier):
+    """
+    Gets the `wait_for_acknowledgement` value of the given response modifier.
+    
+    Parameters
+    ----------
+    wait_for_acknowledgement : `None`, ``ResponseModifier``
+        The respective response modifier if any,
+    
+    Returns
+    -------
+    wait_for_acknowledgement : `bool`
+    """
+    if response_modifier is None:
+        wait_for_acknowledgement = False
+    else:
+        wait_for_acknowledgement = response_modifier.wait_for_acknowledgement
+    
+    return wait_for_acknowledgement

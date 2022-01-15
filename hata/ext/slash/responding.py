@@ -6,7 +6,10 @@ from ...discord.client import Client
 from ...discord.embed import EmbedBase
 from ...discord.interaction import InteractionForm, InteractionType
 
-from .response_modifier import get_show_for_invoking_user_only_from, get_show_for_invoking_user_only_of
+from .response_modifier import (
+    get_show_for_invoking_user_only_from, get_show_for_invoking_user_only_of, get_wait_for_acknowledgement_of
+)
+
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 INTERACTION_TYPE_MESSAGE_COMPONENT = InteractionType.message_component
@@ -66,11 +69,15 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
             if interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND:
                 yield client.interaction_application_command_acknowledge(
                     interaction_event,
+                    get_wait_for_acknowledgement_of(response_modifier),
                     show_for_invoking_user_only = get_show_for_invoking_user_only_of(response_modifier),
                 )
             
             elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
-                yield client.interaction_component_acknowledge(interaction_event)
+                yield client.interaction_component_acknowledge(
+                    interaction_event,
+                    get_wait_for_acknowledgement_of(response_modifier),
+                )
         
         return
     
@@ -166,12 +173,17 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
         if interaction_event.is_unanswered():
             
             if interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND:
-                yield client.interaction_response_message_create(
+                yield client.interaction_application_command_acknowledge(
                     interaction_event,
+                    get_wait_for_acknowledgement_of(response_modifier),
                     show_for_invoking_user_only = get_show_for_invoking_user_only_of(response_modifier)
                 )
+            
             elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
-                yield client.interaction_component_acknowledge(interaction_event)
+                yield client.interaction_component_acknowledge(
+                    interaction_event,
+                    get_wait_for_acknowledgement_of(response_modifier),
+                )
             
             return
     
@@ -498,6 +510,7 @@ class InteractionResponse:
             if need_acknowledging:
                 yield client.interaction_application_command_acknowledge(
                     interaction_event,
+                    get_wait_for_acknowledgement_of(response_modifier),
                     show_for_invoking_user_only = get_show_for_invoking_user_only_from(
                         self._parameters,
                         response_modifier,
@@ -531,7 +544,10 @@ class InteractionResponse:
                 if response_parameters:
                     yield client.interaction_component_message_edit(interaction_event, **response_parameters)
                 else:
-                    yield client.interaction_component_acknowledge(interaction_event)
+                    yield client.interaction_component_acknowledge(
+                        interaction_event,
+                        get_wait_for_acknowledgement_of(response_modifier),
+                    )
             else:
                 if response_parameters:
                     yield client.interaction_response_message_edit(interaction_event, **response_parameters)

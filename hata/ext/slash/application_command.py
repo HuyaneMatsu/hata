@@ -44,7 +44,7 @@ Slasher = include('Slasher')
 
 SLASH_COMMAND_PARAMETER_NAMES = (
     'command', 'name', 'description', 'show_for_invoking_user_only', 'is_global', 'guild', 'is_default',
-    'delete_on_unload', 'allow_by_default', 'target', 'allowed_mentions'
+    'delete_on_unload', 'allow_by_default', 'target', 'allowed_mentions', 'wait_for_acknowledgement'
 )
 
 SLASH_COMMAND_NAME_NAME = 'name'
@@ -936,6 +936,14 @@ class SlasherApplicationCommand:
             
             description = _generate_description_from(command, name, description)
         
+        
+        # Check extra parameters
+        response_modifier = ResponseModifier(kwargs)
+        
+        if kwargs:
+            raise TypeError(f'Extra or unused parameters: {kwargs!r}.')
+        
+        
         if target in APPLICATION_COMMAND_CONTEXT_TARGET_TYPES:
             if command is None:
                 raise ValueError(
@@ -949,13 +957,6 @@ class SlasherApplicationCommand:
             else:
                 parameter_configurers = get_parameter_configurers(wrappers)
                 command, parameter_converters = get_slash_command_parameter_converters(command, parameter_configurers)
-        
-        
-        # Check extra parameters
-        response_modifier = ResponseModifier(kwargs)
-        
-        if kwargs:
-            raise TypeError(f'Extra or unused parameters: {kwargs!r}.')
         
         
         if route_to:

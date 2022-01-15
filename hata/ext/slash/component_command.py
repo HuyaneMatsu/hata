@@ -10,6 +10,7 @@ from .custom_id_based_command import (
 )
 from .exceptions import handle_command_exception
 from .responding import process_command_coroutine
+from .response_modifier import ResponseModifier
 from .utils import _check_maybe_route
 from .wrappers import SlasherCommandWrapper
 
@@ -51,6 +52,9 @@ class ComponentCommand(CustomIdBasedCommand):
         
         Only used for debugging.
     
+    response_modifier : `None`, ``ResponseModifier``
+        Modifies values returned and yielded to command coroutine processor.
+    
     Class Attributes
     ----------------
     COMMAND_COMMAND_NAME : `str`
@@ -63,7 +67,7 @@ class ComponentCommand(CustomIdBasedCommand):
     __slots__ = ()
     
     
-    def __new__(cls, func, custom_id, name=None, target=None):
+    def __new__(cls, func, custom_id, name=None, target=None, **kwargs):
         """
         Creates a new ``ComponentCommand`` with the given parameters
         
@@ -77,6 +81,16 @@ class ComponentCommand(CustomIdBasedCommand):
             The name of the component command.
         target : `str`, `None`, Optional
             The component command's target.
+        
+        Other parameters
+        ----------------
+        allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, ``AllowedMentionProxy``, \
+                `list` of (`str`, ``UserBase``, ``Role`` ), Optional (Keyword only)
+            Which user or role can the response message ping (or everyone).
+        show_for_invoking_user_only : `bool`, Optional (Keyword only)
+            Whether the response message should only be shown for the invoking user.
+        wait_for_acknowledgement : `bool`, Optional (Keyword only)
+            Whether acknowledge tasks should be ensure asynchronously.
         
         Returns
         -------
@@ -113,6 +127,14 @@ class ComponentCommand(CustomIdBasedCommand):
         name, route_to = _check_maybe_route('name', name, route_to, _validate_name)
         custom_id, route_to = _check_maybe_route('custom_id', custom_id, route_to, _validate_custom_ids)
         
+        
+        # Check extra parameters
+        response_modifier = ResponseModifier(kwargs)
+        
+        if kwargs:
+            raise TypeError(f'Extra or unused parameters: {kwargs!r}.')
+        
+        
         command, parameter_converters = get_component_command_parameter_converters(command)
         
         if route_to:
@@ -133,6 +155,7 @@ class ComponentCommand(CustomIdBasedCommand):
                 self._parent_reference = None
                 self._exception_handlers = None
                 self.name = name
+                self.response_modifier = response_modifier
                 
                 if (wrappers is not None):
                     for wrapper in wrappers:
@@ -155,12 +178,14 @@ class ComponentCommand(CustomIdBasedCommand):
             self._parent_reference = None
             self._exception_handlers = None
             self.name = name
+            self.response_modifier = response_modifier
             
             if (wrappers is not None):
                 for wrapper in wrappers:
                     wrapper.apply(self)
             
             return self
+    
     
     @copy_docs(CustomIdBasedCommand.__call__)
     async def __call__(self, client, interaction_event, regex_match):
@@ -186,7 +211,7 @@ class ComponentCommand(CustomIdBasedCommand):
         command_coroutine = self._command_function(*parameters)
         
         try:
-            await process_command_coroutine(client, interaction_event, None, command_coroutine)
+            await process_command_coroutine(client, interaction_event, self.response_modifier, command_coroutine)
         except BaseException as err:
             exception = err
         else:

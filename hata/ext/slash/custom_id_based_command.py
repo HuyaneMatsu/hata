@@ -221,6 +221,9 @@ class CustomIdBasedCommand:
         The component commands name.
         
         Only used for debugging.
+
+    response_modifier : `None`, ``ResponseModifier``
+        Modifies values returned and yielded to command coroutine processor.
     
     Class Attributes
     ----------------
@@ -233,14 +236,14 @@ class CustomIdBasedCommand:
     """
     __slots__ = (
         '_command_function', '_exception_handlers', '_parent_reference', '_parameter_converters', '_regex_custom_ids',
-        '_string_custom_ids', 'name'
+        '_string_custom_ids', 'name', 'response_modifier',
     )
     
-    COMMAND_PARAMETER_NAMES = ('command', 'custom_id', 'name')
-
+    COMMAND_PARAMETER_NAMES = ('command', 'custom_id', 'name', 'allowed_mentions', 'wait_for_acknowledgement')
+    
     COMMAND_NAME_NAME = 'name'
     COMMAND_COMMAND_NAME = 'command'
-
+    
     @classmethod
     def from_class(cls, klass):
         """
@@ -266,7 +269,7 @@ class CustomIdBasedCommand:
             cls.COMMAND_COMMAND_NAME)
     
     
-    def __new__(cls, func, custom_id, name=None):
+    def __new__(cls, func, custom_id, name=None, **kwargs):
         """
         Creates a new custom_id based command instance.
         
@@ -280,6 +283,16 @@ class CustomIdBasedCommand:
             Custom id to match by the component command.
         name : `str`, `None`, Optional
             The name of the component command.
+        
+        Other parameters
+        ----------------
+        allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, ``AllowedMentionProxy``, \
+                `list` of (`str`, ``UserBase``, ``Role`` ), Optional (Keyword only)
+            Which user or role can the response message ping (or everyone).
+        show_for_invoking_user_only : `bool`, Optional (Keyword only)
+            Whether the response message should only be shown for the invoking user.
+        wait_for_acknowledgement : `bool`, Optional (Keyword only)
+            Whether acknowledge tasks should be ensure asynchronously.
         
         Returns
         -------
@@ -336,6 +349,11 @@ class CustomIdBasedCommand:
             
             repr_parts.append(']')
         
+        response_modifier = self.response_modifier
+        if (response_modifier is not None):
+            repr_parts.append(', response_modifier')
+            repr_parts.append(repr(response_modifier))
+        
         return ''.join(repr_parts)
     
     
@@ -376,6 +394,11 @@ class CustomIdBasedCommand:
             command_hash_value = object.__hash__(command_function)
         
         hash_value ^= command_hash_value
+        
+        response_modifier = self.response_modifier
+        if (response_modifier is not None):
+            hash_value ^= hash(response_modifier)
+        
         return hash_value
     
     
@@ -394,6 +417,9 @@ class CustomIdBasedCommand:
             return False
         
         if self._exception_handlers != other._exception_handlers:
+            return False
+        
+        if self.response_modifier != other.response_modifier:
             return False
         
         return True
@@ -418,6 +444,7 @@ class CustomIdBasedCommand:
         if (exception_handlers is not None):
             exception_handlers = exception_handlers.copy()
         new._exception_handlers = exception_handlers
+        new.response_modifier = self.response_modifier
         
         return new
     

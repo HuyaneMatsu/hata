@@ -6,6 +6,7 @@ import os.path
 from math import log10
 from types import ModuleType
 
+from .. import __file__ as hata_discord_init_file_path
 
 opus = None
 
@@ -86,18 +87,23 @@ def load_opus():
     """
     try:
         if sys.platform == 'win32':
-            filename = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bin', f'libopus-0.{"x64" if sys.maxsize>(1 << 36) else "x86"}.dll')
+            if sys.maxsize > (1 << 36):
+                file_name = 'libopus-0.x64.dll'
+            else:
+                file_name = 'libopus-0.x86.dll'
+            
+            file_name = os.path.join(os.path.dirname(os.path.abspath(hata_discord_init_file_path)), 'bin', file_name)
         else:
-            filename = ctypes.util.find_library('opus')
+            file_name = ctypes.util.find_library('opus')
         
-        lib_opus = ctypes.cdll.LoadLibrary(filename)
+        lib_opus = ctypes.cdll.LoadLibrary(file_name)
         
         c_int_ptr = ctypes.POINTER(ctypes.c_int)
         c_int16_ptr = ctypes.POINTER(ctypes.c_int16)
         c_float_ptr = ctypes.POINTER(ctypes.c_float)
         
-        EncoderStructPtr=ctypes.POINTER(type('EncoderStruct', (ctypes.Structure,), {},))
-        DecoderStructPtr=ctypes.POINTER(type('DecoderStruct', (ctypes.Structure,), {},))
+        EncoderStructPtr = ctypes.POINTER(type('EncoderStruct', (ctypes.Structure,), {},))
+        DecoderStructPtr = ctypes.POINTER(type('DecoderStruct', (ctypes.Structure,), {},))
         
         def _err_lt(result, func, args):
             if result < 0:
@@ -116,23 +122,23 @@ def load_opus():
         
         # register the functions...
         for internal_name, func_name, arg_types, res_type, err_check in (
-                ('opus_strerror', 'opus_strerror', (ctypes.c_int,), ctypes.c_char_p, None,),
-                ('opus_packet_get_bandwidth', 'opus_packet_get_bandwidth', (ctypes.c_char_p,), ctypes.c_int, _err_lt,),
-                ('opus_packet_get_channel_count', 'opus_packet_get_nb_channels', (ctypes.c_char_p,), ctypes.c_int, _err_lt,),
-                ('opus_packet_get_frame_count', 'opus_packet_get_nb_frames', (ctypes.c_char_p, ctypes.c_int,), ctypes.c_int, _err_lt,),
-                ('opus_packet_get_samples_per_frame', 'opus_packet_get_samples_per_frame', (ctypes.c_char_p, ctypes.c_int,), ctypes.c_int, _err_lt,),
-                ('opus_encoder_get_size', 'opus_encoder_get_size', (ctypes.c_int,), ctypes.c_int, None,),
-                ('opus_encoder_create', 'opus_encoder_create', (ctypes.c_int, ctypes.c_int, ctypes.c_int, c_int_ptr,), EncoderStructPtr, _err_ne,),
-                ('opus_encode', 'opus_encode', (EncoderStructPtr, c_int16_ptr, ctypes.c_int, ctypes.c_char_p, ctypes.c_int32,), ctypes.c_int32, _err_lt,),
-                ('opus_encoder_control', 'opus_encoder_ctl', None, ctypes.c_int32, _err_lt,),
-                ('opus_encoder_destroy', 'opus_encoder_destroy', (EncoderStructPtr,), None, None,),
-                ('opus_decoder_get_size', 'opus_decoder_get_size', (ctypes.c_int,), ctypes.c_int, None,),
-                ('opus_decoder_create', 'opus_decoder_create', (ctypes.c_int, ctypes.c_int, c_int_ptr,), DecoderStructPtr, _err_ne,),
-                ('opus_decoder_get_sample_count', 'opus_decoder_get_nb_samples', (DecoderStructPtr, ctypes.c_char_p, ctypes.c_int32,), ctypes.c_int, _err_lt,),
-                ('opus_decode', 'opus_decode', (DecoderStructPtr, ctypes.c_char_p, ctypes.c_int32, c_int16_ptr, ctypes.c_int, ctypes.c_int,), ctypes.c_int, _err_lt,),
-                ('opus_decoder_control', 'opus_decoder_ctl', None, ctypes.c_int32, _err_lt, ),
-                ('opus_decoder_destroy', 'opus_decoder_destroy', (DecoderStructPtr,), None, None,),
-                    ):
+            ('opus_strerror', 'opus_strerror', (ctypes.c_int,), ctypes.c_char_p, None,),
+            ('opus_packet_get_bandwidth', 'opus_packet_get_bandwidth', (ctypes.c_char_p,), ctypes.c_int, _err_lt,),
+            ('opus_packet_get_channel_count', 'opus_packet_get_nb_channels', (ctypes.c_char_p,), ctypes.c_int, _err_lt,),
+            ('opus_packet_get_frame_count', 'opus_packet_get_nb_frames', (ctypes.c_char_p, ctypes.c_int,), ctypes.c_int, _err_lt,),
+            ('opus_packet_get_samples_per_frame', 'opus_packet_get_samples_per_frame', (ctypes.c_char_p, ctypes.c_int,), ctypes.c_int, _err_lt,),
+            ('opus_encoder_get_size', 'opus_encoder_get_size', (ctypes.c_int,), ctypes.c_int, None,),
+            ('opus_encoder_create', 'opus_encoder_create', (ctypes.c_int, ctypes.c_int, ctypes.c_int, c_int_ptr,), EncoderStructPtr, _err_ne,),
+            ('opus_encode', 'opus_encode', (EncoderStructPtr, c_int16_ptr, ctypes.c_int, ctypes.c_char_p, ctypes.c_int32,), ctypes.c_int32, _err_lt,),
+            ('opus_encoder_control', 'opus_encoder_ctl', None, ctypes.c_int32, _err_lt,),
+            ('opus_encoder_destroy', 'opus_encoder_destroy', (EncoderStructPtr,), None, None,),
+            ('opus_decoder_get_size', 'opus_decoder_get_size', (ctypes.c_int,), ctypes.c_int, None,),
+            ('opus_decoder_create', 'opus_decoder_create', (ctypes.c_int, ctypes.c_int, c_int_ptr,), DecoderStructPtr, _err_ne,),
+            ('opus_decoder_get_sample_count', 'opus_decoder_get_nb_samples', (DecoderStructPtr, ctypes.c_char_p, ctypes.c_int32,), ctypes.c_int, _err_lt,),
+            ('opus_decode', 'opus_decode', (DecoderStructPtr, ctypes.c_char_p, ctypes.c_int32, c_int16_ptr, ctypes.c_int, ctypes.c_int,), ctypes.c_int, _err_lt,),
+            ('opus_decoder_control', 'opus_decoder_ctl', None, ctypes.c_int32, _err_lt, ),
+            ('opus_decoder_destroy', 'opus_decoder_destroy', (DecoderStructPtr,), None, None,),
+        ):
             
             func = getattr(lib_opus, func_name)
             
@@ -154,6 +160,7 @@ def load_opus():
     except:
         opus = None
         raise
+    
     else:
         module_path = f'{__name__}.opus'
         try:
@@ -176,7 +183,7 @@ try:
 except BaseException:
     pass
 
-SAMPLING_RATE = 48000 #this is the max sadly
+SAMPLING_RATE = 48000 # this is the max sadly
 CHANNELS = 2
 FRAME_LENGTH = 20
 SAMPLE_SIZE = 4 # (bit_rate / 8) * CHANNELS (bit_rate == 16)
@@ -216,7 +223,7 @@ class OpusEncoder:
         
         encoder = opus.opus_encoder_create(SAMPLING_RATE, CHANNELS, APPLICATION_AUDIO, ctypes.byref(ctypes.c_int()))
         
-        self=object.__new__(cls)
+        self = object.__new__(cls)
         self._encoder = encoder
         self._buffer = BUFFER_TYPE()
         

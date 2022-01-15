@@ -1,4 +1,4 @@
-## 1.1.133 *\[2022-01-??\]*
+## 1.1.133 *\[2022-01-15\]*
 
 #### Improvements
 
@@ -9,6 +9,9 @@
 - Component commands now support response modifier parameters as well.
 - Interaction commands are now all acknowledged asynchronously.
 - Add `ResponseModifier.wait_for_acknowledgement`.
+
+#### Bug Fixes
+- Opus not loading on windows. (FoxeiZ)
 
 ## 1.1.132 *\[2022-01-15\]*
 

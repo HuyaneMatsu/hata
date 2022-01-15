@@ -81,6 +81,9 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
         
         return
     
+    # wait for async acknowledgement if applicable
+    await interaction_event._wait_for_async_task_completion()
+    
     if isinstance(response, (str, EmbedBase)) or is_only_embed(response):
         if interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND:
             if interaction_event.is_unanswered():
@@ -463,8 +466,10 @@ class InteractionResponse:
         """
         Gets request coroutine buildable from the ``InteractionResponse``.
         
-        This method is a generator, which should be used inside of a `for` loop.
+        This method is an iterable generator.
         
+        Parameters
+        ----------
         client : ``Client``
             The client who will send the responses if applicable.
         interaction_event : ``InteractionEvent``
@@ -510,7 +515,6 @@ class InteractionResponse:
             if need_acknowledging:
                 yield client.interaction_application_command_acknowledge(
                     interaction_event,
-                    get_wait_for_acknowledgement_of(response_modifier),
                     show_for_invoking_user_only = get_show_for_invoking_user_only_from(
                         self._parameters,
                         response_modifier,

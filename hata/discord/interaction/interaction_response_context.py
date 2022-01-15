@@ -1,6 +1,6 @@
 __all__ = ('InteractionResponseContext',)
 
-from scarletio import Task
+from scarletio import Task, to_coroutine
 
 from ..core import KOKORO
 
@@ -52,15 +52,19 @@ class InteractionResponseContext:
         return self
     
     
+    @to_coroutine
     def ensure(self, coroutine):
         """
         Ensures the coroutine within the interaction response context
+        
+        This method is an awaitable generator.
         
         Parameters
         ----------
         coroutine : ``CoroutineType``
         """
         Task(self._async(coroutine), KOKORO)
+        yield # skip a ready cycle
     
     
     async def _async(self, coroutine):

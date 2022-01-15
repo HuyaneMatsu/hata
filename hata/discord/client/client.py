@@ -14041,7 +14041,7 @@ class Client(ClientUserPBase):
             async with context:
                 await coroutine
         else:
-            context.ensure(coroutine)
+            await context.ensure(coroutine)
     
     
     async def interaction_application_command_autocomplete(self, interaction, choices):
@@ -14401,7 +14401,7 @@ class Client(ClientUserPBase):
             async with context:
                 await coroutine
         else:
-            context.ensure(coroutine)
+            await context.ensure(coroutine)
     
     
     async def interaction_response_message_edit(self, interaction, content=..., *, embed=..., file=None,

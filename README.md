@@ -188,7 +188,7 @@ If you have issues, suggestions, want to contribute, or just want to hang out, j
     <a href="https://discord.gg/3cH2r5d">
         <img
             alt="Invite"
-            src="https://discordapp.com/api/v9/guilds/388267636661682178/widget.png?style=banner"
+            src="https://discordapp.com/api/v9/guilds/388267636661682178/widget.png?style=banner1"
         />
     </a>
 </p>

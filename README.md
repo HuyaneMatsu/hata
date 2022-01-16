@@ -184,7 +184,9 @@ And you are good to go! Hata has native pypy support as well if you need some mo
 
 If you have issues, suggestions, want to contribute, or just want to hang out, join our discord server.
 
-[![](https://discordapp.com/api/v9/guilds/388267636661682178/widget.png?style=banner1)](https://discord.gg/3cH2r5d)
+<p align="center">
+    [![](https://discordapp.com/api/v9/guilds/388267636661682178/widget.png?style=banner1)](https://discord.gg/3cH2r5d)
+</p>
 
 <h1></h1>
 

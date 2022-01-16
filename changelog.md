@@ -1,3 +1,10 @@
+## 1.1.134 *\[2022-01-??\]*
+
+#### Bug Fixes
+
+##### ext.asyncio
+- Add missing `Task._log_destroy_pending`. (Nova#3379)
+
 ## 1.1.133 *\[2022-01-15\]*
 
 #### Improvements

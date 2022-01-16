@@ -607,6 +607,18 @@ class HataFuture:
     def pending(self):
         return self.is_pending()
 
+
+@KeepType(HataTask)
+class HataTask:
+    @property
+    def _log_destroy_pending(self):
+        return False
+    
+    @_log_destroy_pending.setter
+    def _log_destroy_pending(self, value):
+        pass
+
+
 @KeepType(HataLock)
 class HataLock:
     def locked(self):

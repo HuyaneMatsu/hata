@@ -8,14 +8,14 @@ from ..channel import (
     ChannelDirectory, ChannelGroup, ChannelStore, ChannelText, ChannelVoice, create_partial_channel_from_data
 )
 from ..core import CHANNELS, GUILDS, INVITES
-from ..guild import Guild, create_partial_guild_from_data
+from ..guild import Guild, NsfwLevel, create_partial_guild_from_data
 from ..http import urls as module_urls
 from ..preconverters import preconvert_bool, preconvert_int, preconvert_preinstanced_type, preconvert_str
 from ..user import ClientUserBase, User, ZEROUSER
 from ..utils import DISCORD_EPOCH_START, timestamp_to_datetime
 
 from .invite_stage import InviteStage
-from .preinstanced import InviteTargetType
+from .preinstanced import InviteTargetType, InviteType
 
 
 # Experimental addition
@@ -64,6 +64,8 @@ class Invite(DiscordEntity, immortal=True):
         How much times the invite can be used. If not included, then set as `None`.
         
         If the invite has no use limit, then this value is set as `0`.
+    nsfw_level : ``NsfwLevel``
+        The respective guild's nsfw level if applicable.
     partial : `bool`
         Whether the invite is only partially loaded.
     stage : `None`, ``InviteStage``
@@ -78,13 +80,15 @@ class Invite(DiscordEntity, immortal=True):
         Whether this invite only grants temporary membership.
         
         When the user goes offline, they get kicked, except if they got a role meanwhile.
+    type : ``InviteType``
+        The invite's type.
     uses : `None`, `int`
         The amount how much times the invite was used. If not included, set as `None`.
     """
     __slots__ = (
         'approximate_user_count', 'approximate_online_count', 'channel', 'code', 'created_at', 'guild', 'inviter',
-        'max_age', 'max_uses', 'partial', 'target_application', 'stage', 'target_type', 'target_user', 'temporary',
-        'uses'
+        'max_age', 'max_uses', 'nsfw_level', 'partial', 'target_application', 'stage', 'target_type', 'target_user',
+        'temporary', 'type', 'uses'
     )
     
     def __new__(cls, data, data_partial):
@@ -167,6 +171,8 @@ class Invite(DiscordEntity, immortal=True):
         self.target_application = None
         self.partial = True
         self.stage = None
+        self.type = InviteType.guild
+        self.nsfw_level = guild.nsfw_level
         
         return self
     
@@ -298,6 +304,9 @@ class Invite(DiscordEntity, immortal=True):
         else:
             invite_stage = InviteStage(invite_stage_data, guild)
         self.stage = invite_stage
+        
+        self.type = InviteType.get(data.get('type', 0))
+        self.nsfw_level = NsfwLevel.get(data.get('nsfw_level', 0))
     
     
     def _update_attributes(self, data):
@@ -450,7 +459,11 @@ class Invite(DiscordEntity, immortal=True):
         
         Other Parameters
         ----------------
-        channel : `None`, ``ChannelText``, ``ChannelVoice``, ``ChannelStore``, ``ChannelGroup`` or
+        approximate_online_count : `int`, Optional (Keyword only)
+            The amount of online users at the respective guild (or group channel).
+        approximate_user_count : `int`, Optional (Keyword only)
+            The amount of users at the respective guild (or group channel).
+        channel : `None`, ``ChannelText``, ``ChannelVoice``, ``ChannelStore``, ``ChannelGroup``, \
                 ``ChannelDirectory``, Optional (Keyword only)
             The channel where the invite redirects.
         created_at : `datetime`, Optional (Keyword only)
@@ -463,8 +476,8 @@ class Invite(DiscordEntity, immortal=True):
             The time in seconds after the invite will expire.
         max_uses : `None`, `int`, Optional (Keyword only)
             How much times the invite can be used.
-        approximate_online_count : `int`, Optional (Keyword only)
-            The amount of online users at the respective guild (or group channel).
+        nsfw_level : ``NsfwLevel``, Optional (Keyword only)
+            The respective guild's nsfw level.
         target_type : `int`, ``InviteTargetType``, Optional (Keyword only)
             The invite's target type.
         target_application : `int`, `str`, ``Application``, Optional (Keyword only)
@@ -473,8 +486,8 @@ class Invite(DiscordEntity, immortal=True):
             The target user of the invite.
         temporary : `bool`, Optional (Keyword only)
             Whether this invite only grants temporary membership.
-        approximate_user_count : `int`, Optional (Keyword only)
-            The amount of users at the respective guild (or group channel).
+        type : `int`, ``InviteType``, Optional (Keyword only)
+            The invite's type.
         uses : `None`, `int`, Optional (Keyword only)
             The amount how much times the invite was used.
         
@@ -552,14 +565,19 @@ class Invite(DiscordEntity, immortal=True):
                     if (value is not None):
                         value = instance_or_id_to_instance(value, type_, key)
                         processable.append((key, value))
-                    
-            try:
-                target_type = kwargs.pop('target_type')
-            except KeyError:
-                pass
-            else:
-                target_type = preconvert_preinstanced_type(target_type, InviteTargetType, 'target_type')
-                processable.append(('target_type', target_type))
+            
+            for key, type_ in (
+                ('nsfw_level', NsfwLevel),
+                ('target_type', InviteTargetType),
+                ('type', InviteType),
+            ):
+                try:
+                    value = kwargs.pop(key)
+                except KeyError:
+                    pass
+                else:
+                    value = preconvert_preinstanced_type(value, type_, key)
+                    processable.append((key, value))
             
             try:
                 target_application = kwargs.pop('target_application')
@@ -595,6 +613,8 @@ class Invite(DiscordEntity, immortal=True):
             self.target_user = ZEROUSER
             self.partial = True
             self.stage = None
+            self.type = InviteType.guild
+            self.nsfw_level = NsfwLevel.none
             
             INVITES[code] = self
         else:

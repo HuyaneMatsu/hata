@@ -1,5 +1,13 @@
 ## 1.1.134 *\[2022-01-??\]*
 
+#### Improvements
+
+- Add `InviteType`.
+- Add `Invite.type`.
+- Add `type` parameter to `Invite.precreate`.
+- Add `Invite.nsfw_level`.
+- Add `type` parameter to `Invite.nsfw_level`.
+
 #### Bug Fixes
 
 ##### ext.asyncio

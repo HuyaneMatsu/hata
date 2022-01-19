@@ -10,6 +10,9 @@
 - Add `invite._create_empty`.
 - Add `Client.edit_presence`. (Forest#2913)
 
+##### ext.slash
+- Default slasher exception handler now forwards error message for message component interactions as well.
+
 #### Bug Fixes
 
 ##### ext.asyncio

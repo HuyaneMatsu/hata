@@ -290,23 +290,62 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
     if isinstance(exception, SlasherCommandError):
         forward = exception.pretty_repr
         render = False
+        create_new_message = True
+    
     elif isinstance(exception, DiscordException) and (exception.status == 500):
         forward = None
         render = True
+        create_new_message = True
+    
     elif (interaction_event.type is InteractionType.application_command) and interaction_event.is_unanswered():
         forward = client.slasher._random_error_message_getter()
         render = True
+        create_new_message = True
+    
+    elif (interaction_event.type is InteractionType.message_component) and interaction_event.is_unanswered():
+        forward = client.slasher._random_error_message_getter()
+        render = True
+        create_new_message = True
+        
+        try:
+            await client.interaction_component_acknowledge(interaction_event)
+        except BaseException as err:
+            if isinstance(err, ConnectionError):
+                forward = None
+            
+            elif (
+                isinstance(err, DiscordException) and
+                (
+                    (err.status == 500) or
+                    (err.code == ERROR_CODES.unknown_interaction)
+                )
+            ):
+                forward = None
+            
+            else:
+                raise
+    
     else:
         forward = None
         render = True
+        create_new_message = False
     
     if (forward is not None):
+        if create_new_message:
+            function = type(client).interaction_followup_message_create
+        else:
+            function = type(client).interaction_response_message_create
+        
         try:
-            await client.interaction_response_message_create(interaction_event, forward,
-                show_for_invoking_user_only=True)
+            await function(
+                interaction_event,
+                forward,
+                show_for_invoking_user_only = True,
+            )
         except BaseException as err:
             if isinstance(err, ConnectionError):
                 pass
+            
             elif (
                 isinstance(err, DiscordException) and
                 (
@@ -315,6 +354,7 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
                 )
             ):
                 pass
+            
             else:
                 raise
     

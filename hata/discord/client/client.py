@@ -5822,6 +5822,8 @@ class Client(ClientUserPBase):
         """
         Requests the given guild's welcome screen.
         
+        You need to have `manage guild` permission to request the welcome screen if the guild has it disabled.
+        
         This method is a coroutine.
         
         Parameters
@@ -5846,16 +5848,13 @@ class Client(ClientUserPBase):
         -----
         If the guild has no welcome screen enabled, will not do any request.
         """
-        guild, guild_id = get_guild_and_id(guild)
+        guild_id = get_guild_id(guild)
         
-        if (guild is None) or (GuildFeature.welcome_screen_enabled in guild.features):
-            welcome_screen_data = await self.http.welcome_screen_get(guild_id)
-            if welcome_screen_data is None:
-                welcome_screen = None
-            else:
-                welcome_screen = WelcomeScreen.from_data(welcome_screen_data)
-        else:
+        welcome_screen_data = await self.http.welcome_screen_get(guild_id)
+        if welcome_screen_data is None:
             welcome_screen = None
+        else:
+            welcome_screen = WelcomeScreen.from_data(welcome_screen_data)
         
         return welcome_screen
     

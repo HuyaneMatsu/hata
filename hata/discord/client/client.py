@@ -1250,6 +1250,38 @@ class Client(ClientUserPBase):
         return [Connection(connection_data) for connection_data in data]
     
     
+    async def edit_presence(self, **kwargs):
+        """
+        Changes the client's presence (status and activity). If a parameter is not defined, it will not be changed.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        activity : ``ActivityBase``, Optional (Keyword only)
+            The new activity of the Client.
+        status : `str`, ``Status``, Optional (Keyword only)
+            The new status of the client.
+        afk : `bool`, Optional (Keyword only)
+            Whether the client is afk or not (?). Defaults to `False`.
+        
+        Raises
+        ------
+        TypeError:
+            - If the status is not `str`, ``Status``.
+            - If activity is not ``ActivityBase``, except ``ActivityCustom``.
+        ValueError:
+            - If the status `str`, but not any of the predefined ones.
+        AssertionError
+            - If `afk` was not given as `bool`.
+        
+        Notes
+        -----
+        This method is an alternative version of ``.client_edit_presence`` till further decision.
+        """
+        return await self.client_edit_presence(**kwargs)
+    
+    
     async def client_edit_presence(self, *, activity=..., status=None, afk=False):
         """
         Changes the client's presence (status and activity). If a parameter is not defined, it will not be changed.
@@ -1273,7 +1305,7 @@ class Client(ClientUserPBase):
         ValueError:
             - If the status `str`, but not any of the predefined ones.
         AssertionError
-            - `afk` was not given as `int`.
+            - If `afk` was not given as `bool`.
         """
         if status is None:
             status = self._status

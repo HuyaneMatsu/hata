@@ -8,6 +8,7 @@
 - Add `Invite.nsfw_level`.
 - Add `type` parameter to `Invite.nsfw_level`.
 - Add `invite._create_empty`.
+- Add `Client.edit_presence`. (Forest#2913)
 
 #### Bug Fixes
 

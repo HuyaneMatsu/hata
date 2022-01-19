@@ -7,6 +7,7 @@
 - Add `type` parameter to `Invite.precreate`.
 - Add `Invite.nsfw_level`.
 - Add `type` parameter to `Invite.nsfw_level`.
+- Add `invite._create_empty`.
 
 #### Bug Fixes
 

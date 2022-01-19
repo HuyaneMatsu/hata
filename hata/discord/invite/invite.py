@@ -127,6 +127,7 @@ class Invite(DiscordEntity, immortal=True):
         updater(self, data)
         return self
     
+    
     @classmethod
     def _create_vanity(cls, guild, data):
         """
@@ -147,15 +148,10 @@ class Invite(DiscordEntity, immortal=True):
         try:
             self = INVITES[code]
         except KeyError:
-            self = object.__new__(cls)
-        
-        self.code = code
-        self.inviter = ZEROUSER
-        self.uses = None
-        self.max_age = None
-        self.max_uses = None
-        self.temporary = False
-        self.created_at = DISCORD_EPOCH_START
+            self = cls._create_empty(code)
+        else:
+            self.code = code
+            
         self.guild = guild
         try:
             channel_data = data['channel']
@@ -164,27 +160,26 @@ class Invite(DiscordEntity, immortal=True):
         else:
             channel = create_partial_channel_from_data(channel_data, guild.id)
         self.channel = channel
-        self.approximate_online_count = 0
-        self.approximate_user_count = 0
-        self.target_type = InviteTargetType.none
-        self.target_user = ZEROUSER
-        self.target_application = None
-        self.partial = True
-        self.stage = None
-        self.type = InviteType.guild
+        
+        self.approximate_online_count = guild.approximate_online_count
+        self.approximate_user_count = guild.approximate_user_count
         self.nsfw_level = guild.nsfw_level
         
         return self
+    
     
     def __repr__(self):
         """Returns the representation of the invite."""
         return f'<{self.__class__.__name__} code={self.code!r}>'
     
+    
     def __hash__(self):
         """Returns the invite's code's hash."""
         return hash(self.code)
     
+    
     url = property(module_urls.invite_url)
+    
     
     @property
     def id(self):
@@ -196,6 +191,7 @@ class Invite(DiscordEntity, immortal=True):
         id : `int` = `0`
         """
         return 0
+    
     
     # When we update it we get only a partial invite from Discord. So sad.
     def _set_attributes(self, data):
@@ -596,26 +592,7 @@ class Invite(DiscordEntity, immortal=True):
         try:
             self = INVITES[code]
         except KeyError:
-            self = object.__new__(cls)
-            self.code = code
-            self.inviter = ZEROUSER
-            self.uses = None
-            self.max_age = None
-            self.max_uses = None
-            self.temporary = False
-            self.created_at = DISCORD_EPOCH_START
-            self.guild = None
-            self.channel = None
-            self.approximate_online_count = 0
-            self.approximate_user_count = 0
-            self.target_type = InviteTargetType.none
-            self.target_user = None
-            self.target_user = ZEROUSER
-            self.partial = True
-            self.stage = None
-            self.type = InviteType.guild
-            self.nsfw_level = NsfwLevel.none
-            
+            self = cls._create_empty(code)
             INVITES[code] = self
         else:
             if not self.partial:
@@ -624,5 +601,42 @@ class Invite(DiscordEntity, immortal=True):
         if (processable is not None):
             for item in processable:
                 setattr(self, *item)
+        
+        return self
+    
+    
+    @classmethod
+    def _create_empty(cls, code):
+        """
+        Creates an empty invite with default attributes set.
+        
+        Parameters
+        ----------
+        code : `str`
+            Unique identifier of the invite.
+        
+        Returns
+        -------
+        invite : ``Invite``
+        """
+        self = object.__new__(cls)
+        self.code = code
+        self.inviter = ZEROUSER
+        self.uses = None
+        self.max_age = None
+        self.max_uses = None
+        self.temporary = False
+        self.created_at = DISCORD_EPOCH_START
+        self.guild = None
+        self.channel = None
+        self.approximate_online_count = 0
+        self.approximate_user_count = 0
+        self.target_type = InviteTargetType.none
+        self.target_user = None
+        self.target_user = ZEROUSER
+        self.partial = True
+        self.stage = None
+        self.type = InviteType.guild
+        self.nsfw_level = NsfwLevel.none
         
         return self

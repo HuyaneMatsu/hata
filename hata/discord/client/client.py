@@ -3743,6 +3743,7 @@ class Client(ClientUserPBase):
             - If `nonce` was not given neither as `None` nor as `str`.
             - If `reply_fail_fallback` was not given as `bool`.
             - If `embed` contains a non ``EmbedBase`` element.
+            - If `suppress_embeds` is not `bool`.
             - If both `content` and `embed` fields are embeds.
         
         See Also

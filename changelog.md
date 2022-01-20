@@ -9,6 +9,7 @@
 - Add `type` parameter to `Invite.nsfw_level`.
 - Add `invite._create_empty`.
 - Add `Client.edit_presence`. (Forest#2913)
+- Add `suppress_embeds` parameter to `Client.message_create`.
 
 ##### ext.slash
 - Default slasher exception handler now forwards error message for message component interactions as well.
@@ -17,6 +18,12 @@
 
 ##### ext.asyncio
 - Add missing `Task._log_destroy_pending`. (Nova#3379)
+
+
+#### Renames, Deprecation & Removals
+
+- Rename `Client.message_edit`'s `suppress` parameter to `suppress_embeds`.
+- Deprecate `Client.message_edit`'s `suppress` parameter in favor of `suppress_embeds`.
 
 ## 1.1.133 *\[2022-01-15\]*
 

@@ -120,10 +120,12 @@ from .utils import BanEntry, Typer, UserGuildPermission
 _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
 
 MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY = MessageFlag().update_by_keys(invoking_user_only=True)
+MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS = MessageFlag().update_by_keys(embeds_suppressed=True)
 
 AUTO_CLIENT_ID_LIMIT = 1 << 22
 
 STICKER_PACK_CACHE = ForceUpdateCache()
+
 
 @export
 class Client(ClientUserPBase):
@@ -3661,8 +3663,8 @@ class Client(ClientUserPBase):
         return Message(message_data)
     
     
-    async def message_create(self, channel, content=None, *, embed=None, file=None, allowed_mentions=...,
-            sticker=None, components=None, reply_fail_fallback=False, tts=False, nonce=None):
+    async def message_create(self, channel, content=None, *, allowed_mentions=...,  components=None, embed=None,
+            file=None, nonce=None, reply_fail_fallback=False,  sticker=None, suppress_embeds=None, tts=False):
         """
         Creates and returns a message at the given `channel`. If there is nothing to send, then returns `None`.
         
@@ -3673,36 +3675,45 @@ class Client(ClientUserPBase):
         channel : ``ChannelTextBase``, `int`, ``Message``, ``MessageRepr``, ``MessageReference``,
                 `tuple` (`int`, `int`)
             The text channel where the message will be sent, or the message on what you want to reply.
+        
         content : `str`, ``EmbedBase``, `Any`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
             if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
             
             If given as ``EmbedBase``, then is sent as the message's embed.
-            
-        embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
-            The embedded content of the message.
-            
-            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
-            
-            If embeds are given as a list, then the first embed is picked up.
-        file : `Any`, Optional (Keyword only)
-            A file or files to send. Check ``create_file_form`` for details.
-        sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`)
-            Sticker or stickers to send within the message.
+        
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
+                , Optional (Keyword only)
+            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
+        
         components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
                 ``ComponentBase``), Optional (Keyword only)
             Components attached to the message.
             
             > `components` do not count towards having any content in the message.
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
-                , Optional (Keyword only)
-            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
+        
+        embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
+            The embedded content of the message.
+            
+            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
+        
+        file : `Any`, Optional (Keyword only)
+            A file or files to send. Check ``create_file_form`` for details.
+        
         reply_fail_fallback : `bool`, Optional (Keyword only)
             Whether normal message should be sent if the referenced message is deleted. Defaults to `False`.
-        tts : `bool`, Optional (Keyword only)
-            Whether the message is text-to-speech.
+        
         nonce : `str`, Optional (Keyword only)
             Used for optimistic message sending. Will shop up at the message's data.
+        
+        sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`)
+            Sticker or stickers to send within the message.
+        
+        suppress_embeds : `bool`
+            Whether the message's embeds should be suppressed initially.
+        
+        tts : `bool`, Optional (Keyword only)
+            Whether the message is text-to-speech.
         
         Returns
         -------
@@ -3828,10 +3839,6 @@ class Client(ClientUserPBase):
         components = get_components_data(components, False)
         
         if __debug__:
-            if not isinstance(tts, bool):
-                raise AssertionError(
-                    f'`tts` can be `bool`, got {tts.__class__.__name__}, {tts!r}.'
-                )
             
             if (nonce is not None) and (not isinstance(nonce, str)):
                 raise AssertionError(
@@ -3842,6 +3849,16 @@ class Client(ClientUserPBase):
                 raise AssertionError(
                     f'`reply_fail_fallback` can be `bool`, got {reply_fail_fallback.__class__.__name__}; '
                     f'{reply_fail_fallback!r}.')
+            
+            if not isinstance(suppress_embeds, bool):
+                raise AssertionError(
+                    f'`suppress_embeds` can be `bool`, got {suppress_embeds.__class__.__name__}; {suppress_embeds!r}.'
+                )
+        
+            if not isinstance(tts, bool):
+                raise AssertionError(
+                    f'`tts` can be `bool`, got {tts.__class__.__name__}, {tts!r}.'
+                )
         
         # Build payload
         message_data = {}
@@ -3878,6 +3895,9 @@ class Client(ClientUserPBase):
                 message_reference_data['fail_if_not_exists'] = False
             
             message_data['message_reference'] = message_reference_data
+        
+        if suppress_embeds:
+            message_data['flags'] = MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS
         
         message_data = add_file_to_message_data(message_data, file, contains_content)
         if message_data is None:
@@ -4805,7 +4825,7 @@ class Client(ClientUserPBase):
     
     
     async def message_edit(self, message, content=..., *, embed=..., file=None, allowed_mentions=..., components=...,
-            suppress=...):
+            suppress=..., suppress_embeds=...):
         """
         Edits the given `message`.
         
@@ -4827,8 +4847,6 @@ class Client(ClientUserPBase):
             
             If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
             raised.
-            
-            If embeds are given as a list, then the first embed is picked up.
         
         file : `Any`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
@@ -4843,6 +4861,10 @@ class Client(ClientUserPBase):
             
             Pass it as `None` remove the actual ones.
         suppress : `bool`, Optional (Keyword only)
+            Whether the message's embeds should be suppressed or unsuppressed.
+            
+            Deprecated, please use `suppress_embeds` parameter instead.
+        suppress_embeds : `bool`, Optional (Keyword only)
             Whether the message's embeds should be suppressed or unsuppressed.
         
         Raises
@@ -4861,7 +4883,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `suppress` was not given as `bool`.
+            - If `suppress_embeds` was not given as `bool`.
             - If `embed` contains a non ``EmbedBase`` element.
             - If both `content` and `embed` fields are embeds.
         
@@ -4880,10 +4902,21 @@ class Client(ClientUserPBase):
         
         components = get_components_data(components, True)
         
+        if (suppress is not ...):
+            warnings.warn(
+                (
+                    f'`{self.__class__.__name__.__name__}.message_edit`\'s `suppress` parameter is deprecated, and '
+                    f'will be removed in 2022 May. Please use `suppress_embeds` instead.'
+                ),
+                FutureWarning,
+            )
+            
+            suppress_embeds = suppress
+        
         if __debug__:
-            if (suppress is not ...) and (not isinstance(suppress, bool)):
+            if (suppress_embeds is not ...) and (not isinstance(suppress_embeds, bool)):
                 raise AssertionError(
-                    f'`suppress` can be `bool`, got {suppress.__class__.__name__}; {suppress!r}.'
+                    f'`suppress_embeds` can be `bool`, got {suppress_embeds.__class__.__name__}; {suppress_embeds!r}.'
                 )
         
         # Build payload
@@ -4906,10 +4939,10 @@ class Client(ClientUserPBase):
         
         if (suppress is not ...):
             flags = message.flags
-            if suppress:
-                flags |= 0b00000100
+            if suppress_embeds:
+                flags |= MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS
             else:
-                flags &= 0b11111011
+                flags &= ~MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS
             message_data['flags'] = flags
         
         message_data = add_file_to_message_data(message_data, file, True)

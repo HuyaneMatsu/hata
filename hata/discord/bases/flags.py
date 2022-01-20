@@ -292,7 +292,7 @@ class FlagMeta(type):
         return type.__new__(cls, class_name, class_parents, class_attributes)
 
 
-class FlagBase(int, metaclass = FlagMeta, base_class=True):
+class FlagBase(int, metaclass=FlagMeta, base_class=True):
     """
     Base class for bitwise flags.
     

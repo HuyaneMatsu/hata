@@ -3664,7 +3664,7 @@ class Client(ClientUserPBase):
     
     
     async def message_create(self, channel, content=None, *, allowed_mentions=...,  components=None, embed=None,
-            file=None, nonce=None, reply_fail_fallback=False,  sticker=None, suppress_embeds=None, tts=False):
+            file=None, nonce=None, reply_fail_fallback=False,  sticker=None, suppress_embeds=False, tts=False):
         """
         Creates and returns a message at the given `channel`. If there is nothing to send, then returns `None`.
         

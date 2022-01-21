@@ -1563,7 +1563,7 @@ Redo guild user syncing.
 - `Emoji.precreate` now accepts `guild_id` parameter instead of `guild`.
 - `Client.events.emoji_delete` now accepts only 2 parameters (client, emoji) from 3 (client, emoji, guild).
 - Add `UserBase.banner_color`.
-- Add `banner_color` parameter to `User.precretae`.
+- Add `banner_color` parameter to `User.precreate`.
 - Add `banner_color` parameter to `Client.__new__`.
 - Add `debug_options` parameters to `DiscordHTTPClient.__new__`.
 - Add `http_debug_options` parameters to `Client.__new__`.

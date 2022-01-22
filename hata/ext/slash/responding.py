@@ -369,12 +369,13 @@ class InteractionResponse:
         - `'embed'`
         - `'file'`
         - `'show_for_invoking_user_only'`
+        - `'suppress_embeds'`
         - `'tts'`
     """
     __slots__ = ('_event', '_is_abort', '_message', '_parameters',)
     
-    def __init__(self, content=..., *, embed=..., file=..., allowed_mentions=..., components=..., tts=...,
-            show_for_invoking_user_only=..., message=..., event=None):
+    def __init__(self, content=..., *, allowed_mentions=..., components=..., embed=..., event=None, file=...,
+            message=..., show_for_invoking_user_only=..., suppress_embeds=..., tts=...,):
         """
         Creates a new ``InteractionResponse`` with the given parameters.
         
@@ -385,36 +386,52 @@ class InteractionResponse:
             if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
             
             If given as ``EmbedBase``, then is sent as the message's embed.
-            
+        
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
+                , Optional (Keyword only)
+            Which user or role can the message ping (or everyone). Check ``Client._parse_allowed_mentions`` for
+            details.
+        
+        components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
+            Components attached to the message.
+        
         embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
             The embedded content of the message.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
+
+        event : `None`, ``InteractionEvent``, Optional (Keyword only)
+            A specific event ot answer instead of the command's.
+        
         file : `Any`, Optional (Keyword only)
             A file to send. Check ``Client._create_file_form`` for details.
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
-                , Optional (Keyword only)
-            Which user or role can the message ping (or everyone). Check ``Client._parse_allowed_mentions`` for details.
-        components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
-            Components attached to the message.
-        tts : `bool`, Optional (Keyword only)
-            Whether the message is text-to-speech.
-        show_for_invoking_user_only : `bool`, Optional (Keyword only)
-            Whether the sent message should only be shown to the invoking user. Defaults to the value passed when adding
-            the command.
         
         message : `None`, ``Message``, Optional (Keyword only)
             Whether the interaction's message should be edited.
-        event : `None`, ``InteractionEvent``, Optional (Keyword only)
-            A specific event ot answer instead of the command's.
+        
+        show_for_invoking_user_only : `bool`, Optional (Keyword only)
+            Whether the sent message should only be shown to the invoking user. Defaults to the value passed when
+            adding the command.
+        
+        suppress_embeds : `bool`, Optional (Keyword only)
+            Whether the message's embeds should be suppressed initially.
+        
+        tts : `bool`, Optional (Keyword only)
+            Whether the message is text-to-speech.
         """
         self._is_abort = False
         self._parameters = parameters = {}
         self._message = message
         self._event = event
         
+        if (allowed_mentions is not ...):
+            parameters['allowed_mentions'] = allowed_mentions
+        
         if (content is not ...):
             parameters['content'] = content
+        
+        if (components is not ...):
+            parameters['components'] = components
         
         if (embed is not ...):
             parameters['embed'] = embed
@@ -422,17 +439,14 @@ class InteractionResponse:
         if (file is not ...):
             parameters['file'] = file
         
-        if (allowed_mentions is not ...):
-            parameters['allowed_mentions'] = allowed_mentions
+        if (show_for_invoking_user_only is not ...):
+            parameters['show_for_invoking_user_only'] = show_for_invoking_user_only
         
-        if (components is not ...):
-            parameters['components'] = components
+        if (suppress_embeds is not ...):
+            parameters['suppress_embeds'] = suppress_embeds
         
         if (tts is not ...):
             parameters['tts'] = tts
-        
-        if (show_for_invoking_user_only is not ...):
-            parameters['show_for_invoking_user_only'] = show_for_invoking_user_only
     
     
     def _get_response_parameters(self, allowed_parameters):
@@ -522,7 +536,8 @@ class InteractionResponse:
                 )
             
             response_parameters = self._get_response_parameters((
-                'allowed_mentions', 'content', 'embed', 'file', 'tts', 'components', 'show_for_invoking_user_only'
+                'allowed_mentions', 'content', 'components', 'embed', 'file', 'show_for_invoking_user_only',
+                'suppress_embeds', 'tts'
             ))
             
             if (response_modifier is not None):
@@ -543,7 +558,7 @@ class InteractionResponse:
             return
         
         elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
-            response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'embed', 'components'))
+            response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'components', 'embed'))
             if interaction_event.is_unanswered():
                 if response_parameters:
                     yield client.interaction_component_message_edit(interaction_event, **response_parameters)
@@ -581,8 +596,8 @@ class InteractionResponse:
         return ''.join(repr_parts)
 
 
-def abort(content=..., *, embed=..., file=..., allowed_mentions=..., components=..., tts=...,
-        show_for_invoking_user_only=True, message=..., event=None):
+def abort(content=..., *, allowed_mentions=..., components=..., embed=..., event=None, file=..., message=...,
+        show_for_invoking_user_only=True, suppress_embeds=..., tts=...,):
     """
     Aborts the slash response with sending the passed parameters as a response.
     
@@ -597,19 +612,28 @@ def abort(content=..., *, embed=..., file=..., allowed_mentions=..., components=
         if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
         
         If given as ``EmbedBase``, then is sent as the message's embed.
+    
+    allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
+            , Optional (Keyword only)
+        Which user or role can the message ping (or everyone). Check ``Client._parse_allowed_mentions`` for details.
+    
+    components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
+        Components attached to the message.
+    
     embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
         The embedded content of the message.
         
         If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
+    
+    event : `None`, ``InteractionEvent``, Optional (Keyword only)
+        A specific event ot answer instead of the command's.
+    
     file : `Any`, Optional (Keyword only)
         A file to send. Check ``Client._create_file_form`` for details.
-    allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
-            , Optional (Keyword only)
-        Which user or role can the message ping (or everyone). Check ``Client._parse_allowed_mentions`` for details.
-    components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
-        Components attached to the message.
-    tts : `bool`, Optional (Keyword only)
-        Whether the message is text-to-speech.
+    
+    message : `None`, ``Message``, Optional (Keyword only)
+        Whether the interaction's message should be edited.
+    
     show_for_invoking_user_only : `bool`, Optional (Keyword only)
         Whether the sent message should only be shown to the invoking user.
         
@@ -617,18 +641,26 @@ def abort(content=..., *, embed=..., file=..., allowed_mentions=..., components=
         
         Defaults to `True`.
     
+    tts : `bool`, Optional (Keyword only)
+        Whether the message is text-to-speech.
+    
     Raises
     ------
     InteractionAbortedError
         The exception which aborts the interaction, then yields the response.
-    message : `None`, ``Message``, Optional (Keyword only)
-        Whether the interaction's message should be edited.
-    event : `None`, ``InteractionEvent``, Optional (Keyword only)
-        A specific event ot answer instead of the command's.
     """
-    response = InteractionResponse(content, embed=embed, file=file, allowed_mentions=allowed_mentions,
-        components=components, tts=tts, show_for_invoking_user_only=show_for_invoking_user_only, message=message,
-        event=event)
+    response = InteractionResponse(
+        content,
+        allowed_mentions = allowed_mentions,
+        components = components,
+        embed = embed,
+        event = event,
+        file = file,
+        message = message,
+        show_for_invoking_user_only = show_for_invoking_user_only,
+        suppress_embeds = suppress_embeds,
+        tts = tts,
+    )
     
     response._is_abort = True
     raise InteractionAbortedError(response)

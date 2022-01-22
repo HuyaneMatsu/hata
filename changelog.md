@@ -16,6 +16,8 @@
 
 ##### ext.slash
 - Default slasher exception handler now forwards error message for message component interactions as well.
+- Add `suppress_embeds` parameter to `InteractionResponse.__init__`.
+- Add `suppress_emebds` parameter to `abort`.
 
 #### Bug Fixes
 

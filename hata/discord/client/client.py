@@ -3709,7 +3709,7 @@ class Client(ClientUserPBase):
         sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`)
             Sticker or stickers to send within the message.
         
-        suppress_embeds : `bool`
+        suppress_embeds : `bool`, Optional (Keyword only)
             Whether the message's embeds should be suppressed initially.
         
         tts : `bool`, Optional (Keyword only)
@@ -14258,8 +14258,8 @@ class Client(ClientUserPBase):
         return None
     
     
-    async def interaction_response_message_create(self, interaction, content=None, *, embed=None, allowed_mentions=...,
-            components=None, tts=False, show_for_invoking_user_only=False):
+    async def interaction_response_message_create(self, interaction, content=None, *, allowed_mentions=...,
+            components=None, embed=None, show_for_invoking_user_only=False, suppress_embeds=False, tts=False):
         """
         Sends an interaction response. After receiving an ``InteractionEvent``, you should acknowledge it within
         `3` seconds to perform followup actions.
@@ -14285,23 +14285,30 @@ class Client(ClientUserPBase):
             
             If given as ``EmbedBase``, then is sent as the message's embed.
         
-        embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
-            The embedded content of the interaction response.
-            
-            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
-            raised.
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
+        
         components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
                 ``ComponentBase``), Optional (Keyword only)
             Components attached to the message.
             
             > `components` do not count towards having any content in the message.
-        tts : `bool`, Optional (Keyword only)
-            Whether the message is text-to-speech.
+        
+        embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
+            The embedded content of the interaction response.
+            
+            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
+            raised.
+        
+        suppress_embeds : `bool`, Optional (Keyword only)
+            Whether the message's embeds should be suppressed initially.
+        
         show_for_invoking_user_only : `bool`, Optional (Keyword only)
             Whether the sent message should only be shown to the invoking user. Defaults to `False`.
+        
+        tts : `bool`, Optional (Keyword only)
+            Whether the message is text-to-speech.
         
         Raises
         ------
@@ -14322,6 +14329,7 @@ class Client(ClientUserPBase):
             - If `show_for_invoking_user_only` was not given as `bool`.
             - If `embed` contains a non ``EmbedBase`` element.
             - If both `content` and `embed` fields are embeds.
+            - If `suppress_embeds` is not `bool`.
         
         Notes
         -----
@@ -14374,12 +14382,21 @@ class Client(ClientUserPBase):
         components = get_components_data(components, False)
         
         if __debug__:
-            if not isinstance(tts, bool):
-                raise AssertionError(f'`tts` can be `bool`, got {tts.__class__.__name__}.')
-        
             if not isinstance(show_for_invoking_user_only, bool):
-                raise AssertionError(f'`show_for_invoking_user_only` can be `bool`, got '
-                    f'{show_for_invoking_user_only.__class__.__name__}.')
+                raise AssertionError(
+                    f'`show_for_invoking_user_only` can be `bool`, got '
+                    f'{show_for_invoking_user_only.__class__.__name__}; {show_for_invoking_user_only!r}.'
+                )
+            
+            if not isinstance(suppress_embeds, bool):
+                raise AssertionError(
+                    f'`suppress_embeds` can be `bool`, got {suppress_embeds.__class__.__name__}; {suppress_embeds!r}.'
+                )
+            
+            if not isinstance(tts, bool):
+                raise AssertionError(
+                    f'`tts` can be `bool`, got {tts.__class__.__name__}; {tts!r}.'
+                )
         
         # Build payload
         
@@ -14408,8 +14425,16 @@ class Client(ClientUserPBase):
         else:
             is_deferring = True
         
+        flags = 0
+        
         if show_for_invoking_user_only:
-            message_data['flags'] = MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY
+            flags |= MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY
+        
+        if suppress_embeds:
+            flags |= MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS
+        
+        if flags:
+            message_data['flags'] = flags
             contains_content = True
         
         data = {}
@@ -14763,8 +14788,9 @@ class Client(ClientUserPBase):
         return Message(message_data)
     
     
-    async def interaction_followup_message_create(self, interaction, content=None, *, embed=None, file=None,
-            allowed_mentions=..., components=None, tts=False, show_for_invoking_user_only=False):
+    async def interaction_followup_message_create(self, interaction, content=None, *, allowed_mentions=...,
+            components=None,  embed=None, file=None, show_for_invoking_user_only=False, suppress_embeds=False,
+            tts=False):
         """
         Sends a followup message with the given interaction.
         
@@ -14777,32 +14803,42 @@ class Client(ClientUserPBase):
         ----------
         interaction : ``InteractionEvent``
             Interaction to create followup message with.
+        
         content : `str`, ``EmbedBase``, `Any`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
             if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
             
             If given as ``EmbedBase``, then is sent as the message's embed.
-            
-        embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
-            The embedded content of the message.
-            
-            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
-        file : `Any`, Optional
-            A file to send. Check ``create_file_form`` for details.
+        
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
+        
+
         components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
                 ``ComponentBase``), Optional (Keyword only)
             Components attached to the message.
             
             > `components` do not count towards having any content in the message.
-        tts : `bool`, Optional (Keyword only)
-            Whether the message is text-to-speech. Defaults to `False`.
+        
+        embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
+            The embedded content of the message.
+            
+            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
+        
+        file : `Any`, Optional
+            A file to send. Check ``create_file_form`` for details.
+        
         show_for_invoking_user_only : `bool`, Optional (Keyword only)
             Whether the sent message should only be shown to the invoking user. Defaults to `False`.
             
             If given as `True` only the message's content, embeds and components will be processed by Discord.
+        
+        suppress_embeds : `bool`, Optional (Keyword only)
+            Whether the message's embeds should be suppressed initially.
+        
+        tts : `bool`, Optional (Keyword only)
+            Whether the message is text-to-speech. Defaults to `False`.
         
         
         Returns
@@ -14832,6 +14868,7 @@ class Client(ClientUserPBase):
             - If `show_for_invoking_user_only` was not given as `bool`.
             - If `embed` contains a non ``EmbedBase`` element.
             - If both `content` and `embed` fields are embeds.
+            - If `suppress_embeds` is not `bool`.
         """
         if __debug__:
             if not isinstance(interaction, InteractionEvent):
@@ -14866,15 +14903,20 @@ class Client(ClientUserPBase):
         components = get_components_data(components, False)
         
         if __debug__:
-            if not isinstance(tts, bool):
-                raise AssertionError(
-                    f'`tts` can be `bool`, got {tts.__class__.__name__}; {tts!r}.'
-                )
-            
             if not isinstance(show_for_invoking_user_only, bool):
                 raise AssertionError(
                     f'`show_for_invoking_user_only` can be `bool`, got '
                     f'{show_for_invoking_user_only.__class__.__name__}; {show_for_invoking_user_only!r}.'
+                )
+            
+            if not isinstance(suppress_embeds, bool):
+                raise AssertionError(
+                    f'`suppress_embeds` can be `bool`, got {suppress_embeds.__class__.__name__}; {suppress_embeds!r}.'
+                )
+            
+            if not isinstance(tts, bool):
+                raise AssertionError(
+                    f'`tts` can be `bool`, got {tts.__class__.__name__}; {tts!r}.'
                 )
         
         # Build payload
@@ -14899,8 +14941,16 @@ class Client(ClientUserPBase):
         if tts:
             message_data['tts'] = True
         
+        flags = 0
+        
         if show_for_invoking_user_only:
-            message_data['flags'] = MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY
+            flags |= MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY
+        
+        if suppress_embeds:
+            flags |= MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS
+        
+        if flags:
+            message_data['flags'] = flags
         
         message_data = add_file_to_message_data(message_data, file, contains_content)
         if message_data is None:

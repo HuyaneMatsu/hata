@@ -290,17 +290,17 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
     if isinstance(exception, SlasherCommandError):
         forward = exception.pretty_repr
         render = False
-        create_new_message = True
+        create_new_message = False
     
     elif isinstance(exception, DiscordException) and (exception.status == 500):
         forward = None
         render = True
-        create_new_message = True
+        create_new_message = False
     
     elif (interaction_event.type is InteractionType.application_command) and interaction_event.is_unanswered():
         forward = client.slasher._random_error_message_getter()
         render = True
-        create_new_message = True
+        create_new_message = False
     
     elif (interaction_event.type is InteractionType.message_component) and interaction_event.is_unanswered():
         forward = client.slasher._random_error_message_getter()
@@ -330,6 +330,7 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
         render = True
         create_new_message = False
     
+    
     if (forward is not None):
         if create_new_message:
             function = type(client).interaction_followup_message_create
@@ -338,6 +339,7 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
         
         try:
             await function(
+                client,
                 interaction_event,
                 forward,
                 show_for_invoking_user_only = True,

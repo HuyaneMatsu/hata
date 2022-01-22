@@ -553,6 +553,7 @@ Group Details
     - Limiter : `GLOBAL`
     - Limit : `3`
     - Resets after : `1`
+    - Notes : Removed in newer api versions, use `message_edit` instead.
 
 - thread_create_from_message
     - Endpoint : `/channels/{channel_id}/messages/{message_id}/threads`

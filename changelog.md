@@ -10,6 +10,7 @@
 - Add `invite._create_empty`.
 - Add `Client.edit_presence`. (Forest#2913)
 - Add `suppress_embeds` parameter to `Client.message_create`.
+- Make `Client.message_suppress_embeds` work again (it's endpoint was removed).
 
 ##### ext.slash
 - Default slasher exception handler now forwards error message for message component interactions as well.

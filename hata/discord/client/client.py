@@ -109,10 +109,10 @@ from .request_helpers import (
     get_channel_id_and_message_id, get_components_data, get_emoji_from_reaction, get_guild_and_guild_text_channel_id,
     get_guild_and_id, get_guild_and_id_and_scheduled_event_id, get_guild_discovery_and_id, get_guild_id,
     get_guild_id_and_channel_id, get_guild_id_and_emoji_id, get_guild_id_and_role_id,
-    get_guild_id_and_scheduled_event_id, get_reaction, get_role_id, get_scheduled_event_guild_id_and_id,
-    get_stage_channel_id, get_sticker_and_id, get_sticker_pack_and_id, get_user_and_id, get_user_id,
-    get_user_id_nullable, get_webhook_and_id, get_webhook_and_id_token, get_webhook_id, get_webhook_id_token,
-    validate_content_and_embed, validate_message_to_delete
+    get_guild_id_and_scheduled_event_id, get_message_and_channel_id_and_message_id, get_reaction, get_role_id,
+    get_scheduled_event_guild_id_and_id, get_stage_channel_id, get_sticker_and_id, get_sticker_pack_and_id,
+    get_user_and_id, get_user_id, get_user_id_nullable, get_webhook_and_id, get_webhook_and_id_token, get_webhook_id,
+    get_webhook_id_token, validate_content_and_embed, validate_message_to_delete
 )
 from .utils import BanEntry, Typer, UserGuildPermission
 
@@ -4897,7 +4897,7 @@ class Client(ClientUserPBase):
         -----
         Do not updates he given message object, so dispatch event events can still calculate differences when received.
         """
-        channel_id, message_id = get_channel_id_and_message_id(message)
+        message, channel_id, message_id = get_message_and_channel_id_and_message_id(message)
         
         content, embed = validate_content_and_embed(content, embed, True)
         
@@ -4939,11 +4939,16 @@ class Client(ClientUserPBase):
             message_data['components'] = components
         
         if (suppress is not ...):
-            flags = message.flags
+            if message is None:
+                flags = 0
+            else:
+                flags = message.flags
+            
             if suppress_embeds:
                 flags |= MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS
             else:
                 flags &= ~MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS
+            
             message_data['flags'] = flags
         
         message_data = add_file_to_message_data(message_data, file, True)
@@ -4953,7 +4958,7 @@ class Client(ClientUserPBase):
         await self.http.message_edit(channel_id, message_id, message_data)
     
     
-    async def message_suppress_embeds(self, message, suppress=True):
+    async def message_suppress_embeds(self, message, suppress_embeds=True):
         """
         Suppresses or unsuppressed the given message's embeds.
         
@@ -4963,7 +4968,7 @@ class Client(ClientUserPBase):
         ----------
         message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
             The message, what's embeds will be (un)suppressed.
-        suppress : `bool`, Optional
+        suppress_embeds : `bool`, Optional
             Whether the message's embeds would be suppressed or unsuppressed.
         
         Raises
@@ -4978,15 +4983,25 @@ class Client(ClientUserPBase):
         AssertionError
             If `suppress` was not given as `bool`.
         """
-        channel_id, message_id = get_channel_id_and_message_id(message)
+        message, channel_id, message_id = get_message_and_channel_id_and_message_id(message)
         
         if __debug__:
-            if not isinstance(suppress, bool):
+            if not isinstance(suppress_embeds, bool):
                 raise AssertionError(
-                    f'`suppress` can be `bool`, got {suppress.__class__.__name__}; {suppress!r}.'
+                    f'`suppress_embeds` can be `bool`, got {suppress_embeds.__class__.__name__}; {suppress_embeds!r}.'
                 )
         
-        await self.http.message_suppress_embeds(channel_id, message_id, {'suppress': suppress})
+        if message is None:
+            flags = 0
+        else:
+            flags = message.flags
+        
+        if suppress_embeds:
+            flags |= MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS
+        else:
+            flags &= ~MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS
+        
+        await self.http.message_edit(channel_id, message_id, {'flags': flags})
     
     
     async def message_crosspost(self, message):

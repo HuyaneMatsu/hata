@@ -1254,6 +1254,65 @@ def get_channel_id_and_message_id(message):
     return channel_id, message_id
 
 
+
+def get_message_and_channel_id_and_message_id(message):
+    """
+    Gets the message's channel's and it's own identifier.
+    
+    Parameters
+    ----------
+    message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
+        The message or it' representation.
+    
+    Returns
+    -------
+    message : `None`, ``Message``
+        The message in context if found.
+    channel_id : `int`
+        The message's channel's identifier.
+    message_id : `int`
+        The message's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `message`'s type is incorrect.
+    """
+    # 1.: Message
+    # 2.: MessageRepr
+    # 3.: MessageReference
+    # 4.: None -> raise
+    # 5.: `tuple` (`int`, `int`)
+    # 6.: raise
+    if isinstance(message, Message):
+        channel_id = message.channel_id
+        message_id = message.id
+    elif isinstance(message, MessageRepr):
+        channel_id = message.channel_id
+        message_id = message.id
+        message = MESSAGES.get(message_id, None)
+    elif isinstance(message, MessageReference):
+        channel_id = message.channel_id
+        message_id = message.message_id
+        message = MESSAGES.get(message_id, None)
+    elif message is None:
+        raise TypeError(
+            '`message` was given as `None`. Make sure to call message create methods with non-empty content(s).'
+        )
+    else:
+        snowflake_pair = maybe_snowflake_pair(message)
+        if snowflake_pair is None:
+            raise TypeError(
+                f'`message` can be `{Message.__name__}`, `{MessageRepr.__name__}`, `{MessageReference.__name__}`, '
+                f'`tuple` of (`int`, `int`), got {message.__class__.__name__}; {message!r}.'
+            )
+        
+        channel_id, message_id = snowflake_pair
+        message = MESSAGES.get(message_id, None)
+    
+    return message, channel_id, message_id
+
+
 def get_role_id(role):
     """
     Gets the role identifier from the given role or of it's identifier.

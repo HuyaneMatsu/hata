@@ -1,5 +1,9 @@
 ## 1.1.134 *\[2022-01-??\]*
 
+### Summary
+
+Rework audit logs once again.
+
 #### Improvements
 
 - Add `InviteType`.
@@ -36,7 +40,7 @@
 - Add `AuditLogEntry.target_id`.
 - Add `AuditLogEntry.parent`.
 - `AuditLogIterator` is now `AuditLog` subclass.
-
+- Add `ALLOW_DEBUG_MESSAGES` env variable.
 
 ##### ext.slash
 - Default slasher exception handler now forwards error message for message component interactions as well.

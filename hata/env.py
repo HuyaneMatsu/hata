@@ -11,6 +11,9 @@ HATA_ALLOW_DEAD_EVENTS : `bool` = `False`
     - `Client.events.reaction_delete`
     - `Client.events.reaction_delete_emoji`
 
+HATA_ALLOW_DEBUG_MESSAGES : `bool` = `False`
+    Whether debug messages should be show (experimental).
+
 HATA_API_ENDPOINT : `None`, `str` = `None`
     The api endpoint to use instead of the Discord's default.
 
@@ -197,6 +200,7 @@ if (not CACHE_USER):
     CACHE_PRESENCE = False
 
 ALLOW_DEAD_EVENTS = get_bool_env('HATA_ALLOW_DEAD_EVENTS', False)
+ALLOW_DEBUG_MESSAGES = get_bool_env('HATA_ALLOW_DEBUG_MESSAGES', False)
 
 CUSTOM_API_ENDPOINT = get_str_env('HATA_API_ENDPOINT')
 CUSTOM_CDN_ENDPOINT = get_str_env('HATA_CDN_ENDPOINT')

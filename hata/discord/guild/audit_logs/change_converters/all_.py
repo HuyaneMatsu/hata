@@ -48,6 +48,8 @@ def merge_converters(*converters_to_merge):
             del merged_converters[key]
             multi_type_converters.add(key)
             continue
+    
+    return merged_converters
 
 
 MERGED_CONVERTERS = merge_converters(

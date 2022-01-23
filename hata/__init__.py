@@ -110,9 +110,17 @@ from .deprecate_backend import deprecate
 from .discord import *
 from .ext import *
 
+from .debug import *
+from .deprecate_backend import *
+from .env import *
+
 __all__ = (
     *discord.__all__,
     *ext.__all__,
+    
+    *debug.__all__,
+    *deprecate_backend.__all__,
+    *env.__all__,
 )
 
 from scarletio import check_satisfaction

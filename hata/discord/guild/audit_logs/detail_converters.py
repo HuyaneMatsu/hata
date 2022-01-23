@@ -1,7 +1,6 @@
 __all__ = ()
 
 from ...permission import PermissionOverwriteTargetType
-from ...permission.utils import get_permission_overwrite_key_value
 
 
 def detail_converter_channel_id(key, value):
@@ -29,7 +28,10 @@ def detail_converter_permission_overwrite_target_id(key, value):
 
 
 def detail_converter_permission_overwrite_target_type(key, value):
-    return 'target_type', PermissionOverwriteTargetType.get(get_permission_overwrite_key_value(value))
+    if PermissionOverwriteTargetType.VALUE_TYPE is int:
+        value = int(value)
+    
+    return 'target_type', PermissionOverwriteTargetType.get(value)
 
 
 def detail_converter_nothing(key, value):

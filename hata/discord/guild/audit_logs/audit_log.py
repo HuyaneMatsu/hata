@@ -39,7 +39,8 @@ class AuditLog:
         webhooks, meanwhile the values are the values themselves.
     """
     __slots__ = (
-        '_self_reference', 'entries', 'guild', 'integrations', 'scheduled_events', 'threads', 'users', 'webhooks'
+        '__weakref__', '_self_reference', 'entries', 'guild', 'integrations', 'scheduled_events', 'threads', 'users',
+        'webhooks'
     )
     
     def __new__(cls, data, guild):

@@ -1,5 +1,8 @@
 __all__ = ('AuditLogEntry', )
 
+from ....env import ALLOW_DEBUG_MESSAGES
+from ....debug import call_debug_logger
+
 from ...utils import id_to_datetime
 
 from .change_converters.all_ import MERGED_CONVERTERS
@@ -18,7 +21,7 @@ class AuditLogEntry:
         Reference to the audit log entry keys's parent.
     changes : `list` of ``AuditLogChange``
         The changes of the entry.
-    details : `None`, `dict` of (`str`, `Any`) items
+    details : `None`, `dict` of (l`str`, `Any`) items
         Additional information for a specific action types.
     id : `int`
         The unique identifier number of the entry.
@@ -96,6 +99,16 @@ class AuditLogEntry:
                 try:
                     converter = change_converters[key]
                 except KeyError:
+                    if ALLOW_DEBUG_MESSAGES:
+                        call_debug_logger(
+                            (
+                                f'Unknown Dispatch event change key: {key!r}\n'
+                                f'- Change data: {data!r}\n'
+                                f'- Event type: {AuditLogEvent!r}'
+                            ),
+                            True,
+                        )
+                    
                     converter = MERGED_CONVERTERS.get(key, convert_nothing)
                 
                 change = converter(key, change_data)

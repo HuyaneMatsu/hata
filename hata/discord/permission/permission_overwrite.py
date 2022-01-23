@@ -29,11 +29,6 @@ class PermissionOverwrite:
         The permission overwrites target's identifier.
     target_type : ``PermissionOverwriteTargetType``
         The permission overwrite's target's type.
-
-    target_role : `None`, ``Role``, ``Unknown``
-        The target role entity of the overwrite if applicable. Defaults to `None`.
-    target_user_id : `int`
-        The target user id of the overwrite if applicable. Defaults to `0`.
     """
     __slots__ = ('allow', 'deny', 'target_id', 'target_type')
     

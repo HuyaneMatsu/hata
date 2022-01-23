@@ -211,7 +211,7 @@ class EULA(DiscordEntity, immortal=True):
     -----
     The instances of the class support weakreferencing.
     """
-    __slots__ = ('id', 'content', 'name')
+    __slots__ = ('content', 'name')
     
     def __new__(cls, data):
         """

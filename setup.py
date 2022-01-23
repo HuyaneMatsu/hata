@@ -34,6 +34,8 @@ setup(
         'hata.discord.exceptions',
         'hata.discord.gateway',
         'hata.discord.guild',
+        'hata.discord.guild.audit_logs',
+        'hata.discord.guild.audit_logs.change_converters',
         'hata.discord.http',
         'hata.discord.integration',
         'hata.discord.interaction',

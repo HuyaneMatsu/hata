@@ -13,6 +13,30 @@
 - Make `Client.message_suppress_embeds` work again (it's endpoint was removed).
 - Add `suppress_embeds` parameter to `Client.interaction_followup_message_create`.
 - Add `suppress_embeds` parameter to `Client.interaction_response_message_create`.
+- Update `AuditLogEvent` names.
+- Add `AuditLogEvent.application_command_update`.
+- Add `AuditLogEvent.target_type`.
+- Add `AuditLogTargetType`.
+- Add `AuditLogRole` Now these are used inside of audit logs instead of generic `Role` objects.
+- Add `NsfwLevel` transformer for audit logs.
+- Add `StickerFormat` transformer for audit logs.
+- Add `guild_id` transformer for audit logs.
+- Add `preferred_locale` transformer for audit logs.
+- Add `user_limit` transformer for audit logs.
+- Add `pending` transformer for audit logs.
+- Add `available` transformer for audit logs.
+- Add `image` transformer for audit logs.
+- Add `afk_timeout` transformer for audit logs.
+- Add `role_ids` transformer for audit logs.
+- Add `parent_id` transformer to audit logs.
+- Add `invitable` transformer to audit logs.
+- Add `AuditLogEvent.stage_create`.
+- Add `AuditLogEvent.stage_update`.
+- Add `AuditLogEvent.stage_delete`.
+- Add `AuditLogEntry.target_id`.
+- Add `AuditLogEntry.parent`.
+- `AuditLogIterator` is now `AuditLog` subclass.
+
 
 ##### ext.slash
 - Default slasher exception handler now forwards error message for message component interactions as well.
@@ -29,6 +53,12 @@
 
 - Rename `Client.message_edit`'s `suppress` parameter to `suppress_embeds`.
 - Deprecate `Client.message_edit`'s `suppress` parameter in favor of `suppress_embeds`.
+- Rename `AuditLogEvent.channel_overwrite_create` to `.channel_permission_overwrite_create`.
+- Deprecate `AuditLogEvent.channel_overwrite_create` in favor of `.channel_permission_overwrite_create`.
+- Rename `AuditLogEvent.channel_overwrite_update` to `.channel_permission_overwrite_update`.
+- Deprecate `AuditLogEvent.channel_overwrite_update` in favor of `.channel_permission_overwrite_update`.
+- Rename `AuditLogEvent.channel_overwrite_delete` to `.channel_permission_overwrite_delete`.
+- Deprecate `AuditLogEvent.channel_overwrite_delete` in favor of `.channel_permission_overwrite_delete`.
 
 ## 1.1.133 *\[2022-01-15\]*
 
@@ -113,11 +143,11 @@
 - Add `ApplicationFlag.embedded_released`.
 - Add `ApplicationFlag.embedded_first_party`.
 - Add `ApplicationCommandOptionType.attachment`.
-- Add `creator` transformer to audit logs.
-- Add `entity_id` transformer to audit logs.
-- Add `entity_metadata` transformer to audit logs.
-- Add `end` transformer to audit logs.
-- Add `start` transformer to audit logs.
+- Add `creator` transformer for audit logs.
+- Add `entity_id` transformer for audit logs.
+- Add `entity_metadata` transformer for audit logs.
+- Add `end` transformer for audit logs.
+- Add `start` transformer for audit logs.
 - Add `GuildJoinRequestStatus`.
 - Add missing `EventBase.__eq__`.
 - Add missing `EventBase.__hash__`.
@@ -455,7 +485,7 @@ cache.
 - Add `GuildFeature.internal_employee_only`.
 - Add `GuildFeature.channel_banners`.
 - Add `Guild.boost_progress_bar_enabled`.
-- Add `boost_progress_bar_enabled` transformer to audit logs.
+- Add `boost_progress_bar_enabled` transformer for audit logs.
 - Add `boost_progress_bar_enabled` parameter to `Guild.precreate`.
 - Add `boost_progress_bar_enabled` parameter to `Client.guild_edit`.
 - Add `boost_progress_bar_enabled` parameter to `Client.guild_create`.
@@ -474,7 +504,7 @@ cache.
 - `Client.events.scheduled_event_user_unsubscribe` now accepts 2 parameters.
 - Add `timed_out_until` parameter to `Client.client_guild_profile_edit`.
 - Add `timed_out_until` parameter to `Client.user_guild_profile_edit`.
-- Add `timed_out_until` transformer to audit logs.
+- Add `timed_out_until` transformer for audit logs.
 - Add `HATA_LIBRARY_URL` environmental variable.
 - Newly added `launch` event handlers will be ensured instantly if launch was already called.
 
@@ -601,7 +631,7 @@ Update file uploading system.
 - Add `SystemChannelFlag.join_sticker_replies`
 
 ##### ext.commands_v2
-- Add `release_at` check decorator and ``CheckReleaseAt`` check class. (Yuma#8939)
+- Add `release_at` check decorator and `CheckReleaseAt` check class. (Yuma#8939)
 
 #### Bug Fixes
 
@@ -657,7 +687,7 @@ Make `client.events` pluginable.
 
 #### Bug Fixes
 
-- Multiple ``Client`` methods could raise `AttributeError` by calling a bad method. (Yuma#8939)
+- Multiple `Client` methods could raise `AttributeError` by calling a bad method. (Yuma#8939)
 
 ## 1.1.110 *\[2021-10-10\]*
 
@@ -709,7 +739,7 @@ Improve auto completion and error handling of slash extension.
 - Add `Client.events.scheduled_event_user_unsubscribe`.
 
 ##### ext.slash
-- Auto completers now can be registered to command groups and to ``Slasher`` as well.
+- Auto completers now can be registered to command groups and to `Slasher` as well.
 - Auto completers with multiple parameter names can be registered with 1 call.
 - Add `.error` decorator for slasher application commands, to auto completers and to component commands.
 
@@ -731,7 +761,7 @@ Add unicode emoji support for roles.
 - Add `create_unicode_emoji`.
 - Add `Role.unicode_emoji`.
 - Add `unicode_emoji` parameter to `Role.precreate`.
-- Add `unicode_emoji` transformer to audit logs.
+- Add `unicode_emoji` transformer for audit logs.
 - `Client.role_edit`'s `icon` parameter now can be `Emoji` instance as well.
 - `Client.role_create`'s `icon` parameter now can be `Emoji` instance as well.
 
@@ -1344,7 +1374,7 @@ Fix threads a lil bit.
 - Add `AuditLogEvent.scheduled_event_create`.
 - Add `AuditLogEvent.scheduled_event_update`.
 - Add `AuditLogEvent.scheduled_event_delete`.
-- Add `privacy_level` transformer to audit logs.
+- Add `privacy_level` transformer for audit logs.
 - Add `ScheduledEventStatus`.
 - Add `status` transformer for audit logs.
 - Add `ScheduledEventEntityType`.
@@ -1461,8 +1491,8 @@ Add rich creation for rich activity and for sub activity types.
 - Add `AuditLogEvent.thread_create`.
 - Add `AuditLogEvent.thread_update`.
 - Add `AuditLogEvent.thread_delete`.
-- Add `auto_archive_after` transformer to audit logs.
-- Add `default_auto_archive_after` transformer to audit logs.
+- Add `auto_archive_after` transformer for audit logs.
+- Add `default_auto_archive_after` transformer for audit logs.
 - Add `Client.interaction_followup_message_get`.
 - Add `DiscordHTTPClient.interaction_followup_message_get`.
 - Add `RATE_LIMIT_GROUPS.interaction_followup_message_get`.
@@ -1856,7 +1886,7 @@ Add component commands and expression parser for slash commands.
 #### Improvements
 
 - `Guild.nsfw` is now a property.
-- Include date, method and url in ``DiscordException`` error message.
+- Include date, method and url in `DiscordException` error message.
 
 ##### ext.slash
 - Add `ComponentCommand`.
@@ -1895,7 +1925,7 @@ Fix up components in slash.
 - Add `message` parameter to `abort`.
 - Add `event` parameter to `abort`.
 - `InteractionResponse`'s `edit` parameter is now called `message` for consistency.
-- `InteractionResponse` now will always yield back a ``Message`` instance.
+- `InteractionResponse` now will always yield back a `Message` instance.
 
 #### Bug Fixes
 
@@ -2695,7 +2725,7 @@ Add stage events and endpoints.
 
 - Add `ClientUserBase`. (base class for clients and users).
 - Add `ClientUserPBase`. (base class for clients and of users if presences are enabled).
-- Add `video_quality_mode` transformer to audit logs.
+- Add `video_quality_mode` transformer for audit logs.
 - Update `Client.guild_create` for staff to 200.
 - Add `DiscordHTTPClient.discovery_stage_get_all`.
 - Add `RATE_LIMIT_GROUPS.discovery_stage_get_all`.

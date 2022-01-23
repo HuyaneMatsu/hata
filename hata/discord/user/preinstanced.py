@@ -228,6 +228,8 @@ class Status(PreinstancedBase):
         ----------
         value : `str`
             The identifier value of the status.
+        name : `str`
+            The status's name.
         position : `int`
             Internal position of the status for sorting purposes.
         """

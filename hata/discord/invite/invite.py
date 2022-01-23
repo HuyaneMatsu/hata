@@ -2,6 +2,8 @@ __all__ = ('Invite',)
 
 from datetime import datetime
 
+from scarletio import export
+
 from ..application import Application
 from ..bases import DiscordEntity, instance_or_id_to_instance
 from ..channel import (
@@ -33,6 +35,7 @@ EMBEDDED_ACTIVITY_APPLICATION_ID_TO_NAME = {
     value: key for key, value in EMBEDDED_ACTIVITY_NAME_TO_APPLICATION_ID.items()
 }
 
+@export
 class Invite(DiscordEntity, immortal=True):
     """
     Represents a Discord Invite.

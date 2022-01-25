@@ -104,7 +104,7 @@ class AuditLogEntry:
                             (
                                 f'Unknown Dispatch event change key: {key!r}\n'
                                 f'- Change data: {data!r}\n'
-                                f'- Event type: {AuditLogEvent!r}'
+                                f'- Event type: {event_type!r}'
                             ),
                             True,
                         )

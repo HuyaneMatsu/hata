@@ -58,6 +58,7 @@ SCHEDULED_EVENT_CONVERTERS = {
     'entity_metadata' : convert_scheduled_event_entity_metadata,
     'entity_type': convert_scheduled_event_entity_type,
     'image': convert_icon,
+    'location': convert_nothing,
     'name': convert_nothing,
     'privacy_level': convert_privacy_level,
     'scheduled_end_time': convert_timestamp__end,

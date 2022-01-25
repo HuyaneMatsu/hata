@@ -22,16 +22,16 @@ Rework audit logs once again.
 - Add `AuditLogEvent.target_type`.
 - Add `AuditLogTargetType`.
 - Add `AuditLogRole` Now these are used inside of audit logs instead of generic `Role` objects.
-- Add `NsfwLevel` transformer for audit logs.
-- Add `StickerFormat` transformer for audit logs.
-- Add `guild_id` transformer for audit logs.
-- Add `preferred_locale` transformer for audit logs.
-- Add `user_limit` transformer for audit logs.
-- Add `pending` transformer for audit logs.
-- Add `available` transformer for audit logs.
-- Add `image` transformer for audit logs.
-- Add `afk_timeout` transformer for audit logs.
-- Add `role_ids` transformer for audit logs.
+- Add `NsfwLevel` change key converter for audit logs.
+- Add `StickerFormat` change key converter for audit logs.
+- Add `guild_id` change key converter for audit logs.
+- Add `preferred_locale` change key converter for audit logs.
+- Add `user_limit` change key converter for audit logs.
+- Add `pending` change key converter for audit logs.
+- Add `available` change key converter for audit logs.
+- Add `image` change key converter for audit logs.
+- Add `afk_timeout` change key converter for audit logs.
+- Add `role_ids` change key converter for audit logs.
 - Add `parent_id` transformer to audit logs.
 - Add `invitable` transformer to audit logs.
 - Add `AuditLogEvent.stage_create`.
@@ -45,6 +45,12 @@ Rework audit logs once again.
 - Add `ERROR_CODES.rate_limit_edit_to_message_older_than_one_hour`.
 - Add `ChannelThread._created_at`.
 - Add `created_at` parameter to `ChannelThread.precreate`.
+- Add `asset` change key converter for audit logs. (sticker)
+- Add `id` change key converter for audit logs. (sticker)
+- Add `type` change key converter for audit logs. (sticker)
+- Add `location` change key converter for audit logs. (scheduled event)
+- Add `type` change key converter for audit logs. (webhook)
+- Add `application_id` change key converter for audit logs. (webhook)
 
 ##### ext.slash
 - Default slasher exception handler now forwards error message for message component interactions as well.
@@ -151,11 +157,11 @@ Rework audit logs once again.
 - Add `ApplicationFlag.embedded_released`.
 - Add `ApplicationFlag.embedded_first_party`.
 - Add `ApplicationCommandOptionType.attachment`.
-- Add `creator` transformer for audit logs.
-- Add `entity_id` transformer for audit logs.
-- Add `entity_metadata` transformer for audit logs.
-- Add `end` transformer for audit logs.
-- Add `start` transformer for audit logs.
+- Add `creator` change key converter for audit logs.
+- Add `entity_id` change key converter for audit logs.
+- Add `entity_metadata` change key converter for audit logs.
+- Add `end` change key converter for audit logs.
+- Add `start` change key converter for audit logs.
 - Add `GuildJoinRequestStatus`.
 - Add missing `EventBase.__eq__`.
 - Add missing `EventBase.__hash__`.
@@ -493,7 +499,7 @@ cache.
 - Add `GuildFeature.internal_employee_only`.
 - Add `GuildFeature.channel_banners`.
 - Add `Guild.boost_progress_bar_enabled`.
-- Add `boost_progress_bar_enabled` transformer for audit logs.
+- Add `boost_progress_bar_enabled` change key converter for audit logs.
 - Add `boost_progress_bar_enabled` parameter to `Guild.precreate`.
 - Add `boost_progress_bar_enabled` parameter to `Client.guild_edit`.
 - Add `boost_progress_bar_enabled` parameter to `Client.guild_create`.
@@ -512,7 +518,7 @@ cache.
 - `Client.events.scheduled_event_user_unsubscribe` now accepts 2 parameters.
 - Add `timed_out_until` parameter to `Client.client_guild_profile_edit`.
 - Add `timed_out_until` parameter to `Client.user_guild_profile_edit`.
-- Add `timed_out_until` transformer for audit logs.
+- Add `timed_out_until` change key converter for audit logs.
 - Add `HATA_LIBRARY_URL` environmental variable.
 - Newly added `launch` event handlers will be ensured instantly if launch was already called.
 
@@ -769,7 +775,7 @@ Add unicode emoji support for roles.
 - Add `create_unicode_emoji`.
 - Add `Role.unicode_emoji`.
 - Add `unicode_emoji` parameter to `Role.precreate`.
-- Add `unicode_emoji` transformer for audit logs.
+- Add `unicode_emoji` change key converter for audit logs.
 - `Client.role_edit`'s `icon` parameter now can be `Emoji` instance as well.
 - `Client.role_create`'s `icon` parameter now can be `Emoji` instance as well.
 
@@ -1382,12 +1388,12 @@ Fix threads a lil bit.
 - Add `AuditLogEvent.scheduled_event_create`.
 - Add `AuditLogEvent.scheduled_event_update`.
 - Add `AuditLogEvent.scheduled_event_delete`.
-- Add `privacy_level` transformer for audit logs.
+- Add `privacy_level` change key converter for audit logs.
 - Add `ScheduledEventStatus`.
-- Add `status` transformer for audit logs.
+- Add `status` change key converter for audit logs.
 - Add `ScheduledEventEntityType`.
-- Add `entity_type` transformer for audit logs.
-- Add `sku_ids` transformer for audit logs.
+- Add `entity_type` change key converter for audit logs.
+- Add `sku_ids` change key converter for audit logs.
 - Add `DiscordHTTPClient.greet`.
 - Add `RATE_LIMIT_GROUPS.greet`.
 - Add `AuditLog.threads`.
@@ -1499,8 +1505,8 @@ Add rich creation for rich activity and for sub activity types.
 - Add `AuditLogEvent.thread_create`.
 - Add `AuditLogEvent.thread_update`.
 - Add `AuditLogEvent.thread_delete`.
-- Add `auto_archive_after` transformer for audit logs.
-- Add `default_auto_archive_after` transformer for audit logs.
+- Add `auto_archive_after` change key converter for audit logs.
+- Add `default_auto_archive_after` change key converter for audit logs.
 - Add `Client.interaction_followup_message_get`.
 - Add `DiscordHTTPClient.interaction_followup_message_get`.
 - Add `RATE_LIMIT_GROUPS.interaction_followup_message_get`.
@@ -2733,7 +2739,7 @@ Add stage events and endpoints.
 
 - Add `ClientUserBase`. (base class for clients and users).
 - Add `ClientUserPBase`. (base class for clients and of users if presences are enabled).
-- Add `video_quality_mode` transformer for audit logs.
+- Add `video_quality_mode` change key converter for audit logs.
 - Update `Client.guild_create` for staff to 200.
 - Add `DiscordHTTPClient.discovery_stage_get_all`.
 - Add `RATE_LIMIT_GROUPS.discovery_stage_get_all`.

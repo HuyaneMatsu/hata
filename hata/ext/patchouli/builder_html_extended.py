@@ -187,7 +187,7 @@ def section_title_serializer(title):
     yield '<h2>'
     yield from anchor_for_serializer(title)
     yield html_escape(title)
-    yield '<div class="underline"><div></h2>'
+    yield '<div class="underline"></div></h2>'
 
 SECTION_TYPE_DEFAULT = 0
 
@@ -459,7 +459,7 @@ class SimpleSection:
             yield '>'
             yield from anchor_for_serializer(prefix)
             yield html_escape(title)
-            yield '<div class="underline"><div></h'
+            yield '<div class="underline"></div></h'
             yield str(tier)
             yield '>'
         
@@ -629,7 +629,7 @@ class FunctionOrPropertySerializer:
         yield str(tier)
         yield '>'
         
-        yield '<div class="underline"><div>'
+        yield '<div class="underline"></div>'
         
         content = self.content
         if content is None:
@@ -741,7 +741,7 @@ class UnitSection:
         yield '>'
         yield from anchor_for_serializer(prefix)
         yield html_escape(title)
-        yield '<div class="underline"><div></h'
+        yield '<div class="underline"></div></h'
         yield str(tier)
         yield '>'
         
@@ -885,7 +885,7 @@ class AttributeSection:
         yield '>'
         yield from anchor_for_serializer(prefixed_title)
         yield html_escape(title)
-        yield '<div class="underline"><div></h'
+        yield '<div class="underline"></div></h'
         yield str(tier)
         yield '>'
         
@@ -1522,7 +1522,7 @@ class TypeSerializer:
         yield '>'
         yield from anchor_for_serializer(anchor_escape(prefix))
         yield html_escape(name)
-        yield '<div class="underline"><div></h'
+        yield '<div class="underline"></div></h'
         yield str(tier)
         yield '>'
         
@@ -1626,7 +1626,7 @@ class UnitListerSection:
         yield '>'
         yield from anchor_for_serializer(prefix)
         yield html_escape(title)
-        yield '<div class="underline"><div></h'
+        yield '<div class="underline"></div></h'
         yield str(tier)
         yield '><ul class="unit_listing">'
         
@@ -1790,7 +1790,7 @@ class ModuleSerializer:
         yield '<h1>'
         yield from anchor_for_serializer(anchor_escape(name))
         yield html_escape(name)
-        yield '<div class="underline"><div></h1>'
+        yield '<div class="underline"></div></h1>'
         
         for section in self.sections:
             yield from section.serialize()

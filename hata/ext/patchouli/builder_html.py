@@ -513,7 +513,7 @@ def section_title_serializer(title):
     
     yield '<h2>'
     yield html_escape(title)
-    yield '<div class="underline"><div></h2>'
+    yield '<div class="underline"></div></h2>'
 
 def section_serializer(section, object_):
     """

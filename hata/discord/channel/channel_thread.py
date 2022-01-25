@@ -1,5 +1,7 @@
 __all__ = ('AUTO_ARCHIVE_DEFAULT', 'AUTO_ARCHIVE_OPTIONS', 'ChannelThread', )
 
+from datetime import datetime
+
 from scarletio import copy_docs, export
 
 from ..core import CHANNELS, GUILDS
@@ -13,7 +15,7 @@ from ..preconverters import (
 )
 from ..user import ZEROUSER, create_partial_user_from_id
 from ..user.thread_profile import thread_user_create
-from ..utils import datetime_to_timestamp, timestamp_to_datetime
+from ..utils import datetime_to_timestamp, id_to_datetime, timestamp_to_datetime
 
 from . import channel_types as CHANNEL_TYPES
 from .channel_base import ChannelBase
@@ -50,6 +52,8 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         The channel's name.
     _message_history :  `None`, ``MessageHistory``
         The message history of the channel if any.
+    _created_at : `None`, `datetime`
+        When the channel was created.
     archived : `bool`
         Whether the thread s archived.
     archived_at : `None`, `datetime`
@@ -84,8 +88,8 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         The type values which ``ChannelThread`` might represent.
     """
     __slots__ = (
-        'archived', 'archived_at', 'auto_archive_after', 'invitable', 'open', 'owner_id', 'slowmode', 'thread_users',
-        'type'
+        '_created_at', 'archived', 'archived_at', 'auto_archive_after', 'invitable', 'open', 'owner_id', 'slowmode',
+        'thread_users', 'type'
     )
     
     DEFAULT_TYPE = CHANNEL_TYPES.guild_thread_private
@@ -139,6 +143,12 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
             else:
                 owner_id = int(owner_id)
             self.owner_id = owner_id
+            
+            created_at = data.get('create_timestamp', None)
+            if (created_at is not None):
+                created_at = timestamp_to_datetime(created_at)
+            
+            self._created_at = created_at
         
         if (client is not None):
             try:
@@ -263,6 +273,7 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         self = super(ChannelThread, cls)._create_empty(channel_id, channel_type, guild_id)
         self._message_history = None
         
+        self._created_at = None
         self.archived = False
         self.archived_at = None
         self.auto_archive_after = AUTO_ARCHIVE_DEFAULT
@@ -275,10 +286,21 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         
         return self
     
+    
     @property
     @copy_docs(ChannelBase.display_name)
     def display_name(self):
         return self.name.lower()
+    
+    
+    @property
+    @copy_docs(ChannelBase.created_at)
+    def created_at(self):
+        created_at = self._created
+        if (created_at is None):
+            created_at = id_to_datetime(self.id)
+        
+        return created_at
     
     
     @property
@@ -515,6 +537,8 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         ----------------
         auto_archive_after: `int`, Optional (Keyword only)
             The channel's ``.auto_archive_after``.
+        created_at : `None`, `datetime`, Optional (Keyword only)
+            When the channel was created.
         invitable : `bool`, Optional (Keyword only)
             The channel's `..invitable``.
         open : `bool`, Optional (Keyword only)
@@ -565,9 +589,27 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
             except KeyError:
                 pass
             else:
-                auto_archive_after = preconvert_int_options(auto_archive_after, 'auto_archive_after',
-                    AUTO_ARCHIVE_OPTIONS)
+                auto_archive_after = preconvert_int_options(
+                    auto_archive_after,
+                    'auto_archive_after',
+                    AUTO_ARCHIVE_OPTIONS,
+                )
                 processable.append(('auto_archive_after', auto_archive_after))
+            
+            
+            try:
+                created_at = kwargs.pop('created_at')
+            except KeyError:
+                pass
+            else:
+                if (created_at is not None):
+                    if not isinstance(created_at, datetime):
+                        raise TypeError(
+                            f'`created_at` can be `None`, `datetime`, got {created_at.__class__.__name__}; '
+                            f'{created_at!r}.'
+                        )
+                    
+                    processable.append(('_created_at', created_at))
             
             
             try:
@@ -643,5 +685,9 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         
         if self.type == CHANNEL_TYPES.guild_thread_private:
             thread_data['invitable'] = self.invitable
+        
+        created_at = self._created_at
+        if (created_at is not None):
+            data['create_timestamp'] = datetime_to_timestamp(created_at)
         
         return data

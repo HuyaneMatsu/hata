@@ -202,6 +202,8 @@ Error Codes
 +---------------------------------------------------------------+-----------+-----------+
 | rate_limit_widget_update                                      | 30042     | -         |
 +---------------------------------------------------------------+-----------+-----------+
+| rate_limit_edit_to_message_older_than_one_hour                | 30046     | -         |
++---------------------------------------------------------------+-----------+-----------+
 | unauthorized                                                  | 40001     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | email_verification_required                                   | 40002     | -         |
@@ -529,6 +531,7 @@ max_scheduled_events = 30038
 max_stickers = 30039
 rate_limit_prune = 30040
 rate_limit_widget_update = 30042
+rate_limit_edit_to_message_older_than_one_hour = 30046
 
 unauthorized = 40001
 email_verification_required = 40002

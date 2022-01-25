@@ -42,6 +42,9 @@ Rework audit logs once again.
 - `AuditLogIterator` is now `AuditLog` subclass.
 - Add `ALLOW_DEBUG_MESSAGES` env variable.
 - Add `ApplicationCommandAutocompleteInteraction.get_non_focused_values`.
+- Add `ERROR_CODES.rate_limit_edit_to_message_older_than_one_hour`.
+- Add `ChannelThread._created_at`.
+- Add `created_at` parameter to `ChannelThread.precreate`.
 
 ##### ext.slash
 - Default slasher exception handler now forwards error message for message component interactions as well.

@@ -381,42 +381,6 @@ class AuditLogEvent(PreinstancedBase):
     )
     
     
-    @class_property
-    def channel_overwrite_create(cls):
-        warnings.warn(
-            (
-                f'`{cls.__name__}.channel_overwrite_create` is deprecated and will be removed in 2021 May. Please use '
-                f'`{cls.__name__}.channel_permission_overwrite_create` instead.'
-            ),
-            FutureWarning,
-        )
-        return cls.channel_permission_overwrite_create
-    
-    
-    @class_property
-    def channel_overwrite_update(cls):
-        warnings.warn(
-            (
-                f'`{cls.__name__}.channel_overwrite_update` is deprecated and will be removed in 2021 May. Please use '
-                f'`{cls.__name__}.channel_permission_overwrite_update` instead.'
-            ),
-            FutureWarning,
-        )
-        return cls.channel_permission_overwrite_update
-    
-    
-    @class_property
-    def channel_overwrite_delete(cls):
-        warnings.warn(
-            (
-                f'`{cls.__name__}.channel_overwrite_delete` is deprecated and will be removed in 2021 May. Please use '
-                f'`{cls.__name__}.channel_permission_overwrite_delete` instead.'
-            ),
-            FutureWarning,
-        )
-        return cls.channel_permission_overwrite_delete
-    
-    
     def __init__(self, value, name, target_type):
         """
         Creates a new audit log event and stores it at the class's `.INSTANCES` class attribute.
@@ -463,3 +427,39 @@ class AuditLogEvent(PreinstancedBase):
             f'target_type={self.target_type.name!r}'
             '>'
         )
+
+
+    @class_property
+    def channel_overwrite_create(cls):
+        warnings.warn(
+            (
+                f'`{cls.__name__}.channel_overwrite_create` is deprecated and will be removed in 2021 May. Please use '
+                f'`{cls.__name__}.channel_permission_overwrite_create` instead.'
+            ),
+            FutureWarning,
+        )
+        return cls.channel_permission_overwrite_create
+    
+    
+    @class_property
+    def channel_overwrite_update(cls):
+        warnings.warn(
+            (
+                f'`{cls.__name__}.channel_overwrite_update` is deprecated and will be removed in 2021 May. Please use '
+                f'`{cls.__name__}.channel_permission_overwrite_update` instead.'
+            ),
+            FutureWarning,
+        )
+        return cls.channel_permission_overwrite_update
+    
+    
+    @class_property
+    def channel_overwrite_delete(cls):
+        warnings.warn(
+            (
+                f'`{cls.__name__}.channel_overwrite_delete` is deprecated and will be removed in 2021 May. Please use '
+                f'`{cls.__name__}.channel_permission_overwrite_delete` instead.'
+            ),
+            FutureWarning,
+        )
+        return cls.channel_permission_overwrite_delete

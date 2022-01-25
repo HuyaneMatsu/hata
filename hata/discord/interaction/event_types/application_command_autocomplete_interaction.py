@@ -146,6 +146,36 @@ class ApplicationCommandAutocompleteInteraction(InteractionFieldBase):
         return focused_option
     
     
+    def get_non_focused_values(self):
+        """
+        Gets the non focused values of the interaction.
+        
+        Returns
+        -------
+        non_focused_options : `dict` of (`str`, (`None`, `str`)) items
+        """
+        return dict(self._iter_non_focused_values())
+    
+    
+    def _iter_non_focused_values(self):
+        """
+        Iterates over the non focused values of the interaction.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        name : `str`
+            The option's name.
+        value : `None`, `str`
+            The option's value.
+        """
+        options = self.options
+        if (options is not None):
+            for option in options:
+                yield from option._iter_non_focused_values()
+    
+    
     def get_value_of(self, *option_names):
         """
         Gets the value for the option by the given name.
@@ -379,6 +409,33 @@ class ApplicationCommandAutocompleteInteractionOption:
                 focused_option =  option.focused_option
                 if (focused_option is not None):
                     return focused_option
+    
+    
+    def _iter_non_focused_values(self):
+        """
+        Iterates over the non focused values of the interaction option.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        name : `str`
+            The option's name.
+        value : `None`, `str`
+            The option's value.
+        """
+        type_ = self.type
+        if (
+            (type_ is ApplicationCommandOptionType.sub_command) or
+            (type_ is ApplicationCommandOptionType.sub_command_group)
+        ):
+            options = self.options
+            if (options is not None):
+                for option in options:
+                    yield from option._iter_non_focused_values()
+        else:
+            if not self.focused:
+                yield self.name, self.value
     
     
     def get_value_of(self, *option_names):

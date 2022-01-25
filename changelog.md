@@ -41,6 +41,7 @@ Rework audit logs once again.
 - Add `AuditLogEntry.parent`.
 - `AuditLogIterator` is now `AuditLog` subclass.
 - Add `ALLOW_DEBUG_MESSAGES` env variable.
+- Add `ApplicationCommandAutocompleteInteraction.get_non_focused_values`.
 
 ##### ext.slash
 - Default slasher exception handler now forwards error message for message component interactions as well.

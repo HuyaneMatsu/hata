@@ -1,3 +1,10 @@
+## 1.1.135 *\[2022-??-??\]*
+
+#### Improvements
+
+- Add `ScheduledEvent.image_url`.
+- Add `ScheduledEvent.image_url_as`.
+
 ## 1.1.134 *\[2022-01-25\]*
 
 ### Summary

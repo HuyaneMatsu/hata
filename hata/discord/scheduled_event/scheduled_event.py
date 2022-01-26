@@ -3,6 +3,7 @@ __all__ = ('ScheduledEvent', )
 from ..bases import DiscordEntity, IconSlot
 from ..channel import CHANNEL_TYPES, create_partial_channel_from_id
 from ..core import CHANNELS, GUILDS, SCHEDULED_EVENTS
+from ..http import urls as module_urls
 from ..user import User, ZEROUSER
 from ..utils import timestamp_to_datetime
 
@@ -63,7 +64,12 @@ class ScheduledEvent(DiscordEntity):
         'guild_id', 'name', 'privacy_level', 'send_start_notification', 'sku_ids', 'start', 'status', 'user_count'
     )
     
-    image = IconSlot('image', 'image', None, None)
+    image = IconSlot(
+        'image',
+        'image',
+        module_urls.scheduled_event_image_url,
+        module_urls.scheduled_event_image_url_as,
+    )
     
     def __new__(cls, data):
         """

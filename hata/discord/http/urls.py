@@ -1711,3 +1711,81 @@ def channel_banner_url_as(channel, ext=None, size=None):
             prefix = 'a_'
     
     return f'{CDN_ENDPOINT}/channel-banners/{channel.id}/{prefix}{channel.banner_hash:0>32x}.{ext}{end}'
+
+
+def scheduled_event_image_url(scheduled_event):
+    """
+    Returns the scheduled event's image's url. If the scheduled event has no image, then returns `None`.
+    
+    This function is a property of ``ScheduledEvent``-s.
+    
+    Returns
+    -------
+    url : `None`, `str`
+    """
+    image_type = scheduled_event.image_type
+    if image_type is ICON_TYPE_NONE:
+        return None
+    
+    if image_type is ICON_TYPE_STATIC:
+        prefix = ''
+        ext = 'png'
+    else:
+        prefix = 'a_'
+        ext = 'gif'
+    
+    return f'{CDN_ENDPOINT}/guild-events/{scheduled_event.id}/{prefix}{scheduled_event.image_hash:0>32x}.{ext}'
+
+
+def scheduled_event_image_url_as(scheduled_event, ext=None, size=None):
+    """
+    Returns the scheduled event's image's url. If the scheduled event has no image, then returns `None`.
+    
+    This function is a method of ``ScheduledEvent``-s.
+    
+    Parameters
+    ----------
+    ext : `str`, Optional
+        The extension of the image's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
+    size : `int`, Optional
+        The preferred minimal size of the image's url.
+    
+    Returns
+    -------
+    url : `None`, `str`
+    
+    Raises
+    ------
+    ValueError
+        If `ext`, `size` was not passed as any of the expected values.
+    """
+    image_type = scheduled_event.image_type
+    if image_type is ICON_TYPE_NONE:
+        return None
+    
+    if size is None:
+        end = ''
+    elif size in VALID_ICON_SIZES:
+        end = f'?size={size}'
+    else:
+        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
+    
+    if ext is None:
+        if image_type is ICON_TYPE_STATIC:
+            prefix = ''
+            ext = 'png'
+        else:
+            prefix = 'a_'
+            ext = 'gif'
+    
+    else:
+        if image_type is ICON_TYPE_STATIC:
+            if ext not in VALID_ICON_FORMATS:
+                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
+            prefix = ''
+        else:
+            if ext not in VALID_ICON_FORMATS_EXTENDED:
+                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.')
+            prefix = 'a_'
+    
+    return f'{CDN_ENDPOINT}/guild-events/{scheduled_event.id}/{prefix}{scheduled_event.image_hash:0>32x}.{ext}{end}'

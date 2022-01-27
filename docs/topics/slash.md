@@ -165,7 +165,7 @@ def random_error_message_getter():
     return choice(ERROR_MESSAGES)
 
 
-# Then pass it to the client contructor ...
+# Then pass it to the client constructor ...
 ```
 
 ## Adding commands & responding
@@ -683,7 +683,7 @@ The first response can be also empty just to acknowledge the event.
 ```py
 from time import perf_counter
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild=TEST_GUILD, wait_for_acknowledgement=True)
 async def ping():
     """HTTP ping-pong."""
     start = perf_counter()
@@ -698,6 +698,9 @@ async def ping():
 Acknowledging can be useful if you do an additional request to an other site, because the event need to be acknowledged
 within 3 seconds to send followup messages. If the event is acknowledged, followup messages can be sent within an
 additional 15 minutes!
+
+By default, acknowledgement will run parallel with the command. To wait till the acknowledgement is done, use the
+`wait_for_acknowledgement` decorator parameter.
 
 ##### Capturing messages & exceptions
 
@@ -962,7 +965,7 @@ from time import perf_counter
 from hata import Embed
 from hata.ext.slash import abort
 
-@Nitori.interactions
+@Nitori.interactions(wait_for_acknowledgement=True)
 async def ping():
     """HTTP ping-pong."""
     start = perf_counter()

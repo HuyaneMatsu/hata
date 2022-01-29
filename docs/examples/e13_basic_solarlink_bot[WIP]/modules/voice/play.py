@@ -60,6 +60,6 @@ async def play(
     
     yield (
         f'Track added to queue!\n'
-        f'- Name: [{track.title}]({track.url}\n'
+        f'- Name: [{track.title}]({track.url})\n'
         f'- Duration: {duration_to_string(track.duration)}'
     )

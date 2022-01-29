@@ -1,10 +1,11 @@
 from hata import Client, Embed
 
 from constants import TEST_GUILD
-from utils import create_track_repr, duration_to_string
+from utils import duration_to_string, get_queue_duration, create_track_repr
 
 
 Sakuya: Client
+
 
 @Sakuya.interactions(guild=TEST_GUILD)
 async def queue_(
@@ -19,7 +20,7 @@ async def queue_(
         'Music queue',
         (
             f'Total number of tracks {len(queue)}\n'
-            f'Total duration: {duration_to_string(player.queue_duration)}'
+            f'Total duration: {duration_to_string(get_queue_duration(player))}'
         ),
     )
     

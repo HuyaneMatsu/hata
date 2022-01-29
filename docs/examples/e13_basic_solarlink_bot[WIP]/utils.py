@@ -70,3 +70,13 @@ def create_track_repr(track, index):
     repr_parts.append(')')
     
     return ''.join(repr_parts)
+
+
+# Gets player queue duration
+def get_queue_duration(player):
+    duration = 0.0
+    
+    for configured_track in player.queue:
+        duration += configured_track.track.duration
+    
+    return duration

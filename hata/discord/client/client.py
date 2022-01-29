@@ -14322,10 +14322,6 @@ class Client(ClientUserPBase):
         ``.interaction_followup_message_create`` will. To edit or delete this message, you can use
         ``.interaction_response_message_edit`` and ``interaction_response_message_delete``.
         
-        When calling ``.interaction_response_message_create`` multiple time on the same `interaction`, will redirect to
-        ``.interaction_followup_message_create`` or to ``.interaction_response_message_edit`` depending whether the
-        interaction event was just deferred, and drop a warning.
-        
         This method is a coroutine.
         
         Parameters
@@ -14402,34 +14398,6 @@ class Client(ClientUserPBase):
                     f'{interaction.__class__.__name__}; {interaction!r}.'
                 )
         
-        if interaction.is_unanswered():
-            # Expected state, nice
-            pass
-        elif interaction.is_deferred():
-            warnings.warn(
-                (
-                    f'`{self.__class__.__name__}.interaction_response_message_create` called multiple times on the '
-                    f'same {interaction!r}. Redirecting to '
-                    f'`{self.__class__.__name__}.interaction_response_message_edit`.'
-                ),
-                ResourceWarning,
-            )
-            
-            return await self.interaction_response_message_edit(interaction, content, embed=embed,
-                allowed_mentions=allowed_mentions)
-        
-        elif interaction.is_responded():
-            warnings.warn(
-                (
-                    f'`{self.__class__.__name__}.interaction_response_message_create` called multiple times on the '
-                    f'same {interaction!r}. Redirecting to '
-                    f'`{self.__class__.__name__}.interaction_followup_message_create`.'
-                ),
-                ResourceWarning,
-            )
-            
-            return await self.interaction_followup_message_create(interaction, content, embed=embed,
-                allowed_mentions=allowed_mentions, tts=tts)
         
         content, embed = validate_content_and_embed(content, embed, False)
         
@@ -14569,9 +14537,6 @@ class Client(ClientUserPBase):
         Edits the given `interaction`'s source response. If the source interaction event was only deferred, this call
         will send the message as well.
         
-        When calling ``.interaction_response_message_edit`` before ``interaction_response_message_create`` will redirect
-        to ``.interaction_response_message_create`` and drop a warning.
-        
         This method is a coroutine.
         
         Parameters
@@ -14638,19 +14603,6 @@ class Client(ClientUserPBase):
             if not isinstance(interaction, InteractionEvent):
                 raise AssertionError(f'`interaction` can be `{InteractionEvent.__name__}`, got '
                     f'{interaction.__class__.__name__}; {interaction!r}.')
-        
-        if interaction.is_unanswered():
-            warnings.warn(
-                (
-                    f'`{self.__class__.__name__}.interaction_response_message_edit` called before calling '
-                    f'`{self.__class__.__name__}.interaction_response_message_create` with {interaction!r}. '
-                    f'Redirecting to `{self.__class__.__name__}.interaction_response_message_edit`.'
-                ),
-                ResourceWarning,
-            )
-            
-            return await self.interaction_response_message_create(interaction, content, embed=embed,
-                allowed_mentions=allowed_mentions)
         
         content, embed = validate_content_and_embed(content, embed, True)
         
@@ -14856,9 +14808,6 @@ class Client(ClientUserPBase):
         """
         Sends a followup message with the given interaction.
         
-        When calling ``.interaction_followup_message_create`` before calling ``.interaction_response_message_create``
-        on an interaction, will redirect to ``.interaction_response_message_create` `and drop a warning.
-        
         This method is a coroutine.
         
         Parameters
@@ -14939,19 +14888,6 @@ class Client(ClientUserPBase):
                     f'{interaction.__class__.__name__}; {interaction!r}.'
                 )
         
-        if interaction.is_unanswered():
-            warnings.warn(
-                (
-                    f'`{self.__class__.__name__}.interaction_followup_message_create` called before calling '
-                    f'`{self.__class__.__name__}.interaction_response_message_create` with {interaction!r}. Tho it is '
-                    f'possible to call `.interaction_followup_message_create`` before, the request is still '
-                    f'redirected to `.interaction_response_message_create`.'
-                ),
-                ResourceWarning,
-            )
-            
-            return await self.interaction_response_message_create(interaction, content, embed=embed,
-                allowed_mentions=allowed_mentions, components=components, tts=tts)
         
         application_id = self.application.id
         if __debug__:

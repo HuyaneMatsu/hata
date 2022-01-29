@@ -628,15 +628,8 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         This method is a coroutine.
         """
         async_task = self._async_task
-        if (async_task is not None):
+        if (async_task is not None) and (async_task is not KOKORO.current_task):
             try:
                 await async_task
             finally:
                 self._async_task = None
-    
-    
-    def _set_async_task(self):
-        """
-        Sets the interaction event's async task to the currently running task.
-        """
-        self._async_task = KOKORO.current_task

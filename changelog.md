@@ -4,7 +4,7 @@
 
 - Add `ScheduledEvent.image_url`.
 - Add `ScheduledEvent.image_url_as`.
-
+- Remove extra redirect in interaction client methods, since it could(?) confuse flow order.
 
 #### Bug fixes
 

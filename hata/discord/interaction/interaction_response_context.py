@@ -63,7 +63,7 @@ class InteractionResponseContext:
         ----------
         coroutine : ``CoroutineType``
         """
-        Task(self._async(coroutine), KOKORO)
+        self.interaction_event._async_task = Task(self._async(coroutine), KOKORO)
         yield # skip a ready cycle
     
     
@@ -77,9 +77,13 @@ class InteractionResponseContext:
         ----------
         coroutine : ``CoroutineType``
         """
-        async with self:
-            self.interaction_event._set_async_task()
-            await coroutine
+        try:
+            
+            async with self:
+                await coroutine
+        
+        finally:
+            self.interaction_event._async_task = None
     
     
     async def __aenter__(self):

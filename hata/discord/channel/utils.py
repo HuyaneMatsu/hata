@@ -107,10 +107,10 @@ def create_partial_channel_from_id(channel_id, channel_type, guild_id):
     return channel
 
 
-def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None, nsfw=None, slowmode=None, bitrate=None,
-        user_limit=None, region=None, video_quality_mode=None, archived=None, archived_at=None,
-        auto_archive_after=None, open_=None, default_auto_archive_after=None, banner=None, parent=None, guild=None,
-        overwrites=None):
+def cr_pg_channel_object(name, type_, *, permission_overwrites=..., topic=..., nsfw=..., slowmode=..., bitrate=...,
+        user_limit=..., region=..., video_quality_mode=..., archived=..., archived_at=...,
+        auto_archive_after=..., open_=..., default_auto_archive_after=..., banner=..., parent=..., guild=None,
+        overwrites=...):
     """
     Creates a json serializable object representing a ``GuildChannelBase``.
     
@@ -120,16 +120,16 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
         The name of the channel. Can be between `1` and `100` characters.
     type_ : `int`, ``ChannelGuildBase`` subclass
         The channel's type.
-    permission_overwrites : `list` of ``cr_p_permission_overwrite_object`` returns, Optional (Keyword only)
+    permission_overwrites : `None`, `list` of ``cr_p_permission_overwrite_object`` returns, Optional (Keyword only)
         A list of permission overwrites of the channel. The list should contain json serializable permission
         overwrites made by the ``cr_p_permission_overwrite_object`` function.
-    topic : `str`, Optional (Keyword only)
+    topic : `None`, `str`, Optional (Keyword only)
         The channel's topic.
-    nsfw : `bool`, Optional (Keyword only)
+    nsfw : `None`, `bool`, Optional (Keyword only)
         Whether the channel is marked as nsfw.
-    slowmode : int`, Optional (Keyword only)
+    slowmode : `None`, `int`, Optional (Keyword only)
         The channel's slowmode value.
-    bitrate : `int`, Optional (Keyword only)
+    bitrate : `None`, `int`, Optional (Keyword only)
         The channel's bitrate.
     user_limit : `int`, Optional (Keyword only)
         The channel's user limit.
@@ -144,9 +144,9 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
     auto_archive_after : `None`, `int`, Optional (Keyword only)
         Duration in minutes to automatically archive the thread after recent activity. Can be one of: `3600`, `86400`,
         `259200`, `604800`.
-    open_ : `bool`, Optional (Keyword only)
+    open_ : `None`, `bool`, Optional (Keyword only)
         Whether the thread channel is open.
-    default_auto_archive_after : `None`, `int`
+    default_auto_archive_after : `None`, `int`, Optional (Keyword only)
         The default duration (in seconds) for newly created threads to automatically archive the themselves. Can be
         one of: `3600`, `86400`, `259200`, `604800`.
     banner : `None`, `bytes-like`, Optional (Keyword only)
@@ -155,7 +155,7 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
         The channel's parent. If the parent is under a guild, leave it empty.
     category : `None`, ``ChannelCategory``, `int`, Optional (Keyword only)
         Deprecated, please use `parent` parameter instead.
-    guild : `None`, ``Guild``, Optional (Keyword only)
+    guild : `None`, ``Guild`` = `None`, Optional (Keyword only)
         Reference guild used for validation purposes. Defaults to `None`.
     
     Returns
@@ -262,7 +262,7 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
     }
     
     if not issubclass(channel_type, ChannelThread):
-        if permission_overwrites is None:
+        if permission_overwrites is ...:
             permission_overwrites = []
         else:
             if __debug__:
@@ -283,7 +283,7 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
         channel_data['permission_overwrites'] = permission_overwrites
     
     
-    if (topic is not None):
+    if (topic is not ...):
         if __debug__:
             if not issubclass(channel_type, (ChannelText, ChannelStage)):
                 raise AssertionError(
@@ -310,7 +310,7 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
         channel_data['topic'] = topic
     
     
-    if (nsfw is not None):
+    if (nsfw is not ...):
         if __debug__:
             if not issubclass(channel_type, (ChannelText, ChannelStore)):
                 raise AssertionError(
@@ -326,7 +326,7 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
         channel_data['nsfw'] = nsfw
     
     
-    if (slowmode is not None):
+    if (slowmode is not ...):
         if __debug__:
             if not issubclass(channel_type, (ChannelText, ChannelThread)):
                 raise AssertionError(
@@ -347,7 +347,7 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
         channel_data['rate_limit_per_user'] = slowmode
     
     
-    if (banner is not None):
+    if (banner is not ...):
         if __debug__:
             if not issubclass(channel_type, ChannelText):
                 raise AssertionError(
@@ -373,7 +373,7 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
         data['banner'] = banner_data
     
     
-    if (bitrate is not None):
+    if (bitrate is not ...):
         if __debug__:
             if not issubclass(channel_type, ChannelVoiceBase):
                 raise AssertionError(
@@ -400,7 +400,7 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
         channel_data['bitrate'] = bitrate
     
     
-    if (user_limit is not None):
+    if (user_limit is not ...):
         if __debug__:
             if not issubclass(channel_type, ChannelVoiceBase):
                 raise AssertionError(
@@ -423,7 +423,7 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
         channel_data['user_limit'] = user_limit
     
     
-    if (region is not None):
+    if (region is not ...):
         if __debug__:
             if not issubclass(channel_type, ChannelVoiceBase):
                 raise AssertionError(
@@ -444,7 +444,7 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
         channel_data['rtc_region'] = region_value
     
     
-    if (video_quality_mode is not None):
+    if (video_quality_mode is not ...):
         if __debug__:
             if not issubclass(channel_type, ChannelVoice):
                 raise AssertionError(
@@ -465,7 +465,7 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
         channel_data['video_quality_mode'] = video_quality_mode_value
     
     
-    if (archived is not None):
+    if (archived is not ...):
         if __debug__:
             if not issubclass(channel_type, ChannelThread):
                 raise AssertionError(
@@ -481,7 +481,7 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
         channel_data['archived'] = archived
     
     
-    if (archived_at is not None):
+    if (archived_at is not ...):
         if __debug__:
             if not issubclass(channel_type, ChannelThread):
                 raise AssertionError(
@@ -497,7 +497,7 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
         channel_data['archive_timestamp'] =  datetime_to_timestamp(archived_at)
     
     
-    if (auto_archive_after is not None):
+    if (auto_archive_after is not ...):
         if __debug__:
             if not issubclass(channel_type, ChannelThread):
                 raise AssertionError(
@@ -519,7 +519,7 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
         channel_data['auto_archive_duration'] = auto_archive_after // 60
     
     
-    if (default_auto_archive_after is not None):
+    if (default_auto_archive_after is not ...):
         if __debug__:
             if not issubclass(channel_type, (ChannelText, ChannelForum)):
                 raise AssertionError(
@@ -542,7 +542,7 @@ def cr_pg_channel_object(name, type_, *, permission_overwrites=None, topic=None,
         channel_data['default_auto_archive_duration'] = default_auto_archive_after // 60
     
     
-    if (open_ is not None):
+    if (open_ is not ...):
         if __debug__:
             if not issubclass(channel_type, ChannelThread):
                 raise AssertionError(

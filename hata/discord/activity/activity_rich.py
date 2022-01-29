@@ -66,8 +66,8 @@ class ActivityRich(ActivityBase):
         'state', 'sync_id', 'timestamps', 'type', 'url'
     )
     
-    def __new__(cls, name, *, application_id=..., assets=None, created_at=..., details=None, flags=..., id_=...,
-            party=None, secrets=None, session_id=None, state=None, sync_id=None, timestamps=None, type_=..., url=None):
+    def __new__(cls, name, *, application_id=None, assets=None, created_at=None, details=None, flags=None, id_=None,
+            party=None, secrets=None, session_id=None, state=None, sync_id=None, timestamps=None, type_=None, url=None):
         """
         Creates a new activity with the given parameters.
         
@@ -75,31 +75,33 @@ class ActivityRich(ActivityBase):
         ----------
         name : `str`
             The name of the activity.
-        application_id : `None`, `int`, Optional (Keyword only)
-            The id of the activity's application. Defaults to `0`.
-        assets : `None`, ``ActivityAssets``, Optional (Keyword only)
-             The activity's assets. Defaults to `None`.
-        details : `None`, `str`, Optional (Keyword only)
-            What the player is currently doing. Defaults to `None`.
-        flags : ``ActivityFlag``, `int`, Optional (Keyword only)
-            The flags of the activity. Defaults to `ActivityFlag(0)`
-        id_ : `int`, Optional (Keyword only)
-            The id of the activity. Defaults to `0`.
-        party : `None`, ``ActivityParty``, Optional (Keyword only)
+        application_id : `None`, `int` = `None`, Optional (Keyword only)
+            The id of the activity's application.
+        assets : `None`, ``ActivityAssets`` = `None`, Optional (Keyword only)
+             The activity's assets.
+        created_at : `None`, `datetime` = `None`, Optional (Keyword only)
+            When the activity was created.
+        details : `None`, `str` = `None`, Optional (Keyword only)
+            What the player is currently doing.
+        flags : `None`, ``ActivityFlag``, `int` = `None`, Optional (Keyword only)
+            The flags of the activity.
+        id_ : `int` = `None`, Optional (Keyword only)
+            The id of the activity.
+        party : `None`, ``ActivityParty`` = `None`, Optional (Keyword only)
             The activity's party.
-        secrets : `None`, ``ActivitySecret``, Optional (Keyword only)
-            The activity's secrets. Defaults to `None`.
-        session_id : `None`, `str`, Optional (Keyword only)
-            Spotify activity's session's id. Defaults to `None`.
-        state : `None`, `str`, Optional (Keyword only)
-            The player's current party status. Defaults to `None`.
-        sync_id : `None`, `str`, Optional (Keyword only)
-            The ID of the currently playing track of a spotify activity. Defaults to `None`.
-        timestamps : `None`, ``ActivityTimestamps``, Optional (Keyword only)
+        secrets : `None`, ``ActivitySecret`` = `None`, Optional (Keyword only)
+            The activity's secrets.
+        session_id : `None`, `str` = `None`, Optional (Keyword only)
+            Spotify activity's session's id.
+        state : `None`, `str` = `None`, Optional (Keyword only)
+            The player's current party status.
+        sync_id : `None`, `str` = `None`, Optional (Keyword only)
+            The ID of the currently playing track of a spotify activity.
+        timestamps : `None`, ``ActivityTimestamps`` = `None`, Optional (Keyword only)
             The activity's timestamps.
-        type_ : `int`, Optional (Keyword only)
+        type_ : `None`, `int` = `None`, Optional (Keyword only)
             The type value of the activity.
-        url : `None`, `str`, Optional (Keyword only)
+        url : `None`, `str` = `None`, Optional (Keyword only)
             The url of the activity. Only twitch and youtube urls are supported.
         
         Returns
@@ -135,7 +137,7 @@ class ActivityRich(ActivityBase):
         """
         name = preconvert_str(name, 'name', 1, 2048)
         
-        if application_id is ...:
+        if application_id is None:
             application_id = 0
         else:
             application_id = preconvert_snowflake(application_id, 'application_id')
@@ -148,7 +150,7 @@ class ActivityRich(ActivityBase):
             )
         
         
-        if created_at is ...:
+        if created_at is None:
             created_at = DISCORD_EPOCH_START
         else:
             if not isinstance(created_at, datetime):
@@ -163,14 +165,14 @@ class ActivityRich(ActivityBase):
                 details = None
         
         
-        if (flags is ...):
+        if (flags is None):
             flags = ActivityFlag(0)
         else:
             flags = preconvert_flag(flags, 'flags', ActivityFlag)
         
         
         
-        if id_ is ...:
+        if id_ is None:
             id_ = 0
         else:
             id_ = preconvert_snowflake(id_, 'id_')
@@ -227,7 +229,7 @@ class ActivityRich(ActivityBase):
             else:
                 url = None
         
-        if type_ is ...:
+        if type_ is None:
             type_ = ACTIVITY_TYPES.game
         else:
             type_ = preconvert_int_options(type_, 'type_', VALID_RICH_ACTIVITY_TYPES)

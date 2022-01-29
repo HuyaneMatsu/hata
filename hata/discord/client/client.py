@@ -285,34 +285,46 @@ class Client(ClientUserPBase):
         ----------
         token : `str`
             A valid Discord token, what the client can use to interact with the Discord API.
-        secret: `str`, Optional (Keyword only)
+        
+        secret: `None`, `str` = `None`, Optional (Keyword only)
             Client secret used when interacting with oauth2 endpoints.
-        client_id : `None`, `int`, `str`, Optional (Keyword only)
+        
+        client_id : `None`, `int`, `str` = `None`, Optional (Keyword only)
             The client's `.id`. If passed as `str` will be converted to `int`. Defaults to `None`.
             
             When more `Client` is started up, it is recommended to define their id initially. The wrapper can detect the
             clients' id-s only when they are logging in, so the wrapper  needs to check if a ``User`` alter_ego of the
             client exists anywhere, and if does will replace it.
-        application_id : `None`, `int`, `str`, Optional (Keyword only)
+        
+        application_id : `None`, `int`, `str` = `None`, Optional (Keyword only)
             The client's application id. If passed as `str`, will be converted to `int`. Defaults to `None`.
-        activity : ``ActivityBase``, Optional (Keyword only)
+        
+        activity : ``ActivityBase`` = `ACTIVITY_UNKNOWN`, Optional (Keyword only)
             The client's preferred activity.
-        status : `str`, ``Status``, Optional (Keyword only)
+        
+        status : `None`, `str`, ``Status`` = `None`, Optional (Keyword only)
             The client's preferred status.
-        is_bot : `bool`, Optional (Keyword only)
-            Whether the client is a bot user or a user account. Defaults to False.
-        shard_count : `int`, Optional (Keyword only)
+        
+        is_bot : `bool` = `True` Optional (Keyword only)
+            Whether the client is a bot user or a user account.
+        
+        shard_count : `int` = `0`, Optional (Keyword only)
             The client's shard count. If passed as lower as the recommended one, will reshard itself.
-        intents : ``IntentFlag``, Optional (Keyword only)
+        
+        intents : ``IntentFlag`` = `-1`, Optional (Keyword only)
              By default the client will launch up using all the intent flags. Negative values will be interpreted as
              using all the intents, meanwhile if passed as positive, non existing intent flags are removed.
-        additional_owners : `None`, `int`, ``ClientUserBase``, `iterable` of (`int`, ``ClientUserBase``), \
-                Optional (Keyword only)
+         
+        additional_owners : `None`, `int`, ``ClientUserBase``, `iterable` of (`int`, ``ClientUserBase``) = `None` \
+                ,Optional (Keyword only)
             Additional users to return `True` if ``is_owner` is called.
-        extensions : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
+        
+        extensions : `None`, `str`, `iterable` of `str` = `None`, Optional (Keyword only)
             The extension's name to setup on the client.
-        http_debug_options: `None`, `str`, `iterable` of `str`, Optional (Keyword only)
+        
+        http_debug_options: `None`, `str`, `iterable` of `str` = `None`, Optional (Keyword only)
             Http client debug options for the client.
+        
         **kwargs : keyword parameters
             Additional predefined attributes for the client.
         
@@ -320,6 +332,7 @@ class Client(ClientUserPBase):
         ----------------
         name : `str`, Optional (Keyword only)
             The client's ``.name``.
+        
         discriminator : `int`, `str`, Optional (Keyword only)
             The client's ``.discriminator``. Is accepted as `str` as well and will be converted to `int`.
         
@@ -633,6 +646,7 @@ class Client(ClientUserPBase):
         
         return self
     
+    
     def _maybe_replace_alter_ego(self):
         """
         Replaces the type ``User`` alter_ego of the client if applicable.
@@ -682,6 +696,7 @@ class Client(ClientUserPBase):
             break
         
         USERS[client_id] = self
+    
     
     def _init_on_ready(self, data):
         """
@@ -744,7 +759,9 @@ class Client(ClientUserPBase):
         """
         if self.status in (Status.offline, Status.invisible):
             return ''
+        
         return 'web'
+    
     
     def _delete(self):
         """
@@ -872,8 +889,8 @@ class Client(ClientUserPBase):
             return (await response.read())
     
     
-    async def client_edit(self, *, avatar=..., banner=..., banner_color=..., bio=..., name=None, # Generic
-        password=None, new_password=None, email=None, house=... # User account only
+    async def client_edit(self, *, avatar=..., banner=..., banner_color=..., bio=..., name=..., # Generic
+        password=..., new_password=..., email=..., house=... # User account only
     ):
         """
         Edits the client. Only the provided parameters will be changed. Every parameter what refers to a user
@@ -1025,7 +1042,7 @@ class Client(ClientUserPBase):
             data['bio'] = bio
         
         
-        if (name is not None):
+        if (name is not ...):
             if __debug__:
                 if not isinstance(name, str):
                     raise AssertionError(
@@ -1043,7 +1060,7 @@ class Client(ClientUserPBase):
         
         if not self.is_bot:
             if __debug__:
-                if password is None:
+                if password is ...:
                     raise AssertionError(
                         f'`password` is must for non bots, got {password!r}.'
                     )
@@ -1056,7 +1073,7 @@ class Client(ClientUserPBase):
             data['password'] = password
             
             
-            if (email is not None):
+            if (email is not ...):
                 if __debug__:
                     if not isinstance(email, str):
                         raise AssertionError(
@@ -1066,7 +1083,7 @@ class Client(ClientUserPBase):
                 data['email'] = email
             
             
-            if (new_password is not None):
+            if (new_password is not ...):
                 if __debug__:
                     if not isinstance(new_password, str):
                         raise AssertionError(
@@ -1122,7 +1139,7 @@ class Client(ClientUserPBase):
         timed_out_until : `None`, `datetime`, Optional (Keyword only)
             Till when the client is timed out. Pass it as `None` to remove it.
         
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Will show up at the respective guild's audit logs.
         
         Raises
@@ -1264,8 +1281,8 @@ class Client(ClientUserPBase):
             The new activity of the Client.
         status : `str`, ``Status``, Optional (Keyword only)
             The new status of the client.
-        afk : `bool`, Optional (Keyword only)
-            Whether the client is afk or not (?). Defaults to `False`.
+        afk : `bool` = `False`, Optional (Keyword only)
+            Whether the client is afk or not (?).
         
         Raises
         ------
@@ -1284,7 +1301,7 @@ class Client(ClientUserPBase):
         return await self.client_edit_presence(**kwargs)
     
     
-    async def client_edit_presence(self, *, activity=..., status=None, afk=False):
+    async def client_edit_presence(self, *, activity=..., status=..., afk=False):
         """
         Changes the client's presence (status and activity). If a parameter is not defined, it will not be changed.
         
@@ -1296,8 +1313,8 @@ class Client(ClientUserPBase):
             The new activity of the Client.
         status : `str`, ``Status``, Optional (Keyword only)
             The new status of the client.
-        afk : `bool`, Optional (Keyword only)
-            Whether the client is afk or not (?). Defaults to `False`.
+        afk : `bool` = `False`, Optional (Keyword only)
+            Whether the client is afk or not (?).
         
         Raises
         ------
@@ -1309,7 +1326,7 @@ class Client(ClientUserPBase):
         AssertionError
             - If `afk` was not given as `bool`.
         """
-        if status is None:
+        if status is ...:
             status = self._status
         else:
             status = preconvert_preinstanced_type(status, 'status', Status)
@@ -1702,19 +1719,25 @@ class Client(ClientUserPBase):
         ----------
         guild : ``Guild``, `int`
             The guild, where the user is going to be added.
+        
         access: ``OA2Access``, ``UserOA2``, `str`
             The access of the user, who will be added.
-        user : ```ClientUserBase``, `int`, Optional
+        
+        user : `None`, ```ClientUserBase`` = `None`, `int`, Optional
             Defines which user will be added to the guild. The `access` must refer to this specified user.
             
             This field is optional if access is passed as an ``UserOA2`` object.
-        nick : `str`, Optional (Keyword only)
+        
+        nick : `None`, `str` = `None`, Optional (Keyword only)
             The nickname, which with the user will be added.
-        roles : `None`, `list` of (``Role``, `int`), Optional (Keyword only)
+        
+        roles : `None`, `list` of (``Role``, `int`) = `None`, Optional (Keyword only)
             The roles to add the user with.
-        mute : `bool`, Optional (Keyword only)
+        
+        mute : `bool` = `False`, Optional (Keyword only)
             Whether the user should be added as muted.
-        deaf : `bool`, Optional (Keyword only)
+        
+        deaf : `bool` = `False`, Optional (Keyword only)
             Whether the user should be added as deafen.
         
         Raises
@@ -1767,8 +1790,10 @@ class Client(ClientUserPBase):
                     )
             
             user_id = access.id
+        
         elif isinstance(access, str):
             access_token = access
+        
         else:
             raise TypeError(
                 f'`access` can be `{OA2Access.__name__}`, `{UserOA2.__name__}`, `str`, got '
@@ -1977,9 +2002,9 @@ class Client(ClientUserPBase):
             The achievement's description.
         icon : `bytes-like`
             The achievement's icon. Can have `'jpg'`, `'png'`, `'webp'`, `'gif'` format.
-        secret : `bool`, Optional (Keyword only)
+        secret : `bool` = `False`, Optional (Keyword only)
             Secret achievements will *not* be shown to the user until they've unlocked them.
-        secure : `bool`, Optional (Keyword only)
+        secure : `bool` = `False`, Optional (Keyword only)
             Secure achievements can only be set via HTTP calls from your server, not by a game client using the SDK.
         
         Returns
@@ -2054,7 +2079,7 @@ class Client(ClientUserPBase):
         return Achievement(data)
     
     
-    async def achievement_edit(self, achievement, *, name=None, description=None, secret=None, secure=None, icon=None):
+    async def achievement_edit(self, achievement, *, name=..., description=..., secret=..., secure=..., icon=...):
         """
         Edits the passed achievement with the specified parameters. All parameter is optional.
         
@@ -2100,7 +2125,7 @@ class Client(ClientUserPBase):
         
         data = {}
         
-        if (name is not None):
+        if (name is not ...):
             if __debug__:
                 if not isinstance(name, str):
                     raise AssertionError(
@@ -2111,7 +2136,7 @@ class Client(ClientUserPBase):
                 'default': name,
             }
         
-        if (description is not None):
+        if (description is not ...):
             if __debug__:
                 if not isinstance(description, str):
                     raise AssertionError(
@@ -2122,7 +2147,7 @@ class Client(ClientUserPBase):
                 'default': description,
             }
         
-        if (secret is not None):
+        if (secret is not ...):
             if __debug__:
                 if not isinstance(secret, bool):
                     raise AssertionError(
@@ -2131,7 +2156,7 @@ class Client(ClientUserPBase):
             
             data['secret'] = secret
         
-        if (secure is not None):
+        if (secure is not ...):
             if __debug__:
                 if not isinstance(secret, bool):
                     raise AssertionError(
@@ -2140,7 +2165,7 @@ class Client(ClientUserPBase):
             
             data['secure'] = secure
         
-        if (icon is not None):
+        if (icon is not ...):
             icon_type = icon.__class__
             if not isinstance(icon, (bytes, bytearray, memoryview)):
                 raise TypeError(
@@ -2764,9 +2789,9 @@ class Client(ClientUserPBase):
             If not set, then the channel will keep it's current parent. If the parameter is set ``Guild`` or to
             `None`, then the  channel will be moved under the guild itself, Or if passed as ``ChannelCategory``,
             then the channel will be moved under it.
-        lock_permissions : `bool`, Optional (Keyword only)
+        lock_permissions : `bool` = `False`, Optional (Keyword only)
             If you want to sync the permissions with the new category set it to `True`. Defaults to `False`.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -2963,8 +2988,8 @@ class Client(ClientUserPBase):
         await self.http.channel_move(guild.id, data, reason)
     
     
-    async def channel_edit(self, channel, *, name=None, topic=None, nsfw=None, slowmode=None, user_limit=None,
-            bitrate=None, region=..., video_quality_mode=None, type_=None, default_auto_archive_after=None, banner=...,
+    async def channel_edit(self, channel, *, name=..., topic=..., nsfw=..., slowmode=..., user_limit=...,
+            bitrate=..., region=..., video_quality_mode=..., type_=..., default_auto_archive_after=..., banner=...,
             reason=None):
         """
         Edits the given guild channel. Different channel types accept different parameters, so make sure to not pass
@@ -3002,7 +3027,7 @@ class Client(ClientUserPBase):
         banner : `None`, `bytes-like`, Optional (Keyword only)
              The new banner of the channel. Can be `'jpg'`, `'png'`, `'webp'` image's raw data. by passing it as
             `None`, you can remove the current one.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -3042,7 +3067,7 @@ class Client(ClientUserPBase):
         
         data = {}
         
-        if (name is not None):
+        if (name is not ...):
             if __debug__:
                 if not isinstance(name, str):
                     raise AssertionError(
@@ -3059,7 +3084,7 @@ class Client(ClientUserPBase):
             data['name'] = name
         
         
-        if (topic is not None):
+        if (topic is not ...):
             if __debug__:
                 if (channel is not None):
                     if not isinstance(channel, (ChannelText, ChannelStage)):
@@ -3090,7 +3115,7 @@ class Client(ClientUserPBase):
             data['topic'] = topic
         
         
-        if (type_ is not None):
+        if (type_ is not ...):
             if __debug__:
                 if (channel is not None):
                     if not isinstance(channel, ChannelText):
@@ -3112,7 +3137,7 @@ class Client(ClientUserPBase):
             data['type'] = type_
         
         
-        if (nsfw is not None):
+        if (nsfw is not ...):
             if __debug__:
                 if (channel is not None):
                     if not isinstance(channel, (ChannelText, ChannelStore)):
@@ -3129,7 +3154,7 @@ class Client(ClientUserPBase):
             data['nsfw'] = nsfw
         
         
-        if (slowmode is not None):
+        if (slowmode is not ...):
             if __debug__:
                 if (channel is not None):
                     if not isinstance(channel, ChannelText):
@@ -3151,7 +3176,7 @@ class Client(ClientUserPBase):
             data['rate_limit_per_user'] = slowmode
         
         
-        if (bitrate is not None):
+        if (bitrate is not ...):
             if __debug__:
                 if (channel is not None):
                     if not isinstance(channel, ChannelVoiceBase):
@@ -3183,7 +3208,7 @@ class Client(ClientUserPBase):
             data['bitrate'] = bitrate
         
         
-        if (user_limit is not None):
+        if (user_limit is not ...):
             if __debug__:
                 if (channel is not None):
                     if not isinstance(channel, ChannelVoiceBase):
@@ -3224,7 +3249,7 @@ class Client(ClientUserPBase):
             data['rtc_region'] = region_value
         
         
-        if (video_quality_mode is not None):
+        if (video_quality_mode is not ...):
             if __debug__:
                 if (channel is not None):
                     if not isinstance(channel, ChannelVoice):
@@ -3245,7 +3270,7 @@ class Client(ClientUserPBase):
             data['video_quality_mode'] = video_quality_mode_value
         
         
-        if (default_auto_archive_after is not None):
+        if (default_auto_archive_after is not ...):
             if __debug__:
                 if not issubclass(channel_type, (ChannelText, ChannelForum)):
                     raise AssertionError(
@@ -3266,6 +3291,7 @@ class Client(ClientUserPBase):
                     )
             
             channel_data['default_auto_archive_duration'] = default_auto_archive_after // 60
+        
         
         if (banner is not ...):
             if __debug__:
@@ -3312,9 +3338,9 @@ class Client(ClientUserPBase):
             The guild where the channel will be created.
         name : `str`
             The created channel's name.
-        type_ : `int`, ``ChannelGuildBase`` subclass, Optional
+        type_ : `int`, ``ChannelGuildBase`` subclass = ``ChannelText``, Optional
             The type of the created channel. Defaults to ``ChannelText``.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the `guild`'s audit logs.
         **kwargs : Keyword parameters
             Additional keyword parameters to describe the created channel.
@@ -3328,7 +3354,7 @@ class Client(ClientUserPBase):
             The channel's topic.
         nsfw : `bool`, Optional (Keyword only)
             Whether the channel is marked as nsfw.
-        slowmode : int`, Optional (Keyword only)
+        slowmode : `int`, Optional (Keyword only)
             The channel's slowmode value.
         bitrate : `int`, Optional (Keyword only)
             The channel's bitrate.
@@ -3405,7 +3431,7 @@ class Client(ClientUserPBase):
         ----------
         channel : ``ChannelGuildBase``, `int`
             The channel to delete.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -3467,6 +3493,8 @@ class Client(ClientUserPBase):
                         f'`source_channel` must be type 5 (announcements) channel, got {source_channel}.'
                     )
         
+        target_channel_id = get_channel_id(target_channel, ChannelText)
+        
         data = {
             'webhook_channel_id': target_channel_id,
         }
@@ -3491,18 +3519,18 @@ class Client(ClientUserPBase):
         ----------
         channel : ``ChannelTextBase``, `int`
             The channel from where we want to request the messages.
-        limit : `int`, Optional
+        limit : `int` = `100`, Optional
             The amount of messages to request. Can be between 1 and 100.
-        after : `int`, ``DiscordEntity``, `datetime`, Optional (Keyword only)
+        after : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
             The timestamp after the requested messages were created.
-        around : `int`, ``DiscordEntity``, `datetime`, Optional (Keyword only)
+        around : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
             The timestamp around the requested messages were created.
-        before : `int`, ``DiscordEntity``, `datetime`, Optional (Keyword only)
+        before : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
             The timestamp before the requested messages were created.
         
         Returns
         -------
-        messages : `list` of ``Message`` objects
+        messages : `list` of ``Message``
         
         Raises
         ------
@@ -3572,7 +3600,7 @@ class Client(ClientUserPBase):
         ----------
         channel : ``ChannelTextBase``
             The channel from where we want to request the messages.
-        limit : `int`, Optional
+        limit : `int` = `100`, Optional
             The amount of messages to request. Can be between 1 and 100.
         
         Returns
@@ -3676,7 +3704,7 @@ class Client(ClientUserPBase):
                 `tuple` (`int`, `int`)
             The text channel where the message will be sent, or the message on what you want to reply.
         
-        content : `str`, ``EmbedBase``, `Any`, Optional
+        content : `None`, `str`, ``EmbedBase``, `Any` = `None`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
             if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
             
@@ -3687,32 +3715,33 @@ class Client(ClientUserPBase):
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
         
         components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
-                ``ComponentBase``), Optional (Keyword only)
+                ``ComponentBase``) = `None`, Optional (Keyword only)
             Components attached to the message.
             
             > `components` do not count towards having any content in the message.
         
-        embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
+        embed : ``EmbedBase``, `list` of ``EmbedBase`` = `None`, Optional (Keyword only)
             The embedded content of the message.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
         
-        file : `Any`, Optional (Keyword only)
+        file : `None`, `Any` = `None`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
         
-        reply_fail_fallback : `bool`, Optional (Keyword only)
+        reply_fail_fallback : `bool` = `False`, Optional (Keyword only)
             Whether normal message should be sent if the referenced message is deleted. Defaults to `False`.
         
-        nonce : `str`, Optional (Keyword only)
+        nonce : `None`, `str` = `None`, Optional (Keyword only)
             Used for optimistic message sending. Will shop up at the message's data.
         
-        sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`)
+        sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`) = `None` \
+                , Optional (Keyword only)
             Sticker or stickers to send within the message.
         
-        suppress_embeds : `bool`, Optional (Keyword only)
+        suppress_embeds : `bool` = `False`, Optional (Keyword only)
             Whether the message's embeds should be suppressed initially.
         
-        tts : `bool`, Optional (Keyword only)
+        tts : `bool` = `False`, Optional (Keyword only)
             Whether the message is text-to-speech.
         
         Returns
@@ -3900,7 +3929,7 @@ class Client(ClientUserPBase):
         if suppress_embeds:
             message_data['flags'] = MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS
         
-        message_data = add_file_to_message_data(message_data, file, contains_content)
+        message_data = add_file_to_message_data(message_data, file, contains_content, False)
         if message_data is None:
             return
         
@@ -3919,7 +3948,7 @@ class Client(ClientUserPBase):
         ----------
         message : ``Message``, ``MessageReference``, ``MessageRepr``, `tuple` (`int`, `int`)
             The message to delete.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -3971,7 +4000,7 @@ class Client(ClientUserPBase):
         messages : (`list`, `set`, `tuple`) of \
                 (``Message``, ``MessageReference``, ``MessageRepr``, `tuple` (`int`, `int`))
             The messages to delete.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -4098,15 +4127,15 @@ class Client(ClientUserPBase):
         ----------
         channel : ``ChannelTextBase``
             The channel, where the deletion should take place.
-        after : `int`, ``DiscordEntity``, `datetime`, Optional (Keyword only)
+        after : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
             The timestamp after the messages were created, which will be deleted.
-        before : `int`, ``DiscordEntity``, `datetime`, Optional (Keyword only)
+        before : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
             The timestamp before the messages were created, which will be deleted.
-        limit : `int`, Optional (Keyword only)
+        limit : `None`, `int` = `None`, Optional (Keyword only)
             The maximal amount of messages to delete.
-        filter : `callable`, Optional (Keyword only)
+        filter : `None`, `callable` = `None`, Optional (Keyword only)
             A callable filter, what should accept a message object as parameter and return either `True`, `False`.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -4444,15 +4473,15 @@ class Client(ClientUserPBase):
         ----------
         channel : ``ChannelTextBase``
             The channel, where the deletion should take place.
-        after : `int`, ``DiscordEntity``, `datetime`, Optional (Keyword only)
+        after : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
             The timestamp after the messages were created, which will be deleted.
-        before : `int`, ``DiscordEntity``, `datetime`, Optional (Keyword only)
+        before : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
             The timestamp before the messages were created, which will be deleted.
-        limit : `int`, Optional (Keyword only)
+        limit : `None`, `int` = `None`, Optional (Keyword only)
             The maximal amount of messages to delete.
-        filter : `callable`, Optional (Keyword only)
+        filter : `None`, `callable` = `None`, Optional (Keyword only)
             A callable filter, what should accept a message object as parameter and return either `True`, `False`.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -4825,7 +4854,7 @@ class Client(ClientUserPBase):
                 continue
     
     
-    async def message_edit(self, message, content=..., *, embed=..., file=None, allowed_mentions=..., components=...,
+    async def message_edit(self, message, content=..., *, embed=..., file=..., allowed_mentions=..., components=...,
             suppress=..., suppress_embeds=...):
         """
         Edits the given `message`.
@@ -4836,7 +4865,7 @@ class Client(ClientUserPBase):
         ----------
         message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
             The message to edit.
-        content : `str`, ``EmbedBase``, `Any`, Optional
+        content : `None`, `str`, ``EmbedBase``, `Any`, Optional
             The new content of the message.
             
             If given as `str` then the message's content will be edited with it. If given as any non ``EmbedBase``
@@ -4849,7 +4878,7 @@ class Client(ClientUserPBase):
             If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
             raised.
         
-        file : `Any`, Optional (Keyword only)
+        file : `None`, `Any`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
         
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
@@ -4861,10 +4890,12 @@ class Client(ClientUserPBase):
             Components attached to the message.
             
             Pass it as `None` remove the actual ones.
+        
         suppress : `bool`, Optional (Keyword only)
             Whether the message's embeds should be suppressed or unsuppressed.
             
             Deprecated, please use `suppress_embeds` parameter instead.
+        
         suppress_embeds : `bool`, Optional (Keyword only)
             Whether the message's embeds should be suppressed or unsuppressed.
         
@@ -4951,7 +4982,7 @@ class Client(ClientUserPBase):
             
             message_data['flags'] = flags
         
-        message_data = add_file_to_message_data(message_data, file, True)
+        message_data = add_file_to_message_data(message_data, file, True, True)
         if (message_data is None):
             return
         
@@ -4968,7 +4999,7 @@ class Client(ClientUserPBase):
         ----------
         message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
             The message, what's embeds will be (un)suppressed.
-        suppress_embeds : `bool`, Optional
+        suppress_embeds : `bool` = `True`, Optional
             Whether the message's embeds would be suppressed or unsuppressed.
         
         Raises
@@ -5262,9 +5293,9 @@ class Client(ClientUserPBase):
         ----------
         channel : ``ChannelTextBase``, `int`
             The channel from were the messages will be requested.
-        start : `int`, Optional
+        start : `int` = `0`, Optional
             The first message's index at the channel to be requested. Defaults to `0`.
-        end : `int`
+        end : `int` = `100`, Optional
             The last message's index at the channel to be requested. Defaults to `100`.
         
         Returns
@@ -5360,7 +5391,7 @@ class Client(ClientUserPBase):
         ----------
         channel : ``ChannelTextBase``  or `int`
             The channel from were the messages will be requested.
-        chunk_size : `int`, Optional (Keyword only)
+        chunk_size : `int` = `99`, Optional (Keyword only)
             The amount of messages to request when the currently loaded history is exhausted. For message chaining
             it is preferably `99`.
         
@@ -5412,7 +5443,7 @@ class Client(ClientUserPBase):
         await self.http.typing(channel_id)
     
     
-    def keep_typing(self, channel, timeout=300.):
+    def keep_typing(self, channel, timeout=300.0):
         """
         Returns a context manager which will keep sending typing events at the channel. Can be used to indicate that
         the bot is working.
@@ -5421,7 +5452,7 @@ class Client(ClientUserPBase):
         ----------
         channel ``ChannelTextBase``, `int`
             The channel where typing will be triggered.
-        timeout : `float`, Optional
+        timeout : `float` = `300.0`, Optional
             The maximal duration for the ``Typer`` to keep typing.
         
         Returns
@@ -5614,9 +5645,9 @@ class Client(ClientUserPBase):
             The message, what's reactions will be requested.
         emoji : ``Emoji``, `str`
             The emoji, what's reactors will be requested.
-        limit : `None`, `int`, Optional (Keyword only)
+        limit : `None`, `int` = `None`, Optional (Keyword only)
             The amount of users to request. Can be in range [1:100]. Defaults to 25 by Discord.
-        after : `int`, ``DiscordEntity``, `datetime`, Optional (Keyword only)
+        after : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
             The timestamp after the message's reactors were created.
         
         Returns
@@ -5880,7 +5911,7 @@ class Client(ClientUserPBase):
             The guild from where the user will be removed.
         user : ``ClientUserBase``, `int`
             The user to delete from the guild.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the guild's audit logs.
         
         Raises
@@ -6229,9 +6260,9 @@ class Client(ClientUserPBase):
             The guild from where the user will be banned.
         user : ``ClientUserBase``, `int`
             The user to ban from the guild.
-        delete_message_days : `int`, Optional (Keyword only)
+        delete_message_days : `int` = `0`, Optional (Keyword only)
             How much days back the user's messages should be deleted. Can be in range [0:7].
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the guild's audit logs.
         
         Raises
@@ -6286,7 +6317,7 @@ class Client(ClientUserPBase):
             The guild from where the user will be unbanned.
         user : ``ClientUserBase``, `int`
             The user to unban at the guild.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the guild's audit logs.
         
         Raises
@@ -6416,30 +6447,33 @@ class Client(ClientUserPBase):
 ##        if not CACHE_USER:
 ##            return
 ##
-##        old_ids=set(guild.users)
-##        data={'limit':1000,'after':'0'}
+##        old_ids = set(guild.users)
+##        data = {'limit': 1000, 'after': '0'}
 ##        while True:
 ##            user_datas = await self.http.guild_users(guild.id, data)
 ##            for user_data in user_datas:
-##                user=User._create_and_update(user_data, guild)
+##                user = User._create_and_update(user_data, guild)
 ##                try:
 ##                    old_ids.remove(user.id)
 ##                except KeyError:
 ##                    pass
-##             if len(user_datas)<1000:
+##
+##             if len(user_datas)< 1 000:
 ##                 break
-##             data['after']=user_datas[999]['user']['id']
+##
+##             data['after'] = user_datas[999]['user']['id']
+##
 ##        del data
 ##
 ##        for id_ in old_ids:
 ##            try:
-##               user=guild.users.pop(id_)
+##               user = guild.users.pop(id_)
 ##           except KeyError:
 ##               continue #huh?
 ##           try:
 ##               del user.guild_profiles[guild.id]
 ##           except KeyError:
-##               pass #huh??
+##               pass # huh??
     
     async def guild_leave(self, guild):
         """
@@ -6505,29 +6539,30 @@ class Client(ClientUserPBase):
         ----------
         name : `str`
             The name of the new guild.
-        icon : `None`, `bytes-like`, Optional (Keyword only)
+        icon : `None`, `bytes-like` = `None`, Optional (Keyword only)
             The icon of the new guild.
-        roles : `None`, `list` of ``cr_p_role_object`` returns, Optional (Keyword only)
+        roles : `None`, `list` of ``cr_p_role_object`` returns = `None`, Optional (Keyword only)
             A list of roles of the new guild. It should contain json serializable roles made by the
             ``cr_p_role_object`` function.
-        channels : `None`, `list` of ``cr_pg_channel_object`` returns, Optional (Keyword only)
+        channels : `None`, `list` of ``cr_pg_channel_object`` returns = `None`, Optional (Keyword only)
             A list of channels of the new guild.  It should contain json serializable channels made by the
             ``cr_p_role_object`` function.
-        afk_channel_id : `int`, Optional (Keyword only)
+        afk_channel_id : `None`, `int` = `None`, Optional (Keyword only)
             The id of the guild's afk channel. The id should be one of the channel's id from `channels`.
         system_channel_id: `int`, Optional (Keyword only)
             The id of the guild's system channel. The id should be one of the channel's id from `channels`.
-        afk_timeout : `int`, Optional (Keyword only)
+        afk_timeout : `None`, `int` = `None`, Optional (Keyword only)
             The afk timeout for the users at the guild's afk channel.
-        region : ``VoiceRegion``, `str`, Optional (Keyword only)
+        region : ``VoiceRegion``, `str` = `VoiceRegion.eu_central`, Optional (Keyword only)
             The voice region of the new guild.
-        verification_level : ``VerificationLevel``, `int`, Optional (Keyword only)
+        verification_level : ``VerificationLevel``, `int` = `VerificationLevel.medium`, Optional (Keyword only)
             The verification level of the new guild.
-        message_notification : ``MessageNotificationLevel``, `int`, Optional (Keyword only)
+        message_notification : ``MessageNotificationLevel``, `int` = `MessageNotificationLevel.only_mentions`
+                , Optional (Keyword only)
             The message notification level of the new guild.
-        content_filter : ``ContentFilterLevel``, `int`, Optional (Keyword only)
+        content_filter : ``ContentFilterLevel``, `int` = `ContentFilterLevel.disabled`, Optional (Keyword only)
             The content filter level of the guild.
-        boost_progress_bar_enabled : `bool`, Optional (Keyword only)
+        boost_progress_bar_enabled : `None`, `bool` = `None`, Optional (Keyword only)
             Whether the guild has the boost progress bar should be enabled.
         
         Returns
@@ -6725,12 +6760,12 @@ class Client(ClientUserPBase):
             Where the pruning will be executed.
         days : `int`
             The amount of days since at least the users need to inactive. Can be in range [1:30].
-        roles : `None`, `list` of (``Role``, `int`s), Optional (Keyword only)
+        roles : `None`, `list` of (``Role``, `int`) = `None`, Optional (Keyword only)
             By default pruning will kick only the users without any roles, but it can defined which roles to include.
-        count : `bool`, Optional (Keyword only)
+        count : `bool` = `False`, Optional (Keyword only)
             Whether the method should return how much user were pruned, but if the guild is large it will be set to
             `False` anyways. Defaults to `False`.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Will show up at the guild's audit logs.
         
         Returns
@@ -6824,7 +6859,7 @@ class Client(ClientUserPBase):
             Where the counting of prunable users will be done.
         days : `int`
             The amount of days since at least the users need to inactive. Can be in range [1:30].
-        roles : `None`, `list` of ``Role`` objects, Optional (Keyword only)
+        roles : `None`, `list` of (``Role``, `int`) = `None`, Optional (Keyword only)
             By default pruning would kick only the users without any roles, but it can be defined which roles to
             include.
         
@@ -6880,11 +6915,11 @@ class Client(ClientUserPBase):
         return data.get('pruned', None)
     
     
-    async def guild_edit(self, guild, *, name=None, icon=..., invite_splash=..., discovery_splash=..., banner=...,
-            afk_channel=..., system_channel=..., rules_channel=..., public_updates_channel=..., owner=None, region=None,
-            afk_timeout=None, verification_level=None, content_filter=None, message_notification=None, description=...,
-            preferred_locale=None, system_channel_flags=None, add_feature=None, remove_feature=None,
-            boost_progress_bar_enabled=None, reason=None):
+    async def guild_edit(self, guild, *, name=..., icon=..., invite_splash=..., discovery_splash=..., banner=...,
+            afk_channel=..., system_channel=..., rules_channel=..., public_updates_channel=..., owner=..., region=...,
+            afk_timeout=..., verification_level=..., content_filter=..., message_notification=..., description=...,
+            preferred_locale=..., system_channel_flags=..., add_feature=..., remove_feature=...,
+            boost_progress_bar_enabled=..., reason=None):
         """
         Edits the guild with the given parameters.
         
@@ -6947,7 +6982,7 @@ class Client(ClientUserPBase):
             Guild feature(s) to remove from the guild's.
         boost_progress_bar_enabled : `bool`, Optional (Keyword only)
             Whether the guild has the boost progress bar should be enabled.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the guild's audit logs.
         
         Raises
@@ -6990,7 +7025,7 @@ class Client(ClientUserPBase):
         
         guild, guild_id = get_guild_and_id(guild)
         
-        if (name is not None):
+        if (name is not ...):
             if __debug__:
                 if not isinstance(name, str):
                     raise AssertionError(
@@ -7201,7 +7236,7 @@ class Client(ClientUserPBase):
             data['public_updates_channel_id'] = public_updates_channel_id
         
         
-        if (owner is not None):
+        if (owner is not ...):
             if __debug__:
                 if (guild is not None) and (guild.owner_id != self.id):
                     raise AssertionError(
@@ -7222,7 +7257,7 @@ class Client(ClientUserPBase):
             data['owner_id'] = owner_id
         
         
-        if (region is not None):
+        if (region is not ...):
             if isinstance(region, VoiceRegion):
                 region_value = region.value
             elif isinstance(region, str):
@@ -7235,7 +7270,7 @@ class Client(ClientUserPBase):
             data['region'] = region_value
         
         
-        if (afk_timeout is not None):
+        if (afk_timeout is not ...):
             if __debug__:
                 if not isinstance(afk_timeout, int):
                     raise AssertionError(
@@ -7250,7 +7285,7 @@ class Client(ClientUserPBase):
             data['afk_timeout'] = afk_timeout
         
         
-        if (verification_level is not None):
+        if (verification_level is not ...):
             if isinstance(verification_level, VerificationLevel):
                 verification_level_value = verification_level.value
             elif isinstance(verification_level, int):
@@ -7264,7 +7299,7 @@ class Client(ClientUserPBase):
             data['verification_level'] = verification_level_value
         
         
-        if (content_filter is not None):
+        if (content_filter is not ...):
             if isinstance(content_filter, ContentFilterLevel):
                 content_filter_value = content_filter.value
             elif isinstance(content_filter, int):
@@ -7278,7 +7313,7 @@ class Client(ClientUserPBase):
             data['explicit_content_filter'] = content_filter_value
         
         
-        if (message_notification is not None):
+        if (message_notification is not ...):
             if isinstance(message_notification, MessageNotificationLevel):
                 message_notification_value = message_notification.value
             elif isinstance(message_notification, int):
@@ -7313,7 +7348,7 @@ class Client(ClientUserPBase):
             data['description'] = description
         
         
-        if (preferred_locale is not None):
+        if (preferred_locale is not ...):
             if __debug__:
                 if (guild is not None) and (not COMMUNITY_FEATURES.intersection(guild.features)):
                     raise AssertionError(
@@ -7330,7 +7365,7 @@ class Client(ClientUserPBase):
             data['preferred_locale'] = preferred_locale
         
         
-        if (system_channel_flags is not None):
+        if (system_channel_flags is not ...):
             if __debug__:
                 if not isinstance(system_channel_flags, int):
                     raise AssertionError(
@@ -7341,7 +7376,7 @@ class Client(ClientUserPBase):
             data['system_channel_flags'] = system_channel_flags
         
         
-        if (add_feature is not None) or (remove_feature is not None):
+        if (add_feature is not ...) or (remove_feature is not ...):
             # Collect actual
             features = set()
             if (guild is not None):
@@ -7351,7 +7386,7 @@ class Client(ClientUserPBase):
             # Collect added
             # Use GOTO
             while True:
-                if add_feature is None:
+                if add_feature is ...:
                     break
                 
                 if isinstance(add_feature, GuildFeature):
@@ -7390,7 +7425,7 @@ class Client(ClientUserPBase):
             # Collect removed
             
             while True:
-                if remove_feature is None:
+                if remove_feature is ...:
                     break
                 
                 if isinstance(remove_feature, GuildFeature):
@@ -7429,7 +7464,7 @@ class Client(ClientUserPBase):
             data['features'] = features
         
         
-        if (boost_progress_bar_enabled is not None):
+        if (boost_progress_bar_enabled is not ...):
             if __debug__:
                 if not isinstance(boost_progress_bar_enabled, bool):
                     raise AssertionError(
@@ -8098,15 +8133,15 @@ class Client(ClientUserPBase):
         ----------
         guild : ``Guild``, `int`
             The guild, what's audit logs will be requested.
-        limit : `int`, Optional
+        limit : `int` = `100`, Optional
             The amount of audit logs to request. Can be between 1 and 100. Defaults to 100.
-        before : `int`, ``DiscordEntity``, `datetime`, Optional (Keyword only)
+        before : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
             The timestamp before the audit log entries wer created.
-        after : `int`, ``DiscordEntity``, `datetime`, Optional (Keyword only)
+        after : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
             The timestamp after the audit log entries wer created.
-        user : `None`, ```ClientUserBase``, `int`, Optional (Keyword only)
+        user : `None`, ```ClientUserBase``, `int` = `None`, Optional (Keyword only)
             Whether the audit logs should be filtered only to those, which were created by the given user.
-        event : `None`, ``AuditLogEvent``, `int`, Optional (Keyword only)
+        event : `None`, ``AuditLogEvent``, `int` = `None`, Optional (Keyword only)
             Whether the audit logs should be filtered only on the given event.
         
         Returns
@@ -8119,8 +8154,8 @@ class Client(ClientUserPBase):
         TypeError
             - If `guild` was not given neither as ``Guild``, nor as `int`.
             - If `after`, `before` was passed with an unexpected type.
-            - If `user` was not given neither as `None`, ``ClientUserBase`` nor as `int`.
-            - If `event` as not not given neither as `None`, ``AuditLogEvent`` nor as `int`.
+            - If `user` is neither `None`, ``ClientUserBase``, `int`.
+            - If `event` is neither `None`, ``AuditLogEvent``, `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -8193,9 +8228,9 @@ class Client(ClientUserPBase):
         ----------
         guild : ``Guild``, `int`
             The guild, what's audit logs will be requested.
-        user : `None`, ```ClientUserBase``, `int`, Optional (Keyword only)
+        user : `None`, ```ClientUserBase``, `int` = `None`, Optional (Keyword only)
             Whether the audit logs should be filtered only to those, which were created by the given user.
-        event : `None`, ``AuditLogEvent`, `int`, Optional (Keyword only)
+        event : `None`, ``AuditLogEvent``, `int` = `None`, Optional (Keyword only)
             Whether the audit logs should be filtered only on the given event.
         
         Returns
@@ -8206,7 +8241,7 @@ class Client(ClientUserPBase):
     
     # users
     
-    async def user_guild_profile_edit(self, guild, user, *, nick=..., deaf=None, mute=None, voice_channel=...,
+    async def user_guild_profile_edit(self, guild, user, *, nick=..., deaf=..., mute=..., voice_channel=...,
             roles=..., timed_out_until=..., reason=None):
         """
         Edits the user's guild profile at the given guild.
@@ -8233,7 +8268,7 @@ class Client(ClientUserPBase):
             The new roles of the user. Give it as `None` to remove all of the user's roles.
         timed_out_until : `None`, `datetime`, Optional (Keyword only)
             Till when the client is timed out. Pass it as `None` to remove it.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Will show up at the guild's audit logs.
         
         Raises
@@ -8295,7 +8330,7 @@ class Client(ClientUserPBase):
                 else:
                     data['nick'] = nick
                     
-        if (deaf is not None):
+        if (deaf is not ...):
             if __debug__:
                 if not isinstance(deaf, bool):
                     raise AssertionError(
@@ -8304,7 +8339,7 @@ class Client(ClientUserPBase):
             
             data['deaf'] = deaf
             
-        if (mute is not None):
+        if (mute is not ...):
             if __debug__:
                 if not isinstance(mute, bool):
                     raise AssertionError(
@@ -8383,7 +8418,7 @@ class Client(ClientUserPBase):
             The user who will get the role.
         role : ``Role``, `tuple` (`int`, `int`)
             The role to add on the user.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -8417,7 +8452,7 @@ class Client(ClientUserPBase):
             The user from who the role will be removed.
         role : ``Role``, `tuple` (`int`, `int`)
             The role to remove from the user.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -8590,7 +8625,7 @@ class Client(ClientUserPBase):
             The channel to edit.
         topic : `None`, `str`
             The new topic of the stage.
-        privacy_level : ``PrivacyLevel``, `int`, Optional (Keyword only)
+        privacy_level : ``PrivacyLevel``, `int` = `PrivacyLevel.guild_only`, Optional (Keyword only)
             The new privacy level of the stage. Defaults to guild only.
         
         Returns
@@ -8658,7 +8693,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``Stage``, ``ChannelStage``, `int`
+        stage : ``Stage``, ``ChannelStage``, `int`
             The stage to edit. Can be given as it's channel's identifier.
         topic : `str`
             The new topic of the stage.
@@ -8791,19 +8826,19 @@ class Client(ClientUserPBase):
             The event's name. It's length can be in range [1:100].
         start : `datetime``
             When the event will start.
-        description : `None`, `str`, Optional (Keyword only)
+        description : `None`, `str` = `None`, Optional (Keyword only)
             The event's description. It's length can be in range [0:1000].
-        end : `None`, `datetime` Optional (Keyword only)
+        end : `None`, `datetime` = `None`, Optional (Keyword only)
             When the event will end.
-        privacy_level : ``PrivacyLevel``, `int`, Optional (Keyword only)
+        privacy_level : ``PrivacyLevel``, `int` = `None`, Optional (Keyword only)
             The privacy level of the event. Whether it is global or guild only.
-        location : `str`, Optional (Keyword only)
+        location : `None`, `str` = `None`, Optional (Keyword only)
             The location, where the event will take place.
-        stage : ``ChannelStage``, `int`, Optional (Keyword only)
+        stage : `None`, ``ChannelStage``, `int` = `None`, Optional (Keyword only)
             The stage channel, where the event will take place.
-        voice : ``ChannelVoice``, `int`, Optional (Keyword only)
+        voice : `None`, ``ChannelVoice``, `int` = `None`, Optional (Keyword only)
             The voice channel, where the event will take place.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Returns
@@ -8930,7 +8965,7 @@ class Client(ClientUserPBase):
     # In theory you can edit the target entity is as well, but we will ignore it for now.
     
     async def scheduled_event_edit(self, scheduled_event, *, name=..., description=..., start=..., end=...,
-            privacy_level=..., status=..., location=None, stage=None, voice=None, reason=None):
+            privacy_level=..., status=..., location=..., stage=..., voice=..., reason=None):
         """
         Edits the given scheduled event.
         
@@ -8949,10 +8984,12 @@ class Client(ClientUserPBase):
         
         start : `datetime`, Optional (Keyword only)
             The new start of the scheduled event.
+        
         end : `None`, `datetime`
             The end of the of the scheduled event.
             
             Pass it as `None` to remove the old end.
+        
         privacy_level : ``PrivacyLevel``, `int`, Optional (Keyword only)
             The privacy level of the event. Whether it is global or guild only.
         
@@ -8961,11 +8998,14 @@ class Client(ClientUserPBase):
         
         location : `str`, Optional (Keyword only)
             The new location, where the event will take place.
+        
         stage : ``ChannelStage``, `int`, Optional (Keyword only)
             The new stage channel, where the event will take place.
+        
         voice : ``ChannelVoice``, `int`, Optional (Keyword only)
             The new voice channel, where the event will take place.
-        reason : `None`, `str`, Optional (Keyword only)
+        
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -9074,8 +9114,8 @@ class Client(ClientUserPBase):
             
             data['status'] = status_value
         
-        if (location is not None) or (stage is not None) or (voice is not None):
-            if (location is not None):
+        if (location is not ...) or (stage is not ...) or (voice is not ...):
+            if (location is not ...):
                 if __debug__:
                     if not isinstance(location, str):
                         raise AssertionError(
@@ -9086,12 +9126,12 @@ class Client(ClientUserPBase):
                 entity_metadata = {'location': location}
                 entity_type = ScheduledEventEntityType.location
             
-            elif (stage is not None):
+            elif (stage is not ...):
                 channel_id = get_channel_id(stage, ChannelStage)
                 entity_metadata = None
                 entity_type = ScheduledEventEntityType.stage
             
-            # elif (voice is not None):
+            # elif (voice is not ...):
             else:
                 channel_id = get_channel_id(voice, ChannelVoice)
                 entity_metadata = None
@@ -9140,7 +9180,7 @@ class Client(ClientUserPBase):
         ----------
         scheduled_event : ``ScheduledEvent``, `tuple` `int` and `int`
             The scheduled event to get.
-        force_update : `bool`
+        force_update : `bool` = `False`, Optional (Keyword only)
             Whether the scheduled event should be requested even if it supposed to be up to date.
         
         Returns
@@ -9213,11 +9253,11 @@ class Client(ClientUserPBase):
         ----------
         scheduled_event : ``ScheduledEvent``, `tuple` `int` and `int`
             The scheduled event to get.
-        limit : `int`, Optional (Keyword only)
+        limit : `None`, `int` = `None`, Optional (Keyword only)
             The amount of messages to request. Can be between 1 and 100.
-        after : `int`, ``DiscordEntity``, `datetime`, Optional (Keyword only)
+        after : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
             The timestamp after the subscribed users were created.
-        before : `int`, ``DiscordEntity``, `datetime`, Optional (Keyword only)
+        before : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
             The timestamp before the subscribed users were created.
         
         Returns
@@ -9413,18 +9453,20 @@ class Client(ClientUserPBase):
             The channel or message to create thread from.
             
             > If given as a channel instance, will create a private thread, else a public one.
+        
         name : `str`
             The created thread's name.
-        auto_archive_after : `None`, `int`, Optional (Keyword only)
+        
+        auto_archive_after : `None`, `int` = `None`, Optional (Keyword only)
             The duration in seconds after the thread auto archives. Can be any of `3600`, `86400`, `259200`, `604800`.
             
             > For `259200` seconds (or 3 days) or `604800` seconds (or 7 days) auto archive duration the guild needs
             > to be boosted.
         
-        type_ : `None`, `int`, Optional (Keyword only)
+        type_ : `None`, `int` = `None`, Optional (Keyword only)
             The thread channel's type to create. Can be either `10`,`11`,`12`.
         
-        invitable : `bool`, Optional (Keyword only)
+        invitable : `bool` = `True`, Optional (Keyword only)
             Whether non-moderators can invite other non-moderators to the threads. Only applicable for private threads.
             
             Applicable for private threads. Defaults to `True`.
@@ -9892,7 +9934,7 @@ class Client(ClientUserPBase):
         ----------
         user : ``ClientUserBase``, `int`
             The user, who will be requested.
-        force_update : `bool`
+        force_update : `bool` = `False`, Optional (Keyword only)
             Whether the user should be requested even if it supposed to be up to date.
         
         Returns
@@ -9989,7 +10031,7 @@ class Client(ClientUserPBase):
             The guild, where the user is.
         query : `name`
             The query string with what the user's name or nick should start.
-        limit : `int`, Optional
+        limit : `int` = `1`, Optional
             The maximal amount of users to return. Can be in range [1:1000], defaults to `1`.
         
         Returns
@@ -10165,8 +10207,8 @@ class Client(ClientUserPBase):
         return Integration(data)
     
     
-    async def integration_edit(self, integration, *, expire_behavior=None, expire_grace_period=None,
-            enable_emojis=None):
+    async def integration_edit(self, integration, *, expire_behavior=..., expire_grace_period=...,
+            enable_emojis=...):
         """
         Edits the given integration.
         
@@ -10176,11 +10218,11 @@ class Client(ClientUserPBase):
         ----------
         integration : ``Integration``
             The integration to edit.
-        expire_behavior : `None`, `int`, Optional (Keyword only)
+        expire_behavior : `int`, Optional (Keyword only)
             Can be `0` for kick or `1` for role  remove.
-        expire_grace_period : `None`, `int`, Optional (Keyword only)
+        expire_grace_period : `int`, Optional (Keyword only)
             The time in days, after the subscription will be ignored. Can be any of `(1, 3, 7, 14, 30)`.
-        enable_emojis : `None`, `bool`, Optional (Keyword only)
+        enable_emojis : `bool`, Optional (Keyword only)
             Whether the users can use the integration's emojis in Discord.
         
         Raises
@@ -10189,8 +10231,6 @@ class Client(ClientUserPBase):
             - If `expire_behavior` was not passed as `int`.
             - If `expire_grace_period` was not passed as `int`.
             - If `enable_emojis` was not passed as `bool`.
-        ValueError
-
         ConnectionError
             No internet connection.
         DiscordException
@@ -10220,7 +10260,7 @@ class Client(ClientUserPBase):
         
         data = {}
         
-        if expire_behavior is not None:
+        if expire_behavior is not ...:
             if __debug__:
                 if not isinstance(expire_behavior, int):
                     raise AssertionError(
@@ -10235,7 +10275,7 @@ class Client(ClientUserPBase):
             
             data['expire_behavior'] = expire_behavior
         
-        if expire_grace_period is not None:
+        if expire_grace_period is not ...:
             if __debug__:
                 if not isinstance(expire_grace_period, int):
                     raise AssertionError(
@@ -10251,7 +10291,7 @@ class Client(ClientUserPBase):
             data['expire_grace_period'] = expire_grace_period
    
         
-        if (enable_emojis is not None):
+        if (enable_emojis is not ...):
             if __debug__:
                 if not isinstance(enable_emojis, bool):
                     raise AssertionError(
@@ -10340,7 +10380,7 @@ class Client(ClientUserPBase):
         await self.http.integration_sync(role.guild_id, integration.id)
     
     
-    async def permission_overwrite_edit(self, channel, permission_overwrite, *, allow=None, deny=None, reason=None):
+    async def permission_overwrite_edit(self, channel, permission_overwrite, *, allow=..., deny=..., reason=None):
         """
         Edits the given permission overwrite.
         
@@ -10356,7 +10396,7 @@ class Client(ClientUserPBase):
             The permission overwrite's new allowed permission's value.
         deny : `None`, ``Permission``, `int`, Optional (Keyword only)
             The permission overwrite's new denied permission's value.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -10381,7 +10421,7 @@ class Client(ClientUserPBase):
                     f'{overwrite.__class__.__name__}; {overwrite!r}.'
                 )
         
-        if allow is None:
+        if allow is ...:
             allow = permission_overwrite.allow
         else:
             if __debug__:
@@ -10391,7 +10431,7 @@ class Client(ClientUserPBase):
                         f'{allow.__class__.__name__}; {allow!r}.'
                     )
         
-        if deny is None:
+        if deny is ...:
             deny = permission_overwrite.deny
         else:
             if __debug__:
@@ -10422,7 +10462,7 @@ class Client(ClientUserPBase):
             The channel where the permission overwrite is.
         permission_overwrite : ``PermissionOverwrite``
             The permission overwrite to delete.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
 
         Raises
@@ -10464,7 +10504,7 @@ class Client(ClientUserPBase):
             The permission overwrite's allowed permission's value.
         deny : ``Permission``, `int`
             The permission overwrite's denied permission's value.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Returns
@@ -10532,7 +10572,7 @@ class Client(ClientUserPBase):
             The channel of the created webhook.
         name : `str`
             The name of the new webhook. It's length can be in range [1:80].
-        avatar : `bytes-like`, Optional (Keyword only)
+        avatar : `None`, `bytes-like` = `None`, Optional (Keyword only)
             The webhook's avatar. Can be `'jpg'`, `'png'`, `'webp'`, `'gif'` image's raw data. However if set as
             `'gif'`, it will not have any animation.
             
@@ -10842,7 +10882,7 @@ class Client(ClientUserPBase):
         await self.http.webhook_delete_token(webhook_id, webhook_token)
     
     # later there gonna be more stuff that's why 2 different
-    async def webhook_edit(self, webhook, *, name=None, avatar=..., channel=None):
+    async def webhook_edit(self, webhook, *, name=..., avatar=..., channel=...):
         """
         Edits and updates the given webhook.
         
@@ -10883,7 +10923,7 @@ class Client(ClientUserPBase):
         
         data = {}
         
-        if (name is not None):
+        if (name is not ...):
             if __debug__:
                 if not isinstance(name, str):
                     raise AssertionError(
@@ -10925,7 +10965,7 @@ class Client(ClientUserPBase):
             
             data['avatar'] = avatar_data
         
-        if (channel is not None):
+        if (channel is not ...):
             if isinstance(channel, ChannelText):
                 channel_id = channel.id
             else:
@@ -10945,7 +10985,7 @@ class Client(ClientUserPBase):
         webhook._set_attributes(data)
     
     
-    async def webhook_edit_token(self, webhook, *, name=None, avatar=...):
+    async def webhook_edit_token(self, webhook, *, name=..., avatar=...):
         """
         Edits and updates the given webhook through Discord's webhook API.
         
@@ -10988,7 +11028,7 @@ class Client(ClientUserPBase):
         
         data = {}
         
-        if (name is not None):
+        if (name is not ...):
             if __debug__:
                 if not isinstance(name, str):
                     raise AssertionError(
@@ -11055,36 +11095,46 @@ class Client(ClientUserPBase):
         ----------
         webhook : ``Webhook``, `tuple` (`int`, `str`)
             The webhook through what will the message be sent.
-        content : `str`, ``EmbedBase``, `Any`, Optional
+        
+        content : `None`, `str`, ``EmbedBase``, `Any` = `None`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
             if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
             
             If given as ``EmbedBase``, then is sent as the message's embed.
             
-        embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
+        embed : `None`, ``EmbedBase``, `list` of ``EmbedBase`` = `None`, Optional (Keyword only)
             The embedded content of the message.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
             raised.
-        file : `Any`, Optional (Keyword only)
+        
+        file : `None`, `Any` = `None`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
+        
         allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
+            
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
+        
         components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
-                ``ComponentBase``), Optional (Keyword only)
+                ``ComponentBase``) = `None`, Optional (Keyword only)
             Components attached to the message.
             
             > `components` do not count towards having any content in the message.
-        tts : `bool`, Optional (Keyword only)
+        
+        tts : `bool` = `False`, Optional (Keyword only)
             Whether the message is text-to-speech.
-        name : `str`, Optional (Keyword only)
+        
+        name : `None`, `str` = `None`, Optional (Keyword only)
             The message's author's new name. Default to the webhook's name by Discord.
-        avatar_url : `str`, Optional (Keyword only)
+        
+        avatar_url : `None`, `str` = `None`, Optional (Keyword only)
             The message's author's avatar's url. Defaults to the webhook's avatar' url by Discord.
-        thread : `None`, `ChannelThread`, `int`, Optional (Keyword only)
+        
+        thread : `None`, `ChannelThread`, `int` = `None`, Optional (Keyword only)
             The thread of the webhook's channel where the message should be sent.
-        wait : `bool`, Optional (Keyword only)
+        
+        wait : `None`, `bool` = `None`, Optional (Keyword only)
             Whether we should wait for the message to send and receive it's data as well.
         
         Returns
@@ -11200,7 +11250,7 @@ class Client(ClientUserPBase):
             if name:
                 message_data['username'] = name
         
-        message_data = add_file_to_message_data(message_data, file, contains_content)
+        message_data = add_file_to_message_data(message_data, file, contains_content, False)
         if message_data is None:
             return
         
@@ -11236,8 +11286,8 @@ class Client(ClientUserPBase):
         return channel._create_new_message(message_data)
     
     
-    async def webhook_message_edit(self, webhook, message, content=..., *, embed=..., file=None, allowed_mentions=...,
-            components=None):
+    async def webhook_message_edit(self, webhook, message, content=..., *, embed=..., file=..., allowed_mentions=...,
+            components=...):
         """
         Edits the message sent by the given webhook. The message's author must be the webhook itself.
         
@@ -11245,26 +11295,32 @@ class Client(ClientUserPBase):
         ----------
         webhook : ``Webhook``, `tuple` (`int`, `str`)
             The webhook who created the message.
+        
         message : ``Message``, ``MessageRepr``, `int`
             The webhook's message to edit.
-        content : `str`, ``EmbedBase``, `Any`, Optional
+        
+        content : `None`, `str`, ``EmbedBase``, `Any`, Optional
             The new content of the message.
             
             If given as `str` then the message's content will be edited with it. If given as any non ``EmbedBase``
             instance, then it will be cased to string first.
             
             If given as ``EmbedBase``, then the message's embeds will be edited with it.
+        
         embed : `None`, ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
             > If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
             raised.
-        file : `Any`, Optional (Keyword only)
+        
+        file : `None`, `Any`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
+        
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
             for details.
+        
         components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
                 ``ComponentBase``), Optional (Keyword only)
             Components attached to the message.
@@ -11367,7 +11423,7 @@ class Client(ClientUserPBase):
         if (components is not ...):
             message_data['components'] = components
         
-        message_data = add_file_to_message_data(message_data, file, True)
+        message_data = add_file_to_message_data(message_data, file, True, True)
         
         # We receive the new message data, but we do not update the message, so dispatch events can get the difference.
         await self.http.webhook_message_edit(webhook_id, webhook_token, message_id, message_data)
@@ -11592,9 +11648,9 @@ class Client(ClientUserPBase):
             The emoji's name. It's length can be between `2` and `32`.
         image : `bytes-like`
             The emoji's icon.
-        roles : None` or (`list`, `set`, `tuple`) of (``Role``, `int`), Optional (Keyword only)
+        roles : None`, (`list`, `set`, `tuple`) of (``Role``, `int`) = `None`, Optional (Keyword only)
             Whether the created emoji should be limited only to users with any of the specified roles.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Will show up at the guild's audit logs.
         
         Returns
@@ -11619,7 +11675,7 @@ class Client(ClientUserPBase):
         -----
         Only some characters can be in the emoji's name, so every other character is filtered out.
         """
-        guild, guild_id = get_guild_and_id(guild)
+        guild_id = get_guild_id(guild)
         
         if __debug__:
             if not isinstance(name, str):
@@ -11667,9 +11723,6 @@ class Client(ClientUserPBase):
         
         data = await self.http.emoji_create(guild_id, data, reason)
         
-        if guild is None:
-            guild = create_partial_guild_from_id(guild_id)
-        
         emoji = Emoji(data, guild_id)
         emoji.user = self
         return emoji
@@ -11685,7 +11738,7 @@ class Client(ClientUserPBase):
         ----------
         emoji : ``Emoji``
             The emoji to delete.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Will show up at the respective guild's audit logs.
         
         Raises
@@ -11704,7 +11757,7 @@ class Client(ClientUserPBase):
         await self.http.emoji_delete(guild_id, emoji_id, reason=reason)
     
     
-    async def emoji_edit(self, emoji, *, name=None, roles=..., reason=None):
+    async def emoji_edit(self, emoji, *, name=..., roles=..., reason=None):
         """
         Edits the given emoji.
         
@@ -11719,7 +11772,7 @@ class Client(ClientUserPBase):
         roles : `None`, (`list`, `set`, `tuple`) of (``Role``, `int`), Optional (Keyword only)
             The roles to what is the role limited. By passing it as `None`, or as an empty `list` you can remove the
             current ones.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -11749,7 +11802,7 @@ class Client(ClientUserPBase):
         data = {}
         
         # name is required
-        if (name is None):
+        if (name is ...):
             name = emoji.name
         else:
             if __debug__:
@@ -11854,7 +11907,7 @@ class Client(ClientUserPBase):
             The guild, what's invite will be edited.
         vanity_code : `str`
             The new code of the guild's vanity invite.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the guild's audit logs.
         
         Raises
@@ -11889,14 +11942,14 @@ class Client(ClientUserPBase):
         ----------
         channel : ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``, ``ChannelStore``, ``ChannelDirectory``, `int`
             The channel of the created invite.
-        max_age : `int`, Optional (Keyword only)
+        max_age : `int` = `0`, Optional (Keyword only)
             After how much time (in seconds) will the invite expire. Defaults is never.
-        max_uses : `int`, Optional (Keyword only)
+        max_uses : `int` = `0`, Optional (Keyword only)
             How much times can the invite be used. Defaults to unlimited.
-        unique : `bool`, Optional (Keyword only)
-            Whether the created invite should be unique. Defaults to `True`.
-        temporary : `bool`, Optional (Keyword only)
-            Whether the invite should give only temporary membership. Defaults to `False`.
+        unique : `bool` = `True`, Optional (Keyword only)
+            Whether the created invite should be unique.
+        temporary : `bool` = `False`, Optional (Keyword only)
+            Whether the invite should give only temporary membership.
         
         Returns
         -------
@@ -11987,14 +12040,14 @@ class Client(ClientUserPBase):
             The guild where the user streams.
         user : ```ClientUserBase``, `int`
             The streaming user.
-        max_age : `int`, Optional (Keyword only)
+        max_age : `int` = `0`, Optional (Keyword only)
             After how much time (in seconds) will the invite expire. Defaults is never.
-        max_uses : `int`, Optional (Keyword only)
+        max_uses : `int` = `0`, Optional (Keyword only)
             How much times can the invite be used. Defaults to unlimited.
-        unique : `bool`, Optional (Keyword only)
-            Whether the created invite should be unique. Defaults to `True`.
-        temporary : `bool`, Optional (Keyword only)
-            Whether the invite should give only temporary membership. Defaults to `False`.
+        unique : `bool` = `True`, Optional (Keyword only)
+            Whether the created invite should be unique.
+        temporary : `bool` = `False`, Optional (Keyword only)
+            Whether the invite should give only temporary membership.
         
         Returns
         -------
@@ -12098,14 +12151,14 @@ class Client(ClientUserPBase):
             The embedded application to open in the voice channel.
             
             > The application must have `EMBEDDED_APPLICATION` flag.
-        max_age : `int`, Optional (Keyword only)
+        max_age : `int` = `0`, Optional (Keyword only)
             After how much time (in seconds) will the invite expire. Defaults is never.
-        max_uses : `int`, Optional (Keyword only)
+        max_uses : `int` = `0`, Optional (Keyword only)
             How much times can the invite be used. Defaults to unlimited.
-        unique : `bool`, Optional (Keyword only)
-            Whether the created invite should be unique. Defaults to `True`.
-        temporary : `bool`, Optional (Keyword only)
-            Whether the invite should give only temporary membership. Defaults to `False`.
+        unique : `bool` = `True`, Optional (Keyword only)
+            Whether the created invite should be unique.
+        temporary : `bool` = `False`, Optional (Keyword only)
+            Whether the invite should give only temporary membership.
         
         Returns
         -------
@@ -12197,14 +12250,14 @@ class Client(ClientUserPBase):
         
         Other Parameters
         ----------------
-        max_age : `int`, Optional (Keyword only)
+        max_age : `int` = `0`, Optional (Keyword only)
             After how much time (in seconds) will the invite expire. Defaults is never.
-        max_uses : `int`, Optional (Keyword only)
+        max_uses : `int` = `0`, Optional (Keyword only)
             How much times can the invite be used. Defaults to unlimited.
-        unique : `bool`, Optional (Keyword only)
-            Whether the created invite should be unique. Defaults to `True`.
-        temporary : `bool`, Optional (Keyword only)
-            Whether the invite should give only temporary membership. Defaults to `False`.
+        unique : `bool` = `True`, Optional (Keyword only)
+            Whether the created invite should be unique.
+        temporary : `bool` = `False`, Optional (Keyword only)
+            Whether the invite should give only temporary membership.
         
         Returns
         -------
@@ -12289,8 +12342,8 @@ class Client(ClientUserPBase):
         ----------
         invite : ``Invite``, `str`
             The invites code.
-        with_count : `bool`, Optional (Keyword only)
-            Whether the invite should contain the respective guild's user and online user count. Defaults to `True`.
+        with_count : `bool` = `True`, Optional (Keyword only)
+            Whether the invite should contain the respective guild's user and online user count.
         
         Returns
         -------
@@ -12421,7 +12474,7 @@ class Client(ClientUserPBase):
         ----------
         invite : ``Invite``
             The invite to delete.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -12454,8 +12507,8 @@ class Client(ClientUserPBase):
     
     # Role management
     
-    async def role_edit(self, role, *, name=None, color=None, separated=None, mentionable=None, permissions=None,
-            position=None, icon=..., reason=None):
+    async def role_edit(self, role, *, name=..., color=..., separated=..., mentionable=..., permissions=...,
+            position=..., icon=..., reason=None):
         """
         Edits the role with the given parameters.
         
@@ -12467,15 +12520,15 @@ class Client(ClientUserPBase):
             The role to edit.
         name : `str`, Optional (Keyword only)
             The role's new name. It's length ca be in range [2:32].
-        color : `None`, ``Color``, `int`, Optional (Keyword only)
+        color : ``Color``, `int`, Optional (Keyword only)
             The role's new color.
-        separated : `None`, `bool`, Optional (Keyword only)
+        separated : `bool`, Optional (Keyword only)
             Whether the users with this role should be shown up as separated from the others.
-        mentionable : `None`, `bool`, Optional (Keyword only)
+        mentionable : `bool`, Optional (Keyword only)
             Whether the role should be mentionable.
-        permissions : `None`, ``Permission``, `int`, Optional (Keyword only)
+        permissions : ``Permission``, `int`, Optional (Keyword only)
             The new permission value of the role.
-        position : `None`, `int`, Optional (Keyword only)
+        position : `int`, Optional (Keyword only)
             The role's new position.
         icon : `None`, ``Emoji``, `bytes-like`, Optional (Keyword only)
             The new icon of the role. Can be `'jpg'`, `'png'`, `'webp'`, `'gif'` image's raw data.
@@ -12484,7 +12537,7 @@ class Client(ClientUserPBase):
             
             Pass it as `None` to remove the role's current icon.
         
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -12522,7 +12575,7 @@ class Client(ClientUserPBase):
         
         data = {}
         
-        if (name is not None):
+        if (name is not ...):
             if __debug__:
                 if not isinstance(name, str):
                     raise AssertionError(
@@ -12537,7 +12590,7 @@ class Client(ClientUserPBase):
             
             data['name'] = name
         
-        if (color is not None):
+        if (color is not ...):
             if __debug__:
                 if not isinstance(color, int):
                     raise AssertionError(
@@ -12546,7 +12599,7 @@ class Client(ClientUserPBase):
             
             data['color'] = color
         
-        if (separated is not None):
+        if (separated is not ...):
             if __debug__:
                 if not isinstance(separated, bool):
                     raise AssertionError(
@@ -12555,7 +12608,7 @@ class Client(ClientUserPBase):
             
             data['hoist'] = separated
         
-        if (mentionable is not None):
+        if (mentionable is not ...):
             if __debug__:
                 if not isinstance(mentionable, bool):
                     raise AssertionError(
@@ -12564,7 +12617,7 @@ class Client(ClientUserPBase):
             
             data['mentionable'] = mentionable
         
-        if (permissions is not None):
+        if (permissions is not ...):
             if __debug__:
                 if not isinstance(permissions, int):
                     raise AssertionError(
@@ -12621,7 +12674,7 @@ class Client(ClientUserPBase):
         ----------
         role : ``Role``, `tuple` (`int`, `int`)
             The role to delete
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -12655,19 +12708,19 @@ class Client(ClientUserPBase):
         ----------
         guild : ``Guild``, `int`
             The guild where the role will be created.
-        name : `str`, Optional (Keyword only)
+        name : `None`, `str` = `None`, Optional (Keyword only)
             The created role's name. It's length can be in range [2:32].
-        color : ``Color``, `int`, Optional (Keyword only)
+        color : `None`, ``Color``, `int` = `None`, Optional (Keyword only)
             The created role's color.
-        separated : `bool`, Optional (Keyword only)
+        separated : `None`, `bool` = `None`, Optional (Keyword only)
             Whether the users with the created role should show up as separated from the others.
-        mentionable : `bool`, Optional (Keyword only)
+        mentionable : `None`, `bool` = `None`, Optional (Keyword only)
             Whether the created role should be mentionable.
-        permissions : ``Permission``, `int`, Optional (Keyword only)
+        permissions : `None`, ``Permission``, `int` = `None`, Optional (Keyword only)
             The permission value of the created role.
-        icon : `None`, ``Emoji``, `bytes-like`, Optional (Keyword only)
+        icon : `None`, ``Emoji``, `bytes-like` = `None`, Optional (Keyword only)
             The icon for the role.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the guild's audit logs.
         
         Raises
@@ -12797,7 +12850,7 @@ class Client(ClientUserPBase):
             The role to move.
         position : `int`
             The position to move the given role.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -12932,7 +12985,7 @@ class Client(ClientUserPBase):
         """
         Validates `roles` parameter of ``.role_reorder``.
         
-        This method is an asynchronous generator
+        This method is an asynchronous generator.
         
         Parameters
         ----------
@@ -12975,7 +13028,7 @@ class Client(ClientUserPBase):
         ----------
         roles : (`dict` like or `iterable`) of `tuple` (``Role`` or (`tuple` (`int, `int`), `int`) items
             A `dict`, `list`, `set`, `tuple`, which contains role-position items.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
         Raises
@@ -14076,9 +14129,9 @@ class Client(ClientUserPBase):
         ----------
         interaction : ``InteractionEvent``
             Interaction to acknowledge
-        wait : `bool`, Optional
+        wait : `bool` = `True`, Optional
             Whether the interaction should be ensured asynchronously.
-        show_for_invoking_user_only : `bool`, Optional (Keyword only)
+        show_for_invoking_user_only : `bool` = `False`, Optional (Keyword only)
             Whether the sent message should only be shown to the invoking user. Defaults to `False`.
         
         Raises
@@ -14279,35 +14332,36 @@ class Client(ClientUserPBase):
         ----------
         interaction : ``InteractionEvent``
             Interaction to respond to.
-        content : `str`, ``EmbedBase``, `Any`, Optional
+        
+        content : `None`, `str`, ``EmbedBase``, `Any` = `None`, Optional
             The interaction response's content if given. If given as `str` or empty string, then no content will be
             sent, meanwhile if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
             
             If given as ``EmbedBase``, then is sent as the message's embed.
         
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
+        allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
         
         components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
-                ``ComponentBase``), Optional (Keyword only)
+                ``ComponentBase``) = `None`, Optional (Keyword only)
             Components attached to the message.
             
             > `components` do not count towards having any content in the message.
         
-        embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
+        embed : `None`, ``EmbedBase``, `list` of ``EmbedBase`` = `None`, Optional (Keyword only)
             The embedded content of the interaction response.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
+            If `embed` and `content` parameters are both given as ``EmbedBase``, then `AssertionError` is
             raised.
         
-        suppress_embeds : `bool`, Optional (Keyword only)
+        suppress_embeds : `bool` = `False`, Optional (Keyword only)
             Whether the message's embeds should be suppressed initially.
         
-        show_for_invoking_user_only : `bool`, Optional (Keyword only)
+        show_for_invoking_user_only : `bool` = `False`, Optional (Keyword only)
             Whether the sent message should only be shown to the invoking user. Defaults to `False`.
         
-        tts : `bool`, Optional (Keyword only)
+        tts : `bool` = `False`, Optional (Keyword only)
             Whether the message is text-to-speech.
         
         Raises
@@ -14465,7 +14519,7 @@ class Client(ClientUserPBase):
         ----------
         interaction : ``InteractionEvent``
             Interaction to acknowledge
-        wait : `bool`, Optional
+        wait : `bool` = `True`, Optional
             Whether the interaction should be ensured asynchronously.
         
         Raises
@@ -14509,7 +14563,7 @@ class Client(ClientUserPBase):
             await context.ensure(coroutine)
     
     
-    async def interaction_response_message_edit(self, interaction, content=..., *, embed=..., file=None,
+    async def interaction_response_message_edit(self, interaction, content=..., *, embed=..., file=...,
             allowed_mentions=..., components=...):
         """
         Edits the given `interaction`'s source response. If the source interaction event was only deferred, this call
@@ -14524,20 +14578,25 @@ class Client(ClientUserPBase):
         ----------
         interaction : ``InteractionEvent``
             Interaction, what's source response message will be edited.
-        content : `str`, ``EmbedBase``, `Any`, Optional
+        
+        content : `None`, `str`, ``EmbedBase``, `Any`, Optional
             The new content of the message.
             
             If given as ``EmbedBase``, then the message's embeds will be edited with it.
+        
         embed : `None`, ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
             raised.
-        file : `Any`, Optional (Keyword only)
+        
+        file : `None`, `Any`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
+        
         allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
+        
         components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
                 ``ComponentBase``), Optional (Keyword only)
             Components attached to the message.
@@ -14616,7 +14675,7 @@ class Client(ClientUserPBase):
         if (components is not ...):
             message_data['components'] = components
         
-        message_data = add_file_to_message_data(message_data, file, True)
+        message_data = add_file_to_message_data(message_data, file, True, True)
         
         async with InteractionResponseContext(interaction, False, False):
             await self.http.interaction_response_message_edit(application_id, interaction.id, interaction.token,
@@ -14634,15 +14693,18 @@ class Client(ClientUserPBase):
         ----------
         interaction : ``InteractionEvent``
             Interaction, what's source response message will be edited.
-        content : `str`, ``EmbedBase``, `Any`, Optional
+        
+        content : `None`, `str`, ``EmbedBase``, `Any`, Optional
             The new content of the message.
             
             If given as ``EmbedBase``, then the message's embeds will be edited with it.
+        
         embed : `None`, ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
             raised.
+        
         allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
@@ -14804,40 +14866,40 @@ class Client(ClientUserPBase):
         interaction : ``InteractionEvent``
             Interaction to create followup message with.
         
-        content : `str`, ``EmbedBase``, `Any`, Optional
+        content : `None`, `str`, ``EmbedBase``, `Any` = `True`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
             if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
             
             If given as ``EmbedBase``, then is sent as the message's embed.
         
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
+        allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
         
 
         components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
-                ``ComponentBase``), Optional (Keyword only)
+                ``ComponentBase``) = `None`, Optional (Keyword only)
             Components attached to the message.
             
             > `components` do not count towards having any content in the message.
         
-        embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
+        embed : `None`, ``EmbedBase``, `list` of ``EmbedBase`` = `None`, Optional (Keyword only)
             The embedded content of the message.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
         
-        file : `Any`, Optional
+        file : `None`, `Any` = `None`, Optional
             A file to send. Check ``create_file_form`` for details.
         
-        show_for_invoking_user_only : `bool`, Optional (Keyword only)
+        show_for_invoking_user_only : `bool` = `False`, Optional (Keyword only)
             Whether the sent message should only be shown to the invoking user. Defaults to `False`.
             
             If given as `True` only the message's content, embeds and components will be processed by Discord.
         
-        suppress_embeds : `bool`, Optional (Keyword only)
+        suppress_embeds : `bool` = `False`, Optional (Keyword only)
             Whether the message's embeds should be suppressed initially.
         
-        tts : `bool`, Optional (Keyword only)
+        tts : `bool` = `False`, Optional (Keyword only)
             Whether the message is text-to-speech. Defaults to `False`.
         
         
@@ -14952,7 +15014,7 @@ class Client(ClientUserPBase):
         if flags:
             message_data['flags'] = flags
         
-        message_data = add_file_to_message_data(message_data, file, contains_content)
+        message_data = add_file_to_message_data(message_data, file, contains_content, False)
         if message_data is None:
             return
         
@@ -14965,7 +15027,7 @@ class Client(ClientUserPBase):
         return message
     
     
-    async def interaction_followup_message_edit(self, interaction, message, content=..., *, embed=..., file=None,
+    async def interaction_followup_message_edit(self, interaction, message, content=..., *, embed=..., file=...,
             allowed_mentions=..., components=...):
         """
         Edits the given interaction followup message.
@@ -14976,9 +15038,11 @@ class Client(ClientUserPBase):
         ----------
         interaction : ``InteractionEvent``
             Interaction with what the followup message was sent with.
+        
         message : ``Message``, ``MessageRepr``, `int`
             The interaction followup's message to edit.
-        content : `str`, ``EmbedBase``, `Any`, Optional
+        
+        content : `None`, `str`, ``EmbedBase``, `Any`, Optional
             The new content of the message.
             
             If given as `str` then the message's content will be edited with it. If given as any non ``EmbedBase``
@@ -14987,16 +15051,20 @@ class Client(ClientUserPBase):
             By passing it as empty string, you can remove the message's content.
             
             If given as ``EmbedBase``, then the message's embeds will be edited with it.
+        
         embed : `None`, ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
-        file : `Any`, Optional (Keyword only)
+        
+        file : `None`, `Any`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
+        
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
             for details.
+        
         components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
                 ``ComponentBase``), Optional (Keyword only)
             Components attached to the message.
@@ -15088,7 +15156,7 @@ class Client(ClientUserPBase):
         if (components is not ...):
             message_data['components'] = components
         
-        message_data = add_file_to_message_data(message_data, file, True)
+        message_data = add_file_to_message_data(message_data, file, True, True)
         
         async with InteractionResponseContext(interaction, False, False):
             # We receive the new message data, but we do not update the message, so dispatch events can get the
@@ -15227,7 +15295,7 @@ class Client(ClientUserPBase):
         ----------
         sticker : ``Sticker``, `int`
             The sticker, who will be requested.
-        force_update : `bool`, Optional (Keyword only)
+        force_update : `bool` = `False`, Optional (Keyword only)
             Whether the sticker should be requested even if it supposed to be up to date.
         
         Returns
@@ -15258,7 +15326,7 @@ class Client(ClientUserPBase):
         return sticker
     
     
-    async def sticker_pack_get(self, sticker_pack, force_update=False):
+    async def sticker_pack_get(self, sticker_pack, *, force_update=False):
         """
         Gets the sticker packs. If the sticker-packs are already loaded, updates them.
         
@@ -15268,7 +15336,7 @@ class Client(ClientUserPBase):
         ----------
         sticker_pack : ``StickerPack``, `int`
             The sticker pack' identifier.
-        force_update : `bool`, Optional
+        force_update : `bool` = `False`, Optional (Keyword only)
             Whether the sticker-pack should be requested even if it supposed to be up to date.
         
         Returns
@@ -15292,7 +15360,7 @@ class Client(ClientUserPBase):
         return sticker_pack
     
     
-    async def sticker_pack_get_all(self, force_update=False):
+    async def sticker_pack_get_all(self, *, force_update=False):
         """
         Gets the sticker packs. If the sticker-packs are already loaded, updates them.
         
@@ -15300,7 +15368,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        force_update : `bool`, Optional
+        force_update : `bool` = `False`, Optional (Keyword only)
             Whether the sticker-packs should be requested even if it supposed to be up to date.
         
         Returns
@@ -15342,7 +15410,7 @@ class Client(ClientUserPBase):
             The respective guild.
         sticker : ``Sticker``, `int`
             The sticker to get.
-        force_update : `bool`, Optional (Keyword only)
+        force_update : `bool` = `False`, Optional (Keyword only)
             Whether the sticker should be requested even if it supposed to be up to date.
         
         Raises
@@ -15388,9 +15456,9 @@ class Client(ClientUserPBase):
             The emoji representation of the sticker. Used as a tag for the sticker.
         image : `bytes-like`
             The sticker's image in bytes.
-        description : `None`, `str`, Optional
+        description : `None`, `str` = `None`, Optional
             The sticker's representation. It's length can be in range [0:100]
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Will show up at the respective guild's audit logs.
         
         Returns
@@ -15507,7 +15575,7 @@ class Client(ClientUserPBase):
             The new emoji representation of the sticker. Used as a tag for the sticker.
         description : `None`, `str`, Optional (Keyword only)
             New description for the sticker. It's length can be in range [0:100].
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Will show up at the respective guild's audit logs.
         
         Raises
@@ -15609,7 +15677,7 @@ class Client(ClientUserPBase):
         ----------
         sticker : ``Sticker``, `int`
             The sticker to delete.
-        reason : `None`, `str`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
             Will show up at the respective guild's audit logs.
         
         Raises
@@ -15716,7 +15784,7 @@ class Client(ClientUserPBase):
         ----------
         user : ```ClientUserBase``, `int`
             The user with who the relationship will be created.
-        relationship_type : `None`, ``RelationshipType``, `int`, Optional
+        relationship_type : `None`, ``RelationshipType``, `int` = `None`, Optional
             The type of the relationship. Defaults to `None`.
         
         Raises
@@ -16285,9 +16353,13 @@ class Client(ClientUserPBase):
                             continue
                     continue
         except BaseException as err:
-            if isinstance(err, InvalidToken) or \
-                    (isinstance(err, DiscordGatewayException) and (err.code in INTENT_ERROR_CODES)):
-                
+            if (
+                isinstance(err, InvalidToken) or
+                (
+                    isinstance(err, DiscordGatewayException) and
+                    (err.code in INTENT_ERROR_CODES)
+                )
+            ):
                 sys.stderr.write(
                     f'{err.__class__.__name__} occurred, at {self!r}._connect:\n'
                     f'{err!r}\n'
@@ -16412,7 +16484,7 @@ class Client(ClientUserPBase):
         ----------
         channel : ``ChannelStage``
             The stage channel to join.
-        request : `bool`, Optional (Keyword only)
+        request : `bool` = `False`, Optional (Keyword only)
             Whether the client should only request to speak.
         
         Raises
@@ -16512,7 +16584,7 @@ class Client(ClientUserPBase):
             method. However if the check returns any non `bool` value, then that object is passed next to `args` and
             returned as well.
         
-        timeout : `None`, `float`
+        timeout : `None`, `float` = `None`, Optional
             Timeout after `TimeoutError` is raised and the waiting is cancelled.
         
         Returns
@@ -16624,7 +16696,7 @@ class Client(ClientUserPBase):
             The guild, what's members will be requested.
         name : `str`
             The received user's name or nick should start with this string.
-        limit : `int`
+        limit : `int` = `1`, Optional
             The amount of users to received. Limited to `100`.
         
         Returns
@@ -16788,7 +16860,7 @@ class Client(ClientUserPBase):
         ----------
         name : `str`
             The guild's name to search.
-        default : `Any`, Optional
+        default : `None`, `Any` = `None`, Optional
             The default value, what will be returned if the guild was not found.
         
         Returns

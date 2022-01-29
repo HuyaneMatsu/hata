@@ -148,7 +148,7 @@ class ChannelGuildUndefined(ChannelGuildMainBase):
             
             setattr(self, key, data[key])
     
-    def _difference_update_attributes(self,data):
+    def _difference_update_attributes(self, data):
         """
         Updates the channel and returns it's overwritten attributes as a `dict` with a `attribute-name` - `old-value`
         relation.

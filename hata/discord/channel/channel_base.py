@@ -175,7 +175,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any`, Optional
+        default : `Any` = `None`, Optional
             The value what is returned when no user was found. Defaults to `None`.
         
         Returns
@@ -216,7 +216,7 @@ class ChannelBase(DiscordEntity, immortal=True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any`, Optional
+        default : `Any` = `None`, Optional
             The value what is returned when no user was found. Defaults to `None`.
         
         Returns

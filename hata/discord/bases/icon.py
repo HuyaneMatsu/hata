@@ -281,8 +281,8 @@ class IconSlot:
             A function what will be used as a property when accessing the icon' url.
         url_as_method : `None`, `function`
             A function what will be used a method when creating a formatted icon url.
-        add_updater : `bool`, Optional
-            Whether the icon slot should add updater methods to the class. Defaults to `True`.
+        add_updater : `bool` = `True`, Optional
+            Whether the icon slot should add updater methods to the class.
         
         Returns
         -------

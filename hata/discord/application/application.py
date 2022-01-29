@@ -289,8 +289,8 @@ class Application(DiscordEntity, immortal=True):
         ----------
         data : `None`, `dict` of (`str`, `Any`) items
             Application data received from Discord.
-        set_owner : `bool`, Optional
-            Whether the application's owner should be set from the given data. Defaults to `False`.
+        set_owner : `bool` = `False`, Optional
+            Whether the application's owner should be set from the given data.
             Should be given as `True`, if the application is created or if it contains owner data.
         """
         self.name = data['name']

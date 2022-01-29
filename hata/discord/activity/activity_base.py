@@ -46,9 +46,9 @@ class ActivityTimestamps:
         
         Parameters
         ----------
-        end : `None`, `datetime`, Optional (Keyword only)
+        end : `None`, `datetime` = `None`, Optional (Keyword only)
             When the activity. Defaults to `None`.
-        start : `None`, `datetime`, Optional (Keyword only)
+        start : `None`, `datetime` = `None`, Optional (Keyword only)
            When the activity starts. Defaults to `None`.
         
         Raises
@@ -184,13 +184,13 @@ class ActivityAssets:
         
         Parameters
         ----------
-        image_large : `None`, `str`, Optional (Keyword only)
+        image_large : `None`, `str` = `None`, Optional (Keyword only)
             The id of the activity's large asset to display. Defaults to `None`.
-        image_small : `None`, `str`, Optional (Keyword only)
+        image_small : `None`, `str` = `None`, Optional (Keyword only)
             The id of the activity's small asset to display. Defaults to `None`.
-        text_large : `None`, `str`, Optional (Keyword only)
+        text_large : `None`, `str` = `None`, Optional (Keyword only)
             The hover text of the large asset. Defaults to `None`.
-        text_small : `None`, `str`, Optional (Keyword only)
+        text_small : `None`, `str` = `None`, Optional (Keyword only)
             The hover text of the small asset. Defaults to `None`.
         
         Raises
@@ -386,11 +386,11 @@ class ActivityParty:
         
         Parameters
         ----------
-        id_ : `None`, `str`, Optional (Keyword only)
+        id_ : `None` = `None`, `str`, Optional (Keyword only)
             The party's id, which in the player is. Defaults to `None`.
-        size : `int`, Optional (Keyword only)
+        size : `int` = `0`, Optional (Keyword only)
             The party's maximal size, which in the player is. Defaults to `0`.
-        max_ : `int`, Optional (Keyword only)
+        max_ : `int` = `0`, Optional (Keyword only)
             The party's actual size, which in the player is. Defaults to `0`.
         
         Raises
@@ -552,11 +552,11 @@ class ActivitySecrets:
         
         Parameters
         ----------
-        join : `None`, `str`, Optional (Keyword only)
+        join : `None`, `str` = `None`, Optional (Keyword only)
             Unique hash given for the match context. Defaults to `None`.
-        match : `None`, `str`, Optional (Keyword only)
+        match : `None`, `str` = `None`, Optional (Keyword only)
             Unique hash for spectate button. Defaults to `None`.
-        spectate : `None`, `str`, Optional (Keyword only)
+        spectate : `None`, `str` = `None`, Optional (Keyword only)
             Unique hash for chat invites and ask to join. Defaults to `None`.
         """
         if (join is not None):

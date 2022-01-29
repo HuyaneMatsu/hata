@@ -140,9 +140,9 @@ class DiscordEntityMeta(Slotted):
             The superclasses of the creates type.
         class_attributes : `dict` of (`str`, `Any`) items
             The class attributes of the created type.
-        immortal : `bool`, Optional
+        immortal : `bool` = `False`, Optional
             Whether the created type's instances should support weakreferencing. If the inherited type supports
-            weakreferencing, then the subclass will as well of course. Defaults to `False`.
+            weakreferencing, then the subclass will as well of course.
         
         Returns
         -------

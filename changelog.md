@@ -5,6 +5,11 @@
 - Add `ScheduledEvent.image_url`.
 - Add `ScheduledEvent.image_url_as`.
 
+
+#### Bug fixes
+
+- `Client.channel_follow` raised `NameError`.
+
 ## 1.1.134 *\[2022-01-25\]*
 
 ### Summary

@@ -304,8 +304,12 @@ if API_VERSION >= 9:
         
         # checking structure
         
+        # case 0 None
+        if file is None:
+            pass
+        
         # case 1 dict like
-        if hasattr(type(file), 'items'):
+        elif hasattr(type(file), 'items'):
             for name, io in file.items():
                 if files is None:
                     files = []
@@ -385,7 +389,7 @@ if API_VERSION >= 9:
         return form, contains_attachments
     
     
-    def add_file_to_message_data(message_data, file, contains_content):
+    def add_file_to_message_data(message_data, file, contains_content, is_edit):
         """
         Adds files to the message data creating a form data if applicable.
         
@@ -398,6 +402,8 @@ if API_VERSION >= 9:
             The files to send.
         contains_content : `bool`
             Whether the message already contains any content.
+        is_edit : `bool`
+            Whether we are creating edit file form.
         
         Returns
         -------
@@ -410,7 +416,7 @@ if API_VERSION >= 9:
         ValueError
             If more than `10` file is registered to be sent.
         """
-        if (file is None):
+        if (file is (... if is_edit else None)):
             if not contains_content:
                 message_data = None
         else:
@@ -479,8 +485,12 @@ else:
         
         # checking structure
         
+        # case 0 none
+        if file is None:
+            pass
+        
         # case 1 dict like
-        if hasattr(type(file), 'items'):
+        elif hasattr(type(file), 'items'):
             files.extend(file.items())
         
         # case 2 tuple => file, filename pair
@@ -539,7 +549,7 @@ else:
         return form
     
     
-    def add_file_to_message_data(message_data, file, contains_content):
+    def add_file_to_message_data(message_data, file, contains_content, is_edit):
         """
         Adds files to the message data creating a form data if applicable.
         
@@ -552,6 +562,8 @@ else:
             The files to send.
         contains_content : `bool`
             Whether the message already contains any content.
+        is_edit : `bool`
+            Whether we are creating edit file form.
         
         Returns
         -------
@@ -564,7 +576,7 @@ else:
         ValueError
             If more than `10` file is registered to be sent.
         """
-        if (file is None):
+        if (file is (... if is_edit else None)):
             if not contains_content:
                 message_data = None
         else:

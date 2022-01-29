@@ -314,7 +314,7 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
         
         Parameters
         ----------
-        int_ : `int`, Optional
+        int_ : `int` = `-1`, Optional
             The value what will be converted ``IntentFlag``. If not passed or passed as a negative value,
             then returns an ``IntentFlag`` what contains all the enabled flags.
         

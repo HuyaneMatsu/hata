@@ -75,37 +75,37 @@ class ComponentTextInput(ComponentBase):
         
         Parameters
         ----------
-        label : `None`, `str`, Optional
+        label : `None`, `str` = `None`, Optional
             Label of the component.
         
-        custom_id : `None`, `str`, Optional (Keyword only)
+        custom_id : `None`, `str` = `None`, Optional (Keyword only)
             Custom identifier to detect which text input was clicked by the user.
         
-        enabled : `bool`, Optional (Keyword only)
+        enabled : `bool` = `True`, Optional (Keyword only)
             Whether the text input is enabled. Defaults to `True`.
         
-        max_length : `int`, Optional (Keyword only)
+        max_length : `int` = `0`, Optional (Keyword only)
             The maximal length of the inputted text.
             
             Defaults to `0` if not applicable.
         
-        min_length : `int`, Optional (Keyword only)
+        min_length : `int` = `0`, Optional (Keyword only)
             The minimal length of the inputted text.
             
             Defaults to `0` if not applicable.
         
-        placeholder : `None`, `str`, Optional (Keyword only)
+        placeholder : `None`, `str` = `None`, Optional (Keyword only)
             Placeholder text of the select.
         
-        required : `None`, `bool`, Optional (Keyword only)
+        required : `None`, `bool` = `None`, Optional (Keyword only)
             Whether the field is required to be fulfilled.
             
             If not given, or given as `None`, will default to `True` if `min_length` is defined as higher than `0`.
         
-        style : `None`, ``TextInputStyle``, `int`, Optional (Keyword only)
+        style : `None`, ``TextInputStyle``, `int` = `None`, Optional (Keyword only)
             The text input's style.
         
-        value : `None`, `str`, Optional (Keyword only)
+        value : `None`, `str` = `None`, Optional (Keyword only)
             The text input's default value.
         
         Raises

@@ -198,7 +198,7 @@ class User(USER_BASE_CLASS):
         ----------
         data : `dict` of (`str`, `Any`) items
             Received user data.
-        guild : ``Guild``, `None`, Optional
+        guild : `None`, ``Guild`` =  `None`, Optional
             A respective guild from where the user data was received. It is picked up if the given data includes
             guild member data as well.
         
@@ -454,7 +454,7 @@ class User(USER_BASE_CLASS):
         ----------
         data : `dict` of (`str`, `Any`) items
             Received user data.
-        guild : ``Guild``, `None`, Optional
+        guild : `None`, ``Guild`` = `None`, Optional
             A respective guild from where the user data was received. Picked up if the given data includes
             guild member data as well.
         

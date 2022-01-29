@@ -20,9 +20,9 @@ def create_partial_webhook_from_id(webhook_id, token, *, type_=WebhookType.bot, 
         The identifier number of the webhook.
     token : `str`
         The token of the webhook.
-    type_ : ``WebhookType``, Optional (Keyword only)
+    type_ : ``WebhookType`` = `WebhookType.bot`, Optional (Keyword only)
         The webhook's type. Defaults to `WebhookType.bot`.
-    channel_id : `int`, Optional (Keyword only)
+    channel_id : `int` = `0`, Optional (Keyword only)
         The webhook's channel's identifier. Defaults to `0`.
     
     Returns

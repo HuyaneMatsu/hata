@@ -216,7 +216,7 @@ class GuildProfile(metaclass=Slotted):
         
         Parameters
         ----------
-        default : `Any`, Optional
+        default : `Any` = `None`, Optional
             Default value to return if the respective user has no roles at the respective guild. Defaults to `None`.
         
         Returns

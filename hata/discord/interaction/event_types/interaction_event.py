@@ -245,7 +245,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         
         Parameters
         ----------
-        timeout : `None`, `float`, Optional (Keyword only)
+        timeout : `None`, `float` = `None`, Optional (Keyword only)
             The maximal time to wait for message before `TimeoutError` is raised.
         
         Returns

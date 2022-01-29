@@ -662,9 +662,9 @@ class Message(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        validate : `bool`, Optional
+        validate : `bool` = `True`, Optional
             Whether contradictory between the message's attributes can be checked. If there is any, `ValueError`
-            is raised. Defaults to `True`.
+            is raised.
         **kwargs : keyword parameters
             Additional attributes of the created message.
         
@@ -2718,10 +2718,8 @@ class Message(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        recursive : `bool`, Optional (Keyword only)
+        recursive : `bool` = `True`, Optional (Keyword only)
             Whether referenced messages can be converted as well.
-            
-            Defaults to `True`.
         
         Returns
         -------

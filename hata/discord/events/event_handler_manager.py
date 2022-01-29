@@ -932,11 +932,15 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        func : `callable`, Optional
+        func : `None`, `callable` = `None`, Optional
             The async callable to add as an event handler.
-        name : `None`, `str`, Optional
+            
+            If given as `None` will return a decorator.
+        
+        name : `None`, `str` = `None`, Optional
             A name to be used instead of the passed `func`'s when adding it.
-        overwrite : `bool`, Optional
+        
+        overwrite : `bool` = `False`, Optional
             Whether the passed `func` should overwrite the already added ones with the same name or extend them.
         
         Returns
@@ -1240,11 +1244,11 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         ----------
         func : `Any`
             The event handler to remove.
-        name : `str`, Optional
+        name : `None`, `str` = `None`, Optional
             The event's name.
-        by_type : `bool`, Optional
+        by_type : `bool` = `False`, Optional
             Whether `func` was given as the type of the real event handler. Defaults to `False`.
-        count : `int`, Optional
+        count : `int` = `-1`, Optional
             The maximal amount of the same events to remove. Negative numbers count as unlimited. Defaults to `-1`.
         """
         if (count == 0) or (name in EVENT_HANDLER_ATTRIBUTES):

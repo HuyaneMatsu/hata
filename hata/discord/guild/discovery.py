@@ -260,7 +260,7 @@ class DiscoveryCategory(DiscordEntity, immortal=True):
         ----------
         category_id : `int`
             The unique identifier number of the discovery category
-        primary : `bool`, Optional
+        primary : `bool` = `False`, Optional
             Whether the category is a primary category.
         
         Returns

@@ -50,11 +50,11 @@ class ComponentSelectOption(ComponentBase):
             The option's value.
         label : `str`
             Label of the component option.
-        emoji : `None`, ``Emoji``, Optional
+        emoji : `None`, ``Emoji`` = `None`, Optional
             Emoji of the option if applicable.
-        default : `bool`, Optional (Keyword only)
+        default : `bool` = `False`, Optional (Keyword only)
             Whether this the the default option. Defaults to `False`.
-        description : `None`, `str`, Optional (Keyword only)
+        description : `None`, `str` = `None`, Optional (Keyword only)
             Description of the component option.
         """
         if __debug__:

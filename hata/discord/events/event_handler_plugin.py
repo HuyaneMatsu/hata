@@ -76,9 +76,9 @@ class Event:
         ---------
         parameter_count : `int`
             How much parameters does the event handler should accept.
-        default_handler : `None`, `async-callable`, Optional
+        default_handler : `None`, `async-callable` = `None`, Optional
             Default handler to add by default.
-        callback : `None`, `callable`, Optional
+        callback : `None`, `callable` = `None`, Optional
             Optional function to run when an event handler is added or removed.
         
         Raises

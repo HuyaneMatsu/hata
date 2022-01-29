@@ -58,17 +58,17 @@ class EmbedCore(EmbedBase):
         
         Parameters
         ----------
-        title : `str`, Optional
+        title : `None`, `str` = `None`, Optional
             The title of the embed. Shows at the top with intense white characters.
-        description : `str`, Optional
+        description : `None`, `str` = `None`, Optional
             The main content of the embed.
-        color : ``Color``, `int`, Optional
+        color : `None`, ``Color``, `int` = `None`, Optional
             The color code of the embed. Passing `0` means black, not like at the case of roles.
-        url : `str`, Optional
+        url : `None`, `str` = `None`, Optional
             Url of the embed. If defined, the embed's `title` will show up as a hyper link pointing to the `url`.
-        timestamp : `datetime`, optional
+        timestamp : `None`, `datetime` = `None`, Optional
             Timestamp of the embed's content. Shows up next to the `footer` separated with a `'|'` character.
-        type_ : `None`, `str`, Optional
+        type_ : `None`, `str` = `'rich'`, Optional
             The type of the embed. Defaults to `'rich'`.
         """
         self.author = None

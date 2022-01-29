@@ -121,7 +121,7 @@ class DiscordGatewayVoice:
         
         Parameters
         ----------
-        resume : `bool`
+        resume : `bool` = `False`, Optional
             Whether the gateway should try to resume the existing connection.
         
         Raises

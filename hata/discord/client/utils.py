@@ -180,7 +180,7 @@ class Typer:
     """
     __slots__ = ('channel_id', 'client', 'timeout', 'waiter',)
     
-    def __init__(self, client, channel_id, timeout=300.):
+    def __init__(self, client, channel_id, timeout=300.0):
         """
         Parameters
         ----------
@@ -188,7 +188,7 @@ class Typer:
             The client what will send the typing events.
         channel_id : `int`
             The channel's id where typing will be triggered.
-        timeout : `float`, Optional
+        timeout : `float` = `300.0`, Optional
             The maximal amount of time till the client will keep sending typing events. Defaults to `300.0`.
         """
         self.client = client
@@ -210,9 +210,9 @@ class Typer:
         This method is a coroutine.
         """
         # js client's typing is 8s
-        while self.timeout > 0.:
+        while self.timeout > 0.0:
             self.timeout -= 8.0
-            self.waiter = waiter = sleep(8., KOKORO)
+            self.waiter = waiter = sleep(8.0, KOKORO)
             await self.client.http.typing(self.channel_id)
             await waiter
         
@@ -333,8 +333,19 @@ class ClientWrapper:
         
         Parameters
         ----------
-        func : `callable`
+        func : `None`, `callable` = `None`, Optional
             The event handler to add to the respective clients.
+            
+            If not given, will return a decorator.
+        
+        name : `None`, `str` = `None`, Optional
+            The name to which event the handler should be registered to.
+            
+            If not given, it will be extracted from the handler's name.
+        
+        overwrite : `bool` = `False`, Optional
+            Whether the current event handler(s) should be replaced by the added one.
+        
         
         Returns
         -------

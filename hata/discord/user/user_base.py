@@ -617,11 +617,10 @@ class UserBase(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        guild : ``Guild``, `None`, `int`
+        guild : `None`, ``Guild``, `int`
             The guild where the user's top role will be looked up.
-            
-            Can be given as `None`.
-        default : `Any`
+        
+        default : `Any` = `None`, Optional
             If the user is not a member of the guild, or if has no roles there, then the given default value is returned.
             Defaults to `None`.
         

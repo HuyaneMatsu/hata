@@ -62,17 +62,17 @@ class Embed(EmbedBase):
         
         Parameters
         ----------
-        title : `str`, Optional
+        title : `None`, `str` = `None`, Optional
             The title of the embed. Shows at the top with intense white characters.
-        description : `str`, Optional
+        description : `None`, `str` = `None`, Optional
             The main content of the embed.
-        color : ``Color``, `int`, Optional
+        color : `None`, ``Color``, `int` = `None`, Optional
             The color code of the embed. Passing `0` means black, not like at the case of roles.
-        url : `str`, Optional
+        url : `None`, `str` = `None`, Optional
             Url of the embed. If defined, the embed's `title` will show up as a hyper link pointing to the `url`.
-        timestamp : `datetime`, optional
+        timestamp : `None`, `datetime` = `None`, Optional
             Timestamp of the embed's content. Shows up next to the `footer` separated with a `'|'` character.
-        type_ : `None`, `str`, Optional
+        type_ : `None`, `str` = `'rich'`, Optional
             The type of the embed. Defaults to `'rich'`.
         """
         self._data = data = {}
@@ -948,11 +948,11 @@ class Embed(EmbedBase):
         
         Parameters
         ----------
-        icon_url : `str`, Optional
+        icon_url : `None`, `str` = `None`, Optional
             An url of the author's icon. Can be http(s) or attachment.
-        name : `str`, Optional
+        name : `None`, `str` = `None`, Optional
             The name of the author.
-        url : `str`, Optional
+        url : `None`, `str` = `None`, Optional
             The url of the author.
         
         Returns
@@ -988,7 +988,7 @@ class Embed(EmbedBase):
             The name of the field.
         value : `str`
             The value of the field.
-        inline : `bool`, Optional
+        inline : `bool` = `False`, Optional
             Whether this field should display inline.
         
         Returns
@@ -1031,7 +1031,7 @@ class Embed(EmbedBase):
             The name of the field.
         value : `str`
             The value of the field.
-        inline : `bool`, Optional
+        inline : `bool` = `False`, Optional
             Whether this field should display inline.
         """
         if not isinstance(name, str):
@@ -1183,7 +1183,7 @@ class Embed(EmbedBase):
         ----------
         text : `str`
             The footer's text.
-        icon_url : `str`, Optional
+        icon_url : `None`, `str` = `None`, Optional
             An url of the footer's icon. Can be http(s) or attachment.
         
         Returns
@@ -1340,7 +1340,7 @@ class _EmbedFieldsProxy:
             The name of the field.
         value : `str`
             The value of the field.
-        inline : `bool`, Optional
+        inline : `bool` = `False`, Optional
             Whether this field should display inline.
         """
         if not isinstance(name, str):
@@ -1372,7 +1372,7 @@ class _EmbedFieldsProxy:
             The name of the field.
         value : `str`
             The value of the field.
-        inline : `bool`, Optional
+        inline : `bool` = `False`, Optional
             Whether this field should display inline.
         """
         if not isinstance(name, str):

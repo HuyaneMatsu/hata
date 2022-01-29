@@ -109,7 +109,7 @@ class DiscordGateway:
         ----------
         client : ``Client``
             The owner client of the gateway.
-        shard_id : `int`, Optional
+        shard_id : `int` = `0`, Optional
             The shard id of the gateway. Defaults to `0`, if the owner client does not use sharding.
         """
         self.client = client
@@ -151,7 +151,7 @@ class DiscordGateway:
         
         Parameters
         -----------
-        waiter : ``Future``, Optional
+        waiter : `None`, ``Future`` = `None`, Optional
             A waiter future what is set, when the gateway finished connecting and started polling events.
         
         Raises
@@ -222,7 +222,7 @@ class DiscordGateway:
         
         Parameters
         ----------
-        resume : `bool`
+        resume : `bool` = `False`, Optional
             Whether the gateway should try to resume the existing connection.
         
         Raises
@@ -601,9 +601,9 @@ class DiscordGateway:
             The voice client's guild's id.
         channel_id : `int`
             The voice client's channel's id.
-        self_mute : `bool`
+        self_mute : `bool` = `False`, Optional
             Whether the voice client is muted.
-        self_deaf : `bool`
+        self_deaf : `bool` = `False`, Optional
             Whether the voice client is deafen.
         """
         if (guild_id is not None) and (guild_id == 0):

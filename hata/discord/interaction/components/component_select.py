@@ -52,16 +52,16 @@ class ComponentSelect(ComponentBase):
         ----------
         options : `None` or (`list`, `tuple`) of ``ComponentSelectOption``
             Options of the select.
-        custom_id : `None`, `str`, Optional
+        custom_id : `None`, `str` = `None`, Optional
             Custom identifier to detect which component was used by the user.
-        enabled : `bool`, Optional (Keyword only)
+        enabled : `bool` = `True`, Optional (Keyword only)
             Whether the button is enabled. Defaults to `True`.
-        placeholder : `str`, Optional (Keyword only)
+        placeholder : `None`, `str` = `None`, Optional (Keyword only)
             Placeholder text of the select.
-        max_values : `int`, Optional (Keyword only)
-            The maximal amount of options to select. Can be in range [1:25]. Defaults to `1`.
-        min_values : `int`, Optional (Keyword only)
-            The minimal amount of options to select. Can be in range [1:15]. Defaults to `1`.
+        max_values : `int` = `1`, Optional (Keyword only)
+            The maximal amount of options to select. Can be in range [1:25].
+        min_values : `int` = `1`, Optional (Keyword only)
+            The minimal amount of options to select. Can be in range [1:15].
         
         Raises
         ------

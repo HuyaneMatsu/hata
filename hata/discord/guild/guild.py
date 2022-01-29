@@ -1214,7 +1214,7 @@ class Guild(DiscordEntity, immortal=True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any`, Optional
+        default : `Any` = `None`, Optional
             The value what is returned when no user was found. Defaults to `None`.
         
         Returns
@@ -1264,7 +1264,7 @@ class Guild(DiscordEntity, immortal=True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any`, Optional
+        default : `Any` = `None`, Optional
             The value what is returned when no user was found. Defaults to `None`.
         
         Returns
@@ -1408,7 +1408,7 @@ class Guild(DiscordEntity, immortal=True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any`, Optional
+        default : `Any` = `None`, Optional
             The value what is returned when no emoji was found. Defaults to `None`.
         
         Returns
@@ -1433,7 +1433,7 @@ class Guild(DiscordEntity, immortal=True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any`, Optional
+        default : `Any` = `None`, Optional
             The value what is returned when no emoji was found. Defaults to `None`.
         
         Returns
@@ -1475,7 +1475,7 @@ class Guild(DiscordEntity, immortal=True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any`, Optional
+        default : `Any` = `None`, Optional
             The value what is returned when no emoji was found. Defaults to `None`.
         
         Returns
@@ -1497,7 +1497,7 @@ class Guild(DiscordEntity, immortal=True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any`, Optional
+        default : `Any` = `None`, Optional
             The value what is returned when no emoji was found. Defaults to `None`.
         
         Returns
@@ -1540,7 +1540,7 @@ class Guild(DiscordEntity, immortal=True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any`, Optional
+        default : `Any` = `None`, Optional
             The value what is returned when no channel was found. Defaults to `None`.
         
         Returns
@@ -1569,9 +1569,9 @@ class Guild(DiscordEntity, immortal=True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any`, Optional
+        default : `Any` = `None`, Optional
             The value what is returned when no channel was found. Defaults to `None`.
-        type_ : `None`, `type`, `tuple` of `type`, Optional
+        type_ : `None`, `type`, `tuple` of `type` = `None`, Optional
             Whether only specific channel type instances are accepted.
         
         Returns
@@ -1623,7 +1623,7 @@ class Guild(DiscordEntity, immortal=True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any`, Optional
+        default : `Any` = `None`, Optional
             The value what is returned when no role was found. Defaults to `None`.
         
         Returns
@@ -1645,7 +1645,7 @@ class Guild(DiscordEntity, immortal=True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any`, Optional
+        default : `Any` = `None`, Optional
             The value what is returned when no role was found. Defaults to `None`.
         
         Returns

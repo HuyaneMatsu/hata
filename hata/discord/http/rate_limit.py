@@ -112,7 +112,7 @@ class RateLimitGroup:
             | LIMITER_UNLIMITED     | `'unlimited'`         |
             +-----------------------+-----------------------+
         
-        optimistic : `bool`, Optional
+        optimistic : `bool` = `False`, Optional
             Whether the rate limit group is optimistic.
         """
         self = object.__new__(cls)
@@ -815,7 +815,7 @@ class StaticRateLimitGroup:
             The maximal amount of requests, which can be executed parallelly.
         timeout : `float`
             The timeout till the rate limits reset.
-        limiter : `str`, Optional
+        limiter : `str` = `LIMITER_GLOBAL`, Optional
             Identifier name by what is the rate limit group limited. Defaults to `LIMITER_GLOBAL`.
             
             Possible values:

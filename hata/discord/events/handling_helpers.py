@@ -139,11 +139,11 @@ def check_parameter_count_and_convert(func, expected, *, name='event', can_be_as
         The callable, what's type and parameter count will checked.
     expected : `int`
         The amount of parameters, what would be passed to the given `func` when called at the future.
-    name : `str`, Optional (Keyword only)
+    name : `str` = `'event'`, Optional (Keyword only)
         The event's name, what is checked and converted. Defaults to `'event'`.
-    can_be_async_generator : `bool`, Optional (Keyword only)
+    can_be_async_generator : `bool` = `False`, Optional (Keyword only)
         Whether async generators are accepted as well.
-    error_message : `str`, Optional (Keyword only)
+    error_message : `None`, `str` = `None`, Optional (Keyword only)
         A specified error message with what a `TypeError` will be raised at the end, if the given `func` is not async
         and neither cannot be converted to an async callable.
     
@@ -283,7 +283,7 @@ def _convert_unsafe_event_iterable(iterable, type_=None):
     ----------
     iterable : `iterable`
         The iterable, what's elements will be checked.
-    type_ : `None `, `type`
+    type_ : `None`, `type` = `None`, Optional
         If `type_` was passed, then each element is pre-validated with the given type. Some extension classes might
         support behaviour.
         
@@ -1135,7 +1135,7 @@ def route_value(to_route_value, count, default=None):
         The respective value to route
     count : `int`
         The expected amount of copies to generate.
-    default : `Any`, Optional
+    default : `None`, `Any` = `None`, Optional
         Optional default variable to use. Defaults to `None`.
     
     Returns
@@ -1423,9 +1423,9 @@ class eventlist(list):
         
         Parameters
         ----------
-        iterable : `iterable`, Optional
+        iterable : `None`, `iterable` = `None`, Optional
             An iterable of events to extend the eventlist with.
-        type_ : `type`, Optional
+        type_ : `None`, `type` = `None`, Optional
             A type to validate each added element to the eventlist.
         **kwargs : Keyword parameters
             Additional keyword parameters to be used when adding each element.
@@ -2071,10 +2071,10 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
         
         self.waitfors[target] = container
     
-    def get_waiter(self, target, waiter, by_type = False, is_method=False):
+    def get_waiter(self, target, waiter, by_type=False, is_method=False):
         """
-        Looks up whether any of the given `target` - `waiter` relation is stored inside of `.waiters` and if there is any,
-        then returns the first find. If non, then returns `None`.
+        Looks up whether any of the given `target` - `waiter` relation is stored inside of `.waiters` and if there is
+        any, then returns the first find. If non, then returns `None`.
         
         Parameters
         ----------
@@ -2082,9 +2082,9 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
             The target entity.
         waiter : `Any`
             The waiter. `by_type` and `is_method` overwrite the behaviour of checking it.
-        by_type : `bool`, Optional
+        by_type : `bool` = `False`, Optional
             Whether `waiter` was given as the type of the real waiter. Defaults to `False`.
-        is_method : `bool`, Optional
+        is_method : `bool` = `False`, Optional
             Whether the real waiter is a method-like, and you want to check it's "self". Applied before `by_type` and
             defaults to `False`.
         
@@ -2147,9 +2147,9 @@ class EventWaitforBase(EventHandlerBase, metaclass=EventWaitforMeta):
             The target entity.
         waiter : `Any`
             The waiter. `by_type` and `is_method` overwrite the behaviour of checking it.
-        by_type : `bool`, Optional
+        by_type : `bool` = `False`, Optional
             Whether `waiter` was given as the type of the real waiter. Defaults to `False`.
-        is_method : `bool`, Optional
+        is_method : `bool` = `False`, Optional
             Whether the real waiter is a method-like, and you want to check it's "self". Applied before `by_type` and
             defaults to `False`.
         
@@ -2405,7 +2405,7 @@ class asynclist(list):
         
         Parameters
         ----------
-        iterable : `iterable`, Optional
+        iterable : `None`, `iterable` = `None`, Optional
         """
         if (iterable is not None):
             list.extend(self, iterable)

@@ -124,11 +124,11 @@ class DiscordHTTPClient(HTTPClient):
         ----------
         client : ``Client``
             The owner client of the session.
-        proxy_auth :  `str`, Optional (Keyword only)
+        proxy_auth :  `None`, `str` = `None`, Optional (Keyword only)
             Proxy authorization for the session's requests.
-        proxy_url : `str`, Optional (Keyword only)
+        proxy_url : `None`, `str` = `None`, Optional (Keyword only)
             Proxy url for the session's requests.
-        debug_options: `None`, `set` of `str`, Optional (Keyword only)
+        debug_options: `None`, `set` of `str` = `None`, Optional (Keyword only)
             Http debug options, like `'canary'` (I don't know more either).
         """
         loop = client.loop
@@ -140,7 +140,7 @@ class DiscordHTTPClient(HTTPClient):
             connector_ref_counter = _ConnectorRefCounter(connector)
             self.CONNECTOR_REFERENCE_COUNTS[loop] = connector_ref_counter
         else:
-            connector_ref_counter.count +=1
+            connector_ref_counter.count += 1
             connector = connector_ref_counter.connector
         
         HTTPClient.__init__(self, loop, proxy_url, proxy_auth, connector = connector)
@@ -207,13 +207,13 @@ class DiscordHTTPClient(HTTPClient):
             The method of the request.
         url : `str`
             The url to request.
-        data : `Any`, Optional
+        data : `None`, `Any` = `None`, Optional
             Payload to request with.
-        params : `Any`, Optional
+        params : `None`, `Any` = `None`, Optional
             Query parameters.
-        headers : `IgnoreCaseMultiValueDictionary`, Optional
+        headers : `None`, ``IgnoreCaseMultiValueDictionary`` = `None`, Optional
             Headers to do the request with. If passed then the session's own headers wont be used.
-        reason : `str`, Optional
+        reason : `None`, `str` = `None`, Optional
             Shows up at the request's respective guild if applicable.
         
         Returns

@@ -21,7 +21,7 @@ def create_partial_integration_from_id(integration_id, role=None):
     ----------
     integration_id : `int`
         The unique identifier number of the integration.
-    role : ``Role``, Optional
+    role : `None`, ``Role`` = `None`, Optional
         The role of the integration.
     
     Returns

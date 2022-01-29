@@ -120,14 +120,12 @@ class MassUserChunker:
     
     def __init__(self):
         """
-        Parameters
-        ----------
-        left : `int`
-            How much guild's chunks are left to be received.
+        Creates a new mass user chunker.
         """
         self.waiter = Future(KOKORO)
         self.last = now = LOOP_TIME()
         self.timer = KOKORO.call_at(now + USER_CHUNK_TIMEOUT, type(self)._cancel, self)
+    
     
     def __call__(self, event):
         """
@@ -157,6 +155,7 @@ class MassUserChunker:
         
         return True
     
+    
     def _cancel(self):
         """
         The chunker's timer calls this method. If the chunker received any chunks since it's ``.timer`` was started,
@@ -173,6 +172,7 @@ class MassUserChunker:
             self.timer = None
             self.waiter.cancel()
     
+    
     def cancel(self):
         """
         Cancels the chunker.
@@ -186,6 +186,7 @@ class MassUserChunker:
         if (timer is not None):
             self.timer = None
             timer.cancel()
+    
     
     def __await__(self):
         """
@@ -401,7 +402,7 @@ class DiscoveryTermRequestCacher:
             The timeout after the new request should be done instead of using the already cached response.
         rate_limit_group : ``RateLimitGroup``
             Rate limit group of the respective request.
-        rate_limit_limiter : ``DiscordEntity``, Optional
+        rate_limit_limiter : `None`, ``DiscordEntity`` = `None`, Optional
             Rate limit limiter fo the respective request.
         """
         self.func = func

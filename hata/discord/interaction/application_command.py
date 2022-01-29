@@ -80,18 +80,18 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         name : `str`
             The name of the command. It's length can be in range [1:32].
         
-        description : `None`, `str`, Optional
+        description : `None`, `str` = `None`, Optional
             The command's description. It's length can be in range [2:100].
         
-        allow_by_default : `bool`, Optional (Keyword only)
+        allow_by_default : `bool` = `True`, Optional (Keyword only)
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
             
             Defaults to `True`.
         
-        options : `None`, (`list`, `tuple`) of ``ApplicationCommandOption``, Optional (Keyword only)
+        options : `None`, (`list`, `tuple`) of ``ApplicationCommandOption`` = `None`, Optional (Keyword only)
             The parameters of the command. It's length can be in range [0:25].
         
-        target_type : `int`, ``ApplicationCommandTargetType``, Optional (Keyword only)
+        target_type : `None`, `int`, ``ApplicationCommandTargetType`` = `None`, Optional (Keyword only)
             The application command's target type.
             
             Defaults to `ApplicationCommandTargetType.chat`.
@@ -845,40 +845,45 @@ class ApplicationCommandOption:
         ----------
         name : `str`
             The name of the command. It's length can be in range [1:32].
+        
         description : `str`
             The command's description. It's length can be in range [2:100].
+        
         type_ : `int`, ``ApplicationCommandOptionType``
             The application command option's type.
-        autocomplete : `bool`
+        
+        autocomplete : `bool` = `False`, Optional (Keyword only)
             Whether the option supports auto completion.
             
             Mutually exclusive with the `choices` parameter. Only applicable for string type parameters.
         
-        channel_types : `None`, `iterable` of `int`, Optional (Keyword only)
+        channel_types : `None`, `iterable` of `int` = `None`, Optional (Keyword only)
             The accepted channel types by the option.
             
             Only applicable if ``.type`` is set to `ApplicationCommandOptionType.channel`.
         
-        default : `bool`, Optional (Keyword only)
-            Whether the option is the default one. Defaults to `False`.
-        required : `bool`, Optional (Keyword only)
-            Whether the parameter is required. Defaults to `False`.
-        max_value : `None`, `int`, `float`
+        default : `bool` = `False`, Optional (Keyword only)
+            Whether the option is the default one.
+        
+        required : `bool` = `False`, Optional (Keyword only)
+            Whether the parameter is required.
+        
+        max_value : `None`, `int`, `float` = `None`, Optional (Keyword only)
             The maximal value permitted for this option.
             
             Only Applicable for integer as `int`, as float options as `float`.
         
-        min_value : `None`, `int`, `float`
+        min_value : `None`, `int`, `float` = `None`, Optional (Keyword only)
             The minimum value permitted for this option.
             
             Only Applicable for integer as `int`, as float options as `float`.
             
-        choices : `None`, (`list`, `tuple`) of ``ApplicationCommandOptionChoice``, Optional (Keyword only)
+        choices : `None`, (`list`, `tuple`) of ``ApplicationCommandOptionChoice`` = `None`, Optional (Keyword only)
             The choices of the command for string or integer types. It's length can be in range [0:25].
             
             Mutually exclusive with the `autocomplete` parameter.
             
-        options : `None`, (`list`, `tuple`) of ``ApplicationCommandOption``, Optional (Keyword only)
+        options : `None`, (`list`, `tuple`) of ``ApplicationCommandOption`` = `None`, Optional (Keyword only)
             The parameters of the command. It's length can be in range [0:25]. Only applicable for sub command groups.
         
         Raises
@@ -1747,7 +1752,7 @@ class ApplicationCommandPermission:
     """
     __slots__ = ('application_command_id', 'application_id', 'guild_id', 'permission_overwrites')
     
-    def __new__(cls, application_command, *, permission_overwrites=None, overwrites=None):
+    def __new__(cls, application_command, *, permission_overwrites=None):
         """
         Creates a new ``ApplicationCommandPermission`` from the given parameters.
         
@@ -1755,7 +1760,7 @@ class ApplicationCommandPermission:
         ----------
         application_command : ``ApplicationCommand``, `int`
             The application command's identifier.
-        permission_overwrites : `None`, (`list`, `set`, `tuple`) of ``ApplicationCommandPermissionOverwrite`
+        permission_overwrites : `None`, (`list`, `set`, `tuple`) of ``ApplicationCommandPermissionOverwrite` = `None`
                 , Optional (Keyword only)
             Overwrites for the application command.
         

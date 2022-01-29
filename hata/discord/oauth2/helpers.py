@@ -130,7 +130,11 @@ def parse_oauth2_redirect_url(url):
     return result.groups()
 
 
-OAUTH2_SCOPES = {v: v for v in ('activities.read', 'activities.write', 'applications.builds.read',
-    'applications.builds.upload', 'applications.commands', 'applications.entitlements', 'applications.store.update',
-    'bot', 'connections', 'email', 'guilds', 'guilds.join', 'identify', 'messages.read', 'rpc', 'rpc.api',
-    'rpc.notifications.read', 'webhook.incoming')}
+OAUTH2_SCOPES = {
+    v: v for v in (
+        'activities.read', 'activities.write', 'applications.builds.read',
+        'applications.builds.upload', 'applications.commands', 'applications.entitlements', 'applications.store.update',
+        'bot', 'connections', 'email', 'guilds', 'guilds.join', 'identify', 'messages.read', 'rpc', 'rpc.api',
+        'rpc.notifications.read', 'webhook.incoming'
+    )
+}

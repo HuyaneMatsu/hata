@@ -608,7 +608,7 @@ class VoiceClient:
         
         Parameters
         ----------
-        request : `bool`, Optional (Keyword only)
+        request : `bool` = `False`, Optional (Keyword only)
             Whether the client should only request to speak.
         
         Raises
@@ -724,7 +724,7 @@ class VoiceClient:
         
         Parameters
         ----------
-        index : `int`
+        index : `int` = `0`, Optional
             The index of the audio to skip. Defaults to `0`, what causes the currently playing source to skipped.
         
         Returns
@@ -847,7 +847,7 @@ class VoiceClient:
         
         Parameters
         ----------
-        waiter : `None`, ``Future``, Optional
+        waiter : `None`, ``Future`` = `None`, Optional
             A Waiter what's result is set (or is raised to), when the voice client connects (or failed to connect).
         """
         try:
@@ -979,11 +979,11 @@ class VoiceClient:
         
         Parameters
         ----------
-        force : `bool`, Optional
+        force : `bool` = `False`, Optional
             Whether the voice client should disconnect only if it is not connected (for example when it is connecting).
-        terminate : `bool`, Optional
-           Whether it is an internal disconnect. If the Disconnect comes from Discord's side, then `terminate` is
-           `False`, what means, we do not need to terminate the gateway handshake.
+        terminate : `bool` = `True`, Optional
+            Whether it is an internal disconnect. If the Disconnect comes from Discord's side, then `terminate` is
+            `False`, what means, we do not need to terminate the gateway handshake.
         """
         if not (force or self.connected.is_set()):
             return

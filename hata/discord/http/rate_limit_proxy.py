@@ -47,7 +47,7 @@ class RateLimitProxy:
             Who's rate limits will be looked up.
         group : ``RateLimitGroup``
             The proxy's rate limit group to pull additional information.
-        limiter : ``DiscordEntity``, Optional
+        limiter : `None`, ``DiscordEntity`` = `None`, Optional
             What's rate limits will be looked up.
             
             The accepted types depend on the group's limiter:
@@ -70,7 +70,7 @@ class RateLimitProxy:
             
             Note that at the case of `LIMITER_GUILD` partial objects will yield `.guild` as `None` so `ValueError`
             will still be raised.
-        keep_alive : `bool`, Optional
+        keep_alive : `bool` = `False`, Optional
             Whether the rate limit proxy should keep alive the respective rate limit handler. Defaults to `False`.
         
         Raises

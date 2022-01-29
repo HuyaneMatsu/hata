@@ -186,7 +186,7 @@ class EmbedThumbnail:
         
         Parameters
         ----------
-        url : `str`, Optional (Keyword only)
+        url : `None`, `str`, Optional (Keyword only)
             The url of the thumbnail. Can be http(s) or attachment.
         
         Returns
@@ -456,7 +456,7 @@ class EmbedImage:
     
     
     @classmethod
-    def from_data(cls,data):
+    def from_data(cls, data):
         """
         Creates an embed image object from the data sent by Discord.
         
@@ -726,11 +726,11 @@ class EmbedAuthor:
         
         Parameters
         ----------
-        icon_url : `str`, Optional
+        icon_url : `None`, `str` = `None`, Optional
             An url of the author's icon. Can be http(s) or attachment.
-        name : `str`, Optional
+        name : `None`, `str` = `None`, Optional
             The name of the author.
-        url : `str`, Optional
+        url : `None`, `str` = `None`, Optional
             The url of the author.
         """
         self.icon_url = icon_url
@@ -916,11 +916,11 @@ class EmbedAuthor:
         
         Parameters
         ----------
-        icon_url : `str`, Optional (Keyword only)
+        icon_url : `None`, `str`, Optional (Keyword only)
             An url of the author's icon. Can be http(s) or attachment.
-        name : `str`, Optional (Keyword only)
+        name : `None`, `str`, Optional (Keyword only)
             The name of the author.
-        url : `str`, Optional (Keyword only)
+        url : `None`, `str`, Optional (Keyword only)
             The url of the author.
         
         Returns
@@ -973,7 +973,7 @@ class EmbedFooter:
         ----------
         text : `str`
             The footer's text.
-        icon_url : `str`, Optional
+        icon_url : `None`, `str`, Optional
             An url of the footer's icon. Can be http(s) or attachment.
         """
         self.icon_url = icon_url
@@ -1122,7 +1122,7 @@ class EmbedFooter:
         ----------
         text : `str`, Optional (Keyword only)
             The footer's text.
-        icon_url : `str`, Optional (Keyword only)
+        icon_url : `None`, `str`, Optional (Keyword only)
             An url of the footer's icon. Can be http(s) or attachment.
         
         Returns
@@ -1171,7 +1171,7 @@ class EmbedField:
             The name of the field.
         value : `str`
             The value of the field.
-        inline : `bool`, Optional
+        inline : `bool` = `False`, Optional
             Whether this field should display inline.
         """
         self.inline = inline

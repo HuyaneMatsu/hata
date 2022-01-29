@@ -43,7 +43,7 @@ class InteractionForm(ComponentBase):
             The form's title.
         components : ``ComponentBase``
             Sub components.
-        custom_id : `None`, `str`, Optional
+        custom_id : `None`, `str` = `None`, Optional
              Custom identifier for the form.
         
         Raises

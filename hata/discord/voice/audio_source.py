@@ -275,13 +275,17 @@ class LocalAudio(AudioSource):
         ----------
         source : `str`, `file-like`
             The source audio file's path or `file-like` if `pipe` is `True`.
-        executable : `str`, Optional
+        
+        executable : `str` = `DEFAULT_EXECUTABLE`, Optional
             The executable's name to use. Defaults to `'ffmpeg'`.
-        pipe : `bool`, Optional
-            Whether the source is passed to stdin. Defaults to `False`
-        before_options : `str` or (`iterable` of `str`), Optional
+        
+        pipe : `bool` = `False`, Optional
+            Whether the source is passed to stdin.
+        
+        before_options : `str`, (`iterable` of `str`) = `None`, Optional
             Extra parameters passed before the `-i` flag.
-        options : `str` or (`iterable` of `str`), Optional
+        
+        options : `str`, (`iterable` of `str`) = `None`, Optional
             Extra parameters passed after the `-i` flag.
         
         Returns
@@ -469,7 +473,7 @@ else:
             ----------
             url : `str`
                 The url or the title of the video.
-            stream : `bool`
+            stream : `bool` = `True`, Optional
                 Whether the audio should be streamed.
             
             Returns

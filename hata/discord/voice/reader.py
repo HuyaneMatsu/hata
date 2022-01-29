@@ -55,9 +55,9 @@ class AudioStream(AudioSource):
             Parent ``AudioReader``.
         user : ``ClientUserBase``
             The user, who's audio is received.
-        auto_decode : `bool`
+        auto_decode : `bool` = `False`, Optional (Keyword only)
             Whether the received packets should be auto decoded.
-        yield_decoded : `bool`
+        yield_decoded : `bool` = `False`, Optional (Keyword only)
             Whether the audio stream should yield decoded data.
         """
         try:

@@ -65,24 +65,24 @@ class ComponentButton(ComponentBase):
         
         Parameters
         ----------
-        label : `None`, `str`, Optional
+        label : `None`, `str` = `None`, Optional
             Label of the component.
         
-        emoji : `None`, ``Emoji``, Optional
+        emoji : `None`, ``Emoji`` = `None`, Optional
             Emoji of the button if applicable.
         
-        custom_id : `None`, `str`, Optional (Keyword only)
+        custom_id : `None`, `str` = `None`, Optional (Keyword only)
             Custom identifier to detect which button was clicked by the user.
             
             > Mutually exclusive with the `url` field.
         
-        enabled : `bool`, Optional (Keyword only)
+        enabled : `bool` = `True`, Optional (Keyword only)
             Whether the button is enabled. Defaults to `True`.
         
-        style : `None`, ``ButtonStyle``, `int`, Optional (Keyword only)
+        style : `None`, ``ButtonStyle``, `int` = `None`, Optional (Keyword only)
             The button's style.
         
-        url : `None`, `str`, Optional (Keyword only)
+        url : `None`, `str` = `None`, Optional (Keyword only)
             Url to redirect to when clicking on the button.
             
             > Mutually exclusive with the `custom_id` field.

@@ -60,9 +60,9 @@ class AuditLogIterator(AuditLog):
             The client, who will execute the api requests.
         guild : ``Guild``, `int`
             The guild, what's audit logs will be requested.
-        user : `None`, ``ClientUserBase``, `int`, Optional
+        user : `None`, ``ClientUserBase``, `int` = `None`, Optional
             Whether the audit logs should be filtered only to those, which were created by the given user.
-        event : `None`, ``AuditLogEvent``, `int`, Optional
+        event : `None`, ``AuditLogEvent``, `int` = `None`, Optional
             Whether the audit logs should be filtered only on the given event.
         
         Raises

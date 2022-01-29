@@ -316,7 +316,7 @@ class Client(ClientUserPBase):
              using all the intents, meanwhile if passed as positive, non existing intent flags are removed.
          
         additional_owners : `None`, `int`, ``ClientUserBase``, `iterable` of (`int`, ``ClientUserBase``) = `None` \
-                ,Optional (Keyword only)
+                , Optional (Keyword only)
             Additional users to return `True` if ``is_owner` is called.
         
         extensions : `None`, `str`, `iterable` of `str` = `None`, Optional (Keyword only)

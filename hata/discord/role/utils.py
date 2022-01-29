@@ -46,19 +46,19 @@ def cr_p_role_object(name, role_id=None, color=Color(), separated=False, positio
     ----------
     name : `str`
         The name of the role.
-    role_id : `None`, `int`,`optional
+    role_id : `None`, `int` = `None`, Optional
         The role's unique identifier number. If given as `None`, then a random `id` will be generated.
-    color : ``Color``, Optional
+    color : `None`, ``Color`` = `None`, Optional
         The role's color. Defaults to `Color(0)`
     separated : `bool`, Optional
         Users show up in separated groups by their highest `separated` role. Defaults to `False`.
-    position : `int`, Optional
+    position : `int` = `0`, Optional
         The role's position at the guild. Defaults to `0`.
-    permissions : ``Permission``, Optional
+    permissions : ``Permission`` = `Permission(0)`, Optional
         The permissions of the users having the role.
-    managed : `bool`, Optional
+    managed : `bool` = `False`, Optional
         Whether the role is managed by an integration.
-    mentionable : `bool`, Optional
+    mentionable : `bool` = `False`, Optional
         Whether the role can be mentioned.
     
     Returns
@@ -110,7 +110,7 @@ def parse_role(text, message=None):
     ----------
     text : `str`
         The text to parse the role out.
-    message : `None`, ``Message``, Optional
+    message : `None`, ``Message`` = `None`, Optional
         Context for name based parsing.
     
     Returns

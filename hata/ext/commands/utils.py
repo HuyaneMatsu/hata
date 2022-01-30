@@ -52,9 +52,9 @@ class CooldownWrapper(CommandWrapper):
         
         Parameters
         ----------
-        weight : `int`, Optional
+        weight : `int` = `0`, Optional
             The weight of one call. Defaults to `1`.
-        func : `async-callable`, Optional
+        func : `async-callable` = `None`, Optional
             The wrapped command. If not given, returns a wrapper, what can be used as a decorator.
 
         Returns
@@ -253,11 +253,11 @@ class Cooldown:
          
         reset : `float`
             The reset time of the cooldown.
-        limit : `int`
+        limit : `int` = `1`, Optional
             The amount of calls after the respective command goes on cooldown.
-        weight : `int`, Optional
-            The weight of one call. Defaults to `1`.
-        handler : `None`, `async-callable`
+        weight : `int` = `1`, Optional
+            The weight of one call.
+        handler : `None`, `async-callable` = `None`, Optional
             Called, when the wrapped command is on cooldown.
             
             If given then 4 parameters will be passed to it:
@@ -273,7 +273,7 @@ class Cooldown:
             | time_left         | `float`       |
             +-------------------+---------------+
         
-        func : `async-callable`, Optional
+        func : `None`, `async-callable` = `None`, Optional
             The wrapped command. If not given, returns a wrapper, what can be used as a decorator.
         
         Returns

@@ -860,11 +860,11 @@ class RPCClient:
         
         Parameters
         ----------
-        audio_balance : `None`, ``AudioBalance``, Optional (Keyword only)
+        audio_balance : `None`, ``AudioBalance`` = `None`, Optional (Keyword only)
             Audio balance.
-        mute : `None`, `bool`
+        mute : `None`, `bool` = `None`, Optional (Keyword only)
             Whether the user is muted.
-        volume : `None`, `float`
+        volume : `None`, `float` = `None`, Optional (Keyword only)
             The user's volume.
             
             Can be in range [0.0:2.0].
@@ -942,7 +942,7 @@ class RPCClient:
         ----------
         channel : `None`, ``ChannelVoiceBase``, `int`
             The channel to select or `None` to leave.
-        force : `bool`, Optional (Keyword only)
+        force : `bool` = `False`, Optional (Keyword only)
             Forces the user to join the voice channel.
             
             Defaults to `False`.
@@ -1120,28 +1120,28 @@ class RPCClient:
         
         Parameters
         ----------
-        input_ : ``VoiceSettingsInput``, Optional (Keyword only)
+        input_ : `None`, ``VoiceSettingsInput`` = `None`, Optional (Keyword only)
             Input settings.
-        output : ``VoiceSettingsOutput``, Optional (Keyword only)
+        output : `None`, ``VoiceSettingsOutput`` = `None`, Optional (Keyword only)
             Output settings.
-        mode : ``VoiceSettingsMode``, Optional (Keyword only)
+        mode : `None`, ``VoiceSettingsMode`` = `None`, Optional (Keyword only)
             Voice mode settings.
-        automatic_gain_control : `bool`, Optional (Keyword only)
+        automatic_gain_control : `None`, `bool` = `None`, Optional (Keyword only)
             Whether automatic gain control should be enabled.
-        echo_cancellation : `bool`, Optional (Keyword only)
+        echo_cancellation : `None`, `bool` = `None`, Optional (Keyword only)
             Whether echo cancellation should be enabled.
-        noise_suppression : `bool`, Optional (Keyword only)
+        noise_suppression : `None`, `bool` = `None`, Optional (Keyword only)
             Whether noise suppression should be enabled.
-        quality_of_service : `bool`, Optional (Keyword only)
+        quality_of_service : `None`, `bool` = `None`, Optional (Keyword only)
             Whether voice quality of service should be enabled.
             
             > QoS, quality of service is a method to prioritize network traffic going through a router to provide
             > acceptable service to most users.
-        silence_warning : `bool`, Optional (Keyword only)
+        silence_warning : `None`, `bool` = `None`, Optional (Keyword only)
             Whether silence warning notice should be enabled.
-        deaf : `bool`, Optional (Keyword only)
+        deaf : `None`, `bool` = `None`, Optional (Keyword only)
             Whether the user should be deaf.
-        mute : `bool`, Optional (Keyword only)
+        mute : `None`, `bool` = `None`, Optional (Keyword only)
             Whether the user should be muted.
         
         Returns

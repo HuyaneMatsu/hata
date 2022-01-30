@@ -224,7 +224,7 @@ class ComponentInteractionWaiter:
         
         Parameters
         ----------
-        exception : `None`, ``BaseException``, Optional
+        exception : `None`, ``BaseException`` = `None`, Optional
             The exception to cancel the waiter with.
         """
         if self._finished:
@@ -417,7 +417,7 @@ class ComponentInteractionIterator:
         
         Parameters
         ----------
-        exception : `None`, ``BaseException``, Optional
+        exception : `None`, ``BaseException`` = `None`, Optional
             The exception to cancel the waiter with.
         """
         if self._finished:
@@ -558,9 +558,9 @@ async def wait_for_component_interaction(event_or_message, *, timeout=None, chec
     ----------
     event_or_message : ``InteractionEvent``, ``Message``
         The interaction event or the sent message to wait component on.
-    timeout : `None`, `float`, Optional (Keyword only)
+    timeout : `None`, `float` = `None`, Optional (Keyword only)
         The maximal amount of time wait
-    check : `None`, `callable`, Optional (Keyword only)
+    check : `None`, `callable` = `None`, Optional (Keyword only)
         Checks whether the received ``InteractionEvent``-s pass the requirements.
     
     Returns
@@ -591,14 +591,14 @@ async def iter_component_interactions(event_or_message, *, timeout=None, check=N
     ----------
     event_or_message : ``InteractionEvent``, ``Message``
         The interaction event or the sent message to wait component on.
-    timeout : `None`, `float`, Optional (Keyword only)
+    timeout : `None`, `float` = `None`, Optional (Keyword only)
         The maximal amount of time wait
-    check : `None`, `callable`, Optional (Keyword only)
+    check : `None`, `callable` = `None`, Optional (Keyword only)
         Checks whether the received ``InteractionEvent``-s pass the requirements.
-    count : `int`, Optional (Keyword only)
+    count : `int` = `-1`, Optional (Keyword only)
         The maximal amount of events to yield.
         
-        Giving it as negative number will yield infinitely. Defaults to `-1`.
+        Giving it as negative number will yield infinitely.
     
     Yields
     ------

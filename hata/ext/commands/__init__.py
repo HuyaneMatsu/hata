@@ -54,12 +54,12 @@ def setup_ext_commands(client, prefix=None, lite=False, **kwargs):
     ----------
     client : ``Client`
         The client on what the extension will be setuped.
-    prefix : `str`, (`tuple`, `list`, `deque`) of `str`, `callable` -> `str`, Optional
+    prefix : `str`, (`tuple`, `list`, `deque`) of `str`, `callable` -> `str` = `None`, Optional
         The prefix of the client's command processer.
         
         Can be given as `str`, as `tuple`, `list`, `deque` of `str`, or as a `callable`, what accepts `1` parameter,
         the respective ``Message`` and returns `str`.
-    lite : `bool`, Optional
+    lite : `bool` = `False`, Optional
         Whether only the extensions utility feature should be setup. May be useful for example when the client uses
         only slash commands. Defaults to `False`.
     **kwargs : Keyword parameters

@@ -208,7 +208,7 @@ class PaginationBase:
         
         Parameters
         ----------
-        exception : `None`, ``BaseException``, Optional
+        exception : `None`, ``BaseException`` = `None`, Optional
             Exception to cancel the pagination with. Defaults to `None`
         
         Returns

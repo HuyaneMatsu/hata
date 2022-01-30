@@ -924,11 +924,11 @@ class Slasher(EventHandlerBase):
         ----------
         client : ``Client``
             The owner client instance.
-        delete_commands_on_unload : `bool`, Optional
+        delete_commands_on_unload : `bool` = `False`, Optional
             Whether commands should be deleted when unloaded.
-        use_default_exception_handler : `bool`, Optional
+        use_default_exception_handler : `bool` = `True`, Optional
             Whether the default slash exception handler should be added as an exception handler.
-        random_error_message_getter : `None`, `FunctionType`, Optional
+        random_error_message_getter : `None`, `FunctionType` = `None`, Optional
             Random error message getter used by the default exception handler.
         
         Raises
@@ -1234,7 +1234,7 @@ class Slasher(EventHandlerBase):
         ----------
         func : `async-callable`
             The function used as the command when using the respective slash command.
-        name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
+        name : `None`, `str`, `tuple` of (`str`, `Ellipsis`, `None`)
             The command's name if applicable. If not given or if given as `None`, the `func`'s name will be use
             instead.
         description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`), Optional
@@ -1539,7 +1539,7 @@ class Slasher(EventHandlerBase):
         ----------
         func : ``SlasherApplicationCommand``, ``Router`` of ``SlasherApplicationCommand``
             The command to remove.
-        name : `None`, `str`, Optional
+        name : `None`, `str` = `None`, Optional
             The command's name to remove.
         
         Raises
@@ -2694,9 +2694,9 @@ class Slasher(EventHandlerBase):
         
         Parameters
         ----------
-        exception_handler : `None`, `CoroutineFunction`, Optional
+        exception_handler : `None`, `CoroutineFunction` = `None`, Optional
             Exception handler to register.
-        first : `bool`, Optional (Keyword Only)
+        first : `bool` = `False`, Optional (Keyword Only)
             Whether the exception handler should run first.
         
         Returns
@@ -3064,7 +3064,7 @@ class Slasher(EventHandlerBase):
             The parameter's name.
         *parameter_names : `str`
             Additional parameter names to autocomplete
-        function : `None`, `async-callable`, Optional (Keyword only)
+        function : `None`, `async-callable` = `None`, Optional (Keyword only)
             The function to register as auto completer.
         
         Returns

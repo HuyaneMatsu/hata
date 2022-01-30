@@ -275,7 +275,7 @@ class ChannelOutputStream:
         
         Parameters
         ----------
-        timeout : `None`, `float`, Optional
+        timeout : `None`, `float` = `None`, Optional
             Maximal timeout to wait.
         
         Raises
@@ -495,7 +495,7 @@ class ChannelInputStream:
         
         Parameters
         ----------
-        timeout : `None`, `float`, Optional
+        timeout : `None`, `float` = `None`, Optional
             Maximal timeout to wait.
         
         Raises
@@ -756,7 +756,7 @@ class ChannelInputStream:
         
         Parameters
         ----------
-        size : `int`
+        size : `int` = `-1`. Optional
             The upper limit to read from the underlying stream. If eof is received meanwhile reading, the already read
             data is returned.
             
@@ -803,8 +803,8 @@ class ChannelInputStream:
         
         Parameters
         ----------
-        hint : `int`, Optional
-            The upper limit if lines to read. Defaults to `-1`.
+        hint : `int` = `-1`, Optional
+            The upper limit if lines to read.
             
             If given as negative `int`, then all the data till eof is read from the stream.
         
@@ -831,6 +831,7 @@ class ChannelInputStream:
         self.close()
         return False
 
+
 def get_channel_stdout(client, channel, *, chunk_size=1000, sanitize=False):
     """
     Gets output stream towards the given channel.
@@ -841,10 +842,10 @@ def get_channel_stdout(client, channel, *, chunk_size=1000, sanitize=False):
         The client who redirects the stream.
     channel : ``ChannelText``
         The channel where the stream is redirected from.
-    chunk_size : `int`, Optional (Keyword only)
-        The maximal size of a raw chunk to output. Defaults to `1000`.
-    sanitize : `bool`, Optional (Keyword only)
-        Whether the output stream should be sanitized. Defaults to `False`.
+    chunk_size : `int` = `1000`, Optional (Keyword only)
+        The maximal size of a raw chunk to output.
+    sanitize : `bool` = `False`, Optional (Keyword only)
+        Whether the output stream should be sanitized.
         
         > Sanitization is only applied after an output chunk is cut to size, so it is recommended to not set
         > `chunk_size` over `1000` if `sanitize` is given as `True`.
@@ -866,7 +867,7 @@ def get_channel_stdin(client, channel, *, check=None):
         The client who redirects the stream.
     channel : ``ChannelText``
         The channel from where the stream will be redirected form.
-    check : `None`, `callable`, Optional (Keyword only)
+    check : `None`, `callable` = `None`, Optional (Keyword only)
         Check which message's content should be feed to the input. Defaults to `None`.
         
         Should accept the following parameters:

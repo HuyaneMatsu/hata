@@ -227,17 +227,17 @@ class CommandProcessor(EventWaitforBase):
             | prefix            | `str`, `tuple` of `str`   |
             +-------------------+---------------------------+
             
-        precheck : `bool`, Optional (Keyword only)
+        precheck : `None`, `callable` = `None`, Optional (Keyword only)
             A function used to detect whether a message should be handled.
-        mention_prefix_enabled : `bool`, Optional (Keyword only)
+        mention_prefix_enabled : `bool` = `True`, Optional (Keyword only)
             Whether mentioning the client at the start of a message counts as prefix. Defaults to `True`.
-        category_name_rule : `None`, `function`, Optional (Keyword only)
+        category_name_rule : `None`, `FunctionType` = `None`, Optional (Keyword only)
             Function to generate category display names. Defaults to `None`.
-        command_name_rule : `None`, `function`, Optional (Keyword only)
+        command_name_rule : `None`, `FunctionType` = `None`, Optional (Keyword only)
             Function to generate command display names. Defaults to `None`.
-        default_category_name : `None`, `str`, Optional (Keyword only)
+        default_category_name : `None`, `str` = `None`, Optional (Keyword only)
             The command processor's default category's name. Defaults to `None`.
-        prefix_ignore_case : `bool`
+        prefix_ignore_case : `bool` = `True`
             Whether the prefix's case should be ignored.
         
         Raises
@@ -562,9 +562,9 @@ class CommandProcessor(EventWaitforBase):
         ----------
         name : `str`
             The name of the category.
-        checks : `None`, ``CheckBase``, `list` of ``CheckBase``, Optional (Keyword only)
+        checks : `None`, ``CheckBase``, `list` of ``CheckBase`` = `None`, Optional (Keyword only)
             Checks to define in which circumstances a command should be called.
-        description : `Any`, Optional (Keyword only)
+        description : `Any` = `None`, Optional (Keyword only)
             Optional description for the category. Defaults to `None`.
         
         Returns
@@ -888,34 +888,34 @@ class CommandProcessor(EventWaitforBase):
         ----------
         command : ``Command``, ``Router``, `None`, `async-callable`
             Async callable to add as a command.
-        name : `None`, `str`
-            The command's name.
-        name : `None`, `str`, `tuple` of (`None`, `Ellipsis`, `str`)
+        name : `None`, `str`, `tuple` of (`None`, `Ellipsis`, `str`) = `None`, Optional
             The name to be used instead of the passed `command`'s.
-        description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`), Optional
+        description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`) = `None`, Optional
             Description added to the command. If no description is provided, then it will check the commands's
             `.__doc__` attribute for it. If the description is a string instance, then it will be normalized with the
             ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
             description.
-        aliases : `None`, `str`, `list` of `str`, `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`), Optional
+        aliases : `None`, `str`, `list` of `str`, `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`) = `None`
+                , Optional
             The aliases of the command.
-        category : `None`, ``Category``, `str`, `tuple` of (`None`, `Ellipsis`, ``Category``, `str`), Optional
+        category : `None`, ``Category``, `str`, `tuple` of (`None`, `Ellipsis`, ``Category``, `str`) = `None`
+                , Optional
             The category of the command. Can be given as the category itself, or as a category's name. If given as
             `None`, then the command will go under the command processor's default category.
         checks : `None`, ``CommandCheckWrapper``, ``CheckBase``, `list` of ``CommandCheckWrapper``, ``CheckBase`` \
                 instances or `tuple` of (`None`, `Ellipsis`, ``CommandCheckWrapper``, ``CheckBase``, `list` of \
-                ``CommandCheckWrapper``, ``CheckBase``), Optional
+                ``CommandCheckWrapper``, ``CheckBase``) = `None`, Optional
             Checks to decide in which circumstances the command should be called.
         error_handlers : `None`, `async-callable`, `list` of `async-callable`, `tuple` of (`None`, `async-callable`, \
-                `list` of `async-callable`), Optional
+                `list` of `async-callable`) = `None`, Optional
             Error handlers for the command.
-        separator : `None`, `str`, `tuple` (`str`, `str`), Optional
+        separator : `None`, `str`, `tuple` (`str`, `str`) = `None`, Optional
             The parameter separator of the command's parser.
-        assigner : `None`, `str`, Optional
+        assigner : `None`, `str` = `None`, Optional
             Parameter assigner sign of the command's parser.
-        hidden : `None`, `bool`, `tuple` (`None`, `Ellipsis`, `bool`), Optional
+        hidden : `None`, `bool`, `tuple` (`None`, `Ellipsis`, `bool`) = `None`, Optional
             Whether the command should be hidden from the help commands.
-        hidden_if_checks_fail : `None`, `bool`, `tuple` (`None`, `Ellipsis`, `bool`), Optional
+        hidden_if_checks_fail : `None`, `bool`, `tuple` (`None`, `Ellipsis`, `bool`) = `None`, Optional
             Whether the command should be hidden from the help commands if any check fails.
         
         Returns
@@ -965,7 +965,7 @@ class CommandProcessor(EventWaitforBase):
         ----------
         command : ``Command``, ``Router``, `async-callable` or instantiable to `async-callable`
             The command to remove.
-        name : `None`, `str`, Optional
+        name : `None`, `str` = `None`, Optional
             The command's name to remove.
         
         Raises

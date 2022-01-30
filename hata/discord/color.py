@@ -371,7 +371,7 @@ class Color(int):
         
         Parameters
         ----------
-        seed : `Any`, Optional
+        seed : `Any` = `None`, Optional
             If `seed` is given as `None`, the current system time is used. If randomness sources are provided by the
             operating system, they are used instead of the system time.
             
@@ -380,7 +380,7 @@ class Color(int):
             > Since Python 3.9 the seed must be one of the following types: `NoneType`, `int`, `float`, `str`, `bytes`,
             > or `bytearray`.
             
-        version : `int`, Optional
+        version : `int` = `2`, Optional
             Can be given either as `1`, `2`.
             
             If given as `2` (so by default), a `str`, `bytes`, `bytearray` object gets converted to an `int` and all

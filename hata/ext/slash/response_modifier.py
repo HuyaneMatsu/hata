@@ -35,7 +35,7 @@ def _validate_allowed_mentions(allowed_mentions):
     Parameters
     ----------
     allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, ``AllowedMentionProxy``, \
-            `list` of (`str`, ``UserBase``, ``Role`` ), Optional (Keyword only)
+            `list` of (`str`, ``UserBase``, ``Role`` )
          Which user or role can the response message ping (or everyone).
     
     Returns

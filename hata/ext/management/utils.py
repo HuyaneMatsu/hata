@@ -32,7 +32,7 @@ def create_file_structure(directory, structure):
     ----------
     directory : `str`
         Directory to execute the file creation.
-    structure : `tuple` of `tuple` (`tuple` of (`str`, `None`), (`str`, `None`))
+    structure : `tuple` of `tuple` (`tuple` of (`None`, `str`), (`None`, `str`))
         File structure to create.
     """
     for paths, file_content in structure:

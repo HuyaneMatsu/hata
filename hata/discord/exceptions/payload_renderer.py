@@ -93,7 +93,7 @@ def reconstruct_value_into(value, into, indent, is_file):
     
     Parameters
     ----------
-    value : `str`, `None`, `list`, `dict`, `int`, `float`, `bool`
+    value : `None`, `str`, `list`, `dict`, `int`, `float`, `bool`
         The deserialized json value.
     into : `list` of `str`
         A list to extend it's content.

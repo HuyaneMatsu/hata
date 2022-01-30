@@ -833,25 +833,26 @@ class SlasherApplicationCommand:
         
         Parameters
         ----------
-        func : `None`, `async-callable`, Optional
+        func : `None`, `async-callable` = `None`, Optional
             The function used as the command when using the respective slash command.
-        name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`), Optional
+        name : `None`, `str`, `tuple` of (`str`, `Ellipsis`, `None`) = `None`, Optional
             The command's name if applicable. If not given or if given as `None`, the `func`'s name will be use
             instead.
-        description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`), Optional
+        description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`) = `None`, Optional
             Description to use instead of the function's docstring.
-        is_global : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`), Optional
+        is_global : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
             Whether the slash command is global. Defaults to `False`.
         guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
-                `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``)), Optional
+                `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``)) = `None`
+                , Optional
             To which guild(s) the command is bound to.
-        is_global : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`), Optional
+        is_global : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
             Whether the slash command is the default command in it's category.
-        delete_on_unload : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`), Optional
+        delete_on_unload : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
             Whether the command should be deleted from Discord when removed.
-        allow_by_default : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`), Optional
+        allow_by_default : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
-        target : `None`, `int`, `str`, ``ApplicationCommandTargetType``, Optional
+        target : `None`, `int`, `str`, ``ApplicationCommandTargetType`` = `None`, Optional
             The target type of the slash command.
             
             Defaults to `ApplicationCommandTargetType.chat`.
@@ -1659,7 +1660,7 @@ class SlasherApplicationCommand:
             The parameter's name.
         *parameter_names : `str`
             Additional parameter names to autocomplete
-        function : `None`, `async-callable`, Optional (Keyword only)
+        function : `None`, `async-callable` = `None`, Optional (Keyword only)
             The function to register as auto completer.
         
         Returns
@@ -1748,9 +1749,9 @@ class SlasherApplicationCommand:
         
         Parameters
         ----------
-        exception_handler : `None`, `CoroutineFunction`, Optional
+        exception_handler : `None`, `CoroutineFunction` = `None`, Optional
             Exception handler to register.
-        first : `bool`, Optional (Keyword Only)
+        first : `bool` = `False`, Optional (Keyword Only)
             Whether the exception handler should run first.
         
         Returns
@@ -2157,7 +2158,7 @@ class SlasherApplicationCommandFunction:
             The parameter's name.
         *parameter_names : `str`
             Additional parameter names to autocomplete
-        function : `None`, `callable`, Optional (Keyword only)
+        function : `None`, `callable` = `None`, Optional (Keyword only)
             The function to register as auto completer.
         
         Returns
@@ -2245,9 +2246,9 @@ class SlasherApplicationCommandFunction:
         
         Parameters
         ----------
-        exception_handler : `None`, `CoroutineFunction`, Optional
+        exception_handler : `None`, `CoroutineFunction` = `None`, Optional
             Exception handler to register.
-        first : `bool`, Optional (Keyword Only)
+        first : `bool` = `False`, Optional (Keyword Only)
             Whether the exception handler should run first.
         
         Returns
@@ -2665,7 +2666,7 @@ class SlasherApplicationCommandCategory:
             The parameter's name.
         *parameter_names : `str`
             Additional parameter names to autocomplete
-        function : `None`, `callable`, Optional (Keyword only)
+        function : `None`, `callable` = `None`, Optional (Keyword only)
             The function to register as auto completer.
         
         Returns
@@ -2738,9 +2739,9 @@ class SlasherApplicationCommandCategory:
         
         Parameters
         ----------
-        exception_handler : `None`, `CoroutineFunction`, Optional
+        exception_handler : `None`, `CoroutineFunction` = `None`, Optional
             Exception handler to register.
-        first : `bool`, Optional (Keyword Only)
+        first : `bool` = `False`, Optional (Keyword Only)
             Whether the exception handler should run first.
         
         Returns
@@ -2982,9 +2983,9 @@ class SlasherApplicationCommandParameterAutoCompleter:
         
         Parameters
         ----------
-        exception_handler : `None`, `CoroutineFunction`, Optional
+        exception_handler : `None`, `CoroutineFunction` = `True`, Optional
             Exception handler to register.
-        first : `bool`, Optional (Keyword Only)
+        first : `bool` = `False`, Optional (Keyword Only)
             Whether the exception handler should run first.
         
         Returns

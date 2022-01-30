@@ -274,10 +274,8 @@ class SolarPlayerBase:
         ----------
         configured_track : ``ConfiguredTrack``
             The track to play.
-        replace : `bool`, Optional
+        replace : `bool` = `True`, Optional
             Whether the current operation, like playing and pausing should be overwritten.
-            
-            Defaults to `True`.
         """
         node = self.node
         if (node is not None):

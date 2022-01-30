@@ -769,32 +769,33 @@ class Command:
         ----------
         command : `None`, `async-callable`
             The async callable added as the command itself.
-        name : `None`, `str`, `tuple` of (`None`, `Ellipsis`, `str`), Optional
+        name : `None`, `str`, `tuple` of (`None`, `Ellipsis`, `str`) = `None`, Optional
             The name to be used instead of the passed `command`'s.
-        description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`), Optional
+        description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`) = `None`, Optional
             Description added to the command. If no description is provided, then it will check the commands's
             `.__doc__` attribute for it. If the description is a string instance, then it will be normalized with the
             ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
             description.
-        aliases : `None`, `str`, `list` of `str`, `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`), Optional
+        aliases : `None`, `str`, `list` of `str`, `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`) = `None`
+                , Optional
             The aliases of the command.
-        category : `None`, ``Category``, `str`, `tuple` of (`None`, `Ellipsis`, ``Category``, `str`), Optional
+        category : `None`, ``Category``, `str`, `tuple` of (`None`, `Ellipsis`, ``Category``, `str`) = `None`, Optional
             The category of the command. Can be given as the category itself, or as a category's name. If given as
-            `None`, then the command will go under the command processer's default category.
+            `None`, then the command will go under the command processor's default category.
         checks : `None`, ``CommandCheckWrapper``, ``CheckBase``, `list` of ``CommandCheckWrapper``, ``CheckBase`` \
                 instances or `tuple` of (`None`, `Ellipsis`, ``CommandCheckWrapper``, ``CheckBase``, `list` of \
-                ``CommandCheckWrapper``, ``CheckBase``), Optional
+                ``CommandCheckWrapper``, ``CheckBase``) = `None`, Optional
             Checks to decide in which circumstances the command should be called.
         error_handlers : `None`, `async-callable`, `list` of `async-callable`, `tuple` of (`None`, `async-callable`, \
-                `list` of `async-callable`), Optional
+                `list` of `async-callable`) = `None`, Optional
             Error handlers for the command.
-        separator : `None`, `str`, `tuple` (`str`, `str`), Optional
+        separator : `None`, `str`, `tuple` (`str`, `str`) = `None`, Optional
             The parameter separator of the command's parser.
-        assigner : `None`, `str`, Optional
+        assigner : `None`, `str` = `None`, Optional
             Parameter assigner sign of the command's parser.
-        hidden : `None`, `bool`, `tuple` (`None`, `Ellipsis`, `bool`), Optional
+        hidden : `None`, `bool`, `tuple` (`None`, `Ellipsis`, `bool`) = `None`, Optional
             Whether the command should be hidden from the help commands.
-        hidden_if_checks_fail : `None`, `bool`, `tuple` (`None`, `Ellipsis`, `bool`), Optional
+        hidden_if_checks_fail : `None`, `bool`, `tuple` (`None`, `Ellipsis`, `bool`) = `None`, Optional
             Whether the command should be hidden from the help commands if any check fails.
         """
         if command is None:

@@ -215,7 +215,7 @@ class TextTable:
     
     Attributes
     ----------
-    _array : `list` of (`str`, `None`)
+    _array : `list` of (`None`, `str`)
         The elements of the table.
     _size : `tuple` (`int`, `int`)
         The dimensions of the table.
@@ -455,7 +455,7 @@ class TextTable:
         
         Yields
         ------
-        line : `list` of (`str`, `None`)
+        line : `list` of (`None`, `str`)
         """
         x, y = self._size
         array = self._array

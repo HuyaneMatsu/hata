@@ -66,13 +66,15 @@ def validate_extension_parameters(entry_point=None, exit_point=None, extend_defa
     
     Parameters
     ----------
-    entry_point : `None`, `str`, `callable`, Optional
+    entry_point : `None`, `str`, `callable`, = `None` Optional
         Extension specific entry point, to use over the extension loader's default.
-    exit_point : `None`, `str`, `callable`, Optional
+    exit_point : `None`, `str`, `callable` = `None`, Optional
         Extension specific exit point, to use over the extension loader's default.
-    locked : `bool`, Optional
+    extend_default_variables : `bool` = `True`, Optional
+        Whether the extension should use the loader's default variables or just it's own's.
+    locked : `bool` = `False`, Optional
         Whether the given extension(s) should not be affected by `.{}_all` methods.
-    take_snapshot_difference : `bool`, Optional
+    take_snapshot_difference : `bool` = `True`, Optional
         Whether snapshot feature should be used.
     **variables : Keyword parameters
         Variables to assign to an extension(s)'s module before they are loaded.

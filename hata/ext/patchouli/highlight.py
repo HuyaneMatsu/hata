@@ -329,7 +329,7 @@ class WordNode:
         ----------
         string : `str`
             The string to match from.
-        index : `int`, Optional
+        index : `int` = `0`, Optional
             The starter index to match since. Defaults to `0`.
         
         Returns

@@ -293,10 +293,10 @@ class CommandCooldownWrapper(CommandWrapper):
         reset : `float`
             The reset time of the cooldown.
         
-        limit : `int`
+        limit : `int` = `1`, Optional
             The amount of calls after the respective command goes on cooldown.
         
-        weight : `int`, Optional
+        weight : `int` = `1`, Optional
             The weight of one call. Defaults to `1`.
         
         Raises

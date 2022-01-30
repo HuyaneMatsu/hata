@@ -381,7 +381,7 @@ class InteractionResponse:
         
         Parameters
         ----------
-        content : `str`, ``EmbedBase``, `Any`, Optional
+        content : `None`, `str`, ``EmbedBase``, `Any`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
             if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
             
@@ -395,15 +395,15 @@ class InteractionResponse:
         components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
             Components attached to the message.
         
-        embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
+        embed : `None`, ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
             The embedded content of the message.
             
             If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
 
-        event : `None`, ``InteractionEvent``, Optional (Keyword only)
+        event : `None`, ``InteractionEvent`` = `None`, Optional (Keyword only)
             A specific event ot answer instead of the command's.
         
-        file : `Any`, Optional (Keyword only)
+        file : `None`, `Any`, Optional (Keyword only)
             A file to send. Check ``Client._create_file_form`` for details.
         
         message : `None`, ``Message``, Optional (Keyword only)
@@ -607,7 +607,7 @@ def abort(content=..., *, allowed_mentions=..., components=..., embed=..., event
     
     Parameters
     ----------
-    content : `str`, ``EmbedBase``, `Any`, Optional
+    content : `None`, `str`, ``EmbedBase``, `Any`, Optional
         The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
         if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
         
@@ -620,21 +620,21 @@ def abort(content=..., *, allowed_mentions=..., components=..., embed=..., event
     components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
         Components attached to the message.
     
-    embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
+    embed : `None` ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
         The embedded content of the message.
         
         If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
     
-    event : `None`, ``InteractionEvent``, Optional (Keyword only)
+    event : `None`, ``InteractionEvent`` = `None`, Optional (Keyword only)
         A specific event ot answer instead of the command's.
     
-    file : `Any`, Optional (Keyword only)
+    file : `None` `Any`, Optional (Keyword only)
         A file to send. Check ``Client._create_file_form`` for details.
     
     message : `None`, ``Message``, Optional (Keyword only)
         Whether the interaction's message should be edited.
     
-    show_for_invoking_user_only : `bool`, Optional (Keyword only)
+    show_for_invoking_user_only : `bool` = `True`, Optional (Keyword only)
         Whether the sent message should only be shown to the invoking user.
         
         If given as `True`, only the message's content and embeds and components will be processed by Discord.

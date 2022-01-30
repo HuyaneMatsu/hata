@@ -495,7 +495,7 @@ class UserMenuRunner(PaginationBase):
             The channel where the ``UserMenuRunner`` is executed.
         *args : Parameters
             Additional parameters to pass to the factory's class's constructor.
-        message : `None`, ``Message``, Optional (Keyword Only)
+        message : `None`, ``Message`` = `None`, Optional (Keyword Only)
             The message to use instead of creating a new one.
         **kwargs : Keyword parameters
             Additional keyword parameters to pass to the factory's class's constructor.

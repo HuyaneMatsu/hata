@@ -119,11 +119,11 @@ class RPCEventHandlerManager:
         
         Parameters
         ----------
-        func : `callable`, Optional
+        func : `None`, `callable` = `None`, Optional
             The async callable to add as an event handler.
-        name : `None`, `str`, Optional
+        name : `None`, `str` = `None`, Optional
             A name to be used instead of the passed `func`'s when adding it.
-        overwrite : `bool`, Optional
+        overwrite : `bool` = `False`, Optional
             Whether the passed `func` should overwrite the already added ones with the same name or extend them.
         
         Returns

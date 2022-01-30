@@ -1038,7 +1038,7 @@ class SlashParameter:
         The minimal accepted value by the parameter.
     type_or_choice : `str`, `type`, `list`, `dict`
         The annotation's value to use.
-    name : `None`, `str`, Optional
+    name : `None`, `str`
         Name to use instead of the parameter's.
     """
     __slots__ = ('channel_types', 'description', 'max_value', 'min_value', 'name', 'type_or_choice')
@@ -1050,17 +1050,17 @@ class SlashParameter:
         
         Parameters
         ----------
-        type_or_choice : `str`, `type`, `list`, `dict`, Optional
+        type_or_choice : `None`, `str`, `type`, `list`, `dict` = `None`, Optional
             The annotation's value to use.
-        description : `None`, `str`, Optional
+        description : `None`, `str` = `None`, Optional
             Description for the annotation.
-        name : `None`, `str`, Optional
+        name : `None`, `str` = `None`, Optional
             Name to use instead of the parameter's.
-        channel_types : `None`, `iterable` of `int`, Optional (Keyword only)
+        channel_types : `None`, `iterable` of `int` = `None`, Optional (Keyword only)
             The accepted channel types.
-        max_value : `None`, `int`, `float`, Optional (Keyword only)
+        max_value : `None`, `int`, `float` = `None`, Optional (Keyword only)
             The maximal accepted value by the parameter.
-        min_value : `None`, `int`, `float`, Optional (Keyword only)
+        min_value : `None`, `int`, `float` = `None`, Optional (Keyword only)
             The minimal accepted value by the parameter.
         """
         self = object.__new__(cls)

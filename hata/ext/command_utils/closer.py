@@ -103,14 +103,12 @@ class Closer(PaginationBase):
         
         content : ``Any`
             The displayed content.
-        timeout : `float`, Optional (Keyword Only)
-            The timeout of the ``Closer`` in seconds. Defaults to `240.0`.
-        message : `None`, ``Message``, Optional (Keyword Only)
+        timeout : `float` = `240.0`, Optional (Keyword Only)
+            The timeout of the ``Closer`` in seconds.
+        message : `None`, ``Message`` = `None`, Optional (Keyword Only)
             The message on what the ``Closer`` will be executed. If not given a new message will be created.
-            Defaults to `None`.
-        check : `None`, `callable`, Optional (Keyword Only)
-            A callable what decides whether the ``Closer`` should process a received reaction event. Defaults to
-            `None`.
+        check : `None`, `callable` = `None`, Optional (Keyword Only)
+            A callable what decides whether the ``Closer`` should process a received reaction event.
             
             Should accept the following parameters:
             +-----------+---------------------------------------------------+

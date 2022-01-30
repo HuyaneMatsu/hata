@@ -77,11 +77,12 @@ class AudioBalance:
         
         Parameters
         ----------
-        left : `None`, `float`, Optional (Keyword only)
+        left : `None`, `float` = `None`, Optional (Keyword only)
             Left balance of the user.
             
             Can be in range [0.0:1.0].
-        right : `None`, `float`, Optional (Keyword only)
+        
+        right : `None`, `float` = `None`, Optional (Keyword only)
             Right balance of the user.
             
             Can be in range [0.0:1.0].

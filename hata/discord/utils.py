@@ -703,7 +703,7 @@ def chunkify(lines, limit=2000):
     ----------
     lines : `list` of `str`
         Lines of text to be chunkified.
-    limit : `int`, Optional
+    limit : `int` = `2000`, Optional
         The maximal length of a generated chunk.
     
     Returns
@@ -773,9 +773,9 @@ def cchunkify(lines, lang='', limit=2000):
     ----------
     lines : `list` of `str`
         Lines of text to be chunkified.
-    lang : `str`, Optional
+    lang : `str` = `''`, Optional
         Language prefix of the code-block.
-    limit : `int`, Optional
+    limit : `int` = `2000`, Optional
         The maximal length of a generated chunk.
     
     Returns
@@ -853,9 +853,9 @@ else:
         delta,
         limit = 3,
         names = (
-            ('year', 'years',),
+            ('year', 'years'),
             ('month', 'months'),
-            ('day', 'days', ),
+            ('day', 'days'),
             ('hour', 'hours'),
             ('minute', 'minutes'),
             ('second', 'seconds'),
@@ -869,9 +869,10 @@ else:
         delta : `datetime`, `relativedelta`
             The time delta. If given as `datetime`, then the delta will be based on the difference between the given
             datetime and the actual time. If given as `relativedelta`, then that will be used directly.
-        limit : `int`, Optional
+        limit : `int` = `3`, Optional
             The maximal amount of connected time units. Defaults to `3`.
-        names : `iterable` of `tuple` (`str`, `str`), Optional
+        names : `iterable` of `tuple` (`str`, `str`) = `(('year', 'years'), ('month', 'months'), ('day', 'days')
+                , ('hour', 'hours'), ('minute', 'minutes'), ('second', 'seconds'),)`, Optional
             The names of the time units starting from years. Each element of the iterable should yield a `tuple` of two
             `str` elements. The first should be always the singular form of the time unit's name and the second the
             plural. Defaults to the time units' names in engrisssh.
@@ -963,6 +964,8 @@ class Unknown(DiscordEntity):
     """
     Represents a not found object when creating an ``AuditLog``.
     
+    This class is not used anymore and will be deprecated and removed in future releases.
+    
     Attributes
     ----------
     id : `int`
@@ -998,7 +1001,7 @@ class Unknown(DiscordEntity):
             The entity's respective type's respective name.
         id_ : `int`
             The entity's unique identifier number.
-        name : `str`, Optional
+        name : `str` = `None`, Optional
             The name of the entity if applicable. If not, `type_` will be used as name instead.
         """
         self.type = type_
@@ -1360,7 +1363,7 @@ def sanitize_mentions(content, guild=None):
     ----------
     content : `None`, `str`
         The content to sanitize.
-    guild : `None`, ``Guild``, Optional
+    guild : `None`, ``Guild`` = `None`, Optional
         Respective context to look up guild specific names of entities.
     
     Returns
@@ -1417,7 +1420,7 @@ def sanitize_content(content, guild=None):
     ----------
     content : `None`, `str`
         The content to sanitize.
-    guild : `None`, ``Guild``, Optional
+    guild : `None`, ``Guild`` = `None`, Optional
         Respective context to look up guild specific names of entities.
     
     Returns
@@ -1642,7 +1645,7 @@ def format_datetime(date_time, style=None):
     ----------
     date_time : `datetime`
         The datetime to format.
-    style : `None`, `str`, `optional
+    style : `None`, `str` = `None`, Optional
         Format code to use. They are listed within ``TIMESTAMP_STYLES``.
     
     Returns
@@ -1662,7 +1665,7 @@ def format_id(id_, style=None):
     ----------
     id_ : `int`
         The Discord identifier to format.
-    style : `None`, `str`, `optional
+    style : `None`, `str` = `None`, Optional
         Format code to use. They are listed within ``TIMESTAMP_STYLES``.
     
     Returns
@@ -1682,7 +1685,7 @@ def format_loop_time(loop_time, style=None):
     ----------
     loop_time : `float`
         Monotonic loop time.
-    style : `None`, `str`, `optional
+    style : `None`, `str` = `None`, Optional
         Format code to use. They are listed within ``TIMESTAMP_STYLES``.
     
     Returns
@@ -1702,7 +1705,7 @@ def format_unix_time(unix_time, style=None):
     ----------
     unix_time : `int`
         The datetime to format.
-    style : `None`, `str`, `optional
+    style : `None`, `str` = `None`, Optional
         Format code to use. They are listed within ``TIMESTAMP_STYLES``.
     
     Returns

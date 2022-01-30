@@ -64,19 +64,19 @@ class CertifiedDevice:
             Model of the product.
         related : `None`, `str`, ``UUID``, `iterable` of ``UUID``
             UUID-s of related devices.
-        echo_cancellation : `bool`, Optional (Keyword only)
+        echo_cancellation : `bool` = `False`, Optional (Keyword only)
             Whether the device's native echo cancellation is enabled. Defaults to `False`.
             
             > Only applicable for `DeviceType.audio_input` devices.
-        noise_suppression : `bool`, Optional (Keyword only)
+        noise_suppression : `bool` = `False`, Optional (Keyword only)
             Whether the device's native noise suppression is enabled. Defaults to `False`.
             
             > Only applicable for `DeviceType.audio_input` devices.
-        automatic_gain_control : `bool`, Optional (Keyword only)
+        automatic_gain_control : `bool` = `False`, Optional (Keyword only)
             Whether the device's native automatic gain control is enabled. Defaults to `False`.
             
             > Only applicable for `DeviceType.audio_input` devices.
-        hardware_mute : `bool`, Optional (Keyword only)
+        hardware_mute : `bool` = `False`, Optional (Keyword only)
             Whether the device is hardware muted. Defaults to `False`.
             
             > Only applicable for `DeviceType.audio_input` devices.

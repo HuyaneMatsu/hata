@@ -84,12 +84,11 @@ class SolarClient:
             The password used for authentication.
         region : `str`
             The region to assign this node to.
-        resume_key : `str`, Optional
+        resume_key : `str` = `None`, Optional
             A resume key used for resuming a session upon re-establishing a WebSocket connection to Lavalink.
-            Defaults to `None`.
-        reconnect_attempts : `int`, Optional
+        reconnect_attempts : `int` = `3`, Optional
             The amount of times connection with the node will be reattempted before giving up.
-            Set to `-1` for infinite. Defaults to `3`.
+            Set to `-1` for infinite.
         
         Returns
         -------
@@ -495,7 +494,7 @@ class SolarClient:
         
         Parameters
         ----------
-        region : `None`, ``VoiceRegion``, Optional
+        region : `None`, ``VoiceRegion`` = `None`, Optional
             The region to find a node in. Defaults to `None`.
         
         Returns
@@ -592,10 +591,8 @@ class SolarClient:
         ----------
         channel : ``ChannelVoiceBase``, `tuple` (`int`, `int`)
             The channel to join to.
-        cls : ``SolarPlayerBase`` subclass, Optional (Keyword only)
+        cls : ``SolarPlayerBase`` = ``SolarPlayer``, Optional (Keyword only)
             The player's class to create.
-            
-            Defaults to ``SolarPlayer``.
         
         Returns
         -------

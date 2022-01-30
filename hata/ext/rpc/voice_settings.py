@@ -30,9 +30,9 @@ class VoiceSettingsInput:
         
         Parameters
         ----------
-        device_id : `str`, Optional (Keyword only)
+        device_id : `None`, `str` = `None` , Optional (Keyword only)
             The device's identifier.
-        volume : `float`, Optional (Keyword only)
+        volume : `None`, `float` = `None`, Optional (Keyword only)
             Input voice level. Can be in range [0.0:1.0]
         available_devices : `None`, `iterable` of ``AvailableDevice``, Optional (Keyword only)
             Voice device objects.
@@ -319,9 +319,9 @@ class VoiceSettingsOutput:
         
         Parameters
         ----------
-        device_id : `str`, Optional (Keyword only)
+        device_id : `None`, `str` = `None`, Optional (Keyword only)
             The device's identifier.
-        volume : `float`, Optional (Keyword only)
+        volume : `None`, `float` = `None`, Optional (Keyword only)
             Output voice level. Can be in range [0.0:2.0]
         available_devices : `None`, `iterable` of ``AvailableDevice``, Optional (Keyword only)
             Voice device objects.
@@ -531,15 +531,15 @@ class VoiceSettingsMode:
         
         Parameters
         ----------
-        type_ : ``VoiceSettingsModeType``, `str`, Optional (Keyword only)
+        type_ : `None`, ``VoiceSettingsModeType``, `str`, Optional (Keyword only)
             Voice setting mode type.
-        auto_threshold : `bool`, Optional (Keyword only)
+        auto_threshold : `None`, `bool`, Optional (Keyword only)
             Whether the voice activity should automatically set it's threshold.
-        threshold : `float`, Optional (Keyword only)
+        threshold : `None`, `float` = `None`, Optional (Keyword only)
             Threshold  for voice activity in dB. Can be in range [-100.0:0.0]
         shortcut_combination : `None`, ``ShortcutKey``, Optional (Keyword only)
             Shortcut key combo for push to talk.
-        delay : `float`, Optional (Keyword only)
+        delay : `None`, `float` = `None`, Optional (Keyword only)
             The push to talk release delay in seconds. Can be in range [0.0:2.0]
         
         Raises

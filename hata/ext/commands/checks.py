@@ -301,7 +301,7 @@ class _check_base(metaclass=_check_meta):
         
         Parameters
         ----------
-        handler : `None`, `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable` = `None`, Optional
             Will be called when the check fails.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -825,7 +825,7 @@ class has_role(_check_base):
         ----------
         role : `str`, `int`, ``Role``
             The role what the message's author should have.
-        handler : `None`, `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable` = `None`, Optional
             Will be called when the check fails.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -943,7 +943,7 @@ class has_any_role(_check_base):
         ----------
         roles : `iterable` of (`str`, `int`, ``Role``)
             Role from what the message's author should have at least 1.
-        handler : `None`, `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable` = `None`, Optional
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1041,7 +1041,7 @@ class owner_or_has_any_role(has_any_role):
         ----------
         roles : `iterable` of (`str`, `int`, ``Role``)
             Role from what the message's author should have at least 1.
-        handler : `None`, `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable` = `None`, Optional
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1322,7 +1322,7 @@ class has_permissions(_check_base):
         ----------
         permissions : ``Permission``, `int`
             The permission, what the message's author should have at the message's channel.
-        handler : `None`, `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable` = `None`, Optional
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1438,7 +1438,7 @@ class has_guild_permissions(_check_base):
         ----------
         permissions : ``Permission``, `int`
             The permission, what the message's author should have at the message's guild.
-        handler : `None`, `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable` = `None`, Optional
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1450,9 +1450,9 @@ class has_guild_permissions(_check_base):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command``, `str`      |
+            | command           | ``Command``, `str`        |
             +-------------------+---------------------------+
-            | check             | ``_check_base``  |
+            | check             | ``_check_base``           |
             +-------------------+---------------------------+
         
         Raises
@@ -1565,7 +1565,7 @@ class client_has_permissions(_check_base):
         ----------
         permissions : ``Permission``, `int`
             The permission, what the client should have at the message's channel.
-        handler : `None`, `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable` = `None`, Optional
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1577,9 +1577,9 @@ class client_has_permissions(_check_base):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command``, `str`      |
+            | command           | ``Command``, `str`        |
             +-------------------+---------------------------+
-            | check             | ``_check_base``  |
+            | check             | ``_check_base``           |
             +-------------------+---------------------------+
         
         Raises
@@ -1641,7 +1641,7 @@ class client_has_guild_permissions(_check_base):
         ----------
         permissions : ``Permission``, `int`
             The permission, what the client should have at the message's guild.
-        handler : `None`, `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable` = `None`, Optional
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1721,7 +1721,7 @@ class is_guild(_check_base):
         ----------
         guild : `str`, `int`, ``Guild``
             The guild where the message should be sent.
-        handler : `None`, `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable` = `None`, Optional
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1803,7 +1803,7 @@ class is_any_guild(_check_base):
         ----------
         guilds : `iterable` of (`str`, `int`, ``Guild``)
             Guilds to where the message should be sent.
-        handler : `None`, `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable` = `None`, Optional
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1815,9 +1815,9 @@ class is_any_guild(_check_base):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command``, `str`      |
+            | command           | ``Command``, `str`        |
             +-------------------+---------------------------+
-            | check             | ``_check_base``  |
+            | check             | ``_check_base``           |
             +-------------------+---------------------------+
         
         Raises
@@ -1905,7 +1905,7 @@ class custom(_check_base):
         ----------
         function : `callable`
             The custom check what should pass. Can be async.
-        handler : `None`, `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable` = `None`, Optional
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -1917,9 +1917,9 @@ class custom(_check_base):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command``, `str`      |
+            | command           | ``Command``, `str`        |
             +-------------------+---------------------------+
-            | check             | ``_check_base``  |
+            | check             | ``_check_base``           |
             +-------------------+---------------------------+
         
         Raises
@@ -2006,7 +2006,7 @@ class is_channel(_check_base):
         ----------
         channel : `str`, `int`, ``ChannelBase``
             The channel where the message should be sent.
-        handler : `None`, `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable` = `None`, Optional
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -2018,9 +2018,9 @@ class is_channel(_check_base):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command``, `str`      |
+            | command           | ``Command``, `str`        |
             +-------------------+---------------------------+
-            | check             | ``_check_base``  |
+            | check             | ``_check_base``           |
             +-------------------+---------------------------+
         
         Raises
@@ -2084,7 +2084,7 @@ class is_any_channel(_check_base):
         ----------
         channels : `iterable` of (`str`, `int`, ``ChannelBase``)
             Channels to where the message should be sent.
-        handler : `None`, `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable` = `None`, Optional
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -2096,9 +2096,9 @@ class is_any_channel(_check_base):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command``, `str`      |
+            | command           | ``Command``, `str`        |
             +-------------------+---------------------------+
-            | check             | ``_check_base``  |
+            | check             | ``_check_base``           |
             +-------------------+---------------------------+
         
         Raises
@@ -2481,7 +2481,7 @@ class is_in_category(_check_base):
             
             If you want to check those channels, which are not in any category, pass the respective ``Guild`` instead.
         
-        handler : `None`, `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable` = `None`, Optional
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -2493,9 +2493,9 @@ class is_in_category(_check_base):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command``, `str`      |
+            | command           | ``Command``, `str`        |
             +-------------------+---------------------------+
-            | check             | ``_check_base``  |
+            | check             | ``_check_base``           |
             +-------------------+---------------------------+
         
         Raises
@@ -2576,7 +2576,7 @@ class is_in_any_category(_check_base):
             
             If you want to check those channels, which are not in any category, pass the respective ``Guild`` instead.
         
-        handler : `None`, `async-callable` or instantiable to `async-callable`
+        handler : `None`, `async-callable` or instantiable to `async-callable` = `None`, Optional
             The handler to convert.
             
             If the handler is `async-callable` or if it would be instanced to it, then it should accept the
@@ -2588,9 +2588,9 @@ class is_in_any_category(_check_base):
             +-------------------+---------------------------+
             | message           | ``Message``               |
             +-------------------+---------------------------+
-            | command           | ``Command``, `str`      |
+            | command           | ``Command``, `str`        |
             +-------------------+---------------------------+
-            | check             | ``_check_base``  |
+            | check             | ``_check_base``           |
             +-------------------+---------------------------+
         
         Raises

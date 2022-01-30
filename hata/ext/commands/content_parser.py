@@ -2527,7 +2527,7 @@ class FlaggedAnnotation:
         ----------
         annotation : `type`, `str`, ``FlaggedAnnotation``, ``Converter``
             The annotation to convert.
-        flags : ``ConverterFlag``, Optional
+        flags : ``ConverterFlag`` = `None`, Optional
             Extra flags for conversion.
         
         Raises
@@ -2602,7 +2602,7 @@ def validate_annotation(annotation, flags=None):
     ----------
     annotation : `str`, `type`, ``FlaggedAnnotation``, ``Converter``, `tuple` (repeat)
         The annotation to validate.
-    flags : ``ConverterFlag``, Optional
+    flags : ``ConverterFlag`` = `None`, Optional
         Converter flag to create the annotation with if given.
     
     Returns
@@ -2684,7 +2684,7 @@ class Converter:
         ----------
         annotation : `str`, `type`, ``Converter``, ``FlaggedAnnotation``, `tuple` (repeat)
             The type or a type-hint to what type the respective value should be converted.
-        flags : ``ConverterFlag``, Optional
+        flags : ``ConverterFlag`` = `None`, Optional
             Flags to use with the specified type's converter.
         default : `Any`, Optional
             Default object returned if conversion fails.
@@ -2704,7 +2704,7 @@ class Converter:
             +----------------------------------------+--------------------------------------------------------------+
             | `'message.guild'`                      | Returns the message's guild. (Can be `None`)                 |
             +----------------------------------------+--------------------------------------------------------------+
-            | `'message.guild'`              | Same as the `'message.guild'` one.                           |
+            | `'message.guild'`                      | Same as the `'message.guild'` one.                           |
             +----------------------------------------+--------------------------------------------------------------+
             | `'client'`                             | Returns the client, who received the message.                |
             +----------------------------------------+--------------------------------------------------------------+
@@ -2713,7 +2713,7 @@ class Converter:
             +----------------------------------------+--------------------------------------------------------------+
             | `'message.guild.default_role'`         | Returns the message's guild's default role. (Can be `None`)  |
             +----------------------------------------+--------------------------------------------------------------+
-            | `'message.guild.default_role'` | Same as the `''message.guild.default_role''` one.            |
+            | `'message.guild.default_role'`         | Same as the `''message.guild.default_role''` one.            |
             +----------------------------------------+--------------------------------------------------------------+
             
             Defining these might can be difficult, because first you need to get along with hata internals, but to
@@ -3213,9 +3213,10 @@ class ContentParser(CommandContentParser):
         """
         Parameters
         ----------
-        func : `None`, `async-callable` or instantiable to `async-callable`, Optional
+        func : `None`, `async-callable` or instantiable to `async-callable` = `None`, Optional
+            The function to wrap.
         
-        handler : `None`, `async-callable` or instantiable to `async-callable`, Optional
+        handler : `None`, `async-callable` or instantiable to `async-callable` = `None`, Optional
             An async callable, what is ensured when the parser's cannot parse all the required parameters out.
             
             If given, should accept the following parameters:
@@ -3235,9 +3236,10 @@ class ContentParser(CommandContentParser):
             | parent                | `Any`             |
             +-----------------------+-------------------+
         
-        is_method : `bool`, Optional
+        is_method : `bool` = `False`, Optional
             Whether the content parser should act like a method. Default to `False`.
-        separator : `None`, ``ContentParameterSeparator``, `str`, `tuple` (`str`, `str`), Optional
+        
+        separator : `None`, ``ContentParameterSeparator``, `str`, `tuple` (`str`, `str`) = `None`, Optional
             The parameter separator of the parser.
         
         Returns

@@ -72,7 +72,7 @@ def show_warnings(file=None):
     
     Parameters
     ----------
-    file : `file-like`, Optional
+    file : `None`, `file-like` = `None`, Optional
         File like to write the warnings to. Defaults to `sys.stderr`.
     """
     if file is None:

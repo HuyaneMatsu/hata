@@ -73,13 +73,13 @@ class ComponentCommand(CustomIdBasedCommand):
         
         Parameters
         ----------
-        func : `None`, `async-callable`, Optional
+        func : `None`, `async-callable`
             The function used as the command when using the respective slash command.
         custom_id : `str`, (`list`, `set`) of `str`, `tuple` of (`str`, (`list`, `set`) of `str`)
             Custom id to match by the component command.
-        name : `str`, `None`, Optional
+        name : `None`, `str` = `None`, Optional
             The name of the component command.
-        target : `str`, `None`, Optional
+        target : `None`, `str` = `None`, Optional
             The component command's target.
         
         Other parameters

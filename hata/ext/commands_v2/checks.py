@@ -934,7 +934,7 @@ class CheckHasPermissionBase(CheckBase):
         
         Parameters
         ----------
-        permissions : `None`, ``Permission``, `int`, Optional
+        permissions : `None`, ``Permission``, `int` = `None`, Optional
             The permission, which the respective user should have. Defaults to `None`
         **kwargs : Keyword parameters
             `permission-name` - `bool` relations.

@@ -322,7 +322,7 @@ class Command:
             
             The expected attributes of the given `klass` are the following:
             
-            - name : `str`, `None`, `tuple` of (`str`, `Ellipsis`, `None`)
+            - name : `None`, `str`, `tuple` of (`str`, `Ellipsis`, `None`)
                 If was not defined, or was defined as `None`, the class's name will be used.
             - command : `async-callable`
                 If no `command` attribute was defined, then a attribute of the `name`'s value be checked as well.
@@ -740,24 +740,26 @@ class Command:
         ----------
         command : `async-callable`
             The async callable added as the command itself.
-        name : `None`, `str`, `tuple` of (`None`, `Ellipsis`, `str`), Optional
+        name : `None`, `str`, `tuple` of (`None`, `Ellipsis`, `str`) = `None`, Optional
             The name to be used instead of the passed `command`'s.
-        description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`), Optional
+        description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`) = `None`, Optional
             Description added to the command. If no description is provided, then it will check the commands's
             `.__doc__` attribute for it. If the description is a string instance, then it will be normalized with the
             ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
             description.
-        aliases : `None`, `str`, `list` of `str`, `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`), Optional
+        aliases : `None`, `str`, `list` of `str`, `tuple` of (`None, `Ellipsis`, `str`, `list` of `str`) = `None`
+                , Optional
             The aliases of the command.
-        category : `None`, ``Category``, `str`, `tuple` of (`None`, `Ellipsis`, ``Category``, `str`), Optional
+        category : `None`, ``Category``, `str`, `tuple` of (`None`, `Ellipsis`, ``Category``, `str`) = `None`
+                , Optional
             The category of the command. Can be given as the category itself, or as a category's name. If given as
-            `None`, then the command will go under the command processer's default category.
+            `None`, then the command will go under the command processor's default category.
         checks : `None`, ``_check_base``, `list` of ``_check_base`` or \
-                `tuple` of (`None`, `Ellipsis`, ``_check_base``, `list` of ``_check_base``) \
+                `tuple` of (`None`, `Ellipsis`, ``_check_base``, `list` of ``_check_base``) = `None` \
                 , Optional
             Checks to decide in which circumstances the command should be called.
         
-        parser_failure_handler : `None`, `async-callable`, `tuple` of (`None`, `async-callable`), Optional
+        parser_failure_handler : `None`, `async-callable`, `tuple` of (`None`, `async-callable`) = `None`, Optional
             Called when the command uses a parser to parse it's parameters, but it cannot parse out all the required
             ones.
             
@@ -777,7 +779,7 @@ class Command:
             | args                  | `list` of `Any`   |
             +-----------------------+-------------------+
         
-        separator : `None`, ``ContentParameterSeparator``, `str`, `tuple` (`str`, `str`), Optional
+        separator : `None`, ``ContentParameterSeparator``, `str`, `tuple` (`str`, `str`) = `None`, Optional
             The parameter separator of the command's parser.
         
         Returns
@@ -1617,9 +1619,9 @@ class Category:
         ----------
         name : `None`, `str`
             The name of the category. Only a command processer's default category can have it's name as `None`.
-        checks : `None`, ``_check_base``, `list` of ``_check_base``, Optional
+        checks : `None`, ``_check_base``, `list` of ``_check_base`` = `None`, Optional
             Checks to define in which circumstances a command should be called.
-        description : `Any`
+        description : `Any` = `None`
             Optional description for the category. Defaults to `None`.
         
         Returns
@@ -2104,20 +2106,20 @@ class CommandProcesser(EventWaitforBase):
             | message           | ``Message``   |
             +-------------------+---------------+
         
-        ignorecase : `bool`, Optional
+        ignorecase : `bool` = `True`, Optional
             Whether prefix is case insensitive. Defaults to `True`.
-        mention_prefix : `bool`, Optional
+        mention_prefix : `bool` = `True`, Optional
             Whether the command processer accepts the respective client's mention as an alternative prefix. Defaults
             to `True`.
-        default_category_name : `None`, `str`, Optional
+        default_category_name : `None`, `str` = `None`, Optional
             The command processor's default category's name. Defaults to `None`.
-        category_name_rule : `None`, `function`, Optional
+        category_name_rule : `None`, `FunctionType` = `None`, Optional
             Function to generate display names for categories.
             Should accept only 1 parameter, what can be `str`  or `None` and should return a `str` as well.
-        command_name_rule : `None`, `function`, Optional
+        command_name_rule : `None`, `FunctionType` = `None`, Optional
             Function to generate display names for commands.
             Should accept only 1 parameter, what is `str` and should return a `str` as well.
-        precheck : `None`, `callable`, Optional
+        precheck : `None`, `callable` = `None`, Optional
             Function, which decides whether a received message should be processed. Defaults to ``._default_precheck``.
             
             The following parameters are passed to it:
@@ -2217,13 +2219,13 @@ class CommandProcesser(EventWaitforBase):
     def get_category(self, category_name):
         """
         Returns the category for the given name. If the name is passed as `None`, then will return the default category
-        of the command processer.
+        of the command processor.
         
         Returns `None` if there is no category with the given name.
         
         Parameters
         ---------
-        category_name : `str`, `None`
+        category_name : `None`, `str`
         
         Returns
         -------
@@ -2357,9 +2359,9 @@ class CommandProcesser(EventWaitforBase):
         ----------
         name : `str`
             The name of the category. Only a command processer's default category can have it's name as `None`.
-        checks : `None`, ``_check_base``, `list` of ``_check_base``, Optional
+        checks : `None`, ``_check_base``, `list` of ``_check_base`` = `None`, Optional
             Checks to define in which circumstances a command should be called.
-        description : `Any`
+        description : `Any` = `None`
             Optional description for the category. Defaults to `None`.
         
         Returns
@@ -2460,7 +2462,7 @@ class CommandProcesser(EventWaitforBase):
             | message           | ``Message``   |
             +-------------------+---------------+
         
-        ignorecase : `bool`, Optional
+        ignorecase : `bool` = `None`, Optional
             Whether prefix is case insensitive. Defaults to the command processer's.
         
         Raises
@@ -2698,23 +2700,24 @@ class CommandProcesser(EventWaitforBase):
         ---------
         func : ``Command``, `async-callable`, instantiable to `async-callable`
             The function to be added as a command.
-        name : `None`, `str`, `tuple` of (`None`, `Ellipsis`, `str`)
+        name : `None`, `str`, `tuple` of (`None`, `Ellipsis`, `str`) = `None`, Optional
             The name to be used instead of the passed `command`'s.
-        description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`)
+        description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`) = `None`, Optional
             Description added to the command. If no description is provided, then it will check the commands's
             `.__doc__` attribute for it. If the description is a string instance, then it will be normalized with the
             ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
             description.
-        aliases : `None`, `str`, `list` of `str`, `tuple` of (`None`, `Ellipsis`, `str`, `list` of `str`)
+        aliases : `None`, `str`, `list` of `str`, `tuple` of (`None`, `Ellipsis`, `str`, `list` of `str`) = `None`
+                , Optional
             The aliases of the command.
-        category : `None`, ``Category``, `str`, `tuple` of (`None`, `Ellipsis`, ``Category``, `str`)
+        category : `None`, ``Category``, `str`, `tuple` of (`None`, `Ellipsis`, ``Category``, `str`) = `None`
             The category of the command. Can be given as the category itself, or as a category's name. If given as
             `None`, then the command will go under the command processer's default category.
         checks : `None`, ``_check_base``, `list` of ``_check_base`` or \
-                `tuple` of (`None`, `Ellipsis`, ``_check_base``, `list` of ``_check_base``)
+                `tuple` of (`None`, `Ellipsis`, ``_check_base``, `list` of ``_check_base``) = `None`, Optional
             Checks to decide in which circumstances the command should be called.
         
-        parser_failure_handler : `None`, `async-callable`, `tuple` of (`None`, `async-callable`)
+        parser_failure_handler : `None`, `async-callable`, `tuple` of (`None`, `async-callable`) = `None`, Optional
             Called when the command uses a parser to parse it's parameters, but it cannot parse out all the required
             ones.
             
@@ -2733,7 +2736,8 @@ class CommandProcesser(EventWaitforBase):
             +-----------------------+-------------------+
             | args                  | `list` of `Any`   |
             +-----------------------+-------------------+
-        separator : `None`, ``ContentParameterSeparator``, `str`, `tuple` (`str`, `str`), Optional
+        
+        separator : `None`, ``ContentParameterSeparator``, `str`, `tuple` (`str`, `str`) = `None`, Optional
             The parameter separator of the parser.
         
         Returns
@@ -2987,7 +2991,7 @@ class CommandProcesser(EventWaitforBase):
         ----------
         func : ``Command``
             The command to remove.
-        name : `None`, `str`, Optional
+        name : `None`, `str` = `None`, Optional
             The command's respective name. Defaults to `None`.
         
         Raises
@@ -3079,7 +3083,7 @@ class CommandProcesser(EventWaitforBase):
         ----------
         func : ``Command``, ``Router``, `async-callable` or instantiable to `async-callable`
             The command to remove.
-        name : `None`, `str`, Optional
+        name : `None`, `str` = `None`, Optional
             The command's name to remove.
         
         Raises

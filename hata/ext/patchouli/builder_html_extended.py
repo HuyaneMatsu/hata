@@ -516,7 +516,7 @@ class FunctionOrPropertySerializer:
         ----------
         object_ : ``PropertyUnit``, ``FunctionUnit``
             The object to serialize.
-        path : `None`, ``QualPath``, Optional
+        path : `None`, ``QualPath`` = `None`, Optional
             Path to use instead of the object's.
         """
         self.object = object_
@@ -1355,7 +1355,7 @@ class TypeSerializer:
         ----------
         object_ : ``UnitBase``
             The respective unit.
-        path : `None`, ``QualPath``, Optional
+        path : `None`, ``QualPath`` = `None`, Optional
             Path to use instead of the object's.
         """
         self.object = object_

@@ -203,14 +203,10 @@ class TopGGClient:
             The discord client.
         top_gg_token : `str`
             Top.gg api token.
-        auto_post_bot_stats : `bool`, Optional
+        auto_post_bot_stats : `bool` = `True`, Optional
             Whether auto post should be started as the client launches up.
-            
-            Defaults to `True`.
-        raise_on_top_gg_global_rate_limit : `bool`, Optional
+        raise_on_top_gg_global_rate_limit : `bool` = `False`, Optional
             Whether ``TopGGGloballyRateLimited`` should be raised when the client gets globally rate limited.
-            
-            Defaults to `False`.
         
         Raises
         ------
@@ -357,7 +353,7 @@ class TopGGClient:
         
         Parameters
         ----------
-        force_update : `bool`, Optional (Keyword only)
+        force_update : `bool` = `False`, Optional (Keyword only)
             Whether the weekend status should be forcefully updated instead of using the cached one.
         
         Returns
@@ -443,13 +439,13 @@ class TopGGClient:
         
         Parameters
         ----------
-        limit : `int`, Optional (Keyword only)
-            The amount of bots to query. Defaults to `50`.
-        offset : `int`, Optional (Keyword only)
-            Query offset. Defaults to `0`
-        sort_by : `None`, `str`, Optional (Keyword only)
-            Which field to sort by the bots. Defaults to `None`.
-        search : `None`, `dict` of (`str`, `Any`) items, Optional (Keyword only)
+        limit : `int` = `50`, Optional (Keyword only)
+            The amount of bots to query.
+        offset : `int` = `0`, Optional (Keyword only)
+            Query offset
+        sort_by : `None`, `str` = `None`, Optional (Keyword only)
+            Which field to sort by the bots.
+        search : `None`, `dict` of (`str`, `Any`) items = `None`, Optional (Keyword only)
             Fields an expected values to search for.
         
         Returns
@@ -793,11 +789,11 @@ class TopGGClient:
             Http method.
         url : `str`
             Endpoint to do request towards.
-        data : `None`, `Any`, Optional
-            Json serializable data.
         rate_limit_handler : ``RateLimitHandlerBase`
             Rate limit handle to handle rate limit as.
-        query_parameters : `None`, `Any`, Optional
+        data : `None`, `Any` = `None`, Optional
+            Json serializable data.
+        query_parameters : `None`, `Any` = `None`, Optional
             Query parameters.
         
         Raises

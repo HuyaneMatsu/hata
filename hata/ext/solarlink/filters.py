@@ -278,25 +278,17 @@ class Karaoke(Filter):
         
         Parameters
         ----------
-        level : `float`, Optional (Keyword only)
+        level : `float` = `1.0`, Optional (Keyword only)
             Effect level.
-            
-            Defaults to `1.0`.
         
-        mono_level : `float`, Optional (Keyword only)
+        mono_level : `float` = `1.0`, Optional (Keyword only)
             Effect mono level.
             
-            Defaults to `1.0`.
-            
-        filter_band : `float`, Optional (Keyword only)
+        filter_band : `float` = `220.0`, Optional (Keyword only)
             Filter band.
             
-            Defaults to `220.0`.
-            
-        filter_width : `float`, Optional (Keyword only)
+        filter_width : `float` = `100.0`, Optional (Keyword only)
             Filter width.
-            
-            Defaults to `100.0`.
         
         Raises
         ------
@@ -431,20 +423,14 @@ class Timescale(Filter):
         
         Parameters
         ----------
-        speed : `float`, Optional (Keyword only)
+        speed : `float` = `1.0`, Optional (Keyword only)
             Playback speed.
-            
-            Defaults to `1.0`.
         
-        pitch : `float`, Optional (Keyword only):
+        pitch : `float` = `1.0`, Optional (Keyword only):
             Audio pitch.
-            
-            Defaults to `1.0`.
         
-        rate : `float`, Optional (Keyword only):
+        rate : `float` = `1.0`, Optional (Keyword only):
             Playback rate.
-            
-            Defaults to `1.0`.
         
         Raises
         ------
@@ -977,45 +963,29 @@ class Distortion(Filter):
         
         Parameters
         ----------
-        sin_offset : `float`, Optional (Keyword only)
+        sin_offset : `float` = `0.0`, Optional (Keyword only)
             Sin offset.
-            
-            Defaults to `0.0`.
         
-        sin_scale : `float`, Optional (Keyword only)
+        sin_scale : `float` = `1.0`, Optional (Keyword only)
             Sin scale.
-            
-            Defaults to `1.0`.
         
-        cos_offset : `float`, Optional (Keyword only)
+        cos_offset : `float` = `0.0`, Optional (Keyword only)
             Cos offset.
-            
-            Defaults to `0.0`.
         
-        cos_scale : `float`, Optional (Keyword only)
+        cos_scale : `float` = `1.0`, Optional (Keyword only)
             Cos scale.
-            
-            Defaults to `1.0`.
         
-        tan_offset : `float`, Optional (Keyword only)
-            Tan offset
-            
-            Defaults to `0.0`.
+        tan_offset : `float` = `0.0`, Optional (Keyword only)
+            Tan offset.
         
-        tan_scale : `float`, Optional (Keyword only)
+        tan_scale : `float` = `1.0`, Optional (Keyword only)
             Tan scale.
             
-            Defaults to `1.0`.
-            
-        offset : `float`, Optional (Keyword only)
+        offset : `float` = `0.0`, Optional (Keyword only)
             Offset.
-            
-            Defaults to `0.0`.
         
-        scale : `float`, Optional (Keyword only)
+        scale : `float` = `1.0`, Optional (Keyword only)
             Scale.
-            
-            Defaults to `1.0`.
         
         Raises
         ------

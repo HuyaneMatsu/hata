@@ -119,11 +119,11 @@ class SolarPlayer(SolarPlayerBase):
         ----------
         track : ``Track``
             The track to play.
-        start_time : `float`, Optional
+        start_time : `float` = `0.0`, Optional
             Where the track will start in seconds.
-        **end_time : `float`, Optional
+        end_time : `float` = `0.0`, Optional
             Where the track will start in seconds.
-        added_attributes : `dict` of (`str`, `Any`)
+        **added_attributes : `dict` of (`str`, `Any`)
             Additional user defined attributes.
         
         Returns
@@ -260,7 +260,7 @@ class SolarPlayer(SolarPlayerBase):
         
         Parameters
         ----------
-        index : `int`, Optional
+        index : `int` = `0.0`, Optional
             The track's index to skip.
             
             When skipping the `0`-th track, so the current, it will start to play the next if not paused.
@@ -349,7 +349,7 @@ class SolarPlayer(SolarPlayerBase):
         
         Parameters
         ----------
-        index : `int`, Optional
+        index : `int` = `0.0`, Optional
             The track's index to skip.
             
             When skipping the `0`-th track, so the current, it will start to play the next if not paused.
@@ -549,7 +549,7 @@ class SolarPlayer(SolarPlayerBase):
         
         Parameters
         ----------
-        request : `bool`, Optional (Keyword only)
+        request : `bool` = `False`, Optional (Keyword only)
             Whether the client should only request to speak.
         
         Raises

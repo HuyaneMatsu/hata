@@ -704,14 +704,16 @@ class CommandLineParameter:
         ----------
         name : `str`
             The parameter's name.
-        default : `Any`, Optional (Keyword only)
+        default : `Any` = `DEFAULT_DEFAULT_VALUE`, Optional (Keyword only)
             Default value if the parameter is not present.
-        keyword : `str`, Optional (Keyword only)
+        keyword : `str` = `None`, Optional (Keyword only)
             Keyword to pass the parameter after if applicable.
-        multi : `bool`
+        multi : `bool` = `False`, Optional
             Whether multiple parameters are accepted.
-        expected_type : `None`, `str`, `type`, Optional (Keyword only)
+        expected_type : `None`, `str`, `type` = `None`, Optional (Keyword only)
             The expected type by the parameter. Defaults to `bool`.
+        modifier : `bool` = `False`, Optional
+            Whether the parameter is a modifier.
         
         Raises
         ------

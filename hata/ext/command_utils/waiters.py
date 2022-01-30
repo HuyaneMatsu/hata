@@ -179,7 +179,7 @@ class WaitAndContinue:
         
         Parameters
         ----------
-        exception : `None`, ``BaseException``
+        exception : `None`, ``BaseException`` = `None`, Optional
             Exception to cancel the ``WaitAndContinue``'s ``.future`` with.
         """
         canceller = self._canceller

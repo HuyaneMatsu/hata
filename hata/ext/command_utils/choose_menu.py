@@ -217,19 +217,17 @@ class ChooseMenu(PaginationBase):
             The rest of the parameters depend on the respective choice (an elements of ``choices``). If the element is a
             `tuple`, then it's elements will be passed, however if the choice is any other type, then only that
             object will be passed.
-        embed : ``EmbedBase``
+        embed : ``EmbedBase`` = `Embed()`, Optional
             An embed base, what's description and footer will be rendered with the given choices and with information
             about the respective page. Defaults to an empty ``Embed``.
-        timeout : `float`, Optional (Keyword only)
-            The timeout of the ``ChooseMenu`` in seconds. Defaults to `240.0`.
-        message : `None`, ``Message``, Optional (Keyword only)
+        timeout : `float` = `240.0`, Optional (Keyword only)
+            The timeout of the ``ChooseMenu`` in seconds.
+        message : `None`, ``Message`` = `None`, Optional (Keyword only)
             The message on what the ``ChooseMenu`` will be executed. If not given a new message will be created.
-            Defaults to `None`.
-        prefix : `None`, `str`, Optional (Keyword only)
-            A prefix displayed before each option. Defaults to `None`.
-        check : `None`, `callable`, Optional (Keyword only)
-            A callable what decides whether the ``ChooseMenu`` should process a received reaction event. Defaults to
-            `None`.
+        prefix : `None`, `str` = `None`, Optional (Keyword only)
+            A prefix displayed before each option.
+        check : `None`, `callable` = `None`, Optional (Keyword only)
+            A callable what decides whether the ``ChooseMenu`` should process a received reaction event.
             
             Should accept the following parameters:
             +-----------+---------------------------------------------------+

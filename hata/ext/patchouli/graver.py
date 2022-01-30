@@ -471,6 +471,52 @@ class GravedDescription:
         """Returns the graved description's representation."""
         return f'<{self.__class__.__name__} content={graved_to_source_text(self.content)!r}>'
     
+    
+    def split_at(self, pattern):
+        """
+        Splits the description when the pattern matches.
+        
+        Parameters
+        ----------
+        pattern : `_sre.SRE_Pattern`
+            The pattern to split based on.
+            
+            The pattern should split with 2 groups on success.
+        
+        Returns
+        -------
+        other : `None`, ``GravedDescription``
+            The other split down value on success.
+        """
+        content = self.content
+        
+        for index in range(0, len(content)):
+            part = content[index]
+            if isinstance(part, str):
+                match = pattern.full_match(part)
+                if (match is not None):
+                    break
+        else:
+            return
+        
+        pre_part, post_part = match
+        
+        new_parts = []
+        if post_part:
+            new_parts.append(post_part)
+        
+        new_parts.extend(content[index+1:])
+        
+        if pre_part:
+            content[index] = pre_part
+            del content[index+1:]
+        else:
+            del content[index:]
+        
+        other = object.__new__(type(self))
+        other.content = new_parts
+        return other
+
 
 class GravedAttributeDescription:
     """

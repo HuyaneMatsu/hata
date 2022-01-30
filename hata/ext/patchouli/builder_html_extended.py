@@ -982,18 +982,22 @@ class AttributeSection:
 
 PARAMETER_NAME_RP = re.compile('(\*{0,2}[a-zA-Z_]+[a-zA-Z_0-9]*)(?: *\: *(.+)?)?')
 PARAMETER_OPTIONALITY_RP = re.compile('(.*?)(?:,? *([Oo]ptional)(?:,? *\(?([Kk]eyword [Oo]nly)\)?)?)?')
+PARAMETER_DEFAULT_START_RP = re.compile('(.*?) *= *(.*?)')
 
 PARAMETER_SHIFT_NAME = 0
 PARAMETER_SHIFT_DESCRIPTION = 1
 PARAMETER_SHIFT_TYPE = 2
 PARAMETER_SHIFT_OPTIONAL = 3
 PARAMETER_SHIFT_KEYWORD_ONLY = 4
+PARAMETER_SHIFT_DEFAULT = 5
 
 PARAMETER_MASK_NAME = 1 << PARAMETER_SHIFT_NAME
 PARAMETER_MASK_DESCRIPTION = 1 << PARAMETER_SHIFT_DESCRIPTION
 PARAMETER_MASK_TYPE = 1 << PARAMETER_SHIFT_TYPE
 PARAMETER_MASK_OPTIONAL = 1 << PARAMETER_SHIFT_OPTIONAL
 PARAMETER_MASK_KEYWORD_ONLY = 1 << PARAMETER_SHIFT_KEYWORD_ONLY
+PARAMETER_MASK_DEFAULT = 1 << PARAMETER_SHIFT_DEFAULT
+
 
 class ParameterSubSection:
     """
@@ -1001,6 +1005,8 @@ class ParameterSubSection:
     
     Parameters
     ----------
+    default : `None`, ``GravedDescription``
+        The default value of the parameter.
     description : `None`, `list` of ``GravedDescription``
         Description of the parameter.
     keyword_only : `bool`
@@ -1012,7 +1018,7 @@ class ParameterSubSection:
     type : `None`, ``GravedDescription``
         The parameter's type.
     """
-    __slots__ = ('description', 'keyword_only', 'name', 'optional', 'type')
+    __slots__ = ('default', 'description', 'keyword_only', 'name', 'optional', 'type')
     
     def __init__(self, header, description):
         self.description = description
@@ -1080,10 +1086,14 @@ class ParameterSubSection:
         
         if header_contents:
             type_ = header
+            default = header.split_at(PARAMETER_DEFAULT_START_RP)
+        
         else:
             type_ = None
+            default = None
         
         self.type = type_
+        self.default = default
     
     
     def get_mask(self):
@@ -1108,6 +1118,9 @@ class ParameterSubSection:
         
         if (self.type is not None):
             mask |= PARAMETER_MASK_TYPE
+        
+        if (self.default is not None):
+            mask |= PARAMETER_MASK_DEFAULT
         
         return mask
     
@@ -1162,6 +1175,15 @@ class ParameterSubSection:
             
             if self.keyword_only:
                 yield YES_SVG
+            
+            yield '</td>'
+        
+        if mask & PARAMETER_MASK_DEFAULT:
+            yield '<td class="parameter_table_keyword_only">'
+            
+            default = self.default
+            if (default is not None):
+                yield from description_serializer(type_, parent.object, parent.path, create_relative_sectioned_link)
             
             yield '</td>'
         
@@ -1299,6 +1321,9 @@ class ParameterSection:
         
         if mask & PARAMETER_MASK_KEYWORD_ONLY:
             yield '<th>Keyword only</th>'
+        
+        if mask & PARAMETER_MASK_DEFAULT:
+            yield '<th>Default</th>'
         
         if mask & PARAMETER_MASK_DESCRIPTION:
             yield '<th>Description</th>'

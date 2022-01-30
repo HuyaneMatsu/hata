@@ -37,7 +37,7 @@ Hata is an *async* [Discord API](https://discord.com/developers/docs/intro) wrap
 
 - Multiple simultaneous clients
 
-    Hata can run multiple clients from the same instance without sacrificing performance, all while being easy to code.
+    Hata can run multiple clients from the same instance without sacrificing performance.
 
 - Performant
     

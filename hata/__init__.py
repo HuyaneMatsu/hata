@@ -6,7 +6,7 @@ Why hata
 
 - Multiple simultaneous clients
 
-    Hata can run multiple clients from the same instance without sacrificing performance, all while being easy to code.
+    Hata can run multiple clients from the same instance without sacrificing performance.
 
 - Performant
     

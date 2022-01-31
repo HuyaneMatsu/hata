@@ -1,16 +1,16 @@
 # Topics
 
-Hata has tutorials on topics.
-
+Hata has tutorials in guides.
 
 #### Introduction
 
 - [getting_started](getting_started.md): First time making a bot.
-- [introduction](introduction.md): Brief sellout.
+- [introduction](introduction.md): Brief introduction to python
 
 #### Generic topics
 
 - [emoji](emoji.md): How hata emojis work in detail.
+- [3rd party voice clients](3rd_party_voice_clients.md): Implementing your own voice extension.
 
 #### Extension topics:
 

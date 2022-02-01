@@ -26,8 +26,11 @@
     About
 </h3>
 
-Hata is an *async* [Discord API](https://discord.com/developers/docs/intro) wrapper written in Python named after
-[Hata no Kokoro](https://en.touhouwiki.net/wiki/Hata_no_Kokoro).
+Hata is an *asynchronous* [Discord API](https://discord.com/developers/docs/intro) wrapper built on top of scarletio.
+It is designed to be easy to use, with also providing rich API offering everything what an advanced developer might
+need.
+
+Named after [Hata no Kokoro](https://en.touhouwiki.net/wiki/Hata_no_Kokoro) from Touhou Project.
 
 <h1></h1>
 

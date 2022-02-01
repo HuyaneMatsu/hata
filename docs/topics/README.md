@@ -9,6 +9,7 @@ Hata has tutorials in guides.
 
 #### Generic topics
 
+- [FAQ](frequently_asked_questions.md): Frequently asked questions
 - [emoji](emoji.md): How hata emojis work in detail.
 - [3rd party voice clients](3rd_party_voice_clients.md): Implementing your own voice extension.
 

@@ -1,5 +1,9 @@
 ﻿"""
-Hata is an async Discord API wrapper written in Python named after Hata no Kokoro.
+
+Hata is an asynchronous Discord API wrapper built on top of scarletio. It is designed to be easy to use, with also
+providing rich API offering everything what an advanced developer might need.
+
+Named after Hata no Kokoro from Touhou Project.
 
 Why hata
 --------

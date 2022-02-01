@@ -153,7 +153,7 @@ from hata import User
 user = User.precreate(24343344487441449444)
 ```
 
-It is possible to get entities dynamically from cache, with rich functionality methods, and at same cases with client
+It is possible to get entities dynamically from cache, with rich functionality methods, and at a few cases with client
 api methods as well.
 
 ```py

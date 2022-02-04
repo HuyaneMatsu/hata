@@ -1,6 +1,4 @@
-# Emoji
-
-## Introduction
+### Introduction
 
 Hata's emoji handling might be esoteric at the first look but it is actually based on a pretty smart concept.
 (I am happy about it, so it should not be that bad... right?)
@@ -11,7 +9,7 @@ emojis as well.
 Similarly to many Hata Discord entities, each emoji is also globally cached, preventing creating of duplicates.
 This is an essential feature of Hata and many other behaviour mentioned later will be based on it.
 
-## Builtin / unicode emojis
+### Builtin / unicode emojis
 
 Unicode emojis are not special enough cases to break the rules, so they are built into Emojis. But how much
 they can fit into them? - o-ho-ho perfectly! Might sound shocking but all the above mentioned rules are true for them.
@@ -29,7 +27,7 @@ and the new releases will get their new object keeping old data unaffected.
 You can access older Variant selector-16 emojis from `UNICODE_EMOJIS` as well, by using an `_vs16` postfix after their
 name.
 
-## Custom emojis
+### Custom emojis
 
 Custom emojis cannot be accessed initially before startup, since they are not yet received from Discord.
 Tho in runtime, you can find them by using `EMOJIS` weak value dictionary or in their respective guild's `.emojis`
@@ -48,7 +46,7 @@ from Discord. To do this we got `Emoji.precreate` with the following parameters:
 As mentioned, only the `id` parameter is required, although if you want to call other emoji methods or properties before
 runtime you should make sure that you also pass the rest as well.
 
-## Methods & Properties
+### Methods & Properties
 
 There are only 3 commonly used emoji properties and only 2 additional methods that you should memorize.
 
@@ -76,7 +74,7 @@ There are only 3 commonly used emoji properties and only 2 additional methods th
 
     Returns whether the emoji is unicode emoji.
 
-## Parsing emojis
+### Parsing emojis
 
 Hata has a generic emoji parsing function called `parse_emoji` which tries to convert the passed text to a unicode
 or custom emoji. On failure returns `None`.

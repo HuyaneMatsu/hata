@@ -1,5 +1,3 @@
-# Components
-
 ### Introduction
 
 Message components, mainly known as components, are interactive gui elements which might get included with a message.
@@ -11,7 +9,7 @@ did not read that yet please go ahead.
 Writing component based interactions is usually three times longer than generic ones. So if writing some extra code
 is not your bread I do not recommend using components, although I never said they are more complicated.
 
-## Component Structures
+### Component Structures
 
 Components can be passed to `InteractionResponse` and to many client methods as well:
 
@@ -73,17 +71,17 @@ components = [
 ]
 ```
 
-## Limitations
+#### Limitations
 
 - A message can have up to `5` rows.
 - `custom_id` can be `100` character long.
 
-###### Button limitations
+##### Button limitations
 
 - Up to `5` buttons can be in a row.
 - Component `label` can be `80` characters long.
 
-###### Select limitations
+##### Select limitations
 
 - Up to `1` select can be in a row.
 - A select can have `25` choices.
@@ -91,7 +89,7 @@ components = [
 - Select `min_values` can be in range `[0:15]`.
 - Select `max_values` can be in range `[1:25]`.
 
-## Component commands
+### Component commands
 
 You may add component commands to a slashers which are called when a component with the specified `custom_id` is
 used.
@@ -397,7 +395,7 @@ async def party(client, event):
 
 ![](assets/components_0004.gif)
 
-## Waiting for component interaction
+### Waiting for component interaction
 
 You can wait for component interaction on a message by using the `wait_for_component_interaction` coroutine function.
 
@@ -480,7 +478,7 @@ async def add_emoji(client, event,
 > Component interaction events always ignore the message parameter.
 
 
-### Waiting for multiple component interaction
+#### Waiting for multiple component interaction
 
 In the same way as `wait_for_component_interaction` returns on the first sufficient interaction,
 `iter_component_interactions` can be used to (async) iterate over multiple ones.
@@ -564,7 +562,7 @@ async def pick(client, event):
         event=component_interaction)
 ```
 
-## Using select
+### Using select
 
 Selects are not as useful as buttons in practice, since lacking form functionality means, they are just a dynamic
 slash command choice parameter.

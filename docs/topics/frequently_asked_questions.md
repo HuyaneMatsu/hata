@@ -1,9 +1,9 @@
-## Where can I find usage examples?
+##### Where can I find usage examples?
 
 Examples can be found in the [examples folder](https://github.com/HuyaneMatsu/hata/tree/master/docs/examples) of the
 repository.
 
-## How do I set activity?
+##### How do I set activity?
 
 When creating a client, you may pass an `ActivityRich` instance to the `activity` parameter.
 
@@ -27,7 +27,7 @@ client = Client(
 )
 ```
 
-## How do I send a message to a specific channel?
+##### How do I send a message to a specific channel?
 
 If you have a channel entity
 
@@ -41,7 +41,7 @@ If you don't passing just the `id` is fine too.
 await client.message_create(123456789123456789, 'content')
 ```
 
-## How do I send a direct message?
+##### How do I send a direct message?
 
 First you get / create the bot's direct message channel with the user.
 
@@ -57,7 +57,7 @@ If you have just it's id:
 channel = await client.channel_private_create(8899898989898989898)
 ```
 
-## How do I get the ID of a sent message?
+##### How do I get the ID of a sent message?
 
 `Client.message_create` returns the created message (if you create a non empty one of course).
 You can access it's id like `messsage.id`.
@@ -67,7 +67,7 @@ message = await client.message_create(channel, 'content')
 message_id = message.id
 ```
 
-## How do I upload an image?
+##### How do I upload an image?
 
 To upload a file to Discord, you will need to use a file-like object, or it's data.
 
@@ -117,7 +117,7 @@ else:
 
 Since a `bytes` object has no name, it is highly recommended to define one when sending it.
 
-## How can I add a reaction to a message?
+##### How can I add a reaction to a message?
 
 To add a reaction on a message, use the `client.reaction_add` method.
 
@@ -142,7 +142,7 @@ from hata import Emoji
 emoji = Emoji.precreate(704392145330634812)
 ```
 
-## How do I get a specific entity?
+##### How do I get a specific entity?
 
 When using constant entities, it is recommended to create them with the respective type's `.precreate` method.
 It creates a reference to the entity, which is picked up and updated when the entity is received from Discord.
@@ -170,7 +170,7 @@ user = guild.get_user(user_id)
 user = await client.get_user(user_id)
 ```
 
-## How do I make a web request?
+##### How do I make a web request?
 
 To make a web request you should use a non-blocking library. Hata already requires one, since it is necessary to
 communicate with Discord.
@@ -198,7 +198,7 @@ async with client.http.get('https://nekos.life/api/v2/cat') as response:
         data = None
 ```
 
-## How do I use a local image file for an embed image?
+##### How do I use a local image file for an embed image?
 
 A special case is, when using an uploaded attachment within an embed. To do it, pass your file as usual, then in the
 embed instead of defining the image's url, do `attachment://image.png`, where `image.png` is the name of the file you

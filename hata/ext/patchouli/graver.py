@@ -82,6 +82,7 @@ def show_warnings(file=None):
         warning = WARNINGS.pop()
         file.write(warning.message)
 
+
 EXPECTED_BUILTIN_NAMES = {
     'int',
     'str',
@@ -184,6 +185,7 @@ class Grave:
         
         return True
 
+
 def get_part_around(content, index):
     """
     Gets the part of the given `content` around the given `index`.
@@ -264,10 +266,10 @@ def build_graves(text):
                     section = last + section
             content.append(section)
         
-        grave_start +=1
+        grave_start += 1
         if grave_start < len(text) and text[grave_start] == '`':
             double_grave = True
-            grave_start +=1
+            grave_start += 1
         else:
             double_grave = False
         
@@ -493,13 +495,13 @@ class GravedDescription:
         for index in range(0, len(content)):
             part = content[index]
             if isinstance(part, str):
-                match = pattern.full_match(part)
+                match = pattern.fullmatch(part)
                 if (match is not None):
                     break
         else:
             return
         
-        pre_part, post_part = match
+        pre_part, post_part = match.groups()
         
         new_parts = []
         if post_part:

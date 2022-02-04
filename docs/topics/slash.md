@@ -1,5 +1,3 @@
-# Slash
-
 ### Introduction
 
 Slash refers to slash commands as probably known by the users or by interactions as mentioned by the api.
@@ -13,7 +11,7 @@ inherent slash extension.
 
 Not like regular commands, slash commands' format is limited by the Discord API itself, what we cannot overpass.
 
-## Limitations
+##### Limitations
 
 Discord sets the following limitations:
 
@@ -84,7 +82,7 @@ Hata implements a mathematical expression field as well. For example, you can en
 The evaluation of these fields are completely safe, do not uses `eval` or other cheaped out solutions, which have
 critical security vulnerabilities.
 
-### Internal parameters
+#### Internal parameters
 
 `client` (`c`) and `event` (`e`, `interaction_event`) parameters are picked up as internal parameters.
 
@@ -93,7 +91,7 @@ critical security vulnerabilities.
 Internal parameters are not propagated towards discord, instead they are auto-fulfilled internally. They can be used
 to access information about the command's context if required.
 
-## Required oauth2 scopes
+#### Required oauth2 scopes
 
 When using slash commands, adding your bot to a guild with just the regular `bot` scope is not enough. Make sure you
 authorize it with `applications.commands` oauth2 scope as well. Just fill out your bot's application's id in the
@@ -103,7 +101,7 @@ authorize it with `applications.commands` oauth2 scope as well. Just fill out yo
 If this error pops ups as you launched your bot: `DiscordException Forbidden (403), code=50001: Missing access`
 Do not worry, you probably just need to authorize your bot with the `applications.commands` oauth2 scope.
 
-## Setup
+#### Setup
 
 To setup the extension you just pass `'slash'` into the client's `extensions` parameter, or use the `setup_ext_slash`
 function.
@@ -168,7 +166,7 @@ def random_error_message_getter():
 # Then pass it to the client constructor ...
 ```
 
-## Adding commands & responding
+### Adding commands & responding
 
 After the extension is setupped, commands can be added using the `client.interaction` decorator.
 
@@ -205,7 +203,7 @@ are also other interaction related client methods, which are mentioned [later](#
 > New commands might not show up till you restart your client (not the bot). This is **always** the case for the first
 > command.
 
-## Command Parameters
+### Command Parameters
 
 An interaction event has the following top level attributes, which you may use up to produce a proper response:
 
@@ -284,7 +282,7 @@ async def show_emoji(emoji):
     if emoji.is_unicode_emoji():
         return 'That\' an unicode emoji, cannot link it.'
     
-    return f'**Name:** {emoji:e} **Link:** {emoji.url}'
+    return f'**Name:** {emoji} **Link:** {emoji.url}'
 ```
 
 ### Choice parameters
@@ -425,8 +423,10 @@ async def cake_love(
 ):
     return f'Hmmm, yes, I love {cake_type} {EMOJI_CAKE} as well.'
 
-CAKE_NAMES = ['butter', 'pound', 'sponge', 'genoise', 'biscuit', 'angel food', 'chiffon', 'baked flourless',
-    'unbaked flourless', 'carrot', 'red velvet', ]
+CAKE_NAMES = [
+    'butter', 'pound', 'sponge', 'genoise', 'biscuit', 'angel food', 'chiffon', 'baked flourless', 'unbaked flourless',
+    'carrot', 'red velvet'
+]
 
 @cake_love.autocomplete('cake_type') # Define which parameter we want to auto-complete.
 async def autocomplete_cake_type(value):
@@ -608,7 +608,7 @@ manually set permission overwrites will be wiped out there, so make sure you eit
 
 > Permission overwrites are buggy from Discord side, I take no responsibility if they do not work as expected.
 
-## Tricks and Tips
+### Tricks and Tips
 
 ##### Sending rich response
 
@@ -668,7 +668,7 @@ IMPROVISATION_CHOICES = [
 async def improvise():
     """Improvises some derpage"""
     yield '*Thinks*'
-    await sleep(1.0 + random()*4.0)
+    await sleep(1.0 + random() * 4.0)
     yield choice(IMPROVISATION_CHOICES)
 ```
 
@@ -949,7 +949,7 @@ async def latest_users(event):
 
 ![](assets/slash_0021.png)
 
-## Non-global commands
+### Non-global commands
 
 The slash extension supports non-global commands, which are neither global nor normal guild bound commands. These
 commands are not added automatically, but matched with guild commands on the fly.
@@ -1019,7 +1019,7 @@ bound one.
 > If you are using `ClientWrapper` to add commands to more clients you will get back a command router instead of
 > the command, so you wont be able to use `.name` or `.get_schema()` on it.
 
-## Categories
+### Categories
 
 It is possible to create a "category" command by creating a command with giving function as `None`. If you do not pass
 a function, then name and description can not be auto-detected, so you will need to pass those manually as well.
@@ -1090,7 +1090,7 @@ async def devil(client, event):
 
 ![](assets/slash_0022.png)
 
-## Manual Responding
+### Manual Responding
 
 Sometimes the auto-responding feature just cannot do it. For these cases there are the questionably long named
 `Client` interaction methods. This section just mentions these methods, please check their docs for more information.
@@ -1165,13 +1165,13 @@ async def kaboom_mixed(client, event):
         await client.interaction_followup_message_delete(event, message)
 ```
 
-## Specifying channel parameter types
+### Specifying channel parameter types
 
 The accepted channel types by channel parameters can be defined by 3 ways. Either by modifying the
 annotated type, or by using the `channel_types` parameter with `SlashParameter` or with the `configure_parameter`
 decorator.
 
-### Modifying the annotated type
+#### Modifying the annotated type
 
 Channel types can be defined by changing the annotated type. By default defining it as `ChannelBase`, or as
 `'channel'` will accept all the channel types. But you can pass specific channel types as well, like: `ChannelText`,
@@ -1218,7 +1218,7 @@ async def thread_channel_name_length(
 
 ![](assets/slash_0024.png)
 
-### The `channel_types` parameter
+#### The `channel_types` parameter
 
 
 When using `SlashParameter` or `configure_parameter`, the `channel_types` keyword only parameter can be used to define
@@ -1248,7 +1248,7 @@ async def voice_channel_name_length(
     return len(channel.name)
 ```
 
-## Specifying input value range
+### Specifying input value range
 
 For `number` and `float` parameter types, you can define the minimal and the maximal accepted values with using the
 `min_value` and `max_value` parameters. It works for both `SlashParameter` and for `configure_parameter` as well.
@@ -1290,7 +1290,7 @@ async def character_popularity(
 
 ![](assets/slash_0025.gif)
 
-## Context commands
+### Context commands
 
 Context commands can be defined by passing the `target` parameter when registering a command with the `.interactions`
 decorator. The `target` parameter can be given either as `'user'` / `'message'`.
@@ -1319,7 +1319,7 @@ async def length(target):
 
 ![](assets/slash_0027.gif)
 
-## Getting command count
+### Getting command count
 
 The amount of active commands can be get with using the `Client.slasher.get_global_command_count()` and with the
 `client.slasher.get_guild_command_count(guild_or_guild_id)` methods.
@@ -1363,9 +1363,9 @@ async def command_count(client, event):
 To include sub-command count as well, there are the `.get_global_command_count_with_sub_commands()` and the
 `.get_guild_command_count_with_sub_commands(guild_or_guild_id)` methods.
 
-## FAQ
+### FAQ
 
-#### Commands not show up
+##### Commands not show up
 
 Slash commands might not show up after you launched your bot with them. This can be caused by many reasons:
 
@@ -1385,7 +1385,7 @@ Slash commands might not show up after you launched your bot with them. This can
     
     > Note, that specifying whether the command is global or guild bound to a sub-commands does nothing.
 
-#### Commands are not removed
+##### Commands are not removed
 
 Removed slash commands may not disappear after they are removed. This can have many reasons.
 

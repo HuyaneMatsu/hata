@@ -3021,7 +3021,7 @@ class Client(ClientUserPBase):
             > By giving as `None`, you can remove the old value.
         video_quality_mode : ``VideoQualityMode``, `int`, Optional (Keyword only)
             The channel's new video quality mode.
-        default_auto_archive_after : `None`, `int`
+        default_auto_archive_after : `None`, `int`, Optional (Keyword only)
             The default duration (in seconds) for newly created threads to automatically archive the themselves. Can be
             one of: `3600`, `86400`, `259200`, `604800`.
         banner : `None`, `bytes-like`, Optional (Keyword only)
@@ -8228,7 +8228,7 @@ class Client(ClientUserPBase):
         ----------
         guild : ``Guild``, `int`
             The guild, what's audit logs will be requested.
-        user : `None`, ```ClientUserBase``, `int` = `None`, Optional (Keyword only)
+        user : `None`, ``ClientUserBase``, `int` = `None`, Optional (Keyword only)
             Whether the audit logs should be filtered only to those, which were created by the given user.
         event : `None`, ``AuditLogEvent``, `int` = `None`, Optional (Keyword only)
             Whether the audit logs should be filtered only on the given event.

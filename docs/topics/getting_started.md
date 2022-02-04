@@ -1,4 +1,4 @@
-# Get started
+### Get started
 
 To get started with Discord bots, first you need a discord application and add a bot to it. This tutorial will show to
 how to do it.
@@ -38,7 +38,7 @@ You can find them on the bot tab a little bit down.
 
 ![](assets/getting_started_0007.png)
 
-## Inviting your bot
+### Inviting your bot
 
 To invite to a guild, first you need a bot invite.
 
@@ -67,7 +67,7 @@ Select a guild to add the bot into and click `Authorize`.
 
 Now that you have your bot, you can start writing your bot.
 
-## Writing your bot
+### Writing your bot
 
 There are many libraries interacting with the Discord API. Most bot developers stick with the same library for their
 whole career, so checking out multiple ones and making a choice, which satisfies needs is highly recommended.

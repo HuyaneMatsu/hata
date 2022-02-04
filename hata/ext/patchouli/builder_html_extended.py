@@ -1087,7 +1087,6 @@ class ParameterSubSection:
         if header_contents:
             type_ = header
             default = header.split_at(PARAMETER_DEFAULT_START_RP)
-        
         else:
             type_ = None
             default = None
@@ -1183,7 +1182,7 @@ class ParameterSubSection:
             
             default = self.default
             if (default is not None):
-                yield from description_serializer(type_, parent.object, parent.path, create_relative_sectioned_link)
+                yield from description_serializer(default, parent.object, parent.path, create_relative_sectioned_link)
             
             yield '</td>'
         

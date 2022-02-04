@@ -1,6 +1,4 @@
-# Commands (v2)
-
-> commands_v2 is in Beta testing right now.
+### Introduction
 
 Hata commands_v2 extension lets you easily assign python functions as commands. The user then can call the commands
 from the chat using a prefix, familiarly as a you would call the python function.
@@ -48,12 +46,12 @@ NekoBot = Client(TOKEN)
 setup_ext_commands(NekoBot, prefix='!')
 ```
 
-## Command Parameters
+### Command Parameters
 
 You may use internal parameters to get context about command invocation, or outer ones, which are required to be
 passed by the user invoking the user. Parameter types are detected based on annotation, name and position.
 
-### Internal parameters
+#### Internal parameters
 
 ##### No parameters
 
@@ -71,7 +69,7 @@ You can define any parameter annotated as ``CommandContext``, or named as `conte
 This parameter gives you access to information about the command's invocation and implements many related functions,
 like `.send(...)`, `.message`, `.channel`, `.client`, `.prefix` to make your life easier.
 
-### Outer / Discord parameters
+#### Outer / Discord parameters
 
 Outer or Discord parameters can be required or optionally passable by the caller user on Discord.
 
@@ -224,12 +222,12 @@ async def pat(ctx, user, message=None):
     return embed
 ```
 
-### Parameter separators & assigner
+#### Parameter separators & assigner
 
 You can overwrite the default parameter separator `('"', '"')` and assigner `':'` by passing as keyword parameters to
 the `.commands` decorator. Overwriting these can be a great tool to make your bot unique.
 
-#### Parameter separators
+##### Parameter separators
 
 Separators might be defined as encapsulators, where you define where a group starts and ends, or as a standalone
 separator to break up the input text.
@@ -274,7 +272,7 @@ async def separate(*args):
 |---------------------------------------------------|-----------------------------------------------------------------------|
 | `'Legacy of Lunatic Kingdom *Pandemonic Planet*'` | `'Legacy'`, `'of'`, `'Lunatic'`, `'Kingdom'`, `'Pandemonic Planet'`   |
 
-#### Assigner
+##### Assigner
 
 Assigners modify the assigner used at keyword parameters.
 
@@ -287,7 +285,7 @@ async def keywords(**kwargs):
     return 'No keyword received.'
 ```
 
-### Configure parameters
+#### Configure parameters
 
 Each entity parameter converter has converter flags., which define the was how the converter tries to convert a field.
 Like by default `User` converter wont allow you to access out-of-guild users. But by using `configure_converter
@@ -333,11 +331,11 @@ Meanwhile these are all the applicable ones:
 | invite    | url, id                                   |
 | sticker   | name, id, everywhere                      |
 
-## Categories
+### Categories
 
 Categories can be used to group up commands. Can be used for help commands, checks and for error handling.
 
-### Creating categories
+#### Creating categories
 
 Categories can be created on the fly, by using the `category` keyword inside of the `.commands` decorator.
 
@@ -405,7 +403,7 @@ NekoBot = Client(TOKEN,
 
 Default category can be get by using the `client.command_processor.get_default_category()` method later.
 
-## Checks
+### Checks
 
 Checks can be applied to commands and to categories to check whether the user has permission to invoke the user.
 
@@ -469,7 +467,7 @@ The following checks are implemented:
 | user_account_or_client_only    | N/A                      | Whether the message's author is a user account or a ``Client``.                                           |
 
 
-### Category checks
+#### Category checks
 
 Checks can be applied to categories at creation or later as well.
 
@@ -481,7 +479,7 @@ UTILITY_CATEGORY = NekoBot.command_processor.create_category('utility', checks=c
 NekoBot.command_processor.get_default_category().checks = checks.owner_only()
 ```
 
-## Precheck
+### Precheck
 
 Command processor's precheck runs when a message is received. It decides, whether the received message should be
 processed as a command.
@@ -498,7 +496,7 @@ def filter_only_bots(client, message):
 
 >  Pre-checks cannot be async. `client` and `message` parameters are always passed to them.
 
-## Error handling
+### Error handling
 
 Exception handlers can be registered to the command processor, to categories and to commands as well. The first
 exception handler, returning `True` will stop the rest of being called, marking the exception as handled.
@@ -539,7 +537,7 @@ async def about_role_error_handler(ctx, exception):
 ```
 
 
-## Cooldowns
+### Cooldowns
 
 Cooldowns can be applied to commands by using the `cooldown` decorator. They can be either per `'user'`, `'channel'`
 or `'guild'`.
@@ -563,7 +561,7 @@ async def handle_cooldown_error(command_context, exception):
     return False
 ```
 
-## Sub commands
+### Sub commands
 
 Sub commands can be registered under other commands on the same way as they are registered to the client.
 
@@ -579,7 +577,7 @@ async def sub():
     return 'This is a sub command.'
 ```
 
-## Unknown command
+### Unknown command
 
 If command prefix and command name is found, but the command's name do not refers to any command,
 `.command_processor.unknown_command` is called.

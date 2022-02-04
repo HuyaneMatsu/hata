@@ -665,6 +665,8 @@ class CommandProcessor(EventWaitforBase):
                     category = self.create_category(category_hint)
             
             command.set_category(category)
+        
+        self.commands.add(command)
     
     
     def _remove_command(self, command):
@@ -694,6 +696,7 @@ class CommandProcessor(EventWaitforBase):
             )
         
         command.unlink_category()
+        self.commands.discard(command)
     
     
     def _add_category(self, category):

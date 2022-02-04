@@ -10,6 +10,9 @@
 
 - `Client.channel_follow` raised `NameError`.
 
+##### ext.commands_v2
+- `CommandProcessor.commands` is now populated correctly.
+
 ## 1.1.134 *\[2022-01-25\]*
 
 ### Summary

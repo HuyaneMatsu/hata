@@ -115,13 +115,13 @@ HELP = (
 def __main__():
     interactive_console_locals = {PACKAGE_NAME: PACKAGE}
     for variable_name in {
-            '__name__',
-            '__package__',
-            '__loader__',
-            '__spec__',
-            '__builtins__',
-            '__file__'
-                }:
+        '__name__',
+        '__package__',
+        '__loader__',
+        '__spec__',
+        '__builtins__',
+        '__file__'
+    }:
         interactive_console_locals[variable_name] = getattr(PACKAGE, variable_name)
     
     for variable_name in PACKAGE.__all__:

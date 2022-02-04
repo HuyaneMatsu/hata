@@ -4,8 +4,9 @@ Hata has tutorials in guides.
 
 #### Introduction
 
-- [getting_started](getting_started.md): First time making a bot.
+- [getting_started](getting_started.md): First time making a bot
 - [introduction](introduction.md): Brief introduction to python
+- [first bot](first_bot.md): Coding our first bot with hata
 
 #### Generic topics
 

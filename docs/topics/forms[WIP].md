@@ -7,9 +7,9 @@ not intuitive enough. This is when multi-field forms / model interactions come i
 
 #### Building Forms
 
-Forms are standalone components, with subcomponents as fields.
+Forms are standalone components, with sub-components as fields.
 
-For now forms are limited to 5 subcomponents. And the only accepted subcomponents are `TextInput`-s (basically rows
+For now forms are limited to 5 sub-components. And the only accepted sub-components are `TextInput`-s (basically rows
 of text inputs, but rows are inserted automatically if not defined.)
 
 #### Limitations

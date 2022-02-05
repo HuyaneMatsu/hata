@@ -198,7 +198,7 @@ class ContentParameterParserContextEncapsulator(ContentParameterParserContextBas
 
 class ContentParameterParser:
     """
-    Content parameter parser used inside of a ``ContentParserContext`` and stored by ``CommandContentParser``
+    Content parameter parser used inside of a ``ContentParameterParserContext`` and stored by ``CommandContentParser``
     instances.
     
     Attributes

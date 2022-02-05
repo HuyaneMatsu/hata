@@ -11,10 +11,8 @@ PACKAGE = __import__(PACKAGE_NAME)
 NAME = 'interpreter'
 USAGE = 'i | interpreter'
 
-HELP = (
-    f'Runs asynchronous python interpreter through hata\'s asynchronous environment.\n'
-    f'{AWAIT_NOTE}\n'
-)
+HELP = f'Runs asynchronous python interpreter through scarletio.\n{AWAIT_NOTE}\n'
+
 
 def __main__():
     run_asynchronous_interactive_console(

@@ -1,14 +1,24 @@
-__all__ = ('ClientWrapper', 'BanEntry', 'Typer', 'start_clients', 'stop_clients', 'wait_for_interruption')
+__all__ = (
+    'ClientWrapper', 'BanEntry', 'Typer', 'run_console_till_interruption', 'start_clients', 'stop_clients',
+    'wait_for_interruption'
+)
 
 import sys
+from importlib.util import module_from_spec
 from threading import current_thread
 from time import sleep as blocking_sleep
 
 from scarletio import CancelledError, Task, WaitTillAll, include, sleep
+from scarletio.tools.asynchronous_interactive_console import (
+    create_banner, create_exit_message, run_asynchronous_interactive_console
+)
 
+from ... import __package__ as PACKAGE_NAME
 from ..core import CLIENTS, KOKORO
 from ..permission import Permission
 from ..permission.utils import PERMISSION_KEY
+
+PACKAGE = __import__(PACKAGE_NAME)
 
 
 Client = include('Client')
@@ -47,7 +57,7 @@ def wait_for_interruption():
     Waits for keyboard interruption. If occurred, shuts down all the clients and closes the event loop. This operation
     is unreleasable.
     
-    Shutting down the clients might take a few seconds depending on the added shutdown event handlers.
+    > Shutting down the clients might take a few seconds depending on the added shutdown event handlers.
     
     Raises
     ------
@@ -71,12 +81,54 @@ def wait_for_interruption():
     
     sys.stdout.write('wait_for_interruption interrupted\n')
     
-    await WaitTillAll([Task(client.disconnect(), KOKORO) for client in CLIENTS.values()], KOKORO).sync_wrap().wait()
+    WaitTillAll([Task(client.disconnect(), KOKORO) for client in CLIENTS.values()], KOKORO).sync_wrap().wait()
     KOKORO.stop()
     
     # reraise exception
     if (exception is not None):
         raise exception
+
+
+def _console_exit_callback():
+    """
+    Callback used by ``run_console_till_interruption`` to stop the running clients.
+    """
+    WaitTillAll([Task(client.disconnect(), KOKORO) for client in CLIENTS.values()], KOKORO).sync_wrap().wait()
+
+
+def run_console_till_interruption():
+    """
+    Runs interactive console.
+    
+    On system exit shuts down all the clients and closes the event loop.
+    
+    > Shutting down the clients might take a few seconds depending on the added shutdown event handlers.
+    
+    Raises
+    ------
+    RuntimeError
+        If used inside of the event loop of clients.
+    """
+    if current_thread() is KOKORO:
+        raise RuntimeError(f'`run_console_till_interruption` cannot be used inside of {KOKORO!r}.')
+    
+    frame = sys._getframe().f_back
+    spec = frame.f_globals['__spec__']
+    module = sys.modules.get(spec.name, None)
+    if module is None:
+        module = module_from_spec(spec)
+    
+    interactive_console_locals = {}
+    
+    for variable_name in set(dir(module)) - {'__name__', '__package__', '__loader__', '__spec__'}:
+        interactive_console_locals[variable_name] = getattr(module, variable_name)
+    
+    run_asynchronous_interactive_console(
+        interactive_console_locals,
+        banner = create_banner(PACKAGE),
+        exit_message = create_exit_message(PACKAGE),
+        callback = _console_exit_callback,
+    )
 
 
 class BanEntry:

@@ -71,7 +71,7 @@ def wait_for_interruption():
     
     sys.stdout.write('wait_for_interruption interrupted\n')
     
-    WaitTillAll([Task(client.disconnect(), KOKORO) for client in CLIENTS.values()], KOKORO).sync_wrap().wait()
+    await WaitTillAll([Task(client.disconnect(), KOKORO) for client in CLIENTS.values()], KOKORO).sync_wrap().wait()
     KOKORO.stop()
     
     # reraise exception

@@ -5,12 +5,11 @@ from collections import deque
 from datetime import datetime
 from json import JSONDecodeError
 from math import inf
-from threading import current_thread
 from time import time as time_now
 
 from scarletio import (
     CancelledError, EventThread, Future, IgnoreCaseMultiValueDictionary, LOOP_TIME, Task, WaitTillAll, WaitTillFirst,
-    change_on_switch, export, from_json, future_or_timeout, methodize, sleep
+    change_on_switch, export, from_json, future_or_timeout, methodize, run_coroutine_concurrent, sleep
 )
 from scarletio.web_common import BasicAuth, Formdata
 from scarletio.web_common.headers import AUTHORIZATION
@@ -16083,18 +16082,7 @@ class Client(ClientUserPBase):
         if self.running:
             raise RuntimeError(f'{self!r} is already running!')
         
-        task = Task(self.connect(), KOKORO)
-        
-        thread = current_thread()
-        if thread is KOKORO:
-            return task
-        
-        if isinstance(thread, EventThread):
-            # `.async_wrap` wakes up KOKORO
-            return task.async_wrap(thread)
-        
-        KOKORO.wake_up()
-        return task.sync_wrap().wait()
+        return run_coroutine_concurrent(self.connect(), KOKORO)
     
     
     def stop(self):
@@ -16111,18 +16099,8 @@ class Client(ClientUserPBase):
                 `FutureAsyncWrapper`.
             - If the method was called from any other thread, returns `None` when disconnecting finished.
         """
-        task = Task(self.disconnect(), KOKORO)
-        
-        thread = current_thread()
-        if thread is KOKORO:
-            return task
-        
-        if isinstance(thread, EventThread):
-            # AsyncWrap wakes up KOKORO
-            return task.async_wrap(thread)
-        
-        KOKORO.wake_up()
-        task.sync_wrap().wait()
+        return run_coroutine_concurrent(self.disconnect(), KOKORO)
+    
     
     async def connect(self):
         """

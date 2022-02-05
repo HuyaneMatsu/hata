@@ -4,9 +4,8 @@ import sys
 from math import floor
 from os import getpid as get_process_identifier
 from sys import platform as PLATFORM
-from threading import current_thread
 
-from scarletio import EventThread, Future, Task, from_json, future_or_timeout, sleep, to_json
+from scarletio import Future, Task, from_json, future_or_timeout, run_coroutine_concurrent, sleep, to_json
 
 from ...discord.activity import ActivityRich
 from ...discord.channel import CHANNEL_TYPE_MAP, ChannelBase, ChannelGuildUndefined, ChannelTextBase, ChannelVoiceBase
@@ -162,18 +161,7 @@ class RPCClient:
         if self.running:
             raise RuntimeError(f'{self!r} is already running!')
         
-        task = Task(self.connect(), KOKORO)
-        
-        thread = current_thread()
-        if thread is KOKORO:
-            return task
-        
-        if isinstance(thread, EventThread):
-            # `.async_wrap` wakes up KOKORO
-            return task.async_wrap(thread)
-        
-        KOKORO.wake_up()
-        return task.sync_wrap().wait()
+        return run_coroutine_concurrent(self.connect(), KOKORO)
     
     
     async def connect(self):

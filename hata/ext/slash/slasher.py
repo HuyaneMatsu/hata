@@ -2,9 +2,8 @@ __all__ = ('Slasher', )
 
 import warnings
 from functools import partial as partial_func
-from threading import current_thread
 
-from scarletio import EventThread, Task, WaitTillAll, WeakKeyDictionary, WeakReferer, export
+from scarletio import Task, WaitTillAll, WeakKeyDictionary, WeakReferer, export, run_coroutine_concurrent
 
 from ...discord.client import Client
 from ...discord.client.request_helpers import get_guild_id
@@ -2315,18 +2314,7 @@ class Slasher(EventHandlerBase):
         if client is None:
             raise RuntimeError('The slasher\'s client was already garbage collected.')
         
-        task = Task(self._do_main_sync(client), KOKORO)
-        
-        thread = current_thread()
-        if thread is KOKORO:
-            return task
-        
-        if isinstance(thread, EventThread):
-            # `.async_wrap` wakes up KOKORO
-            return task.async_wrap(thread)
-        
-        KOKORO.wake_up()
-        return task.sync_wrap().wait()
+        return run_coroutine_concurrent(self._do_main_sync(client), KOKORO)
     
     
     async def _do_main_sync(self, client):
@@ -2435,18 +2423,7 @@ class Slasher(EventHandlerBase):
         if client is None:
             raise RuntimeError('The slasher\'s client was already garbage collected.')
         
-        task = Task(self._do_discard_kept_command(client), KOKORO)
-        
-        thread = current_thread()
-        if thread is KOKORO:
-            return task
-        
-        if isinstance(thread, EventThread):
-            # `.async_wrap` wakes up KOKORO
-            return task.async_wrap(thread)
-        
-        KOKORO.wake_up()
-        return task.sync_wrap().wait()
+        return run_coroutine_concurrent(self._do_discard_kept_command(client), KOKORO)
     
     
     def _discard_kept_command_and_update_sync_states(self):

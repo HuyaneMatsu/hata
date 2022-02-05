@@ -1,9 +1,10 @@
 __all__ = ('EXTENSION_LOADER', 'ExtensionLoader', )
 
 from io import StringIO
-from threading import current_thread
 
-from scarletio import EventThread, HybridValueDictionary, Task, alchemy_incendiary, export, is_coroutine_function
+from scarletio import (
+    EventThread, HybridValueDictionary, alchemy_incendiary, export, is_coroutine_function, run_coroutine_concurrent
+)
 
 from ...discord.core import KOKORO
 
@@ -338,9 +339,9 @@ class ExtensionLoader:
     on the same thread as the clients, that is why they can be async as well.
     
     These methods also act differently depending from which thread they were called from. Whenever they are called from
-    the client's thread, a ``Task`` is returned what can be `awaited`. If called from other ``EventThread``, then the task
-    is async_wrapped and that is returned. When calling from any other thread (like the main thread for example), the
-    task is sync_wrapped and the thread is blocked till the extension's loading is finished.
+    the client's thread, a ``Task`` is returned what can be `awaited`. If called from other ``EventThread``, then the
+    task is async wrapped and that is returned. When calling from any other thread (like the main thread for example),
+    the task is sync wrapped and the thread is blocked till the extension's loading is finished.
     
     Attributes
     ----------
@@ -697,17 +698,7 @@ class ExtensionLoader:
         """
         extensions = _get_extensions(name)
         
-        task = Task(self._load(extensions), KOKORO)
-        
-        thread = current_thread()
-        if thread is KOKORO:
-            return task
-        
-        if isinstance(current_thread, EventThread):
-            return task.async_wrap(current_thread)
-        
-        KOKORO.wake_up()
-        task.sync_wrap().wait()
+        return run_coroutine_concurrent(self._load(extensions), KOKORO)
     
     
     async def _load(self, extensions):
@@ -765,17 +756,7 @@ class ExtensionLoader:
         """
         extensions = _get_extensions(name)
         
-        task = Task(self._unload(extensions), KOKORO)
-        
-        thread = current_thread()
-        if thread is KOKORO:
-            return task
-        
-        if isinstance(current_thread, EventThread):
-            return task.async_wrap(current_thread)
-        
-        KOKORO.wake_up()
-        task.sync_wrap().wait()
+        return run_coroutine_concurrent(self._unload(extensions), KOKORO)
     
     
     async def _unload(self, extensions):
@@ -833,17 +814,7 @@ class ExtensionLoader:
         """
         extensions = _get_extensions(name)
         
-        task = Task(self._reload(extensions),KOKORO)
-        
-        thread = current_thread()
-        if thread is KOKORO:
-            return task
-        
-        if isinstance(current_thread, EventThread):
-            return task.async_wrap(current_thread)
-        
-        KOKORO.wake_up()
-        task.sync_wrap().wait()
+        return run_coroutine_concurrent(self._reload(extensions),KOKORO)
     
     
     async def _reload(self, extensions):
@@ -895,17 +866,7 @@ class ExtensionLoader:
         ExtensionError
             If any extension failed to load correctly.
         """
-        task = Task(self._load_all(),KOKORO)
-
-        thread = current_thread()
-        if thread is KOKORO:
-            return task
-        
-        if isinstance(current_thread, EventThread):
-            return task.async_wrap(current_thread)
-        
-        KOKORO.wake_up()
-        task.sync_wrap().wait()
+        return run_coroutine_concurrent(self._load_all(),KOKORO)
     
     
     async def _load_all(self):
@@ -957,17 +918,8 @@ class ExtensionLoader:
         ExtensionError
             If any extension failed to unload correctly.
         """
-        task = Task(self._unload_all(), KOKORO)
-        
-        thread = current_thread()
-        if thread is KOKORO:
-            return task
-        
-        if isinstance(current_thread, EventThread):
-            return task.async_wrap(current_thread)
-        
-        KOKORO.wake_up()
-        task.sync_wrap().wait()
+        return run_coroutine_concurrent(self._unload_all(), KOKORO)
+    
     
     async def _unload_all(self):
         """
@@ -1015,17 +967,8 @@ class ExtensionLoader:
         ExtensionError
             If any extension failed to reload correctly.
         """
-        task = Task(self._reload_all(), KOKORO)
-        
-        thread = current_thread()
-        if thread is KOKORO:
-            return task
-        
-        if isinstance(current_thread, EventThread):
-            return task.async_wrap(current_thread)
-        
-        KOKORO.wake_up()
-        task.sync_wrap().wait()
+        return run_coroutine_concurrent(self._reload_all(), KOKORO)
+    
     
     async def _reload_all(self):
         """

@@ -1,9 +1,8 @@
 __all__ = ('SolarClient', )
 
 from random import choice
-from threading import current_thread
 
-from scarletio import EventThread, Task, WaitTillAll, WeakReferer, to_json
+from scarletio import Task, WaitTillAll, WeakReferer, run_coroutine_concurrent, to_json
 from scarletio.web_common.headers import AUTHORIZATION, CONTENT_TYPE
 
 from ...discord.bases import maybe_snowflake_pair
@@ -127,18 +126,7 @@ class SolarClient:
         
         self.nodes.add(node)
         
-        task = Task(node.start(), KOKORO)
-        
-        thread = current_thread()
-        if thread is KOKORO:
-            return task
-        
-        if isinstance(thread, EventThread):
-            # `.async_wrap` wakes up KOKORO
-            return task.async_wrap(thread)
-        
-        KOKORO.wake_up()
-        return task.sync_wrap().wait()
+        return run_coroutine_concurrent(node.start(), KOKORO)
     
     
     async def get_tracks(self, query):

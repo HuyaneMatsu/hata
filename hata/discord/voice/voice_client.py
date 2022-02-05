@@ -5,7 +5,8 @@ from datetime import datetime
 from functools import partial as partial_func
 
 from scarletio import (
-    DOCS_ENABLED, DatagramMergerReadProtocol, Event, Future, Lock, Task, export, future_or_timeout, sleep
+    DOCS_ENABLED, DatagramMergerReadProtocol, Event, Future, Lock, Task, export, future_or_timeout, skip_poll_cycle,
+    sleep
 )
 from scarletio.web_common import ConnectionClosed, InvalidHandshake, WebSocketProtocolError
 
@@ -997,9 +998,7 @@ class VoiceClient:
                 player.stop()
                 
                 # skip 1 full loop
-                waiter = Future(KOKORO)
-                KOKORO.call_later(0.0, Future.set_result_if_pending, waiter, None)
-                await waiter
+                await skip_poll_cycle(KOKORO)
             
             reader = self.reader
             if (reader is not None):

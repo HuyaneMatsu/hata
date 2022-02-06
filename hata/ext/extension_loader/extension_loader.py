@@ -3,7 +3,7 @@ __all__ = ('EXTENSION_LOADER', 'ExtensionLoader', )
 from io import StringIO
 
 from scarletio import (
-    EventThread, HybridValueDictionary, alchemy_incendiary, export, is_coroutine_function, run_coroutine_concurrent
+    EventThread, HybridValueDictionary, alchemy_incendiary, export, is_coroutine_function, run_coroutine
 )
 
 from ...discord.core import KOKORO
@@ -698,7 +698,7 @@ class ExtensionLoader:
         """
         extensions = _get_extensions(name)
         
-        return run_coroutine_concurrent(self._load(extensions), KOKORO)
+        return run_coroutine(self._load(extensions), KOKORO)
     
     
     async def _load(self, extensions):
@@ -756,7 +756,7 @@ class ExtensionLoader:
         """
         extensions = _get_extensions(name)
         
-        return run_coroutine_concurrent(self._unload(extensions), KOKORO)
+        return run_coroutine(self._unload(extensions), KOKORO)
     
     
     async def _unload(self, extensions):
@@ -814,7 +814,7 @@ class ExtensionLoader:
         """
         extensions = _get_extensions(name)
         
-        return run_coroutine_concurrent(self._reload(extensions),KOKORO)
+        return run_coroutine(self._reload(extensions),KOKORO)
     
     
     async def _reload(self, extensions):
@@ -866,7 +866,7 @@ class ExtensionLoader:
         ExtensionError
             If any extension failed to load correctly.
         """
-        return run_coroutine_concurrent(self._load_all(),KOKORO)
+        return run_coroutine(self._load_all(),KOKORO)
     
     
     async def _load_all(self):
@@ -918,7 +918,7 @@ class ExtensionLoader:
         ExtensionError
             If any extension failed to unload correctly.
         """
-        return run_coroutine_concurrent(self._unload_all(), KOKORO)
+        return run_coroutine(self._unload_all(), KOKORO)
     
     
     async def _unload_all(self):
@@ -967,7 +967,7 @@ class ExtensionLoader:
         ExtensionError
             If any extension failed to reload correctly.
         """
-        return run_coroutine_concurrent(self._reload_all(), KOKORO)
+        return run_coroutine(self._reload_all(), KOKORO)
     
     
     async def _reload_all(self):

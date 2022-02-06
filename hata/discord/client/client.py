@@ -9,7 +9,7 @@ from time import time as time_now
 
 from scarletio import (
     CancelledError, EventThread, Future, IgnoreCaseMultiValueDictionary, LOOP_TIME, Task, WaitTillAll, WaitTillFirst,
-    change_on_switch, export, from_json, future_or_timeout, methodize, run_coroutine_concurrent, sleep
+    change_on_switch, export, from_json, future_or_timeout, methodize, run_coroutine, sleep
 )
 from scarletio.web_common import BasicAuth, Formdata
 from scarletio.web_common.headers import AUTHORIZATION
@@ -16082,7 +16082,7 @@ class Client(ClientUserPBase):
         if self.running:
             raise RuntimeError(f'{self!r} is already running!')
         
-        return run_coroutine_concurrent(self.connect(), KOKORO)
+        return run_coroutine(self.connect(), KOKORO)
     
     
     def stop(self):
@@ -16099,7 +16099,7 @@ class Client(ClientUserPBase):
                 `FutureAsyncWrapper`.
             - If the method was called from any other thread, returns `None` when disconnecting finished.
         """
-        return run_coroutine_concurrent(self.disconnect(), KOKORO)
+        return run_coroutine(self.disconnect(), KOKORO)
     
     
     async def connect(self):

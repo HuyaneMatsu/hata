@@ -3,7 +3,7 @@ __all__ = ('Slasher', )
 import warnings
 from functools import partial as partial_func
 
-from scarletio import Task, WaitTillAll, WeakKeyDictionary, WeakReferer, export, run_coroutine_concurrent
+from scarletio import Task, WaitTillAll, WeakKeyDictionary, WeakReferer, export, run_coroutine
 
 from ...discord.client import Client
 from ...discord.client.request_helpers import get_guild_id
@@ -2314,7 +2314,7 @@ class Slasher(EventHandlerBase):
         if client is None:
             raise RuntimeError('The slasher\'s client was already garbage collected.')
         
-        return run_coroutine_concurrent(self._do_main_sync(client), KOKORO)
+        return run_coroutine(self._do_main_sync(client), KOKORO)
     
     
     async def _do_main_sync(self, client):
@@ -2423,7 +2423,7 @@ class Slasher(EventHandlerBase):
         if client is None:
             raise RuntimeError('The slasher\'s client was already garbage collected.')
         
-        return run_coroutine_concurrent(self._do_discard_kept_command(client), KOKORO)
+        return run_coroutine(self._do_discard_kept_command(client), KOKORO)
     
     
     def _discard_kept_command_and_update_sync_states(self):

@@ -2,7 +2,7 @@ __all__ = ('SolarClient', )
 
 from random import choice
 
-from scarletio import Task, WaitTillAll, WeakReferer, run_coroutine_concurrent, to_json
+from scarletio import Task, WaitTillAll, WeakReferer, run_coroutine, to_json
 from scarletio.web_common.headers import AUTHORIZATION, CONTENT_TYPE
 
 from ...discord.bases import maybe_snowflake_pair
@@ -126,7 +126,7 @@ class SolarClient:
         
         self.nodes.add(node)
         
-        return run_coroutine_concurrent(node.start(), KOKORO)
+        return run_coroutine(node.start(), KOKORO)
     
     
     async def get_tracks(self, query):

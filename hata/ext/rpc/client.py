@@ -5,7 +5,7 @@ from math import floor
 from os import getpid as get_process_identifier
 from sys import platform as PLATFORM
 
-from scarletio import Future, Task, from_json, future_or_timeout, run_coroutine_concurrent, sleep, to_json
+from scarletio import Future, Task, from_json, future_or_timeout, run_coroutine, sleep, to_json
 
 from ...discord.activity import ActivityRich
 from ...discord.channel import CHANNEL_TYPE_MAP, ChannelBase, ChannelGuildUndefined, ChannelTextBase, ChannelVoiceBase
@@ -161,7 +161,7 @@ class RPCClient:
         if self.running:
             raise RuntimeError(f'{self!r} is already running!')
         
-        return run_coroutine_concurrent(self.connect(), KOKORO)
+        return run_coroutine(self.connect(), KOKORO)
     
     
     async def connect(self):

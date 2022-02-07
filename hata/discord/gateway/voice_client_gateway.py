@@ -300,7 +300,7 @@ class DiscordGatewayVoice:
     
     async def terminate(self):
         """
-        Terminates the gateway's ``.kokoro`` and closes it's `.websocket`` with close code of `4000`.
+        Terminates the gateway's ``.kokoro`` and closes it's ``.websocket`` with close code of `4000`.
         
         This method is a coroutine.
         """

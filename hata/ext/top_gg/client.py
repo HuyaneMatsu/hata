@@ -267,6 +267,25 @@ class TopGGClient:
         return self
     
     
+    def __repr__(self):
+        """Returns the representation of the top.gg client."""
+        repr_parts = ['<', self.__class__.__name__, ' to ' ]
+        
+        client = self.client_reference()
+        if client is None:
+            client_name = str(self.client_id)
+        else:
+            client_name = client.full_name
+        
+        repr_parts.append(client_name)
+        
+        if self.is_auto_posting:
+            repr_parts.append('(auto-posting)')
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
     def is_auto_posting(self):
         """
         Returns whether the bot stats are auto posted to top.gg

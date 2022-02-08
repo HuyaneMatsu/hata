@@ -7,12 +7,16 @@
 - Remove extra redirect in interaction client methods, since it could(?) confuse flow order.
 - Add `run_console_till_interruption` (experimental).
 
+##### ex.top_gg
+- Add missing `TopGGClient.__repr__`.
+
 #### Bug fixes
 
 - `Client.channel_follow` raised `NameError`.
 
 ##### ext.commands_v2
 - `CommandProcessor.commands` is now populated correctly.
+
 
 ## 1.1.134 *\[2022-01-25\]*
 

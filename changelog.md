@@ -1,3 +1,8 @@
+## 1.1.136 *\[2022-02-??\]*
+
+#### Improvements
+- Move `ext.asyncio` to `scarletio`.
+
 ## 1.1.135 *\[2022-02-08\]*
 
 #### Improvements

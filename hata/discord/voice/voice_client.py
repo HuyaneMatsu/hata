@@ -91,7 +91,7 @@ class VoiceClient:
          +==================+===========================+
          | client           | ``VoiceClient``           |
          +------------------+---------------------------+
-         | last_source      | `None`, ``AudioSource`` |
+         | last_source      | `None`, ``AudioSource``   |
          +------------------+---------------------------+
          
          The ``VoiceClient`` also includes some other predefined function for setting as `call_after`:

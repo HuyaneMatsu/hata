@@ -1,4 +1,4 @@
-### Introduction
+# Introduction
 
 Message components, mainly known as components, are interactive gui elements which might get included with a message.
 Your application or bot can send and interact with them. They are customizable and easy to use.
@@ -9,7 +9,7 @@ did not read that yet please go ahead.
 Writing component based interactions is usually three times longer than generic ones. So if writing some extra code
 is not your bread I do not recommend using components, although I never said they are more complicated.
 
-### Component Structures
+# Component Structures
 
 Components can be passed to `InteractionResponse` and to many client methods as well:
 
@@ -71,17 +71,17 @@ components = [
 ]
 ```
 
-#### Limitations
+## Limitations
 
 - A message can have up to `5` rows.
 - `custom_id` can be `100` character long.
 
-##### Button limitations
+### Button limitations
 
 - Up to `5` buttons can be in a row.
 - Component `label` can be `80` characters long.
 
-##### Select limitations
+### Select limitations
 
 - Up to `1` select can be in a row.
 - A select can have `25` choices.
@@ -89,7 +89,7 @@ components = [
 - Select `min_values` can be in range `[0:15]`.
 - Select `max_values` can be in range `[1:25]`.
 
-### Component commands
+# Component commands
 
 You may add component commands to a slashers which are called when a component with the specified `custom_id` is
 used.
@@ -172,7 +172,7 @@ async def cat_fed(event):
 
 ![](assets/components_0001.gif)
 
-#### Using regex
+## Using regex
 
 You can pass regex as `custom_id` for component commands to match. It can be used to store specific states or button
 positions and then get the data back when clicked. Here is a short example for giving roles on button click.
@@ -221,7 +221,7 @@ async def give_role(client, event, role_id):
 
 ```
 
-#### Using multiple custom id
+## Using multiple custom id
 
 Using multiple strings or regex `custom_id`-s work as well. Here is a simple poison chooser example for multiple string.
 This example could have been done with regex as well, but an advantage of strings is that their lookup time is `O(1)`,
@@ -273,7 +273,7 @@ async def poison_edit(event):
 
 ![](assets/components_0002.gif)
 
-#### Deleting the component's message
+## Deleting the component's message
 
 The source message can be deleted, by first acknowledging it, then using the
 `.interaction_response_message_delete` client method.
@@ -333,7 +333,7 @@ async def close_user_info(client, event):
 
 ![](assets/components_0003.gif)
 
-#### Sending notification
+## Sending notification
 
 Sometimes you do not want to edit the source message, but want to notify the user, about anything in general. You
 can do it by first acknowledging the event, then creating a followup message.
@@ -395,7 +395,7 @@ async def party(client, event):
 
 ![](assets/components_0004.gif)
 
-### Waiting for component interaction
+# Waiting for component interaction
 
 You can wait for component interaction on a message by using the `wait_for_component_interaction` coroutine function.
 
@@ -478,7 +478,7 @@ async def add_emoji(client, event,
 > Component interaction events always ignore the message parameter.
 
 
-#### Waiting for multiple component interaction
+## Waiting for multiple component interaction
 
 In the same way as `wait_for_component_interaction` returns on the first sufficient interaction,
 `iter_component_interactions` can be used to (async) iterate over multiple ones.
@@ -562,7 +562,7 @@ async def pick(client, event):
         event=component_interaction)
 ```
 
-### Using select
+# Using select
 
 Selects are not as useful as buttons in practice, since lacking form functionality means, they are just a dynamic
 slash command choice parameter.

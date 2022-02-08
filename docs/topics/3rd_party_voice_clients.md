@@ -1,22 +1,22 @@
-### Introduction
+# Introduction
 
 If you ever wanted to play music with Python you might have stumbled upon a big problem - Python GIL.
 
 For CPU intensive tasks, relying on single core is not optimal and for this purpose you might want to integrate 3rd
 party voice libraries which will be explained below.
 
-### Getting started
+# Getting started
 
 First check which Python bindings you or the 3rd party library use:
 - If it's blocking IO code then make sure to executors or start other threads.
 - If it's asyncio based then make sure to import `hata.ext.asyncio`, which adds support for asyncio based modules when
 using Hata.
 
-### Related events
+# Related events
 
 Hata separates many voice related events, which are separated in 4 groups:
 
-#### Internal
+## Internal
     
 - `voice_client_ghost`
 
@@ -38,7 +38,7 @@ Hata separates many voice related events, which are separated in 4 groups:
     Parameters:
     - [Client](https://www.astil.dev/project/hata/docs/hata/discord/client/client/Client)
 
-#### Voice server update
+## Voice server update
 
 - `voice_server_update`
 
@@ -55,7 +55,7 @@ Hata separates many voice related events, which are separated in 4 groups:
     .token
     ```
 
-#### Voice client updates
+## Voice client updates
 
 Voice client updates relate directly to the client unlike [user voice updates](#user-voice-updates) which are
 related to every user.
@@ -103,7 +103,7 @@ Voice client update usually operate with voice states which expose the following
     - [VoiceState](https://www.astil.dev/project/hata/docs/hata/discord/user/voice_state/VoiceState)
     - `old_attributes` (`dict`) `attribute-name` - `old_value` pairs of the client voice state changed attributes.
 
-#### User voice updates
+## User voice updates
 
 - `user_voice_join`
     
@@ -140,7 +140,7 @@ Voice client update usually operate with voice states which expose the following
     - [VoiceState](https://www.astil.dev/project/hata/docs/hata/discord/user/voice_state/VoiceState)
     - `old_attributes` (`dict`) `attribute-name` - `old_value` pairs of the voice state changed attributes.
 
-### Api usage
+# Api usage
 
 To deal with voice client connections you will need to use the respective guild gateway. To get it, do:
 
@@ -156,7 +156,7 @@ It can be accessed trough `gateway.session_id`.
 Don't forget to overwrite **all** `voice_client_...` events when dealing with voice clients.
 To overwrite (replace) one use the `overwrite=True` parameter.
 
-#### Joining to voice channel
+## Joining to voice channel
 
 For joining, first get the gateway of the guild where you wish to join then call its `.change_voice_state`.
 
@@ -178,7 +178,7 @@ async def voice_client_join(client, voice_state):
 
 > Both `.channel` and `.channel_id` works.
 
-#### Moving between voice channels.
+## Moving between voice channels.
 
 Moving between voice channel is similar to joining.
 
@@ -195,7 +195,7 @@ async def voice_client_move(client, voice_state, old_channel_id):
         voice_client.channel_id = voice_state.channel_id
 ```
 
-#### Leaving from voice channel
+## Leaving from voice channel
 
 To leave from a voice channel, pass parameter `channel_id` as `0` to the `change_voice_state` method.
 
@@ -212,7 +212,7 @@ async def voice_client_leave(client, voice_state, old_channel_id):
         await voice_client.disconnect()
 ```
 
-#### Editing voice state
+## Editing voice state
 
 To edit voice state use the `self_mute` and the `self_deaf` parameters of `change_voice_state`.
 
@@ -229,7 +229,7 @@ async def voice_client_update(client, voice_state, old_attributes):
     ...
 ```
 
-### Ghost voice clients
+# Ghost voice clients
 
 If you do not want to deal with ghost clients, just register an empty function or just disconnect the client from the
 voice channel.
@@ -241,7 +241,7 @@ async def voice_client_ghost(client, voice_state):
     await voice_client.disconnect()
 ```
 
-### Shutting down voice clients
+# Shutting down voice clients
 
 Shutting down voice clients and awaiting their shutdown.
 
@@ -261,7 +261,7 @@ async def voice_client_shutdown(client):
     await WaitTillAll(tasks, client.loop)
 ```
 
-### Voice server update
+# Voice server update
 
 After connecting to a voice channel the `voice_server_update_event` is received. If the event has both `endpoint` and
 `token` set as non-`None` you are free to create your datagram connection.
@@ -274,9 +274,9 @@ async def voice_server_update(client, event):
         await voice_client.create_socket(event)
 ```
 
-### Tips
+# Tips
 
-##### Track voice region
+### Track voice region
 
 The voice client is disconnected when its channel voice region changes. To avoid this, you might want to check whether
 the client got disconnected indeed because ofg region change or just normal disconnect.
@@ -290,7 +290,7 @@ if region is None:
     region = channel.guild.region
 ```
 
-##### Getting entity from cache
+### Getting entity from cache
 
 In certain cases you might need rich information about entities, but you only have their ID available.
 Even tho most objects will expose entity access too, e.g. they have `channel_id` attribute and a `channel` property, this may not be enough.

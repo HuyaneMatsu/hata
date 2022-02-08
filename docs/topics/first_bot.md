@@ -1,4 +1,4 @@
-### Setup
+# Setup
 
 Let's code our first hata bot!
 
@@ -14,7 +14,7 @@ Or if using windows:
 python -m pip install hata
 ```
 
-### Writing your first bot
+# Writing your first bot
 
 When creating your first bot make sure to enable all intents on the developer portal for the full experience.
 
@@ -94,7 +94,7 @@ client.start()
 wait_for_interruption()
 ```
 
-### Slash commands
+# Slash commands
 
 This is a good start, but let's define some **real** commands using Discord's slash command feature.
 
@@ -135,6 +135,6 @@ wait_for_interruption()
 Great success! This not only looks cleaner, but there are many more options to customize your commands and their
 parameters as well!
 
-#### What's next?
+## What's next?
 
 Considered creating slash commands? Check out our detailed [slash](slash.md) extension guide.

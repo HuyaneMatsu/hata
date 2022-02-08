@@ -1,4 +1,4 @@
-### Introduction
+# Introduction
 
 If you are reading this, you probably want to create Discord bots! They are cool and flashy, but creating them might
 not be that simple. Many people start programming with creating a Discord bot, tho creating a decent one requires
@@ -17,7 +17,7 @@ In these guides you will learn about various concepts:
 - More advanced concepts.
 - And much more.
 
-### Before you begin...
+# Before you begin...
 
 If you don't know any python, but want to learn it, here are some links, where you can get started.
 

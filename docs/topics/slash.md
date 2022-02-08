@@ -1,4 +1,4 @@
-### Introduction
+# Introduction
 
 Slash refers to slash commands as probably known by the users or by interactions as mentioned by the api.
 
@@ -11,7 +11,7 @@ inherent slash extension.
 
 Not like regular commands, slash commands' format is limited by the Discord API itself, what we cannot overpass.
 
-##### Limitations
+### Limitations
 
 Discord sets the following limitations:
 
@@ -51,21 +51,21 @@ The parameter types can be the following:
 | user_id           | No            | user          | `'user_id'`           | N/A                   | `int`                     |
 
 
-#### Parameter notes
+## Parameter notes
 
 > There are choice parameters as well, but lets talk about those only later.
 
-##### user, channel, role
+### user, channel, role
 
 `user`, `channel` and `role` data may not be included within the interaction. However users can be requested from
 Discord, but channels and roles can not be. It means `role` and `channel` conversions can fail and the command wont be
 called. To avoid this case, you may use `role_id` / `channel_id` parameter types instead.
 
-##### mentionable
+### mentionable
 
 `mentionable` field stands for `user` + `role`.
 
-##### int, number
+### int, number
 
 In hata there are 2 integer input options available, one is `int` and the other one is `number`. Both has it's pros and
 cons. `int` field is converted to `string` by the extension, then when receiving an interaction is converted back to
@@ -73,7 +73,7 @@ cons. `int` field is converted to `string` by the extension, then when receiving
 fail. On other hand `number` field is inaccurate. Discord uses javascript `number` type (that's from the name comes
 from as well), what equals to float64. It means integers over 53 bit will lose from their precision.
 
-##### expression
+### expression
 
 Hata implements a mathematical expression field as well. For example, you can enter `3 * 2` or `10 / 5 + 4` instead of
 `6`. Even constants like `pi` or functions like `sqrt(2)` may be used. The field idea is based on
@@ -82,7 +82,7 @@ Hata implements a mathematical expression field as well. For example, you can en
 The evaluation of these fields are completely safe, do not uses `eval` or other cheaped out solutions, which have
 critical security vulnerabilities.
 
-#### Internal parameters
+## Internal parameters
 
 `client` (`c`) and `event` (`e`, `interaction_event`) parameters are picked up as internal parameters.
 
@@ -91,7 +91,7 @@ critical security vulnerabilities.
 Internal parameters are not propagated towards discord, instead they are auto-fulfilled internally. They can be used
 to access information about the command's context if required.
 
-#### Required oauth2 scopes
+## Required oauth2 scopes
 
 When using slash commands, adding your bot to a guild with just the regular `bot` scope is not enough. Make sure you
 authorize it with `applications.commands` oauth2 scope as well. Just fill out your bot's application's id in the
@@ -101,7 +101,7 @@ authorize it with `applications.commands` oauth2 scope as well. Just fill out yo
 If this error pops ups as you launched your bot: `DiscordException Forbidden (403), code=50001: Missing access`
 Do not worry, you probably just need to authorize your bot with the `applications.commands` oauth2 scope.
 
-#### Setup
+## Setup
 
 To setup the extension you just pass `'slash'` into the client's `extensions` parameter, or use the `setup_ext_slash`
 function.
@@ -120,11 +120,11 @@ Nitori = Client(TOKEN)
 setup_ext_slash(Nitori)
 ```
 
-#### Optional Slasher parameters
+## Optional Slasher parameters
 
 When setupping slash extension, a few optional parameters are also supported.
 
-##### delete_commands_on_unload
+### delete_commands_on_unload
 
 Tells to the slasher whether it should delete the commands from Discord when they are removed. Defaults to `False` in
 favor of working with extensions.
@@ -132,7 +132,7 @@ favor of working with extensions.
 When unloading an extension, all of it's commands are deleted from Discord as well if set as `True`. This might be
 painful when reloading global commands, because it would need 1 hour for the changes to take place.
 
-##### use_default_exception_handler
+### use_default_exception_handler
 
 Whether the slasher default exception handler should be used to handle exceptions dropped while handling or running a
 slash or a component command. Defaults to `True`.
@@ -141,7 +141,7 @@ The default slasher exception handler forwards `SlasherCommandError`-s' prettifi
 are raised meanwhile looking up, or validating slash command parameters. If any other exception occurs, it will forward
 a random not related error message, and call `client.events.error`.
 
-##### random_error_message_getter
+### random_error_message_getter
 
 Used by the default exception handler to get a random error message to forward if something goes wrong.
 
@@ -166,7 +166,7 @@ def random_error_message_getter():
 # Then pass it to the client constructor ...
 ```
 
-### Adding commands & responding
+# Adding commands & responding
 
 After the extension is setupped, commands can be added using the `client.interaction` decorator.
 
@@ -203,7 +203,7 @@ are also other interaction related client methods, which are mentioned [later](#
 > New commands might not show up till you restart your client (not the bot). This is **always** the case for the first
 > command.
 
-### Command Parameters
+# Command Parameters
 
 An interaction event has the following top level attributes, which you may use up to produce a proper response:
 
@@ -238,7 +238,7 @@ async def cookie(event,
 
 ![](assets/slash_0002.png)
 
-#### SlashParameter
+## SlashParameter
 
 Parameter definition can be defined with `SlashParameter`-s as well. An advantage of slash parameters, that they
 support keyword-only parameters, like `channel_types`, `min_value`, `max_value`.
@@ -262,7 +262,7 @@ async def cake(event,
     return Embed(description=f'{event.user:f} just gifted a cookie to {user:f} !').add_image(choice(CAKES))
 ```
 
-#### configure_parameter
+## configure_parameter
 
 If you do not like the annotation design, you can use the `configure_parameter` decorator. Since the main design is
 more intuitive, the rest of the examples will follow that one.
@@ -285,7 +285,7 @@ async def show_emoji(emoji):
     return f'**Name:** {emoji} **Link:** {emoji.url}'
 ```
 
-### Choice parameters
+# Choice parameters
 
 Slash commands support choice parameters, for string and integer types. Each choice has a `name` and a
 `value` field. All values must be the same type, either `str` or `int` as mentioned above.
@@ -405,7 +405,7 @@ async def roll(
 
 ![](assets/slash_0005.png)
 
-### Auto completed parameters
+# Auto completed parameters
 
 String parameters can be auto-completed by using the `.autocomplete(...)` decorator after adding the command.
 
@@ -442,7 +442,7 @@ already typed. This value defaults to `None` if the user didn't yet type anythin
 
 Choice parameters cannot be auto completed.
 
-### Required & not required parameters
+# Required & not required parameters
 
 Whether a command parameter is required or not, is defined whether you assign default value to it.
 
@@ -474,24 +474,24 @@ async def cookie(client, event,
 
 ![](assets/slash_0007.png)
 
-### Decorator parameters
+# Decorator parameters
 
 `client.interactions` has no requires parameters, so can be used just as `@client.interactions` decorator, however in
 most of the cases of slash commands, you want to also pass additional parameters.
 
-##### guild
+### guild
 
 The `guild` parameter is already mentioned above, it defines in which guild(s) the command is available. Can be given
 either as `Guild` or `guild_id` or as a `list` of `set` of them as well.
 
-##### is_global
+### is_global
 
 Defines whether the command is a global command. Accepts either `True` of `False`.
 
 Mutually exclusive with the `guild` parameter. If neither `guild` not `is_global` parameter is given, the command will
 become "non-global". More about them in the [Non-global](#non-global-commands) section.
 
-##### show_for_invoking_user_only
+### show_for_invoking_user_only
 
 Whether the source message should be shown only for the invoker user. Defaults to `False`.
 
@@ -515,7 +515,7 @@ async def perms(event):
 
 ![](assets/slash_0008.png)
 
-##### name
+### name
 
 The most important feature, changing the name! By default a command's name will be it's function's name.
 
@@ -552,7 +552,7 @@ async def id_to_datetime_(
     return f'{time:{DATETIME_FORMAT_CODE}}\n{elapsed_time(time)} ago'
 ```
 
-##### description
+### description
 
 Description can be passed instead of defining as docstring. As an example this feature can be used when auto-generating
 commands, like:
@@ -593,11 +593,11 @@ del action_name, embed_color
 
 ![](assets/slash_0011.png)
 
-##### delete_on_unload
+### delete_on_unload
 
 Command specific setting, to overwrite the parent slasher's [delete_commands_on_unload](#delete_commands_on_unload).
 
-##### allow_by_default
+### allow_by_default
 
 Whether the command should be allowed by default for everyone. Defaults to `True` of course. Not allowed commands
 in the GUI are not hidden, they show up as gray.
@@ -608,9 +608,9 @@ manually set permission overwrites will be wiped out there, so make sure you eit
 
 > Permission overwrites are buggy from Discord side, I take no responsibility if they do not work as expected.
 
-### Tricks and Tips
+# Tricks and Tips
 
-##### Sending rich response
+### Sending rich response
 
 With `return` and `yield` statements, you can only send either `content` or `embed` fields. Using these statements is
 still way more comfy than typing out the whole client method, so there is a middle way, called `SlashResponse`.
@@ -644,7 +644,7 @@ When checking the message's payload, it is indeed visible, that Koishi was not p
 ...
 ```
 
-##### Responding multiple times
+### Responding multiple times
 
 Sometimes you might wanna respond multiple times on an event. At this case use `yield` instead of `return`.
 
@@ -676,7 +676,7 @@ async def improvise():
 
 > Python limitation, you cannot `return` any value if you use `yield` inside of an `async def`.
 
-##### Acknowledge the interaction event
+### Acknowledge the interaction event
 
 The first response can be also empty just to acknowledge the event.
 
@@ -702,7 +702,7 @@ additional 15 minutes!
 By default, acknowledgement will run parallel with the command. To wait till the acknowledgement is done, use the
 `wait_for_acknowledgement` decorator parameter.
 
-##### Capturing messages & exceptions
+### Capturing messages & exceptions
 
 Acknowledging will never return a message object (Discord side), so it cannot be captured either, but followup messages
 will do. So can do the following with them:
@@ -747,7 +747,7 @@ async def collect_reactions():
 
 ![](assets/slash_0016.png)
 
-##### Giving away control flow
+### Giving away control flow
 
 Sometimes you have more commands calling the same coroutine function, which executes shared code among more commands.
 This is all good, till the function is not a coroutine generator function. As we know you can yield from a generator
@@ -803,7 +803,7 @@ Both works completely fine.
 
 ![](assets/slash_0017.gif)
 
-##### Aborting command
+### Aborting command
 
 Commands may be aborted using the `abort` function. It leaves from the command's execution and sends the passed
 content familiarly to `SlashResponse`. The one difference is, that abort should be mainly used to send end-command
@@ -855,7 +855,7 @@ async def is_banned(client, event,
 
 ![](assets/slash_0019.png)
 
-##### Changing parameter name
+### Changing parameter name
 
 Familiarly to the `name` interaction parameter mentioned [above](#name), the tailing `_` characters are removed from
 parameter names as well, but at some cases it is not enough. For this cases, you can add an extra third element to your
@@ -875,7 +875,7 @@ async def user_id(event,
 
 ![](assets/slash_0020.png)
 
-##### Set command permissions
+### Set command permissions
 
 Default command permissions can be set with the `allow_by_default` command parameter and they can be overwritten with
 the `set_permission` decorator. With `set_permission` you can set 1 overwrite, but with using more you can set
@@ -949,7 +949,7 @@ async def latest_users(event):
 
 ![](assets/slash_0021.png)
 
-### Non-global commands
+# Non-global commands
 
 The slash extension supports non-global commands, which are neither global nor normal guild bound commands. These
 commands are not added automatically, but matched with guild commands on the fly.
@@ -1019,7 +1019,7 @@ bound one.
 > If you are using `ClientWrapper` to add commands to more clients you will get back a command router instead of
 > the command, so you wont be able to use `.name` or `.get_schema()` on it.
 
-### Categories
+# Categories
 
 It is possible to create a "category" command by creating a command with giving function as `None`. If you do not pass
 a function, then name and description can not be auto-detected, so you will need to pass those manually as well.
@@ -1090,7 +1090,7 @@ async def devil(client, event):
 
 ![](assets/slash_0022.png)
 
-### Manual Responding
+# Manual Responding
 
 Sometimes the auto-responding feature just cannot do it. For these cases there are the questionably long named
 `Client` interaction methods. This section just mentions these methods, please check their docs for more information.
@@ -1165,13 +1165,13 @@ async def kaboom_mixed(client, event):
         await client.interaction_followup_message_delete(event, message)
 ```
 
-### Specifying channel parameter types
+# Specifying channel parameter types
 
 The accepted channel types by channel parameters can be defined by 3 ways. Either by modifying the
 annotated type, or by using the `channel_types` parameter with `SlashParameter` or with the `configure_parameter`
 decorator.
 
-#### Modifying the annotated type
+## Modifying the annotated type
 
 Channel types can be defined by changing the annotated type. By default defining it as `ChannelBase`, or as
 `'channel'` will accept all the channel types. But you can pass specific channel types as well, like: `ChannelText`,
@@ -1218,7 +1218,7 @@ async def thread_channel_name_length(
 
 ![](assets/slash_0024.png)
 
-#### The `channel_types` parameter
+## The `channel_types` parameter
 
 
 When using `SlashParameter` or `configure_parameter`, the `channel_types` keyword only parameter can be used to define
@@ -1248,7 +1248,7 @@ async def voice_channel_name_length(
     return len(channel.name)
 ```
 
-### Specifying input value range
+# Specifying input value range
 
 For `number` and `float` parameter types, you can define the minimal and the maximal accepted values with using the
 `min_value` and `max_value` parameters. It works for both `SlashParameter` and for `configure_parameter` as well.
@@ -1290,7 +1290,7 @@ async def character_popularity(
 
 ![](assets/slash_0025.gif)
 
-### Context commands
+# Context commands
 
 Context commands can be defined by passing the `target` parameter when registering a command with the `.interactions`
 decorator. The `target` parameter can be given either as `'user'` / `'message'`.
@@ -1319,7 +1319,7 @@ async def length(target):
 
 ![](assets/slash_0027.gif)
 
-### Getting command count
+# Getting command count
 
 The amount of active commands can be get with using the `Client.slasher.get_global_command_count()` and with the
 `client.slasher.get_guild_command_count(guild_or_guild_id)` methods.
@@ -1363,9 +1363,9 @@ async def command_count(client, event):
 To include sub-command count as well, there are the `.get_global_command_count_with_sub_commands()` and the
 `.get_guild_command_count_with_sub_commands(guild_or_guild_id)` methods.
 
-### FAQ
+# FAQ
 
-##### Commands not show up
+### Commands not show up
 
 Slash commands might not show up after you launched your bot with them. This can be caused by many reasons:
 
@@ -1385,7 +1385,7 @@ Slash commands might not show up after you launched your bot with them. This can
     
     > Note, that specifying whether the command is global or guild bound to a sub-commands does nothing.
 
-##### Commands are not removed
+### Commands are not removed
 
 Removed slash commands may not disappear after they are removed. This can have many reasons.
 

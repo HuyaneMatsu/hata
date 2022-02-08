@@ -207,14 +207,14 @@ class Guild(DiscordEntity, immortal=True):
         Thread channels of the guild.
     user_count : `int`
         The amount of users at the guild.
-    users : `dict` r ``WeakValueDictionary`` of (`int`, ``ClientUserBase``) items
+    users : `dict`, ``WeakValueDictionary`` of (`int`, ``ClientUserBase``) items
         The users at the guild stored within `user_id` - `user` relation.
     vanity_code : `None`, `str`
         The guild's vanity invite's code if it has.
     verification_level : ``VerificationLevel``
         The minimal verification needed to join to guild.
     voice_states : `dict` of (`int`, ``VoiceState``) items
-        Each user at a voice channel is represented by a ``VoiceState`` object. voice state are stored in
+        Each user at a voice channel is represented by a ``VoiceState`` object. Voice state are stored in
         `respective user's id` - `voice state` relation.
     widget_channel_id : `int`
         The channel's identifier for which the guild's widget is for.

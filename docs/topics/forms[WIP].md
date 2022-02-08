@@ -1,26 +1,26 @@
 > Forms are currently implemented on wrapper side, waiting for Discord to fully release them
 
-### Introduction
+# Introduction
 
 When it comes to interactions, slash commands and components are a great first step, but for longer inputs they are
 not intuitive enough. This is when multi-field forms / model interactions come into the picture.
 
-#### Building Forms
+## Building Forms
 
 Forms are standalone components, with sub-components as fields.
 
 For now forms are limited to 5 sub-components. And the only accepted sub-components are `TextInput`-s (basically rows
 of text inputs, but rows are inserted automatically if not defined.)
 
-#### Limitations
+## Limitations
 
 - Up to `5` rows in each form.
 
-##### Text input limitations
+### Text input limitations
 
 - Up to `1` text input can be in a row.
 
-### Form commands
+# Form commands
 
 To send a form response to the user just return the form from a slash or a component command, or use the
 `Client.interaction_form_send` method.
@@ -75,7 +75,7 @@ async def introduction_form_submit(event, *, name, bio):
     )
 ```
 
-#### Parameters
+## Parameters
 
 Positional parameters of form submit commands work in the same way as component commands'. This means single and 
 multiple regex `custom_id`-s are both supported.

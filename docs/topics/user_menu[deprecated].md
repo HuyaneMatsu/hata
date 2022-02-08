@@ -1,6 +1,4 @@
-# User menu
-
-### Introduction
+# Introduction
 
 User menu allows you to create `Pagination` like mini-apps, where you wait for reactions and then respond.
 The user menu-runner executes the middle layer which deals with waiting, timeouts and race conditions.
@@ -11,26 +9,26 @@ The user menu-runner executes the middle layer which deals with waiting, timeout
 
 User menu factorizes the wrapped classes, picking up special methods and other attributes.
 
-##### close_emoji
+### close_emoji
 
 Emoji used to close the menu. Can be either `None`, `Emoji` instance. If the user reacts with it, the
 `.close(CancelledError()` will be called.
 
 > Defaults to `None`.
 
-##### emojis
+### emojis
 
 The emojis which are added on the respective message.
 
 > Defaults to `None`.
 
-##### allow_third_party_emojis
+### allow_third_party_emojis
 
 Whether third party emojis should trigger the menu as well. Note that these emojis are not removed.
 
 > Defaults to `False`.
 
-##### timeout
+### timeout
 
 The timeout after which the menu will expire.
 
@@ -38,7 +36,7 @@ Defining timeout is optional, but recommended. If it's undefined or negative the
 
 > Defaults to `0.0`.
 
-##### check
+### check
 
 Check is an optional **non-async** function that check whether the reaction add or delete emoji should be further
 processed.
@@ -57,7 +55,7 @@ It will return the following values:
 
 > Defaults to `None`.
 
-##### initial_invoke
+### initial_invoke
 
 A required **async** function to return the default content of the menu to display.
 
@@ -70,7 +68,7 @@ Function takes no parameters and will return the following values:
 If it returns `None` then the menu will be instantly closed. Note that at this point `menu.close()` can also be called
 to not add any reactions on the menu and leave.
 
-##### invoke
+### invoke
 
 A required **async** function called when the menu is invoked with a reaction. Not called if the emoji is
 `close_emoji`.
@@ -89,7 +87,7 @@ It will return the following values:
 
 If non-`None` value is returned the respective message will be edited and the timeout will be reset.
 
-##### cancel
+### cancel
 
 Called when the menu is closed, timeouted or when any exception occurs.
 
@@ -115,23 +113,23 @@ Other exception will not trigger it.
 User menu has 3 parameters from which 2 are required. Any extra positional and keyword parameters of the
 menu runner instance will be passed to the factorized class constructor.
 
-##### client
+### client
 
 The client who executes the menu.
 
-##### channel
+### channel
 
 The channel to send the message to.
 
 Can also be given as `Message` or as `InteractionEvent`.
 
-##### message
+### message
 
 A message to re-use inside the menu. Optional keyword only.
 
 ## Examples
 
-##### Feed the cat
+### Feed the cat
 
 ```py
 from hata.emoji import BUILTIN_EMOJIS
@@ -205,7 +203,7 @@ async def cat_feeder(client, event):
     await CatFeeder(client, event)
 ```
 
-##### Zeref's pagination
+### Zeref's pagination
 
 There is a `Pagination`-like class which you can subclass included just for this purpose.
 

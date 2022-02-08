@@ -45,6 +45,10 @@ def default_debug_logger(message):
     """
     Default debug logger.
     
+    Puts `DEBUG` prefix before each logged line and writes it to stdout.
+    
+    To set a new debug logger use ``set_debug_logger``.
+    
     Parameters
     ----------
     message : `str`

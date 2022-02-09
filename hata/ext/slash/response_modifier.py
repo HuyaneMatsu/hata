@@ -267,6 +267,8 @@ def get_show_for_invoking_user_only_of(response_modifier):
         show_for_invoking_user_only = False
     else:
         show_for_invoking_user_only = response_modifier.show_for_invoking_user_only
+        if show_for_invoking_user_only is None:
+            show_for_invoking_user_only = False
     
     return show_for_invoking_user_only
 

@@ -13,6 +13,7 @@ from .response_modifier import (
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 INTERACTION_TYPE_MESSAGE_COMPONENT = InteractionType.message_component
+INTERACTION_TYPE_FORM_SUBMIT = InteractionType.form_submit
 
 
 def is_only_embed(maybe_embeds):
@@ -65,8 +66,10 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
     
     if (response is None):
         if interaction_event.is_unanswered():
-            
-            if interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND:
+            if (
+                (interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND) or
+                (interaction_event_type is INTERACTION_TYPE_FORM_SUBMIT)
+            ):
                 yield client.interaction_application_command_acknowledge(
                     interaction_event,
                     get_wait_for_acknowledgement_of(response_modifier),
@@ -85,7 +88,10 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
     await interaction_event._wait_for_async_task_completion()
     
     if isinstance(response, (str, EmbedBase)) or is_only_embed(response):
-        if interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND:
+        if (
+            (interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND) or
+            (interaction_event_type is INTERACTION_TYPE_FORM_SUBMIT)
+        ):
             if interaction_event.is_unanswered():
                 yield client.interaction_response_message_create(
                     interaction_event,
@@ -152,7 +158,10 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
     
     if response:
         
-        if interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND:
+        if (
+            (interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND) or
+            (interaction_event_type is INTERACTION_TYPE_FORM_SUBMIT)
+        ):
             if interaction_event.is_unanswered():
                 yield client.interaction_response_message_create(
                     interaction_event,
@@ -175,7 +184,10 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
     else:
         if interaction_event.is_unanswered():
             
-            if interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND:
+            if (
+                (interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND) or
+                (interaction_event_type is INTERACTION_TYPE_FORM_SUBMIT)
+            ):
                 yield client.interaction_application_command_acknowledge(
                     interaction_event,
                     get_wait_for_acknowledgement_of(response_modifier),
@@ -502,7 +514,10 @@ class InteractionResponse:
             interaction_event = event
         
         interaction_event_type = interaction_event.type
-        if interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND:
+        if (
+            (interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND) or
+            (interaction_event_type is INTERACTION_TYPE_FORM_SUBMIT)
+        ):
             message = self._message
             if message is not ...:
                 response_parameters = self._get_response_parameters((

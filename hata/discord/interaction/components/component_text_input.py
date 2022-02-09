@@ -8,9 +8,8 @@ from ...preconverters import preconvert_preinstanced_type
 
 from .component_base import ComponentBase
 from .debug import (
-    _debug_component_custom_id, _debug_component_enabled, _debug_component_label, _debug_component_max_length,
-    _debug_component_min_length, _debug_component_placeholder, _debug_component_required,
-    _debug_component_text_input_value
+    _debug_component_custom_id, _debug_component_label, _debug_component_max_length, _debug_component_min_length,
+    _debug_component_placeholder, _debug_component_required, _debug_component_text_input_value
 )
 from .preinstanced import ComponentType, TextInputStyle
 
@@ -25,9 +24,6 @@ class ComponentTextInput(ComponentBase):
     ----------
     custom_id : `None`, `str`
         Custom identifier to detect which text input was clicked by the user.
-    
-    enabled : `bool`
-        Whether the component is enabled.
     
     label : `None`, `str`
         Label of the component.
@@ -65,11 +61,11 @@ class ComponentTextInput(ComponentBase):
     type = ComponentType.text_input
     
     __slots__ = (
-        'custom_id', 'enabled', 'label', 'max_length', 'min_length', 'placeholder', 'required', 'style', 'value'
+        'custom_id', 'label', 'max_length', 'min_length', 'placeholder', 'required', 'style', 'value'
     )
     
-    def __new__(cls, label=None, *, custom_id=None, enabled=True, max_length=0, min_length=0, placeholder=None,
-            required=None, style=None, value=None):
+    def __new__(cls, label=None, *, custom_id=None, max_length=0, min_length=0, placeholder=None, required=None,
+            style=None, value=None):
         """
         Creates a new component instance with the given parameters.
         
@@ -80,9 +76,6 @@ class ComponentTextInput(ComponentBase):
         
         custom_id : `None`, `str` = `None`, Optional (Keyword only)
             Custom identifier to detect which text input was clicked by the user.
-        
-        enabled : `bool` = `True`, Optional (Keyword only)
-            Whether the text input is enabled. Defaults to `True`.
         
         max_length : `int` = `0`, Optional (Keyword only)
             The maximal length of the inputted text.
@@ -116,7 +109,6 @@ class ComponentTextInput(ComponentBase):
             - If `custom_id` was not given neither as `None`, `str`.
             - If `style` was not given as any of the `type`'s expected styles.
             - If `label` was not given neither as `None` nor as `int`.
-            - If `enabled` was not given as `bool`.
             - If `label`'s length is over `80`.
             - If `custom_id`'s length is over `100`.
             - If `max_length` was not given as `int`.
@@ -128,7 +120,6 @@ class ComponentTextInput(ComponentBase):
         """
         if __debug__:
             _debug_component_custom_id(custom_id)
-            _debug_component_enabled(enabled)
             _debug_component_label(label)
             _debug_component_max_length(max_length)
             _debug_component_min_length(min_length)
@@ -139,9 +130,6 @@ class ComponentTextInput(ComponentBase):
         # custom_id
         if (custom_id is None) or (not custom_id):
             custom_id = create_auto_custom_id()
-        
-        # enabled
-        # No additional checks
         
         # label
         if (label is not None) and (not label):
@@ -178,7 +166,6 @@ class ComponentTextInput(ComponentBase):
         self = object.__new__(cls)
         
         self.custom_id = custom_id
-        self.enabled = enabled
         self.label = label
         self.max_length = max_length
         self.min_length = min_length
@@ -197,9 +184,6 @@ class ComponentTextInput(ComponentBase):
         
         # custom_id
         self.custom_id = data.get('custom_id', None)
-        
-        # enabled
-        self.enabled = not data.get('disabled', False)
         
         # label
         self.label = data.get('label', None)
@@ -246,10 +230,6 @@ class ComponentTextInput(ComponentBase):
         custom_id = self.custom_id
         if (custom_id is not None):
             data['custom_id'] = custom_id
-        
-        # enabled
-        if (not self.enabled):
-            data['disabled'] = True
         
         # label
         label = self.label
@@ -338,7 +318,7 @@ class ComponentTextInput(ComponentBase):
             repr_parts.append(', value=')
             repr_parts.append(repr(value))
         
-        # Optional descriptive fields : max_length & min_length & required & enabled
+        # Optional descriptive fields : max_length & min_length & required
         
         # min_length
         min_length = self.min_length
@@ -358,12 +338,6 @@ class ComponentTextInput(ComponentBase):
             repr_parts.append(', required=')
             repr_parts.append(repr(required))
         
-        # enabled
-        enabled = self.enabled
-        if (not enabled):
-            repr_parts.append(', enabled=')
-            repr_parts.append(repr(enabled))
-        
         
         repr_parts.append('>')
         return ''.join(repr_parts)
@@ -374,7 +348,6 @@ class ComponentTextInput(ComponentBase):
         new = object.__new__(type(self))
         
         new.custom_id = self.custom_id
-        new.enabled = self.enabled
         new.label = self.label
         new.max_length = self.max_length
         new.min_length = self.min_length
@@ -399,9 +372,6 @@ class ComponentTextInput(ComponentBase):
         ----------------
         custom_id : `None`, `str`, Optional (Keyword only)
             Custom identifier to detect which text input was clicked by the user.
-        
-        enabled : `bool`, Optional (Keyword only)
-            Whether the text input is enabled. Defaults to `True`.
         
         label : `None`, `str`, Optional (Keyword only)
             Label of the component.
@@ -444,15 +414,6 @@ class ComponentTextInput(ComponentBase):
         
         if (custom_id is None):
             custom_id = create_auto_custom_id()
-        
-        # enabled
-        try:
-            enabled = kwargs.pop('enabled')
-        except KeyError:
-            enabled = self.enabled
-        else:
-            if __debug__:
-                _debug_component_enabled(enabled)
         
         # label
         try:
@@ -537,7 +498,6 @@ class ComponentTextInput(ComponentBase):
         new = object.__new__(type(self))
         
         new.custom_id = custom_id
-        new.enabled = enabled
         new.label = label
         new.max_length = max_length
         new.min_length = min_length
@@ -556,10 +516,6 @@ class ComponentTextInput(ComponentBase):
         
         # custom_id
         if self.custom_id != other.custom_id:
-            return False
-        
-        # enabled
-        if self.enabled != other.enabled:
             return False
         
         # label
@@ -602,10 +558,6 @@ class ComponentTextInput(ComponentBase):
         custom_id = self.custom_id
         if (custom_id is not None):
             hash_value ^= hash(custom_id)
-        
-        # enabled
-        if self.enabled:
-            hash_value ^= 1 << 8
         
         # label
         label = self.label

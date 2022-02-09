@@ -1,7 +1,12 @@
-## 1.1.136 *\[2022-02-??\]*
+## 1.1.136 *\[2022-02-09\]*
 
 #### Improvements
 - Move `ext.asyncio` to `scarletio`.
+
+#### Bug fixes
+
+- `_debug_component_text_input_value` checked for bad type. (Gilgamesh#8939)
+
 
 ## 1.1.135 *\[2022-02-08\]*
 

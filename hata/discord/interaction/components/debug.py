@@ -523,8 +523,8 @@ def _debug_component_text_input_value(value):
     AssertionError
         If `value` was not given neither as `None`, `str`.
     """
-    if (value is not None) and (not isinstance(value, bool)):
+    if (value is not None) and (not isinstance(value, str)):
         raise AssertionError(
-            f'`value` can be `None`, `bool`, got {value.__class__.__name__}; {value!r}.'
+            f'`value` can be `None`, `str`, got {value.__class__.__name__}; {value!r}.'
         )
 

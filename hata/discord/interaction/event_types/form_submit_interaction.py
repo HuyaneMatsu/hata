@@ -49,8 +49,8 @@ class FormSubmitInteraction(InteractionFieldBase):
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__,]
         
-        repr_parts.append('custom_id=')
-        repr_parts.append(self.custom_id)
+        repr_parts.append(' custom_id=')
+        repr_parts.append(reprlib.repr(self.custom_id))
         
         options = self.options
         if (options is not None):

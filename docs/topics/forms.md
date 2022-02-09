@@ -47,7 +47,7 @@ INTRODUCTION_FORM = Form(
 )
  
 @Nitori.interactions(guild=TEST_GUILD)
-def introduce_myself():
+async def introduce_myself():
     """Creates an introduction embed after filling a form."""
     return INTRODUCTION_FORM
 ```
@@ -102,7 +102,7 @@ ADD_ROLE_FORM = Form(
 
 
 @Nitori.interactions(guild=TEST_GUILD)
-def add_role(
+async def add_role(
     user: ('user', 'User to add role to'),
     role: ('role', 'The role to give'),
 ):
@@ -271,7 +271,7 @@ WAIFU_FORM = Form(
 # Add command
 
 @Nitori.interactions(guild=TEST_GUILD)
-def add_waifu():
+async def add_waifu():
     """Add a new waifu to the database!"""
     return WAIFU_FORM
 
@@ -296,7 +296,7 @@ async def waifu_add_form_submit(
 # Get command
 
 @Nitori.interactions(guild=TEST_GUILD)
-def get_waifu(
+async def get_waifu(
     name: ('str', 'Their name?')
 ):
     """Returns an added waifu."""

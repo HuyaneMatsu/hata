@@ -27,7 +27,7 @@ To send a form response to the user just return the form from a slash or a compo
 from hata.ext.slash import Form, TextInput, TextInputStyle
 
 INTRODUCTION_FORM = Form(
-    'Introduce yourself'
+    'Introduce yourself',
     [
         TextInput(
             'What is your name?',

@@ -61,6 +61,8 @@ specify that you want to match forms submit interaction and not component intera
 
 
 ```py
+from hata import Embed
+
 @Nitori.interactions(custom_id='introduction', target='form')
 async def introduction_form_submit(event, *, name, bio):
     return Embed(

@@ -10,3 +10,5 @@ from scarletio.ext import (
     add_library_extension_hook, get_and_validate_setup_functions, register_library_extension, register_setup_function,
     run_setup_functions
 )
+
+__all__ = ()

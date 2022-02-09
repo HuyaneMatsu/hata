@@ -9,6 +9,9 @@
 - `AttributeError` in `Guild._difference_update_attributes`.
 - `AttributeError` in `AllowedMentionProxy.__hash__`.
 
+##### ext.slash
+- `get_show_for_invoking_user_only_of` could return `None`.
+
 ## 1.1.135 *\[2022-02-08\]*
 
 #### Improvements

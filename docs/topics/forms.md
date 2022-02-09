@@ -1,5 +1,3 @@
-> Forms are currently implemented on wrapper side, waiting for Discord to fully release them
-
 # Introduction
 
 When it comes to interactions, slash commands and components are a great first step, but for longer inputs they are

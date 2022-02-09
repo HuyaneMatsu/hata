@@ -354,6 +354,7 @@ class CustomIdBasedCommand:
             repr_parts.append(', response_modifier')
             repr_parts.append(repr(response_modifier))
         
+        repr_parts.append('>')
         return ''.join(repr_parts)
     
     

@@ -103,6 +103,8 @@ ADD_ROLE_FORM = Form(
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def add_role(
+    client,
+    event,
     user: ('user', 'User to add role to'),
     role: ('role', 'The role to give'),
 ):
@@ -134,16 +136,16 @@ async def add_role(client, event, user_id, role_id, *, message):
     
     yield # acknowledge the even
     
-    await client.role_add(user, (event.guild_id, role_id), reason=message)
+    await client.user_role_add(user_id, (event.guild_id, role_id), reason=message)
     
     # Try to send DM to the poor being.
-    channel = await channel_private_create(user_id)
+    channel = await client.channel_private_create(user_id)
     
     guild = event.guild
     role = guild.roles[role_id]
     
     embed = Embed(
-        description = 'You have received role {role.name} in {guild.name}.',
+        description = f'You have received role {role.name} in {guild.name}.',
     )
     
     # Since message doesn't have `required` nor `min_length` passed it can be `None`.
@@ -165,7 +167,7 @@ async def add_role(client, event, user_id, role_id, *, message):
     user = await client.user_get(user_id)
     
     embed = Embed(
-        description = 'You gave {role.name} to {user.full_name}',
+        description = f'You gave {role.name} to {user.full_name}',
     )
     
     if (message is not None):
@@ -436,7 +438,7 @@ async def rate_cakes(
         custom_id = CUSTOM_ID_RATE_CAKE,
     )
 
-@cake_love.autocomplete('cake-1', 'cake-2', 'cake-3', 'cake-4', 'cake-5')
+@rate_cakes.autocomplete('cake-1', 'cake-2', 'cake-3', 'cake-4', 'cake-5')
 async def autocomplete_cake_type(value):
     if value is None:
         return CAKE_NAMES[:20]

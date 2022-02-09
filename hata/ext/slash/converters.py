@@ -3106,7 +3106,7 @@ def get_form_submit_command_parameter_converters(func):
     if (args_parameter is None):
         multi_parameter_converter = None
     else:
-        multi_parameter_converter = FormFieldMultiParameterConverter(parameter)
+        multi_parameter_converter = FormFieldMultiParameterConverter(args_parameter)
     
     if should_instance:
         func = analyzer.instance()

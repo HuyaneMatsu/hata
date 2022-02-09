@@ -33,33 +33,28 @@ Discord sets the following limitations:
 
 The parameter types can be the following:
 
-| Name              | Requires bot  | Discord field | String representation | Type representation   | Output type               |
-|-------------------|---------------|---------------|-----------------------|-----------------------|---------------------------|
-| boolean           | No            | boolean       | `'bool'`              | `bool`                | `bool`                    |
-| channel           | Depends       | channel       | `'channel'`           | `ChannelBase`         | `ChannelBase`             |
-| channel_id        | No            | channel       | `'channel_id'`        | N/A                   | `int`                     |
-| expression        | No            | string        | `'expression'`        | N/A                   | `int` / `float`           |
-| float             | No            | float         | `'float'`             | `float`               | `float`                   |
-| integer           | No            | string        | `'int'`               | `int`                 | `int`                     |
-| role              | Depends       | role          | `'role'`              | `Role`                | `Role`                    |
-| role_id           | No            | role          | `'role_id'`           | N/A                   | `int`                     |
-| string            | No            | string        | `'str'`               | `str`                 | `str`                     |
-| mentionable       | Depends       | mentionable   | `'mentionable'`       | N/A                   | `ClientUserBase`, `Role`  |
-| mentionable_id    | No            | mentionable   | `'mentionable_id'`    | N/A                   | `int`                     |
-| number            | No            | integer       | `'number'`            | N/A                   | `int`                     |
-| user              | No            | user          | `'user'`              | `User`, `UserBase`    | `ClientUserBase`          |
-| user_id           | No            | user          | `'user_id'`           | N/A                   | `int`                     |
+| Name              | Discord field | String representation | Type representation   | Output type               |
+|-------------------|---------------|-----------------------|-----------------------|---------------------------|
+| attachment        | attachment    | `'attachment'`        | `Attachment`          | `Attachment`              |
+| boolean           | boolean       | `'bool'`              | `bool`                | `bool`                    |
+| channel           | channel       | `'channel'`           | `ChannelBase`         | `ChannelBase`             |
+| channel_id        | channel       | `'channel_id'`        | N/A                   | `int`                     |
+| expression        | string        | `'expression'`        | N/A                   | `int` / `float`           |
+| float             | float         | `'float'`             | `float`               | `float`                   |
+| integer           | string        | `'int'`               | `int`                 | `int`                     |
+| role              | role          | `'role'`              | `Role`                | `Role`                    |
+| role_id           | role          | `'role_id'`           | N/A                   | `int`                     |
+| string            | string        | `'str'`               | `str`                 | `str`                     |
+| mentionable       | mentionable   | `'mentionable'`       | N/A                   | `ClientUserBase`, `Role`  |
+| mentionable_id    | mentionable   | `'mentionable_id'`    | N/A                   | `int`                     |
+| number            | integer       | `'number'`            | N/A                   | `int`                     |
+| user              | user          | `'user'`              | `User`, `UserBase`    | `ClientUserBase`          |
+| user_id           | user          | `'user_id'`           | N/A                   | `int`                     |
 
 
 ## Parameter notes
 
 > There are choice parameters as well, but lets talk about those only later.
-
-### user, channel, role
-
-`user`, `channel` and `role` data may not be included within the interaction. However users can be requested from
-Discord, but channels and roles can not be. It means `role` and `channel` conversions can fail and the command wont be
-called. To avoid this case, you may use `role_id` / `channel_id` parameter types instead.
 
 ### mentionable
 

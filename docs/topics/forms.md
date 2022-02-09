@@ -45,7 +45,7 @@ INTRODUCTION_FORM = Form(
     ],
     custom_id = 'introduction',
 )
- 
+
 @Nitori.interactions(guild=TEST_GUILD)
 async def introduce_myself():
     """Creates an introduction embed after filling a form."""
@@ -89,7 +89,7 @@ from hata import DiscordException, ERROR_CODES, Embed
 from hata.ext.slash import abort
 
 ADD_ROLE_FORM = Form(
-    'Add role', # Any dummie title does it
+    'Add role', # Any dummy title does it
     [
         TextInput(
             'Additional message to send?',
@@ -162,8 +162,8 @@ async def add_role(client, event, user_id, role_id, *, message):
         if err.code != ERROR_CODES.cannot_message_user: # user has dm-s disabled
             raise
     
-    # Note: The user might not be cached at this point. Request it. If you have user caching enabled + intent, it will
-    # do nothing.
+    # Note: The user might not be cached at this point. Request it.
+    # If you have user caching enabled + intent, it will do nothing.
     user = await client.user_get(user_id)
     
     embed = Embed(
@@ -269,7 +269,7 @@ WAIFU_FORM = Form(
     ],
     custom_id = CUSTOM_ID_WAIFU_FORM,
 )
- 
+
 # Add command
 
 @Nitori.interactions(guild=TEST_GUILD)
@@ -358,7 +358,7 @@ async def edit_waifu(
     
     text_input = FIELD_TO_TEXT_INPUT[field]
     
-    # We autofill the current value
+    # We auto-fill the current value
     text_input = text_input.copy_with(value=FIELD_TO_ATTRIBUTE[field].__get__(waifu, Waifu))
     
     return Form(
@@ -410,8 +410,10 @@ CUSTOM_ID_RATE_CAKE = 'rate_cake'
 CUSTOM_ID_RATE_CAKE_FIELD = 'rate_cake.field'
 
 
-CAKE_NAMES = ['butter', 'pound', 'sponge', 'genoise', 'biscuit', 'angel food', 'chiffon', 'baked flourless',
-    'unbaked flourless', 'carrot', 'red velvet', ]
+CAKE_NAMES = [
+    'butter', 'pound', 'sponge', 'genoise', 'biscuit', 'angel food', 'chiffon', 'baked flourless', 'unbaked flourless',
+    'carrot', 'red velvet'
+]
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def rate_cakes(

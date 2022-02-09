@@ -216,7 +216,7 @@ class Waifu:
     def embed(self):
         return Embed(
             self.name,
-            self.description,
+            self.bio,
         ).add_field(
             'age',
             self.age,
@@ -234,7 +234,7 @@ class Waifu:
 
 TEXT_INPUT_WAIFU_BIO = TextInput(
     'Bio',
-    style = TextInputStyle.bio,
+    style = TextInputStyle.paragraph,
     min_length = 64,
     max_length = 1024,
     custom_id = CUSTOM_ID_WAIFU_BIO,
@@ -325,8 +325,8 @@ useful when dynamically generating form fields.
 
 ```py
 CUSTOM_ID_WAIFU_EDIT_BASE = 'waifu.edit.'
-CUSTOM_ID_WAIFU_EDIT_REGEX = 'waifu\.edit\.(.*)'
-CUSTOM_ID_WAIFU_FIELD_ALL = 'waifu\.(?P<field>age|bio|hair)'
+CUSTOM_ID_WAIFU_EDIT_REGEX = re.compile('waifu\.edit\.(.*)')
+CUSTOM_ID_WAIFU_FIELD_ALL = re.compile('waifu\.(?P<field>age|bio|hair)')
 
 FIELD_TO_TEXT_INPUT = {
     'age': TEXT_INPUT_WAIFU_AGE,
@@ -362,7 +362,7 @@ async def edit_waifu(
     text_input = text_input.copy_with(value=FIELD_TO_ATTRIBUTE[field].__get__(waifu, Waifu))
     
     return Form(
-        f'Editing {waifu.name}'
+        f'Editing {waifu.name}',
         [text_input],
         custom_id = f'{CUSTOM_ID_WAIFU_EDIT_BASE}{key}',
     )

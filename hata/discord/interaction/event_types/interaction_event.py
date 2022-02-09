@@ -377,7 +377,6 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
                 repr_parts.append(', ')
                 continue
             
-            repr_parts.append(response_state_name)
             repr_parts.append('),')
         
         repr_parts.append(' type=')

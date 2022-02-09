@@ -2097,7 +2097,7 @@ class Guild(DiscordEntity, immortal=True):
             old_attributes['boost_progress_bar_enabled'] = self.boost_progress_bar_enabled
             self.boost_progress_bar_enabled = boost_progress_bar_enabled
         
-        self.self._update_counts_only(data)
+        self._update_counts_only(data)
         
         return old_attributes
     

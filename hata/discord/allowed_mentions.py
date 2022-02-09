@@ -534,7 +534,7 @@ class AllowedMentionProxy:
         hash_value ^= self._allow_users << 3
         hash_value ^= self._allow_roles << 6
         hash_value ^= self._allow_everyone << 9
-        hash_value ^= self.self._allow_replied_user << 12
+        hash_value ^= self._allow_replied_user << 12
         
         allowed_roles = self._allowed_roles
         if (allowed_roles is not None):

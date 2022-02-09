@@ -6,7 +6,8 @@
 #### Bug fixes
 
 - `_debug_component_text_input_value` checked for bad type. (Gilgamesh#8939)
-
+- `AttributeError` in `Guild._difference_update_attributes`.
+- `AttributeError` in `AllowedMentionProxy.__hash__`.
 
 ## 1.1.135 *\[2022-02-08\]*
 

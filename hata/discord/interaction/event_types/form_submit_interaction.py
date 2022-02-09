@@ -300,16 +300,24 @@ class FormSubmitInteractionOption:
         # type
         type_ = self.type
         if type_ is not ComponentType.none:
-            repr_parts.append(', type=')
+            repr_parts.append(' type=')
             repr_parts.append(type_.name)
             repr_parts.append(' (')
             repr_parts.append(repr(type_.value))
             repr_parts.append(')')
+            
+            field_added = True
+        
+        else:
+            field_added = False
         
         # System fields : custom_id
         
         # custom_id
-        repr_parts.append(', custom_id=')
+        
+        if field_added:
+            repr_parts.append(',')
+        repr_parts.append(' custom_id=')
         repr_parts.append(reprlib.repr(self.custom_id))
         
         # Extra descriptive fields : options | value

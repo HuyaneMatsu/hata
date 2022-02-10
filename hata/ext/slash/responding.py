@@ -520,9 +520,12 @@ class InteractionResponse:
         ):
             message = self._message
             if message is not ...:
+                
                 response_parameters = self._get_response_parameters((
                     'allowed_mentions', 'content', 'components', 'embed', 'file'
                 ))
+                if (response_modifier is not None):
+                    response_modifier.apply_to(response_parameters)
                 
                 if message is None:
                     yield client.interaction_response_message_edit(interaction_event, **response_parameters)
@@ -554,7 +557,6 @@ class InteractionResponse:
                 'allowed_mentions', 'content', 'components', 'embed', 'file', 'show_for_invoking_user_only',
                 'suppress_embeds', 'tts'
             ))
-            
             if (response_modifier is not None):
                 response_modifier.apply_to(response_parameters)
             
@@ -573,7 +575,11 @@ class InteractionResponse:
             return
         
         elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
+            
             response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'components', 'embed'))
+            if (response_modifier is not None):
+                response_modifier.apply_to(response_parameters)
+            
             if interaction_event.is_unanswered():
                 if response_parameters:
                     yield client.interaction_component_message_edit(interaction_event, **response_parameters)

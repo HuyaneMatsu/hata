@@ -1,3 +1,10 @@
+## 1.1.137 *\[2022-02-??\]*
+
+#### Bug fixes
+
+#### ext.slash
+- `allowed_mentions` response modifier was not applied correctly.
+
 ## 1.1.136 *\[2022-02-09\]*
 
 #### Improvements

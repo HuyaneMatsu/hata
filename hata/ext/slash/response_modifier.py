@@ -154,22 +154,46 @@ class ResponseModifier:
         return self
     
     
-    def apply_to(self, parameters):
+    def apply_to_creation(self, parameters):
         """
-        Applies the modifiers to the given parameters.
+        Applies the response creation modifiers to the given parameters.
         
         Parameters
         ----------
-        parameters : `dict` of (`str`, `Any` items
+        parameters : `dict` of (`str`, `Any`) items
+            Request parameters.
+        """
+        self._apply_to_shared(parameters)
+        
+        show_for_invoking_user_only = self.show_for_invoking_user_only
+        if (show_for_invoking_user_only is not None):
+            parameters.setdefault('show_for_invoking_user_only', show_for_invoking_user_only)
+    
+    
+    def apply_to_edition(self, parameters):
+        """
+        Applies the response edition modifiers to the given parameters.
+        
+        Parameters
+        ----------
+        parameters : `dict` of (`str`, `Any`) items
+            Request parameters.
+        """
+        self._apply_to_shared(parameters)
+    
+    
+    def _apply_to_shared(self, parameters):
+        """
+        Applies creation and edition modifiers to the given parameters.
+        
+        Parameters
+        ----------
+        parameters : `dict` of (`str`, `Any`) items
             Request parameters.
         """
         allowed_mentions = self.allowed_mentions
         if (allowed_mentions is not None):
             parameters.setdefault('allowed_mentions', allowed_mentions)
-        
-        show_for_invoking_user_only = self.show_for_invoking_user_only
-        if (show_for_invoking_user_only is not None):
-            parameters.setdefault('show_for_invoking_user_only', show_for_invoking_user_only)
     
     
     def __repr__(self):
@@ -316,3 +340,56 @@ def get_wait_for_acknowledgement_of(response_modifier):
         wait_for_acknowledgement = response_modifier.wait_for_acknowledgement
     
     return wait_for_acknowledgement
+
+
+DUMMY_DICT = {}
+
+def un_map_pack_response_creation_modifier(response_modifier):
+    """
+    Returns an un-map-packer to the given response modifier for message creation endpoints.
+    
+    Parameters
+    ----------
+    response_modifier : `None`, ``ResponseModifier``
+        The response modifier to un-map-pack if any.
+    
+    Returns
+    -------
+    un_map_packer : `dict`
+    
+    Notes
+    -----
+    We could have use ``un_map_pack``, but dictionaries are just faster.
+    """
+    if response_modifier is None:
+        return DUMMY_DICT
+    
+    dictionary = {}
+    response_modifier.apply_to_creation(dictionary)
+    return dictionary
+
+
+def un_map_pack_response_edition_modifier(response_modifier):
+    """
+    Returns an un-map-packer to the given response modifier for message edition endpoints.
+    
+    Parameters
+    ----------
+    response_modifier : `None`, ``ResponseModifier``
+        The response modifier to un-map-pack if any.
+    
+    Returns
+    -------
+    un_map_packer : `dict`
+    
+    Notes
+    -----
+    We could have use ``un_map_pack``, but dictionaries are just faster.
+    """
+    if response_modifier is None:
+        return DUMMY_DICT
+    
+    dictionary = {}
+    response_modifier.apply_to_edition(dictionary)
+    return dictionary
+

@@ -909,6 +909,41 @@ class AllowedMentionProxy:
         return self._difference(other, self)
     
     
+    def __iter__(self):
+        """
+        Iterates back the values which with a same allowed mention proxy can be created.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        allowed_mentions : `str`, ``UserBase``, ``Role``
+            Which user or role can the message ping (or everyone).
+        """
+        if self._allow_roles:
+            yield 'roles'
+        
+        if self._allow_users:
+            yield 'users'
+        
+        if self._allow_everyone:
+            yield 'everyone'
+        
+        allow_replied_user = self._allow_replied_user
+        if allow_replied_user == STATE_ALLOW_REPLIED_USER_FALSE:
+            yield '!replied_user'
+        elif allow_replied_user == STATE_ALLOW_REPLIED_USER_TRUE:
+            yield 'replied_user'
+        
+        allowed_roles = self._allowed_roles
+        if (allowed_roles is not None):
+            yield from allowed_roles
+        
+        allowed_users = self.allowed_users
+        if (allowed_users is not None):
+            yield from allowed_users
+    
+    
     def update(self, other):
         """
         Updates the allowed mentions with the given value.

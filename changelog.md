@@ -13,6 +13,7 @@
 - Add `AllowedMentionProxy.__radd__`.
 - Add `AllowedMentionProxy.__sub__`.
 - Add `AllowedMentionProxy.__rsub__`.
+- Add `AllowedMentionProxy.__iter__`.
 
 #### Bug fixes
 - `AllowedMentionProxy.update` could set `._allow_replied_user` incorrectly.

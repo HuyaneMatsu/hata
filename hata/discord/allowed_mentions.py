@@ -623,13 +623,21 @@ class AllowedMentionProxy:
         -------
         new : ``AllowedMentionProxy``
         """
+        allowed_roles = self._allowed_roles
+        if (allowed_roles is not None):
+            allowed_roles = allowed_roles.copy()
+        
+        allowed_users = self._allowed_users
+        if (allowed_users is not None):
+            allowed_users = allowed_users.copy()
+        
         new = object.__new__(type(self))
         new._allow_users = self._allow_users
         new._allow_roles = self._allow_roles
         new._allow_everyone = self._allow_everyone
         new._allow_replied_user = self._allow_replied_user
-        new._allowed_roles = self._allowed_roles
-        new._allowed_users = self._allowed_users
+        new._allowed_roles = allowed_roles
+        new._allowed_users = allowed_users
         return new
     
     

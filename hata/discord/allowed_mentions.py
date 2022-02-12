@@ -826,7 +826,7 @@ class AllowedMentionProxy:
         """
         Returns an allowed mentions proxy, without elements found in other.
         
-        this is a classmethod.
+        This is a classmethod.
         
         Parameters
         ----------

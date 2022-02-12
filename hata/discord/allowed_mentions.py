@@ -4,6 +4,12 @@ from .role import Role, create_partial_role_from_id
 from .user import UserBase, create_partial_user_from_id
 
 
+
+STATE_ALLOW_REPLIED_USER_FALSE = -1
+STATE_ALLOW_REPLIED_USER_NONE = 0
+STATE_ALLOW_REPLIED_USER_TRUE = 1
+
+
 def parse_allowed_mentions(allowed_mentions):
     """
     If `allowed_mentions` is passed as `None`, then returns a `dict`, what will cause all mentions to be disabled.
@@ -57,7 +63,7 @@ def parse_allowed_mentions(allowed_mentions):
     else:
         allowed_mentions = [allowed_mentions]
     
-    allow_replied_user = 0
+    allow_replied_user = STATE_ALLOW_REPLIED_USER_NONE
     allow_everyone = 0
     allow_users = 0
     allow_roles = 0
@@ -68,11 +74,11 @@ def parse_allowed_mentions(allowed_mentions):
     for element in allowed_mentions:
         if isinstance(element, str):
             if element == '!replied_user':
-                allow_replied_user = -1
+                allow_replied_user = STATE_ALLOW_REPLIED_USER_FALSE
                 continue
             
             if element == 'replied_user':
-                allow_replied_user = 1
+                allow_replied_user = STATE_ALLOW_REPLIED_USER_TRUE
                 continue
             
             if element == 'everyone':
@@ -116,8 +122,8 @@ def parse_allowed_mentions(allowed_mentions):
     result = {}
     parse_all_of = None
     
-    if allow_replied_user:
-        result['replied_user'] = (allow_replied_user > 0)
+    if allow_replied_user != STATE_ALLOW_REPLIED_USER_NONE:
+        result['replied_user'] = (allow_replied_user == STATE_ALLOW_REPLIED_USER_TRUE)
     
     if allow_everyone:
         if parse_all_of is None:
@@ -147,6 +153,129 @@ def parse_allowed_mentions(allowed_mentions):
             result['roles'] = allowed_roles
     
     return result
+
+
+def _nullable_list_intersection(list_1, list_2):
+    """
+    Returns the intersection of 2 nullable lists.
+    
+    Parameters
+    ----------
+    list_1 : `None` or `list` of ``DiscordEntity``
+        First list.
+    list_2 : `None` or `list` of ``DiscordEntity``
+        First list.
+    
+    Returns
+    -------
+    intersection : `None` or `list` of ``DiscordEntity``
+        A list with the two list's intersection.
+    """
+    if list_1 is None:
+        return None
+    
+    if list_2 is None:
+        return None
+    
+    intersection = set(list_1) & set(list_2)
+    if not intersection:
+        return None
+    
+    return list(intersection)
+
+
+def _nullable_list_symmetric_difference(list_1, list_2):
+    """
+    Returns the symmetric difference of 2 nullable lists.
+    
+    Parameters
+    ----------
+    list_1 : `None` or `list` of ``DiscordEntity``
+        First list.
+    list_2 : `None` or `list` of ``DiscordEntity``
+        First list.
+    
+    Returns
+    -------
+    symmetric_difference : `None` or `list` of ``DiscordEntity``
+        A list with the two list's symmetric difference.
+    """
+    if list_1 is None:
+        if list_2 is None:
+            return None
+        
+        else:
+            return list_2.copy()
+    
+    else:
+        if list_2 is None:
+            return list_1.copy()
+    
+    symmetric_difference = set(list_1) ^ set(list_2)
+    if not symmetric_difference:
+        return None
+    
+    return list(symmetric_difference)
+
+
+def _nullable_list_union(list_1, list_2):
+    """
+    Returns the union of 2 nullable lists.
+    
+    Parameters
+    ----------
+    list_1 : `None` or `list` of ``DiscordEntity``
+        First list.
+    list_2 : `None` or `list` of ``DiscordEntity``
+        First list.
+    
+    Returns
+    -------
+    union : `None` or `list` of ``DiscordEntity``
+        A list with the two list's union.
+    """
+    if list_1 is None:
+        if list_2 is None:
+            return None
+        
+        else:
+            return list_2.copy()
+    
+    else:
+        if list_2 is None:
+            return list_1.copy()
+        
+        else:
+            return list({*list_1, *list_2})
+
+
+def _nullable_list_difference(list_1, list_2):
+    """
+    Returns the a copy of `list_1` without the elements of `list_2`.
+    
+    Parameters
+    ----------
+    list_1 : `None` or `list` of ``DiscordEntity``
+        First list.
+    list_2 : `None` or `list` of ``DiscordEntity``
+        First list.
+    
+    Returns
+    -------
+    difference : `None` or `list` of ``DiscordEntity``
+        A list with the two list's difference.
+    """
+    if list_1 is None:
+        return None
+    
+    if list_2 is None:
+        return list_1.copy()
+    
+    difference = set(list_1) - set(list_2)
+    if not difference:
+        return None
+    
+    return list(difference)
 
 
 class AllowedMentionProxy:
@@ -191,7 +320,7 @@ class AllowedMentionProxy:
         allow_users = 0
         allow_roles = 0
         allow_everyone = 0
-        allow_replied_user = 0
+        allow_replied_user = STATE_ALLOW_REPLIED_USER_NONE
         allowed_roles = None
         allowed_users = None
         
@@ -199,11 +328,11 @@ class AllowedMentionProxy:
             for element in allowed_mentions:
                 if isinstance(element, str):
                     if element == '!replied_user':
-                        allow_replied_user = -1
+                        allow_replied_user = STATE_ALLOW_REPLIED_USER_FALSE
                         continue
                     
                     if element == 'replied_user':
-                        allow_replied_user = 1
+                        allow_replied_user = STATE_ALLOW_REPLIED_USER_TRUE
                         continue
                     
                     if element == 'everyone':
@@ -279,7 +408,7 @@ class AllowedMentionProxy:
             allow_users = 0
             allow_roles = 0
             allow_everyone = 0
-            allow_replied_user = 0
+            allow_replied_user = STATE_ALLOW_REPLIED_USER_NONE
             allowed_roles = None
             allowed_users = None
             
@@ -287,12 +416,12 @@ class AllowedMentionProxy:
             try:
                 allow_replied_user_raw = data['replied_user']
             except KeyError:
-                allow_replied_user = 0
+                allow_replied_user = STATE_ALLOW_REPLIED_USER_NONE
             else:
                 if allow_replied_user_raw:
-                    allow_replied_user = 1
+                    allow_replied_user = STATE_ALLOW_REPLIED_USER_TRUE
                 else:
-                    allow_replied_user = -1
+                    allow_replied_user = STATE_ALLOW_REPLIED_USER_FALSE
             
             allowed_roles_raw = data.get('roles', None)
             if (allowed_roles_raw is None) or (not allowed_roles_raw):
@@ -358,8 +487,8 @@ class AllowedMentionProxy:
         parse_all_of = None
         
         allow_replied_user = self._allow_replied_user
-        if allow_replied_user:
-            data['replied_user'] = (allow_replied_user > 0)
+        if allow_replied_user != STATE_ALLOW_REPLIED_USER_NONE:
+            data['replied_user'] = (allow_replied_user == STATE_ALLOW_REPLIED_USER_TRUE)
         
         if self._allow_everyone:
             if parse_all_of is None:
@@ -397,11 +526,11 @@ class AllowedMentionProxy:
         repr_parts = ['<', self.__class__.__name__]
         
         allow_replied_user = self._allow_replied_user
-        if allow_replied_user:
+        if allow_replied_user != STATE_ALLOW_REPLIED_USER_NONE:
             field_added = True
             
             repr_parts.append(' allow_replied_user=')
-            repr_parts.append(repr((allow_replied_user > 0)))
+            repr_parts.append(repr((allow_replied_user == STATE_ALLOW_REPLIED_USER_TRUE)))
         else:
             field_added = False
         
@@ -503,6 +632,7 @@ class AllowedMentionProxy:
         new._allowed_users = self._allowed_users
         return new
     
+    
     def __eq__(self, other):
         """Returns whether the two allowed mention proxies are equal."""
         if type(self) is not type(other):
@@ -527,7 +657,8 @@ class AllowedMentionProxy:
             return False
         
         return True
-
+    
+    
     def __hash__(self):
         """Returns the allowed mention proxy's hash value."""
         hash_value = 0
@@ -538,7 +669,7 @@ class AllowedMentionProxy:
         
         allowed_roles = self._allowed_roles
         if (allowed_roles is not None):
-            hash_value ^= len(allowed_roles) << 24
+            hash_value ^= len(allowed_roles) << 16
             for role in allowed_roles:
                 hash_value ^= role.id
 
@@ -551,6 +682,233 @@ class AllowedMentionProxy:
         return hash_value
     
     
+    def __and__(self, other):
+        """Returns the intersection of the two allowed mention proxy."""
+        if not isinstance(other, type(self)):
+            try:
+                other = type(self)().update(other)
+            except (ValueError, TypeError):
+                return NotImplemented
+        
+        allow_roles = self._allow_roles & other._allow_roles
+        
+        allow_users = self._allow_users & other._allow_users
+        
+        allow_everyone = self._allow_everyone & other._allow_everyone
+        
+        allow_replied_user = self.allow_replied_user
+        if allow_replied_user != other._allow_replied_user:
+            allow_replied_user = STATE_ALLOW_REPLIED_USER_NONE
+        
+        if allow_roles:
+            allowed_roles = None
+        else:
+            allowed_roles = _nullable_list_intersection(self._allowed_roles, other._allowed_roles)
+        
+        if allow_users:
+            allowed_users = None
+        else:
+            allowed_users = _nullable_list_intersection(self._allowed_users, other._allowed_users)
+        
+        new = type(self)()
+        new._allow_roles = allow_roles
+        new._allow_users = allow_users
+        new._allow_everyone = allow_everyone
+        new._allow_replied_user = allow_replied_user
+        new._allowed_roles = allowed_roles
+        new._allowed_users = allowed_users
+        
+        return new
+    
+    __rand__ = __and__
+    
+    def __xor__(self, other):
+        """Returns the symmetric difference of the two allowed mention proxy."""
+        if not isinstance(other, type(self)):
+            try:
+                other = type(self)().update(other)
+            except (ValueError, TypeError):
+                return NotImplemented
+        
+        
+        allow_roles = self._allow_roles ^ other._allow_roles
+        
+        allow_users = self._allow_users ^ other._allow_users
+        
+        allow_everyone = self._allow_everyone ^ other._allow_everyone
+        
+        self_allow_replied_user = self.allow_replied_user
+        other_allow_replied_user = other._allow_replied_user
+        if self_allow_replied_user == STATE_ALLOW_REPLIED_USER_NONE:
+            allow_replied_user = other_allow_replied_user
+        elif other_allow_replied_user == STATE_ALLOW_REPLIED_USER_NONE:
+            allow_replied_user = self_allow_replied_user
+        else:
+            allow_replied_user = STATE_ALLOW_REPLIED_USER_NONE
+        
+        if allow_roles:
+            allowed_roles = None
+        else:
+            allowed_roles = _nullable_list_symmetric_difference(self._allowed_roles, other._allowed_roles)
+        
+        if allow_users:
+            allowed_users = None
+        else:
+            allowed_users = _nullable_list_symmetric_difference(self._allowed_users, other._allowed_users)
+        
+        new = type(self)()
+        
+        new._allow_roles = allow_roles
+        new._allow_users = allow_users
+        new._allow_everyone = allow_everyone
+        new._allow_replied_user = allow_replied_user
+        new._allowed_roles = allowed_roles
+        new._allowed_users = allowed_users
+        
+        return new
+    
+    __rxor__ = __xor__
+    
+    def __or__(self, other):
+        """Returns the union of the two allowed mention proxy."""
+        if not isinstance(other, type(self)):
+            try:
+                other = type(self)().update(other)
+            except (ValueError, TypeError):
+                return NotImplemented
+        
+        
+        allow_roles = self._allow_roles | other._allow_roles
+        
+        allow_users = self._allow_users | other._allow_users
+        
+        allow_everyone = self._allow_everyone | other._allow_everyone
+        
+        self_allow_replied_user = self.allow_replied_user
+        other_allow_replied_user = other._allow_replied_user
+        if self_allow_replied_user == STATE_ALLOW_REPLIED_USER_NONE:
+            allow_replied_user = other_allow_replied_user
+        elif other_allow_replied_user == STATE_ALLOW_REPLIED_USER_NONE:
+            allow_replied_user = self_allow_replied_user
+        elif self_allow_replied_user == other_allow_replied_user:
+            allow_replied_user = self_allow_replied_user
+        else:
+            allow_replied_user = STATE_ALLOW_REPLIED_USER_NONE
+        
+        if allow_roles:
+            allowed_roles = None
+        else:
+            allowed_roles = _nullable_list_union(self._allowed_roles, other._allowed_roles)
+        
+        if allow_users:
+            allowed_users = None
+        else:
+            allowed_users = _nullable_list_union(self._allowed_users, other._allowed_users)
+            
+        new = type(self)()
+        
+        new._allow_roles = allow_roles
+        new._allow_users = allow_users
+        new._allow_everyone = allow_everyone
+        new._allow_replied_user = allow_replied_user
+        new._allowed_roles = allowed_roles
+        new._allowed_users = allowed_users
+        
+        return new
+    
+    __ror__ = __or__
+    __add__ = __or__
+    __radd__ = __or__
+    
+    
+    @classmethod
+    def _difference(cls, self, other):
+        """
+        Returns an allowed mentions proxy, without elements found in other.
+        
+        this is a classmethod.
+        
+        Parameters
+        ----------
+        self : ``AllowedMentionProxy``
+            The allowed mention proxy to subtract the other from.
+        other : ``AllowedMentionProxy``
+            The allowed mention proxy to subtract.
+        
+        Returns
+        -------
+        new : ``AllowedMentionProxy``
+        """
+        if other._allow_roles:
+            allow_roles = 0
+        else:
+            allow_roles = self._allow_roles
+        
+        if other._allow_users:
+            allow_users = 0
+        else:
+            allow_users = self._allow_users
+        
+        if other._allow_everyone:
+            allow_everyone = 0
+        else:
+            allow_everyone = other._allow_everyone
+        
+        self_allow_replied_user = self.allow_replied_user
+        other_allow_replied_user = other._allow_replied_user
+        if self_allow_replied_user == STATE_ALLOW_REPLIED_USER_NONE:
+            allow_replied_user = other_allow_replied_user
+        elif other_allow_replied_user == STATE_ALLOW_REPLIED_USER_NONE:
+            allow_replied_user = self_allow_replied_user
+        elif self_allow_replied_user == other_allow_replied_user:
+            allow_replied_user = self_allow_replied_user
+        else:
+            allow_replied_user = STATE_ALLOW_REPLIED_USER_NONE
+        
+        if allow_roles:
+            allowed_roles = _nullable_list_difference(self._allowed_roles, other._allowed_roles)
+        else:
+            allowed_roles = None
+        
+        if allow_users:
+            allowed_users = _nullable_list_difference(self._allowed_users, other._allowed_users)
+        else:
+            allowed_users = None
+        
+        new = type(cls)()
+        
+        new._allow_roles = allow_roles
+        new._allow_users = allow_users
+        new._allow_everyone = allow_everyone
+        new._allow_replied_user = allow_replied_user
+        new._allowed_roles = allowed_roles
+        new._allowed_users = allowed_users
+        
+        return new
+    
+    
+    def __sub__(self, other):
+        """Returns an allowed mentions proxy, without elements found in other."""
+        if not isinstance(other, type(self)):
+            try:
+                other = type(self)().update(other)
+            except (ValueError, TypeError):
+                return NotImplemented
+        
+        return self._difference(self, other)
+        
+    
+    def __rsub__(self, other):
+        """Returns an allowed mentions proxy, without elements found in self."""
+        if not isinstance(other, type(self)):
+            try:
+                other = type(self)().update(other)
+            except (ValueError, TypeError):
+                return NotImplemented
+        
+        return self._difference(other, self)
+    
+    
     def update(self, other):
         """
         Updates the allowed mentions with the given value.
@@ -560,6 +918,10 @@ class AllowedMentionProxy:
         other : `str`, ``UserBase``, ``Role``, ``AllowedMentionProxy`` or (`list`, `tuple`, `set`) of \
                 (`str`, ``UserBase``, ``Role``)
             Which user or role can the message ping (or everyone).
+        
+        Returns
+        -------
+        self : ``AllowedMentionProxy``
         
         Raises
         ------
@@ -576,11 +938,11 @@ class AllowedMentionProxy:
             other = type(self)(other)
         
         
-        allow_replied_user = self._allow_replied_user
-        if allow_replied_user:
+        allow_replied_user = other._allow_replied_user
+        if allow_replied_user != STATE_ALLOW_REPLIED_USER_NONE:
             self._allow_replied_user = allow_replied_user
         
-        allow_everyone = self._allow_everyone
+        allow_everyone = other._allow_everyone
         if allow_everyone:
             self._allow_everyone = allow_everyone
         
@@ -626,6 +988,7 @@ class AllowedMentionProxy:
                         final_allowed_users.extend(other_allowed_users)
                 
                 self._allowed_users = final_allowed_users
+    
     
     @property
     def allow_roles(self):
@@ -741,13 +1104,12 @@ class AllowedMentionProxy:
         Accepts and returns `None` and `bool`-s.
         """
         allow_replied_user = self._allow_replied_user
-        if allow_replied_user:
-            if allow_replied_user > 0:
-                allow_replied_user_output = True
-            else:
-                allow_replied_user_output = False
-        else:
+        if allow_replied_user == STATE_ALLOW_REPLIED_USER_NONE:
             allow_replied_user_output = None
+        elif allow_replied_user == STATE_ALLOW_REPLIED_USER_TRUE:
+            allow_replied_user_output = True
+        else:
+            allow_replied_user_output = False
         
         return allow_replied_user_output
     
@@ -761,17 +1123,17 @@ class AllowedMentionProxy:
                 )
         
         if allow_replied_user_input is None:
-            allow_replied_user = 0
+            allow_replied_user = STATE_ALLOW_REPLIED_USER_NONE
         elif allow_replied_user_input:
-            allow_replied_user = 1
+            allow_replied_user = STATE_ALLOW_REPLIED_USER_TRUE
         else:
-            allow_replied_user = -1
+            allow_replied_user = STATE_ALLOW_REPLIED_USER_FALSE
         
         self._allow_replied_user = allow_replied_user
     
     @allow_replied_user.deleter
     def allow_replied_user(self):
-        self._allow_replied_user = 0
+        self._allow_replied_user = STATE_ALLOW_REPLIED_USER_NONE
     
     
     @property

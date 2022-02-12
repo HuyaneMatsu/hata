@@ -1,6 +1,22 @@
 ## 1.1.137 *\[2022-02-??\]*
 
+#### Improvements
+
+- Add `AllowedMentionProxy.update` now returns itself.
+- Add `AllowedMentionProxy.__and__`.
+- Add `AllowedMentionProxy.__rand__`.
+- Add `AllowedMentionProxy.__xor__`.
+- Add `AllowedMentionProxy.__rxor__`.
+- Add `AllowedMentionProxy.__or__`.
+- Add `AllowedMentionProxy.__ror__`.
+- Add `AllowedMentionProxy.__add__`.
+- Add `AllowedMentionProxy.__radd__`.
+- Add `AllowedMentionProxy.__sub__`.
+- Add `AllowedMentionProxy.__rsub__`.
+
+
 #### Bug fixes
+- `AllowedMentionProxy.update` could set `._allow_replied_user` incorrectly.
 
 #### ext.slash
 - `allowed_mentions` response modifier was not applied correctly.

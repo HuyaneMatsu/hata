@@ -7,7 +7,7 @@
     'is_invite_code', 'is_mention', 'is_role_mention', 'is_url', 'is_user_mention', 'mention_channel_by_id',
     'mention_role_by_id', 'mention_user_by_id', 'mention_user_nick_by_id', 'now_as_id', 'parse_message_reference',
     'parse_rdelta', 'parse_tdelta', 'random_id', 'sanitize_content', 'sanitize_mentions', 'seconds_to_id_difference',
-    'timedelta_to_id_difference', 'unix_time_to_id'
+    'seconds_to_elapsed_time', 'timedelta_to_id_difference', 'unix_time_to_id'
 )
 
 import reprlib, sys
@@ -848,51 +848,21 @@ def cchunkify(lines, lang='', limit=2000):
 
 if relativedelta is None:
     elapsed_time = None
+    seconds_to_elapsed_time = None
 else:
-    def elapsed_time(
-        delta,
-        limit = 3,
-        names = (
-            ('year', 'years'),
-            ('month', 'months'),
-            ('day', 'days'),
-            ('hour', 'hours'),
-            ('minute', 'minutes'),
-            ('second', 'seconds'),
-        )
-    ):
-        """
-        Generates an elapsed time formula from the given time delta.
-        
-        Parameters
-        ----------
-        delta : `datetime`, `relativedelta`
-            The time delta. If given as `datetime`, then the delta will be based on the difference between the given
-            datetime and the actual time. If given as `relativedelta`, then that will be used directly.
-        limit : `int` = `3`, Optional
-            The maximal amount of connected time units. Defaults to `3`.
-        names : `iterable` of `tuple` (`str`, `str`) = `(('year', 'years'), ('month', 'months'), ('day', 'days')
-                , ('hour', 'hours'), ('minute', 'minutes'), ('second', 'seconds'),)`, Optional
-            The names of the time units starting from years. Each element of the iterable should yield a `tuple` of two
-            `str` elements. The first should be always the singular form of the time unit's name and the second the
-            plural. Defaults to the time units' names in engrisssh.
-        
-        Returns
-        -------
-        result : `str`
-        
-        Raises
-        ------
-        TypeError
-            If delta was neither passed as `datetime`, `relativedelta`.
-        """
-        if isinstance(delta, datetime):
-            delta = relativedelta(datetime.utcnow(), delta)
-        elif isinstance(delta, relativedelta):
-            pass
-        else:
-            raise TypeError(f'Expected, `relativedelta`, `datetime`, got {delta.__class__.__name__}; {delta!r}.')
-        
+    ELAPSED_TIME_DEFAULT_LIMIT = 3
+    
+    ELAPSED_TIME_DEFAULT_NAMES = (
+        ('year', 'years'),
+        ('month', 'months'),
+        ('day', 'days'),
+        ('hour', 'hours'),
+        ('minute', 'minutes'),
+        ('second', 'seconds'),
+    )
+    
+
+    def _relative_delta_to_elapsed_time(delta, limit, names):
         parts = []
         for value, name_pair in zip(
             (delta.years, delta.months, delta.days, delta.hours, delta.minutes, delta.seconds),
@@ -923,6 +893,70 @@ else:
             result = f'0 {names[5][0]}'
         
         return result
+    
+    def elapsed_time(delta, limit=ELAPSED_TIME_DEFAULT_LIMIT, names=ELAPSED_TIME_DEFAULT_NAMES):
+        """
+        Generates an elapsed time formula from the given time delta.
+        
+        Parameters
+        ----------
+        delta : `datetime`, `relativedelta`
+            The time delta. If given as `datetime`, then the delta will be based on the difference between the given
+            datetime and the actual time. If given as `relativedelta`, then that will be used directly.
+        limit : `int` = `3`, Optional
+            The maximal amount of connected time units. Defaults to `3`.
+        names : `iterable` of `tuple` (`str`, `str`) = `(('year', 'years'), ('month', 'months'), ('day', 'days')
+                , ('hour', 'hours'), ('minute', 'minutes'), ('second', 'seconds'),)`, Optional
+            The names of the time units starting from years. Each element of the iterable should yield a `tuple` of two
+            `str` elements. The first should be always the singular form of the time unit's name and the second the
+            plural. Defaults to the time units' names in engrisssh.
+        
+        Returns
+        -------
+        result : `str`
+        
+        Raises
+        ------
+        TypeError
+            If `delta` was not passed as `datetime`, `relativedelta`.
+        """
+        if isinstance(delta, datetime):
+            delta = relativedelta(datetime.utcnow(), delta)
+        elif isinstance(delta, relativedelta):
+            pass
+        else:
+            raise TypeError(f'Expected, `relativedelta`, `datetime`, got {delta.__class__.__name__}; {delta!r}.')
+        
+        return _relative_delta_to_elapsed_time(delta, limit, names)
+    
+    
+    def seconds_to_elapsed_time(seconds, limit=ELAPSED_TIME_DEFAULT_LIMIT, names=ELAPSED_TIME_DEFAULT_NAMES):
+        """
+        Generates an elapsed time formula from the given seconds.
+        
+        Parameters
+        ----------
+        seconds : `int`, `float`
+            The time delta in seconds.
+        limit : `int` = `3`, Optional
+            The maximal amount of connected time units. Defaults to `3`.
+        names : `iterable` of `tuple` (`str`, `str`) = `(('year', 'years'), ('month', 'months'), ('day', 'days')
+                , ('hour', 'hours'), ('minute', 'minutes'), ('second', 'seconds'),)`, Optional
+            The names of the time units starting from years. Each element of the iterable should yield a `tuple` of two
+            `str` elements. The first should be always the singular form of the time unit's name and the second the
+            plural. Defaults to the time units' names in engrisssh.
+        
+        Returns
+        -------
+        result : `str`
+        
+        Raises
+        ------
+        TypeError
+            If `seconds` was not passed as `int`, `float`.
+        """
+        delta = relativedelta(seconds)
+        return _relative_delta_to_elapsed_time(delta, limit, names)
 
 
 class Relationship:

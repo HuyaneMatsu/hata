@@ -17,6 +17,10 @@
 - Add `AllowedMentionProxy.__iter__`.
 - Add `GuildFeature.creator_monetizable`.
 - Add `GuildFeature.creator_monetizable_disabled`.
+- Add `seconds_to_elapsed_time` (requires dateutil).
+
+#### ext.slash
+- `get_request_coroutines` now wont acknowledge the interaction event if it returns `None`.
 
 #### Bug fixes
 - `AllowedMentionProxy.update` could set `._allow_replied_user` incorrectly.

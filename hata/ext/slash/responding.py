@@ -66,7 +66,7 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
     interaction_event_type = interaction_event.type
     
     if (response is None):
-        if interaction_event.is_unanswered():
+        if (not is_return) and interaction_event.is_unanswered():
             if (
                 (interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND) or
                 (interaction_event_type is INTERACTION_TYPE_FORM_SUBMIT)

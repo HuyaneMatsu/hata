@@ -1,6 +1,6 @@
 __all__ = ('abort', 'InteractionResponse',)
 
-from scarletio import is_coroutine_generator
+from scarletio import is_coroutine_generator, skip_ready_cycle
 
 from ...discord.client import Client
 from ...discord.embed import EmbedBase
@@ -66,23 +66,39 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
     interaction_event_type = interaction_event.type
     
     if (response is None):
-        if (not is_return) and interaction_event.is_unanswered():
+        if interaction_event.is_unanswered():
             if (
                 (interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND) or
                 (interaction_event_type is INTERACTION_TYPE_FORM_SUBMIT)
             ):
-                yield client.interaction_application_command_acknowledge(
-                    interaction_event,
-                    get_wait_for_acknowledgement_of(response_modifier),
-                    show_for_invoking_user_only = get_show_for_invoking_user_only_of(response_modifier),
-                )
+                if (not is_return):
+                    # This usually means, the command is uncompleted
+                    yield client.interaction_application_command_acknowledge(
+                        interaction_event,
+                        get_wait_for_acknowledgement_of(response_modifier),
+                        show_for_invoking_user_only = get_show_for_invoking_user_only_of(response_modifier),
+                    )
+                
+                return
             
-            elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
+            if interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
+                if is_return:
+                    # Maybe the user launched up an other task to handle the component interaction. If this happened,
+                    # we just need to skip a ready cycle
+                    await skip_ready_cycle()
+                    
+                    # If the user indeed launched up an other task, we leave.
+                    if not interaction_event.is_unanswered():
+                        return
+                
                 yield client.interaction_component_acknowledge(
                     interaction_event,
                     get_wait_for_acknowledgement_of(response_modifier),
                 )
+                
+                return
         
+        # no more cases
         return
     
     # wait for async acknowledgement if applicable

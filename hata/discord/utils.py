@@ -955,7 +955,7 @@ else:
         TypeError
             If `seconds` was not passed as `int`, `float`.
         """
-        delta = relativedelta(seconds)
+        delta = relativedelta(seconds=floor(seconds))
         return _relative_delta_to_elapsed_time(delta, limit, names)
 
 

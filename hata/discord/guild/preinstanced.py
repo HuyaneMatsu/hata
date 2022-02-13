@@ -343,6 +343,10 @@ class GuildFeature(PreinstancedBase):
     +-------------------------------+-----------------------------------+-------------------------------------------+
     | commerce                      | commerce                          | COMMERCE                                  |
     +-------------------------------+-----------------------------------+-------------------------------------------+
+    | creator_monetizable           | creator monetizable               | CREATOR_MONETIZABLE                       |
+    +-------------------------------+-----------------------------------+-------------------------------------------+
+    | creator_monetizable_disabled  | creator monetizable disabled      | CREATOR_MONETIZABLE_DISABLED              |
+    +-------------------------------+-----------------------------------+-------------------------------------------+
     | community                     | community                         | COMMUNITY                                 |
     +-------------------------------+-----------------------------------+-------------------------------------------+
     | discoverable                  | discoverable                      | DISCOVERABLE                              |
@@ -449,6 +453,8 @@ class GuildFeature(PreinstancedBase):
     banner = P('BANNER', 'banner')
     channel_banners = P('CHANNEL_BANNER', 'channel banners')
     commerce = P('COMMERCE', 'commerce')
+    creator_monetizable = P('CREATOR_MONETIZABLE', 'creator monetizable')
+    creator_monetizable_disabled = P('CREATOR_MONETIZABLE_DISABLED', 'creator monetizable disabled')
     community = P('COMMUNITY', 'community')
     discoverable = P('DISCOVERABLE', 'discoverable')
     discoverable_disabled = P('DISCOVERABLE_DISABLED', 'discoverable disabled')

@@ -15,6 +15,8 @@
 - Add `AllowedMentionProxy.__sub__`.
 - Add `AllowedMentionProxy.__rsub__`.
 - Add `AllowedMentionProxy.__iter__`.
+- Add `GuildFeature.creator_monetizable`.
+- Add `GuildFeature.creator_monetizable_disabled`.
 
 #### Bug fixes
 - `AllowedMentionProxy.update` could set `._allow_replied_user` incorrectly.

@@ -238,6 +238,8 @@ Error Codes
 +---------------------------------------------------------------+-----------+-----------+
 | application_name_used                                         | 40041     | -         |
 +---------------------------------------------------------------+-----------+-----------+
+| interaction_already_acknowledged                              | 40060     | -         |
++---------------------------------------------------------------+-----------+-----------+
 | missing_access                                                | 50001     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | invalid_account_type                                          | 50002     | -         |
@@ -550,6 +552,7 @@ message_crossposted = 40033
 user_identity_verification_processing = 40035
 user_identity_verification_succeeded = 40036
 application_name_used = 40041
+interaction_already_acknowledged = 40060
 
 missing_access = 50001
 invalid_account_type = 50002

@@ -1,5 +1,9 @@
 ## 1.1.137 *\[2022-02-??\]*
 
+#### Improvements
+
+- Add `ERROR_CODES.interaction_already_acknowledged`.
+
 #### Bug fixes
 
 #### ext.slash

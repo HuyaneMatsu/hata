@@ -4,6 +4,8 @@ __all__ = (
 
 from datetime import datetime
 
+from scarletio import RichAttributeErrorBaseType, copy_docs
+
 from ..color import Color
 from ..utils import DATETIME_FORMAT_CODE, DISCORD_EPOCH_START, datetime_to_unix_time, unix_time_to_datetime
 
@@ -27,7 +29,85 @@ ACTIVITY_TYPE_NAMES = {
 }
 
 
-class ActivityTimestamps:
+ACTIVITY_TYPE_NAME_UNKNOWN = 'unknown'
+
+def get_activity_type_name(type_value):
+    """
+    Returns the activity'sn ame for the given type value.
+    
+    Parameters
+    ----------
+    type_value : `int`
+        The activity's type's value.
+    
+    Returns
+    -------
+    activity_type_name : `str`
+    """
+    return ACTIVITY_TYPE_NAMES.get(type_value, ACTIVITY_TYPE_NAME_UNKNOWN)
+
+
+class ActivityFieldBase(RichAttributeErrorBaseType):
+    """
+    Base class for activity fields.
+    """
+    __slots__ = ()
+    
+    def __new__(cls):
+        """
+        Creates a new activity field.
+        """
+        return object.__new__(cls)
+    
+    
+    @classmethod
+    def from_data(cls, data):
+        """
+        Creates a new activity field from the given data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Activity field data.
+        """
+        return object.__new__(cls)
+    
+    
+    def to_data(self):
+        """
+        Serializes the activity field.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`) items
+        """
+        return {}
+    
+    
+    def __repr__(self):
+        """Returns the activity field's representation."""
+        return f'<{self.__class__.__name__}>'
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two activity fields are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return True
+    
+    
+    def __hash__(self):
+        """Returns the activity field's hash value."""
+        return 0
+    
+    
+    def __bool__(self):
+        """Returns whether the activity field has any non-default attribute set."""
+        return False
+
+
+class ActivityTimestamps(ActivityFieldBase):
     """
     Represents an activity's timestamp field.
     
@@ -75,15 +155,8 @@ class ActivityTimestamps:
     
     
     @classmethod
+    @copy_docs(ActivityFieldBase.from_data)
     def from_data(cls, timestamps_data):
-        """
-        Creates a new activity timestamp object from the given data.
-        
-        Parameters
-        ----------
-        timestamps_data : `dict` of (`str`, `Any`) items
-            Activity timestamp data.
-        """
         start = timestamps_data.get('start', None)
         if (start is not None):
             start = unix_time_to_datetime(start)
@@ -98,8 +171,24 @@ class ActivityTimestamps:
         return self
     
     
+    @copy_docs(ActivityFieldBase.to_data)
+    def to_data(self):
+        timestamps_data = {}
+        
+        start = self.start
+        if (start is not None):
+            timestamps_data['start'] = datetime_to_unix_time(start)
+        
+        end = self.end
+        if (end is not None):
+            timestamps_data['end'] = datetime_to_unix_time(end)
+        
+        return timestamps_data
+    
+    
+    
+    @copy_docs(ActivityFieldBase.__repr__)
     def __repr__(self):
-        """Returns the activity timestamp's representation."""
         repr_parts = [
             '<',
             self.__class__.__name__,
@@ -126,8 +215,8 @@ class ActivityTimestamps:
         return ''.join(repr_parts)
     
     
+    @copy_docs(ActivityFieldBase.__eq__)
     def __eq__(self, other):
-        """Returns whether the two activity timestamps are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -140,28 +229,37 @@ class ActivityTimestamps:
         return True
     
     
-    def to_data(self):
-        """
-        Serializes the activity timestamp.
-        
-        Returns
-        -------
-        timestamps_data : `dict` of (`str`, `Any`) items
-        """
-        timestamps_data = {}
+    @copy_docs(ActivityFieldBase.__hash__)
+    def __hash__(self):
+        hash_value = 0
         
         start = self.start
         if (start is not None):
-            timestamps_data['start'] = datetime_to_unix_time(start)
+            hash_value ^= hash(start)
+            hash_value ^= (1 << 0)
         
         end = self.end
         if (end is not None):
-            timestamps_data['end'] = datetime_to_unix_time(end)
+            hash_value ^= hash(end)
+            hash_value ^= (1 << 4)
         
-        return timestamps_data
+        return hash_value
 
 
-class ActivityAssets:
+    @copy_docs(ActivityFieldBase.__bool__)
+    def __bool__(self):
+        start = self.start
+        if (start is not None):
+            return True
+        
+        end = self.end
+        if (end is not None):
+            return True
+        
+        return False
+
+
+class ActivityAssets(ActivityFieldBase):
     """
     Represents a discord activity asset.
     
@@ -254,16 +352,10 @@ class ActivityAssets:
         self.text_small = text_small
         return self
     
+    
     @classmethod
+    @copy_docs(ActivityFieldBase.from_data)
     def from_data(cls, assets_data):
-        """
-        Creates a new activity asset object from the given data.
-        
-        Parameters
-        ----------
-        assets_data : `dict` of (`str`, `Any`) items
-            Activity asset data.
-        """
         self = object.__new__(cls)
         self.image_large = assets_data.get('large_image', None)
         self.image_small = assets_data.get('small_image', None)
@@ -271,8 +363,32 @@ class ActivityAssets:
         self.text_small = assets_data.get('small_text', None)
         return self
     
+    
+    @copy_docs(ActivityFieldBase.to_data)
+    def to_data(self):
+        assets_data = {}
+        
+        image_large = self.image_large
+        if (image_large is not None):
+            assets_data['large_image'] = image_large
+        
+        image_small = self.image_small
+        if (image_small is not None):
+            assets_data['small_image'] = image_small
+        
+        text_large = self.text_large
+        if (text_large is not None):
+            assets_data['large_text'] = text_large
+        
+        text_small = self.text_small
+        if (text_small is not None):
+            assets_data['small_text'] = text_small
+        
+        return assets_data
+    
+    
+    @copy_docs(ActivityFieldBase.__repr__)
     def __repr__(self):
-        """Returns the activity asset's representation."""
         repr_parts = [
             '<',
             self.__class__.__name__,
@@ -316,8 +432,8 @@ class ActivityAssets:
         return ''.join(repr_parts)
     
     
+    @copy_docs(ActivityFieldBase.__eq__)
     def __eq__(self, other):
-        """Returns whether the two activity assets are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -336,36 +452,55 @@ class ActivityAssets:
         return True
     
     
-    def to_data(self):
-        """
-        Serializes the activity asset.
-        
-        Returns
-        -------
-        timestamp_data : `dict` of (`str`, `Any`) items
-        """
-        assets_data = {}
+    @copy_docs(ActivityFieldBase.__hash__)
+    def __hash__(self):
+        hash_value = 0
         
         image_large = self.image_large
         if (image_large is not None):
-            assets_data['large_image'] = image_large
+            hash_value ^= hash(image_large)
+            hash_value ^= (1 << 0)
         
         image_small = self.image_small
         if (image_small is not None):
-            assets_data['small_image'] = image_small
+            hash_value ^= hash(image_small)
+            hash_value ^= (1 << 4)
         
         text_large = self.text_large
         if (text_large is not None):
-            assets_data['large_text'] = text_large
+            hash_value ^= hash(text_large)
+            hash_value ^= (1 << 8)
         
         text_small = self.text_small
         if (text_small is not None):
-            assets_data['small_text'] = text_small
+            hash_value ^= hash(text_small)
+            hash_value ^= (1 << 12)
         
-        return assets_data
+        return hash_value
+    
+    
+    @copy_docs(ActivityFieldBase.__bool__)
+    def __bool__(self):
+        image_large = self.image_large
+        if (image_large is not None):
+            return True
+        
+        image_small = self.image_small
+        if (image_small is not None):
+            return True
+        
+        text_large = self.text_large
+        if (text_large is not None):
+            return True
+        
+        text_small = self.text_small
+        if (text_small is not None):
+            return True
+        
+        return False
 
 
-class ActivityParty:
+class ActivityParty(ActivityFieldBase):
     """
     Represents a discord activity party.
     
@@ -441,16 +576,8 @@ class ActivityParty:
     
     
     @classmethod
+    @copy_docs(ActivityFieldBase.from_data)
     def from_data(cls, party_data):
-        """
-        Creates a new activity party object from the given data.
-        
-        Parameters
-        ----------
-        party_data : `dict` of (`str`, `Any`) items
-            Activity party data.
-        """
-        
         self = object.__new__(cls)
         self.id = party_data.get('id', None)
         
@@ -464,8 +591,25 @@ class ActivityParty:
         self.max = max_
         return self
     
+    
+    @copy_docs(ActivityFieldBase.to_data)
+    def to_data(self):
+        party_data = {}
+        
+        id_ = self.id
+        if (id_ is not None):
+            party_data['id'] = id_
+        
+        size = self.size
+        max_ = self.max
+        if size or max_:
+            party_data['size'] = [size, max_]
+        
+        return party_data
+    
+    
+    @copy_docs(ActivityFieldBase.__repr__)
     def __repr__(self):
-        """Returns the activity party's representation."""
         repr_parts = [
             '<',
             self.__class__.__name__,
@@ -493,8 +637,9 @@ class ActivityParty:
         
         return ''.join(repr_parts)
     
+    
+    @copy_docs(ActivityFieldBase.__eq__)
     def __eq__(self, other):
-        """Returns whether the two activity parties are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -509,29 +654,47 @@ class ActivityParty:
         
         return True
     
-    def to_data(self):
-        """
-        Serializes the activity party.
-        
-        Returns
-        -------
-        timestamp_data : `dict` of (`str`, `Any`) items
-        """
-        party_data = {}
+
+    @copy_docs(ActivityFieldBase.__hash__)
+    def __hash__(self):
+        hash_value = 0
         
         id_ = self.id
         if (id_ is not None):
-            party_data['id'] = id_
+            hash_value ^= hash(id_)
+            hash_value ^= (1 << 0)
         
         size = self.size
-        max_ = self.max
-        if size or max_:
-            party_data['size'] = [size, max_]
+        if size:
+            hash_value ^= hash(size)
+            hash_value ^= (1 << 4)
         
-        return party_data
+        max_ = self.max
+        if max_:
+            hash_value ^= hash(max_)
+            hash_value ^= (1 << 8)
+        
+        return hash_value
+    
+    
+    @copy_docs(ActivityFieldBase.__bool__)
+    def __bool__(self):
+        id_ = self.id
+        if (id_ is not None):
+            return True
+        
+        size = self.size
+        if size:
+            return True
+        
+        max_ = self.max
+        if max_:
+            return True
+        
+        return False
 
 
-class ActivitySecrets:
+class ActivitySecrets(ActivityFieldBase):
     """
     Represents and activity secret.
     
@@ -597,24 +760,38 @@ class ActivitySecrets:
         self.spectate = spectate
         return self
     
+    
     @classmethod
+    @copy_docs(ActivityFieldBase.from_data)
     def from_data(cls, secrets_data):
-        """
-        Creates a new activity secret object from the given data.
-        
-        Parameters
-        ----------
-        secrets_data : `dict` of (`str`, `Any`) items
-            Activity secret data.
-        """
         self = object.__new__(cls)
         self.join = secrets_data.get('join', None)
         self.spectate = secrets_data.get('spectate', None)
         self.match = secrets_data.get('match', None)
         return self
     
+    
+    @copy_docs(ActivityFieldBase.to_data)
+    def to_data(self):
+        secrets_data = {}
+        
+        join = self.join
+        if (join is not None):
+            secrets_data['join'] = join
+        
+        spectate = self.spectate
+        if (spectate is not None):
+            secrets_data['spectate'] = spectate
+        
+        match = self.match
+        if (match is not None):
+            secrets_data['match'] = match
+        
+        return secrets_data
+    
+    
+    @copy_docs(ActivityFieldBase.__repr__)
     def __repr__(self):
-        """Returns the activity secret's representation."""
         repr_parts = [
             '<',
             self.__class__.__name__,
@@ -648,8 +825,9 @@ class ActivitySecrets:
         
         return ''.join(repr_parts)
     
+    
+    @copy_docs(ActivityFieldBase.__eq__)
     def __eq__(self, other):
-        """Returns whether the two activity secrets are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -664,32 +842,47 @@ class ActivitySecrets:
         
         return True
     
-    def to_data(self):
-        """
-        Serializes the activity secret.
-        
-        Returns
-        -------
-        timestamp_data : `dict` of (`str`, `Any`) items
-        """
-        secrets_data = {}
+
+    @copy_docs(ActivityFieldBase.__hash__)
+    def __hash__(self):
+        hash_value = 0
         
         join = self.join
         if (join is not None):
-            secrets_data['join'] = join
+            hash_value ^= hash(join)
+            hash_value ^= (1 << 0)
         
         spectate = self.spectate
         if (spectate is not None):
-            secrets_data['spectate'] = spectate
+            hash_value ^= hash(spectate)
+            hash_value ^= (1 << 4)
         
         match = self.match
         if (match is not None):
-            secrets_data['match'] = match
+            hash_value ^= hash(match)
+            hash_value ^= (1 << 8)
         
-        return secrets_data
+        return hash_value
+    
+    
+    @copy_docs(ActivityFieldBase.__bool__)
+    def __bool__(self):
+        join = self.join
+        if (join is not None):
+            return True
+        
+        spectate = self.spectate
+        if (spectate is not None):
+            return True
+        
+        match = self.match
+        if (match is not None):
+            return True
+        
+        return False
 
 
-class ActivityBase:
+class ActivityBase(RichAttributeErrorBaseType):
     """
     Base class for activities.
     
@@ -746,6 +939,7 @@ class ActivityBase:
         """
         return NotImplemented
     
+    
     @property
     def color(self):
         """
@@ -778,6 +972,7 @@ class ActivityBase:
         
         return activity_id
     
+    
     @property
     def created_at(self):
         """
@@ -788,6 +983,7 @@ class ActivityBase:
         created_at : `datetime`
         """
         return DISCORD_EPOCH_START
+    
     
     @classmethod
     def from_data(cls, activity_data):
@@ -807,6 +1003,7 @@ class ActivityBase:
         """
         return None
     
+    
     def _difference_update_attributes(self, data):
         """
         Updates the activity and returns the changes in a `dict` of (`attribute-name`, `old-value`) items.
@@ -825,6 +1022,7 @@ class ActivityBase:
         """
         return {}
     
+    
     def _update_attributes(self, data):
         """
         Updates the activity by overwriting it's old attributes.
@@ -838,6 +1036,7 @@ class ActivityBase:
         """
         pass
     
+    
     def bot_dict(self):
         """
         Converts the activity to json serializable dictionary, which can be sent with bot account to change activity.
@@ -849,6 +1048,7 @@ class ActivityBase:
         activity_data : `dict` of (`str`, `Any`) items
         """
         return {}
+    
     
     def user_dict(self):
         """
@@ -862,6 +1062,7 @@ class ActivityBase:
         activity_data : `dict` of (`str`, `Any`) items
         """
         return {}
+    
     
     def full_dict(self):
         """

@@ -1,5 +1,8 @@
 __all__ = ('EmbeddedActivityState',)
 
+
+from scarletio import RichAttributeErrorBaseType
+
 from ..activity import ActivityRich
 from ..core import CHANNELS, EMBEDDED_ACTIVITY_STATES, GUILDS
 from ..user import create_partial_user_from_id
@@ -192,7 +195,7 @@ def handle_embedded_update_event(data):
             _remove_embedded_activity_state_from_guild_cache(embedded_activity_state)
 
 
-class EmbeddedActivityState:
+class EmbeddedActivityState(RichAttributeErrorBaseType):
     """
     Attributes
     ----------

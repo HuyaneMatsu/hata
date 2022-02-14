@@ -9,12 +9,11 @@ from ..utils import DISCORD_EPOCH_START, datetime_to_unix_time, is_url, unix_tim
 
 from . import activity_types as ACTIVITY_TYPES
 from .activity_base import (
-    ACTIVITY_TYPE_NAMES, ActivityAssets, ActivityBase, ActivityParty, ActivitySecrets, ActivityTimestamps, CUSTOM_IDS
+    ActivityAssets, ActivityBase, ActivityParty, ActivitySecrets, ActivityTimestamps, CUSTOM_IDS,
+    get_activity_type_name
 )
 from .flags import ActivityFlag
 
-
-ACTIVITY_TYPE_NAME_UNKNOWN = 'unknown'
 
 VALID_RICH_ACTIVITY_TYPES = frozenset((
     ACTIVITY_TYPES.game,
@@ -261,7 +260,7 @@ class ActivityRich(ActivityBase):
         repr_parts = ['<', self.__class__.__name__, ' name=', repr(self.name), ' type=']
         
         type_value = self.type
-        type_name = ACTIVITY_TYPE_NAMES.get(type_value, ACTIVITY_TYPE_NAME_UNKNOWN)
+        type_name = get_activity_type_name(type_value)
         repr_parts.append(type_name)
         repr_parts.append(' (')
         repr_parts.append(repr(type_value))

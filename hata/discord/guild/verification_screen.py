@@ -2,7 +2,7 @@ __all__ = ('VerificationScreenStep', 'VerificationScreen', )
 
 import reprlib
 
-from scarletio import BaseMethodDescriptor
+from scarletio import BaseMethodDescriptor, RichAttributeErrorBaseType
 
 from ..preconverters import preconvert_preinstanced_type
 from ..utils import DATETIME_FORMAT_CODE, datetime_to_timestamp, timestamp_to_datetime
@@ -10,7 +10,7 @@ from ..utils import DATETIME_FORMAT_CODE, datetime_to_timestamp, timestamp_to_da
 from .preinstanced import VerificationScreenStepType
 
 
-class VerificationScreen:
+class VerificationScreen(RichAttributeErrorBaseType):
     """
     Represents a guild's verification screen.
     
@@ -88,7 +88,7 @@ class VerificationScreen:
         return True
 
 
-class VerificationScreenStep:
+class VerificationScreenStep(RichAttributeErrorBaseType):
     """
     Represents a step of a ``VerificationScreen``.
     

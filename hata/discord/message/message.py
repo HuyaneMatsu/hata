@@ -180,7 +180,6 @@ def _has_message_field(message, field_key):
     """
     Returns whether the message has the given field.
     
-    
     Parameters
     ----------
     message : ``Message``
@@ -199,6 +198,33 @@ def _has_message_field(message, field_key):
         has_field = (field_key in fields)
     
     return has_field
+
+
+def _iter_message_field(message, field_key):
+    """
+    Iterates over a field of the message.
+    
+    This function is an iterable generator.
+    
+    Parameters
+    ----------
+    message : ``Message``
+        The message to get the field from.
+    field_key : `int`
+        Message field key to get.
+    
+    Yields
+    ------
+    value : `Any`
+    """
+    fields = message._fields
+    if (fields is not None):
+        try:
+            field_value = fields[field_key]
+        except KeyError:
+            pass
+        else:
+            yield from field_value
 
 
 @export
@@ -3194,6 +3220,22 @@ class Message(DiscordEntity, immortal=True):
             MESSAGE_FIELD_KEY_ATTACHMENTS,
         )
     
+    
+    def iter_attachments(self):
+        """
+        Iterates over the attachments of the message.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        attachment : ``Attachment``
+        """
+        yield from _iter_message_field(
+            self,
+            MESSAGE_FIELD_KEY_ATTACHMENTS,
+        )
+    
     # Message.channel_mentions
     
     def _get_channel_mentions(self):
@@ -3669,6 +3711,22 @@ class Message(DiscordEntity, immortal=True):
         embed : `None`, ``EmbedCore``
         """
         return _get_first_message_field(
+            self,
+            MESSAGE_FIELD_KEY_EMBEDS,
+        )
+    
+    
+    def iter_embeds(self):
+        """
+        Iterates over the embeds of the message.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        embed : ``EmbedCore``
+        """
+        yield from _iter_message_field(
             self,
             MESSAGE_FIELD_KEY_EMBEDS,
         )
@@ -4245,6 +4303,22 @@ class Message(DiscordEntity, immortal=True):
         sticker : `None`, ``Sticker``
         """
         return _get_first_message_field(
+            self,
+            MESSAGE_FIELD_KEY_STICKERS,
+        )
+    
+    
+    def iter_stickers(self):
+        """
+        Iterates over the stickers of the message.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        sticker : ``Sticker``
+        """
+        yield from _iter_message_field(
             self,
             MESSAGE_FIELD_KEY_STICKERS,
         )

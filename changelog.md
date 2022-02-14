@@ -18,6 +18,36 @@
 - Add `GuildFeature.creator_monetizable`.
 - Add `GuildFeature.creator_monetizable_disabled`.
 - Add `seconds_to_elapsed_time` (requires dateutil).
+- Add `Message.iter_attachments`.
+- Add `Message.iter_embeds`.
+- Add `Message.iter_stickers`.
+- Add `Guild.forum_channels`.
+- Add `Guild.get_emojis_like`.
+- `Guild.get_sticker_like` now matches tags as well.
+- Add `Guild.get_stickers_like`.
+- Add `Sticker.iter_tags`.
+- `EmbeddedActivityState`-s now raise rich attribute errors.
+- Add ``ActivityFieldBase`` base class for activity fields.
+- Add `ActivityTimestamps.__hash__`.
+- Add `ActivityAssets.__hash__`.
+- Add `ActivityParty.__hash__`.
+- Add `ActivityParty.__hash__`.
+- Add `ActivitySecrets.__hash__`.
+- Add `ActivityTimestamps.__hash__`.
+- Add `ActivityAssets.__bool__`.
+- Add `ActivityParty.__bool__`.
+- Add `ActivityParty.__bool__`.
+- Add `ActivitySecrets.__bool__`.
+- `ActivityBase`-s now raise rich attribute errors.
+- `VerificationScreen`-s now raise rich attribute errors.
+- `VerificationScreenStep`-s now raise rich attribute errors.
+- `TeamMember`-s now raise rich attribute errors.
+- `RateLimitGroup`-s now raise rich attribute errors.
+- `RateLimitContextBase`-s now raise rich attribute errors.
+- `RateLimitHandlerBase`-s now raise rich attribute errors.
+- `Icon`-s now raise rich attribute errors.
+- `PreinstancedBase`-s now raise rich attribute errors.
+
 
 #### ext.slash
 - `get_request_coroutines` now wont acknowledge the interaction event if it returns `None`.
@@ -1332,7 +1362,7 @@ Make multiple entities to weakly bound to other ones.
 - Remove `._parse_overwrites`, add `parse_permission_overwrites` instead.
 - Add `CHANNEL_TYPES`.
 - Add `Guild.public_updates_channel_id`.
-- `Guild.public_updates_channel` is nwo a property.
+- `Guild.public_updates_channel` is now a property.
 - Add `Guild.afk_channel_id`.
 - `Guild.afk_channel` is now a property.
 - Add `Guild.rules_channel_id`.

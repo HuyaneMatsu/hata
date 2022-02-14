@@ -205,6 +205,7 @@ class Sticker(DiscordEntity, immortal=True):
         
         self.available = data.get('available', True)
     
+    
     def _difference_update_attributes(self, data):
         """
         Updates the sticker with the given data and returns the changed attributes in `attribute-name` - `old-value`
@@ -430,9 +431,9 @@ class Sticker(DiscordEntity, immortal=True):
                     processable.append((attribute_name, animated))
             
             for attribute_name, lower_limit, upper_limit in (
-                        ('description', 0, 1024),
-                        ('name', 2, 32),
-                    ):
+                ('description', 0, 1024),
+                ('name', 2, 32),
+            ):
                 
                 try:
                     attribute_value = kwargs.pop('attribute_name')
@@ -443,9 +444,9 @@ class Sticker(DiscordEntity, immortal=True):
                     processable.append((attribute_name, attribute_value))
             
             for attribute_name, preinstanced_type in (
-                        ('format_type', StickerFormat),
-                        ('type', StickerType),
-                    ):
+                ('format_type', StickerFormat),
+                ('type', StickerType),
+            ):
                 try:
                     attribute_value = kwargs.pop('attribute_name')
                 except KeyError:
@@ -559,3 +560,18 @@ class Sticker(DiscordEntity, immortal=True):
         guild_id = self.guild_id
         if guild_id:
             return GUILDS.get(guild_id, None)
+    
+    
+    def iter_tags(self):
+        """
+        Iterates over the tags of the sticker.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        tag : `str`
+        """
+        tags = self.tags
+        if (tags is not None):
+            yield from tags

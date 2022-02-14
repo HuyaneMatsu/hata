@@ -5,6 +5,7 @@ __all__ = (
     'VOICE_STATE_UPDATE'
 )
 
+from datetime import datetime
 from re import I as re_ignore_case, compile as re_compile, escape as re_escape
 
 from scarletio import WeakValueDictionary, export, include
@@ -12,7 +13,7 @@ from scarletio import WeakValueDictionary, export, include
 from ...env import CACHE_PRESENCE, CACHE_USER
 
 from ..bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
-from ..channel import CHANNEL_TYPE_MAP, ChannelCategory, ChannelGuildUndefined, ChannelText
+from ..channel import CHANNEL_TYPE_MAP, CHANNEL_TYPES, ChannelCategory, ChannelGuildUndefined, ChannelText
 from ..core import GUILDS
 from ..emoji import Emoji
 from ..http import urls as module_urls
@@ -80,20 +81,65 @@ MAX_PRESENCES_DEFAULT = 0
 MAX_USERS_DEFAULT = 250000
 MAX_VIDEO_CHANNEL_USERS_DEFAULT = 25
 
-def user_date_sort_key(item):
+
+CHANNEL_TYPE_GUILD_TEXT = CHANNEL_TYPES.guild_text
+CHANNEL_TYPE_GUILD_VOICE = CHANNEL_TYPES.guild_voice
+CHANNEL_TYPE_GUILD_CATEGORY = CHANNEL_TYPES.guild_category
+CHANNEL_TYPE_GUILD_ANNOUNCEMENTS = CHANNEL_TYPES.guild_announcements
+CHANNEL_TYPE_GUILD_STORE = CHANNEL_TYPES.guild_store
+CHANNEL_TYPE_GUILD_STAGE = CHANNEL_TYPES.guild_stage
+CHANNEL_TYPE_GUILD_FORUM = CHANNEL_TYPES.guild_forum
+CHANNEL_TYPE_GROUP_GUILD_TEXT_LIKE = CHANNEL_TYPES.GROUP_GUILD_TEXT_LIKE
+CHANNEL_TYPE_GROUP_GUILD_CONNECTABLE = CHANNEL_TYPES.GROUP_GUILD_CONNECTABLE
+
+
+def _user_date_sort_key(item):
     """
-    Sort key used inside ``Guild.get_users_like_ordered`` and in ``Guild.boosters`` to sort users by a specfiied date.
+    Sort key used inside ``Guild.get_users_like_ordered`` and in ``Guild.boosters`` to sort users by a specified date.
     
     Parameters
     ----------
-    item : `tuple` of (`datetime`, ``ClientUserBase``)
+    item : `tuple` ( ``ClientUserBase``, `datetime`)
         The user and it's specific date.
     
     Returns
     -------
     date : `datetime`
     """
-    return item[0]
+    return item[1]
+
+
+def _emoji_match_sort_key(item):
+    """
+    Sort key used inside of ``Guild.get_emojis_like`` to sort emojis based on their match rate.
+    
+    Parameters
+    ----------
+    item : `tuple` (``Emoji``, `tuple` (`int`, `int`))
+        The emoji and it's match rate.
+    
+    Returns
+    -------
+    match_rate : `tuple` (`int`, `int`)
+    """
+    return item[1]
+
+
+def _sticker_match_sort_key(item):
+    """
+    Sort key used inside of ``Guild.get_stickers_like`` to sort stickers based on their match rate.
+    
+    Parameters
+    ----------
+    item : `tuple` (``Sticker``, `tuple` (`bool`, `int`, `int`))
+        The sticker and it's match rate.
+    
+    Returns
+    -------
+    match_rate : `tuple` (`bool`, `int`, `int`)
+    """
+    return item[1]
+
 
 # discord does not send `widget_channel_id`, `widget_enabled`, `max_presences`, `max_users` correctly and that is sad.
 
@@ -926,7 +972,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``ChannelText``
         """
-        return [channel for channel in self.channels.values() if channel.type == 0]
+        return [channel for channel in self.channels.values() if channel.type == CHANNEL_TYPE_GUILD_TEXT]
     
     
     @property
@@ -938,7 +984,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``ChannelVoice``
         """
-        return [channel for channel in self.channels.values() if channel.type == 2]
+        return [channel for channel in self.channels.values() if channel.type == CHANNEL_TYPE_GUILD_VOICE]
     
     
     @property
@@ -950,7 +996,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``ChannelCategory``
         """
-        return [channel for channel in self.channels.values() if channel.type == 4]
+        return [channel for channel in self.channels.values() if channel.type == CHANNEL_TYPE_GUILD_CATEGORY]
     
     
     @property
@@ -962,7 +1008,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``ChannelText``
         """
-        return [channel for channel in self.channels.values() if channel.type == 5]
+        return [channel for channel in self.channels.values() if channel.type == CHANNEL_TYPE_GUILD_ANNOUNCEMENTS]
     
     
     @property
@@ -974,7 +1020,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``ChannelStore``
         """
-        return [channel for channel in self.channels.values() if channel.type == 6]
+        return [channel for channel in self.channels.values() if channel.type == CHANNEL_TYPE_GUILD_STORE]
     
     
     @property
@@ -996,21 +1042,33 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channels . `list` of ``ChannelVoiceBase``
+        channels : `list` of ``ChannelVoiceBase``
         """
-        return [channel for channel in self.channels.values() if channel.type == 13]
+        return [channel for channel in self.channels.values() if channel.type == CHANNEL_TYPE_GUILD_STAGE]
+    
+    
+    @property
+    def forum_channels(self):
+        """
+        Returns the forum channels of the guild.
+        
+        Returns
+        -------
+        channels : `list` of ``ChannelForum``
+        """
+        return [channel for channel in self.channels.values() if channel.type == CHANNEL_TYPE_GUILD_FORUM]
     
     
     @property
     def messageable_channels(self):
         """
-        Returns the messageable channels of the guild.
+        Returns the messageable channels (excluding threads) of the guild.
         
         Returns
         -------
         channels : `list` of ``ChannelText``
         """
-        return [channel for channel in self.channels.values() if channel.type in (0, 5)]
+        return [channel for channel in self.channels.values() if channel.type in CHANNEL_TYPE_GROUP_GUILD_TEXT_LIKE]
     
     
     @property
@@ -1022,7 +1080,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``ChannelVoiceBase``
         """
-        return [channel for channel in self.channels.values() if channel.type in (2, 13)]
+        return [channel for channel in self.channels.values() if channel.type in CHANNEL_TYPE_GROUP_GUILD_CONNECTABLE]
     
     
     @property
@@ -1084,31 +1142,31 @@ class Guild(DiscordEntity, immortal=True):
         else:
             self._sync_emojis(emoji_datas)
 
-##        #sadly we don't get voice states with guild_get
+##        # sadly we don't get voice states with guild_get
 ##        try:
-##            voice_state_datas=data['voice_states']
+##            voice_state_datas = data['voice_states']
 ##        except KeyError:
 ##            self.voice_states.clear()
 ##        else:
-##            old_voice_states=self.voice_states
-##            new_voice_states=self.voice_states={}
+##            old_voice_states = self.voice_states
+##            new_voice_states = self.voice_states = {}
 ##
 ##            for voice_state_data in voice_state_datas:
 ##                user=create_partial_user_from_id(int(voice_state_data['user_id']))
 ##
-##                channel_id=voice_state_data.get('channel_id',None)
+##                channel_id = voice_state_data.get('channel_id', None)
 ##                if channel_id is None:
 ##                    continue
-##                channel=self.channels[int(channel_id)]
+##                channel = self.channels[int(channel_id)]
 ##
 ##                try:
-##                    voice_state=old_voice_states[user.id]
+##                    voice_state = old_voice_states[user.id]
 ##                except KeyError:
-##                    new_voice_states[user.id]=VoiceState(voice_state_data,channel)
+##                    new_voice_states[user.id] = VoiceState(voice_state_data, channel)
 ##                    continue
 ##
-##                voice_state._update_attributes(voice_state_data,channel)
-##                new_voice_states[user.id]=voice_state
+##                voice_state._update_attributes(voice_state_data, channel)
+##                new_voice_states[user.id] = voice_state
     
     def _apply_presences(self, data):
         """
@@ -1319,7 +1377,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        users : `list` of ``ClientUserBase`` objects
+        users : `list` of ``ClientUserBase``
         """
         result = []
         if (not 1 < len(name) < 38):
@@ -1374,6 +1432,8 @@ class Guild(DiscordEntity, immortal=True):
         if (not 1 < len(name) < 33):
             return to_sort
         
+        now_date_time = None
+        
         pattern = re_compile(re_escape(name), re_ignore_case)
         guild_id = self.id
         for user in self.users.values():
@@ -1389,15 +1449,20 @@ class Guild(DiscordEntity, immortal=True):
             joined_at = profile.joined_at
             
             if joined_at is None:
-                joined_at = user.created_at
+                # Instead of defaulting to `user.created_at` use the current date
+                if now_date_time is None:
+                    now_date_time = datetime.utcnow()
+                
+                joined_at = now_date_time
             
-            to_sort.append((joined_at, user))
+            
+            to_sort.append((user, joined_at))
         
         if not to_sort:
             return to_sort
         
-        to_sort.sort(key=user_date_sort_key)
-        return [x[1] for x in to_sort]
+        to_sort.sort(key=_user_date_sort_key)
+        return [item[0] for item in to_sort]
     
     
     def get_emoji(self, name, default=None):
@@ -1443,8 +1508,7 @@ class Guild(DiscordEntity, immortal=True):
         emoji_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
         
         accurate_emoji = default
-        accurate_match_start = 100
-        accurate_match_length = 100
+        accurate_match_key = (100, 100)
         
         for emoji in self.emojis.values():
             emoji_name = emoji.name
@@ -1455,16 +1519,51 @@ class Guild(DiscordEntity, immortal=True):
             match_start = parsed.start()
             match_length = parsed.end() - match_start
             
-            if (match_length > accurate_match_length) or \
-                    ((match_length == accurate_match_length) and (match_start > accurate_match_start)):
+            match_rate = (match_length, match_length)
+            if accurate_match_key > match_rate:
                 continue
             
             accurate_emoji = emoji
-            accurate_match_start = match_start
-            accurate_match_length = match_length
+            accurate_match_key = match_rate
         
         return accurate_emoji
     
+    
+    def get_emojis_like(self, name):
+        """
+        Searches the emojis, what's name match the given value.
+        
+        The returned value is ordered by match rate.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        
+        Returns
+        -------
+        emojis : `list` of ``Emoji``
+        """
+        emoji_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
+        
+        to_sort = []
+        
+        for emoji in self.emojis.values():
+            emoji_name = emoji.name
+            parsed = emoji_name_pattern.search(emoji_name)
+            if parsed is None:
+                continue
+            
+            match_start = parsed.start()
+            match_length = parsed.end() - match_start
+            
+            to_sort.append((emoji, (match_length, match_start)))
+        
+        if not to_sort:
+            return to_sort
+        
+        to_sort.sort(key=_emoji_match_sort_key)
+        return [item[0] for item in to_sort]
     
     
     def get_sticker(self, name, default=None):
@@ -1504,32 +1603,109 @@ class Guild(DiscordEntity, immortal=True):
         -------
         sticker : ``Sticker``, `default`
         """
-        target_name_length = len(name)
-        
-        pattern = re_compile(re_escape(name), re_ignore_case)
+        sticker_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
         
         accurate_sticker = default
-        accurate_name_length = 120
+        matching_names_only = False
+        accurate_match_key = (100, 100)
         
         for sticker in self.stickers.values():
             sticker_name = sticker.name
-            name_length = len(sticker_name)
-            if name_length > accurate_name_length:
-                continue
             
-            if pattern.match(sticker_name) is None:
-                continue
+            parsed = sticker_name_pattern.search(sticker_name)
+            if (parsed is not None):
             
-            if name_length < accurate_name_length:
-                accurate_sticker = sticker
-                accurate_name_length = name_length
+                match_start = parsed.start()
+                match_length = parsed.end() - match_start
+                
+                match_rate = (match_length, match_length)
+                if accurate_match_key < match_rate:
+                    accurate_sticker = sticker
+                    accurate_match_key = match_rate
+                    matching_names_only = True
+                    continue
             
-            if (name_length == target_name_length) and (name == sticker_name):
-                return sticker
-            
-            continue
+            if not matching_names_only:
+                sticker_tags = sticker.tags
+                if (sticker_tags is not None):
+                    for sticker_tag in sticker_tags:
+                        
+                        parsed = sticker_name_pattern.search(sticker_tag)
+                        if (parsed is not None):
+                            
+                            match_start = parsed.start()
+                            match_length = parsed.end() - match_start
+                            
+                            match_rate = (match_length, match_length)
+                            if accurate_match_key < match_rate:
+                                accurate_sticker = sticker
+                                accurate_match_key = match_rate
+                                continue
         
         return accurate_sticker
+    
+    
+    def get_stickers_like(self, name):
+        """
+        Searches the stickers, what's name and tags matches the given value.
+        
+        The returned value is ordered by match rate.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to search for.
+        
+        Returns
+        -------
+        stickers : `list` of ``Sticker``
+        """
+        sticker_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
+        
+        matches = {}
+        
+        for sticker in self.stickers.values():
+            sticker_name = sticker.name
+            
+            parsed = sticker_name_pattern.search(sticker_name)
+            if (parsed is not None):
+            
+                match_start = parsed.start()
+                match_length = parsed.end() - match_start
+                
+                match_rate = (False, match_length, match_length)
+                
+                matches[sticker] = match_rate
+                continue
+            
+            sticker_tags = sticker.tags
+            if (sticker_tags is not None):
+                for sticker_tag in sticker_tags:
+                    
+                    parsed = sticker_name_pattern.search(sticker_tag)
+                    if (parsed is not None):
+                        
+                        match_start = parsed.start()
+                        match_length = parsed.end() - match_start
+                        
+                        match_rate = (True, match_length, match_length)
+                        
+                        try:
+                            accurate_match_rate = matches[sticker]
+                        except KeyError:
+                            pass
+                        else:
+                            if accurate_match_rate <= match_rate:
+                                continue
+                                
+                        matches[sticker] = match_rate
+                        continue
+        
+        
+        if not matches:
+            return []
+        
+        return [item[0] for item in sorted(matches.items(), key=_sticker_match_sort_key)]
     
     
     def get_channel(self, name, default=None):
@@ -2607,12 +2783,12 @@ class Guild(DiscordEntity, immortal=True):
                     if boosts_since is None:
                         continue
                     
-                    boosters_ordered.append((boosts_since, user),)
+                    boosters_ordered.append((user, boosts_since),)
                     
-                boosters_ordered.sort(key=user_date_sort_key)
-                boosters = [element[1] for element in boosters_ordered]
+                boosters_ordered.sort(key=_user_date_sort_key)
+                boosters = [element[0] for element in boosters_ordered]
             else:
-                boosters=[]
+                boosters = []
             
             self._boosters = boosters
 

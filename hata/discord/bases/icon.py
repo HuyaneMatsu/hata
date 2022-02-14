@@ -4,7 +4,7 @@ __all__ = (
 
 import sys
 
-from scarletio import DOCS_ENABLED, docs_property
+from scarletio import DOCS_ENABLED, RichAttributeErrorBaseType, docs_property
 
 from .preinstanced import Preinstance as P, PreinstancedBase
 
@@ -64,7 +64,8 @@ ICON_TYPE_NONE = IconType.none
 ICON_TYPE_STATIC = IconType.static
 ICON_TYPE_ANIMATED = IconType.animated
 
-class Icon:
+
+class Icon(RichAttributeErrorBaseType):
     """
     Represents a Discord Icon.
     
@@ -90,7 +91,8 @@ class Icon:
         """
         self.type = icon_type
         self.hash = icon_hash
-        
+    
+    
     @property
     def as_base16_hash(self):
         """
@@ -129,6 +131,7 @@ class Icon:
             
             return hash_value
     
+    
     elif hash_info_width == 64:
         def __hash__(self):
             """Returns the icon's hash."""
@@ -141,6 +144,7 @@ class Icon:
                 if icon_type is ICON_TYPE_ANIMATED:
                     hash_value ^= ((1 << 64) - 1)
             return hash_value
+    
     
     else:
         def __hash__(self):
@@ -156,6 +160,7 @@ class Icon:
             return hash_value
     
     del hash_info_width
+    
     
     def __eq__(self, other):
         """Returns whether the two icons are equal."""
@@ -174,9 +179,11 @@ class Icon:
         
         return False
     
+    
     def __repr__(self):
         """Returns the representation of the icon."""
         return f'{self.__class__.__name__}(type=ICON_TYPE_{self.type.name.upper()}, hash={self.hash})'
+    
     
     def __iter__(self):
         """
@@ -187,12 +194,15 @@ class Icon:
         yield self.type
         yield self.hash
     
+    
     def __len__(self):
         """Length hinter (for unpacking if needed)."""
         return 2
     
+    
     def __bool__(self):
         return (self.type is not ICON_TYPE_NONE)
+    
     
     @classmethod
     def from_base16_hash(cls, icon):

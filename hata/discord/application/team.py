@@ -1,5 +1,7 @@
 __all__ = ('Team', 'TeamMember', )
 
+from scarletio import RichAttributeErrorBaseType
+
 from ..bases import DiscordEntity, IconSlot
 from ..core import TEAMS, USERS
 from ..http import urls as module_urls
@@ -70,6 +72,7 @@ class Team(DiscordEntity, immortal=True):
         team.owner_id = int(data['owner_user_id'])
         return team
     
+    
     @property
     def owner(self):
         """
@@ -88,6 +91,7 @@ class Team(DiscordEntity, immortal=True):
         
         return owner
     
+    
     @property
     def invited(self):
         """
@@ -99,6 +103,7 @@ class Team(DiscordEntity, immortal=True):
         """
         target_state = TeamMembershipState.invited
         return [team_member.user for team_member in self.members if team_member.state is target_state]
+    
     
     @property
     def accepted(self):
@@ -117,7 +122,8 @@ class Team(DiscordEntity, immortal=True):
         """Returns the team's representation."""
         return f'<{self.__class__.__name__} owner={self.owner.full_name}, total members={len(self.members)}>'
 
-class TeamMember:
+
+class TeamMember(RichAttributeErrorBaseType):
     """
     Represents a team member of a ``Team``.
     
@@ -148,14 +154,19 @@ class TeamMember:
         self.user = User(data['user'])
         self.state = TeamMembershipState.get(data['membership_state'])
     
+    
     def __repr__(self):
         """Returns the team member's representation."""
-        return (f'<{self.__class__.__name__} user={self.user.full_name} state={self.state.name} permissions='
-            f'{self.permissions}>')
+        return (
+            f'<{self.__class__.__name__} user={self.user.full_name} state={self.state.name} permissions='
+            f'{self.permissions}>'
+        )
+    
     
     def __hash__(self):
         """Returns the team member's hash value, what is equal to it's user's id."""
         return self.user.id
+    
     
     def __eq__(self, other):
         """Returns whether the two team members are equal."""

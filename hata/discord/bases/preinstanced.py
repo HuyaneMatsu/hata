@@ -1,5 +1,8 @@
 __all__ = ('Preinstance', 'PreinstancedBase', )
 
+from scarletio import RichAttributeErrorBaseType
+
+
 class Preinstance:
     """
     name : `str`
@@ -84,7 +87,7 @@ class PreinstancedMeta(type):
         return type_
 
 
-class PreinstancedBase(metaclass=PreinstancedMeta):
+class PreinstancedBase(RichAttributeErrorBaseType, metaclass=PreinstancedMeta):
     """
     Base class for preinstanced types.
     

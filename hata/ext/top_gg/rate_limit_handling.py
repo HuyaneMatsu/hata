@@ -1,11 +1,11 @@
 __all__ = ()
 
-from scarletio import ScarletLock, copy_docs
+from scarletio import ScarletLock, RichAttributeErrorBaseType, copy_docs
 
 from ...discord.core import KOKORO
 
 
-class RateLimitContextBase:
+class RateLimitContextBase(RichAttributeErrorBaseType):
     """
     Rate limit context used to handle static rate limits when communicating with top.gg.
     
@@ -156,7 +156,7 @@ class StackedRateLimitContext(RateLimitContextBase):
             self.acquired = False
 
 
-class RateLimitHandlerBase:
+class RateLimitHandlerBase(RichAttributeErrorBaseType):
     """
     Rate limit handler which can be entered.
     """
@@ -239,7 +239,7 @@ class StackedRateLimitHandler(RateLimitHandlerBase):
         return StackedRateLimitContext(self.rate_limit_groups)
 
 
-class RateLimitGroup:
+class RateLimitGroup(RichAttributeErrorBaseType):
     """
     Static rate limit handler group implementation.
     

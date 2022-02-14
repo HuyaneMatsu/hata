@@ -47,7 +47,17 @@
 - `RateLimitHandlerBase`-s now raise rich attribute errors.
 - `Icon`-s now raise rich attribute errors.
 - `PreinstancedBase`-s now raise rich attribute errors.
-
+- Add new embeddable activities (still experimental).
+- Add `AuditLogEvent.auto_moderation_rule_create`.
+- Add `AuditLogEvent.auto_moderation_rule_update`.
+- Add `AuditLogEvent.auto_moderation_rule_delete`.
+- Add `AuditLogEvent.auto_moderation_block_message`.
+- Add `ERROR_CODES.activity_launch_no_access`.
+- Add `ERROR_CODES.activity_launch_premium_tier`.
+- Add `ERROR_CODES.activity_launch_concurrent_activities`.
+- Add `ERROR_CODES.invalid_user_settings_data`.
+- Add `ERROR_CODES.auto_moderation_message_blocked`.
+- Add `AuditLogTargetType.auto_moderation`.
 
 #### ext.slash
 - `get_request_coroutines` now wont acknowledge the interaction event if it returns `None`.

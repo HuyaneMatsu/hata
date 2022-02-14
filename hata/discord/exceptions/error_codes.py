@@ -342,6 +342,14 @@ Error Codes
 +---------------------------------------------------------------+-----------+-----------+
 | not_enough_guild_boosters                                     | 50101     | -         |
 +---------------------------------------------------------------+-----------+-----------+
+| invalid_user_settings_data                                    | 50105     | -         |
++---------------------------------------------------------------+-----------+-----------+
+| activity_launch_no_access                                     | 50106     | -         |
++---------------------------------------------------------------+-----------+-----------+
+| activity_launch_premium_tier                                  | 50107     | -         |
++---------------------------------------------------------------+-----------+-----------+
+| activity_launch_concurrent_activities                         | 50108     | -         |
++---------------------------------------------------------------+-----------+-----------+
 | invalid_json                                                  | 50109     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | MFA_enabled                                                   | 60001     | -         |
@@ -443,6 +451,8 @@ Error Codes
 | exactly_one_guild_id_parameter_is_required                    | 180001    | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | failed_to_create_stage_needed_for_scheduled_event             | 180002    | -         |
++---------------------------------------------------------------+-----------+-----------+
+| auto_moderation_message_blocked                               | 200000    | -         |
 +---------------------------------------------------------------+-----------+-----------+
 """
 unknown_account = 10001
@@ -605,6 +615,10 @@ invalid_country_code = 50095
 cannot_friend_self = 50096
 guild_monetization_required = 50097
 not_enough_guild_boosters = 50101
+invalid_user_settings_data = 50105
+activity_launch_no_access = 50106
+activity_launch_premium_tier = 50107
+activity_launch_concurrent_activities = 50108
 invalid_json = 50109
 
 MFA_enabled = 60001
@@ -667,3 +681,5 @@ sticker_animation_duration_exceeds_5_second = 170007
 cannot_update_finished_scheduled_event = 180000
 exactly_one_guild_id_parameter_is_required = 180001
 failed_to_create_stage_needed_for_scheduled_event = 180002
+
+auto_moderation_message_blocked = 200000

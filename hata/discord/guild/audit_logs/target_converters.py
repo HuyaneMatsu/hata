@@ -123,3 +123,7 @@ def target_converter_thread(entry):
 
 def target_converter_application_command(entry):
     return None
+
+
+def target_converter_auto_moderation(entry):
+    return None

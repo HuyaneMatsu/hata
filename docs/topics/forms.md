@@ -75,6 +75,8 @@ async def introduction_form_submit(event, *, name, bio):
     )
 ```
 
+![](assets/forms_0000.gif)
+
 ## Parameters
 
 Positional parameters of form submit commands work in the same way as component commands'. This means single and 
@@ -184,6 +186,9 @@ If the annotation is neither string nor regex pattern, it is ignored.
 
 > Annotating a parameter with "regular" regex is pretty pointless. Could be good when updating old code
 > and you want to support multiple `custom_id`-s.
+
+![](assets/forms_0001.gif)
+
 
 ```py
 import re
@@ -295,6 +300,11 @@ async def waifu_add_form_submit(
     
     return waifu.embed
 
+```
+
+![](assets/forms_0002.gif)
+
+```py
 # Get command
 
 @Nitori.interactions(guild=TEST_GUILD)
@@ -319,6 +329,9 @@ async def autocomplete_waifu_name(value):
     value = value.casefold()
     return [waifu.name for key, waifu in WAIFUS.items() if value in key]
 ```
+
+![](assets/forms_0003.gif)
+
 
 When using capturing groups or named capturing groups, you will get the captured values back as well. This can be
 useful when dynamically generating form fields.
@@ -395,6 +408,9 @@ async def waifu_edit_form_submit(
     return waifu.embed
 ```
 
+![](assets/forms_0004.gif)
+
+
 To capture multiple fields in one parameter you can use `*args`.
 
 When using capturing groups in regex, each element will be a tuple, similar to the keyword parameters above.
@@ -462,3 +478,5 @@ async def rate_cake_form_submit(
     
     return embed
 ```
+
+![](assets/forms_0005.gif)

@@ -1,5 +1,6 @@
 from .all_ import*
 from .application_command import *
+from .auto_moderation import *
 from .channel import *
 from .channel_permission_overwrite import *
 from .emoji import *
@@ -17,6 +18,7 @@ from .webhook import *
 __all__ = (
     *all_.__all__,
     *application_command.__all__,
+    *auto_moderation.__all__,
     *channel.__all__,
     *channel_permission_overwrite.__all__,
     *emoji.__all__,

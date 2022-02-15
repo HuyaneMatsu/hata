@@ -452,6 +452,10 @@ Error Codes
 +---------------------------------------------------------------+-----------+-----------+
 | failed_to_create_stage_needed_for_scheduled_event             | 180002    | -         |
 +---------------------------------------------------------------+-----------+-----------+
+| privacy_policy_required                                       | 190001    | -         |
++---------------------------------------------------------------+-----------+-----------+
+| terms_of_service_required                                     | 190002    | -         |
++---------------------------------------------------------------+-----------+-----------+
 | auto_moderation_message_blocked                               | 200000    | -         |
 +---------------------------------------------------------------+-----------+-----------+
 """
@@ -681,5 +685,8 @@ sticker_animation_duration_exceeds_5_second = 170007
 cannot_update_finished_scheduled_event = 180000
 exactly_one_guild_id_parameter_is_required = 180001
 failed_to_create_stage_needed_for_scheduled_event = 180002
+
+privacy_policy_required = 190001
+terms_of_service_required = 190002
 
 auto_moderation_message_blocked = 200000

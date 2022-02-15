@@ -5,7 +5,7 @@ from ..core import APPLICATIONS
 from ..http import urls as module_urls
 from ..preconverters import preconvert_bool, preconvert_flag, preconvert_snowflake, preconvert_str
 from ..user import ClientUserBase, User, ZEROUSER
-
+from .embedded_activity_configuration import EmbeddedActivityConfiguration
 from .flags import ApplicationFlag
 from .miscellaneous import ApplicationExecutable, ApplicationInstallParameters, ApplicationSubEntity, ThirdPartySKU
 from .team import Team
@@ -38,6 +38,8 @@ class Application(DiscordEntity, immortal=True):
         The description of the application. Defaults to empty string.
     developers : `None`, `list` of ``ApplicationSubEntity``
         A list of the application's games' developers. Defaults to `None`.
+    embedded_activity_configuration : `None`, EmbeddedActivityConfiguration
+        Configuration for the embedded activity.
     eula_id : `int`
         The end-user license agreement's id of the application. Defaults to `0` if not applicable.
     executables : `None`, `list` of ``ApplicationExecutable``
@@ -57,6 +59,8 @@ class Application(DiscordEntity, immortal=True):
         The application's icon's type.
     id : `int`
         The application's id. Defaults to `0`. Meanwhile set as `0`, hashing the application will raise `RuntimeError`.
+    max_participants : `int`
+        The maximal amount of users, who can join the application's embedded activity. Defaults to `0`.
     name : `str`
         The name of the application. Defaults to empty string.
     overlay : `bool`
@@ -99,9 +103,10 @@ class Application(DiscordEntity, immortal=True):
     """
     __slots__ = (
         'aliases', 'bot_public', 'bot_require_code_grant', 'custom_install_url', 'description', 'developers',
-        'eula_id', 'executables', 'flags', 'guild_id', 'hook', 'install_parameters', 'name', 'overlay',
-        'overlay_compatibility_hook', 'owner', 'primary_sku_id', 'privacy_policy_url', 'publishers', 'rpc_origins',
-        'slug', 'summary', 'tags', 'terms_of_service_url', 'third_party_skus', 'verify_key'
+        'embedded_activity_configuration', 'eula_id', 'executables', 'flags', 'guild_id', 'hook', 'install_parameters',
+        'max_participants', 'name', 'overlay', 'overlay_compatibility_hook', 'owner', 'primary_sku_id',
+        'privacy_policy_url', 'publishers', 'rpc_origins', 'slug', 'summary', 'tags', 'terms_of_service_url',
+        'third_party_skus', 'verify_key'
     )
     
     cover = IconSlot(
@@ -127,9 +132,14 @@ class Application(DiscordEntity, immortal=True):
     )
     
     @classmethod
-    def _create_empty(cls):
+    def _create_empty(cls, application_id):
         """
         Creates an empty application, with it's default attributes set.
+        
+        Parameters
+        ----------
+        application_id : `int`
+            The application's default identifier.
         
         Returns
         -------
@@ -138,42 +148,44 @@ class Application(DiscordEntity, immortal=True):
         """
         self = object.__new__(cls)
         
-        self.id = 0
-        self.name = ''
-        self.description = ''
-        self.rpc_origins = None
+        self.aliases = None
         self.bot_public = False
         self.bot_require_code_grant = False
-        self.owner = ZEROUSER
-        self.summary = ''
-        self.verify_key = ''
-        self.guild_id = None
-        self.primary_sku_id = 0
-        self.slug = None
-        self.developers = None
-        self.hook = None
-        self.publishers = None
-        self.executables = None
-        self.third_party_skus = None
-        self.overlay = False
-        self.overlay_compatibility_hook = False
-        self.aliases = None
-        self.eula_id = 0
-        self.flags = ApplicationFlag()
-        self.privacy_policy_url = None
-        self.terms_of_service_url = None
-        self.custom_install_url = None
-        self.install_parameters = None
-        self.tags = None
-        
         self.cover_hash = 0
         self.cover_type = ICON_TYPE_NONE
+        self.custom_install_url = None
+        self.description = ''
+        self.developers = None
+        self.embedded_activity_configuration = None
+        self.eula_id = 0
+        self.executables = None
+        self.flags = ApplicationFlag()
+        self.guild_id = None
+        self.hook = None
+        self.install_parameters = None
         self.icon_hash = 0
         self.icon_type = ICON_TYPE_NONE
+        self.id = application_id
+        self.max_participants = 0
+        self.name = ''
+        self.overlay = False
+        self.overlay_compatibility_hook = False
+        self.owner = ZEROUSER
+        self.primary_sku_id = 0
+        self.privacy_policy_url = None
+        self.publishers = None
+        self.rpc_origins = None
+        self.slug = None
         self.splash_hash = 0
         self.splash_type = ICON_TYPE_NONE
+        self.summary = ''
+        self.terms_of_service_url = None
+        self.tags = None
+        self.third_party_skus = None
+        self.verify_key = ''
         
         return self
+    
     
     def _create_update(self, data, ready_data):
         """
@@ -427,6 +439,24 @@ class Application(DiscordEntity, immortal=True):
         else:
             tags = tuple(sorted(tags))
         self.tags = tags
+        
+        # Only set `max_participants` is received
+        
+        try:
+            max_participants = data['max_participants']
+        except KeyError:
+            pass
+        else:
+            self.max_participants = max_participants
+        
+        # Only set `embedded_activity_configuration` if received
+        
+        try:
+            embedded_activity_configuration_data = data['embedded_activity_config']
+        except KeyError:
+            pass
+        else:
+            self.embedded_activity_configuration = EmbeddedActivityConfiguration(embedded_activity_configuration_data)
     
     
     @classmethod
@@ -574,8 +604,7 @@ class Application(DiscordEntity, immortal=True):
         try:
             application = APPLICATIONS[application_id]
         except KeyError:
-            application = cls._create_empty()
-            application.id = application_id
+            application = cls._create_empty(application_id)
             is_partial = True
         else:
             is_partial = application.partial

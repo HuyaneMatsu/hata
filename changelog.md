@@ -58,6 +58,11 @@
 - Add `ERROR_CODES.invalid_user_settings_data`.
 - Add `ERROR_CODES.auto_moderation_message_blocked`.
 - Add `AuditLogTargetType.auto_moderation`.
+- Add `Application.max_participants`.
+- Add `EmbeddedActivityConfiguration`.
+- Add `Activity.embedded_activity_configuration`.
+- Add `ERROR_CODES.terms_of_service_required`.
+- Add `ERROR_CODES.auto_moderation_message_blocked`.
 
 #### ext.slash
 - `get_request_coroutines` now wont acknowledge the interaction event if it returns `None`.

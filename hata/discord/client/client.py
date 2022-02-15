@@ -411,10 +411,13 @@ class Client(ClientUserPBase):
         else:
             client_id = preconvert_snowflake(client_id, 'client_id')
         
-        application = Application._create_empty()
-        if (application_id is not None):
+        # application_id
+        if (application_id is None):
+            application_id = 0
+        else:
             application_id = preconvert_snowflake(application_id, 'application_id')
-            application.id = application_id
+        
+        application = Application._create_empty(application_id)
         
         # activity
         if (not isinstance(activity, ActivityBase)) or (type(activity) is ActivityCustom):

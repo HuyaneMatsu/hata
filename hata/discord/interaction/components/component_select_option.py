@@ -40,7 +40,7 @@ class ComponentSelectOption(ComponentBase):
     """
     __slots__ = ('default', 'description', 'emoji', 'label', 'value')
     
-    def __new__(cls, value, label, emoji=None, *, default=False, description=None):
+    def __new__(cls, value, label=None, emoji=None, *, default=False, description=None):
         """
         Creates a new component option with the given parameters.
         
@@ -48,12 +48,18 @@ class ComponentSelectOption(ComponentBase):
         ----------
         value : `str`
             The option's value.
-        label : `str`
+        
+        label : `str` = `None`, Optional
             Label of the component option.
+            
+            Defaults to the `value` parameter if not given.
+        
         emoji : `None`, ``Emoji`` = `None`, Optional
             Emoji of the option if applicable.
+        
         default : `bool` = `False`, Optional (Keyword only)
             Whether this the the default option. Defaults to `False`.
+        
         description : `None`, `str` = `None`, Optional (Keyword only)
             Description of the component option.
         """
@@ -77,9 +83,7 @@ class ComponentSelectOption(ComponentBase):
         # label
         if __debug__:
             if (label is None) or (not label):
-                raise AssertionError(
-                    f'`label` cannot be empty.'
-                )
+                label = value
         
         # value
         # No additional checks

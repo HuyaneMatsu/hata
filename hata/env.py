@@ -207,17 +207,33 @@ CUSTOM_CDN_ENDPOINT = get_str_env('HATA_CDN_ENDPOINT')
 CUSTOM_DISCORD_ENDPOINT = get_str_env('HATA_DISCORD_ENDPOINT')
 CUSTOM_STATUS_ENDPOINT = get_str_env('HATA_STATUS_ENDPOINT')
 
-API_VERSION = get_int_env('HATA_API_VERSION', 9)
+DEFAULT_API_VERSION = 10
+API_VERSION = get_int_env('HATA_API_VERSION', DEFAULT_API_VERSION)
 
-if API_VERSION not in (7, 8):
+if API_VERSION != DEFAULT_API_VERSION:
     if API_VERSION < 6:
-        warnings.warn(f'`API_VERSION` given with a value less than `6`, got {API_VERSION!r}, defaulting to {7!r}!')
-        API_VERSION = 7
+        warnings.warn(
+            f'`HATA_API_VERSION` given with a value less than `6`, got {API_VERSION!r}, defaulting to '
+            f'{DEFAULT_API_VERSION!r}!'
+        )
+        API_VERSION = DEFAULT_API_VERSION
+    
     elif API_VERSION > 10:
-        warnings.warn(f'`API_VERSION` given with a value greater than `10`, got {API_VERSION!r}, defaulting to {9!r}!')
-        API_VERSION = 9
-    elif API_VERSION == 6:
-        warnings.warn('`API_VERSION` given as 6, please use version `7`, `8`.', FutureWarning)
+        warnings.warn(
+            f'`API_VERSION` given with a value greater than `10`, got {API_VERSION!r}, defaulting to '
+            f'{DEFAULT_API_VERSION!r}!'
+        )
+        API_VERSION = DEFAULT_API_VERSION
+    
+    elif API_VERSION < 10:
+        warnings.warn(
+            (
+                f'`API_VERSION` given either as `6`, `7`, `8`, `9`, got {API_VERSION!r}, please use version '
+                f'`{DEFAULT_API_VERSION!r}` instead',
+            ),
+            FutureWarning
+        )
+
 
 LIBRARY_URL = get_str_env('HATA_LIBRARY_URL', 'https://github.com/HuyaneMatsu/hata')
 

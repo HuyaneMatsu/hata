@@ -20,6 +20,7 @@ INTENT_SHIFT_GUILD_TYPINGS = 11
 INTENT_SHIFT_DIRECT_MESSAGES = 12
 INTENT_SHIFT_DIRECT_REACTIONS = 13
 INTENT_SHIFT_DIRECT_TYPINGS = 14
+INTENT_SHIFT_MESSAGE_CONTENT = 15
 INTENT_SHIFT_GUILD_SCHEDULED_EVENTS = 16
 
 INTENT_MASK_GUILDS = 1 << INTENT_SHIFT_GUILDS
@@ -37,6 +38,7 @@ INTENT_MASK_GUILD_TYPINGS = 1 << INTENT_SHIFT_GUILD_TYPINGS
 INTENT_MASK_DIRECT_MESSAGES = 1 << INTENT_SHIFT_DIRECT_MESSAGES
 INTENT_MASK_DIRECT_REACTIONS = 1 << INTENT_SHIFT_DIRECT_REACTIONS
 INTENT_MASK_DIRECT_TYPINGS = 1 << INTENT_SHIFT_DIRECT_TYPINGS
+INTENT_MASK_MESSAGE_CONTENT = 1 << INTENT_SHIFT_MESSAGE_CONTENT
 INTENT_MASK_GUILD_SCHEDULED_EVENTS = 1 << INTENT_SHIFT_GUILD_SCHEDULED_EVENTS
 
 INTENT_SHIFT_EVENTS = {
@@ -130,6 +132,8 @@ INTENT_SHIFT_EVENTS = {
     ),
     INTENT_SHIFT_DIRECT_TYPINGS: (
         'TYPING_START',
+    ),
+    INTENT_SHIFT_MESSAGE_CONTENT: (
     ),
     INTENT_SHIFT_GUILD_SCHEDULED_EVENTS: (
         'GUILD_SCHEDULED_EVENT_CREATE',
@@ -279,12 +283,14 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
     +----------------------------------------+-------+----------------------------+---------------------------------------------+
     | INTENT_SHIFT_DIRECT_TYPINGS            | 14    | direct_typings             | TYPING_START                                |
     +----------------------------------------+-------+----------------------------+---------------------------------------------+
+    | INTENT_SHIFT_MESSAGE_CONTENT           | 15    | message_content            | N/A                                         |
+    +----------------------------------------+-------+----------------------------+---------------------------------------------+
     | INTENT_SHIFT_GUILD_SCHEDULED_EVENTS    | 16    | guild_scheduled_events     | GUILD_APPLICATION_COMMAND_COUNTS_UPDATE,    |
     |                                        |       |                            | GUILD_SCHEDULED_EVENT_CREATE,               |
     |                                        |       |                            | GUILD_SCHEDULED_EVENT_UPDATE,               |
     |                                        |       |                            | GUILD_SCHEDULED_EVENT_DELETE,               |
     |                                        |       |                            | GUILD_SCHEDULED_EVENT_USER_ADD,             |
-    |                                        |       |                            | GUILD_SCHEDULED_EVENT_USER_REMOVE          |
+    |                                        |       |                            | GUILD_SCHEDULED_EVENT_USER_REMOVE           |
     +----------------------------------------+-------+----------------------------+---------------------------------------------+
     """
     __keys__ = {
@@ -303,6 +309,7 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
         'direct_messages': INTENT_SHIFT_DIRECT_MESSAGES,
         'direct_reactions': INTENT_SHIFT_DIRECT_REACTIONS,
         'direct_typings': INTENT_SHIFT_DIRECT_TYPINGS,
+        'message_content': INTENT_SHIFT_MESSAGE_CONTENT,
         'guild_scheduled_events': INTENT_SHIFT_GUILD_SCHEDULED_EVENTS
     }
     

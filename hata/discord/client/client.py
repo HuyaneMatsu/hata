@@ -6301,8 +6301,6 @@ class Client(ClientUserPBase):
             
             data['delete_message_days'] = delete_message_days
         
-        if (reason is not None) and reason:
-            data['reason'] = reason
         
         await self.http.guild_ban_add(guild_id, user_id, data, reason)
     

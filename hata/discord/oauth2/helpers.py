@@ -7,6 +7,22 @@ DEFAULT_LOCALE = 'en-US'
 LOCALES = {DEFAULT_LOCALE: DEFAULT_LOCALE}
 
 
+def get_cached_locale(locale):
+    """
+    Gets the given locale from cache if present.
+    
+    Parameters
+    ----------
+    locale : `str`
+        The local to get from cache.
+    
+    Returns
+    -------
+    locale : `str`
+    """
+    return LOCALES.setdefault(locale, locale)
+
+
 def parse_locale(data):
     """
     Gets `'local'`'s value out from the given `dict`. If found returns it, if not, then returns `DEFAULT_LOCAL`.
@@ -51,8 +67,7 @@ def parse_guild_locale(data):
     except KeyError:
         return DEFAULT_LOCALE
     
-    guild_locale = LOCALES.setdefault(guild_locale, guild_locale)
-    return guild_locale
+    return get_cached_locale(guild_locale)
 
 
 def parse_preferred_locale(data):
@@ -76,8 +91,7 @@ def parse_preferred_locale(data):
     except KeyError:
         return DEFAULT_LOCALE
     
-    locale = LOCALES.setdefault(locale, locale)
-    return locale
+    return get_cached_locale(locale)
 
 
 def parse_locale_optional(data):
@@ -100,8 +114,22 @@ def parse_locale_optional(data):
     except KeyError:
         return None
     
-    locale = LOCALES.setdefault(locale, locale)
-    return locale
+    return get_cached_locale(locale)
+
+
+def process_locale_dictionary(dictionary):
+    """
+    Processes a locale dictionary, where they keys are locales.
+    
+    Parameters
+    ----------
+    dictionary : `dict` of (`str`, `Any`) items
+    
+    Returns
+    -------
+    transformed : `dict` of (`str`, `Any`) items
+    """
+    return {get_cached_locale(key): value for key, value in dictionary.items()}
 
 
 OAUTH2_REQUEST_URL_RP = re.compile('(https?://.+?)\?code=([a-zA-Z0-9]{30})')

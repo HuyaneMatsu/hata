@@ -1,7 +1,10 @@
 __all__ = ('Achievement', )
 
+from ...env import API_VERSION
+
 from ..bases import DiscordEntity, IconSlot
 from ..http import urls as module_urls
+from ..oauth2.helpers import process_locale_dictionary
 from ..utils import DATETIME_FORMAT_CODE
 
 
@@ -17,18 +20,24 @@ class Achievement(DiscordEntity):
         The achievement's respective application's id.
     description : `str`
         The description of the achievement.
-    name : `str`
-        The name of the achievement.
-    secret : `bool`
-        Secret achievements will *not* be shown to the user until they've unlocked them.
-    secure : `bool`
-        Secure achievements can only be set via HTTP calls from your server, not by a game client using the SDK.
+    description_localizations : `None`, `dict` of (`str`, `str`) items
+        Localized descriptions of the achievement.
     icon_hash : `int`
         The achievement's icon's hash. Achievements always have icon.
     icon_type : ``IconType``
         The achievement's icon's type.
+    name : `str`
+        The name of the achievement.
+    name_localizations : `None`, `dict` of (`str`, `str`) items
+        Localized names of the achievement.
+    secret : `bool`
+        Secret achievements will *not* be shown to the user until they've unlocked them.
+    secure : `bool`
+        Secure achievements can only be set via HTTP calls from your server, not by a game client using the SDK.
     """
-    __slots__ = ('application_id', 'description', 'name', 'secret', 'secure',)
+    __slots__ = (
+        'application_id', 'description', 'description_localizations', 'name', 'name_localizations', 'secret', 'secure'
+    )
     
     icon = IconSlot('icon', 'icon_hash', module_urls.achievement_icon_url, module_urls.achievement_icon_url_as)
     
@@ -60,6 +69,7 @@ class Achievement(DiscordEntity):
         
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
+    
     def _difference_update_attributes(self, data):
         """
         Updates the achievement and returns it's overwritten attributes as a `dict` with a `attribute-name` -
@@ -77,31 +87,70 @@ class Achievement(DiscordEntity):
         
         Returned Data Structure
         -----------------------
-        +---------------+-----------+
-        | Keys          | Values    |
-        +===============+===========+
-        | name          | `str`     |
-        +---------------+-----------+
-        | description   | `str`     |
-        +---------------+-----------+
-        | secret        | `bool`    |
-        +---------------+-----------+
-        | secure        | `bool`    |
-        +---------------+-----------+
-        | icon          | ``Icon``  |
-        +---------------+-----------+
+        
+        +---------------------------+-------------------------------------------+
+        | Keys                      | Values                                    |
+        +===========================+===========================================+
+        | description               | `str`                                     |
+        +---------------------------+-------------------------------------------+
+        | description_localizations | `None`, `dict` of (`str`, `str`) items    |
+        +---------------------------+-------------------------------------------+
+        | icon                      | ``Icon``                                  |
+        +---------------------------+-------------------------------------------+
+        | name                      | `str`                                     |
+        +---------------------------+-------------------------------------------+
+        | name_localizations        | `None`, `dict` of (`str`, `str`) items    |
+        +---------------------------+-------------------------------------------+
+        | secret                    | `bool`                                    |
+        +---------------------------+-------------------------------------------+
+        | secure                    | `bool`                                    |
+        +---------------------------+-------------------------------------------+
         """
         old_attributes = {}
         
-        name = data['name']['default']
+        if API_VERSION >= 10:
+            name_localizations = data['name_localizations']
+            if not name_localizations:
+                name_localizations = None
+            
+            name = data['name']
+            
+            description_localizations = data['description_localizations']
+            if not description_localizations:
+                description_localizations = None
+            
+            description = data['description']
+        
+        else:
+            name_localizations = data['name']
+            name = data.pop('default')
+            if not name_localizations:
+                name_localizations = None
+            
+            description_localizations = data['description']
+            description = description_localizations.pop('default')
+            if not description_localizations:
+                description_localizations = None
+        
         if self.name != name:
             old_attributes['name'] = self.name
             self.name = name
         
-        description = data['description']['default']
+        
         if self.description != description:
             old_attributes['description'] = self.description
             self.description = description
+        
+        
+        if self.name_localizations != name_localizations:
+            old_attributes['name_localizations'] = self.name_localizations
+            self.name_localizations = process_locale_dictionary(name_localizations)
+        
+        
+        if self.description_localizations != description_localizations:
+            old_attributes['description_localizations'] = self.description_localizations
+            self.description_localizations = process_locale_dictionary(description_localizations)
+        
         
         secret = data['secret']
         if self.secret != secret:
@@ -117,6 +166,7 @@ class Achievement(DiscordEntity):
         
         return old_attributes
     
+    
     def _update_attributes(self, data):
         """
         Updates the achievement with overwriting it's old attributes.
@@ -126,8 +176,36 @@ class Achievement(DiscordEntity):
         data : `dict` of (`str`, `Any`) items
             Achievement data received from Discord.
         """
-        self.name = data['name']['default']
-        self.description = data['description']['default']
+        if API_VERSION >= 10:
+            name_localizations = data['name_localizations']
+            if not name_localizations:
+                name_localizations = None
+            
+            name = data['name']
+            
+            description_localizations = data['description_localizations']
+            if not description_localizations:
+                description_localizations = None
+            
+            description = data['description']
+        
+        else:
+            name_localizations = data['name']
+            name = data.pop('default')
+            if not name_localizations:
+                name_localizations = {}
+            
+            description_localizations = data['description']
+            description = description_localizations.pop('default')
+            if not description_localizations:
+                 description_localizations = {}
+        
+        
+        self.name = name
+        self.description = description
+        
+        self.name_localizations = name_localizations
+        self.description_localizations = description_localizations
         
         self.secret = data['secret']
         self.secure = data['secure']

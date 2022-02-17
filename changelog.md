@@ -4,7 +4,7 @@
 
 - \[ALL VERSIONS\] application.summary now returns an empty string. This field will be removed in v11 \[x\]
 - Achievement localization format has changed. name and description are now strings, and localized strings are now
-    stored in name_localizations and description_localizations
+    stored in name_localizations and description_localizations \[x\]
 - /channels/<channel_id>/threads/active has been removed \[x\]
 - Existing attachments must be specified when PATCHing messages with new attachments. Any attachments not specified
     will be removed and replaced with the specified list \[x\]
@@ -19,7 +19,15 @@
 - Add `create_identifier_custom_id_from_name`.
 - `ComponentTextInput` now auto-generates `custom_id` from `label` parameter instead.
 - `ComponentSelectOption`'s `label` parameter is optional and defaults to `value`. (Gilgamesh#8939)
-
+- Add `Achievement.description_localizations`.
+- Add `Achievement.name_localizations`.
+- Add `description_localizations` parameter to `Client.achievement_create`.
+- Add `name_localizations` parameter to `Client.achievement_create`.
+- `Client.achievement_get` now accepts `Achievement` instances as well.
+- Add `description_localizations` parameter to `Client.achievement_edit`.
+- Add `name_localizations` parameter to `Client.achievement_edit`.
+- Add `EmbeddedActivityConfiguration.premium_tier_treatment_default`.
+- Add `EmbeddedActivityConfiguration.premium_tier_treatment_map`.
 
 #### Renames, Deprecation & Removals
 

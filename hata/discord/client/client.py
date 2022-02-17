@@ -1958,7 +1958,7 @@ class Client(ClientUserPBase):
         return [Achievement(achievement_data) for achievement_data in data]
     
     
-    async def achievement_get(self, achievement_id):
+    async def achievement_get(self, achievement):
         """
         Requests one of the client's achievements by it's id.
         
@@ -1966,8 +1966,8 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        achievement_id : `int`
-            The achievement's id.
+        achievement : ``Achievement``, `int`
+            The achievement or it's identifier.
         
         Returns
         -------
@@ -1976,23 +1976,25 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `achievement_id` was not given as `int`.
+            If `achievement` is not given as ``Achievement``, `int`.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        achievement_id_c = maybe_snowflake(achievement_id)
-        if achievement_id_c is None:
-            raise TypeError(
-                f'`achievement_id` can be `int`, got {achievement_id.__class__.__name__}; {achievement_id!r}.'
-            )
+        achievement, achievement_id = get_achievement_and_id(achievement)
+        data = await self.http.achievement_get(self.application.id, achievement_id)
         
-        data = await self.http.achievement_get(self.application.id, achievement_id_c)
-        return Achievement(data)
+        if achievement is None:
+            achievement = Achievement(data)
+        else:
+            achievement._update_attributes(data)
+        
+        return achievement
     
     
-    async def achievement_create(self, name, description, icon, *, secret=False, secure=False):
+    async def achievement_create(self, name, description, icon, *, description_localizations=None,
+            name_localizations=None, secret=False, secure=False):
         """
         Creates an achievement for the client's application and returns it.
         
@@ -2006,6 +2008,10 @@ class Client(ClientUserPBase):
             The achievement's description.
         icon : `bytes-like`
             The achievement's icon. Can have `'jpg'`, `'png'`, `'webp'`, `'gif'` format.
+        description_localizations : `None`, `dict` of (`str`, `Any`) items = `None`, Optional (Keyword only)
+            Localized descriptions of the achievement.
+        name_localizations : `None`, `dict` of (`str`, `Any`) items = `None`, Optional (Keyword only)
+            Localized names of the achievement.
         secret : `bool` = `False`, Optional (Keyword only)
             Secret achievements will *not* be shown to the user until they've unlocked them.
         secure : `bool` = `False`, Optional (Keyword only)
@@ -2067,23 +2073,48 @@ class Client(ClientUserPBase):
                     f'`secure` can be `bool`, got {secure.__class__.__name__}; {secure!r}.'
                 )
         
+        if description_localizations is None:
+            description_localizations = {}
+        else:
+            if not isinstance(description_localizations, dict):
+                description_localizations = dict(description_localizations)
+        
+        if name_localizations is None:
+            name_localizations = {}
+        else:
+            if not isinstance(name_localizations, dict):
+                name_localizations = dict(name_localizations)
+        
         data = {
-            'name' : {
-                'default' : name,
-            },
-            'description' : {
-                'default' : description,
-            },
-            'secret' : secret,
-            'secure' : secure,
-            'icon'   : icon_data,
+            'secret': secret,
+            'secure': secure,
+            'icon': icon_data,
         }
         
+        
+        if API_VERSION >= 10:
+            data['name'] = name
+            data['description'] = description
+            data['name_localizations'] = name_localizations
+            data['description_localizations'] = description_localizations
+        
+        else:
+            data['name'] = {
+                'default': name,
+                **name_localizations,
+            }
+            data['description'] = {
+                'default': description,
+                **description_localizations,
+            }
+        
         data = await self.http.achievement_create(self.application.id, data)
+        
         return Achievement(data)
     
     
-    async def achievement_edit(self, achievement, *, name=..., description=..., secret=..., secure=..., icon=...):
+    async def achievement_edit(self, achievement, *, description=..., description_localizations=..., icon=...,
+            name=..., name_localizations=...,  secret=..., secure=...):
         """
         Edits the passed achievement with the specified parameters. All parameter is optional.
         
@@ -2093,16 +2124,20 @@ class Client(ClientUserPBase):
         ----------
         achievement : ``Achievement``, `int`
             The achievement, what will be edited.
-        name : `str`, Optional (Keyword only)
-            The new name of the achievement.
         description : `str`, Optional (Keyword only)
             The achievement's new description.
+        description_localizations : `dict` of (`str`, `str`) items
+            Localized descriptions of the achievement.
+        icon : `bytes-like`, Optional (Keyword only)
+            The achievement's new icon.
+        name : `str`, Optional (Keyword only)
+            The new name of the achievement.
+        name_localizations : `dict` of (`str`, `str`) items
+            Localized names of the achievement.
         secret : `bool`, Optional (Keyword only)
             The achievement's new secret value.
         secure : `bool`, Optional (Keyword only)
             The achievement's new secure value.
-        icon : `bytes-like`, Optional (Keyword only)
-            The achievement's new icon.
         
         Returns
         -------
@@ -2129,27 +2164,22 @@ class Client(ClientUserPBase):
         
         data = {}
         
-        if (name is not ...):
+
+        if (icon is not ...):
+            icon_type = icon.__class__
+            if not isinstance(icon, (bytes, bytearray, memoryview)):
+                raise TypeError(
+                    f'`icon` can be `bytes-like`, got {icon_type.__name__}; {reprlib.repr(icon_type)}.'
+                )
+            
             if __debug__:
-                if not isinstance(name, str):
-                    raise AssertionError(
-                        f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+                media_type = get_image_media_type(icon)
+                if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
+                    raise ValueError(
+                        f'Invalid `icon` type for achievement: {media_type}; got {reprlib.repr(icon_type)!r}.'
                     )
             
-            data['name'] = {
-                'default': name,
-            }
-        
-        if (description is not ...):
-            if __debug__:
-                if not isinstance(description, str):
-                    raise AssertionError(
-                        f'`description` can be `str`, got {description.__class__.__name__}; {description!r}.'
-                    )
-            
-            data['description'] = {
-                'default': description,
-            }
+            data['icon'] = image_to_base64(icon)
         
         if (secret is not ...):
             if __debug__:
@@ -2169,27 +2199,104 @@ class Client(ClientUserPBase):
             
             data['secure'] = secure
         
-        if (icon is not ...):
-            icon_type = icon.__class__
-            if not isinstance(icon, (bytes, bytearray, memoryview)):
-                raise TypeError(
-                    f'`icon` can be `bytes-like`, got {icon_type.__name__}; {reprlib.repr(icon_type)}.'
-                )
-            
-            if __debug__:
-                media_type = get_image_media_type(icon)
-                if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
-                    raise ValueError(
-                        f'Invalid `icon` type for achievement: {media_type}; got {reprlib.repr(icon_type)!r}.'
+        
+        if __debug__:
+            if (name is not ...):
+                if not isinstance(name, str):
+                    raise AssertionError(
+                        f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
                     )
+        
+        if __debug__:
+            if (description is not ...):
+                if not isinstance(description, str):
+                    raise AssertionError(
+                        f'`description` can be `str`, got {description.__class__.__name__}; {description!r}.'
+                    )
+        
+        if API_VERSION >= 10:
+            if (description is not ...):
+                data['description'] = description
             
-            data['icon'] = image_to_base64(icon)
+            
+            if (description_localizations is not ...):
+                if description_localizations is None:
+                    description_localizations = {}
+                
+                else:
+                    if not isinstance(description_localizations, dict):
+                        description_localizations = dict(description_localizations)
+            
+                data['description_localizations'] = description_localizations
+            
+            
+            if (name is not ...):
+                data['name'] = name
+            
+        
+            if (name_localizations is not ...):
+                if name_localizations is None:
+                    name_localizations = {}
+                
+                else:
+                    if not isinstance(name_localizations, dict):
+                        name_localizations = dict(name_localizations)
+            
+                data['name_localizations'] = name_localizations
+        
+        else:
+            if (
+                (description is not ...) or
+                (description_localizations is not ...) or
+                (name is not ...) or
+                (name_localizations is not ...)
+            ):
+                if (achievement is None):
+                    achievement = self.achievement_get(achievement_id)
+                
+                if (name is not ...) or (name_localizations is not ...):
+                    if (name is ...):
+                        name = achievement.name
+                    
+                    if (name_localizations is ...):
+                        name_localizations = achievement.name_localizations
+                    else:
+                        if name_localizations is None:
+                            name_localizations = {}
+                        else:
+                            if not isinstance(name_localizations, dict):
+                                name_localizations = dict(name_localizations)
+                    
+                    data['name'] = {
+                        'default': name,
+                        **name_localizations,
+                    }
+                
+                if (description is not ...) or (description_localizations is not ...):
+                    if (description is ...):
+                        description = achievement.description
+                    
+                    if (description_localizations is ...):
+                        description_localizations = achievement.description_localizations
+                    else:
+                        if description_localizations is None:
+                            description_localizations = {}
+                        else:
+                            if not isinstance(description_localizations, dict):
+                                description_localizations = dict(description_localizations)
+                        
+                    data['description'] = {
+                        'default': description,
+                        **description_localizations,
+                    }
+        
         
         data = await self.http.achievement_edit(self.application.id, achievement_id, data)
         if achievement is None:
             achievement = Achievement(data)
         else:
             achievement._update_attributes(data)
+        
         return achievement
     
     

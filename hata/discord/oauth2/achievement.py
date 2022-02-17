@@ -69,7 +69,7 @@ class Achievement(DiscordEntity):
         ----------
         data : `dict` of (`str`, `Any`) items
             Achievement data received from Discord.
-            
+        
         Returns
         -------
         old_attributes : `dict` of (`str`, `Any`) items

@@ -1,5 +1,18 @@
 ## 1.1.138 *\[2022-02-??\]*
 
+### API v10 checklist:
+
+- \[ALL VERSIONS\] application.summary now returns an empty string. This field will be removed in v11 \[x\]
+- Achievement localization format has changed. name and description are now strings, and localized strings are now
+    stored in name_localizations and description_localizations
+- /channels/<channel_id>/threads/active has been removed
+- Existing attachments must be specified when PATCHing messages with new attachments. Any attachments not specified
+    will be removed and replaced with the specified list \[x\]
+- Audit log reason as a body/query parameter is no longer supported, and you should instead use the X-Audit-Log-Reason
+    header.
+- Message routes accept embeds rather than embed \[x\]
+- Requests to v10 and higher will no longer be supported on discordapp.com \[x\]
+
 #### Improvements
 - API v10 hype.
 - Add `message_content` intent.

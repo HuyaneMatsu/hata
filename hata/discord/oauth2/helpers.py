@@ -129,7 +129,8 @@ def process_locale_dictionary(dictionary):
     -------
     transformed : `dict` of (`str`, `Any`) items
     """
-    return {get_cached_locale(key): value for key, value in dictionary.items()}
+    if dictionary is not None:
+        return {get_cached_locale(key): value for key, value in dictionary.items()}
 
 
 OAUTH2_REQUEST_URL_RP = re.compile('(https?://.+?)\?code=([a-zA-Z0-9]{30})')

@@ -2226,7 +2226,7 @@ class Client(ClientUserPBase):
                 else:
                     if not isinstance(description_localizations, dict):
                         description_localizations = dict(description_localizations)
-            
+                
                 data['description_localizations'] = description_localizations
             
             

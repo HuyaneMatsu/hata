@@ -1363,12 +1363,6 @@ def str_integration_application(application, index=None, head_line=True, **kwarg
     else:
         result.append(f'- description : {description}', 1)
     
-    summary = application.summary
-    if len(description) > 32:
-        result.append(f'- summary: {summary[:26]}...(+{len(summary) - 26})', 1)
-    else:
-        result.append(f'- summary : {summary}', 1)
-    
     bot = application.bot
     if (bot is not ZEROUSER):
         result.append('Bot:', 1)
@@ -1707,9 +1701,6 @@ def str_application(application, index=None, **kwargs):
     slug = application.slug
     if (slug is not None):
         result.append(f'- slug: {slug!r}', 1)
-    summary = application.summary
-    if summary:
-        result.append(f'- summary : {summary!r}', 1)
     verify_key = application.verify_key
     if verify_key:
         result.append(f'- verify key : {verify_key!r}', 1)

@@ -2,9 +2,17 @@
 
 #### Improvements
 - API v10 hype.
+- Add `message_content` intent.
 - Add `create_identifier_custom_id_from_name`.
 - `ComponentTextInput` now auto-generates `custom_id` from `label` parameter instead.
 - `ComponentSelectOption`'s `label` parameter is optional and defaults to `value`. (Gilgamesh#8939)
+
+
+#### Renames, Deprecation & Removals
+
+- `IntegrationApplication.summary` is removed & deprecated.
+- `Application.summary` is removed & deprecated.
+
 
 ## 1.1.137 *\[2022-02-15\]*
 

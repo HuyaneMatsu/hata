@@ -1,5 +1,7 @@
 __all__ = ('Application', )
 
+import warnings
+
 from ..bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
 from ..core import APPLICATIONS
 from ..http import urls as module_urls
@@ -85,9 +87,6 @@ class Application(DiscordEntity, immortal=True):
         The application's splash image's hash as `uint128`.
     splash_type : ``IconType``
         The application's splash image's type.
-    summary : `str`
-        If this application is a game sold on Discord, this field will be the summary field for the store page of its
-        primary sku. Defaults to empty string.
     tags : `None`, `tuple` of `str`
         Up to 5 tags describing the content and functionality of the application.
     terms_of_service_url : `None`, `str`
@@ -105,8 +104,8 @@ class Application(DiscordEntity, immortal=True):
         'aliases', 'bot_public', 'bot_require_code_grant', 'custom_install_url', 'description', 'developers',
         'embedded_activity_configuration', 'eula_id', 'executables', 'flags', 'guild_id', 'hook', 'install_parameters',
         'max_participants', 'name', 'overlay', 'overlay_compatibility_hook', 'owner', 'primary_sku_id',
-        'privacy_policy_url', 'publishers', 'rpc_origins', 'slug', 'summary', 'tags', 'terms_of_service_url',
-        'third_party_skus', 'verify_key'
+        'privacy_policy_url', 'publishers', 'rpc_origins', 'slug', 'tags', 'terms_of_service_url', 'third_party_skus',
+        'verify_key'
     )
     
     cover = IconSlot(
@@ -178,7 +177,6 @@ class Application(DiscordEntity, immortal=True):
         self.slug = None
         self.splash_hash = 0
         self.splash_type = ICON_TYPE_NONE
-        self.summary = ''
         self.terms_of_service_url = None
         self.tags = None
         self.third_party_skus = None
@@ -317,7 +315,6 @@ class Application(DiscordEntity, immortal=True):
         
         self.bot_public = data.get('bot_public', False)
         self.bot_require_code_grant = data.get('bot_require_code_grant', False)
-        self.summary = data['summary']
         self.verify_key = data['verify_key']
         
         if set_owner:
@@ -518,6 +515,9 @@ class Application(DiscordEntity, immortal=True):
         summary : `str`, Optional (Keyword only)
             If this application is a game sold on Discord, this field will be the summary field for the store page of
             its primary sku.
+            
+            > ``.summary` is deprecated. The parameter will be removed in 2022 Jun.
+        
         terms_of_service_url : `None`, `str`, Optional (Keyword only)
             The url of the application's terms of service.
         
@@ -546,7 +546,7 @@ class Application(DiscordEntity, immortal=True):
                 value = preconvert_bool(value, key)
                 processable.append((key, value))
             
-            for key in ('description', 'summary'):
+            for key in ('description',):
                 try:
                     value = kwargs.pop(key)
                 except KeyError:
@@ -554,6 +554,16 @@ class Application(DiscordEntity, immortal=True):
                 
                 value = preconvert_str(value, key, 0, 1024)
                 processable.append((key, value))
+            
+            try:
+                kwargs.pop(key)
+            except KeyError:
+                pass
+            else:
+                warnings.warn(
+                    f'`{cls.__name__}.summary` is deprecated and will be removed in 2022 Jun.',
+                    FutureWarning,
+                )
             
             try:
                 flags = kwargs.pop('flags')
@@ -614,3 +624,13 @@ class Application(DiscordEntity, immortal=True):
                 setattr(application, *item)
         
         return application
+    
+    
+    @property
+    def summary(self):
+        warnings.warn(
+            f'`{self.__class__.__name__}.summary` is deprecated and will be removed in 2022 Jun.',
+            FutureWarning,
+        )
+        
+        return ''

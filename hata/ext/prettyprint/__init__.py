@@ -1,7 +1,7 @@
 import warnings
 
 warnings.warn(
-    '`hata.ext.prettyprint` is discontinued and will be removed in 2020 Jun.',
+    '`hata.ext.prettyprint` is discontinued and will be removed in 2022 Jun.',
     FutureWarning,
 )
 

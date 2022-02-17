@@ -1,5 +1,7 @@
 __all__ = ('IntegrationApplication',)
 
+import warnings
+
 from ..bases import DiscordEntity, IconSlot
 from ..http import urls as module_urls
 from ..user import User, ZEROUSER
@@ -23,11 +25,8 @@ class IntegrationApplication(DiscordEntity):
         The application's id.
     name : `str`
         The name of the application. Defaults to empty string.
-    summary : `str`
-        if this application is a game sold on Discord, this field will be the summary field for the store page of its
-        primary sku. Defaults to empty string.
     """
-    __slots__ = ('bot', 'description', 'name', 'summary', )
+    __slots__ = ('bot', 'description', 'name', )
     
     icon = IconSlot('icon', 'icon', module_urls.application_icon_url, module_urls.application_icon_url_as,)
     
@@ -43,7 +42,6 @@ class IntegrationApplication(DiscordEntity):
         self.id = int(data['id'])
         self.name = data['name']
         self.description = data['description']
-        self.summary = data['summary']
         self._set_icon(data)
         
         bot_data = data.get('bot', None)
@@ -53,3 +51,13 @@ class IntegrationApplication(DiscordEntity):
             bot = User(bot_data)
         
         self.bot = bot
+    
+    
+    @property
+    def summary(self):
+        warnings.warn(
+            f'`{self.__class__.__name__}.summary` is deprecated and will be removed in 2022 Jun.',
+            FutureWarning,
+        )
+        
+        return ''

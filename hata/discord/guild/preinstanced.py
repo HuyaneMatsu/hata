@@ -91,6 +91,8 @@ class VoiceRegion(PreinstancedBase):
     +=======================+===============+===================+===============+===========+===========+
     | brazil                | brazil        | Brazil            | False         | False     | False     |
     +-----------------------+---------------+-------------------+---------------+-----------+-----------+
+    | _deprecated           | deprecated    | deprecated        | True          | False     | False     |
+    +-----------------------+---------------+-------------------+---------------+-----------+-----------+
     | dubai                 | dubai         | Dubai             | False         | False     | False     |
     +-----------------------+---------------+-------------------+---------------+-----------+-----------+
     | eu_central            | eu-central    | Central Europe    | False         | False     | False     |
@@ -235,6 +237,7 @@ class VoiceRegion(PreinstancedBase):
     
     # normal
     brazil = P('brazil', 'Brazil', False, False)
+    _deprecated = P('deprecated', 'deprecated', True, False)
     dubai = P('dubai', 'Dubai', False, False)
     eu_central = P('eu-central', 'Central Europe', False, False)
     eu_west = P('eu-west', 'Western Europe', False, False)

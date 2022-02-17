@@ -281,14 +281,7 @@ async def voice_server_update(client, event):
 The voice client is disconnected when its channel voice region changes. To avoid this, you might want to check whether
 the client got disconnected indeed because ofg region change or just normal disconnect.
 
-To get the channel voice region you can use `channel.region`. If the channel does not have voice region you can
-set it to guild default.
-
-```py
-region = channel.region
-if region is None:
-    region = channel.guild.region
-```
+To get the channel voice region you can use `channel.region`.
 
 ### Getting entity from cache
 

@@ -5,6 +5,7 @@ __all__ = (
     'VOICE_STATE_UPDATE'
 )
 
+import warnings
 from datetime import datetime
 from re import I as re_ignore_case, compile as re_compile, escape as re_escape
 
@@ -229,8 +230,6 @@ class Guild(DiscordEntity, immortal=True):
         The channel's identifier where the guild's public updates should go. The guild must be a `community` guild.
         
         Defaults to `0`.
-    region : ``VoiceRegion``
-        The voice region of the guild.
     roles : `dict` of (`int`, ``Role``) items
         The roles of the guild stored in `role_id` - `role` relation.
     rules_channel_id : `int`
@@ -283,10 +282,9 @@ class Guild(DiscordEntity, immortal=True):
         'approximate_online_count', 'approximate_user_count', 'available', 'boost_progress_bar_enabled',
         'booster_count', 'channels', 'clients', 'content_filter', 'description', 'emojis', 'features', 'is_large',
         'max_presences', 'max_users', 'max_video_channel_users', 'message_notification', 'mfa', 'name', 'nsfw_level',
-        'owner_id', 'preferred_locale', 'premium_tier', 'public_updates_channel_id', 'region', 'roles', 'roles',
-        'rules_channel_id', 'scheduled_events', 'stages', 'stickers', 'system_channel_flags', 'system_channel_id',
-        'threads', 'user_count', 'users', 'vanity_code', 'verification_level', 'voice_states', 'widget_channel_id',
-        'widget_enabled'
+        'owner_id', 'preferred_locale', 'premium_tier', 'public_updates_channel_id', 'roles', 'rules_channel_id',
+        'scheduled_events', 'stages', 'stickers', 'system_channel_flags', 'system_channel_id', 'threads', 'user_count',
+        'users', 'vanity_code', 'verification_level', 'voice_states', 'widget_channel_id', 'widget_enabled'
     )
     
     banner = IconSlot(
@@ -589,6 +587,8 @@ class Guild(DiscordEntity, immortal=True):
         
         region : ``VoiceRegion``, `str`, Optional (Keyword only)
             The guild's voice region.
+            
+            The parameter is deprecated and will be removed in 2022 Jun.
         
         nsfw_level : ``NsfwLevel``, Optional (Keyword only)
             The nsfw level of the guild.
@@ -623,7 +623,6 @@ class Guild(DiscordEntity, immortal=True):
             cls.discovery_splash.preconvert(kwargs, processable)
             
             for attribute_name, attribute_type in (
-                ('region', VoiceRegion),
                 ('nsfw_level', NsfwLevel),
             ):
                 try:
@@ -633,6 +632,19 @@ class Guild(DiscordEntity, immortal=True):
                 else:
                     attribute_value = preconvert_preinstanced_type(attribute_value, attribute_name, attribute_type)
                     processable.append((attribute_name, attribute_value))
+            
+            try:
+                kwargs.pop('region')
+            except KeyError:
+                pass
+            else:
+                warnings.warn(
+                    (
+                        f'`region` parameter of `{cls.__name__}.precreate` is deprecated and will be '
+                        f'removed in 2022 Jun. '
+                    ),
+                    FutureWarning,
+                )
             
             try:
                 boost_progress_bar_enabled = kwargs.pop('boost_progress_bar_enabled')
@@ -711,7 +723,6 @@ class Guild(DiscordEntity, immortal=True):
         self.preferred_locale = DEFAULT_LOCALE
         self.premium_tier = 0
         self.public_updates_channel_id = 0
-        self.region = VoiceRegion.eu_central
         self.rules_channel_id = 0
         self.invite_splash_hash = 0
         self.invite_splash_type = ICON_TYPE_NONE
@@ -2021,7 +2032,7 @@ class Guild(DiscordEntity, immortal=True):
         +-------------------------------+-------------------------------+
         | content_filter                | ``ContentFilterLevel``        |
         +-------------------------------+-------------------------------+
-        | description                   | `None`, `str`               |
+        | description                   | `None`, `str`                 |
         +-------------------------------+-------------------------------+
         | discovery_splash              | ``Icon``                      |
         +-------------------------------+-------------------------------+
@@ -2053,15 +2064,13 @@ class Guild(DiscordEntity, immortal=True):
         +-------------------------------+-------------------------------+
         | public_updates_channel_id     | `int`                         |
         +-------------------------------+-------------------------------+
-        | region                        | ``VoiceRegion``               |
-        +-------------------------------+-------------------------------+
         | rules_channel_id              | `int`                         |
         +-------------------------------+-------------------------------+
         | system_channel_id             | `int`                         |
         +-------------------------------+-------------------------------+
         | system_channel_flags          | ``SystemChannelFlag``         |
         +-------------------------------+-------------------------------+
-        | vanity_code                   | `None`, `str`               |
+        | vanity_code                   | `None`, `str`                 |
         +-------------------------------+-------------------------------+
         | verification_level            | ``VerificationLevel``         |
         +-------------------------------+-------------------------------+
@@ -2091,11 +2100,6 @@ class Guild(DiscordEntity, immortal=True):
         self._update_invite_splash(data, old_attributes)
         self._update_discovery_splash(data, old_attributes)
         self._update_banner(data, old_attributes)
-        
-        region = VoiceRegion.get(data['region'])
-        if self.region is not region:
-            old_attributes['region'] = region
-            self.region = region
         
         afk_timeout = data['afk_timeout']
         if self.afk_timeout != afk_timeout:
@@ -2301,8 +2305,6 @@ class Guild(DiscordEntity, immortal=True):
         self._set_invite_splash(data)
         self._set_discovery_splash(data)
         self._set_banner(data)
-        
-        self.region = VoiceRegion.get(data['region'])
         
         self.afk_timeout = data['afk_timeout']
         
@@ -2985,3 +2987,19 @@ class Guild(DiscordEntity, immortal=True):
         widget_channel_id = self.widget_channel_id
         if widget_channel_id:
             return self.channels.get(widget_channel_id, None)
+    
+    
+    @property
+    def region(self):
+        """
+        `.region` is deprecated and will be removed in 2022 Jun. Please access `channel.region` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.region` is deprecated and will be removed in 2022 Jun. '
+                f'Please access `channel.region` instead.'
+            ),
+            FutureWarning,
+        )
+        
+        return VoiceRegion._deprecated

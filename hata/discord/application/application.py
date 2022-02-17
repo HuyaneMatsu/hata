@@ -628,8 +628,14 @@ class Application(DiscordEntity, immortal=True):
     
     @property
     def summary(self):
+        """
+        `.summary` is deprecated and will be removed in 2022 Jun. Please use `.description` instead.
+        """
         warnings.warn(
-            f'`{self.__class__.__name__}.summary` is deprecated and will be removed in 2022 Jun.',
+            (
+                f'`{self.__class__.__name__}.summary` is deprecated and will be removed in 2022 Jun. '
+                f'Please use `.description` instead.'
+            ),
             FutureWarning,
         )
         

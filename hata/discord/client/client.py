@@ -6635,9 +6635,9 @@ class Client(ClientUserPBase):
     
     
     async def guild_create(self, name, *, icon=None, roles=None, channels=None, afk_channel_id=None,
-            system_channel_id=None, afk_timeout=None, region=VoiceRegion.eu_central,
-            verification_level=VerificationLevel.medium, message_notification=MessageNotificationLevel.only_mentions,
-            content_filter=ContentFilterLevel.disabled, boost_progress_bar_enabled=None):
+            system_channel_id=None, afk_timeout=None, region=..., verification_level=VerificationLevel.medium,
+            message_notification=MessageNotificationLevel.only_mentions, content_filter=ContentFilterLevel.disabled,
+            boost_progress_bar_enabled=None):
         """
         Creates a guild with the given parameter. Bot accounts can create guilds only when they have less than 10.
         User account guild limit is 100, meanwhile staff guild limit is 200.
@@ -6662,8 +6662,10 @@ class Client(ClientUserPBase):
             The id of the guild's system channel. The id should be one of the channel's id from `channels`.
         afk_timeout : `None`, `int` = `None`, Optional (Keyword only)
             The afk timeout for the users at the guild's afk channel.
-        region : ``VoiceRegion``, `str` = `VoiceRegion.eu_central`, Optional (Keyword only)
+        region : ``VoiceRegion``, `str`, Optional (Keyword only)
             The voice region of the new guild.
+            
+            This parameter is deprecated and will be removed in 2022 July.
         verification_level : ``VerificationLevel``, `int` = `VerificationLevel.medium`, Optional (Keyword only)
             The verification level of the new guild.
         message_notification : ``MessageNotificationLevel``, `int` = `MessageNotificationLevel.only_mentions`
@@ -6748,14 +6750,13 @@ class Client(ClientUserPBase):
             icon_data = image_to_base64(icon)
         
         
-        if isinstance(region, VoiceRegion):
-            region_value = region.value
-        elif isinstance(region, str):
-            region_value = region
-        else:
-            raise TypeError(
-                f'`region` can be `{VoiceRegion.__name__}`, `str`, got '
-                f'{region.__class__.__name__}; {region!r}.'
+        if (region is not ...):
+            warnings.warn(
+                (
+                    f'`region` parameter of `{self.__class__.__name__}.guild_create` is deprecated and will be '
+                    f'removed in 2022 Jun. '
+                ),
+                FutureWarning,
             )
         
         
@@ -6800,7 +6801,6 @@ class Client(ClientUserPBase):
         data = {
             'name': name,
             'icon': icon_data,
-            'region': region_value,
             'verification_level': verification_level_value,
             'default_message_notifications': message_notification_value,
             'explicit_content_filter': content_filter_value,
@@ -7066,6 +7066,9 @@ class Client(ClientUserPBase):
             The new owner of the guild. You must be the owner of the guild to transfer ownership.
         region : ``VoiceRegion``, Optional (Keyword only)
             The new voice region of the guild.
+            
+            The parameter is deprecated and will be removed in 2022 July.
+            
         afk_timeout : `int`, Optional (Keyword only)
             The new afk timeout for the users at the guild's afk channel.
             
@@ -7105,7 +7108,6 @@ class Client(ClientUserPBase):
             - If `system_channel`, `rules_channel`, `public_updates_channel` was given, but not as `None`,
                 ``ChannelText``, neither as `int`.
             - If `owner` was not given neither as ``ClientUserBase``, `int`.
-            - If `region` was given neither as ``VoiceRegion``, `str`.
             - If `verification_level` was not given neither as ``VerificationLevel``, `int`.
             - If `content_filter` was not given neither as ``ContentFilterLevel``, `int`.
             - If `description` was not given either as `None`, `str`.
@@ -7367,16 +7369,13 @@ class Client(ClientUserPBase):
         
         
         if (region is not ...):
-            if isinstance(region, VoiceRegion):
-                region_value = region.value
-            elif isinstance(region, str):
-                region_value = region
-            else:
-                raise TypeError(
-                    f'`region` can be `{VoiceRegion.__name__}`, `str`, got {region.__class__.__name__}; {region!r}.'
-                )
-            
-            data['region'] = region_value
+            warnings.warn(
+                (
+                    f'`region` parameter of `{cls.__name__}.guild_edit` is deprecated and will be '
+                    f'removed in 2022 Jun. '
+                ),
+                FutureWarning,
+            )
         
         
         if (afk_timeout is not ...):

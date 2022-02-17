@@ -28,11 +28,17 @@
 - Add `name_localizations` parameter to `Client.achievement_edit`.
 - Add `EmbeddedActivityConfiguration.premium_tier_treatment_default`.
 - Add `EmbeddedActivityConfiguration.premium_tier_treatment_map`.
+- Add `VoiceRegion.deprecated`.
 
 #### Renames, Deprecation & Removals
 
 - `IntegrationApplication.summary` is removed & deprecated.
 - `Application.summary` is removed & deprecated.
+- `summary` parameter of `Application.precreate` is deprecated.
+- `Guild.region` is removed & deprecated.
+- `region` parameter of `Client.guild_create` is deprecated.
+- `region` parameter of `Guild.precreate` is deprecated.
+- `region` parameter of `Client.guild_edit` is deprecated.
 
 
 ## 1.1.137 *\[2022-02-15\]*

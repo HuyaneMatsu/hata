@@ -641,7 +641,7 @@ class Guild(DiscordEntity, immortal=True):
                 warnings.warn(
                     (
                         f'`region` parameter of `{cls.__name__}.precreate` is deprecated and will be '
-                        f'removed in 2022 Jun. '
+                        f'removed in 2022 Jun.'
                     ),
                     FutureWarning,
                 )

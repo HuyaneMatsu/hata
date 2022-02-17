@@ -11695,7 +11695,7 @@ class Client(ClientUserPBase):
         return Message(message_data)
     
     
-    async def emoji_get(self, guild, emoji):
+    async def emoji_get(self, emoji, *deprecated_parameters):
         """
         Requests the emoji by it's id at the given guild. If the client's logging in is finished, then it should have
         it's every emoji loaded already.
@@ -11704,10 +11704,12 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
-            The guild, where the emoji is.
-        emoji : ``Emoji``, `int`
-            The emoji to get.
+        emoji : ``Emoji``, `tuple` (`int`, `int`) items
+            The emoji, or 2 snowflake representing it.
+        *deprecated_parameters : Additional parameters, Optional
+            Old style parameter passing, as `guild` and `emoji`.
+            
+            Please pass either an ``Emoji``, or a snowflake pair (`guild_id`, `emoji_id`).
         
         Returns
         -------
@@ -11716,32 +11718,70 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            - If `guild` was not given neither as ``Guild`` nor as `int`.
-            - If `emoji` was not given neither as ``Emoji`` nor as `int`.
+            - If `emoji` was not given as ``Emoji``, `tuple` (`int`, `int`).
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild, guild_id = get_guild_and_id(guild)
-        
-        if isinstance(emoji, Emoji):
-            emoji_id = emoji.id
-        else:
-            emoji_id = maybe_snowflake(emoji)
-            if emoji_id is None:
+        # Check for old-style deprecated
+        if deprecated_parameters:
+            if len(deprecated_parameters) > 1:
                 raise TypeError(
-                    f'`emoji` can be `{Emoji.__name__}`, `int`, got {emoji.__class__.__name__}; {emoji!r}.'
+                    f'`{self.__class__.__name__}.emoji_get` accepts up to `2` positional parameters, got '
+                    f'{len(deprecated_parameters) + 1}.'
                 )
             
-            emoji = EMOJIS.get(emoji, None)
+            warnings.warn(
+                (
+                    f'2nd parameter of `{self.__class__.__name__}.emoji_get` is deprecated and will be '
+                    f'removed in 2022 Jun. Please pass just an `{Emoji.__name__}` or a pair of snowflake.'
+                ),
+                FutureWarning,
+            )
+            
+            guild, *_, = deprecated_parameters
+            
+            guild_id = get_guild_id(guild)
+            
+            if isinstance(emoji, Emoji):
+                emoji_id = emoji.id
+            else:
+                emoji_id = maybe_snowflake(emoji)
+                if emoji_id is None:
+                    raise TypeError(
+                        f'`emoji` can be `{Emoji.__name__}`, `int`, got {emoji.__class__.__name__}; {emoji!r}.'
+                    )
+                
+                emoji = EMOJIS.get(emoji, None)
+        
+        else:
+            if isinstance(emoji, Emoji):
+                guild_id = emoji.guild_id
+                emoji_id = emoji.id
+            else:
+                snowflake_pair = maybe_snowflake_pair(emoji)
+                if snowflake_pair is None:
+                    raise TypeError(
+                        f'`emoji` can be `{Emoji.__name__}`, `int`, `tuple` (`int`, `int`)'
+                        f', got {emoji.__class__.__name__}; {emoji!r}.'
+                    )
+                
+                guild_id, emoji_id = snowflake_pair
+                emoji = EMOJIS.get(emoji, None)
+        
+        
+        # If the emoji has no linked guild, we cannot request it, so we return instantly.
+        if not guild_id:
+            # Create empty emoji instead of returning `None` to stop expected errors
+            if emoji is None:
+                emoji = Emoji.precreate(emoji_id)
+            
+            return emoji
         
         emoji_data = await self.http.emoji_get(guild_id, emoji_id)
         
         if (emoji is None) or emoji.partial:
-            if guild is None:
-                guild = create_partial_guild_from_id(guild_id)
-        
             emoji = Emoji(emoji_data, guild_id)
         else:
             emoji._update_attributes(emoji_data)

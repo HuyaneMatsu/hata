@@ -43,9 +43,9 @@ class Emoji(DiscordEntity, immortal=True):
     name : `int`
         The emoji's name.
     role_ids : `None`, `tuple` of `int`
-        A set of role identifiers for which the custom emoji is whitelisted to. If the emoji is not limited for specific roles,
-        then this value is set to `None`. If the emoji is a builtin (unicode) emoji, then this attribute is set to
-        `None` as  well.
+        A set of role identifiers for which the custom emoji is whitelisted to. If the emoji is not limited for
+        specific roles, then this value is set to `None`. If the emoji is a builtin (unicode) emoji, then this
+        attribute is set to `None` as  well.
     unicode : `None`, `str`
         At the case of custom emojis this attribute is always `None`, but at the case of builtin (unicode) emojis this
         attribute stores the emoji's unicode representation.

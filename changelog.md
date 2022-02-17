@@ -39,6 +39,7 @@
 - `region` parameter of `Client.guild_create` is deprecated.
 - `region` parameter of `Guild.precreate` is deprecated.
 - `region` parameter of `Client.guild_edit` is deprecated.
+- `Client.emoji_get`'s 2nd parameter is deprecated.
 
 
 ## 1.1.137 *\[2022-02-15\]*

@@ -729,6 +729,44 @@ def validate_content_and_embed(content, embed, is_edit):
     return content, embed
 
 
+def _get_type_or_type_names(type_or_types):
+    """
+    Returns the name of a type or the types.
+    
+    Parameters
+    ----------
+    type_or_types : `type`, `tuple` of `type`
+        The type(s) to get heir name of.
+    
+    Returns
+    -------
+    name : `str`
+    """
+    name_parts = []
+    if isinstance(type_or_types, type):
+        name_parts.append('`')
+        name_parts.append(type_or_types.__name__)
+        name_parts.append('`')
+    
+    else:
+        limit = len(type_or_types)
+        if limit:
+            index = 0
+            while True:
+                name_parts.append('`')
+                name_parts.append(type_or_types[index].__name__)
+                name_parts.append('`')
+                
+                index += 1
+                if index == limit:
+                    break
+                
+                name_parts.append(', ')
+                continue
+    
+    return ''.join(name_parts)
+
+
 def get_channel_id(channel, channel_type):
     """
     Gets the channel's identifier from the given channel or of it's identifier.
@@ -737,7 +775,7 @@ def get_channel_id(channel, channel_type):
     ----------
     channel : `channel_type`, `int`
         The channel, or it's identifier.
-    channel_type : `type`
+    channel_type : `type`, `tuple` of `type`
         The expected channel type of `channel`.
     
     Returns
@@ -757,56 +795,11 @@ def get_channel_id(channel, channel_type):
         channel_id = maybe_snowflake(channel)
         if channel_id is None:
             raise TypeError(
-                f'`channel` can be `{channel_type.__name__}`, `int`, got {channel.__class__.__name__}; {channel!r}.'
+                f'`channel` can be {_get_type_or_type_names(channel_type)}, `int`, '
+                f'got {channel.__class__.__name__}; {channel!r}.'
             )
     
     return channel_id
-
-
-def get_guild_and_guild_text_channel_id(channel):
-    """
-    Gets guild text channel identifier and it's guild from the given text channel or of it's identifier.
-    
-    Parameters
-    ----------
-    channel : ``ChannelText``, `int`
-        The channel, or it's identifier.
-    
-    Returns
-    -------
-    guild : `None`, ``Guild``
-        The respective guild if any found.
-    channel_id : `int`
-        The channel's identifier.
-    
-    Raises
-    ------
-    TypeError
-        If `channel`'s type is incorrect.
-    """
-    while True:
-        if isinstance(channel, ChannelText):
-            channel_id = channel.id
-            guild = channel.guild
-            break
-        
-        channel_id = maybe_snowflake(channel)
-        if (channel_id is not None):
-            try:
-                channel = CHANNELS[channel_id]
-            except KeyError:
-                guild = None
-                break
-            
-            if isinstance(channel, ChannelText):
-                guild = channel.guild
-                break
-        
-        raise TypeError(
-            f'`channel` can be `{ChannelText.__name__}`, `int`, got {channel.__class__.__name__}; {channel!r}.'
-        )
-    
-    return guild, channel_id
 
 
 def get_guild_id_and_channel_id(channel, channel_type):
@@ -817,12 +810,12 @@ def get_guild_id_and_channel_id(channel, channel_type):
     ----------
     channel : `channel_type`, `tuple` (`int`, `int`)
         The role, or `guild-id`, `role-id` pair.
-    channel_type : `type`
+    channel_type : `type`, `tuple` of `type`
         The expected type of `channel`.
     
     Returns
     -------
-    snowflake_pair : `None`, `tuple` (`int`, `int`)
+    snowflake_pair : `tuple` (`int`, `int`)
         The channel's guild's and it's own identifier if applicable.
     
     Raises
@@ -831,19 +824,15 @@ def get_guild_id_and_channel_id(channel, channel_type):
         If `channel`'s type is incorrect.
     """
     if isinstance(channel, channel_type):
-        guild = channel.guild
-        if guild is None:
-            snowflake_pair = None
-        else:
-            snowflake_pair = guild.id, channel.id
+        snowflake_pair = channel.guild_id, channel.id
     else:
         snowflake_pair = maybe_snowflake_pair(channel)
         if snowflake_pair is None:
             raise TypeError(
-                f'`channel` can be `{channel_type.__name__}`, `tuple` (`int`, `int`), got '
+                f'`channel` can be {_get_type_or_type_names(channel_type)}, `tuple` (`int`, `int`), got '
                 f'{channel.__class__.__name__}; {channel!r}.'
             )
-        
+    
     return snowflake_pair
 
 
@@ -855,7 +844,7 @@ def get_channel_and_id(channel, channel_type):
     ----------
     channel : ``ChannelThread``, `int`
         The channel, or it's identifier.
-    channel_type : `type`
+    channel_type : `type`, `tuple` of `type`
         The expected type of `channel`.
     
     Returns
@@ -887,7 +876,8 @@ def get_channel_and_id(channel, channel_type):
                 break
         
         raise TypeError(
-            f'`channel` can be `{channel_type.__name__}`, `int`, got {channel.__class__.__name__}; {channel!r}.'
+            f'`channel` can be {_get_type_or_type_names(channel_type)}, `int`, '
+            f'got {channel.__class__.__name__}; {channel!r}.'
         )
     
     return channel, channel_id

@@ -862,7 +862,7 @@ async def _message_delete_multiple_task(client, channel_id, groups, reason):
 
 
 
-async def request_channel_thread_channels(client, guild, channel_id, request_function):
+async def request_channel_thread_channels(client, guild_id, channel_id, request_function):
     """
     Gets thread channels trough the discord API with the given http client and function.
     
@@ -872,8 +872,8 @@ async def request_channel_thread_channels(client, guild, channel_id, request_fun
     ----------
     client : ``Client``
         The respective client instance.
-    guild : `Guild``
-        The source guild of the channel.
+    guild_id : `int`
+        The source guild's identifier.
     channel_id : `int`
         The respective guild text channel's identifier.
     request_function : ``CoroutineFunctionType``
@@ -899,7 +899,7 @@ async def request_channel_thread_channels(client, guild, channel_id, request_fun
         thread_channel_datas = data['threads']
         
         for thread_channel_data in thread_channel_datas:
-            thread_channel = ChannelThread(thread_channel_data, client, guild.id)
+            thread_channel = ChannelThread(thread_channel_data, client, guild_id)
             thread_channels.append(thread_channel)
         
         thread_user_datas = data['members']

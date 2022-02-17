@@ -710,6 +710,7 @@ Group Details
     - Limiter : `UNLIMITED`
     - Limit : `N/A`
     - Resets after : `N/A`
+    - Notes : Removed in v10
 
 - channel_thread_get_chunk_archived_private
     - Endpoint : `/channels/{channel_id}/threads/archived/private`

@@ -9,7 +9,7 @@ from time import time as time_now
 
 from scarletio import (
     CancelledError, EventThread, Future, IgnoreCaseMultiValueDictionary, LOOP_TIME, Task, WaitTillAll, WaitTillFirst,
-    change_on_switch, export, from_json, future_or_timeout, methodize, run_coroutine, sleep
+    change_on_switch, export, from_json, future_or_timeout, methodize, run_coroutine, set_docs, sleep
 )
 from scarletio.web_common import BasicAuth, Formdata
 from scarletio.web_common.headers import AUTHORIZATION
@@ -23,9 +23,10 @@ from ..application import Application, EULA, Team
 from ..bases import maybe_snowflake, maybe_snowflake_pair
 from ..channel import (
     AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS, CHANNEL_TYPES, CHANNEL_TYPE_MAP, ChannelBase, ChannelCategory,
-    ChannelDirectory, ChannelGroup, ChannelGuildBase, ChannelGuildMainBase, ChannelGuildUndefined, ChannelPrivate,
-    ChannelStage, ChannelStore, ChannelText, ChannelTextBase, ChannelThread, ChannelVoice, ChannelVoiceBase,
-    MessageIterator, VideoQualityMode, cr_pg_channel_object, create_partial_channel_from_id, message_relative_index
+    ChannelDirectory, ChannelForum, ChannelGroup, ChannelGuildBase, ChannelGuildMainBase, ChannelGuildUndefined,
+    ChannelPrivate, ChannelStage, ChannelStore, ChannelText, ChannelTextBase, ChannelThread, ChannelVoice,
+    ChannelVoiceBase, MessageIterator, VideoQualityMode, cr_pg_channel_object, create_partial_channel_from_id,
+    message_relative_index
 )
 from ..color import Color
 from ..core import (
@@ -105,13 +106,13 @@ from .functionality_helpers import (
 from .ready_state import ReadyState
 from .request_helpers import (
     add_file_to_message_data, get_achievement_and_id, get_achievement_id, get_channel_and_id, get_channel_id,
-    get_channel_id_and_message_id, get_components_data, get_emoji_from_reaction, get_guild_and_guild_text_channel_id,
-    get_guild_and_id, get_guild_and_id_and_scheduled_event_id, get_guild_discovery_and_id, get_guild_id,
-    get_guild_id_and_channel_id, get_guild_id_and_emoji_id, get_guild_id_and_role_id,
-    get_guild_id_and_scheduled_event_id, get_message_and_channel_id_and_message_id, get_reaction, get_role_id,
-    get_scheduled_event_guild_id_and_id, get_stage_channel_id, get_sticker_and_id, get_sticker_pack_and_id,
-    get_user_and_id, get_user_id, get_user_id_nullable, get_webhook_and_id, get_webhook_and_id_token, get_webhook_id,
-    get_webhook_id_token, validate_content_and_embed, validate_message_to_delete
+    get_channel_id_and_message_id, get_components_data, get_emoji_from_reaction, get_guild_and_id,
+    get_guild_and_id_and_scheduled_event_id, get_guild_discovery_and_id, get_guild_id, get_guild_id_and_channel_id,
+    get_guild_id_and_emoji_id, get_guild_id_and_role_id, get_guild_id_and_scheduled_event_id,
+    get_message_and_channel_id_and_message_id, get_reaction, get_role_id, get_scheduled_event_guild_id_and_id,
+    get_stage_channel_id, get_sticker_and_id, get_sticker_pack_and_id, get_user_and_id, get_user_id,
+    get_user_id_nullable, get_webhook_and_id, get_webhook_and_id_token, get_webhook_id, get_webhook_id_token,
+    validate_content_and_embed, validate_message_to_delete
 )
 from .utils import BanEntry, Typer, UserGuildPermission
 
@@ -125,6 +126,7 @@ AUTO_CLIENT_ID_LIMIT = 1 << 22
 
 STICKER_PACK_CACHE = ForceUpdateCache()
 
+THREADABLE_CHANNEL_TYPES = (ChannelText, ChannelForum)
 
 @export
 class Client(ClientUserPBase):
@@ -8497,10 +8499,10 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        snowflake_pair = get_guild_id_and_channel_id(channel, ChannelVoiceBase)
-        if snowflake_pair is None:
+        guild_id, channel_id = get_guild_id_and_channel_id(channel, ChannelVoiceBase)
+        if not guild_id:
             return
-        guild_id, channel_id = snowflake_pair
+        
         user_id = get_user_id(user)
        
         await self.http.user_move(guild_id, user_id, {'channel_id': channel_id})
@@ -8529,10 +8531,10 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        snowflake_pair = get_guild_id_and_channel_id(channel, ChannelStage)
-        if snowflake_pair is None:
+        guild_id, channel_id = get_guild_id_and_channel_id(channel, ChannelStage)
+        if not guild_id:
             return
-        guild_id, channel_id = snowflake_pair
+        
         user_id = get_user_id(user)
        
         data = {
@@ -8566,10 +8568,10 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        snowflake_pair = get_guild_id_and_channel_id(channel, ChannelStage)
-        if snowflake_pair is None:
+        guild_id, channel_id = get_guild_id_and_channel_id(channel, ChannelStage)
+        if not guild_id:
             return
-        guild_id, channel_id = snowflake_pair
+        
         user_id = get_user_id(user)
        
         data = {
@@ -9398,6 +9400,8 @@ class Client(ClientUserPBase):
         ----------
         guild : ``Guild``, `int`
             The guild to get it's threads of.
+            
+            If the guild is given as `0`, will return an empty list.
         
         Returns
         -------
@@ -9413,6 +9417,8 @@ class Client(ClientUserPBase):
             If any exception was received from the Discord API.
         """
         guild_id = get_guild_id(guild)
+        if not guild_id:
+            return []
         
         data = await self.http.guild_thread_get_all_active(guild_id)
         
@@ -9816,7 +9822,24 @@ class Client(ClientUserPBase):
         return users
     
     
-    async def channel_thread_get_all_active(self, channel):
+    if API_VERSION >= 10:
+        async def channel_thread_get_all_active(self, channel):
+            guild_id, channel_id = get_guild_id_and_channel_id(channel, THREADABLE_CHANNEL_TYPES)
+            thread_channels = await self.guild_thread_get_all_active(guild_id)
+            return [thread_channel for thread_channel in thread_channels if thread_channel.parent_id == channel_id]
+    
+    else:
+        async def channel_thread_get_all_active(self, channel):
+            guild_id, channel_id = get_guild_id_and_channel_id(channel, THREADABLE_CHANNEL_TYPES)
+            return await request_channel_thread_channels(
+                self,
+                guild_id,
+                channel_id,
+                type(self.http).channel_thread_get_chunk_active,
+            )
+    
+    set_docs(
+        channel_thread_get_all_active,
         """
         Requests all the active threads of the given channel.
         
@@ -9837,11 +9860,15 @@ class Client(ClientUserPBase):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        
+        Notes
+        -----
+        When using API v10 or later, this endpoint filters from ``.guild_thread_get_all_active`` method's return.
+        Consider using that instead.
+        
+        Active threads can also be extracted from ``Guild.threads``.
         """
-        guild, channel_id = get_guild_and_guild_text_channel_id(channel)
-        return await request_channel_thread_channels(self, guild, channel_id,
-            type(self.http).channel_thread_get_chunk_active)
-    
+    )
     
     async def channel_thread_get_all_archived_private(self, channel):
         """
@@ -9865,9 +9892,13 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild, channel_id = get_guild_and_guild_text_channel_id(channel)
-        return await request_channel_thread_channels(self, guild, channel_id,
-            type(self.http).channel_thread_get_chunk_archived_private)
+        guild_id, channel_id = get_guild_id_and_channel_id(channel, THREADABLE_CHANNEL_TYPES)
+        return await request_channel_thread_channels(
+            self,
+            guild_id,
+            channel_id,
+            type(self.http).channel_thread_get_chunk_archived_private,
+        )
     
     
     async def channel_thread_get_all_archived_public(self, channel):
@@ -9892,9 +9923,13 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild, channel_id = get_guild_and_guild_text_channel_id(channel)
-        return await request_channel_thread_channels(self, guild, channel_id,
-            type(self.http).channel_thread_get_chunk_archived_public)
+        guild_id, channel_id = get_guild_id_and_channel_id(channel, THREADABLE_CHANNEL_TYPES)
+        return await request_channel_thread_channels(
+            self,
+            guild_id,
+            channel_id,
+            type(self.http).channel_thread_get_chunk_archived_public,
+        )
     
     
     async def channel_thread_get_all_self_archived(self, channel):
@@ -9919,9 +9954,13 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild, channel_id = get_guild_and_guild_text_channel_id(channel)
-        return await request_channel_thread_channels(self, guild, channel_id,
-            type(self.http).channel_thread_get_chunk_self_archived)
+        guild_id, channel_id = get_guild_id_and_channel_id(channel, THREADABLE_CHANNEL_TYPES)
+        return await request_channel_thread_channels(
+            self,
+            guild_id,
+            channel_id,
+            type(self.http).channel_thread_get_chunk_self_archived,
+    )
     
     
     async def user_get(self, user, *, force_update=False):

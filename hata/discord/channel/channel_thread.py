@@ -44,8 +44,8 @@ class ChannelThread(ChannelGuildBase, ChannelTextBase):
         The unique identifier of the channel.
     _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    parent : `None`, ``ChannelText``
-        The text channel from where the thread is created from.
+    parent_id : `int`
+        The thread's parent text or forum channel's identifier.
     guild_id : `int`
         The channel's guild's identifier.
     name : `str`

@@ -1702,6 +1702,7 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/channels/{channel_id}/thread-members/@me/settings',
         )
     
+    # Removed in V10
     async def channel_thread_get_chunk_active(self, channel_id, data):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.channel_thread_get_chunk_active, channel_id),

@@ -384,9 +384,8 @@ async def party(client, event):
         
         return Embed('Party!', url='https://orindance.party/').add_image(choice(orin_dance_images))
     
-    # Notify the user; we also could use `yield` to acknowledging it.
-    await client.interaction_component_acknowledge(event)
-    await client.interaction_followup_message_create(
+    # Notify the user
+    await client.interaction_response_message_create(
         event,
         'Please start your own party to dance!',
         show_for_invoking_user_only = True,

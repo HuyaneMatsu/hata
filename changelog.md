@@ -38,6 +38,12 @@
 - `Client.sticker_guild_get_all` wont create a partial guild.
 - `Client.sticker_guild_get_all` now returns a list emojis.
 
+#### ext.slash
+
+- Returned and yielded values from form commands will depending the form was invoked by a message component or
+    application command.
+- Followup yields from a message component command are sent followup messages instead of editing the source message.
+
 #### Bug Fixes
 
 - `Guild.get_emoji_like` returned the default value always. (from 1.1.137)

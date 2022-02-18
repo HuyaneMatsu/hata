@@ -335,9 +335,8 @@ async def close_user_info(client, event):
 
 ## Sending notification
 
-Sometimes you do not want to edit the source message, but want to notify the user, about anything in general. You
-can do it by first acknowledging the event, then creating a followup message.
-
+Sometimes you do not want to edit the source message, but want to notify the user, about anything in general. To do it
+create a response message.
 
 ```py
 

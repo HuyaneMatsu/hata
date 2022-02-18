@@ -107,7 +107,10 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
     if isinstance(response, (str, EmbedBase)) or is_only_embed(response):
         if (
             (interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND) or
-            (interaction_event_type is INTERACTION_TYPE_FORM_SUBMIT)
+            (
+                (interaction_event_type is INTERACTION_TYPE_FORM_SUBMIT) and
+                (interaction_event.message is None)
+            )
         ):
             if interaction_event.is_unanswered():
                 yield client.interaction_response_message_create(
@@ -130,18 +133,32 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
                     show_for_invoking_user_only = get_show_for_invoking_user_only_of(response_modifier),
                 )
         
-        elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
+        elif (
+            (interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT) or
+            (
+                (interaction_event_type is INTERACTION_TYPE_FORM_SUBMIT) and
+                (interaction_event.message is not None)
+            )
+        ):
             if interaction_event.is_unanswered():
                 yield client.interaction_component_message_edit(
                     interaction_event,
                     response,
                     **un_map_pack_response_edition_modifier(response_modifier),
                 )
-            else:
+            
+            elif interaction_event.is_deferred():
                 yield client.interaction_response_message_edit(
                     interaction_event,
                     response,
                     **un_map_pack_response_edition_modifier(response_modifier),
+                )
+            
+            elif interaction_event.is_responded():
+                yield client.interaction_followup_message_create(
+                    interaction_event,
+                    response,
+                    show_for_invoking_user_only = get_show_for_invoking_user_only_of(response_modifier),
                 )
         
         # No more cases
@@ -554,7 +571,10 @@ class InteractionResponse:
         interaction_event_type = interaction_event.type
         if (
             (interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND) or
-            (interaction_event_type is INTERACTION_TYPE_FORM_SUBMIT)
+            (
+                (interaction_event_type is INTERACTION_TYPE_FORM_SUBMIT) and
+                (interaction_event.message is None)
+            )
         ):
             message = self._message
             if message is not ...:
@@ -612,23 +632,45 @@ class InteractionResponse:
             
             return
         
-        elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
-            
-            response_parameters = self._get_response_parameters(('allowed_mentions', 'content', 'components', 'embed'))
-            if (response_modifier is not None):
-                response_modifier.apply_to_edition(response_parameters)
-            
+        elif (
+            (interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT) or
+            (
+                (interaction_event_type is INTERACTION_TYPE_FORM_SUBMIT) and
+                (interaction_event.message is not None)
+            )
+        ):
             if interaction_event.is_unanswered():
+                response_parameters = self._get_response_parameters((
+                    'allowed_mentions', 'content', 'components', 'embed'
+                ))
+                if (response_modifier is not None):
+                    response_modifier.apply_to_edition(response_parameters)
+                    
                 if response_parameters:
                     yield client.interaction_component_message_edit(interaction_event, **response_parameters)
+                
                 else:
                     yield client.interaction_component_acknowledge(
                         interaction_event,
                         get_wait_for_acknowledgement_of(response_modifier),
                     )
-            else:
+            
+            elif interaction_event.is_deferred():
+                response_parameters = self._get_response_parameters((
+                    'allowed_mentions', 'content', 'components', 'embed'
+                ))
                 if response_parameters:
                     yield client.interaction_response_message_edit(interaction_event, **response_parameters)
+            
+            elif interaction_event.is_responded():
+                response_parameters = self._get_response_parameters((
+                    'allowed_mentions', 'content', 'components', 'embed', 'file', 'show_for_invoking_user_only',
+                    'suppress_embeds', 'tts'
+                ))
+                if (response_modifier is not None):
+                    response_modifier.apply_to_creation(response_parameters)
+                
+                yield client.interaction_followup_message_create(interaction_event, **response_parameters)
             
             return
         

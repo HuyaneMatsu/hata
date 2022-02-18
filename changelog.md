@@ -38,6 +38,12 @@
 - `Client.sticker_guild_get_all` wont create a partial guild.
 - `Client.sticker_guild_get_all` now returns a list emojis.
 
+#### Bug Fixes
+
+- `Guild.get_emoji_like` returned the default value always. (from 1.1.137)
+- `Guild.get_sticker_like` returned the default value always. (from 1.1.137)
+- `Guild.get_stickers_like` returned the empty list.
+
 #### Renames, Deprecation & Removals
 
 - `IntegrationApplication.summary` is removed & deprecated.
@@ -51,6 +57,7 @@
 - Deprecate `Client.guild_sync_emojis`.
 - `Client.sticker_guild_get`'s 2nd parameter is deprecated.
 - Deprecate `Client.guild_sync_stickers`.
+
 
 ## 1.1.137 *\[2022-02-15\]*
 

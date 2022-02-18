@@ -11867,7 +11867,7 @@ class Client(ClientUserPBase):
             The emoji's name. It's length can be between `2` and `32`.
         image : `bytes-like`
             The emoji's icon.
-        roles : None`, (`list`, `set`, `tuple`) of (``Role``, `int`) = `None`, Optional (Keyword only)
+        roles : `None`, (`list`, `set`, `tuple`) of (``Role``, `int`) = `None`, Optional (Keyword only)
             Whether the created emoji should be limited only to users with any of the specified roles.
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Will show up at the guild's audit logs.

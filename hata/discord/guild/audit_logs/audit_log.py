@@ -78,7 +78,7 @@ class AuditLog:
         Returns
         -------
         populated : `bool`
-            Whether any entry was added to teh audit log.
+            Whether any entry was added to the audit log.
         """
         try:
             entry_datas = data['audit_log_entries']

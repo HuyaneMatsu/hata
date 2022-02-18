@@ -1531,7 +1531,7 @@ class Guild(DiscordEntity, immortal=True):
             match_length = parsed.end() - match_start
             
             match_rate = (match_length, match_length)
-            if accurate_match_key > match_rate:
+            if accurate_match_key < match_rate:
                 continue
             
             accurate_emoji = emoji
@@ -1630,7 +1630,7 @@ class Guild(DiscordEntity, immortal=True):
                 match_length = parsed.end() - match_start
                 
                 match_rate = (match_length, match_length)
-                if accurate_match_key < match_rate:
+                if accurate_match_key > match_rate:
                     accurate_sticker = sticker
                     accurate_match_key = match_rate
                     matching_names_only = True
@@ -1648,7 +1648,7 @@ class Guild(DiscordEntity, immortal=True):
                             match_length = parsed.end() - match_start
                             
                             match_rate = (match_length, match_length)
-                            if accurate_match_key < match_rate:
+                            if accurate_match_key > match_rate:
                                 accurate_sticker = sticker
                                 accurate_match_key = match_rate
                                 continue

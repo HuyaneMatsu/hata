@@ -54,13 +54,16 @@ class InteractionResponseContext:
     
     def __repr__(self):
         """Returns the interaction response context's representation."""
-        repr_parts = ['<', self.__class__.__name__, ' interaction_event=', repr(self.interaction_event)]
+        repr_parts = ['<', self.__class__.__name__]
         
         if self.is_deferring:
             repr_parts.append(' deferring')
         
         if self.is_ephemeral:
             repr_parts.append(' (ephemeral)')
+        
+        repr_parts.append(' interaction_event=')
+        repr_parts.append(repr(self.interaction_event))
         
         repr_parts.append('>')
         return ''.join(repr_parts)

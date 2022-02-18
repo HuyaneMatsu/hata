@@ -29,6 +29,14 @@
 - Add `EmbeddedActivityConfiguration.premium_tier_treatment_default`.
 - Add `EmbeddedActivityConfiguration.premium_tier_treatment_map`.
 - Add `VoiceRegion.deprecated`.
+- Add `force_update` parameter to `Client.emoji_get`.
+- Add `Emoji._set_attributes`.
+- Add `Client.emoji_guild_get_all` (renamed from `guild_sync_emojis`).
+- `Client.emoji_edit` now accepts snowflake pair as well.
+- `Client.emoji_guild_get_all` wont create a partial guild.
+- `Client.emoji_guild_get_all` now returns a list emojis.
+- `Client.sticker_guild_get_all` wont create a partial guild.
+- `Client.sticker_guild_get_all` now returns a list emojis.
 
 #### Renames, Deprecation & Removals
 
@@ -40,7 +48,9 @@
 - `region` parameter of `Guild.precreate` is deprecated.
 - `region` parameter of `Client.guild_edit` is deprecated.
 - `Client.emoji_get`'s 2nd parameter is deprecated.
-
+- Deprecate `Client.guild_sync_emojis`.
+- `Client.sticker_guild_get`'s 2nd parameter is deprecated.
+- Deprecate `Client.guild_sync_stickers`.
 
 ## 1.1.137 *\[2022-02-15\]*
 

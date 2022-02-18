@@ -2524,19 +2524,19 @@ class Guild(DiscordEntity, immortal=True):
         return changes
     
     
-    def _sync_emojis(self, data):
+    def _sync_emojis(self, emoji_datas):
         """
         Syncs the emojis of the guild.
         
         Parameters
         ----------
-        data : `list` of (`dict` of (`str`, `Any`) items)
+        emoji_datas : `list` of (`dict` of (`str`, `Any`) items)
             Received emoji datas.
         """
         emojis = self.emojis
         old_ids = set(emojis)
-
-        for emoji_data in data:
+        
+        for emoji_data in emoji_datas:
             emoji_id = int(emoji_data['id'])
             try:
                 emoji = emojis[emoji_id]

@@ -105,9 +105,8 @@ class Emoji(DiscordEntity, immortal=True):
             self.user = user
             
         else:
-            # whenever we receive an emoji, it will have no user data included,
-            # so it is enough if we check for user data only whenever we
-            # receive emoji data from a request or so.
+            # whenever we receive an emoji, it will have no user data included, so it is enough if we check for user
+            # data only whenever we receive emoji data from a request or so.
             if not self.partial:
                 
                 if self.user is ZEROUSER:
@@ -120,27 +119,7 @@ class Emoji(DiscordEntity, immortal=True):
                 
                 return self
         
-        name = data['name']
-        if name is None:
-            name = ''
-        
-        self.name = name
-        self.animated = data.get('animated', False)
-        self.require_colons= data.get('require_colons', True)
-        self.managed = data.get('managed', False)
-        self.guild_id = guild_id
-        self.available = data.get('available', True)
-        self.user = ZEROUSER
-        
-        self.unicode = None
-        
-        role_ids = data.get('roles', None)
-        if (role_ids is None) or (not role_ids):
-            role_ids = None
-        else:
-            role_ids = tuple(sorted(int(role_id)for role_id in role_ids))
-        
-        self.role_ids = role_ids
+        self._set_attributes(data, guild_id)
         
         return self
     
@@ -428,6 +407,30 @@ class Emoji(DiscordEntity, immortal=True):
     url_as = module_urls.emoji_url_as
     
     
+    def _set_attributes(self, data, guild_id):
+        """
+        Sets the attributes of the emoji from the given data.
+        
+        Parameters
+        ----------
+        data`dict` of (`str`, `Any`) items
+            Emoji's data.
+        guild_id : `int`
+            The emoji's guild's identifier.
+        """
+        # guild_id is not present in the payload, so we receive it from the parameters.
+        self.guild_id = guild_id
+        
+        # unicode
+        self.unicode = None
+        
+        # user
+        self.user = ZEROUSER
+        
+        # Update sets every attributes, except `.user`. That is only ste if present in the payload.
+        self._update_attributes(data)
+    
+    
     def _update_attributes(self, data):
         """
         Updates the emoji with overwriting it's old attributes.
@@ -435,19 +438,27 @@ class Emoji(DiscordEntity, immortal=True):
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
-            Emojis data received from Discord
+            Emoji's data received from Discord.
         """
-        self.require_colons = data.get('require_colons', True)
-        self.managed = data.get('managed', False)
-        
+        # animated
         self.animated = data.get('animated', False)
         
+        # available
+        self.available = data.get('available', True)
+        
+        # managed
+        self.managed = data.get('managed', False)
+        
+        # name
         name = data['name']
         if name is None:
             name = ''
-        
         self.name = name
         
+        # require_colons
+        self.require_colons = data.get('require_colons', True)
+        
+        # role_ids
         role_ids = data.get('roles', None)
         if (role_ids is None) or (not role_ids):
             role_ids = None
@@ -455,14 +466,13 @@ class Emoji(DiscordEntity, immortal=True):
             role_ids = tuple(sorted(int(role_id) for role_id in role_ids))
         self.role_ids = role_ids
         
+        # user
         try:
             user_data = data['user']
         except KeyError:
             pass
         else:
             self.user = User(user_data)
-        
-        self.available = data.get('available', True)
     
     
     def _difference_update_attributes(self, data):

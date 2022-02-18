@@ -1620,7 +1620,7 @@ def get_guild_id_and_emoji_id(emoji):
     
     Returns
     -------
-    snowflake_pair : `None`, `tuple` (`int`, `int`)
+    snowflake_pair : `tuple` (`int`, `int`)
         The emoji's guild's and it's own identifier if applicable.
     
     Raises
@@ -1629,11 +1629,7 @@ def get_guild_id_and_emoji_id(emoji):
         If `emoji`'s type is incorrect.
     """
     if isinstance(emoji, Emoji):
-        guild = emoji.guild
-        if guild is None:
-            snowflake_pair = None
-        else:
-            snowflake_pair = guild.id, emoji.id
+        snowflake_pair = emoji.guild_id, emoji.id
     
     else:
         snowflake_pair = maybe_snowflake_pair(emoji)

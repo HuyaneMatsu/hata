@@ -31,7 +31,7 @@ from ..channel import (
 from ..color import Color
 from ..core import (
     APPLICATIONS, APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, CHANNELS, CLIENTS, DISCOVERY_CATEGORIES, EMOJIS,
-    EULAS, GUILDS, KOKORO, MESSAGES, ROLES, SCHEDULED_EVENTS, USERS
+    EULAS, GUILDS, KOKORO, MESSAGES, ROLES, SCHEDULED_EVENTS, STICKERS, USERS
 )
 from ..embed import EmbedImage
 from ..emoji import Emoji
@@ -11695,7 +11695,7 @@ class Client(ClientUserPBase):
         return Message(message_data)
     
     
-    async def emoji_get(self, emoji, *deprecated_parameters):
+    async def emoji_get(self, emoji, *deprecated_parameters, force_update=False):
         """
         Requests the emoji by it's id at the given guild. If the client's logging in is finished, then it should have
         it's every emoji loaded already.
@@ -11711,6 +11711,9 @@ class Client(ClientUserPBase):
             
             Please pass either an ``Emoji``, or a snowflake pair (`guild_id`, `emoji_id`).
         
+        force_update : `bool` = `False`, Optional (Keyword only)
+            Whether the emoji should be requested even if it supposed to be up to date.
+        
         Returns
         -------
         emoji : ``Emoji``
@@ -11718,7 +11721,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            - If `emoji` was not given as ``Emoji``, `tuple` (`int`, `int`).
+            If `emoji` was not given as ``Emoji``, `tuple` (`int`, `int`).
         ConnectionError
             No internet connection.
         DiscordException
@@ -11740,7 +11743,7 @@ class Client(ClientUserPBase):
                 FutureWarning,
             )
             
-            guild, *_, = deprecated_parameters
+            guild, emoji, = emoji, *deprecated_parameters
             
             guild_id = get_guild_id(guild)
             
@@ -11753,7 +11756,7 @@ class Client(ClientUserPBase):
                         f'`emoji` can be `{Emoji.__name__}`, `int`, got {emoji.__class__.__name__}; {emoji!r}.'
                     )
                 
-                emoji = EMOJIS.get(emoji, None)
+                emoji = EMOJIS.get(emoji_id, None)
         
         else:
             if isinstance(emoji, Emoji):
@@ -11763,12 +11766,12 @@ class Client(ClientUserPBase):
                 snowflake_pair = maybe_snowflake_pair(emoji)
                 if snowflake_pair is None:
                     raise TypeError(
-                        f'`emoji` can be `{Emoji.__name__}`, `int`, `tuple` (`int`, `int`)'
-                        f', got {emoji.__class__.__name__}; {emoji!r}.'
+                        f'`emoji` can be `{Emoji.__name__}`, `tuple` (`int`, `int`), '
+                        f'got {emoji.__class__.__name__}; {emoji!r}.'
                     )
                 
                 guild_id, emoji_id = snowflake_pair
-                emoji = EMOJIS.get(emoji, None)
+                emoji = EMOJIS.get(emoji_id, None)
         
         
         # If the emoji has no linked guild, we cannot request it, so we return instantly.
@@ -11779,17 +11782,20 @@ class Client(ClientUserPBase):
             
             return emoji
         
+        if (emoji is not None) and (not emoji.partial) and (not force_update):
+            return emoji
+        
         emoji_data = await self.http.emoji_get(guild_id, emoji_id)
         
-        if (emoji is None) or emoji.partial:
+        if (emoji is None):
             emoji = Emoji(emoji_data, guild_id)
         else:
-            emoji._update_attributes(emoji_data)
+            emoji._set_attributes(emoji_data, guild_id)
         
         return emoji
     
     
-    async def guild_sync_emojis(self, guild):
+    async def emoji_guild_get_all(self, guild):
         """
         Syncs the given guild's emojis with the wrapper.
         
@@ -11799,6 +11805,11 @@ class Client(ClientUserPBase):
         ----------
         guild : ``Guild``, `int`
             The guild, what's emojis will be synced.
+        
+        Returns
+        -------
+        emojis : `list` of ``Emoji``
+            The guild's emojis.
         
         Raises
         ------
@@ -11811,12 +11822,35 @@ class Client(ClientUserPBase):
         """
         guild, guild_id = get_guild_and_id(guild)
         
-        data = await self.http.emoji_guild_get_all(guild_id)
+        emoji_datas = await self.http.emoji_guild_get_all(guild_id)
         
         if guild is None:
-            guild = create_partial_guild_from_id(guild_id)
+            # Do not create a partial guild, because it would have been garbage collected after leaving the function
+            # anyways
+            guild = GUILDS.get(guild_id, None)
         
-        guild._sync_emojis(data)
+        if guild is None:
+            emojis = [Emoji(emoji_data, guild_id) for emoji_data in emoji_datas]
+        else:
+            guild._sync_emojis(emoji_datas)
+            emojis = list(guild.emojis.values())
+        
+        return emojis
+    
+    
+    async def guild_sync_emojis(self, guild):
+        """
+        Deprecated and will be removed in 2022 Jun. Please use ``.emoji_guild_get_all`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.guild_sync_emojis` is deprecated and will be '
+                f'removed in 2022 Jun. Please use `.emoji_guild_get_all` instead.'
+            ),
+            FutureWarning,
+        )
+        
+        return await self.emoji_guild_get_all(guild)
     
     
     async def emoji_create(self, guild, name, image, *, roles=None, reason=None):
@@ -11935,10 +11969,12 @@ class Client(ClientUserPBase):
         AssertionError
             If `emoji` was not given as ``Emoji``.
         """
-        snowflake_pair = get_guild_id_and_emoji_id(emoji)
-        if (snowflake_pair is None):
+        guild_id, emoji_id = get_guild_id_and_emoji_id(emoji)
+        
+        # Cannot delete partially loaded emoji.
+        if guild_id is None:
             return
-        guild_id, emoji_id = snowflake_pair
+        
         await self.http.emoji_delete(guild_id, emoji_id, reason=reason)
     
     
@@ -11950,7 +11986,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        emoji : ``Emoji``
+        emoji : ``Emoji``, `tuple` (`int`, `int`)
             The emoji to edit.
         name : `str`, Optional (Keyword only)
             The emoji's new name. It's length can be in range [2:32].
@@ -11963,33 +11999,27 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `roles` contains a non ``Role``, `int` element.
+            - If `roles` contains a non ``Role``, `int` element.
+            - If `emoji` is not ``Emoji``, `tuple` (`int`, `int`).
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `emoji` was not given as ``Emoji``.
             - If `name` was not given as `str`.
             - If `name` length is out of the expected range [1:32].
             - If `roles` was not given neither as `None`, `list`, `tuple`, `set`.
         """
-        if __debug__:
-            if not isinstance(emoji, Emoji):
-                raise AssertionError(
-                    f'`emoji` can be `{Emoji.__name__}`, got {emoji.__class__.__name__}; {emoji!r}.'
-                )
+        guild_id, emoji_id = get_guild_id_and_emoji_id(emoji)
         
-        guild = emoji.guild
-        if guild is None:
+        # Cannot edit partially loaded emojis.
+        if not guild_id:
             return
         
         data = {}
         
-        # name is required
-        if (name is ...):
-            name = emoji.name
-        else:
+        # name is not a required parameter anymore, we can edit the emoji normally.
+        if (name is not ...):
             if __debug__:
                 if not isinstance(name, str):
                     raise AssertionError(
@@ -12004,10 +12034,10 @@ class Client(ClientUserPBase):
                     raise AssertionError(
                         f'`name` length can be in range [2:32], got {name_length!r}; {name!r}.'
                     )
+            
+            data['name'] = name
         
-        data['name'] = name
         
-        # roles are not required
         if (roles is not ...):
             role_ids = set()
             if (roles is not None):
@@ -12033,7 +12063,8 @@ class Client(ClientUserPBase):
             
             data['roles'] = role_ids
         
-        await self.http.emoji_edit(guild.id, emoji.id, data, reason)
+        
+        await self.http.emoji_edit(guild_id, emoji_id, data, reason)
     
     # Invite management
     
@@ -15519,7 +15550,7 @@ class Client(ClientUserPBase):
         return sticker_packs
     
     
-    async def sticker_guild_get(self, guild, sticker, *, force_update=False):
+    async def sticker_guild_get(self, sticker, *deprecated_parameters, force_update=False):
         """
         Gets the specified sticker from the respective guild.
         
@@ -15527,9 +15558,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        guild : ``Guild``, `int`
-            The respective guild.
-        sticker : ``Sticker``, `int`
+        sticker : ``Sticker``, `tuple`, (`int`, `int`)
             The sticker to get.
         force_update : `bool` = `False`, Optional (Keyword only)
             Whether the sticker should be requested even if it supposed to be up to date.
@@ -15537,20 +15566,48 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `sticker` was not given neither as ``Sticker``, neither as `int`.
+            If `sticker` is not ``Sticker``, `tuple` (`int`, `int`).
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        TypeError
-            - If `sticker` was not given as ``Sticker``, nor as `int`.
-            - If `guild` was not given as ``Guild``, nor as `int`.
         """
-        sticker, sticker_id = get_sticker_and_id(sticker)
+        if deprecated_parameters:
+            if len(deprecated_parameters) > 1:
+                raise TypeError(
+                    f'`{self.__class__.__name__}.sticker_guild_get` accepts up to `2` positional parameters, got '
+                    f'{len(deprecated_parameters) + 1}.'
+                )
+            
+            warnings.warn(
+                (
+                    f'2nd parameter of `{self.__class__.__name__}.sticker_guild_get` is deprecated and will be '
+                    f'removed in 2022 Jun. Please pass just an `{Sticker.__name__}` or a pair of snowflake.'
+                ),
+                FutureWarning,
+            )
+            
+            guild, sticker, = sticker, *deprecated_parameters
+            sticker, sticker_id = get_sticker_and_id(sticker)
+            guild_id = get_guild_id(guild)
+            
+        else:
+            if isinstance(sticker, Sticker):
+                guild_id = sticker.guild_id
+                sticker_id = sticker.id
+            else:
+                snowflake_pair = maybe_snowflake_pair(sticker)
+                if snowflake_pair is None:
+                    raise TypeError(
+                        f'`sticker` can be `{Sticker.__name__}`, `tuple` (`int`, `int`), '
+                        f'got {sticker.__class__.__name__}; {sticker!r}.'
+                    )
+                
+                guild_id, sticker_id = snowflake_pair
+                sticker = STICKERS.get(sticker_id, None)
+        
         if (sticker is not None) and (not sticker.partial) and (not force_update):
             return sticker
-        
-        guild_id = get_guild_id(guild)
         
         data = await self.http.sticker_guild_get(guild_id, sticker_id)
         if (sticker is None):
@@ -15823,7 +15880,8 @@ class Client(ClientUserPBase):
         await self.http.sticker_guild_delete(sticker.guild_id, sticker.id, reason)
     
     
-    async def guild_sync_stickers(self, guild):
+    
+    async def sticker_guild_get_all(self, guild):
         """
         Syncs the given guild's stickers with the wrapper.
         
@@ -15833,6 +15891,11 @@ class Client(ClientUserPBase):
         ----------
         guild : ``Guild``, `int`
             The guild, what's stickers will be synced.
+        
+        Returns
+        -------
+        stickers : `list` of ``Sticker``
+            The guild's stickers.
         
         Raises
         ------
@@ -15845,13 +15908,35 @@ class Client(ClientUserPBase):
         """
         guild, guild_id = get_guild_and_id(guild)
         
-        data = await self.http.sticker_guild_get_all(guild_id)
+        sticker_datas = await self.http.sticker_guild_get_all(guild_id)
         
         if guild is None:
-            guild = create_partial_guild_from_id(guild_id)
+            # Do not create a partial guild, because it would have been garbage collected after leaving the function
+            # anyways
+            guild = GUILDS.get(guild_id, None)
         
-        guild._sync_stickers(data)
+        if guild is None:
+            stickers = [Sticker(sticker_data, guild_id) for sticker_data in sticker_datas]
+        else:
+            guild._sync_stickers(sticker_datas)
+            stickers = list(guild.stickers.values())
+        
+        return stickers
     
+    
+    async def guild_sync_stickers(self, guild):
+        """
+        Deprecated and will be removed in 2022 Jun. Please use ``.sticker_guild_get_all`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.guild_sync_stickers` is deprecated and will be '
+                f'removed in 2022 Jun. Please use `.sticker_guild_get_all` instead.'
+            ),
+            FutureWarning,
+        )
+        
+        return await self.sticker_guild_get_all(guild)
     
     # Relationship related
     

@@ -52,6 +52,20 @@ class InteractionResponseContext:
         return self
     
     
+    def __repr__(self):
+        """Returns the interaction response context's representation."""
+        repr_parts = ['<', self.__class__.__name__, ' interaction_event=', repr(self.interaction_event)]
+        
+        if self.is_deferring:
+            repr_parts.append(' deferring')
+        
+        if self.is_ephemeral:
+            repr_parts.append(' (ephemeral)')
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
     @to_coroutine
     def ensure(self, coroutine):
         """
@@ -101,10 +115,7 @@ class InteractionResponseContext:
             if not (response_flag & RESPONSE_FLAG_ACKNOWLEDGING_OR_ACKNOWLEDGED):
                 response_flag |= RESPONSE_FLAG_DEFERRING
         else:
-            if (
-                (not response_flag & RESPONSE_FLAG_RESPONDING_OR_RESPONDED) and
-                (not response_flag & RESPONSE_FLAG_DEFERRING_OR_DEFERRED)
-            ):
+            if (not response_flag & RESPONSE_FLAG_RESPONDING_OR_RESPONDED):
                 response_flag |= RESPONSE_FLAG_RESPONDING
         
         interaction_event._response_flag = response_flag
@@ -133,6 +144,10 @@ class InteractionResponseContext:
                 if response_flag & RESPONSE_FLAG_RESPONDING:
                     response_flag ^= RESPONSE_FLAG_RESPONDING
                     response_flag |= RESPONSE_FLAG_RESPONDED
+                    
+                    if response_flag & RESPONSE_FLAG_DEFERRED:
+                        response_flag ^= RESPONSE_FLAG_DEFERRED
+
         
         else:
             if self.is_deferring:

@@ -44,7 +44,7 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
     """
     Gets request coroutine after an output from a command coroutine. Might return `None` if there is nothing to send.
     
-    This function is a coroutine generator, which should be ued inside of an async for loop.
+    This function is an async iterable coroutine generator.
     
     Parameters
     ----------
@@ -105,63 +105,15 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
     await interaction_event._wait_for_async_task_completion()
     
     if isinstance(response, (str, EmbedBase)) or is_only_embed(response):
-        if (
-            (interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND) or
-            (
-                (interaction_event_type is INTERACTION_TYPE_FORM_SUBMIT) and
-                (interaction_event.message is None)
-            )
+        async for request_coroutine in _get_request_coroutines_from_value(
+            client,
+            interaction_event,
+            response_modifier,
+            response,
+            is_return,
         ):
-            if interaction_event.is_unanswered():
-                yield client.interaction_response_message_create(
-                    interaction_event,
-                    response,
-                    **un_map_pack_response_creation_modifier(response_modifier),
-                )
-            
-            elif interaction_event.is_deferred():
-                yield client.interaction_followup_message_create(
-                    interaction_event,
-                    response,
-                    **un_map_pack_response_creation_modifier(response_modifier),
-                )
-            
-            elif interaction_event.is_responded():
-                yield client.interaction_followup_message_create(
-                    interaction_event,
-                    response,
-                    show_for_invoking_user_only = get_show_for_invoking_user_only_of(response_modifier),
-                )
+            yield request_coroutine
         
-        elif (
-            (interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT) or
-            (
-                (interaction_event_type is INTERACTION_TYPE_FORM_SUBMIT) and
-                (interaction_event.message is not None)
-            )
-        ):
-            if interaction_event.is_unanswered():
-                yield client.interaction_component_message_edit(
-                    interaction_event,
-                    response,
-                    **un_map_pack_response_edition_modifier(response_modifier),
-                )
-            
-            elif interaction_event.is_deferred():
-                yield client.interaction_response_message_edit(
-                    interaction_event,
-                    response,
-                    **un_map_pack_response_edition_modifier(response_modifier),
-                )
-            
-            elif interaction_event.is_responded():
-                yield client.interaction_followup_message_create(
-                    interaction_event,
-                    response,
-                    show_for_invoking_user_only = get_show_for_invoking_user_only_of(response_modifier),
-                )
-        
-        # No more cases
         return
     
     if isinstance(response, InteractionForm):
@@ -202,11 +154,58 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
     if len(response) > 2000:
         response = response[:2000]
     
-    if response:
-        
+    async for request_coroutine in _get_request_coroutines_from_value(
+        client,
+        interaction_event,
+        response_modifier,
+        response,
+        is_return,
+    ):
+        yield request_coroutine
+    
+    # No more cases
+    return
+
+
+async def _get_request_coroutines_from_value(client, interaction_event, response_modifier, response, is_return):
+    """
+    Gets request coroutine after an output from a command coroutine. Might return `None` if there is nothing to send.
+    
+    This function is an async iterable coroutine generator.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The client who will send the responses if applicable.
+    interaction_event : ``InteractionEvent``
+        The respective event to respond on.
+    response_modifier : `None`, ``ResponseModifier``
+        Modifies values returned and yielded to command coroutine processor.
+    response : `Any`
+        Any object yielded or returned by the command coroutine.
+    is_return : `bool`
+        Whether the response is used in a return and we do not require response message.
+    
+    Yields
+    -------
+    request_coroutine : `None`, `CoroutineType`
+    """
+    interaction_event_type = interaction_event.type
+    
+    if interaction_event.is_responded():
+        yield client.interaction_followup_message_create(
+            interaction_event,
+            response,
+            show_for_invoking_user_only = get_show_for_invoking_user_only_of(response_modifier),
+        )
+    
+    else:
         if (
             (interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND) or
-            (interaction_event_type is INTERACTION_TYPE_FORM_SUBMIT)
+            (
+                (interaction_event_type is INTERACTION_TYPE_FORM_SUBMIT) and
+                (interaction_event.message is None)
+            )
         ):
             if interaction_event.is_unanswered():
                 yield client.interaction_response_message_create(
@@ -214,51 +213,33 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
                     response,
                     **un_map_pack_response_creation_modifier(response_modifier),
                 )
+            
+            elif interaction_event.is_deferred():
+                yield client.interaction_followup_message_create(
+                    interaction_event,
+                    response,
+                    **un_map_pack_response_creation_modifier(response_modifier),
+                )
+        elif (
+            (interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT) or
+            (
+                (interaction_event_type is INTERACTION_TYPE_FORM_SUBMIT) and
+                (interaction_event.message is not None)
+            )
+        ):
+            if interaction_event.is_unanswered():
+                yield client.interaction_component_message_edit(
+                    interaction_event,
+                    response,
+                    **un_map_pack_response_edition_modifier(response_modifier),
+                )
+            
             elif interaction_event.is_deferred():
                 yield client.interaction_response_message_edit(
                     interaction_event,
                     response,
                     **un_map_pack_response_edition_modifier(response_modifier),
                 )
-            
-            elif interaction_event.is_responded():
-                yield client.interaction_followup_message_create(
-                    interaction_event,
-                    response,
-                    **un_map_pack_response_creation_modifier(response_modifier),
-                )
-        elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
-            yield client.interaction_component_message_edit(
-                interaction_event,
-                response,
-                **un_map_pack_response_edition_modifier(response_modifier),
-            )
-        
-        # No more cases
-        return
-    else:
-        if interaction_event.is_unanswered():
-            
-            if (
-                (interaction_event_type is INTERACTION_TYPE_APPLICATION_COMMAND) or
-                (interaction_event_type is INTERACTION_TYPE_FORM_SUBMIT)
-            ):
-                yield client.interaction_application_command_acknowledge(
-                    interaction_event,
-                    get_wait_for_acknowledgement_of(response_modifier),
-                    show_for_invoking_user_only = get_show_for_invoking_user_only_of(response_modifier)
-                )
-            
-            elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
-                yield client.interaction_component_acknowledge(
-                    interaction_event,
-                    get_wait_for_acknowledgement_of(response_modifier),
-                )
-            
-            return
-    
-    # No more cases
-    return
 
 
 async def process_command_coroutine_generator(

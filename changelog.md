@@ -1,4 +1,4 @@
-## 1.1.138 *\[2022-02-??\]*
+## 1.2.0 *\[2022-02-??\]*
 
 ### API v10 checklist:
 
@@ -37,6 +37,7 @@
 - `Client.emoji_guild_get_all` now returns a list emojis.
 - `Client.sticker_guild_get_all` wont create a partial guild.
 - `Client.sticker_guild_get_all` now returns a list emojis.
+- Add missing `InteractionResponseContext.__repr__`.
 
 #### ext.slash
 
@@ -49,6 +50,7 @@
 - `Guild.get_emoji_like` returned the default value always. (from 1.1.137)
 - `Guild.get_sticker_like` returned the default value always. (from 1.1.137)
 - `Guild.get_stickers_like` returned the empty list.
+- Deferred interactions were never marked as responded.
 
 #### Renames, Deprecation & Removals
 

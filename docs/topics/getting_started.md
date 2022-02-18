@@ -36,7 +36,7 @@ turning all on for now.
 
 You can find them on the bot tab a little bit down.
 
-![](assets/getting_started_0007.png)
+![](assets/getting_started_0007.gif)
 
 # Inviting your bot
 

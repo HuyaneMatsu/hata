@@ -32,7 +32,7 @@ from .message_activity import MessageActivity
 from .message_application import MessageApplication
 from .message_interaction import MessageInteraction
 from .message_reference import MessageReference
-from .preinstanced import GENERIC_MESSAGE_TYPES, MessageType
+from .preinstanced import GENERIC_MESSAGE_TYPES, MESSAGE_DEFAULT_CONVERTER, MessageType
 from .utils import try_resolve_interaction_message
 
 
@@ -88,6 +88,21 @@ MESSAGE_CACHE_FIELD_KEYS = (
     MESSAGE_FIELD_KEY_CHANNEL_MENTIONS,
     MESSAGE_FIELD_KEY_ROLE_MENTIONS,
 )
+
+
+MESSAGE_TYPE_VALUES_WITH_CONTENT_FIELDS = frozenset((
+    message_type.value
+    for message_type in MessageType.INSTANCES.values()
+    if message_type.convert is MESSAGE_DEFAULT_CONVERTER
+))
+
+MESSAGE_CONTENT_FIELDS = (
+    MESSAGE_FIELD_KEY_CONTENT,
+    MESSAGE_FIELD_KEY_EMBEDS,
+    MESSAGE_FIELD_KEY_ATTACHMENTS,
+    MESSAGE_FIELD_KEY_COMPONENTS,
+)
+
 
 def _set_message_field(message, field_key, value):
     """
@@ -4545,3 +4560,31 @@ class Message(DiscordEntity, immortal=True):
             self,
             MESSAGE_FIELD_KEY_USER_MENTIONS,
         )
+    
+    
+    def has_any_content_field(self):
+        """
+        Returns whether the message has any content field. Can be used to check whether the bot receiving / requesting
+        the message has the message content intent.
+        
+        Returns
+        -------
+        has_any_content_field : `bool`
+        """
+        fields = self._fields
+        if fields is None:
+            return False
+        
+        try:
+            message_type = fields[MESSAGE_FIELD_KEY_TYPE]
+        except KeyError:
+            pass
+        else:
+            if message_type not in MESSAGE_TYPE_VALUES_WITH_CONTENT_FIELDS:
+                return True
+        
+        for field_key in MESSAGE_CONTENT_FIELDS:
+            if field_key in fields:
+                return True
+        
+        return False

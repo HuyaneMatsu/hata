@@ -1406,6 +1406,6 @@ Removed slash commands may not disappear after they are removed. This can have m
 
 - Global command sync time & Lazy caching
 
-<footer>
-    <a style="align=left;" href="/components.md">Components</a> |
-</footer>
+<div class="footer">
+    <a align="right;" href="/components.md">Components</a> |
+</div>

@@ -20,7 +20,8 @@
     <a href="https://github.com/HuyaneMatsu/hata">Source</a>
 </p>
 
----- 
+<h1></h1>
+
 <p align="center">
     New hata versions use
     <a href="https://github.com/discord/discord-api-docs/discussions/4510">
@@ -28,8 +29,6 @@
     </a>
     .
 </p>
-
-----
 
 <h1></h1>
 

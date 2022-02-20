@@ -2,7 +2,7 @@ __all__ = ()
 
 from scarletio import include
 
-from ..core import CLIENTS
+from ..core import APPLICATION_ID_TO_CLIENT, CLIENTS
 
 from .intent import INTENT_MASK_DIRECT_MESSAGES, INTENT_MASK_GUILD_MESSAGES, INTENT_MASK_MESSAGE_CONTENT
 
@@ -54,6 +54,51 @@ def filter_clients(clients, flag_mask, me):
 
 
 
+def get_message_enabled_user_ids(message_data):
+    """
+    Gets the content field enabled user id-s for teh given message.
+    
+    Parameters
+    ----------
+    message_data : `dict` of (`str`, `Any`) items
+        Received message data.
+    
+    Returns
+    -------
+    enabled_user_ids : `set` of `int`
+    """
+    enabled_user_ids = set()
+    
+    try:
+        author_data = message_data['author']
+    except KeyError:
+        application_id = message_data.get('application_id')
+        if (application_id is not None):
+            application_id = int(application_id)
+            
+            try:
+                client = APPLICATION_ID_TO_CLIENT[application_id]
+            except KeyError:
+                pass
+            else:
+                enabled_user_ids.add(client.id)
+            
+    else:
+        user_id = int(author_data['id'])
+        enabled_user_ids.add(user_id)
+    
+    try:
+        user_mention_datas = message_data['mentions']
+    except KeyError:
+        pass
+    else:
+        for user_mention_data in user_mention_datas:
+            user_id = int(user_mention_data['id'])
+            enabled_user_ids.add(user_id)
+    
+    return enabled_user_ids
+
+
 def filter_content_intent_client(clients, message_data, me):
     """
     Filters the clients who has message content intent.
@@ -70,8 +115,8 @@ def filter_content_intent_client(clients, message_data, me):
     ----------
     clients : `list` of ``Client``
         A list of client to search from.
-    flag_mask : `int`
-        The intent flag's mask based on what the clients will be filtered.
+    message_data : `dict` of (`str`, `Any`) items
+        Received message data.
     me : ``Client``
         The client who received the respective event.
     
@@ -93,10 +138,7 @@ def filter_content_intent_client(clients, message_data, me):
     else:
         flag_mask |= INTENT_MASK_GUILD_MESSAGES
     
-    enabled_user_ids = {
-        int(message_data['author']['id']),
-        *(int(user_data['id']) for user_data in message_data['mentions']),
-    }
+    enabled_user_ids = get_message_enabled_user_ids(message_data)
     
     iterator = iter(clients)
     for client in iterator:
@@ -231,8 +273,8 @@ def first_content_intent_client(clients, message_data, me):
     ----------
     clients : `list` of ``Client``
         A list of client to search from.
-    flag_mask : `int`
-        The intent flag's mask based on what the clients will be filtered.
+    message_data : `dict` of (`str`, `Any`) items
+        Received message data.
     me : ``Client``
         The client who received the respective event.
     
@@ -256,18 +298,10 @@ def first_content_intent_client(clients, message_data, me):
         if client.intents & flag_mask:
             return client
     
-    author_id = int(message_data['author']['id'])
-    try:
-        return CLIENTS[author_id]
-    except KeyError:
-        pass
-    
-    for user_data in message_data['mentions']:
-        author_id = int(user_data['id'])
-        try:
-            return CLIENTS[author_id]
-        except KeyError:
-            pass
+    enabled_user_ids = get_message_enabled_user_ids(message_data)
+    for client in clients:
+        if client.id in enabled_user_ids:
+            return client
     
     return clients[0]
 

@@ -4579,7 +4579,7 @@ class Message(DiscordEntity, immortal=True):
             MESSAGE_FIELD_KEY_USER_MENTIONS,
         )
     
-    
+        
     def has_any_content_field(self):
         """
         Returns whether the message has any content field. Can be used to check whether the bot receiving / requesting

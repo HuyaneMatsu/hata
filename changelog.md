@@ -1,4 +1,4 @@
-## 1.2.0 *\[2022-02-??\]*
+## 1.2.0 *\[2022-02-20\]*
 
 ### API v10 checklist:
 
@@ -40,6 +40,7 @@
 - Add missing `InteractionResponseContext.__repr__`.
 - Add `Message.has_any_content_field`.
 - Update content fields of message if required.
+- Synchronise message edit dispatch event parsers based on message content availability. 
 
 #### ext.slash
 

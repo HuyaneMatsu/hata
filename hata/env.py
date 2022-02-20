@@ -225,10 +225,10 @@ if API_VERSION != DEFAULT_API_VERSION:
         )
         API_VERSION = DEFAULT_API_VERSION
     
-    elif API_VERSION < 10:
+    elif API_VERSION < 9:
         warnings.warn(
             (
-                f'`API_VERSION` given either as `6`, `7`, `8`, `9`, got {API_VERSION!r}, please use version '
+                f'`API_VERSION` given either as `6`, `7`, `8`, got {API_VERSION!r}, please use version '
                 f'`{DEFAULT_API_VERSION!r}` instead',
             ),
             FutureWarning

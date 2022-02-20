@@ -1406,6 +1406,6 @@ Removed slash commands may not disappear after they are removed. This can have m
 
 - Global command sync time & Lazy caching
 
-<div role="footer">
-    <a role="what_is_next" href="/components.md">Components</a>
-</div>
+<mark>
+    <a href="/components.md">Components</a>
+</mark>

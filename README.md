@@ -20,11 +20,24 @@
     <a href="https://github.com/HuyaneMatsu/hata">Source</a>
 </p>
 
+---- 
+<p align="center">
+
+
+| New hata versions use [Discord API V10](https://github.com/discord/discord-api-docs/discussions/4510) |
+| --- |
+
+</p>
+
+----
+
 <h1></h1>
 
 <h3 align="center">
     About
 </h3>
+
+
 
 Hata is an *asynchronous* [Discord API](https://discord.com/developers/docs/intro) wrapper built on top of scarletio.
 It is designed to be easy to use, with also providing rich API offering everything what an advanced developer might

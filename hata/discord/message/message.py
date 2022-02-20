@@ -2205,6 +2205,7 @@ class Message(DiscordEntity, immortal=True):
 
         return contents
     
+    
     @property
     def mentions(self):
         """
@@ -2287,6 +2288,7 @@ class Message(DiscordEntity, immortal=True):
                 clean_embeds.append(embed._clean_copy(self))
         
         return clean_embeds
+    
     
     def is_deletable(self):
         """

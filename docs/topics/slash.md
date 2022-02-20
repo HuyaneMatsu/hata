@@ -1405,3 +1405,7 @@ Removed slash commands may not disappear after they are removed. This can have m
     time when reloading an extension. This behaviour can be altered (mentioned later).
 
 - Global command sync time & Lazy caching
+
+<footer>
+    <a style="align=left;" href="/components.md">Components</a> |
+</footer>

@@ -2,11 +2,15 @@ __all__ = ()
 
 from scarletio import include
 
+from ..core import CLIENTS
+
+from .intent import INTENT_MASK_DIRECT_MESSAGES, INTENT_MASK_GUILD_MESSAGES, INTENT_MASK_MESSAGE_CONTENT
+
 
 Client = include('Client')
 
 
-def filter_clients(clients, flag_mask):
+def filter_clients(clients, flag_mask, me):
     """
     Filters the clients whether their intents allows the specific flag.
     
@@ -24,40 +28,93 @@ def filter_clients(clients, flag_mask):
         The clients to filter.
     flag_mask : `int`
         The intent flag's mask based on what the clients will be filtered.
+    me : ``Client``
+        The client who received the respective event.
     
     Yields
     -------
     client : ``Client``, `None`
     """
-    index = 0
-    limit = len(clients)
-    
-    while True:
-        if index == limit:
-            yield None
-            return
-        
-        client = clients[index]
+    iterator = iter(clients)
+    for client in iterator:
         if client.intents & flag_mask:
-            yield client
             break
-        
-        index += 1
-        continue
-        
-    yield client
-    index += 1
     
-    while True:
-        if index == limit:
-            return
-        
-        client = clients[index]
+    else:
+        yield me
+        yield me
+        return
+    
+    yield client
+    yield client
+    
+    for client in iterator:
         if client.intents & flag_mask:
             yield client
-        
-        index += 1
-        continue
+
+
+
+def filter_content_intent_client(clients, message_data, me):
+    """
+    Filters the clients who has message content intent.
+    
+    First yields the first client from `clients` what allows message content. If non, then yields `None`.
+    If a `None` or not the expected client was yielded, then the generator should be closed.
+    
+    If the correct client was yielded, then the generator is used at a for loop yielding all the clients from `clients`
+    which allow the specified flag including the firstly yielded one.
+    
+    This function is a generator.
+    
+    Parameters
+    ----------
+    clients : `list` of ``Client``
+        A list of client to search from.
+    flag_mask : `int`
+        The intent flag's mask based on what the clients will be filtered.
+    me : ``Client``
+        The client who received the respective event.
+    
+    Returns
+    -------
+    client : ``Client``
+    """
+    # Fast check for obvious speed reasons.
+    if len(clients) <= 1:
+        yield me
+        yield me
+        return
+    
+    # Check whether any of the clients has the required intent mask
+    flag_mask = INTENT_MASK_MESSAGE_CONTENT
+    
+    if message_data.get('guild_id', None) is None:
+        flag_mask |= INTENT_MASK_DIRECT_MESSAGES
+    else:
+        flag_mask |= INTENT_MASK_GUILD_MESSAGES
+    
+    enabled_user_ids = {
+        int(message_data['author']['id']),
+        *(int(user_data['id']) for user_data in message_data['mentions']),
+    }
+    
+    iterator = iter(clients)
+    for client in iterator:
+        if (client.intents & flag_mask) or (client.id in enabled_user_ids):
+            break
+    
+    else:
+        yield me
+        yield me
+        return
+    
+    yield client
+    yield client
+    
+    for client in iterator:
+        if (client.intents & flag_mask) or (client.id in enabled_user_ids):
+            yield client
+
 
 def filter_clients_or_me(clients, flag_mask, me):
     """
@@ -86,47 +143,31 @@ def filter_clients_or_me(clients, flag_mask, me):
     flag_shift : `int`
         The intent flag's mask based on what the clients will be filtered.
     me : ``Client``
-        The source client, what received the respective event.
+        The client who received the respective event.
     
     Yields
     -------
     client : ``Client``, `None`
     """
-    index = 0
-    limit = len(clients)
-    
-    while True:
-        if index == limit:
-            # If non of the clients have the intent, then yield `me`
-            user = yield me
-            yield
-            if user is me:
-                yield me
-            return
-        
-        client = clients[index]
+    iterator = iter(clients)
+    for client in iterator:
         if client.intents & flag_mask:
-            user = yield client
             break
-        
-        index += 1
-        continue
     
+    else:
+        user = yield me
+        yield
+        if user is me:
+            yield me
+        return
+    
+    user = yield client
     yield
-    
     yield client
-    index += 1
     
-    while True:
-        if index == limit:
-            break
-        
-        client = clients[index]
+    for client in iterator:
         if client.intents & flag_mask:
             yield client
-        
-        index += 1
-        continue
     
     # Whether the user is type Client and we did not yield it, yield it.
     if not isinstance(user, Client):
@@ -156,7 +197,7 @@ def filter_just_me(me):
     yield me
 
 
-def first_client(clients, flag_mask):
+def first_client(clients, flag_mask, me):
     """
     Returns the first client what allows the specified intent flag. If no client allows it, then returns `None`.
     
@@ -166,25 +207,69 @@ def first_client(clients, flag_mask):
         A list of client to search from.
     flag_mask : `int`
         The intent flag's mask based on what the clients will be filtered.
+    me : ``Client``
+        The client who received the respective event.
     
     Returns
     -------
-    client : ``Client``, `None`
+    client : ``Client``
     """
-    index = 0
-    limit = len(clients)
-    
-    while True:
-        if index == limit:
-            return None
-        
-        client = clients[index]
+    for client in clients:
         if client.intents & flag_mask:
             return client
-            break
-        
-        index += 1
-        continue
+    
+    return me
+
+
+def first_content_intent_client(clients, message_data, me):
+    """
+    Returns the first client, who has message content intent for the given message.
+    
+    If no client allows it, returns the first client.
+    
+    Parameters
+    ----------
+    clients : `list` of ``Client``
+        A list of client to search from.
+    flag_mask : `int`
+        The intent flag's mask based on what the clients will be filtered.
+    me : ``Client``
+        The client who received the respective event.
+    
+    Returns
+    -------
+    client : ``Client``
+    """
+    # Fast check for obvious speed reasons.
+    if len(clients) <= 1:
+        return me
+    
+    # Check whether any of the clients has the required intent mask
+    flag_mask = INTENT_MASK_MESSAGE_CONTENT
+    
+    if message_data.get('guild_id', None) is None:
+        flag_mask |= INTENT_MASK_DIRECT_MESSAGES
+    else:
+        flag_mask |= INTENT_MASK_GUILD_MESSAGES
+    
+    for client in clients:
+        if client.intents & flag_mask:
+            return client
+    
+    author_id = int(message_data['author']['id'])
+    try:
+        return CLIENTS[author_id]
+    except KeyError:
+        pass
+    
+    for user_data in message_data['mentions']:
+        author_id = int(user_data['id'])
+        try:
+            return CLIENTS[author_id]
+        except KeyError:
+            pass
+    
+    return clients[0]
 
 
 def first_client_or_me(clients, flag_mask, me):
@@ -198,23 +283,14 @@ def first_client_or_me(clients, flag_mask, me):
     flag_mask : `int`
         The intent flag's mask based on what the clients will be filtered.
     me : ``Client``
-        The source client, what received the respective event.
+        The client who received the respective event.
     
     Returns
     -------
     client : ``Client``
     """
-    index = 0
-    limit = len(clients)
-    
-    while True:
-        if index == limit:
-            return me
-        
-        client = clients[index]
+    for client in clients:
         if client.intents & flag_mask:
             return client
-            break
-        
-        index += 1
-        continue
+    
+    return me

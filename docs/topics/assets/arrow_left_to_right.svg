@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.1"
+   viewBox="-10 0 100 100"
+   id="svg6"
+   width="100"
+   height="100"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs10" />
+  <g
+     transform="matrix(0.09765625,0,0,-0.1048951,-10,101.50354)"
+     id="g4">
+    <path
+       fill="currentColor"
+       d="M 1024,491 738,205 678,265 862,448 H 0 v 85 h 862 l -184,184 60,60 z"
+       id="path2" />
+  </g>
+</svg>

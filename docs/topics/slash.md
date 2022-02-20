@@ -1406,6 +1406,6 @@ Removed slash commands may not disappear after they are removed. This can have m
 
 - Global command sync time & Lazy caching
 
-<mark>
+<p>
     <a href="/components.md">Components</a>
-</mark>
+</p>

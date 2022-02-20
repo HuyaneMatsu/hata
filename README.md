@@ -21,7 +21,7 @@
 </p>
 
 <h1></h1>
-
+<br>
 <p align="center">
     New hata versions use
     <a href="https://github.com/discord/discord-api-docs/discussions/4510">
@@ -30,7 +30,7 @@
     .
 </p>
 
-<h2></h2>
+<h1></h1>
 
 <h3 align="center">
     About

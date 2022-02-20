@@ -22,11 +22,11 @@
 
 ---- 
 <p align="center">
-
-
-| New hata versions use [Discord API V10](https://github.com/discord/discord-api-docs/discussions/4510) |
-| --- |
-
+    New hata versions use
+    <a href="https://github.com/discord/discord-api-docs/discussions/4510">
+        Discord API V10
+    </a>
+    .
 </p>
 
 ----

@@ -24,3 +24,9 @@ If you don't know any python, but want to learn it, here are some links, where y
 - [The Hitchhiker's Guide to Python](https://docs.python-guide.org/)
 - [A Byte of Python](https://python.swaroopch.com/)
 - [Automate the Boring Stuff with Python](https://automatetheboringstuff.com/)
+
+----
+
+<p align="right">
+    <a href="./first_bot.md">Next up: First Hata bot</a>
+</p>

@@ -761,3 +761,9 @@ async def zoo(event):
 ```
 
 ![](assets/components_0006.gif)
+
+----
+
+<p align="right">
+    <a href="./forms.md">Next up: Forms</a>
+</p>

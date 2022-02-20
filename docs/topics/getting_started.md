@@ -74,3 +74,9 @@ whole career, so checking out multiple ones and making a choice, which satisfies
 
 Or if you are enough hardcore to make your own, or you are just curious, check out
 [Discord's official documentation](https://discord.com/developers/docs/intro).
+
+----
+
+<p align="right">
+    <a href="./introduction_to_python.md">Next up: Introduction to Python</a>
+</p>

@@ -1409,5 +1409,5 @@ Removed slash commands may not disappear after they are removed. This can have m
 ----
 
 <p align="right">
-    <a href="/components.md">Components</a>
+    <a href="/components.md">Next up: Components</a>
 </p>

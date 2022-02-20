@@ -39,6 +39,7 @@
 - `Client.sticker_guild_get_all` now returns a list emojis.
 - Add missing `InteractionResponseContext.__repr__`.
 - Add `Message.has_any_content_field`.
+- Update content fields of message if required.
 
 #### ext.slash
 

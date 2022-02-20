@@ -323,6 +323,9 @@ class Message(DiscordEntity, immortal=True):
             MESSAGES[self.id] = self
         else:
             if not self.partial:
+                if not self.has_any_content_field():
+                    self._update_content_fields(data)
+                
                 return self
         
         self._fields = None
@@ -1875,51 +1878,6 @@ class Message(DiscordEntity, immortal=True):
             self.everyone_mention = everyone_mention
         
         
-        try:
-            attachment_datas = data['attachments']
-        except KeyError:
-            pass
-        else:
-            if attachment_datas:
-                attachments = tuple(Attachment(attachment) for attachment in attachment_datas)
-            else:
-                attachments = None
-            self.attachments = attachments
-        
-        
-        try:
-            embed_datas = data['embeds']
-        except KeyError:
-            pass
-        else:
-            if embed_datas:
-                embeds = tuple(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
-            else:
-                embeds = None
-            self.embeds = embeds
-        
-        
-        try:
-            content = data['content']
-        except KeyError:
-            pass
-        else:
-            if (content is not None) and (not content):
-                content = None
-            self.content = content
-        
-        
-        try:
-            component_datas = data['components']
-        except KeyError:
-            pass
-        else:
-            if (component_datas is None) or (not component_datas):
-                components = None
-            else:
-                components = tuple(create_component(component_data) for component_data in component_datas)
-            self.components = components
-        
         guild = self.guild
         
         try:
@@ -1963,6 +1921,64 @@ class Message(DiscordEntity, immortal=True):
                 role_mention_ids = tuple(sorted(int(role_id) for role_id in role_mention_ids))
             
             self.role_mention_ids = role_mention_ids
+        
+        
+        self._update_content_fields(data)
+    
+    
+    def _update_content_fields(self, data):
+        """
+        Updates the message's content attributes with the given data by overwriting it's old attributes.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Message data received from Discord.
+        """
+        try:
+            attachment_datas = data['attachments']
+        except KeyError:
+            pass
+        else:
+            if attachment_datas:
+                attachments = tuple(Attachment(attachment) for attachment in attachment_datas)
+            else:
+                attachments = None
+            self.attachments = attachments
+        
+
+        try:
+            content = data['content']
+        except KeyError:
+            pass
+        else:
+            if (content is not None) and (not content):
+                content = None
+            self.content = content
+        
+        
+        try:
+            component_datas = data['components']
+        except KeyError:
+            pass
+        else:
+            if (component_datas is None) or (not component_datas):
+                components = None
+            else:
+                components = tuple(create_component(component_data) for component_data in component_datas)
+            self.components = components
+        
+        
+        try:
+            embed_datas = data['embeds']
+        except KeyError:
+            pass
+        else:
+            if embed_datas:
+                embeds = tuple(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
+            else:
+                embeds = None
+            self.embeds = embeds
     
     
     def _clear_cache(self):

@@ -192,7 +192,11 @@ class Sticker(DiscordEntity, immortal=True):
         data : `dict` of (`str`, `Any`) items
             Sticker data.
         """
-        self.description = data.get('description', None)
+        description = data.get('description', None)
+        if (description is not None) and (not description):
+            description = None
+        self.description = description
+        
         self.name = data['name']
         self.sort_value = data.get('sort_value', DEFAULT_SORT_VALUE)
         
@@ -238,6 +242,8 @@ class Sticker(DiscordEntity, immortal=True):
         old_attributes = {}
         
         description = data.get('description', None)
+        if (description is not None) and (not description):
+            description = None
         if description != self.description:
             old_attributes['description'] = self.description
             self.description = description
@@ -536,7 +542,7 @@ class Sticker(DiscordEntity, immortal=True):
         self = object.__new__(cls)
         self.id = sticker_id
         self.available = True
-        self.description = ''
+        self.description = None
         self.format = StickerFormat.none
         self.guild_id = 0
         self.name = ''

@@ -4,6 +4,9 @@
 
 - Add `DiscordException.debug_options`
 
+#### Bug fixes
+
+- `Sticker.description` now correctly defaults to `None`.
 
 ## 1.2.0 *\[2022-02-20\]*
 

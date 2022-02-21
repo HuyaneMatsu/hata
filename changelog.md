@@ -1,3 +1,10 @@
+## 1.2.1 *\[2022-02-??\]*
+
+#### Improvements
+
+- Add `DiscordException.debug_options`
+
+
 ## 1.2.0 *\[2022-02-20\]*
 
 ### API v10 checklist:

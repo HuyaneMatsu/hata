@@ -86,6 +86,8 @@ class DiscordHTTPClient(HTTPClient):
     
     Attributes
     ----------
+    _debug_options : `None`, `tuple` of `str`
+        Debug options used when requesting towards Discord.
     connector : ``TCPConnector``
         TCP connector of the session. Each Discord Http client shares the same.
     cookie_jar : ``CookieJar``
@@ -110,7 +112,7 @@ class DiscordHTTPClient(HTTPClient):
         running on the same loop.
     """
     __slots__ = (
-        'connector', 'cookie_jar', 'global_rate_limit_expires_at', 'handlers', 'headers', 'loop', 'proxy_auth',
+        '_debug_options', 'cookie_jar', 'global_rate_limit_expires_at', 'handlers', 'headers', 'loop', 'proxy_auth',
         'proxy_url'
     )
     
@@ -153,12 +155,16 @@ class DiscordHTTPClient(HTTPClient):
             headers[RATE_LIMIT_PRECISION] = 'millisecond'
         
         if (debug_options is not None):
+            debug_options = tuple(sorted(debug_options))
+            
             for debug_option in debug_options:
                 headers[DEBUG_OPTIONS] = debug_option
         
+        self._debug_options = debug_options
         self.headers = headers
         self.global_rate_limit_expires_at = 0.0
         self.handlers = WeakMap()
+    
     
     __aenter__ = None
     __aexit__ = None
@@ -192,6 +198,7 @@ class DiscordHTTPClient(HTTPClient):
         
         if not connector.closed:
             connector.close()
+    
     
     async def discord_request(self, handler, method, url, data=None, params=None, headers=None, reason=None):
         """
@@ -284,7 +291,7 @@ class DiscordHTTPClient(HTTPClient):
                 
                 if status == 429:
                     if 'code' in response_data: # Can happen at the case of rate limit ban
-                        raise DiscordException(response, response_data, data)
+                        raise DiscordException(response, response_data, data, self._debug_options)
                     
                     retry_after = response_data.get('retry_after', 0.0)
                     if response_data.get('global', False):
@@ -303,7 +310,7 @@ class DiscordHTTPClient(HTTPClient):
                     continue
                 
                 lock.exit(response_headers)
-                raise DiscordException(response, response_data, data)
+                raise DiscordException(response, response_data, data, self._debug_options)
     
     # client
     

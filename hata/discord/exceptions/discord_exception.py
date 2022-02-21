@@ -56,10 +56,14 @@ class DiscordException(Exception):
     
     Attributes
     ----------
-    response : ``ClientResponse``
-        The http client response, what caused the error.
+    debug_options : `None`, `tuple` of `str`
+        Debug options of the http client.
     received_data : `Any`
         Deserialized `json` response data if applicable.
+    response : ``ClientResponse``
+        The http client response, what caused the error.
+    sent_data : `ANy`
+        Sent data.
     _messages : `None`, `list` of `str`
         Initially the `._messages` attribute is `None`, but when the `.messages` property is used for the first time,
         the messages will be parsed out from the response and from it's data.
@@ -67,7 +71,7 @@ class DiscordException(Exception):
         Initially the `._code` attribute is set to `None`, but first time when the `.code` property is accessed, it is
         parsed out. If the response data does not contains `code`, then this attribute is set to `0`.
     """
-    def __init__(self, response, received_data, sent_data):
+    def __init__(self, response, received_data, sent_data, debug_options):
         """
         Creates a new ``DiscordException``.
         
@@ -77,13 +81,19 @@ class DiscordException(Exception):
             The http client response, what caused the error.
         received_data : `Any`
             Deserialized `json` response data if applicable.
+        sent_data : `Any`
+            Sent data.
+        debug_options : `None`, `tuple` of `str`
+            Debug options of the http client.
         """
         Exception.__init__(self)
         self.response = response
         self.received_data = received_data
         self.sent_data = sent_data
+        self.debug_options = debug_options
         self._messages = None
         self._code = None
+    
     
     @property
     def data(self):
@@ -96,6 +106,7 @@ class DiscordException(Exception):
             FutureWarning)
         
         return self.received_data
+    
     
     @property
     def messages(self):
@@ -113,12 +124,17 @@ class DiscordException(Exception):
         messages = self._messages
         if messages is None:
             messages = self._create_messages()
-            if (reconstruct_payload is not None):
+            if RICH_DISCORD_EXCEPTION:
+                debug_options_message = self._create_debug_options_message()
+                if (debug_options_message is not None):
+                    messages.append(debug_options_message)
+                
                 reconstructed_payload = reconstruct_payload(self.sent_data)
                 if (reconstructed_payload is not None):
                     messages.append(reconstructed_payload)
         
         return messages
+    
     
     def _create_messages(self):
         """
@@ -322,6 +338,7 @@ class DiscordException(Exception):
         
         return code
     
+    
     def _get_code(self):
         """
         Parses out the Discord's inner exception code from the response's data. Sets it to `._code` and returns it as
@@ -340,6 +357,7 @@ class DiscordException(Exception):
         self._code = code
         return code
     
+    
     @property
     def status(self):
         """
@@ -350,3 +368,34 @@ class DiscordException(Exception):
         status_code : `int`
         """
         return self.response.status
+    
+    
+    def _create_debug_options_message(self):
+        """
+        Creates debug options message part.
+        
+        Returns
+        -------
+        debug_options_message : `None`, `str`
+        """
+        debug_options = self.debug_options
+        if (debug_options is None):
+            return None
+        
+        debug_options_message_parts = ['debug options: ']
+        
+        index = 0
+        limit = len(debug_options)
+        while True:
+            debug_option = debug_options[index]
+            index += 1
+            
+            debug_options_message_parts.append(debug_option)
+            
+            if index == limit:
+                break
+            
+            debug_options_message_parts.append(', ')
+            continue
+        
+        return ''.join(debug_options_message_parts)

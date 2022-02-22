@@ -119,9 +119,6 @@ async def process_command_coroutine_generator(command_context, coroutine_generat
             if (response_exception is None) or (response_exception is not err):
                 raise
             
-            if isinstance(err, ConnectionError):
-                return
-            
             if isinstance(err, DiscordException):
                 if err.code in (
                     ERROR_CODES.unknown_channel, # Message's channel deleted; Can we get this?

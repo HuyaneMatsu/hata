@@ -555,6 +555,9 @@ class UserMenuRunner(PaginationBase):
                 await client.message_edit(message, default_content)
         except BaseException as err:
             self.cancel(err)
+            if isinstance(err, GeneratorExit):
+                raise
+            
             if isinstance(err, ConnectionError):
                 return self
             
@@ -585,6 +588,9 @@ class UserMenuRunner(PaginationBase):
                     await client.reaction_add(message, emoji)
             except BaseException as err:
                 self.cancel(err)
+                if isinstance(err, GeneratorExit):
+                    raise
+                
                 if isinstance(err, ConnectionError):
                     return self
                 
@@ -649,6 +655,10 @@ class UserMenuRunner(PaginationBase):
         
         try:
             content = await self._factory.invoke(self._instance, event)
+        except GeneratorExit as err:
+            self.cancel(err)
+            raise
+        
         except BaseException as err:
             self.cancel(err)
             await client.events.error(client, f'{self!r}.__call__', err)
@@ -662,6 +672,9 @@ class UserMenuRunner(PaginationBase):
             await client.message_edit(self.message, content)
         except BaseException as err:
             self.cancel(err)
+            
+            if isinstance(err, GeneratorExit):
+                raise
             
             if isinstance(err, ConnectionError):
                 # no internet
@@ -695,6 +708,9 @@ class UserMenuRunner(PaginationBase):
         if (close is not None):
             try:
                 await close(self._instance, exception)
+            except GeneratorExit:
+                raise
+            
             except BaseException as err:
                 client = self.client
                 await client.events.error(client, f'{self!r}.handle_close_exception', err)
@@ -865,6 +881,9 @@ class UserPagination:
         if isinstance(exception, CancelledError):
             try:
                 await client.message_delete(self.menu.message)
+            except GeneratorExit:
+                raise
+            
             except BaseException as err:
                 if isinstance(err, ConnectionError):
                     # no internet
@@ -886,6 +905,9 @@ class UserPagination:
             if self.menu.channel.cached_permissions_for(client).can_manage_messages:
                 try:
                     await client.reaction_clear(self.menu.message)
+                except GeneratorExit:
+                    raise
+                
                 except BaseException as err:
                     
                     if isinstance(err, ConnectionError):

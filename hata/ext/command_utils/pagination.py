@@ -210,6 +210,9 @@ class Pagination(PaginationBase):
                 await client.message_edit(message, pages[0])
         except BaseException as err:
             self.cancel(err)
+            if isinstance(err, GeneratorExit):
+                raise
+            
             if isinstance(err, ConnectionError):
                 return self
             
@@ -237,6 +240,9 @@ class Pagination(PaginationBase):
                 await client.reaction_add(message, self.CANCEL)
         except BaseException as err:
             self.cancel(err)
+            if isinstance(err, GeneratorExit):
+                raise
+            
             if isinstance(err, ConnectionError):
                 return self
             
@@ -308,15 +314,18 @@ class Pagination(PaginationBase):
                 except BaseException as err:
                     self.cancel(err)
                     
+                    if isinstance(err, GeneratorExit):
+                        raise
+                    
                     if isinstance(err, ConnectionError):
                         # no internet
                         return
                     
                     if isinstance(err, DiscordException):
                         if err.code in (
-                                ERROR_CODES.unknown_channel, # message's channel deleted
-                                ERROR_CODES.missing_access, # client removed
-                                    ):
+                            ERROR_CODES.unknown_channel, # message's channel deleted
+                            ERROR_CODES.missing_access, # client removed
+                        ):
                             return
                     
                     await client.events.error(client, f'{self!r}.__call__', err)
@@ -352,16 +361,19 @@ class Pagination(PaginationBase):
         except BaseException as err:
             self.cancel(err)
             
+            if isinstance(err, GeneratorExit):
+                raise
+            
             if isinstance(err, ConnectionError):
                 # no internet
                 return
             
             if isinstance(err, DiscordException):
                 if err.code in (
-                        ERROR_CODES.unknown_message, # message deleted
-                        ERROR_CODES.unknown_channel, # channel deleted
-                        ERROR_CODES.missing_access, # client removed
-                            ):
+                    ERROR_CODES.unknown_message, # message deleted
+                    ERROR_CODES.unknown_channel, # channel deleted
+                    ERROR_CODES.missing_access, # client removed
+                ):
                     return
             
             # We definitely do not want to silence `ERROR_CODES.invalid_form_body`

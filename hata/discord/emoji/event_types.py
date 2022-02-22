@@ -21,6 +21,9 @@ async def _delete_reaction_with_task(reaction_add_event, client):
     """
     try:
         await client.reaction_delete(reaction_add_event.message, reaction_add_event.emoji, reaction_add_event.user)
+    except GeneratorExit:
+        raise
+    
     except BaseException as err:
         
         if isinstance(err, ConnectionError):

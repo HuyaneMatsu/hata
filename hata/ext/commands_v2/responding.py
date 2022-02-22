@@ -134,6 +134,9 @@ async def process_command_coroutine_generator(command_context, coroutine_generat
         else:
             try:
                 response_message = await send_response(command_context, response)
+            except GeneratorExit:
+                raise
+            
             except BaseException as err:
                 response_message = None
                 response_exception = err

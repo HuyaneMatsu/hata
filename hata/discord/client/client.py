@@ -16397,6 +16397,9 @@ class Client(ClientUserPBase):
         
         try:
             data = await self.client_login_static()
+        except GeneratorExit:
+            raise
+        
         except BaseException as err:
             if isinstance(err, ConnectionError) and err.args[0] == 'Invalid address':
                 after = (

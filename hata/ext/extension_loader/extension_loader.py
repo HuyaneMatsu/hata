@@ -1037,6 +1037,9 @@ class ExtensionLoader:
             try:
                 # loading blocks, but unloading does not
                 lib = await KOKORO.run_in_executor(extension._load)
+            except GeneratorExit:
+                raise
+            
             except BaseException as err:
                 message = await KOKORO.run_in_executor(
                     alchemy_incendiary(
@@ -1073,6 +1076,8 @@ class ExtensionLoader:
                     await entry_point(lib)
                 else:
                     entry_point(lib)
+            except GeneratorExit:
+                raise
             
             except BaseException as err:
                 message = await KOKORO.run_in_executor(
@@ -1151,6 +1156,8 @@ class ExtensionLoader:
                         await exit_point(lib)
                     else:
                         exit_point(lib)
+                except GeneratorExit:
+                    raise
                 
                 except BaseException as err:
                     message = await KOKORO.run_in_executor(

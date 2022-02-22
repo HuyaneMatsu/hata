@@ -155,6 +155,9 @@ class PaginationBase:
         if isinstance(exception, CancelledError):
             try:
                 await client.message_delete(message)
+            except GeneratorExit:
+                raise
+            
             except BaseException as err:
                 
                 if isinstance(err, ConnectionError):
@@ -163,10 +166,10 @@ class PaginationBase:
                 
                 if isinstance(err, DiscordException):
                     if err.code in (
-                            ERROR_CODES.unknown_channel, # channel deleted
-                            ERROR_CODES.unknown_message, # message deleted
-                            ERROR_CODES.missing_access, # client removed
-                                ):
+                        ERROR_CODES.unknown_channel, # channel deleted
+                        ERROR_CODES.unknown_message, # message deleted
+                        ERROR_CODES.missing_access, # client removed
+                    ):
                         return True
                 
                 await client.events.error(client, f'{self!r}._handle_close_exception', err)
@@ -177,6 +180,9 @@ class PaginationBase:
             if self.channel.cached_permissions_for(client).can_manage_messages:
                 try:
                     await client.reaction_clear(message)
+                except GeneratorExit:
+                    raise
+                
                 except BaseException as err:
                     
                     if isinstance(err, ConnectionError):
@@ -185,11 +191,11 @@ class PaginationBase:
                     
                     if isinstance(err, DiscordException):
                         if err.code in (
-                                ERROR_CODES.unknown_message, # message deleted
-                                ERROR_CODES.unknown_channel, # channel deleted
-                                ERROR_CODES.missing_access, # client removed
-                                ERROR_CODES.missing_permissions, # permissions changed meanwhile
-                                    ):
+                            ERROR_CODES.unknown_message, # message deleted
+                            ERROR_CODES.unknown_channel, # channel deleted
+                            ERROR_CODES.missing_access, # client removed
+                            ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                        ):
                             return True
                     
                     await client.events.error(client, f'{self!r}._handle_close_exception', err)

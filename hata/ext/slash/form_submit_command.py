@@ -207,8 +207,12 @@ class FormSubmitCommand(CustomIdBasedCommand):
         for parameter_converter in self._parameter_converters:
             try:
                 parameter = await parameter_converter(client, interaction_event, regex_match)
+            except GeneratorExit:
+                raise
+            
             except BaseException as err:
                 exception = err
+            
             else:
                 positional_parameters.append(parameter)
                 continue
@@ -225,8 +229,12 @@ class FormSubmitCommand(CustomIdBasedCommand):
         if (parameter_converter is not None):
             try:
                 parameters = await parameter_converter(client, interaction_event, regex_match)
+            except GeneratorExit:
+                raise
+            
             except BaseException as err:
                 exception = err
+            
             else:
                 if (parameters is not None):
                     positional_parameters.extend(parameters)
@@ -249,8 +257,12 @@ class FormSubmitCommand(CustomIdBasedCommand):
         for parameter_converter in self._keyword_parameter_converters:
             try:
                 parameter = await parameter_converter(client, interaction_event, regex_match)
+            except GeneratorExit:
+                raise
+            
             except BaseException as err:
                 exception = err
+            
             else:
                 keyword_parameters[parameter_converter.parameter_name] = parameter
                 continue
@@ -268,8 +280,12 @@ class FormSubmitCommand(CustomIdBasedCommand):
         
         try:
             await process_command_coroutine(client, interaction_event, self.response_modifier, command_coroutine)
+        except GeneratorExit:
+            raise
+        
         except BaseException as err:
             exception = err
+        
         else:
             return
         

@@ -456,6 +456,9 @@ class ChooseMenu(PaginationBase):
         if (check is not None):
             try:
                 should_continue = check(event)
+            except GeneratorExit:
+                raise
+            
             except BaseException as err:
                 await client.events.error(client, f'{self!r}.__call__', err)
                 return
@@ -508,19 +511,23 @@ class ChooseMenu(PaginationBase):
                     else:
                         for emoji in self.EMOJIS:
                             await client.reaction_delete_own(message, emoji)
+                
                 except BaseException as err:
                     self.cancel(err)
+                    if isinstance(err, GeneratorExit):
+                        raise
+                    
                     if isinstance(err, ConnectionError):
                         # no internet
                         return
                     
                     if isinstance(err, DiscordException):
                         if err.code in (
-                                ERROR_CODES.unknown_message, # message already deleted
-                                ERROR_CODES.unknown_channel, # channel deleted
-                                ERROR_CODES.missing_access, # client removed
-                                ERROR_CODES.missing_permissions, # permissions changed meanwhile
-                                    ):
+                            ERROR_CODES.unknown_message, # message already deleted
+                            ERROR_CODES.unknown_channel, # channel deleted
+                            ERROR_CODES.missing_access, # client removed
+                            ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                        ):
                             return
                     
                     await client.events.error(client, f'{self!r}.__call__', err)
@@ -535,8 +542,13 @@ class ChooseMenu(PaginationBase):
                     else:
                         coroutine = selector(client, channel, message, choice)
                     await coroutine
+                
+                except GeneratorExit:
+                    raise
+                
                 except BaseException as err:
                     await client.events.error(client, f'{self!r}.__call__ when calling {selector!r}', err)
+                
                 return
             
             return
@@ -556,16 +568,19 @@ class ChooseMenu(PaginationBase):
         except BaseException as err:
             self.cancel(err)
             
+            if isinstance(err, GeneratorExit):
+                raise
+            
             if isinstance(err, ConnectionError):
                 # no internet
                 return
             
             if isinstance(err, DiscordException):
                 if err.code in (
-                        ERROR_CODES.unknown_message, # message already deleted
-                        ERROR_CODES.unknown_channel, # message's channel deleted
-                        ERROR_CODES.missing_access, # client removed
-                            ):
+                    ERROR_CODES.unknown_message, # message already deleted
+                    ERROR_CODES.unknown_channel, # message's channel deleted
+                    ERROR_CODES.missing_access, # client removed
+                ):
                     return
             
             # We definitely do not want to silence `ERROR_CODES.invalid_form_body`

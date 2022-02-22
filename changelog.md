@@ -2,9 +2,54 @@
 
 #### Bug fixes
 
+- `_delete_reaction_with_task` ignored `GeneratorExit`.
+- `Client.connect` ignored `GeneratorExit`.
+- `WaitForHandler.__call__` ignored `GeneratorExit`.
+- `_with_error` ignored `GeneratorExit`.
+
 ##### ext.commands_v2
 
 - `CommandProcessor.__call__` ignored `GeneratorExit`.
+- `process_command_coroutine_generator` ignored `GeneratorExit`.
+- `CheckCustom.__call__` ignored `GeneratorExit`.
+- `CommandContext.invoke` ignored `GeneratorExit`.
+
+##### ext.command_utils
+
+- `ChooseMenu.__call__` ignored `GeneratorExit`.
+- `Closer.__call__` ignored `GeneratorExit`.
+- `UserMenu.__call__` ignored `GeneratorExit`.
+- `UserMenu._handle_close_exception` ignored `GeneratorExit`.
+- `PaginationBase._handle_close_exception` ignored `GeneratorExit`.
+- `Pagination.__call__` ignored `GeneratorExit`.
+
+##### ext.extension_loader
+
+- `ExtensionLoader._load_extension` ignored `GeneratorExit`.
+- `ExtensionLoader._unload_extension` ignored `GeneratorExit`.
+
+#### ext.slash
+
+- `acknowledge_component_interaction` ignored `GeneratorExit`.
+- `Slasher._sync_permission_task` ignored `GeneratorExit`.
+- `Slasher._create_command` ignored `GeneratorExit`.
+- `Slasher._delete_command` ignored `GeneratorExit`.
+- `Slasher._edit_command` ignored `GeneratorExit`.
+- `Slasher._edit_guild_command_to_non_global` ignored `GeneratorExit`.
+- `Slasher._register_command_task` ignored `GeneratorExit`.
+- `Slasher._dispatch_application_command_event` ignored `GeneratorExit`.
+- `Slasher._dispatch_application_command_autocomplete_event` ignored `GeneratorExit`.
+- `Slasher._sync_guild_task` ignored `GeneratorExit`.
+- `Slasher._sync_global_task` ignored `GeneratorExit`.
+- `process_command_coroutine_generator` ignored `GeneratorExit`.
+- `Menu._handle_close_exception` ignored `GeneratorExit`.
+- `Menu.__call__` ignored `GeneratorExit`.
+- `Menu._canceller_function` ignored `GeneratorExit`.
+- `FormSubmitCommand.__call__` ignored `GeneratorExit`.
+- `handle_command_exception` ignored `GeneratorExit`.
+- `ComponentCommand.__call__` ignored `GeneratorExit`.
+- `SlasherApplicationCommandFunction.__call__` ignored `GeneratorExit`.
+- `SlasherApplicationCommandParameterAutoCompleter.__call__` ignored `GeneratorExit`.
 
 ## 1.2.1 *\[2022-02-22\]*
 

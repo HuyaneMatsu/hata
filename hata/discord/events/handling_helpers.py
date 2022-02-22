@@ -2378,8 +2378,13 @@ class WaitForHandler:
         for future, check in self.waiters.items():
             try:
                 result = check(*args)
+            except GeneratorExit as err:
+                future.set_exception_if_pending(err)
+                raise
+            
             except BaseException as err:
                 future.set_exception_if_pending(err)
+            
             else:
                 if isinstance(result, bool):
                     if result:
@@ -2502,8 +2507,12 @@ async def _with_error(client, task):
     """
     try:
         await task
+    except GeneratorExit:
+        raise
+    
     except BaseException as err:
         await client.events.error(client, repr(task), err)
+    
     finally:
         task = None # clear references
 

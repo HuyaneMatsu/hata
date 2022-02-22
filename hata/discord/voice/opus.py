@@ -183,6 +183,7 @@ try:
 except BaseException:
     pass
 
+
 SAMPLING_RATE = 48000 # this is the max sadly
 CHANNELS = 2
 FRAME_LENGTH = 20

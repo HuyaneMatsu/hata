@@ -194,8 +194,12 @@ class ComponentCommand(CustomIdBasedCommand):
         for parameter_converter in self._parameter_converters:
             try:
                 parameter = await parameter_converter(client, interaction_event, regex_match)
+            except GeneratorExit:
+                raise
+            
             except BaseException as err:
                 exception = err
+            
             else:
                 parameters.append(parameter)
                 continue
@@ -212,8 +216,12 @@ class ComponentCommand(CustomIdBasedCommand):
         
         try:
             await process_command_coroutine(client, interaction_event, self.response_modifier, command_coroutine)
+        except GeneratorExit:
+            raise
+        
         except BaseException as err:
             exception = err
+        
         else:
             return
         

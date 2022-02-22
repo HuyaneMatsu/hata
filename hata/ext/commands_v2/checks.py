@@ -1475,6 +1475,9 @@ class CheckCustom(CheckBase):
             result = self.check(context)
             if self._is_async:
                 result = await result
+        except GeneratorExit:
+            raise
+        
         except BaseException as err:
             client = context.client
             Task(client.events.error(client, repr(self), err), KOKORO)

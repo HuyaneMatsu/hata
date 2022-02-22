@@ -403,6 +403,9 @@ async def handle_command_exception(entity, client, interaction_event, exception)
     for exception_handler in _iter_exception_handlers(entity):
         try:
             handled = await exception_handler(client, interaction_event, entity, exception)
+        except GeneratorExit:
+            raise
+        
         except BaseException as err:
             await client.events.error(client, 'handle_command_exception', err)
             return

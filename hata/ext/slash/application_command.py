@@ -1950,8 +1950,12 @@ class SlasherApplicationCommandFunction:
             
             try:
                 parameter = await parameter_converter(client, interaction_event, value)
+            except GeneratorExit:
+                raise
+            
             except BaseException as err:
                 exception = err
+            
             else:
                 parameters.append(parameter)
                 continue
@@ -1974,8 +1978,12 @@ class SlasherApplicationCommandFunction:
                 self.response_modifier,
                 command_coroutine,
             )
+        except GeneratorExit:
+            raise
+        
         except BaseException as err:
             exception = err
+        
         else:
             return
         
@@ -2889,8 +2897,12 @@ class SlasherApplicationCommandParameterAutoCompleter:
                 interaction_event,
                 auto_completer_coroutine,
             )
+        except GeneratorExit:
+            raise
+        
         except BaseException as err:
             exception = err
+        
         else:
             return
         

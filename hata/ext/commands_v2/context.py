@@ -380,7 +380,10 @@ class CommandContext(object):
             await process_command_coroutine(self,
                 command_function._function(*command_positional_parameters, **command_keyword_parameters)
             )
-            
+        
+        except GeneratorExit:
+            raise
+        
         except BaseException as err:
             return await handle_exception(self, err)
         

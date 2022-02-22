@@ -304,9 +304,6 @@ async def process_command_coroutine_generator(
             if (response_exception is None) or (response_exception is not err):
                 raise
             
-            if isinstance(err, ConnectionError):
-                return
-            
             raise
         
         else:
@@ -323,6 +320,9 @@ async def process_command_coroutine_generator(
             ):
                 try:
                     response_message = await request_coroutine
+                except GeneratorExit:
+                    raise
+                
                 except BaseException as err:
                     # `response_message` may have be set before with an iteration, so reset it.
                     response_message = None
@@ -377,13 +377,7 @@ async def process_command_coroutine(client, interaction_event, response_modifier
         response,
         True,
     ):
-        try:
-            await request_coroutine
-        except BaseException as err:
-            if isinstance(err, ConnectionError):
-                return
-            
-            raise
+        await request_coroutine
 
 
 class InteractionResponse:

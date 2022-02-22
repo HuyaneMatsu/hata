@@ -173,6 +173,9 @@ class Closer(PaginationBase):
                 await client.message_edit(message, content)
         except BaseException as err:
             self.cancel(err)
+            if isinstance(err, GeneratorExit):
+                raise
+            
             if isinstance(err, ConnectionError):
                 return self
             
@@ -197,6 +200,9 @@ class Closer(PaginationBase):
             await client.reaction_add(message, self.CANCEL)
         except BaseException as err:
             self.cancel(err)
+            if isinstance(err, GeneratorExit):
+                raise
+            
             if isinstance(err, ConnectionError):
                 return self
             
@@ -235,6 +241,9 @@ class Closer(PaginationBase):
         if (check is not None):
             try:
                 should_continue = check(event)
+            except GeneratorExit:
+                raise
+            
             except BaseException as err:
                 await client.events.error(client, f'{self!r}.__call__', err)
                 return

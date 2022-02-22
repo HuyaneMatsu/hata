@@ -1603,6 +1603,10 @@ class Menu(metaclass=MenuType):
         if (check is not None):
             try:
                 should_process = check(self, interaction_event)
+            except GeneratorExit as err:
+                self.cancel(err)
+                raise
+            
             except BaseException as err:
                 self.cancel(err)
                 return
@@ -1616,6 +1620,10 @@ class Menu(metaclass=MenuType):
         invoke = self._menu_structure.invoke
         try:
             should_edit = await invoke(self, interaction_event)
+        except GeneratorExit as err:
+            self.cancel(err)
+            raise
+        
         except BaseException as err:
             self.cancel(err)
             return
@@ -1630,7 +1638,15 @@ class Menu(metaclass=MenuType):
                 kwargs['allowed_mentions'] = allowed_mentions
             
             try:
-                await client.interaction_component_message_edit(interaction_event, **kwargs, components=self._components)
+                await client.interaction_component_message_edit(
+                    interaction_event,
+                    **kwargs,
+                    components = self._components,
+                )
+            except GeneratorExit as err:
+                self.cancel(err)
+                raise
+            
             except BaseException as err:
                 self.cancel(err)
                 return
@@ -1656,6 +1672,10 @@ class Menu(metaclass=MenuType):
         else:
             try:
                 await client.interaction_component_acknowledge(interaction_event)
+            except GeneratorExit as err:
+                self.cancel(err)
+                raise
+            
             except BaseException as err:
                 self.cancel(err)
                 return
@@ -1723,8 +1743,12 @@ class Menu(metaclass=MenuType):
             else:
                 await close(self, exception)
                 handled = True
+        except GeneratorExit:
+            raise
+        
         except BaseException as err:
             await client.events.error(client, f'{self!r}._canceller_function', err)
+        
         else:
             if not handled:
                 await client.events.error(client, f'{self!r}.cancel', exception)
@@ -1755,6 +1779,9 @@ class Menu(metaclass=MenuType):
         if isinstance(exception, CancelledError):
             try:
                 await client.message_delete(message)
+            except GeneratorExit:
+                raise
+            
             except BaseException as err:
                 if isinstance(err, ConnectionError):
                     # no internet
@@ -1762,10 +1789,10 @@ class Menu(metaclass=MenuType):
                 
                 if isinstance(err, DiscordException):
                     if err.code in (
-                            ERROR_CODES.unknown_channel, # channel deleted
-                            ERROR_CODES.unknown_message, # message deleted
-                            ERROR_CODES.missing_access, # client removed
-                                ):
+                        ERROR_CODES.unknown_channel, # channel deleted
+                        ERROR_CODES.unknown_message, # message deleted
+                        ERROR_CODES.missing_access, # client removed
+                    ):
                         return True
                 
                 await client.events.error(client, f'{self!r}._handle_close_exception', err)
@@ -1776,6 +1803,9 @@ class Menu(metaclass=MenuType):
             if (message.components is not None):
                 try:
                     await client.message_edit(message, components=None)
+                except GeneratorExit:
+                    raise
+                
                 except BaseException as err:
                     if isinstance(err, ConnectionError):
                         # no internet
@@ -1783,11 +1813,11 @@ class Menu(metaclass=MenuType):
                     
                     if isinstance(err, DiscordException):
                         if err.code in (
-                                ERROR_CODES.unknown_message, # message deleted
-                                ERROR_CODES.unknown_channel, # channel deleted
-                                ERROR_CODES.missing_access, # client removed
-                                ERROR_CODES.missing_permissions, # permissions changed meanwhile
-                                    ):
+                            ERROR_CODES.unknown_message, # message deleted
+                            ERROR_CODES.unknown_channel, # channel deleted
+                            ERROR_CODES.missing_access, # client removed
+                            ERROR_CODES.missing_permissions, # permissions changed meanwhile
+                        ):
                             return True
                     
                     await client.events.error(client, f'{self!r}._handle_close_exception', err)

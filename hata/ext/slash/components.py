@@ -26,6 +26,9 @@ async def acknowledge_component_interaction(interaction_event):
         
     try:
         await client.interaction_component_acknowledge(interaction_event)
+    except GeneratorExit:
+        raise
+    
     except BaseException as err:
         if isinstance(err, ConnectionError):
             # No Internet connection

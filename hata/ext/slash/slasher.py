@@ -1053,6 +1053,9 @@ class Slasher(EventHandlerBase):
         """
         try:
             command = await self._try_get_command_by_id(client, interaction_event)
+        except GeneratorExit:
+            raise
+        
         except ConnectionError:
             return
         except BaseException as err:
@@ -1126,10 +1129,15 @@ class Slasher(EventHandlerBase):
         
         try:
             command = await self._try_get_command_by_id(client, interaction_event)
+        except GeneratorExit:
+            raise
+        
         except ConnectionError:
             return
+        
         except BaseException as err:
             await client.events.error(client, f'{self!r}._dispatch_application_command_autocomplete_event', err)
+        
         else:
             if (command is not None):
                 await command.call_auto_completion(client, interaction_event, auto_complete_option)
@@ -1755,6 +1763,9 @@ class Slasher(EventHandlerBase):
         
         try:
             application_commands = await client.application_command_guild_get_all(guild_id)
+        except GeneratorExit:
+            raise
+        
         except BaseException as err:
             # No internet connection
             if not isinstance(err, ConnectionError):
@@ -1922,6 +1933,9 @@ class Slasher(EventHandlerBase):
         success = False
         try:
             application_commands = await client.application_command_global_get_all()
+        except GeneratorExit:
+            raise
+        
         except BaseException as err:
             # No internet connection
             if not isinstance(err, ConnectionError):
@@ -2101,8 +2115,14 @@ class Slasher(EventHandlerBase):
         
         if permission_overwrites != current_permission_overwrites:
             try:
-                permission = await client.application_command_permission_edit(guild_id, application_command,
-                    permission_overwrites)
+                permission = await client.application_command_permission_edit(
+                    guild_id,
+                    application_command,
+                    permission_overwrites,
+                )
+            except GeneratorExit:
+                raise
+            
             except BaseException as err:
                 if not isinstance(err, ConnectionError):
                     await client.events.error(client, f'{self!r}._register_command', err)
@@ -2143,8 +2163,14 @@ class Slasher(EventHandlerBase):
             Whether the command was updated successfully.
         """
         try:
-            application_command = await client.application_command_guild_edit(guild_id, application_command,
-                command.get_schema())
+            application_command = await client.application_command_guild_edit(
+                guild_id,
+                application_command,
+                command.get_schema(),
+            )
+        except GeneratorExit:
+            raise
+        
         except BaseException as err:
             if isinstance(err, ConnectionError):
                 return False
@@ -2189,6 +2215,9 @@ class Slasher(EventHandlerBase):
             else:
                 coroutine = client.application_command_guild_edit(guild_id, application_command, schema)
             await coroutine
+        except GeneratorExit:
+            raise
+        
         except BaseException as err:
             if isinstance(err, ConnectionError):
                 # No internet connection
@@ -2234,6 +2263,9 @@ class Slasher(EventHandlerBase):
             else:
                 coroutine = client.application_command_guild_delete(guild_id, application_command)
             await coroutine
+        except GeneratorExit:
+            raise
+        
         except BaseException as err:
             if isinstance(err, ConnectionError):
                 # No internet connection
@@ -2278,6 +2310,9 @@ class Slasher(EventHandlerBase):
             else:
                 coroutine = client.application_command_guild_create(guild_id, schema)
             application_command = await coroutine
+        except GeneratorExit:
+            raise
+        
         except BaseException as err:
             if isinstance(err, ConnectionError):
                 # No internet connection
@@ -2629,6 +2664,9 @@ class Slasher(EventHandlerBase):
         try:
             try:
                 permissions = await client.application_command_permission_get_all_guild(guild_id)
+            except GeneratorExit:
+                raise
+            
             except BaseException as err:
                 if not isinstance(err, ConnectionError):
                     await client.events.error(client, f'{self!r}._sync_permission_task', err)

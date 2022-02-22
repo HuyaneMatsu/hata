@@ -1,3 +1,11 @@
+## 1.2.2 *\[2022-02-??\]*
+
+#### Bug fixes
+
+##### ext.commands_v2
+
+- `CommandProcessor.__call__` ignored `GeneratorExit`.
+
 ## 1.2.1 *\[2022-02-22\]*
 
 #### Improvements

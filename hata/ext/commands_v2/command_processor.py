@@ -385,6 +385,9 @@ class CommandProcessor(EventWaitforBase):
         if (unknown_command is not None):
             try:
                 await unknown_command(client, message, command_name)
+            except GeneratorExit:
+                raise
+            
             except BaseException as err:
                 await client.events.error(client, f'{self!r}.__call__', err)
     

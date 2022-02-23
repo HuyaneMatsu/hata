@@ -324,7 +324,7 @@ class Application(DiscordEntity, immortal=True):
                 if owner_data is None:
                     owner = ZEROUSER
                 else:
-                    owner = User(owner_data)
+                    owner = User.from_data(owner_data)
             else:
                 owner = Team(team_data)
             

@@ -75,7 +75,7 @@ class Integration(DiscordEntity, immortal=True):
         if user_data is None:
             user = ZEROUSER
         else:
-            user = User(user_data)
+            user = User.from_data(user_data)
         self.user = user
         
         application_data = data.get('application', None)

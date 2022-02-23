@@ -39,7 +39,7 @@ class MessageInteraction(DiscordEntity):
         self.id = int(data['id'])
         self.name = data['name']
         self.type = InteractionType.get(data['type'])
-        self.user = User(data['user'])
+        self.user = User.from_data(data['user'])
         
         return self
     

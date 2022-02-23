@@ -381,10 +381,8 @@ class Message(DiscordEntity, immortal=True):
         guild_id = data.get('guild_id', None)
         if guild_id is None:
             guild_id = 0
-            guild = None
         else:
             guild_id = int(guild_id)
-            guild = GUILDS.get(guild_id, None)
         
         self.guild_id = guild_id
         
@@ -412,12 +410,7 @@ class Message(DiscordEntity, immortal=True):
             if author_data is None:
                 author = ZEROUSER
             else:
-                try:
-                     author_data['member'] = data['member']
-                except KeyError:
-                    pass
-                
-                author = User(author_data, guild)
+                author = User.from_data(author_data, data.get('member', None), guild_id)
         else:
             if (data.get('message_reference', None) is not None):
                 cross_mention_datas = data.get('mention_channels', None)
@@ -611,7 +604,10 @@ class Message(DiscordEntity, immortal=True):
                 self,
                 MESSAGE_FIELD_KEY_USER_MENTIONS,
                 tuple(sorted(
-                    (User(user_mention_data, guild) for user_mention_data in user_mention_datas),
+                    (
+                        User.from_data(user_mention_data, user_mention_data.get('member', None), guild_id)
+                        for user_mention_data in user_mention_datas
+                    ),
                     key = id_sort_key,
                 )),
             )
@@ -1758,7 +1754,10 @@ class Message(DiscordEntity, immortal=True):
                 user_mentions = None
             else:
                 user_mentions = tuple(sorted(
-                    (User(user_mention_data, guild) for user_mention_data in user_mention_datas),
+                    (
+                        User.from_data(user_mention_data, user_mention_data.get('member', None), self.guild_id)
+                        for user_mention_data in user_mention_datas
+                    ),
                     key = id_sort_key,
                 ))
             
@@ -1887,7 +1886,10 @@ class Message(DiscordEntity, immortal=True):
         else:
             if user_mention_datas:
                 user_mentions = tuple(sorted(
-                    (User(user_mention_data, guild) for user_mention_data in user_mention_datas),
+                    (
+                        User.from_data(user_mention_data, user_mention_data.get('member', None), self.guild_id)
+                        for user_mention_data in user_mention_datas
+                    ),
                     key = id_sort_key,
                 ))
             else:

@@ -97,7 +97,7 @@ class AuditLog:
             users = self.users
             
             for user_data in users_data:
-                user = User(user_data)
+                user = User.from_data(user_data)
                 users[user.id] = user
         
         

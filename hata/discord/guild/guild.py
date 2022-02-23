@@ -426,12 +426,12 @@ class Guild(DiscordEntity, immortal=True):
             
             if CACHE_PRESENCE:
                 try:
-                    user_datas = data['members']
+                    guild_profile_datas = data['members']
                 except KeyError:
                     pass
                 else:
-                    for user_data in user_datas:
-                        User(user_data, self)
+                    for guild_profile_data in guild_profile_datas:
+                        User.from_data(guild_profile_data['user'], guild_profile_data, guild_id)
                 
                 # If user caching is disabled, then presence caching is too.
                 try:

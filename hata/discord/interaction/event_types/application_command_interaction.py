@@ -156,10 +156,7 @@ class ApplicationCommandInteraction(DiscordEntity, InteractionFieldBase):
                         else:
                             guild_profile_data = resolved_guild_profile_datas.get(user_id, None)
                         
-                        if (guild_profile_data is not None):
-                            user_data['member'] = guild_profile_data
-                        
-                        user = User(user_data, interaction_event.guild)
+                        user = User.from_data(user_data, guild_profile_data, interaction_event.guild_id)
                         resolved_users[user.id] = user
                         
                         if (guild_profile_data is not None):

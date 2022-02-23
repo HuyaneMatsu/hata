@@ -178,11 +178,14 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         
         # user
         try:
-            user_data = data['member']
+            guild_profile_data = data['member']
         except KeyError:
             user_data = data['user']
+            guild_profile_data = None
+        else:
+            user_data = guild_profile_data['user']
         
-        user = User(user_data, guild)
+        user = User.from_data(user_data, guild_profile_data, guild_id)
         
         # user_permissions
         try:

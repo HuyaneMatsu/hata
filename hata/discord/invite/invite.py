@@ -269,7 +269,7 @@ class Invite(DiscordEntity, immortal=True):
         except KeyError:
             inviter = ZEROUSER
         else:
-            inviter = User(inviter_data)
+            inviter = User.from_data(inviter_data)
         self.inviter = inviter
         
         self.uses = data.get('uses', None)
@@ -292,7 +292,7 @@ class Invite(DiscordEntity, immortal=True):
         except KeyError:
             target_user = ZEROUSER
         else:
-            target_user = User(target_user_data)
+            target_user = User.from_data(target_user_data)
         
         self.target_user = target_user
         
@@ -310,7 +310,7 @@ class Invite(DiscordEntity, immortal=True):
         except KeyError:
             invite_stage = None
         else:
-            invite_stage = InviteStage(invite_stage_data, guild)
+            invite_stage = InviteStage(invite_stage_data, guild.id)
         self.stage = invite_stage
         
         self.type = InviteType.get(data.get('type', 0))
@@ -366,7 +366,7 @@ class Invite(DiscordEntity, immortal=True):
         except KeyError:
             pass
         else:
-            self.inviter = User(inviter_data)
+            self.inviter = User.from_data(inviter_data)
         
         try:
             self.uses = data['uses']
@@ -407,7 +407,7 @@ class Invite(DiscordEntity, immortal=True):
         except KeyError:
             pass
         else:
-            self.target_user = User(target_user_data)
+            self.target_user = User.from_data(target_user_data)
     
         try:
             target_application_data = data['target_application']
@@ -421,7 +421,7 @@ class Invite(DiscordEntity, immortal=True):
         except KeyError:
             pass
         else:
-            self.stage = InviteStage(invite_stage_data, guild)
+            self.stage = InviteStage(invite_stage_data, guild.id)
     
     
     def _update_counts_only(self, data):

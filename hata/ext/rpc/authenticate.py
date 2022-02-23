@@ -38,7 +38,7 @@ class AuthenticateResponse:
         -------
         self : ``AuthenticateResponse``
         """
-        user = User(data['user'])
+        user = User.from_data(data['user'])
         
         raw_scopes = data['raw_scopes']
         scopes = set()

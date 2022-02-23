@@ -48,7 +48,7 @@ class IntegrationApplication(DiscordEntity):
         if bot_data is None:
             bot = ZEROUSER
         else:
-            bot = User(bot_data)
+            bot = User.from_data(bot_data)
         
         self.bot = bot
     

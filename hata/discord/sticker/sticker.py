@@ -77,7 +77,7 @@ class Sticker(DiscordEntity, immortal=True):
             except KeyError:
                 user = ZEROUSER
             else:
-                user = User(user_data)
+                user = User.from_data(user_data)
             self.user = user
         
         else:
@@ -88,7 +88,7 @@ class Sticker(DiscordEntity, immortal=True):
                     except KeyError:
                         pass
                     else:
-                        self.user = User(user_data)
+                        self.user = User.from_data(user_data)
                 
                 return self
         

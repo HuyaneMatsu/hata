@@ -194,7 +194,7 @@ class GuildJoinRequest(GuildJoinRequestDeleteEvent):
         """
         actioned_by = data.get('actioned_by_user', None)
         if (actioned_by is not None):
-            actioned_by = User(actioned_by)
+            actioned_by = User.from_data(actioned_by)
         
         actioned_at = data.get('actioned_at', None)
         if (actioned_at is not None):
@@ -217,7 +217,7 @@ class GuildJoinRequest(GuildJoinRequestDeleteEvent):
         
         status = GuildJoinRequestStatus.get(data['application_status'])
         
-        user = User(data['user'])
+        user = User.from_data(data['user'])
         
         self = GuildJoinRequestDeleteEvent.__new__(cls, data)
         self.actioned_by = actioned_by

@@ -31,11 +31,10 @@ class GuildUserChunkEvent(EventBase):
     if CACHE_PRESENCE:
         def __new__(cls, data):
             guild_id = int(data['guild_id'])
-            guild = GUILDS.get(guild_id, None)
             
             users = []
-            for user_data in data['members']:
-                user = User(user_data, guild)
+            for guild_profile_data in data['members']:
+                user = User.from_data(guild_profile_data['user'], guild_profile_data, guild_id)
                 users.append(user)
             
             try:
@@ -43,7 +42,11 @@ class GuildUserChunkEvent(EventBase):
             except KeyError:
                 pass
             else:
-                if (guild is not None):
+                try:
+                    guild = GUILDS[guild_id]
+                except KeyError:
+                    pass
+                else:
                     guild._apply_presences(presence_datas)
             
             self = object.__new__(GuildUserChunkEvent)
@@ -58,11 +61,10 @@ class GuildUserChunkEvent(EventBase):
     else:
         def __new__(cls, data):
             guild_id = int(data['guild_id'])
-            guild = GUILDS.get(guild_id, None)
             
             users = []
-            for user_data in data['members']:
-                user = User(user_data, guild)
+            for guild_profile_data in data['members']:
+                user = User.from_data(guild_profile_data['user'], guild_profile_data, guild_id)
                 users.append(user)
             
             self = object.__new__(GuildUserChunkEvent)

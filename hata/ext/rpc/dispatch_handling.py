@@ -23,7 +23,7 @@ from .voice_settings import VoiceSettings
 
 
 def handle_dispatch_ready(rpc_client, data):
-    rpc_client.user = User(data['user'])
+    rpc_client.user = User.from_data(data['user'])
     rpc_client._set_connection_waiter_result(True)
     
     Task(rpc_client.events.ready(rpc_client), KOKORO)
@@ -163,7 +163,7 @@ def handle_dispatch_activity_spectate(rpc_client, data):
 
 
 def handle_dispatch_activity_join_request(rpc_client, data):
-    user = User(data['user'])
+    user = User.from_data(data['user'])
     
     Task(rpc_client.events.activity_join_request(rpc_client, user), KOKORO)
 

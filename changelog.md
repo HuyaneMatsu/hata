@@ -1,5 +1,9 @@
 ## 1.2.2 *\[2022-02-??\]*
 
+#### Improvements
+
+- Add `User.from_data`. New user constructor, which can bind guild profile even if the guild is uncached.
+
 #### Bug fixes
 
 - `_delete_reaction_with_task` ignored `GeneratorExit`.
@@ -51,11 +55,15 @@
 - `SlasherApplicationCommandFunction.__call__` ignored `GeneratorExit`.
 - `SlasherApplicationCommandParameterAutoCompleter.__call__` ignored `GeneratorExit`.
 
+#### Renames, Deprecation & Removals
+
+- Deprecate `User.__new__`. Use `User.from_data` instead.
+
 ## 1.2.1 *\[2022-02-22\]*
 
 #### Improvements
 
-- Add `DiscordException.debug_options`
+- Add `DiscordException.debug_options`.
 
 #### Bug fixes
 

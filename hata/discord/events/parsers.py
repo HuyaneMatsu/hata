@@ -1824,7 +1824,7 @@ def CHANNEL_PINS_UPDATE__CAL(client, data):
         guild_sync(client, data, ('CHANNEL_PINS_UPDATE', check_channel, channel_id))
         return
     
-    #ignoring message search
+    # ignoring message search
     Task(client.events.channel_pin_update(client, channel), KOKORO)
 
 def CHANNEL_PINS_UPDATE__OPT(client, data):
@@ -1846,7 +1846,7 @@ def CHANNEL_RECIPIENT_ADD_CAL(client, data):
     except KeyError:
         return
     
-    user = User(data['user'])
+    user = User.from_data(data['user'])
     users = channel.users
     if user not in users:
         users.append(user)
@@ -1860,7 +1860,7 @@ def CHANNEL_RECIPIENT_ADD__OPT(client, data):
     except KeyError:
         return
     
-    user = User(data['user'])
+    user = User.from_data(data['user'])
     users = channel.users
     if user not in users:
         users.append(user)
@@ -1881,7 +1881,7 @@ def CHANNEL_RECIPIENT_REMOVE__CAL_SC(client, data):
     except KeyError:
         return
     
-    user = User(data['user'])
+    user = User.from_data(data['user'])
     try:
         channel.users.remove(user)
     except ValueError:
@@ -1897,7 +1897,7 @@ def CHANNEL_RECIPIENT_REMOVE__CAL_MC(client, data):
     except KeyError:
         return
     
-    user = User(data['user'])
+    user = User.from_data(data['user'])
     try:
         channel.users.remove(user)
     except ValueError:
@@ -1916,7 +1916,7 @@ def CHANNEL_RECIPIENT_REMOVE__OPT(client, data):
     except KeyError:
         return
 
-    user = User(data['user'])
+    user = User.from_data(data['user'])
     try:
         channel.users.remove(user)
     except ValueError:
@@ -2167,10 +2167,11 @@ def GUILD_MEMBER_ADD__CAL_SC(client, data):
         guild_sync(client, data, None)
         return
     
-    user = User(data, guild)
-    guild.user_count +=1
+    user = User.from_data(data['user'], data, guild_id)
+    guild.user_count += 1
     
     Task(client.events.guild_user_add(client, guild, user), KOKORO)
+
 
 def GUILD_MEMBER_ADD__CAL_MC(client, data):
     guild_id = int(data['guild_id'])
@@ -2185,7 +2186,7 @@ def GUILD_MEMBER_ADD__CAL_MC(client, data):
         clients.close()
         return
     
-    user = User(data, guild)
+    user = User.from_data(data['user'], data, guild_id)
     guild.user_count +=1
     
     for client_ in clients:
@@ -2202,7 +2203,7 @@ if CACHE_USER:
             guild_sync(client, data, None)
             return
         
-        User(data, guild)
+        User.from_data(data['user'], data, guild_id)
         guild.user_count +=1
     
     def GUILD_MEMBER_ADD__OPT_MC(client, data):
@@ -2216,8 +2217,8 @@ if CACHE_USER:
         if first_client(guild.clients, INTENT_MASK_GUILD_USERS, client) is not client:
             return
         
-        User(data, guild)
-        guild.user_count +=1
+        User.from_data(data['user'], data, guild_id)
+        guild.user_count += 1
 else:
     def GUILD_MEMBER_ADD__OPT_SC(client, data):
         guild_id = int(data['guild_id'])
@@ -2227,7 +2228,7 @@ else:
             guild_sync(client, data, None)
             return
         
-        guild.user_count +=1
+        guild.user_count += 1
 
     def GUILD_MEMBER_ADD__OPT_MC(client, data):
         guild_id = int(data['guild_id'])
@@ -2240,7 +2241,7 @@ else:
         if first_client(guild.clients, INTENT_MASK_GUILD_USERS, client) is not client:
             return
         
-        guild.user_count +=1
+        guild.user_count += 1
 
 add_parser(
     'GUILD_MEMBER_ADD',
@@ -2262,7 +2263,7 @@ if CACHE_USER:
             guild_sync(client, data, 'GUILD_MEMBER_REMOVE')
             return
         
-        user = User(data['user'])
+        user = User.from_data(data['user'])
         
         try:
             del guild.users[user.id]
@@ -2291,7 +2292,7 @@ if CACHE_USER:
             clients.close()
             return
         
-        user = User(data['user'])
+        user = User.from_data(data['user'])
         
         try:
             del guild.users[user.id]
@@ -2318,7 +2319,7 @@ if CACHE_USER:
             guild_sync(client, data, 'GUILD_MEMBER_REMOVE')
             return
         
-        user = User(data['user'])
+        user = User.from_data(data['user'])
         
         try:
             del guild.users[user.id]
@@ -2344,7 +2345,7 @@ if CACHE_USER:
         if first_client(guild.clients, INTENT_MASK_GUILD_USERS, client) is not client:
             return
         
-        user = User(data['user'])
+        user = User.from_data(data['user'])
         
         try:
             del guild.users[user.id]
@@ -2368,7 +2369,7 @@ else:
             guild_sync(client, data, 'GUILD_MEMBER_REMOVE')
             return
         
-        user = User(data['user'])
+        user = User.from_data(data['user'])
         guild.user_count -= 1
         
         Task(client.events.guild_user_delete(client, guild, user, None), KOKORO)
@@ -2386,7 +2387,7 @@ else:
             clients.close()
             return
         
-        user = User(data['user'])
+        user = User.from_data(data['user'])
         guild.user_count -= 1
         
         for client_ in clients:
@@ -2704,7 +2705,7 @@ def GUILD_BAN_ADD__CAL(client, data):
         guild_sync(client, data, 'GUILD_BAN_ADD')
         return
     
-    user = User(data['user'])
+    user = User.from_data(data['user'])
     
     Task(client.events.guild_ban_add(client, guild, user), KOKORO)
 
@@ -2728,7 +2729,7 @@ def GUILD_BAN_REMOVE__CAL(client, data):
         guild_sync(client, data, 'GUILD_BAN_REMOVE')
         return
     
-    user = User(data['user'])
+    user = User.from_data(data['user'])
     Task(client.events.guild_ban_delete(client, guild, user), KOKORO)
 
 def GUILD_BAN_REMOVE__OPT(client, data):
@@ -3164,11 +3165,14 @@ def VOICE_STATE_UPDATE__CAL_SC(client, data):
         return
     
     try:
-        user_data = data['member']
+        guild_profile_data = data['member']
     except KeyError:
         user_data = data['user']
+        guild_profile_data = None
+    else:
+        user_data = guild_profile_data['user']
     
-    user = User(user_data)
+    user = User.from_data(user_data, guild_profile_data, guild_id)
     
     if user is client:
         for action, voice_state, change in guild._update_voice_state(data, user):
@@ -3263,11 +3267,14 @@ def VOICE_STATE_UPDATE__CAL_MC(client, data):
         return
     
     try:
-        user_data = data['member']
+        guild_profile_data = data['member']
     except KeyError:
         user_data = data['user']
+        guild_profile_data = None
+    else:
+        user_data = guild_profile_data['user']
     
-    user = User(user_data)
+    user = User.from_data(user_data, guild_profile_data, guild_id)
     
     actions = list(guild._update_voice_state(data, user))
     if not actions:
@@ -3341,11 +3348,14 @@ def VOICE_STATE_UPDATE__OPT_SC(client, data):
         return
     
     try:
-        user_data = data['member']
+        guild_profile_data = data['member']
     except KeyError:
         user_data = data['user']
+        guild_profile_data = None
+    else:
+        user_data = guild_profile_data['user']
     
-    user = User(user_data, guild)
+    user = User.from_data(user_data, guild_profile_data, guild_id)
     
     if user is client:
         for action, voice_state, change in guild._update_voice_state(data, user):
@@ -3394,11 +3404,14 @@ def VOICE_STATE_UPDATE__OPT_MC(client, data):
         return
     
     try:
-        user_data = data['member']
+        guild_profile_data = data['member']
     except KeyError:
         user_data = data['user']
+        guild_profile_data = None
+    else:
+        user_data = guild_profile_data['user']
     
-    user = User(user_data)
+    user = User.from_data(user_data, guild_profile_data, guild_id)
     
     if isinstance(user, Client):
         for action, voice_state, change in guild._update_voice_state(data, user):

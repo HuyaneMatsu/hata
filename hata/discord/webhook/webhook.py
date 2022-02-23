@@ -154,7 +154,7 @@ class Webhook(WebhookBase):
         except KeyError:
             user = ZEROUSER
         else:
-            user = User(user_data)
+            user = User.from_data(user_data)
         self.user = user
     
     

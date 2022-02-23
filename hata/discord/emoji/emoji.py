@@ -101,7 +101,7 @@ class Emoji(DiscordEntity, immortal=True):
             except KeyError:
                 user = ZEROUSER
             else:
-                user = User(user_data)
+                user = User.from_data(user_data)
             self.user = user
             
         else:
@@ -115,7 +115,7 @@ class Emoji(DiscordEntity, immortal=True):
                     except KeyError:
                         pass
                     else:
-                        self.user = User(user_data)
+                        self.user = User.from_data(user_data)
                 
                 return self
         
@@ -472,7 +472,7 @@ class Emoji(DiscordEntity, immortal=True):
         except KeyError:
             pass
         else:
-            self.user = User(user_data)
+            self.user = User.from_data(user_data)
     
     
     def _difference_update_attributes(self, data):
@@ -547,7 +547,7 @@ class Emoji(DiscordEntity, immortal=True):
         except KeyError:
             pass
         else:
-            self.user = User(user_data)
+            self.user = User.from_data(user_data)
         
         available = data.get('available', True)
         if self.available != available:

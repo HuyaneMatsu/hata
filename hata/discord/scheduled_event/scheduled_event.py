@@ -122,7 +122,7 @@ class ScheduledEvent(DiscordEntity):
         if creator_data is None:
             creator = ZEROUSER
         else:
-            creator = User(creator_data)
+            creator = User.from_data(creator_data)
         self.creator = creator
         
         

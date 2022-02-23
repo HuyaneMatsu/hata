@@ -21,7 +21,7 @@ class InviteStage:
     __slots__ = ('participant_count', 'participants', 'speaker_count', 'topic',)
     
     
-    def __new__(cls, data, guild):
+    def __new__(cls, data, guild_id):
         """
         Creates a new ``InviteStage`` from the given data.
         
@@ -29,11 +29,14 @@ class InviteStage:
         ----------
         data : `str`
             Data received from Discord.
-        guild : ``Guild``, `None`
-            The respective guild if any.
+        guild_id : `int`
+            The respective guild's identifier.
         """
-        user_datas = data['members']
-        users = tuple(User(user_data, guild) for user_data in user_datas)
+        guild_profile_datas = data['members']
+        users = tuple(
+            User.from_data(guild_profile_data['user'], guild_profile_datas, guild_id)
+            for guild_profile_data in guild_profile_datas
+        )
         
         topic = data['topic']
         if (topic is not None) and (not topic):

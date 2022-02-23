@@ -76,7 +76,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
             users.clear()
         
         for user_data in data['recipients']:
-            user = User(user_data)
+            user = User.from_data(user_data)
             users.append(user)
         
         if (client is not None):
@@ -321,7 +321,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
         self.owner_id = int(data['owner_id'])
         
         for user_data in data['recipients']:
-            user = User(user_data)
+            user = User.from_data(user_data)
             users.append(user)
         
         users.sort()

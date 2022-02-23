@@ -68,6 +68,6 @@ class RichVoiceState:
         self.nick = data.get('nick', None)
         self.self_deaf = data['self_deaf']
         self.self_mute = data['self_mute']
-        self.user = User(data['user'], None)
-        self.volume = data['volume']*0.01
+        self.user = User.from_data(data['user'])
+        self.volume = data['volume'] * 0.01
         return self

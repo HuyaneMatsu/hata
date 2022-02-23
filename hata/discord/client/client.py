@@ -107,12 +107,12 @@ from .ready_state import ReadyState
 from .request_helpers import (
     add_file_to_message_data, get_achievement_and_id, get_achievement_id, get_channel_and_id, get_channel_id,
     get_channel_id_and_message_id, get_components_data, get_emoji_from_reaction, get_guild_and_id,
-    get_guild_and_id_and_scheduled_event_id, get_guild_discovery_and_id, get_guild_id, get_guild_id_and_channel_id,
-    get_guild_id_and_emoji_id, get_guild_id_and_role_id, get_guild_id_and_scheduled_event_id,
-    get_message_and_channel_id_and_message_id, get_reaction, get_role_id, get_scheduled_event_guild_id_and_id,
-    get_stage_channel_id, get_sticker_and_id, get_sticker_pack_and_id, get_user_and_id, get_user_id,
-    get_user_id_nullable, get_webhook_and_id, get_webhook_and_id_token, get_webhook_id, get_webhook_id_token,
-    validate_content_and_embed, validate_message_to_delete
+    get_guild_discovery_and_id, get_guild_id, get_guild_id_and_channel_id, get_guild_id_and_emoji_id,
+    get_guild_id_and_role_id, get_guild_id_and_scheduled_event_id, get_message_and_channel_id_and_message_id,
+    get_reaction, get_role_id, get_scheduled_event_guild_id_and_id, get_stage_channel_id, get_sticker_and_id,
+    get_sticker_pack_and_id, get_user_and_id, get_user_id, get_user_id_nullable, get_webhook_and_id,
+    get_webhook_and_id_token, get_webhook_id, get_webhook_id_token, validate_content_and_embed,
+    validate_message_to_delete
 )
 from .utils import BanEntry, Typer, UserGuildPermission
 
@@ -5836,7 +5836,7 @@ class Client(ClientUserPBase):
         
         data = await self.http.reaction_user_get_chunk(channel_id, message_id, emoji.as_reaction, data)
         
-        users = [User(user_data) for user_data in data]
+        users = [User.from_data(user_data) for user_data in data]
         
         if (reactions is not None):
             reactions._update_some_users(emoji, users)
@@ -5905,7 +5905,7 @@ class Client(ClientUserPBase):
         
         while True:
             user_datas = await self.http.reaction_user_get_chunk(channel_id, message_id, reaction, data)
-            users.extend(User(user_data) for user_data in user_datas)
+            users.extend(User.from_data(user_data) for user_data in user_datas)
             
             if len(user_datas) < 100:
                 break
@@ -5965,7 +5965,7 @@ class Client(ClientUserPBase):
                 
                 while True:
                     user_datas = await self.http.reaction_user_get_chunk(channel_id, message_id, reaction, data)
-                    users.extend(User(user_data) for user_data in user_datas)
+                    users.extend(User.from_data(user_data) for user_data in user_datas)
                     
                     if len(user_datas) < 100:
                         break
@@ -7614,7 +7614,7 @@ class Client(ClientUserPBase):
         guild_id = get_guild_id(guild)
         
         data = await self.http.guild_ban_get_all(guild_id)
-        return [BanEntry(User(ban_data['user']), ban_data.get('reason', None)) for ban_data in data]
+        return [BanEntry(User.from_data(ban_data['user']), ban_data.get('reason', None)) for ban_data in data]
     
     
     async def guild_ban_get(self, guild, user):
@@ -7649,7 +7649,7 @@ class Client(ClientUserPBase):
         user_id = get_user_id(user)
         
         data = await self.http.guild_ban_get(guild_id, user_id)
-        return BanEntry(User(data['user']), data.get('reason', None))
+        return BanEntry(User.from_data(data['user']), data.get('reason', None))
     
     
     async def guild_widget_get(self, guild):
@@ -8047,20 +8047,17 @@ class Client(ClientUserPBase):
         
         When using it with user account, the client's token will be invalidated.
         """
-        guild, guild_id = get_guild_and_id(guild)
+        guild_id = get_guild_id(guild)
         
         data = {'limit': 1000, 'after': 0}
         users = []
         while True:
-            user_datas = await self.http.guild_user_get_chunk(guild_id, data)
-            if guild is None:
-                guild = create_partial_guild_from_id(guild_id)
-            
-            for user_data in user_datas:
-                user = User(user_data, guild)
+            guild_profile_datas = await self.http.guild_user_get_chunk(guild_id, data)
+            for guild_profile_data in guild_profile_datas:
+                user = User.from_data(guild_profile_data['user'], guild_profile_data, guild_id)
                 users.append(user)
             
-            if len(user_datas) < 1000:
+            if len(guild_profile_datas) < 1000:
                 break
             
             data['after'] = user.id
@@ -8096,6 +8093,7 @@ class Client(ClientUserPBase):
             result.extend(create_partial_guild_from_data(guild_data) for guild_data in data)
             if len(data) < 100:
                 break
+            
             params['after'] = result[-1].id
         
         return result
@@ -9385,7 +9383,7 @@ class Client(ClientUserPBase):
             - If `limit` was not given as `int`.
             - If `limit` is out of range [1:100].
         """
-        guild, guild_id, scheduled_event_id = get_guild_and_id_and_scheduled_event_id(scheduled_event)
+        guild_id, scheduled_event_id = get_guild_id_and_scheduled_event_id(scheduled_event)
         
         if limit is None:
             limit = 100
@@ -9412,7 +9410,7 @@ class Client(ClientUserPBase):
         if (before is not None):
             data['before'] = log_time_converter(before)
         
-        if (guild is not None):
+        if guild_id:
             data['with_member'] = True
         
         scheduled_event_user_datas = await self.http.scheduled_event_user_get_chunk(guild_id, scheduled_event_id, data)
@@ -9420,15 +9418,7 @@ class Client(ClientUserPBase):
         users = []
         for scheduled_event_user_data in scheduled_event_user_datas:
             user_data = scheduled_event_user_data['user']
-            if (guild is not None):
-                try:
-                    guild_profile_data = scheduled_event_user_data['member']
-                except KeyError:
-                    pass
-                else:
-                    user_data['member'] = guild_profile_data
-            
-            user = User(user_data, guild)
+            user = User.from_data(user_data, user_data.get('member', None), guild_id)
             users.append(user)
         
         return users
@@ -9458,11 +9448,11 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild, guild_id, scheduled_event_id = get_guild_and_id_and_scheduled_event_id(scheduled_event)
+        guild_id, scheduled_event_id = get_guild_id_and_scheduled_event_id(scheduled_event)
         
         data = {'after': 0}
         
-        if (guild is not None):
+        if guild_id:
             data['with_member'] = True
         
         users = []
@@ -9476,15 +9466,7 @@ class Client(ClientUserPBase):
             
             for scheduled_event_user_data in scheduled_event_user_datas:
                 user_data = scheduled_event_user_data['user']
-                if (guild is not None):
-                    try:
-                        guild_profile_data = scheduled_event_user_data['member']
-                    except KeyError:
-                        pass
-                    else:
-                        user_data['member'] = guild_profile_data
-                
-                user = User(user_data, guild)
+                user = User.from_data(user_data, user_data.get('member', None), guild_id)
                 users.append(user)
             
             if len(scheduled_event_user_datas) < 100:

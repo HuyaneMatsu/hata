@@ -1,10 +1,12 @@
 __all__ = ('User', 'ZEROUSER')
 
+import warnings
+
 from scarletio import include, set_docs
 
 from ...env import CACHE_PRESENCE, CACHE_USER
 
-from ..core import USERS
+from ..core import GUILDS, USERS
 from ..preconverters import (
     preconvert_bool, preconvert_color, preconvert_discriminator, preconvert_flag, preconvert_snowflake, preconvert_str
 )
@@ -79,6 +81,15 @@ class User(USER_BASE_CLASS):
     
     if CACHE_PRESENCE:
         def __new__(cls, data, guild=None):
+            
+            warnings.warn(
+                (
+                    f'{cls.__name__}.__new__ is deprecated and will re-purposed in 2022 Jun. '
+                    f'Please use {cls.__name__}.from_data instead.'
+                ),
+                FutureWarning,
+            )
+            
             try:
                 user_data = data['user']
             except KeyError:
@@ -122,6 +133,15 @@ class User(USER_BASE_CLASS):
     
     elif CACHE_USER:
         def __new__(cls, data, guild=None):
+            
+            warnings.warn(
+                (
+                    f'{cls.__name__}.__new__ is deprecated and will re-purposed in 2022 Jun. '
+                    f'Please use {cls.__name__}.from_data instead.'
+                ),
+                FutureWarning,
+            )
+            
             try:
                 user_data = data['user']
                 guild_profile_data = data
@@ -161,6 +181,15 @@ class User(USER_BASE_CLASS):
     
     else:
         def __new__(cls, data, guild=None):
+            
+            warnings.warn(
+                (
+                    f'{cls.__name__}.__new__ is deprecated and will re-purposed in 2022 Jun. '
+                    f'Please use {cls.__name__}.from_data instead.'
+                ),
+                FutureWarning,
+            )
+            
             try:
                 user_data = data['user']
                 guild_profile_data = data
@@ -194,6 +223,8 @@ class User(USER_BASE_CLASS):
         and the given data contains member data as well, then it will create a respective guild profile for the user
         too.
         
+        ``.__new__`` is deprecated and will be re-purposed in 2022 Jun. Please use ``.from_data` instead.
+        
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
@@ -206,6 +237,134 @@ class User(USER_BASE_CLASS):
         -------
         user : ``ClientUserBase``
         """)
+    
+    
+    if CACHE_PRESENCE:
+        @classmethod
+        def from_data(cls, user_data, guild_profile_data=None, guild_id=0):
+            user_id = int(user_data['id'])
+            
+            try:
+                self = USERS[user_id]
+            except KeyError:
+                self = object.__new__(cls)
+                self.id = user_id
+                self.guild_profiles = {}
+                self.thread_profiles = None
+                self.status = Status.offline
+                self.statuses = {}
+                self.activities = None
+                update = True
+                
+                USERS[user_id] = self
+            else:
+                update = self.partial
+            
+            if update:
+                self.is_bot = user_data.get('bot', False)
+                self._update_attributes(user_data)
+            
+            if (guild_profile_data is not None) and guild_id:
+                try:
+                    profile = self.guild_profiles[guild_id]
+                except KeyError:
+                    self.guild_profiles[guild_id] = GuildProfile(guild_profile_data)
+                else:
+                    profile._set_joined(guild_profile_data)
+                
+                try:
+                    guild = GUILDS[guild_id]
+                except KeyError:
+                    pass
+                else:
+                    guild.users[user_id] = self
+            
+            return self
+    
+    elif CACHE_USER:
+        @classmethod
+        def from_data(cls, user_data, guild_profile_data=None, guild_id=0):
+            user_id = int(user_data['id'])
+
+            try:
+                self = USERS[user_id]
+            except KeyError:
+                self = object.__new__(cls)
+                self.id = user_id
+                self.guild_profiles = {}
+                self.thread_profiles = None
+                update = True
+                
+                USERS[user_id] = self
+            else:
+                update = self.partial
+            
+            if update:
+                self.is_bot = user_data.get('bot', False)
+                self._update_attributes(user_data)
+            
+            if (guild_profile_data is not None) and guild_id:
+                try:
+                    guild_profile = self.guild_profiles[guild_id]
+                except KeyError:
+                    self.guild_profiles[guild_id] = GuildProfile(guild_profile_data)
+                else:
+                    guild_profile._set_joined(guild_profile_data)
+                
+                try:
+                    guild = GUILDS[guild_id]
+                except KeyError:
+                    pass
+                else:
+                    guild.users[user_id] = self
+            
+            return self
+    
+    else:
+        @classmethod
+        def from_data(cls, user_data, guild_profile_data=None, guild_id=0):
+            user_id = int(user_data['id'])
+            
+            try:
+                self = USERS[user_id]
+            except KeyError:
+                self = object.__new__(cls)
+                self.id = user_id
+                self.guild_profiles = {}
+                self.thread_profiles = None
+                
+                USERS[user_id] = self
+            
+            self.is_bot = user_data.get('bot', False)
+            self._update_attributes(user_data)
+            
+            if (guild_profile_data is not None) and guild_id:
+                self.guild_profiles[guild_id] = GuildProfile(guild_profile_data)
+            
+            return self
+    
+    
+    set_docs(
+        from_data,
+        """
+        First tries to find the user by id. If fails, then creates a new ``User`` object. If guild was given
+        and the given data contains member data as well, then it will create a respective guild profile for the user
+        too.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Received user data.
+        guild_profile_data : `None`, `dict` of (`str`, `Any`) items = `None`, Optional
+            Received guild profile data.
+        guild : `int` =  `0`, Optional
+            A respective guild's identifier from where the user data was received.
+        
+        Returns
+        -------
+        user : ``ClientUserBase``
+        """
+    )
     
     
     @classmethod

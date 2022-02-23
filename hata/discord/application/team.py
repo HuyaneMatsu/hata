@@ -151,7 +151,7 @@ class TeamMember(RichAttributeErrorBaseType):
         permissions = data['permissions']
         permissions.sort()
         self.permissions = permissions
-        self.user = User(data['user'])
+        self.user = User.from_data(data['user'])
         self.state = TeamMembershipState.get(data['membership_state'])
     
     

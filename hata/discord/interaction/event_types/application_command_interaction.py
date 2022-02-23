@@ -116,7 +116,7 @@ class ApplicationCommandInteraction(DiscordEntity, InteractionFieldBase):
                 if resolved_role_datas:
                     resolved_roles = {}
                     for role_data in resolved_role_datas.values():
-                        role = Role(role_data, interaction_event.guild)
+                        role = Role(role_data, interaction_event.guild_id)
                         resolved_roles[role.id] = role
                 else:
                     resolved_roles = None

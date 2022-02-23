@@ -12939,7 +12939,7 @@ class Client(ClientUserPBase):
             - If `permissions` was not given as `None`, ``Permission``, neither as other `int`.
             - If `icon` is passed as `bytes-like`, but it's format is not a valid image format.
         """
-        guild, guild_id = get_guild_and_id(guild)
+        guild_id = get_guild_id(guild)
         
         data = {}
         
@@ -13030,10 +13030,7 @@ class Client(ClientUserPBase):
         
         data = await self.http.role_create(guild_id, data, reason)
         
-        if guild is None:
-            guild = create_partial_guild_from_id(guild_id)
-        
-        return Role(data, guild)
+        return Role(data, guild_id)
     
     
     async def role_move(self, role, position, *, reason=None):

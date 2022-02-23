@@ -110,6 +110,8 @@ Error Codes
 +---------------------------------------------------------------+-----------+-----------+
 | unknown_guild_member_verification_form                        | 10068     | -         |
 +---------------------------------------------------------------+-----------+-----------+
+| unknown_guild_welcome_screen                                  | 10069     | -         |
++---------------------------------------------------------------+-----------+-----------+
 | unknown_scheduled_event                                       | 10070     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | unknown_scheduled_event_user                                  | 10071     | -         |
@@ -499,6 +501,7 @@ unknown_voice_state = 10065
 unknown_application_command_permissions = 10066
 unknown_stage = 10067
 unknown_guild_member_verification_form = 10068
+unknown_guild_welcome_screen = 10069
 unknown_scheduled_event = 10070
 unknown_scheduled_event_user = 10071
 

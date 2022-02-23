@@ -3,7 +3,7 @@ __all__ = ()
 import warnings
 from functools import partial as partial_func
 
-from scarletio import RichAttributeErrorBaseType, Task, WeakReferer
+from scarletio import CallableAnalyzer, RichAttributeErrorBaseType, Task, WeakReferer
 
 from ..core import KOKORO
 
@@ -18,6 +18,7 @@ from .default_event_handlers import (
     default_voice_server_update_event_handler
 )
 from .event_handler_plugin import EventHandlerPlugin
+from .event_types import WebhookUpdateEvent
 from .handling_helpers import (
     ChunkWaiter, _iterate_event_handler, asynclist, check_name, check_parameter_count_and_convert
 )
@@ -42,7 +43,11 @@ EVENT_HANDLER_ATTRIBUTES = frozenset((
     '_plugins',
 ))
 
-def _check_is_event_deprecated(name):
+DEPRECATION_LEVEL_NONE = 0
+DEPRECATION_LEVEL_REMOVED = 1
+DEPRECATION_LEVEL_SHOULD_WRAP = 2
+
+def _get_event_deprecation_state(name):
     """
     Checks whether the event is deprecated.
     
@@ -50,7 +55,7 @@ def _check_is_event_deprecated(name):
     
     Returns
     -------
-    is_deprecated : `bool`
+    deprecation_level : `int`
     """
     if name == 'guild_join_reject':
         warnings.warn(
@@ -61,9 +66,61 @@ def _check_is_event_deprecated(name):
             FutureWarning,
         )
         
-        return True
+        return DEPRECATION_LEVEL_REMOVED
     
-    return False
+    
+    if name == 'webhook_update':
+        return DEPRECATION_LEVEL_SHOULD_WRAP
+    
+    
+    return DEPRECATION_LEVEL_NONE
+
+
+def _wrap_maybe_deprecated_event(name, func):
+    """
+    Wraps the given maybe deprecated event handler.
+    
+    Parameters
+    ----------
+    name : `str`
+        The event's name.
+    func : `Any`
+        Event handler.
+    
+    Returns
+    -------
+    func : `Any`
+        The wrapper or maybe not wrapped event handler.
+    """
+    if name == 'webhook_update':
+        analyzer = CallableAnalyzer(func)
+        if analyzer.is_async():
+            real_analyzer = analyzer
+        else:
+            real_analyzer = CallableAnalyzer(func.__call__, as_method=True)
+        
+        for parameter in real_analyzer.parameters:
+            if 'channel' in parameter.name:
+                has_channel_parameter = True
+                break
+        else:
+            has_channel_parameter = False
+        
+        if has_channel_parameter:
+            warnings.warn(
+                (
+                    f'`Client.events.webhook_update`\'s `channel` parameter` is removed.\n'
+                    f'Please use `event` (type {WebhookUpdateEvent.__name__}) parameter instead.'
+                ),
+                FutureWarning,
+            )
+        
+            async def webhook_update_event_handler_wrapper(client, event):
+                return await func(client, event.channel)
+            
+            return webhook_update_event_handler_wrapper
+    
+    return func
 
 
 class EventHandlerManager(RichAttributeErrorBaseType):
@@ -961,7 +1018,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         name = check_name(func, name)
         
-        if _check_is_event_deprecated(name):
+        deprecation_state = _get_event_deprecation_state(name)
+        if deprecation_state == DEPRECATION_LEVEL_REMOVED:
             return
         
         plugin, parameter_count = get_plugin_event_handler_and_parameter_count(self, name)
@@ -975,6 +1033,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
             parser_names = None
         
         func = check_parameter_count_and_convert(func, parameter_count, name=name)
+        if deprecation_state == DEPRECATION_LEVEL_SHOULD_WRAP:
+            func = _wrap_maybe_deprecated_event(name, func)
         
         actual = getattr(plugin, name)
         
@@ -1059,7 +1119,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
             object.__setattr__(self, name, value)
             return
         
-        if _check_is_event_deprecated(name):
+        if _get_event_deprecation_state(name) == DEPRECATION_LEVEL_REMOVED:
             return
         
         plugin, parameter_count = get_plugin_event_handler_and_parameter_count(self, name)
@@ -1123,7 +1183,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         AttributeError
             The ``EventHandlerManager`` has no attribute named as the given `name`.
         """
-        if _check_is_event_deprecated(name):
+        if _get_event_deprecation_state(name) == DEPRECATION_LEVEL_REMOVED:
             return
         
         plugin, parser_names = get_plugin_event_handler_and_parser_names(self, name)
@@ -1254,7 +1314,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         name = check_name(func, name)
         
-        if _check_is_event_deprecated(name):
+        if _get_event_deprecation_state(name) == DEPRECATION_LEVEL_REMOVED:
             return
         
         plugin = get_plugin_event_handler(self, name)

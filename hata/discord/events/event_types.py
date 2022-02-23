@@ -1,11 +1,11 @@
-__all__ = ('GuildUserChunkEvent', 'VoiceServerUpdateEvent',)
+__all__ = ('GuildUserChunkEvent', 'VoiceServerUpdateEvent', 'WebhookUpdateEvent',)
 
 from scarletio import copy_docs, set_docs
 
 from ...env import CACHE_PRESENCE
 
 from ..bases import EventBase
-from ..core import GUILDS
+from ..core import CHANNELS, GUILDS
 from ..user import User
 
 
@@ -25,6 +25,14 @@ class GuildUserChunkEvent(EventBase):
         A nonce to identify guild user chunk response.
     users : `list` of ``ClientUserBase``
         The received users.
+    
+    Examples
+    --------
+    The event can be unpacked like:
+    
+    ```py
+    guild_id, users, nonce, index, count = event
+    ```
     """
     __slots__ = ('count', 'guild_id', 'index', 'nonce', 'users')
     
@@ -177,6 +185,20 @@ class GuildUserChunkEvent(EventBase):
                 hash_value ^= user.id
         
         return hash_value
+    
+    
+    @property
+    def guild(self):
+        """
+        Returns the event's guild from cache.
+        
+        Returns
+        -------
+        guild : `None`, ``Guild``
+        """
+        guild_id = self.guild_id
+        if guild_id:
+            return GUILDS.get(guild_id, None)
 
 
 class VoiceServerUpdateEvent(EventBase):
@@ -191,6 +213,14 @@ class VoiceServerUpdateEvent(EventBase):
         The respective guild's identifier.
     token : `None`, `str`
         Voice connection token.
+    
+    Examples
+    --------
+    The event can be unpacked like:
+    
+    ```py
+    guild_id, endpoint, token = event
+    ```
     """
     __slots__ = ('endpoint', 'guild_id', 'token')
     
@@ -285,3 +315,143 @@ class VoiceServerUpdateEvent(EventBase):
             hash_value ^= hash(token)
         
         return hash_value
+    
+    
+    @property
+    def guild(self):
+        """
+        Returns the event's guild from cache.
+        
+        Returns
+        -------
+        guild : `None`, ``Guild``
+        """
+        guild_id = self.guild_id
+        if guild_id:
+            return GUILDS.get(guild_id, None)
+
+
+class WebhookUpdateEvent(EventBase):
+    """
+    Represents a `WEBHOOKS_UPDATE` event.
+    
+    Attributes
+    ----------
+    channel_id : `int`
+        The respective channel's identifier.
+    guild_id : `int`
+        The respective guild's identifier.
+    
+    Examples
+    --------
+    The event can be unpacked like:
+    
+    ```py
+    guild_id, channel_id = event
+    ```
+    """
+    __slots__ = ('channel_id', 'guild_id')
+    
+    def __new__(cls, data):
+        """
+        Creates a new webhook update event from the given data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Webhook update data.
+        """
+        channel_id = int(data['channel_id'])
+        
+        guild_id = data.get('guild_id', None)
+        # non guild webhook check ??
+        if guild_id is None:
+            guild_id = 0
+        else:
+            guild_id = int(guild_id)
+        
+        self = object.__new__(cls)
+        self.channel_id = channel_id
+        self.guild_id = guild_id
+        
+        return self
+    
+    
+    @copy_docs(EventBase.__repr__)
+    def __repr__(self):
+        repr_parts = ['<', self.__class__.__name__,]
+        
+        repr_parts.append(' guild_id=')
+        repr_parts.append(repr(self.guild_id))
+        
+        repr_parts.append(', channel_id=')
+        repr_parts.append(repr(self.channel_id))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    @copy_docs(EventBase.__len__)
+    def __len__(self):
+        return 2
+    
+    
+    @copy_docs(EventBase.__iter__)
+    def __iter__(self):
+        yield self.guild_id
+        yield self.channel_id
+    
+    
+    @copy_docs(EventBase.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        # channel_id
+        if self.channel_id != other.channel_id:
+            return False
+        
+        # guild_id
+        if self.guild_id != other.guild_id:
+            return False
+        
+        return True
+    
+    
+    @copy_docs(EventBase.__hash__)
+    def __hash__(self):
+        hash_value = 0
+        
+        # channel_id
+        hash_value ^= self.channel_id
+        
+        # guild_id
+        hash_value ^= self.guild_id
+        
+        return hash_value
+    
+    
+    @property
+    def channel(self):
+        """
+        Returns the event's channel from cache.
+        
+        Returns
+        -------
+        channel : `None`, ``ChannelBase``
+        """
+        return CHANNELS.get(self.channel_id, None)
+    
+    
+    @property
+    def guild(self):
+        """
+        Returns the event's guild from cache.
+        
+        Returns
+        -------
+        guild : `None`, ``Guild``
+        """
+        guild_id = self.guild_id
+        if guild_id:
+            return GUILDS.get(guild_id, None)

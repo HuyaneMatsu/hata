@@ -3,6 +3,13 @@
 #### Improvements
 
 - Add `User.from_data`. New user constructor, which can bind guild profile even if the guild is uncached.
+- Add `ERROR_CODES.unknown_guild_welcome_screen`.
+- `Role` constructor now accepts `guild_id` instead of `Guild`.
+- `Client.events.guild_user_add` will fire instantly even if the guild is not cached.
+- `Client.events.role_create` will fire instantly even if the guild is not cached.
+- Add `VoiceServerUpdateEvent.guild` property.
+- Add `GuildUserChunkEvent.guild` property.
+- Add `WebhookUpdateEvent`.
 
 #### Bug fixes
 

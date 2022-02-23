@@ -384,7 +384,7 @@ class Guild(DiscordEntity, immortal=True):
                 pass
             else:
                 for role_data in role_datas:
-                    Role(role_data, self)
+                    Role(role_data, guild_id)
             
             try:
                 emoji_datas = data['emojis']
@@ -1259,7 +1259,7 @@ class Guild(DiscordEntity, immortal=True):
         old_ids = set(roles)
         # every new role can cause mass switchings at the role orders, can it mess up the order tho?
         for role_data in data:
-            role = Role(role_data, self)
+            role = Role(role_data, self.id)
             try:
                 old_ids.remove(role.id)
                 role._update_attributes(role_data)

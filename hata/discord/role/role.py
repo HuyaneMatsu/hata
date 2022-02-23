@@ -85,7 +85,7 @@ class Role(DiscordEntity, immortal=True):
         module_urls.role_icon_url_as,
     )
     
-    def __new__(cls, data, guild):
+    def __new__(cls, data, guild_id):
         """
         Creates a role from the given `data` at the given `guild`. If the role already exists and is not partial, then
         returns it. However it is partial, then updates it as well.
@@ -94,8 +94,8 @@ class Role(DiscordEntity, immortal=True):
         ----------
         data : `dict` of (`str`, `Any`) items
             Role data received from Discord.
-        guild : ``Guild``
-            The owner guild of the role.
+        guild_id : `int`
+            The owner guild's identifier.
         
         Returns
         -------
@@ -113,9 +113,7 @@ class Role(DiscordEntity, immortal=True):
             update = self.partial
         
         if update:
-            
-            guild.roles[role_id] = self
-            self.guild_id = guild.id
+            self.guild_id = guild_id
             
             self.name = data['name']
             
@@ -144,6 +142,13 @@ class Role(DiscordEntity, immortal=True):
                 unicode_emoji = create_unicode_emoji(unicode)
             
             self.unicode_emoji = unicode_emoji
+            
+            try:
+                guild = GUILDS[guild_id]
+            except KeyError:
+                pass
+            else:
+                guild.roles[role_id] = self
         
         return self
     

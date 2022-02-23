@@ -15,7 +15,7 @@ from ..emoji import ReactionAddEvent, ReactionDeleteEvent, create_partial_emoji_
 from ..guild import (
     EMOJI_UPDATE_CREATE, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, Guild, GuildJoinRequest, GuildJoinRequestDeleteEvent,
     STICKER_UPDATE_CREATE, STICKER_UPDATE_DELETE, STICKER_UPDATE_EDIT, VOICE_STATE_JOIN, VOICE_STATE_LEAVE,
-    VOICE_STATE_MOVE, VOICE_STATE_UPDATE
+    VOICE_STATE_MOVE, VOICE_STATE_UPDATE, create_partial_guild_from_id
 )
 from ..guild.embedded_activity_state import (
     EMBEDDED_ACTIVITY_UPDATE_CREATE, EMBEDDED_ACTIVITY_UPDATE_DELETE, EMBEDDED_ACTIVITY_UPDATE_UPDATE,
@@ -2164,8 +2164,7 @@ def GUILD_MEMBER_ADD__CAL_SC(client, data):
     try:
         guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client, data, None)
-        return
+        guild = create_partial_guild_from_id(guild_id)
     
     user = User.from_data(data['user'], data, guild_id)
     guild.user_count += 1
@@ -2178,21 +2177,27 @@ def GUILD_MEMBER_ADD__CAL_MC(client, data):
     try:
         guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client, data, None)
-        return
+        guild = create_partial_guild_from_id(guild_id)
+        clients = None
     
-    clients = filter_clients(guild.clients, INTENT_MASK_GUILD_USERS, client)
-    if clients.send(None) is not client:
-        clients.close()
-        return
+    else:
+        clients = filter_clients(guild.clients, INTENT_MASK_GUILD_USERS, client)
+        if clients.send(None) is not client:
+            clients.close()
+            return
     
     user = User.from_data(data['user'], data, guild_id)
     guild.user_count +=1
     
-    for client_ in clients:
-        event_handler = client_.events.guild_user_add
+    if clients is None:
+        event_handler = client.events.guild_user_add
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client_, guild, user), KOKORO)
+            Task(event_handler(client, guild, user), KOKORO)
+    else:
+        for client_ in clients:
+            event_handler = client_.events.guild_user_add
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client_, guild, user), KOKORO)
 
 if CACHE_USER:
     def GUILD_MEMBER_ADD__OPT_SC(client, data):
@@ -2200,7 +2205,6 @@ if CACHE_USER:
         try:
             guild = GUILDS[guild_id]
         except KeyError:
-            guild_sync(client, data, None)
             return
         
         User.from_data(data['user'], data, guild_id)
@@ -2211,7 +2215,6 @@ if CACHE_USER:
         try:
             guild = GUILDS[guild_id]
         except KeyError:
-            guild_sync(client, data, None)
             return
         
         if first_client(guild.clients, INTENT_MASK_GUILD_USERS, client) is not client:
@@ -2225,7 +2228,6 @@ else:
         try:
             guild = GUILDS[guild_id]
         except KeyError:
-            guild_sync(client, data, None)
             return
         
         guild.user_count += 1
@@ -2235,7 +2237,6 @@ else:
         try:
             guild = GUILDS[guild_id]
         except KeyError:
-            guild_sync(client, data, None)
             return
         
         if first_client(guild.clients, INTENT_MASK_GUILD_USERS, client) is not client:
@@ -2862,58 +2863,56 @@ del GUILD_INTEGRATIONS_UPDATE__CAL, \
 
 def GUILD_ROLE_CREATE__CAL_SC(client, data):
     guild_id = int(data['guild_id'])
-    try:
-        guild = GUILDS[guild_id]
-    except KeyError:
-        guild_sync(client, data, 'GUILD_ROLE_CREATE')
-        return
     
-    role = Role(data['role'], guild)
+    role = Role(data['role'], guild_id)
     
     Task(client.events.role_create(client, role), KOKORO)
+
 
 def GUILD_ROLE_CREATE__CAL_MC(client, data):
     guild_id = int(data['guild_id'])
     try:
         guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client, data, 'GUILD_ROLE_CREATE')
-        return
+        clients = None
+    else:
+        clients = filter_clients(guild.clients, INTENT_MASK_GUILDS, client)
+        if clients.send(None) is not client:
+            clients.close()
+            return
     
-    clients = filter_clients(guild.clients, INTENT_MASK_GUILDS, client)
-    if clients.send(None) is not client:
-        clients.close()
-        return
+    role = Role(data['role'], guild_id)
     
-    role = Role(data['role'], guild)
-    
-    for client_ in clients:
-        event_handler = client_.events.role_create
+    if clients is None:
+        event_handler = client.events.role_create
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client_, role), KOKORO)
+            Task(event_handler(client, role), KOKORO)
+    
+    else:
+        for client_ in clients:
+            event_handler = client_.events.role_create
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client_, role), KOKORO)
+
 
 def GUILD_ROLE_CREATE__OPT_SC(client, data):
     guild_id = int(data['guild_id'])
-    try:
-        guild = GUILDS[guild_id]
-    except KeyError:
-        guild_sync(client, data, 'GUILD_ROLE_CREATE')
-        return
     
-    Role(data['role'], guild)
+    Role(data['role'], guild_id)
+
 
 def GUILD_ROLE_CREATE__OPT_MC(client, data):
     guild_id = int(data['guild_id'])
     try:
         guild = GUILDS[guild_id]
     except KeyError:
-        guild_sync(client, data, 'GUILD_ROLE_CREATE')
-        return
+        pass
+    else:
+        if first_client(guild.clients, INTENT_MASK_GUILDS, client) is not client:
+            return
     
-    if first_client(guild.clients, INTENT_MASK_GUILDS, client) is not client:
-        return
-    
-    Role(data['role'], guild)
+    Role(data['role'], guild_id)
+
 
 add_parser(
     'GUILD_ROLE_CREATE',
@@ -2925,6 +2924,7 @@ del GUILD_ROLE_CREATE__CAL_SC, \
     GUILD_ROLE_CREATE__CAL_MC, \
     GUILD_ROLE_CREATE__OPT_SC, \
     GUILD_ROLE_CREATE__OPT_MC
+
 
 def GUILD_ROLE_DELETE__CAL_SC(client, data):
     guild_id = int(data['guild_id'])
@@ -3136,8 +3136,8 @@ def WEBHOOKS_UPDATE__CAL(client, data):
     channel_id = int(data['channel_id'])
     channel = CHANNELS.get(channel_id, None)
     
-    #if this happens the client might ask for update.
-    Task(client.events.webhook_update(client, channel,), KOKORO)
+    # if this happens the client might ask for update.
+    Task(client.events.webhook_update(client, channel), KOKORO)
 
 def WEBHOOKS_UPDATE__OPT(client, data):
     pass

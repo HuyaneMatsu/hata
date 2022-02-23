@@ -188,12 +188,15 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         user = User.from_data(user_data, guild_profile_data, guild_id)
         
         # user_permissions
-        try:
-            user_permissions = user_data['permissions']
-        except KeyError:
+        if (guild_profile_data is None):
             user_permissions = PERMISSION_PRIVATE
         else:
-            user_permissions = Permission(user_permissions)
+            try:
+                user_permissions = guild_profile_data['permissions']
+            except KeyError:
+                user_permissions = PERMISSION_PRIVATE
+            else:
+                user_permissions = Permission(user_permissions)
         
         
         self = object.__new__(cls)

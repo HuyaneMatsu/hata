@@ -65,6 +65,8 @@
 #### Renames, Deprecation & Removals
 
 - Deprecate `User.__new__`. Use `User.from_data` instead.
+- `Client.events.webhook_update` now has `client, events` parameters (from `client, channel`). If added with `channel`
+    parameter, deprecation is dropped.
 
 ## 1.2.1 *\[2022-02-22\]*
 

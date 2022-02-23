@@ -951,8 +951,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         >
         > When using 3rd party voice library, make sure to register your by passing `overwrite=True` parameter as well.
     
-    webhook_update(client: ``Client``, channel: ``ChannelGuildBase``):
-        Called when a webhook of a channel is updated. Discord not provides further details tho.
+    webhook_update(client: ``Client``, event: ``WebhookUpdateEvent``):
+        Called when a webhook of a channel is updated.
     """
     __slots__ = (*EVENT_HANDLER_ATTRIBUTES, *EVENT_HANDLER_NAMES)
     

@@ -2062,7 +2062,7 @@ class SlasherApplicationCommandFunction:
         
         response_modifier = self.response_modifier
         if (response_modifier is not None):
-            repr_parts.append(', response_modifier')
+            repr_parts.append(', response_modifier=')
             repr_parts.append(repr(response_modifier))
         
         repr_parts.append('>')

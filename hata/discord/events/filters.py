@@ -56,7 +56,7 @@ def filter_clients(clients, flag_mask, me):
 
 def get_message_enabled_user_ids(message_data):
     """
-    Gets the content field enabled user id-s for teh given message.
+    Gets the content field enabled user id-s for the given message.
     
     Parameters
     ----------

@@ -530,7 +530,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
     @property
     def channel(self):
         """
-        Returns the interaction's event.
+        Returns the interaction's event's channel.
         
         Returns
         -------

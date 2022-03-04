@@ -110,15 +110,11 @@ class User(USER_BASE_CLASS):
                 self.status = Status.offline
                 self.statuses = {}
                 self.activities = None
-                update = True
                 
                 USERS[user_id] = self
-            else:
-                update = self.partial
             
-            if update:
-                self.is_bot = user_data.get('bot', False)
-                self._update_attributes(user_data)
+            self.is_bot = user_data.get('bot', False)
+            self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
                 try:
@@ -158,15 +154,11 @@ class User(USER_BASE_CLASS):
                 self.id = user_id
                 self.guild_profiles = {}
                 self.thread_profiles = None
-                update = True
                 
                 USERS[user_id] = self
-            else:
-                update = self.partial
             
-            if update:
-                self.is_bot = user_data.get('bot', False)
-                self._update_attributes(user_data)
+            self.is_bot = user_data.get('bot', False)
+            self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
                 try:
@@ -254,15 +246,11 @@ class User(USER_BASE_CLASS):
                 self.status = Status.offline
                 self.statuses = {}
                 self.activities = None
-                update = True
                 
                 USERS[user_id] = self
-            else:
-                update = self.partial
             
-            if update:
-                self.is_bot = user_data.get('bot', False)
-                self._update_attributes(user_data)
+            self.is_bot = user_data.get('bot', False)
+            self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and guild_id:
                 try:
@@ -293,15 +281,11 @@ class User(USER_BASE_CLASS):
                 self.id = user_id
                 self.guild_profiles = {}
                 self.thread_profiles = None
-                update = True
                 
                 USERS[user_id] = self
-            else:
-                update = self.partial
             
-            if update:
-                self.is_bot = user_data.get('bot', False)
-                self._update_attributes(user_data)
+            self.is_bot = user_data.get('bot', False)
+            self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and guild_id:
                 try:

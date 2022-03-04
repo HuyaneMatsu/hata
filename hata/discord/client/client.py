@@ -2621,7 +2621,7 @@ class Client(ClientUserPBase):
         ----------
         channel : ``ChannelGroup``, `int`
             The channel to add the `users` to.
-        *users : ``ClientUserBase``, `int`s
+        *users : ``ClientUserBase``, `int`
             The users to add to the `channel`.
         
         Raises
@@ -2653,9 +2653,9 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : `ChannelGroup``, `int`
+        channel : ``ChannelGroup``, `int`
             The channel from where the `users` will be removed.
-        *users : ``ClientUserBase``, `int`s
+        *users : ``ClientUserBase``, `int`
             The users to remove from the `channel`.
         
         Raises
@@ -8245,7 +8245,7 @@ class Client(ClientUserPBase):
             The timestamp before the audit log entries wer created.
         after : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
             The timestamp after the audit log entries wer created.
-        user : `None`, ```ClientUserBase``, `int` = `None`, Optional (Keyword only)
+        user : `None`, ``ClientUserBase``, `int` = `None`, Optional (Keyword only)
             Whether the audit logs should be filtered only to those, which were created by the given user.
         event : `None`, ``AuditLogEvent``, `int` = `None`, Optional (Keyword only)
             Whether the audit logs should be filtered only on the given event.

@@ -130,6 +130,78 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     
     Each added event should be an async callable accepting a predefined amount of positional parameters.
     
+    Adding Event Handlers
+    ----------------------
+    To add event handler just do:
+    
+    ```py
+    @client.events
+    async def message_create(client, message):
+        ...
+    ```
+    
+    If you are having an event handler with a different name, that is a problem, use the `name` parameter.
+    
+    ```py
+    @client.events(name='message_create')
+    async def filter_messages(client, message):
+        ...
+    ```
+    
+    You can also overwrite all existing event handler, with using the `overwrite` parameter, or by assigning it
+    directly.
+    
+    ```py
+    @client.events(overwrite=True)
+    async def message_create(client, message):
+        ...
+    
+    
+    async def message_create(client, message):
+        ...
+    
+    client.events.message_create = message_create
+    ```
+    
+    If want to and an event handler to multiple clients, there is the ``ClientWrapper`` option.
+    
+    ```py
+    ALL = ClientWrapper()
+    
+    @ALL.events
+    async def launch(client):
+        print(f'{client:f} launched!')
+    ```
+    
+    Removing Event Handlers
+    -----------------------
+    If want to remove the events, use the ``.remove`` method. It is familiar when you use add an event handler.
+    
+    If names match, just calling `.remove(event_handler` is enough.
+    
+    ```py
+    client.events.remove(message_create)
+    ```
+    
+    If names do not match, it supports a name parameter for this reason.
+    
+    ```py
+    client.events.remove(filter_messages, name='message_create')
+    ```
+    
+    If you want to remove all event handlers from an event, using the `del` keyword is an option.
+    
+    ```py
+    del client.events.message_create
+    ```
+    
+    A special case is when you cant have the event handler, but have it's type. For these cases use it's type and the
+    `by_type` parameter.
+    
+    ```py
+    client.events.remove(MyEventHandlerType, by_type=True)
+    ```
+    
     Attributes
     ----------
     _launch_called : `bool`

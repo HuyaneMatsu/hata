@@ -60,7 +60,7 @@ channel = await client.channel_private_create(8899898989898989898)
 ### How do I get the ID of a sent message?
 
 `Client.message_create` returns the created message (if you create a non empty one of course).
-You can access it's id like `messsage.id`.
+You can access it's id like `message.id`.
 
 ```py
 message = await client.message_create(channel, 'content')

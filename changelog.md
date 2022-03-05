@@ -1,3 +1,10 @@
+## 1.2.3 *\[2022-03-??\]*
+
+#### Improvements
+
+- Change embed author constructor parameter order to `name, icon_url, url` from `icon_url`, `name`, `url`. On this
+    way it is more intuitive and matches the footer's parameter order as well. Drop warning if passed in bad order.
+
 ## 1.2.2 *\[2022-02-28\]*
 
 #### Improvements

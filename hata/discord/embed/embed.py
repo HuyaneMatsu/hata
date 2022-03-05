@@ -5,7 +5,8 @@ from scarletio import copy_docs
 from ..utils import datetime_to_timestamp, timestamp_to_datetime
 
 from .embed_base import (
-    EmbedAuthor, EmbedBase, EmbedField, EmbedFooter, EmbedImage, EmbedProvider, EmbedThumbnail, EmbedVideo
+    EmbedAuthor, EmbedBase, EmbedField, EmbedFooter, EmbedImage, EmbedProvider, EmbedThumbnail, EmbedVideo,
+    _warn_bad_embed_author_constructor_parameter_order
 )
 
 
@@ -18,6 +19,7 @@ RICH_EMBED_FIELDS = frozenset((
     'thumbnail',
     'video',
 ))
+
 
 class Embed(EmbedBase):
     """
@@ -959,8 +961,10 @@ class Embed(EmbedBase):
         -------
         self : ``Embed``
         """
-        if not isinstance(name, str):
+        if (name is not None) and (not isinstance(name, str)):
             name = str(name)
+        
+        name, icon_url = _warn_bad_embed_author_constructor_parameter_order(name, icon_url)
         
         author_data = {}
         

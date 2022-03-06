@@ -944,16 +944,16 @@ class Embed(EmbedBase):
     
     # author
     
-    def add_author(self, icon_url=None, name=None, url=None):
+    def add_author(self, name=None, icon_url=None, url=None):
         """
         Adds an ``EmbedAuthor`` to the embed with the given parameters.
         
         Parameters
         ----------
-        icon_url : `None`, `str` = `None`, Optional
-            An url of the author's icon. Can be http(s) or attachment.
         name : `None`, `str` = `None`, Optional
             The name of the author.
+        icon_url : `None`, `str` = `None`, Optional
+            An url of the author's icon. Can be http(s) or attachment.
         url : `None`, `str` = `None`, Optional
             The url of the author.
         

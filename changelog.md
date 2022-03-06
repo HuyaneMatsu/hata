@@ -8,6 +8,9 @@
 - Update max auto-completion options to 25 (from 20).
 - Auto generate bit flag getters, setters and deleters instead of using descriptors (this improves performance).
 
+#### ext.slash
+- `int` fields with applied max or min values are translated to `number` ones.
+
 #### Bug fixes
 - `Sticker.user` was not updated when expected.
 - Update message content fields correctly when polling from cache.

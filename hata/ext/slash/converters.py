@@ -1181,6 +1181,9 @@ def process_max_and_min_value(type_, value, value_name):
     """
     Processes max and min values.
     
+    Since the library defaults `integer` fields to `string` ones, `integer` fields are translated to `number` to
+    enable using `min_value` and `max_value` with them.
+    
     Parameters
     ----------
     type_ : `int`
@@ -1192,13 +1195,29 @@ def process_max_and_min_value(type_, value, value_name):
     
     Returns
     -------
+    type_ : `int`
+        The value's type's respective internal identifier.
     value : `None`, `int`, `float`
+        The min or max value.
+    
+    Raises
+    ------
+    TypeError
+        If `type_`'s value is incorrect.
+    ValueError
+        The respective `type_` do not supports max and min values.
     """
     if (value is not None):
         if type_ == ANNOTATION_TYPE_NUMBER:
             expected_type = int
+        
         elif type_ == ANNOTATION_TYPE_FLOAT:
             expected_type = float
+        
+        elif type_ == ANNOTATION_TYPE_INT:
+            expected_type = int
+            type_ = ANNOTATION_TYPE_NUMBER
+        
         else:
             raise ValueError(
                 f'`{value_name}` is not applicable for `{ANNOTATION_TYPE_TO_REPRESENTATION[type_]}` parameters.'
@@ -1214,7 +1233,7 @@ def process_max_and_min_value(type_, value, value_name):
                 f'as `{ANNOTATION_TYPE_TO_REPRESENTATION[type_]}`, got {value.__class__.__name__}; {value!r}.'
             )
     
-    return value
+    return type_, value
 
 
 def create_annotation_choice_from_int(value):
@@ -1706,8 +1725,8 @@ def parse_annotation_slash_parameter(slash_parameter, parameter_name):
     processed_channel_types = preprocess_channel_types(slash_parameter.channel_types)
     channel_types = postprocess_channel_types(processed_channel_types, parsed_channel_types)
     
-    max_value = process_max_and_min_value(type_, slash_parameter.max_value, 'max_value')
-    min_value = process_max_and_min_value(type_, slash_parameter.min_value, 'min_value')
+    type_, max_value = process_max_and_min_value(type_, slash_parameter.max_value, 'max_value')
+    type_, min_value = process_max_and_min_value(type_, slash_parameter.min_value, 'min_value')
     
     description = slash_parameter.description
     if (description is not None):

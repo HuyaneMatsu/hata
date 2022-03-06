@@ -297,8 +297,8 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         
         type_, choices, parsed_channel_types = parse_annotation_type_and_choice(type_or_choice, parameter_name)
         
-        max_value = process_max_and_min_value(type_, max_value, 'max_value')
-        min_value = process_max_and_min_value(type_, min_value, 'min_value')
+        type_, max_value = process_max_and_min_value(type_, max_value, 'max_value')
+        type_, min_value = process_max_and_min_value(type_, min_value, 'min_value')
         
         processed_channel_types = preprocess_channel_types(channel_types)
         channel_types = postprocess_channel_types(processed_channel_types, parsed_channel_types)

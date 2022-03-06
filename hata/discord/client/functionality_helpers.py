@@ -1085,7 +1085,7 @@ def application_command_autocomplete_choice_parser(choices):
             f'{choices.__class__.__name__}; {choices!r}.'
         )
     
-    del choices_processed[20:]
+    del choices_processed[25:]
     
     return choices_processed
 

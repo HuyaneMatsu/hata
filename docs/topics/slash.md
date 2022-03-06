@@ -182,7 +182,7 @@ async def perms(event):
         description = '*none*'
     
     user = event.user
-    return Embed('Permissions', description).add_author(user.avatar_url, user.full_name)
+    return Embed('Permissions', description).add_author(user.full_name, user.avatar_url)
 ```
 
 
@@ -505,7 +505,7 @@ async def perms(event):
         description = '*none*'
     
     user = event.user
-    return Embed('Permissions', description).add_author(user.avatar_url, user.full_name)
+    return Embed('Permissions', description).add_author(user.full_name, user.avatar_url)
 ```
 
 ![](assets/slash_0008.png)

@@ -359,6 +359,9 @@ class Message(DiscordEntity, immortal=True):
             MESSAGES[self.id] = self
         else:
             if not self.partial:
+                if not self.has_any_content_field():
+                    self._update_content_fields(data)
+                
                 return True, self
         
         self._fields = None
@@ -636,6 +639,15 @@ class Message(DiscordEntity, immortal=True):
         Some message fields might be missing after receiving a payload. This method is called to check and set those
         if multiple payload is received.
         
+        The fields are:
+        
+        - `content`
+        - `components`
+        - `embeds`
+        - `interaction`
+        
+        Since we update the content fields anyways, in this method we only update the `interaction` field.
+        
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
@@ -643,24 +655,9 @@ class Message(DiscordEntity, immortal=True):
         """
         fields = self._fields
         if (fields is None):
-            update_content = True
             update_interaction = True
-            update_components = True
-            update_embeds = True
         else:
-            update_content = (MESSAGE_FIELD_KEY_CONTENT not in fields)
             update_interaction = (MESSAGE_FIELD_KEY_INTERACTION not in fields)
-            update_components = (MESSAGE_FIELD_KEY_COMPONENTS not in fields)
-            update_embeds = (MESSAGE_FIELD_KEY_EMBEDS not in fields)
-        
-        if update_content:
-            content = data.get('content', None)
-            if (content is not None) and content:
-                _set_message_field(
-                    self,
-                    MESSAGE_FIELD_KEY_CONTENT,
-                    content,
-                )
         
         if update_interaction:
             interaction_data = data.get('interaction', None)
@@ -672,24 +669,6 @@ class Message(DiscordEntity, immortal=True):
                     self,
                     MESSAGE_FIELD_KEY_INTERACTION,
                     interaction,
-                )
-        
-        if update_components:
-            component_datas = data.get('components', None)
-            if (component_datas is not None) and component_datas:
-                _set_message_field(
-                    self,
-                    MESSAGE_FIELD_KEY_COMPONENTS,
-                    tuple(create_component(component_data) for component_data in component_datas),
-                )
-            
-        if update_embeds:
-            embed_datas = data.get('embeds', None)
-            if (embed_datas is not None) and embed_datas:
-                _set_message_field(
-                    self,
-                    MESSAGE_FIELD_KEY_EMBEDS,
-                    tuple(EmbedCore.from_data(embed) for embed in embed_datas),
                 )
     
     
@@ -1876,8 +1855,6 @@ class Message(DiscordEntity, immortal=True):
         else:
             self.everyone_mention = everyone_mention
         
-        
-        guild = self.guild
         
         try:
             user_mention_datas = data['mentions']

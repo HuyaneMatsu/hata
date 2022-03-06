@@ -208,6 +208,14 @@ class Sticker(DiscordEntity, immortal=True):
         self.tags = tags
         
         self.available = data.get('available', True)
+        
+        # user
+        try:
+            user_data = data['user']
+        except KeyError:
+            pass
+        else:
+            self.user = User.from_data(user_data)
     
     
     def _difference_update_attributes(self, data):

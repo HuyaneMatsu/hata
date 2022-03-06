@@ -736,11 +736,11 @@ def _warn_bad_embed_author_constructor_parameter_order(name, icon_url):
     
     if switch:
         warnings.warn(
-            FutureWarning,
             (
                 f'Embed author parameter order changed to `name, icon_url, url` from `icon_url`, `name`, `url` one. '
                 f'Using the old version is deprecated and will be removed in 2022 Jul.'
             ),
+            FutureWarning,
         )
         
         icon_url, name = name, icon_url

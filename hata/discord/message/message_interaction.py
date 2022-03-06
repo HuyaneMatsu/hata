@@ -26,7 +26,7 @@ class MessageInteraction(DiscordEntity):
     """
     __slots__ = ('name', 'type', 'user')
     
-    def __new__(cls, data):
+    def __new__(cls, data, guild_id):
         """
         Creates a new ``MessageInteraction`` from the received data.
         
@@ -34,12 +34,14 @@ class MessageInteraction(DiscordEntity):
         ----------
         data : `dict` of (`str`, `Any`) items
             Message interaction data.
+        guild_id : `int`
+            The respective message's guild's identifier.
         """
         self = object.__new__(cls)
         self.id = int(data['id'])
         self.name = data['name']
         self.type = InteractionType.get(data['type'])
-        self.user = User.from_data(data['user'])
+        self.user = User.from_data(data['user'], data.get('member', None), guild_id)
         
         return self
     

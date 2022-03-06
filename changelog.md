@@ -4,9 +4,11 @@
 
 - Change embed author constructor parameter order to `name, icon_url, url` from `icon_url`, `name`, `url`. On this
     way it is more intuitive and matches the footer's parameter order as well. Drop warning if passed in bad order.
+- `MessageInteraction` now picks up the `member` field from payload.
 
 #### Bug fixes
 - `Sticker.user` was not updated when expected.
+- Update message content fields correctly when polling from cache.
 
 ## 1.2.2 *\[2022-02-28\]*
 

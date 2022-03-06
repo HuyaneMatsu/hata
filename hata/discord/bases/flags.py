@@ -1,156 +1,107 @@
 __all__ = ('FlagBase', 'ReverseFlagBase', )
 
-class FlagGetDescriptor:
+
+def create_flag_getter(name, shift):
     """
-    Returns the flag descriptor's owner's value at a specific bitwise position.
+    Creates a flag getter function.
     
-    Attributes
+    Parameters
     ----------
+    name : `str`
+        The flag's name.
     shift : `int`
-        The bitwise position of the attribute what this flag represents.
+        Bit shift value.
+    
+    Returns
+    -------
+    flag_getter : `FunctionType`
     """
-    __slots__ = ('shift', )
-    def __init__(self, shift):
-        self.shift = shift
+    locals_ = {}
+    func_name = f'_get_{name}'
+    exec(compile((
+        f'def {func_name}(self):\n'
+        f'    return (self >> 0x{shift:x}) & 1'
+    ), f'<create_flag_getter>', 'exec', optimize=2), {}, locals_)
     
-    def __get__(self, instance, type_):
-        if instance is None:
-            return self
-        else:
-            return (instance >> self.shift) & 1
-    
-    def __call__(self, value):
-        return (value >> self.shift) & 1
-    
-    def __set__(self, obj, value):
-        raise AttributeError('can\'t set attribute')
-    
-    def __delete__(self, obj):
-        raise AttributeError('can\'t delete attribute')
+    return locals_[func_name]
 
 
-class ReverseFlagGetDescriptor(FlagGetDescriptor):
+def create_reversed_flag_getter(name, shift):
     """
-    Returns the flag descriptor's owner's reversed value at a specific bitwise position.
+    Creates a reversed flag getter function.
     
-    This type is a reversed version of ``FlagGetDescriptor``, so it returns `0` when the value has `1` at the specific
-    bitwise position.
-    
-    Attributes
+    Parameters
     ----------
+    name : `str`
+        The flag's name.
     shift : `int`
-        The bitwise position of the attribute, what this flag represents.
-    """
-    def __get__(self, instance, type_):
-        if instance is None:
-            return self
-        else:
-            return ((instance >> self.shift) & 1)^1
+        Bit shift value.
     
-    def __call__(self, value):
-        return ((value >> self.shift) & 1)^1
+    Returns
+    -------
+    reversed_flag_getter : `FunctionType`
+    """
+    locals_ = {}
+    func_name = f'_get_{name}'
+    exec(compile((
+        f'def {func_name}(self):\n'
+        f'    return ((self >> 0x{shift:x}) & 1) ^ 1'
+    ), f'<create_reversed_flag_getter>', 'exec', optimize=2), {}, locals_)
+    
+    return locals_[func_name]
 
 
-class FlagEnabler:
+def create_flag_enabler(name, shift):
     """
-    Enables a specific bitwise flag of a given value by returning a new one with the given bitwise flag enabled.
+    Creates a flag enabler function.
     
-    This type is instanced by ``FlagEnableDescriptor`` objects, when they are accessed as instance attribute.
-    
-    Attributes
+    Parameters
     ----------
-    instance : ``FlagMeta``'s instance
-        The source value, what will be modified.
+    name : `str`
+        The flag's name.
     shift : `int`
-        The bitwise position, what will be modified.
+        Bit shift value.
     
-    Notes
-    -----
-    This type is used for disabling specific bitwise values when the source flag is a reversed flag.
+    Returns
+    -------
+    flag_enabler : `FunctionType`
     """
-    __slots__ = ('instance', 'shift')
+    locals_ = {}
+    func_name = f'_enable_{name}'
+    exec(compile((
+        f'def {func_name}(self):\n'
+        f'    return int.__new__(type(self), (self | (1 << 0x{shift:x})))'
+    ), f'<create_flag_enabler>', 'exec', optimize=2), {}, locals_)
     
-    def __call__(self):
-        instance = self.instance
-        return int.__new__(type(instance), (instance | (1 << self.shift)))
+    return locals_[func_name]
 
 
-class FlagEnableDescriptor(FlagGetDescriptor):
+def create_flag_disabler(name, shift):
     """
-    Descriptor for enabling a specific bitwise value of a flag. After this descriptor is accessed as an instance
-    attribute, a ``FlagEnabler`` is returned, and calling that will return a new instance with it's bitwise flag
-    value enabled.
+    Creates a flag disabler function.
     
-    Attributes
+    Parameters
     ----------
+    name : `str`
+        The flag's name.
     shift : `int`
-        The bitwise position of the attribute what this flag represents.
+        Bit shift value.
     
-    Notes
-    -----
-    This type is used for disabling specific bitwise values when the source flag is a reversed flag.
+    Returns
+    -------
+    flag_disabler : `FunctionType`
     """
-    def __get__(self, instance, type_):
-        if instance is None:
-            return self
-        else:
-            result = FlagEnabler()
-            result.instance = instance
-            result.shift = self.shift
-            return result
-
-
-class FlagDisabler:
-    """
-    Disables a specific bitwise flag of a given value by returning a new one with the given bitwise flag disabled.
+    locals_ = {}
+    func_name = f'_disable_{name}'
+    exec(compile((
+        f'def {func_name}(self):\n'
+        f'    if (instance >> 0x{shift:x}) & 1:\n'
+        f'        return int.__new__(type(instance), (instance ^ (1 << 0x{shift:x})))\n'
+        f'    else:\n'
+        f'        return instance'
+    ), f'<create_flag_enabler>', 'exec', optimize=2), {}, locals_)
     
-    This type is instanced by ``FlagDisableDescriptor`` objects, when they are accessed as instance attribute.
-    
-    Attributes
-    ----------
-    instance : ``FlagMeta``'s instance
-        The source value, what will be modified.
-    shift : `int`
-        The bitwise position, what will be modified.
-    
-    Notes
-    -----
-    This type is used for enable specific bitwise values when the source flag is a reversed flag.
-    """
-    __slots__ = ('instance', 'shift')
-    
-    def __call__(self):
-        instance = self.instance
-        shift = self.shift
-        if (instance >> shift) & 1:
-            return int.__new__(type(instance), (instance^(1 << shift)))
-        else:
-            return instance
-
-
-class FlagDisableDescriptor(FlagGetDescriptor):
-    """
-    Descriptor for disabling a specific bitwise value of a flag. After this descriptor is accessed as an instance
-    attribute, a ``FlagDisabler`` is returned, and calling that will return a new instance with it's bitwise flag
-    value disabled.
-    
-    Attributes
-    ----------
-    shift : `int`
-        The bitwise position of the attribute what this flag represents.
-    
-    Notes
-    -----
-    This type is used for enabling specific bitwise values when the source flag is a reversed flag.
-    """
-    def __get__(self, instance, type_):
-        if instance is None:
-            return self
-        else:
-            result = FlagDisabler()
-            result.instance = instance
-            result.shift = self.shift
-            return result
+    return locals_[func_name]
 
 
 class FlagMeta(type):
@@ -183,9 +134,9 @@ class FlagMeta(type):
             Whether the created type is a base class for flags. If it is:
                 - Should directly derived from `int`.
                 - Should not implement `__keys__` (except `NotImplemented`).
-                - Should implement `__getter_class__` class attribute.
-                - Should implement `__enabler_class__` class attribute.
-                - Should implement `__disabler_class__` class attribute.
+                - Should implement `__getter_factory__` class attribute.
+                - Should implement `__enabler_factory__` class attribute.
+                - Should implement `__disabler_factory__` class attribute.
             If not, then:
                 - Should derive directly from a ``FlagMeta`` base_class.
                 - Should implement `__keys__` as `dict` of (`str`, `int`) items, where the values are not less than
@@ -216,7 +167,7 @@ class FlagMeta(type):
                     f'`{class_name}` has `__keys__` defined and not as `NotImplemented`.'
                 )
             
-            for attribute_name in ('__getter_class__', '__enabler_class__', '__disabler_class__'):
+            for attribute_name in ('__getter_factory__', '__enabler_factory__', '__disabler_factory__'):
                 if attribute_name not in class_attributes:
                     raise TypeError(
                         f'`{class_name}` should implement a `{attribute_name}`.'
@@ -270,9 +221,9 @@ class FlagMeta(type):
         
         class_attributes.setdefault('__new__', int.__new__)
         
-        getter = parent.__getter_class__
-        enabler = parent.__enabler_class__
-        disabler = parent.__disabler_class__
+        getter = parent.__getter_factory__
+        enabler = parent.__enabler_factory__
+        disabler = parent.__disabler_factory__
         
         # Add properties
         for name, shift in keys.items():
@@ -281,13 +232,13 @@ class FlagMeta(type):
             else:
                 access_name = f'{access_keyword}_{name}'
             
-            class_attributes[access_name] = getter(shift)
+            class_attributes[access_name] = property(getter(name, shift))
             
             if (enable_keyword is not None):
-                class_attributes[f'{enable_keyword}_{name}'] = enabler(shift)
+                class_attributes[f'{enable_keyword}_{name}'] = enabler(name, shift)
             
             if (disable_keyword is not None):
-                class_attributes[f'{disable_keyword}_{name}'] = disabler(shift)
+                class_attributes[f'{disable_keyword}_{name}'] = disabler(name, shift)
         
         return type.__new__(cls, class_name, class_parents, class_attributes)
 
@@ -298,19 +249,19 @@ class FlagBase(int, metaclass=FlagMeta, base_class=True):
     
     Class Attributes
     ----------------
-    __getter_class__ : ``FlagGetDescriptor``
+    __getter_factory__ : ``create_flag_getter``
         Flag value getter descriptor for subclasses.
-    __enabler_class__ : ``FlagEnableDescriptor``
-        Flag enabler descriptor for subclasses.
-    __disabler_class__ : ``FlagDisableDescriptor``
-        Flag disabler descriptor for subclasses.
+    __enabler_factory__ : ``create_flag_enabler``
+        Flag enabler function factory for subclasses.
+    __disabler_factory__ : ``create_flag_disabler``
+        Flag disabler function factory for subclasses.
     """
     __slots__ = ()
     __keys__ = NotImplemented
     
-    __getter_class__ = FlagGetDescriptor
-    __enabler_class__ = FlagEnableDescriptor
-    __disabler_class__ = FlagDisableDescriptor
+    __getter_factory__ = create_flag_getter
+    __enabler_factory__ = create_flag_enabler
+    __disabler_factory__ = create_flag_disabler
     
     def __new__(self, base=None):
         """You cannot subclass flag base classes."""
@@ -445,22 +396,23 @@ class FlagBase(int, metaclass=FlagMeta, base_class=True):
         
         return int.__new__(type(self), new)
 
+
 class ReverseFlagBase(FlagBase, base_class=True):
     """
     Base class for reversed bitwise flags.
     
     Class Attributes
     ----------------
-    __getter_class__ : ``ReverseFlagGetDescriptor``
+    __getter_factory__ : ``create_reversed_flag_getter``
         Flag value getter descriptor for subclasses.
-    __enabler_class__ : ``FlagDisableDescriptor``
-        Flag enabler descriptor for subclasses.
-    __disabler_class__ : ``FlagEnableDescriptor``
-        Flag disabler descriptor for subclasses.
+    __enabler_factory__ : ``create_flag_disabler``
+        Flag enabler function factory for subclasses.
+    __disabler_factory__ : ``create_flag_enabler``
+        Flag disabler function factory for subclasses.
     """
-    __getter_class__ = ReverseFlagGetDescriptor
-    __enabler_class__ = FlagDisableDescriptor
-    __disabler_class__ = FlagEnableDescriptor
+    __getter_factory__ = create_reversed_flag_getter
+    __enabler_factory__ = create_flag_disabler
+    __disabler_factory__ = create_flag_enabler
     
     def __getitem__(self, key):
         """Returns whether a specific flag of the given name is enabled."""
@@ -510,7 +462,7 @@ class ReverseFlagBase(FlagBase, base_class=True):
             Whether the specific bitwise value is enabled.
         """
         for name, shift in self.__keys__.items():
-            yield name, ((self >> shift) & 1)^1
+            yield name, ((self >> shift) & 1) ^ 1
     
     def __contains__(self, key):
         """Returns whether the specific flag of the given name is enabled."""
@@ -519,7 +471,7 @@ class ReverseFlagBase(FlagBase, base_class=True):
         except KeyError:
             return 0
         
-        return ((self >> position) & 1)^1
+        return ((self >> position) & 1) ^ 1
     
     def is_subset(self, other):
         """Returns whether self has the same amount or more flags disabled than other."""

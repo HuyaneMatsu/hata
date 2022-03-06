@@ -41,7 +41,7 @@ VALID_STICKER_IMAGE_MEDIA_TYPES = frozenset(('image/png', 'application/json'))
 
 STYLE_PATTERN = re.compile('(^shield$)|(^banner[1-4]$)')
 
-MESSAGE_JUMP_URL_RP = re.compile('(?:https://)?discord(?:app)?.com/channels/(?:(\d{7,21})|@me)/(\d{7,21})/(\d{7,21})')
+MESSAGE_JUMP_URL_RP = re.compile('(?:https://)?(?:(?:canary|ptb)\.)?discord(?:app)?.com/channels/(?:(\d{7,21})|@me)/(\d{7,21})/(\d{7,21})')
 export(MESSAGE_JUMP_URL_RP, 'MESSAGE_JUMP_URL_RP')
 
 _try_get_guild_id = include('_try_get_guild_id')
@@ -70,7 +70,7 @@ def message_jump_url(message):
 CDN_RP = re.compile(
     'https://(?:'
         'cdn\.discordapp\.com|'
-        'discord\.com|'
+        '(?:(?:canary|ptb)\.)?discord\.com|'
         '(?:'
             'images-ext-\d+|'
             'media'

@@ -259,8 +259,8 @@ class Pagination(PaginationBase):
             raise
         
         self._timeouter = Timeouter(self, timeout=timeout)
-        client.events.reaction_add.append(message, self)
-        client.events.reaction_delete.append(message, self)
+        await client.events.reaction_add(message, self)
+        await client.events.reaction_delete(message, self)
         return self
     
     @copy_docs(PaginationBase.__call__)

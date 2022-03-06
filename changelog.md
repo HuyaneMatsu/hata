@@ -6,10 +6,15 @@
     way it is more intuitive and matches the footer's parameter order as well. Drop warning if passed in bad order.
 - `MessageInteraction` now picks up the `member` field from payload.
 - Update max auto-completion options to 25 (from 20).
+- Auto generate bit flag getters, setters and deleters instead of using descriptors (this improves performance).
 
 #### Bug fixes
 - `Sticker.user` was not updated when expected.
 - Update message content fields correctly when polling from cache.
+
+#### Renames, Deprecation & Removals
+- Rename `start_embedded_activities` to `use_embedded_activities` permission.
+- Add deprecated `Permission.can_start_embedded_activities` property.
 
 ## 1.2.2 *\[2022-02-28\]*
 

@@ -95,10 +95,10 @@ def create_flag_disabler(name, shift):
     func_name = f'_disable_{name}'
     exec(compile((
         f'def {func_name}(self):\n'
-        f'    if (instance >> 0x{shift:x}) & 1:\n'
-        f'        return int.__new__(type(instance), (instance ^ (1 << 0x{shift:x})))\n'
+        f'    if (self >> 0x{shift:x}) & 1:\n'
+        f'        return int.__new__(type(self), (self ^ (1 << 0x{shift:x})))\n'
         f'    else:\n'
-        f'        return instance'
+        f'        return self'
     ), f'<create_flag_enabler>', 'exec', optimize=2), {}, locals_)
     
     return locals_[func_name]

@@ -1,5 +1,7 @@
 __all__ = ('Permission', )
 
+import warnings
+
 from ..bases import FlagBase
 
 
@@ -42,7 +44,7 @@ PERMISSION_SHIFT_CREATE_PUBLIC_THREADS = 35
 PERMISSION_SHIFT_CREATE_PRIVATE_THREADS = 36
 PERMISSION_SHIFT_USE_EXTERNAL_STICKERS = 37
 PERMISSION_SHIFT_SEND_MESSAGES_IN_THREADS = 38
-PERMISSION_SHIFT_START_EMBEDDED_ACTIVITIES = 39
+PERMISSION_SHIFT_USE_EMBEDDED_ACTIVITIES = 39
 PERMISSION_SHIFT_MODERATE_USERS = 40
 
 
@@ -85,8 +87,9 @@ PERMISSION_MASK_CREATE_PUBLIC_THREADS = 1 << PERMISSION_SHIFT_CREATE_PUBLIC_THRE
 PERMISSION_MASK_CREATE_PRIVATE_THREADS = 1 << PERMISSION_SHIFT_CREATE_PRIVATE_THREADS
 PERMISSION_MASK_USE_EXTERNAL_STICKERS = 1 << PERMISSION_SHIFT_USE_EXTERNAL_STICKERS
 PERMISSION_MASK_SEND_MESSAGES_IN_THREADS = 1 << PERMISSION_SHIFT_SEND_MESSAGES_IN_THREADS
-PERMISSION_MASK_START_EMBEDDED_ACTIVITIES = 1 << PERMISSION_SHIFT_START_EMBEDDED_ACTIVITIES
+PERMISSION_MASK_USE_EMBEDDED_ACTIVITIES = 1 << PERMISSION_SHIFT_USE_EMBEDDED_ACTIVITIES
 PERMISSION_MASK_MODERATE_USERS = 1 << PERMISSION_SHIFT_MODERATE_USERS
+
 
 class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable_keyword='deny'):
     """
@@ -173,7 +176,7 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
     +-------------------------------+-------------------+
     | send_messages_in_threads      | 38                |
     +-------------------------------+-------------------+
-    | start_embedded_activities     | 39                |
+    | use_embedded_activities     | 39                |
     +-------------------------------+-------------------+
     | moderate_users                | 40                |
     +-------------------------------+-------------------+
@@ -221,9 +224,21 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
         'create_private_threads': PERMISSION_SHIFT_CREATE_PRIVATE_THREADS,
         'use_external_stickers': PERMISSION_SHIFT_USE_EXTERNAL_STICKERS,
         'send_messages_in_threads': PERMISSION_SHIFT_SEND_MESSAGES_IN_THREADS,
-        'start_embedded_activities': PERMISSION_SHIFT_START_EMBEDDED_ACTIVITIES,
+        'use_embedded_activities': PERMISSION_SHIFT_USE_EMBEDDED_ACTIVITIES,
         'moderate_users': PERMISSION_SHIFT_MODERATE_USERS,
     }
+    
+    
+    @property
+    def can_start_embedded_activities(self):
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.can_start_embedded_activities` is deprecated and will be removed in '
+                f'2022 Jul.\nPlease use `.can_use_embedded_activities` instead.'
+            ),
+            FutureWarning,
+        )
+        return self.can_use_embedded_activities
 
 
 PERMISSION_ALL = Permission().update_by_keys(
@@ -266,7 +281,7 @@ PERMISSION_ALL = Permission().update_by_keys(
     create_private_threads = True,
     use_external_stickers = True,
     send_messages_in_threads = True,
-    start_embedded_activities = True,
+    use_embedded_activities = True,
     moderate_users = True,
 )
 
@@ -310,7 +325,7 @@ PERMISSION_PRIVATE = Permission().update_by_keys(
     request_to_speak = False,
     use_external_stickers = True,
     send_messages_in_threads = False,
-    start_embedded_activities = False,
+    use_embedded_activities = False,
     moderate_users = False,
 )
 
@@ -366,7 +381,7 @@ PERMISSION_TEXT_ALL = Permission().update_by_keys(
     create_private_threads = True,
     use_external_stickers = True,
     send_messages_in_threads = True,
-    start_embedded_activities = False,
+    use_embedded_activities = False,
     moderate_users = False,
 )
 
@@ -424,7 +439,7 @@ PERMISSION_VOICE_ALL = Permission().update_by_keys(
     create_private_threads = False,
     use_external_stickers = False,
     send_messages_in_threads = False,
-    start_embedded_activities = True,
+    use_embedded_activities = True,
     moderate_users = False,
 )
 

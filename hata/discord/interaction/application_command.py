@@ -116,22 +116,19 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             - If `options`'s length is out of range [0:25].
             - If `allow_by_default` was not given as `bool`.
         """
-        # ---- Debug mode only checks ----
+        # id
+        # Internal attribute
+        
+        # allow_by_default
         if __debug__:
-            # id
-            # Internal attribute
-            
-            # allow_by_default
             if not isinstance(allow_by_default, bool):
                 raise AssertionError(
                     f'`allow_by_default` can be `bool`, got {allow_by_default.__class__.__name__}; '
                     f'{allow_by_default!r}.'
                 )
-            
-            # application_id
-            # Internal attribute
-            
-            # description
+        
+        # description
+        if __debug__:
             if (description is not None):
                 if not isinstance(description, str):
                     raise AssertionError(
@@ -148,8 +145,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                         f'[{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], '
                         f'got {description_length!r}; {description!r}.'
                     )
-            
-            # name
+        
+        # name
+        if __debug__:
             if not isinstance(name, str):
                 raise AssertionError(
                     f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
@@ -170,30 +168,6 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                 raise AssertionError(
                     f'`name` contains an unexpected character, got {name!r}.'
                 )
-            
-            # options
-            # No additional checks
-            
-            # target_type
-            # No additional checks
-            
-            # version
-            # Internal attribute
-        
-        
-        # ---- General checks ----
-        
-        # id
-        # Internal attribute
-        
-        # allow_by_default
-        # No general checks
-        
-        # description
-        # No general checks
-        
-        # name
-        # No general checks
         
         # options
         if options is None:
@@ -231,6 +205,8 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         else:
             target_type = preconvert_preinstanced_type(target_type, 'target_type', ApplicationCommandTargetType)
         
+        
+        # Post checks
         if (target_type in APPLICATION_COMMAND_CONTEXT_TARGET_TYPES):
             # Context commands cannot have description and options, so we clear them.
             description = None

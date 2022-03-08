@@ -5,6 +5,7 @@
 - Add `ApplicationCommand.verison`.
 - Add `ApplicationCommand.edited_at`.
 - Add `e` format code to `ApplicationCommand`.
+- Add `ApplicationCommand._create_empty`.
 
 ## 1.2.3 *\[2022-03-08\]*
 

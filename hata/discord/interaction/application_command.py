@@ -116,7 +116,40 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             - If `options`'s length is out of range [0:25].
             - If `allow_by_default` was not given as `bool`.
         """
+        # ---- Debug mode only checks ----
         if __debug__:
+            # id
+            # Internal attribute
+            
+            # allow_by_default
+            if not isinstance(allow_by_default, bool):
+                raise AssertionError(
+                    f'`allow_by_default` can be `bool`, got {allow_by_default.__class__.__name__}; '
+                    f'{allow_by_default!r}.'
+                )
+            
+            # application_id
+            # Internal attribute
+            
+            # description
+            if (description is not None):
+                if not isinstance(description, str):
+                    raise AssertionError(
+                        f'`description` can be `None`, `str`, got {description.__class__.__name__}; {description!r}.'
+                    )
+                
+                description_length = len(description)
+                if (
+                    description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or
+                    description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX
+                ):
+                    raise AssertionError(
+                        f'`description` length can be in range '
+                        f'[{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], '
+                        f'got {description_length!r}; {description!r}.'
+                    )
+            
+            # name
             if not isinstance(name, str):
                 raise AssertionError(
                     f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
@@ -138,29 +171,31 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                     f'`name` contains an unexpected character, got {name!r}.'
                 )
             
-            if (description is not None):
-                if not isinstance(description, str):
-                    raise AssertionError(
-                        f'`description` can be `None`, `str`, got {description.__class__.__name__}; {description!r}.'
-                    )
-                
-                description_length = len(description)
-                if (
-                    description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or
-                    description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX
-                ):
-                    raise AssertionError(
-                        f'`description` length can be in range '
-                        f'[{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], '
-                        f'got {description_length!r}; {description!r}.'
-                    )
+            # options
+            # No additional checks
             
-            if not isinstance(allow_by_default, bool):
-                raise AssertionError(
-                    f'`allow_by_default` can be `bool`, got {allow_by_default.__class__.__name__}; '
-                    f'{allow_by_default!r}.'
-                )
+            # target_type
+            # No additional checks
+            
+            # version
+            # Internal attribute
         
+        
+        # ---- General checks ----
+        
+        # id
+        # Internal attribute
+        
+        # allow_by_default
+        # No general checks
+        
+        # description
+        # No general checks
+        
+        # name
+        # No general checks
+        
+        # options
         if options is None:
             options_processed = None
         else:
@@ -190,22 +225,27 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             else:
                 options_processed = None
         
+        # target_type
         if target_type is None:
             target_type = ApplicationCommandTargetType.chat
         else:
             target_type = preconvert_preinstanced_type(target_type, 'target_type', ApplicationCommandTargetType)
         
-        if (target_type not in APPLICATION_COMMAND_CONTEXT_TARGET_TYPES):
+        if (target_type in APPLICATION_COMMAND_CONTEXT_TARGET_TYPES):
+            # Context commands cannot have description and options, so we clear them.
+            description = None
+            options_processed = None
+        
+        else:
+            # For non context commands description is required.
             if (description is None):
                 raise ValueError(
                     f'`description` cannot be `None` for application commands with non-context target.'
                 )
-        else:
-            # We do not really care about them, we can just lose them, no problem.
-            description = None
-            options_processed = None
+        
         
         self = object.__new__(cls)
+        
         self.id = 0
         self.application_id = 0
         self.name = name
@@ -214,6 +254,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         self.options = options_processed
         self.target_type = target_type
         self.version = 0
+        
         return self
     
     
@@ -243,8 +284,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                     f'{self.__class__.__name__}.add_option` can be only called on partial '
                     f'`{self.__class__.__name__}`-s, but was called on {self!r}.'
                 )
-        
-        if __debug__:
+            
             if not isinstance(option, ApplicationCommandOption):
                 raise AssertionError(
                     f'`option` can be `{ApplicationCommandOption.__name__}`, got '
@@ -263,6 +303,32 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                     )
         
         options.append(option)
+        return self
+    
+    
+    @classmethod
+    def _create_empty(cls, application_command_id):
+        """
+        Creates an empty application command with the default attributes set.
+        
+        Parameters
+        ----------
+        application_command_id : `int`
+            The application command's identifier.
+        
+        Returns
+        -------
+        self : ``ApplicationCommand``
+        """
+        self = object.__new__(cls)
+        self.id = application_command_id
+        self.allow_by_default = True
+        self.application_id = 0
+        self.description = None
+        self.name = ''
+        self.options = None
+        self.target_type = ApplicationCommandTargetType.none
+        self.version = 0
         return self
     
     

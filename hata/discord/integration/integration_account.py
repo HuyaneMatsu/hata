@@ -2,6 +2,7 @@ __all__ = ('IntegrationAccount', )
 
 from ..user import User
 
+
 INTEGRATION_TYPE_DISCORD = 'discord'
 
 class IntegrationAccount:
@@ -50,7 +51,7 @@ class IntegrationAccount:
     
     
     @classmethod
-    def create_empty(cls):
+    def _create_empty(cls):
         """
         Creates an empty integration account, with it's attributes set as empty strings.
         """
@@ -58,6 +59,3 @@ class IntegrationAccount:
         self.id = ''
         self.name = ''
         return self
-
-
-

@@ -307,7 +307,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     
     
     @classmethod
-    def _create_empty(cls, application_command_id):
+    def _create_empty(cls, application_command_id, application_id):
         """
         Creates an empty application command with the default attributes set.
         
@@ -315,6 +315,8 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         ----------
         application_command_id : `int`
             The application command's identifier.
+        application_id : `int`
+            The application command's owner application's identifier.
         
         Returns
         -------
@@ -323,7 +325,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         self = object.__new__(cls)
         self.id = application_command_id
         self.allow_by_default = True
-        self.application_id = 0
+        self.application_id = application_id
         self.description = None
         self.name = ''
         self.options = None
@@ -351,8 +353,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         try:
             self = APPLICATION_COMMANDS[application_command_id]
         except KeyError:
-            self = cls._create_empty(application_command_id)
-            self.application_id = int(data['application_id'])
+            self = cls._create_empty(application_command_id, int(data['application_id']))
             APPLICATION_COMMANDS[application_command_id] = self
             
         self._update_attributes(data)
@@ -558,28 +559,41 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         -------
         data : `dict` of (`str`, `Any`) items
         """
-        data = {
-            'name': self.name,
-        }
+        data = {}
         
+        # id
+        # Receive only
+        
+        # allow_by_default
+        # Always add this to data, so if we update the command with it, will be always updated.
+        data['default_permission'] = self.allow_by_default
+        
+        # application_id
+        # Receive only
+        
+        # description
         description = self.description
         if (description is not None):
             data['description'] = description
         
+        # name
+        data['name'] = self.name
+        
+        # options
         options = self.options
         if (options is None):
             option_datas = []
         else:
             option_datas = [option.to_data() for option in options]
-        
         data['options'] = option_datas
         
-        # Always add this to data, so if we update the command with it, will be always updated.
-        data['default_permission'] = self.allow_by_default
-        
+        # target_type
         data['type'] = self.target_type.value
         
+        # version
+        # Receive only
         return data
+    
     
     def __repr__(self):
         """Returns the application command's representation."""
@@ -587,14 +601,17 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             '<', self.__class__.__name__,
         ]
         
-        id_ = self.id
-        if id_ == 0:
+        # if the application command is partial, mention that, else add  `.id` and `.application_id` fields.
+        if self.partial:
             repr_parts.append(' (partial)')
+        
         else:
             repr_parts.append(' id=')
-            repr_parts.append(repr(id_))
+            repr_parts.append(repr(self.id))
             repr_parts.append(', application_id=')
             repr_parts.append(repr(self.application_id))
+        
+        # Required fields are `.name` and `.type`
         
         repr_parts.append(', name=')
         repr_parts.append(repr(self.name))
@@ -607,6 +624,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             repr_parts.append(repr(target_type.value))
             repr_parts.append(')')
         
+        # Optional fields `.description`, `.options`, `.allow_by_default`
         description = self.description
         if (description is not None):
             repr_parts.append(', description=')
@@ -637,6 +655,8 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         repr_parts.append('>')
         
+        # Ignore extra fields: `.version`
+        
         return ''.join(repr_parts)
     
     
@@ -665,7 +685,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     
     
     @classmethod
-    def _from_edit_data(cls, data, interaction_id, application_id):
+    def _from_edit_data(cls, data, application_command_id, application_id):
         """
         Creates an application command with the given parameters after an application command edition took place.
         
@@ -673,7 +693,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         ----------
         data : `dict` of (`str`, `Any`) items
             Application command data returned by it's ``.to_data`` method.
-        interaction_id : `int`
+        application_command_id : `int`
             The unique identifier number of the newly created application command.
         application_id : `int`
             The new application identifier number of the newly created application command.
@@ -684,19 +704,10 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             The newly created or updated application command.
         """
         try:
-            self = APPLICATION_COMMANDS[interaction_id]
+            self = APPLICATION_COMMANDS[application_command_id]
         except KeyError:
-            self = object.__new__(cls)
-            self.id = interaction_id
-            self.application_id = application_id
-            APPLICATION_COMMANDS[interaction_id] = self
-            
-            # Discord might not include attributes in edit data, so we will set them first to avoid unset attributes.
-            self.description = None
-            self.name = ''
-            self.options = None
-            self.target_type = ApplicationCommandTargetType.none
-            self.version = 0
+            self = cls._create_empty(application_command_id, application_id)
+            APPLICATION_COMMANDS[application_command_id] = self
         
         self._update_attributes(data)
         
@@ -707,26 +718,43 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         """
         Copies the ``ApplicationCommand``.
         
+        The copy is always a partial application command.
+        
         Returns
         -------
         new : ``ApplicationCommand``
-            A copied new partial application command.
         """
         new = object.__new__(type(self))
+        
+        # id
         new.id = 0
-        new.application_id = 0
-        new.name = self.name
-        new.description = self.description
+        
+        # allow_by_default
         new.allow_by_default = self.allow_by_default
         
+        # application_id
+        new.application_id = 0
+        
+        # description
+        new.description = self.description
+        
+        # name
+        new.name = self.name
+        
+        # options
         options = self.options
         if (options is not None):
             options = [option.copy() for option in options]
         new.options = options
         
+        # target_type
         new.target_type = self.target_type
-        new.version = self.version
+        
+        # version
+        new.version = 0
+        
         return new
+    
     
     def __eq__(self, other):
         """Returns whether the two application commands are equal."""
@@ -742,22 +770,24 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             
             return False
         
-        if self.name != other.name:
-            return False
-        
-        if self.description != other.description:
-            return False
-        
+        # allow_by_default
         if self.allow_by_default != other.allow_by_default:
             return False
         
+        # description
+        if self.description != other.description:
+            return False
+        
+        # name
+        if self.name != other.name:
+            return False
+        
+        # options
         if self.options != other.options:
             return False
         
+        # target_type
         if (self.target_type is not other.target_type):
-            return False
-        
-        if (self.version != other.version):
             return False
         
         return True
@@ -776,22 +806,24 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             
             return True
         
-        if self.name != other.name:
-            return True
-        
-        if self.description != other.description:
-            return True
-        
+        # allow_by_default
         if self.allow_by_default != other.allow_by_default:
             return True
         
+        # description
+        if self.description != other.description:
+            return True
+        
+        # name
+        if self.name != other.name:
+            return True
+        
+        # options
         if self.options != other.options:
             return True
         
+        # target_type
         if (self.target_type is not other.target_type):
-            return True
-        
-        if (self.version != other.version):
             return True
         
         return False

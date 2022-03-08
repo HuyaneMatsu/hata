@@ -6,6 +6,10 @@
 - Add `ApplicationCommand.edited_at`.
 - Add `e` format code to `ApplicationCommand`.
 - Add `ApplicationCommand._create_empty`.
+- `ApplicationCommandOption` now supports rich attribute errors.
+- `ApplicationCommandOptionChoice` now supports rich attribute errors.
+- `ApplicationCommandPermission` now supports rich attribute errors.
+- `ApplicationCommandPermissionOverwrite` now supports rich attribute errors.
 
 ## 1.2.3 *\[2022-03-08\]*
 

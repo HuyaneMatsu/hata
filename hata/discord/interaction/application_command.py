@@ -3,6 +3,8 @@ __all__ = (
     'ApplicationCommandPermissionOverwrite',
 )
 
+from scarletio import RichAttributeErrorBaseType
+
 from ..bases import DiscordEntity, maybe_snowflake
 from ..channel import ChannelBase
 from ..core import APPLICATION_COMMANDS, CHANNELS, ROLES
@@ -573,9 +575,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     
     def __repr__(self):
         """Returns the application command's representation."""
-        repr_parts = [
-            '<', self.__class__.__name__,
-        ]
+        repr_parts = ['<', self.__class__.__name__]
         
         # if the application command is partial, mention that, else add  `.id` and `.application_id` fields.
         if self.partial:
@@ -942,7 +942,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         return (self.target_type is ApplicationCommandTargetType.chat)
 
 
-class ApplicationCommandOption:
+class ApplicationCommandOption(RichAttributeErrorBaseType):
     """
     An option of an ``ApplicationCommand``.
     
@@ -1635,24 +1635,26 @@ class ApplicationCommandOption:
     
     def __repr__(self):
         """Returns the application command option's representation."""
-        repr_parts = [
-            '<', self.__class__.__name__,
-            ', name=', repr(self.name),
-        ]
+        repr_parts = ['<', self.__class__.__name__]
         
-        if self.autocomplete:
-            repr_parts.append(' (auto completed)')
+        # Descriptive fields `.name`, `.description`, `.type`
+        repr_parts.append(' name=')
+        repr_parts.append(repr(self.name))
         
         repr_parts.append(', description=')
         repr_parts.append(repr(self.description))
-        repr_parts.append(', type=')
         
+        repr_parts.append(', type=')
         type_ = self.type
         repr_parts.append(repr(type_.value))
         repr_parts.append(' (')
         repr_parts.append(type_.name)
         repr_parts.append(')')
         
+        # Extra fields `.autocomplete`, `.min_value`, `.max_value`, `.default`, `.required`, `.choices`, `.options`
+        if self.autocomplete:
+            repr_parts.append(', autocomplete=True')
+            
         min_value = self.min_value
         if (min_value is not None):
             repr_parts.append(', min_value=')
@@ -1742,74 +1744,102 @@ class ApplicationCommandOption:
         """
         new = object.__new__(type(self))
         
-        choices = self.choices
-        if (choices is not None):
-            choices = choices.copy()
-        new.choices = choices
+        # autocomplete
+        new.autocomplete = self.autocomplete
         
-        new.default = self.default
-        new.description = self.description
-        new.name = self.name
-        
-        options = self.options
-        if (options is not None):
-            options = [option.copy() for option in options]
-        new.options = options
-        
-        new.required = self.required
-        new.type = self.type
-        
+        # channel_types
         channel_types = self.channel_types
         if (channel_types is not None):
             channel_types = tuple(channel_types)
         new.channel_types = channel_types
         
-        new.autocomplete = self.autocomplete
+        # choices
+        choices = self.choices
+        if (choices is not None):
+            choices = choices.copy()
+        new.choices = choices
         
-        new.min_value = self.min_value
+        # default
+        new.default = self.default
+        
+        # description
+        new.description = self.description
+        
+        # max_value
         new.max_value = self.max_value
         
+        # min_value
+        new.min_value = self.min_value
+        
+        # name
+        new.name = self.name
+        
+        # options
+        options = self.options
+        if (options is not None):
+            options = [option.copy() for option in options]
+        new.options = options
+        
+        # required
+        new.required = self.required
+        
+        # type
+        new.type = self.type
+        
         return new
+    
     
     def __eq__(self, other):
         """Returns whether the two options are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
-        if self.choices != other.choices:
-            return False
-        
-        if self.default != other.default:
-            return False
-        
-        if self.description != other.description:
-            return False
-        
-        if self.name != other.name:
-            return False
-        
-        if self.options != other.options:
-            return False
-        
-        if self.required != other.required:
-            return False
-        
-        if self.type is not other.type:
-            return False
-        
-        if self.channel_types != other.channel_types:
-            return False
-        
+        # autocomplete
         if self.autocomplete != other.autocomplete:
             return False
         
+        # channel_types
+        if self.channel_types != other.channel_types:
+            return False
+        
+        # choices
+        if self.choices != other.choices:
+            return False
+        
+        # default
+        if self.default != other.default:
+            return False
+        
+        # description
+        if self.description != other.description:
+            return False
+        
+        # min_value
         if self.min_value != other.min_value:
             return False
         
+        # max_value
         if self.max_value != other.max_value:
             return False
         
+        # name
+        if self.name != other.name:
+            return False
+        
+        # options
+        if self.options != other.options:
+            return False
+        
+        # required
+        if self.required != other.required:
+            return False
+        
+        # type
+        if self.type is not other.type:
+            return False
+        
         return True
+    
     
     def __len__(self):
         """Returns the application command option's length."""
@@ -1828,7 +1858,7 @@ class ApplicationCommandOption:
         return length
 
 
-class ApplicationCommandOptionChoice:
+class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
     """
     A choice of a ``ApplicationCommandOption``.
     
@@ -1860,6 +1890,7 @@ class ApplicationCommandOptionChoice:
             - If `value` is neither `str`, `int` nor `float`.
             - If `value` is `str` and it's length is out of range [0:100].
         """
+        # name
         if __debug__:
             if not isinstance(name, str):
                 raise AssertionError(
@@ -1876,7 +1907,9 @@ class ApplicationCommandOptionChoice:
                     f'[{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN}:{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX}], '
                     f'got {name_length!r}; {name!r}.'
                 )
-            
+        
+        # value
+        if __debug__:
             if isinstance(value, int):
                 pass
             
@@ -1920,10 +1953,17 @@ class ApplicationCommandOptionChoice:
         self : ``ApplicationCommandOptionChoice``
             The created choice.
         """
+        # name
+        name = data['name']
+        
+        # value
+        value = data['value']
+        
         self = object.__new__(cls)
-        self.name = data['name']
-        self.value = data['value']
+        self.name = name
+        self.value = value
         return self
+    
     
     def to_data(self):
         """
@@ -1933,31 +1973,57 @@ class ApplicationCommandOptionChoice:
         -------
         data : `dict` of (`str`, `Any`) items
         """
-        return {
-            'name': self.name,
-            'value': self.value,
-        }
+        data = {}
+        
+        # name
+        data['name'] = self.name
+        
+        # value
+        data['value'] = self.value
+        
+        return data
+    
     
     def __repr__(self):
         """Returns the application command option choice's representation."""
-        return f'<{self.__class__.__name__} name={self.name!r}, value={self.value!r}>'
+        repr_parts = ['<', self.__class__.__name__]
+        
+        # name
+        repr_parts.append(' name=')
+        repr_parts.append(repr(self.name))
+        
+        # value
+        repr_parts.append(', value=')
+        repr_parts.append(repr(self.value))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
     
     def __eq__(self, other):
         """Returns whether the two choices are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
+        # name
         if self.name != other.name:
             return False
         
+        # value
         if self.value != other.value:
             return False
         
         return True
     
+    
     def __len__(self):
         """Returns the application command choice's length."""
-        length = len(self.name)
+        length = 0
+        
+        # name
+        length += len(self.name)
+        
+        # value
         value = self.value
         if isinstance(value, str):
             length += len(value)
@@ -1965,7 +2031,7 @@ class ApplicationCommandOptionChoice:
         return length
 
 
-class ApplicationCommandPermission:
+class ApplicationCommandPermission(RichAttributeErrorBaseType):
     """
     Stores am ``ApplicationCommand``'s overwrites.
     
@@ -1973,10 +2039,13 @@ class ApplicationCommandPermission:
     ----------
     application_command_id : `int`
         The identifier of the respective ``ApplicationCommand``.
+    
     application_id : `int`
         The application command's application's identifier.
+    
     guild_id : `int`
         The identifier of the respective guild.
+    
     permission_overwrites : `None`, `list` of ``ApplicationCommandPermissionOverwrite``
         The application command permissions overwrites relating to the respective application command in the guild.
     """
@@ -1990,6 +2059,7 @@ class ApplicationCommandPermission:
         ----------
         application_command : ``ApplicationCommand``, `int`
             The application command's identifier.
+        
         permission_overwrites : `None`, (`list`, `set`, `tuple`) of ``ApplicationCommandPermissionOverwrite` = `None`
                 , Optional (Keyword only)
             Overwrites for the application command.
@@ -2003,6 +2073,7 @@ class ApplicationCommandPermission:
             - If `permission_overwrites` contains a non ``ApplicationCommandPermissionOverwrite`` element.
             - If `permission_overwrites` length is over `10`.
         """
+        # application_command
         if isinstance(application_command, ApplicationCommand):
             application_command_id = application_command.id
         else:
@@ -2013,6 +2084,13 @@ class ApplicationCommandPermission:
                     f'{application_command.__class__.__name__}; {application_command!r}.'
                 )
         
+        # application_id
+        # Internal attribute
+        
+        # guild_id
+        # Internal attribute
+        
+        # permission_overwrites
         if permission_overwrites is None:
             permission_overwrites_processed = None
         
@@ -2072,6 +2150,16 @@ class ApplicationCommandPermission:
         -------
         self : ``ApplicationCommandPermission``
         """
+        # application_command_id
+        application_command_id = int(data['id'])
+        
+        # application_id
+        application_id = int(data['application_id'])
+        
+        # guild_id
+        guild_id = int(data['guild_id'])
+        
+        # permission_overwrites
         permission_overwrite_datas = data['permissions']
         if permission_overwrite_datas:
             permission_overwrites = [
@@ -2082,11 +2170,14 @@ class ApplicationCommandPermission:
         else:
             permission_overwrites = None
         
+        
         self = object.__new__(cls)
-        self.application_command_id = int(data['id'])
-        self.application_id = int(data['application_id'])
-        self.guild_id = int(data['guild_id'])
+        
+        self.application_command_id = application_command_id
+        self.application_id = application_id
+        self.guild_id = guild_id
         self.permission_overwrites = permission_overwrites
+        
         return self
     
     
@@ -2098,12 +2189,18 @@ class ApplicationCommandPermission:
         -------
         data : `dict` of (`str`, `Any`) items
         """
-        data = {
-            'id': self.application_command_id,
-            'application_id': self.application_id,
-            'guild_id': self.guild_id,
-        }
+        data = {}
         
+        # application_command_id
+        data['id'] = self.application_command_id
+        
+        # application_id
+        data['application_id'] = self.application_id
+        
+        # guild_id
+        data['guild_id'] = self.guild_id
+        
+        # permission_overwrites
         permission_overwrites = self.permission_overwrites
         if permission_overwrites is None:
             permission_overwrite_datas = []
@@ -2116,20 +2213,32 @@ class ApplicationCommandPermission:
         
         return data
     
+    
     def __repr__(self):
         """Returns the application command permission's representation."""
-        repr_parts = ['<', self.__class__.__name__, ' application_command_id=', repr(self.application_command_id),
-            ' guild_id=', repr(self.guild_id), ', permission overwrite count=']
+        repr_parts = ['<', self.__class__.__name__]
         
+        # application_command_id
+        repr_parts.append(' application_command_id=')
+        repr_parts.append(repr(self.application_command_id))
+        
+        # application_id
+        # Unique by application_command_id
+        
+        # guild_id
+        repr_parts.append(' guild_id=')
+        repr_parts.append(repr(self.guild_id))
+        
+        # permission_overwrites
         permission_overwrites = self.permission_overwrites
         if permission_overwrites is None:
             permission_overwrite_count = '0'
         else:
             permission_overwrite_count = repr(len(permission_overwrites))
-        
+        repr_parts.append(', permission overwrite count=')
         repr_parts.append(permission_overwrite_count)
-        repr_parts.append('>')
         
+        repr_parts.append('>')
         return ''.join(repr_parts)
     
     
@@ -2138,13 +2247,18 @@ class ApplicationCommandPermission:
         if type(self) is not type(other):
             return NotImplemented
         
-        # No need to compare application_id, since `application_command_id` are already unique.
+        # application_command_id
         if self.application_command_id != other.application_command_id:
             return False
         
+        # application_id
+        # Unique by application_command_id
+        
+        # guild_id
         if self.guild_id != other.guild_id:
             return False
         
+        # permission_overwrites
         if self.permission_overwrites != other.permission_overwrites:
             return False
         
@@ -2153,13 +2267,26 @@ class ApplicationCommandPermission:
     
     def __hash__(self):
         """Returns the application command overwrite's hash value."""
-        hash_ = self.application_command_id ^ self.guild_id
+        hash_value = 0
+        
+        # application_command_id
+        hash_value ^= self.application_command_id
+        
+        # application_id
+        # Unique by application_command_id
+        
+        # guild_id
+        hash_value ^= self.guild_id
+        
+        # permission_overwrites
         permission_overwrites = self.permission_overwrites
         if (permission_overwrites is not None):
+            hash_value ^= len(permission_overwrites) << 4
+            
             for permission_overwrite in permission_overwrites:
-                hash_ ^= hash(permission_overwrite)
+                hash_value ^= hash(permission_overwrite)
         
-        return hash_
+        return hash_value
     
     
     def copy(self):
@@ -2172,17 +2299,23 @@ class ApplicationCommandPermission:
         """
         new = object.__new__(type(self))
         
-        new.application_id = self.application_id
+        # application_command_id
         new.application_command_id = self.application_command_id
+        
+        # application_id
+        new.application_id = self.application_id
+        
+        # guild_id
         new.guild_id = self.guild_id
         
+        # permission_overwrites
         permission_overwrites = self.permission_overwrites
         if (permission_overwrites is not None):
             permission_overwrites = [permission_overwrite.copy() for permission_overwrite in permission_overwrites]
-        
         new.permission_overwrites = permission_overwrites
         
         return new
+    
     
     def add_permission_overwrite(self, permission_overwrite):
         """
@@ -2221,7 +2354,7 @@ class ApplicationCommandPermission:
         permission_overwrites.append(permission_overwrite)
 
 
-class ApplicationCommandPermissionOverwrite:
+class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
     """
     Represents an application command's allow/disallow overwrite for the given entity.
     
@@ -2229,9 +2362,11 @@ class ApplicationCommandPermissionOverwrite:
     ----------
     allow : `bool`
         Whether the respective command is allowed for the represented entity.
+    
     target_id : `int`
         The represented entity's identifier.
-    target_type : ``ApplicationCommandPermissionOverwriteTargetType`
+    target_type : ``ApplicationCommandPermissionOverwriteTargetType``
+    
         The target entity's type.
     """
     __slots__ = ('allow', 'target_id', 'target_type')
@@ -2272,6 +2407,14 @@ class ApplicationCommandPermissionOverwrite:
         AssertionError
             If `allow` was not given as `bool`.
         """
+        # allow
+        if __debug__:
+            if not isinstance(allow, bool):
+                raise AssertionError(
+                    f'`allow` can be `bool`, got {allow.__class__.__name__}; {allow!r}.'
+                )
+        
+        # target_id & target_type
         # GOTO
         while True:
             if isinstance(target, Role):
@@ -2343,11 +2486,6 @@ class ApplicationCommandPermissionOverwrite:
                 f'got {target.__class__.__name__}: {target!r}.'
             )
         
-        if __debug__:
-            if not isinstance(allow, bool):
-                raise AssertionError(
-                    f'`allow` can be `bool`, got {allow.__class__.__name__}; {allow!r}.'
-                )
         
         self = object.__new__(cls)
         self.allow = allow
@@ -2371,10 +2509,19 @@ class ApplicationCommandPermissionOverwrite:
         self : ``ApplicationCommandPermission``
             The created application command option.
         """
+        # allow
+        allow = data['permission']
+        
+        # target_id
+        target_id = int(data['id'])
+        
+        # target_type
+        target_type = ApplicationCommandPermissionOverwriteTargetType.get(data['type'])
+        
         self = object.__new__(cls)
-        self.allow = data['permission']
-        self.target_id = int(data['id'])
-        self.target_type = ApplicationCommandPermissionOverwriteTargetType.get(data['type'])
+        self.allow = allow
+        self.target_id = target_id
+        self.target_type = target_type
         return self
     
     
@@ -2386,11 +2533,18 @@ class ApplicationCommandPermissionOverwrite:
         -------
         data : `dict` of (`str`, `Any`) items
         """
-        return {
-            'permission': self.allow,
-            'id': self.target_id,
-            'type': self.target_type.value,
-        }
+        data = {}
+        
+        # allow
+        data['permission'] = self.allow
+        
+        # target_id
+        data['id'] = self.target_id
+        
+        # target_type
+        data['type'] = self.target_type.value
+        
+        return data
     
     
     @property
@@ -2422,10 +2576,21 @@ class ApplicationCommandPermissionOverwrite:
     
     def __repr__(self):
         """Returns the application command permission overwrite's representation."""
-        return (
-            f'<{self.__class__.__name__} target_type={self.target_type.name}, target_id={self.target_id!r}, '
-            f'allow={self.allow!r}>'
-        )
+        repr_parts = ['<', self.__class__.__name__]
+        
+        # Primary fields: `.target_type`, `.target_id`
+        repr_parts.append(' target_type=')
+        repr_parts.append(self.target_type.name)
+        
+        repr_parts.append(', target_id=')
+        repr_parts.append(repr(self.target_id))
+        
+        # Secondary fields: `.allow`
+        repr_parts.append(', allow=')
+        repr_parts.append(repr(self.allow))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
     
     
     def __eq__(self, other):
@@ -2433,13 +2598,16 @@ class ApplicationCommandPermissionOverwrite:
         if type(self) is not type(other):
             return NotImplemented
         
+        # allow
         if self.allow != other.allow:
             return False
         
-        if self.target_type is not other.target_type:
+        # target_id
+        if self.target_id != other.target_id:
             return False
         
-        if self.target_id != other.target_id:
+        # target_type
+        if self.target_type is not other.target_type:
             return False
         
         return True
@@ -2447,7 +2615,18 @@ class ApplicationCommandPermissionOverwrite:
     
     def __hash__(self):
         """Returns the application command permission overwrite's hash value."""
-        return self.target_type.value^(self.allow << 8)^self.target_id
+        hash_value = 0
+        
+        # allow
+        hash_value ^= self.allow << 8
+        
+        # target_id
+        hash_value ^= self.target_id
+        
+        # target_type
+        hash_value ^= self.target_type.value
+        
+        return hash_value
     
     
     def copy(self):
@@ -2460,9 +2639,14 @@ class ApplicationCommandPermissionOverwrite:
         """
         new = object.__new__(type(self))
         
+        # allow
         new.allow = self.allow
-        new.target_type = self.target_type
+        
+        # target_id
         new.target_id = self.target_id
+        
+        # target_type
+        new.target_type = self.target_type
         
         return new
     

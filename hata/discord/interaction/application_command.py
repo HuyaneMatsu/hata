@@ -43,6 +43,7 @@ APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MAX = 100
 # ApplicationCommandPermissionOverwrite
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX = 10
 
+
 class ApplicationCommand(DiscordEntity, immortal=True):
     """
     Represents a Discord slash command.
@@ -64,12 +65,14 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         set as `None`.
     target_type : ``ApplicationCommandTargetType``
         The application command target's type describing where it shows up.
+    version : `int`
+        The time when the command was last edited in snowflake.
     
     Notes
     -----
     ``ApplicationCommand``s are weakreferable.
     """
-    __slots__ = ('allow_by_default', 'application_id', 'description', 'name', 'options', 'target_type',)
+    __slots__ = ('allow_by_default', 'application_id', 'description', 'name', 'options', 'target_type', 'version')
     
     def __new__(cls, name, description=None, *, allow_by_default=True, options=None, target_type=None):
         """
@@ -210,6 +213,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         self.allow_by_default = allow_by_default
         self.options = options_processed
         self.target_type = target_type
+        self.version = 0
         return self
     
     
@@ -292,6 +296,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             self.options = None
             self.allow_by_default = True
             self.target_type = ApplicationCommandTargetType.none
+            self.version = 0
         
         self._update_attributes(data)
         return self
@@ -342,6 +347,17 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             pass
         else:
             self.target_type = ApplicationCommandTargetType.get(target_type)
+        
+        try:
+            version = data['version']
+        except KeyError:
+            pass
+        else:
+            if version is None:
+                version = 0
+            else:
+                version = int(version)
+            self.version = version
     
     
     def _difference_update_attributes(self, data):
@@ -580,6 +596,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             self.name = ''
             self.options = None
             self.target_type = ApplicationCommandTargetType.none
+            self.version = 0
         
         self._update_attributes(data)
         
@@ -608,7 +625,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         new.options = options
         
         new.target_type = self.target_type
-        
+        new.version = self.version
         return new
     
     def __eq__(self, other):
@@ -640,6 +657,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         if (self.target_type is not other.target_type):
             return False
         
+        if (self.version != other.version):
+            return False
+        
         return True
     
     
@@ -669,6 +689,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             return True
         
         if (self.target_type is not other.target_type):
+            return True
+        
+        if (self.version != other.version):
             return True
         
         return False

@@ -1,3 +1,9 @@
+## 1.2.4 *\[2022-03-??\]*
+
+#### Improvements
+
+- Add `Application.verison`.
+
 ## 1.2.3 *\[2022-03-08\]*
 
 #### Improvements

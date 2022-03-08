@@ -1077,52 +1077,49 @@ class ApplicationCommandOption:
             - If both `autocomplete` and `choices` are defined.
             - If `autocomplete` is defined, but the parameters's type is not string.
         """
+        
+        # autocomplete
         if __debug__:
-            if not isinstance(name, str):
+            if not isinstance(autocomplete, bool):
                 raise AssertionError(
-                    f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+                    f'`autocomplete` can be `bool`, got {autocomplete.__class__.__name__}; {autocomplete!r}.'
+                )
+        
+        # channel_types
+        if (channel_types is None):
+            channel_types_processed = None
+        else:
+            channel_types_processed = None
+            
+            iterator = getattr(type(channel_types), '__iter__', None)
+            if (iterator is None):
+                raise TypeError(
+                    f'`channel_types` can be `None`, `iterable`, got '
+                    f'{channel_types.__class__.__anme__}; {channel_types!r}.'
                 )
             
-            name_length = len(name)
-            if (
-                name_length < APPLICATION_COMMAND_NAME_LENGTH_MIN or
-                name_length > APPLICATION_COMMAND_NAME_LENGTH_MAX
-            ):
-                raise AssertionError(
-                    f'`name` length can be in range '
-                    f'[{APPLICATION_COMMAND_NAME_LENGTH_MIN}:{APPLICATION_COMMAND_NAME_LENGTH_MAX}], got '
-                    f'{name_length!r}; {name!r}.'
-                )
+            for channel_type in iterator(channel_types):
+                if type(channel_type) is int:
+                    pass
+                elif isinstance(channel_type, int):
+                    channel_type = int(channel_type)
+                else:
+                    raise TypeError(
+                        f'`channel_types` may include only `int`s, got {channel_type.__class__.__name__}; '
+                        f'{channel_type!r}; channel_types={channel_types!r}.'
+                    )
+                
+                if channel_types_processed is None:
+                    channel_types_processed = set()
+                
+                channel_types_processed.add(channel_type)
         
-            if not isinstance(description, str):
-                raise AssertionError(
-                    f'`description` can be `str`, got {description.__class__.__name__}; {description!r}.'
-                )
-            
-            description_length = len(description)
-            if (
-                description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or
-                description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX
-            ):
-                raise AssertionError(
-                    f'`description` length can be in range '
-                    f'[{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], '
-                    f'got {description_length!r}; {description!r}.'
-                )
+            if channel_types_processed:
+                channel_types_processed = tuple(sorted(channel_types_processed))
+            else:
+                channel_types_processed = None
         
-        type_ = preconvert_preinstanced_type(type_, 'type_', ApplicationCommandOptionType)
-        
-        if __debug__:
-            if not isinstance(default, bool):
-                raise AssertionError(
-                    f'`default` can be `bool`, got {default.__class__.__name__}; {default!r}.'
-                )
-            
-            if not isinstance(required, bool):
-                raise AssertionError(
-                    f'`required` can be `bool`, got {required.__class__.__name__}; {required!r}.'
-                )
-        
+        # choices
         if choices is None:
             choices_processed = None
         else:
@@ -1152,6 +1149,59 @@ class ApplicationCommandOption:
             if not choices_processed:
                 choices_processed = None
         
+        # default
+        if __debug__:
+            if not isinstance(default, bool):
+                raise AssertionError(
+                    f'`default` can be `bool`, got {default.__class__.__name__}; {default!r}.'
+                )
+        
+        # description
+        if __debug__:
+            if not isinstance(description, str):
+                raise AssertionError(
+                    f'`description` can be `str`, got {description.__class__.__name__}; {description!r}.'
+                )
+            
+            description_length = len(description)
+            if (
+                description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or
+                description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX
+            ):
+                raise AssertionError(
+                    f'`description` length can be in range '
+                    f'[{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], '
+                    f'got {description_length!r}; {description!r}.'
+                )
+        
+        
+        # max_value
+        # requires `type`
+        
+        # min_value
+        # requires `type`
+        
+        
+        # name
+        if __debug__:
+            if not isinstance(name, str):
+                raise AssertionError(
+                    f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+                )
+            
+            name_length = len(name)
+            if (
+                name_length < APPLICATION_COMMAND_NAME_LENGTH_MIN or
+                name_length > APPLICATION_COMMAND_NAME_LENGTH_MAX
+            ):
+                raise AssertionError(
+                    f'`name` length can be in range '
+                    f'[{APPLICATION_COMMAND_NAME_LENGTH_MIN}:{APPLICATION_COMMAND_NAME_LENGTH_MAX}], got '
+                    f'{name_length!r}; {name!r}.'
+                )
+        
+        # options
+
         if options is None:
             options_processed = None
         else:
@@ -1189,61 +1239,20 @@ class ApplicationCommandOption:
             if not options_processed:
                 options_processed = None
         
-        if (choices_processed is not None):
-            if type_ is ApplicationCommandOptionType.string:
-                expected_choice_type = str
-            elif type_ is ApplicationCommandOptionType.integer:
-                expected_choice_type = int
-            elif type_ is ApplicationCommandOptionType.float:
-                expected_choice_type = float
-            else:
-                raise TypeError(
-                    f'`choices` can be bound either to string, integer or float option types, got '
-                    f'choices={choices!r}, type={type_!r}.'
+
+        # required
+        if __debug__:
+            if not isinstance(required, bool):
+                raise AssertionError(
+                    f'`required` can be `bool`, got {required.__class__.__name__}; {required!r}.'
                 )
-            
-            for index, choice in enumerate(choices):
-                if not isinstance(choice.value, expected_choice_type):
-                    raise TypeError(
-                        f'`choices[{index!r}]` is not `{expected_choice_type.__name__}` as expected from the received'
-                        f'command option type, got {choice.__class__.__name__}; {choice!r}; type_={type_!r}; '
-                        f'choices={choices!r}.'
-                    )
         
-        if (channel_types is None):
-            channel_types_processed = None
-        else:
-            channel_types_processed = None
-            
-            iterator = getattr(type(channel_types), '__iter__', None)
-            if (iterator is None):
-                raise TypeError(
-                    f'`channel_types` can be `None`, `iterable`, got '
-                    f'{channel_types.__class__.__anme__}; {channel_types!r}.'
-                )
-            
-            for channel_type in iterator(channel_types):
-                if type(channel_type) is int:
-                    pass
-                elif isinstance(channel_type, int):
-                    channel_type = int(channel_type)
-                else:
-                    raise TypeError(
-                        f'`channel_types` may include only `int`s, got {channel_type.__class__.__name__}; '
-                        f'{channel_type!r}; channel_types={channel_types!r}.'
-                    )
-                
-                if channel_types_processed is None:
-                    channel_types_processed = set()
-                
-                channel_types_processed.add(channel_type)
+        # type
+        type_ = preconvert_preinstanced_type(type_, 'type_', ApplicationCommandOptionType)
         
-            if channel_types_processed:
-                channel_types_processed = tuple(sorted(channel_types_processed))
-            else:
-                channel_types_processed = None
+        # Postprocessing
         
-        
+        # max_value
         if (max_value is not None):
             if type_ is ApplicationCommandOptionType.integer:
                 if not isinstance(max_value, int):
@@ -1266,6 +1275,7 @@ class ApplicationCommandOption:
                     f'type_={type_!r}; max_value={max_value!r}.'
                 )
         
+        # min_value
         if (min_value is not None):
             if type_ is ApplicationCommandOptionType.integer:
                 if not isinstance(min_value, int):
@@ -1288,19 +1298,8 @@ class ApplicationCommandOption:
                     f'type_={type_!r}; min_value={min_value!r}.'
                 )
         
+        # postprocessing | autocomplete
         if __debug__:
-            if (channel_types_processed is not None) and (type_ is not ApplicationCommandOptionType.channel):
-                raise AssertionError(
-                    f'`channel_types` is only meaningful if `type_` is '
-                    f'`{ApplicationCommandOptionType.__name__}.channel`, got '
-                    f'type_={type_!r}; channel_types={channel_types_processed!r}.'
-                )
-            
-            if not isinstance(autocomplete, bool):
-                raise AssertionError(
-                    f'`autocomplete` can be `bool`, got {autocomplete.__class__.__name__}; {autocomplete!r}.'
-                )
-            
             if autocomplete:
                 if (choices_processed is not None):
                     raise AssertionError(
@@ -1313,18 +1312,52 @@ class ApplicationCommandOption:
                         f'`autocomplete` is only available for string option type, got type={type_!r}.'
                     )
         
+        # postprocessing | choices
+        if (choices_processed is not None):
+            if type_ is ApplicationCommandOptionType.string:
+                expected_choice_type = str
+            elif type_ is ApplicationCommandOptionType.integer:
+                expected_choice_type = int
+            elif type_ is ApplicationCommandOptionType.float:
+                expected_choice_type = float
+            else:
+                raise TypeError(
+                    f'`choices` can be bound either to string, integer or float option types, got '
+                    f'choices={choices!r}, type={type_!r}.'
+                )
+            
+            for index, choice in enumerate(choices):
+                if not isinstance(choice.value, expected_choice_type):
+                    raise TypeError(
+                        f'`choices[{index!r}]` is not `{expected_choice_type.__name__}` as expected from the received'
+                        f'command option type, got {choice.__class__.__name__}; {choice!r}; type_={type_!r}; '
+                        f'choices={choices!r}.'
+                    )
+        
+        # postprocessing | channel_types
+        if __debug__:
+            if (channel_types_processed is not None) and (type_ is not ApplicationCommandOptionType.channel):
+                raise AssertionError(
+                    f'`channel_types` is only meaningful if `type_` is '
+                    f'`{ApplicationCommandOptionType.__name__}.channel`, got '
+                    f'type_={type_!r}; channel_types={channel_types_processed!r}.'
+                )
+        
+        
         self = object.__new__(cls)
-        self.name = name
-        self.description = description
-        self.type = type_
-        self.default = default
-        self.required = required
-        self.choices = choices_processed
-        self.options = options_processed
-        self.channel_types = channel_types_processed
+        
         self.autocomplete = autocomplete
+        self.channel_types = channel_types_processed
+        self.choices = choices_processed
+        self.default = default
+        self.description = description
         self.max_value = max_value
         self.min_value = min_value
+        self.name = name
+        self.options = options_processed
+        self.required = required
+        self.type = type_
+        
         return self
     
     
@@ -1473,42 +1506,66 @@ class ApplicationCommandOption:
         self : ``ApplicationCommandOption``
             The created application command option.
         """
-        self = object.__new__(cls)
-        choice_datas = data.get('choices', None)
-        if (choice_datas is None) or (not choice_datas):
-            choices = None
-        else:
-            choices = [ApplicationCommandOptionChoice.from_data(choice_data) for choice_data in choice_datas]
-        self.choices = choices
+        # autocomplete
+        autocomplete = data.get('autocomplete', False)
         
-        self.default = data.get('default', False)
-        
-        self.description = data['description']
-        self.name = data['name']
-        
-        option_datas = data.get('options', None)
-        if (option_datas is None) or (not option_datas):
-            options = None
-        else:
-            options = [ApplicationCommandOption.from_data(option_data) for option_data in option_datas]
-        self.options = options
-        
-        self.required = data.get('required', False)
-        
+        # channel_types
         channel_types = data.get('channel_types', None)
         if (channel_types is None) or (not channel_types):
             channel_types = None
         else:
             channel_types = tuple(sorted(channel_types))
+        
+        # choices
+        choice_datas = data.get('choices', None)
+        if (choice_datas is None) or (not choice_datas):
+            choices = None
+        else:
+            choices = [ApplicationCommandOptionChoice.from_data(choice_data) for choice_data in choice_datas]
+        
+        # default
+        default = data.get('default', False)
+        
+        # description
+        description = data['description']
+        
+        # max_value
+        max_value = data.get('max_value', None)
+        
+        # min_value
+        min_value = data.get('min_value', None)
+        
+        # name
+        name = data['name']
+        
+        # options
+        option_datas = data.get('options', None)
+        if (option_datas is None) or (not option_datas):
+            options = None
+        else:
+            options = [ApplicationCommandOption.from_data(option_data) for option_data in option_datas]
+        
+        # required
+        required = data.get('required', False)
+        
+        # type
+        type_ = ApplicationCommandOptionType.get(data['type'])
+        
+        
+        self = object.__new__(cls)
+        
+        self.autocomplete = autocomplete
         self.channel_types = channel_types
+        self.choices = choices
+        self.default = default
+        self.description = description
+        self.max_value = max_value
+        self.min_value = min_value
+        self.name = name
+        self.options = options
+        self.required = required
+        self.type = type_
         
-        self.autocomplete = data.get('autocomplete', False)
-        
-        self.min_value = data.get('min_value', None)
-        
-        self.max_value = data.get('max_value', None)
-        
-        self.type = ApplicationCommandOptionType.get(data['type'])
         return self
     
     

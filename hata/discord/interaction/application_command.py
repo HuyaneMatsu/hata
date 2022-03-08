@@ -965,8 +965,10 @@ class ApplicationCommandOption:
     
     default : `bool`
         Whether the option is the default one. Only one option can be `default`.
+    
     description : `str`
         The description of the application command option. It's length can be in range [1:100].
+    
     max_value : `None`, `int`, `float`
         The maximal value permitted for this option.
         
@@ -979,11 +981,14 @@ class ApplicationCommandOption:
     
     name : `str`
         The name of the application command option. It's length can be in range [1:32].
+    
     options : `None`, `list` of ``ApplicationCommandOption``
         If the command's type is sub-command group type, then this nested option will be the parameters of the
         sub-command. It's length can be in range [0:25]. If would be set as empty list, instead is set as `None`.
+    
     required : `bool`
         Whether the parameter is required. Defaults to `False`.
+    
     type : ``ApplicationCommandOptionType``
         The option's type.
     """
@@ -1577,41 +1582,53 @@ class ApplicationCommandOption:
         -------
         data : `dict` of (`str`, `Any`) items
         """
-        data = {
-            'description' : self.description,
-            'name' : self.name,
-            'type' : self.type.value,
-        }
+        data = {}
         
-        choices = self.choices
-        if (choices is not None):
-            data['choices'] = [choice.to_data() for choice in choices]
+        # autocomplete
+        if self.autocomplete:
+            data['autocomplete'] = True
         
-        
-        if self.default:
-            data['default'] = True
-        
-        options = self.options
-        if (options is not None):
-            data['options'] = [option.to_data() for option in options]
-        
-        if self.required:
-            data['required'] = True
-        
+        # channel_types
         channel_types = self.channel_types
         if (channel_types is not None):
             data['channel_types'] = channel_types
         
-        if self.autocomplete:
-            data['autocomplete'] = True
+        # choices
+        choices = self.choices
+        if (choices is not None):
+            data['choices'] = [choice.to_data() for choice in choices]
         
+        # default
+        if self.default:
+            data['default'] = True
+        
+        # description
+        data['description'] = self.description
+        
+        # max_value
+        max_value = self.max_value
+        if (max_value is not None):
+            data['max_value'] = max_value
+        
+        # min_value
         min_value = self.min_value
         if (min_value is not None):
             data['min_value'] = min_value
         
-        max_value = self.max_value
-        if (max_value is not None):
-            data['max_value'] = max_value
+        # name
+        data['name'] = self.name
+        
+        # options
+        options = self.options
+        if (options is not None):
+            data['options'] = [option.to_data() for option in options]
+        
+        # required
+        if self.required:
+            data['required'] = True
+        
+        # type
+        data['type'] = self.type.value
         
         return data
     

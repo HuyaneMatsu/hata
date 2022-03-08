@@ -306,6 +306,8 @@ Error Codes
 +---------------------------------------------------------------+-----------+-----------+
 | cannot_add_user_to_guild_where_bot_is_not_in                  | 50036     | -         |
 +---------------------------------------------------------------+-----------+-----------+
+| invalid_oauth2_redirect_url                                   | 50040     | -         |
++---------------------------------------------------------------+-----------+-----------+
 | invalid_API_version                                           | 50041     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | asset_size_too_large                                          | 50045     | -         |
@@ -603,6 +605,7 @@ invalid_recipients = 50033
 bulk_delete_message_too_old = 50034
 invalid_form_body = 50035
 cannot_add_user_to_guild_where_bot_is_not_in = 50036
+invalid_oauth2_redirect_url = 50040
 invalid_API_version = 50041
 asset_size_too_large = 50045
 invalid_asset = 50046

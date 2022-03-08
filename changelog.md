@@ -7,6 +7,7 @@
 - `MessageInteraction` now picks up the `member` field from payload.
 - Update max auto-completion options to 25 (from 20).
 - Auto generate bit flag getters, setters and deleters instead of using descriptors (this improves performance).
+- Add `ERROR_CODES.invalid_oauth2_redirect_url`.
 
 #### ext.slash
 - `int` fields with applied max or min values are translated to `number` ones.

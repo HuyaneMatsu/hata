@@ -248,6 +248,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-----------------------+---------------------------------------------------+
         | target_type           | ``ApplicationCommandTargetType``                  |
         +-----------------------+---------------------------------------------------+
+        | version               | `int`                                             |
+        +-----------------------+---------------------------------------------------+
     
     channel_create(client: ``Client``, channel: ``ChannelBase``)
         Called when a channel is created.

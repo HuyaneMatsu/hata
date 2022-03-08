@@ -351,19 +351,10 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         try:
             self = APPLICATION_COMMANDS[application_command_id]
         except KeyError:
-            self = object.__new__(cls)
-            self.id = application_command_id
+            self = cls._create_empty(application_command_id)
             self.application_id = int(data['application_id'])
             APPLICATION_COMMANDS[application_command_id] = self
-        
-            # Discord might not include attributes in edit data, so we will set them first to avoid unset attributes.
-            self.description = None
-            self.name = ''
-            self.options = None
-            self.allow_by_default = True
-            self.target_type = ApplicationCommandTargetType.none
-            self.version = 0
-        
+            
         self._update_attributes(data)
         return self
     
@@ -377,6 +368,21 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         data : `dict` of (`str`, `Any`) items
             Received application command data.
         """
+        # id
+        # Do not update, cannot be changed
+        
+        # allow_by_default
+        try:
+            allow_by_default = data['default_permission']
+        except KeyError:
+            pass
+        else:
+            self.allow_by_default = allow_by_default
+        
+        # application_id
+        # Do not update, cannot be changed
+        
+        # description
         try:
             description = data['description']
         except KeyError:
@@ -386,11 +392,15 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                 description = None
             self.description = description
         
+        # name
         try:
-            self.name = data['name']
+            name = data['name']
         except KeyError:
             pass
+        else:
+            self.name = name
         
+        # options
         try:
             option_datas = data['options']
         except KeyError:
@@ -402,11 +412,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                 options = [ApplicationCommandOption.from_data(option_data) for option_data in option_datas]
             self.options = options
         
-        try:
-            self.allow_by_default = data['default_permission']
-        except KeyError:
-            pass
-        
+        # target_type
         try:
             target_type = data['type']
         except KeyError:
@@ -414,6 +420,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         else:
             self.target_type = ApplicationCommandTargetType.get(target_type)
         
+        # version
         try:
             version = data['version']
         except KeyError:
@@ -456,9 +463,28 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             +-----------------------+---------------------------------------------------+
             | target_type           | ``ApplicationCommandTargetType``                  |
             +-----------------------+---------------------------------------------------+
+            | version               | `int`                                             |
+            +-----------------------+---------------------------------------------------+
         """
         old_attributes = {}
         
+        # id
+        # Do not update, cannot be changed
+        
+        # allow_by_default
+        try:
+            allow_by_default = data['default_permission']
+        except KeyError:
+            pass
+        else:
+            if self.allow_by_default != self.allow_by_default:
+                old_attributes['allow_by_default'] = allow_by_default
+                self.allow_by_default = allow_by_default
+        
+        # application_id
+        # Do not update, cannot be changed
+        
+        # description
         try:
             description = data['description']
         except KeyError:
@@ -470,6 +496,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                 old_attributes['description'] = self.description
                 self.description = description
         
+        # name
         try:
             name = data['name']
         except KeyError:
@@ -479,6 +506,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                 old_attributes['name'] = self.name
                 self.name = name
         
+        # options
         try:
             option_datas = data['options']
         except KeyError:
@@ -493,15 +521,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                 old_attributes['options'] = self.options
                 self.options = options
         
-        try:
-            allow_by_default = data['default_permission']
-        except KeyError:
-            pass
-        else:
-            if self.allow_by_default != self.allow_by_default:
-                old_attributes['allow_by_default'] = allow_by_default
-                self.allow_by_default = allow_by_default
-        
+        # target_type
         try:
             target_type = data['type']
         except KeyError:
@@ -512,6 +532,20 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                 old_attributes['target_type'] = self.target_type
                 self.target_type = target_type
         
+        # version
+        try:
+            version = data['version']
+        except KeyError:
+            pass
+        else:
+            if version is None:
+                version = 0
+            else:
+                version = int(version)
+            
+            if self.version != version:
+                old_attributes['version'] = self.version
+                self.version = version
         
         return old_attributes
     

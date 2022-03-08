@@ -1558,7 +1558,7 @@ class Message(DiscordEntity, immortal=True):
             if edited_at is None:
                 edited_at = 'never'
             else:
-                edited_at = self.edited_at.__format__(DATETIME_FORMAT_CODE)
+                edited_at = edited_at.__format__(DATETIME_FORMAT_CODE)
             return edited_at
         
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')

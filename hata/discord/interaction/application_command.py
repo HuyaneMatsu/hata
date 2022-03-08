@@ -9,7 +9,7 @@ from ..core import APPLICATION_COMMANDS, CHANNELS, ROLES
 from ..preconverters import preconvert_preinstanced_type
 from ..role import Role, create_partial_role_from_id
 from ..user import ClientUserBase, create_partial_user_from_id
-from ..utils import DATETIME_FORMAT_CODE, is_valid_application_command_name
+from ..utils import DATETIME_FORMAT_CODE, id_to_datetime, is_valid_application_command_name
 
 from .preinstanced import (
     APPLICATION_COMMAND_CONTEXT_TARGET_TYPES, ApplicationCommandOptionType,
@@ -721,6 +721,20 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         return self.name.lower().replace('_', '-')
     
     
+    @property
+    def edited_at(self):
+        """
+        Returns when the command was last edited / modified. If the command was not edited yet, returns `None`.
+        
+        Returns
+        -------
+        edited_at : `None`, `edited_at`
+        """
+        version = self.version
+        if version:
+            return id_to_datetime(version)
+    
+    
     def __format__(self, code):
         """
         Formats the application command in a format string.
@@ -758,6 +772,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         >>> # 'c' stands for created at.
         >>> f'{application_command:c}'
         '2021-01-03 20:17:36'
+        >>> # 'e' stands for edited at.
+        >>> f'{application_command:e}'
+        'never'
         ```
         """
         if not code:
@@ -771,6 +788,14 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         if code == 'c':
             return self.created_at.__format__(DATETIME_FORMAT_CODE)
+        
+        if code == 'e':
+            edited_at = self.edited_at
+            if edited_at is None:
+                edited_at = 'never'
+            else:
+                edited_at = edited_at.__format__(DATETIME_FORMAT_CODE)
+            return edited_at
         
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     

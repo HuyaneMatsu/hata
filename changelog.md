@@ -2,7 +2,9 @@
 
 #### Improvements
 
-- Add `Application.verison`.
+- Add `ApplicationCommand.verison`.
+- Add `ApplicationCommand.edited_at`.
+- Add `e` format code to `ApplicationCommand`.
 
 ## 1.2.3 *\[2022-03-08\]*
 

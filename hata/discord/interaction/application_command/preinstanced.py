@@ -3,7 +3,7 @@ __all__ = (
     'APPLICATION_COMMAND_CONTEXT_TARGET_TYPES'
 )
 
-from ..bases import Preinstance as P, PreinstancedBase
+from ...bases import Preinstance as P, PreinstancedBase
 
 
 class ApplicationCommandOptionType(PreinstancedBase):

@@ -39,6 +39,7 @@ setup(
         'hata.discord.http',
         'hata.discord.integration',
         'hata.discord.interaction',
+        'hata.discord.interaction.application_command',
         'hata.discord.interaction.components',
         'hata.discord.interaction.event_types',
         'hata.discord.invite',

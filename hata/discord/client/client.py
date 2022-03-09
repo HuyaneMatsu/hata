@@ -64,7 +64,7 @@ from ..interaction import (
     ApplicationCommandPermissionOverwriteTargetType, INTERACTION_RESPONSE_TYPES, InteractionEvent, InteractionForm,
     InteractionResponseContext, InteractionType
 )
-from ..interaction.application_command import (
+from ..interaction.application_command.constants import (
     APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
 )
 from ..invite import Invite, InviteTargetType

@@ -16,7 +16,7 @@ from ...discord.interaction import (
     ApplicationCommandOption, ApplicationCommandOptionChoice, ApplicationCommandOptionType, InteractionEvent,
     InteractionType
 )
-from ...discord.interaction.application_command import (
+from ...discord.interaction.application_command.constants import (
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN,
     APPLICATION_COMMAND_OPTIONS_MAX
 )

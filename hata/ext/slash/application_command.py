@@ -13,7 +13,7 @@ from ...discord.interaction import (
     APPLICATION_COMMAND_CONTEXT_TARGET_TYPES, ApplicationCommand, ApplicationCommandOption,
     ApplicationCommandOptionType, ApplicationCommandTargetType, InteractionEvent
 )
-from ...discord.interaction.application_command import (
+from ...discord.interaction.application_command.constants import (
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN,
     APPLICATION_COMMAND_NAME_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_OPTIONS_MAX,
     APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX

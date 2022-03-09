@@ -4,7 +4,7 @@ import reprlib
 
 from scarletio import copy_docs
 
-from ..preinstanced import ApplicationCommandOptionType
+from ..application_command.preinstanced import ApplicationCommandOptionType
 
 from .interaction_field_base import InteractionFieldBase
 

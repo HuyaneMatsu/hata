@@ -8,7 +8,7 @@ from ...message import Attachment, Message
 from ...role import Role
 from ...user import User
 
-from ..preinstanced import ApplicationCommandOptionType
+from ..application_command.preinstanced import ApplicationCommandOptionType
 
 from .interaction_field_base import InteractionFieldBase
 

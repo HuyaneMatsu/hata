@@ -10,6 +10,15 @@
 - `ApplicationCommandOptionChoice` now supports rich attribute errors.
 - `ApplicationCommandPermission` now supports rich attribute errors.
 - `ApplicationCommandPermissionOverwrite` now supports rich attribute errors.
+- `Client.achievement_create`'s `description_localizations` parameter is now validated.
+- `Client.achievement_create`'s `name_localizations` parameter is now validated.
+- `Client.achievement_edit`'s `description_localizations` parameter is now validated.
+- `Client.achievement_edit`'s `name_localizations` parameter is now validated.
+
+#### Bug fixes
+- `Achievement.description_localizations` not correctly defaulted to `None`.
+- `Achievement.name_localizations` not correctly defaulted to `None`.
+- `ChannelGuildBase.to_data` returned incorrect value (typo). (FoxeiZ)
 
 ## 1.2.3 *\[2022-03-08\]*
 

@@ -68,11 +68,10 @@ from ..interaction.application_command.constants import (
     APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
 )
 from ..invite import Invite, InviteTargetType
+from ..localizations import DEFAULT_LOCALE, Locale, get_locale
 from ..message import Attachment, Message, MessageFlag, MessageReference, MessageRepr
-from ..message.utils import process_message_chunk
-from ..message.utils import try_resolve_interaction_message
+from ..message.utils import process_message_chunk, try_resolve_interaction_message
 from ..oauth2 import Achievement, Connection, OA2Access, UserOA2
-from ..oauth2.helpers import DEFAULT_LOCALE, parse_locale
 from ..permission import Permission, PermissionOverwrite, PermissionOverwriteTargetType
 from ..permission.permission import (
     PERMISSION_MASK_CREATE_INSTANT_INVITE, PERMISSION_MASK_MANAGE_MESSAGES, PERMISSION_MASK_READ_MESSAGE_HISTORY
@@ -100,8 +99,8 @@ from .functionality_helpers import (
     DiscoveryCategoryRequestCacher, DiscoveryTermRequestCacher, ForceUpdateCache, MassUserChunker,
     MultiClientMessageDeleteSequenceSharder, SingleUserChunker, _check_is_client_duped,
     _message_delete_multiple_private_task, _message_delete_multiple_task,
-    application_command_autocomplete_choice_parser, channel_move_sort_key, request_channel_thread_channels,
-    role_move_key, role_reorder_valid_roles_sort_key, try_get_user_id_from_token
+    application_command_autocomplete_choice_parser, channel_move_sort_key, localised_dictionary_builder,
+    request_channel_thread_channels, role_move_key, role_reorder_valid_roles_sort_key, try_get_user_id_from_token
 )
 from .ready_state import ReadyState
 from .request_helpers import (
@@ -171,7 +170,7 @@ class Client(ClientUserPBase):
         The client's email.
     flags : ``UserFlag``
         The client's user flags.
-    locale : `str`
+    locale : ``Locale``
         The preferred locale by the client.
     mfa : `bool`
         Whether the client has two factor authorization enabled on the account.
@@ -744,7 +743,7 @@ class Client(ClientUserPBase):
         self.email = data.get('email', None)
         self.flags = UserFlag(data.get('flags', 0))
         self.premium_type = PremiumType.get(data.get('premium_type', 0))
-        self.locale = parse_locale(data)
+        self.locale = get_locale(data.get('locale', None))
     
     
     @property
@@ -2008,7 +2007,7 @@ class Client(ClientUserPBase):
             The achievement's description.
         icon : `bytes-like`
             The achievement's icon. Can have `'jpg'`, `'png'`, `'webp'`, `'gif'` format.
-        description_localizations : `None`, `dict` of (`str`, `Any`) items = `None`, Optional (Keyword only)
+        description_localizations : `None`, `dict` of (`str`, `str`) items = `None`, Optional (Keyword only)
             Localized descriptions of the achievement.
         name_localizations : `None`, `dict` of (`str`, `Any`) items = `None`, Optional (Keyword only)
             Localized names of the achievement.
@@ -2073,17 +2072,13 @@ class Client(ClientUserPBase):
                     f'`secure` can be `bool`, got {secure.__class__.__name__}; {secure!r}.'
                 )
         
+        description_localizations = localised_dictionary_builder(description_localizations, 'description_localizations')
         if description_localizations is None:
             description_localizations = {}
-        else:
-            if not isinstance(description_localizations, dict):
-                description_localizations = dict(description_localizations)
         
+        name_localizations = localised_dictionary_builder(name_localizations, 'name_localizations')
         if name_localizations is None:
             name_localizations = {}
-        else:
-            if not isinstance(name_localizations, dict):
-                name_localizations = dict(name_localizations)
         
         data = {
             'secret': secret,
@@ -2099,14 +2094,11 @@ class Client(ClientUserPBase):
             data['description_localizations'] = description_localizations
         
         else:
-            data['name'] = {
-                'default': name,
-                **name_localizations,
-            }
-            data['description'] = {
-                'default': description,
-                **description_localizations,
-            }
+            name_localizations['default'] = name
+            data['name'] = name_localizations
+            
+            description_localizations['default'] = description
+            data['description'] = description_localizations
         
         data = await self.http.achievement_create(self.application.id, data)
         
@@ -2219,13 +2211,12 @@ class Client(ClientUserPBase):
                 data['description'] = description
             
             
-            if (description_localizations is not ...):
+                description_localizations = localised_dictionary_builder(
+                    description_localizations,
+                    'description_localizations',
+                )
                 if description_localizations is None:
                     description_localizations = {}
-                
-                else:
-                    if not isinstance(description_localizations, dict):
-                        description_localizations = dict(description_localizations)
                 
                 data['description_localizations'] = description_localizations
             
@@ -2235,12 +2226,9 @@ class Client(ClientUserPBase):
             
         
             if (name_localizations is not ...):
+                name_localizations = localised_dictionary_builder(name_localizations, 'name_localizations')
                 if name_localizations is None:
                     name_localizations = {}
-                
-                else:
-                    if not isinstance(name_localizations, dict):
-                        name_localizations = dict(name_localizations)
             
                 data['name_localizations'] = name_localizations
         
@@ -2260,17 +2248,17 @@ class Client(ClientUserPBase):
                     
                     if (name_localizations is ...):
                         name_localizations = achievement.name_localizations
-                    else:
                         if name_localizations is None:
                             name_localizations = {}
                         else:
-                            if not isinstance(name_localizations, dict):
-                                name_localizations = dict(name_localizations)
+                            name_localizations = name_localizations.copy()
+                    else:
+                        name_localizations = localised_dictionary_builder(name_localizations, 'name_localizations')
+                        if name_localizations is None:
+                            name_localizations = {}
                     
-                    data['name'] = {
-                        'default': name,
-                        **name_localizations,
-                    }
+                    name_localizations['default'] = name
+                    data['name'] = name_localizations
                 
                 if (description is not ...) or (description_localizations is not ...):
                     if (description is ...):
@@ -2278,17 +2266,21 @@ class Client(ClientUserPBase):
                     
                     if (description_localizations is ...):
                         description_localizations = achievement.description_localizations
-                    else:
                         if description_localizations is None:
                             description_localizations = {}
                         else:
-                            if not isinstance(description_localizations, dict):
-                                description_localizations = dict(description_localizations)
-                        
-                    data['description'] = {
-                        'default': description,
-                        **description_localizations,
-                    }
+                            description_localizations = description_localizations.copy()
+                    
+                    else:
+                        description_localizations = localised_dictionary_builder(
+                            description_localizations,
+                            'description_localizations',
+                        )
+                        if description_localizations is None:
+                            description_localizations = {}
+                    
+                    description_localizations['default'] = description
+                    data['description'] = description_localizations
         
         
         data = await self.http.achievement_edit(self.application.id, achievement_id, data)
@@ -7082,7 +7074,7 @@ class Client(ClientUserPBase):
         description : `None`, `str`, Optional (Keyword only)
             The new description of the guild. By passing `None`, or an empty string you can remove the current one. The
             guild must be a Community guild.
-        preferred_locale : `str`, Optional (Keyword only)
+        preferred_locale : ``Locale``, `str`, Optional (Keyword only)
             The guild's preferred locale. The guild must be a Community guild.
         system_channel_flags : ``SystemChannelFlag``, Optional (Keyword only)
             The guild's system channel's new flags.
@@ -7111,6 +7103,7 @@ class Client(ClientUserPBase):
             - If `verification_level` was not given neither as ``VerificationLevel``, `int`.
             - If `content_filter` was not given neither as ``ContentFilterLevel``, `int`.
             - If `description` was not given either as `None`, `str`.
+            - If `preferred_locale` was not given as ``Locale``, `str`.
         AssertionError
             - If `icon`, `invite_splash`, `discovery_splash`, `banner` was passed as `bytes-like`, but it's format
                 is not any of the expected formats.
@@ -7125,7 +7118,6 @@ class Client(ClientUserPBase):
             - If `name` was not given as `str`.
             - If `afk_timeout` was not given as `int`.
             - If `system_channel_flags` was not given as `SystemChannelFlag`, `int`.
-            - If `preferred_locale` was not given as `str`.
             - If `boost_progress_bar_enabled` was not given as `bool`.
         ConnectionError
             No internet connection.
@@ -7464,13 +7456,19 @@ class Client(ClientUserPBase):
                         f'guild={guild!r}'
                     )
                 
-                if not isinstance(preferred_locale, str):
-                    raise AssertionError(
-                        f'`preferred_locale` can be `str`, got {preferred_locale.__class__.__name__}; '
-                        f'{preferred_locale!r}.'
-                    )
+            if isinstance(preferred_locale, Locale):
+                preferred_locale_value = preferred_locale.value
             
-            data['preferred_locale'] = preferred_locale
+            elif isinstance(preferred_locale, str):
+                preferred_locale_value = preferred_locale
+            
+            else:
+                raise TypeError(
+                    f'`preferred_locale` can be `{Locale.__name__}`, `str`, got {preferred_locale.__class__.__name__}; '
+                    f'{preferred_locale!r}.'
+                )
+            
+            data['preferred_locale'] = preferred_locale_value
         
         
         if (system_channel_flags is not ...):
@@ -17260,15 +17258,15 @@ class Client(ClientUserPBase):
             +-----------------------+-----------------------+
             | banner                | ``Icon``              |
             +-----------------------+-----------------------+
-            | banner_color          | `None`, ``Color``   |
+            | banner_color          | `None`, ``Color``     |
             +-----------------------+-----------------------+
             | discriminator         | `int`                 |
             +-----------------------+-----------------------+
-            | email                 | `None`, `str`       |
+            | email                 | `None`, `str`         |
             +-----------------------+-----------------------+
             | flags                 | ``UserFlag``          |
             +-----------------------+-----------------------+
-            | locale                | `str                  |
+            | locale                | ``Locale``            |
             +-----------------------+-----------------------+
             | mfa                   | `bool`                |
             +-----------------------+-----------------------+
@@ -17305,8 +17303,8 @@ class Client(ClientUserPBase):
             self.mfa = mfa
         
         
-        locale = parse_locale(data)
-        if self.locale != locale:
+        locale = get_locale(data.get('locale', None))
+        if self.locale is not locale:
             old_attributes['locale'] = self.locale
             self.locale = locale
         
@@ -17333,7 +17331,7 @@ class Client(ClientUserPBase):
         
         self.mfa = data.get('mfa_enabled', False)
         
-        self.locale = parse_locale(data)
+        self.locale = get_locale(data.get('locale', None))
     
     
     def _difference_update_profile_only(self, data, guild):

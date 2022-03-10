@@ -18,7 +18,7 @@ from ..channel import CHANNEL_TYPE_MAP, CHANNEL_TYPES, ChannelCategory, ChannelG
 from ..core import GUILDS
 from ..emoji import Emoji
 from ..http import urls as module_urls
-from ..oauth2.helpers import DEFAULT_LOCALE, parse_preferred_locale
+from ..localizations import DEFAULT_LOCALE, get_locale
 from ..permission import Permission
 from ..permission.permission import PERMISSION_ALL, PERMISSION_MASK_ADMINISTRATOR, PERMISSION_NONE
 from ..preconverters import preconvert_bool, preconvert_preinstanced_type, preconvert_snowflake, preconvert_str
@@ -222,7 +222,7 @@ class Guild(DiscordEntity, immortal=True):
         The guild's nsfw level.
     owner_id : `int`
         The guild's owner's id. Defaults to `0`.
-    preferred_locale : `str`
+    preferred_locale : ``Locale``
         The preferred language of the guild. The guild must be a Community guild, defaults to `'en-US'`.
     premium_tier : `int`
         The premium tier of the guild. More subs = higher tier.
@@ -2058,7 +2058,7 @@ class Guild(DiscordEntity, immortal=True):
         +-------------------------------+-------------------------------+
         | owner_id                      | `int`                         |
         +-------------------------------+-------------------------------+
-        | preferred_locale              | `str`                         |
+        | preferred_locale              | ``Locale``                    |
         +-------------------------------+-------------------------------+
         | premium_tier                  | `int`                         |
         +-------------------------------+-------------------------------+
@@ -2262,8 +2262,8 @@ class Guild(DiscordEntity, immortal=True):
         
         self._boosters = None
         
-        preferred_locale = parse_preferred_locale(data)
-        if self.preferred_locale != preferred_locale:
+        preferred_locale = get_locale(data.get('preferred_locale', None))
+        if self.preferred_locale is not preferred_locale:
             old_attributes['preferred_locale'] = self.preferred_locale
             self.preferred_locale = preferred_locale
         
@@ -2405,7 +2405,7 @@ class Guild(DiscordEntity, immortal=True):
         self.booster_count = booster_count
         self._boosters = None
         
-        self.preferred_locale = parse_preferred_locale(data)
+        self.preferred_locale = get_locale(data.get('preferred_locale', None))
         
         self.nsfw_level = NsfwLevel.get(data.get('nsfw_level', 0))
         

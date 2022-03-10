@@ -11,6 +11,7 @@ from ..channel import ChannelThread
 from ..core import CHANNELS, CLIENTS, KOKORO
 from ..exceptions import DiscordException
 from ..http import RateLimitProxy
+from ..localizations import Locale
 from ..permission.permission import PERMISSION_MASK_VIEW_CHANNEL
 from ..user import create_partial_user_from_id, thread_user_create
 from ..utils import DISCORD_EPOCH, time_now
@@ -1241,3 +1242,129 @@ def try_get_user_id_from_token(token):
         user_id = 0
     
     return user_id
+
+
+def localised_dictionary_item_validator(item, parameter_name):
+    """
+    Localization dictionary key validator.
+    
+    Parameters
+    ---------
+    key : `tuple` ((``Locale``, `str`), `str`)
+        An item representing a `locale` - `str` pair.
+    parameter_name : `str`
+        The parameter's name to raise exception with.
+    
+    Returns
+    -------
+    validated_key : `str`
+    
+    Raises
+    ------
+    TypeError
+        If `key`'s type is incorrect.
+    ValueError
+        If `key`'s is an empty string.
+    """
+    key, value = item
+    if isinstance(key, Locale):
+        validated_key = key.value
+    
+    elif isinstance(key, str):
+        if not key:
+            raise ValueError(
+                f'`{parameter_name}` keys cannot be empty strings, got item={item!r}.'
+            )
+        
+        validated_key = key
+    
+    else:
+        raise TypeError(
+            f'`{parameter_name}` keys can be `{Locale.__name__}`, `str`, got {value.__class__.__name__}; {value!r}; '
+            f'item={item!r}.'
+        )
+    
+    if isinstance(value, str):
+        if not value:
+            raise ValueError(
+                f'`{parameter_name}` values cannot be empty strings, got item={item!r}.'
+            )
+        
+        validated_value = value
+    
+    else:
+        raise TypeError(
+            f'`{parameter_name}` values can be `str`, got {value.__class__.__name__}; {value!r}; item={item!r}.'
+        )
+    
+    
+    return validated_key, validated_value
+
+
+def localised_dictionary_builder(dictionary, parameter_name):
+    """
+    Builds a localised dictionary from the given dictionary.
+    
+    Parameters
+    ----------
+    dictionary : `None`, `dict` of ((``Locale``, `str`), `str`) items,
+            (`set`, `tuple`, `list`) of `tuple` ((``Locale``, `str`), `str`)
+        The value to convert to localized dictionary.
+    parameter_name : `str`
+        The parameter's name to raise exception with.
+    
+    Returns
+    -------
+    validated_dictionary : `None`, `dict` of (`str`, `Any`) items
+    
+    Raises
+    ------
+    TypeError
+        - If `dictionary`'s or any of it's element's type is incorrect.
+    ValueError
+        - Empty key or value.
+        - Incorrect item length.
+    """
+    if dictionary is None:
+        validated_dictionary = None
+    
+    elif isinstance(dictionary, dict):
+        validated_dictionary = {}
+        
+        for item in dictionary.items():
+            key, value = localised_dictionary_item_validator(item, parameter_name)
+            validated_dictionary[key] = value
+        
+        if not validated_dictionary:
+            validated_dictionary = None
+    
+    elif isinstance(dictionary, (tuple, list, set)):
+        validated_dictionary = {}
+        for item in dictionary:
+            if not isinstance(item, tuple):
+                raise TypeError(
+                    f'`{parameter_name}` items can be `tuple`-s, got {item.__class__.__name__}; {item!r}; '
+                    f'{parameter_name}={dictionary!r}.'
+                )
+            
+            
+            item_length = len(item)
+            if item_length != 2:
+                raise ValueError(
+                    f'`{parameter_name}` items can be `tuple`-s of length `2`, got {item!r}; length={item_length!r}; '
+                    f'{parameter_name}={dictionary!r}.'
+                )
+            
+            key, value = localised_dictionary_item_validator(item, parameter_name)
+            validated_dictionary[key] = value
+        
+        if not validated_dictionary:
+            validated_dictionary = None
+            
+    else:
+        raise TypeError(
+            f'`{parameter_name}` can be `None`, `dict`, `set`, `tuple`, `list`, '
+            f'got {dictionary.__class__.__name__}; {dictionary!r}.'
+        )
+    
+    return validated_dictionary

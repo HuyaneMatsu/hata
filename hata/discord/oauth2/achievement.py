@@ -4,7 +4,7 @@ from ...env import API_VERSION
 
 from ..bases import DiscordEntity, IconSlot
 from ..http import urls as module_urls
-from ..oauth2.helpers import process_locale_dictionary
+from ..localizations import process_locale_dictionary
 from ..utils import DATETIME_FORMAT_CODE
 
 
@@ -193,12 +193,12 @@ class Achievement(DiscordEntity):
             name_localizations = data['name']
             name = data.pop('default')
             if not name_localizations:
-                name_localizations = {}
+                name_localizations = None
             
             description_localizations = data['description']
             description = description_localizations.pop('default')
             if not description_localizations:
-                 description_localizations = {}
+                 description_localizations = None
         
         
         self.name = name

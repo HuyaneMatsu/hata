@@ -1,5 +1,7 @@
 __all__ = ()
 
+from ....localizations import Locale
+
 from ...flags import SystemChannelFlag
 from ...preinstanced import (
     ContentFilterLevel, MFA, MessageNotificationLevel, NsfwLevel, VerificationLevel, VoiceRegion
@@ -60,6 +62,10 @@ def convert_verification_level(name, data):
     return _convert_preinstanced('verification_level', data, VerificationLevel)
 
 
+def convert_preferred_locale(name, data):
+    return _convert_preinstanced('preferred_locale', data, Locale)
+
+
 GUILD_CONVERTERS = {
     'afk_channel_id': convert_snowflake,
     'afk_timeout': convert_nothing,
@@ -76,7 +82,7 @@ GUILD_CONVERTERS = {
     'nsfw_level': convert_nsfw_level,
     'owner_id': convert_snowflake,
     'premium_progress_bar_enabled': convert_bool__boost_progress_bar_enabled,
-    'preferred_locale': convert_nothing,
+    'preferred_locale': convert_preferred_locale,
     'prune_delete_days': convert_int__days,
     'public_updates_channel_id': convert_snowflake,
     'rules_channel_id': convert_snowflake,

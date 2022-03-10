@@ -8,8 +8,8 @@ from ...core import (
     KOKORO
 )
 from ...guild import create_partial_guild_from_id
+from ...localizations import get_locale
 from ...message import Message
-from ...oauth2.helpers import parse_guild_locale, parse_locale
 from ...permission import Permission
 from ...permission.permission import PERMISSION_PRIVATE
 from ...user import ClientUserBase, User
@@ -79,13 +79,13 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
     guild_id : `int`
         The guild's identifier from where the interaction was called from. Might be `0` if the interaction was called
         from a private channel.
-    guild_locale : `str`
+    guild_locale : ``Locale``
         The guild's preferred locale if invoked from guild.
     interaction : `None`, ``ApplicationCommandInteraction``, ``ComponentInteraction``, \
             ``ApplicationCommandAutocompleteInteraction``
         
         The called interaction by it's route by the user.
-    locale : `str`
+    locale : ``Locale``
         The selected language of the invoking user.
     message : `None`, ``Message``
         The message from where the interaction was received. Applicable for message components.
@@ -153,13 +153,13 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
             guild = None
         
         # guild_locale
-        guild_locale = parse_guild_locale(data)
+        guild_locale = get_locale(data.get('guild_locale', None))
         
         # interaction
         # We set interaction at the end when the object is fully initialized
         
         # locale
-        locale = parse_locale(data)
+        locale = get_locale(data.get('locale', None))
         
         # message
         try:
@@ -413,11 +413,11 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         repr_parts.append(repr(self.user))
         
         repr_parts.append(', guild_locale=')
-        repr_parts.append(repr(self.guild_locale))
+        repr_parts.append(repr(self.guild_locale.name))
         
         if guild_id:
             repr_parts.append(', locale=')
-            repr_parts.append(repr(self.locale))
+            repr_parts.append(repr(self.locale.name))
         
         repr_parts.append(', interaction=')
         repr_parts.append(repr(self.interaction))

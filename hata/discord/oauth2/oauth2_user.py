@@ -2,9 +2,8 @@ __all__ = ('UserOA2',)
 
 from scarletio import copy_docs
 
+from ..localizations import get_locale
 from ..user import PremiumType, UserBase, UserFlag
-
-from .helpers import parse_locale
 
 
 class UserOA2(UserBase):
@@ -31,11 +30,13 @@ class UserOA2(UserBase):
         The user's banner's hash in `uint128`.
     banner_type : ``IconType``
         The user's banner's type.
+    access : ``OA2Access``
+        Source oauth2 access.
     email : `None`, `str`
         The user's email. Defaults to empty string.
     flags : ``UserFlag``
         The user's user flags.
-    locale : `str`
+    locale : ``Locale``
         The preferred locale by the user.
     mfa : `bool`
         Whether the user has two factor authorization enabled on the account.
@@ -47,6 +48,16 @@ class UserOA2(UserBase):
     __slots__ = ('access', 'email', 'flags', 'locale', 'mfa', 'premium_type', 'system', 'verified', )
     
     def __init__(self, data, access):
+        """
+        Creates a new ``UserOA2`` instance.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            User data.
+        access : ``OA2Access``
+            Source oauth2 access.
+        """
         self.access = access
         self.id = int(data['id'])
         
@@ -69,7 +80,7 @@ class UserOA2(UserBase):
         self.flags = UserFlag(flags)
         
         self.premium_type = PremiumType.get(data.get('premium_type', 0))
-        self.locale = parse_locale(data)
+        self.locale = get_locale(data.get('locale', None))
     
     
     def _difference_update_attributes(self, data):
@@ -101,7 +112,7 @@ class UserOA2(UserBase):
             +-----------------------+-----------------------+
             | flags                 | ``UserFlag``          |
             +-----------------------+-----------------------+
-            | locale                | `str                  |
+            | locale                | ``Locale``            |
             +-----------------------+-----------------------+
             | mfa                   | `bool`                |
             +-----------------------+-----------------------+
@@ -147,8 +158,8 @@ class UserOA2(UserBase):
             self.premium_type = premium_type
         
         
-        locale = parse_locale(data)
-        if self.locale != locale:
+        locale = get_locale(data.get('locale', None))
+        if self.locale is not locale:
             old_attributes['locale'] = self.locale
             self.locale = locale
         

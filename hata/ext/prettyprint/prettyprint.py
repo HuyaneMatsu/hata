@@ -894,7 +894,7 @@ def str_guild(guild, index=None, **kwargs):
     result.append(f'- max users : {guild.max_users}', 1)
     result.append(f'- max presences : {guild.max_presences}', 1)
     result.append(f'- max video channel users : {guild.max_video_channel_users}', 1)
-    result.append(f'- preferred locale : {guild.preferred_locale}', 1)
+    result.append(f'- preferred locale : {guild.preferred_locale.value}', 1)
     
     description = guild.description
     if (description is not None):
@@ -1438,7 +1438,7 @@ def str_user_oa2(user, index=None, **kwargs):
     else:
         result.append(f'- flags : None', 1)
     result.append(f'- premium type : {user.premium_type!s}', 1)
-    result.append(f'- locale : {user.locale}', 1)
+    result.append(f'- locale : {user.locale.value}', 1)
 
     return result
 

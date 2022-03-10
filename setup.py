@@ -43,6 +43,7 @@ setup(
         'hata.discord.interaction.components',
         'hata.discord.interaction.event_types',
         'hata.discord.invite',
+        'hata.discord.localizations',
         'hata.discord.message',
         'hata.discord.oauth2',
         'hata.discord.permission',

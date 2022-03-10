@@ -13,6 +13,7 @@ from .http import *
 from .integration import *
 from .interaction import *
 from .invite import *
+from .localizations import *
 from .message import *
 from .oauth2 import *
 from .permission import *
@@ -47,6 +48,7 @@ __all__ = (
     *integration.__all__,
     *interaction.__all__,
     *invite.__all__,
+    *localizations.__all__,
     *message.__all__,
     *oauth2.__all__,
     *permission.__all__,

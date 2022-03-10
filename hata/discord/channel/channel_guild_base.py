@@ -336,7 +336,7 @@ class ChannelGuildBase(ChannelBase):
         if parent_id:
             data['parent_id'] = str(parent_id)
         
-        return self
+        return data
 
 
 @export

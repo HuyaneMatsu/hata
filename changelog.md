@@ -14,6 +14,8 @@
 - `Client.achievement_create`'s `name_localizations` parameter is now validated.
 - `Client.achievement_edit`'s `description_localizations` parameter is now validated.
 - `Client.achievement_edit`'s `name_localizations` parameter is now validated.
+- Add `required_permissions` parameter to `ApplicationCommand.__new__`.
+- Add `ApplicationCommand.required_permissions`.
 
 #### Bug fixes
 - `Achievement.description_localizations` not correctly defaulted to `None`.

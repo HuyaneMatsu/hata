@@ -3,6 +3,7 @@ __all__ = ('ApplicationCommand',)
 
 from ...bases import DiscordEntity
 from ...core import APPLICATION_COMMANDS
+from ...permission import Permission
 from ...preconverters import preconvert_preinstanced_type
 from ...utils import DATETIME_FORMAT_CODE, id_to_datetime, is_valid_application_command_name
 
@@ -22,19 +23,29 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     ----------
     id : `int`
         The application command's id.
+    
     allow_by_default : `bool`
         Whether the command is enabled by default for everyone who has `use_application_commands` permission.
+    
     application_id : `int`
         The application command's application's id.
+    
     description : `str`
         The command's description. It's length can be in range [2:100].
+    
     name : `str`
         The name of the command. It's length can be in range [1:32].
+    
     options : `None`, `list` of ``ApplicationCommandOption``
         The parameters of the command. It's length can be in range [0:25]. If would be set as empty list, instead is
         set as `None`.
+    
+    required_permissions : `None`, ``Permission``
+        The required permissions to use the application command inside of a guild.
+    
     target_type : ``ApplicationCommandTargetType``
         The application command target's type describing where it shows up.
+    
     version : `int`
         The time when the command was last edited in snowflake.
     
@@ -42,9 +53,14 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     -----
     ``ApplicationCommand``s are weakreferable.
     """
-    __slots__ = ('allow_by_default', 'application_id', 'description', 'name', 'options', 'target_type', 'version')
+    __slots__ = (
+        'allow_by_default', 'application_id', 'description', 'name', 'options', 'required_permissions', 'target_type',
+        'version'
+    )
     
-    def __new__(cls, name, description=None, *, allow_by_default=True, options=None, target_type=None):
+    def __new__(cls, name, description=None, *, allow_by_default=True, options=None, required_permissions=None,
+            target_type=None
+        ):
         """
         Creates a new ``ApplicationCommand`` with the given parameters.
         
@@ -56,13 +72,18 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         description : `None`, `str` = `None`, Optional
             The command's description. It's length can be in range [2:100].
         
-        allow_by_default : `bool` = `True`, Optional (Keyword only)
+        allow_by_default : `None`, `bool` = `None`, Optional (Keyword only)
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
             
             Defaults to `True`.
         
         options : `None`, (`list`, `tuple`) of ``ApplicationCommandOption`` = `None`, Optional (Keyword only)
             The parameters of the command. It's length can be in range [0:25].
+        
+        required_permissions : `None`, ``Permission``, `int` = `None`, Optional (Keyword only)
+            The required permissions to use the application command inside of a guild.
+            
+            If given as non-null value, turns off `allow_by_default` to `False` by default.
         
         target_type : `None`, `int`, ``ApplicationCommandTargetType`` = `None`, Optional (Keyword only)
             The application command's target type.
@@ -91,11 +112,12 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         # allow_by_default
         if __debug__:
-            if not isinstance(allow_by_default, bool):
-                raise AssertionError(
-                    f'`allow_by_default` can be `bool`, got {allow_by_default.__class__.__name__}; '
-                    f'{allow_by_default!r}.'
-                )
+            if (allow_by_default is not None):
+                if not isinstance(allow_by_default, bool):
+                    raise AssertionError(
+                        f'`allow_by_default` can be `bool`, got {allow_by_default.__class__.__name__}; '
+                        f'{allow_by_default!r}.'
+                    )
         
         # description
         if __debug__:
@@ -169,6 +191,18 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             else:
                 options_processed = None
         
+        # required_permissions
+        if (required_permissions is None):
+            pass
+        elif isinstance(required_permissions, int):
+            required_permissions = Permission(required_permissions)
+        
+        else:
+            raise TypeError(
+                f'`required_permissions` can be `None`, `{Permission.__name__}`, `int`, got '
+                f'{required_permissions.__class__.__name__}; {required_permissions!r}.'
+            )
+        
         # target_type
         if target_type is None:
             target_type = ApplicationCommandTargetType.chat
@@ -189,6 +223,13 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                     f'`description` cannot be `None` for application commands with non-context target.'
                 )
         
+        # allow_by_default & required_permissions
+        if (allow_by_default is None):
+            if (required_permissions is None):
+                allow_by_default = True
+            else:
+                allow_by_default = False
+        
         
         self = object.__new__(cls)
         
@@ -198,6 +239,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         self.description = description
         self.allow_by_default = allow_by_default
         self.options = options_processed
+        this.required_permissions = required_permissions
         self.target_type = target_type
         self.version = 0
         
@@ -275,6 +317,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         self.description = None
         self.name = ''
         self.options = None
+        self.required_permissions = None
         self.target_type = ApplicationCommandTargetType.none
         self.version = 0
         return self
@@ -359,6 +402,16 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                 options = [ApplicationCommandOption.from_data(option_data) for option_data in option_datas]
             self.options = options
         
+        # required_permissions
+        try:
+            required_permissions = data['default_member_permissions']
+        except KeyError:
+            pass
+        else:
+            if (required_permissions is not None):
+                required_permissions = Permission(required_permissions)
+            self.required_permissions = required_permissions
+        
         # target_type
         try:
             target_type = data['type']
@@ -407,6 +460,8 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             | name                  | `str`                                             |
             +-----------------------+---------------------------------------------------+
             | options               | `None`, `list` of ``ApplicationCommandOption``    |
+            +-----------------------+---------------------------------------------------+
+            | required_permissions  | `None`, ``Permission``                            |
             +-----------------------+---------------------------------------------------+
             | target_type           | ``ApplicationCommandTargetType``                  |
             +-----------------------+---------------------------------------------------+
@@ -467,6 +522,19 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             if self.options != options:
                 old_attributes['options'] = self.options
                 self.options = options
+        
+        # required_permissions
+        try:
+            required_permissions = data['default_member_permissions']
+        except KeyError:
+            pass
+        else:
+            if (required_permissions is not None):
+                required_permissions = Permission(required_permissions)
+            
+            if self.required_permissions != required_permissions:
+                old_attributes['required_permissions'] = self.required_permissions
+                self.required_permissions = required_permissions
         
         # target_type
         try:
@@ -533,6 +601,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             option_datas = [option.to_data() for option in options]
         data['options'] = option_datas
         
+        # required_permissions
+        data['default_member_permissions'] = self.required_permissions
+        
         # target_type
         data['type'] = self.target_type.value
         
@@ -568,7 +639,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             repr_parts.append(repr(target_type.value))
             repr_parts.append(')')
         
-        # Optional fields `.description`, `.options`, `.allow_by_default`
+        # Optional fields `.description`, `.options`, `.allow_by_default`, ``.required_permissions``
         description = self.description
         if (description is not None):
             repr_parts.append(', description=')
@@ -576,6 +647,11 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         if not self.allow_by_default:
             repr_parts.append(', allow_by_default=False')
+        
+        required_permissions = self.required_permissions
+        if (required_permissions is not None):
+            repr_parts.append(', required_permissions=')
+            repr_parts.append(required_permissions.__format__('d'))
         
         options = self.options
         if (options is not None):
@@ -691,6 +767,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             options = [option.copy() for option in options]
         new.options = options
         
+        # required_permissions
+        new.required_permissions = self.required_permissions
+        
         # target_type
         new.target_type = self.target_type
         
@@ -724,6 +803,10 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         # name
         if self.name != other.name:
+            return False
+        
+        # required_permissions
+        if self.required_permissions != other.required_permissions:
             return False
         
         # options
@@ -760,6 +843,10 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         # name
         if self.name != other.name:
+            return True
+        
+        # required_permissions
+        if self.required_permissions != other.required_permissions:
             return True
         
         # options

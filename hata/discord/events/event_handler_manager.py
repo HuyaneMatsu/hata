@@ -246,6 +246,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-----------------------+---------------------------------------------------+
         | options               | `None`, `list` of ``ApplicationCommandOption``    |
         +-----------------------+---------------------------------------------------+
+        | required_permissions  | `None`, ``Permission``                            |
+        +-----------------------+---------------------------------------------------+
         | target_type           | ``ApplicationCommandTargetType``                  |
         +-----------------------+---------------------------------------------------+
         | version               | `int`                                             |

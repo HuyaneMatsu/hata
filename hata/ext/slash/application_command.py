@@ -277,17 +277,15 @@ def _validate_allow_by_default(allow_by_default):
     
     Returns
     -------
-    allow_by_default : `bool`
+    allow_by_default : `None`, `bool`
         The validated `allow_by_default` value.
     
     Raises
     ------
     TypeError
-        If `allow_by_default` was not given as `None` nor as `bool`.
+        If `allow_by_default` was not given as `None`, `bool`.
     """
-    if allow_by_default is None:
-        allow_by_default = True
-    else:
+    if (allow_by_default is not None):
         allow_by_default = preconvert_bool(allow_by_default, 'allow_by_default')
     
     return allow_by_default
@@ -637,7 +635,7 @@ class SlasherApplicationCommand:
         
         Mutually exclusive with the ``._command`` parameter.
     
-    allow_by_default : `bool`
+    allow_by_default : `None`, `bool`
         Whether the command is enabled by default for everyone who has `use_application_commands` permission.
     description : `str`
         Application command description. It's length can be in range [2:100].
@@ -1058,7 +1056,7 @@ class SlasherApplicationCommand:
     
     def __repr__(self):
         """returns the slash command's representation."""
-        result = ['<', self.__class__.__name__, ' name=', repr(self.name), ', type=']
+        repr_parts = ['<', self.__class__.__name__, ' name=', repr(self.name), ', type=']
         
         guild_ids = self.guild_ids
         if guild_ids is None:
@@ -1069,33 +1067,35 @@ class SlasherApplicationCommand:
         else:
             type_name = 'guild bound'
         
-        result.append(type_name)
+        repr_parts.append(type_name)
         
-        if not self.allow_by_default:
-            result.append(', allow_by_default=False')
+        allow_by_default = self.allow_by_default
+        if (allow_by_default is not None):
+            repr_parts.append(', allow_by_default=')
+            repr_parts.append(repr(allow_by_default))
         
         target = self.target
         if target is not DEFAULT_APPLICATION_COMMAND_TARGET_TYPE:
-             result.append(', target=')
-             result.append(target.name)
+             repr_parts.append(', target=')
+             repr_parts.append(target.name)
         
         if (guild_ids is not None):
-            result.append(', guild_ids=')
-            result.append(repr(guild_ids))
+            repr_parts.append(', guild_ids=')
+            repr_parts.append(repr(guild_ids))
         
         unloading_behaviour = self._unloading_behaviour
         if unloading_behaviour != UNLOADING_BEHAVIOUR_INHERIT:
-            result.append(', unloading_behaviour=')
+            repr_parts.append(', unloading_behaviour=')
             if unloading_behaviour == UNLOADING_BEHAVIOUR_DELETE:
                 unloading_behaviour_name = 'delete'
             else:
                 unloading_behaviour_name = 'keep'
             
-            result.append(unloading_behaviour_name)
+            repr_parts.append(unloading_behaviour_name)
         
-        result.append('>')
+        repr_parts.append('>')
         
-        return ''.join(result)
+        return ''.join(repr_parts)
     
     
     async def __call__(self, client, interaction_event):

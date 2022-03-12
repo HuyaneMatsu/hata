@@ -17,6 +17,9 @@
 - Add `required_permissions` parameter to `ApplicationCommand.__new__`.
 - Add `ApplicationCommand.required_permissions`.
 
+#### ext.slash
+- Add `required_permissions` parameter to slasher application commands.
+
 #### Bug fixes
 - `Achievement.description_localizations` not correctly defaulted to `None`.
 - `Achievement.name_localizations` not correctly defaulted to `None`.

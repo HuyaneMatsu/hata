@@ -43,8 +43,8 @@ Slasher = include('Slasher')
 # Routers
 
 SLASH_COMMAND_PARAMETER_NAMES = (
-    'command', 'name', 'description', 'show_for_invoking_user_only', 'is_global', 'guild', 'is_default',
-    'delete_on_unload', 'allow_by_default', 'target', 'allowed_mentions', 'wait_for_acknowledgement'
+    'allow_by_default', 'allowed_mentions', 'command', 'delete_on_unload', 'description', 'guild', 'is_default',
+    'is_global', 'name', 'required_permissions', 'show_for_invoking_user_only', 'target', 'wait_for_acknowledgement'
 )
 
 SLASH_COMMAND_NAME_NAME = 'name'
@@ -289,6 +289,31 @@ def _validate_allow_by_default(allow_by_default):
         allow_by_default = preconvert_bool(allow_by_default, 'allow_by_default')
     
     return allow_by_default
+
+
+def _validate_required_permissions(required_permissions):
+    """
+    Validates the given `required_permissions` value.
+    
+    Parameters
+    ----------
+    required_permissions : `None`, `bool`
+        The `required_permissions` value to validate.
+    
+    Returns
+    -------
+    required_permissions : `None`, `bool`
+        The validated `required_permissions` value.
+    
+    Raises
+    ------
+    TypeError
+        If `required_permissions` was not given as `None`, `bool`.
+    """
+    if (required_permissions is not None):
+        required_permissions = preconvert_bool(required_permissions, 'required_permissions')
+    
+    return required_permissions
 
 
 DEFAULT_APPLICATION_COMMAND_TARGET_TYPE = ApplicationCommandTargetType.chat
@@ -590,8 +615,10 @@ class SlasherApplicationCommand:
     ----------
     _auto_completers : `None`, `list` of ``SlasherApplicationCommandParameterAutoCompleter``
         Auto completer functions.
+    
     _command : `None`, ``SlasherApplicationCommandFunction``
         The command of the slash command.
+    
     _exception_handlers : `None`, `list` of `CoroutineFunction`
         Exception handlers added with ``.error`` to the interaction handler.
         
@@ -602,6 +629,7 @@ class SlasherApplicationCommand:
     
     _permission_overwrites : `None`, `dict` of (`int`, `list` of ``ApplicationCommandPermissionOverwrite``)
         Permission overwrites applied to the slash command.
+    
     _registered_application_command_ids : `None`, `dict` of (`int`, `int`) items
         The registered application command ids, which are matched by the command's schema.
         
@@ -609,6 +637,7 @@ class SlasherApplicationCommand:
         command id.
     _schema : `None`, ``ApplicationCommand``
         Internal slot used by the ``.get_schema`` method.
+    
     _self_reference : `None`, ``WeakReferer`` to ``SlasherApplicationCommand``
         Back reference to the slasher application command.
         
@@ -637,18 +666,27 @@ class SlasherApplicationCommand:
     
     allow_by_default : `None`, `bool`
         Whether the command is enabled by default for everyone who has `use_application_commands` permission.
+    
     description : `str`
         Application command description. It's length can be in range [2:100].
+    
     guild_ids : `None`, `set` of `int`
         The ``Guild``'s id to which the command is bound to.
+    
     is_default : `bool`
         Whether the command is the default command in it's category.
+    
     is_global : `bool`
         Whether the command is a global command.
         
         Guild commands have ``.guild_ids`` set as `None`.
+    
     name : `str`
         Application command name. It's length can be in range [1:32].
+    
+    required_permissions : `None`, ``Permission``
+        The required permissions to use the application command inside of a guild.
+    
     target : ``ApplicationCommandTargetType``
         The target type of the slash command.
         
@@ -662,7 +700,7 @@ class SlasherApplicationCommand:
         '__weakref__', '_auto_completers', '_command', '_exception_handlers', '_parent_reference',
         '_permission_overwrites', '_registered_application_command_ids', '_schema', '_self_reference', '_sub_commands',
         '_unloading_behaviour', 'allow_by_default', 'description', 'guild_ids', 'is_default', 'is_global', 'name',
-        'target'
+        'required_permissions', 'target'
     )
     
     def _register_guild_and_application_command_id(self, guild_id, application_command_id):
@@ -823,8 +861,8 @@ class SlasherApplicationCommand:
     
     
     def __new__(cls, func, name=None, description=None, is_global=None,
-            guild=None, is_default=None, delete_on_unload=None, allow_by_default=None, target=None,
-            **kwargs,
+            guild=None, is_default=None, delete_on_unload=None, allow_by_default=None, required_permissions=None,
+            target=None, **kwargs,
         ):
         """
         Creates a new ``SlasherApplicationCommand`` with the given parameters.
@@ -850,6 +888,8 @@ class SlasherApplicationCommand:
             Whether the command should be deleted from Discord when removed.
         allow_by_default : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
+        required_permissions : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
+            The required permissions to use the application command inside of a guild.
         target : `None`, `int`, `str`, ``ApplicationCommandTargetType`` = `None`, Optional
             The target type of the slash command.
             
@@ -897,6 +937,8 @@ class SlasherApplicationCommand:
             _validate_delete_on_unload)
         allow_by_default, route_to = _check_maybe_route('allow_by_default', allow_by_default, route_to,
             _validate_allow_by_default)
+        required_permissions, route_to = _check_maybe_route('required_permissions', required_permissions, route_to,
+            _validate_required_permissions)
         
         target = _validate_target(target)
         
@@ -910,6 +952,7 @@ class SlasherApplicationCommand:
             is_default = route_value(is_default, route_to)
             unloading_behaviour = route_value(unloading_behaviour, route_to)
             allow_by_default = route_value(allow_by_default, route_to)
+            required_permissions = route_value(required_permissions, route_to)
             target = route_value(target, route_to)
             
             description = [
@@ -962,9 +1005,11 @@ class SlasherApplicationCommand:
             router = []
             
             for (
-                name, description, is_global, guild_ids, is_default, unloading_behaviour, allow_by_default
+                name, description, is_global, guild_ids, is_default, unloading_behaviour, allow_by_default,
+                required_permissions
             ) in zip(
-                name, description, is_global, guild_ids, is_default, unloading_behaviour, allow_by_default
+                name, description, is_global, guild_ids, is_default, unloading_behaviour, allow_by_default,
+                required_permissions
             ):
                 
                 if is_global and (guild_ids is not None):
@@ -993,6 +1038,7 @@ class SlasherApplicationCommand:
                 self.is_default = is_default
                 self._unloading_behaviour = unloading_behaviour
                 self.allow_by_default = allow_by_default
+                self.required_permissions = required_permissions
                 self._permission_overwrites = None
                 self.target = target
                 self._auto_completers = None
@@ -1037,6 +1083,7 @@ class SlasherApplicationCommand:
             self.is_default = is_default
             self._unloading_behaviour = unloading_behaviour
             self.allow_by_default = allow_by_default
+            self.required_permissions = required_permissions
             self._permission_overwrites = None
             self.target = target
             self._auto_completers = None
@@ -1073,6 +1120,11 @@ class SlasherApplicationCommand:
         if (allow_by_default is not None):
             repr_parts.append(', allow_by_default=')
             repr_parts.append(repr(allow_by_default))
+        
+        required_permissions = self.required_permissions
+        if (required_permissions is not None):
+            repr_parts.append(', required_permissions=')
+            repr_parts.append(repr(required_permissions))
         
         target = self.target
         if target is not DEFAULT_APPLICATION_COMMAND_TARGET_TYPE:
@@ -1228,7 +1280,7 @@ class SlasherApplicationCommand:
                     options.append(option)
         
         return ApplicationCommand(self.name, self.description, allow_by_default=self.allow_by_default,
-            options=options, target_type=self.target)
+            options=options, required_permissions=self.required_permissions, target_type=self.target)
     
     
     def as_sub(self, deepness):
@@ -1282,6 +1334,7 @@ class SlasherApplicationCommand:
         new.name = self.name
         new._unloading_behaviour = self._unloading_behaviour
         new.allow_by_default = self.allow_by_default
+        new.required_permissions = self.required_permissions
         
         permission_overwrites = self._permission_overwrites
         if (permission_overwrites is not None):
@@ -1486,6 +1539,9 @@ class SlasherApplicationCommand:
             return False
         
         if self.allow_by_default != other.allow_by_default:
+            return False
+        
+        if self.required_permissions != other.required_permissions:
             return False
         
         if self._permission_overwrites != other._permission_overwrites:

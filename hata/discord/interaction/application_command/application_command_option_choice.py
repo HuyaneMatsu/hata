@@ -38,7 +38,7 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
             The choice's value.
             
             Defaults to `name` parameter if not given.
-            
+        
         name_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
                 (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`) = `None`, Optional (Keyword only)
             Localized names of the choice.
@@ -48,7 +48,7 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         TypeError
             - If `name_localizations`'s or any of it's item's type is incorrect.
         ValueError
-            - `name_localizations` has an item with incorrect structure.
+            - If `name_localizations` has an item with incorrect structure.
         AssertionError
             - If `name` is not `str`.
             - If `name`'s length is out of range [1:100].
@@ -173,7 +173,9 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         repr_parts.append(', value=')
         repr_parts.append(repr(self.value))
         
-        # Optional fields: `.name_localizations`
+        # Extra fields: `.name_localizations`
+        
+        # name_localizations
         name_localizations = self.name_localizations
         if (name_localizations is not None):
             repr_parts.append(', name_localizations=')

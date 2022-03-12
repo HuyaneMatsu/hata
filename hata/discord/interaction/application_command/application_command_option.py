@@ -2,6 +2,8 @@ __all__ = ('ApplicationCommandOption',)
 
 from scarletio import RichAttributeErrorBaseType
 
+from ...localizations.helpers import localized_dictionary_builder
+from ...localizations.utils import build_locale_dictionary, destroy_locale_dictionary
 from ...preconverters import preconvert_preinstanced_type
 
 from .application_command_option_choice import ApplicationCommandOptionChoice
@@ -53,6 +55,9 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
     name : `str`
         The name of the application command option. It's length can be in range [1:32].
     
+    name_localizations : `None`, `dict` of (``Locale``, `str`) items
+        Localized names of the option.
+    
     options : `None`, `list` of ``ApplicationCommandOption``
         If the command's type is sub-command group type, then this nested option will be the parameters of the
         sub-command. It's length can be in range [0:25]. If would be set as empty list, instead is set as `None`.
@@ -65,11 +70,11 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
     """
     __slots__ = (
         'autocomplete', 'channel_types', 'choices', 'default', 'description', 'max_value', 'min_value', 'name',
-        'options', 'required', 'type'
+        'name_localizations', 'options', 'required', 'type'
     )
     
-    def __new__(cls, name, description, type_, *, autocomplete=False, channel_types=None, default=False,
-            required=False, max_value=None, min_value=None, choices=None, options=None):
+    def __new__(cls, name, description, type_, *, autocomplete=False, channel_types=None, choices=None, default=False,
+            max_value=None, min_value=None, name_localizations=None, required=False, options=None):
         """
         Creates a new ``ApplicationCommandOption`` with the given parameters.
         
@@ -94,12 +99,16 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
             
             Only applicable if ``.type`` is set to `ApplicationCommandOptionType.channel`.
         
+
+        choices : `None`, (`list`, `tuple`) of ``ApplicationCommandOptionChoice`` = `None`, Optional (Keyword only)
+            The choices of the command for string or integer types. It's length can be in range [0:25].
+            
+            Mutually exclusive with the `autocomplete` parameter.
+        
         default : `bool` = `False`, Optional (Keyword only)
             Whether the option is the default one.
         
-        required : `bool` = `False`, Optional (Keyword only)
-            Whether the parameter is required.
-        
+
         max_value : `None`, `int`, `float` = `None`, Optional (Keyword only)
             The maximal value permitted for this option.
             
@@ -109,12 +118,14 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
             The minimum value permitted for this option.
             
             Only Applicable for integer as `int`, as float options as `float`.
-            
-        choices : `None`, (`list`, `tuple`) of ``ApplicationCommandOptionChoice`` = `None`, Optional (Keyword only)
-            The choices of the command for string or integer types. It's length can be in range [0:25].
-            
-            Mutually exclusive with the `autocomplete` parameter.
-            
+        
+        name_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
+                (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`) = `None`, Optional (Keyword only)
+            Localized names of the choice.
+        
+        required : `bool` = `False`, Optional (Keyword only)
+            Whether the parameter is required.
+        
         options : `None`, (`list`, `tuple`) of ``ApplicationCommandOption`` = `None`, Optional (Keyword only)
             The parameters of the command. It's length can be in range [0:25]. Only applicable for sub command groups.
         
@@ -128,12 +139,14 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
             - If `channel_types` is neither `None` nor `iterable` of `int`.
             - If `max_value` is not the expected type defined by `type_`'s value.
             - If `min_value` is not the expected type defined by `type_`'s value.
+            - If `name_localizations`'s or any of it's item's type is incorrect.
         ValueError
             - If `type_` was given as `int`, but it do not matches any of the precreated
                 ``ApplicationCommandOptionType``-s.
             - If `channel_types` contains an unknown channel type value.
             - If `max_value` is given, but it is not applicable for the given `type_`.
             - If `min_value` is given, but it is not applicable for the given `type_`.
+            - If `name_localizations` has an item with incorrect structure.
         AssertionError
             - If `name` was not given as `str`.
             - If `name` length is out of range [1:32].
@@ -275,6 +288,9 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
                     f'[{APPLICATION_COMMAND_NAME_LENGTH_MIN}:{APPLICATION_COMMAND_NAME_LENGTH_MAX}], got '
                     f'{name_length!r}; {name!r}.'
                 )
+        
+        # name_localizations
+        name_localizations = localized_dictionary_builder(name_localizations, 'name_localizations')
         
         # options
 
@@ -430,6 +446,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         self.max_value = max_value
         self.min_value = min_value
         self.name = name
+        self.name_localizations = name_localizations
         self.options = options_processed
         self.required = required
         self.type = type_
@@ -614,6 +631,9 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         # name
         name = data['name']
         
+        # name_localizations
+        name_localizations = build_locale_dictionary(data['name_localizations'])
+        
         # options
         option_datas = data.get('options', None)
         if (option_datas is None) or (not option_datas):
@@ -638,6 +658,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         self.max_value = max_value
         self.min_value = min_value
         self.name = name
+        self.name_localizations = name_localizations
         self.options = options
         self.required = required
         self.type = type_
@@ -689,6 +710,9 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         # name
         data['name'] = self.name
         
+        # name_localizations
+        data['name_localizations'] = destroy_locale_dictionary(self.name_localizations)
+        
         # options
         options = self.options
         if (options is not None):
@@ -709,12 +733,16 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         repr_parts = ['<', self.__class__.__name__]
         
         # Descriptive fields `.name`, `.description`, `.type`
+        
+        # name
         repr_parts.append(' name=')
         repr_parts.append(repr(self.name))
         
+        # description
         repr_parts.append(', description=')
         repr_parts.append(repr(self.description))
         
+        # type
         repr_parts.append(', type=')
         type_ = self.type
         repr_parts.append(repr(type_.value))
@@ -722,64 +750,34 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         repr_parts.append(type_.name)
         repr_parts.append(')')
         
-        # Extra fields `.autocomplete`, `.min_value`, `.max_value`, `.default`, `.required`, `.choices`, `.options`
+        # Extra fields: `.autocomplete`, `.min_value`, `.max_value`, `.default`, `.required`, `.choices`, `.options`
+        #    `.name_localizations`
+        
+        # autocomplete
         if self.autocomplete:
             repr_parts.append(', autocomplete=True')
-            
+        
+        # default
+        if self.default:
+            repr_parts.append(', default=True')
+        
+        # required
+        if self.required:
+            repr_parts.append(', required=True')
+        
+        # min_value
         min_value = self.min_value
         if (min_value is not None):
             repr_parts.append(', min_value=')
             repr_parts.append(repr(min_value))
         
+        # max_value
         max_value = self.max_value
         if (max_value is not None):
             repr_parts.append(', max_value=')
             repr_parts.append(repr(max_value))
         
-        if self.default:
-            repr_parts.append(', default=True')
-        
-        if self.required:
-            repr_parts.append(', required=True')
-        
-        choices = self.choices
-        if (choices is not None):
-            repr_parts.append(', choices=[')
-            
-            index = 0
-            limit = len(choices)
-            
-            while True:
-                choice = choices[index]
-                index += 1
-                repr_parts.append(repr(choice))
-                
-                if index == limit:
-                    break
-                
-                repr_parts.append(', ')
-                continue
-        
-        options = self.options
-        if (options is not None):
-            repr_parts.append(', options=[')
-            
-            index = 0
-            limit = len(options)
-            
-            while True:
-                option = options[index]
-                index += 1
-                repr_parts.append(repr(option))
-                
-                if index == limit:
-                    break
-                
-                repr_parts.append(', ')
-                continue
-            
-            repr_parts.append(']')
-        
+        # channel_types
         channel_types = self.channel_types
         if (channel_types is not None):
             repr_parts.append(', channel_types=[')
@@ -800,8 +798,53 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
             
             repr_parts.append(']')
         
-        repr_parts.append('>')
+        # choices
+        choices = self.choices
+        if (choices is not None):
+            repr_parts.append(', choices=[')
+            
+            index = 0
+            limit = len(choices)
+            
+            while True:
+                choice = choices[index]
+                index += 1
+                repr_parts.append(repr(choice))
+                
+                if index == limit:
+                    break
+                
+                repr_parts.append(', ')
+                continue
         
+        # options
+        options = self.options
+        if (options is not None):
+            repr_parts.append(', options=[')
+            
+            index = 0
+            limit = len(options)
+            
+            while True:
+                option = options[index]
+                index += 1
+                repr_parts.append(repr(option))
+                
+                if index == limit:
+                    break
+                
+                repr_parts.append(', ')
+                continue
+            
+            repr_parts.append(']')
+        
+        # name_localizations
+        name_localizations = self.name_localizations
+        if (name_localizations is not None):
+            repr_parts.append(', name_localizations=')
+            repr_parts.append(repr(name_localizations))
+        
+        repr_parts.append('>')
         return ''.join(repr_parts)
     
     
@@ -844,6 +887,12 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         
         # name
         new.name = self.name
+        
+        # name_localizations
+        name_localizations = self.name_localizations
+        if (name_localizations is not None):
+            name_localizations = name_localizations.copy()
+        new.name_localizations = self.name_localizations
         
         # options
         options = self.options
@@ -897,6 +946,10 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         if self.name != other.name:
             return False
         
+        # name_localizations
+        if self.name_localizations != other.name_localizations:
+            return False
+        
         # options
         if self.options != other.options:
             return False
@@ -916,11 +969,19 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         """Returns the application command option's length."""
         length = len(self.name) + len(self.description)
         
+        # choices
         choices = self.choices
         if (choices is not None):
             for choice in choices:
                 length += len(choice)
         
+        # name_localizations
+        name_localizations = self.name_localizations
+        if (name_localizations is not None):
+            for value in name_localizations.values():
+                length += len(value)
+        
+        # options
         options = self.options
         if (options is not None):
             for option in options:

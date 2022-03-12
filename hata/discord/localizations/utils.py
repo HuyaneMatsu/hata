@@ -1,4 +1,4 @@
-__all__ = ('DEFAULT_LOCALE', 'get_locale', 'process_locale_dictionary')
+__all__ = ('DEFAULT_LOCALE', 'get_locale', 'build_locale_dictionary')
 
 from .preinstanced import Locale
 
@@ -26,9 +26,9 @@ def get_locale(value):
     return locale
 
 
-def process_locale_dictionary(dictionary):
+def build_locale_dictionary(dictionary):
     """
-    Processes a locale dictionary, where they keys are locales.
+    Builds a locale dictionary where they keys are all ``Locale``-s.
     
     Parameters
     ----------
@@ -41,3 +41,20 @@ def process_locale_dictionary(dictionary):
     """
     if dictionary is not None:
         return {Locale.get(key): value for key, value in dictionary.items()}
+
+
+def destroy_locale_dictionary(dictionary):
+    """
+    Builds a json serializable dictionary where they keys are all `str`-s.
+    
+    Parameters
+    ----------
+    dictionary : `dict` of (`Locale`, `Any`) items
+        The dictionary to process.
+    
+    Returns
+    -------
+    transformed : `dict` of (`str`, `Any`) items
+    """
+    if dictionary is not None:
+        return {key.value: value for key, value in dictionary.items()}

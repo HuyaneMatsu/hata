@@ -4,7 +4,7 @@ from ...env import API_VERSION
 
 from ..bases import DiscordEntity, IconSlot
 from ..http import urls as module_urls
-from ..localizations import process_locale_dictionary
+from ..localizations import build_locale_dictionary
 from ..utils import DATETIME_FORMAT_CODE
 
 
@@ -144,12 +144,12 @@ class Achievement(DiscordEntity):
         
         if self.name_localizations != name_localizations:
             old_attributes['name_localizations'] = self.name_localizations
-            self.name_localizations = process_locale_dictionary(name_localizations)
+            self.name_localizations = build_locale_dictionary(name_localizations)
         
         
         if self.description_localizations != description_localizations:
             old_attributes['description_localizations'] = self.description_localizations
-            self.description_localizations = process_locale_dictionary(description_localizations)
+            self.description_localizations = build_locale_dictionary(description_localizations)
         
         
         secret = data['secret']

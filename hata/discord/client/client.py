@@ -69,6 +69,7 @@ from ..interaction.application_command.constants import (
 )
 from ..invite import Invite, InviteTargetType
 from ..localizations import DEFAULT_LOCALE, Locale, get_locale
+from ..localizations.helpers import serializable_localized_dictionary_builder
 from ..message import Attachment, Message, MessageFlag, MessageReference, MessageRepr
 from ..message.utils import process_message_chunk, try_resolve_interaction_message
 from ..oauth2 import Achievement, Connection, OA2Access, UserOA2
@@ -99,8 +100,8 @@ from .functionality_helpers import (
     DiscoveryCategoryRequestCacher, DiscoveryTermRequestCacher, ForceUpdateCache, MassUserChunker,
     MultiClientMessageDeleteSequenceSharder, SingleUserChunker, _check_is_client_duped,
     _message_delete_multiple_private_task, _message_delete_multiple_task,
-    application_command_autocomplete_choice_parser, channel_move_sort_key, localised_dictionary_builder,
-    request_channel_thread_channels, role_move_key, role_reorder_valid_roles_sort_key, try_get_user_id_from_token
+    application_command_autocomplete_choice_parser, channel_move_sort_key, request_channel_thread_channels,
+    role_move_key, role_reorder_valid_roles_sort_key, try_get_user_id_from_token
 )
 from .ready_state import ReadyState
 from .request_helpers import (
@@ -2072,11 +2073,11 @@ class Client(ClientUserPBase):
                     f'`secure` can be `bool`, got {secure.__class__.__name__}; {secure!r}.'
                 )
         
-        description_localizations = localised_dictionary_builder(description_localizations, 'description_localizations')
+        description_localizations = serializable_localized_dictionary_builder(description_localizations, 'description_localizations')
         if description_localizations is None:
             description_localizations = {}
         
-        name_localizations = localised_dictionary_builder(name_localizations, 'name_localizations')
+        name_localizations = serializable_localized_dictionary_builder(name_localizations, 'name_localizations')
         if name_localizations is None:
             name_localizations = {}
         
@@ -2211,7 +2212,7 @@ class Client(ClientUserPBase):
                 data['description'] = description
             
             
-                description_localizations = localised_dictionary_builder(
+                description_localizations = serializable_localized_dictionary_builder(
                     description_localizations,
                     'description_localizations',
                 )
@@ -2226,7 +2227,7 @@ class Client(ClientUserPBase):
             
         
             if (name_localizations is not ...):
-                name_localizations = localised_dictionary_builder(name_localizations, 'name_localizations')
+                name_localizations = serializable_localized_dictionary_builder(name_localizations, 'name_localizations')
                 if name_localizations is None:
                     name_localizations = {}
             
@@ -2253,7 +2254,7 @@ class Client(ClientUserPBase):
                         else:
                             name_localizations = name_localizations.copy()
                     else:
-                        name_localizations = localised_dictionary_builder(name_localizations, 'name_localizations')
+                        name_localizations = serializable_localized_dictionary_builder(name_localizations, 'name_localizations')
                         if name_localizations is None:
                             name_localizations = {}
                     
@@ -2272,7 +2273,7 @@ class Client(ClientUserPBase):
                             description_localizations = description_localizations.copy()
                     
                     else:
-                        description_localizations = localised_dictionary_builder(
+                        description_localizations = serializable_localized_dictionary_builder(
                             description_localizations,
                             'description_localizations',
                         )

@@ -19,6 +19,11 @@
 - `ApplicationCommandOptionChoice.__new__`'s `value` parameter is not optional and defaults to `name`.
 - Add `name_localizations` parameter to `ApplicationCommandOptionChoice.__new__`.
 - Add `ApplicationCommandOptionChoice.name_localizations`.
+- Add `name_localizations` parameter to `ApplicationCommandOption.__new__`.
+- Add `ApplicationCommandOption.name_localizations`.
+- Add `description_localizations` parameter to `ApplicationCommandOption.__new__`.
+- Add `ApplicationCommandOption.description_localizations`.
+
 
 #### ext.slash
 - Add `required_permissions` parameter to slasher application commands.

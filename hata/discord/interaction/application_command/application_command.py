@@ -3,6 +3,8 @@ __all__ = ('ApplicationCommand',)
 
 from ...bases import DiscordEntity
 from ...core import APPLICATION_COMMANDS
+from ...localizations.helpers import localized_dictionary_builder
+from ...localizations.utils import build_locale_dictionary, destroy_locale_dictionary
 from ...permission import Permission
 from ...preconverters import preconvert_preinstanced_type
 from ...utils import DATETIME_FORMAT_CODE, id_to_datetime, is_valid_application_command_name
@@ -30,11 +32,21 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     application_id : `int`
         The application command's application's id.
     
-    description : `str`
+    description : `None`, `str`
         The command's description. It's length can be in range [2:100].
+        
+        Set as `None` for context commands.
+    
+    description_localizations : `None`, `dict` of (``Locale``, `str`) items
+        Localized descriptions of the application command.
+        
+        Set as `None` for context commands.
     
     name : `str`
         The name of the command. It's length can be in range [1:32].
+    
+    name_localizations : `None`, `dict` of (``Locale``, `str`) items
+        Localized names of the application command.
     
     options : `None`, `list` of ``ApplicationCommandOption``
         The parameters of the command. It's length can be in range [0:25]. If would be set as empty list, instead is
@@ -54,13 +66,12 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     ``ApplicationCommand``s are weakreferable.
     """
     __slots__ = (
-        'allow_by_default', 'application_id', 'description', 'name', 'options', 'required_permissions', 'target_type',
-        'version'
+        'allow_by_default', 'application_id', 'description', 'description_localizations', 'name', 'name_localizations',
+        'options', 'required_permissions', 'target_type', 'version'
     )
     
-    def __new__(cls, name, description=None, *, allow_by_default=True, options=None, required_permissions=None,
-            target_type=None
-        ):
+    def __new__(cls, name, description=None, *, allow_by_default=True, description_localizations=None,
+            name_localizations=None, options=None, required_permissions=None, target_type=None):
         """
         Creates a new ``ApplicationCommand`` with the given parameters.
         
@@ -76,6 +87,14 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
             
             Defaults to `True`.
+        
+        description_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
+                (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`) = `None`, Optional (Keyword only)
+            Localized descriptions of the application command.
+        
+        name_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
+                (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`) = `None`, Optional (Keyword only)
+            Localized names of the application command.
         
         options : `None`, (`list`, `tuple`) of ``ApplicationCommandOption`` = `None`, Optional (Keyword only)
             The parameters of the command. It's length can be in range [0:25].
@@ -93,9 +112,13 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         Raises
         ------
         TypeError
-            If `target_type` is neither `int`, nor ``ApplicationCommandTargetType``.
+            - If `target_type` is neither `int`, nor ``ApplicationCommandTargetType``.
+            - If `name_localizations`'s or any of it's item's type is incorrect.
+            - If `description_localizations`'s or any of it's item's type is incorrect.
         ValueError
-            `description` cannot be `None` for application commands with non-context target.
+            - `description` cannot be `None` for application commands with non-context target.
+            - If `name_localizations` has an item with incorrect structure.
+            - If `description_localizations` has an item with incorrect structure.
         AssertionError
             - If `name` was not given as `str`.
             - If `name` length is out of range [1:32].
@@ -138,6 +161,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                         f'got {description_length!r}; {description!r}.'
                     )
         
+        # description_localizations
+        description_localizations = localized_dictionary_builder(description_localizations, 'description_localizations')
+        
         # name
         if __debug__:
             if not isinstance(name, str):
@@ -160,6 +186,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                 raise AssertionError(
                     f'`name` contains an unexpected character, got {name!r}.'
                 )
+        
+        # name_localizations
+        name_localizations = localized_dictionary_builder(name_localizations, 'name_localizations')
         
         # options
         if options is None:
@@ -214,6 +243,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         if (target_type in APPLICATION_COMMAND_CONTEXT_TARGET_TYPES):
             # Context commands cannot have description and options, so we clear them.
             description = None
+            description_localizations = None
             options_processed = None
         
         else:
@@ -236,7 +266,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         self.id = 0
         self.application_id = 0
         self.name = name
+        self.name_localizations = name_localizations
         self.description = description
+        self.description_localizations = description_localizations
         self.allow_by_default = allow_by_default
         self.options = options_processed
         this.required_permissions = required_permissions
@@ -315,7 +347,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         self.allow_by_default = True
         self.application_id = application_id
         self.description = None
+        self.description_localizations = None
         self.name = ''
+        self.name_localizations = None
         self.options = None
         self.required_permissions = None
         self.target_type = ApplicationCommandTargetType.none
@@ -382,6 +416,14 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                 description = None
             self.description = description
         
+        # description_localizations
+        try:
+            description_localizations = data['description_localizations']
+        except KeyError:
+            pass
+        else:
+            self.description_localizations = build_locale_dictionary(description_localizations)
+        
         # name
         try:
             name = data['name']
@@ -389,6 +431,14 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             pass
         else:
             self.name = name
+        
+        # name_localizations
+        try:
+            name_localizations = data['name_localizations']
+        except KeyError:
+            pass
+        else:
+            self.name_localizations = build_locale_dictionary(name_localizations)
         
         # options
         try:
@@ -450,23 +500,27 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             
             Every item in the returned dict is optional and can contain the following ones:
             
-            +-----------------------+---------------------------------------------------+
-            | Keys                  | Values                                            |
-            +=======================+===================================================+
-            | description           | `None`, `str`                                     |
-            +-----------------------+---------------------------------------------------+
-            | allow_by_default      | `bool`                                            |
-            +-----------------------+---------------------------------------------------+
-            | name                  | `str`                                             |
-            +-----------------------+---------------------------------------------------+
-            | options               | `None`, `list` of ``ApplicationCommandOption``    |
-            +-----------------------+---------------------------------------------------+
-            | required_permissions  | `None`, ``Permission``                            |
-            +-----------------------+---------------------------------------------------+
-            | target_type           | ``ApplicationCommandTargetType``                  |
-            +-----------------------+---------------------------------------------------+
-            | version               | `int`                                             |
-            +-----------------------+---------------------------------------------------+
+            +---------------------------+---------------------------------------------------+
+            | Keys                      | Values                                            |
+            +===========================+===================================================+
+            | description               | `None`, `str`                                     |
+            +---------------------------+---------------------------------------------------+
+            | description_localizations | `None`, `dict` of (``Locale``, `str`) items       |
+            +---------------------------+---------------------------------------------------+
+            | allow_by_default          | `bool`                                            |
+            +---------------------------+---------------------------------------------------+
+            | name                      | `str`                                             |
+            +---------------------------+---------------------------------------------------+
+            | name_localizations        | `None`, `dict` of (``Locale``, `str`) items       |
+            +---------------------------+---------------------------------------------------+
+            | options                   | `None`, `list` of ``ApplicationCommandOption``    |
+            +---------------------------+---------------------------------------------------+
+            | required_permissions      | `None`, ``Permission``                            |
+            +---------------------------+---------------------------------------------------+
+            | target_type               | ``ApplicationCommandTargetType``                  |
+            +---------------------------+---------------------------------------------------+
+            | version                   | `int`                                             |
+            +---------------------------+---------------------------------------------------+
         """
         old_attributes = {}
         
@@ -498,6 +552,17 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                 old_attributes['description'] = self.description
                 self.description = description
         
+        # description_localizations
+        try:
+            description_localizations = data['description_localizations']
+        except KeyError:
+            pass
+        else:
+            description_localizations = build_locale_dictionary(description_localizations)
+            if self.description_localizations != description_localizations:
+                old_attributes['description_localizations'] = self.description_localizations
+                self.description_localizations = description_localizations
+        
         # name
         try:
             name = data['name']
@@ -507,6 +572,17 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             if self.name != name:
                 old_attributes['name'] = self.name
                 self.name = name
+        
+        # name_localizations
+        try:
+            name_localizations = data['name_localizations']
+        except KeyError:
+            pass
+        else:
+            name_localizations = build_locale_dictionary(name_localizations)
+            if self.name_localizations != name_localizations:
+                old_attributes['name_localizations'] = self.name_localizations
+                self.name_localizations = name_localizations
         
         # options
         try:
@@ -590,8 +666,13 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         if (description is not None):
             data['description'] = description
         
+        data['description_localizations'] = destroy_locale_dictionary(self.description_localizations)
+        
         # name
         data['name'] = self.name
+        
+        # name_localizations
+        data['name_localizations'] = destroy_locale_dictionary(self.name_localizations)
         
         # options
         options = self.options
@@ -621,16 +702,21 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             repr_parts.append(' (partial)')
         
         else:
+            # id
             repr_parts.append(' id=')
             repr_parts.append(repr(self.id))
+            
+            # application_id
             repr_parts.append(', application_id=')
             repr_parts.append(repr(self.application_id))
         
         # Required fields are `.name` and `.type`
         
+        # name
         repr_parts.append(', name=')
         repr_parts.append(repr(self.name))
         
+        # target_type
         target_type = self.target_type
         if (target_type is not ApplicationCommandTargetType.none):
             repr_parts.append(', target_type=')
@@ -639,12 +725,16 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             repr_parts.append(repr(target_type.value))
             repr_parts.append(')')
         
-        # Optional fields `.description`, `.options`, `.allow_by_default`, ``.required_permissions``
+        # Extra fields: `.description`, `.options`, `.allow_by_default`, `.required_permissions`,
+        #    `.name_localizations`, `.description_localizations`
+        
+        # description
         description = self.description
         if (description is not None):
             repr_parts.append(', description=')
             repr_parts.append(repr(self.description))
         
+        # allow_by_default
         if not self.allow_by_default:
             repr_parts.append(', allow_by_default=False')
         
@@ -653,6 +743,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             repr_parts.append(', required_permissions=')
             repr_parts.append(required_permissions.__format__('d'))
         
+        # options
         options = self.options
         if (options is not None):
             repr_parts.append(', options=[')
@@ -673,10 +764,21 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             
             repr_parts.append(']')
         
-        repr_parts.append('>')
+        # name_localizations
+        name_localizations = self.name_localizations
+        if (name_localizations is not None):
+            repr_parts.append(', name_localizations=')
+            repr_parts.append(repr(name_localizations))
+        
+        # description_localizations
+        description_localizations = self.description_localizations
+        if (description_localizations is not None):
+            repr_parts.append(', description_localizations=')
+            repr_parts.append(repr(description_localizations))
         
         # Ignore extra fields: `.version`
         
+        repr_parts.append('>')
         return ''.join(repr_parts)
     
     
@@ -758,8 +860,22 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         # description
         new.description = self.description
         
+
+        # description_localizations
+        description_localizations = self.description_localizations
+        if (description_localizations is not None):
+            description_localizations = description_localizations.copy()
+        new.description_localizations = description_localizations
+        
         # name
         new.name = self.name
+        
+
+        # name_localizations
+        name_localizations = self.name_localizations
+        if (name_localizations is not None):
+            name_localizations = name_localizations.copy()
+        new.name_localizations = name_localizations
         
         # options
         options = self.options
@@ -801,8 +917,16 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         if self.description != other.description:
             return False
         
+        # description_localizations
+        if self.description_localizations != other.description_localizations:
+            return False
+        
         # name
         if self.name != other.name:
+            return False
+        
+        # name_localizations
+        if self.name_localizations != other.name_localizations:
             return False
         
         # required_permissions
@@ -841,8 +965,16 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         if self.description != other.description:
             return True
         
+        # description_localizations
+        if self.description_localizations != other.description_localizations:
+            return True
+        
         # name
         if self.name != other.name:
+            return True
+        
+        # name_localizations
+        if self.name_localizations != other.name_localizations:
             return True
         
         # required_permissions
@@ -965,8 +1097,27 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     
     def __len__(self):
         """Returns the application command's length."""
-        length = len(self.name) + len(self.description)
+        length = 0
         
+        # description
+        length += len(self.description)
+        
+        # description_localizations
+        description_localizations = self.description_localizations
+        if (description_localizations is not None):
+            for value in description_localizations.values():
+                length += len(value)
+        
+        # name
+        length += len(self.name)
+        
+        # name_localizations
+        name_localizations = self.name_localizations
+        if (name_localizations is not None):
+            for value in name_localizations.values():
+                length += len(value)
+        
+        # options
         options = self.options
         if (options is not None):
             for option in options:

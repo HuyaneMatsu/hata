@@ -77,8 +77,8 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
     )
     
     def __new__(cls, name, description, type_, *, autocomplete=False, channel_types=None, choices=None, default=False,
-            description_localizations=None, max_value=None, min_value=None, name_localizations=None, required=False,
-            options=None):
+            description_localizations=None, max_value=None, min_value=None, name_localizations=None, options=None,
+            required=False):
         """
         Creates a new ``ApplicationCommandOption`` with the given parameters.
         
@@ -129,11 +129,11 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
                 (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`) = `None`, Optional (Keyword only)
             Localized names of the option.
         
-        required : `bool` = `False`, Optional (Keyword only)
-            Whether the parameter is required.
-        
         options : `None`, (`list`, `tuple`) of ``ApplicationCommandOption`` = `None`, Optional (Keyword only)
             The parameters of the command. It's length can be in range [0:25]. Only applicable for sub command groups.
+        
+        required : `bool` = `False`, Optional (Keyword only)
+            Whether the parameter is required.
         
         Raises
         ------

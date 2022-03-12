@@ -4,7 +4,7 @@ from ...env import API_VERSION
 
 from ..bases import DiscordEntity, IconSlot
 from ..http import urls as module_urls
-from ..localizations import build_locale_dictionary
+from ..localizations.utils import build_locale_dictionary
 from ..utils import DATETIME_FORMAT_CODE
 
 

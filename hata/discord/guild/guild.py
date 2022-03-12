@@ -18,7 +18,7 @@ from ..channel import CHANNEL_TYPE_MAP, CHANNEL_TYPES, ChannelCategory, ChannelG
 from ..core import GUILDS
 from ..emoji import Emoji
 from ..http import urls as module_urls
-from ..localizations import DEFAULT_LOCALE, get_locale
+from ..localizations.utils import DEFAULT_LOCALE, get_locale
 from ..permission import Permission
 from ..permission.permission import PERMISSION_ALL, PERMISSION_MASK_ADMINISTRATOR, PERMISSION_NONE
 from ..preconverters import preconvert_bool, preconvert_preinstanced_type, preconvert_snowflake, preconvert_str

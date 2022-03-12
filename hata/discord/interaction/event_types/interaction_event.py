@@ -8,7 +8,7 @@ from ...core import (
     KOKORO
 )
 from ...guild import create_partial_guild_from_id
-from ...localizations import get_locale
+from ...localizations.utils import get_locale
 from ...message import Message
 from ...permission import Permission
 from ...permission.permission import PERMISSION_PRIVATE

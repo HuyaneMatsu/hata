@@ -68,7 +68,7 @@ from ..interaction.application_command.constants import (
     APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
 )
 from ..invite import Invite, InviteTargetType
-from ..localizations import DEFAULT_LOCALE, Locale, get_locale
+from ..localizations.utils import DEFAULT_LOCALE, Locale, get_locale
 from ..localizations.helpers import serializable_localized_dictionary_builder
 from ..message import Attachment, Message, MessageFlag, MessageReference, MessageRepr
 from ..message.utils import process_message_chunk, try_resolve_interaction_message

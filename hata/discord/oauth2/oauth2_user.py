@@ -2,7 +2,7 @@ __all__ = ('UserOA2',)
 
 from scarletio import copy_docs
 
-from ..localizations import get_locale
+from ..localizations.utils import get_locale
 from ..user import PremiumType, UserBase, UserFlag
 
 

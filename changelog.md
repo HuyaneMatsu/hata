@@ -16,6 +16,9 @@
 - `Client.achievement_edit`'s `name_localizations` parameter is now validated.
 - Add `required_permissions` parameter to `ApplicationCommand.__new__`.
 - Add `ApplicationCommand.required_permissions`.
+- `ApplicationCommandOptionChoice.__new__`'s `value` parameter is not optional and defaults to `name`.
+- Add `name_localizations` parameter to `ApplicationCommandOptionChoice.__new__`.
+- Add `ApplicationCommandOptionChoice.name_localizations`.
 
 #### ext.slash
 - Add `required_permissions` parameter to slasher application commands.

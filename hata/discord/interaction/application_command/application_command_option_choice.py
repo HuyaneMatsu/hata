@@ -2,6 +2,9 @@ __all__ = ('ApplicationCommandOptionChoice',)
 
 from scarletio import RichAttributeErrorBaseType
 
+from ...localizations.helpers import localized_dictionary_builder
+from ...localizations.utils import build_locale_dictionary, destroy_locale_dictionary
+
 from .constants import (
     APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX, APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN,
     APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MAX, APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN
@@ -16,12 +19,14 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
     ----------
     name : `str`
         The choice's name. It's length can be in range [1:100].
+    name_localizations : `None`, `dict` of (``Locale``, `str`) items
+        Localized names of the choice.
     value : `str`, `int`, `float`
         The choice's value.
     """
-    __slots__ = ('name', 'value')
+    __slots__ = ('name', 'name_localizations', 'value')
     
-    def __new__(cls, name, value):
+    def __new__(cls, name, value=None, *, name_localizations=None):
         """
         Creates a new ``ApplicationCommandOptionChoice`` with the given parameters.
         
@@ -29,11 +34,21 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         ----------
         name : `str`
             The choice's name. It's length can be in range [1:100].
-        value : `str`, `int`, `float`
+        value : `None`, `str`, `int`, `float` = `None`, Optional
             The choice's value.
+            
+            Defaults to `name` parameter if not given.
+            
+        name_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
+                (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`) = `None`, Optional (Keyword only)
+            Localized names of the choice.
         
         Raises
         ------
+        TypeError
+            - If `name_localizations`'s or any of it's item's type is incorrect.
+        ValueError
+            - `name_localizations` has an item with incorrect structure.
         AssertionError
             - If `name` is not `str`.
             - If `name`'s length is out of range [1:100].
@@ -58,12 +73,15 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
                     f'got {name_length!r}; {name!r}.'
                 )
         
+        # name_localizations
+        name_localizations = localized_dictionary_builder(name_localizations, 'name_localizations')
+        
         # value
+        if value is None:
+            value = name
+        
         if __debug__:
-            if isinstance(value, int):
-                pass
-            
-            elif isinstance(value, str):
+            if isinstance(value, str):
                 value_length = len(value)
                 if (
                     value_length < APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN or
@@ -75,15 +93,17 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
                         f'got {value_length!r}; {value!r}.'
                     )
             
-            elif isinstance(value, float):
+            elif isinstance(value, (int, float)):
                 pass
             
             else:
                 raise AssertionError(f'`value` type can be either `str`, `int`, `float`, '
                     f'got {value.__class__.__name__}; {value!r}.')
         
+        
         self = object.__new__(cls)
         self.name = name
+        self.name_localizations = name_localizations
         self.value = value
         return self
     
@@ -106,11 +126,15 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         # name
         name = data['name']
         
+        # name_localizations
+        name_localizations = build_locale_dictionary(data['name_localizations'])
+        
         # value
         value = data['value']
         
         self = object.__new__(cls)
         self.name = name
+        self.name_localizations = name_localizations
         self.value = value
         return self
     
@@ -127,6 +151,9 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         
         # name
         data['name'] = self.name
+        
+        # name_localizations
+        data['name_localizations'] = destroy_locale_dictionary(self.name_localizations)
         
         # value
         data['value'] = self.value
@@ -146,6 +173,12 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         repr_parts.append(', value=')
         repr_parts.append(repr(self.value))
         
+        # Optional fields: `.name_localizations`
+        name_localizations = self.name_localizations
+        if (name_localizations is not None):
+            repr_parts.append(', name_localizations=')
+            repr_parts.append(repr(name_localizations))
+        
         repr_parts.append('>')
         return ''.join(repr_parts)
     
@@ -157,6 +190,10 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         
         # name
         if self.name != other.name:
+            return False
+        
+        # name_localizations
+        if self.name_localizations != other.name_localizations:
             return False
         
         # value
@@ -173,10 +210,15 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         # name
         length += len(self.name)
         
+        # name_localizations
+        name_localizations = self.name_localizations
+        if (name_localizations is not None):
+            for value in name_localizations.values():
+                length += len(value)
+        
         # value
         value = self.value
         if isinstance(value, str):
             length += len(value)
         
         return length
-

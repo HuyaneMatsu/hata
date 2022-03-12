@@ -18,8 +18,8 @@ from .application_command import (
 )
 from .component_command import COMMAND_TARGETS_COMPONENT_COMMAND, ComponentCommand
 from .exceptions import (
-    _register_exception_handler, _validate_random_error_message_getter, default_slasher_exception_handler,
-    default_slasher_random_error_message_getter, test_exception_handler
+    _register_exception_handler, _validate_random_error_message_getter, SlasherSyncError,
+    default_slasher_exception_handler, default_slasher_random_error_message_getter, test_exception_handler
 )
 from .form_submit_command import COMMAND_TARGETS_FORM_COMPONENT_COMMAND, FormSubmitCommand
 from .utils import (
@@ -874,7 +874,7 @@ class Slasher(EventHandlerBase):
     _sync_done : `set` of `int`
         A set of guild id-s which are synced.
     
-    _sync_permission_tasks : `dict` of (`int`, ``Task``) items
+    _get_permission_tasks : `dict` of (`int`, ``Task``) items
         A dictionary of `guild-id` - `permission getter` tasks.
     
     _sync_should : `set` of `int`
@@ -906,7 +906,7 @@ class Slasher(EventHandlerBase):
         '_command_unloading_behaviour', '_component_commands', '_component_interaction_waiters', '_exception_handlers',
         '_form_submit_commands', '_random_error_message_getter', '_regex_custom_id_to_component_command',
         '_regex_custom_id_to_form_submit_command', '_self_reference', '_string_custom_id_to_component_command',
-        '_string_custom_id_to_form_submit_command', '_sync_done', '_sync_permission_tasks', '_sync_should', '_sync_tasks',
+        '_string_custom_id_to_form_submit_command', '_sync_done', '_get_permission_tasks', '_sync_should', '_sync_tasks',
         '_synced_permissions', 'command_id_to_command'
     )
     
@@ -989,7 +989,7 @@ class Slasher(EventHandlerBase):
         self._sync_tasks = {}
         self._sync_should = set()
         self._sync_done = set()
-        self._sync_permission_tasks = {}
+        self._get_permission_tasks = {}
         self._synced_permissions = {}
         self._component_interaction_waiters = WeakKeyDictionary()
         self._random_error_message_getter = random_error_message_getter
@@ -2125,7 +2125,11 @@ class Slasher(EventHandlerBase):
             
             except BaseException as err:
                 if not isinstance(err, ConnectionError):
-                    await client.events.error(client, f'{self!r}._register_command', err)
+                    await client.events.error(
+                        client,
+                        f'{self!r}._register_command',
+                        SlasherSyncError(command, err),
+                    )
                 return False
             
             try:
@@ -2179,10 +2183,15 @@ class Slasher(EventHandlerBase):
                 # no command, no problem, lol
                 return True
             
-            await client.events.error(client, f'{self!r}._edit_guild_command_to_non_global', err)
+            await client.events.error(
+                client,
+                f'{self!r}._edit_guild_command_to_non_global',
+                SlasherSyncError(command, err),
+            )
             return False
         
         return await self._register_command(client, command, command_state, guild_id, application_command)
+    
     
     async def _edit_command(self, client, command, command_state, guild_id, application_command):
         """
@@ -2228,10 +2237,15 @@ class Slasher(EventHandlerBase):
                 self._unregister_helper(command, command_state, guild_id)
                 return await self._create_command(client, command, command_state, guild_id)
             
-            await client.events.error(client, f'{self!r}._edit_command', err)
+            await client.events.error(
+                client,
+                f'{self!r}._edit_command',
+                SlasherSyncError(command, err),
+            )
             return False
         
         return await self._register_command(client, command, command_state, guild_id, application_command)
+    
     
     async def _delete_command(self, client, command, command_state, guild_id, application_command):
         """
@@ -2275,11 +2289,16 @@ class Slasher(EventHandlerBase):
                 # Already deleted, lul, ok, I guess.
                 pass
             else:
-                await client.events.error(client, f'{self!r}._delete_command', err)
+                await client.events.error(
+                    client,
+                    f'{self!r}._delete_command',
+                    SlasherSyncError(command, err),
+                )
                 return False
         
         self._unregister_helper(command, command_state, guild_id)
         return True
+    
     
     async def _create_command(self, client, command, command_state, guild_id):
         """
@@ -2318,7 +2337,11 @@ class Slasher(EventHandlerBase):
                 # No internet connection
                 return False
             
-            await client.events.error(client, f'{self!r}._create_command', err)
+            await client.events.error(
+                client,
+                f'{self!r}._create_command',
+                SlasherSyncError(command, err),
+            )
             return False
         
         return await self._register_command(client, command, command_state, guild_id, application_command)
@@ -2421,6 +2444,7 @@ class Slasher(EventHandlerBase):
                 except:
                     self._late_register()
                     raise
+                
                 else:
                     if self._late_register(): # Make sure this is called
                         if success:
@@ -2626,10 +2650,10 @@ class Slasher(EventHandlerBase):
             return True, per_guild.get(application_command_id, None)
         
         try:
-            sync_permission_task = self._sync_permission_tasks[guild_id]
+            sync_permission_task = self._get_permission_tasks[guild_id]
         except KeyError:
-            sync_permission_task = Task(self._sync_permission_task(client, guild_id), KOKORO)
-            self._sync_permission_tasks[guild_id] = sync_permission_task
+            sync_permission_task = Task(self._get_permission_task(client, guild_id), KOKORO)
+            self._get_permission_tasks[guild_id] = sync_permission_task
         
         success, per_guild = await sync_permission_task
         if success:
@@ -2640,7 +2664,7 @@ class Slasher(EventHandlerBase):
         return success, permission
     
     
-    async def _sync_permission_task(self, client, guild_id):
+    async def _get_permission_task(self, client, guild_id):
         """
         Syncs the respective guild's permissions.
         
@@ -2669,7 +2693,7 @@ class Slasher(EventHandlerBase):
             
             except BaseException as err:
                 if not isinstance(err, ConnectionError):
-                    await client.events.error(client, f'{self!r}._sync_permission_task', err)
+                    await client.events.error(client, f'{self!r}._get_permission_task', err)
                 
                 return False, None
             else:
@@ -2684,7 +2708,7 @@ class Slasher(EventHandlerBase):
                 return True, per_guild
         finally:
             try:
-                del self._sync_permission_tasks[guild_id]
+                del self._get_permission_tasks[guild_id]
             except KeyError:
                 pass
     

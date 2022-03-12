@@ -1,4 +1,4 @@
-__all__ = ('SlasherCommandError', 'SlasherApplicationCommandParameterConversionError')
+__all__ = ('SlasherApplicationCommandParameterConversionError', 'SlasherCommandError', 'SlasherSyncError')
 
 from random import choice
 
@@ -539,3 +539,30 @@ def _iter_exception_handlers(entity):
         entity = parent_reference()
         if entity is None:
             break
+
+
+class SlasherSyncError(BaseException):
+    """
+    Raised when syncing an application command or it's permission fails.
+    
+    The main purpose of the exception is to include the entity in context within the traceback.
+    
+    Attributes
+    ----------
+    entity: ``SlasherApplicationCommand``
+        The entity, who's sync failed.
+    """
+    def __init__(self, entity, err):
+        """
+        Creates a new slasher sync error exception.
+        
+        Parameters
+        ----------
+        entity: ``SlasherApplicationCommand``
+            The entity, who's sync failed.
+        err : ``BaseException``
+            Source exception.
+        """
+        self.entity = entity
+        BaseException.__init__(self, entity)
+        self.__cause__ = err

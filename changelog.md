@@ -19,6 +19,7 @@
 
 #### ext.slash
 - Add `required_permissions` parameter to slasher application commands.
+- Add `SlasherSyncError` to improve sync exceptions' readability. (experimental)
 
 #### Bug fixes
 - `Achievement.description_localizations` not correctly defaulted to `None`.

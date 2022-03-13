@@ -107,7 +107,7 @@ def _validate_translation_table_from_dict(translation_table):
     """
     validated_translation_table = None
     
-    for locale, relations in translation_table:
+    for locale, relations in translation_table.items():
         locale = maybe_locale(locale)
         relations = _validate_translation_table_relations(relations)
         

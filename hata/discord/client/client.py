@@ -5041,7 +5041,7 @@ class Client(ClientUserPBase):
         if (suppress is not ...):
             warnings.warn(
                 (
-                    f'`{self.__class__.__name__.__name__}.message_edit`\'s `suppress` parameter is deprecated, and '
+                    f'`{self.__class__.__name__}.message_edit`\'s `suppress` parameter is deprecated, and '
                     f'will be removed in 2022 May. Please use `suppress_embeds` instead.'
                 ),
                 FutureWarning,

@@ -28,6 +28,7 @@
 - Add `description_localizations` parameter to `ApplicationCommand.__new__`.
 - Add `ApplicationCommand.description_localizations`.
 - Add `ApplicationCommandOptionChoice.copy`.
+- Add `OA2Access.expires_at`.
 
 #### ext.slash
 - Add `required_permissions` parameter to slasher application commands.
@@ -37,6 +38,10 @@
 - `Achievement.description_localizations` not correctly defaulted to `None`.
 - `Achievement.name_localizations` not correctly defaulted to `None`.
 - `ChannelGuildBase.to_data` returned incorrect value (typo). (FoxeiZ)
+
+#### Renames, Deprecation & Removals
+- Rename `OA2Access.expires_in` to `.expires_after`.
+- Deprecate `OA2Access.expires.in`.
 
 ## 1.2.3 *\[2022-03-08\]*
 

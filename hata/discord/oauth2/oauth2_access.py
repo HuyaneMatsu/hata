@@ -1,6 +1,8 @@
 __all__ = ('OA2Access', )
 
-from datetime import datetime
+import warnings
+
+from datetime import datetime, timedelta
 from time import time as time_now
 
 from .helpers import OAUTH2_SCOPES
@@ -17,7 +19,7 @@ class OA2Access:
         Token used for `Bearer` authorizations, when requesting OAuth2 data about the respective user.
     created_at : `datetime`
         The time when the access was last created or renewed.
-    expires_in : `int`
+    expires_after : `int`
         The time in seconds after this access expires.
     redirect_url : `str`
         The redirect url with what the user granted the authorization code for the oauth2 scopes for the application.
@@ -37,7 +39,7 @@ class OA2Access:
     """
     TOKEN_TYPE = 'Bearer'
     
-    __slots__ = ('access_token', 'created_at', 'expires_in', 'redirect_url', 'refresh_token', 'scopes',)
+    __slots__ = ('access_token', 'created_at', 'expires_after', 'redirect_url', 'refresh_token', 'scopes',)
     
     def __init__(self, data, redirect_url):
         """
@@ -54,13 +56,14 @@ class OA2Access:
         self.redirect_url = redirect_url
         self.access_token = data['access_token']
         self.refresh_token = data.get('refresh_token', '')
-        self.expires_in = data['expires_in'] # default is 604800 (s) (1 week)
+        self.expires_after = data['expires_in'] # default is 604800 (s) (1 week)
         self.scopes = scopes = set()
         for scope in data['scope'].split():
             scope = OAUTH2_SCOPES.get(scope, scope)
             scopes.add(scope)
         
-        self.created_at = datetime.utcnow() #important for renewing
+        self.created_at = datetime.utcnow() # important for renewing
+    
     
     def _renew(self, data):
         """
@@ -77,7 +80,7 @@ class OA2Access:
         
         self.access_token = data['access_token']
         self.refresh_token = data.get('refresh_token', '')
-        self.expires_in = data['expires_in']
+        self.expires_after = data['expires_in']
         scopes = self.scopes
         scopes.clear()
         for scope in data['scope'].split():
@@ -86,8 +89,36 @@ class OA2Access:
             except KeyError:
                 pass
     
+    
+    @property
+    def expires_in(self):
+        """
+        `.expires_in` is deprecated and will be removed in 2022 Jul. Please use ``.expires
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.expires_in` is deprecated, and '
+                f'will be removed in 2022 Jul. Please use `.expires_after` instead.'
+            ),
+            FutureWarning,
+        )
+        return self.expires_after
+    
+    
+    @property
+    def expires_at(self):
+        """
+        Returns when the access expires.
+        
+        Returns
+        -------
+        expires_at : `datetime`
+        """
+        return self.created_at + timedelta(seconds=self.expires_after)
+    
+    
     def __repr__(self):
         """Returns the representation of the achievement."""
-        state = 'active' if (self.created_at.timestamp() + self.expires_in > time_now()) else 'expired'
+        state = 'active' if (self.created_at.timestamp() + self.expires_after > time_now()) else 'expired'
         return (f'<{self.__class__.__name__} {state}, access_token={self.access_token!r}, scopes count='
             f'{len(self.scopes)}>')

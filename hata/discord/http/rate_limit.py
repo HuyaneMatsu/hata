@@ -544,7 +544,7 @@ class RateLimitHandler:
         
         Parameters
         ----------
-        headers : `None`, `IgnoreCaseMultiValueDictionary` of (`str`, `str`) items
+        headers : `None`, ``IgnoreCaseMultiValueDictionary`` of (`str`, `str`) items
             Response headers
         """
         current_size = self.parent.size
@@ -1027,7 +1027,7 @@ class StaticRateLimitHandler:
         
         Parameters
         ----------
-        headers : `None`, `IgnoreCaseMultiValueDictionary` of (`str`, `str`) items
+        headers : `None`, ``IgnoreCaseMultiValueDictionary`` of (`str`, `str`) items
             Response headers
         """
         handle = KOKORO.call_later(self.parent.timeout, self.lock.release)

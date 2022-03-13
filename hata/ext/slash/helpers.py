@@ -118,6 +118,8 @@ def _validate_translation_table_from_dict(translation_table):
             validated_translation_table = {}
         
         validated_translation_table[locale] = relations
+    
+    return validated_translation_table
 
 
 def _validate_translation_table_relations(relations):

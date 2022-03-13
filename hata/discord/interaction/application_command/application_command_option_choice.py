@@ -128,7 +128,7 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         name = data['name']
         
         # name_localizations
-        name_localizations = build_locale_dictionary(data['name_localizations'])
+        name_localizations = build_locale_dictionary(data.get('name_localizations', None))
         
         # value
         value = data['value']

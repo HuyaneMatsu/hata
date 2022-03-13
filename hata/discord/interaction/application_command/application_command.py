@@ -292,7 +292,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         self.description_localizations = description_localizations
         self.allow_by_default = allow_by_default
         self.options = options_processed
-        this.required_permissions = required_permissions
+        self.required_permissions = required_permissions
         self.target_type = target_type
         self.version = 0
         

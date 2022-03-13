@@ -635,7 +635,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         description = data['description']
         
         # description_localizations
-        description_localizations = build_locale_dictionary(data['description_localizations'])
+        description_localizations = build_locale_dictionary(data.get('description_localizations', None))
         
         # max_value
         max_value = data.get('max_value', None)
@@ -647,7 +647,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         name = data['name']
         
         # name_localizations
-        name_localizations = build_locale_dictionary(data['name_localizations'])
+        name_localizations = build_locale_dictionary(data.get('name_localizations', None))
         
         # options
         option_datas = data.get('options', None)

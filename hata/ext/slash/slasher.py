@@ -22,6 +22,7 @@ from .exceptions import (
     default_slasher_exception_handler, default_slasher_random_error_message_getter, test_exception_handler
 )
 from .form_submit_command import COMMAND_TARGETS_FORM_COMPONENT_COMMAND, FormSubmitCommand
+from .helpers import validate_translation_table
 from .utils import (
     RUNTIME_SYNC_HOOKS, SYNC_ID_GLOBAL, SYNC_ID_MAIN, SYNC_ID_NON_GLOBAL, UNLOADING_BEHAVIOUR_DELETE,
     UNLOADING_BEHAVIOUR_KEEP
@@ -801,12 +802,16 @@ class Slasher(EventHandlerBase):
     ----------
     _auto_completers : `None`, `list` of ``SlasherApplicationCommandParameterAutoCompleter``
         Auto completer functions.
+    
     _call_later : `None`, `list` of `tuple` (`bool`, `Any`)
         Slash command changes to apply later if syncing is in progress.
+    
     _client_reference : ``WeakReferer`` to ``Client``
         Weak reference to the parent client.
+    
     _command_states : `dict` of (`int`, ``CommandState``) items
         The slasher's commands's states.
+    
     _command_unloading_behaviour : `int`
         Behaviour to describe what should happen when a command is unloaded.
         
@@ -819,6 +824,7 @@ class Slasher(EventHandlerBase):
         +-------------------------------+-------+
         | UNLOADING_BEHAVIOUR_KEEP      | 1     |
         +-------------------------------+-------+
+    
     _component_commands : `set` of ``ComponentCommand``
         The component commands added to the slasher.
     
@@ -887,6 +893,9 @@ class Slasher(EventHandlerBase):
         A nested dictionary, which contains application command permission overwrites per guild_id and per
         `command_id`.
     
+    _translation_table : `None`, `dict` of (``Locale`, `dict` of (`str`, `str`) items) items
+        Translation table for the commands of the slasher.
+    
     command_id_to_command : `dict` of (`int`, ``SlasherApplicationCommand``) items
         A dictionary where the keys are application command id-s and the keys are their respective command.
     
@@ -894,6 +903,7 @@ class Slasher(EventHandlerBase):
     ----------------
     __event_name__ : `str` = 'interaction_create'
         Tells for the ``EventHandlerManager`` that ``Slasher`` is a `interaction_create` event handler.
+    
     SUPPORTED_TYPES : `tuple` (``SlasherApplicationCommand``, ``ComponentCommand``, ``FormSubmitCommand``)
         Tells to ``eventlist`` what exact types the ``Slasher`` accepts.
     
@@ -904,10 +914,10 @@ class Slasher(EventHandlerBase):
     __slots__ = (
         '__weakref__', '_auto_completers', '_call_later', '_client_reference', '_command_states',
         '_command_unloading_behaviour', '_component_commands', '_component_interaction_waiters', '_exception_handlers',
-        '_form_submit_commands', '_random_error_message_getter', '_regex_custom_id_to_component_command',
-        '_regex_custom_id_to_form_submit_command', '_self_reference', '_string_custom_id_to_component_command',
-        '_string_custom_id_to_form_submit_command', '_sync_done', '_get_permission_tasks', '_sync_should', '_sync_tasks',
-        '_synced_permissions', 'command_id_to_command'
+        '_form_submit_commands', '_get_permission_tasks', '_random_error_message_getter',
+        '_regex_custom_id_to_component_command', '_regex_custom_id_to_form_submit_command', '_self_reference',
+        '_string_custom_id_to_component_command', '_string_custom_id_to_form_submit_command', '_sync_done',
+        '_sync_should', '_sync_tasks', '_synced_permissions', '_translation_table', 'command_id_to_command'
     )
     
     __event_name__ = 'interaction_create'
@@ -915,7 +925,7 @@ class Slasher(EventHandlerBase):
     SUPPORTED_TYPES = (SlasherApplicationCommand, ComponentCommand)
     
     def __new__(cls, client, delete_commands_on_unload=False, use_default_exception_handler=True,
-            random_error_message_getter=None):
+            random_error_message_getter=None, translation_table=None):
         """
         Creates a new interaction event handler.
         
@@ -929,13 +939,19 @@ class Slasher(EventHandlerBase):
             Whether the default slash exception handler should be added as an exception handler.
         random_error_message_getter : `None`, `FunctionType` = `None`, Optional
             Random error message getter used by the default exception handler.
+        translation_table : `None`, `str`, `dict` of ((``Locale``, `str`),
+                (`None`, `dict` of (`str`, (`None`, `str`)) items)) items, Optional
+            Translation table for the commands of the slasher.
         
         Raises
         ------
+        FileNotFoundError
+            - If `translation_table` is a string, but not a file.
         TypeError
             - If `delete_commands_on_unload` was not given as `bool`.
             - If `use_default_exception_handler` was not given as `bool`.
             - If `client` was not given as ``Client``.
+            - If `translation_table`'s structure is incorrect.
         """
         if not isinstance(client, Client):
             raise TypeError(
@@ -981,6 +997,8 @@ class Slasher(EventHandlerBase):
         else:
             _validate_random_error_message_getter(random_error_message_getter)
         
+        translation_table = validate_translation_table(translation_table)
+        
         self = object.__new__(cls)
         self._call_later = None
         self._client_reference = client_reference
@@ -993,6 +1011,7 @@ class Slasher(EventHandlerBase):
         self._synced_permissions = {}
         self._component_interaction_waiters = WeakKeyDictionary()
         self._random_error_message_getter = random_error_message_getter
+        self._translation_table = translation_table
         
         self.command_id_to_command = {}
         

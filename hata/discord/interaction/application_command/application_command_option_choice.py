@@ -258,11 +258,15 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        translation_table : `dict` of ((``Locale``, `str`), `dict` (`str`, `str`) items) items
+        translation_table : `None`, `dict` of ((``Locale``, `str`),
+                (`None`, `dict` (`str`, (`None`, `str`)) items)) items
             Translation table to pull localizations from.
         replace : `bool` = `False`, Optional
             Whether actual translation should be replaced.
         """
+        if translation_table is None:
+            return
+        
         # name
         self.name_localizations = apply_translation_into(
             self.name,

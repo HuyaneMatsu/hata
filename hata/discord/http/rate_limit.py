@@ -544,7 +544,7 @@ class RateLimitHandler:
         
         Parameters
         ----------
-        headers : `None`, `imultidict` of (`str`, `str) items
+        headers : `None`, `IgnoreCaseMultiValueDictionary` of (`str`, `str`) items
             Response headers
         """
         current_size = self.parent.size
@@ -751,7 +751,7 @@ class RateLimitHandlerCTX:
         
         Parameters
         ----------
-        headers : `None`, `imultidict`
+        headers : `None`, `IgnoreCaseMultiValueDictionary`
             Response headers.
         """
         assert not self.exited, '`RateLimitHandlerCTX.exit`, `StaticRateLimitHandler.exit` was already called.'
@@ -1027,7 +1027,7 @@ class StaticRateLimitHandler:
         
         Parameters
         ----------
-        headers : `None`, `imultidict` of (`str`, `str`) items
+        headers : `None`, `IgnoreCaseMultiValueDictionary` of (`str`, `str`) items
             Response headers
         """
         handle = KOKORO.call_later(self.parent.timeout, self.lock.release)
@@ -1155,7 +1155,7 @@ class StackedStaticRateLimitHandler:
         
         Parameters
         ----------
-        headers : `None`, `imultidict` of (`str`, `str`) items
+        headers : `None`, ``IgnoreCaseMultiValueDictionary`` of (`str`, `str`) items
             Response headers
         """
         for handler in self.stack:

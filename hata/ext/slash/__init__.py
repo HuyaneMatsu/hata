@@ -10,6 +10,7 @@ from .event_handlers import *
 from .exceptions import *
 from .expression_parser import *
 from .form_submit_command import *
+from .helpers import *
 from .responding import *
 from .response_modifier import *
 from .slasher import *
@@ -31,6 +32,7 @@ __all__ = (
     *exceptions.__all__,
     *expression_parser.__all__,
     *form_submit_command.__all__,
+    *helpers.__all__,
     *responding.__all__,
     *response_modifier.__all__,
     *slasher.__all__,
@@ -69,6 +71,11 @@ def setup_ext_slash(client, **kwargs):
         Whether commands should be deleted when unloaded.
     use_default_exception_handler : `bool`, Optional
         Whether the default slash exception handler should be added as an exception handler.
+    random_error_message_getter : `None`, `FunctionType` = `None`, Optional
+        Random error message getter used by the default exception handler.
+    translation_table : `None`, `str`, `dict` of ((``Locale``, `str`),
+            (`None`, `dict` of (`str`, (`None`, `str`)) items)) items, Optional
+        Translation table for the commands of the slasher.
     
     Returns
     -------
@@ -79,10 +86,13 @@ def setup_ext_slash(client, **kwargs):
     ------
     RuntimeError
         If the client has an attribute set what the slasher would use.
+    FileNotFoundError
+        - If `translation_table` is a string, but not a file.
     TypeError
         - If `client` was not given as ``Client`` instance.
         - If `delete_commands_on_unload` was not given as `bool` instance.
         - If `use_default_exception_handler` was not given as `bool` instance.
+        - If `translation_table`'s structure is incorrect.
     """
     for attr_name in ('slasher', 'interactions'):
         if hasattr(client, attr_name):
@@ -116,5 +126,6 @@ register_setup_function(
         'delete_commands_on_unload',
         'use_default_exception_handler',
         'random_error_message_getter',
+        'translation_table',
     ),
 )

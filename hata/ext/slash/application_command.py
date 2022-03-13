@@ -1279,8 +1279,22 @@ class SlasherApplicationCommand:
                     
                     options.append(option)
         
-        return ApplicationCommand(self.name, self.description, allow_by_default=self.allow_by_default,
-            options=options, required_permissions=self.required_permissions, target_type=self.target)
+        schema = ApplicationCommand(
+            self.name,
+            self.description,
+            allow_by_default = self.allow_by_default,
+            options = options,
+            required_permissions = self.required_permissions,
+            target_type = self.target,
+        )
+        
+        parent_reference = self._parent_reference
+        if (parent_reference is not None):
+            parent = parent_reference()
+            if (parent is not None):
+                schema.apply_translation(parent._translation_table)
+        
+        return schema
     
     
     def as_sub(self, deepness):

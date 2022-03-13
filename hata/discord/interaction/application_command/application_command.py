@@ -1175,7 +1175,8 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        translation_table : `dict` of ((``Locale``, `str`), `dict` (`str`, `str`) items) items
+        translation_table : `None`, `dict` of ((``Locale``, `str`),
+                (`None`, `dict` (`str`, (`None`, `str`)) items)) items
             Translation table to pull localizations from.
         replace : `bool` = `False`, Optional
             Whether actual translation should be replaced.
@@ -1191,6 +1192,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                     f'{self.__class__.__name__}.add_option` can be only called on partial '
                     f'`{self.__class__.__name__}`-s, but was called on {self!r}.'
                 )
+        
+        if translation_table is None:
+            return
         
         # description
         self.description_localizations = apply_translation_into(

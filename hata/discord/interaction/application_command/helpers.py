@@ -45,7 +45,7 @@ def apply_translation_into(source_value, localised_dictionary, translation_table
         The value to get translations for.
     localised_dictionary : `None`, `dict` of ((`str`, ``Locale``), `str`) items
         Localized dictionary to apply the translations to.
-    translation_table : `dict` of ((``Locale``, `str`), `dict` (`str`, `str`) items) items
+    translation_table : `dict` of ((``Locale``, `str`), (`None`, `dict` (`str`, (`None`, `str`)) items)) items
         Translation table to pull localizations from.
     replace : `bool`
         Whether actual translation should be replaced.
@@ -57,9 +57,15 @@ def apply_translation_into(source_value, localised_dictionary, translation_table
     """
     if (source_value is not None):
         for locale, relations in translation_table.items():
+            if relations is None:
+                continue
+            
             try:
                 translation = relations[source_value]
             except KeyError:
+                continue
+            
+            if translation is None:
                 continue
             
             locale = maybe_locale(locale)

@@ -23,7 +23,11 @@
 - Add `ApplicationCommandOption.name_localizations`.
 - Add `description_localizations` parameter to `ApplicationCommandOption.__new__`.
 - Add `ApplicationCommandOption.description_localizations`.
-
+- Add `name_localizations` parameter to `ApplicationCommand.__new__`.
+- Add `ApplicationCommand.name_localizations`.
+- Add `description_localizations` parameter to `ApplicationCommand.__new__`.
+- Add `ApplicationCommand.description_localizations`.
+- Add `ApplicationCommandOptionChoice.copy`.
 
 #### ext.slash
 - Add `required_permissions` parameter to slasher application commands.

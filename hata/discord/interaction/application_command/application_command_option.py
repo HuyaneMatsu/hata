@@ -894,7 +894,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         # choices
         choices = self.choices
         if (choices is not None):
-            choices = choices.copy()
+            choices = [choice.copy() for choice in choices]
         new.choices = choices
         
         # default

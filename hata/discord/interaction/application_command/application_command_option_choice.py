@@ -161,6 +161,31 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         return data
     
     
+    def copy(self):
+        """
+        Copies the ``ApplicationCommandOptionChoice``.
+        
+        Returns
+        -------
+        new : ``ApplicationCommandOptionChoice``
+        """
+        new = object.__new__(type(self))
+        
+        # name
+        new.name = self.name
+        
+        # name_localizations
+        name_localizations = self.name_localizations
+        if (name_localizations is not None):
+            name_localizations = name_localizations.copy()
+        new.name_localizations = name_localizations
+        
+        # value
+        new.value = self.value
+        
+        return new
+    
+    
     def __repr__(self):
         """Returns the application command option choice's representation."""
         repr_parts = ['<', self.__class__.__name__]

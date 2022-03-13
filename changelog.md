@@ -189,6 +189,9 @@
 - Update content fields of message if required.
 - Synchronise message edit dispatch event parsers based on message content availability. 
 - `ApplicationCommand.__new__`'s `description` parameter defaults to `name` one.
+- Add `ApplicationCommand.apply_translation`.
+- Add `ApplicationCommandOption.apply_translation`.
+- Add `ApplicationCommandOptionChoice.apply_translation`.
 
 #### ext.slash
 

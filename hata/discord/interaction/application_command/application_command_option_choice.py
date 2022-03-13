@@ -9,6 +9,7 @@ from .constants import (
     APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX, APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN,
     APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MAX, APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN
 )
+from .helpers import apply_translation_into
 
 
 class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
@@ -249,3 +250,23 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
             length += len(value)
         
         return length
+    
+    
+    def apply_translation(self, translation_table, replace=False):
+        """
+        Applies translation from the given nested dictionary to the application command option choice.
+        
+        Parameters
+        ----------
+        translation_table : `dict` of ((``Locale``, `str`), `dict` (`str`, `str`) items) items
+            Translation table to pull localizations from.
+        replace : `bool` = `False`, Optional
+            Whether actual translation should be replaced.
+        """
+        # name
+        self.name_localizations = apply_translation_into(
+            self.name,
+            self.name_localizations,
+            translation_table,
+            replace,
+        )

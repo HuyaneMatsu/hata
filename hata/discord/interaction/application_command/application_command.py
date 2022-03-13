@@ -14,6 +14,7 @@ from .constants import (
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN,
     APPLICATION_COMMAND_NAME_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_OPTIONS_MAX
 )
+from .helpers import apply_translation_into
 from .preinstanced import APPLICATION_COMMAND_CONTEXT_TARGET_TYPES, ApplicationCommandTargetType
 
 
@@ -319,7 +320,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             - If the ``ApplicationCommand`` has already `25` options.
         """
         if __debug__:
-            if self.id != 0:
+            if not self.partial:
                 raise AssertionError(
                     f'{self.__class__.__name__}.add_option` can be only called on partial '
                     f'`{self.__class__.__name__}`-s, but was called on {self!r}.'
@@ -1166,3 +1167,49 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         is_slash_command : `bool`
         """
         return (self.target_type is ApplicationCommandTargetType.chat)
+    
+    
+    def apply_translation(self, translation_table, replace=False):
+        """
+        Applies translation from the given nested dictionary to the application command.
+        
+        Parameters
+        ----------
+        translation_table : `dict` of ((``Locale``, `str`), `dict` (`str`, `str`) items) items
+            Translation table to pull localizations from.
+        replace : `bool` = `False`, Optional
+            Whether actual translation should be replaced.
+        
+        Raises
+        ------
+        AssertionError
+            If the application command is not partial.
+        """
+        if __debug__:
+            if not self.partial:
+                raise AssertionError(
+                    f'{self.__class__.__name__}.add_option` can be only called on partial '
+                    f'`{self.__class__.__name__}`-s, but was called on {self!r}.'
+                )
+        
+        # description
+        self.description_localizations = apply_translation_into(
+            self.description,
+            self.description_localizations,
+            translation_table,
+            replace,
+        )
+        
+        # name
+        self.name_localizations = apply_translation_into(
+            self.name,
+            self.name_localizations,
+            translation_table,
+            replace,
+        )
+        
+        # options
+        options = self.options
+        if (options is not None):
+            for option in options:
+                option.apply_translation(translation_table, replace)

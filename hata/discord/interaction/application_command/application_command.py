@@ -17,6 +17,39 @@ from .constants import (
 from .preinstanced import APPLICATION_COMMAND_CONTEXT_TARGET_TYPES, ApplicationCommandTargetType
 
 
+
+def _debug_application_command_description(description):
+    """
+    Runs debug only checks on application command description.
+    
+    Parameters
+    ----------
+    description : `None, `str`
+        The description to run checks on.
+    
+    Raises
+    ------
+    AssertionError
+        Any checks failed.
+    """
+    if (description is not None):
+        if not isinstance(description, str):
+            raise AssertionError(
+                f'`description` can be `None`, `str`, got {description.__class__.__name__}; {description!r}.'
+            )
+        
+        description_length = len(description)
+        if (
+            description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or
+            description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX
+        ):
+            raise AssertionError(
+                f'`description` length can be in range '
+                f'[{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], '
+                f'got {description_length!r}; {description!r}.'
+            )
+
+
 class ApplicationCommand(DiscordEntity, immortal=True):
     """
     Represents a Discord slash command.
@@ -82,6 +115,8 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         description : `None`, `str` = `None`, Optional
             The command's description. It's length can be in range [2:100].
+            
+            Defaults to the `name` parameter if not given.
         
         allow_by_default : `None`, `bool` = `None`, Optional (Keyword only)
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
@@ -116,7 +151,6 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             - If `name_localizations`'s or any of it's item's type is incorrect.
             - If `description_localizations`'s or any of it's item's type is incorrect.
         ValueError
-            - `description` cannot be `None` for application commands with non-context target.
             - If `name_localizations` has an item with incorrect structure.
             - If `description_localizations` has an item with incorrect structure.
         AssertionError
@@ -144,22 +178,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         # description
         if __debug__:
-            if (description is not None):
-                if not isinstance(description, str):
-                    raise AssertionError(
-                        f'`description` can be `None`, `str`, got {description.__class__.__name__}; {description!r}.'
-                    )
-                
-                description_length = len(description)
-                if (
-                    description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or
-                    description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX
-                ):
-                    raise AssertionError(
-                        f'`description` length can be in range '
-                        f'[{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], '
-                        f'got {description_length!r}; {description!r}.'
-                    )
+            _debug_application_command_description(description)
         
         # description_localizations
         description_localizations = localized_dictionary_builder(description_localizations, 'description_localizations')
@@ -249,9 +268,10 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         else:
             # For non context commands description is required.
             if (description is None):
-                raise ValueError(
-                    f'`description` cannot be `None` for application commands with non-context target.'
-                )
+                description = name
+                if __debug__:
+                    _debug_application_command_description(description)
+        
         
         # allow_by_default & required_permissions
         if (allow_by_default is None):

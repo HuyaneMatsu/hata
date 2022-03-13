@@ -188,6 +188,7 @@
 - Add `Message.has_any_content_field`.
 - Update content fields of message if required.
 - Synchronise message edit dispatch event parsers based on message content availability. 
+- `ApplicationCommand.__new__`'s `description` parameter defaults to `name` one.
 
 #### ext.slash
 

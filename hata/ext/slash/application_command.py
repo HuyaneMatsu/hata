@@ -18,7 +18,8 @@ from ...discord.interaction.application_command.constants import (
     APPLICATION_COMMAND_NAME_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_OPTIONS_MAX,
     APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
 )
-from ...discord.preconverters import preconvert_bool, preconvert_snowflake
+from ...discord.permission import Permission
+from ...discord.preconverters import preconvert_bool, preconvert_flag, preconvert_snowflake
 
 from .converters import (
     InternalParameterConverter, SlashCommandParameterConverter,
@@ -297,21 +298,21 @@ def _validate_required_permissions(required_permissions):
     
     Parameters
     ----------
-    required_permissions : `None`, `bool`
+    required_permissions : `None`, `int`, ``Permission``
         The `required_permissions` value to validate.
     
     Returns
     -------
-    required_permissions : `None`, `bool`
+    required_permissions : `None`, `Permission`
         The validated `required_permissions` value.
     
     Raises
     ------
     TypeError
-        If `required_permissions` was not given as `None`, `bool`.
+        If `required_permissions` was not given as `None`, ``Permission``, `int`.
     """
     if (required_permissions is not None):
-        required_permissions = preconvert_bool(required_permissions, 'required_permissions')
+        required_permissions = preconvert_flag(required_permissions, 'required_permissions', Permission)
     
     return required_permissions
 

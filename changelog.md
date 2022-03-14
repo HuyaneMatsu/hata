@@ -33,6 +33,10 @@
 - Add `ApplicationCommand.apply_translation`.
 - Add `ApplicationCommandOption.apply_translation`.
 - Add `ApplicationCommandOptionChoice.apply_translation`.
+- Add `ComponentType.user_select`.
+- Add `ComponentType.role_select`.
+- Add `ComponentType.mentionable_select`.
+- Add `ComponentType.channel_select`.
 
 #### ext.slash
 - Add `required_permissions` parameter to slasher application commands.

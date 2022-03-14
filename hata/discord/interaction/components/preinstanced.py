@@ -28,19 +28,27 @@ class ComponentType(PreinstancedBase):
     
     Every predefined component type can be accessed as class attribute as well:
     
-    +-----------------------+---------------+-------+
-    | Class attribute name  | Name          | Value |
-    +=======================+===============+=======+
-    | none                  | none          | 0     |
-    +-----------------------+---------------+-------+
-    | row                   | row           | 1     |
-    +-----------------------+---------------+-------+
-    | button                | button        | 2     |
-    +-----------------------+---------------+-------+
-    | select                | select        | 3     |
-    +-----------------------+---------------+-------+
-    | text_input            | text input    | 4     |
-    +-----------------------+---------------+-------+
+    +-----------------------+-----------------------+-------+
+    | Class attribute name  | Name                  | Value |
+    +=======================+=======================+=======+
+    | none                  | none                  | 0     |
+    +-----------------------+-----------------------+-------+
+    | row                   | row                   | 1     |
+    +-----------------------+-----------------------+-------+
+    | button                | button                | 2     |
+    +-----------------------+-----------------------+-------+
+    | select                | string select         | 3     |
+    +-----------------------+-----------------------+-------+
+    | text_input            | text input            | 4     |
+    +-----------------------+-----------------------+-------+
+    | user_select           | user select           | 5     |
+    +-----------------------+-----------------------+-------+
+    | role_select           | role select           | 6     |
+    +-----------------------+-----------------------+-------+
+    | mentionable_select    | mentionable select    | 7     |
+    +-----------------------+-----------------------+-------+
+    | channel_select        | channel select        | 8     |
+    +-----------------------+-----------------------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -51,8 +59,12 @@ class ComponentType(PreinstancedBase):
     none = P(0, 'none')
     row = P(1, 'row')
     button = P(2, 'button')
-    select = P(3, 'select')
+    select = P(3, 'string select')
     text_input = P(4, 'text input')
+    user_select = P(5, 'user select')
+    role_select = P(6, 'role select')
+    mentionable_select = P(7, 'mentionable select')
+    channel_select = P(8, 'mentionable select')
     
 
 class ButtonStyle(PreinstancedBase):

@@ -303,7 +303,7 @@ def _validate_required_permissions(required_permissions):
     
     Returns
     -------
-    required_permissions : `None`, `Permission`
+    required_permissions : `None`, ``Permission``
         The validated `required_permissions` value.
     
     Raises
@@ -889,7 +889,8 @@ class SlasherApplicationCommand:
             Whether the command should be deleted from Discord when removed.
         allow_by_default : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
-        required_permissions : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
+        required_permissions : `None`, `int`, ``Permission``, `tuple` of (`None`, `int`, ``Permission``,
+                `Ellipsis`) = `None`, Optional
             The required permissions to use the application command inside of a guild.
         target : `None`, `int`, `str`, ``ApplicationCommandTargetType`` = `None`, Optional
             The target type of the slash command.

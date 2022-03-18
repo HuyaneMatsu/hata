@@ -1,3 +1,14 @@
+## 1.2.5 *\[2022-03-??\]*
+
+#### Improvements
+
+- `allow_by_default` should not default based on `required_permissions`.
+- Force request application command localizations.
+
+#### Bug fixes
+
+- Use `create_event_loop` instead of `EventThread`, so `get_event_loop` wont fail in the main thread initially.
+
 ## 1.2.4 *\[2022-03-15\]*
 
 #### Improvements
@@ -43,11 +54,13 @@
 - Add `SlasherSyncError` to improve sync exceptions' readability. (experimental)
 
 #### Bug fixes
+
 - `Achievement.description_localizations` not correctly defaulted to `None`.
 - `Achievement.name_localizations` not correctly defaulted to `None`.
 - `ChannelGuildBase.to_data` returned incorrect value (typo). (FoxeiZ)
 
 #### Renames, Deprecation & Removals
+
 - Rename `OA2Access.expires_in` to `.expires_after`.
 - Deprecate `OA2Access.expires.in`.
 

@@ -4,7 +4,7 @@
     'SCHEDULED_EVENTS', 'STAGES', 'STICKERS', 'STICKER_PACKS', 'TEAMS', 'UNICODE_TO_EMOJI', 'USERS'
 )
 
-from scarletio import EventThread, WeakKeyDictionary, WeakValueDictionary, get_event_loop
+from scarletio import WeakKeyDictionary, WeakValueDictionary, create_event_loop, get_event_loop
 
 
 __doc__ = """
@@ -181,4 +181,4 @@ UNICODE_TO_EMOJI = {}
 try:
     KOKORO = get_event_loop()
 except RuntimeError:
-    KOKORO = EventThread(daemon=False, name='KOKORO')
+    KOKORO = create_event_loop(daemon=False, name='KOKORO')

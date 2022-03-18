@@ -13471,8 +13471,11 @@ class Client(ClientUserPBase):
             
             application_command = APPLICATION_COMMANDS.get(application_command_id, None)
         
-        application_command_data = await self.http.application_command_global_get(application_id,
-            application_command_id)
+        application_command_data = await self.http.application_command_global_get(
+            application_id,
+            application_command_id,
+            {'with_localizations': True},,
+        )
         
         if application_command is None:
             application_command = ApplicationCommand.from_data(application_command_data)
@@ -13509,7 +13512,11 @@ class Client(ClientUserPBase):
                     'The client\'s application is not yet synced.'
                 )
         
-        data = await self.http.application_command_global_get_all(application_id)
+        data = await self.http.application_command_global_get_all(
+            application_id,
+            {'with_localizations': True},
+        )
+        
         return [ApplicationCommand.from_data(application_command_data) for application_command_data in data]
     
     
@@ -13805,8 +13812,12 @@ class Client(ClientUserPBase):
             
             application_command = APPLICATION_COMMANDS.get(application_command_id, None)
         
-        application_command_data = await self.http.application_command_guild_get(application_id, guild_id,
-            application_command_id)
+        application_command_data = await self.http.application_command_guild_get(
+            application_id,
+            guild_id,
+            application_command_id,
+            {'with_localizations': True},
+        )
         
         if application_command is None:
             application_command = ApplicationCommand.from_data(application_command_data)
@@ -13852,7 +13863,12 @@ class Client(ClientUserPBase):
         
         guild_id = get_guild_id(guild)
         
-        data = await self.http.application_command_guild_get_all(application_id, guild_id)
+        data = await self.http.application_command_guild_get_all(
+            application_id,
+            guild_id,
+            {'with_localizations': True},
+        )
+        
         return [ApplicationCommand.from_data(application_command_data) for application_command_data in data]
     
     

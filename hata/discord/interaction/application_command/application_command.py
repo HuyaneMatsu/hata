@@ -169,8 +169,11 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         # Internal attribute
         
         # allow_by_default
-        if __debug__:
-            if (allow_by_default is not None):
+        if (allow_by_default is None):
+            allow_by_default = True
+        
+        else:
+            if __debug__:
                 if not isinstance(allow_by_default, bool):
                     raise AssertionError(
                         f'`allow_by_default` can be `bool`, got {allow_by_default.__class__.__name__}; '
@@ -272,14 +275,6 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                 description = name
                 if __debug__:
                     _debug_application_command_description(description)
-        
-        
-        # allow_by_default & required_permissions
-        if (allow_by_default is None):
-            if (required_permissions is None):
-                allow_by_default = True
-            else:
-                allow_by_default = False
         
         
         self = object.__new__(cls)

@@ -366,6 +366,7 @@ class MessageType(PreinstancedBase):
         
         return self
     
+    
     def __init__(self, value, name, convert):
         """
         Creates an ``MessageType`` and stores it at the class's `.INSTANCES` class attribute as well.
@@ -385,9 +386,11 @@ class MessageType(PreinstancedBase):
         
         self.INSTANCES[value] = self
     
+    
     def __repr__(self):
         """Returns the representation of the message type."""
         return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r}, convert={self.convert!r})'
+    
     
     # predefined
     default = P(0, 'default', MESSAGE_DEFAULT_CONVERTER)

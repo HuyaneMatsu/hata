@@ -1,6 +1,9 @@
 __all__ = ('Locale',)
 
+import warnings
+
 from ..bases import Preinstance as P, PreinstancedBase
+
 
 class Locale(PreinstancedBase):
     """
@@ -12,6 +15,8 @@ class Locale(PreinstancedBase):
         The Discord side identifier value of the locale.
     name : `str`
         The default name of the locale.
+    native_name : `str`
+        The native name of the language.
     
     Class Attributes
     ----------------
@@ -26,103 +31,178 @@ class Locale(PreinstancedBase):
     
     Every predefined locale is also stored as a class attribute:
     
-    +-----------------------+-------------------------------+-----------+
-    | Class attribute name  | name                          | value     |
-    +=======================+===============================+===========+
-    | bulgarian             | Bulgarian                     | bg        |
-    +-----------------------+-------------------------------+-----------+
-    | chinese_cn            | Chinese (China)               | zh-CN     |
-    +-----------------------+-------------------------------+-----------+
-    | chinese_tw            | Chinese (Taiwan)              | zh-TW     |
-    +-----------------------+-------------------------------+-----------+
-    | croatian              | Croatian                      | hr        |
-    +-----------------------+-------------------------------+-----------+
-    | czech                 | Czech                         | cs        |
-    +-----------------------+-------------------------------+-----------+
-    | danish                | Danish                        | da        |
-    +-----------------------+-------------------------------+-----------+
-    | dutch                 | Dutch                         | nl        |
-    +-----------------------+-------------------------------+-----------+
-    | english_gb            | English (Great Britain)       | en-GB     |
-    +-----------------------+-------------------------------+-----------+
-    | english_us            | English (United States)       | en-US     |
-    +-----------------------+-------------------------------+-----------+
-    | finnish               | Finnish                       | fi        |
-    +-----------------------+-------------------------------+-----------+
-    | french                | French                        | fr        |
-    +-----------------------+-------------------------------+-----------+
-    | german                | German                        | de        |
-    +-----------------------+-------------------------------+-----------+
-    | greek                 | Greek                         | el        |
-    +-----------------------+-------------------------------+-----------+
-    | hindi                 | Hindi                         | hi        |
-    +-----------------------+-------------------------------+-----------+
-    | hungarian             | Hungarian                     | hu        |
-    +-----------------------+-------------------------------+-----------+
-    | italian               | Italian                       | it        |
-    +-----------------------+-------------------------------+-----------+
-    | japanese              | Japanese                      | jp        |
-    +-----------------------+-------------------------------+-----------+
-    | korean                | Korean                        | ko        |
-    +-----------------------+-------------------------------+-----------+
-    | lithuanian            | Lithuanian                    | lt        |
-    +-----------------------+-------------------------------+-----------+
-    | norwegian             | Norwegian                     | no        |
-    +-----------------------+-------------------------------+-----------+
-    | polish                | Polish                        | pl        |
-    +-----------------------+-------------------------------+-----------+
-    | portuguese_br         | Portuguese (Brazil)           | pt-BR     |
-    +-----------------------+-------------------------------+-----------+
-    | romanian              | Romanian                      | ro        |
-    +-----------------------+-------------------------------+-----------+
-    | russian               | Russian                       | ru        |
-    +-----------------------+-------------------------------+-----------+
-    | spanish_sp            | Spanish (Spain)               | es-ES     |
-    +-----------------------+-------------------------------+-----------+
-    | swedish               | Swedish                       | sv-SE     |
-    +-----------------------+-------------------------------+-----------+
-    | thai                  | Thai                          | th        |
-    +-----------------------+-------------------------------+-----------+
-    | turkish               | Turkish                       | tr        |
-    +-----------------------+-------------------------------+-----------+
-    | ukrainian             | Ukrainian                     | uk        |
-    +-----------------------+-------------------------------+-----------+
-    | vietnamese            | Vietnamese                    | vi        |
-    +-----------------------+-------------------------------+-----------+
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | Class attribute name  | Name                          | Value     | Native name                           |
+    +=======================+===============================+===========+=======================================+
+    | bulgarian             | Bulgarian                     | bg        | български                             |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | chinese_cn            | Chinese (China)               | zh-CN     | \u4e2d\u6587                          |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | chinese_tw            | Chinese (Taiwan)              | zh-TW     | \u7e41\u9ad4\u4e2d\u6587              |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | croatian              | Croatian                      | hr        | Hrvatski                              |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | czech                 | Czech                         | cs        | Čeština                               |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | danish                | Danish                        | da        | Dansk                                 |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | dutch                 | Dutch                         | nl        | Nederlands                            |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | english_gb            | English (Great Britain)       | en-GB     | English, UK                           |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | english_us            | English (United States)       | en-US     | English, US                           |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | finnish               | Finnish                       | fi        | Suomi                                 |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | french                | French                        | fr        | Français                              |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | german                | German                        | de        | Deutsch                               |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | greek                 | Greek                         | el        | Ελληνικά                              |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | hindi                 | Hindi                         | hi        | \u0939\u093f\u0928\u094d\u0926\u0940  |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | hungarian             | Hungarian                     | hu        | Magyar                                |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | italian               | Italian                       | it        | Italiano                              |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | japanese              | Japanese                      | jp        | \u65e5\u672c\u8a9e                    |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | korean                | Korean                        | ko        | \ud55c\uad6d\uc5b4                    |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | lithuanian            | Lithuanian                    | lt        | Lietuviškai                           |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | norwegian             | Norwegian                     | no        | Norsk                                 |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | polish                | Polish                        | pl        | Polski                                |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | portuguese            | Portuguese, Brazilian         | pt-BR     | Português do Brasil                   |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | romanian              | Romanian, Romania             | ro        | Română                                |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | russian               | Russian                       | ru        | Pусский                               |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | spanish               | Spanish                       | es-ES     | Español                               |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | swedish               | Swedish                       | sv-SE     | Svenska                               |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | thai                  | Thai                          | th        | \u0e44\u0e17\u0e22                    |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | turkish               | Turkish                       | tr        | Türkçe                                |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | ukrainian             | Ukrainian                     | uk        | Українська                            |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | vietnamese            | Vietnamese                    | vi        | Tiếng Việt                            |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
     """
     INSTANCES = {}
     VALUE_TYPE = str
     
-    __slots__ = ()
+    __slots__ = ('native_name',)
+    
+
+    @classmethod
+    def _from_value(cls, value):
+        """
+        Creates a new locale with the given value.
+        
+        Parameters
+        ----------
+        value : `int`
+            The locale's identifier value.
+        
+        Returns
+        -------
+        self : ``Locale``
+            The created instance.
+        """
+        self = object.__new__(cls)
+        self.name = cls.DEFAULT_NAME
+        self.value = value
+        self.native_name = value
+        
+        return self
+    
+    
+    def __init__(self, value, name, native_name):
+        """
+        Creates an ``Locale`` and stores it at the class's `.INSTANCES` class attribute as well.
+        
+        Parameters
+        ----------
+        value : `int`
+            The Discord side identifier value of the locale.
+        name : `str`
+            The default name of the locale.
+        native_name : `str`
+            The native name of the locale.
+        """
+        self.value = value
+        self.name = name
+        self.native_name = native_name
+        
+        self.INSTANCES[value] = self
     
     # predefined
-    bulgarian = P('bg', 'Bulgarian')
-    chinese_cn = P('zh-CN', 'Chinese (China)')
-    chinese_tw = P('zh-TW', 'Chinese (Taiwan)')
-    croatian = P('hr', 'Croatian')
-    czech = P('cs', 'Czech')
-    danish = P('da', 'Danish')
-    dutch = P('nl', 'Dutch')
-    english_gb = P('en-GB', 'English (Great Britain)')
-    english_us = P('en-US', 'English (United States)')
-    finnish = P('fi', 'Finnish')
-    french = P('fr', 'French')
-    german = P('de', 'German')
-    greek = P('el', 'Greek')
-    hindi = P('hi', 'Hindi')
-    hungarian = P('hu', 'Hungarian')
-    italian = P('it', 'Italian')
-    japanese = P('jp', 'Japanese')
-    korean = P('ko', 'Korean')
-    lithuanian = P('lt', 'Lithuanian')
-    norwegian = P('no', 'Norwegian')
-    polish = P('pl', 'Polish')
-    portuguese_br = P('pt-BR', 'Portuguese (Brazil)')
-    romanian = P('ro', 'Romanian')
-    russian = P('ru', 'Russian')
-    spanish_sp = P('es-ES', 'Spanish (Spain)')
-    swedish = P('sv-SE', 'Swedish')
-    thai = P('th', 'Thai')
-    turkish = P('tr', 'Turkish')
-    ukrainian = P('uk', 'Ukrainian')
-    vietnamese = P('vi', 'Vietnamese')
+    bulgarian = P('bg', 'Bulgarian', 'български')
+    chinese_cn = P('zh-CN', 'Chinese China', '\u4e2d\u6587')
+    chinese_tw = P('zh-TW', 'Chinese Taiwan', '\u7e41\u9ad4\u4e2d\u6587')
+    croatian = P('hr', 'Croatian', 'Hrvatski')
+    czech = P('cs', 'Czech', 'Čeština')
+    danish = P('da', 'Danish', 'Dansk')
+    dutch = P('nl', 'Dutch', 'Nederlands',)
+    english_gb = P('en-GB', 'English, UK', 'English, UK')
+    english_us = P('en-US', 'English, US', 'English, US')
+    finnish = P('fi', 'Finnish', 'Suomi')
+    french = P('fr', 'French', 'Français')
+    german = P('de', 'German', 'Deutsch')
+    greek = P('el', 'Greek', 'Ελληνικά')
+    hindi = P('hi', 'Hindi', '\u0939\u093f\u0928\u094d\u0926\u0940')
+    hungarian = P('hu', 'Hungarian', 'Magyar')
+    italian = P('it', 'Italian', 'Italiano')
+    japanese = P('jp', 'Japanese', '\u65e5\u672c\u8a9e')
+    korean = P('ko', 'Korean', '\ud55c\uad6d\uc5b4')
+    lithuanian = P('lt', 'Lithuanian', 'Lietuviškai')
+    norwegian = P('no', 'Norwegian', 'Norsk')
+    polish = P('pl', 'Polish', 'Polski')
+    portuguese = P('pt-BR', 'Portuguese, Brazilian', 'Português do Brasil')
+    romanian = P('ro', 'Romanian, Romania', 'Română')
+    russian = P('ru', 'Russian', 'Pусский')
+    spanish = P('es-ES', 'Spanish', 'Español')
+    swedish = P('sv-SE', 'Swedish', 'Svenska')
+    thai = P('th', 'Thai', '\u0e44\u0e17\u0e22')
+    turkish = P('tr', 'Turkish', 'Türkçe')
+    ukrainian = P('uk', 'Ukrainian', 'Українська')
+    vietnamese = P('vi', 'Vietnamese', 'Tiếng Việt')
+    
+    
+    @property
+    def spanish_sp(self):
+        """
+        `.spanish_sp` is deprecated and will be removed in 2022 Aug. Please use `.spanish` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.spanish_sp` is deprecated and will be removed in 2022 Aug. '
+                f'Please use `.spanish` instead.'
+            ),
+            FutureWarning,
+        )
+        
+        return self.spanish
+    
+    
+    @property
+    def portuguese_br(self):
+        """
+        `.portuguese_br` is deprecated and will be removed in 2022 Aug. Please use `.portuguese` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.portuguese_br` is deprecated and will be removed in 2022 Aug. '
+                f'Please use `.portuguese` instead.'
+            ),
+            FutureWarning,
+        )
+        
+        return self.portuguese

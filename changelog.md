@@ -6,10 +6,19 @@
 - Force request application command localizations.
 - Improve `DiscordGatewayException` error messages.
 - Improve `ChannelTextBase` docs mentioning that you are looking at a bad class for general channel methods.
+- Plugged in cli commands are now supported.
+- Add `Locale.native_name`.
 
 #### Bug fixes
 
 - Use `create_event_loop` instead of `EventThread`, so `get_event_loop` wont fail in the main thread initially.
+
+#### Renames, Deprecation & Removals
+
+- Rename `Locale.spanish_sp` to `.spanish`
+- Deprecate `Locale.spanish_sp`.
+- Rename `Locale.portuguese_br` to `.portuguese`
+- Deprecate `Locale.portuguese_br`.
 
 ## 1.2.4 *\[2022-03-15\]*
 

@@ -38,13 +38,19 @@ class Command(RichAttributeErrorBaseType):
             The command's file's name.
         name : `str`
             The command's name.
-        alters : `None` or `frozenset` of `str`
+        alters : `None` or `list` of `str`
             Alternative names of the command.
         usage : `str`
             The command's usage.
         description : `str`
             The command's description.
         """
+        if (alters is not None):
+            if alters:
+                alters = frozenset(alters)
+            else:
+                alters = None
+        
         self = object.__new__(cls)
         self.alters = alters
         self.description = description
@@ -166,10 +172,10 @@ class Command(RichAttributeErrorBaseType):
         -------
         command_function : `FunctionType`
         """
-        access_path_parts = [*COMMAND_IMPORT_ROUTE, self.folder_name_name, self.file_name]
+        access_path_parts = [*COMMAND_IMPORT_ROUTE, self.folder_name, self.file_name]
         module = __import__('.'.join(access_path_parts))
         
-        for access_path_part in access_path_parts:
+        for access_path_part in access_path_parts[1:]:
             module = getattr(module, access_path_part)
         
         return module.__main__

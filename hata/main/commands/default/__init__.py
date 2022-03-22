@@ -8,25 +8,25 @@ Command(
     'default',
     'help',
     'help',
-    frozenset(('h', 'help')),
+    ['h'],
     'h | help *command*',
-    f'Either lists the available command, or shows the command\'s usage.\n',
+    'Either lists the available command, or shows the command\'s usage.',
 )
 
 Command(
     'default',
     'interpreter',
     'interpreter',
-    frozenset(('i', 'interpreter')),
+    ['i'],
     'i | interpreter',
-    f'Runs asynchronous python interpreter through scarletio.\n{AWAIT_NOTE}\n',
+    f'Runs asynchronous python interpreter through scarletio.\n{AWAIT_NOTE}',
 )
 
 Command(
     'default',
     'version',
     'version',
-    frozenset(('v', 'version')),
+    ['v'],
     'v | version',
-    f'Prints out hata\'s version.\n'
+    'Prints out hata\'s version.'
 )

@@ -70,6 +70,7 @@ setup(
         'hata.ext.top_gg',
         'hata.main',
         'hata.main.commands',
+        'hata.main.commands.default',
     ],
     url = 'https://github.com/HuyaneMatsu/hata',
     license = 'MIT',

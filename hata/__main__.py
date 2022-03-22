@@ -88,6 +88,8 @@ def __main__():
     
     else:
         command_function = command.get_command_function()
+    
+    return command_function
 
 
 if __name__ == '__main__':

@@ -37,7 +37,8 @@ def show_command(command_name):
         output_parts.append(' ')
         output_parts.append(command.usage)
         output_parts.append('"\n\n')
-        output_parts.append(command.help_)
+        output_parts.append(command.description)
+        output_parts.append('\n')
     
     output = ''.join(output_parts)
     sys.stderr.write(output)
@@ -50,7 +51,7 @@ def list_commands():
     command_count = len(COMMANDS)
     index_adjust = floor(log10(command_count)) + 1
     
-    for index, command in enumerate(command_count, 1):
+    for index, command in enumerate(COMMANDS, 1):
         command_name = command.name
         output_parts.append(str(index).rjust(index_adjust))
         output_parts.append('.: ')

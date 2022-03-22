@@ -13474,7 +13474,7 @@ class Client(ClientUserPBase):
         application_command_data = await self.http.application_command_global_get(
             application_id,
             application_command_id,
-            {'with_localizations': True},,
+            {'with_localizations': True},
         )
         
         if application_command is None:

@@ -4,11 +4,26 @@ INTENT_ERROR_CODES = frozenset((4013, 4014,))
 RESHARD_ERROR_CODES = frozenset((4011,))
 
 GATEWAY_EXCEPTION_CODE_TABLE = {
-    4011: 'A gateway would have handled too many guilds, resharding is required.',
-    4013: 'An invalid intent is one that is not meaningful and not documented.',
+    4011: (
+        'A gateway would have handled too many guilds. -> Resharding is required.'
+    ),
+    4013: (
+        'An invalid intent is used, one that is not meaningful and not documented. -> Please check your intents.'
+    ),
     4014: (
-        'A disallowed intent is one which you have not enabled for your bot or one that your bot is not '
-        'whitelisted to use.'
+        'You are trying to use an intent, that is either disallowed, or you are not whitelisted to use. -> \n'
+        'To disable specific intents use the `intents` parameter of your `Client` constructor like:\n'
+        '\n'
+        'from hata import Client, IntentFlag\n'
+        '\n'
+        'MY_CLIENT = Client(\n'
+        '    YOUR_TOKEN,\n'
+        '    intents = IntentFlag().update_by_keys(\n'
+        '        guild_users = False,\n'
+        '        guild_presences = False,\n'
+        '        message_content = False\n'
+        '    )\n'
+        ')'
     ),
 }
 
@@ -58,7 +73,7 @@ class DiscordGatewayException(BaseException):
         except KeyError:
             pass
         else:
-            repr_parts.append(': ')
+            repr_parts.append(':\n')
             repr_parts.append(description)
         
         return ''.join(repr_parts)

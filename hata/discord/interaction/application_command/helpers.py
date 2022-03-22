@@ -5,7 +5,7 @@ from ...localizations import Locale
 
 def maybe_locale(value):
     """
-    Converts teh given value to locale if it is not already.
+    Converts the given value to locale if it is not already.
     
     Parameters
     ----------

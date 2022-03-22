@@ -4,6 +4,8 @@
 
 - `allow_by_default` should not default based on `required_permissions`.
 - Force request application command localizations.
+- Improve `DiscordGatewayException` error messages.
+- Improve `ChannelTextBase` docs mentioning that you are looking at a bad class for general channel methods.
 
 #### Bug fixes
 

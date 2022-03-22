@@ -3,24 +3,19 @@ from math import floor, log10
 
 from scarletio import get_short_executable
 
-from .. import __package__ as PACKAGE_NAME
-from ..__main__ import COMMAND_MAP, COMMAND_NAMES
+from .... import __package__ as PACKAGE_NAME
+
+from ... import COMMANDS, COMMAND_NAME_TO_COMMAND
 
 
 PACKAGE = __import__(PACKAGE_NAME)
 
-NAME = 'help'
-USAGE = 'h | help *command*'
-
-HELP = (
-    f'Either lists the available command, or shows the command\'s usage.\n'
-)
 
 def show_command(command_name):
-    command_file_name = COMMAND_MAP.get(command_name.lower(), None)
+    command = COMMAND_NAME_TO_COMMAND.get(command_name.lower(), None)
     
     output_parts = []
-    if command_file_name is None:
+    if command is None:
         output_parts = []
         
         output_parts.append('No command is added for: ')
@@ -31,23 +26,18 @@ def show_command(command_name):
         output_parts.append(' ')
         output_parts.append(PACKAGE_NAME)
         output_parts.append(' help" to list all available commands\n.')
+    
     else:
-        __import__(f'{PACKAGE_NAME}.main.{command_file_name}')
-        command_module = getattr(PACKAGE.main, command_file_name)
-        name = command_module.NAME
-        usage = command_module.USAGE
-        help_ = command_module.HELP
-        
         output_parts.append('Help for: "')
-        output_parts.append(name)
+        output_parts.append(command.name)
         output_parts.append('"\n\nUsage: "$ ')
         output_parts.append(get_short_executable())
         output_parts.append(' ')
         output_parts.append(PACKAGE_NAME)
         output_parts.append(' ')
-        output_parts.append(usage)
+        output_parts.append(command.usage)
         output_parts.append('"\n\n')
-        output_parts.append(help_)
+        output_parts.append(command.help_)
     
     output = ''.join(output_parts)
     sys.stderr.write(output)
@@ -57,12 +47,11 @@ def list_commands():
     output_parts = []
     output_parts.append('Available commands:\n\n')
     
-    command_count = len(COMMAND_NAMES)
+    command_count = len(COMMANDS)
     index_adjust = floor(log10(command_count)) + 1
-    index = 0
-    while index != command_count:
-        command_name = COMMAND_NAMES[index]
-        index += 1
+    
+    for index, command in enumerate(command_count, 1):
+        command_name = command.name
         output_parts.append(str(index).rjust(index_adjust))
         output_parts.append('.: ')
         output_parts.append(command_name)

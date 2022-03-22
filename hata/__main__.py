@@ -31,27 +31,14 @@ except ImportError:
 
 PACKAGE = __import__(PACKAGE_NAME)
 
+MAIN = __import__(f'{PACKAGE_NAME}.main').main
+
+COMMAND_NAME_TO_COMMAND = MAIN.COMMAND_NAME_TO_COMMAND
+find_commands = MAIN.find_commands
+
+find_commands()
+
 SYSTEM_DEFAULT_PARAMETER = 'i'
-
-COMMAND_NAMES = tuple(sorted((
-    'help',
-    'interpreter',
-    'version',
-)))
-
-COMMAND_MAP = {
-    'h': 'help',
-    'help': 'help',
-    
-    'i': 'interpreter',
-    'interpreter': 'interpreter',
-    
-    'v': 'version',
-    'version': 'version',
-}
-
-assert SYSTEM_DEFAULT_PARAMETER in COMMAND_MAP
-
 
 def command_not_found():
     from scarletio import get_short_executable
@@ -60,20 +47,23 @@ def command_not_found():
     
     system_parameter = sys.argv
     
-    index = 1
     length = len(system_parameter)
-    
-    while True:
-        output_parts.append(repr(system_parameter[index]))
-        index += 1
-        if index == length:
-            break
+    if length > 2:
+        index = 1
         
-        output_parts.append(', ')
-        continue
+        while True:
+            output_parts.append(repr(system_parameter[index]))
+            index += 1
+            if index == length:
+                break
+            
+            output_parts.append(', ')
+            continue
+    else:
+        output_parts.append('-')
     
     output_parts.append('\n')
-    output_parts.append('Try using "$')
+    output_parts.append('Try using "$ ')
     output_parts.append(get_short_executable())
     output_parts.append(' ')
     output_parts.append(PACKAGE_NAME)
@@ -92,12 +82,12 @@ def __main__():
         system_parameter = system_parameters[1].lower()
     
     try:
-        command_name = COMMAND_MAP[system_parameter]
+        command = COMMAND_NAME_TO_COMMAND[system_parameter]
     except KeyError:
-        return command_not_found
+        command_function = command_not_found
     
-    __import__(f'{PACKAGE_NAME}.main.{command_name}')
-    return getattr(PACKAGE.main, command_name).__main__
+    else:
+        command_function = command.get_command_function()
 
 
 if __name__ == '__main__':

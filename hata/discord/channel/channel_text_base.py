@@ -207,6 +207,11 @@ class ChannelTextBase:
     ----------
     _message_history : `None`, ``MessageHistory``
         The channel's message history if any.
+    
+    Notes
+    -----
+    This class is not the direct super class of channel types. If you are looking for general channel methods or
+    properties, check out ``ChannelBase`` instead.
     """
     __slots__ = ()
     __slots = ('_message_history', )

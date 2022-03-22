@@ -69,6 +69,7 @@ setup(
         'hata.ext.slash.menus',
         'hata.ext.top_gg',
         'hata.main',
+        'hata.main.commands',
     ],
     url = 'https://github.com/HuyaneMatsu/hata',
     license = 'MIT',

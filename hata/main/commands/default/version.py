@@ -3,16 +3,8 @@ from platform import platform as get_platform
 
 from scarletio import __package__ as SCARLETIO_NAME, __version__ as SCARLETIO_VERSION
 
-from .. import __package__ as PACKAGE_NAME, __version__ as PACKAGE_VERSION
+from .... import __package__ as PACKAGE_NAME, __version__ as PACKAGE_VERSION
 
-
-
-NAME = 'version'
-USAGE = 'v | version'
-
-HELP = (
-    f'Prints out hata\'s version.\n'
-)
 
 def __main__():
     output_parts = []

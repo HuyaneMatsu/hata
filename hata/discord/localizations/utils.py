@@ -13,7 +13,7 @@ def get_locale(value):
     Parameters
     ----------
     value : `None`, `str`
-        If given as `None`, returns teh default locale.
+        If given as `None`, returns the default locale.
     
     Returns
     -------

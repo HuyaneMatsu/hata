@@ -137,67 +137,125 @@ class Client(ClientUserPBase):
     ----------
     id : `int`
         The client's unique identifier number.
+    
     name : str
         The client's username.
+    
     discriminator : `int`
         The client's discriminator. Given to avoid overlapping names.
+    
     avatar_hash : `int`
         The client's avatar's hash in `uint128`.
+    
     avatar_type : ``IconType``
         The client's avatar's type.
+    
     banner_color : `None`, ``Color``
         The user's banner color if has any.
+    
     banner_hash : `int`
         The user's banner's hash in `uint128`.
+    
     banner_type : ``IconType``
         The user's banner's type.
+    
     guild_profiles : `dict` of (`int`, ``GuildProfile``) items
         A dictionary, which contains the client's guild profiles. If a client is member of a guild, then it should
         have a respective guild profile accordingly.
+    
     is_bot : `bool`
         Whether the client is a bot or a user account.
-    partial : `bool`
-        Partial clients have only their id set. If any other data is set, it might not be in sync with Discord.
+    
+    flags : ``UserFlag``
+        The client's user flags.
+    
     thread_profiles : `None`, `dict` (``ChannelThread``, ``ThreadProfile``) items
         A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
         Defaults to `None`.
+    
     activities : `None`, `list` of ``ActivityBase``
         A list of the client's activities. Defaults to `None`.
+    
     status : `Status`
         The client's display status.
+    
     statuses : `dict` of (`str`, `str`) items
         The client's statuses for each platform.
-    email : `None`, `str`
-        The client's email.
-    flags : ``UserFlag``
-        The client's user flags.
-    locale : ``Locale``
-        The preferred locale by the client.
-    mfa : `bool`
-        Whether the client has two factor authorization enabled on the account.
-    premium_type : ``PremiumType``
-        The Nitro subscription type of the client.
-    verified : `bool`
-        Whether the email of the client is verified.
+    
+    _activity : ``ActivityBase``
+        The client's preferred activity.
+    
+    _additional_owner_ids : `None`, `set` of `int`
+        Additional users' (as id) to be passed by the ``.is_owner`` check.
+    
+    _gateway_max_concurrency : `int`
+        The max amount of shards, which can be launched at the same time.
+    
+    _gateway_requesting : `bool`
+        Whether the client already requests it's gateway.
+    
+    _gateway_time : `float`
+        The last timestamp when ``._gateway_url`` was updated.
+    
+    _gateway_url : `str`
+        Cached up gateway url, what is invalidated after `1` minute. Used to avoid unnecessary requests when launching
+        up more shards.
+    
+    _gateway_waiter : `None`, ``Future``
+        When client gateway is being requested multiple times at the same time, this future is set and awaited at the
+        secondary requests.
+    
+    _should_request_users : `bool`
+        Whether the client should try to request the users of it's guilds.
+    
+    _status : ``Status``
+        The client's preferred status.
+    
+    _user_chunker_nonce : `int`
+        The last nonce in int used for requesting guild user chunks. The default value is `0`, what means the next
+        request will start at `1`.
+        
+        Nonce `0` is allocated for the case, when all the guild's users are requested.
+    
     application : ``Application``
         The bot account's application. The application data of the client is requested meanwhile it logs in.
+    
+    email : `None`, `str`
+        The client's email.
+    
     events : ``EventHandlerManager``
         Contains the event handlers of the client. New event handlers can be added through it as well.
+    
     gateway : ``DiscordGateway``, ``DiscordGatewaySharder``
         The gateway of the client towards Discord. If the client uses sharding, then ``DiscordGatewaySharder`` is used
         as gateway.
+    
+    group_channels : `dict` of (`int`, ``ChannelGroup``) items
+        The group channels of the client. They can be accessed by their id as the key.
+    
     guilds : `set` of ``Guild``
         The guilds, where the client is in.
+    
     http : ``DiscordHTTPClient``
         The http session of the client. Can be used as a normal http session, or for lower level interactions with the
         Discord API.
+    
     intents : ``IntentFlag``
         The intent flags of the client.
+    
+    locale : ``Locale``
+        The preferred locale by the client.
+    
+    mfa : `bool`
+        Whether the client has two factor authorization enabled on the account.
+    
+    premium_type : ``PremiumType``
+        The Nitro subscription type of the client.
+    
     private_channels : `dict` of (`int`, ``ChannelPrivate``) items
         Stores the private channels of the client. The channels' other recipient' ids are the keys, meanwhile the
         channels are the values.
-    group_channels : `dict` of (`int`, ``ChannelGroup``) items
-        The group channels of the client. They can be accessed by their id as the key.
+    
     ready_state : ``ReadyState``, `None`
         The client on login fills up it's ``.ready_state`` with ``Guild`` objects, which will have their members
         requested.
@@ -209,42 +267,28 @@ class Client(ClientUserPBase):
     relationships : `dict` of (`int`, ``Relationship``) items
         Stores the relationships of the client. The relationships' users' ids are the keys and the relationships
         themselves are the values.
+    
     running : `bool`
         Whether the client is running or not. When the client is stopped, this attribute is set as `False` what causes
         it's heartbeats to stop and it's gateways to close and not reconnect.
+    
     secret : `str`
         The client's secret used when interacting with oauth2 endpoints.
+    
     shard_count : `int`
         The client's shard count. Set as `0` if the bot is not using sharding.
+    
     token : `str`
         The client's token.
+    
+    verified : `bool`
+        Whether the email of the client is verified.
+    
     voice_clients : `dict` of (`int`, ``VoiceClient``) items
         Each bot can join a channel at every ``Guild`` and meanwhile they do, they have an active voice client for that
         guild. This attribute stores these voice clients. They keys are the guilds' ids, meanwhile the values are
         the voice clients.
-    _activity : ``ActivityBase``
-        The client's preferred activity.
-    _additional_owner_ids : `None`, `set` of `int`
-        Additional users' (as id) to be passed by the ``.is_owner`` check.
-    _gateway_url : `str`
-        Cached up gateway url, what is invalidated after `1` minute. Used to avoid unnecessary requests when launching
-        up more shards.
-    _gateway_requesting : `bool`
-        Whether the client already requests it's gateway.
-    _gateway_time : `float`
-        The last timestamp when ``._gateway_url`` was updated.
-    _gateway_max_concurrency : `int`
-        The max amount of shards, which can be launched at the same time.
-    _gateway_waiter : `None`, ``Future``
-        When client gateway is being requested multiple times at the same time, this future is set and awaited at the
-        secondary requests.
-    _status : ``Status``
-        The client's preferred status.
-    _user_chunker_nonce : `int`
-        The last nonce in int used for requesting guild user chunks. The default value is `0`, what means the next
-        request will start at `1`.
-        
-        Nonce `0` is allocated for the case, when all the guild's users are requested.
+    
     
     Class Attributes
     ----------------
@@ -266,19 +310,34 @@ class Client(ClientUserPBase):
     Client supports weakreferencing and dynamic attribute names as well for extension support.
     """
     __slots__ = (
-        'email', 'locale', 'mfa', 'premium_type', 'verified', # OAUTH 2
-        '__dict__', '_additional_owner_ids', '_activity', '_gateway_requesting', '_gateway_time', '_gateway_url',
-        '_gateway_max_concurrency', '_gateway_waiter', '_status', '_user_chunker_nonce', 'application', 'events',
-        'gateway', 'guilds', 'http', 'intents', 'private_channels', 'ready_state', 'group_channels', 'relationships',
-        'running', 'secret', 'shard_count', 'token', 'voice_clients'
+        '__dict__', '_activity', '_additional_owner_ids', '_gateway_max_concurrency', '_gateway_requesting',
+        '_gateway_time', '_gateway_url', '_gateway_waiter', '_should_request_users', '_status', '_user_chunker_nonce',
+        'application', 'email', 'events', 'gateway', 'group_channels', 'guilds', 'http', 'intents', 'locale', 'mfa',
+        'premium_type', 'private_channels', 'ready_state', 'relationships', 'running', 'secret', 'shard_count',
+        'token', 'verified', 'voice_clients'
     )
     
     loop = KOKORO
     _next_auto_id = 1
     
-    def __new__(cls, token, *, secret=None, client_id=None, application_id=None, activity=ACTIVITY_UNKNOWN,
-            status=None, is_bot=True, shard_count=0, intents=-1, additional_owners=None, extensions=None,
-            http_debug_options=None, **kwargs):
+    def __new__(
+        cls,
+        token,
+        *,
+        activity = ACTIVITY_UNKNOWN,
+        additional_owners = None,
+        application_id = None,
+        client_id = None,
+        extensions = None,
+        http_debug_options = None,
+        intents = -1,
+        is_bot = True,
+        secret = None,
+        shard_count = 0,
+        should_request_users = True,
+        status = None,
+        **kwargs
+    ):
         """
         Creates a new ``Client`` with the given parameters.
         
@@ -287,8 +346,15 @@ class Client(ClientUserPBase):
         token : `str`
             A valid Discord token, what the client can use to interact with the Discord API.
         
-        secret: `None`, `str` = `None`, Optional (Keyword only)
-            Client secret used when interacting with oauth2 endpoints.
+        activity : ``ActivityBase`` = `ACTIVITY_UNKNOWN`, Optional (Keyword only)
+            The client's preferred activity.
+         
+        additional_owners : `None`, `int`, ``ClientUserBase``, `iterable` of (`int`, ``ClientUserBase``) = `None` \
+                , Optional (Keyword only)
+            Additional users to return `True` if ``is_owner` is called.
+        
+        application_id : `None`, `int`, `str` = `None`, Optional (Keyword only)
+            The client's application id. If passed as `str`, will be converted to `int`. Defaults to `None`.
         
         client_id : `None`, `int`, `str` = `None`, Optional (Keyword only)
             The client's `.id`. If passed as `str` will be converted to `int`. Defaults to `None`.
@@ -297,45 +363,36 @@ class Client(ClientUserPBase):
             clients' id-s only when they are logging in, so the wrapper  needs to check if a ``User`` alter_ego of the
             client exists anywhere, and if does will replace it.
         
-        application_id : `None`, `int`, `str` = `None`, Optional (Keyword only)
-            The client's application id. If passed as `str`, will be converted to `int`. Defaults to `None`.
-        
-        activity : ``ActivityBase`` = `ACTIVITY_UNKNOWN`, Optional (Keyword only)
-            The client's preferred activity.
-        
-        status : `None`, `str`, ``Status`` = `None`, Optional (Keyword only)
-            The client's preferred status.
-        
-        is_bot : `bool` = `True` Optional (Keyword only)
-            Whether the client is a bot user or a user account.
-        
-        shard_count : `int` = `0`, Optional (Keyword only)
-            The client's shard count. If passed as lower as the recommended one, will reshard itself.
-        
-        intents : ``IntentFlag`` = `-1`, Optional (Keyword only)
-             By default the client will launch up using all the intent flags. Negative values will be interpreted as
-             using all the intents, meanwhile if passed as positive, non existing intent flags are removed.
-         
-        additional_owners : `None`, `int`, ``ClientUserBase``, `iterable` of (`int`, ``ClientUserBase``) = `None` \
-                , Optional (Keyword only)
-            Additional users to return `True` if ``is_owner` is called.
-        
         extensions : `None`, `str`, `iterable` of `str` = `None`, Optional (Keyword only)
             The extension's name to setup on the client.
         
         http_debug_options: `None`, `str`, `iterable` of `str` = `None`, Optional (Keyword only)
             Http client debug options for the client.
         
+        intents : ``IntentFlag`` = `-1`, Optional (Keyword only)
+             By default the client will launch up using all the intent flags. Negative values will be interpreted as
+             using all the intents, meanwhile if passed as positive, non existing intent flags are removed.
+        
+        is_bot : `bool` = `True` Optional (Keyword only)
+            Whether the client is a bot user or a user account.
+        
+        secret: `None`, `str` = `None`, Optional (Keyword only)
+            Client secret used when interacting with oauth2 endpoints.
+        
+        shard_count : `int` = `0`, Optional (Keyword only)
+            The client's shard count. If passed as lower as the recommended one, will reshard itself.
+        
+        should_request_users : `int` = `False`, Optional (Keyword only)
+            Whether the client should try to request the users of it's guilds.
+        
+        status : `None`, `str`, ``Status`` = `None`, Optional (Keyword only)
+            The client's preferred status.
+        
         **kwargs : keyword parameters
             Additional predefined attributes for the client.
         
         Other Parameters
         ----------------
-        name : `str`, Optional (Keyword only)
-            The client's ``.name``.
-        
-        discriminator : `int`, `str`, Optional (Keyword only)
-            The client's ``.discriminator``. Is accepted as `str` as well and will be converted to `int`.
         
         avatar : `None`, ``Icon``, `str`, Optional (Keyword only)
             The client's avatar.
@@ -370,10 +427,17 @@ class Client(ClientUserPBase):
             
             > Mutually exclusive with `banner`.
         
+        discriminator : `int`, `str`, Optional (Keyword only)
+            The client's ``.discriminator``. Is accepted as `str` as well and will be converted to `int`.
+        
         flags : ``UserFlag``, `int`, Optional (Keyword only)
             The client's ``.flags``. If not passed as ``UserFlag``, then will be converted to it.
+        
+        name : `str`, Optional (Keyword only)
+            The client's ``.name``.
+        
         **kwargs : keyword parameters
-            Additional parameters to pass to extension setuppers.
+            Additional parameters to pass to extension setup functions.
             
             > If any required parameter by an extension is missing `RuntimeError` is raised, meanwhile if any extra
             > is given, `RuntimeWarning` is dropped.
@@ -391,6 +455,8 @@ class Client(ClientUserPBase):
         RuntimeError
             Creating the same client multiple times is not allowed.
         """
+        # ---- Required Parameters ----
+        
         # token
         if (type(token) is str):
             pass
@@ -399,64 +465,13 @@ class Client(ClientUserPBase):
         else:
             raise TypeError(f'`token` can be `str`, got {token.__class__.__name__}; {token!r}')
         
-        # secret
-        if (secret is None) or type(secret is str):
-            pass
-        elif isinstance(secret, str):
-            secret = str(secret)
-        else:
-            raise TypeError(f'`secret` can be `str`, got `{secret.__class__.__name__}`; {secret!r}.')
-        
-        # client_id
-        if client_id is None:
-            client_id = try_get_user_id_from_token(token)
-        else:
-            client_id = preconvert_snowflake(client_id, 'client_id')
-        
-        # application_id
-        if (application_id is None):
-            application_id = 0
-        else:
-            application_id = preconvert_snowflake(application_id, 'application_id')
-        
-        application = Application._create_empty(application_id)
+        # ---- Optional Client Parameters ----
         
         # activity
         if (not isinstance(activity, ActivityBase)) or (type(activity) is ActivityCustom):
             raise TypeError(
                 f'`activity` can be `{ActivityBase.__name__}` (except `{ActivityCustom.__name__}`), got '
                 f'{activity.__class__.__name__}; {activity!r}.')
-        
-        # status
-        if (status is not None):
-            status = preconvert_preinstanced_type(status, 'status', Status)
-            if status is Status.offline:
-                status = Status.invisible
-        
-        # is_bot
-        is_bot = preconvert_bool(is_bot, 'is_bot')
-        
-        # shard count
-        if (type(shard_count) is int):
-            pass
-        elif isinstance(shard_count, int):
-            shard_count = int(shard_count)
-        else:
-            raise TypeError(
-                f'`shard_count` can be `int`, got {shard_count.__class__.__name__}; {shard_count!r}.'
-            )
-        
-        if shard_count < 0:
-            raise ValueError(
-                f'`shard_count` can be non negative `int`, got {shard_count!r}.'
-            )
-        
-        # Default to `0`
-        if shard_count == 1:
-            shard_count = 0
-        
-        # intents
-        intents = preconvert_flag(intents, 'intents', IntentFlag)
         
         # additional owners
         if additional_owners is None:
@@ -495,6 +510,23 @@ class Client(ClientUserPBase):
                 
                 if (not additional_owner_ids):
                     additional_owner_ids = None
+        
+        # application_id
+        if (application_id is None):
+            application_id = 0
+        else:
+            application_id = preconvert_snowflake(application_id, 'application_id')
+        
+        application = Application._create_empty(application_id)
+        
+        # client_id
+        if client_id is None:
+            client_id = try_get_user_id_from_token(token)
+        else:
+            client_id = preconvert_snowflake(client_id, 'client_id')
+        
+        # extensions
+        # They will eb checked at the end
         
         # http_debug_options
         processed_http_debug_options = None
@@ -536,17 +568,71 @@ class Client(ClientUserPBase):
                     
                     processed_http_debug_options.add(http_debug_option)
         
+        # intents
+        intents = preconvert_flag(intents, 'intents', IntentFlag)
+        
+        # is_bot
+        is_bot = preconvert_bool(is_bot, 'is_bot')
+        
+        # secret
+        if (secret is None) or type(secret is str):
+            pass
+        elif isinstance(secret, str):
+            secret = str(secret)
+        else:
+            raise TypeError(f'`secret` can be `str`, got `{secret.__class__.__name__}`; {secret!r}.')
+        
+        # shard count
+        if (type(shard_count) is int):
+            pass
+        elif isinstance(shard_count, int):
+            shard_count = int(shard_count)
+        else:
+            raise TypeError(
+                f'`shard_count` can be `int`, got {shard_count.__class__.__name__}; {shard_count!r}.'
+            )
+        
+        if shard_count < 0:
+            raise ValueError(
+                f'`shard_count` can be non negative `int`, got {shard_count!r}.'
+            )
+        
+        # Default shard count to `0` if we received `1`.
+        if shard_count == 1:
+            shard_count = 0
+        
+        # should_request_users
+        should_request_users = preconvert_bool(should_request_users, 'should_request_users')
+        
+        # status
+        if (status is not None):
+            status = preconvert_preinstanced_type(status, 'status', Status)
+            if status is Status.offline:
+                status = Status.invisible
+        
+        if (status is None):
+            status = Status.online
+        
+        
+        # ---- Optional presettable user Parameters ----
+        
         # kwargs
         if kwargs:
             processable = []
-            # kwargs.name
+            
+            # kwargs.avatar & kwargs.avatar_type & kwargs.avatar_hash
+            cls.avatar.preconvert(kwargs, processable)
+            
+            # kwargs.banner & kwargs.banner_type & kwargs.banner_hash
+            cls.banner.preconvert(kwargs, processable)
+            
             try:
-                name = kwargs.pop('name')
+                banner_color = kwargs.pop('banner_color')
             except KeyError:
                 pass
             else:
-                name = preconvert_str(name, 'name', 2, 32)
-                processable.append(('name', name))
+                banner_color = preconvert_color(banner_color, 'banner_color', True)
+                processable.append(('banner_color', banner_color))
             
             # kwargs.discriminator
             try:
@@ -557,12 +643,6 @@ class Client(ClientUserPBase):
                 discriminator = preconvert_discriminator(discriminator)
                 processable.append(('discriminator', discriminator))
             
-            # kwargs.avatar & kwargs.avatar_type & kwargs.avatar_hash
-            cls.avatar.preconvert(kwargs, processable)
-            
-            # kwargs.banner & kwargs.banner_type & kwargs.banner_hash
-            cls.banner.preconvert(kwargs, processable)
-            
             # kwargs.flags
             try:
                 flags = kwargs.pop('flags')
@@ -572,81 +652,96 @@ class Client(ClientUserPBase):
                 flags = preconvert_flag(flags, 'flags', UserFlag)
                 processable.append(('flags', flags))
             
+            # kwargs.name
             try:
-                banner_color = kwargs.pop('banner_color')
+                name = kwargs.pop('name')
             except KeyError:
                 pass
             else:
-                banner_color = preconvert_color(banner_color, 'banner_color', True)
-                processable.append(('banner_color', banner_color))
+                name = preconvert_str(name, 'name', 2, 32)
+                processable.append(('name', name))
+            
+            if not processable:
+                processable = None
         
         else:
             processable = None
         
-        if (status is None):
-            _status = Status.online
-        else:
-            _status = status
         
+        # ---- Setup extensions ----
+        
+        # extensions
         setup_functions = get_and_validate_setup_functions(extensions, kwargs)
         
+        
+        # ---- Auto generate initial id if un-detected ----
         
         if client_id < AUTO_CLIENT_ID_LIMIT:
             client_id = cls._next_auto_id
             cls._next_auto_id = client_id + 1
         
+        
+        # ---- Build object ----
+        
+        # Set all Attributes
+        
         self = object.__new__(cls)
         
-        ClientUserPBase._set_default_attributes(self)
-        
-        self.mfa = False
-        self.verified = False
-        self.email = None
-        self.premium_type = PremiumType.none
-        self.locale = DEFAULT_LOCALE
-        self.token = token
-        self.secret = secret
         self.is_bot = is_bot
-        self.shard_count = shard_count
-        self.intents = intents
-        self.running = False
-        self.relationships = {}
-        self._status = _status
+        ClientUserPBase._set_default_attributes(self)
+        self.id = client_id
+        
         self._activity = activity
         self._additional_owner_ids = additional_owner_ids
-        self._gateway_url = ''
-        self._gateway_time = -inf
         self._gateway_max_concurrency = 1
         self._gateway_requesting = False
+        self._gateway_time = -inf
+        self._gateway_url = ''
         self._gateway_waiter = None
-        self._user_chunker_nonce= 0
-        self.group_channels = {}
-        self.private_channels = {}
-        self.voice_clients = {}
-        self.guilds = set()
-        self.id = client_id
-        self.ready_state = None
+        self._should_request_users = should_request_users
+        self._status = status
+        self._user_chunker_nonce = 0
         self.application = application
-        self.gateway = (DiscordGatewaySharder if shard_count else DiscordGateway)(self)
-        self.http = DiscordHTTPClient(self, debug_options=processed_http_debug_options)
+        self.email = None
         self.events = EventHandlerManager(self)
+        self.gateway = (DiscordGatewaySharder if shard_count else DiscordGateway)(self)
+        self.group_channels = {}
+        self.guilds = set()
+        self.http = DiscordHTTPClient(self, debug_options=processed_http_debug_options)
+        self.intents = intents
+        self.locale = DEFAULT_LOCALE
+        self.mfa = False
+        self.premium_type = PremiumType.none
+        self.private_channels = {}
+        self.ready_state = None
+        self.relationships = {}
+        self.running = False
+        self.secret = secret
+        self.shard_count = shard_count
+        self.token = token
+        self.verified = False
+        self.voice_clients = {}
         
+        # Setup additional user related attributes
         if (processable is not None):
             for item in processable:
                 setattr(self, *item)
         
+        # Check whether the client is duped
         if client_id > AUTO_CLIENT_ID_LIMIT:
             _check_is_client_duped(self, client_id)
             self._maybe_replace_alter_ego()
         
-        
+        # Setup extensions
         run_setup_functions(self, setup_functions, kwargs)
 
-        
+        # Register client
         CLIENTS[client_id] = self
         
+        # Register client by application id
         if application_id:
             APPLICATION_ID_TO_CLIENT[application_id] = self
+        
         
         return self
     

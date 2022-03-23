@@ -1,3 +1,9 @@
+## 1.2.6 *\[2022-03-??\]*
+
+#### Improvements
+
+- Add `should_request_users` parameter to `Client` constructor.
+
 ## 1.2.5 *\[2022-03-23\]*
 
 #### Improvements

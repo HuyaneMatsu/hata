@@ -195,16 +195,24 @@ class ShardUserRequester:
 
 if CACHE_PRESENCE:
     def should_request_users_of(client, guild):
-        if client.intents & INTENT_MASK_GUILD_PRESENCES:
-            return guild.is_large
+        if client.client._should_request_users:
+            if client.intents & INTENT_MASK_GUILD_PRESENCES:
+                should_request_users = guild.is_large
+            else:
+                should_request_users = True
         else:
-            return True
+            should_request_users = False
+        
+        return should_request_users
+
 elif CACHE_USER:
     def should_request_users_of(client, guild):
-        return True
+        return client._should_request_users
+
 else:
     def should_request_users_of(client, guild):
         return False
+
 
 set_docs(should_request_users_of,
     """

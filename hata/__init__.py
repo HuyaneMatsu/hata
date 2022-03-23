@@ -107,7 +107,7 @@ interrupt.
 
 We got some tutorials on `github:https://github.com/HuyaneMatsu/hata/tree/master/docs` as well, please check them too!
 """
-__version__ = '1.2.4'
+__version__ = '1.2.5'
 
 from .deprecate_backend import deprecate
 

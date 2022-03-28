@@ -101,7 +101,7 @@ from scarletio import CallableAnalyzer, Task
 from scarletio.utils.compact import NEEDS_DUMMY_INIT
 
 from ...discord.bases import instance_or_id_to_instance, instance_or_id_to_snowflake
-from ...discord.channel import ChannelBase, ChannelCategory, ChannelGuildBase, ChannelText
+from ...discord.channel import Channel
 from ...discord.client import Client
 from ...discord.core import KOKORO
 from ...discord.events.handling_helpers import check_parameter_count_and_convert
@@ -2004,7 +2004,7 @@ class is_channel(_check_base):
         
         Parameters
         ----------
-        channel : `str`, `int`, ``ChannelBase``
+        channel : `str`, `int`, ``Channel``
             The channel where the message should be sent.
         handler : `None`, `async-callable` or instantiable to `async-callable` = `None`, Optional
             The handler to convert.
@@ -2026,12 +2026,12 @@ class is_channel(_check_base):
         Raises
         ------
         TypeError
-            - If `channel` was not given neither as ``ChannelBase``, `str`, `int`.
+            - If `channel` was not given neither as ``Channel``, `str`, `int`.
             - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         ValueError
             If `channel` was given as `str`, `int`, but not as a valid snowflake.
         """
-        channel_id = instance_or_id_to_snowflake(channel, ChannelBase, 'channel')
+        channel_id = instance_or_id_to_snowflake(channel, Channel, 'channel')
         handler = _convert_handler(handler)
         
         self = object.__new__(cls)
@@ -2082,7 +2082,7 @@ class is_any_channel(_check_base):
         
         Parameters
         ----------
-        channels : `iterable` of (`str`, `int`, ``ChannelBase``)
+        channels : `iterable` of (`str`, `int`, ``Channel``)
             Channels to where the message should be sent.
         handler : `None`, `async-callable` or instantiable to `async-callable` = `None`, Optional
             The handler to convert.
@@ -2105,7 +2105,7 @@ class is_any_channel(_check_base):
         ------
         TypeError
             - If `channels` was not given as an `iterable`.
-            - If an element of `channels` was not given neither as ``ChannelBase``, `str`, `int`.
+            - If an element of `channels` was not given neither as ``Channel``, `str`, `int`.
             - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         ValueError
             If an element of `channels` was given as `str`, `int`, but not as a valid snowflake.
@@ -2113,13 +2113,13 @@ class is_any_channel(_check_base):
         channels_type = channels.__class__
         if not hasattr(channels_type, '__iter__'):
             raise TypeError(
-                f'`channels` can be `iterable` of (`str`, `int`, `{ChannelBase.__name__}`), '
+                f'`channels` can be `iterable` of (`str`, `int`, `{Channel.__name__}`), '
                 f'got {channels_type.__name__}; {channels!r}.'
             )
         
         channel_ids_processed = set()
         for channel in channels:
-            channel_id = instance_or_id_to_snowflake(channel, ChannelBase, 'channel')
+            channel_id = instance_or_id_to_snowflake(channel, Channel, 'channel')
             channel_ids_processed.add(channel_id)
         
         channel_ids_processed_length = len(channel_ids_processed)
@@ -2189,7 +2189,7 @@ class nsfw_channel_only(_check_base):
             Whether the check passed.
         """
         channel = message.channel
-        if (isinstance(channel, ChannelText) and channel.nsfw):
+        if (isinstance(channel, Channel) and channel.nsfw):
             return True
         
         return False
@@ -2476,7 +2476,7 @@ class is_in_category(_check_base):
         
         Parameters
         ----------
-        category : `str`, `int`, ``ChannelCategory``, ``Guild``
+        category : `str`, `int`, ``Channel``, ``Guild``
             The category, within sent messages pass the check.
             
             If you want to check those channels, which are not in any category, pass the respective ``Guild`` instead.
@@ -2501,12 +2501,12 @@ class is_in_category(_check_base):
         Raises
         ------
         TypeError
-            - If `category` was not given neither as ``ChannelCategory``, ``Guild``, `str`, `int`.
+            - If `category` was not given neither as ``Channel``, ``Guild``, `str`, `int`.
             - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         ValueError
             If `category` was given as `str`, `int`, but not as a valid snowflake.
         """
-        category_id = instance_or_id_to_snowflake(category, (ChannelCategory, Guild), 'category')
+        category_id = instance_or_id_to_snowflake(category, (Channel, Guild), 'category')
         handler = _convert_handler(handler)
         
         self = object.__new__(cls)
@@ -2533,7 +2533,7 @@ class is_in_category(_check_base):
             Whether the check passed.
         """
         channel = message.channel
-        if not isinstance(channel, ChannelGuildBase):
+        if not isinstance(channel, Channel):
             return False
         
         parent = channel.parent
@@ -2571,7 +2571,7 @@ class is_in_any_category(_check_base):
         
         Parameters
         ----------
-        categories : `iterable` of (`str`, `int`, ``ChannelCategory``, ``Guild``)
+        categories : `iterable` of (`str`, `int`, ``Channel``, ``Guild``)
             The categories, within sent messages pass the check.
             
             If you want to check those channels, which are not in any category, pass the respective ``Guild`` instead.
@@ -2597,7 +2597,7 @@ class is_in_any_category(_check_base):
         ------
         TypeError
             - If `categories` was not given as an `iterable`.
-            - If an element of `categories` was not given neither as ``ChannelCategory``, ``Guild``, `str`, `int`
+            - If an element of `categories` was not given neither as ``Channel``, ``Guild``, `str`, `int`
                 instance.
             - If `handler` was given as an invalid type, or it accepts a bad amount of parameters.
         ValueError
@@ -2606,13 +2606,13 @@ class is_in_any_category(_check_base):
         categories_type = categories.__class__
         if not hasattr(categories_type, '__iter__'):
             raise TypeError(
-                f'`categories` can be `iterable` of (`str`, `int`, `{ChannelCategory.__name__}`, `{Guild.__name__}`), '
+                f'`categories` can be `iterable` of (`str`, `int`, `{Channel.__name__}`, `{Guild.__name__}`), '
                 f'got {categories_type.__name__}; {categories!r}.'
             )
         
         category_ids_processed = set()
         for category in categories:
-            category_id = instance_or_id_to_snowflake(category, (ChannelCategory, Guild), 'category')
+            category_id = instance_or_id_to_snowflake(category, (Channel, Guild), 'category')
             category_ids_processed.add(category_id)
         
         category_ids_processed_length = len(category_ids_processed)
@@ -2648,7 +2648,7 @@ class is_in_any_category(_check_base):
             Whether the check passed.
         """
         channel = message.channel
-        if not isinstance(channel, ChannelGuildBase):
+        if not isinstance(channel, Channel):
             return False
         
         parent = channel.parent

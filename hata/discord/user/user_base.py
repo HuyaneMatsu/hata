@@ -443,7 +443,7 @@ class UserBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        thread_profiles : `None`, `dict` (``ChannelThread``, ``ThreadProfile``) items
+        thread_profiles : `None`, `dict` (``Channel``, ``ThreadProfile``) items
         """
         return None
     

@@ -79,7 +79,7 @@ class WebhookBase(UserBase):
         
         Returns
         -------
-        channel : `None`, ``ChannelText``
+        channel : `None`, ``Channel``
         """
         return CHANNELS.get(self.channel_id, None)
     

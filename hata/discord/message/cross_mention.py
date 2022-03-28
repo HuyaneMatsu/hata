@@ -3,11 +3,11 @@ __all__ = ('UnknownCrossMention', )
 from scarletio import include
 
 from ..bases import DiscordEntity
-from ..core import CHANNELS
+from ..core import CHANNELS, GUILDS
 from ..utils import DATETIME_FORMAT_CODE
 
 
-ChannelBase = include('ChannelBase')
+Channel = include('Channel')
 
 
 class UnknownCrossMention(DiscordEntity):
@@ -40,7 +40,7 @@ class UnknownCrossMention(DiscordEntity):
         
         Returns
         -------
-        channel : ``UnknownCrossMention``, ``ChannelGuildBase``
+        channel : ``UnknownCrossMention``, ``Channel``
         """
         channel_id = int(data['id'])
         try:
@@ -54,46 +54,58 @@ class UnknownCrossMention(DiscordEntity):
         
         return channel
     
+    
     def __gt__(self, other):
         """Returns whether this unknown cross mention's id is greater than the other's."""
-        if (type(other) is not UnknownCrossMention) and (not isinstance(other, ChannelBase)):
+        if (type(other) is not UnknownCrossMention) and (not isinstance(other, Channel)):
             return NotImplemented
+        
         return self.id > other.id
+    
     
     def __ge__(self, other):
         """Returns whether this unknown cross mention's id is greater or equal to the other's."""
-        if (type(other) is not UnknownCrossMention) and (not isinstance(other, ChannelBase)):
+        if (type(other) is not UnknownCrossMention) and (not isinstance(other, Channel)):
             return NotImplemented
+        
         return self.id >= other.id
+    
     
     def __eq__(self, other):
         """Returns whether this unknown cross mention's id is equal to the other's."""
-        if (type(other) is not UnknownCrossMention) and (not isinstance(other, ChannelBase)):
+        if (type(other) is not UnknownCrossMention) and (not isinstance(other, Channel)):
             return NotImplemented
+        
         return self.id == other.id
+    
     
     def __ne__(self, other):
         """Returns whether this unknown cross mention's id is not equal to the other's."""
-        if (type(other) is not UnknownCrossMention) and (not isinstance(other, ChannelBase)):
+        if (type(other) is not UnknownCrossMention) and (not isinstance(other, Channel)):
             return NotImplemented
+        
         return self.id != other.id
+    
     
     def __le__(self, other):
         """Returns whether this unknown cross mention's id is less or equal to the other's."""
-        if (type(other) is not UnknownCrossMention) and (not isinstance(other, ChannelBase)):
+        if (type(other) is not UnknownCrossMention) and (not isinstance(other, Channel)):
             return NotImplemented
+        
         return self.id <= other.id
+    
     
     def __lt__(self, other):
         """Returns whether this unknown cross mention's id is less than the other's."""
-        if (type(other) is not UnknownCrossMention) and (not isinstance(other, ChannelBase)):
+        if (type(other) is not UnknownCrossMention) and (not isinstance(other, Channel)):
             return NotImplemented
+        
         return self.id < other.id
     
     
     def __format__(self, code):
         """
-        Formats the unknown cross mention ina format string. Check ``ChannelBase.__format__`` for available format
+        Formats the unknown cross mention ina format string. Check ``Channel.__format__`` for available format
         codes.
         
         Parameters
@@ -136,6 +148,7 @@ class UnknownCrossMention(DiscordEntity):
         """
         return []
     
+    
     @property
     def display_name(self):
         """
@@ -162,6 +175,7 @@ class UnknownCrossMention(DiscordEntity):
         # Should not happen
         return name
     
+    
     @property
     def guild(self):
         """
@@ -171,7 +185,8 @@ class UnknownCrossMention(DiscordEntity):
         -------
         guild : `None`
         """
-        return None
+        return GUILDS.get(self.guild_id, None)
+    
     
     @property
     def mention(self):
@@ -183,6 +198,7 @@ class UnknownCrossMention(DiscordEntity):
         mention : `str`
         """
         return f'<#{self.id}>'
+    
     
     @property
     def partial(self):

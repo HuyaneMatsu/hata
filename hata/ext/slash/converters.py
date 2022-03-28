@@ -4,8 +4,9 @@ import reprlib
 
 from scarletio import CallableAnalyzer, copy_docs, un_map_pack
 
-from ...discord.channel import (
-    CHANNEL_TYPES, ChannelBase, ChannelCategory, ChannelDirectory, ChannelGroup, ChannelGuildBase, ChannelGuildMainBase,
+from ...discord.channel import CHANNEL_TYPES
+from ...discord.channel.deprecation import (
+    ChannelBase, ChannelCategory, ChannelDirectory, ChannelGroup, ChannelGuildBase, ChannelGuildMainBase,
     ChannelPrivate, ChannelStage, ChannelStore, ChannelText, ChannelTextBase, ChannelThread, ChannelVoice,
     ChannelVoiceBase
 )
@@ -388,7 +389,7 @@ async def converter_role(client, interaction_event, value):
 
 async def converter_channel(client, interaction_event, value):
     """
-    Converter for ``ApplicationCommandInteractionOption`` value to ``ChannelBase``.
+    Converter for ``ApplicationCommandInteractionOption`` value to ``Channel``.
     
     This function is a coroutine.
     
@@ -403,7 +404,7 @@ async def converter_channel(client, interaction_event, value):
     
     Returns
     -------
-    value : `None`, ``ChannelBase``
+    value : `None`, ``Channel``
         If conversion fails, then returns `None`.
     """
     channel_id = await converter_snowflake(client, interaction_event, value)

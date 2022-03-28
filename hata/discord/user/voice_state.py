@@ -12,7 +12,7 @@ create_partial_role_from_id = include('create_partial_role_from_id')
 
 class VoiceState:
     """
-    Represents a user at a ``ChannelVoice``.
+    Represents a user at a ``Channel``.
     
     Attributes
     ----------
@@ -27,14 +27,14 @@ class VoiceState:
     is_speaker : `bool`
         Whether the user is suppressed inside of the voice channel.
         
-        If the channel is a ``ChannelVoice``, it is always `False`, meanwhile it ``ChannelStage`` it can vary.
+        If the channel is a ``Channel``, it is always `False`, meanwhile it ``Channel`` it can vary.
     
     mute : `bool`
         Whether the user is muted.
     requested_to_speak_at : `None`, `datetime`
         When the user requested to speak.
         
-        Only applicable if the user is connected to a ``ChannelStage``.
+        Only applicable if the user is connected to a ``Channel``.
     
     self_deaf : `bool`
         Whether the user muted everyone else.
@@ -144,7 +144,7 @@ class VoiceState:
         
         Returns
         -------
-        channel : `None`, ``ChannelVoiceBase``
+        channel : `None`, ``Channel``
         """
         channel_id = self.channel_id
         if channel_id:

@@ -10,15 +10,33 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 
 - Add `should_request_users` parameter to `Client` constructor.
 - Add `Channel` type inheriting all methods & properties of the old `ChannelBase`.
-- Add `Channel.is_messageable`.
-- Add `Channel.is_guild_messageable`.
-- Add `Channel.is_guild_text_like`.
-- Add `Channel.is_connectable`.
-- Add `Channel.is_guild_connectable`.
+- Add `Channel.is_in_group_messageable`.
+- Add `Channel.is_in_group_guild_messageable`.
+- Add `Channel.is_in_group_guild_text_like`.
+- Add `Channel.is_in_group_connectable`.
+- Add `Channel.is_in_group_guild_connectable`.
+- Add `Channel.is_in_group_private`.
+- Add `Channel.is_in_group_guild`.
+- Add `Channel.is_in_group_thread`.
+- Add `Channel.is_in_group_can_contain_threads`.
+- Add `Channel.is_guild_text`.
 - Add `Channel.is_private`.
-- Add `Channel.is_guild`.
+- Add `Channel.is_guild_voice`.
+- Add `Channel.is_private_group`.
+- Add `Channel.is_guild_category`.
+- Add `Channel.is_guild_announcements`.
+- Add `Channel.is_guild_store`.
 - Add `Channel.is_thread`.
-- Add `Channel.can_contain_threads`.
+- Add `Channel.is_guild_thread_announcements`.
+- Add `Channel.is_guild_thread_public`.
+- Add `Channel.is_guild_thread_private`.
+- Add `Channel.is_guild_stage`.
+- Add `Channel.is_guild_directory`.
+- Add `Channel.is_guild_forum`.
+- Add `CHANNEL_TYPES.GROUP_IN_PRODUCTION`.
+- Add `get_channel_type_name`.
+- Add `get_channel_type_names`.
+
 
 #### Renames, Deprecation & Removals
 

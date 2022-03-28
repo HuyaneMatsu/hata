@@ -558,19 +558,17 @@ class Channel(DiscordEntity, immortal=True):
     
     
     @classmethod
-    def _from_partial_data(cls, data, channel_id, channel_type, guild_id):
+    def _from_partial_data(cls, data, channel_id, guild_id):
         """
         Creates a channel from partial data. Called by ``create_partial_channel_from_data`` when a new
         partial channel is needed to be created.
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `None`, `dict` of (`str`, `Any`) items
             Partial channel data.
         channel_id : `int`
             The channel's id.
-        channel_type : `int`
-            The channel's type identifier.
         guild_id : `int`
             The channel's guild's identifier if applicable.
         
@@ -581,7 +579,10 @@ class Channel(DiscordEntity, immortal=True):
         self = object.__new__(cls)
         self.id = channel_id
         self.guild_id = guild_id
-        self.metadata = get_channel_metadata_type(channel_type)._from_partial_data(data)
+        self.metadata = get_channel_metadata_type(data.get('type', -1))._from_partial_data(data)
+        
+        CHANNELS.setdefault(channel_id, self)
+        
         return self
     
     
@@ -1809,29 +1810,29 @@ class Channel(DiscordEntity, immortal=True):
     
     # ---- Utility methods ----
     
-    def is_messageable(self):
+    def is_in_group_messageable(self):
         """
         Returns whether the channel is messageable.
         
         Returns
         -------
-        is_messageable : `bool`
+        is_in_group_messageable : `bool`
         """
         return self.metadata.type in CHANNEL_TYPES.GROUP_MESSAGEABLE
     
     
-    def is_guild_messageable(self):
+    def is_in_group_guild_messageable(self):
         """
         Returns whether the channel is a guild and messageable one.
         
         Returns
         -------
-        is_guild_messageable : `bool`
+        is_in_group_guild_messageable : `bool`
         """
         return self.metadata.type in CHANNEL_TYPES.GROUP_GUILD_MESSAGEABLE
     
     
-    def is_guild_text_like(self):
+    def is_in_group_guild_text_like(self):
         """
         Returns whether the channel a guild text like channel.
         
@@ -1839,12 +1840,12 @@ class Channel(DiscordEntity, immortal=True):
         
         Returns
         -------
-        is_guild_text_like : `bool`
+        is_in_group_guild_text_like : `bool`
         """
         return self.metadata.type in CHANNEL_TYPES.GROUP_GUILD_TEXT_LIKE
     
     
-    def is_connectable(self):
+    def is_in_group_connectable(self):
         """
         Returns whether the channel is connectable.
         
@@ -1853,61 +1854,223 @@ class Channel(DiscordEntity, immortal=True):
         
         Returns
         -------
-        is_connectable : `bool`
+        is_in_group_connectable : `bool`
         """
         return self.metadata.type in CHANNEL_TYPES.GROUP_CONNECTABLE
     
     
-    def is_guild_connectable(self):
+    def is_in_group_guild_connectable(self):
         """
         Returns whether the channel is a guild connectable channel.
         
         Returns
         -------
-        is_guild_connectable : `bool`
+        is_in_group_guild_connectable : `bool`
         """
         return self.metadata.type in CHANNEL_TYPES.GROUP_GUILD_CONNECTABLE
     
     
-    def is_private(self):
+    def is_in_group_private(self):
         """
         Returns whether the channel is a private channel.
         
         Returns
         -------
-        is_private : `bool`
+        is_in_group_private : `bool`
         """
         return self.metadata.type in CHANNEL_TYPES.GROUP_PRIVATE
     
     
-    def is_guild(self):
+    def is_in_group_guild(self):
         """
         Returns whether the channel is a guild channel.
         
         Returns
         -------
-        is_guild : `bool`
+        is_in_group_guild : `bool`
         """
         return self.metadata.type in CHANNEL_TYPES.GROUP_GUILD
     
     
-    def is_thread(self):
+    def is_in_group_thread(self):
         """
         Returns whether the channel is a thread.
         
         Returns
         -------
-        is_thread : `bool`
+        is_in_group_thread : `bool`
         """
         return self.metadata.type in CHANNEL_TYPES.GROUP_THREAD
     
     
-    def can_contain_threads(self):
+    def is_in_group_can_contain_threads(self):
         """
         Returns whether the channel can have threads.
         
         Returns
         -------
-        can_contain_threads : `bool`
+        is_in_group_can_contain_threads : `bool`
         """
         return self.metadata.type in CHANNEL_TYPES.GROUP_CAN_CONTAIN_THREADS
+    
+    
+    def is_guild_text(self):
+        """
+        Returns whether the channel is a guild text channel.
+        
+        > Excludes Announcements and thread channels.
+        
+        Returns
+        -------
+        is_guild_text : `bool`
+        """
+        return self.metadata.type in CHANNEL_TYPES.guild_text
+    
+    
+    def is_private(self):
+        """
+        Returns whether the channel is a private or direct message (DM) channel.
+        
+        Returns
+        -------
+        is_private : `bool`
+        """
+        return self.metadata.type in CHANNEL_TYPES.private
+        
+        
+    def is_guild_voice(self):
+        """
+        Returns whether the guild is a guild voice channel.
+        
+        > Excludes stage channels.
+        
+        Returns
+        -------
+        is_guild_voice : `bool`
+        """
+        return self.metadata.type in CHANNEL_TYPES.guild_voice
+    
+    
+    def is_private_group(self):
+        """
+        Returns whether the channel is a private group channel.
+        
+        Returns
+        -------
+        is_private_group : `bool`
+        """
+        return self.metadata.type in CHANNEL_TYPES.private_group
+    
+    
+    def is_guild_category(self):
+        """
+        Returns whether the guild is a guild directory channel.
+        
+        Returns
+        -------
+        is_guild_category : `bool`
+        """
+        return self.metadata.type in CHANNEL_TYPES.guild_category
+    
+    
+    def is_guild_announcements(self):
+        """
+        Returns whether the channel is a guild announcements channel.
+        
+        Returns
+        -------
+        is_guild_announcements : `bool`
+        """
+        return self.metadata.type in CHANNEL_TYPES.guild_announcements
+    
+    
+    def is_guild_store(self):
+        """
+        Returns whether the channel is a guild store channels.
+        
+        > Store channels are deprecated & removed from Discord.
+        
+        Returns
+        -------
+        is_guild_store : `bool`
+        """
+        return self.metadata.type in CHANNEL_TYPES.guild_store
+    
+    
+    def is_thread(self):
+        """
+        Returns whether the channel is a thread channel.
+        
+        > This thread channel type never made into Discord.
+        
+        Returns
+        -------
+        is_thread : `bool`
+        """
+        return self.metadata.type in CHANNEL_TYPES.thread
+    
+    
+    def is_guild_thread_announcements(self):
+        """
+        Returns whether the channel is a guild announcements thread.
+        
+        Returns
+        -------
+        is_guild_thread_announcements : `bool`
+        """
+        return self.metadata.type in CHANNEL_TYPES.guild_thread_announcements
+    
+    
+    def is_guild_thread_public(self):
+        """
+        Returns whether the channel is a guild public thread.
+        
+        Returns
+        -------
+        is_guild_thread_public : `bool`
+        """
+        return self.metadata.type in CHANNEL_TYPES.guild_thread_public
+    
+    
+    def is_guild_thread_private(self):
+        """
+        Returns whether the channel is a guild private thread.
+        
+        Returns
+        -------
+        is_guild_thread_private : `bool`
+        """
+        return self.metadata.type in CHANNEL_TYPES.guild_thread_private
+    
+    
+    def is_guild_stage(self):
+        """
+        Returns whether the channel is a guild stage channel.
+        
+        Returns
+        -------
+        is_guild_stage : `bool`
+        """
+        return self.metadata.type in CHANNEL_TYPES.guild_stage
+    
+    
+    def is_guild_directory(self):
+        """
+        Returns whether the channel is a guild directory channel.
+        
+        Returns
+        -------
+        is_guild_directory : `bool`
+        """
+        return self.metadata.type in CHANNEL_TYPES.guild_directory
+    
+    
+    def is_guild_forum(self):
+        """
+        Returns whether the channel is a guild forum channel.
+        
+        Returns
+        -------
+        is_guild_forum : `bool`
+        """
+        return self.metadata.type in CHANNEL_TYPES.guild_forum

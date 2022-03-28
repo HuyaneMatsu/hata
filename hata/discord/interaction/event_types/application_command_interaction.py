@@ -27,7 +27,7 @@ class ApplicationCommandInteraction(DiscordEntity, InteractionFieldBase):
         The parameters and values from the user if any. Defaults to `None` if non is received.
     resolved_attachments : `None`, `dict` of (`int`, `Attachment``) items
         Resolved received attachments stored by their identifier as keys if any.
-    resolved_channels : `None`, `dict` of (`int`, ``ChannelBase``) items
+    resolved_channels : `None`, `dict` of (`int`, ``Channel``) items
         Resolved received channels stored by their identifier as keys if any.
     resolved_roles : `None`, `dict` of (`int`, ``Role``) items
         Resolved received roles stored by their identifier as keys if any.

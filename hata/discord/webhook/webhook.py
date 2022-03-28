@@ -211,7 +211,7 @@ class Webhook(WebhookBase):
         
         user : ``ClientUserBase``, Optional (Keyword only)
             The webhook's ``.user``.
-        channel : ``ChannelText``, Optional (Keyword only)
+        channel : ``Channel``, Optional (Keyword only)
             The webhook's ``.channel``.
         application_id : `int`, Optional (Keyword only)
             The application's id what created the webhook.
@@ -307,7 +307,7 @@ class Webhook(WebhookBase):
         ----------
         data : `dict` of (`str`, `Any`) items
             Received webhook data.
-        source_channel : ``ChannelText``
+        source_channel : ``Channel``
             The followed channel.
         target_channel_id : `int`
             The target channel's identifier where the webhook messages will be sent.

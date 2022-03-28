@@ -570,7 +570,7 @@ class VoiceClient:
         
         Parameters
         ---------
-        channel : ``ChannelVoiceBase``, `int`
+        channel : ``Channel``, `int`
             The channel where the voice client will move to.
         
         Returns
@@ -581,7 +581,7 @@ class VoiceClient:
         Raises
         ------
         TypeError
-            If  `channel` was not given as ``ChannelVoiceBase`` not `int`.
+            If  `channel` was not given as ``Channel`` not `int`.
         """
         if isinstance(channel, ChannelVoiceBase):
             channel_id = channel.id
@@ -788,7 +788,7 @@ class VoiceClient:
     
     def is_connected(self):
         """
-        Returns whether the voice client is connected to a ``ChannelVoice``.
+        Returns whether the voice client is connected to a ``Channel``.
         
         Returns
         -------
@@ -1335,7 +1335,7 @@ class VoiceClient:
         
         Returns
         -------
-        channel : `None`, ``ChannelVoiceBase``
+        channel : `None`, ``Channel``
         """
         return CHANNELS.get(self.channel_id, None)
     

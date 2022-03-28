@@ -6,7 +6,7 @@ from scarletio import Task, include
 
 from ...env import ALLOW_DEAD_EVENTS, CACHE_PRESENCE, CACHE_USER
 
-from ..channel import CHANNEL_TYPE_MAP, ChannelGuildBase, ChannelGuildUndefined, ChannelPrivate, ChannelThread
+from ..channel import Channel
 from ..core import (
     APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, CHANNELS, CLIENTS, GUILDS, KOKORO, MESSAGES, SCHEDULED_EVENTS,
     STAGES, USERS
@@ -87,7 +87,7 @@ def READY(client, data):
         pass
     else:
         for channel_private_data in channel_private_datas:
-            CHANNEL_TYPE_MAP.get(channel_private_data['type'], ChannelGuildUndefined)(channel_private_data, client, 0)
+            Channel(channel_private_data, client, 0)
     
     old_application_id = client.application.id
     client.application._create_update(data['application'], True)
@@ -153,7 +153,7 @@ def MESSAGE_CREATE__CAL(client, data):
         if data.get('guild_id', None) is not None:
             return
         
-        channel = ChannelPrivate._create_private_data_less(channel_id)
+        channel = Channel._create_private_data_less(channel_id)
         message = channel._create_new_message(data)
         channel._finish_private_data_less(client, message.author)
     else:
@@ -169,7 +169,7 @@ def MESSAGE_CREATE__OPT(client, data):
         if data.get('guild_id', None) is not None:
             return
         
-        channel = ChannelPrivate._create_private_data_less(channel_id)
+        channel = Channel._create_private_data_less(channel_id)
         message = channel._create_new_message(data)
         channel._finish_private_data_less(client, message.author)
     else:
@@ -220,7 +220,7 @@ if ALLOW_DEAD_EVENTS:
         else:
             clients = filter_clients(
                 channel.clients,
-                INTENT_MASK_GUILD_MESSAGES if isinstance(channel, ChannelGuildBase) else INTENT_MASK_DIRECT_MESSAGES,
+                INTENT_MASK_GUILD_MESSAGES if channel.is_in_group_guild() else INTENT_MASK_DIRECT_MESSAGES,
                 client,
             )
             
@@ -277,7 +277,7 @@ else:
         
         clients = filter_clients(
             channel.clients,
-            INTENT_MASK_GUILD_MESSAGES if isinstance(channel, ChannelGuildBase) else INTENT_MASK_DIRECT_MESSAGES,
+            INTENT_MASK_GUILD_MESSAGES if channel.is_in_group_guild() else INTENT_MASK_DIRECT_MESSAGES,
             client,
         )
         
@@ -321,7 +321,7 @@ def MESSAGE_DELETE__OPT_MC(client, data):
     
     if first_client(
         channel.clients,
-        INTENT_MASK_GUILD_MESSAGES if isinstance(channel, ChannelGuildBase) else INTENT_MASK_DIRECT_MESSAGES,
+        INTENT_MASK_GUILD_MESSAGES if channel.is_in_group_guild() else INTENT_MASK_DIRECT_MESSAGES,
         client,
     ) is not client:
         return
@@ -704,7 +704,7 @@ if ALLOW_DEAD_EVENTS:
         else:
             clients = filter_clients(
                 channel.clients,
-                INTENT_MASK_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_MASK_DIRECT_REACTIONS,
+                INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
                 client,
             )
             if clients.send(None) is not client:
@@ -759,7 +759,7 @@ else:
         
         channel = message.channel
         clients = filter_clients(channel.clients,
-            INTENT_MASK_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_MASK_DIRECT_REACTIONS,
+            INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
             client,
         )
         if clients.send(None) is not client:
@@ -797,7 +797,7 @@ def MESSAGE_REACTION_ADD__OPT_MC(client, data):
     channel = message.channel
     if first_client(
         channel.clients,
-        INTENT_MASK_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_MASK_DIRECT_REACTIONS,
+        INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
         client,
     ) is not client:
         return
@@ -861,7 +861,7 @@ if ALLOW_DEAD_EVENTS:
         else:
             clients = filter_clients(
                 channel.clients,
-                INTENT_MASK_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_MASK_DIRECT_REACTIONS,
+                INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
                 client,
             )
             if clients.send(None) is not client:
@@ -922,7 +922,7 @@ else:
         channel = message.channel
         clients = filter_clients(
             channel.clients,
-            INTENT_MASK_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_MASK_DIRECT_REACTIONS,
+            INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
             client,
         )
         if clients.send(None) is not client:
@@ -962,7 +962,7 @@ def MESSAGE_REACTION_REMOVE_ALL__OPT_MC(client, data):
     channel = message.channel
     if first_client(
         channel.clients,
-        INTENT_MASK_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_MASK_DIRECT_REACTIONS,
+        INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
         client,
     ) is not client:
         return
@@ -1025,7 +1025,7 @@ if ALLOW_DEAD_EVENTS:
         else:
             clients = filter_clients(
                 channel.clients,
-                INTENT_MASK_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_MASK_DIRECT_REACTIONS,
+                INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
                 client,
             )
             if clients.send(None) is not client:
@@ -1084,7 +1084,7 @@ else:
         channel = message.channel
         clients = filter_clients(
             channel.clients,
-            INTENT_MASK_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_MASK_DIRECT_REACTIONS,
+            INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
             client,
         )
         if clients.send(None) is not client:
@@ -1122,7 +1122,7 @@ def MESSAGE_REACTION_REMOVE__OPT_MC(client, data):
     channel = message.channel
     if first_client(
         channel.clients,
-        INTENT_MASK_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_MASK_DIRECT_REACTIONS,
+        INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
         client,
     ) is not client:
         return
@@ -1184,7 +1184,7 @@ if ALLOW_DEAD_EVENTS:
         else:
             clients = filter_clients(
                 channel.clients,
-                INTENT_MASK_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_MASK_DIRECT_REACTIONS,
+                INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
                 client,
             )
             if clients.send(None) is not client:
@@ -1243,7 +1243,7 @@ else:
         channel = message.channel
         clients = filter_clients(
             channel.clients,
-            INTENT_MASK_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_MASK_DIRECT_REACTIONS,
+            INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
             client,
         )
         if clients.send(None) is not client:
@@ -1279,7 +1279,7 @@ def MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC(client, data):
     channel = message.channel
     if first_client(
         channel.clients,
-        INTENT_MASK_GUILD_REACTIONS if isinstance(channel, ChannelGuildBase) else INTENT_MASK_DIRECT_REACTIONS,
+        INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
         client,
     ) is not client:
         return
@@ -1528,7 +1528,7 @@ def CHANNEL_DELETE__CAL_SC(client, data):
     except KeyError:
         return
     
-    if isinstance(channel, ChannelGuildBase):
+    if channel.is_in_group_guild():
         guild = channel.guild
         if guild is None:
             return
@@ -1544,7 +1544,7 @@ def CHANNEL_DELETE__CAL_MC(client, data):
     except KeyError:
         return
     
-    if isinstance(channel, ChannelGuildBase):
+    if channel.is_in_group_guild():
         clients = filter_clients(channel.clients, INTENT_MASK_GUILDS, client)
         if clients.send(None) is not client:
             clients.close()
@@ -1667,8 +1667,7 @@ def THREAD_UPDATE__CAL_SC(client, data):
         else:
             guild_id = int(guild_id)
         
-        channel_type = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)
-        channel = channel_type(data, client, guild_id)
+        channel = Channel(data, client, guild_id)
         old_attributes = None
         
     else:
@@ -1702,8 +1701,7 @@ def THREAD_UPDATE__CAL_MC(client, data):
             return
     
     if channel is None:
-        channel_type = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)
-        channel = channel_type(data, client, guild_id)
+        channel = Channel(data, client, guild_id)
         old_attributes = None
     else:
         old_attributes = channel._difference_update_attributes(data)
@@ -1733,8 +1731,7 @@ def THREAD_UPDATE__OPT_SC(client, data):
         else:
             guild_id = int(guild_id)
         
-        channel_type = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)
-        channel_type(data, client, guild_id)
+        Channel(data, client, guild_id)
     else:
         channel._update_attributes(data)
 
@@ -1760,8 +1757,7 @@ def THREAD_UPDATE__OPT_MC(client, data):
             return
     
     if (channel is None):
-        channel_type = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)
-        channel_type(data, client, guild_id)
+        Channel(data, client, guild_id)
     else:
         channel._update_attributes(data)
 
@@ -1778,28 +1774,24 @@ del THREAD_UPDATE__CAL_SC, \
     THREAD_UPDATE__OPT_MC
 
 def CHANNEL_CREATE__CAL(client, data):
-    channel_type = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)
-    
     guild_id = data.get('guild_id', None)
     if guild_id is None:
-        channel_type(data, client, 0)
+        Channel(data, client, 0)
         return
     
     guild_id = int(guild_id)
-    channel = channel_type(data, client, guild_id)
+    channel = Channel(data, client, guild_id)
     
     Task(client.events.channel_create(client, channel), KOKORO)
 
 def CHANNEL_CREATE__OPT(client, data):
-    channel_type = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)
-    
     guild_id = data.get('guild_id', None)
     if guild_id is None:
         guild_id = 0
     else:
         guild_id = int(guild_id)
     
-    channel_type(data, client, guild_id)
+    Channel(data, client, guild_id)
 
 
 add_parser(
@@ -3944,7 +3936,7 @@ def THREAD_LIST_SYNC(client, data):
     
     thread_channel_datas = data['threads']
     for thread_channel_data in thread_channel_datas:
-        ChannelThread(thread_channel_data, client, guild_id)
+        Channel(thread_channel_data, client, guild_id)
     
     thread_user_datas = data['members']
     for thread_user_data in thread_user_datas:

@@ -56,7 +56,7 @@ class Invite(DiscordEntity, immortal=True):
         as `0`.
     approximate_user_count : `int`
         The approximate amount of users at the respective guild (or group channel). If not included, then set as `0`.
-    channel : `None`, ``ChannelText``, ``ChannelVoice``, ``ChannelStore``, ``ChannelGroup``, ``ChannelDirectory``
+    channel : `None`, ``Channel``
         The channel where the invite redirects. If it is announcements or store channel, then the invite is a lurk
         invite. If channel data was not sent with the invite's, then this attribute is set as `None`.
     code : `str`
@@ -471,8 +471,7 @@ class Invite(DiscordEntity, immortal=True):
             The amount of online users at the respective guild (or group channel).
         approximate_user_count : `int`, Optional (Keyword only)
             The amount of users at the respective guild (or group channel).
-        channel : `None`, ``ChannelText``, ``ChannelVoice``, ``ChannelStore``, ``ChannelGroup``, \
-                ``ChannelDirectory``, Optional (Keyword only)
+        channel : `None`, ``Channel``, Optional (Keyword only)
             The channel where the invite redirects.
         created_at : `datetime`, Optional (Keyword only)
             When the invite was created.

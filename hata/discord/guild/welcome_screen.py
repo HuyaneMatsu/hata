@@ -4,7 +4,7 @@ import reprlib
 
 from scarletio import BaseMethodDescriptor
 
-from ..channel import ChannelBase, ChannelText
+from ..channel import CHANNEL_TYPES, Channel
 from ..core import CHANNELS
 from ..emoji import Emoji, create_partial_emoji_from_data
 from ..preconverters import preconvert_snowflake
@@ -159,7 +159,7 @@ class WelcomeChannel:
         
         Other Parameters
         ----------------
-        channel : ``ChannelTextBase``, `int`, Optional
+        channel : ``Channel``, `int`, Optional
             The channel of the welcome screen.
         channel_id : `int`, optional
             Alias of `channel`, tho it accepts only snowflake.
@@ -177,8 +177,8 @@ class WelcomeChannel:
         Raises
         ------
         TypeError
-            - If `channel` parameter was given as a channel, but not as ``ChannelText``.
-            - If `channel` parameter was not given neither as ``ChannelText``, `int`.
+            - If `channel` parameter was given as a channel, but not as ``Channel``.
+            - If `channel` parameter was not given neither as ``Channel``, `int`.
             - If `channel_id` was given but neither as `int`, `str`.
             - If `description` was not given as `str`.
             - If `emoji` was not given as ``Emoji``.
@@ -195,13 +195,14 @@ class WelcomeChannel:
             except KeyError:
                 pass
             else:
-                if isinstance(channel, ChannelText):
-                    channel_id = channel.id
-                elif isinstance(channel, ChannelBase):
-                    raise TypeError(
-                        f'`channel` can be `{ChannelText.__name__}`, `int`, got {channel.__class__.__name__}; '
-                        f'{channel!r}.'
-                    )
+                if isinstance(channel, Channel):
+                    if channel.is_in_group_guild_text_like() or channel.partial:
+                        channel_id = channel.id
+                    else:
+                        raise ValueError(
+                            f'`channel` can be `guild-text-like`, `int`, got {channel!r}.'
+                        )
+                
                 else:
                     channel_id = preconvert_snowflake(channel, 'channel')
                 
@@ -278,13 +279,13 @@ class WelcomeChannel:
         
         Returns
         -------
-        channel : ``ChannelText``
+        channel : ``Channel``
         """
         channel_id = self.channel_id
         try:
             channel = CHANNELS[channel_id]
         except KeyError:
-            channel = ChannelText._from_partial_data(None, channel_id, None)
+            channel = Channel._from_partial_data({'type': CHANNEL_TYPES.guild_text}, channel_id, 0)
         
         return channel
     

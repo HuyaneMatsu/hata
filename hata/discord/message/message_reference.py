@@ -9,7 +9,7 @@ class MessageReference:
     
     Attributes
     ----------
-    _channel : `object`, `None`, ``ChannelBase``
+    _channel : `object`, `None`, ``Channel``
         Internal slot used by the ``.channel`` property.
     _guild : `object`, `None`, ``Guild``
         Internal used by the ``.guild`` property.
@@ -81,7 +81,7 @@ class MessageReference:
         
         Returns
         -------
-        channel : `None`, ``ChannelBase``
+        channel : `None`, ``Channel``
         """
         channel = self._channel
         if channel is ...:

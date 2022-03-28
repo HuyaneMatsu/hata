@@ -179,7 +179,7 @@ class Guild(DiscordEntity, immortal=True):
         Whether the guild has the boost progress bar enabled.
     booster_count : `int`
         The total number of boosts of the guild.
-    channels : `dict` of (`int`, ``ChannelGuildBase``) items
+    channels : `dict` of (`int`, ``Channel``) items
         The channels of the guild stored in `channel_id` - `channel` relation.
     clients : `list` of ``Client``
         The loaded clients, who are the member of the guild. If no clients are member of a guild, it is partial.
@@ -248,7 +248,7 @@ class Guild(DiscordEntity, immortal=True):
         The scheduled events of the guild.
     system_channel_flags : ``SystemChannelFlag``
         Describe which type of messages are sent automatically to the system channel.
-    threads : `dict` of (`int`, ``ChannelThread``)
+    threads : `dict` of (`int`, ``Channel``)
         Thread channels of the guild.
     user_count : `int`
         The amount of users at the guild.
@@ -981,7 +981,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channels : `list` of ``ChannelText``
+        channels : `list` of ``Channel``
         """
         return [channel for channel in self.channels.values() if channel.type == CHANNEL_TYPE_GUILD_TEXT]
     
@@ -993,7 +993,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channels : `list` of ``ChannelVoice``
+        channels : `list` of ``Channel``
         """
         return [channel for channel in self.channels.values() if channel.type == CHANNEL_TYPE_GUILD_VOICE]
     
@@ -1005,7 +1005,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channels : `list` of ``ChannelCategory``
+        channels : `list` of ``Channel``
         """
         return [channel for channel in self.channels.values() if channel.type == CHANNEL_TYPE_GUILD_CATEGORY]
     
@@ -1017,7 +1017,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channels : `list` of ``ChannelText``
+        channels : `list` of ``Channel``
         """
         return [channel for channel in self.channels.values() if channel.type == CHANNEL_TYPE_GUILD_ANNOUNCEMENTS]
     
@@ -1029,7 +1029,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channels : `list` of ``ChannelStore``
+        channels : `list` of ``Channel``
         """
         return [channel for channel in self.channels.values() if channel.type == CHANNEL_TYPE_GUILD_STORE]
     
@@ -1041,7 +1041,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channels : `list` of ``ChannelThread``
+        channels : `list` of ``Channel``
         """
         return list(self.threads.values())
     
@@ -1053,7 +1053,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channels : `list` of ``ChannelVoiceBase``
+        channels : `list` of ``Channel``
         """
         return [channel for channel in self.channels.values() if channel.type == CHANNEL_TYPE_GUILD_STAGE]
     
@@ -1065,7 +1065,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channels : `list` of ``ChannelForum``
+        channels : `list` of ``Channel``
         """
         return [channel for channel in self.channels.values() if channel.type == CHANNEL_TYPE_GUILD_FORUM]
     
@@ -1077,7 +1077,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channels : `list` of ``ChannelText``
+        channels : `list` of ``Channel``
         """
         return [channel for channel in self.channels.values() if channel.type in CHANNEL_TYPE_GROUP_GUILD_TEXT_LIKE]
     
@@ -1089,7 +1089,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channels : `list` of ``ChannelVoiceBase``
+        channels : `list` of ``Channel``
         """
         return [channel for channel in self.channels.values() if channel.type in CHANNEL_TYPE_GROUP_GUILD_CONNECTABLE]
     
@@ -1732,7 +1732,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channel : ``ChannelGuildBase``, `default`
+        channel : ``Channel``, `default`
         """
         if name.startswith('#'):
             name = name[1:]
@@ -1763,7 +1763,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channel : ``ChannelGuildBase``, `default`
+        channel : ``Channel``, `default`
         """
         if name.startswith('#'):
             name = name[1:]
@@ -2876,7 +2876,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channels : `list` of ``ChannelGuildBase``
+        channels : `list` of ``Channel``
         """
         return sorted(channel for channel in self.channels.values() if channel.parent is None)
     
@@ -2887,7 +2887,7 @@ class Guild(DiscordEntity, immortal=True):
         Returns the channels of the guild in a list in their display order. Note, that channels inside of categories are
         included as well.
         
-        channels : `list` of ``ChannelGuildBase``
+        channels : `list` of ``Channel``
         """
         channels = []
         for channel in sorted(channel for channel in self.channels.values() if channel.parent is None):
@@ -2926,7 +2926,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        public_updates_channel : `None`, ``ChannelText``
+        public_updates_channel : `None`, ``Channel``
         """
         public_updates_channel_id = self.public_updates_channel_id
         if public_updates_channel_id:
@@ -2940,7 +2940,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        afk_channel : `None`, ``ChannelVoice``
+        afk_channel : `None`, ``Channel``
         """
         afk_channel_id = self.afk_channel_id
         if afk_channel_id:
@@ -2954,7 +2954,7 @@ class Guild(DiscordEntity, immortal=True):
 
         Returns
         -------
-        rules_channel : `None`, ``ChannelText``
+        rules_channel : `None`, ``Channel``
         """
         rules_channel_id = self.rules_channel_id
         if rules_channel_id:
@@ -2968,7 +2968,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        public_updates_channel : `None`, ``ChannelText``
+        public_updates_channel : `None`, ``Channel``
         """
         system_channel_id = self.system_channel_id
         if system_channel_id:
@@ -2982,7 +2982,7 @@ class Guild(DiscordEntity, immortal=True):
         
         Returns
         -------
-        public_updates_channel : `None`, ``ChannelText``
+        public_updates_channel : `None`, ``Channel``
         """
         widget_channel_id = self.widget_channel_id
         if widget_channel_id:

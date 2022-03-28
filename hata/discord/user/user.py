@@ -57,7 +57,7 @@ class User(USER_BASE_CLASS):
         The user's user flags.
     partial : `bool`
         Partial users have only their `.id` set and every other field might not reflect the reality.
-    thread_profiles : `None`, `dict` (``ChannelThread``, ``ThreadProfile``) items
+    thread_profiles : `None`, `dict` (``Channel``, ``ThreadProfile``) items
         A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
         Defaults to `None`.
     activities : `None`, `list` of ``ActivityBase``

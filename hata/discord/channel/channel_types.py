@@ -1,4 +1,4 @@
-__all__ = ()
+__all__ = ('get_channel_type_name', 'get_channel_type_names',)
 
 __doc__ = """
 Contains channel type identifiers.
@@ -88,6 +88,19 @@ In addition also extra groups are defined:
 |                                       | guild_announcements,          |
 |                                       | guild_forum                   |
 +---------------------------------------+-------------------------------+
+| GROUP_IN_PRODUCTION                   | guild_text,                   |
+|                                       | private,                      |
+|                                       | guild_voice,                  |
+|                                       | private_group,                |
+|                                       | guild_category,               |
+|                                       | guild_announcements,          |
+|                                       | guild_thread_announcements,   |
+|                                       | guild_thread_public,          |
+|                                       | guild_thread_private,         |
+|                                       | guild_stage,                  |
+|                                       | guild_directory,              |
+|                                       | guild_forum                   |
++---------------------------------------+-------------------------------+
 """
 guild_text = 0
 private = 1
@@ -116,6 +129,7 @@ GROUP_MESSAGEABLE = frozenset((
     guild_thread_public,
     guild_thread_private,
 ))
+
 
 GROUP_GUILD_MESSAGEABLE = frozenset((
     guild_text,
@@ -166,14 +180,85 @@ GROUP_GUILD = frozenset((
     guild_forum,
 ))
 
+
 GROUP_THREAD = frozenset((
     guild_thread_announcements,
     guild_thread_public,
     guild_thread_private,
 ))
 
+
 GROUP_CAN_CONTAIN_THREADS = frozenset((
     guild_text,
     guild_announcements,
     guild_forum,
 ))
+
+
+GROUP_IN_PRODUCTION = frozenset((
+    guild_text,
+    private,
+    guild_voice,
+    private_group,
+    guild_category,
+    guild_announcements,
+    guild_thread_announcements,
+    guild_thread_public,
+    guild_thread_private,
+    guild_stage,
+    guild_directory,
+    guild_forum,
+))
+
+
+CHANNEL_TYPE_NAMES = {
+    guild_text: 'guild text',
+    private: 'guild private',
+    guild_voice: 'guild voice',
+    private_group: 'private group',
+    guild_category: 'guild category',
+    guild_announcements: 'guild announcements',
+    guild_store: 'guild store',
+    thread: 'thread',
+    guild_thread_announcements: 'guild thread announcements',
+    guild_thread_public: 'guild thread public',
+    guild_thread_private: 'guild thread private',
+    guild_stage: 'guild stage',
+    guild_directory: 'guild directory',
+    guild_forum: 'guild forum',
+}
+
+
+DEFAULT_CHANNEL_TYPE_NAME = 'unknown'
+
+
+def get_channel_type_name(channel_type):
+    """
+    Returns the channel type's name.
+    
+    Parameters
+    ----------
+    channel_type : `int`
+        The channel type to get it's name.
+    
+    Returns
+    -------
+    channel_name : `str`
+    """
+    return CHANNEL_TYPE_NAMES.get(channel_type, DEFAULT_CHANNEL_TYPE_NAME)
+
+
+def get_channel_type_names(channel_types):
+    """
+    Returns multiple channel type's names connected by comma.
+    
+    Parameters
+    ----------
+    channel_types : `iterable` of `int`
+        The channel types to get the their name.
+    
+    Returns
+    -------
+    channel_names : `str`
+    """
+    return ', '.join(sorted(get_channel_type_name(channel_type) for channel_type in channel_types))

@@ -38,8 +38,8 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        target : ``ClientUserBase``, ``Role``, ``ChannelBase``, `tuple` ((``ClientUserBase``, ``Role``, \
-                ``ChannelBase``, `str` (`'Role'`, `'role'`, `'User'`, `'user'`, `'Channel'`, `'channel'`)), `int`)
+        target : ``ClientUserBase``, ``Role``, ``Channel``, `tuple` ((``ClientUserBase``, ``Role``, \
+                ``Channel``, `str` (`'Role'`, `'role'`, `'User'`, `'user'`, `'Channel'`, `'channel'`)), `int`)
             The target entity of the application command permission overwrite.
             
             The expected type & value might be pretty confusing, but the target was it to allow relaxing creation.
@@ -47,10 +47,10 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
             
             - ``Role``
             - ``ClientUserBase``
-            - ``ChannelBase``
+            - ``Channel``
             - `tuple` (``Role``, `int`)
             - `tuple` (``ClientUserBase``, `int`)
-            - `tuple` (``ChannelBase``, `int`)
+            - `tuple` (``Channel``, `int`)
             - `tuple` (`'Role'`, `int`)
             - `tuple` (`'role'`, `int`)
             - `tuple` (`'User'`, `int`)
@@ -215,7 +215,7 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
         
         Returns
         -------
-        target : `None`, ``Role``, ``ClientUserBase``, ``ChannelBase``
+        target : `None`, ``Role``, ``ClientUserBase``, ``Channel``
         """
         target_type = self.target_type
         target_id = self.target_id

@@ -22,7 +22,7 @@ class Stage(DiscordEntity):
     ----------
     id : `int`
         The stage instance's identifier.
-    channel : ``ChannelStage``
+    channel : ``Channel``
         The stage channel where the stage is active.
     discoverable : `bool`
         Whether the stage is discoverable.

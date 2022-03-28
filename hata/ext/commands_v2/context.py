@@ -101,7 +101,7 @@ class CommandContext(object):
         
         Returns
         -------
-        channel : ``ChannelBase``
+        channel : ``Channel``
         """
         return self.message.channel
     

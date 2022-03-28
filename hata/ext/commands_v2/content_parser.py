@@ -446,7 +446,7 @@ def parse_channel_mention(part, message):
         
     Returns
     -------
-    channel : `None`, ``ChannelBase``
+    channel : `None`, ``Channel``
     """
     channel_mentions = message.channel_mentions
     if channel_mentions is None:

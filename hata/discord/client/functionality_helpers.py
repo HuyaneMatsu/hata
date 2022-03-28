@@ -881,7 +881,7 @@ async def request_channel_thread_channels(client, guild_id, channel_id, request_
     
     Returns
     -------
-    thread_channels : `list` of ``ChannelThread``
+    thread_channels : `list` of ``Channel``
     
     Raises
     ------

@@ -118,11 +118,12 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase):
     @classmethod
     @copy_docs(ChannelMetadataPrivateBase._from_partial_data)
     def _from_partial_data(cls, data):
-        self = super(ChannelMetadataGroup, cls)._from_partial_data(data)
+        self = super(ChannelMetadataPrivateGroup, cls)._from_partial_data(data)
         
-        name = data.get('name', None)
-        if (name is not None):
-            self.name = name
+        if (data is not None):
+            name = data.get('name', None)
+            if (name is not None):
+                self.name = name
         
         return self
     
@@ -130,7 +131,7 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase):
     @classmethod
     @copy_docs(ChannelMetadataPrivateBase._create_empty)
     def _create_empty(cls):
-        self = super(ChannelMetadataGroup, cls)._create_empty()
+        self = super(ChannelMetadataPrivateGroup, cls)._create_empty()
         
         self.name = None
         self.owner_id = 0
@@ -144,7 +145,7 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase):
     @classmethod
     @copy_docs(ChannelMetadataPrivateBase._precreate)
     def _precreate(cls, keyword_parameters):
-        self = super(ChannelMetadataGroup, cls)._precreate(keyword_parameters)
+        self = super(ChannelMetadataPrivateGroup, cls)._precreate(keyword_parameters)
         
         try:
             name = keyword_parameters.pop('name')

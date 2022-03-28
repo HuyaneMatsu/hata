@@ -18,7 +18,7 @@ class RichVoiceState:
     is_speaker : `bool`
         Whether the user is suppressed inside of the voice channel.
         
-        If the channel is a ``ChannelVoice``, it is always `False`, meanwhile it ``ChannelStage`` it can vary.
+        If the channel is a ``Channel``, it is always `False`, meanwhile it ``Channel`` it can vary.
     mute : `bool`
         Whether the user is muted.
     nick : `None`, `str`

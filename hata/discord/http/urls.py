@@ -1634,7 +1634,7 @@ def channel_banner_url(channel):
     """
     Returns the channel's banner's url. If the channel has no banner, then returns `None`.
     
-    This function is a shared property of ``ChannelText``-s.
+    This function is a shared property of ``Channel``-s.
     
     Returns
     -------
@@ -1658,7 +1658,7 @@ def channel_banner_url_as(channel, ext=None, size=None):
     """
     Returns the channel's banner's url. If the channel has no banner, then returns `None`.
     
-    This function is a shared method of ``ChannelText``-s.
+    This function is a shared method of ``Channel``-s.
     
     Parameters
     ----------

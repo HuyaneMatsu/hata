@@ -230,7 +230,7 @@ def wait_for_message(client, channel, check, timeout):
     ----------
     client : ``Client``
         The client who's `message_create` event will be used.
-    channel : ``ChannelBase``
+    channel : ``Channel``
         The target channel where the new messages will be checked.
     check : `callable`
         The check what is called with the received parameters whenever an event is received.

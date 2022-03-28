@@ -1567,7 +1567,7 @@ class CheckIsChannel(CheckIsChannelBase):
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelBase``, `str`, `int`.
+            If `channel` was not given neither as ``Channel``, `str`, `int`.
         ValueError
             If `channel` was given as `str`, `int`, but not as a valid snowflake.
         """
@@ -1606,13 +1606,13 @@ class CheckIsAnyChannel(CheckIsChannelBase):
         
         Parameters
         ----------
-        *channels : `str`, `int`, ``ChannelBase``
+        *channels : `str`, `int`, ``Channel``
             The channel where the message should be sent.
         
         Raises
         ------
         TypeError
-            If a channel was not given neither as ``ChannelBase``, `str`, `int`.
+            If a channel was not given neither as ``Channel``, `str`, `int`.
         ValueError
             If a channel was given as `str`, `int`, but not as a valid snowflake.
         """
@@ -1946,7 +1946,7 @@ class CheckIsCategory(CheckIsCategoryBase):
         
         Parameters
         ----------
-        category : `str`, `int`, ``ChannelCategory``, ``Guild``
+        category : `str`, `int`, ``Channel``, ``Guild``
             The category, within sent messages pass the check.
             
             If you want to check whether the channel is not in a category, pass the parameter as the respective guild
@@ -1955,7 +1955,7 @@ class CheckIsCategory(CheckIsCategoryBase):
         Raises
         ------
         TypeError
-            If `category` was not given neither as ``ChannelCategory``, ``Guild``, `str`, `int`.
+            If `category` was not given neither as ``Channel``, ``Guild``, `str`, `int`.
         ValueError
             If `category` was given as `str`, `int`, but not as a valid snowflake.
         """
@@ -2008,7 +2008,7 @@ class CheckIsAnyCategory(CheckIsCategoryBase):
         
         Parameters
         ----------
-        *categories : `str`, `int`, ``ChannelCategory``, ``Guild``
+        *categories : `str`, `int`, ``Channel``, ``Guild``
             The categories, within sent messages pass the check.
             
             If you want to check whether the channel is not in a category, pass the parameter as the respective guild
@@ -2017,7 +2017,7 @@ class CheckIsAnyCategory(CheckIsCategoryBase):
         Raises
         ------
         TypeError
-            If a category was not given neither as ``ChannelCategory``, ``Guild``, `str`, `int`.
+            If a category was not given neither as ``Channel``, ``Guild``, `str`, `int`.
         ValueError
             If a category was given as `str`, `int`, but not as a valid snowflake.
         """

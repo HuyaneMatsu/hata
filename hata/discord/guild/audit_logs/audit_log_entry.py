@@ -150,7 +150,7 @@ class AuditLogEntry:
         
         Returns
         -------
-        target : `None`, ``Guild``,  ``ChannelGuildBase``, ``ClientUserBase``, ``Role``, ``Webhook``,
+        target : `None`, ``Guild``,  ``Channel``, ``ClientUserBase``, ``Role``, ``Webhook``,
             ``Emoji``, ``Message``, ``Integration``, ``Sticker``, ``Stage``, ``ScheduledEvent``
         """
         return self.type.target_type.target_converter(self)

@@ -71,12 +71,13 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
     def _from_partial_data(cls, data):
         self = super(ChannelMetadataBase, cls)._from_partial_data(data)
         
-        try:
-            name = data['name']
-        except KeyError:
-            pass
-        else:
-            self.name = name
+        if (data is not None):
+            try:
+                name = data['name']
+            except KeyError:
+                pass
+            else:
+                self.name = name
         
         return self
     

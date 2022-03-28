@@ -29,7 +29,7 @@ class AuditLogIterator(AuditLog):
         the integrations, meanwhile the values are the integrations themselves.
     scheduled_events : `dict` of (`int`, ``ScheduledEvent``) items
         A dictionary containing the scheduled events mentioned inside of the audit logs.
-    threads : `dict` of (`int`, ``ChannelThread``) items
+    threads : `dict` of (`int`, ``Channel``) items
         A dictionary containing the mentioned threads inside of the audit logs.
     users : `dict` of (`int`, ``ClientUserBase``) items
         A dictionary, what contains the mentioned users by the audit log's entries. The keys are the `id`-s of the

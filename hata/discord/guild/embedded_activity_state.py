@@ -319,7 +319,7 @@ class EmbeddedActivityState(RichAttributeErrorBaseType):
         
         Returns
         -------
-        channel : `None`, ``ChannelBase``
+        channel : `None`, ``Channel``
         """
         return CHANNELS.get(self.channel_id, None)
     

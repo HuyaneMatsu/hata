@@ -22,12 +22,13 @@ from ..allowed_mentions import parse_allowed_mentions
 from ..application import Application, EULA, Team
 from ..bases import maybe_snowflake, maybe_snowflake_pair
 from ..channel import (
-    AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS, CHANNEL_TYPES, CHANNEL_TYPE_MAP, ChannelBase, ChannelCategory,
-    ChannelDirectory, ChannelForum, ChannelGroup, ChannelGuildBase, ChannelGuildMainBase, ChannelGuildUndefined,
+    CHANNEL_TYPES, Channel, ChannelCategory,
+    ChannelDirectory, ChannelForum, ChannelGroup, ChannelGuildBase, ChannelGuildMainBase,
     ChannelPrivate, ChannelStage, ChannelStore, ChannelText, ChannelTextBase, ChannelThread, ChannelVoice,
     ChannelVoiceBase, MessageIterator, VideoQualityMode, cr_pg_channel_object, create_partial_channel_from_id,
     message_relative_index
 )
+from ..channel.constants import AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
 from ..color import Color
 from ..core import (
     APPLICATIONS, APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, CHANNELS, CLIENTS, DISCOVERY_CATEGORIES, EMOJIS,
@@ -169,7 +170,7 @@ class Client(ClientUserPBase):
     flags : ``UserFlag``
         The client's user flags.
     
-    thread_profiles : `None`, `dict` (``ChannelThread``, ``ThreadProfile``) items
+    thread_profiles : `None`, `dict` (``Channel``, ``ThreadProfile``) items
         A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
         Defaults to `None`.
     
@@ -2696,7 +2697,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        channel_id = get_channel_id(channel, ChannelGroup)
+        channel_id = get_channel_id(channel, Channel.is_private_group)
         
         await self.http.channel_group_leave(channel_id)
     
@@ -2724,7 +2725,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        channel_id = get_channel_id(channel, ChannelGroup)
+        channel_id = get_channel_id(channel, Channel.is_private_group)
         
         user_ids = set()
         for user in users:
@@ -2758,7 +2759,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        channel_id = get_channel_id(channel, ChannelGroup)
+        channel_id = get_channel_id(channel, Channel.is_private_group)
         
         user_ids = set()
         for user in users:
@@ -2804,7 +2805,7 @@ class Client(ClientUserPBase):
         -----
         No request is done if no optional parameter is provided.
         """
-        channel_id = get_channel_id(channel, ChannelGroup)
+        channel_id = get_channel_id(channel, Channel.is_private_group)
         
         data = {}
         
@@ -2966,7 +2967,7 @@ class Client(ClientUserPBase):
         if (not self.is_bot):
             data = await self.http.channel_private_get_all()
             for channel_data in data:
-                channel = CHANNEL_TYPE_MAP.get(channel_data['type'], ChannelGuildUndefined)(channel_data, self, 0)
+                channel = Channel(channel_data, self, 0)
                 channels.append(channel)
         
         return channels
@@ -2982,13 +2983,13 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelGuildMainBase``
+        channel : ``Channel``
             The channel to be moved.
         visual_position : `int`
             The visual position where the channel should go.
-        parent : `None`, ``ChannelCategory``, Optional (Keyword only)
+        parent : `None`, ``Channel``, Optional (Keyword only)
             If not set, then the channel will keep it's current parent. If the parameter is set ``Guild`` or to
-            `None`, then the  channel will be moved under the guild itself, Or if passed as ``ChannelCategory``,
+            `None`, then the  channel will be moved under the guild itself, Or if passed as ``Channel``,
             then the channel will be moved under it.
         lock_permissions : `bool` = `False`, Optional (Keyword only)
             If you want to sync the permissions with the new category set it to `True`. Defaults to `False`.
@@ -3001,8 +3002,8 @@ class Client(ClientUserPBase):
             - If the `channel` would be between guilds.
             - If parent channel would be moved under an other category.
         TypeError
-            - If `ChannelGuildBase` was not passed as ``ChannelGuildMainBase``.
-            - If `parent` was not given as `None`, ``ChannelCategory``.
+            - If `ChannelGuildBase` was not passed as ``Channel``.
+            - If `parent` was not given as `None`, ``Channel``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -3029,7 +3030,7 @@ class Client(ClientUserPBase):
             parent = channel.parent
         elif parent is None:
             parent = None
-        elif isinstance(parent, ChannelCategory):
+        elif isinstance(parent, Channel):
             if parent.guild is not guild:
                 raise ValueError(
                     f'Can not move channel between guilds! Channel\'s guild: {guild!r}; Category\'s '
@@ -3037,11 +3038,11 @@ class Client(ClientUserPBase):
                 )
         else:
             raise TypeError(
-                f'`parent` can be `None` or {ChannelCategory.__name__}`, got {parent.__class__.__name__}; {parent!r}.'
+                f'`parent` can be `None` or {Channel.__name__}`, got {parent.__class__.__name__}; {parent!r}.'
             )
         
         # Cannot put category under category
-        if isinstance(channel, ChannelCategory) and isinstance(parent, ChannelCategory):
+        if isinstance(channel, ChannelCategory) and isinstance(parent, Channel):
             raise ValueError(
                 f'Can not move category channel under category channel. channel={channel!r}; parent={parent!r}'
             )
@@ -3200,7 +3201,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelGuildBase``, `int`
+        channel : ``Channel``, `int`
             The channel to edit.
         name : `str`, Optional (Keyword only)
             The `channel`'s new name.
@@ -3234,7 +3235,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            - If the given `channel` is not ``ChannelGuildBase``, `int`.
+            - If the given `channel` is not ``Channel``, `int`.
             - If `region` was not given neither as `None`, `str` nor ``VoiceRegion``.
             - If `video_quality_mode` was not given neither as ``VideoQualityMode` nor as `int`.
         AssertionError
@@ -3242,23 +3243,23 @@ class Client(ClientUserPBase):
             - If `name`'s length is out of range `[1:100]`.
             - If `topic` was not given as `str`.
             - If `topic`'s length is over `1024`, `120` depending on channel type.
-            - If `topic` was given, but the given channel is not ``ChannelText`` nor ``ChannelStage``.
-            - If `type_` was given, but the given channel is not ``ChannelText``.
+            - If `topic` was given, but the given channel is not ``Channel`` nor ``Channel``.
+            - If `type_` was given, but the given channel is not ``Channel``.
             - If `type_` was not given as `int`.
             - If `type_` cannot be interchanged to the given value.
-            - If `nsfw` was given meanwhile the channel is not ``ChannelText``, ``ChannelStore``.
+            - If `nsfw` was given meanwhile the channel is not ``Channel``.
             - If `nsfw` was not given as `bool`.
-            - If `slowmode` was given, but the channel is not ``ChannelText``.
+            - If `slowmode` was given, but the channel is not ``Channel``.
             - If `slowmode` was not given as `int`.
             - If `slowmode` was given, but it's value is less than `0` or greater than `21600`.
-            - If `bitrate` was given, but the channel is not ``ChannelVoiceBase``.
+            - If `bitrate` was given, but the channel is not ``Channel``.
             - If `bitrate` was not given as `int`.
             - If `bitrate`'s value is out of the expected range.
-            - If `user_limit` was given, but the channel is not ``ChannelVoiceBase``.
+            - If `user_limit` was given, but the channel is not ``Channel``.
             - If `user_limit` was not given as `int`.
             - If `user_limit` was given, but is out of the expected [0:99] range.
-            - If `region` was given, but the respective channel type is not ``ChannelVoiceBase``.
-            - If `video_quality_mode` was given,but the respective channel type is not ``ChannelVoice``
+            - If `region` was given, but the respective channel type is not ``Channel``.
+            - If `video_quality_mode` was given,but the respective channel type is not ``Channel``
         ConnectionError
             No internet connection.
         DiscordException
@@ -3539,8 +3540,8 @@ class Client(ClientUserPBase):
             The guild where the channel will be created.
         name : `str`
             The created channel's name.
-        type_ : `int`, ``ChannelGuildBase`` subclass = ``ChannelText``, Optional
-            The type of the created channel. Defaults to ``ChannelText``.
+        type_ : `int`, ``Channel`` subclass = ``Channel``, Optional
+            The type of the created channel. Defaults to ``Channel``.
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the `guild`'s audit logs.
         **kwargs : Keyword parameters
@@ -3561,9 +3562,9 @@ class Client(ClientUserPBase):
             The channel's bitrate.
         user_limit : `int`, Optional (Keyword only)
             The channel's user limit.
-        parent : `None`, ``ChannelCategory``, `int`, Optional (Keyword only)
+        parent : `None`, ``Channel``, `int`, Optional (Keyword only)
             The channel's parent. If the channel is under a guild, leave it empty.
-        category : `None`, ``ChannelCategory``, ``Guild``, `int`, Optional (Keyword only)
+        category : `None`, ``Channel``, ``Guild``, `int`, Optional (Keyword only)
             Deprecated, please use `parent` parameter instead.
         region : `None`, ``VoiceRegion``, `str`, Optional (Keyword only)
             The channel's voice region.
@@ -3577,15 +3578,15 @@ class Client(ClientUserPBase):
         
         Returns
         -------
-        channel : `None`, ``ChannelGuildBase``
+        channel : `None`, ``Channel``
             The created channel. Returns `None` if the respective `guild` is not cached.
         
         Raises
         ------
         TypeError
             - If `guild` was not given as ``Guild``, `int`.
-            - If `type_` was not passed as `int`, ``ChannelGuildBase``.
-            - If `parent` was not given as `None`, ``ChannelCategory``, `int`.
+            - If `type_` was not passed as `int`, ``Channel``.
+            - If `parent` was not given as `None`, ``Channel``, `int`.
             - If `region` was not given either as `None`, `str` nor ``VoiceRegion``.
         AssertionError
             - If `type_` was given as `int`, and is less than `0`.
@@ -3595,20 +3596,20 @@ class Client(ClientUserPBase):
             - If `permission_overwrites` was not given as `None`, neither as `list` of `dict`-s.
             - If `topic` was not given as `str`.
             - If `topic`'s length is over `1024`.
-            - If `topic` was given, but the respective channel type is not ``ChannelText``.
-            - If `nsfw` was given meanwhile the respective channel type is not ``ChannelText``, ``ChannelStore``.
+            - If `topic` was given, but the respective channel type is not ``Channel``.
+            - If `nsfw` was given meanwhile the respective channel type is not ``Channel``.
             - If `nsfw` was not given as `bool`.
-            - If `slowmode` was given, but the respective channel type is not ``ChannelText``.
+            - If `slowmode` was given, but the respective channel type is not ``Channel``.
             - If `slowmode` was not given as `int`.
             - If `slowmode` was given, but it's value is less than `0` or greater than `21600`.
-            - If `bitrate` was given, but the respective channel type is not ``ChannelVoice``.
+            - If `bitrate` was given, but the respective channel type is not ``Channel``.
             - If `bitrate` was not given as `int`.
             - If `bitrate`'s value is out of the expected range.
-            - If `user_limit` was given, but the respective channel type is not ``ChannelVoice``.
+            - If `user_limit` was given, but the respective channel type is not ``Channel``.
             - If `user_limit` was not given as `int`.
             - If `user_limit` was given, but is out of the expected [0:99] range.
             - If `parent` was given, but the respective channel type cannot be put under other categories.
-            - If `region` was given, but the respective channel type is not ``ChannelVoice``.
+            - If `region` was given, but the respective channel type is not ``Channel``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -3619,7 +3620,7 @@ class Client(ClientUserPBase):
         data = cr_pg_channel_object(name, type_, **kwargs, guild=guild)
         data = await self.http.channel_create(guild_id, data, reason)
         
-        return CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)(data, self, guild_id)
+        return Channel(data, self, guild_id)
     
     
     async def channel_delete(self, channel, *, reason=None):
@@ -3630,7 +3631,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelGuildBase``, `int`
+        channel : ``Channel``, `int`
             The channel to delete.
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
@@ -3638,7 +3639,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If the given `channel` is not ``ChannelGuildBase``, `int`.
+            If the given `channel` is not ``Channel``, `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -3648,7 +3649,7 @@ class Client(ClientUserPBase):
         -----
         If a category channel is deleted, it's sub-channels will not be removed, instead they will move under the guild.
         """
-        channel_id = get_channel_id(channel, ChannelGuildBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_guild)
         
         await self.http.channel_delete(channel_id, reason)
     
@@ -3662,9 +3663,9 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        source_channel : ``ChannelText``, `int`
+        source_channel : ``Channel``, `int`
             The channel what will be followed. Must be an announcements (type 5) channel.
-        target_channel : ``ChannelText``, `int`instance
+        target_channel : ``Channel``, `int`instance
             The target channel where the webhook messages will be sent. Can be any guild text channel type.
         
         Returns
@@ -3675,8 +3676,8 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            - If the `source_channel` was not given neither as ``ChannelText`` nor `int`.
-            - If the `target_channel` was not given neither as ``ChannelText`` nor `int`.
+            - If the `source_channel` was not given neither as ``Channel`` nor `int`.
+            - If the `target_channel` was not given neither as ``Channel`` nor `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -3694,7 +3695,7 @@ class Client(ClientUserPBase):
                         f'`source_channel` must be type 5 (announcements) channel, got {source_channel}.'
                     )
         
-        target_channel_id = get_channel_id(target_channel, ChannelText)
+        target_channel_id = get_channel_id(target_channel, Channel.is_in_group_guild_text_like)
         
         data = {
             'webhook_channel_id': target_channel_id,
@@ -3879,7 +3880,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        channel_id = get_channel_id(channel, ChannelTextBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
         
         message_id_value = maybe_snowflake(message_id)
         if message_id_value is None:
@@ -4273,10 +4274,7 @@ class Client(ClientUserPBase):
             except KeyError:
                 is_private = False
             else:
-                if isinstance(channel, ChannelGuildBase):
-                    is_private = False
-                else:
-                    is_private = True
+                is_private = channel.is_in_group_private()
             
             if is_private:
                 function = _message_delete_multiple_private_task
@@ -5339,7 +5337,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        channel_id = get_channel_id(channel, ChannelTextBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
         
         data = await self.http.channel_pin_get_all(channel_id)
         
@@ -5639,7 +5637,7 @@ class Client(ClientUserPBase):
         -----
         The client will be shown up as typing for 8 seconds, or till it sends a message at the respective channel.
         """
-        channel_id = get_channel_id(channel, ChannelTextBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
         
         await self.http.typing(channel_id)
     
@@ -5673,7 +5671,7 @@ class Client(ClientUserPBase):
             await client.message_create(channel, 'Ayaya')
         ```
         """
-        channel_id = get_channel_id(channel, ChannelTextBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
         
         return Typer(self, channel_id, timeout)
     
@@ -7142,14 +7140,14 @@ class Client(ClientUserPBase):
         banner : `None`, `bytes-like`, Optional (Keyword only)
             The new banner of the guild. Can be `'jpg'`, `'png'`, `'webp'` image's raw data. The guild must have
             `BANNER` feature. By passing it as `None` you can remove the current one.
-        afk_channel : `None`, ``ChannelVoice``, `int`, Optional (Keyword only)
+        afk_channel : `None`, ``Channel``, `int`, Optional (Keyword only)
             The new afk channel of the guild. You can remove the current one by passing is as `None`.
-        system_channel : `None`, ``ChannelText``, `int`, Optional (Keyword only)
+        system_channel : `None`, ``Channel``, `int`, Optional (Keyword only)
             The new system channel of the guild. You can remove the current one by passing is as `None`.
-        rules_channel : `None`, ``ChannelText``, `int`, Optional (Keyword only)
+        rules_channel : `None`, ``Channel``, `int`, Optional (Keyword only)
             The new rules channel of the guild. The guild must be a Community guild. You can remove the current
             one by passing is as `None`.
-        public_updates_channel : `None`, ``ChannelText``, `int`, Optional (Keyword only)
+        public_updates_channel : `None`, ``Channel``, `int`, Optional (Keyword only)
             The new public updates channel of the guild. The guild must be a Community guild. You can remove the
             current one by passing is as `None`.
         owner : ``ClientUserBase``, `int`, Optional (Keyword only)
@@ -7194,9 +7192,9 @@ class Client(ClientUserPBase):
             - If `icon`, `invite_splash`, `discovery_splash`, `banner` is neither `None`, `bytes-like`.
             - If `add_feature`, `remove_feature` was not given neither as `str`, ``GuildFeature``,
                 `iterable` of `str`, ``GuildFeature``-s.
-            - If `afk_channel` was given, but not as `None`, ``ChannelVoice``, neither as `int`.
+            - If `afk_channel` was given, but not as `None`, ``Channel``, neither as `int`.
             - If `system_channel`, `rules_channel`, `public_updates_channel` was given, but not as `None`,
-                ``ChannelText``, neither as `int`.
+                ``Channel``, neither as `int`.
             - If `owner` was not given neither as ``ClientUserBase``, `int`.
             - If `verification_level` was not given neither as ``VerificationLevel``, `int`.
             - If `content_filter` was not given neither as ``ContentFilterLevel``, `int`.
@@ -8462,7 +8460,7 @@ class Client(ClientUserPBase):
             Whether the user should be deafen at the voice channels.
         mute : `bool`, Optional (Keyword only)
             Whether the user should be muted at the voice channels.
-        voice_channel : `None`, ``ChannelVoiceBase``, `int` , Optional (Keyword only)
+        voice_channel : `None`, ``Channel``, `int` , Optional (Keyword only)
             Moves the user to the given voice channel. Only applicable if the user is already at a voice channel.
             
             Pass it as `None` to kick the user from it's voice channel.
@@ -8478,7 +8476,7 @@ class Client(ClientUserPBase):
         TypeError
             - If `guild` was not given neither as ``Guild`` neither as `int`.
             - If `user` was not given neither as ``ClientUserBase``, neither as `int`.
-            - If `voice_channel` was not given neither as `None`, ``ChannelVoiceBase``, neither as `int`.
+            - If `voice_channel` was not given neither as `None`, ``Channel``, neither as `int`.
             - If `roles` contains neither ``Role``, `int` element.
         ConnectionError
             No internet connection.
@@ -8686,14 +8684,14 @@ class Client(ClientUserPBase):
         ----------
         user : ```ClientUserBase``, `int`
             The user to move.
-        channel : ``ChannelVoiceBase``, `tuple` (`int`, `int`)
+        channel : ``Channel``, `tuple` (`int`, `int`)
             The channel where the user will be moved.
         
         Raises
         ------
         TypeError
             - If `user` was not given neither as ``ClientUserBase``, neither as `int`.
-            - If `channel` was not given neither as ``ChannelVoiceBase`` nor as `tuple` of (`int`, `int`).
+            - If `channel` was not given neither as ``Channel`` nor as `tuple` of (`int`, `int`).
         ConnectionError
             No internet connection.
         DiscordException
@@ -8718,14 +8716,14 @@ class Client(ClientUserPBase):
         ----------
         user : ```ClientUserBase``, `int`
             The user to move.
-        channel : ``ChannelStage``, `tuple` (`int`, `int`)
+        channel : ``Channel``, `tuple` (`int`, `int`)
             The channel where the user will be moved.
         
         Raises
         ------
         TypeError
             - If `user` was not given neither as ``ClientUserBase``, neither as `int`.
-            - If `channel` was not given neither as ``ChannelStage`` nor as `tuple` of (`int`, `int`).
+            - If `channel` was not given neither as ``Channel`` nor as `tuple` of (`int`, `int`).
         ConnectionError
             No internet connection.
         DiscordException
@@ -8755,14 +8753,14 @@ class Client(ClientUserPBase):
         ----------
         user : ```ClientUserBase``, `int`
             The user to move.
-        channel : ``ChannelStage``, `tuple` (`int`, `int`)
+        channel : ``Channel``, `tuple` (`int`, `int`)
             The channel where the user will be moved.
         
         Raises
         ------
         TypeError
             - If `user` was not given neither as ``ClientUserBase``, neither as `int`.
-            - If `channel` was not given neither as ``ChannelStage`` nor as `tuple` of (`int`, `int`).
+            - If `channel` was not given neither as ``Channel`` nor as `tuple` of (`int`, `int`).
         ConnectionError
             No internet connection.
         DiscordException
@@ -8823,7 +8821,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelStage``, `int`
+        channel : ``Channel``, `int`
             The channel to edit.
         topic : `None`, `str`
             The new topic of the stage.
@@ -8838,7 +8836,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            - If `channel` was not given as ``ChannelStage`` neither as `int`.
+            - If `channel` was not given as ``Channel`` neither as `int`.
             - If `privacy_level` was not given neither as ``PrivacyLevel`` nor as `int`.
         ConnectionError
             No internet connection.
@@ -8848,7 +8846,7 @@ class Client(ClientUserPBase):
             - If `topic` was not given neither as `None`, `str`.
             - If `topic`'s length is out of range [1:120].
         """
-        channel_id = get_channel_id(channel, ChannelStage)
+        channel_id = get_channel_id(channel, Channel.is_guild_stage)
         
         if topic is None:
             topic = ''
@@ -8895,7 +8893,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        stage : ``Stage``, ``ChannelStage``, `int`
+        stage : ``Stage``, ``Channel``, `int`
             The stage to edit. Can be given as it's channel's identifier.
         topic : `str`
             The new topic of the stage.
@@ -8905,7 +8903,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            - If `stage` was not given as ``Stage``, ``ChannelStage`` neither as `int`.
+            - If `stage` was not given as ``Stage``, ``Channel`` neither as `int`.
             - If `privacy_level` was not given neither as ``PrivacyLevel`` nor as `int`.
         ConnectionError
             No internet connection.
@@ -8966,13 +8964,13 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        stage : ``Stage``, ``ChannelStage``, `int`
+        stage : ``Stage``, ``Channel``, `int`
             The stage to delete. Can be given as it's channel's identifier.
         
         Raises
         ------
         TypeError
-            If `stage` was not given as ``Stage``, ``ChannelStage`` neither as `int`.
+            If `stage` was not given as ``Stage``, ``Channel`` neither as `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -8992,19 +8990,19 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelStage``, `int`
+        channel : ``Channel``, `int`
             The stage's channel's identifier.
         
         Raises
         ------
         TypeError
-            If `channel` was not given as ``ChannelStage`` neither as `int`.
+            If `channel` was not given as ``Channel`` neither as `int`.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        channel_id = get_channel_id(channel, ChannelStage)
+        channel_id = get_channel_id(channel, Channel.is_guild_stage)
         
         data = await self.http.stage_get(channel_id)
         return Stage(data)
@@ -9036,9 +9034,9 @@ class Client(ClientUserPBase):
             The privacy level of the event. Whether it is global or guild only.
         location : `None`, `str` = `None`, Optional (Keyword only)
             The location, where the event will take place.
-        stage : `None`, ``ChannelStage``, `int` = `None`, Optional (Keyword only)
+        stage : `None`, ``Channel``, `int` = `None`, Optional (Keyword only)
             The stage channel, where the event will take place.
-        voice : `None`, ``ChannelVoice``, `int` = `None`, Optional (Keyword only)
+        voice : `None`, ``Channel``, `int` = `None`, Optional (Keyword only)
             The voice channel, where the event will take place.
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
@@ -9053,8 +9051,8 @@ class Client(ClientUserPBase):
         TypeError
             - If `guild` is neither ``Guild``, nor `int`.
             - If `privacy_level` is neither ``PrivacyLevel``, nor `int`.
-            - If `stage` is neither ``ChannelStage``, nor `int`.
-            - If `voice` is neither ``ChannelVoice``, nor `int`.
+            - If `stage` is neither ``Channel``, nor `int`.
+            - If `voice` is neither ``Channel``, nor `int`.
             - If neither `location`, `stage`, `voice` parameters is given.
         ConnectionError
             No internet connection.
@@ -9201,10 +9199,10 @@ class Client(ClientUserPBase):
         location : `str`, Optional (Keyword only)
             The new location, where the event will take place.
         
-        stage : ``ChannelStage``, `int`, Optional (Keyword only)
+        stage : ``Channel``, `int`, Optional (Keyword only)
             The new stage channel, where the event will take place.
         
-        voice : ``ChannelVoice``, `int`, Optional (Keyword only)
+        voice : ``Channel``, `int`, Optional (Keyword only)
             The new voice channel, where the event will take place.
         
         reason : `None`, `str` = `None`, Optional (Keyword only)
@@ -9215,8 +9213,8 @@ class Client(ClientUserPBase):
         TypeError
             - If `scheduled_event` is neither ``ScheduledEvent``, nor `tuple` (`int`, `int`).
             - If `privacy_level` is neither ``PrivacyLevel``, nor `int`.
-            - If `stage` is neither ``ChannelStage``, nor `int`.
-            - If `voice` is neither ``ChannelVoice``, nor `int`.
+            - If `stage` is neither ``Channel``, nor `int`.
+            - If `voice` is neither ``Channel``, nor `int`.
             - If `privacy_level` is neither ``PrivacyLevel``, nor `int`.
             - If `status` is neither ``ScheduledEventStatus``, nor `int`.
         ConnectionError
@@ -9589,7 +9587,7 @@ class Client(ClientUserPBase):
         
         Returns
         -------
-        threads : `list` of ``ChannelThread``
+        threads : `list` of ``Channel``
         
         Raises
         ------
@@ -9638,7 +9636,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        message_or_channel : ``ChannelText``, ``Message``, ``MessageRepr``, ``MessageReference``, `int`, \
+        message_or_channel : ``Channel``, ``Message``, ``MessageRepr``, ``MessageReference``, `int`, \
                 `tuple` (`int`, `int`)
             The channel or message to create thread from.
             
@@ -9663,7 +9661,7 @@ class Client(ClientUserPBase):
         
         Returns
         -------
-        thread_channel : ``ChannelThread``
+        thread_channel : ``Channel``
         
         Raises
         ------
@@ -9690,7 +9688,7 @@ class Client(ClientUserPBase):
         #
         # Message cannot be detected by id, only cached ones, so ignore that case.
         
-        if isinstance(message_or_channel, ChannelBase):
+        if isinstance(message_or_channel, Channel):
             if message_or_channel.type not in CHANNEL_TYPES.GROUP_CAN_CONTAIN_THREADS:
                 raise TypeError(
                     f'{message_or_channel!r} do not supports thread creation.'
@@ -9700,32 +9698,37 @@ class Client(ClientUserPBase):
             channel = message_or_channel
             channel_id = channel.id
             guild = channel.guild
+        
         elif isinstance(message_or_channel, Message):
             message_id = message_or_channel.id
             channel_id = message_or_channel.channel_id
             channel = CHANNELS.get(channel_id, None)
             guild = channel.guild
+        
         else:
             channel_id = maybe_snowflake(message_or_channel)
             if (channel_id is not None):
                 message_id = None
                 channel = CHANNELS.get(channel_id, None)
                 guild = None
+            
             elif isinstance(message_or_channel, MessageRepr):
                 message_id = message_or_channel.id
                 channel_id = message_or_channel.channel_id
                 channel = CHANNELS.get(channel_id, None)
                 guild = message_or_channel.guild
+            
             elif isinstance(message_or_channel, MessageReference):
                 message_id = message_or_channel.message_id
                 channel_id = message_or_channel.channel_id
                 channel = CHANNELS.get(channel_id, None)
                 guild = message_or_channel.guild
+            
             else:
                 snowflake_pair = maybe_snowflake_pair(message_or_channel)
                 if snowflake_pair is None:
                     raise TypeError(
-                        f'`message_or_channel` can be `{ChannelTextBase.__name__}`, `{Message.__name__}`, '
+                        f'`message_or_channel` can be `{Channel.__name__}`, `{Message.__name__}`, '
                         f'`{MessageRepr.__name__}`, `{MessageReference.__name__}`, `int`, `tuple` (`int`, `int`)'
                         f', got {message_or_channel.__class__.__name__}; {message_or_channel!r}.'
                     )
@@ -9811,7 +9814,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        thread_channel : ``ChannelThread``, `int`
+        thread_channel : ``Channel``, `int`
             The channel to join to, or it's identifier.
         
         Raises
@@ -9823,7 +9826,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        channel_id = get_channel_id(thread_channel, ChannelThread)
+        channel_id = get_channel_id(thread_channel, Channel.is_in_group_thread)
         
         await self.http.thread_join(channel_id)
     
@@ -9836,7 +9839,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        thread_channel : ``ChannelThread``, `int`
+        thread_channel : ``Channel``, `int`
             The channel to join to, or it's identifier.
         
         Raises
@@ -9848,7 +9851,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        channel_id = get_channel_id(thread_channel, ChannelThread)
+        channel_id = get_channel_id(thread_channel, Channel.is_in_group_thread)
         
         await self.http.thread_leave(channel_id)
     
@@ -9861,7 +9864,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        thread_channel : ``ChannelThread``, `int`
+        thread_channel : ``Channel``, `int`
             The channel to get the user's thread profile of.
         user : ``ClientUserBase``, `int`
             The user to get it's thread profile of.
@@ -9905,7 +9908,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        thread_channel : ``ChannelThread``, `int`
+        thread_channel : ``Channel``, `int`
             The channel to add the user to, or it's identifier.
         user : ``ClientUserBase``, `int`
             The user to add to the the thread.
@@ -9920,7 +9923,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        channel_id = get_channel_id(thread_channel, ChannelThread)
+        channel_id = get_channel_id(thread_channel, Channel.is_in_group_thread)
         user_id = get_user_id(user)
         
         if user_id == self.id:
@@ -9938,7 +9941,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        thread_channel : ``ChannelThread``, `int`
+        thread_channel : ``Channel``, `int`
             The channel to remove the user from, or it's identifier.
         user : ``ClientUserBase``, `int`
             The user to remove from the thread.
@@ -9953,7 +9956,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        channel_id = get_channel_id(thread_channel, ChannelThread)
+        channel_id = get_channel_id(thread_channel, Channel.is_in_group_thread)
         user_id = get_user_id(user)
         
         if user_id == self.id:
@@ -9971,7 +9974,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        thread_channel : ``ChannelThread``, `int`
+        thread_channel : ``Channel``, `int`
             The channel to get it's users of.
         
         Returns
@@ -10029,12 +10032,12 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelText``, `int`
+        channel : ``Channel``, `int`
             The channel to request the thread of, or it's identifier.
         
         Returns
         -------
-        thread_channels : `list` of ``ChannelThread``
+        thread_channels : `list` of ``Channel``
         
         Raises
         ------
@@ -10060,12 +10063,12 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelText``, `int`
+        channel : ``Channel``, `int`
             The channel to request the thread of, or it's identifier.
         
         Returns
         -------
-        thread_channels : `list` of ``ChannelThread``
+        thread_channels : `list` of ``Channel``
         
         Raises
         ------
@@ -10091,12 +10094,12 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelText``, `int`
+        channel : ``Channel``, `int`
             The channel to request the thread of, or it's identifier.
         
         Returns
         -------
-        thread_channels : `list` of ``ChannelThread``
+        thread_channels : `list` of ``Channel``
         
         Raises
         ------
@@ -10122,12 +10125,12 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelText``, `int`
+        channel : ``Channel``, `int`
             The channel to request the thread of, or it's identifier.
         
         Returns
         -------
-        thread_channels : `list` of ``ChannelThread``
+        thread_channels : `list` of ``Channel``
         
         Raises
         ------
@@ -10625,7 +10628,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelGuildMainBase`` nor as `int`.
+            If `channel` was not given neither as ``Channel`` nor as `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -10691,7 +10694,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelGuildMainBase`` nor as `int`.
+            If `channel` was not given neither as ``Channel`` nor as `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -10719,7 +10722,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelGuildMainBase``, `int`
+        channel : ``Channel``, `int`
             The channel to what the permission overwrite will be added.
         target : ``Role``, ``ClientUserBase``
             The permission overwrite's target.
@@ -10738,7 +10741,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            - If `channel` was not given neither as ``ChannelGuildMainBase`` nor as `int`.
+            - If `channel` was not given neither as ``Channel`` nor as `int`.
             - If `target` was not passed neither as ``Role``,``User``, neither as ``Client``.
         ConnectionError
             No internet connection.
@@ -10791,7 +10794,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelText``, `int`
+        channel : ``Channel``, `int`
             The channel of the created webhook.
         name : `str`
             The name of the new webhook. It's length can be in range [1:80].
@@ -10807,7 +10810,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            - If `channel` was not given neither as ``ChannelText`` nor as `int`.
+            - If `channel` was not given neither as ``Channel`` nor as `int`.
             - If `avatar` was not given neither as `None`, `bytes-like`.
         ConnectionError
             No internet connection.
@@ -10942,7 +10945,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelText``, `int`
+        channel : ``Channel``, `int`
             The channel, what's webhooks will be requested.
         
         Returns
@@ -10952,7 +10955,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelText``, neither as `int`.
+            If `channel` was not given neither as ``Channel``, neither as `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -10977,7 +10980,7 @@ class Client(ClientUserPBase):
             > `Forbidden (403), code=50001: Missing Access`.
         
         AssertionError
-            If `channel` was given as a channel's identifier but it detectably not refers to a ``ChannelText``.
+            If `channel` was given as a channel's identifier but it detectably not refers to a ``Channel``.
         
         Notes
         -----
@@ -10995,7 +10998,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelText``, `int`
+        channel : ``Channel``, `int`
             The channel, what's webhooks will be requested.
         
         Returns
@@ -11120,7 +11123,7 @@ class Client(ClientUserPBase):
         avatar : `None`, `bytes-like`, Optional (Keyword only)
             The webhook's new avatar. Can be `'jpg'`, `'png'`, `'webp'`, `'gif'` image's raw data. However if set as
             `'gif'`, it will not have any animation. If passed as `None`, will remove the webhook's current avatar.
-        channel : ``ChannelText``, `int`, Optional (Keyword only)
+        channel : ``Channel``, `int`, Optional (Keyword only)
             The webhook's channel.
         
         Raises
@@ -11128,7 +11131,7 @@ class Client(ClientUserPBase):
         TypeError
             - If `webhook` was not given neither as ``Webhook`` neither as `int`.
             - If `avatar` was not given neither as `None` nor as `bytes-like`.
-            - If `channel` was not given neither as ``ChannelText`` neither as `int`.
+            - If `channel` was not given neither as ``Channel`` neither as `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -11373,7 +11376,7 @@ class Client(ClientUserPBase):
             - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase``-s.
             - `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
             - If invalid file type would be sent.
-            - If `thread` was not given either as `None`, ``ChannelThread`` nor as `int`.
+            - If `thread` was not given either as `None`, ``Channel`` nor as `int`.
             - If `components` type is incorrect.
         ValueError
             - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
@@ -12234,7 +12237,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``, ``ChannelStore``, ``ChannelDirectory``, `int`
+        channel : ``Channel``, `int`
             The channel of the created invite.
         max_age : `int` = `0`, Optional (Keyword only)
             After how much time (in seconds) will the invite expire. Defaults is never.
@@ -12252,8 +12255,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``,
-                ``ChannelStore``, ``ChannelDirectory``, neither as `int`.
+            If `channel` was not given neither as ``Channel``, neither as `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -12438,8 +12440,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``, ``ChannelStore``,
-                ``ChannelDirectory``, `int
+        channel : ``Channel``, `int
             The target channel of the invite.
         application : ``Application``, `int`
             The embedded application to open in the voice channel.
@@ -12461,8 +12462,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            - If `channel` was not given neither as ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``,
-                ``ChannelStore``, ``ChannelDirectory``, neither as `int`.
+            - If `channel` was not given neither as ``Channel``, neither as `int`.
             - If `application` was not given neither as ``Application`` nor as`int`.
         ConnectionError
             No internet connection.
@@ -12726,7 +12726,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``, ``ChannelStore``, ``ChannelDirectory``, `int`
+        channel : ``Channel``, `int`
             The channel, what's invites will be requested.
         
         Returns
@@ -12736,8 +12736,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelText``, ``ChannelVoice``, ``ChannelGroup``,
-            ``ChannelStore``, ``ChannelDirectory``, neither as `int`.
+            If `channel` was not given neither as ``Channel``, neither as `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -16711,7 +16710,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelVoiceBase``, `tuple` (`int`, `int`)
+        channel : ``Channel``, `tuple` (`int`, `int`)
             The channel to join to.
         
         Returns
@@ -16725,7 +16724,7 @@ class Client(ClientUserPBase):
         TimeoutError
             If voice client fails to connect the given channel.
         TypeError
-            If `channel` was not given neither as ``ChannelVoiceBase`` nor as `tuple` (`int`, `int`).
+            If `channel` was not given neither as ``Channel`` nor as `tuple` (`int`, `int`).
         """
         if isinstance(channel, ChannelVoiceBase):
             guild_id = channel.guild_id
@@ -16761,7 +16760,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelStage``
+        channel : ``Channel``
             The stage channel to join.
         request : `bool` = `False`, Optional (Keyword only)
             Whether the client should only request to speak.
@@ -16769,7 +16768,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelStage`` nor as `tuple` (`int`, `int`).
+            If `channel` was not given neither as ``Channel`` nor as `tuple` (`int`, `int`).
         ConnectionError
             No internet connection.
         DiscordException
@@ -16810,7 +16809,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelStage``, `tuple` (`int`, `int`)
+        channel : ``Channel``, `tuple` (`int`, `int`)
             The stage channel to join.
         
         Raises
@@ -16818,7 +16817,7 @@ class Client(ClientUserPBase):
         RuntimeError
             If `channel` is partial.
         TypeError
-            If `channel` was not given neither as ``ChannelStage`` nor as `tuple` (`int`, `int`).
+            If `channel` was not given neither as ``Channel`` nor as `tuple` (`int`, `int`).
         ConnectionError
             No internet connection.
         DiscordException

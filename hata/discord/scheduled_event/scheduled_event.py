@@ -397,7 +397,7 @@ class ScheduledEvent(DiscordEntity):
         
         Returns
         -------
-        entity : `None`, ``ChannelStage``
+        entity : `None`, ``Channel``
         """
         entity_id = self.entity_id
         if entity_id:
@@ -423,7 +423,7 @@ class ScheduledEvent(DiscordEntity):
         
         Returns
         -------
-        channel : `None`, ``ChannelStage``
+        channel : `None`, ``Channel``
         """
         channel_id = self.channel_id
         if channel_id:

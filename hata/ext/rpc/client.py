@@ -738,12 +738,12 @@ class RPCClient:
         
         Parameters
         ----------
-        channel : ``ChannelBase``, `int`
+        channel : ``Channel``, `int`
             The channel or it's identifier.
         
         Returns
         -------
-        channel : ``ChannelBase``
+        channel : ``Channel``
             The response channel.
         messages : `None`, `list` of ``Message``
             Messages sent to the channel if applicable.
@@ -753,7 +753,7 @@ class RPCClient:
         Raises
         ------
         TypeError
-            If `channel` is neither `int`, nor ``ChannelBase``.
+            If `channel` is neither `int`, nor ``Channel``.
         ConnectionError
             RPC client is not connected.
         TimeoutError
@@ -808,7 +808,7 @@ class RPCClient:
         
         Returns
         -------
-        channels : `list` of ``ChannelGuildBase``
+        channels : `list` of ``Channel``
         
         Raises
         ------
@@ -928,7 +928,7 @@ class RPCClient:
         
         Parameters
         ----------
-        channel : `None`, ``ChannelVoiceBase``, `int`
+        channel : `None`, ``Channel``, `int`
             The channel to select or `None` to leave.
         force : `bool` = `False`, Optional (Keyword only)
             Forces the user to join the voice channel.
@@ -937,12 +937,12 @@ class RPCClient:
         
         Returns
         -------
-        channel : ``ChannelVoiceBase``, `None`
+        channel : ``Channel``, `None`
         
         Raises
         ------
         TypeError
-            If `channel` is neither `None`, ``ChannelVoiceBase``, `int`.
+            If `channel` is neither `None`, ``Channel``, `int`.
         ConnectionError
             RPC client is not connected.
         TimeoutError
@@ -955,7 +955,7 @@ class RPCClient:
         if channel is None:
             channel_id = None
         else:
-            channel_id = get_channel_id(channel, ChannelVoiceBase)
+            channel_id = get_channel_id(channel, Channel.is_in_group_guild_connectable)
             channel_id = str(channel_id)
         
         if __debug__:
@@ -995,7 +995,7 @@ class RPCClient:
         
         Returns
         -------
-        channel : ``ChannelVoiceBase``, `None`
+        channel : ``Channel``, `None`
         
         Raises
         ------
@@ -1048,7 +1048,7 @@ class RPCClient:
         if (channel is None):
             channel_id = None
         else:
-            channel_id = get_channel_id(channel, ChannelTextBase)
+            channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
             channel_id = str(channel_id)
         
         data = {
@@ -1586,7 +1586,7 @@ class RPCClient:
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, ChannelVoiceBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_guild_connectable)
         
         await self._subscribe(
             DISPATCH_EVENT_USER_VOICE_CREATE,
@@ -1602,7 +1602,7 @@ class RPCClient:
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`
+            channel : ``ChannelTextBase``, `int`
             The channel to unsubscribe from.
         
         Raises
@@ -1614,7 +1614,7 @@ class RPCClient:
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, ChannelVoiceBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_guild_connectable)
 
         await self._unsubscribe(
             DISPATCH_EVENT_USER_VOICE_CREATE,
@@ -1642,7 +1642,7 @@ class RPCClient:
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, ChannelVoiceBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_guild_connectable)
         
         await self._subscribe(
             DISPATCH_EVENT_USER_VOICE_UPDATE,
@@ -1670,7 +1670,7 @@ class RPCClient:
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, ChannelVoiceBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_guild_connectable)
 
         await self._unsubscribe(
             DISPATCH_EVENT_USER_VOICE_UPDATE,
@@ -1698,7 +1698,7 @@ class RPCClient:
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, ChannelVoiceBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_guild_connectable)
         
         await self._subscribe(
             DISPATCH_EVENT_USER_VOICE_DELETE,
@@ -1726,7 +1726,7 @@ class RPCClient:
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, ChannelVoiceBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_guild_connectable)
 
         await self._unsubscribe(
             DISPATCH_EVENT_USER_VOICE_DELETE,
@@ -1796,7 +1796,7 @@ class RPCClient:
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, ChannelTextBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
         
         await self._subscribe(
             DISPATCH_EVENT_MESSAGE_CREATE,
@@ -1824,7 +1824,7 @@ class RPCClient:
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, ChannelTextBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
 
         await self._unsubscribe(
             DISPATCH_EVENT_MESSAGE_CREATE,
@@ -1852,7 +1852,7 @@ class RPCClient:
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, ChannelTextBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
         
         await self._subscribe(
             DISPATCH_EVENT_MESSAGE_EDIT,
@@ -1880,7 +1880,7 @@ class RPCClient:
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, ChannelTextBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
 
         await self._unsubscribe(
             DISPATCH_EVENT_MESSAGE_EDIT,
@@ -1908,7 +1908,7 @@ class RPCClient:
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, ChannelTextBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
         
         await self._subscribe(
             DISPATCH_EVENT_MESSAGE_DELETE,
@@ -1936,7 +1936,7 @@ class RPCClient:
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, ChannelTextBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
 
         await self._unsubscribe(
             DISPATCH_EVENT_MESSAGE_DELETE,
@@ -1964,7 +1964,7 @@ class RPCClient:
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, ChannelVoiceBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_guild_connectable)
         
         await self._subscribe(
             DISPATCH_EVENT_SPEAKING_START,
@@ -1992,7 +1992,7 @@ class RPCClient:
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, ChannelVoiceBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_guild_connectable)
 
         await self._unsubscribe(
             DISPATCH_EVENT_SPEAKING_START,
@@ -2020,7 +2020,7 @@ class RPCClient:
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, ChannelVoiceBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_guild_connectable)
         
         await self._subscribe(
             DISPATCH_EVENT_SPEAKING_STOP,
@@ -2048,7 +2048,7 @@ class RPCClient:
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, ChannelVoiceBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_guild_connectable)
         
         await self._unsubscribe(
             DISPATCH_EVENT_SPEAKING_STOP,

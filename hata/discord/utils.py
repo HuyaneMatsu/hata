@@ -1020,7 +1020,6 @@ class Unknown(DiscordEntity):
         - `'Webhook'`
         - `'Sticker'`
         - `'ScheduledEvent'`
-        - `'ChannelThread'`
         - `'Integration'`
     """
     __slots__ = ('name', 'type', )

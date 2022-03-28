@@ -577,7 +577,7 @@ class SolarClient:
         
         Parameters
         ----------
-        channel : ``ChannelVoiceBase``, `tuple` (`int`, `int`)
+        channel : ``Channel``, `tuple` (`int`, `int`)
             The channel to join to.
         cls : ``SolarPlayerBase`` = ``SolarPlayer``, Optional (Keyword only)
             The player's class to create.
@@ -589,7 +589,7 @@ class SolarClient:
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelVoiceBase`` nor as `tuple` (`int`, `int`).
+            If `channel` was not given neither as ``Channel`` nor as `tuple` (`int`, `int`).
         RuntimeError
             - If there are no available nodes.
             - If the ``SolarClient``'s client is already deconstructed.

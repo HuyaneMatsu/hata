@@ -438,7 +438,7 @@ class SolarPlayerBase:
         
         Parameters
         ---------
-        channel : ``ChannelVoiceBase``, `int`
+        channel : ``Channel``, `int`
             The channel where the voice client will move to.
         
         Returns
@@ -450,7 +450,7 @@ class SolarPlayerBase:
         Raises
         ------
         TypeError
-            If  `channel` was not given as ``ChannelVoiceBase`` not `int`.
+            If  `channel` was not given as ``Channel`` not `int`.
         """
         node = self.node
         if node is None:
@@ -569,7 +569,7 @@ class SolarPlayerBase:
         
         Returns
         -------
-        channel : `None`, ``ChannelVoiceBase``
+        channel : `None`, ``Channel``
         """
         channel_id = self.channel_id
         if channel_id:

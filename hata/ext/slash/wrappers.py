@@ -124,8 +124,8 @@ class SlasherApplicationCommandPermissionOverwriteWrapper(SlasherCommandWrapper)
         ----------
         guild : ``Guild``, `int`
             The guild's identifier where the overwrite is applied.
-        target : ``ClientUserBase``, ``Role``, ``ChannelBase``, `tuple` ((``ClientUserBase``, ``Role``, \
-                ``ChannelBase``, `str` (`'Role'`, `'role'`, `'User'`, `'user'`, `'Channel'`, `'channel'`)), `int`)
+        target : ``ClientUserBase``, ``Role``, ``Channel``, `tuple` ((``ClientUserBase``, ``Role``, \
+                ``Channel``, `str` (`'Role'`, `'role'`, `'User'`, `'user'`, `'Channel'`, `'channel'`)), `int`)
             The target entity of the overwrite
             
             The expected type & value might be pretty confusing, but the target was it to allow relaxing creation.
@@ -133,10 +133,10 @@ class SlasherApplicationCommandPermissionOverwriteWrapper(SlasherCommandWrapper)
             
             - ``Role``
             - ``ClientUserBase``
-            - ``ChannelBase``
+            - ``Channel``
             - `tuple` (``Role``, `int`)
             - `tuple` (``ClientUserBase``, `int`)
-            - `tuple` (``ChannelBase``, `int`)
+            - `tuple` (``Channel``, `int`)
             - `tuple` (`'Role'`, `int`)
             - `tuple` (`'role'`, `int`)
             - `tuple` (`'User'`, `int`)

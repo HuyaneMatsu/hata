@@ -147,7 +147,7 @@ class WebhookSourceChannel(DiscordEntity):
         
         Parameters
         ----------
-        channel : ``ChannelText``
+        channel : ``Channel``
             The respective channel instance.
         
         Returns
@@ -176,7 +176,7 @@ class WebhookSourceChannel(DiscordEntity):
         
         Returns
         -------
-        channel : ``ChannelText``
+        channel : ``Channel``
         """
         channel = create_partial_channel_from_id(self.id, 5, 0)
         if channel.partial:

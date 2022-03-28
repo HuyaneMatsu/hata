@@ -179,7 +179,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `None`, `dict` of (`str`, `Any`) items
             Partial channel data.
         
         Returns

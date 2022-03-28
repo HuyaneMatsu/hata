@@ -257,15 +257,15 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         | version                   | `int`                                             |
         +---------------------------+---------------------------------------------------+
     
-    channel_create(client: ``Client``, channel: ``ChannelBase``)
+    channel_create(client: ``Client``, channel: ``Channel``)
         Called when a channel is created.
         
         > This event is not called when a private channel is created.
     
-    channel_delete(client: ``Client``, channel: ``ChannelBase``)
+    channel_delete(client: ``Client``, channel: ``Channel``)
         Called when a channel is deleted.
     
-    channel_edit(client: ``Client``, channel: ``ChannelBase``, old_attributes: {`dict`, `None`})
+    channel_edit(client: ``Client``, channel: ``Channel``, old_attributes: {`dict`, `None`})
         Called when a channel is edited. The passed `old_attributes` parameter contains the channel's overwritten
         attributes in `attribute-name` - `old-value` relation.
         
@@ -664,7 +664,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------------------------------------------+
         | content           | `None`, `str`                                                         |
         +-------------------+-----------------------------------------------------------------------+
-        | cross_mentions    | `None` or (`tuple` of (``ChannelBase``, ``UnknownCrossMention``))     |
+        | cross_mentions    | `None` or (`tuple` of (``Channel``, ``UnknownCrossMention``))         |
         +-------------------+-----------------------------------------------------------------------+
         | edited_at         | `None`, `datetime`                                                    |
         +-------------------+-----------------------------------------------------------------------+
@@ -867,10 +867,10 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         | tags                  | `None`  or `frozenset` of `str`   |
         +-----------------------+-----------------------------------+
     
-    thread_user_add(client : ``Client``, thread_channel: ``ChannelThread``, user: ``ClientUserBase``):
+    thread_user_add(client : ``Client``, thread_channel: ``Channel``, user: ``ClientUserBase``):
         Called when a user is added or joined a thread channel.
     
-    thread_user_delete(client : ``Client``, thread_channel: ``ChannelThread``, user: ``ClientUserBase``, \
+    thread_user_delete(client : ``Client``, thread_channel: ``Channel``, user: ``ClientUserBase``, \
             thread_profile: ``ThreadProfile``):
         Called when a user is removed or left a thread channel.
     

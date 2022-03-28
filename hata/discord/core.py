@@ -33,7 +33,7 @@ Weak Caches
 
 - `CHANNELS` : ``WeakValueDictionary``
     
-    Contains various ``ChannelBase``.
+    Contains various ``Channel``.
 
 - `DISCOVERY_CATEGORIES` : ``WeakValueDictionary``
     

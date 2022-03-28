@@ -1,5 +1,7 @@
 __all__ = ()
 
+import warnings
+
 from scarletio import copy_docs
 
 from ...utils.module_deprecation import deprecated_import
@@ -11,7 +13,7 @@ from . import channel_types as CHANNEL_TYPES
 @deprecated_import
 class ChannelBase:
     """
-    Deprecated and scheduled for remove. Please use the ``Channel`` type instead.
+    Deprecated and will be removed in 2022 August. Please use the ``Channel`` type instead.
     """
     allowed_types = frozenset((
         CHANNEL_TYPES.guild_text,
@@ -30,11 +32,37 @@ class ChannelBase:
         CHANNEL_TYPES.guild_forum,
     ))
     
+    type = 0
+    
     def __instancecheck__(cls, instance):
+        warnings.warn(
+            f'`{cls.__name__}` is deprecated and will be removed in 2022. Please use `{Channel.__name__}` instead.',
+            FutureWarning,
+        )
+        
         return isinstance(instance, Channel) and instance.type in cls.allowed_types
     
     def __subclasscheck__(cls, klass):
+        warnings.warn(
+            f'`{cls.__name__}` is deprecated and will be removed in 2022. Please use `{Channel.__name__}` instead.',
+            FutureWarning,
+        )
+        
         return issubclass(klass, Channel) or (klass is cls)
+    
+    @classmethod
+    def precreate(cls, channel_id, **kwargs):
+        channel_type = next(iter(cls.allowed_types))
+        
+        warnings.warn(
+            (
+                f'`{cls.__name__}` is deprecated and will be removed in 2022 August. Please use: '
+                f'`{Channel.__name__}.precreate(channel_id, channel_type={channel_type}, ...)` instead.'
+            ),
+            FutureWarning,
+        )
+        
+        return Channel.precreate(channel_id, channel_type=channel_type, **kwargs)
 
 
 @deprecated_import
@@ -88,6 +116,8 @@ class ChannelGuildMainBase(ChannelGuildBase):
 @deprecated_import
 @copy_docs(ChannelBase)
 class ChannelCategory(ChannelGuildMainBase):
+    type = CHANNEL_TYPES.guild_category
+    
     allowed_types = frozenset((
         CHANNEL_TYPES.guild_category,
     ))
@@ -96,6 +126,8 @@ class ChannelCategory(ChannelGuildMainBase):
 @deprecated_import
 @copy_docs(ChannelBase)
 class ChannelDirectory(ChannelGuildMainBase):
+    type = CHANNEL_TYPES.guild_directory
+    
     allowed_types = frozenset((
         CHANNEL_TYPES.guild_directory,
     ))
@@ -104,6 +136,8 @@ class ChannelDirectory(ChannelGuildMainBase):
 @deprecated_import
 @copy_docs(ChannelBase)
 class ChannelForum(ChannelGuildMainBase):
+    type = CHANNEL_TYPES.guild_forum
+    
     allowed_types = frozenset((
         CHANNEL_TYPES.guild_forum,
     ))
@@ -120,6 +154,8 @@ class ChannelStore(ChannelGuildMainBase):
 @deprecated_import
 @copy_docs(ChannelBase)
 class ChannelText(ChannelGuildMainBase, ChannelTextBase):
+    type = CHANNEL_TYPES.guild_text
+    
     allowed_types = frozenset((
         CHANNEL_TYPES.guild_text,
         CHANNEL_TYPES.guild_announcements,
@@ -147,6 +183,8 @@ class ChannelVoiceBase(ChannelGuildMainBase):
 @deprecated_import
 @copy_docs(ChannelBase)
 class ChannelVoice(ChannelVoiceBase):
+    type = CHANNEL_TYPES.guild_voice
+    
     allowed_types = frozenset((
         CHANNEL_TYPES.guild_voice,
     ))
@@ -155,6 +193,8 @@ class ChannelVoice(ChannelVoiceBase):
 @deprecated_import
 @copy_docs(ChannelBase)
 class ChannelStage(ChannelVoiceBase):
+    type = CHANNEL_TYPES.guild_stage
+    
     allowed_types = frozenset((
         CHANNEL_TYPES.guild_stage,
     ))
@@ -163,6 +203,7 @@ class ChannelStage(ChannelVoiceBase):
 @deprecated_import
 @copy_docs(ChannelBase)
 class ChannelPrivate(ChannelBase, ChannelTextBase):
+    type = CHANNEL_TYPES.private
     
     allowed_types = frozenset((
         CHANNEL_TYPES.private,
@@ -172,6 +213,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
 @deprecated_import
 @copy_docs(ChannelBase)
 class ChannelGroup(ChannelBase, ChannelTextBase):
+    type = CHANNEL_TYPES.private_group
     
     allowed_types = frozenset((
         CHANNEL_TYPES.private_group,
@@ -180,7 +222,7 @@ class ChannelGroup(ChannelBase, ChannelTextBase):
 
 @deprecated_import
 @copy_docs(ChannelBase)
-class ChannelThread(ChannelGuildBase, ChannelTextBase)
+class ChannelThread(ChannelGuildBase, ChannelTextBase):
     allowed_types = frozenset((
         CHANNEL_TYPES.guild_thread_announcements,
         CHANNEL_TYPES.guild_thread_public,

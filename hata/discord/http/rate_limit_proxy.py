@@ -10,8 +10,7 @@ from .rate_limit import (
 )
 
 
-ChannelBase = include('ChannelBase')
-ChannelGuildBase = include('ChannelGuildBase')
+Channel = include('Channel')
 Message = include('Message')
 Role = include('Role')
 Webhook = include('Webhook')
@@ -54,9 +53,9 @@ class RateLimitProxy:
             +-----------------------+-----------------------------------------------------------------------+
             | Respective limiter    |   Accepted values                                                     |
             +=======================+=======================================================================+
-            | LIMITER_CHANNEL       | ``ChannelBase``, ``Message``                                          |
+            | LIMITER_CHANNEL       | ``Channel``, ``Message``                                              |
             +-----------------------+-----------------------------------------------------------------------+
-            | LIMITER_GUILD         | ``Guild``, ``ChannelGuildBase``, ``Message``, ``Role``, ``Webhook``,  |
+            | LIMITER_GUILD         | ``Guild``, ``Channel``, ``Message``, ``Role``, ``Webhook``,           |
             |                       | ``WebhookRepr``                                                       |
             +-----------------------+-----------------------------------------------------------------------+
             | LIMITER_WEBHOOK       | ``Webhook``, ``WebhookRepr``                                          |
@@ -100,7 +99,7 @@ class RateLimitProxy:
             
             elif group_limiter is LIMITER_CHANNEL:
                 if (limiter is not None):
-                    if isinstance(limiter, ChannelBase):
+                    if isinstance(limiter, Channel):
                         limiter_id = limiter.id
                         break
                     
@@ -114,8 +113,11 @@ class RateLimitProxy:
                         limiter_id = limiter.id
                         break
                     
-                    if isinstance(limiter, (ChannelGuildBase, Message, Role, Webhook, WebhookRepr)):
-                        
+                    if isinstance(limiter, (Channel, Message, Role)):
+                        limiter_id = limiter.guild_id
+                        break
+                    
+                    if isinstance(limiter, (Webhook, WebhookRepr)):
                         guild = limiter.guild
                         if (guild is not None):
                             limiter_id = limiter.id

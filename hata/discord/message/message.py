@@ -36,17 +36,11 @@ from .preinstanced import GENERIC_MESSAGE_TYPES, MESSAGE_DEFAULT_CONVERTER, Mess
 from .utils import try_resolve_interaction_message
 
 
-ChannelTextBase = include('ChannelTextBase')
-ChannelGuildBase = include('ChannelGuildBase')
-ChannelText = include('ChannelText')
-ChannelPrivate = include('ChannelPrivate')
-ChannelGroup = include('ChannelGroup')
+Channel = include('Channel')
 create_component = include('create_component')
-ChannelGuildUndefined = include('ChannelGuildUndefined')
 CHANNEL_TYPE_MAP = include('CHANNEL_TYPE_MAP')
 InteractionType = include('InteractionType')
 ComponentBase = include('ComponentBase')
-ChannelThread = include('ChannelThread')
 
 EMBED_UPDATE_NONE = 0
 EMBED_UPDATE_SIZE_UPDATE = 1
@@ -630,7 +624,7 @@ class Message(DiscordEntity, immortal=True):
             _set_message_field(
                 self,
                 MESSAGE_FIELD_KEY_THREAD,
-                CHANNEL_TYPE_MAP.get(thread_data['type'], ChannelGuildUndefined)(thread_data, None, guild_id),
+                Channel(thread_data, None, guild_id),
             )
     
     
@@ -709,7 +703,7 @@ class Message(DiscordEntity, immortal=True):
             The ``.author`` attribute of the message. If passed as `None` then it will be set as `ZEROUSER` instead.
             
             If called as a classmethod, defaults to `ZEROUSER`.
-        channel_id : ``ChannelTextBase``, `int`, Optional if called as method (Keyword only)
+        channel_id : ``Channel``, `int`, Optional if called as method (Keyword only)
             The ``.channel_id`` attribute of the message.
             
             If called as a classmethod this attribute must be passed, or `TypeError` is raised.
@@ -724,7 +718,7 @@ class Message(DiscordEntity, immortal=True):
             
             If called as a classmethod defaults to `''` (empty string).
         
-        cross_mentions : `None`, (`tuple`, `list`) of (``UnknownCrossMention``, ``ChannelGuildBase``)
+        cross_mentions : `None`, (`tuple`, `list`) of (``UnknownCrossMention``, ``Channel``)
                 , Optional (Keyword only)
             The `.cross_mentions` attribute of the message. If passed as an empty list, then will be set `None` instead.
             
@@ -795,7 +789,7 @@ class Message(DiscordEntity, immortal=True):
             
             If called as a classmethod, defaults to `None`.
         
-        thread : `None`, ``ChannelThread``
+        thread : `None`, ``Channel``
             The ``.thread`` attribute of the message.
             
             If called as a classmethod defaults to `None`.
@@ -850,12 +844,12 @@ class Message(DiscordEntity, immortal=True):
             else:
                 if isinstance(channel_id, int):
                     channel = None
-                elif isinstance(channel_id, ChannelTextBase):
+                elif isinstance(channel_id, Channel):
                     channel = channel_id
                     channel_id = channel_id.id
                 else:
                     raise TypeError(
-                        f'`channel_id` can be `int`, `{ChannelTextBase.__name__}`, got `{channel_id!r}`.'
+                        f'`channel_id` can be `int`, `{Channel.__name__}`, got `{channel_id!r}`.'
                     )
             
             if (channel is None):
@@ -875,9 +869,9 @@ class Message(DiscordEntity, immortal=True):
                 FutureWarning,
             )
             
-            if not isinstance(channel, ChannelTextBase):
+            if not isinstance(channel, Channel):
                 raise TypeError(
-                    f'`channel` can be `{ChannelTextBase.__name__}`, got {channel.__class__.__name__}; {channel!r}.'
+                    f'`channel` can be `{Channel.__name__}`, got {channel.__class__.__name__}; {channel!r}.'
                 )
                 
             channel_id = channel.id
@@ -1014,7 +1008,7 @@ class Message(DiscordEntity, immortal=True):
             if (cross_mentions is not None):
                 if not isinstance(cross_mentions, (tuple, list)):
                     raise TypeError(
-                        f'`cross_mentions` can be `None`, `tuple`, `list` of `{ChannelGuildBase.__name__}` or '
+                        f'`cross_mentions` can be `None`, `tuple`, `list` of `{Channel.__name__}` or '
                         f'`{UnknownCrossMention.__name__}`, got '
                         f'{cross_mentions.__class__.__name__}; {cross_mentions!r}.'
                     )
@@ -1022,9 +1016,9 @@ class Message(DiscordEntity, immortal=True):
                 cross_mentions_processed = []
                 
                 for channel_ in cross_mentions:
-                    if not isinstance(channel_, (ChannelGuildBase, UnknownCrossMention)):
+                    if not isinstance(channel_, (Channel, UnknownCrossMention)):
                         raise TypeError(
-                            f'`cross_mentions` can contain `{ChannelGuildBase.__name__}`, '
+                            f'`cross_mentions` can contain `{Channel.__name__}`, '
                             f'`{UnknownCrossMention.__name__}` elements, got {channel_.__class__.__name__};'
                             f'{channel_!r}; cross_mentions={cross_mentions!r}.'
                         )
@@ -1164,7 +1158,7 @@ class Message(DiscordEntity, immortal=True):
                 flags = preconvert_flag(flags, 'flags', MessageFlag)
         
         if validate:
-            if isinstance(channel, ChannelText):
+            if isinstance(channel, Channel):
                 if flags.source_message_deleted and (not flags.is_crosspost):
                     raise ValueError(
                         '`flags.source_message_deleted` is set, but `flags.is_crosspost` is not -> Only crossposted '
@@ -1176,19 +1170,19 @@ class Message(DiscordEntity, immortal=True):
                 if flags.crossposted:
                     raise ValueError(
                         '`flags.crossposted` is set, meanwhile `channel` is not type '
-                        f'`{ChannelText.__name__}`, got {channel.__class__.__name__}; {channel!r}.'
+                        f'`{Channel.__name__}`, got {channel.__class__.__name__}; {channel!r}.'
                     )
     
                 if flags.is_crosspost:
                     raise ValueError(
                         '`flags.is_crosspost` is set, meanwhile `channel` is not type '
-                        f'`{ChannelText.__name__}`, got {channel.__class__.__name__}; {channel!r}.'
+                        f'`{Channel.__name__}`, got {channel.__class__.__name__}; {channel!r}.'
                     )
     
                 if flags.source_message_deleted:
                     raise ValueError(
                         '`flags.source_message_deleted` is set, meanwhile `channel` is not type '
-                        f'`{ChannelText.__name__}`, got {channel.__class__.__name__}; {channel!r}.'
+                        f'`{Channel.__name__}`, got {channel.__class__.__name__}; {channel!r}.'
                     )
         
         try:
@@ -1282,7 +1276,7 @@ class Message(DiscordEntity, immortal=True):
                     role_mentions = None
         
         if validate:
-            if (role_mentions is not None) and (not isinstance(channel,ChannelGuildBase)):
+            if (role_mentions is not None) and (not isinstance(channel, Channel)):
                 raise ValueError(
                     f'`role_mentions` are only applicable for guild channels, got {channel.__class__.__name__}; '
                     f'{channel!r}; role_mentions={role_mentions!r}.'
@@ -1435,9 +1429,9 @@ class Message(DiscordEntity, immortal=True):
             else:
                 thread = base.thread
         else:
-            if (thread is not None) and (not isinstance(thread, ChannelThread)):
+            if (thread is not None) and (not isinstance(thread, Channel)):
                 raise TypeError(
-                    f'`thread` can be `None`, `{ChannelThread.__name__}` , got '
+                    f'`thread` can be `None`, `{Channel.__name__}` , got '
                     f'{thread.__class__.__name__}; {thread!r}.'
                 )
         
@@ -1526,8 +1520,8 @@ class Message(DiscordEntity, immortal=True):
         Examples
         --------
         ```py
-        >>>> from hata import Message, ChannelText, now_as_id
-        >>>> message = Message.custom(content='Fluffy nekos', channel=ChannelText.precreate(now_as_id()))
+        >>>> from hata import Message, Channel, now_as_id
+        >>>> message = Message.custom(content='Fluffy nekos', channel=Channel.precreate(now_as_id()))
         >>>> message
         <Message id=0, ln=12, author=#0000>
         >>>> # No code stands for str(message), what is same as repr(message) for the time being.
@@ -1588,13 +1582,13 @@ class Message(DiscordEntity, immortal=True):
         +-------------------+-----------------------------------------------------------------------+
         | Keys              | Values                                                                |
         +===================+=======================================================================+
-        | attachments       | `None`, (`tuple` of ``Attachment``)                                 |
+        | attachments       | `None`, (`tuple` of ``Attachment``)                                   |
         +-------------------+-----------------------------------------------------------------------+
-        | components        | `None`, (`tuple` of ``ComponentBase``)                              |
+        | components        | `None`, (`tuple` of ``ComponentBase``)                                |
         +-------------------+-----------------------------------------------------------------------+
-        | content           | `None`, `str`                                                       |
+        | content           | `None`, `str`                                                         |
         +-------------------+-----------------------------------------------------------------------+
-        | cross_mentions    | `None`, (`tuple` of (``ChannelBase``, ``UnknownCrossMention``))   |
+        | cross_mentions    | `None`, (`tuple` of (``Channel``, ``UnknownCrossMention``))           |
         +-------------------+-----------------------------------------------------------------------+
         | edited_at         | `None`  or `datetime`                                                 |
         +-------------------+-----------------------------------------------------------------------+
@@ -1606,9 +1600,9 @@ class Message(DiscordEntity, immortal=True):
         +-------------------+-----------------------------------------------------------------------+
         | pinned            | `bool`                                                                |
         +-------------------+-----------------------------------------------------------------------+
-        | user_mentions     | `None`, (`tuple` of ``ClientUserBase``)                             |
+        | user_mentions     | `None`, (`tuple` of ``ClientUserBase``)                               |
         +-------------------+-----------------------------------------------------------------------+
-        | role_mention_ids  | `None`, (`tuple` of `int`)                                          |
+        | role_mention_ids  | `None`, (`tuple` of `int`)                                            |
         +-------------------+-----------------------------------------------------------------------+
         """
         self._clear_cache()
@@ -2140,7 +2134,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        guild : `None`, ``ChannelTextBase``
+        guild : `None`, ``Channel``
         """
         channel_id = self.channel_id
         if channel_id:
@@ -2208,7 +2202,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        mentions : `list` of (`str` (`'everyone'`), ``ClientUserBase``, ``Role``, ``ChannelBase`` or
+        mentions : `list` of (`str` (`'everyone'`), ``ClientUserBase``, ``Role``, ``Channel``,
                 ``UnknownCrossMention``)
         """
         mentions = []
@@ -2432,7 +2426,7 @@ class Message(DiscordEntity, immortal=True):
         author : `None`, ``ClientUserBase``, ``Webhook``, ``WebhookRepr``, Optional (Keyword only)
             The ``.author`` attribute of the message. If passed as `None` then it will be set as `ZEROUSER` instead.
         
-        channel_id : ``ChannelTextBase``, `int`, Optional if called as method (Keyword only)
+        channel_id : ``Channel``, `int`, Optional if called as method (Keyword only)
             The ``.channel_id`` attribute of the message.
         
         components : `None`, (`list`, `tuple`) of ``ComponentBase``, Optional (Keyword only)
@@ -2441,7 +2435,7 @@ class Message(DiscordEntity, immortal=True):
         content : `None`, `str`, Optional (Keyword only)
             The ``.content`` attribute of the message. Can be between length `0` and `4000`.
         
-        cross_mentions : `None`, (`tuple`, `list`) of (``UnknownCrossMention``, ``ChannelGuildBase``)
+        cross_mentions : `None`, (`tuple`, `list`) of (``UnknownCrossMention``, ``Channel``)
                 , Optional (Keyword only)
             The `.cross_mentions` attribute of the message. If passed as an empty list, then will be set `None` instead.
         
@@ -2488,7 +2482,7 @@ class Message(DiscordEntity, immortal=True):
         stickers : `None`, (`list`, `tuple`) of ``Sticker``, Optional (Keyword only)
             The ``.stickers`` attribute of the message.
             
-        thread : `None`, ``ChannelThread``
+        thread : `None`, ``Channel``
             The ``.thread`` attribute of the message.
         
         tts : `bool`, `int` (`0`, `1`), Optional (Keyword only)
@@ -2548,7 +2542,7 @@ class Message(DiscordEntity, immortal=True):
                 (MESSAGE_FIELD_KEY_EDITED_AT, datetime, 'edited_at'),
                 (MESSAGE_FIELD_KEY_INTERACTION, MessageInteraction, 'interaction'),
                 (MESSAGE_FIELD_KEY_REACTIONS, reaction_mapping, 'reactions'),
-                (MESSAGE_FIELD_KEY_THREAD, ChannelThread, 'thread'),
+                (MESSAGE_FIELD_KEY_THREAD, Channel, 'thread'),
             ):
                 try:
                     variable_value = kwargs.pop(variable_name)
@@ -2577,7 +2571,7 @@ class Message(DiscordEntity, immortal=True):
                 (MESSAGE_FIELD_KEY_ATTACHMENTS, Attachment, 'attachments', False),
                 (MESSAGE_FIELD_KEY_COMPONENTS, ComponentBase, 'components', False),
                 (MESSAGE_FIELD_KEY_STICKERS, Sticker, 'stickers', False),
-                (MESSAGE_FIELD_KEY_CROSS_MENTIONS, (ChannelGuildBase, UnknownCrossMention), 'cross_mentions', True),
+                (MESSAGE_FIELD_KEY_CROSS_MENTIONS, (Channel, UnknownCrossMention), 'cross_mentions', True),
                 (MESSAGE_FIELD_KEY_USER_MENTIONS, ClientUserBase, 'user_mentions', True),
             ):
                 try:
@@ -3258,7 +3252,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channel_mentions : `None`, `tuple` of (``GuildChannelBase``, ``UnknownCrossMention``) instances.
+        channel_mentions : `None`, `tuple` of (``Channel``, ``UnknownCrossMention``) instances.
             The parsed channel mentions.
         """
         content = self.content
@@ -3300,7 +3294,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        channel_mentions : `None`, (`tuple` of (``ChannelBase``, ``UnknownCrossMentions``))
+        channel_mentions : `None`, (`tuple` of (``Channel``, ``UnknownCrossMentions``))
         """
         fields = self._fields
         if fields is None:
@@ -3451,7 +3445,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        cross_mentions : `None`, `tuple` of (``UnknownCrossMention``, ``ChannelBase``)
+        cross_mentions : `None`, `tuple` of (``UnknownCrossMention``, ``Channel``)
         """
         return _get_message_field(
             self,
@@ -4346,7 +4340,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        thread : `None`, ``ChannelThread``
+        thread : `None`, ``Channel``
         """
         return _get_message_field(
             self,

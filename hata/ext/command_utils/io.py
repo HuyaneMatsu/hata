@@ -18,7 +18,7 @@ class ChannelOutputStream:
     """
     Attributes
     ----------
-    _channel : ``ChannelText``
+    _channel : ``Channel``
         The target channel of the stream.
     _chunk_size : `int`
         The maximal chunk size to send in one message.
@@ -52,7 +52,7 @@ class ChannelOutputStream:
         ----------
         client : ``Client``
             The client who send the stream to the channel.
-        channel : ``ChannelText``
+        channel : ``Channel``
             The target channel of the stream.
         chunk_size : `int`
             The maximal chunk size to send in one message.
@@ -310,7 +310,7 @@ class ChannelInputStream:
     """
     Attributes
     ----------
-    _channel : ``ChannelText``
+    _channel : ``Channel``
         The source channel of the stream.
     _check : `None`, `callable`
         Optional check to call to check whether a received message should be passed to the stream.
@@ -358,7 +358,7 @@ class ChannelInputStream:
         ----------
         client : ``Client``
             The client who send the stream to the channel.
-        channel : ``ChannelText``
+        channel : ``Channel``
             The target channel of the stream.
         check : `None`, `callable`
             Optional check to call to check whether a received message should be passed to the stream.
@@ -840,7 +840,7 @@ def get_channel_stdout(client, channel, *, chunk_size=1000, sanitize=False):
     ----------
     client : ``Client``
         The client who redirects the stream.
-    channel : ``ChannelText``
+    channel : ``Channel``
         The channel where the stream is redirected from.
     chunk_size : `int` = `1000`, Optional (Keyword only)
         The maximal size of a raw chunk to output.
@@ -865,7 +865,7 @@ def get_channel_stdin(client, channel, *, check=None):
     ----------
     client : ``Client``
         The client who redirects the stream.
-    channel : ``ChannelText``
+    channel : ``Channel``
         The channel from where the stream will be redirected form.
     check : `None`, `callable` = `None`, Optional (Keyword only)
         Check which message's content should be feed to the input. Defaults to `None`.

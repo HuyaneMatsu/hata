@@ -18,7 +18,7 @@ def thread_user_create(thread_channel, user, thread_user_data):
     
     Parameters
     ----------
-    thread_channel : ``ChannelThread``
+    thread_channel : ``Channel``
         The respective thread.
     user : ``ClientUserBase``
         The respective user to add or update in the thread.
@@ -57,7 +57,7 @@ def thread_user_update(thread_channel, user, thread_user_data):
     
     Parameters
     ----------
-    thread_channel : ``ChannelThread``
+    thread_channel : ``Channel``
         The respective thread.
     user : ``ClientUserBase``
         The respective user to add or update in the thread.
@@ -96,7 +96,7 @@ def thread_user_delete(thread_channel, user_id):
     
     Parameters
     ----------
-    thread_channel : ``ChannelThread``
+    thread_channel : ``Channel``
         The respective thread.
     user_id : `int`
         The respective user's identifier.
@@ -128,7 +128,7 @@ def thread_user_pop(thread_channel, user_id, me):
     
     Parameters
     ----------
-    thread_channel : ``ChannelThread``
+    thread_channel : ``Channel``
         The respective thread.
     user_id : `int`
         The respective user's identifier.

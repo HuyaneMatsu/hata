@@ -42,7 +42,7 @@ class ClientUserBase(UserBase):
         Whether the user is a bot or a user account.
     flags : ``UserFlag``
         The user's user flags.
-    thread_profiles : `None`, `dict` (``ChannelThread``, ``ThreadProfile``) items
+    thread_profiles : `None`, `dict` (``Channel``, ``ThreadProfile``) items
         A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
         Defaults to `None`.
     """
@@ -573,7 +573,7 @@ class ClientUserPBase(ClientUserBase):
         Whether the user is a bot or a user account.
     flags : ``UserFlag``
         The user's user flags.
-    thread_profiles : `None`, `dict` (``ChannelThread``, ``ThreadProfile``) items
+    thread_profiles : `None`, `dict` (``Channel``, ``ThreadProfile``) items
         A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
         Defaults to `None`.
     activities : `None`, `list` of ``ActivityBase``

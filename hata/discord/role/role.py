@@ -680,7 +680,7 @@ class Role(DiscordEntity, immortal=True):
                         # should not happen
                         pass
                     else:
-                        role_ids = guild_profile
+                        role_ids = guild_profile.role_ids
                         if (role_ids is not None):
                             if role_id in role_ids:
                                 users.append(user)

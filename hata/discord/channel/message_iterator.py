@@ -5,11 +5,10 @@ from ..core import CHANNELS
 from ..exceptions import DiscordException, ERROR_CODES
 from ..permission.permission import PERMISSION_MASK_READ_MESSAGE_HISTORY
 
-from .channel_text_base import ChannelTextBase
+from .channel import Channel
 
 
-# sounds funny, but this is a class
-# the chunk_size is 99, because it means 1 request for _load_messages_till
+# sounds funny, but this is a class the chunk_size is 99, because it means 1 request for _load_messages_till
 
 class MessageIterator:
     """
@@ -21,7 +20,7 @@ class MessageIterator:
         The index of the message, what will be yielded.
     _can_read_history : `bool`
         Tells the message iterator, whether it's client can read the history if it's channel.
-    channel : ``ChannelTextBase``
+    channel : ``Channel``
         The channel, what's messages the message iterator will iterates over.
     chunk_size : `int`
         The amount of messages, what the message iterator will extend it's channel's message history, each time, the
@@ -41,7 +40,7 @@ class MessageIterator:
         ----------
         client : ``Client``
             The client, who will do the api requests for requesting more messages.
-        channel : ``ChannelTextBase``, `int`
+        channel : ``Channel``, `int`
             The channel, what's messages the message iterator will iterates over.
         chunk_size : `int`, Optional
             The amount of messages, what the message iterator will extend it's channel's message history, each time,
@@ -50,7 +49,7 @@ class MessageIterator:
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelTextBase`` nor `int`.
+            If `channel` was not given neither as ``Channel`` nor `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -73,13 +72,13 @@ class MessageIterator:
         if chunk_size > 99:
             chunk_size = 99
         
-        if isinstance(channel, ChannelTextBase):
+        if isinstance(channel, Channel):
             pass
         else:
             channel_id = maybe_snowflake(channel)
             if channel_id is None:
                 raise TypeError(
-                    f'`channel` can be `{ChannelTextBase.__name__}`, got '
+                    f'`channel` can be `{Channel.__name__}`, got '
                     f'{channel.__class__.__name__}; {channel!r}.'
                 )
             

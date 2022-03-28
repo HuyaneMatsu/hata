@@ -153,9 +153,9 @@ def MESSAGE_CREATE__CAL(client, data):
         if data.get('guild_id', None) is not None:
             return
         
-        channel = ChannelPrivate._create_dataless(channel_id)
+        channel = ChannelPrivate._create_private_data_less(channel_id)
         message = channel._create_new_message(data)
-        channel._finish_dataless(client, message.author)
+        channel._finish_private_data_less(client, message.author)
     else:
         message = channel._create_new_message(data)
     
@@ -169,9 +169,9 @@ def MESSAGE_CREATE__OPT(client, data):
         if data.get('guild_id', None) is not None:
             return
         
-        channel = ChannelPrivate._create_dataless(channel_id)
+        channel = ChannelPrivate._create_private_data_less(channel_id)
         message = channel._create_new_message(data)
-        channel._finish_dataless(client, message.author)
+        channel._finish_private_data_less(client, message.author)
     else:
         channel._create_new_message(data)
 
@@ -1532,10 +1532,8 @@ def CHANNEL_DELETE__CAL_SC(client, data):
         guild = channel.guild
         if guild is None:
             return
-        
-        channel._delete()
-    else:
-        channel._delete(client)
+    
+    channel._delete(client)
     
     Task(client.events.channel_delete(client, channel), KOKORO)
 
@@ -1552,7 +1550,7 @@ def CHANNEL_DELETE__CAL_MC(client, data):
             clients.close()
             return
         
-        channel._delete()
+        channel._delete(client)
         
         for client_ in clients:
             event_handler = client_.events.channel_delete
@@ -1573,10 +1571,7 @@ def CHANNEL_DELETE__OPT(client, data):
     except KeyError:
         return
     
-    if isinstance(channel, ChannelGuildBase):
-        channel._delete()
-    else:
-        channel._delete(client)
+    channel._delete(client)
 
 add_parser(
     ('CHANNEL_DELETE', 'THREAD_DELETE'),

@@ -3,17 +3,12 @@ __all__ = ()
 import warnings
 from itertools import chain
 
-from scarletio import Task, export
+from scarletio import Task, WeakSet, export
 
 from ..core import KOKORO
 
 from .intent import DISPATCH_EVENT_TO_INTENTS, INTENT_SHIFT_DEFAULT_EVENT, INTENT_SHIFT_MISSING_EVENT
 
-
-try:
-    from _weakref import WeakSet
-except ImportError:
-    from weakref import WeakSet
 
 PARSERS = {}
 

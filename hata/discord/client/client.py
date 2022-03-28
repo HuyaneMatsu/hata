@@ -704,10 +704,8 @@ class Client(ClientUserPBase):
         self.application = application
         self.email = None
         self.events = EventHandlerManager(self)
-        self.gateway = (DiscordGatewaySharder if shard_count else DiscordGateway)(self)
         self.group_channels = {}
         self.guilds = set()
-        self.http = DiscordHTTPClient(self, debug_options=processed_http_debug_options)
         self.intents = intents
         self.locale = DEFAULT_LOCALE
         self.mfa = False
@@ -721,6 +719,10 @@ class Client(ClientUserPBase):
         self.token = token
         self.verified = False
         self.voice_clients = {}
+        
+        # These might require other attributes to be set
+        self.http = DiscordHTTPClient(self, debug_options=processed_http_debug_options)
+        self.gateway = (DiscordGatewaySharder if shard_count else DiscordGateway)(self)
         
         # Setup additional user related attributes
         if (processable is not None):
@@ -3079,12 +3081,12 @@ class Client(ClientUserPBase):
                 iter_channel, sub_channels = iter_channel
                 display_sub_channels = []
                 for sub_channel in sub_channels:
-                    channel_key = (sub_channel.ORDER_GROUP, sub_channel.position, sub_channel.id, None)
+                    channel_key = (sub_channel.order_group, sub_channel.position, sub_channel.id, None)
                     display_sub_channels.append(channel_key)
             else:
                 display_sub_channels = None
             
-            channel_key = (iter_channel.ORDER_GROUP, iter_channel.position, iter_channel.id, display_sub_channels)
+            channel_key = (iter_channel.order_group, iter_channel.position, iter_channel.id, display_sub_channels)
             
             display_new.append(channel_key)
         

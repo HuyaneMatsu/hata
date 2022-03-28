@@ -13,18 +13,8 @@ from ..permission import PermissionOverwrite
 from ..utils import datetime_to_timestamp
 
 from . import channel_types as CHANNEL_TYPES
-from .channel_base import ChannelBase
-from .channel_guild_base import ChannelGuildBase
-from .channel_guild_category import ChannelCategory
-from .channel_guild_directory import ChannelDirectory
-from .channel_guild_forum import ChannelForum
-from .channel_guild_store import ChannelStore
-from .channel_guild_text import ChannelText
-from .channel_guild_undefined import ChannelGuildUndefined
-from .channel_guild_voice import ChannelStage, ChannelVoice, ChannelVoiceBase
-from .channel_private import ChannelGroup, ChannelPrivate
-from .channel_thread import AUTO_ARCHIVE_OPTIONS
-from .channel_thread import ChannelThread
+from .constants import AUTO_ARCHIVE_OPTIONS
+
 from .preinstanced import VideoQualityMode
 
 

@@ -109,25 +109,23 @@ We got some tutorials on `github:https://github.com/HuyaneMatsu/hata/tree/master
 """
 __version__ = '1.2.5'
 
-from .deprecate_backend import deprecate
+from .utils.module_deprecation import get_deprecation_function
 
 from .discord import *
 from .ext import *
+from .utils import *
 
-from .debug import *
-from .deprecate_backend import *
 from .env import *
 
 __all__ = (
     *discord.__all__,
     *ext.__all__,
     
-    *debug.__all__,
-    *deprecate_backend.__all__,
+    *utils.__all__,
     *env.__all__,
 )
 
 from scarletio import check_satisfaction
 check_satisfaction()
 
-deprecate()
+__getattr__ = get_deprecation_function()

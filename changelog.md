@@ -1,8 +1,42 @@
 ## 1.2.6 *\[2022-03-??\]*
 
+### Summary
+
+Channels now have a metadata system, making every channel share the same type.
+
+This fixes a case when a precreated channel could mess up the channel's and other related entities lifecycle.
+
 #### Improvements
 
 - Add `should_request_users` parameter to `Client` constructor.
+- Add `Channel` type inheriting all methods & properties of the old `ChannelBase`.
+- Add `Channel.is_messageable`.
+- Add `Channel.is_guild_messageable`.
+- Add `Channel.is_guild_text_like`.
+- Add `Channel.is_connectable`.
+- Add `Channel.is_guild_connectable`.
+- Add `Channel.is_private`.
+- Add `Channel.is_guild`.
+- Add `Channel.is_thread`.
+- Add `Channel.can_contain_threads`.
+
+#### Renames, Deprecation & Removals
+
+- Deprecate `ChannelBase`.
+- Deprecate `ChannelTextBase`.
+- Deprecate `ChannelGuildBase`.
+- Deprecate `ChannelGuildMainBase`.
+- Deprecate `ChannelCategory`.
+- Deprecate `ChannelDirectory`.
+- Deprecate `ChannelForum`.
+- Deprecate `ChannelStore`.
+- Deprecate `ChannelGuildUndefined`.
+- Deprecate `ChannelVoiceBase`.
+- Deprecate `ChannelVoice`.
+- Deprecate `ChannelStage`.
+- Deprecate `ChannelPrivate`.
+- Deprecate `ChannelGroup`.
+- Deprecate `ChannelThread`.
 
 ## 1.2.5 *\[2022-03-23\]*
 

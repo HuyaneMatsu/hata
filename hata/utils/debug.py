@@ -2,7 +2,7 @@ __all__ = ('set_debug_logger', )
 
 import sys
 
-from . import __package__ as PACKAGE_NAME
+from .. import __package__ as PACKAGE_NAME
 
 
 UNIQUE_MESSAGES = set()

@@ -8,7 +8,7 @@ from sys import platform as PLATFORM
 from scarletio import Future, Task, from_json, future_or_timeout, run_coroutine, sleep, to_json
 
 from ...discord.activity import ActivityRich
-from ...discord.channel import CHANNEL_TYPE_MAP, ChannelBase, ChannelGuildUndefined, ChannelTextBase, ChannelVoiceBase
+from ...discord.channel import Channel
 from ...discord.client.request_helpers import get_channel_id, get_guild_id, get_user_id
 from ...discord.core import KOKORO
 from ...discord.guild import create_partial_guild_from_data
@@ -761,7 +761,7 @@ class RPCClient:
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, ChannelBase)
+        channel_id = get_channel_id(channel, Channel)
         channel_id = str(channel_id)
         
         data = {
@@ -772,7 +772,7 @@ class RPCClient:
         }
         
         data = await self._send_request(data)
-        channel = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)(data, None, 0)
+        channel = Channel(data, None, 0)
         
         message_datas = data.get('messages', None)
         if (message_datas is not None) and message_datas:
@@ -834,7 +834,7 @@ class RPCClient:
     
         channels = []
         for channel_data in data['channels']:
-            channel = CHANNEL_TYPE_MAP.get(channel_data['type'], ChannelGuildUndefined)(channel_data, None, guild_id)
+            channel = Channel(channel_data, None, guild_id)
             channels.append(channel)
         
         return channels
@@ -977,7 +977,7 @@ class RPCClient:
         if (data is None):
             channel = None
         else:
-            channel = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)(data, None, 0)
+            channel = Channel(data, None, 0)
         
         return channel
     
@@ -1014,7 +1014,7 @@ class RPCClient:
         if (data is None):
             channel = None
         else:
-            channel = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)(data, None, 0)
+            channel = Channel(data, None, 0)
         
         return channel
     
@@ -1063,7 +1063,7 @@ class RPCClient:
         if (data is None):
             channel = None
         else:
-            channel = CHANNEL_TYPE_MAP.get(data['type'], ChannelGuildUndefined)(data, None, 0)
+            channel = Channel(data, None, 0)
         
         return channel
     

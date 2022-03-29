@@ -14,7 +14,7 @@ from scarletio import WeakValueDictionary, export, include
 from ...env import CACHE_PRESENCE, CACHE_USER
 
 from ..bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
-from ..channel import CHANNEL_TYPE_MAP, CHANNEL_TYPES, ChannelCategory, ChannelGuildUndefined, ChannelText
+from ..channel import CHANNEL_TYPES, Channel
 from ..core import GUILDS
 from ..emoji import Emoji
 from ..http import urls as module_urls
@@ -90,7 +90,7 @@ CHANNEL_TYPE_GUILD_ANNOUNCEMENTS = CHANNEL_TYPES.guild_announcements
 CHANNEL_TYPE_GUILD_STORE = CHANNEL_TYPES.guild_store
 CHANNEL_TYPE_GUILD_STAGE = CHANNEL_TYPES.guild_stage
 CHANNEL_TYPE_GUILD_FORUM = CHANNEL_TYPES.guild_forum
-CHANNEL_TYPE_GROUP_GUILD_TEXT_LIKE = CHANNEL_TYPES.GROUP_GUILD_TEXT_LIKE
+CHANNEL_TYPE_GROUP_GUILD_MAIN_TEXT = CHANNEL_TYPES.GROUP_GUILD_MAIN_TEXT
 CHANNEL_TYPE_GROUP_GUILD_CONNECTABLE = CHANNEL_TYPES.GROUP_GUILD_CONNECTABLE
 
 
@@ -411,16 +411,8 @@ class Guild(DiscordEntity, immortal=True):
             except KeyError:
                 pass
             else:
-                later = []
                 for channel_data in channel_datas:
-                    channel_type = CHANNEL_TYPE_MAP.get(channel_data['type'], ChannelGuildUndefined)
-                    if channel_type is ChannelCategory:
-                        channel_type(channel_data, client, guild_id)
-                    else:
-                        later.append((channel_type, channel_data),)
-                
-                for channel_type, channel_data in later:
-                    channel_type(channel_data, client, guild_id)
+                    Channel(channel_data, client, guild_id)
             
             self._update_attributes(data)
             
@@ -455,7 +447,7 @@ class Guild(DiscordEntity, immortal=True):
                 pass
             else:
                 for thread_data in thread_datas:
-                    CHANNEL_TYPE_MAP.get(thread_data['type'], ChannelGuildUndefined)(thread_data, client, guild_id)
+                    Channel(thread_data, client, guild_id)
             
             try:
                 scheduled_event_datas = data['guild_scheduled_events']
@@ -501,6 +493,7 @@ class Guild(DiscordEntity, immortal=True):
             client.guilds.add(self)
         
         return self
+    
     
     @classmethod
     def precreate(cls, guild_id, **kwargs):
@@ -1079,7 +1072,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``Channel``
         """
-        return [channel for channel in self.channels.values() if channel.type in CHANNEL_TYPE_GROUP_GUILD_TEXT_LIKE]
+        return [channel for channel in self.channels.values() if channel.type in CHANNEL_TYPE_GROUP_GUILD_MAIN_TEXT]
     
     
     @property
@@ -1212,33 +1205,15 @@ class Guild(DiscordEntity, immortal=True):
         channels = self.channels
         old_ids = set(channels)
         
-        later = []
         for channel_data in data:
-            channel_type = CHANNEL_TYPE_MAP.get(channel_data['type'], ChannelGuildUndefined)
-            if channel_type is ChannelCategory:
-                #categories
-                channel = channel_type(channel_data, None, self.id)
-                channel_id = channel.id
-                try:
-                    old_ids.remove(channel_id)
-                except KeyError:
-                    pass
-                else:
-                    #old channel -> update
-                    channel._update_attributes(channel_data)
-            else:
-                later.append((channel_type, channel_data),)
-        
-        #non category channels
-        for channel_type, channel_data in later:
-            channel = channel_type(channel_data, None, self.id)
+            channel = Channel(channel_data, None, self.id)
             channel_id = channel.id
             try:
                 old_ids.remove(channel_id)
             except KeyError:
                 pass
             else:
-                #old channel -> update
+                # old channel -> update
                 channel._update_attributes(channel_data)
         
         # deleting
@@ -2674,7 +2649,7 @@ class Guild(DiscordEntity, immortal=True):
         """
         self._permission_cache = None
         for channel in self.channels.values():
-            channel._permission_cache = None
+            channel.metadata._invalidate_permission_cache()
     
     
     @property
@@ -2892,7 +2867,7 @@ class Guild(DiscordEntity, immortal=True):
         channels = []
         for channel in sorted(channel for channel in self.channels.values() if channel.parent is None):
             channels.append(channel)
-            if type(channel) is ChannelCategory:
+            if channel.type == CHANNEL_TYPE_GUILD_CATEGORY:
                 channels.extend(channel.list_channels)
         
         return channels

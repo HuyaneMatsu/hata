@@ -7,7 +7,8 @@ from types import FunctionType
 from scarletio import CallableAnalyzer, cached_property, copy_docs
 
 from ...discord.bases import FlagBase
-from ...discord.channel import (
+from ...discord.channel import Channel
+from ...discord.channel.deprecation import (
     ChannelBase, ChannelCategory, ChannelDirectory, ChannelGroup, ChannelGuildBase, ChannelPrivate, ChannelStage,
     ChannelStore, ChannelText, ChannelTextBase, ChannelThread, ChannelVoice, ChannelVoiceBase
 )
@@ -1267,8 +1268,9 @@ CONVERTER_CHANNEL = ConverterSetting(
     default_flags = ConverterFlag.channel_default,
     all_flags = ConverterFlag.channel_all,
     alternative_type_name = 'channel',
-    default_type = ChannelBase,
+    default_type = Channel,
     alternative_types = [
+        ChannelBase,
         ChannelGuildBase,
         ChannelTextBase,
         ChannelVoiceBase,

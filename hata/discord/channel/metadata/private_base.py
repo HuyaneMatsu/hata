@@ -52,7 +52,7 @@ class ChannelMetadataPrivateBase(ChannelMetadataBase):
     
     @classmethod
     @copy_docs(ChannelMetadataBase._create_empty)
-    async def _create_empty(cls):
+    def _create_empty(cls):
         self = super(ChannelMetadataPrivateBase, cls)._create_empty()
         
         self.users = []

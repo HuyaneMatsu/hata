@@ -54,7 +54,7 @@ In addition also extra groups are defined:
 |                                       | guild_thread_public,          |
 |                                       | guild_thread_private          |
 +---------------------------------------+-------------------------------+
-| GROUP_GUILD_TEXT_LIKE                 | guild_text,                   |
+| GROUP_GUILD_MAIN_TEXT                 | guild_text,                   |
 |                                       | guild_announcements           |
 +---------------------------------------+-------------------------------+
 | GROUP_CONNECTABLE                     | private,                      |
@@ -101,6 +101,23 @@ In addition also extra groups are defined:
 |                                       | guild_directory,              |
 |                                       | guild_forum                   |
 +---------------------------------------+-------------------------------+
+| GROUP_CAN_CREATE_INVITE_TO            | guild_text,                   |
+|                                       | guild_voice,                  |
+|                                       | private_group,                |
+|                                       | guild_announcements,          |
+|                                       | guild_store,                  |
+|                                       | guild_stage,                  |
+|                                       | guild_directory               |
++---------------------------------------+-------------------------------+
+| GROUP_GUILD_MOVABLE                   | guild_text,                   |
+|                                       | guild_voice,                  |
+|                                       | guild_category,               |
+|                                       | guild_announcements,          |
+|                                       | guild_store,                  |
+|                                       | guild_stage,                  |
+|                                       | guild_directory,              |
+|                                       | guild_forum                   |
++---------------------------------------+-------------------------------+
 """
 guild_text = 0
 private = 1
@@ -140,7 +157,7 @@ GROUP_GUILD_MESSAGEABLE = frozenset((
 ))
 
 
-GROUP_GUILD_TEXT_LIKE = frozenset((
+GROUP_GUILD_MAIN_TEXT = frozenset((
     guild_text,
     guild_announcements,
 ))
@@ -205,6 +222,29 @@ GROUP_IN_PRODUCTION = frozenset((
     guild_thread_announcements,
     guild_thread_public,
     guild_thread_private,
+    guild_stage,
+    guild_directory,
+    guild_forum,
+))
+
+
+GROUP_CAN_CREATE_INVITE_TO = frozenset((
+    guild_text,
+    guild_voice,
+    private_group,
+    guild_announcements,
+    guild_store,
+    guild_stage,
+    guild_directory,
+    
+))
+
+GROUP_GUILD_MOVABLE = frozenset((
+    guild_text,
+    guild_voice,
+    guild_category,
+    guild_announcements,
+    guild_store,
     guild_stage,
     guild_directory,
     guild_forum,

@@ -1027,17 +1027,17 @@ class RPCClient:
         
         Parameters
         ----------
-        channel : `None`, ``ChannelTextBase``, `int`
+        channel : `None`, ``Channel``, `int`
             The channel to select or `None` to leave.
         
         Returns
         -------
-        channel : ``ChannelTextBase``, `None`
+        channel : ``Channel``, `None`
         
         Raises
         ------
         TypeError
-            If `channel` is neither `None`, ``ChannelTextBase`` nor `int`.
+            If `channel` is neither `None`, ``Channel`` nor `int`.
         ConnectionError
             RPC client is not connected.
         TimeoutError
@@ -1574,7 +1574,7 @@ class RPCClient:
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`
+        channel : ``Channel``, `int`
             The channel to subscribe to.
         
         Raises
@@ -1602,7 +1602,7 @@ class RPCClient:
         
         Parameters
         ----------
-            channel : ``ChannelTextBase``, `int`
+            channel : ``Channel``, `int`
             The channel to unsubscribe from.
         
         Raises
@@ -1630,7 +1630,7 @@ class RPCClient:
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`
+        channel : ``Channel``, `int`
             The channel to subscribe to.
         
         Raises
@@ -1658,7 +1658,7 @@ class RPCClient:
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`
+        channel : ``Channel``, `int`
             The channel to unsubscribe from.
         
         Raises
@@ -1686,7 +1686,7 @@ class RPCClient:
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`
+        channel : ``Channel``, `int`
             The channel to subscribe to.
         
         Raises
@@ -1714,7 +1714,7 @@ class RPCClient:
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`
+        channel : ``Channel``, `int`
             The channel to unsubscribe from.
         
         Raises
@@ -1784,7 +1784,7 @@ class RPCClient:
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`
+        channel : ``Channel``, `int`
             The channel to subscribe to.
         
         Raises
@@ -1812,7 +1812,7 @@ class RPCClient:
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`
+        channel : ``Channel``, `int`
             The channel to unsubscribe from.
         
         Raises
@@ -1840,7 +1840,7 @@ class RPCClient:
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`
+        channel : ``Channel``, `int`
             The channel to subscribe to.
         
         Raises
@@ -1868,7 +1868,7 @@ class RPCClient:
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`
+        channel : ``Channel``, `int`
             The channel to unsubscribe from.
         
         Raises
@@ -1896,7 +1896,7 @@ class RPCClient:
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`
+        channel : ``Channel``, `int`
             The channel to subscribe to.
         
         Raises
@@ -1924,7 +1924,7 @@ class RPCClient:
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`
+        channel : ``Channel``, `int`
             The channel to unsubscribe from.
         
         Raises
@@ -1952,7 +1952,7 @@ class RPCClient:
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`
+        channel : ``Channel``, `int`
             The channel to subscribe to.
         
         Raises
@@ -1980,7 +1980,7 @@ class RPCClient:
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`
+        channel : ``Channel``, `int`
             The channel to unsubscribe from.
         
         Raises
@@ -2008,7 +2008,7 @@ class RPCClient:
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`
+        channel : ``Channel``, `int`
             The channel to subscribe to.
         
         Raises
@@ -2036,7 +2036,7 @@ class RPCClient:
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`
+        channel : ``Channel``, `int`
             The channel to unsubscribe from.
         
         Raises

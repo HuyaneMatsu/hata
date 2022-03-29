@@ -4,7 +4,7 @@ from functools import partial as partial_func
 
 from scarletio import CallableAnalyzer, DOCS_ENABLED, docs_property
 
-from ....discord.channel import (
+from ....discord.channel.deprecation import (
     ChannelBase, ChannelCategory, ChannelDirectory, ChannelGroup, ChannelGuildBase, ChannelPrivate, ChannelStore,
     ChannelText, ChannelTextBase, ChannelThread, ChannelVoice
 )

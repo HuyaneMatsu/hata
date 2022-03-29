@@ -2,12 +2,12 @@ __all__ = ('SolarClient', )
 
 from random import choice
 
-from scarletio import Task, WaitTillAll, WeakReferer, run_coroutine, to_json
+from scarletio import RichAttributeErrorBaseType, Task, WaitTillAll, WeakReferer, run_coroutine, to_json
 from scarletio.web_common.headers import AUTHORIZATION, CONTENT_TYPE
 
-from ...discord.bases import maybe_snowflake_pair
-from ...discord.channel import ChannelVoiceBase
+from ...discord.channel import Channel
 from ...discord.client import Client
+from ...discord.client.request_helpers import get_guild_id_and_channel_id
 from ...discord.core import KOKORO
 from ...discord.voice.utils import try_get_voice_region
 
@@ -20,7 +20,7 @@ from .route_planner import get_route_planner
 from .track import GetTracksResult, Track
 
 
-class SolarClient:
+class SolarClient(RichAttributeErrorBaseType):
     """
     Represents a lavalink client used to manage nodes and connections.
     
@@ -599,18 +599,8 @@ class SolarClient:
                 f'`cls` can be `{SolarPlayerBase.__name__}` subclass, got {cls!r}.'
             )
         
-        if isinstance(channel, ChannelVoiceBase):
-            guild_id = channel.guild_id
-            channel_id = channel.id
-        else:
-            snowflake_pair = maybe_snowflake_pair(channel)
-            if snowflake_pair is None:
-                raise TypeError(
-                    f'`channel` can be `{ChannelVoiceBase.__name__}`, `tuple` (`int`, `int`)'
-                    f', got {channel.__class__.__name__}; {channel!r}.'
-                )
-            
-            guild_id, channel_id = snowflake_pair
+        guild_id, channel_id = get_guild_id_and_channel_id(channel, Channel.is_in_group_guild_connectable)
+        
         
         try:
             player = self.players[guild_id]

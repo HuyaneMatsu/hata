@@ -49,7 +49,7 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
         except KeyError:
             pass
         else:
-            guild.channels[self.id] = self
+            guild.channels[channel_entity.id] = channel_entity
     
     
     @copy_docs(ChannelMetadataGuildBase._delete)

@@ -12,7 +12,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 - Add `Channel` type inheriting all methods & properties of the old `ChannelBase`.
 - Add `Channel.is_in_group_messageable`.
 - Add `Channel.is_in_group_guild_messageable`.
-- Add `Channel.is_in_group_guild_text_like`.
+- Add `Channel.is_in_group_guild_main_text`.
 - Add `Channel.is_in_group_connectable`.
 - Add `Channel.is_in_group_guild_connectable`.
 - Add `Channel.is_in_group_private`.
@@ -36,7 +36,10 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 - Add `CHANNEL_TYPES.GROUP_IN_PRODUCTION`.
 - Add `get_channel_type_name`.
 - Add `get_channel_type_names`.
-
+- Add `Channel.is_in_group_can_create_invite_to`.
+- Add `CHANNEL_TYPED.GROUP_CAN_CREATE_INVITE_TO`.
+- Add `CHANNEL_TYPES.GROUP_GUILD_MOVABLE`.
+- Add `Channel.is_in_group_guild_movable`.
 
 #### Renames, Deprecation & Removals
 
@@ -55,6 +58,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 - Deprecate `ChannelPrivate`.
 - Deprecate `ChannelGroup`.
 - Deprecate `ChannelThread`.
+- Rename `CHANNEL_NAMES.GROUP_GUILD_TEXT_LIKE` to `.GROUP_GUILD_MAIN_TEXT`.
 
 ## 1.2.5 *\[2022-03-23\]*
 
@@ -1292,7 +1296,7 @@ Add auto completion for slash commands.
 - Add `channel_types` parameter to `ApplicationCommandOption.__new__`.
 - Add `CHANNEL_TYPES.GROUP_GUILD_MESSAGEABLE`.
 - Add `CHANNEL_TYPES.GROUP_GUILD_CONNECTABLE`.
-- Add `CHANNEL_TYPES.GROUP_GUILD_TEXT_LIKE`.
+- Add `CHANNEL_TYPES.GROUP_GUILD_MAIN_TEXT`.
 - Add `GuildFeature.role_subscriptions_enabled`.
 - Add `Attachment.temporary`.
 - Add `MessageRepr.guild_id`.

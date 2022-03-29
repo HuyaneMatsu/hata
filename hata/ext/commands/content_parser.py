@@ -8,7 +8,8 @@ from types import FunctionType, MethodType
 from scarletio import CallableAnalyzer, MethodLike, module_property
 
 from ...discord.bases import FlagBase
-from ...discord.channel import (
+from ...discord.channel import Channel
+from ...discord.channel.deprecation import (
     ChannelBase, ChannelCategory, ChannelDirectory, ChannelGroup, ChannelGuildBase, ChannelPrivate, ChannelStore,
     ChannelText, ChannelTextBase, ChannelThread, ChannelVoice
 )
@@ -1471,7 +1472,7 @@ class ConverterSetting:
                 limit = len(alternative_types)
                 while True:
                     alternative_type_= alternative_types[index]
-                    index +=1
+                    index += 1
                     
                     result.append(alternative_type_.__name__)
                     
@@ -1819,8 +1820,9 @@ ConverterSetting(
     default_flags = ConverterFlag.channel_default,
     all_flags = ConverterFlag.channel_all,
     alternative_type_name = 'channel',
-    default_type = ChannelBase,
+    default_type = Channel,
     alternative_types = [
+        ChannelBase,
         ChannelGuildBase,
         ChannelTextBase,
         ChannelText,
@@ -2134,7 +2136,7 @@ ConverterSetting(
     alternative_type_name = 'message',
     default_type = Message,
     alternative_types = None,
-        )
+)
 
 async def invite_converter(parser_ctx, content_parser_ctx):
     part = content_parser_ctx.get_next()
@@ -2164,7 +2166,7 @@ async def invite_converter(parser_ctx, content_parser_ctx):
     except BaseException as err:
         if not (isinstance(err, ConnectionError) or
             isinstance(err, DiscordException) and err.code == ERROR_CODES.unknown_invite # Invite not exists
-                    ):
+        ):
                 raise
         
         return None

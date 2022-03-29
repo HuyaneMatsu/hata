@@ -22,13 +22,17 @@ from ..allowed_mentions import parse_allowed_mentions
 from ..application import Application, EULA, Team
 from ..bases import maybe_snowflake, maybe_snowflake_pair
 from ..channel import (
-    CHANNEL_TYPES, Channel, ChannelCategory,
-    ChannelDirectory, ChannelForum, ChannelGroup, ChannelGuildBase, ChannelGuildMainBase,
-    ChannelPrivate, ChannelStage, ChannelStore, ChannelText, ChannelTextBase, ChannelThread, ChannelVoice,
-    ChannelVoiceBase, MessageIterator, VideoQualityMode, cr_pg_channel_object, create_partial_channel_from_id,
-    message_relative_index
+    CHANNEL_TYPES, Channel, MessageIterator, cr_pg_channel_object, create_partial_channel_from_id,
+    get_channel_type_names, message_relative_index
 )
 from ..channel.constants import AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
+from ..channel.utils import (
+    _assert_channel_type, _maybe_add_channel_bitrate_field_to_data,
+    _maybe_add_channel_default_auto_archive_after_field_to_data, _maybe_add_channel_nsfw_field_to_data,
+    _maybe_add_channel_region_field_to_data, _maybe_add_channel_slowmode_field_to_data,
+    _maybe_add_channel_topic_field_to_data, _maybe_add_channel_user_limit_field_to_data,
+    _maybe_add_channel_video_quality_mode_field_to_data
+)
 from ..color import Color
 from ..core import (
     APPLICATIONS, APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, CHANNELS, CLIENTS, DISCOVERY_CATEGORIES, EMOJIS,
@@ -127,7 +131,6 @@ AUTO_CLIENT_ID_LIMIT = 1 << 22
 
 STICKER_PACK_CACHE = ForceUpdateCache()
 
-THREADABLE_CHANNEL_TYPES = (ChannelText, ChannelForum)
 
 @export
 class Client(ClientUserPBase):
@@ -231,7 +234,7 @@ class Client(ClientUserPBase):
         The gateway of the client towards Discord. If the client uses sharding, then ``DiscordGatewaySharder`` is used
         as gateway.
     
-    group_channels : `dict` of (`int`, ``ChannelGroup``) items
+    group_channels : `dict` of (`int`, ``Channel``) items
         The group channels of the client. They can be accessed by their id as the key.
     
     guilds : `set` of ``Guild``
@@ -253,7 +256,7 @@ class Client(ClientUserPBase):
     premium_type : ``PremiumType``
         The Nitro subscription type of the client.
     
-    private_channels : `dict` of (`int`, ``ChannelPrivate``) items
+    private_channels : `dict` of (`int`, ``Channel``) items
         Stores the private channels of the client. The channels' other recipient' ids are the keys, meanwhile the
         channels are the values.
     
@@ -688,8 +691,8 @@ class Client(ClientUserPBase):
         
         self = object.__new__(cls)
         
-        self.is_bot = is_bot
         ClientUserPBase._set_default_attributes(self)
+        self.is_bot = is_bot
         self.id = client_id
         
         self._activity = activity
@@ -2685,13 +2688,13 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelGroup``, `int`
+        channel : ``Channel``, `int`
             The channel to leave from.
         
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelGroup`` nor `int`.
+            If `channel` was not given neither as ``Channel`` nor `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -2710,7 +2713,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelGroup``, `int`
+        channel : ``Channel``, `int`
             The channel to add the `users` to.
         *users : ``ClientUserBase``, `int`
             The users to add to the `channel`.
@@ -2718,7 +2721,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            - If `channel` was not given neither as ``ChannelGroup`` nor `int`.
+            - If `channel` was not given neither as ``Channel`` nor `int`.
             - If `users` contains non ``ClientUserBase``, neither `int`.
         ConnectionError
             No internet connection.
@@ -2744,7 +2747,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelGroup``, `int`
+        channel : ``Channel``, `int`
             The channel from where the `users` will be removed.
         *users : ``ClientUserBase``, `int`
             The users to remove from the `channel`.
@@ -2752,7 +2755,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            - If `channel` was not given neither as ``ChannelGroup`` nor `int`.
+            - If `channel` was not given neither as ``Channel`` nor `int`.
             - If `users` contains non ``ClientUserBase``, neither `int`.
         ConnectionError
             No internet connection.
@@ -2778,7 +2781,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelGroup``, `int`
+        channel : ``Channel``, `int`
             The channel to edit.
         name : `None`, `str`, Optional (Keyword only)
             The new name of the channel. By passing `None` or an empty string you can remove the actual one.
@@ -2788,7 +2791,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            - If `channel` was not given neither as ``ChannelGroup`` nor `int`.
+            - If `channel` was not given neither as ``Channel`` nor `int`.
             - If `name` is neither `None`, `str`.
             - If `icon` is neither `None`, `bytes-like`.
         ValueError
@@ -2870,7 +2873,7 @@ class Client(ClientUserPBase):
         
         Returns
         -------
-        channel : ``ChannelGroup``
+        channel : ``Channel``
             The created group channel.
         
         Raises
@@ -2899,13 +2902,13 @@ class Client(ClientUserPBase):
             user_ids_length = len(user_ids)
             if user_ids_length < 2:
                 raise AssertionError(
-                    f'`{ChannelGroup.__name__}` can be created at least with at least `2` users,  got '
+                    f'group channel can be created at least with at least `2` users,  got '
                     f'{user_ids_length}; {users!r}.'
                 )
         
         data = {'recipients': user_ids}
         data = await self.http.channel_group_create(self.id, data)
-        return ChannelGroup(data, self, 0)
+        return Channel(data, self, 0)
     
     
     async def channel_private_create(self, user):
@@ -2922,7 +2925,7 @@ class Client(ClientUserPBase):
         
         Returns
         -------
-        channel : ``ChannelPrivate``
+        channel : ``Channel``
             The created private channel.
         
         Raises
@@ -2940,7 +2943,7 @@ class Client(ClientUserPBase):
             channel = self.private_channels[user_id]
         except KeyError:
             data = await self.http.channel_private_create({'recipient_id': user_id})
-            channel = ChannelPrivate(data, self, 0)
+            channel = Channel(data, self, 0)
         
         return channel
     
@@ -2954,7 +2957,7 @@ class Client(ClientUserPBase):
         
         Returns
         -------
-        channels : `list` of (``ChannelPrivate``, ``ChannelGroup``) objects
+        channels : `list` of (``Channel``, ``Channel``) objects
         
         Raises
         ------
@@ -3002,7 +3005,7 @@ class Client(ClientUserPBase):
             - If the `channel` would be between guilds.
             - If parent channel would be moved under an other category.
         TypeError
-            - If `ChannelGuildBase` was not passed as ``Channel``.
+            - If `channel` was isn ot movable.
             - If `parent` was not given as `None`, ``Channel``.
         ConnectionError
             No internet connection.
@@ -3014,9 +3017,9 @@ class Client(ClientUserPBase):
         This method also fixes the messy channel positions of Discord to an intuitive one.
         """
         # Check channel type
-        if not isinstance(channel, ChannelGuildMainBase):
+        if (not channel.is_in_group_guild_movable()) and (not channel.partial):
             raise TypeError(
-                f'`channel` can be `{ChannelGuildMainBase.__name__}`, got {channel.__class__.__name__}; {channel!r}.'
+                f'`channel` can be any movable guild channel, got {channel.__class__.__name__}; {channel!r}.'
             )
         
         # Check whether the channel is partial.
@@ -3042,7 +3045,7 @@ class Client(ClientUserPBase):
             )
         
         # Cannot put category under category
-        if isinstance(channel, ChannelCategory) and isinstance(parent, Channel):
+        if isinstance(parent, Channel) and channel.is_guild_category() and (not channel.partial):
             raise ValueError(
                 f'Can not move category channel under category channel. channel={channel!r}; parent={parent!r}'
             )
@@ -3072,7 +3075,7 @@ class Client(ClientUserPBase):
         
         for index in range(len(display_state)):
             iter_channel = display_state[index]
-            if isinstance(iter_channel, ChannelCategory):
+            if iter_channel.is_guild_category():
                 display_state[index] = iter_channel, iter_channel.channel_list
         
         # Generate a state where the channels are theoretically ordered with tuples
@@ -3191,7 +3194,7 @@ class Client(ClientUserPBase):
     
     
     async def channel_edit(self, channel, *, name=..., topic=..., nsfw=..., slowmode=..., user_limit=...,
-            bitrate=..., region=..., video_quality_mode=..., type_=..., default_auto_archive_after=..., banner=...,
+            bitrate=..., region=..., video_quality_mode=..., type_=..., default_auto_archive_after=...,
             reason=None):
         """
         Edits the given guild channel. Different channel types accept different parameters, so make sure to not pass
@@ -3203,32 +3206,40 @@ class Client(ClientUserPBase):
         ----------
         channel : ``Channel``, `int`
             The channel to edit.
-        name : `str`, Optional (Keyword only)
-            The `channel`'s new name.
-        topic : `str`, Optional (Keyword only)
-            The new topic of the `channel`.
-        nsfw : `bool`, Optional (Keyword only)
-            Whether the `channel` will be nsfw or not.
-        slowmode : `int`, Optional (Keyword only)
-            The new slowmode value of the `channel`.
-        user_limit : `int`, Optional (Keyword only)
-            The new user limit of the `channel`.
+        
         bitrate : `int`, Optional (Keyword only)
             The new bitrate of the `channel`.
-        type_ : `int`, Optional (Keyword only)
-            The `channel`'s new type value.
+        
+        default_auto_archive_after : `None`, `int`, Optional (Keyword only)
+            The default duration (in seconds) for newly created threads to automatically archive the themselves. Can be
+            one of: `3600`, `86400`, `259200`, `604800`.
+        
+        name : `str`, Optional (Keyword only)
+            The `channel`'s new name.
+        
+        nsfw : `bool`, Optional (Keyword only)
+            Whether the `channel` will be nsfw or not.
+        
         region : `None`, ``VoiceRegion``, `str`, Optional (Keyword only)
             The channel's new voice region.
             
             > By giving as `None`, you can remove the old value.
+        
+        slowmode : `int`, Optional (Keyword only)
+            The new slowmode value of the `channel`.
+        
+        topic : `str`, Optional (Keyword only)
+            The new topic of the `channel`.
+        
+        type_ : `int`, Optional (Keyword only)
+            The `channel`'s new type value.
+        
+        user_limit : `int`, Optional (Keyword only)
+            The new user limit of the `channel`.
+        
         video_quality_mode : ``VideoQualityMode``, `int`, Optional (Keyword only)
             The channel's new video quality mode.
-        default_auto_archive_after : `None`, `int`, Optional (Keyword only)
-            The default duration (in seconds) for newly created threads to automatically archive the themselves. Can be
-            one of: `3600`, `86400`, `259200`, `604800`.
-        banner : `None`, `bytes-like`, Optional (Keyword only)
-             The new banner of the channel. Can be `'jpg'`, `'png'`, `'webp'` image's raw data. by passing it as
-            `None`, you can remove the current one.
+        
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
@@ -3239,35 +3250,15 @@ class Client(ClientUserPBase):
             - If `region` was not given neither as `None`, `str` nor ``VoiceRegion``.
             - If `video_quality_mode` was not given neither as ``VideoQualityMode` nor as `int`.
         AssertionError
-            - If `name` was not given as `str`.
-            - If `name`'s length is out of range `[1:100]`.
-            - If `topic` was not given as `str`.
-            - If `topic`'s length is over `1024`, `120` depending on channel type.
-            - If `topic` was given, but the given channel is not ``Channel`` nor ``Channel``.
-            - If `type_` was given, but the given channel is not ``Channel``.
-            - If `type_` was not given as `int`.
-            - If `type_` cannot be interchanged to the given value.
-            - If `nsfw` was given meanwhile the channel is not ``Channel``.
-            - If `nsfw` was not given as `bool`.
-            - If `slowmode` was given, but the channel is not ``Channel``.
-            - If `slowmode` was not given as `int`.
-            - If `slowmode` was given, but it's value is less than `0` or greater than `21600`.
-            - If `bitrate` was given, but the channel is not ``Channel``.
-            - If `bitrate` was not given as `int`.
-            - If `bitrate`'s value is out of the expected range.
-            - If `user_limit` was given, but the channel is not ``Channel``.
-            - If `user_limit` was not given as `int`.
-            - If `user_limit` was given, but is out of the expected [0:99] range.
-            - If `region` was given, but the respective channel type is not ``Channel``.
-            - If `video_quality_mode` was given,but the respective channel type is not ``Channel``
+            - If a parameter's type or value is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        channel, channel_id = get_channel_and_id(channel, ChannelGuildBase)
+        channel, channel_id = get_channel_and_id(channel, Channel.is_in_group_guild)
         
-        data = {}
+        channel_data = {}
         
         if (name is not ...):
             if __debug__:
@@ -3283,252 +3274,59 @@ class Client(ClientUserPBase):
                         f'`name` length can be in range [1:100], got {name_length}; {name!r}.'
                     )
             
-            data['name'] = name
+            channel_data['name'] = name
         
-        
-        if (topic is not ...):
-            if __debug__:
-                if (channel is not None):
-                    if not isinstance(channel, (ChannelText, ChannelStage)):
-                        raise AssertionError(
-                            f'`topic` is a valid parameter only for `{ChannelText.__name__}` and for '
-                            f'`{ChannelStage.__name__}`, got {channel.__class__.__name__}; {channel!r}.'
-                        )
-                
-                if not isinstance(topic, str):
-                    raise AssertionError(
-                        f'`topic` can be `str`, got {topic.__class__.__name__}; {topic!r}.'
-                    )
-                
-                if channel is None:
-                    topic_length_limit = 1024
-                elif isinstance(channel, ChannelText):
-                    topic_length_limit = 1024
-                else:
-                    topic_length_limit = 120
-                
-                topic_length = len(topic)
-                
-                if topic_length > topic_length_limit:
-                    raise AssertionError(
-                        f'`topic` length can be in range [0:{topic_length_limit}], got {topic_length}; {topic!r}.'
-                    )
-            
-            data['topic'] = topic
+
+        if channel is None:
+            channel_type = -1
+        else:
+            channel_type = channel.type
         
         
         if (type_ is not ...):
             if __debug__:
                 if (channel is not None):
-                    if not isinstance(channel, ChannelText):
-                        raise AssertionError(
-                            f'`type_` is a valid parameter only for `{ChannelText.__name__}`-s'
-                            f', got {channel.__class__.__name__}; {channel!r}.'
-                        )
+                    _assert_channel_type(
+                        channel_type,
+                        channel,
+                        (CHANNEL_TYPES.guild_text, CHANNEL_TYPES.guild_announcements),
+                        'type_',
+                        type_,
+                    )
                 
                 if not isinstance(type_, int):
                     raise AssertionError(
                         f'`type_` can be `int`, got {type_.__class__.__name__}.; {type_!r}'
                     )
                 
-                if type_ not in ChannelText.INTERCHANGE:
+                if type_ not in (CHANNEL_TYPES.guild_text, CHANNEL_TYPES.guild_announcements):
                     raise AssertionError(
-                        f'`type_` can be interchanged to `{ChannelText.INTERCHANGE}`, got {type_!r}.'
+                        f'`type_` can be interchanged to `{CHANNEL_TYPES.guild_text!r}` '
+                        f'(`{get_channel_type_name(CHANNEL_TYPES.guild_text)}`) ,'
+                        f'`{CHANNEL_TYPES.guild_announcements!r}` '
+                        f'(`{get_channel_type_name(CHANNEL_TYPES.guild_announcements)}`)'
+                        f', got {type_!r} (`{get_channel_type_name(type_)}`).'
                     )
             
-            data['type'] = type_
+            channel_data['type'] = type_
         
         
-        if (nsfw is not ...):
-            if __debug__:
-                if (channel is not None):
-                    if not isinstance(channel, (ChannelText, ChannelStore)):
-                        raise AssertionError(
-                            f'`nsfw` is a valid parameter only for `{ChannelText.__name__}` and '
-                            f'`{ChannelStore.__name__}`, got {channel.__class__.__name__}; {channel!r}.'
-                        )
-                
-                if not isinstance(nsfw, bool):
-                    raise AssertionError(
-                        f'`nsfw` can be `bool`, got {nsfw.__class__.__name__}; {nsfw!r}.'
-                    )
-            
-            data['nsfw'] = nsfw
+        _maybe_add_channel_topic_field_to_data(channel_type, channel, channel_data, topic)
+        _maybe_add_channel_nsfw_field_to_data(channel_type, channel, channel_data, nsfw)
+        _maybe_add_channel_slowmode_field_to_data(channel_type, channel, channel_data, slowmode)
+        _maybe_add_channel_bitrate_field_to_data(channel_type, channel, channel_data, bitrate)
+        _maybe_add_channel_user_limit_field_to_data(channel_type, channel, channel_data, user_limit)
+        _maybe_add_channel_region_field_to_data(channel_type, channel, channel_data, region)
+        _maybe_add_channel_video_quality_mode_field_to_data(channel_type, channel, channel_data, video_quality_mode)
+        _maybe_add_channel_default_auto_archive_after_field_to_data(
+            channel_type, channel, channel_data, default_auto_archive_after,
+        )
         
         
-        if (slowmode is not ...):
-            if __debug__:
-                if (channel is not None):
-                    if not isinstance(channel, ChannelText):
-                        raise AssertionError(
-                            f'`slowmode` is a valid parameter only for `{ChannelText.__name__}`-s'
-                            f', got {channel.__class__.__name__}; {channel!r}.'
-                        )
-                
-                if not isinstance(slowmode, int):
-                    raise AssertionError(
-                        f'`slowmode` can be `int`, got {slowmode.__class__.__name__}; {slowmode!r}.'
-                    )
-                
-                if slowmode < 0 or slowmode > 21600:
-                    raise AssertionError(
-                        f'`slowmode` can be in range [0:21600], got {slowmode!r}.'
-                    )
-            
-            data['rate_limit_per_user'] = slowmode
-        
-        
-        if (bitrate is not ...):
-            if __debug__:
-                if (channel is not None):
-                    if not isinstance(channel, ChannelVoiceBase):
-                        raise AssertionError(
-                            f'`bitrate` is a valid parameter only for `{ChannelVoiceBase.__name__}`-s'
-                            f', got {channel.__class__.__name__}; {channel!r}.'
-                        )
-                    
-                if not isinstance(bitrate, int):
-                    raise AssertionError(
-                        f'`bitrate` can be `int`, got {bitrate.__class__.__name__}; {bitrate!r}.'
-                    )
-                
-                # Get max bitrate
-                if channel is None:
-                    bitrate_limit = 384000
-                else:
-                    guild = channel.guild
-                    if guild is None:
-                        bitrate_limit = 384000
-                    else:
-                        bitrate_limit = guild.bitrate_limit
-                
-                if bitrate < 8000 or bitrate > bitrate_limit:
-                    raise AssertionError(
-                        f'`bitrate` is out of the expected [8000:{bitrate_limit}] range, got {bitrate!r}.'
-                    )
-            
-            data['bitrate'] = bitrate
-        
-        
-        if (user_limit is not ...):
-            if __debug__:
-                if (channel is not None):
-                    if not isinstance(channel, ChannelVoiceBase):
-                        raise AssertionError(
-                            f'`user_limit` is a valid parameter only for `{ChannelVoiceBase.__name__}`-s'
-                            f', got {channel.__class__.__name__}; {channel!r}.'
-                        )
-                
-                if user_limit < 0 or user_limit > 99:
-                    raise AssertionError(
-                        f'`user_limit`\'s value is out of the expected [0:99] range, got {user_limit!r}.'
-                    )
-            
-            data['user_limit'] = user_limit
-        
-        
-        if (region is not ...):
-            if __debug__:
-                if (channel is not None):
-                    if not isinstance(channel, ChannelVoiceBase):
-                        raise AssertionError(
-                            f'`region` is a valid parameter only for `{ChannelVoiceBase.__name__}`-s'
-                            f', got {channel.__class__.__name__}; {channel!r}.'
-                        )
-            
-            if region is None:
-                region_value = None
-            elif isinstance(region, VoiceRegion):
-                region_value = region.value
-            elif isinstance(region, str):
-                region_value = region
-            else:
-                raise TypeError(
-                    f'`region` can be `None`, `str`, `{VoiceRegion.__name__}`, got {region.__class__.__name__}; '
-                    f'{region!r}.'
-                )
-            
-            data['rtc_region'] = region_value
-        
-        
-        if (video_quality_mode is not ...):
-            if __debug__:
-                if (channel is not None):
-                    if not isinstance(channel, ChannelVoice):
-                        raise AssertionError(
-                            f'`video_quality_mode` is a valid parameter only for `{ChannelVoice.__name__}`, '
-                            f'got {channel.__class__.__name__}; {channel!r}.'
-                        )
-            
-            if isinstance(video_quality_mode, VideoQualityMode):
-                video_quality_mode_value = video_quality_mode.value
-            elif isinstance(video_quality_mode, int):
-                video_quality_mode_value = video_quality_mode
-            else:
-                raise TypeError(
-                    f'`video_quality_mode` can be `None`, `str`, `{VideoQualityMode.__name__}`, got '
-                    f'{video_quality_mode.__class__.__name__}; {video_quality_mode!r}.')
-            
-            data['video_quality_mode'] = video_quality_mode_value
-        
-        
-        if (default_auto_archive_after is not ...):
-            if __debug__:
-                if not issubclass(channel_type, (ChannelText, ChannelForum)):
-                    raise AssertionError(
-                        f'`default_auto_archive_after` is a valid parameter only for `{ChannelText.__name__}`-s'
-                        f', got {channel_type.__name__}; {channel!r}.'
-                    )
-                
-                if not isinstance(default_auto_archive_after, int):
-                    raise AssertionError(
-                        f'`default_auto_archive_after` can be `None`, `datetime`, got '
-                        f'{default_auto_archive_after.__class__.__name__}; {default_auto_archive_after!r}.'
-                    )
-                
-                if default_auto_archive_after not in AUTO_ARCHIVE_OPTIONS:
-                    raise AssertionError(
-                        f'`default_auto_archive_after` can be any of: '
-                        f'{AUTO_ARCHIVE_OPTIONS}, got {default_auto_archive_after}.'
-                    )
-            
-            channel_data['default_auto_archive_duration'] = default_auto_archive_after // 60
-        
-        
-        if (banner is not ...):
-            if __debug__:
-                if (channel is not None):
-                    if not isinstance(channel, ChannelText):
-                        raise AssertionError(
-                            f'`banner` is a valid parameter only for `{ChannelText.__name__}`-s'
-                            f', got {channel.__class__.__name__}; {channel!r}.'
-                        )
-            
-            if banner is None:
-                banner_data = None
-            else:
-                if not isinstance(banner, (bytes, bytearray, memoryview)):
-                    raise TypeError(
-                        f'`banner` can be `None`, `bytes-like`, got '
-                        f'{banner.__class__.__name__}; got {reprlib.repr(banner)}.'
-                    )
-                
-                if __debug__:
-                    media_type = get_image_media_type(banner)
-                    if media_type not in VALID_ICON_MEDIA_TYPES:
-                        raise AssertionError(
-                            f'Invalid `banner` type: {media_type}; got {reprlib.repr(banner)}.'
-                        )
-                
-                banner_data = image_to_base64(banner)
-            
-            data['banner'] = banner_data
-        
-        
-        await self.http.channel_edit(channel_id, data, reason)
+        await self.http.channel_edit(channel_id, channel_data, reason)
     
     
-    async def channel_create(self, guild, name, type_=ChannelText, *, reason=None, **kwargs):
+    async def channel_create(self, guild, name, type_=CHANNEL_TYPES.guild_text, *, reason=None, **kwargs):
         """
         Creates a new channel at the given `guild`. If the channel is successfully created returns it.
         
@@ -3540,7 +3338,7 @@ class Client(ClientUserPBase):
             The guild where the channel will be created.
         name : `str`
             The created channel's name.
-        type_ : `int`, ``Channel`` subclass = ``Channel``, Optional
+        type_ : `int`, Optional
             The type of the created channel. Defaults to ``Channel``.
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the `guild`'s audit logs.
@@ -3573,8 +3371,6 @@ class Client(ClientUserPBase):
         default_auto_archive_after : `None`, `int`
             The default duration (in seconds) for newly created threads to automatically archive the themselves. Can be
             one of: `3600`, `86400`, `259200`, `604800`.
-        banner : `None`, `bytes-like`, Optional (Keyword only)
-             The new banner of the channel. Can be `'jpg'`, `'png'`, `'webp'` image's raw data.
         
         Returns
         -------
@@ -3685,17 +3481,11 @@ class Client(ClientUserPBase):
         AssertionError
             - If `source_channel` is not announcement channel.
         """
-        source_channel, source_channel_id = get_channel_and_id(source_channel, ChannelText)
+        source_channel, source_channel_id = get_channel_and_id(source_channel, Channel.is_guild_announcements)
         if source_channel is None:
             source_channel = create_partial_channel_from_id(source_channel_id, 5, 0)
-        else:
-            if __debug__:
-                if source_channel.type != 5:
-                    raise AssertionError(
-                        f'`source_channel` must be type 5 (announcements) channel, got {source_channel}.'
-                    )
         
-        target_channel_id = get_channel_id(target_channel, Channel.is_in_group_guild_text_like)
+        target_channel_id = get_channel_id(target_channel, Channel.is_in_group_guild_main_text)
         
         data = {
             'webhook_channel_id': target_channel_id,
@@ -3719,7 +3509,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`
+        channel : ``Channel``, `int`
             The channel from where we want to request the messages.
         limit : `int` = `100`, Optional
             The amount of messages to request. Can be between 1 and 100.
@@ -3737,7 +3527,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            - If `channel` was not given neither as ``ChannelTextBase`` nor `int`.
+            - If `channel` was not given neither as ``Channel`` nor `int`.
             - If `after`, `around`, `before` was passed with an unexpected type.
         ConnectionError
             No internet connection.
@@ -3757,7 +3547,7 @@ class Client(ClientUserPBase):
             channel.
         - ``.message_iterator`` : An iterator over a channel's message history.
         """
-        channel, channel_id = get_channel_and_id(channel, ChannelTextBase)
+        channel, channel_id = get_channel_and_id(channel, Channel.is_in_group_messageable)
         
         if __debug__:
             if not isinstance(limit, int):
@@ -3800,7 +3590,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``
+        channel : ``Channel``
             The channel from where we want to request the messages.
         limit : `int` = `100`, Optional
             The amount of messages to request. Can be between 1 and 100.
@@ -3812,7 +3602,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelTextBase`` nor `int`.
+            If `channel` was not given neither as ``Channel`` nor `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -3821,7 +3611,7 @@ class Client(ClientUserPBase):
             - If `limit` was not given as `int`.
             - If `limit` is out of range [1:100].
         """
-        channel, channel_id = get_channel_and_id(channel, ChannelTextBase)
+        channel, channel_id = get_channel_and_id(channel, Channel.is_in_group_messageable)
         
         if __debug__:
             if not isinstance(limit, int):
@@ -3861,7 +3651,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`
+        channel : ``Channel``, `int`
             The channel from where we want to request the message.
         message_id : `int`
             The message's id.
@@ -3873,7 +3663,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelTextBase`` nor `int`.
+            If `channel` was not given neither as ``Channel`` nor `int`.
             If `message_id` was not given as `int`.
         ConnectionError
             No internet connection.
@@ -3902,7 +3692,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`, ``Message``, ``MessageRepr``, ``MessageReference``,
+        channel : ``Channel``, `int`, ``Message``, ``MessageRepr``, ``MessageReference``,
                 `tuple` (`int`, `int`)
             The text channel where the message will be sent, or the message on what you want to reply.
         
@@ -3983,7 +3773,7 @@ class Client(ClientUserPBase):
         """
         
         # Channel check order:
-        # 1.: ChannelTextBase -> channel
+        # 1.: Channel -> channel
         # 2.: Message -> channel + reply
         # 3.: int (str) -> channel
         # 4.: MessageRepr -> channel + reply
@@ -3991,37 +3781,51 @@ class Client(ClientUserPBase):
         # 6.: `tuple` (`int`, `int`) -> channel + reply
         # 7.: raise
         
-        if isinstance(channel, ChannelTextBase):
-            message_id = None
-            channel_id = channel.id
-        elif isinstance(channel, Message):
-            message_id = channel.id
-            channel_id = channel.channel_id
-            channel = CHANNELS.get(channel_id, None)
-        else:
-            channel_id = maybe_snowflake(channel)
-            if (channel_id is not None):
-                message_id = None
-                channel = CHANNELS.get(channel_id, None)
-            elif isinstance(channel, MessageRepr):
+        while True:
+            if isinstance(channel, Channel):
+                if channel.is_in_group_messageable() or channel.partial:
+                    message_id = None
+                    channel_id = channel.id
+                    break
+            
+            elif isinstance(channel, Message):
                 message_id = channel.id
                 channel_id = channel.channel_id
                 channel = CHANNELS.get(channel_id, None)
-            elif isinstance(channel, MessageReference):
-                message_id = channel.message_id
-                channel_id = channel.channel_id
-                channel = CHANNELS.get(channel_id, None)
+                break
+            
             else:
-                snowflake_pair = maybe_snowflake_pair(channel)
-                if snowflake_pair is None:
-                    raise TypeError(
-                        f'`channel` can be `{ChannelTextBase.__name__}`, `{Message.__name__}`, '
-                        f'`{MessageRepr.__name__}`, `{MessageReference.__name__}`, `int`, `tuple` (`int`, `int`), '
-                        f'got {channel.__class__.__name__}; {channel!r}.'
-                    )
+                channel_id = maybe_snowflake(channel)
+                if (channel_id is not None):
+                    message_id = None
+                    channel = CHANNELS.get(channel_id, None)
+                    break
                 
-                channel_id, message_id = snowflake_pair
-                channel = CHANNELS.get(channel_id, None)
+                elif isinstance(channel, MessageRepr):
+                    message_id = channel.id
+                    channel_id = channel.channel_id
+                    channel = CHANNELS.get(channel_id, None)
+                    break
+                
+                elif isinstance(channel, MessageReference):
+                    message_id = channel.message_id
+                    channel_id = channel.channel_id
+                    channel = CHANNELS.get(channel_id, None)
+                    break
+                
+                else:
+                    snowflake_pair = maybe_snowflake_pair(channel)
+                    if snowflake_pair is not None:
+                        channel_id, message_id = snowflake_pair
+                        channel = CHANNELS.get(channel_id, None)
+                        break
+            
+            raise TypeError(
+                f'`channel` can be a messageable channel, `{Message.__name__}`, '
+                f'`{MessageRepr.__name__}`, `{MessageReference.__name__}`, `int`, `tuple` (`int`, `int`), '
+                f'got {channel.__class__.__name__}; {channel!r}.'
+            )
+            
         
         content, embed = validate_content_and_embed(content, embed, False)
         
@@ -4274,7 +4078,10 @@ class Client(ClientUserPBase):
             except KeyError:
                 is_private = False
             else:
-                is_private = channel.is_in_group_private()
+                if channel.partial:
+                    is_private = True
+                else:
+                    is_private = channel.is_in_group_private()
             
             if is_private:
                 function = _message_delete_multiple_private_task
@@ -4324,7 +4131,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``
+        channel : ``Channel``
             The channel, where the deletion should take place.
         after : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
             The timestamp after the messages were created, which will be deleted.
@@ -4346,16 +4153,16 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If `channel` was not given as ``ChannelTextBase``.
+            If `channel` was not given as ``Channel``.
         
         Notes
         -----
         This method uses up 4 different rate limit groups parallelly to maximize the request and the deletion speed.
         """
         if __debug__:
-            if not isinstance(channel, ChannelTextBase):
+            if not (isinstance(channel, Channel) and (channel.is_in_group_messageable() or channel.partial)):
                 raise AssertionError(
-                    f'`channel` can `{ChannelTextBase.__name__}`, got {channel.__class__.__name__}; {channel!r}.'
+                    f'`channel` can be a messageable channel, got {channel.__class__.__name__}; {channel!r}.'
                 )
         
         # Check permissions
@@ -4670,7 +4477,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``
+        channel : ``Channel``
             The channel, where the deletion should take place.
         after : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
             The timestamp after the messages were created, which will be deleted.
@@ -4692,7 +4499,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If `channel` is not ``ChannelTextBase``.
+            If `channel` is not ``Channel``.
         
         Notes
         -----
@@ -4700,9 +4507,9 @@ class Client(ClientUserPBase):
         parallelize the them between more clients as well.
         """
         if __debug__:
-            if not isinstance(channel, ChannelTextBase):
+            if not (isinstance(channel, Channel) and (channel.is_in_group_messageable() or channel.partial)):
                 raise AssertionError(
-                    f'`channel` can be `{ChannelTextBase.__name__}`, got {channel.__class__.__name__}; {channel!r}.'
+                    f'`channel` can be a messageable channel, got {channel.__class__.__name__}; {channel!r}.'
                 )
         
         # Check permissions
@@ -5320,7 +5127,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`
+        channel : ``Channel``, `int`
             The channel from were the pinned messages will be requested.
         
         Returns
@@ -5331,7 +5138,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelTextBase`` nor `int`.
+            If `channel` was not given neither as ``Channel`` nor `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -5353,7 +5160,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``
+        channel : ``Channel``
             The channel from where the messages will be requested.
         index : `int`
             Till which index the messages should be requested at the given channel.
@@ -5422,7 +5229,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`.
+        channel : ``Channel``, `int`.
             The channel from were the messages will be requested.
         index : `int`
             The index of the target message.
@@ -5434,7 +5241,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelTextBase`` nor `int`.
+            If `channel` was not given neither as ``Channel`` nor `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -5454,7 +5261,7 @@ class Client(ClientUserPBase):
                     f'`index` is out from the expected [0:] range, got {index!r}.'
                 )
         
-        channel, channel_id = get_channel_and_id(channel, ChannelTextBase)
+        channel, channel_id = get_channel_and_id(channel, Channel.is_in_group_messageable)
         if channel is None:
             messages = await self.message_get_chunk_from_zero(channel_id, min(index + 1, 100))
             
@@ -5490,7 +5297,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`
+        channel : ``Channel``, `int`
             The channel from were the messages will be requested.
         start : `int` = `0`, Optional
             The first message's index at the channel to be requested. Defaults to `0`.
@@ -5504,7 +5311,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelTextBase`` nor `int`.
+            If `channel` was not given neither as ``Channel`` nor `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -5536,7 +5343,7 @@ class Client(ClientUserPBase):
                     f'`end` is out from the expected [0:] range, got {end!r}.'
                 )
         
-        channel, channel_id = get_channel_and_id(channel, ChannelTextBase)
+        channel, channel_id = get_channel_and_id(channel, Channel.is_in_group_messageable)
         if channel is None:
             messages = await self.message_get_chunk_from_zero(channel_id, min(end + 1, 100))
             
@@ -5588,7 +5395,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``  or `int`
+        channel : ``Channel``  or `int`
             The channel from were the messages will be requested.
         chunk_size : `int` = `99`, Optional (Keyword only)
             The amount of messages to request when the currently loaded history is exhausted. For message chaining
@@ -5601,7 +5408,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelTextBase`` nor `int`.
+            If `channel` was not given neither as ``Channel`` nor `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -5621,13 +5428,13 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ``ChannelTextBase``, `int`
+        channel : ``Channel``, `int`
             The channel where typing will be triggered.
         
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelTextBase`` nor `int`.
+            If `channel` was not given neither as ``Channel`` nor `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -5649,7 +5456,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel ``ChannelTextBase``, `int`
+        channel ``Channel``, `int`
             The channel where typing will be triggered.
         timeout : `float` = `300.0`, Optional
             The maximal duration for the ``Typer`` to keep typing.
@@ -5661,7 +5468,7 @@ class Client(ClientUserPBase):
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelTextBase`` nor `int`.
+            If `channel` was not given neither as ``Channel`` nor `int`.
         
         Examples
         --------
@@ -7359,32 +7166,49 @@ class Client(ClientUserPBase):
         
         
         if (afk_channel is not ...):
-            if afk_channel is None:
-                afk_channel_id = None
-            elif isinstance(afk_channel, ChannelVoice):
-                afk_channel_id = afk_channel.id
-            else:
-                afk_channel_id = maybe_snowflake(afk_channel)
-                if afk_channel_id is None:
-                    raise TypeError(
-                        f'`afk_channel` can be `None`, `{ChannelVoice.__name__}`, `int` , got '
-                        f'{afk_channel.__class__.__name__}; {afk_channel!r}.')
+            while True:
+                if afk_channel is None:
+                    afk_channel_id = None
+                    break
+                
+                elif isinstance(afk_channel, Channel):
+                    if afk_channel.is_guild_voice() or afk_channel.partial:
+                        afk_channel_id = afk_channel.id
+                        break
+                
+                else:
+                    afk_channel_id = maybe_snowflake(afk_channel)
+                    if afk_channel_id is not None:
+                        break
+                
+                raise TypeError(
+                    f'`afk_channel` can be `None`, guild voice channel, `int` , got '
+                    f'{afk_channel.__class__.__name__}; {afk_channel!r}.'
+                )
             
             data['afk_channel_id'] = afk_channel_id
         
         
         if (system_channel is not ...):
-            if system_channel is None:
-                system_channel_id = None
-            elif isinstance(system_channel, ChannelText):
-                system_channel_id = system_channel.id
-            else:
-                system_channel_id = maybe_snowflake(system_channel)
-                if system_channel_id is None:
-                    raise TypeError(
-                        f'`system_channel` can be `None`, `{ChannelText.__name__}`, `int`, got '
-                        f'{system_channel.__class__.__name__}; {system_channel!r}.'
-                    )
+            while True:
+                if system_channel is None:
+                    system_channel_id = None
+                    break
+                
+                elif isinstance(system_channel, Channel):
+                    if system_channel.is_in_group_guild_main_text() or system_channel.partial:
+                        system_channel_id = system_channel.id
+                        break
+                
+                else:
+                    system_channel_id = maybe_snowflake(system_channel)
+                    if system_channel_id is not None:
+                        break
+                
+                raise TypeError(
+                    f'`system_channel` can be `None`, guild text channel, `int`, got '
+                    f'{system_channel.__class__.__name__}; {system_channel!r}.'
+                )
             
             data['system_channel_id'] = system_channel_id
         
@@ -7397,17 +7221,25 @@ class Client(ClientUserPBase):
                         f'guild={guild!r}.'
                     )
             
-            if rules_channel is None:
-                rules_channel_id = None
-            elif isinstance(rules_channel, ChannelText):
-                rules_channel_id = rules_channel.id
-            else:
-                rules_channel_id = maybe_snowflake(rules_channel)
-                if rules_channel_id is None:
-                    raise TypeError(
-                        f'`rules_channel` can be `None`, `{ChannelText.__name__}`, `int` , got '
-                        f'{rules_channel.__class__.__name__}.'
-                    )
+            while True:
+                if rules_channel is None:
+                    rules_channel_id = None
+                    break
+                
+                elif isinstance(rules_channel, Channel):
+                    if rules_channel.is_in_group_guild_main_text() or rules_channel.partial:
+                        rules_channel_id = rules_channel.id
+                        break
+                
+                else:
+                    rules_channel_id = maybe_snowflake(rules_channel)
+                    if rules_channel_id is not None:
+                        break
+                
+                raise TypeError(
+                    f'`rules_channel` can be `None`, guild text channel, `int` , got '
+                    f'{rules_channel.__class__.__name__}.'
+                )
             
             data['rules_channel_id'] = rules_channel_id
         
@@ -7420,17 +7252,25 @@ class Client(ClientUserPBase):
                         f'{public_updates_channel!r}; guild={guild!r}.'
                     )
             
-            if public_updates_channel is None:
-                public_updates_channel_id = None
-            elif isinstance(public_updates_channel, ChannelText):
-                public_updates_channel_id = public_updates_channel.id
-            else:
-                public_updates_channel_id = maybe_snowflake(public_updates_channel)
-                if public_updates_channel_id is None:
-                    raise TypeError(
-                        f'`public_updates_channel` can be `None`, `{ChannelText.__name__}`, `int`, got '
-                        f'{public_updates_channel.__class__.__name__}; {public_updates_channel!r}.'
-                    )
+            while True:
+                if public_updates_channel is None:
+                    public_updates_channel_id = None
+                    break
+                
+                elif isinstance(public_updates_channel, Channel):
+                    if public_updates_channel.is_in_group_guild_main_text() or public_updates_channel.partial:
+                        public_updates_channel_id = public_updates_channel.id
+                        break
+                    
+                else:
+                    public_updates_channel_id = maybe_snowflake(public_updates_channel)
+                    if public_updates_channel_id is not None:
+                        break
+                
+                raise TypeError(
+                    f'`public_updates_channel` can be `None`, guild text channel, `int`, got '
+                    f'{public_updates_channel.__class__.__name__}; {public_updates_channel!r}.'
+                )
             
             data['public_updates_channel_id'] = public_updates_channel_id
         
@@ -8549,17 +8389,25 @@ class Client(ClientUserPBase):
             data['mute'] = mute
             
         if (voice_channel is not ...):
-            if voice_channel is None:
-                voice_channel_id = None
-            elif isinstance(voice_channel, ChannelVoiceBase):
-                voice_channel_id = voice_channel.id
-            else:
-                voice_channel_id = maybe_snowflake(voice_channel)
-                if voice_channel_id is None:
-                    raise TypeError(
-                        f'`voice_channel` can be `None`, `{ChannelVoiceBase.__name__}`, `int`, got '
-                        f'{voice_channel.__class__.__name__}; {voice_channel!r}.'
-                    )
+            while True:
+                if voice_channel is None:
+                    voice_channel_id = None
+                    break
+                
+                elif isinstance(voice_channel, Channel):
+                    if voice_channel.is_in_group_guild_connectable() or voice_channel.partial:
+                        voice_channel_id = voice_channel.id
+                        break
+                
+                else:
+                    voice_channel_id = maybe_snowflake(voice_channel)
+                    if voice_channel_id is not None:
+                        break
+                
+                raise TypeError(
+                    f'`voice_channel` can be `None`, any guild connectable channel, `int`, got '
+                    f'{voice_channel.__class__.__name__}; {voice_channel!r}.'
+                )
             
             data['channel_id'] = voice_channel_id
         
@@ -8697,7 +8545,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild_id, channel_id = get_guild_id_and_channel_id(channel, ChannelVoiceBase)
+        guild_id, channel_id = get_guild_id_and_channel_id(channel, Channel.is_in_group_guild_connectable)
         if not guild_id:
             return
         
@@ -8729,7 +8577,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild_id, channel_id = get_guild_id_and_channel_id(channel, ChannelStage)
+        guild_id, channel_id = get_guild_id_and_channel_id(channel, Channel.is_guild_stage)
         if not guild_id:
             return
         
@@ -8766,7 +8614,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild_id, channel_id = get_guild_id_and_channel_id(channel, ChannelStage)
+        guild_id, channel_id = get_guild_id_and_channel_id(channel, Channel.is_guild_stage)
         if not guild_id:
             return
         
@@ -9130,12 +8978,12 @@ class Client(ClientUserPBase):
             entity_type = ScheduledEventEntityType.location
         
         elif (stage is not None):
-            channel_id = get_channel_id(stage, ChannelStage)
+            channel_id = get_channel_id(stage, Channel.is_guild_stage)
             entity_metadata = None
             entity_type = ScheduledEventEntityType.stage
         
         elif (voice is not None):
-            channel_id = get_channel_id(voice, ChannelVoice)
+            channel_id = get_channel_id(voice, Channel.is_guild_voice)
             entity_metadata = None
             entity_type = ScheduledEventEntityType.voice
             
@@ -9327,13 +9175,13 @@ class Client(ClientUserPBase):
                 entity_type = ScheduledEventEntityType.location
             
             elif (stage is not ...):
-                channel_id = get_channel_id(stage, ChannelStage)
+                channel_id = get_channel_id(stage, Channel.is_guild_stage)
                 entity_metadata = None
                 entity_type = ScheduledEventEntityType.stage
             
             # elif (voice is not ...):
             else:
-                channel_id = get_channel_id(voice, ChannelVoice)
+                channel_id = get_channel_id(voice, Channel.is_guild_voice)
                 entity_metadata = None
                 entity_type = ScheduledEventEntityType.voice
             
@@ -9607,7 +9455,7 @@ class Client(ClientUserPBase):
         thread_channel_datas = data['threads']
         
         thread_channels = [
-            ChannelThread(thread_channel_data, self, guild_id) for thread_channel_data in thread_channel_datas
+            Channel(thread_channel_data, self, guild_id) for thread_channel_data in thread_channel_datas
         ]
         
         thread_user_datas = data['members']
@@ -9803,7 +9651,7 @@ class Client(ClientUserPBase):
                 guild_id = int(guild_id)
                 guild = GUILDS.get(guild_id, None)
         
-        return ChannelThread(channel_data, self, guild.id)
+        return Channel(channel_data, self, guild.id)
     
     
     async def thread_join(self, thread_channel):
@@ -9884,7 +9732,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        channel, channel_id = get_channel_and_id(thread_channel, ChannelThread)
+        channel, channel_id = get_channel_and_id(thread_channel, Channel.is_in_group_thread)
         user, user_id = get_user_and_id(user)
         
         thread_user_data = await self.http.thread_user_get(channel_id, user_id)
@@ -9991,7 +9839,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        thread_channel, channel_id = get_channel_and_id(thread_channel, ChannelThread)
+        thread_channel, channel_id = get_channel_and_id(thread_channel, Channel.is_in_group_thread)
         
         thread_user_datas = await self.http.thread_user_get_all(channel_id)
         
@@ -10011,13 +9859,13 @@ class Client(ClientUserPBase):
     
     if API_VERSION >= 10:
         async def channel_thread_get_all_active(self, channel):
-            guild_id, channel_id = get_guild_id_and_channel_id(channel, THREADABLE_CHANNEL_TYPES)
+            guild_id, channel_id = get_guild_id_and_channel_id(channel, Channel.is_in_group_can_contain_threads)
             thread_channels = await self.guild_thread_get_all_active(guild_id)
             return [thread_channel for thread_channel in thread_channels if thread_channel.parent_id == channel_id]
     
     else:
         async def channel_thread_get_all_active(self, channel):
-            guild_id, channel_id = get_guild_id_and_channel_id(channel, THREADABLE_CHANNEL_TYPES)
+            guild_id, channel_id = get_guild_id_and_channel_id(channel, Channel.is_in_group_can_contain_threads)
             return await request_channel_thread_channels(
                 self,
                 guild_id,
@@ -10079,7 +9927,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild_id, channel_id = get_guild_id_and_channel_id(channel, THREADABLE_CHANNEL_TYPES)
+        guild_id, channel_id = get_guild_id_and_channel_id(channel, Channel.is_in_group_can_contain_threads)
         return await request_channel_thread_channels(
             self,
             guild_id,
@@ -10110,7 +9958,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild_id, channel_id = get_guild_id_and_channel_id(channel, THREADABLE_CHANNEL_TYPES)
+        guild_id, channel_id = get_guild_id_and_channel_id(channel, Channel.is_in_group_can_contain_threads)
         return await request_channel_thread_channels(
             self,
             guild_id,
@@ -10141,7 +9989,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild_id, channel_id = get_guild_id_and_channel_id(channel, THREADABLE_CHANNEL_TYPES)
+        guild_id, channel_id = get_guild_id_and_channel_id(channel, Channel.is_in_group_can_contain_threads)
         return await request_channel_thread_channels(
             self,
             guild_id,
@@ -10614,7 +10462,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ˙˙ChannelGuildMainBase``, `int`
+        channel : ˙˙Channel``, `int`
             The channel where the permission overwrite is.
         permission_overwrite : ``PermissionOverwrite``
             The permission overwrite to edit.
@@ -10638,7 +10486,7 @@ class Client(ClientUserPBase):
             - If `allow` was not given neither as `None`, ``Permission`` not other `int`.
             - If `deny` was not given neither as `None`, ``Permission`` not other `int`.
         """
-        channel_id = get_channel_id(channel, ChannelGuildMainBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_guild_movable)
         
         if __debug__:
             if not isinstance(permission_overwrite, PermissionOverwrite):
@@ -10684,7 +10532,7 @@ class Client(ClientUserPBase):
         
         Parameters
         ----------
-        channel : ˙˙ChannelGuildMainBase``
+        channel : ˙˙Channel``
             The channel where the permission overwrite is.
         permission_overwrite : ``PermissionOverwrite``
             The permission overwrite to delete.
@@ -10702,7 +10550,7 @@ class Client(ClientUserPBase):
         AssertionError
             If `permission_overwrite` was not given as ``PermissionOverwrite``.
         """
-        channel_id = get_channel_id(channel, ChannelGuildMainBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_guild_movable)
         
         if __debug__:
             if not isinstance(permission_overwrite, PermissionOverwrite):
@@ -10751,7 +10599,7 @@ class Client(ClientUserPBase):
             - If `allow` was not given neither as ``Permission`` nor as other `int`.
             - If `deny ` was not given neither as ``Permission`` not as other `int`.
         """
-        channel_id = get_channel_id(channel, ChannelGuildMainBase)
+        channel_id = get_channel_id(channel, Channel.is_in_group_guild_movable)
         
         if isinstance(target, Role):
             permission_overwrite_target_type = PermissionOverwriteTargetType.role
@@ -10821,7 +10669,7 @@ class Client(ClientUserPBase):
             - If `name` range is out of the expected range [1:80].
             - If `avatar`'s type is not any of the expected ones: `'jpg'`, `'png'`, `'webp'`, `'gif'`.
         """
-        channel_id = get_channel_id(channel, ChannelText)
+        channel_id = get_channel_id(channel, Channel.is_in_group_guild_main_text)
         
         if __debug__:
             if not isinstance(name, str):
@@ -10986,7 +10834,7 @@ class Client(ClientUserPBase):
         -----
         No request is done, if the passed channel is partial, or if the channel's guild's webhooks are up to date.
         """
-        channel_id = get_channel_id(channel, ChannelText)
+        channel_id = get_channel_id(channel, Channel.is_in_group_guild_main_text)
         
         data = await self.http.webhook_get_all_channel(channel_id)
         return [Webhook(webhook_data) for webhook_data in data]
@@ -11192,15 +11040,21 @@ class Client(ClientUserPBase):
             data['avatar'] = avatar_data
         
         if (channel is not ...):
-            if isinstance(channel, ChannelText):
-                channel_id = channel.id
-            else:
-                channel_id = maybe_snowflake(channel)
-                if channel_id is None:
-                    raise TypeError(
-                        f'`channel` can be `{ChannelText.__name__}`, `int`, got {channel.__class__.__name__}; '
-                        f'{channel!r}.'
-                    )
+            while True:
+                if isinstance(channel, Channel):
+                    if channel.is_in_group_guild_main_text() or channel.partial:
+                        channel_id = channel.id
+                        break
+                
+                else:
+                    channel_id = maybe_snowflake(channel)
+                    if channel_id is not None:
+                        break
+                
+                raise TypeError(
+                    f'`channel` can be gild text channel, `int`, got {channel.__class__.__name__}; '
+                    f'{channel!r}.'
+                )
             
             data['channel_id'] = channel_id
         
@@ -11357,7 +11211,7 @@ class Client(ClientUserPBase):
         avatar_url : `None`, `str` = `None`, Optional (Keyword only)
             The message's author's avatar's url. Defaults to the webhook's avatar' url by Discord.
         
-        thread : `None`, `ChannelThread`, `int` = `None`, Optional (Keyword only)
+        thread : `None`, ``Channel``, `int` = `None`, Optional (Keyword only)
             The thread of the webhook's channel where the message should be sent.
         
         wait : `None`, `bool` = `None`, Optional (Keyword only)
@@ -11403,17 +11257,25 @@ class Client(ClientUserPBase):
         """
         webhook, webhook_id, webhook_token = get_webhook_and_id_token(webhook)
         
-        if thread is None:
-            thread_id = 0
-        elif isinstance(thread, ChannelThread):
-            thread_id = thread.id
-        else:
-            thread_id = maybe_snowflake(thread)
-            if thread_id is None:
-                raise TypeError(
-                    f'`thread` can be `None`, `{ChannelThread.__name__}`, `int`, '
-                    f'got {thread.__class__.__name__}; {thread!r}.'
-                )
+        while True:
+            if thread is None:
+                thread_id = 0
+                break
+                
+            elif isinstance(thread, Channel):
+                if thread.is_in_group_thread() or thread.partial:
+                    thread_id = thread.id
+                    break
+            
+            else:
+                thread_id = maybe_snowflake(thread)
+                if thread_id is not None:
+                    break
+            
+            raise TypeError(
+                f'`thread` can be `None`, thread channel, `int`, '
+                f'got {thread.__class__.__name__}; {thread!r}.'
+            )
         
         content, embed = validate_content_and_embed(content, embed, False)
         
@@ -12266,15 +12128,21 @@ class Client(ClientUserPBase):
             - If `unique` was not given as `bool`.
             - If `temporary` was not given as `bool`.
         """
-        if isinstance(channel, (ChannelText, ChannelVoice, ChannelGroup, ChannelStore, ChannelStore)):
-            channel_id = channel.id
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(
-                    f'`channel` can be `{ChannelText.__name__}`, `{ChannelVoice.__name__}`, '
-                    f'`{ChannelGroup.__name__}`, `{ChannelStore.__name__}`, `{ChannelStore.__name__}`, `int`, got '
-                    f'{channel.__class__.__name__}; {channel!r}.')
+        while True:
+            if isinstance(channel, Channel):
+                if channel.is_in_group_can_create_invite_to() or channel.partial:
+                    channel_id = channel.id
+                    break
+            
+            else:
+                channel_id = maybe_snowflake(channel)
+                if (channel_id is not None):
+                    break
+            
+            raise TypeError(
+                f'`channel` can be {get_channel_type_names(CHANNEL_TYPES.GROUP_CAN_CREATE_INVITE_TO)} channel, `int`'
+                f', got {channel.__class__.__name__}; {channel!r}.'
+            )
         
         if __debug__:
             if not isinstance(max_age, int):
@@ -12475,15 +12343,7 @@ class Client(ClientUserPBase):
             - If `unique` was not given as `bool`.
             - If `temporary` was not given as `bool`.
         """
-        if isinstance(channel, ChannelVoice):
-            channel_id = channel.id
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(
-                    f'`channel` can be `{ChannelVoice.__name__}`, `int`, got '
-                    f'{channel.__class__.__name__}; {channel!r}.'
-                )
+        channel_id = get_channel_id(channel, Channel.is_guild_voice)
         
         if isinstance(application, Application):
             application_id = application.id
@@ -12742,16 +12602,21 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(channel, (ChannelText, ChannelVoice, ChannelGroup, ChannelStore, ChannelDirectory)):
-            channel_id = channel.id
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(
-                    f'`channel` can be `{ChannelText.__name__}`, `{ChannelVoice.__name__}`, '
-                    f'`{ChannelGroup.__name__}`, `{ChannelStore.__name__}`, `{ChannelDirectory.__name__}`, `int`, got '
-                    f'{channel.__class__.__name__}; {channel!r}.'
-                )
+        while True:
+            if isinstance(channel, Channel):
+                if channel.is_in_group_can_create_invite_to() or channel.partial:
+                    channel_id = channel.id
+                    break
+            
+            else:
+                channel_id = maybe_snowflake(channel)
+                if (channel_id is not None):
+                    break
+            
+            raise TypeError(
+                f'`channel` can be {get_channel_type_names(CHANNEL_TYPES.GROUP_CAN_CREATE_INVITE_TO)} channel, `int`'
+                f', got {channel.__class__.__name__}; {channel!r}.'
+            )
         
         invite_datas = await self.http.invite_get_all_channel(channel_id)
         return [Invite(invite_data, False) for invite_data in invite_datas]
@@ -16726,18 +16591,24 @@ class Client(ClientUserPBase):
         TypeError
             If `channel` was not given neither as ``Channel`` nor as `tuple` (`int`, `int`).
         """
-        if isinstance(channel, ChannelVoiceBase):
-            guild_id = channel.guild_id
-            channel_id = channel.id
-        else:
-            snowflake_pair = maybe_snowflake_pair(channel)
-            if snowflake_pair is None:
-                raise TypeError(
-                    f'`channel` can be `{ChannelVoiceBase.__name__}`, `tuple` (`int`, `int`), got '
-                    f'{channel.__class__.__name__}; {channel!r}.'
-                )
+        while True:
+            if isinstance(channel, Channel):
+                if channel.is_in_group_guild_connectable() or channel.partial:
+                    guild_id = channel.guild_id
+                    channel_id = channel.id
+                    break
             
-            guild_id, channel_id = snowflake_pair
+            else:
+                snowflake_pair = maybe_snowflake_pair(channel)
+                if (snowflake_pair is not None):
+                    guild_id, channel_id = snowflake_pair
+                    break
+                
+            raise TypeError(
+                f'`channel` can be {get_channel_type_names(CHANNEL_TYPES.GROUP_GUILD_CONNECTABLE)}, '
+                f'`tuple` (`int`, `int`), got {channel.__class__.__name__}; {channel!r}.'
+            )
+        
         
         try:
             voice_client = self.voice_clients[guild_id]
@@ -16774,18 +16645,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(channel, ChannelStage):
-            guild_id = channel.guild_id
-            channel_id = channel.id
-        else:
-            snowflake_pair = maybe_snowflake_pair(channel)
-            if snowflake_pair is None:
-                raise TypeError(
-                    f'`channel` can be `{ChannelStage.__name__}`, `tuple`(`int`, `int`), got '
-                    f'{channel.__class__.__name__}; {channel!r}.'
-                )
-            
-            guild_id, channel_id = snowflake_pair
+        guild_id, channel_id = get_guild_id_and_channel_id(channel, Channel.is_guild_stage)
         
         if request:
             timestamp = datetime_to_timestamp(datetime.utcnow())
@@ -16823,19 +16683,7 @@ class Client(ClientUserPBase):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(channel, ChannelStage):
-            guild_id = channel.guild_id
-            channel_id = channel.id
-        else:
-            snowflake_pair = maybe_snowflake_pair(channel)
-            if snowflake_pair is None:
-                raise TypeError(
-                    f'`channel` can be `{ChannelStage.__name__}`, `tuple`(`int`, `int`) , got '
-                    f'{channel.__class__.__name__}; {channel!r}.'
-                )
-            
-            guild_id, channel_id = snowflake_pair
-        
+        guild_id, channel_id = get_guild_id_and_channel_id(channel, Channel.is_guild_stage)
         
         data = {
             'suppress': True,

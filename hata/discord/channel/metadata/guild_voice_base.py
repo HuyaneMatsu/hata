@@ -96,7 +96,7 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
     @classmethod
     @copy_docs(ChannelMetadataGuildMainBase._precreate)
     def _precreate(cls, keyword_parameters):
-        self = ChannelMetadataGuildMainBase._precreate(cls, keyword_parameters)
+        self = super(ChannelMetadataGuildVoiceBase, cls)._precreate(keyword_parameters)
         
         try:
             bitrate = keyword_parameters.pop('bitrate')

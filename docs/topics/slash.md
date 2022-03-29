@@ -1192,7 +1192,7 @@ Or a group covering multiple one.
 
 - `channel_group_messageable`
 - `channel_group_guild_messageable`
-- `channel_group_guild_text_like`
+- `channel_group_guild_main_text`
 - `channel_group_connectable`
 - `channel_group_private`
 - `channel_group_guild_connectable`

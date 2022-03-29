@@ -38,7 +38,7 @@ class ChannelMetadataPrivate(ChannelMetadataPrivateBase):
                 if client not in users:
                     users.append(client)
                 
-                client.private_channels[users[0].id] = self
+                client.private_channels[users[0].id] = channel_entity
                 
                 users.sort()
             

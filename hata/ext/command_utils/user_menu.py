@@ -2,7 +2,7 @@ __all__ = ('UserMenuFactory', 'UserMenuRunner', 'UserPagination',)
 
 from scarletio import CallableAnalyzer, CancelledError, copy_docs
 
-from ...discord import ChannelTextBase
+from ...discord import Channel
 from ...discord.core import BUILTIN_EMOJIS
 from ...discord.emoji import Emoji
 from ...discord.exceptions import DiscordException, ERROR_CODES
@@ -462,7 +462,7 @@ class UserMenuRunner(PaginationBase):
     _timeouter : `None`, ``Timeouter``
         Executes the timing out feature on the ``UserMenuRunner``.
     
-    channel : ``ChannelTextBase``
+    channel : ``Channel``
         The channel where the ``UserMenuRunner`` is executed.
     
     client : ``Client``
@@ -491,7 +491,7 @@ class UserMenuRunner(PaginationBase):
             The respective user menu factory to execute.
         client : ``Client``
             The client who executes the ``UserMenuRunner``.
-        channel : ``ChannelTextBase``
+        channel : ``Channel``
             The channel where the ``UserMenuRunner`` is executed.
         *args : Parameters
             Additional parameters to pass to the factory's class's constructor.
@@ -505,7 +505,7 @@ class UserMenuRunner(PaginationBase):
         TypeError
             `channel`'s type is incorrect.
         """
-        if isinstance(channel, ChannelTextBase):
+        if isinstance(channel, Channel):
             target_channel = channel
             received_interaction = False
         elif isinstance(channel, Message):
@@ -516,7 +516,7 @@ class UserMenuRunner(PaginationBase):
             received_interaction = True
         else:
             raise TypeError(
-                f'`channel` can be `{ChannelTextBase.__name__}`, `{Message.__name__}`, `{InteractionEvent.__name__}`, '
+                f'`channel` can be `{Channel.__name__}`, `{Message.__name__}`, `{InteractionEvent.__name__}`, '
                 f'got {channel.__class__.__name__}; {channel!r}.'
             )
         

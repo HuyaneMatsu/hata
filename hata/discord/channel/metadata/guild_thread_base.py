@@ -96,7 +96,7 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
         except KeyError:
             pass
         else:
-            guild.threads[channel_entity.id] = self
+            guild.threads[channel_entity.id] = channel_entity
     
 
     @classmethod
@@ -343,7 +343,7 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
         return self
     
     
-    @copy_docs(ChannelMetadataGuildBase.to_data)
+    @copy_docs(ChannelMetadataGuildBase._to_data)
     def _to_data(self):
         data = ChannelMetadataGuildBase._to_data(self)
         

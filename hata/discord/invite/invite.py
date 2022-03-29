@@ -6,9 +6,7 @@ from scarletio import export
 
 from ..application import Application
 from ..bases import DiscordEntity, instance_or_id_to_instance
-from ..channel import (
-    ChannelDirectory, ChannelGroup, ChannelStore, ChannelText, ChannelVoice, create_partial_channel_from_data
-)
+from ..channel import Channel, create_partial_channel_from_data
 from ..core import CHANNELS, GUILDS, INVITES
 from ..guild import Guild, NsfwLevel, create_partial_guild_from_data
 from ..http import urls as module_urls
@@ -123,6 +121,7 @@ class Invite(DiscordEntity, immortal=True):
             self.partial = data_partial
             INVITES[code] = self
             updater = cls._set_attributes
+        
         else:
             if self.partial:
                 if data_partial:
@@ -561,7 +560,7 @@ class Invite(DiscordEntity, immortal=True):
             
             for key, type_ in (
                 ('guild', Guild),
-                ('channel', (ChannelText, ChannelGroup, ChannelVoice, ChannelStore, ChannelDirectory)),
+                ('channel', Channel),
             ):
                 
                 try:

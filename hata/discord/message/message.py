@@ -38,7 +38,6 @@ from .utils import try_resolve_interaction_message
 
 Channel = include('Channel')
 create_component = include('create_component')
-CHANNEL_TYPE_MAP = include('CHANNEL_TYPE_MAP')
 InteractionType = include('InteractionType')
 ComponentBase = include('ComponentBase')
 

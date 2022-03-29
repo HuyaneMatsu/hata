@@ -58,7 +58,7 @@ def _get_deprecations_for_spec_name(name):
     for spec_access_path, obj, obj_name in DEPRECATIONS:
         spec_access_path_length = len(spec_access_path)
         
-        if len(spec_access_path_length) < target_spec_access_path_length:
+        if spec_access_path_length < target_spec_access_path_length:
             continue
         
         if spec_access_path_length > target_spec_access_path_length:
@@ -83,7 +83,7 @@ def get_deprecation_function():
     deprecations = _get_deprecations_for_spec_name(spec_name)
     
     
-    def __getattr__(self, attribute_name):
+    def __getattr__(attribute_name):
         try:
             attribute_value = deprecations[attribute_name]
         except KeyError:

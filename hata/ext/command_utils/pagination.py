@@ -2,7 +2,7 @@ __all__ = ('Pagination',)
 
 from scarletio import CancelledError, copy_docs
 
-from ...discord import ChannelTextBase
+from ...discord import Channel
 from ...discord.core import BUILTIN_EMOJIS
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.interaction import InteractionEvent
@@ -53,7 +53,7 @@ class Pagination(PaginationBase):
     _timeouter : `None`, ``Timeouter``
         Executes the timing out feature on the ``Pagination``.
     
-    channel : ``ChannelTextBase``
+    channel : ``Channel``
         The channel where the ``Pagination`` is executed.
     
     client : ``Client`` of ``Embed`` (or any compatible)
@@ -125,7 +125,7 @@ class Pagination(PaginationBase):
         ----------
         client : ``Client``
             The client who will execute the ``Pagination``.
-        channel : ``ChannelTextBase``, ``Message``, ``InteractionEvent``
+        channel : ``Channel``, ``Message``, ``InteractionEvent``
             The channel where the ``Pagination`` will be executed. Pass it as a ``Message`` to send a reply.
             
             If given as ``InteractionEvent``, then will acknowledge it and create a new message with it as well.
@@ -169,7 +169,7 @@ class Pagination(PaginationBase):
         if not pages:
             return None
         
-        if isinstance(channel, ChannelTextBase):
+        if isinstance(channel, Channel):
             target_channel = channel
             received_interaction = False
         elif isinstance(channel, Message):
@@ -180,7 +180,7 @@ class Pagination(PaginationBase):
             received_interaction = True
         else:
             raise TypeError(
-                f'`channel` can be `{ChannelTextBase.__name__}`, `{Message.__name__}`, `{InteractionEvent.__name__}`, '
+                f'`channel` can be `{Channel.__name__}`, `{Message.__name__}`, `{InteractionEvent.__name__}`, '
                 f'got {channel.__class__.__name__}; {channel!r}.'
             )
         

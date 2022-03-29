@@ -158,7 +158,7 @@ async def process_command_coroutine(client, channel, coroutine):
     ----------
     client : ``Client``
         The client who will send the responses if applicable.
-    channel : ``ChannelTextBase``
+    channel : ``Channel``
         The channel from where the respective command was called.
     coroutine : `CoroutineType`
         A coroutine with will send command response.

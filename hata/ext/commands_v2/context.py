@@ -305,7 +305,7 @@ class CommandContext(object):
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``ChannelTextBase`` nor `int`.
+            If `channel` was not given neither as ``Channel`` nor `int`.
         ConnectionError
             No internet connection.
         DiscordException

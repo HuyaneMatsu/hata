@@ -7,7 +7,7 @@ from math import inf
 
 from scarletio import BaseMethodType, Future, LOOP_TIME, Task, WaitTillFirst
 
-from ..channel import ChannelThread
+from ..channel import Channel
 from ..core import CHANNELS, CLIENTS, KOKORO
 from ..exceptions import DiscordException
 from ..http import RateLimitProxy
@@ -626,7 +626,7 @@ class MultiClientMessageDeleteSequenceSharder:
         ----------
         client : ``Client``
             A client who would execute the delete task.
-        channel : ``ChannelTextBase``
+        channel : ``Channel``
             Channel, from where the client would delete messages.
         
         Returns
@@ -899,7 +899,7 @@ async def request_channel_thread_channels(client, guild_id, channel_id, request_
         thread_channel_datas = data['threads']
         
         for thread_channel_data in thread_channel_datas:
-            thread_channel = ChannelThread(thread_channel_data, client, guild_id)
+            thread_channel = Channel(thread_channel_data, client, guild_id)
             thread_channels.append(thread_channel)
         
         thread_user_datas = data['members']

@@ -21,6 +21,7 @@ from . import channel_types as CHANNEL_TYPES
 from .message_history import MessageHistory, MessageHistoryCollector, message_relative_index
 from .metadata import ChannelMetadataBase, ChannelMetadataGuildMainBase
 from .metadata.utils import get_channel_metadata_type
+from .utils import get_channel_type_name
 
 
 @export
@@ -74,6 +75,7 @@ class Channel(DiscordEntity, immortal=True):
             self.metadata = metadata
             
             metadata._created(self, client)
+            CHANNELS[channel_id] = self
             
         else:
             if self.partial:
@@ -131,9 +133,27 @@ class Channel(DiscordEntity, immortal=True):
         metadata._created(self, client)
     
     
+    
     def __repr__(self):
         """Returns the representation of the channel."""
-        return f'<{self.__class__.__name__} id={self.id}, name={self.metadata._get_processed_name()!r}>'
+        repr_parts = ['<', self.__class__.__name__]
+        
+        repr_parts.append(' id=')
+        repr_parts.append(repr(self.id))
+        
+        metadata = self.metadata
+        
+        repr_parts.append(', name=')
+        repr_parts.append(repr(metadata._get_processed_name()))
+        
+        channel_type = metadata.type
+        repr_parts.append(' type=')
+        repr_parts.append(repr(channel_type))
+        channel_type.append('~')
+        repr_parts.append(repr(get_channel_type_name(channel_type)))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
     
     
     def __format__(self, code):
@@ -1832,7 +1852,7 @@ class Channel(DiscordEntity, immortal=True):
         return self.metadata.type in CHANNEL_TYPES.GROUP_GUILD_MESSAGEABLE
     
     
-    def is_in_group_guild_text_like(self):
+    def is_in_group_guild_main_text(self):
         """
         Returns whether the channel a guild text like channel.
         
@@ -1840,9 +1860,9 @@ class Channel(DiscordEntity, immortal=True):
         
         Returns
         -------
-        is_in_group_guild_text_like : `bool`
+        is_in_group_guild_main_text : `bool`
         """
-        return self.metadata.type in CHANNEL_TYPES.GROUP_GUILD_TEXT_LIKE
+        return self.metadata.type in CHANNEL_TYPES.GROUP_GUILD_MAIN_TEXT
     
     
     def is_in_group_connectable(self):
@@ -1912,6 +1932,28 @@ class Channel(DiscordEntity, immortal=True):
         is_in_group_can_contain_threads : `bool`
         """
         return self.metadata.type in CHANNEL_TYPES.GROUP_CAN_CONTAIN_THREADS
+    
+    
+    def is_in_group_can_create_invite_to(self):
+        """
+        Returns whether the channel have invites created to.
+        
+        Returns
+        -------
+        is_in_group_can_create_invite_to : `bool`
+        """
+        return self.metadata.type in CHANNEL_TYPES.GROUP_CAN_CREATE_INVITE_TO
+    
+    
+    def is_in_group_guild_movable(self):
+        """
+        Returns whether the channel is a movable guild channel.
+        
+        Returns
+        -------
+        is_in_group_guild_movable : `bool`
+        """
+        return self.metadata.type in CHANNEL_TYPES.GROUP_GUILD_MOVABLE
     
     
     def is_guild_text(self):

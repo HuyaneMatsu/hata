@@ -196,7 +196,7 @@ class WelcomeChannel:
                 pass
             else:
                 if isinstance(channel, Channel):
-                    if channel.is_in_group_guild_text_like() or channel.partial:
+                    if channel.is_in_group_guild_main_text() or channel.partial:
                         channel_id = channel.id
                     else:
                         raise ValueError(

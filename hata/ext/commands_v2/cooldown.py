@@ -2,7 +2,6 @@ __all__ = ('CooldownHandler', )
 
 from scarletio import LOOP_TIME
 
-from ...discord.channel import ChannelGuildBase
 from ...discord.core import KOKORO
 
 from .exceptions import CommandCooldownError
@@ -135,7 +134,7 @@ def _check_guild(cooldown_handler, command_context):
         If the cooldown limitation is not applicable for the given entity, returns `-1.0`.
     """
     channel = command_context.message.channel
-    if not isinstance(channel, ChannelGuildBase):
+    if not channel.guild_id:
         return -1.0
     
     guild_id = channel.guild.id

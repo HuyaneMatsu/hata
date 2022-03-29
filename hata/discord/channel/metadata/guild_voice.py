@@ -84,7 +84,7 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
     @classmethod
     @copy_docs(ChannelMetadataGuildVoiceBase._precreate)
     def _precreate(cls, keyword_parameters):
-        self = ChannelMetadataGuildVoiceBase._precreate(cls, keyword_parameters)
+        self = super(ChannelMetadataGuildVoice, cls)._precreate(keyword_parameters)
         
         try:
             video_quality_mode = keyword_parameters.pop('video_quality_mode')

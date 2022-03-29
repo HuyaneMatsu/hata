@@ -84,7 +84,7 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
     @classmethod
     @copy_docs(ChannelMetadataGuildVoiceBase._precreate)
     def _precreate(cls, keyword_parameters):
-        self = ChannelMetadataGuildVoiceBase._precreate(cls, keyword_parameters)
+        self = super(ChannelMetadataGuildStage, cls)._precreate(keyword_parameters)
         
         try:
             topic = keyword_parameters.pop('topic')

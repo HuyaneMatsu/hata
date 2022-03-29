@@ -121,7 +121,7 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
     @classmethod
     @copy_docs(ChannelMetadataGuildMainBase._precreate)
     def _precreate(cls, keyword_parameters):
-        self = ChannelMetadataGuildMainBase._precreate(cls, keyword_parameters)
+        self = super(ChannelMetadataGuildTextBase, cls)._precreate(keyword_parameters)
         
         try:
             default_auto_archive_after = keyword_parameters.pop('default_auto_archive_duration')

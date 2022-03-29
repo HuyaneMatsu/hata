@@ -139,7 +139,7 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         return list(self._iter_users(channel_entity))
     
     
-    @copy_docs(ChannelMetadataBase.iter_users)
+    @copy_docs(ChannelMetadataBase._iter_users)
     def _iter_users(self, channel_entity):
         guild = channel_entity.guild
         if (guild is not None):
@@ -336,3 +336,10 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         else:
             name = preconvert_str(name, 'name', 2, 100)
             self.name = name
+        
+        return self
+    
+    
+    @copy_docs(ChannelMetadataBase._invalidate_permission_cache)
+    def _invalidate_permission_cache(self):
+        self._permission_cache = None

@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 
 from scarletio import MultiValueDictionary
 
-from ...discord.channel import ChannelGuildMainBase
 from ...discord.integration import IntegrationAccount
 from ...discord.message import Message, MessageType
 from ...discord.permission import Permission
@@ -652,7 +651,7 @@ def write_guild_channel_extras(channel, result, write_parents, write_overwrites,
     if (parent is not None):
         result.append(f'- parent : {parent.name!r} ({parent.id})', 1)
     
-    if isinstance(channel, ChannelGuildMainBase):
+    if channel.guild_id:
         result.append(f'- position : {channel.position}', 1)
         
         overwrites = channel.overwrites

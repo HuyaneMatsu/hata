@@ -166,9 +166,7 @@ from functools import partial as partial_func
 from scarletio import CallableAnalyzer, Task, copy_docs, export
 
 from ...discord.bases import instance_or_id_to_instance, instance_or_id_to_snowflake
-from ...discord.channel import (
-    ChannelBase, ChannelCategory, ChannelGroup, ChannelGuildBase, ChannelPrivate, ChannelText
-)
+from ...discord.channel import Channel
 from ...discord.client import Client
 from ...discord.core import KOKORO
 from ...discord.guild import Guild
@@ -827,10 +825,7 @@ class CheckIsInGuild(CheckSingleBase):
     
     @copy_docs(CheckBase.__call__)
     async def __call__(self, context):
-        if isinstance(context.message.channel, ChannelGuildBase):
-            return True
-        
-        return False
+        return context.message.channel.is_in_group_guild()
     
     @copy_docs(CheckBase.__invert__)
     def __invert__(self):
@@ -845,10 +840,7 @@ class CheckIsInPrivate(CheckSingleBase):
     
     @copy_docs(CheckBase.__call__)
     async def __call__(self, context):
-        if isinstance(context.message.channel, (ChannelPrivate, ChannelGroup)):
-            return True
-        
-        return False
+        return context.message.channel.is_in_group_private()
     
     @copy_docs(CheckBase.__invert__)
     def __invert__(self):
@@ -1571,7 +1563,7 @@ class CheckIsChannel(CheckIsChannelBase):
         ValueError
             If `channel` was given as `str`, `int`, but not as a valid snowflake.
         """
-        channel_id = instance_or_id_to_snowflake(channel, ChannelBase, 'channel')
+        channel_id = instance_or_id_to_snowflake(channel, Channel, 'channel')
         
         self = object.__new__(cls)
         self.channel_id = channel_id
@@ -1619,7 +1611,7 @@ class CheckIsAnyChannel(CheckIsChannelBase):
         channel_ids_processed = set()
         
         for channel in channels:
-            channel_id = instance_or_id_to_snowflake(channel, ChannelBase, 'guild')
+            channel_id = instance_or_id_to_snowflake(channel, Channel, 'guild')
             channel_ids_processed.add(channel_id)
         
         channel_ids_processed_length = len(channel_ids_processed)
@@ -1653,11 +1645,7 @@ class CheckIsNsfwChannel(CheckSingleBase):
 
     @copy_docs(CheckBase.__call__)
     async def __call__(self, context):
-        channel = context.message.channel
-        if (isinstance(channel, ChannelText) and channel.nsfw):
-            return True
-        
-        return False
+        return context.message.channel.nsfw
 
 
 class CheckIsAnnouncementChannel(CheckSingleBase):
@@ -1959,7 +1947,7 @@ class CheckIsCategory(CheckIsCategoryBase):
         ValueError
             If `category` was given as `str`, `int`, but not as a valid snowflake.
         """
-        category_id = instance_or_id_to_snowflake(category, (ChannelCategory, Guild), 'category')
+        category_id = instance_or_id_to_snowflake(category, (Channel, Guild), 'category')
         
         self = object.__new__(cls)
         self.category_id = category_id
@@ -1968,8 +1956,6 @@ class CheckIsCategory(CheckIsCategoryBase):
     @copy_docs(CheckBase.__call__)
     async def __call__(self, context):
         channel = context.message.channel
-        if not isinstance(channel, ChannelGuildBase):
-            return False
         
         parent = channel.parent
         if parent is None:
@@ -2024,7 +2010,7 @@ class CheckIsAnyCategory(CheckIsCategoryBase):
         category_ids_processed = set()
         
         for category in categories:
-            category_id = instance_or_id_to_snowflake(category, (ChannelCategory, Guild), 'category')
+            category_id = instance_or_id_to_snowflake(category, (Channel, Guild), 'category')
             category_ids_processed.add(category_id)
         
         category_ids_processed_length = len(category_ids_processed)

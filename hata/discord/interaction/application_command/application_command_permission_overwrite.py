@@ -2,7 +2,7 @@ __all__ = ('ApplicationCommandPermissionOverwrite',)
 
 from scarletio import RichAttributeErrorBaseType
 
-from ...channel import ChannelBase
+from ...channel import Channel
 from ...core import CHANNELS, ROLES
 from ...role import Role, create_partial_role_from_id
 from ...user import ClientUserBase, create_partial_user_from_id
@@ -90,7 +90,7 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
                 target_lookup_failed = False
                 break
             
-            if isinstance(target, ChannelBase):
+            if isinstance(target, Channel):
                 target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_CHANNEL
                 target_id = target.id
                 target_lookup_failed = False
@@ -104,7 +104,7 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
                         target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_ROLE
                     elif issubclass(target_maybe, ClientUserBase):
                         target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER
-                    elif issubclass(target_maybe, ChannelBase):
+                    elif issubclass(target_maybe, Channel):
                         target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_CHANNEL
                     else:
                         target_lookup_failed = True
@@ -141,8 +141,8 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
         
         if target_lookup_failed:
             raise TypeError(
-                f'`target` can be `{Role.__name__}`, `{ClientUserBase.__name__}`, `{ChannelBase.__name__}`, '
-                f'`tuple` ((`{Role.__name__}`, `{ClientUserBase.__name__}`, `{ChannelBase.__name__}`, `str` '
+                f'`target` can be `{Role.__name__}`, `{ClientUserBase.__name__}`, `{Channel.__name__}`, '
+                f'`tuple` ((`{Role.__name__}`, `{ClientUserBase.__name__}`, `{Channel.__name__}`, `str` '
                 f'(`\'Role\'`, `\'role\'`, `\'User\'`, `\'user\'`, `\'Channel\'`, `\'channel\'`)), `int`), '
                 f'got {target.__class__.__name__}: {target!r}.'
             )

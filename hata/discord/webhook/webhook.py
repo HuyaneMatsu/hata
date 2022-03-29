@@ -17,7 +17,7 @@ from .webhook_sources import WebhookSourceChannel, WebhookSourceGuild
 
 create_partial_webhook_from_id = include('create_partial_webhook_from_id')
 create_partial_channel_from_id = include('create_partial_channel_from_id')
-ChannelText = include('ChannelText')
+Channel = include('Channel')
 Client = include('Client')
 
 
@@ -242,9 +242,9 @@ class Webhook(WebhookBase):
             cls.banner.precovert(kwargs, processable)
             
             for attribute_name, attribute_type in (
-                    ('user'      , (User, Client),),
-                    ('channel_id', ChannelText   ,),
-                        ):
+                ('user'      , (User, Client),),
+                ('channel_id', Channel   ,),
+            ):
                 try:
                     attribute_value = kwargs.pop(attribute_name)
                 except KeyError:

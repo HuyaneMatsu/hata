@@ -5,13 +5,14 @@ import reprlib
 from scarletio import export, include
 
 from ..bases import DiscordEntity
-from ..channel import ChannelStage, create_partial_channel_from_id
+from ..channel import create_partial_channel_from_id
 from ..core import STAGES
 from ..scheduled_event import PrivacyLevel
 
 
 Guild = include('Guild')
 create_partial_guild_from_id = include('create_partial_guild_from_id')
+
 
 @export
 class Stage(DiscordEntity):

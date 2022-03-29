@@ -48,7 +48,7 @@ class MessageHistoryCollector:
     """
     Attributes
     ----------
-    channel_reference : ``WeakReferer`` to ``ChannelTextBase``
+    channel_reference : ``WeakReferer`` to ``Channel``
         Reference to the parent channel.
     delay : `float`
         Additional message collection delay.

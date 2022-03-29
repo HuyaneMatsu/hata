@@ -15,7 +15,6 @@ from ...env import (
 from ..bases import ICON_TYPE_NONE, ICON_TYPE_STATIC
 
 
-ChannelGuildBase = include('ChannelGuildBase')
 StickerFormat = include('StickerFormat')
 
 API_ENDPOINT = f'https://discord.com/api/v{API_VERSION}' if (CUSTOM_API_ENDPOINT is None) else CUSTOM_API_ENDPOINT
@@ -474,7 +473,7 @@ def channel_group_icon_url(channel):
     """
     Returns the group channel's icon's image's url. If the channel has no icon, then returns `None`.
     
-    This function is a shared property of ``ChannelGroup``-s.
+    This function is a shared property of ``Channel``-s.
     
     Returns
     -------
@@ -498,7 +497,7 @@ def channel_group_icon_url_as(channel, ext=None, size=None):
     """
     Returns the group channel's icon's image's url. If the channel has no icon, then returns `None`.
     
-    This function is a shared method of ``ChannelGroup``-s.
+    This function is a shared method of ``Channel``-s.
     
     Parameters
     ----------

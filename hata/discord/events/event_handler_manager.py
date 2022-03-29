@@ -320,13 +320,13 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         | video_quality_mode            | ``VideoQualityMode``                                      |
         +-------------------------------+-----------------------------------------------------------+
     
-    channel_group_user_add(client: ``Client``, channel: ``ChannelGroup``, user: ``ClientUserBase``):
+    channel_group_user_add(client: ``Client``, channel: ``Channel``, user: ``ClientUserBase``):
         Called when a user is added to a group channel.
     
-    channel_group_user_delete(client: ``Client``, channel: ``ChannelGroup``, user: ``ClientUserBase``):
+    channel_group_user_delete(client: ``Client``, channel: ``Channel``, user: ``ClientUserBase``):
         Called when a user is removed from a group channel.
     
-    channel_pin_update(client: ``Client``, channel: ``ChannelTextBase``):
+    channel_pin_update(client: ``Client``, channel: ``Channel``):
         Called when a channel's pins are updated.
     
     client_edit(client: ``Client``, old_attributes: `dict`):
@@ -874,7 +874,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
             thread_profile: ``ThreadProfile``):
         Called when a user is removed or left a thread channel.
     
-    typing(client: ``Client``, channel: ``ChannelTextBase``, user: ``ClientUserBase``, timestamp: `datetime`):
+    typing(client: ``Client``, channel: ``Channel``, user: ``ClientUserBase``, timestamp: `datetime`):
         Called when a user is typing at a channel. The `timestamp` parameter represents when the typing started.
         
         However a typing requests stands for 8 seconds, but the official Discord client usually just spams it.

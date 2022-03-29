@@ -2,13 +2,15 @@ __all__ = ()
 
 import warnings
 
-from scarletio import copy_docs
+from scarletio import copy_docs, include
 
 from ...utils.module_deprecation import deprecated_import
 
-from .channel import Channel
-
 from . import channel_types as CHANNEL_TYPES
+
+
+Channel = include('Channel')
+
 
 @deprecated_import
 class ChannelBase:
@@ -202,7 +204,7 @@ class ChannelStage(ChannelVoiceBase):
 
 @deprecated_import
 @copy_docs(ChannelBase)
-class ChannelPrivate(ChannelBase, ChannelTextBase):
+class ChannelPrivate(ChannelTextBase, ChannelBase):
     type = CHANNEL_TYPES.private
     
     allowed_types = frozenset((
@@ -212,7 +214,7 @@ class ChannelPrivate(ChannelBase, ChannelTextBase):
 
 @deprecated_import
 @copy_docs(ChannelBase)
-class ChannelGroup(ChannelBase, ChannelTextBase):
+class ChannelGroup(ChannelTextBase, ChannelBase):
     type = CHANNEL_TYPES.private_group
     
     allowed_types = frozenset((

@@ -2,7 +2,7 @@ __all__ = ('ChooseMenu', )
 
 from scarletio import CancelledError, copy_docs
 
-from ...discord.channel import ChannelTextBase
+from ...discord.channel import Channel
 from ...discord.core import BUILTIN_EMOJIS
 from ...discord.embed import Embed
 from ...discord.exceptions import DiscordException, ERROR_CODES
@@ -55,7 +55,7 @@ class ChooseMenu(PaginationBase):
     _timeouter : `None`, ``Timeouter``
         Executes the timing out feature on the ``ChooseMenu``.
     
-    channel : ``ChannelTextBase``
+    channel : ``Channel``
         The channel where the ``ChooseMenu`` is executed.
     
     client : ``Client``
@@ -125,7 +125,7 @@ class ChooseMenu(PaginationBase):
         +===================+===============================+
         | client            | ``Client``                    |
         +-------------------+-------------------------------+
-        | channel           | ``ChannelTextBase``           |
+        | channel           | ``Channel``           |
         +-------------------+-------------------------------+
         | message           | ``Message``, `None`           |
         +-------------------+-------------------------------+
@@ -175,7 +175,7 @@ class ChooseMenu(PaginationBase):
         ----------
         client : ``Client``
             The client who executes the ``ChooseMenu``.
-        channel : ``ChannelTextBase``, ``Message``
+        channel : ``Channel``, ``Message``
             The channel where the ``ChooseMenu`` is executed. Pass it as a ``Message`` to send a reply.
             
             If given as ``InteractionEvent``, then will acknowledge it and create a new message with it as well.
@@ -209,7 +209,7 @@ class ChooseMenu(PaginationBase):
             +===================+===========================================================+
             | client            | ``Client``                                                |
             +-------------------+-----------------------------------------------------------+
-            | channel           | ``ChannelTextBase``, ``Message``, ``InteractionEvent``    |
+            | channel           | ``Channel``, ``Message``, ``InteractionEvent``    |
             +-------------------+-----------------------------------------------------------+
             | message           | ``Message``, `None`                                       |
             +-------------------+-----------------------------------------------------------+
@@ -262,7 +262,7 @@ class ChooseMenu(PaginationBase):
                 f'Please a shorter 100 character long prefix, got {len(prefix)!r}, {prefix!r}.'
             )
         
-        if isinstance(channel, ChannelTextBase):
+        if isinstance(channel, Channel):
             target_channel = channel
             received_interaction = False
         elif isinstance(channel, Message):
@@ -273,7 +273,7 @@ class ChooseMenu(PaginationBase):
             received_interaction = True
         else:
             raise TypeError(
-                f'`channel` can be `{ChannelTextBase.__name__}`, `{Message.__name__}`, `{InteractionEvent.__name__}`, '
+                f'`channel` can be `{Channel.__name__}`, `{Message.__name__}`, `{InteractionEvent.__name__}`, '
                 f'got {channel.__class__.__name__}; {channel!r}.'
             )
         

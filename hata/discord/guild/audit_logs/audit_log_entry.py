@@ -1,7 +1,7 @@
 __all__ = ('AuditLogEntry', )
 
 from ....env import ALLOW_DEBUG_MESSAGES
-from ....debug import call_debug_logger
+from ....utils.debug import call_debug_logger
 
 from ...utils import id_to_datetime
 

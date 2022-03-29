@@ -2,7 +2,7 @@ __all__ = ('AuditLog', )
 
 from scarletio import WeakReferer
 
-from ...channel import ChannelThread
+from ...channel import Channel
 from ...integration import Integration
 from ...scheduled_event import ScheduledEvent
 from ...user import User
@@ -133,7 +133,7 @@ class AuditLog:
             threads = self.threads
             
             for thread_data in thread_datas:
-                thread = ChannelThread(thread_data, None, self.guild.id)
+                thread = Channel(thread_data, None, self.guild.id)
                 threads[thread.id] = thread
         
         

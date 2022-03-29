@@ -56,7 +56,7 @@ class PaginationBase:
     _timeouter : `None`, ``Timeouter``
         Executes the timing out feature on the ``Pagination``.
     
-    channel : ``ChannelTextBase``
+    channel : ``Channel``
         The channel where the ``Pagination`` is executed.
     
     client : ``Client`` of ``Embed`` (or any compatible)

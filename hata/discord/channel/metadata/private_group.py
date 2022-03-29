@@ -45,7 +45,7 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase):
     @copy_docs(ChannelMetadataPrivateBase._created)
     def _created(self, channel_entity, client):
         if (client is not None):
-            client.group_channels[channel_entity.id] = self
+            client.group_channels[channel_entity.id] = channel_entity
     
         
     @copy_docs(ChannelMetadataPrivateBase._delete)

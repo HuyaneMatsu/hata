@@ -11,7 +11,7 @@ from scarletio import (
 from scarletio.web_common import ConnectionClosed, InvalidHandshake, WebSocketProtocolError
 
 from ..bases import maybe_snowflake
-from ..channel import ChannelVoiceBase
+from ..channel import Channel
 from ..core import CHANNELS, GUILDS, KOKORO
 from ..exceptions import VOICE_CLIENT_DISCONNECT_CLOSE_CODE, VOICE_CLIENT_RECONNECT_CLOSE_CODE
 from ..gateway.voice_client_gateway import DiscordGatewayVoice, SecretBox
@@ -583,15 +583,21 @@ class VoiceClient:
         TypeError
             If  `channel` was not given as ``Channel`` not `int`.
         """
-        if isinstance(channel, ChannelVoiceBase):
-            channel_id = channel.id
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(
-                    f'`channel` can be `{ChannelVoiceBase.__name__}`, `int`, got '
-                    f'{channel.__class__.__name__}; {channel!r}.'
-                )
+        while True:
+            if isinstance(channel, Channel):
+                if channel.is_in_group_guild_connectable() or channel.partial:
+                    channel_id = channel.id
+                    break
+                
+            else:
+                channel_id = maybe_snowflake(channel)
+                if channel_id is not None:
+                    break
+            
+            raise TypeError(
+                f'`channel` can be guild connectable channel, `int`, got '
+                f'{channel.__class__.__name__}; {channel!r}.'
+            )
         
         if self.channel_id == channel_id:
             return False
@@ -1338,6 +1344,7 @@ class VoiceClient:
         channel : `None`, ``Channel``
         """
         return CHANNELS.get(self.channel_id, None)
+    
     
     @property
     def guild(self):

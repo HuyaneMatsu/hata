@@ -6,7 +6,7 @@ from types import MemberDescriptorType
 from scarletio import CallableAnalyzer, CancelledError, RichAttributeErrorBaseType, Task, copy_docs
 
 from ....discord.allowed_mentions import AllowedMentionProxy
-from ....discord.channel import ChannelTextBase
+from ....discord.channel import Channel
 from ....discord.client import Client
 from ....discord.core import KOKORO
 from ....discord.embed import EmbedBase
@@ -1423,7 +1423,7 @@ class Menu(metaclass=MenuType):
         Executes the timeout feature on the menu.
     _tracked_changes : `dict` of (`str`, `Any`) items
         The tracked changes by parameter name.
-    channel : ``ChannelTextBase``
+    channel : ``Channel``
         The channel where the menu is executed.
     client : ``Client``
         The executor client instance.
@@ -1448,7 +1448,7 @@ class Menu(metaclass=MenuType):
         ----------
         client : ``Client``
             The client instance whi will execute the action.
-        target : ``InteractionEvent``, ``Message``, ``ChannelTextBase``, `int`
+        target : ``InteractionEvent``, ``Message``, ``Channel``, `int`
             The event to respond to, or the channel to send the message at, or the message to edit.
         *args : Positional parameters
             Additional positional parameters.
@@ -1458,7 +1458,7 @@ class Menu(metaclass=MenuType):
         Raises
         ------
         TypeError
-            If `interaction_event` was not given neither as ``InteractionEvent``, ``Message``, ``ChannelTextBase``,
+            If `interaction_event` was not given neither as ``InteractionEvent``, ``Message``, ``Channel``,
              nor as instance.
         RuntimeError
             If `interaction_event` is given as ``InteractionEvent``, but it's client cannot be detected.
@@ -1484,7 +1484,7 @@ class Menu(metaclass=MenuType):
                 is_interaction = False
                 break
             
-            if isinstance(target, ChannelTextBase):
+            if isinstance(target, Channel):
                 target_channel_id = target.id
                 target_message = None
                 is_interaction = False
@@ -1499,7 +1499,7 @@ class Menu(metaclass=MenuType):
                 
             raise TypeError(
                 f'`target` can be `{InteractionEvent.__name__}`, '
-                f'`{Message.__name__}`, `{ChannelTextBase.__name__}`, `int`, got '
+                f'`{Message.__name__}`, `{Channel.__name__}`, `int`, got '
                 f'{target.__class__.__name__}; {target!r}.'
             )
         

@@ -70,6 +70,11 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         return self
     
     
+    def __repr__(self):
+        """Returns the channel metadata's representation."""
+        return f'<{self.__class__.__name__} type={self.type}>'
+    
+    
     def _created(self, channel_entity, client):
         """
         Called when the channel entity is initialized.
@@ -553,3 +558,12 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         created_at : `datetime`
         """
         return id_to_datetime(channel_entity.id)
+    
+    
+    def _invalidate_permission_cache(self):
+        """
+        Invalidates the cached permissions of the channel.
+        
+        This method is only applicable for channel types with permission cache.
+        """
+        pass

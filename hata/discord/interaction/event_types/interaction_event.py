@@ -534,7 +534,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         
         Returns
         -------
-        channel : ``ChannelTextBase``, `None`
+        channel : ``Channel``, `None`
         """
         return CHANNELS.get(self.channel_id, None)
     

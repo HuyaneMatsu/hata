@@ -5,8 +5,8 @@ from time import monotonic
 
 from scarletio import Future, Task
 
-from ...discord.bases import maybe_snowflake
-from ...discord.channel import ChannelVoiceBase
+from ...discord.channel import Channel
+from ...discord.client.request_helpers import get_channel_id
 from ...discord.core import CHANNELS, GUILDS, KOKORO
 
 from .constants import (
@@ -457,15 +457,7 @@ class SolarPlayerBase:
             # Already disconnected.
             return False
         
-        if isinstance(channel, ChannelVoiceBase):
-            channel_id = channel.id
-        else:
-            channel_id = maybe_snowflake(channel)
-            if channel_id is None:
-                raise TypeError(
-                    f'`channel` can be `{ChannelVoiceBase.__name__}`, `int`, got '
-                    f'{channel.__class__.__name__}; {channel!r}.'
-                )
+        channel_id = get_channel_id(channel, Channel.is_in_group_guild_connectable)
         
         if self.channel_id == channel_id:
             return False

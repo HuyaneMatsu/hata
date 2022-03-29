@@ -103,7 +103,7 @@ class ChannelMetadataGuildStore(ChannelMetadataGuildMainBase):
     @classmethod
     @copy_docs(ChannelMetadataGuildMainBase._precreate)
     def _precreate(cls, keyword_parameters):
-        self = ChannelMetadataGuildMainBase._precreate(cls, keyword_parameters)
+        self = super(ChannelMetadataGuildStore, cls)._precreate(keyword_parameters)
         
         try:
             nsfw = keyword_parameters.pop('nsfw')

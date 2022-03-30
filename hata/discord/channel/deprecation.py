@@ -11,9 +11,29 @@ from . import channel_types as CHANNEL_TYPES
 
 Channel = include('Channel')
 
+class DeprecatedChannelMetType(type):
+    """
+    Meta type for the old deprecated channels warning about deprecation when instance or subtype checking.
+    """
+    def __instancecheck__(cls, instance):
+        warnings.warn(
+            f'`{cls.__name__}` is deprecated and will be removed in 2022. Please use `{Channel.__name__}` instead.',
+            FutureWarning,
+        )
+        
+        return isinstance(instance, Channel) and instance.type in cls.allowed_types
+    
+    def __subclasscheck__(cls, klass):
+        warnings.warn(
+            f'`{cls.__name__}` is deprecated and will be removed in 2022. Please use `{Channel.__name__}` instead.',
+            FutureWarning,
+        )
+        
+        return issubclass(klass, Channel) or (klass is cls)
+
 
 @deprecated_import
-class ChannelBase:
+class ChannelBase(metaclass=DeprecatedChannelMetType):
     """
     Deprecated and will be removed in 2022 August. Please use the ``Channel`` type instead.
     """
@@ -36,29 +56,13 @@ class ChannelBase:
     
     type = 0
     
-    def __instancecheck__(cls, instance):
-        warnings.warn(
-            f'`{cls.__name__}` is deprecated and will be removed in 2022. Please use `{Channel.__name__}` instead.',
-            FutureWarning,
-        )
-        
-        return isinstance(instance, Channel) and instance.type in cls.allowed_types
-    
-    def __subclasscheck__(cls, klass):
-        warnings.warn(
-            f'`{cls.__name__}` is deprecated and will be removed in 2022. Please use `{Channel.__name__}` instead.',
-            FutureWarning,
-        )
-        
-        return issubclass(klass, Channel) or (klass is cls)
-    
     @classmethod
     def precreate(cls, channel_id, **kwargs):
         channel_type = next(iter(cls.allowed_types))
         
         warnings.warn(
             (
-                f'`{cls.__name__}` is deprecated and will be removed in 2022 August. Please use: '
+                f'`{cls.__name__}.precreate(...)` is deprecated and will be removed in 2022 August. Please use: '
                 f'`{Channel.__name__}.precreate(channel_id, channel_type={channel_type}, ...)` instead.'
             ),
             FutureWarning,

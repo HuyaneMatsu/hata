@@ -148,9 +148,9 @@ class Channel(DiscordEntity, immortal=True):
         
         channel_type = metadata.type
         repr_parts.append(' type=')
-        repr_parts.append(repr(channel_type))
-        channel_type.append('~')
         repr_parts.append(repr(get_channel_type_name(channel_type)))
+        repr_parts.append('~')
+        repr_parts.append(repr(channel_type))
         
         repr_parts.append('>')
         return ''.join(repr_parts)

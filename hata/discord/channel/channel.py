@@ -247,6 +247,18 @@ class Channel(DiscordEntity, immortal=True):
         """
         return (not self.clients)
     
+
+    @property
+    def clients(self):
+        """
+        The clients, who can access this channel.
+        
+        Returns
+        -------
+        clients : `list` of ``Client``
+        """
+        return self.metadata._get_clients(self)
+    
     
     def get_user(self, name, default=None):
         """
@@ -341,18 +353,6 @@ class Channel(DiscordEntity, immortal=True):
         user : ``ClientUserBase``
         """
         yield from self.metadata._iter_users(self)
-    
-    
-    @property
-    def clients(self):
-        """
-        The clients, who can access this channel.
-        
-        Returns
-        -------
-        clients : `list` of ``Client``
-        """
-        return self.metadata._get_clients(self)
     
     
     @property
@@ -1346,7 +1346,7 @@ class Channel(DiscordEntity, immortal=True):
             self = cls._create_empty(channel_id, -1, 0)
             CHANNELS[channel_id] = self
         else:
-            if self.partial:
+            if not self.partial:
                 return self
         
         self.metadata = metadata

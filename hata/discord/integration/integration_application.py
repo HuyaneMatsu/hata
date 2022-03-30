@@ -64,6 +64,7 @@ class IntegrationApplication(DiscordEntity):
                 f'Please use `.description` instead.'
             ),
             FutureWarning,
+            stacklevel = 2,
         )
         
         return ''

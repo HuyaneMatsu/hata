@@ -101,6 +101,7 @@ class OA2Access:
                 f'will be removed in 2022 Jul. Please use `.expires_after` instead.'
             ),
             FutureWarning,
+            stacklevel = 2,
         )
         return self.expires_after
     

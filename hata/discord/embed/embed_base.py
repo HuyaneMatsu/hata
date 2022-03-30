@@ -741,6 +741,7 @@ def _warn_bad_embed_author_constructor_parameter_order(name, icon_url):
                 f'Using the old version is deprecated and will be removed in 2022 Jul.'
             ),
             FutureWarning,
+            stacklevel = 3,
         )
         
         icon_url, name = name, icon_url

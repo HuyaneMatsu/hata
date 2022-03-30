@@ -636,6 +636,7 @@ class Guild(DiscordEntity, immortal=True):
                         f'removed in 2022 Jun.'
                     ),
                     FutureWarning,
+                    stacklevel = 2,
                 )
             
             try:
@@ -2984,6 +2985,7 @@ class Guild(DiscordEntity, immortal=True):
                 f'Please access `channel.region` instead.'
             ),
             FutureWarning,
+            stacklevel = 2,
         )
         
         return VoiceRegion._deprecated

@@ -563,6 +563,7 @@ class Application(DiscordEntity, immortal=True):
                 warnings.warn(
                     f'`{cls.__name__}.summary` is deprecated and will be removed in 2022 Jun.',
                     FutureWarning,
+                    stacklevel = 2,
                 )
             
             try:
@@ -637,6 +638,7 @@ class Application(DiscordEntity, immortal=True):
                 f'Please use `.description` instead.'
             ),
             FutureWarning,
+            stacklevel = 2,
         )
         
         return ''

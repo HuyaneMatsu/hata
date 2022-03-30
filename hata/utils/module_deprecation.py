@@ -92,6 +92,7 @@ def get_deprecation_function():
             warnings.warn(
                 f'{spec_name}.{attribute_name} is deprecated.',
                 FutureWarning,
+                stacklevel = 2,
             )
             
             return attribute_value

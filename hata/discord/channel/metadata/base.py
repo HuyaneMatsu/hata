@@ -297,7 +297,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         clients : `list` of ``Client``
         """
         clients = []
-        for user in self.users:
+        for user in self._get_users(channel_entity):
             if isinstance(user, Client):
                 clients.append(user)
         

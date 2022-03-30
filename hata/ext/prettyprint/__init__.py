@@ -3,6 +3,7 @@ import warnings
 warnings.warn(
     '`hata.ext.prettyprint` is discontinued and will be removed in 2022 Jun.',
     FutureWarning,
+    stacklevel = 2,
 )
 
 from .prettyprint import *

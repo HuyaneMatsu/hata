@@ -866,6 +866,7 @@ class Message(DiscordEntity, immortal=True):
                     f'January. Please use `channel_id` instead.'
                 ),
                 FutureWarning,
+                stacklevel = 2,
             )
             
             if not isinstance(channel, Channel):

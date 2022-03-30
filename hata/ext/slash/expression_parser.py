@@ -2264,7 +2264,11 @@ class EvaluationError(SlasherCommandError):
     
     @property
     def start_(self):
-        warnings.warn(f'{self.__class__.__name__}.start is deprecated.', FutureWarning)
+        warnings.warn(
+            f'`{self.__class__.__name__}.start` is deprecated.',
+            FutureWarning,
+            stacklevel = 2,
+        )
         
         lowest_value = -1
         for highlight_group in self.highlight_groups:
@@ -2287,7 +2291,11 @@ class EvaluationError(SlasherCommandError):
     
     @property
     def end_(self):
-        warnings.warn(f'{self.__class__.__name__}.end is deprecated.', FutureWarning)
+        warnings.warn(
+            f'`{self.__class__.__name__}.end` is deprecated.',
+            FutureWarning,
+            stacklevel = 2,
+        )
         
         highest_value = -1
         for highlight_group in self.highlight_groups:

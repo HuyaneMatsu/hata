@@ -456,6 +456,7 @@ class AuditLogEvent(PreinstancedBase):
                 f'`{cls.__name__}.channel_permission_overwrite_create` instead.'
             ),
             FutureWarning,
+            stacklevel = 2,
         )
         return cls.channel_permission_overwrite_create
     
@@ -468,6 +469,7 @@ class AuditLogEvent(PreinstancedBase):
                 f'`{cls.__name__}.channel_permission_overwrite_update` instead.'
             ),
             FutureWarning,
+            stacklevel = 2,
         )
         return cls.channel_permission_overwrite_update
     
@@ -480,5 +482,6 @@ class AuditLogEvent(PreinstancedBase):
                 f'`{cls.__name__}.channel_permission_overwrite_delete` instead.'
             ),
             FutureWarning,
+            stacklevel = 2,
         )
         return cls.channel_permission_overwrite_delete

@@ -187,6 +187,7 @@ class Locale(PreinstancedBase):
                 f'Please use `.spanish` instead.'
             ),
             FutureWarning,
+            stacklevel = 2,
         )
         
         return self.spanish
@@ -203,6 +204,7 @@ class Locale(PreinstancedBase):
                 f'Please use `.portuguese` instead.'
             ),
             FutureWarning,
+            stacklevel = 2,
         )
         
         return self.portuguese

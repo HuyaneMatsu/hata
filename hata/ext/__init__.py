@@ -311,6 +311,7 @@ def get_and_validate_setup_functions(extensions, kwargs):
                 f'{", ".join(f"{name}={kwargs[name]!r}" for name in exhaustible_parameters)}.'
             ),
             RuntimeWarning,
+            stacklevel = 3,
         )
     
     return setup_functions

@@ -96,19 +96,6 @@ class DiscordException(Exception):
     
     
     @property
-    def data(self):
-        """
-        Deprecated, please use ``.channel_thread_get_all_active`` instead.
-        """
-        warnings.warn(
-            f'`{self.__class__.__name__}.data` is deprecated, and will be removed in 2022 January. '
-            f'Please use `.received_data` instead.',
-            FutureWarning)
-        
-        return self.received_data
-    
-    
-    @property
     def messages(self):
         """
         Returns a list of the errors. The 0th element of the list is always a header line, what contains the

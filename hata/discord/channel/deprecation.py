@@ -19,6 +19,7 @@ class DeprecatedChannelMetType(type):
         warnings.warn(
             f'`{cls.__name__}` is deprecated and will be removed in 2022. Please use `{Channel.__name__}` instead.',
             FutureWarning,
+            stacklevel = 2,
         )
         
         return isinstance(instance, Channel) and instance.type in cls.allowed_types
@@ -27,6 +28,7 @@ class DeprecatedChannelMetType(type):
         warnings.warn(
             f'`{cls.__name__}` is deprecated and will be removed in 2022. Please use `{Channel.__name__}` instead.',
             FutureWarning,
+            stacklevel = 2,
         )
         
         return issubclass(klass, Channel) or (klass is cls)
@@ -66,6 +68,7 @@ class ChannelBase(metaclass=DeprecatedChannelMetType):
                 f'`{Channel.__name__}.precreate(channel_id, channel_type={channel_type}, ...)` instead.'
             ),
             FutureWarning,
+            stacklevel = 2,
         )
         
         return Channel.precreate(channel_id, channel_type=channel_type, **kwargs)

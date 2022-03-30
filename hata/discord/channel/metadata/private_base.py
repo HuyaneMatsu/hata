@@ -48,6 +48,11 @@ class ChannelMetadataPrivateBase(ChannelMetadataBase):
         return True
     
     
+    @copy_docs(ChannelMetadataBase._get_users)
+    def _get_users(self, channel_entity):
+        return self.users
+    
+    
     @copy_docs(ChannelMetadataBase.name)
     def name(self):
         users = self.users

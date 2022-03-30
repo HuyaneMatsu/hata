@@ -213,6 +213,7 @@ def cr_pg_channel_object(
                     f'subclass, got {channel_type.__class__.__name__}; {channel_type!r}.'
                 ),
                 FutureWarning,
+                stacklevel = 2,
             )
             
             channel_type = channel_type.type

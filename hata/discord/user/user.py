@@ -88,6 +88,7 @@ class User(USER_BASE_CLASS):
                     f'Please use {cls.__name__}.from_data instead.'
                 ),
                 FutureWarning,
+                stacklevel = 2,
             )
             
             try:
@@ -136,6 +137,7 @@ class User(USER_BASE_CLASS):
                     f'Please use {cls.__name__}.from_data instead.'
                 ),
                 FutureWarning,
+                stacklevel = 2,
             )
             
             try:
@@ -180,6 +182,7 @@ class User(USER_BASE_CLASS):
                     f'Please use {cls.__name__}.from_data instead.'
                 ),
                 FutureWarning,
+                stacklevel = 2,
             )
             
             try:

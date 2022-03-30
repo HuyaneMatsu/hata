@@ -3,6 +3,7 @@ import warnings
 warnings.warn(
     '`commands` extension is deprecated and will be removed in 2022',
     FutureWarning,
+    stacklevel = 2,
 )
 
 from ...ext import command_utils as module_command_utils

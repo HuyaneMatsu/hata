@@ -106,7 +106,9 @@ def get_bool_env(name, default, *, warn_if_empty=True):
         return False
     
     if warn_if_empty:
-        warnings.warn(f'{name!r} is specified as non bool: {env_variable!r}, defaulting to {default!r}!')
+        warnings.warn(
+            f'{name!r} is specified as non bool: {env_variable!r}, defaulting to {default!r}!',
+        )
     
     return default
 
@@ -138,7 +140,9 @@ def get_str_env(name, default=None, *, warn_if_empty=True):
         return env_variable
     
     if warn_if_empty:
-        warnings.warn(f'{name!r} is specified as empty string: {env_variable!r}, defaulting to {default!r}!')
+        warnings.warn(
+            f'{name!r} is specified as empty string: {env_variable!r}, defaulting to {default!r}!',
+        )
     
     return default
 
@@ -177,7 +181,9 @@ def get_int_env(name, default, *, warn_if_empty=True):
         return variable
     
     if warn_if_empty:
-        warnings.warn(f'{name!r} is specified as non `int`: {env_variable!r}, defaulting to {default!r}!')
+        warnings.warn(
+            f'{name!r} is specified as non `int`: {env_variable!r}, defaulting to {default!r}!',
+        )
     
     return default
 
@@ -231,7 +237,7 @@ if API_VERSION != DEFAULT_API_VERSION:
                 f'`API_VERSION` given either as `6`, `7`, `8`, got {API_VERSION!r}, please use version '
                 f'`{DEFAULT_API_VERSION!r}` instead',
             ),
-            FutureWarning
+            FutureWarning,
         )
 
 

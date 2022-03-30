@@ -64,6 +64,7 @@ def _get_event_deprecation_state(name):
                 'Please use `Client.events.guild_join_request_delete(client, event)` instead.'
             ),
             FutureWarning,
+            stacklevel = 3,
         )
         
         return DEPRECATION_LEVEL_REMOVED
@@ -113,6 +114,7 @@ def _wrap_maybe_deprecated_event(name, func):
                     f'Please use `event` (type {WebhookUpdateEvent.__name__}) parameter instead.'
                 ),
                 FutureWarning,
+                stacklevel = 3,
             )
         
             async def webhook_update_event_handler_wrapper(client, event):

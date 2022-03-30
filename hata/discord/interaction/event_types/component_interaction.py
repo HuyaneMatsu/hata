@@ -136,19 +136,3 @@ class ComponentInteraction(InteractionFieldBase):
                 hash_value ^ hash(option)
         
         return hash_value
-    
-    
-    def component_type(cls):
-        """
-        ``.component_type`` is deprecated, please use ``.type`` instead. Will be removed in 2022
-        February.
-        """
-        warnings.warn(
-            (
-                f'`{cls.__name__}.component_type` is deprecated, and will be removed in 2022 February. '
-                f'Please use `{cls.__name__}.type` instead.'
-            ),
-            FutureWarning,
-        )
-        
-        return cls.type

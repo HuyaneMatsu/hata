@@ -45,7 +45,7 @@ class ChannelMetadataPrivate(ChannelMetadataPrivateBase):
             else:
                 users.append(client)
     
-        
+    
     @copy_docs(ChannelMetadataPrivateBase._delete)
     def _delete(self, channel_entity, client):
         if (client is not None):

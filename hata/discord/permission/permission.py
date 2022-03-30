@@ -237,6 +237,7 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
                 f'2022 Jul.\nPlease use `.can_use_embedded_activities` instead.'
             ),
             FutureWarning,
+            stacklevel = 2,
         )
         return self.can_use_embedded_activities
 

@@ -25,4 +25,5 @@ warnings.warn(
         f'Please import from `scarletio` instead.'
     ),
     FutureWarning,
+    stacklevel = 3,
 )

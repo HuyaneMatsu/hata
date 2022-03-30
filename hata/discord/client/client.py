@@ -4947,6 +4947,7 @@ class Client(ClientUserPBase):
                     f'will be removed in 2022 May. Please use `suppress_embeds` instead.'
                 ),
                 FutureWarning,
+                stacklevel = 2,
             )
             
             suppress_embeds = suppress
@@ -6652,6 +6653,7 @@ class Client(ClientUserPBase):
                     f'removed in 2022 Jun. '
                 ),
                 FutureWarning,
+                stacklevel = 2,
             )
         
         
@@ -7309,6 +7311,7 @@ class Client(ClientUserPBase):
                     f'removed in 2022 Jun. '
                 ),
                 FutureWarning,
+                stacklevel = 2,
             )
         
         
@@ -11711,6 +11714,7 @@ class Client(ClientUserPBase):
                     f'removed in 2022 Jun. Please pass just an `{Emoji.__name__}` or a pair of snowflake.'
                 ),
                 FutureWarning,
+                stacklevel = 2,
             )
             
             guild, emoji, = emoji, *deprecated_parameters
@@ -11818,6 +11822,7 @@ class Client(ClientUserPBase):
                 f'removed in 2022 Jun. Please use `.emoji_guild_get_all` instead.'
             ),
             FutureWarning,
+            stacklevel = 2,
         )
         
         return await self.emoji_guild_get_all(guild)
@@ -14468,7 +14473,8 @@ class Client(ClientUserPBase):
         """
         if __debug__:
             if not isinstance(interaction, InteractionEvent):
-                raise AssertionError(f'`interaction` can be `{InteractionEvent.__name__}`, got '
+                raise AssertionError(
+                    f'`interaction` can be `{InteractionEvent.__name__}`, got '
                     f'{interaction.__class__.__name__}; {interaction!r}.'
                 )
         
@@ -14478,15 +14484,17 @@ class Client(ClientUserPBase):
                     f'`{self.__class__.__name__}.interaction_response_form` called on an interaction already '
                     f'acknowledged /answered: {interaction!r}. Returning `None`.'
                 ),
-                ResourceWarning
+                ResourceWarning,
+                stacklevel = 2,
             )
             
             return None
         
         if __debug__:
             if not isinstance(form, InteractionForm):
-                raise AssertionError(f'`form` can be `{InteractionForm.__name__}`, got '
-                    f'{form.__class__.__name__}.')
+                raise AssertionError(
+                    f'`form` can be `{InteractionForm.__name__}`, got '
+                    f'{form.__class__.__name__}; {form!r}.')
         
         if (
             (interaction.type is not InteractionType.application_command) and
@@ -15567,6 +15575,7 @@ class Client(ClientUserPBase):
                     f'removed in 2022 Jun. Please pass just an `{Sticker.__name__}` or a pair of snowflake.'
                 ),
                 FutureWarning,
+                stacklevel = 2,
             )
             
             guild, sticker, = sticker, *deprecated_parameters
@@ -15916,6 +15925,7 @@ class Client(ClientUserPBase):
                 f'removed in 2022 Jun. Please use `.sticker_guild_get_all` instead.'
             ),
             FutureWarning,
+            stacklevel = 2,
         )
         
         return await self.sticker_guild_get_all(guild)

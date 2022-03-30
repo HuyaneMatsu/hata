@@ -45,21 +45,19 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
         `manage_messages`, `manage_channel` permissions are unaffected.
     thread_users : `None`, `dict` of (`int`, ``ClientUserBase``) items
         The users inside of the thread if any.
-    type : `int` = `12`
-        The channel's Discord side type.
     owner_id : `int`
         The channel's creator's identifier. Defaults to `0`.
     
     Class Attributes
     ----------------
-    type : `int` = `0`
+    type : `int` = `-1`
         The channel's type.
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """
     __slots__ = (
         '_created_at', 'archived', 'archived_at', 'auto_archive_after', 'invitable', 'open', 'owner_id', 'slowmode',
-        'thread_users', 'type'
+        'thread_users'
     )
     
     @copy_docs(ChannelMetadataGuildBase.__new__)
@@ -98,7 +96,41 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
         else:
             guild.threads[channel_entity.id] = channel_entity
     
-
+    
+    @copy_docs(ChannelMetadataGuildBase._compare_attributes_to)
+    def _compare_attributes_to(self, other):
+        if not ChannelMetadataGuildBase._compare_attributes_to(self, other):
+            return False
+        
+        if self._created_at != other._created_at:
+            return False
+        
+        if self.archived != other.archived:
+            return False
+        
+        if self.archived_at != other.archived_at:
+            return False
+        
+        if self.auto_archive_after != other.auto_archive_after:
+            return False
+        
+        if self.invitable != other.invitable:
+            return False
+        
+        if self.open != other.open:
+            return False
+        
+        if self.owner_id != other.owner_id:
+            return False
+        
+        if self.slowmode != other.slowmode:
+            return False
+        
+        # Ignoring `thread_users`
+        
+        return True
+    
+    
     @classmethod
     @copy_docs(ChannelMetadataGuildBase._create_empty)
     def _create_empty(cls):

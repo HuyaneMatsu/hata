@@ -52,6 +52,17 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
     
     type = CHANNEL_TYPES.guild_voice
     
+    @copy_docs(ChannelMetadataGuildVoiceBase._compare_attributes_to)
+    def _compare_attributes_to(self, other):
+        if not ChannelMetadataGuildVoiceBase._compare_attributes_to(self, other):
+            return False
+        
+        if self.video_quality_mode is not other.video_quality_mode:
+            return False
+        
+        return True
+    
+    
     @classmethod
     @copy_docs(ChannelMetadataGuildVoiceBase._create_empty)
     def _create_empty(cls):

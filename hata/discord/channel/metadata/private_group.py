@@ -57,6 +57,26 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase):
                 pass
     
     
+    @copy_docs(ChannelMetadataPrivateBase._compare_attributes_to)
+    def _compare_attributes_to(self, other):
+        if not ChannelMetadataPrivateBase._compare_attributes_to(self, other):
+            return False
+        
+        if self.name != other.name:
+            return False
+        
+        if self.owner_id != other.owner_id:
+            return False
+        
+        if self.icon_hash != other.icon_hash:
+            return False
+        
+        if self.icon_type is not other.icon_type:
+            return False
+        
+        return True
+    
+    
     @copy_docs(ChannelMetadataPrivateBase._get_processed_name)
     def _get_processed_name(self):
         name = self.name

@@ -44,6 +44,17 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
     
     type = CHANNEL_TYPES.guild_forum
     
+    @copy_docs(ChannelMetadataGuildMainBase._compare_attributes_to)
+    def _compare_attributes_to(self, other):
+        if not ChannelMetadataGuildMainBase._compare_attributes_to(self, other):
+            return False
+        
+        if self.default_auto_archive_after != other.default_auto_archive_after:
+            return False
+        
+        return True
+    
+    
     @copy_docs(ChannelMetadataGuildMainBase._get_display_name)
     def _get_display_name(self):
         return self.name.upper()

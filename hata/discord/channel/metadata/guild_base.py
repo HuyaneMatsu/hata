@@ -29,7 +29,7 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
     
     Class Attributes
     ----------------
-    type : `int` = `0`
+    type : `int` = `-1`
         The channel's type.
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
@@ -49,6 +49,17 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
     def _delete(self, channel_entity, client):
         self.permission_overwrites.clear()
         self._permission_cache = None
+    
+    
+    @copy_docs(ChannelMetadataBase._compare_attributes_to)
+    def _compare_attributes_to(self, other):
+        if self.parent_id != other.parent_id:
+            return False
+        
+        if self.name != other.name:
+            return False
+        
+        return True
     
     
     @copy_docs(ChannelMetadataBase._to_data)

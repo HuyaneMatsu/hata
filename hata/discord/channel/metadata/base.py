@@ -44,14 +44,14 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     
     Class Attributes
     ----------------
-    type : `int` = `0`
+    type : `int` = `-1`
         The channel's type.
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """
     __slots__ = ()
     
-    type = 0
+    type = -1
     order_group = 0
     
     def __new__(cls, data):
@@ -73,6 +73,33 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     def __repr__(self):
         """Returns the channel metadata's representation."""
         return f'<{self.__class__.__name__} type={self.type}>'
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two channel metadatas are the same."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self._compare_attributes_to(other)
+    
+    
+    def _compare_attributes_to(self, other):
+        """
+        Compares the channel metadata's attributes to the other one's.
+        
+        Parameters
+        ----------
+        other : ``ChannelMetadataBase``
+            The other channel metadata to compare self to.
+            
+            > Must have the same type as self.
+        
+        Returns
+        -------
+        equal : `bool`
+            Whether both metadata has the same attributes.
+        """
+        return True
     
     
     def _created(self, channel_entity, client):

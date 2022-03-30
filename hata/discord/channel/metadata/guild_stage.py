@@ -52,6 +52,18 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
     
     type = CHANNEL_TYPES.guild_stage
     
+
+    @copy_docs(ChannelMetadataGuildVoiceBase._compare_attributes_to)
+    def _compare_attributes_to(self, other):
+        if not ChannelMetadataGuildVoiceBase._compare_attributes_to(self, other):
+            return False
+        
+        if self.topic != other.topic:
+            return False
+        
+        return True
+    
+    
     @classmethod
     @copy_docs(ChannelMetadataGuildVoiceBase._create_empty)
     def _create_empty(cls):

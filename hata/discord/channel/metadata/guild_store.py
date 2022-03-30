@@ -41,11 +41,21 @@ class ChannelMetadataGuildStore(ChannelMetadataGuildMainBase):
     
     type = CHANNEL_TYPES.guild_store
     
+    @copy_docs(ChannelMetadataGuildMainBase._compare_attributes_to)
+    def _compare_attributes_to(self, other):
+        if not ChannelMetadataGuildMainBase._compare_attributes_to(self, other):
+            return False
+        
+        if self.nsfw != other.nsfw:
+            return False
+        
+        return True
+    
+    
     @property
     @copy_docs(ChannelMetadataGuildMainBase._get_display_name)
     def _get_display_name(self):
         return self.name.lower()
-    
     
     
     @classmethod

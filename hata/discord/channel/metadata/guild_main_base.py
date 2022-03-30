@@ -35,7 +35,7 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
     
     Class Attributes
     ----------------
-    type : `int` = `0`
+    type : `int` = `-1`
         The channel's type.
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
@@ -65,6 +65,20 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
                 del guild.channels[self.id]
             except KeyError:
                 pass
+    
+    
+    @copy_docs(ChannelMetadataGuildBase._compare_attributes_to)
+    def _compare_attributes_to(self, other):
+        if not ChannelMetadataGuildBase._compare_attributes_to(self, other):
+            return False
+        
+        if self.permission_overwrites != other.permission_overwrites:
+            return False
+        
+        if self.position != other.position:
+            return False
+        
+        return True
     
     
     @copy_docs(ChannelMetadataGuildBase._update_attributes)

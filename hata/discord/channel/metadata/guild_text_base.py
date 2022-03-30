@@ -38,12 +38,32 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
     
     Class Attributes
     ----------------
-    type : `int` = `0`
+    type : `int` = `-1`
         The channel's type.
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """
     __slots__ = ('default_auto_archive_after', 'nsfw', 'slowmode', 'topic')
+    
+    @copy_docs(ChannelMetadataGuildMainBase._compare_attributes_to)
+    def _compare_attributes_to(self, other):
+        if not ChannelMetadataGuildMainBase._compare_attributes_to(self, other):
+            return False
+        
+        if self.default_auto_archive_after != other.default_auto_archive_after:
+            return False
+        
+        if self.nsfw != other.nsfw:
+            return False
+        
+        if self.slowmode != other.slowmode:
+            return False
+        
+        if self.topic != other.topic:
+            return False
+        
+        return True
+    
     
     @property
     @copy_docs(ChannelMetadataGuildMainBase._get_display_name)

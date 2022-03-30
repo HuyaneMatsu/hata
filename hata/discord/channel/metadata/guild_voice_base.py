@@ -35,7 +35,7 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
     
     Class Attributes
     ----------------
-    type : `int` = `0`
+    type : `int` = `-1`
         The channel's type.
     order_group: `int` = `2`
         The channel's order group used when sorting channels.
@@ -43,6 +43,24 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
     __slots__ = ('bitrate', 'region', 'user_limit')
     
     order_group = 2
+    
+
+    @copy_docs(ChannelMetadataGuildMainBase._compare_attributes_to)
+    def _compare_attributes_to(self, other):
+        if not ChannelMetadataGuildMainBase._compare_attributes_to(self, other):
+            return False
+        
+        if self.bitrate != other.bitrate:
+            return False
+        
+        if self.region is not other.region:
+            return False
+        
+        if self.user_limit != other.user_limit:
+            return False
+        
+        return True
+    
     
     @classmethod
     @copy_docs(ChannelMetadataGuildMainBase._create_empty)

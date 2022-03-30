@@ -7,7 +7,7 @@ from ...preinstanced import VoiceRegion
 
 from ..audit_log_change import AuditLogChange
 
-from .shared import _convert_preinstanced, convert_icon, convert_nothing, convert_snowflake
+from .shared import _convert_preinstanced, convert_nothing, convert_snowflake
 
 
 def convert_bool__open(name, data):
@@ -73,7 +73,6 @@ def convert_voice_region(name, data):
 CHANNEL_CONVERTERS = {
     'archived': convert_nothing,
     'auto_archive_duration': convert_int__auto_archive_after,
-    'banner_hash': convert_icon,
     'bitrate': convert_nothing,
     'default_auto_archive_duration': convert_int__default_auto_archive_after,
     'invitable': convert_nothing,

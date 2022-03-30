@@ -31,7 +31,7 @@ from ..utils import DATETIME_FORMAT_CODE, EMOJI_NAME_RP
 from .embedded_activity_state import EmbeddedActivityState
 from .flags import SystemChannelFlag
 from .preinstanced import (
-    ContentFilterLevel, GuildFeature, MFA, MessageNotificationLevel, NsfwLevel, VerificationLevel, VoiceRegion
+    ContentFilterLevel, GuildFeature, HubType, MFA, MessageNotificationLevel, NsfwLevel, VerificationLevel, VoiceRegion
 )
 
 
@@ -195,6 +195,8 @@ class Guild(DiscordEntity, immortal=True):
         The emojis of the guild stored in `emoji_id` - `emoji` relation.
     features : `list` of ``GuildFeature``
         The guild's features.
+    hub_type : ``HubType``
+        The guild's hub type. Only applicable for hub guilds.
     icon_hash : `int`
         The guild's icon's hash in `uint128`.
     icon_type : ``IconType``
@@ -280,11 +282,12 @@ class Guild(DiscordEntity, immortal=True):
     __slots__ = (
         '_boosters', '_embedded_activity_states', '_permission_cache', 'afk_channel_id', 'afk_timeout',
         'approximate_online_count', 'approximate_user_count', 'available', 'boost_progress_bar_enabled',
-        'booster_count', 'channels', 'clients', 'content_filter', 'description', 'emojis', 'features', 'is_large',
-        'max_presences', 'max_users', 'max_video_channel_users', 'message_notification', 'mfa', 'name', 'nsfw_level',
-        'owner_id', 'preferred_locale', 'premium_tier', 'public_updates_channel_id', 'roles', 'rules_channel_id',
-        'scheduled_events', 'stages', 'stickers', 'system_channel_flags', 'system_channel_id', 'threads', 'user_count',
-        'users', 'vanity_code', 'verification_level', 'voice_states', 'widget_channel_id', 'widget_enabled'
+        'booster_count', 'channels', 'clients', 'content_filter', 'description', 'emojis', 'features', 'hub_type',
+        'is_large', 'max_presences', 'max_users', 'max_video_channel_users', 'message_notification', 'mfa', 'name',
+        'nsfw_level', 'owner_id', 'preferred_locale', 'premium_tier', 'public_updates_channel_id', 'roles',
+        'rules_channel_id', 'scheduled_events', 'stages', 'stickers', 'system_channel_flags', 'system_channel_id',
+        'threads', 'user_count', 'users', 'vanity_code', 'verification_level', 'voice_states', 'widget_channel_id',
+        'widget_enabled'
     )
     
     banner = IconSlot(
@@ -515,6 +518,7 @@ class Guild(DiscordEntity, immortal=True):
         ----------------
         name : `str`, Optional (Keyword only)
             The guild's ``.name``.
+        
         banner : `None`, ``Icon``, `str`, Optional (Keyword only)
             The guild's banner.
             
@@ -577,11 +581,6 @@ class Guild(DiscordEntity, immortal=True):
             The guild's icon's hash.
             
             > Mutually exclusive with `icon`.
-        
-        region : ``VoiceRegion``, `str`, Optional (Keyword only)
-            The guild's voice region.
-            
-            The parameter is deprecated and will be removed in 2022 Jun.
         
         nsfw_level : ``NsfwLevel``, Optional (Keyword only)
             The nsfw level of the guild.
@@ -702,6 +701,7 @@ class Guild(DiscordEntity, immortal=True):
         self.discovery_splash_type = ICON_TYPE_NONE
         self.emojis = {}
         self.features = []
+        self.hub_type = HubType.none
         self.icon_hash = 0
         self.icon_type = ICON_TYPE_NONE
         self.id = guild_id
@@ -2013,6 +2013,8 @@ class Guild(DiscordEntity, immortal=True):
         +-------------------------------+-------------------------------+
         | features                      | `list` of ``GuildFeature``    |
         +-------------------------------+-------------------------------+
+        | hub_type                      | ``HubType``                   |
+        +-------------------------------+-------------------------------+
         | icon                          | ``Icon``                      |
         +-------------------------------+-------------------------------+
         | invite_splash                 | ``Icon``                      |
@@ -2095,6 +2097,11 @@ class Guild(DiscordEntity, immortal=True):
         if self.mfa is not mfa:
             old_attributes['mfa'] = self.mfa
             self.mfa = mfa
+        
+        hub_type = HubType.get(data.get('hub_type', 0))
+        if self.hub_type is not hub_type:
+            old_attributes['hub_type'] = self.hub_type
+            self.hub_type = hub_type
         
         content_filter = ContentFilterLevel.get(data.get('explicit_content_filter', 0))
         if self.content_filter is not content_filter:
@@ -2288,6 +2295,8 @@ class Guild(DiscordEntity, immortal=True):
         self.message_notification = MessageNotificationLevel.get(data['default_message_notifications'])
         
         self.mfa = MFA.get(data['mfa_level'])
+        
+        self.hub_type = HubType.get(data.get('hub_type', 0))
         
         self.content_filter = ContentFilterLevel.get(data.get('explicit_content_filter', 0))
 

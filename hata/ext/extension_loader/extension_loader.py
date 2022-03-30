@@ -1,19 +1,21 @@
 __all__ = ('EXTENSION_LOADER', 'ExtensionLoader', )
 
-from io import StringIO
+from importlib import __file__ as IMPORTLIB_FILE_PATH
 
 from scarletio import (
-    EventThread, HybridValueDictionary, alchemy_incendiary, export, is_coroutine_function, run_coroutine
+    HybridValueDictionary, alchemy_incendiary, export, is_coroutine_function, render_exception_into, run_coroutine
 )
 
 from ...discord.core import KOKORO
 
 from .exceptions import ExtensionError
-from .extension import EXTENSIONS, EXTENSION_STATE_LOADED, Extension
+from .extension import __file__ as EXTENSION_LOADER_EXTENSION_FILE_PATH, EXTENSIONS, EXTENSION_STATE_LOADED, Extension
 from .utils import (
-    PROTECTED_NAMES, _get_path_extension_name, _iter_extension_names_and_paths, _validate_entry_or_exit,
-    validate_extension_parameters
+    PROTECTED_NAMES, _get_path_extension_name, _iter_extension_names_and_paths, _validate_entry_or_exit, validate_extension_parameters
 )
+
+
+EXTENSION_LOADER_EXTENSION_LOADER_FILE_PATH = __file__
 
 
 def _get_extensions(name):
@@ -62,6 +64,61 @@ def _get_extensions(name):
         extensions.add(extension)
     
     return extensions
+
+
+def _ignore_module_import_frames(file_name, name, line_number, line):
+    """
+    Ignores import frames of extension loading.
+    
+    Parameters
+    ----------
+    file_name : `str`
+        The frame's respective file's name.
+    name : `str`
+        The frame's respective function's name.
+    line_number : `int`
+        The line's index where the exception occurred.
+    line : `str`
+        The frame's respective stripped line.
+    
+    Returns
+    -------
+    should_show_frame : `bool`
+        Whether the frame should be shown.
+    """
+    if file_name.startswith('<') and file_name.endswith('>'):
+        return False
+    
+    if file_name == EXTENSION_LOADER_EXTENSION_FILE_PATH:
+        if name == '_load':
+            if line in (
+                'reload_module(lib)',
+                'spec.loader.exec_module(lib)',
+            ):
+                return False
+    
+    if file_name == EXTENSION_LOADER_EXTENSION_LOADER_FILE_PATH:
+        if name == '_load_extension':
+            if line in (
+                'lib = await KOKORO.run_in_executor(extension._load)',
+                'await entry_point(lib)',
+                'entry_point(lib)',
+            ):
+                return False
+        
+        if name == '_unload_extension':
+            if line in (
+                'await exit_point(lib)',
+                'exit_point(lib)',
+            ):
+                return False
+            
+            return False
+    
+    if file_name == IMPORTLIB_FILE_PATH:
+        return False
+    
+    return True
 
 
 class ExtensionLoader:
@@ -721,13 +778,12 @@ class ExtensionLoader:
         error_messages = None
         
         for extension in extensions:
-            try:
-                await self._load_extension(extension)
-            except ExtensionError as err:
+            exception = await self._load_extension(extension)
+            if (exception is not None):
                 if error_messages is None:
                     error_messages = []
                 
-                error_messages.append(err.message)
+                error_messages.append(exception.message)
         
         if (error_messages is not None):
             raise ExtensionError(error_messages) from None
@@ -779,13 +835,12 @@ class ExtensionLoader:
         error_messages = None
         
         for extension in extensions:
-            try:
-                await self._unload_extension(extension, False)
-            except ExtensionError as err:
+            exception = await self._unload_extension(extension, False)
+            if (exception is not None):
                 if error_messages is None:
                     error_messages = []
                 
-                error_messages.append(err.message)
+                error_messages.append(exception.message)
         
         if (error_messages is not None):
             raise ExtensionError(error_messages) from None
@@ -814,7 +869,7 @@ class ExtensionLoader:
         """
         extensions = _get_extensions(name)
         
-        return run_coroutine(self._reload(extensions),KOKORO)
+        return run_coroutine(self._reload(extensions), KOKORO)
     
     
     async def _reload(self, extensions):
@@ -837,14 +892,15 @@ class ExtensionLoader:
         error_messages = None
         
         for extension in extensions:
-            try:
-                await self._unload_extension(extension, True)
-                await self._load_extension(extension)
-            except ExtensionError as err:
+            exception = await self._unload_extension(extension, True)
+            if (exception is None):
+                exception = await self._load_extension(extension)
+            
+            if (exception is not None):
                 if error_messages is None:
                     error_messages = []
                 
-                error_messages.append(err.message)
+                error_messages.append(exception.message)
         
         if (error_messages is not None):
             raise ExtensionError(error_messages) from None
@@ -1027,10 +1083,9 @@ class ExtensionLoader:
         extension : ``Extension``
             The extension to load.
         
-        Raises
-        ------
-        ExtensionError
-            Extension entry point raised.
+        Returns
+        -------
+        exception : `None`, ``ExtensionError``
         """
         self._execute_counter += 1
         try:
@@ -1055,7 +1110,7 @@ class ExtensionLoader:
                     ),
                 )
                 
-                raise ExtensionError(message) from None
+                return ExtensionError(message)
             
             if lib is None:
                 return # already loaded
@@ -1096,7 +1151,7 @@ class ExtensionLoader:
                     )
                 )
                 
-                raise ExtensionError(message) from None
+                return ExtensionError(message)
         finally:
             self._execute_counter -= 1
     
@@ -1125,10 +1180,9 @@ class ExtensionLoader:
             
             This parameter is used when reloading, to avoid unloading un-reloadable files.
         
-        Raises
-        ------
-        ExtensionError
-            Extension exit point raised.
+        Returns
+        -------
+        exception : `None`, ``ExtensionError``
         """
         self._execute_counter += 1
         try:
@@ -1176,7 +1230,7 @@ class ExtensionLoader:
                         )
                     )
                     
-                    raise ExtensionError(message) from None
+                    return ExtensionError(message)
             
             finally:
                 extension._unassign_variables()
@@ -1213,12 +1267,8 @@ class ExtensionLoader:
         -----
         This function should run in an executor.
         """
-        file = StringIO()
-        EventThread._render_exception_sync(exception, before=header, after=None, file=file)
-        message = file.getvalue()
-        file.close()
-        
-        return message
+        return ''.join(render_exception_into(exception, header, filter=_ignore_module_import_frames))
+    
     
     def __repr__(self):
         """Returns the extension loader's representation."""

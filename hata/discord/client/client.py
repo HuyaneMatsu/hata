@@ -6945,8 +6945,9 @@ class Client(ClientUserPBase):
             The new splash of the guild. Can be `'jpg'`, `'png'`, `'webp'` image's raw data. The guild must have
             `DISCOVERABLE` feature. By passing it as `None` you can remove the current one.
         banner : `None`, `bytes-like`, Optional (Keyword only)
-            The new banner of the guild. Can be `'jpg'`, `'png'`, `'webp'` image's raw data. The guild must have
-            `BANNER` feature. By passing it as `None` you can remove the current one.
+            The new banner of the guild. Can be `'jpg'`, `'png'`, `'webp'`, `'gif'` image's raw data. The guild must
+            have `BANNER` feature. `ANIMATED_BANNER` for `gif` banner. By passing it as `None` you can remove the
+            current one.
         afk_channel : `None`, ``Channel``, `int`, Optional (Keyword only)
             The new afk channel of the guild. You can remove the current one by passing is as `None`.
         system_channel : `None`, ``Channel``, `int`, Optional (Keyword only)
@@ -6975,8 +6976,7 @@ class Client(ClientUserPBase):
         message_notification : ``MessageNotificationLevel``, Optional (Keyword only)
             The new message notification level of the guild.
         description : `None`, `str`, Optional (Keyword only)
-            The new description of the guild. By passing `None`, or an empty string you can remove the current one. The
-            guild must be a Community guild.
+            The new description of the guild. By passing `None`, or an empty string you can remove the current one.
         preferred_locale : ``Locale``, `str`, Optional (Keyword only)
             The guild's preferred locale. The guild must be a Community guild.
         system_channel_flags : ``SystemChannelFlag``, Optional (Keyword only)
@@ -7011,7 +7011,7 @@ class Client(ClientUserPBase):
             - If `icon`, `invite_splash`, `discovery_splash`, `banner` was passed as `bytes-like`, but it's format
                 is not any of the expected formats.
             - If `banner` was given meanwhile the guild has no `BANNER` feature.
-            - If `rules_channel`, `description`, `preferred_locale`, `public_updates_channel` was passed meanwhile
+            - If `rules_channel`, `preferred_locale`, `public_updates_channel` was passed meanwhile
                 the guild is not Community guild.
             - If `owner` was passed meanwhile the client is not the owner of the guild.
             - If `afk_timeout` was passed and not as one of: `60, 300, 900, 1800, 3600`.
@@ -7097,7 +7097,13 @@ class Client(ClientUserPBase):
                 
                 if __debug__:
                     media_type = get_image_media_type(banner)
-                    if media_type not in VALID_ICON_MEDIA_TYPES:
+                    
+                    if (guild is not None) and (GuildFeature.animated_banner not in guild.features):
+                        valid_banner_media_types = VALID_ICON_MEDIA_TYPES_EXTENDED
+                    else:
+                        valid_banner_media_types = VALID_ICON_MEDIA_TYPES
+                    
+                    if media_type not in valid_banner_media_types:
                         raise AssertionError(
                             f'Invalid `banner` type: {media_type}; got {reprlib.repr(banner)}.'
                         )
@@ -7364,13 +7370,6 @@ class Client(ClientUserPBase):
         
         
         if (description is not ...):
-            if __debug__:
-                if (guild is not None) and (not COMMUNITY_FEATURES.intersection(guild.features)):
-                    raise AssertionError(
-                        f'The guild is not Community guild and `description` was given, got {description!r}; '
-                        f'guild={guild!r}.'
-                    )
-            
             if description is None:
                 pass
             elif isinstance(description, str):
@@ -8657,7 +8656,9 @@ class Client(ClientUserPBase):
         await self.http.user_move(guild_id, user_id, {'channel_id': None})
     
     
-    async def stage_create(self, channel, topic, *, privacy_level=PrivacyLevel.guild_only):
+    async def stage_create(
+        self, channel, topic, *, privacy_level=PrivacyLevel.guild_only, send_start_notification=False,
+    ):
         """
         Edits the given stage channel.
         
@@ -8671,10 +8672,17 @@ class Client(ClientUserPBase):
         ----------
         channel : ``Channel``, `int`
             The channel to edit.
+        
         topic : `None`, `str`
             The new topic of the stage.
+        
         privacy_level : ``PrivacyLevel``, `int` = `PrivacyLevel.guild_only`, Optional (Keyword only)
             The new privacy level of the stage. Defaults to guild only.
+        
+        send_start_notification : `bool` = `False`, Optional (Keyword only)
+            Whether @everyone should be notified when the stage is started.
+            
+            > You must have `mention everyone` permission.
         
         Returns
         -------
@@ -8693,9 +8701,12 @@ class Client(ClientUserPBase):
         AssertionError
             - If `topic` was not given neither as `None`, `str`.
             - If `topic`'s length is out of range [1:120].
+            - If `send_start_notification` is not `bool`
         """
+        # channel_id
         channel_id = get_channel_id(channel, Channel.is_guild_stage)
         
+        # topic
         if topic is None:
             topic = ''
         else:
@@ -8711,21 +8722,37 @@ class Client(ClientUserPBase):
                         f'`topic` length can be in range [1:120], got {topic_length!r}; {topic!r}.'
                     )
         
+        # privacy_level
         if isinstance(privacy_level, PrivacyLevel):
             privacy_level = privacy_level.value
+        
         elif isinstance(privacy_level, int):
             privacy_level = privacy_level
+        
         else:
             raise TypeError(
                 f'`privacy_level` can be `{PrivacyLevel.__name__}`, `int` , got '
                 f'{privacy_level.__class__.__name__}; {privacy_level!r}.'
             )
         
+        # send_start_notification
+        if __debug__:
+            if not isinstance(send_start_notification, bool):
+                raise AssertionError(
+                    f'`send_start_notification` can be `bool`, '
+                    f'got {send_start_notification.__class__.__name__}; {send_start_notification!r}.'
+                )
+        
+        
         data = {
             'channel_id': channel_id,
             'topic': topic,
             'privacy_level': privacy_level,
         }
+        
+        if send_start_notification:
+            data['send_start_notification'] = True
+        
         
         data = await self.http.stage_create(data)
         return Stage(data)

@@ -96,6 +96,8 @@ def _console_exit_callback():
     WaitTillAll([Task(client.disconnect(), KOKORO) for client in CLIENTS.values()], KOKORO).sync_wrap().wait()
 
 
+IGNORED_CONSOLE_VARIABLES = {'__name__', '__package__', '__loader__', '__spec__'}
+
 def run_console_till_interruption():
     """
     Runs interactive console.
@@ -113,15 +115,25 @@ def run_console_till_interruption():
         raise RuntimeError(f'`run_console_till_interruption` cannot be used inside of {KOKORO!r}.')
     
     frame = sys._getframe().f_back
-    spec = frame.f_globals['__spec__']
-    module = sys.modules.get(spec.name, None)
-    if module is None:
-        module = module_from_spec(spec)
+    spec = frame.f_globals.get('__spec__', None)
+    if (spec is None):
+        module = None
+    else:
+        module = sys.modules.get(spec.name, None)
+        if module is None:
+            module = module_from_spec(spec)
     
     interactive_console_locals = {}
     
-    for variable_name in set(dir(module)) - {'__name__', '__package__', '__loader__', '__spec__'}:
-        interactive_console_locals[variable_name] = getattr(module, variable_name)
+    if module is None:
+        for variable_value, variable_name in frame.f_globals.items():
+            if (variable_name not in IGNORED_CONSOLE_VARIABLES):
+                interactive_console_locals[variable_name] = variable_value
+    
+    else:
+        for variable_name in dir(module):
+            if (variable_name not in IGNORED_CONSOLE_VARIABLES):
+                interactive_console_locals[variable_name] = getattr(module, variable_name)
     
     run_asynchronous_interactive_console(
         interactive_console_locals,

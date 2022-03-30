@@ -4,7 +4,7 @@ from ....localizations import Locale
 
 from ...flags import SystemChannelFlag
 from ...preinstanced import (
-    ContentFilterLevel, MFA, MessageNotificationLevel, NsfwLevel, VerificationLevel, VoiceRegion
+    ContentFilterLevel, HubType, MFA, MessageNotificationLevel, NsfwLevel, VerificationLevel, VoiceRegion
 )
 
 from ..audit_log_change import AuditLogChange
@@ -16,6 +16,10 @@ from .shared import (
 
 def convert_content_filter(name, data):
     return _convert_preinstanced('content_filter', data, ContentFilterLevel)
+
+
+def convert_hub_type(name, data):
+    return _convert_preinstanced('hub_type', data, HubType)
 
 
 def convert_bool__boost_progress_bar_enabled(name, data):
@@ -73,8 +77,9 @@ GUILD_CONVERTERS = {
     'banner_hash': convert_icon,
     'default_message_notifications': convert_message_notification,
     'description': convert_nothing,
-    'discovery_splash_hash' : convert_icon,
-    'explicit_content_filter':convert_content_filter,
+    'discovery_splash_hash': convert_icon,
+    'explicit_content_filter': convert_content_filter,
+    'hub_type': convert_hub_type,
     'icon_hash': convert_icon,
     'mfa_level': convert_mfa,
     'name': convert_nothing,

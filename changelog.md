@@ -40,6 +40,22 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 - Add `CHANNEL_TYPED.GROUP_CAN_CREATE_INVITE_TO`.
 - Add `CHANNEL_TYPES.GROUP_GUILD_MOVABLE`.
 - Add `Channel.is_in_group_guild_movable`.
+- Add `HubType`.
+- Add `Guild.hub_type`.
+- Add `hub_type` audit log converter.
+- Add `send_start_notification` parameter to `Client.stage_create`.
+- Enable animated `banner` in `Client.guild_edit` if the guild has `animated banner` feature.
+- Do not require community feature in `Client.guild_edit` to edit `description`.
+- Set `form` title max length to `45`.
+
+##### ext.extension_loader
+
+- Exception messages will not show internal frames.
+
+#### Bug Fixes
+
+- `datetime_to_unix_time` returned incorrect value.
+- `run_console_till_interruption` could raise is called outside from a module. (Forest#2913)
 
 #### Renames, Deprecation & Removals
 

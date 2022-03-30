@@ -1,6 +1,6 @@
 __all__ = (
-    'ContentFilterLevel', 'GuildFeature', 'GuildJoinRequestStatus', 'MFA', 'MessageNotificationLevel', 'NsfwLevel',
-    'VerificationLevel', 'VerificationScreenStepType', 'VoiceRegion'
+    'ContentFilterLevel', 'GuildFeature', 'GuildJoinRequestStatus', 'HubType', 'MFA', 'MessageNotificationLevel',
+    'NsfwLevel', 'VerificationLevel', 'VerificationScreenStepType', 'VoiceRegion'
 )
 
 from scarletio import export
@@ -846,3 +846,47 @@ class VerificationFieldPlatform(PreinstancedBase):
     
     email = P('email', 'email')
     phone = P('phone', 'phone')
+
+
+class HubType(PreinstancedBase):
+    """
+    Represents Discord's guild's hub type.
+    
+    Attributes
+    ----------
+    name : `str`
+        The default name of the hub type
+    value : `int`
+        The Discord side identifier value of the hub type
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`int`, ``HubType``) items
+        Stores the predefined Hub types. This container is accessed when converting an Hub types's value to
+        it's wrapper side representation.
+    VALUE_TYPE : `type` = `int`
+        The hub types' values' type.
+    DEFAULT_NAME : `str` = `'Undefined'`
+        The default name of the hub types
+    
+    Each predefined hub type can also be accessed as class attribute:
+    
+    +-----------------------+---------------+-------+
+    | Class attribute name  | name          | value |
+    +=======================+===============+=======+
+    | none                  | none          | 0     |
+    +-----------------------+---------------+-------+
+    | high_school           | high school   | 1     |
+    +-----------------------+---------------+-------+
+    | college               | college       | 2     |
+    +-----------------------+---------------+-------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = int
+    
+    __slots__ = ()
+    
+    # Predefined
+    none = P(0, 'none')
+    high_school = P(1, 'high school')
+    college = P(2, 'college')

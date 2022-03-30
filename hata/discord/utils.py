@@ -297,11 +297,11 @@ def datetime_to_id(date_time):
 
 if IS_UNIX:
     def datetime_to_unix_time(date_time):
-        return floor(date_time.timestamp() * 1000.0)
+        return floor(date_time.timestamp())
 else:
     def datetime_to_unix_time(date_time):
         try:
-            return floor(date_time.timestamp() * 1000.0)
+            return floor(date_time.timestamp())
         except OSError:
             if date_time <= DATETIME_MIN:
                 return UNIX_TIME_MIN

@@ -372,7 +372,7 @@ class Guild(DiscordEntity, immortal=True):
             else:
                 self.user_count = user_count
             
-            self.boost_count = -1
+            self.boost_count = 0
             
             try:
                 is_large = data['large']
@@ -694,7 +694,7 @@ class Guild(DiscordEntity, immortal=True):
         self.banner_hash = 0
         self.banner_type = ICON_TYPE_NONE
         self.boost_progress_bar_enabled = False
-        self.boost_count = -1
+        self.boost_count = 0
         self.clients = []
         self.content_filter = ContentFilterLevel.disabled
         self.description = None

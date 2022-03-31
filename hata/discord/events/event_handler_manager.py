@@ -508,7 +508,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-------------------------------+-------------------------------+
         | boost_progress_bar_enabled    | `bool`                        |
         +-------------------------------+-------------------------------+
-        | booster_count                 | `int`                         |
+        | boost_count                   | `int`                         |
         +-------------------------------+-------------------------------+
         | content_filter                | ``ContentFilterLevel``        |
         +-------------------------------+-------------------------------+

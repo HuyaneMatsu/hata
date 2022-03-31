@@ -933,8 +933,8 @@ def str_guild(guild, index=None, **kwargs):
     if (public_updates_channel is not None):
         result.append(f' - public updates channel : {public_updates_channel.name} {public_updates_channel.id}', 1)
     
-    if guild.booster_count:
-        result.append(f'- boosters : {guild.booster_count}', 1)
+    if guild.boost_count:
+        result.append(f'- boosters : {guild.boost_count}', 1)
         result.append(f'- premium tier : {guild.premium_tier}', 1)
     result.append(str_list(guild.channel_list, write_parents=False), 1)
     result.append(str_list(guild.role_list, write_parents=False), 1)

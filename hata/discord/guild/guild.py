@@ -177,7 +177,7 @@ class Guild(DiscordEntity, immortal=True):
         The guild's banner's type.
     boost_progress_bar_enabled : `bool`
         Whether the guild has the boost progress bar enabled.
-    booster_count : `int`
+    boost_count : `int`
         The total number of boosts of the guild.
     channels : `dict` of (`int`, ``Channel``) items
         The channels of the guild stored in `channel_id` - `channel` relation.
@@ -282,7 +282,7 @@ class Guild(DiscordEntity, immortal=True):
     __slots__ = (
         '_boosters', '_embedded_activity_states', '_permission_cache', 'afk_channel_id', 'afk_timeout',
         'approximate_online_count', 'approximate_user_count', 'available', 'boost_progress_bar_enabled',
-        'booster_count', 'channels', 'clients', 'content_filter', 'description', 'emojis', 'features', 'hub_type',
+        'boost_count', 'channels', 'clients', 'content_filter', 'description', 'emojis', 'features', 'hub_type',
         'is_large', 'max_presences', 'max_users', 'max_video_channel_users', 'message_notification', 'mfa', 'name',
         'nsfw_level', 'owner_id', 'preferred_locale', 'premium_tier', 'public_updates_channel_id', 'roles',
         'rules_channel_id', 'scheduled_events', 'stages', 'stickers', 'system_channel_flags', 'system_channel_id',
@@ -372,7 +372,7 @@ class Guild(DiscordEntity, immortal=True):
             else:
                 self.user_count = user_count
             
-            self.booster_count = -1
+            self.boost_count = -1
             
             try:
                 is_large = data['large']
@@ -694,7 +694,7 @@ class Guild(DiscordEntity, immortal=True):
         self.banner_hash = 0
         self.banner_type = ICON_TYPE_NONE
         self.boost_progress_bar_enabled = False
-        self.booster_count = -1
+        self.boost_count = -1
         self.clients = []
         self.content_filter = ContentFilterLevel.disabled
         self.description = None
@@ -2004,7 +2004,7 @@ class Guild(DiscordEntity, immortal=True):
         +-------------------------------+-------------------------------+
         | boost_progress_bar_enabled    | `bool`                        |
         +-------------------------------+-------------------------------+
-        | booster_count                 | `int`                         |
+        | boost_count                   | `int`                         |
         +-------------------------------+-------------------------------+
         | content_filter                | ``ContentFilterLevel``        |
         +-------------------------------+-------------------------------+
@@ -2235,13 +2235,13 @@ class Guild(DiscordEntity, immortal=True):
             old_attributes['premium_tier'] = self.premium_tier
             self.premium_tier = premium_tier
 
-        booster_count = data.get('premium_subscription_count', None)
-        if booster_count is None:
-            booster_count = 0
+        boost_count = data.get('premium_subscription_count', None)
+        if boost_count is None:
+            boost_count = 0
         
-        if self.booster_count != booster_count:
-            old_attributes['booster_count'] = self.booster_count
-            self.booster_count = booster_count
+        if self.boost_count != boost_count:
+            old_attributes['boost_count'] = self.boost_count
+            self.boost_count = boost_count
         
         self._boosters = None
         
@@ -2383,11 +2383,11 @@ class Guild(DiscordEntity, immortal=True):
         
         self.premium_tier = data['premium_tier']
         
-        booster_count = data.get('premium_subscription_count', None)
-        if booster_count is None:
-            booster_count = 0
+        boost_count = data.get('premium_subscription_count', None)
+        if boost_count is None:
+            boost_count = 0
         
-        self.booster_count = booster_count
+        self.boost_count = boost_count
         self._boosters = None
         
         self.preferred_locale = get_locale(data.get('preferred_locale', None))
@@ -2444,7 +2444,7 @@ class Guild(DiscordEntity, immortal=True):
             +-------+-------------------+-----------------------------------------------+
             | 1     | emoji             | ``Emoji``                                     |
             +-------+-------------------+-----------------------------------------------+
-            | 2     | old_attributes    | `None`, `dict` of (`str`, `Any`) items      |
+            | 2     | old_attributes    | `None`, `dict` of (`str`, `Any`) items        |
             +-------+-------------------+-----------------------------------------------+
             
             Possible actions:
@@ -2477,7 +2477,7 @@ class Guild(DiscordEntity, immortal=True):
             +-------------------+-------------------------------+
             | require_colons    | `bool`                        |
             +-------------------+-------------------------------+
-            | roles_ids         | `None`, `tuple` of ``Role`` |
+            | roles_ids         | `None`, `tuple` of ``Role``   |
             +-------------------+-------------------------------+
         """
         emojis = self.emojis
@@ -2757,7 +2757,7 @@ class Guild(DiscordEntity, immortal=True):
         """
         boosters = self._boosters
         if boosters is None:
-            if self.booster_count:
+            if self.boost_count:
                 boosters_ordered = []
                 guild_id = self.id
                 for user in self.users.values():
@@ -2989,3 +2989,20 @@ class Guild(DiscordEntity, immortal=True):
         )
         
         return VoiceRegion._deprecated
+    
+    
+    @property
+    def booster_count(self):
+        """
+        `.booster_count` is deprecated and will be removed in 2022 Aug. Please use `.boost_count` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.booster_count` is deprecated and will be removed in 2022 Aug. '
+                f'Please use `.boost_count` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return self.boost_count

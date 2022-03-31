@@ -75,6 +75,8 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 - Deprecate `ChannelGroup`.
 - Deprecate `ChannelThread`.
 - Rename `CHANNEL_NAMES.GROUP_GUILD_TEXT_LIKE` to `.GROUP_GUILD_MAIN_TEXT`.
+- Deprecate `Guild.booster_count`.
+- Rename `Guild.booster_count` to `.boost_count`.
 
 ## 1.2.5 *\[2022-03-23\]*
 

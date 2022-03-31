@@ -1123,7 +1123,7 @@ class Channel(DiscordEntity, immortal=True):
             else:
                 channel_id = self.id
                 
-                for channel in guild.channels.values:
+                for channel in guild.channels.values():
                     if channel.parent_id == channel_id:
                         channels.append(channel)
                 

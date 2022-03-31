@@ -156,10 +156,10 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
     
     
     @copy_docs(ChannelMetadataGuildBase._get_created_at)
-    def _get_created_at(self):
+    def _get_created_at(self, channel_entity):
         created_at = self._created_at
         if (created_at is None):
-            created_at = id_to_datetime(self.id)
+            created_at = id_to_datetime(channel_entity.id)
         
         return created_at
     

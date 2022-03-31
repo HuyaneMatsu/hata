@@ -54,7 +54,7 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
     
     @copy_docs(ChannelMetadataGuildBase._delete)
     def _delete(self, channel_entity, client):
-        ChannelMetadataGuildBase._delete(self, channel_entity)
+        ChannelMetadataGuildBase._delete(self, channel_entity, client)
         
         try:
             guild = GUILDS[channel_entity.guild_id]
@@ -62,7 +62,7 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
             pass
         else:
             try:
-                del guild.channels[self.id]
+                del guild.channels[channel_entity.id]
             except KeyError:
                 pass
     

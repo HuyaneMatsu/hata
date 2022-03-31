@@ -2478,7 +2478,7 @@ class Slasher(EventHandlerBase):
                 pass
     
     
-    def discard_kept_command(self):
+    def discard_kept_commands(self):
         """
         Discards the kept application commands out. If needed, triggers syncing.
         
@@ -2501,10 +2501,10 @@ class Slasher(EventHandlerBase):
         if client is None:
             raise RuntimeError('The slasher\'s client was already garbage collected.')
         
-        return run_coroutine(self._do_discard_kept_command(client), KOKORO)
+        return run_coroutine(self._do_discard_kept_commands(client), KOKORO)
     
     
-    def _discard_kept_command_and_update_sync_states(self):
+    def _discard_kept_commands_and_update_sync_states(self):
         """
         Discards all kept commands and updates sync states.
         
@@ -2526,10 +2526,10 @@ class Slasher(EventHandlerBase):
         self._command_unloading_behaviour = UNLOADING_BEHAVIOUR_DELETE
     
     
-    async def _do_discard_kept_command(self, client):
+    async def _do_discard_kept_commands(self, client):
         """
         Discards the kept application commands out. If needed, triggers syncing. This method is the internal method of
-        ``.discard_kept_command``.
+        ``.discard_kept_commands``.
         
         This method is a coroutine.
         
@@ -2543,7 +2543,7 @@ class Slasher(EventHandlerBase):
         success : `bool`
             Whether the sync was successful.
         """
-        self._discard_kept_command_and_update_sync_states()
+        self._discard_kept_commands_and_update_sync_states()
         return await self._do_main_sync(client)
         
     

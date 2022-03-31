@@ -57,6 +57,10 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 - `datetime_to_unix_time` returned incorrect value.
 - `run_console_till_interruption` could raise is called outside from a module. (Forest#2913)
 
+##### ext.slash
+
+- `Slasher.discard_kept_commands` was missing the last `s` from the end. :derp:
+
 #### Renames, Deprecation & Removals
 
 - Deprecate `ChannelBase`.

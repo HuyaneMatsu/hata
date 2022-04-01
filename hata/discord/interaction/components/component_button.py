@@ -49,12 +49,12 @@ class ComponentButton(ComponentBase):
     
     Class Attributes
     ----------------
-    default_style : ``ButtonStyle`` = `ButtonStyle.violet`
+    default_style : ``ButtonStyle`` = `ButtonStyle.blue`
         The default button style to use if style is not given.
     type : ``ComponentType`` = `ComponentType.button`
         The component's type.
     """
-    default_style = ButtonStyle.violet
+    default_style = ButtonStyle.blue
     type = ComponentType.button
     
     __slots__ = ('custom_id', 'enabled', 'emoji', 'label', 'style', 'url',)

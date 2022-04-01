@@ -81,6 +81,8 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 - Rename `CHANNEL_NAMES.GROUP_GUILD_TEXT_LIKE` to `.GROUP_GUILD_MAIN_TEXT`.
 - Deprecate `Guild.booster_count`.
 - Rename `Guild.booster_count` to `.boost_count`.
+- Deprecate `ButtonStyle.violet`.
+- Rename `ButtonStyle.violet` to `.blue` (seems like they never intended it to be burple)
 
 ## 1.2.5 *\[2022-03-23\]*
 

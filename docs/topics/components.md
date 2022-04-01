@@ -111,7 +111,7 @@ CUSTOM_ID_PING = 'ping_pong.ping'
 CUSTOM_ID_PONG = 'ping_pong.pong'
 
 BUTTON_PING = Button('ping', EMOJI_PING_PONG, custom_id=CUSTOM_ID_PING, style=ButtonStyle.green)
-BUTTON_PONG = Button('pong', EMOJI_PING_PONG, custom_id=CUSTOM_ID_PONG, style=ButtonStyle.violet)
+BUTTON_PONG = Button('pong', EMOJI_PING_PONG, custom_id=CUSTOM_ID_PONG, style=ButtonStyle.blue)
 
 
 @Nitori.interactions(guild=TEST_GUILD)
@@ -243,7 +243,7 @@ EMOJI_SNAKE = BUILTIN_EMOJIS['snake']
 EMOJI_EGGPLANT = BUILTIN_EMOJIS['eggplant']
 
 CHOOSE_YOUR_POISON_ROW = Row(
-    Button('cake', custom_id=CUSTOM_ID_CAKE, style=ButtonStyle.violet),
+    Button('cake', custom_id=CUSTOM_ID_CAKE, style=ButtonStyle.blue),
     Button('cat', custom_id=CUSTOM_ID_CAT, style=ButtonStyle.gray),
     Button('snake', custom_id=CUSTOM_ID_SNAKE, style=ButtonStyle.green),
     Button('eggplant', custom_id=CUSTOM_ID_EGGPLANT, style=ButtonStyle.red),

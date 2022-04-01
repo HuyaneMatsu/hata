@@ -1,6 +1,8 @@
 __all__ = ('ButtonStyle', 'ComponentType', 'TextInputStyle')
 
-from scarletio import export
+import warnings
+
+from scarletio import class_property, export
 
 from ...bases import Preinstance as P, PreinstancedBase
 
@@ -94,7 +96,7 @@ class ButtonStyle(PreinstancedBase):
     +=======================+===============+=======+
     | none                  | none          | 0     |
     +-----------------------+---------------+-------+
-    | violet                | violet        | 1     |
+    | blue                  | blue          | 1     |
     +-----------------------+---------------+-------+
     | gray                  | gray          | 2     |
     +-----------------------+---------------+-------+
@@ -112,11 +114,28 @@ class ButtonStyle(PreinstancedBase):
     __slots__ = ()
     
     none = P(0, 'none')
-    violet = P(1, 'violet')
+    blue = P(1, 'blue')
     gray = P(2, 'gray')
     green = P(3, 'green')
     red = P(4, 'red')
     link = P(5, 'link')
+    
+    
+    @class_property
+    def violet(cls):
+        """
+        `.violet` is deprecated and will be removed in 2022 Aug. Please use `.blue` instead.
+        """
+        warnings.warn(
+            (
+                f'`{cls.__name__}.violet` is deprecated and will be removed in 2022 Aug. '
+                f'Please use `.blue` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return cls.blue
 
 
 class TextInputStyle(PreinstancedBase):

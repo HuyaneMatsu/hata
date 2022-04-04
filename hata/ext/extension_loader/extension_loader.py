@@ -10,15 +10,88 @@ from ...discord.core import KOKORO
 
 from .exceptions import ExtensionError
 from .extension import __file__ as EXTENSION_LOADER_EXTENSION_FILE_PATH, EXTENSIONS, EXTENSION_STATE_LOADED, Extension
-from .utils import (
-    PROTECTED_NAMES, _get_path_extension_name, _iter_extension_names_and_paths, _validate_entry_or_exit, validate_extension_parameters
+from .helpers import (
+    PROTECTED_NAMES, _get_extension_name_and_path, _get_path_extension_name, _iter_extension_names_and_paths,
+    _validate_entry_or_exit, validate_extension_parameters
 )
 
 
 EXTENSION_LOADER_EXTENSION_LOADER_FILE_PATH = __file__
 
 
-def _get_extensions(name):
+def _render_exception_message(exception, header):
+    """
+    Renders an exception' traceback.
+    
+    Parameters
+    ----------
+    exception : `BaseException`
+        The exception to render.
+    header : `list` of `str`
+        Header of the rendered traceback.
+    
+    Returns
+    -------
+    message : `str`
+        The `exception`'s rendered traceback.
+    
+    Notes
+    -----
+    This function should run in an executor.
+    """
+    return ''.join(render_exception_into(exception, header, filter=_ignore_module_import_frames))
+
+
+async def _render_exception_message_async(exception, header):
+    """
+    Returns the exception message inside of an executor.
+    
+    Parameters
+    ----------
+    exception : `BaseException`
+        The exception to render.
+    header : `list` of `str`
+        Header of the rendered traceback.
+    
+    Returns
+    -------
+    message : `str`
+        The `exception`'s rendered traceback.
+    """
+    return await KOKORO.run_in_executor(alchemy_incendiary(_render_exception_message, (exception, header)))
+
+
+def _try_get_extension(extension_name, extension_path):
+    """
+    Tries to get extension for the given name or path.
+    
+    Parameters
+    ----------
+    extension_name : `None`, `str`
+        Extension's  name.
+    extension_path : `str`
+        Path of the extension file.
+    
+    Returns
+    -------
+    extension : `None`, ``Extension``
+        The found extension if any.
+    """
+    try:
+        return EXTENSION_LOADER._extensions_by_name[extension_path]
+    except KeyError:
+        pass
+    
+    if extension_name is None:
+        extension_name = _get_path_extension_name(extension_path)
+    
+    try:
+        return EXTENSION_LOADER._extensions_by_name[extension_name]
+    except KeyError:
+        pass
+
+
+async def _get_extensions(name):
     """
     Gets the extensions with the given name.
     
@@ -29,7 +102,7 @@ def _get_extensions(name):
     
     Returns
     -------
-    extensions : `set` of ``Extension``
+    extensions : `list` of ``Extension``
         The found extensions.
     
     Raises
@@ -37,33 +110,42 @@ def _get_extensions(name):
     ExtensionError
         If an extension could not be found.
     """
-    extensions = set()
-    
-    extension_names_and_paths = set(_iter_extension_names_and_paths(name))
-    for extension_name, extension_path in extension_names_and_paths:
-        # Use goto
-        while True:
-            try:
-                extension = EXTENSION_LOADER._extensions_by_name[extension_path]
-            except KeyError:
-                pass
-            else:
-                break
-            
-            if extension_name is None:
-                extension_name = _get_path_extension_name(extension_path)
-            try:
-                extension = EXTENSION_LOADER._extensions_by_name[extension_name]
-            except KeyError:
-                pass
-            else:
-                break
-            
-            raise ExtensionError(f'No extension was added with name: `{extension_name}`.') from None
+    try:
+        extensions = set()
         
-        extensions.add(extension)
+        extension_names_and_paths = set(_iter_extension_names_and_paths(name))
+        for extension_name, extension_path in extension_names_and_paths:
+            extension = _try_get_extension(extension_name, extension_path)
+            if extension is None:
+                raise ExtensionError(f'No extension was added with name: `{extension_name}`.')
+            
+            extensions.add(extension)
+            continue
+        
+        if not extensions:
+            raise ExtensionError(
+                f'No extensions found with the given name: {name!r}.'
+            )
+        
+        return sorted(extensions)
     
-    return extensions
+    except GeneratorExit:
+        raise
+    
+    except ExtensionError:
+        raise
+    
+    except BaseException as err:
+        message = await _render_exception_message_async(
+            err,
+            [
+                'Exception occurred meanwhile looking up extensions for name: `',
+                repr(name),
+                '`.\n',
+            ]
+        )
+        
+        raise ExtensionError(message)
 
 
 def _ignore_module_import_frames(file_name, name, line_number, line):
@@ -233,21 +315,12 @@ class ExtensionLoader:
         raise exception
       File ".../scarletio/core/traps/task.py", line 1602, in _step
         result = coroutine.throw(exception)
-      File ".../hata/ext/extension_loader/extension_loader.py", line 670, in _reload_all
+      File ".../hata/ext/extension_loader/extension_loader.py", line 670, in _reload_all_task
         raise ExtensionError(error_messages) from None
     hata.ext.extension_loader.ExtensionError: ExtensionError (1):
     Exception occurred meanwhile loading an extension: `extension`.
     
     Traceback (most recent call last):
-      File ".../hata/ext/extension_loader/extension_loader.py", line 675, in _load_extension
-        lib = await KOKORO.run_in_executor(extension.load)
-      File ".../hata/ext/extension_loader/extension_loader.py", line 270, in load
-        reload_module(lib)
-      File ".../importlib/__init__.py", line 169, in reload
-        _bootstrap._exec(spec, module)
-      File "<frozen importlib._bootstrap>", line 630, in _exec
-      File "<frozen importlib._bootstrap_external>", line 728, in exec_module
-      File "<frozen importlib._bootstrap>", line 219, in _call_with_frames_removed
       File ".../extension.py", line 1, in <module>
         cake = cake.split()
     NameError("name 'cake' is not defined")
@@ -478,6 +551,7 @@ class ExtensionLoader:
         """
         return self._default_exit_point
     
+    
     @default_exit_point.setter
     def default_exit_point(self, default_exit_point):
         if not _validate_entry_or_exit(default_exit_point):
@@ -488,9 +562,11 @@ class ExtensionLoader:
         
         self._default_exit_point = default_exit_point
     
+    
     @default_exit_point.deleter
     def default_exit_point(self):
         self._default_exit_point = None
+    
     
     def add_default_variables(self, **variables):
         """
@@ -618,9 +694,16 @@ class ExtensionLoader:
         default_variables : `None`, `HybridValueDictionary` of (`str`, `Any`) items
             An optionally weak value dictionary to store objects for assigning them to modules before loading them.
             If would be empty, is set as `None` instead.
+        
+        Returns
+        -------
+        extension : ``Extension``
+            The registered extension.
         """
-        extension = Extension(extension_name, extension_path, entry_point, exit_point, extend_default_variables,
-            locked, take_snapshot_difference, default_variables)
+        extension = Extension(
+            extension_name, extension_path, entry_point, exit_point, extend_default_variables,
+            locked, take_snapshot_difference, default_variables
+        )
         
         self._extensions_by_name[extension.name] = extension
         self._extensions_by_name[extension.file_name] = extension
@@ -628,6 +711,8 @@ class ExtensionLoader:
         short_name = extension.short_name
         if (short_name is not None):
             self._extensions_by_name.setdefault(extension.short_name, extension)
+        
+        return extension
     
     
     def remove(self, name):
@@ -676,7 +761,7 @@ class ExtensionLoader:
             extension._unlink()
     
     
-    def load_extension(self, name, *args, **kwargs):
+    def load_extension(self, name, *parameters, **keyword_parameters):
         """
         Adds, then loads the extension.
         
@@ -684,9 +769,9 @@ class ExtensionLoader:
         ----------
         name : `str`, `iterable` of `str`
             The extension's name to load.
-        *args : Parameters
+        *parameters : Parameters
             Additional parameters to create the extension with.
-        **kwargs : Keyword parameters
+        **keyword_parameters : Keyword parameters
             Additional parameters to create the extension with.
         
         Other Parameters
@@ -701,7 +786,15 @@ class ExtensionLoader:
             Whether snapshot feature should be used.
         **variables : Keyword parameters
             Variables to assign to an extension(s)'s module before they are loaded.
+        
+        Returns
+        -------
+        task : `set` of ``Extension``, ``Task`` -> ``Extension``, ``FutureAsyncWrapper`` -> ``Extension``
+            If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
+            loading is done. However if called from a sync thread, will block till the loading is done.
             
+            When finished returns the loaded extension.
+        
         Raises
         ------
         ImportError
@@ -721,15 +814,69 @@ class ExtensionLoader:
         ExtensionError
             The extension failed to load correctly.
         """
-        extension_names_and_paths = set(_iter_extension_names_and_paths(name))
-        entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference, default_variables = \
-            validate_extension_parameters(*args, **kwargs)
+        return run_coroutine(self._load_extension_task(name, parameters, keyword_parameters), KOKORO)
+    
+    
+    async def _load_extension_task(self, name, parameters, keyword_parameters):
+        """
+        Adds, then loads the extension.
         
-        for extension_name, extension_path in extension_names_and_paths:
-            self._add(extension_name, extension_path, entry_point, exit_point, extend_default_variables, locked,
-                take_snapshot_difference, default_variables)
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        name : `str`
+            The extension's name.
+        parameters : `tuple` of `Any`
+            Additional parameters to create the extension with.
+        keyword_parameters : `dict` of (`str`, `Any`) items
+            Additional parameters to create the extension with.
+        
+        Returns
+        -------
+        extension : ``Extension``
+            The loaded extension.
+        
+        Raises
+        ------
+        ImportError
+            If the given name do not refers to any loadable file.
+        TypeError
+            - If `entry_point` was not given as `None`, `str`, `callable`.
+            - If `entry_point` was given as `callable`, but accepts less or more positional parameters, as would be
+                given.
+            - If `exit_point` was not given as `None`, `str`, `callable`.
+            - If `exit_point` was given as `callable`, but accepts less or more positional parameters, as would be
+                given.
+            - If `extend_default_variables` was not given as `bool`.
+            - If `locked` was not given as `bool`.
+            - If `name` was not given as `str`, `iterable` of `str`.
+        ValueError
+            If a variable name is would be used, what is `module` attribute.
+        ExtensionError
+            The extension failed to load correctly.
+        """
+        extension_name, extension_path = _get_extension_name_and_path(name)
+        extension = _try_get_extension(extension_name, extension_path)
+        if (extension is None):
+            entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference, default_variables = \
+                validate_extension_parameters(*parameters, **keyword_parameters)
             
-            return self.load(extension_name)
+            extension = self._add(
+                extension_name, extension_path, entry_point, exit_point, extend_default_variables, locked,
+                take_snapshot_difference, default_variables
+            )
+            
+        else:
+            if extension.is_loaded():
+                return extension
+        
+        
+        extension_error = await self._load_extension(extension)
+        if (extension_error is not None):
+            raise extension_error
+        
+        return extension
     
     
     def load(self, name):
@@ -743,9 +890,12 @@ class ExtensionLoader:
         
         Returns
         -------
-        task : `None`, ``Task``, ``FutureAsyncWrapper``
+        task : `list` of ``Extension``, ``Task`` -> `list` of ``Extension``,
+                ``FutureAsyncWrapper`` -> `list` of ``Extension``
             If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             loading is done. However if called from a sync thread, will block till the loading is done.
+            
+            When finished returns the loaded extension.
         
         Raises
         ------
@@ -753,21 +903,24 @@ class ExtensionLoader:
             - No extension is added with the given name.
             - Loading the extension failed.
         """
-        extensions = _get_extensions(name)
-        
-        return run_coroutine(self._load(extensions), KOKORO)
+        return run_coroutine(self._load_task(name), KOKORO)
     
     
-    async def _load(self, extensions):
+    async def _load_task(self, name):
         """
-        Loads the extension with the given name.
+        Loads the given extensions.
         
         This method is a coroutine.
         
         Parameters
         ----------
-        extensions : `set` of ``Extension``
-            The extension to load.
+        name : `str'
+            The extension(s) name to load.
+
+        Returns
+        -------
+        extensions : `list` of ``Extension``
+            The loaded extensions.
         
         Raises
         ------
@@ -775,6 +928,8 @@ class ExtensionLoader:
             - No extension is added with the given name.
             - Loading the extension failed.
         """
+        extensions = await _get_extensions(name)
+        
         error_messages = None
         
         for extension in extensions:
@@ -787,6 +942,8 @@ class ExtensionLoader:
         
         if (error_messages is not None):
             raise ExtensionError(error_messages) from None
+        
+        return extensions
     
     
     def unload(self, name):
@@ -800,9 +957,12 @@ class ExtensionLoader:
         
         Returns
         -------
-        task : `None`, ``Task``, ``FutureAsyncWrapper``
+        task : `list` of ``Extension``, ``Task`` -> `list` of ``Extension``,
+                ``FutureAsyncWrapper`` -> `list` of ``Extension``
             If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             unloading is done. However if called from a sync thread, will block till the unloading is done.
+            
+            When finished returns the unloaded extension.
         
         Raises
         ------
@@ -810,12 +970,10 @@ class ExtensionLoader:
             - No extension is added with the given name.
             - Unloading the extension failed.
         """
-        extensions = _get_extensions(name)
-        
-        return run_coroutine(self._unload(extensions), KOKORO)
+        return run_coroutine(self._unload_task(name), KOKORO)
     
     
-    async def _unload(self, extensions):
+    async def _unload_task(self, name):
         """
         Unloads the extension with the given name.
         
@@ -823,8 +981,13 @@ class ExtensionLoader:
         
         Parameters
         ----------
-        extensions : `set` of ``Extension``
-            The extension to load.
+        name : `str`, `iterable` of `str`
+            The extension's name.
+        
+        Returns
+        -------
+        extensions : `list` of ``Extension``
+            The unloaded extensions.
         
         Raises
         ------
@@ -832,6 +995,8 @@ class ExtensionLoader:
             - No extension is added with the given name.
             - Unloading the extension failed.
         """
+        extensions = await _get_extensions(name)
+        
         error_messages = None
         
         for extension in extensions:
@@ -844,6 +1009,8 @@ class ExtensionLoader:
         
         if (error_messages is not None):
             raise ExtensionError(error_messages) from None
+        
+        return extensions
     
     
     def reload(self, name):
@@ -857,9 +1024,12 @@ class ExtensionLoader:
         
         Returns
         -------
-        task : `None`, ``Task``, ``FutureAsyncWrapper``
+        task : `list` of ``Extension``, ``Task`` -> `list` of ``Extension``,
+                ``FutureAsyncWrapper`` -> `list` of ``Extension``
             If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             reloading is done. However if called from a sync thread, will block till the reloading is done.
+            
+            When finished returns the reloaded extensions.
         
         Raises
         ------
@@ -867,12 +1037,10 @@ class ExtensionLoader:
             - No extension is added with the given name.
             - Reloading the extension failed.
         """
-        extensions = _get_extensions(name)
-        
-        return run_coroutine(self._reload(extensions), KOKORO)
+        return run_coroutine(self._reload_task(name), KOKORO)
     
     
-    async def _reload(self, extensions):
+    async def _reload_task(self, extensions):
         """
         Reloads the extension with the given name.
         
@@ -880,8 +1048,13 @@ class ExtensionLoader:
         
         Parameters
         ----------
-        extensions : `set` of ``Extension``
-            The extension to load.
+        name : `str`, `iterable` of `str`
+            The extension's name.
+        
+        Returns
+        -------
+        extensions : `list` of ``Extension``
+            The reloaded extensions.
         
         Raises
         ------
@@ -889,6 +1062,8 @@ class ExtensionLoader:
             - No extension is added with the given name.
             - Reloading the extension failed.
         """
+        extensions = await _get_extensions(name)
+        
         error_messages = None
         
         for extension in extensions:
@@ -904,6 +1079,8 @@ class ExtensionLoader:
         
         if (error_messages is not None):
             raise ExtensionError(error_messages) from None
+        
+        return extensions
     
     
     def load_all(self):
@@ -922,10 +1099,10 @@ class ExtensionLoader:
         ExtensionError
             If any extension failed to load correctly.
         """
-        return run_coroutine(self._load_all(),KOKORO)
+        return run_coroutine(self._load_all_task(), KOKORO)
     
     
-    async def _load_all(self):
+    async def _load_all_task(self):
         """
         Loads all the extensions of the extension loader.
         
@@ -974,10 +1151,10 @@ class ExtensionLoader:
         ExtensionError
             If any extension failed to unload correctly.
         """
-        return run_coroutine(self._unload_all(), KOKORO)
+        return run_coroutine(self._unload_all_task(), KOKORO)
     
     
-    async def _unload_all(self):
+    async def _unload_all_task(self):
         """
         Unloads all the extensions of the extension loader.
         
@@ -992,7 +1169,7 @@ class ExtensionLoader:
         ExtensionError
             If any extension failed to unload correctly.
         """
-        error_messages = []
+        error_messages = None
         
         for extension in EXTENSIONS.values():
             if extension._locked:
@@ -1001,9 +1178,12 @@ class ExtensionLoader:
             try:
                 await self._unload_extension(extension, False)
             except ExtensionError as err:
+                if error_messages is None:
+                    error_messages = []
+                
                 error_messages.append(err.message)
             
-        if error_messages:
+        if (error_messages is not None):
             raise ExtensionError(error_messages) from None
     
     
@@ -1023,10 +1203,10 @@ class ExtensionLoader:
         ExtensionError
             If any extension failed to reload correctly.
         """
-        return run_coroutine(self._reload_all(), KOKORO)
+        return run_coroutine(self._reload_all_task(), KOKORO)
     
     
-    async def _reload_all(self):
+    async def _reload_all_task(self):
         """
         Reloads all the extensions of the extension loader.
         
@@ -1041,7 +1221,7 @@ class ExtensionLoader:
         ExtensionError
             If any extension failed to reload correctly.
         """
-        error_messages = []
+        error_messages = None
         
         for extension in EXTENSIONS.values():
             if extension._locked:
@@ -1049,16 +1229,14 @@ class ExtensionLoader:
             
             try:
                 await self._unload_extension(extension, True)
-            except ExtensionError as err:
-                error_messages.append(err.message)
-                continue
-            
-            try:
                 await self._load_extension(extension)
             except ExtensionError as err:
+                if error_messages is None:
+                    error_messages = []
+                
                 error_messages.append(err.message)
         
-        if error_messages:
+        if (error_messages is not None):
             raise ExtensionError(error_messages) from None
     
     
@@ -1096,18 +1274,13 @@ class ExtensionLoader:
                 raise
             
             except BaseException as err:
-                message = await KOKORO.run_in_executor(
-                    alchemy_incendiary(
-                        self._render_exc,
-                        (
-                            err,
-                            [
-                                'Exception occurred meanwhile loading an extension: `',
-                                extension.name,
-                                '`.\n\n',
-                            ],
-                        ),
-                    ),
+                message = await _render_exception_message_async(
+                    err,
+                    [
+                        'Exception occurred meanwhile loading an extension: `',
+                        extension.name,
+                        '`.\n\n',
+                    ],
                 )
                 
                 return ExtensionError(message)
@@ -1135,20 +1308,15 @@ class ExtensionLoader:
                 raise
             
             except BaseException as err:
-                message = await KOKORO.run_in_executor(
-                    alchemy_incendiary(
-                        self._render_exc,
-                        (
-                            err,
-                            [
-                                'Exception occurred meanwhile entering an extension: `',
-                                extension.name,
-                                '`.\nAt entry_point:',
-                                repr(entry_point),
-                                '\n\n',
-                            ],
-                        )
-                    )
+                message = await _render_exception_message_async(
+                    err,
+                    [
+                        'Exception occurred meanwhile entering an extension: `',
+                        extension.name,
+                        '`.\nAt entry_point:',
+                        repr(entry_point),
+                        '\n\n',
+                    ],
                 )
                 
                 return ExtensionError(message)
@@ -1214,20 +1382,15 @@ class ExtensionLoader:
                     raise
                 
                 except BaseException as err:
-                    message = await KOKORO.run_in_executor(
-                        alchemy_incendiary(
-                            self._render_exc,
-                            (
-                                err,
-                                [
-                                    'Exception occurred meanwhile unloading an extension: `',
-                                    extension.name,
-                                    '`.\nAt exit_point:',
-                                    repr(exit_point),
-                                    '\n\n',
-                                ],
-                            )
-                        )
+                    message = await _render_exception_message_async(
+                        err,
+                        [
+                            'Exception occurred meanwhile unloading an extension: `',
+                            extension.name,
+                            '`.\nAt exit_point:',
+                            repr(exit_point),
+                            '\n\n',
+                        ],
                     )
                     
                     return ExtensionError(message)
@@ -1245,29 +1408,6 @@ class ExtensionLoader:
                     del lib_globals[key]
         finally:
             self._execute_counter -= 1
-    
-    @staticmethod
-    def _render_exc(exception, header):
-        """
-        Renders an exception' traceback.
-        
-        Parameters
-        ----------
-        exception : `BaseException`
-            The exception to render.
-        header : `str`, `list` of `str`
-            Header of the rendered traceback.
-        
-        Returns
-        -------
-        message : `str`
-            The `exception`'s rendered traceback.
-        
-        Notes
-        -----
-        This function should run in an executor.
-        """
-        return ''.join(render_exception_into(exception, header, filter=_ignore_module_import_frames))
     
     
     def __repr__(self):

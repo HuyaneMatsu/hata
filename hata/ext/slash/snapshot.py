@@ -1,323 +1,424 @@
-from ..extension_loader.extension_loader import EXTENSION_LOADER
-from ..extension_loader.snapshot import SNAPSHOT_TAKERS
+__all__ = ('SlasherSnapshotType', )
+
+
+from scarletio import RichAttributeErrorBaseType, copy_docs
+
+from ..extension_loader import BaseSnapshotType, EXTENSION_LOADER
+from ..extension_loader.snapshot.helpers import (
+    _get_list_difference, _get_set_difference, _merge_list_groups, _merge_set_groups
+)
 
 from .application_command import SYNC_ID_NON_GLOBAL
 from .slasher import Slasher
 from .utils import RUNTIME_SYNC_HOOKS
 
-def take_slasher_snapshot(client):
+
+class ApplicationCommandDifference(RichAttributeErrorBaseType):
     """
-    Collects all the command changes from the client's slash command processor.
+    Snapshot for application commands.
     
-    Parameters
+    Attributes
     ----------
-    client : ``Client``
-        The client, who will be snapshotted.
-    
-    Returns
-    -------
-    collected : `None`, `tuple` of (`dict` of (`int`, `list` of `tuple` \
-            (`bool`, ``SlasherApplicationCommand``)) items, `None`, `set` of ``ComponentCommand``, \
-            `None`, `set` of ``FormSubmitCommand``)
-        The collected commands of the slasher.
+    added_application_commands : `None`, `list` of ``SlasherApplicationCommand``
+        The added application commands.
+    removed_application_commands : `None`, `list` of ``SlasherApplicationCommand``
+        The removed application commands.
     """
-    slasher = getattr(client, 'slasher', None)
-    if (slasher is None) or (not isinstance(slasher, Slasher)):
-        collected = None
+    __slots__ = ('added_application_commands', 'removed_application_commands',)
     
-    else:
-        command_states = slasher._command_states
+    def __new__(cls):
+        """
+        Creates a new application command snapshot.
+        """
+        self = object.__new__(cls)
+        self.added_application_commands = None
+        self.removed_application_commands = None
+        return self
+    
+    def __repr__(self):
+        """Returns the application command difference."""
+        repr_parts = ['<', self.__class__.__name__]
         
-        collected_application_commands = None
-        for guild_id, command_state in command_states.items():
-            if guild_id == SYNC_ID_NON_GLOBAL:
-                active_commands = command_state._active
-                if (active_commands is None):
-                    continue
-                
-                command_changes = [(True, command) for command in active_commands]
-                
+        field_added = False
+        
+        added_application_commands = self.added_application_commands
+        if (added_application_commands is not None):
+            if field_added:
+                repr_parts.append(',')
             else:
-                changes = command_state._changes
-                if changes is None:
-                    continue
-                
-                command_changes = [tuple(change) for change in changes]
+                field_added = True
             
-            if collected_application_commands is None:
-                collected_application_commands = {}
+            repr_parts.append(' added_application_commands=')
+            repr_parts.append(repr(added_application_commands))
+        
+        removed_application_commands = self.removed_application_commands
+        if (removed_application_commands is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
             
-            collected_application_commands[guild_id] = command_changes
+            repr_parts.append(',4 removed_application_commands=')
+            repr_parts.append(repr(removed_application_commands))
         
-        collected_component_commands = slasher._component_commands
-        if collected_component_commands:
-            collected_component_commands = collected_component_commands.copy()
-        else:
-            collected_component_commands = None
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    def __bool__(self):
+        """Returns whether the difference contains any changes."""
+        if (self.added_application_commands is not None):
+            return True
         
-        collected_form_submit_commands = slasher._form_submit_commands
-        if collected_form_submit_commands:
-            collected_form_submit_commands = collected_form_submit_commands.copy()
-        else:
-            collected_form_submit_commands = None
+        if (self.removed_application_commands is not None):
+            return True
         
-        if (
-            (collected_application_commands is None) and
-            (collected_component_commands is None) and
-            (collected_form_submit_commands is None)
-        ):
-            collected = None
-        else:
-            collected = (
-                collected_application_commands,
-                collected_component_commands,
-                collected_form_submit_commands,
-            )
-    
-    return collected
-
-
-def calculate_slasher_snapshot_difference(client, snapshot_old, snapshot_new):
-    """
-    Calculates the difference between two slasher snapshots
-    
-    Parameters
-    ----------
-    client : ``Client``
-        The respective client.
-    snapshot_old :  `None`, `tuple` of (`dict` of (`int`, `list` of `tuple` \
-            (`bool`, ``SlasherApplicationCommand``)) items, `None`, `set` of ``ComponentCommand``, \
-            `None`, `set` of ``FormSubmitCommand``)
-        An old snapshot taken.
-    snapshot_new :  `None`, `tuple` of (`dict` of (`int`, `list` of `tuple` \
-            (`bool`, ``SlasherApplicationCommand``)) items, `None`, `set` of ``ComponentCommand``, \
-            `None`, `set` of ``FormSubmitCommand``)
-        A new snapshot.
-    
-    Returns
-    -------
-    snapshot_difference : `None`, `tuple` (`tuple` (`None`, `set` of ``SlasherApplicationCommand``, `None` or
-            `set` of ``SlasherApplicationCommand``), `tuple` (`None`, `set` of ``ComponentCommand``, `None` or \
-            `set` of ``ComponentCommand``), `tuple` (`None`, `set` of ``FormSubmitCommand``, `None` or \
-            `set` of ``FormSubmitCommand``))
-        The difference between the two snapshots.
-    """
-    if (snapshot_old is None) and (snapshot_new is None):
-        return None
+        return False
     
     
-    if snapshot_old is None:
-        application_command_snapshot_old = None
-        component_command_snapshot_old = None
-        form_submit_command_snapshot_old = None
-    else:
-        application_command_snapshot_old, \
-        component_command_snapshot_old, \
-        form_submit_command_snapshot_old \
-            = snapshot_old
-    
-    if snapshot_new is None:
-        application_command_snapshot_new = None
-        component_command_snapshot_new = None
-        form_submit_command_snapshot_new = None
-    else:
-        application_command_snapshot_new, \
-        component_command_snapshot_new, \
-        form_submit_command_snapshot_new \
-            = snapshot_new
-    
-    
-    if (application_command_snapshot_old is not None) or (application_command_snapshot_new is not None):
-        added_application_commands = []
-        removed_application_commands = []
+    def add(self, application_command):
+        """
+        Adds an application command to self.
         
-        guild_ids = set()
-        if (application_command_snapshot_old is not None):
-            guild_ids.update(application_command_snapshot_old.keys())
+        Parameters
+        ----------
+        application_command : ``SlasherApplicationCommand``
+            The application command to add.
+        """
+        added_application_commands = self.added_application_commands
+        if (added_application_commands is None):
+            added_application_commands = []
+            self.added_application_commands = added_application_commands
         
-        if (application_command_snapshot_new is not None):
-            guild_ids.update(application_command_snapshot_new.keys())
+        removed_application_commands = self.removed_application_commands
+        if (removed_application_commands is not None):
+            try:
+                removed_application_commands.remove(application_command)
+            except ValueError:
+                pass
+            else:
+                if not removed_application_commands:
+                    self.removed_application_commands = None
         
-        for guild_id in guild_ids:
-            local_added_application_commands = []
-            local_removed_application_commands = []
-            
-            if (application_command_snapshot_new is not None):
-                try:
-                    new_changes = application_command_snapshot_new[guild_id]
-                except KeyError:
-                    pass
-                else:
-                    for added, command in new_changes:
-                        if added:
-                            local_added_application_commands.append(command)
-                        else:
-                            local_removed_application_commands.remove(command)
-            
-            if (application_command_snapshot_old is not None):
-                try:
-                    old_changes = application_command_snapshot_old[guild_id]
-                except KeyError:
-                    pass
-                else:
-                    for added, command in old_changes:
-                        if added:
-                            try:
-                                local_added_application_commands.remove(command)
-                            except ValueError:
-                                local_removed_application_commands.append(command)
-                        else:
-                            try:
-                                local_removed_application_commands.remove(command)
-                            except ValueError:
-                                local_added_application_commands.append(command)
-            
-            added_application_commands.extend(local_added_application_commands)
-            removed_application_commands.extend(local_removed_application_commands)
-        
-        if (not added_application_commands):
-            added_application_commands = None
-        
-        if (not removed_application_commands):
-            removed_application_commands = None
+        added_application_commands.append(application_command)
     
-        if (added_application_commands is None) and (removed_application_commands is None):
-            application_command_difference = None
-        else:
-            if client.running and client.application.id:
-                slasher = getattr(client, 'slasher', None)
-                if (slasher is not None):
-                    slasher.sync()
-            
-            application_command_difference = added_application_commands, removed_application_commands
-    else:
-        application_command_difference = None
     
-    # component commands
-    if (component_command_snapshot_old is None) or (component_command_snapshot_new is None):
-        removed_component_commands = component_command_snapshot_old
-        added_component_commands = component_command_snapshot_new
-    else:
-        removed_component_commands = component_command_snapshot_old - component_command_snapshot_new
-        added_component_commands = component_command_snapshot_new - component_command_snapshot_old
+    def remove(self, application_command):
+        """
+        Removes the application command from self.
         
-        if (not removed_component_commands):
-            removed_component_commands = None
+        Parameters
+        ----------
+        application_command : ``SlasherApplicationCommand``
+            The application command to remove.
+        """
+        added_application_commands = self.added_application_commands
+        if (added_application_commands is not None):
+            try:
+                added_application_commands.remove(application_command)
+            except ValueError:
+                pass
+            else:
+                if not added_application_commands:
+                    self.added_application_commands = None
         
-        if (not added_component_commands):
-            added_component_commands = None
-    
-    if (added_component_commands is None) and (removed_component_commands is None):
-        component_command_difference = None
-    else:
-        component_command_difference = (removed_component_commands, added_component_commands)
-    
-    # form submit commands
-    if (form_submit_command_snapshot_old is None) or (form_submit_command_snapshot_new is None):
-        removed_form_submit_commands = form_submit_command_snapshot_old
-        added_form_submit_commands = form_submit_command_snapshot_new
-    else:
-        removed_form_submit_commands = form_submit_command_snapshot_old - form_submit_command_snapshot_new
-        added_form_submit_commands = form_submit_command_snapshot_new - form_submit_command_snapshot_old
+        removed_application_commands = self.removed_application_commands
+        if (removed_application_commands is None):
+            removed_application_commands = []
+            self.removed_application_commands = removed_application_commands
         
-        if (not removed_form_submit_commands):
-            removed_form_submit_commands = None
+        removed_application_commands.append(application_command)
+    
+    
+    def iter_added_application_commands(self):
+        """
+        Iterates over the added application commands of the application command difference.
         
-        if (not added_form_submit_commands):
-            added_form_submit_commands = None
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        added_application_command : ``SlasherApplicationCommand``
+        """
+        added_application_commands = self.added_application_commands
+        if (added_application_commands is not None):
+            yield from added_application_commands
     
-    if (added_form_submit_commands is None) and (removed_form_submit_commands is None):
-        form_submit_command_difference = None
-    else:
-        form_submit_command_difference = (removed_form_submit_commands, added_form_submit_commands)
     
-    # Merging
-    if (
-        (application_command_difference is None) and
-        (component_command_difference is None) and
-        (form_submit_command_difference is None)
+    def iter_removed_application_commands(self):
+        """
+        Iterates over the removed application commands of the application command difference.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        removed_application_command : ``SlasherApplicationCommand``
+        """
+        removed_application_commands = self.removed_application_commands
+        if (removed_application_commands is not None):
+            yield from removed_application_commands
     
-    ):
-        snapshot_difference = None
-    else:
-        snapshot_difference = (
-            application_command_difference,
-            component_command_difference,
-            form_submit_command_difference,
+    
+    def copy(self):
+        """
+        Copies the application command difference.
+        
+        Returns
+        -------
+        new : ``ApplicationCommandDifference``
+        """
+        added_application_commands = self.added_application_commands
+        if (added_application_commands is not None):
+            added_application_commands = added_application_commands.copy()
+        
+        removed_application_commands = self.removed_application_commands
+        if (removed_application_commands is not None):
+            removed_application_commands = removed_application_commands.copy()
+        
+        new = object.__new__(type(self))
+        new.added_application_commands = added_application_commands
+        new.removed_application_commands = removed_application_commands
+        return new
+    
+    
+    def revert_copy(self):
+        """
+        Revert copies the application command difference.
+        
+        Returns
+        -------
+        new : ``ApplicationCommandDifference``
+        """
+        added_application_commands = self.added_application_commands
+        if (added_application_commands is not None):
+            added_application_commands = added_application_commands.copy()
+        
+        removed_application_commands = self.removed_application_commands
+        if (removed_application_commands is not None):
+            removed_application_commands = removed_application_commands.copy()
+        
+        new = object.__new__(type(self))
+        new.added_application_commands = removed_application_commands
+        new.removed_application_commands = added_application_commands
+        return new
+    
+    
+    def _subtract(self, other):
+        """
+        Subtracts other from self.
+        
+        Parameters
+        ----------
+        other : ``ApplicationCommandDifference``
+            The other difference to subtract from self.
+        
+        Returns
+        -------
+        new : ``ApplicationCommandDifference``
+        """
+        added_application_commands, removed_application_commands = _get_list_difference(
+            _merge_list_groups(self.added_application_commands, other.removed_application_commands),
+            _merge_list_groups(other.added_application_commands, self.removed_application_commands),
         )
+        
+        new = object.__new__(type(self))
+        new.added_application_commands = added_application_commands
+        new.removed_application_commands = removed_application_commands
+        return new
     
-    return snapshot_difference
+    
+    def __sub__(self, other):
+        """Subtracts other from self."""
+        if other is None:
+            return self.copy()
+        
+        if type(self) is type(other):
+            return self._subtract(other)
+        
+        return NotImplemented
+    
+    
+    def __rsub__(self, other):
+        """subtracts other from self."""
+        if other is None:
+            return self.revert_copy()
+        
+        if type(self) is type(other):
+            return other._subtract(self)
+        
+        return NotImplemented
+        
+        
 
-
-def revert_slasher_snapshot(client, snapshot_difference):
+class SlasherSnapshotType(BaseSnapshotType):
     """
-    Reverts a snapshot taken from a slasher.
+    Slasher extension snapshot.
     
-    Parameters
+    Attributes
     ----------
-    client : ``Client``
-        The respective client instance.
-    snapshot_difference : `None`, `tuple` (`tuple` (`None`, `set` of ``SlasherApplicationCommand``, `None` or
-            `set` of ``SlasherApplicationCommand``), `tuple` (`None`, `set` of ``ComponentCommand``, `None` or \
-            `set` of ``ComponentCommand``), `tuple` (`None`, `set` of ``FormSubmitCommand``, `None` or \
-            `set` of ``FormSubmitCommand``))
-        The taken snapshot.
+    added_component_commands : `None`, `set` of ``ComponentCommand``
+        The added component commands
+    added_form_submit_commands : `None, `set` of ``FormSubmitCommand``
+        The added form submit commands.
+    application_command_differences_by_guild_id : `dict` of (`int`, ``ApplicationCommandDifference``)
+        The added application commands.
+    removed_component_commands : `None`, `set` of ``ComponentCommand``
+        The removed component commands
+    removed_form_submit_commands : `None, `set` of ``FormSubmitCommand``
+        The removed form submit commands.
     """
-    slasher = getattr(client, 'slasher', None)
-    if (slasher is None) or (not isinstance(slasher, Slasher)):
-        return
+    __slots__ = (
+        'added_component_commands', 'added_form_submit_commands', 'application_command_differences_by_guild_id',
+        'removed_component_commands', 'removed_form_submit_commands',
+    )
     
-    if (snapshot_difference is not None):
+    
+    @copy_docs(BaseSnapshotType.__new__)
+    def __new__(cls, client):
+        application_command_differences_by_guild_id = {}
         
-        application_command_difference, \
-        component_command_difference, \
-        form_submit_command_difference \
-            = snapshot_difference
+        slasher = getattr(client, 'slasher', None)
+        if (slasher is None) or (not isinstance(slasher, Slasher)):
+            added_component_commands = None
+            added_form_submit_commands = None
+            application_command_differences_by_guild_id = None
         
-        # application_command_difference
-        if (application_command_difference is not None):
-            added_application_commands, removed_application_commands = application_command_difference
-            if (added_application_commands is not None):
-                for application_command in added_application_commands:
-                    slasher._remove_application_command(application_command)
+        else:
+            command_states = slasher._command_states
             
-            if (removed_application_commands is not None):
-                for application_command in removed_application_commands:
-                    slasher._add_application_command(application_command)
+            for guild_id, command_state in command_states.items():
+                application_command_difference = ApplicationCommandDifference()
+                
+                if guild_id == SYNC_ID_NON_GLOBAL:
+                    active_commands = command_state._active
+                    if (active_commands is not None):
+                        for command in active_commands:
+                            application_command_difference.add(command)
+                    
+                else:
+                    changes = command_state._changes
+                    if (changes is not None):
+                        for added, command in changes:
+                            if added:
+                                application_command_difference.add(command)
+                            else:
+                                application_command_difference.remove(command)
+                
+                if application_command_difference:
+                    application_command_differences_by_guild_id[guild_id] = application_command_difference
             
-            if client.running and client.application.id:
+            
+            added_component_commands = slasher._component_commands
+            if added_component_commands:
+                added_component_commands = added_component_commands.copy()
+            else:
+                added_component_commands = None
+            
+            added_form_submit_commands = slasher._form_submit_commands
+            if added_form_submit_commands:
+                added_form_submit_commands = added_form_submit_commands.copy()
+            else:
+                added_form_submit_commands = None
+        
+        self = BaseSnapshotType.__new__(cls, client)
+        
+        self.added_component_commands = added_component_commands
+        self.added_form_submit_commands = added_form_submit_commands
+        self.application_command_differences_by_guild_id = application_command_differences_by_guild_id
+        self.removed_component_commands = None
+        self.removed_form_submit_commands = None
+        
+        return self
+    
+    
+    @copy_docs(BaseSnapshotType._extract)
+    def _extract(self, other):
+        self_application_command_differences_by_guild_id = self.application_command_differences_by_guild_id
+        other_application_command_differences_by_guild_id = other.application_command_differences_by_guild_id
+        
+        new_application_command_differences_by_guild_id = {}
+        
+        for guild_id in {
+            *self_application_command_differences_by_guild_id.keys(),
+            *other_application_command_differences_by_guild_id.keys(),
+        }:
+            new_application_command_difference = (
+                self_application_command_differences_by_guild_id.get(guild_id, None) -
+                other_application_command_differences_by_guild_id.get(guild_id, None)
+            )
+            
+            if new_application_command_difference:
+                new_application_command_differences_by_guild_id[guild_id] = new_application_command_difference
+        
+        
+        added_component_commands, removed_component_commands = _get_set_difference(
+            _merge_set_groups(self.added_component_commands, other.removed_component_commands),
+            _merge_set_groups(other.added_component_commands, self.removed_component_commands),
+        )
+        
+        added_form_submit_commands, removed_form_submit_commands = _get_set_difference(
+            _merge_set_groups(self.added_form_submit_commands, other.removed_form_submit_commands),
+            _merge_set_groups(other.added_form_submit_commands, self.removed_form_submit_commands),
+        )
+        
+        new = BaseSnapshotType._extract(self, other)
+        
+        new.added_component_commands = added_component_commands
+        new.added_form_submit_commands = added_form_submit_commands
+        new.application_command_differences_by_guild_id = new_application_command_differences_by_guild_id
+        new.removed_component_commands = removed_component_commands
+        new.removed_form_submit_commands = removed_form_submit_commands
+        
+        client = self.client
+        if client.running and client.application.id:
+            slasher = getattr(client, 'slasher', None)
+            if (slasher is not None):
                 slasher.sync()
         
-        # component_command_difference
-        if (component_command_difference is not None):
-            added_component_commands, removed_component_commands = component_command_difference
-            
-            if (added_component_commands is not None):
-                for component_command in added_component_commands:
-                    slasher._remove_component_command(component_command)
-
-            if (removed_component_commands is not None):
-                for component_command in removed_component_commands:
-                    slasher._add_component_command(component_command)
+        return new
+    
+    
+    @copy_docs(BaseSnapshotType.revert)
+    def revert(self):
+        BaseSnapshotType.revert(self)
         
-        # form_submit_command_difference
-        if (form_submit_command_difference is not None):
-            added_form_submit_commands, removed_form_submit_commands = form_submit_command_difference
+        client = self.client
+        if client is None:
+            return
+
+        slasher = getattr(client, 'slasher', None)
+        if (slasher is None) or (not isinstance(slasher, Slasher)):
+            return
+        
+        for application_command_difference in self.application_command_differences_by_guild_id.values():
+            for application_command in application_command_difference.iter_added_application_commands():
+                slasher._remove_application_command(application_command)
             
-            if (added_form_submit_commands is not None):
-                for form_submit_command in added_form_submit_commands:
-                    slasher._remove_form_submit_command(form_submit_command)
-
-            if (removed_form_submit_commands is not None):
-                for form_submit_command in removed_form_submit_commands:
-                    slasher._add_form_submit_command(form_submit_command)
-
-
-SNAPSHOT_TAKERS['client.slasher'] = (
-    take_slasher_snapshot,
-    calculate_slasher_snapshot_difference,
-    revert_slasher_snapshot,
-)
+            for application_command in application_command_difference.iter_removed_application_commands():
+                slasher._add_application_command(application_command)
+        
+        
+        added_component_commands = self.added_component_commands
+        if (added_component_commands is not None):
+            for component_command in added_component_commands:
+                slasher._remove_component_command(component_command)
+        
+        
+        removed_component_commands = self.removed_component_commands
+        if (removed_component_commands is not None):
+            for component_command in removed_component_commands:
+                slasher._add_component_command(component_command)
+        
+        added_form_submit_commands = self.added_form_submit_commands
+        if (added_form_submit_commands is not None):
+            for form_submit_command in added_form_submit_commands:
+                slasher._remove_form_submit_command(form_submit_command)
+        
+        removed_form_submit_commands = self.removed_form_submit_commands
+        if (removed_form_submit_commands is not None):
+            for form_submit_command in removed_form_submit_commands:
+                slasher._add_form_submit_command(form_submit_command)
 
 
 def runtime_sync_hook_is_executing_extension(client):

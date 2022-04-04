@@ -23,6 +23,7 @@ class ExtensionError(Exception):
         """
         self._message = message
     
+    
     @property
     def message(self):
         """

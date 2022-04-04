@@ -63,6 +63,7 @@ setup(
         'hata.ext.commands_v2',
         'hata.ext.commands_v2.helps',
         'hata.ext.extension_loader',
+        'hata.ext.extension_loader.utils',
         'hata.ext.kokoro_sqlalchemy',
         'hata.ext.patchouli',
         'hata.ext.prettyprint',

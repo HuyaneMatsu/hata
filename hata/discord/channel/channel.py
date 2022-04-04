@@ -69,9 +69,9 @@ class Channel(DiscordEntity, immortal=True):
             metadata = get_channel_metadata_type(data['type'])(data)
             
             self = object.__new__(cls)
+            self._message_history = None
             self.id = channel_id
             self.guild_id = guild_id
-            self._message_history = None
             self.metadata = metadata
             
             metadata._created(self, client)
@@ -597,6 +597,7 @@ class Channel(DiscordEntity, immortal=True):
         channel : ``Channel``
         """
         self = object.__new__(cls)
+        self._message_history = None
         self.id = channel_id
         self.guild_id = guild_id
         self.metadata = get_channel_metadata_type(data.get('type', -1))._from_partial_data(data)
@@ -626,6 +627,7 @@ class Channel(DiscordEntity, immortal=True):
             The created partial channel.
         """
         self = object.__new__(cls)
+        self._message_history = None
         self.id = channel_id
         self.guild_id = guild_id
         self.metadata = get_channel_metadata_type(channel_type)._create_empty()

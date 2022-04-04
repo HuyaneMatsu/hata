@@ -51,6 +51,14 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 ##### ext.extension_loader
 
 - Exception messages will not show internal frames.
+- `Extension` class now supports rich attribute errors.
+- When circularly loading extensions, `ImportError` is raised.
+- `EXTENSION_LOADER.load_extension` returns the loaded extension.
+- Add `Extension.__gt__`.
+- Add `Extension.__lt__`.
+- `EXTENSION_LOADER.load` returns the loaded extensions.
+- `EXTENSION_LOADER.unload` returns the unloaded extensions.
+- `EXTENSION_LOADER.reload` returns the reloaded extensions.
 
 #### Bug Fixes
 

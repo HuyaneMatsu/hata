@@ -1,15 +1,13 @@
-__all__ = ('require', )
+__all__ = ()
 
 from os import listdir as list_directory
 from os.path import (
     basename as base_name, exists, isabs as is_absolute_path_name, isdir as is_folder, isfile as is_file,
     join as join_paths
 )
-from sys import _getframe as get_frame, path as route_paths
+from sys import path as route_paths
 
 from scarletio import CallableAnalyzer, HybridValueDictionary
-
-from .exceptions import DoNotLoadExtension
 
 
 def _validate_entry_or_exit(point):
@@ -206,34 +204,81 @@ PYTHON_EXTENSION_NAMES = (
 )
 
 
+def _get_extension_name_and_path(name):
+    """
+    fetches the name and the path of the first matched extension. If non is matched raised `ImportError`.
+    
+    Parameters
+    ----------
+    name : `str`
+        The name to fetch.
+    
+    Raises
+    ------
+    extension_name : `None`, `str`
+        Extension's  name.
+    extension_path : `str`
+        Path of the extension file.
+    
+    Raises
+    ------
+    ImportError
+        - Could not resolve the given `name`.
+    ImportError
+        - If `name` could not be detected as an extension.
+    TypeError
+        - If `name` is not `str` nor an `iterable` of `str`.
+    """
+    if not isinstance(name, str):
+        raise TypeError(
+            f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+        )
+    
+    generator = _iter_extension_names_and_paths(name)
+    try:
+        extension_pair = generator.send(None)
+    except StopIteration:
+        raise ImportError(
+            f'No extensions found with the given name: {name!r}.'
+        ) from None
+    
+    else:
+        generator.close()
+    
+    return extension_pair
+
+
 def _iter_extension_names_and_paths(name):
     """
-    Fetches the names
+    Fetches the names and the paths of the given extension.
     
     This function is a generator.
     
     Parameters
     ----------
     name : `str`, `iterable` of `str`
-        The name to fetch to single strings.
+        The name(s) to fetch.
     
     Yields
     ------
-    name : `str`
-        Extension names.
-    path : `str`
+    extension_name : `None`, `str`
+        Extension's  name.
+    extension_path : `str`
         Path of the extension file.
     
     Raises
     ------
     ImportError
-        If a name could not be detected as an extension.
+        - Could not resolve the given `name`.
+    ImportError
+        - If `name` could not be detected as an extension.
     TypeError
-        If `name` is not `str` nor an `iterable` of `str`.
+        - If `name` is not `str` nor an `iterable` of `str`.
     """
     for name in _iter_name_maybe_iterable(name):
         if name.startswith(ABSOLUTE_PATH_EXTENSION_NAME_PREFIX):
-            return name
+            yield name
+            return
         
         yield from _lookup_path(name)
 
@@ -251,13 +296,17 @@ def _iter_name_maybe_iterable(name):
     
     Yields
     ------
-    name : `str`
-        Extension names.
+    extension_name : `None`, `str`
+        The extension's name.
+    extension_path : `str`
+        Path of the extension file.
     
     Raises
     ------
+    ImportError
+        - Could not resolve the given `name`.
     TypeError
-        If `name` is not `str` nor an `iterable` of `str`.
+        - If `name` is not `str` nor an `iterable` of `str`.
     """
     name_type = type(name)
     if name_type is str:
@@ -294,9 +343,9 @@ def _lookup_path(import_name_or_path):
     
     Yields
     ------
-    import_name : `None`, `str`
+    extension_name : `None`, `str`
         Import name to an extension file.
-    path : `str`
+    extension_path : `str`
         Path of the file.
     
     Raise
@@ -339,16 +388,16 @@ def _iter_folder(import_name, folder_path):
     
     Parameters
     ----------
-    import_name : `None`, `str`
+    extension_name : `None`, `str`
         The name of the extension if we would import it.
     folder_path : `str`
         Path to the folder
     
     Yields
     ------
-    import_name : `None`, `str`
+    extension_name : `None`, `str`
         Detected import names for each applicable file in the folder.
-    path : `str`
+    extension_path : `str`
         Path of the file.
     """
     for python_extension_name in PYTHON_EXTENSION_NAMES:
@@ -385,40 +434,6 @@ def _iter_folder(import_name, folder_path):
         
         # no more cases
         continue
-
-
-
-def require(*args, **kwargs):
-    """
-    Requires the given parameters.
-    
-    Parameters
-    ----------
-    *args : Parameters
-        Required variable names.
-    **kwargs : Keyword parameters
-        Variables and their expected value / type.
-    """
-    module_globals = get_frame().f_back.f_globals
-    
-    for variable_name in args:
-        if variable_name not in module_globals:
-            raise DoNotLoadExtension(variable_name)
-    
-    for variable_name, expected_value in kwargs.items():
-        try:
-            variable_value = module_globals[variable_name]
-        except KeyError:
-            raise DoNotLoadExtension(variable_name) from None
-        
-        if variable_value is expected_value:
-            continue
-        
-        if isinstance(expected_value, type) and isinstance(variable_value, expected_value):
-            continue
-        
-        raise DoNotLoadExtension(variable_name, variable_value, expected_value)
-
 
 ABSOLUTE_PATH_EXTENSION_NAME_PREFIX = '<extension>.'
 

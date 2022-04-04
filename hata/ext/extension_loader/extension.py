@@ -5,11 +5,11 @@ from importlib import reload as reload_module
 from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from py_compile import compile as compile_module
 
-from scarletio import HybridValueDictionary, WeakValueDictionary, include
+from scarletio import HybridValueDictionary, RichAttributeErrorBaseType, WeakSet, WeakValueDictionary, include
 
 from .exceptions import DoNotLoadExtension
 from .snapshot import calculate_snapshot_difference, revert_snapshot, take_snapshot
-from .utils import PROTECTED_NAMES, _get_path_extension_name, _validate_entry_or_exit
+from .helpers import PROTECTED_NAMES, _get_path_extension_name, _validate_entry_or_exit
 
 
 EXTENSION_LOADER = include('EXTENSION_LOADER')
@@ -28,7 +28,10 @@ EXTENSION_STATE_VALUE_TO_NAME = {
     EXTENSION_STATE_UNSATISFIED: 'unsatisfied',
 }
 
-class Extension:
+LOADING_EXTENSIONS = set()
+
+
+class Extension(RichAttributeErrorBaseType):
     """
     Represents an extension.
     
@@ -36,6 +39,8 @@ class Extension:
     ----------
     _added_variable_names : `list of `str`
         A list of the added variables' names to the module.
+    _child_extensions : `None`, ``WeakSet`` of ``Extension``
+        Child extensions of the extension.
     _default_variables : `None`, `HybridValueDictionary` of (`str`, `Any`) items
         An optionally weak value dictionary to store objects for assigning them to modules before loading them.
         If it would be set as empty, then it is set as `None` instead.
@@ -45,12 +50,14 @@ class Extension:
         Internal slot used by the ``.exit_point`` property.
     _extend_default_variables : `bool`
         Internal slot used by the ``.extend_default_variables`` property.
-    _lib : `None` or module`
-        The extension's module. Set as `module` object if it the extension was already loaded.
     _locked : `bool`
         The internal slot used for the ``.locked`` property.
-    _snapshot_difference : `None`, `list` of `tuple` (``Client``, `list` of `tuple` (`str`, `Any`))
+    _module : `None` or module`
+        The extension's module. Set as `module` object if it the extension was already loaded.
+    _snapshot_difference : `None`, `list` of ``BaseSnapshotType``
         Snapshot difference if applicable. Defaults to `None`.
+    _snapshot_extractions : `None`, `list` of `list` of ``BaseSnapshotType``
+        Additional snapshots to extract from own.
     _spec : `ModuleSpec`
         The module specification for the extension's module's import system related state.
     _state : `int`
@@ -70,8 +77,9 @@ class Extension:
         Whether snapshot difference should be taken.
     """
     __slots__ = (
-        '__weakref__', '_added_variable_names', '_default_variables', '_entry_point', '_exit_point',
-        '_extend_default_variables', '_lib', '_locked', '_snapshot_difference', '_spec', '_state', '_take_snapshot'
+        '__weakref__', '_added_variable_names', '_child_extensions', '_default_variables', '_entry_point',
+        '_exit_point', '_extend_default_variables', '_locked', '_module', '_snapshot_difference',
+        '_snapshot_extractions', '_spec', '_state', '_take_snapshot'
     )
     
     def __new__(cls, name, path, entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference,
@@ -125,23 +133,30 @@ class Extension:
         if from_path:
             spec = spec_from_file_location(name, path)
         else:
-            spec = find_spec(name)
+            # `find_spec` can freeze with importing already imported modules, running the same code,
+            # causing `RuntimeError`, so we skip it. This can happen when switching threads from a loading file.
+            # spec = find_spec(name)
+            
+            spec = spec_from_file_location(name, path)
+            
         
         if spec is None:
             raise ModuleNotFoundError(name)
         
         self = object.__new__(cls)
-        self._state = EXTENSION_STATE_UNDEFINED
-        self._spec = spec
-        self._lib = None
+        self._added_variable_names = []
+        self._child_extensions = None
+        self._default_variables = default_variables
         self._entry_point = entry_point
         self._exit_point = exit_point
         self._extend_default_variables = extend_default_variables
         self._locked = locked
-        self._default_variables = default_variables
-        self._added_variable_names = []
-        self._take_snapshot = take_snapshot_difference
+        self._module = None
         self._snapshot_difference = None
+        self._snapshot_extractions = None
+        self._spec = spec
+        self._state = EXTENSION_STATE_UNDEFINED
+        self._take_snapshot = take_snapshot_difference
         
         EXTENSIONS[name] = self
         
@@ -187,6 +202,22 @@ class Extension:
         repr_parts.append('>')
         
         return ''.join(repr_parts)
+    
+    
+    def __gt__(self, other):
+        """Returns whether self is greater than other."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self.name > other.name
+    
+    
+    def __lt__(self, other):
+        """Returns whether self is less than other."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return self.name < other.name
     
     
     def add_default_variables(self, **variables):
@@ -273,6 +304,7 @@ class Extension:
         
         self._entry_point = entry_point
     
+    
     @entry_point.deleter
     def entry_point(self):
         self._entry_point = None
@@ -311,6 +343,7 @@ class Extension:
         """
         return self._extend_default_variables
     
+    
     @extend_default_variables.setter
     def extend_default_variables(self, extend_default_variables):
         extend_default_variables_type = extend_default_variables.__class__
@@ -326,6 +359,7 @@ class Extension:
         
         self._extend_default_variables = extend_default_variables
     
+    
     @property
     def locked(self):
         """
@@ -335,6 +369,7 @@ class Extension:
         Accepts and returns `bool`.
         """
         return self._locked
+    
     
     @locked.setter
     def locked(self, locked):
@@ -357,109 +392,137 @@ class Extension:
         
         Returns
         -------
-        lib : `None`, `lib`
+        module : `None`, `ModuleType`
+        
+        Raises
+        ------
+        ImportError
+            Circular imports.
+        BaseException
+            Any exception raised from the extension file.
         """
-        state = self._state
-        if state == EXTENSION_STATE_UNDEFINED:
+        if self in LOADING_EXTENSIONS:
+            raise ImportError(
+                f'{self.name} is already being loaded. This can happen if there are circular imports. The following '
+                f'extensions are being loaded right now: '
+                f'{", ".join(extension.name for extension in LOADING_EXTENSIONS)}'
+            )
+        
+        try:
+            LOADING_EXTENSIONS.add(self)
+            state = self._state
+            if state == EXTENSION_STATE_UNDEFINED:
+                
+                spec = self._spec
+                module = sys.modules.get(spec.name, None)
+                if module is None:
+                    # module is not imported yet, nice
+                    module = module_from_spec(spec)
+                    
+                    added_variable_names = self._added_variable_names
+                    if self._extend_default_variables:
+                        for name, value in EXTENSION_LOADER._default_variables.items():
+                            setattr(module, name, value)
+                            added_variable_names.append(name)
+                    
+                    default_variables = self._default_variables
+                    if (default_variables is not None):
+                        for name, value in default_variables.items():
+                            setattr(module, name, value)
+                            added_variable_names.append(name)
+                    
+                    if self._take_snapshot:
+                        snapshot_old = take_snapshot()
+                    
+                    try:
+                        spec.loader.exec_module(module)
+                    except DoNotLoadExtension:
+                        loaded = False
+                    else:
+                        loaded = True
+                    
+                    sys.modules[spec.name] = module
+                    
+                    if loaded:
+                        if self._take_snapshot:
+                            snapshot_new = take_snapshot()
+                            
+                            self._snapshot_difference = calculate_snapshot_difference(snapshot_old, snapshot_new)
+                
+                else:
+                    loaded = True
+                
+                self._module = module
+                
+                if loaded:
+                    state = EXTENSION_STATE_LOADED
+                else:
+                    state = EXTENSION_STATE_UNSATISFIED
+                    module = None
+                
+                self._state = state
+                return module
             
-            spec = self._spec
-            lib = sys.modules.get(spec.name, None)
-            if lib is None:
-                # lib is not imported yet, nice
-                lib = module_from_spec(spec)
+            if state == EXTENSION_STATE_LOADED:
+                # return None -> already loaded
+                return None
+            
+            if state in (EXTENSION_STATE_UNLOADED, EXTENSION_STATE_UNSATISFIED):
+                # reload
+                module = self._module
                 
                 added_variable_names = self._added_variable_names
                 if self._extend_default_variables:
                     for name, value in EXTENSION_LOADER._default_variables.items():
-                        setattr(lib, name, value)
+                        setattr(module, name, value)
                         added_variable_names.append(name)
                 
                 default_variables = self._default_variables
                 if (default_variables is not None):
                     for name, value in default_variables.items():
-                        setattr(lib, name, value)
+                        setattr(module, name, value)
                         added_variable_names.append(name)
                 
                 if self._take_snapshot:
                     snapshot_old = take_snapshot()
                 
                 try:
-                    spec.loader.exec_module(lib)
+                    reload_module(module)
                 except DoNotLoadExtension:
                     loaded = False
                 else:
                     loaded = True
                 
-                sys.modules[spec.name] = lib
-                
                 if loaded:
                     if self._take_snapshot:
                         snapshot_new = take_snapshot()
                         
-                        self._snapshot_difference = calculate_snapshot_difference(snapshot_old, snapshot_new)
+                        snapshot_difference = calculate_snapshot_difference(snapshot_old, snapshot_new)
+                        for snapshot_extraction in self.iter_iter_snapshot_extractions():
+                            snapshot_difference = calculate_snapshot_difference(snapshot_difference, snapshot_extraction)
+                        
+                        self.clear_snapshot_extractions()
+                        
+                        self._snapshot_difference = snapshot_difference
+                        for child in self.iter_child_extensions():
+                            child.add_snapshot_extraction(snapshot_difference)
+                
+                if loaded:
+                    state = EXTENSION_STATE_LOADED
+                else:
+                    state = EXTENSION_STATE_UNSATISFIED
+                    module = None
+                
+                self._state = state
+                
+                return module
             
-            else:
-                loaded = True
-            
-            self._lib = lib
-            
-            if loaded:
-                state = EXTENSION_STATE_LOADED
-            else:
-                state = EXTENSION_STATE_UNSATISFIED
-                lib = None
-            
-            self._state = state
-            return lib
-        
-        if state == EXTENSION_STATE_LOADED:
-            # return None -> already loaded
             return None
+            # no more cases
         
-        if state in (EXTENSION_STATE_UNLOADED, EXTENSION_STATE_UNSATISFIED):
-            # reload
-            lib = self._lib
-            
-            added_variable_names = self._added_variable_names
-            if self._extend_default_variables:
-                for name, value in EXTENSION_LOADER._default_variables.items():
-                    setattr(lib, name, value)
-                    added_variable_names.append(name)
-            
-            default_variables = self._default_variables
-            if (default_variables is not None):
-                for name, value in default_variables.items():
-                    setattr(lib, name, value)
-                    added_variable_names.append(name)
-            
-            if self._take_snapshot:
-                snapshot_old = take_snapshot()
-            
-            try:
-                reload_module(lib)
-            except DoNotLoadExtension:
-                loaded = False
-            else:
-                loaded = True
-            
-            if loaded:
-                if self._take_snapshot:
-                    snapshot_new = take_snapshot()
-                    
-                    self._snapshot_difference = calculate_snapshot_difference(snapshot_old, snapshot_new)
-            
-            if loaded:
-                state = EXTENSION_STATE_LOADED
-            else:
-                state = EXTENSION_STATE_UNSATISFIED
-                lib = None
-            
-            self._state = state
-            
-            return lib
-        
-        return None
-        # no more cases
+        finally:
+            LOADING_EXTENSIONS.discard(self)
+    
     
     def _unload(self, check_for_syntax):
         """
@@ -472,7 +535,7 @@ class Extension:
         
         Returns
         -------
-        lib : `None`, `lib`
+        module : `None`, `ModuleType`
         
         Raises
         ------
@@ -484,10 +547,10 @@ class Extension:
             return None
         
         if state == EXTENSION_STATE_LOADED:
-            lib = self._lib
+            module = self._module
             
             # Check whether the file's syntax is correct
-            if check_for_syntax and (lib is not None):
+            if check_for_syntax and (module is not None):
                 file_name = self.file_name
                 # python files might not be `.py` files, which we should not compile.
                 if file_name.endswith('.py'):
@@ -503,7 +566,7 @@ class Extension:
                 revert_snapshot(snapshot_difference)
             
             self._state = EXTENSION_STATE_UNLOADED
-            return lib
+            return module
         
         if state in (EXTENSION_STATE_UNLOADED, EXTENSION_STATE_UNSATISFIED):
             return None
@@ -514,16 +577,17 @@ class Extension:
         """
         Unassigns the assigned variables to the respective module and clears ``._added_variable_names``.
         """
-        lib = self._lib
-        if lib is None:
+        module = self._module
+        if module is None:
             return
         
         added_variable_names = self._added_variable_names
         for name in added_variable_names:
             try:
-                delattr(lib, name)
+                delattr(module, name)
             except AttributeError:
                 pass
+        
         added_variable_names.clear()
     
     @property
@@ -603,19 +667,19 @@ class Extension:
         
         if state == EXTENSION_STATE_LOADED:
             self._state = EXTENSION_STATE_UNLOADED
-            lib = self._lib
+            module = self._module
             
             if self._extend_default_variables:
                 for name in EXTENSION_LOADER._default_variables:
                     try:
-                        delattr(lib, name)
+                        delattr(module, name)
                     except AttributeError:
                         pass
             
             default_variables = self._default_variables
             if (default_variables is not None):
                 for name in default_variables:
-                    delattr(lib, name)
+                    delattr(module, name)
             
             try:
                 del sys.modules[self._spec.name]
@@ -631,3 +695,78 @@ class Extension:
             return
         
         # no more cases
+    
+    
+    def add_child_extension(self, extension):
+        """
+        Registers a child extension.
+        
+        Parameters
+        ----------
+        extension : ``Extension``
+            The extension to register.
+        """
+        child_extensions = self._child_extensions
+        if (child_extensions is None):
+            child_extensions = WeakSet()
+        
+        child_extensions.add(extension)
+    
+    
+    def iter_child_extensions(self):
+        """
+        Iterates over the child extensions.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        child_extension : `None`
+        """
+        child_extensions = self._child_extensions
+        if (child_extensions is not None):
+            yield from child_extensions
+    
+    
+    def clear_child_extensions(self):
+        """
+        Clears the child extensions of the extension.
+        """
+        self._child_extensions = None
+    
+    
+    def add_snapshot_extraction(self, snapshots):
+        """
+        Adds snapshot extraction to the extension.
+        
+        Parameters
+        ----------
+        snapshots : `list` of ``BaseSnapshotType``
+        """
+        snapshot_extractions = self._snapshot_extractions
+        if (snapshot_extractions is None):
+            snapshot_extractions = []
+        
+        snapshot_extractions.append(snapshots)
+    
+    
+    def iter_snapshot_extractions(self):
+        """
+        Iterates over the snapshot extractions of the extension.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        snapshots : `list` of ``BaseSnapshotType``
+        """
+        snapshot_extractions = self._snapshot_extractions
+        if (snapshot_extractions is not None):
+            yield from snapshot_extractions
+    
+    
+    def clear_snapshot_extractions(self):
+        """
+        Clears the snapshot extractions of the extension.
+        """
+        self._snapshot_extractions = None

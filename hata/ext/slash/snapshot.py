@@ -332,6 +332,44 @@ class SlasherSnapshotType(BaseSnapshotType):
         return self
     
     
+    @copy_docs(BaseSnapshotType.__repr__)
+    def __repr__(self):
+        repr_parts = ['<', self.__class__.__name__]
+        
+        client = self.client
+        if (client is not None):
+            repr_parts.append(' of ')
+            repr_parts.append(repr(client))
+        
+        application_command_differences_by_guild_id = self.application_command_differences_by_guild_id
+        if application_command_differences_by_guild_id:
+            repr_parts.append(', application_command_differences_by_guild_id=')
+            repr_parts.append(repr(application_command_differences_by_guild_id))
+        
+        added_component_commands = self.added_component_commands
+        if (added_component_commands is not None):
+            repr_parts.append(', added_component_commands=')
+            repr_parts.append(repr(added_component_commands))
+            
+        removed_component_commands = self.removed_component_commands
+        if (removed_component_commands is not None):
+            repr_parts.append(', removed_component_commands=')
+            repr_parts.append(repr(removed_component_commands))
+        
+        added_form_submit_commands = self.added_form_submit_commands
+        if (added_form_submit_commands is not None):
+            repr_parts.append(', added_form_submit_commands=')
+            repr_parts.append(repr(added_form_submit_commands))
+        
+        removed_form_submit_commands = self.removed_form_submit_commands
+        if (removed_form_submit_commands is not None):
+            repr_parts.append(', removed_form_submit_commands=')
+            repr_parts.append(repr(removed_form_submit_commands))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
     @copy_docs(BaseSnapshotType._extract)
     def _extract(self, other):
         self_application_command_differences_by_guild_id = self.application_command_differences_by_guild_id

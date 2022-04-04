@@ -81,7 +81,7 @@ class ContentParameterParserContextBase(RichAttributeErrorBaseType):
         repr_parts = ['<', self.__class__.__name__]
         
         repr_parts.append(' parsed=')
-        repr_parts.append(repr(repr_parts))
+        repr_parts.append(repr(self._parsed))
         
         repr_parts.append('>')
         return ''.join(repr_parts)

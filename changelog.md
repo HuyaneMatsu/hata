@@ -60,6 +60,27 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 - `EXTENSION_LOADER.unload` returns the unloaded extensions.
 - `EXTENSION_LOADER.reload` returns the reloaded extensions.
 
+##### ext.commands_v2
+
+- Add missing `CommandContentParser.__repr__`.
+- `CommandContentParser` now support rich attribute error messages.
+- Add missing `CommandContentParser.__eq__`.
+- Add missing `CommandContentParser.__hash__`.
+- `ContentParserParameter` now support rich attribute error messages.
+- Add missing `ContentParserParameter.__eq__`.
+- Add missing `ContentParserParameter.__hash__`.
+- `ContentParserParameterDetail` now support rich exception messages.
+- Add missing `ContentParserParameterDetail.__eq__`.
+- Add missing `ContentParserParameterDetail.__hash__`.
+- `ConverterSetting` now support rich attribute error messages.
+- Add missing `ConverterSetting.__eq__`.
+- Add missing `ConverterSetting.__hash__`.
+- `ContentParameterParser` now support rich exception messages.
+- `ContentParameterParserContextBase` now support rich attribute error messages.
+- Add missing `ContentParameterParserContextBase.__repr__`.
+- Add missing `ContentParameterParserContextBase.__eq__`.
+- Add missing `ContentParameterParserContextBase.__hash__`.
+
 #### Bug Fixes
 
 - `datetime_to_unix_time` returned incorrect value.

@@ -447,7 +447,15 @@ class Extension(RichAttributeErrorBaseType):
                         if self._take_snapshot:
                             snapshot_new = take_snapshot()
                             
-                            self._snapshot_difference = calculate_snapshot_difference(snapshot_old, snapshot_new)
+                            snapshot_difference = calculate_snapshot_difference(snapshot_new, snapshot_old)
+                            for snapshot_extraction in self.iter_snapshot_extractions():
+                                snapshot_difference = calculate_snapshot_difference(snapshot_difference, snapshot_extraction)
+                            
+                            self.clear_snapshot_extractions()
+                            
+                            self._snapshot_difference = snapshot_difference
+                            for child in self.iter_child_extensions():
+                                child.add_snapshot_extraction(snapshot_difference)
                 
                 else:
                     loaded = True
@@ -497,8 +505,8 @@ class Extension(RichAttributeErrorBaseType):
                     if self._take_snapshot:
                         snapshot_new = take_snapshot()
                         
-                        snapshot_difference = calculate_snapshot_difference(snapshot_old, snapshot_new)
-                        for snapshot_extraction in self.iter_iter_snapshot_extractions():
+                        snapshot_difference = calculate_snapshot_difference(snapshot_new, snapshot_old)
+                        for snapshot_extraction in self.iter_snapshot_extractions():
                             snapshot_difference = calculate_snapshot_difference(snapshot_difference, snapshot_extraction)
                         
                         self.clear_snapshot_extractions()

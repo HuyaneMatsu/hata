@@ -4,7 +4,7 @@ import re
 from datetime import timedelta
 from types import FunctionType
 
-from scarletio import CallableAnalyzer, cached_property, copy_docs
+from scarletio import CallableAnalyzer, RichAttributeErrorBaseType, cached_property, copy_docs
 
 from ...discord.bases import FlagBase
 from ...discord.channel import Channel
@@ -48,7 +48,7 @@ DEFAULT_PARAMETER_SEPARATOR = ('"', '"')
 DEFAULT_PARAMETER_ASSIGNER = ':'
 
 
-class ContentParameterParserContextBase:
+class ContentParameterParserContextBase(RichAttributeErrorBaseType):
     """
     Parsing context returned by ``ContentParameterParser``.
     
@@ -75,6 +75,34 @@ class ContentParameterParserContextBase:
         self._cache = {}
         return self
     
+    
+    def __repr__(self):
+        """Returns the content parameter parser context's representation."""
+        repr_parts = ['<', self.__class__.__name__]
+        
+        repr_parts.append(' parsed=')
+        repr_parts.append(repr(repr_parts))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two content parameter parser contexts are the same"""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self._parsed != other._parsed:
+            return False
+        
+        return True
+    
+    
+    def __hash__(self):
+        """Returns the content parameter parser context's hash value."""
+        return hash(self._parsed)
+    
+    
     @property
     def has_keyword(self):
         """
@@ -85,6 +113,7 @@ class ContentParameterParserContextBase:
         has_keyword : `bool`
         """
         return (self.keyword is not None)
+    
     
     @property
     def end(self):
@@ -97,6 +126,7 @@ class ContentParameterParserContextBase:
         """
         return self._parsed.end()
     
+    
     @cached_property
     def whole(self):
         """
@@ -108,6 +138,7 @@ class ContentParameterParserContextBase:
         """
         return ''
     
+    
     @cached_property
     def keyword(self):
         """
@@ -118,6 +149,7 @@ class ContentParameterParserContextBase:
         keyword : `None`, `str`
         """
         return None
+    
     
     @cached_property
     def value(self):
@@ -148,15 +180,18 @@ class ContentParameterParserContextSeparator(ContentParameterParserContextBase):
     def whole(self):
         return self._parsed.group(1)
     
+    
     @cached_property
     @copy_docs(ContentParameterParserContextBase.keyword)
     def keyword(self):
         return self._parsed.group(2)
     
+    
     @cached_property
     @copy_docs(ContentParameterParserContextBase.value)
     def value(self):
         return self._parsed.group(3)
+
 
 class ContentParameterParserContextEncapsulator(ContentParameterParserContextBase):
     """
@@ -181,10 +216,12 @@ class ContentParameterParserContextEncapsulator(ContentParameterParserContextBas
         
         return part
     
+    
     @cached_property
     @copy_docs(ContentParameterParserContextBase.keyword)
     def keyword(self):
         return self._parsed.group(1)
+    
     
     @cached_property
     @copy_docs(ContentParameterParserContextBase.value)
@@ -197,7 +234,7 @@ class ContentParameterParserContextEncapsulator(ContentParameterParserContextBas
         return part
 
 
-class ContentParameterParser:
+class ContentParameterParser(RichAttributeErrorBaseType):
     """
     Content parameter parser used inside of a ``ContentParameterParserContext`` and stored by ``CommandContentParser``
     instances.
@@ -614,7 +651,7 @@ CONVERTER_SETTING_NAME_TO_SETTING = {}
 CONVERTER_NAME_TO_TYPE = {}
 
 
-class ConverterSetting:
+class ConverterSetting(RichAttributeErrorBaseType):
     """
     Store settings about a converter.
     
@@ -626,8 +663,8 @@ class ConverterSetting:
         Alternative string name for the parser, which allows picking up a respective converter.
     alternative_types : `None`, `list` of `type`
         Alternative type specifications, which are supported by the parser.
-    converter : `async-function`
-        The converter function.
+    converter : `FunctionType`
+        The converter coroutine function.
     default_flags : ``ConverterFlag``
         The default flags with what the converter will be used if not defining any specific.
     default_type : `None`, `type`
@@ -649,8 +686,8 @@ class ConverterSetting:
         
         Parameters
         ----------
-        converter : `function` (async)
-            The converter function.
+        converter : `FunctionType`
+            The converter coroutine function.
         uses_flags : `bool`
             Whether the converter processes any flags.
         default_flags : ``ConverterFlag``
@@ -870,7 +907,91 @@ class ConverterSetting:
         
         repr_parts.append('>')
         return ''.join(repr_parts)
-
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two converter settings are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.all_flags != other.all_flags:
+            return False
+        
+        if self.alternative_type_name != other.alternative_type_name:
+            return False
+        
+        if self.alternative_types != other.alternative_types:
+            return False
+        
+        if self.converter != other.converter:
+            return False
+        
+        if self.default_flags != other.default_flags:
+            return False
+        
+        if self.default_type != other.default_type:
+            return False
+        
+        if self.requires_part != other.requires_part:
+            return False
+        
+        if self.uses_flags != other.uses_flags:
+            return False
+        
+        return True
+    
+    
+    def __hash__(self):
+        """Returns the converter setting's hash value."""
+        hash_value = 0
+        
+        # all_flags
+        hash_value ^= self.all_flags
+        
+        # alternative_type_name
+        alternative_type_name = self.alternative_type_name
+        if (alternative_type_name is not None):
+            hash_value ^= hash(alternative_type_name)
+        
+        # alternative_types
+        alternative_types = self.alternative_types
+        if (alternative_types is not None):
+            hash_value ^= len(alternative_types)
+            for alternative_type in alternative_types:
+                try:
+                    alternative_type_hash = hash(alternative_type)
+                except TypeError:
+                    alternative_type_hash = object.__hash__(alternative_type)
+                hash_value ^= alternative_type_hash
+        
+        # converter
+        converter = self.converter
+        try:
+            converter_hash = hash(converter)
+        except TypeError:
+            converter_hash = object.__hash__(converter)
+        hash_value ^= converter_hash
+        
+        # default_flags
+        hash_value ^= self.default_flags
+        
+        # default_type
+        default_type = self.default_type
+        if (default_type is not None):
+            try:
+                default_type_hash = hash(default_type)
+            except TypeError:
+                default_type_hash = object.__hash__(default_type)
+            hash_value ^= default_type_hash
+        
+        # requires_part
+        hash_value ^= self.requires_part << 8
+        
+        # uses_flags
+        hash_value ^= self.uses_flags << 9
+        
+        return hash_value
+    
 
 async def none_converter(command_context, content_parser_parameter_detail):
     return None
@@ -1785,7 +1906,7 @@ else:
     CONVERTER_RDELTA = None
 
 
-class ContentParserParameterDetail:
+class ContentParserParameterDetail(RichAttributeErrorBaseType):
     """
     Stores details about a converter.
     
@@ -1812,10 +1933,11 @@ class ContentParserParameterDetail:
             The type or subtype of the annotation to parse.
         """
         self = object.__new__(cls)
-        self.type = type_
         self.converter_setting = converter_setting
         self.flags = converter_setting.default_flags
+        self.type = type_
         return self
+    
     
     def __repr__(self):
         """Returns the ``ContentParserParameterDetail``'s representation."""
@@ -1835,18 +1957,47 @@ class ContentParserParameterDetail:
         
         repr_parts.append('>')
         return ''.join(repr_parts)
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two content parser parameter details are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.converter_setting != other.converter_setting:
+            return False
+        
+        if self.flags != other.flags:
+            return False
+        
+        if self.type != other.type:
+            return False
+        
+        return True
+    
+    
+    def __hash__(self):
+        """Returns the converter parser parameter detail's hash value."""
+        hash_value = hash(self.converter_setting) ^ self.flags
+        
+        type_ = self.type
+        if (type_ is not None):
+            try:
+                type_hash = hash(type_)
+            except KeyError:
+                type_hash = object.__hash__(type)
+            
+            hash_value ^= type_hash
+        
+        return hash_value
 
 
-class ContentParserParameter:
+class ContentParserParameter(RichAttributeErrorBaseType):
     """
     Represents a parameter to parse.
     
     Parameters
     ----------
-    default : `None`, `Any`
-        Default value to the parser
-    has_default : `bool`
-        Whether the parser has default value.
     default : `None`, `Any`
         The default object to return if the parser fails.
     description : `None`, `str`
@@ -1875,7 +2026,7 @@ class ContentParserParameter:
         The parameter's name.
     """
     __slots__ = (
-        'converter', 'default', 'description', 'detail', 'details', 'display_name', 'flags', 'has_default', 'index',
+        'default', 'description', 'detail', 'details', 'display_name', 'flags', 'has_default', 'index',
         'is_args', 'is_keyword', 'is_kwargs', 'is_positional', 'is_rest', 'name'
     )
     
@@ -2059,6 +2210,117 @@ class ContentParserParameter:
         repr_parts.append('>')
         return ''.join(repr_parts)
     
+    
+    def __eq__(self, other):
+        """Returns whether the two content parsers parameters are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self.default != other.default:
+            return False
+        
+        if self.description != other.description:
+            return False
+        
+        if self.detail != other.detail:
+            return False
+        
+        if self.details != other.details:
+            return False
+        
+        if self.display_name != other.display_name:
+            return False
+        
+        if self.has_default != other.has_default:
+            return False
+        
+        if self.index != other.index:
+            return False
+        
+        if self.is_args != other.is_args:
+            return False
+        
+        if self.is_keyword != other.is_keyword:
+            return False
+        
+        if self.is_kwargs != other.is_kwargs:
+            return False
+        
+        if self.is_positional != other.is_positional:
+            return False
+        
+        if self.is_rest != other.is_rest:
+            return False
+        
+        if self.name != other.name:
+            return False
+        
+        return True
+    
+    
+    def __hash__(self):
+        """Returns the hash value of the content parser parameter."""
+        hash_value = 0
+        
+        # default
+        default = self.default
+        try:
+            default_hash = hash(default)
+        except TypeError:
+            default_hash = object.__hash__(default)
+        
+        hash_value ^= default_hash
+        
+        # description
+        description = self.description
+        if (description is not None):
+            hash_value ^= hash(description)
+        
+        # detail
+        detail = self.detail
+        if (detail is not None):
+            hash_value ^= hash(detail)
+        
+        # details
+        details = self.details
+        if (details is not None):
+            hash_value ^= len(details)
+            for detail in details:
+                hash_value ^= hash(detail)
+        
+        # display_name
+        display_name = self.display_name
+        hash_value ^= hash(display_name)
+        
+        # has_default
+        hash_value ^= self.has_default << 8
+        
+        # index
+        hash_value ^= self.index << 9
+        
+        # is_args
+        hash_value ^= self.is_args << 18
+        
+        # is_keyword
+        hash_value ^= self.is_keyword << 19
+        
+        # is_kwargs
+        hash_value ^= self.is_kwargs << 20
+        
+        # is_positional
+        hash_value ^= self.is_positional << 21
+        
+        # is_rest
+        hash_value ^= self.is_rest << 22
+        
+        # name
+        name = self.name
+        if (display_name != name):
+            hash_value ^= hash(name)
+        
+        return hash_value
+    
+    
     def set_converter_setting(self, converter_setting):
         """
         Sets a new converter setting to the ``ContentParserParameter``.
@@ -2076,7 +2338,8 @@ class ContentParserParameter:
             raise RuntimeError('Converter setting cannot be set if the parser is multi type.')
         
         self.detail = ContentParserParameterDetail(converter_setting, converter_setting.default_type)
-
+    
+    
     async def parse(self, command_context, part):
         """
         Tries to parse the parameter from the given part.
@@ -2263,7 +2526,7 @@ def get_details_from_set(annotation):
         continue
 
 
-class CommandContentParser:
+class CommandContentParser(RichAttributeErrorBaseType):
     """
     Content parser for commands.
     
@@ -2355,6 +2618,49 @@ class CommandContentParser:
             postprocessor(self)
         
         return self, func
+    
+    
+    def __repr__(self):
+        """Returns the command content parser's representation."""
+        repr_parts = ['<', self.__class__.__name__]
+        
+        repr_parts.append(' content_parameter_parser=')
+        repr_parts.append(repr(self._content_parameter_parser))
+        
+        repr_parts.append(', parameters=')
+        repr_parts.append(repr(self._parameters))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    def __eq__(self, other):
+        """Returns whether the two command content parsers are equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self._content_parameter_parser != other._content_parameter_parser:
+            return False
+        
+        if self._parameters != other._parameters:
+            return False
+        
+        return True
+    
+    
+    def __hash__(self):
+        """Returns the command content parser's hash value."""
+        hash_value = 0
+        
+        hash_value ^= hash(self._content_parameter_parser)
+        
+        parameters = self._parameters
+        hash_value ^= len(parameters)
+        
+        for parameter in parameters:
+            hash_value ^= parameter
+        
+        return hash_value
     
     
     async def parse_content(self, command_context, index):

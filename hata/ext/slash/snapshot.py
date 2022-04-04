@@ -58,7 +58,7 @@ class ApplicationCommandDifference(RichAttributeErrorBaseType):
             else:
                 field_added = True
             
-            repr_parts.append(',4 removed_application_commands=')
+            repr_parts.append(' removed_application_commands=')
             repr_parts.append(repr(removed_application_commands))
         
         repr_parts.append('>')

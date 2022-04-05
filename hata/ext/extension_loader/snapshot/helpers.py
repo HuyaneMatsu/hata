@@ -123,34 +123,30 @@ def _get_set_difference(group_1, group_2):
     
     Returns
     -------
-    group_1 : `None`, `set` of `Any`
+    new_group_1 : `None`, `set` of `Any`
         The first group.
-    group_2 : `None`, `set` of `Any`
+    new_group_2 : `None`, `set` of `Any`
         The second group.
     """
-    not_null = 0
+    if (group_1 is None) or (group_2 is None):
+        if (group_1 is None):
+            new_group_1 = None
+        else:
+            new_group_1 = group_1.copy()
+            
+        if (group_2 is None):
+            new_group_2 = None
+        else:
+            new_group_2 = group_2.copy()
     
-    if (group_1 is not None):
-        group_1 = group_1.copy()
-        not_null += 1
+    else:
+        new_group_1 = group_1 - group_2
+        new_group_2 = group_2 - group_1
         
-    if (group_2 is not None):
-        group_2 = group_2.copy()
-        not_null += 1
+        if not new_group_1:
+            new_group_1 = None
+        
+        if not new_group_2:
+            new_group_2 = None
     
-    if not_null == 2:
-        for value in tuple(group_1):
-            try:
-                group_2.remove(value)
-            except KeyError:
-                pass
-            else:
-                group_1.discard(value)
-        
-        if not group_2:
-            group_2 = None
-        
-        if not group_1:
-            group_1 = None
-    
-    return group_1, group_2
+    return new_group_1, new_group_2

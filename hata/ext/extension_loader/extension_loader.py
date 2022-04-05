@@ -1040,7 +1040,7 @@ class ExtensionLoader:
         return run_coroutine(self._reload_task(name), KOKORO)
     
     
-    async def _reload_task(self, extensions):
+    async def _reload_task(self, name):
         """
         Reloads the extension with the given name.
         

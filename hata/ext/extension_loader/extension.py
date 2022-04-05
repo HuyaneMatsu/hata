@@ -1,9 +1,11 @@
 __all__ = ('EXTENSIONS', )
 
 import sys
+from os.path import dirname as get_directory_name, join as join_paths, isfile as is_file
 from importlib import reload as reload_module
 from importlib.util import find_spec, module_from_spec, spec_from_file_location
 from py_compile import compile as compile_module
+from types import ModuleType
 
 from scarletio import HybridValueDictionary, RichAttributeErrorBaseType, WeakSet, WeakValueDictionary, include
 
@@ -418,6 +420,8 @@ class Extension(RichAttributeErrorBaseType):
                 if module is None:
                     # module is not imported yet, nice
                     module = module_from_spec(spec)
+                    # Set path. It is important when trying to reload.
+                    module.__path__ = spec.origin
                     
                     added_variable_names = self._added_variable_names
                     if self._extend_default_variables:
@@ -493,6 +497,9 @@ class Extension(RichAttributeErrorBaseType):
                 
                 if self._take_snapshot:
                     snapshot_old = take_snapshot()
+                
+                # If parent module not in `sys.modules` we might an `ImportError`, so we manually add it, lol.
+                self._maybe_set_parent_module()
                 
                 try:
                     reload_module(module)
@@ -608,6 +615,18 @@ class Extension(RichAttributeErrorBaseType):
         name : `str`
         """
         return self._spec.name
+    
+    
+    @property
+    def path(self):
+        """
+        Returns the extension's name.
+        
+        Returns
+        -------
+        name : `str`
+        """
+        return self._spec.origin
     
     
     @property
@@ -778,3 +797,22 @@ class Extension(RichAttributeErrorBaseType):
         Clears the snapshot extractions of the extension.
         """
         self._snapshot_extractions = None
+    
+    
+    def _maybe_set_parent_module(self):
+        """
+        Tries to set the parent module if required. This might be required when reloading the module.
+        """
+        name = self.name
+        dot_index = name.rfind('.')
+        if dot_index == -1:
+            return
+        
+        name = name[:dot_index]
+        if name in sys.modules:
+            return
+        
+        module = ModuleType(name)
+        module.__path__ = get_directory_name(self.path)
+        
+        sys.modules[name] = module

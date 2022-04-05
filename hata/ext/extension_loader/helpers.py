@@ -192,6 +192,7 @@ PROTECTED_NAMES = {
     'origin',
     'parent',
     'submodule_search_locations',
+    '__path__',
 }
 
 

@@ -59,6 +59,8 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 - `EXTENSION_LOADER.load` returns the loaded extensions.
 - `EXTENSION_LOADER.unload` returns the unloaded extensions.
 - `EXTENSION_LOADER.reload` returns the reloaded extensions.
+- Add `Extension.path`.
+- Now python implementation errors wont stop us to load & reload modules caused by dead locked imports.
 
 ##### ext.commands_v2
 
@@ -80,6 +82,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 - Add missing `ContentParameterParserContextBase.__repr__`.
 - Add missing `ContentParameterParserContextBase.__eq__`.
 - Add missing `ContentParameterParserContextBase.__hash__`.
+- Add missing `CommandProcessor.__repr__`.
 
 #### Bug Fixes
 
@@ -90,6 +93,10 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 ##### ext.slash
 
 - `Slasher.discard_kept_commands` was missing the last `s` from the end. :derp:
+
+##### ext.commands_v2
+
+- Commands were not unlinked correctly.
 
 #### Renames, Deprecation & Removals
 

@@ -588,13 +588,8 @@ class Command:
         if (command_processor is not None):
             command_name_to_command = command_processor.command_name_to_command
             for name in self._iter_names():
-                try:
-                    command = command_name_to_command[name]
-                except KeyError:
-                    pass
-                else:
-                    if command is self:
-                        del command_name_to_command[name]
+                if command_name_to_command.get(name, None) is self:
+                    del command_name_to_command[name]
             
             command_processor.commands.discard(self)
         
@@ -666,6 +661,8 @@ class Command:
         
         for name in names:
             command_name_to_command[name] = self
+        
+        self._command_processor_reference = command_processor._self_reference
     
     
     def get_command_processor(self):
@@ -957,6 +954,7 @@ class Command:
         
         repr_parts.append('>')
         return ''.join(repr_parts)
+    
     
     def copy(self):
         """

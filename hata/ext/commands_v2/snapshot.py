@@ -125,7 +125,6 @@ class CommandsV2SnapshotType(BaseSnapshotType):
         if (command_processor is None) or (not isinstance(command_processor, CommandProcessor)):
             return
         
-
         added_commands = self.added_commands
         if (added_commands is not None):
             for command in added_commands:
@@ -146,4 +145,4 @@ class CommandsV2SnapshotType(BaseSnapshotType):
         removed_categories = self.removed_categories
         if (removed_categories is not None):
             for category in removed_categories:
-                command_processor._remove_category(category)
+                command_processor._add_category(category)

@@ -313,6 +313,7 @@ class CommandProcessor(EventWaitforBase):
         
         return self
     
+    
     async def __call__(self, client, message):
         """
         Calls the waitfors of the command processor, processing the given `message`'s content, and calls a command if
@@ -1050,3 +1051,17 @@ class CommandProcessor(EventWaitforBase):
         test_unknown_command(unknown_command)
         self._unknown_command = unknown_command
         return unknown_command
+    
+    
+    def __repr__(self):
+        """Returns the command processor's representation."""
+        repr_parts = ['<', self.__class__.__name__]
+        
+        repr_parts.append(' command count: ')
+        repr_parts.append(str(len(self.commands)))
+        
+        repr_parts.append(' category count: ')
+        repr_parts.append(str(len(self.categories)))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)

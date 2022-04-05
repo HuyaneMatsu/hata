@@ -282,7 +282,6 @@ class SlasherSnapshotType(BaseSnapshotType):
         if (slasher is None) or (not isinstance(slasher, Slasher)):
             added_component_commands = None
             added_form_submit_commands = None
-            application_command_differences_by_guild_id = None
         
         else:
             command_states = slasher._command_states

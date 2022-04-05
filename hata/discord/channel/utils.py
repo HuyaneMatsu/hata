@@ -460,7 +460,7 @@ def _maybe_add_channel_bitrate_field_to_data(channel_type, channel, channel_data
     AssertionError
         - If `bitrate`'s type or value is incorrect.
     """
-    if (bitrate is not None):
+    if (bitrate is not ...):
         if __debug__:
             _assert_channel_type(channel_type, channel, HAS_BITRATE, 'bitrate', bitrate)
             

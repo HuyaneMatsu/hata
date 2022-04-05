@@ -422,6 +422,7 @@ class Extension(RichAttributeErrorBaseType):
                     module = module_from_spec(spec)
                     # Set path. It is important when trying to reload.
                     module.__path__ = spec.origin
+                    # Set spec, because at some cases that is not set either...
                     module.__spec__ = spec
                     
                     added_variable_names = self._added_variable_names
@@ -454,7 +455,9 @@ class Extension(RichAttributeErrorBaseType):
                             
                             snapshot_difference = calculate_snapshot_difference(snapshot_new, snapshot_old)
                             for snapshot_extraction in self.iter_snapshot_extractions():
-                                snapshot_difference = calculate_snapshot_difference(snapshot_difference, snapshot_extraction)
+                                snapshot_difference = calculate_snapshot_difference(
+                                    snapshot_difference, snapshot_extraction
+                                )
                             
                             self.clear_snapshot_extractions()
                             
@@ -515,7 +518,9 @@ class Extension(RichAttributeErrorBaseType):
                         
                         snapshot_difference = calculate_snapshot_difference(snapshot_new, snapshot_old)
                         for snapshot_extraction in self.iter_snapshot_extractions():
-                            snapshot_difference = calculate_snapshot_difference(snapshot_difference, snapshot_extraction)
+                            snapshot_difference = calculate_snapshot_difference(
+                                snapshot_difference, snapshot_extraction
+                            )
                         
                         self.clear_snapshot_extractions()
                         

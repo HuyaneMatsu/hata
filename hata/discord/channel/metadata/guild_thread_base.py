@@ -149,7 +149,6 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
         return self
     
     
-    @property
     @copy_docs(ChannelMetadataGuildBase._get_display_name)
     def _get_display_name(self):
         return self.name.lower()

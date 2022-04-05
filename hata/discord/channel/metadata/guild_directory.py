@@ -38,7 +38,6 @@ class ChannelMetadataGuildDirectory(ChannelMetadataGuildMainBase):
     
     type = CHANNEL_TYPES.guild_directory
     
-    @property
     @copy_docs(ChannelMetadataGuildMainBase._get_display_name)
     def _get_display_name(self):
         return self.name.lower()

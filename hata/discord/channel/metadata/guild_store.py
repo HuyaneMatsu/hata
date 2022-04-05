@@ -52,7 +52,6 @@ class ChannelMetadataGuildStore(ChannelMetadataGuildMainBase):
         return True
     
     
-    @property
     @copy_docs(ChannelMetadataGuildMainBase._get_display_name)
     def _get_display_name(self):
         return self.name.lower()

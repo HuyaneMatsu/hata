@@ -422,6 +422,7 @@ class Extension(RichAttributeErrorBaseType):
                     module = module_from_spec(spec)
                     # Set path. It is important when trying to reload.
                     module.__path__ = spec.origin
+                    module.__spec__ = spec
                     
                     added_variable_names = self._added_variable_names
                     if self._extend_default_variables:

@@ -257,11 +257,12 @@ class User(USER_BASE_CLASS):
             
             if (guild_profile_data is not None) and guild_id:
                 try:
-                    profile = self.guild_profiles[guild_id]
+                    guild_profile = self.guild_profiles[guild_id]
                 except KeyError:
                     self.guild_profiles[guild_id] = GuildProfile(guild_profile_data)
                 else:
-                    profile._set_joined(guild_profile_data)
+                    guild_profile._set_joined(guild_profile_data)
+                    guild_profile._update_attributes(guild_profile_data)
                 
                 try:
                     guild = GUILDS[guild_id]
@@ -297,6 +298,7 @@ class User(USER_BASE_CLASS):
                     self.guild_profiles[guild_id] = GuildProfile(guild_profile_data)
                 else:
                     guild_profile._set_joined(guild_profile_data)
+                    guild_profile._update_attributes(guild_profile_data)
                 
                 try:
                     guild = GUILDS[guild_id]

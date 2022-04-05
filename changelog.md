@@ -85,6 +85,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 
 - `datetime_to_unix_time` returned incorrect value.
 - `run_console_till_interruption` could raise is called outside from a module. (Forest#2913)
+- `User.from_data` didn't update guild profile every time.
 
 ##### ext.slash
 

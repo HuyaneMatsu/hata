@@ -61,6 +61,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 - `EXTENSION_LOADER.reload` returns the reloaded extensions.
 - Add `Extension.path`.
 - Now python implementation errors wont stop us to load & reload modules caused by dead locked imports.
+- Sync extension loading & unloading to avoid parallel calls on a single file.
 
 ##### ext.commands_v2
 

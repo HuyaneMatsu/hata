@@ -91,7 +91,7 @@ def import_extension(extension_name, *variable_names):
         )
     
     # Get local frame and build the extension name to load
-    frame = get_frame()
+    frame = get_frame().f_back
     spec = frame.f_globals.get('__spec__', None)
     if spec is None:
         raise RuntimeError(
@@ -122,8 +122,10 @@ def import_extension(extension_name, *variable_names):
     else:
         built_name = extension_name
     
-    
-    extension = EXTENSION_LOADER.load_extension(built_name)
+    try:
+        extension = EXTENSION_LOADER.load_extension(built_name)
+    except BaseException as err:
+        raise
     
     current_extension = EXTENSIONS.get(local_name, None)
     if (current_extension is not None):
@@ -132,7 +134,7 @@ def import_extension(extension_name, *variable_names):
     variable_names_length = len(variable_names)
     module = extension._module
     if variable_names_length == 0:
-        return extension
+        return module
     
     variables = []
     

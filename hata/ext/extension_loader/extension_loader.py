@@ -1,18 +1,20 @@
 __all__ = ('EXTENSION_LOADER', 'ExtensionLoader', )
 
+from functools import partial as partial_func
 from importlib import __file__ as IMPORTLIB_FILE_PATH
 
 from scarletio import (
-    HybridValueDictionary, alchemy_incendiary, export, is_coroutine_function, render_exception_into, run_coroutine
+    HybridValueDictionary, Task, alchemy_incendiary, export, is_coroutine_function, render_exception_into,
+    run_coroutine, shield
 )
 
 from ...discord.core import KOKORO
 
 from .exceptions import ExtensionError
-from .extension import __file__ as EXTENSION_LOADER_EXTENSION_FILE_PATH, EXTENSIONS, EXTENSION_STATE_LOADED, Extension
+from .extension import EXTENSIONS, EXTENSION_STATE_LOADED, Extension, __file__ as EXTENSION_LOADER_EXTENSION_FILE_PATH
 from .helpers import (
-    _build_extension_tree, _get_extension_name_and_path, _get_path_extension_name, _iter_extension_names_and_paths,
-    _validate_entry_or_exit, PROTECTED_NAMES, validate_extension_parameters
+    PROTECTED_NAMES, _build_extension_tree, _get_extension_name_and_path, _get_path_extension_name,
+    _iter_extension_names_and_paths, _validate_entry_or_exit, validate_extension_parameters
 )
 
 
@@ -201,6 +203,40 @@ def _ignore_module_import_frames(file_name, name, line_number, line):
         return False
     
     return True
+
+
+def _pop_unloader_task_callback(task, extension):
+    """
+    Removes the unloader task of the extension loader for the given extension.
+    
+    Parameters
+    ----------
+    task : ``Task``
+        The finished task.
+    extension : ``Extension``
+        The extension to remove it's task of.
+    """
+    try:
+        del EXTENSION_LOADER._unloader_tasks[extension]
+    except KeyError:
+        pass
+
+
+def _pop_loader_task_callback(task, extension):
+    """
+    Removes the loader task of the extension loader for the given extension.
+    
+    Parameters
+    ----------
+    task : ``Task``
+        The finished task.
+    extension : ``Extension``
+        The extension to remove it's task of.
+    """
+    try:
+        del EXTENSION_LOADER._loader_tasks[extension]
+    except KeyError:
+        pass
 
 
 class ExtensionLoader:
@@ -486,6 +522,10 @@ class ExtensionLoader:
         Whether the extension loader is executing an extension.
     _extensions_by_name : `dict` of (`str`, ``Extension``) items
         A dictionary of the added extensions to the extension loader in `extension-name` - ``Extension`` relation.
+    _loader_tasks : `dict` of (``Extension``, ``Task``) items
+        Active extension loading tasks.
+    _unloader_tasks : `dict` of (``Extension``, ``Task``) items
+        Active extension unloading tasks.
     
     Class Attributes
     ---------------
@@ -493,7 +533,8 @@ class ExtensionLoader:
         The already created instance of the ``ExtensionLoader`` if there is any.
     """
     __slots__ = (
-        '_default_entry_point', '_default_exit_point', '_default_variables', '_execute_counter', '_extensions_by_name'
+        '_default_entry_point', '_default_exit_point', '_default_variables', '_execute_counter', '_extensions_by_name',
+        '_loader_tasks', '_unloader_tasks'
     )
     
     _instance = None
@@ -515,8 +556,11 @@ class ExtensionLoader:
             self._extensions_by_name = {}
             self._default_variables = HybridValueDictionary()
             self._execute_counter = 0
+            self._loader_tasks = {}
+            self._unloader_tasks = {}
         
         return self
+    
     
     @property
     def default_entry_point(self):
@@ -858,6 +902,7 @@ class ExtensionLoader:
         """
         extension_name, extension_path = _get_extension_name_and_path(name)
         extension = _try_get_extension(extension_name, extension_path)
+        
         if (extension is None):
             entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference, default_variables = \
                 validate_extension_parameters(*parameters, **keyword_parameters)
@@ -871,8 +916,7 @@ class ExtensionLoader:
             if extension.is_loaded():
                 return extension
         
-        
-        extension_error = await self._load_extension(extension)
+        extension_error = await self._extension_loader(extension)
         if (extension_error is not None):
             raise extension_error
         
@@ -933,7 +977,7 @@ class ExtensionLoader:
         error_messages = None
         
         for extension in extensions:
-            exception = await self._load_extension(extension)
+            exception = await self._extension_loader(extension)
             if (exception is not None):
                 if error_messages is None:
                     error_messages = []
@@ -1000,7 +1044,7 @@ class ExtensionLoader:
         error_messages = None
         
         for extension in extensions:
-            exception = await self._unload_extension(extension)
+            exception = await self._extension_unloader(extension)
             if (exception is not None):
                 if error_messages is None:
                     error_messages = []
@@ -1069,9 +1113,9 @@ class ExtensionLoader:
         error_messages = None
         
         for extension in extensions:
-            exception = await self._unload_extension(extension)
+            exception = await self._extension_unloader(extension)
             if (exception is None):
-                exception = await self._load_extension(extension)
+                exception = await self._extension_loader(extension)
             
             if (exception is not None):
                 if error_messages is None:
@@ -1125,13 +1169,12 @@ class ExtensionLoader:
             if extension._locked:
                 continue
             
-            try:
-                await self._load_extension(extension)
-            except ExtensionError as err:
+            exception = await self._extension_loader(extension)
+            if (exception is not None):
                 if error_messages is None:
                     error_messages = []
                 
-                error_messages.append(err.message)
+                error_messages.append(exception.message)
         
         if (error_messages is not None):
             raise ExtensionError(error_messages) from None
@@ -1177,13 +1220,12 @@ class ExtensionLoader:
             if extension._locked:
                 continue
             
-            try:
-                await self._unload_extension(extension)
-            except ExtensionError as err:
+            exception = await self._extension_unloader(extension)
+            if (exception is not None):
                 if error_messages is None:
                     error_messages = []
                 
-                error_messages.append(err.message)
+                error_messages.append(exception.message)
             
         if (error_messages is not None):
             raise ExtensionError(error_messages) from None
@@ -1229,20 +1271,66 @@ class ExtensionLoader:
         await self._check_for_syntax(extensions)
         
         for extension in extensions:
-            try:
-                await self._unload_extension(extension)
-                await self._load_extension(extension)
-            except ExtensionError as err:
+            exception = await self._extension_unloader(extension)
+            if (exception is None):
+                exception = await self._extension_loader(extension)
+            
+            if (exception is not None):
                 if error_messages is None:
                     error_messages = []
                 
-                error_messages.append(err.message)
+                error_messages.append(exception.message)
         
         if (error_messages is not None):
             raise ExtensionError(error_messages) from None
     
     
-    async def _load_extension(self, extension):
+    async def _extension_loader(self, extension):
+        """
+        Loads the given extension. This method synchronises extension loading.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        extension : ``Extension``
+            The extension to unload.
+        
+        Returns
+        -------
+        exception : `None`, ``ExtensionError``
+        """
+        try:
+            unloader_task = self._unloader_tasks[extension]
+        except KeyError:
+            pass
+        else:
+            try:
+                exception = await shield(unloader_task, KOKORO)
+            except:
+                raise
+            else:
+                if (exception is not None):
+                    return exception
+            
+            finally:
+                unloader_task = None
+            
+        try:
+            loader_task = self._loader_tasks[extension]
+        except KeyError:
+            loader_task = Task(self._extension_loader_task(extension), KOKORO)
+            loader_task.add_done_callback(partial_func(_pop_loader_task_callback, extension))
+            
+            self._loader_tasks[extension] = loader_task
+        
+        try:
+            return await shield(loader_task, KOKORO)
+        finally:
+            loader_task = None
+    
+    
+    async def _extension_loader_task(self, extension):
         """
         Loads the extension. If the extension is loaded, will do nothing.
         
@@ -1326,7 +1414,52 @@ class ExtensionLoader:
             self._execute_counter -= 1
     
     
-    async def _unload_extension(self, extension):
+    async def _extension_unloader(self, extension):
+        """
+        Unloads the given extension. This method synchronises extension unloading.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        extension : ``Extension``
+            The extension to unload.
+        
+        Returns
+        -------
+        exception : `None`, ``ExtensionError``
+        """
+        try:
+            loader_task = self._loader_tasks[extension]
+        except KeyError:
+            pass
+        else:
+            try:
+                exception = await shield(loader_task, KOKORO)
+            except:
+                raise
+            else:
+                if (exception is not None):
+                    return exception
+            
+            finally:
+                loader_task = None
+        
+        try:
+            unloader_task = self._unloader_tasks[extension]
+        except KeyError:
+            unloader_task = Task(self._extension_unloader_task(extension), KOKORO)
+            unloader_task.add_done_callback(partial_func(_pop_unloader_task_callback, extension, ))
+            
+            self._unloader_tasks[extension] = unloader_task
+        
+        try:
+            return await shield(unloader_task, KOKORO)
+        finally:
+            unloader_task = None
+
+    
+    async def _extension_unloader_task(self, extension):
         """
         Unloads the extension. If the extension is not loaded, will do nothing.
         

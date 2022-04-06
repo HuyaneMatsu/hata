@@ -458,3 +458,54 @@ def _get_path_extension_name(path):
         file_name = file_name[:dot_index]
     
     return ABSOLUTE_PATH_EXTENSION_NAME_PREFIX + file_name
+
+
+def _build_extension_tree(extensions):
+    """
+    Builds a tree of extensions.
+    
+    Parameters
+    ----------
+    extensions : `list` of ``Extension``
+    
+    Returns
+    -------
+    extensions : `list` of ``Extension``
+    """
+    extensions_to_unwrap = [*extensions]
+    unwrapped_extensions = set()
+    
+    while extensions_to_unwrap:
+        extension = extensions_to_unwrap.pop()
+        
+        for child_extension in extension.iter_child_extensions():
+            if extension in unwrapped_extensions:
+                continue
+            
+            unwrapped_extensions.add(child_extension)
+            extensions_to_unwrap.append(extension)
+    
+    
+    extensions_to_check_ordered = sorted(unwrapped_extensions, reverse=True)
+    
+    extensions_satisfied = set()
+    extensions_satisfied_ordered = []
+    
+    while extensions_to_check_ordered:
+        for index in reversed(range(len(extensions_to_check_ordered))):
+            extension = extensions_to_check_ordered[index]
+            
+            if not extension.are_child_extensions_present_in(extensions_satisfied):
+                continue
+            
+            extensions_satisfied.add(extension)
+            extensions_satisfied_ordered.append(extension)
+            del extensions_to_check_ordered[index]
+            break
+
+        else:
+            raise RuntimeError(
+                f'Extensions with circular satisfaction: {extensions_to_check_ordered!r}'
+            )
+    
+    return extensions_satisfied_ordered

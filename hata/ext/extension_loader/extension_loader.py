@@ -11,8 +11,8 @@ from ...discord.core import KOKORO
 from .exceptions import ExtensionError
 from .extension import __file__ as EXTENSION_LOADER_EXTENSION_FILE_PATH, EXTENSIONS, EXTENSION_STATE_LOADED, Extension
 from .helpers import (
-    PROTECTED_NAMES, _get_extension_name_and_path, _get_path_extension_name, _iter_extension_names_and_paths,
-    _validate_entry_or_exit, validate_extension_parameters
+    _build_extension_tree, _get_extension_name_and_path, _get_path_extension_name, _iter_extension_names_and_paths,
+    _validate_entry_or_exit, PROTECTED_NAMES, validate_extension_parameters
 )
 
 
@@ -127,7 +127,7 @@ async def _get_extensions(name):
                 f'No extensions found with the given name: {name!r}.'
             )
         
-        return sorted(extensions)
+        return _build_extension_tree(extensions)
     
     except GeneratorExit:
         raise
@@ -1000,7 +1000,7 @@ class ExtensionLoader:
         error_messages = None
         
         for extension in extensions:
-            exception = await self._unload_extension(extension, False)
+            exception = await self._unload_extension(extension)
             if (exception is not None):
                 if error_messages is None:
                     error_messages = []
@@ -1064,10 +1064,12 @@ class ExtensionLoader:
         """
         extensions = await _get_extensions(name)
         
+        await self._check_for_syntax(extensions)
+        
         error_messages = None
         
         for extension in extensions:
-            exception = await self._unload_extension(extension, True)
+            exception = await self._unload_extension(extension)
             if (exception is None):
                 exception = await self._load_extension(extension)
             
@@ -1176,7 +1178,7 @@ class ExtensionLoader:
                 continue
             
             try:
-                await self._unload_extension(extension, False)
+                await self._unload_extension(extension)
             except ExtensionError as err:
                 if error_messages is None:
                     error_messages = []
@@ -1223,12 +1225,12 @@ class ExtensionLoader:
         """
         error_messages = None
         
-        for extension in EXTENSIONS.values():
-            if extension._locked:
-                continue
-            
+        extensions = _build_extension_tree([extension for extension in EXTENSIONS.values() if not extension._locked])
+        await self._check_for_syntax(extensions)
+        
+        for extension in extensions:
             try:
-                await self._unload_extension(extension, True)
+                await self._unload_extension(extension)
                 await self._load_extension(extension)
             except ExtensionError as err:
                 if error_messages is None:
@@ -1324,7 +1326,7 @@ class ExtensionLoader:
             self._execute_counter -= 1
     
     
-    async def _unload_extension(self, extension, check_for_syntax):
+    async def _unload_extension(self, extension):
         """
         Unloads the extension. If the extension is not loaded, will do nothing.
         
@@ -1343,10 +1345,6 @@ class ExtensionLoader:
         ----------
         extension : ``Extension``
             The extension to unload.
-        check_for_syntax : `bool`
-            Whether the file's new syntax should be checked before unloading.
-            
-            This parameter is used when reloading, to avoid unloading un-reloadable files.
         
         Returns
         -------
@@ -1355,7 +1353,7 @@ class ExtensionLoader:
         self._execute_counter += 1
         try:
             # loading blocks, but unloading does not
-            lib = extension._unload(check_for_syntax)
+            lib = extension._unload()
             
             if lib is None:
                 return # not loaded
@@ -1438,6 +1436,7 @@ class ExtensionLoader:
         
         return ''.join(repr_parts)
     
+    
     def is_processing_extension(self):
         """
         Returns whether the extension loader is processing an extension.
@@ -1469,6 +1468,43 @@ class ExtensionLoader:
             The matched extension if any.
         """
         return self._extensions_by_name.get(name, None)
+    
+    
+    async def _check_for_syntax(self, extensions):
+        """
+        Checks whether the extensions can be reloaded.
+        
+        This function is a coroutine.
+        
+        Parameters
+        ----------
+        extension : `list` of ``Extension``
+            A list of extensions to check their syntax.
+        
+        Raises
+        ------
+        SyntaxError
+        """
+        return await KOKORO.run_in_executor(alchemy_incendiary(self._check_for_syntax_blocking, (extensions,)))
+    
+    
+    def _check_for_syntax_blocking(self, extensions):
+        """
+        Checks whether the extensions can be reloaded.
+        
+        This method is blocking and ran inside of an executor by ``._check_for_syntax``.
+        
+        Parameters
+        ----------
+        extension : `list` of ``Extension``
+            A list of extensions to check their syntax.
+        
+        Raises
+        ------
+        SyntaxError
+        """
+        for extension in extensions:
+            extension._check_for_syntax()
 
 
 EXTENSION_LOADER = ExtensionLoader()

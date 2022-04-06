@@ -545,14 +545,34 @@ class Extension(RichAttributeErrorBaseType):
             LOADING_EXTENSIONS.discard(self)
     
     
-    def _unload(self, check_for_syntax):
+    def _check_for_syntax(self):
+        """
+        Checks the file's new syntax.
+        
+        Used when reloading, to avoid unloading un-loadable files.
+        
+        This method is blocking. Run it inside of an executor.
+        
+        Raises
+        ------
+        SyntaxError
+        """
+        if self.state == EXTENSION_STATE_LOADED:
+            module = self._module
+            if (module is not None):
+                file_name = self.file_name
+                # python files might not be `.py` files, which we should not compile.
+                if file_name.endswith('.py'):
+                    try:
+                        compile_module(file_name)
+                    except FileNotFoundError:
+                        # If the file is deleted, is fine.
+                        pass
+    
+    
+    def _unload(self):
         """
         Unloads the module and returns it. If it is already unloaded returns `None`.
-        
-        check_for_syntax : `bool`
-            Whether the file's new syntax should be checked before unloading.
-            
-            This parameter is used when reloading, to avoid unloading un-reloadable files.
         
         Returns
         -------
@@ -568,18 +588,9 @@ class Extension(RichAttributeErrorBaseType):
             return None
         
         if state == EXTENSION_STATE_LOADED:
-            module = self._module
+            self.clear_child_extensions()
             
-            # Check whether the file's syntax is correct
-            if check_for_syntax and (module is not None):
-                file_name = self.file_name
-                # python files might not be `.py` files, which we should not compile.
-                if file_name.endswith('.py'):
-                    try:
-                        compile_module(file_name)
-                    except FileNotFoundError:
-                        # If the file is deleted, is fine.
-                        pass
+            module = self._module
             
             snapshot_difference = self._snapshot_difference
             if (snapshot_difference is not None):
@@ -610,6 +621,7 @@ class Extension(RichAttributeErrorBaseType):
                 pass
         
         added_variable_names.clear()
+    
     
     @property
     def name(self):
@@ -759,6 +771,29 @@ class Extension(RichAttributeErrorBaseType):
         child_extensions = self._child_extensions
         if (child_extensions is not None):
             yield from child_extensions
+    
+    
+    def are_child_extensions_present_in(self, extensions):
+        """
+        Returns whether all the child extensions are present in the given `extensions`.
+        
+        Parameters
+        ----------
+        extensions : `iterable` of ``Extension``
+            Already present extensions to check satisfaction form.
+        
+        Returns
+        -------
+        are_child_extensions_present_in : `bool`
+        """
+        child_extensions = self._child_extensions
+        if (child_extensions is None):
+            return True
+        
+        if child_extensions <= extensions:
+            return True
+        
+        return False
     
     
     def clear_child_extensions(self):

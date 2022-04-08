@@ -30,11 +30,11 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
         to `3600`. Can be one of: `3600`, `86400`, `259200`, `604800`.
     nsfw : `bool`
         Whether the channel is marked as non safe for work.
-    topic : `None`, `str`
-        The channel's topic.
     slowmode : `int`
         The amount of time in seconds what a user needs to wait between it's each message. Bots and user accounts with
         `manage_messages`, `manage_channel` permissions are unaffected.
+    topic : `None`, `str`
+        The channel's topic.
     
     Class Attributes
     ----------------

@@ -1291,6 +1291,9 @@ class Channel(DiscordEntity, immortal=True):
         default_auto_archive_after : `int`, Optional (Keyword only)
             The channel's ``.default_auto_archive_after``.
         
+        flags : `int`, ``ChannelFlag``, Optional (Keyword only)
+            The channel's ``.flags``.
+        
         icon : `None`, ``Icon``, `str`, Optional (Keyword only)
             The channel's icon.
             

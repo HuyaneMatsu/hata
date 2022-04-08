@@ -12,6 +12,8 @@
 - Add `ChannelMetadataThreadPublic.flags`.
 - Add `ChannelFlag` audit log converter.
 - Add `Channel.flags`.
+- Add `ChannelMetadataGuildForum.topic`.
+- Add `ChannelMetadataGuildForum.slowmode`.
 
 #### Bug Fixes
 

@@ -1,4 +1,4 @@
-## 1.2.6 *\[2022-03-??\]*
+## 1.2.6 *\[2022-04-07\]*
 
 ### Summary
 
@@ -62,6 +62,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 - Add `Extension.path`.
 - Now python implementation errors wont stop us to load & reload modules caused by dead locked imports.
 - Sync extension loading & unloading to avoid parallel calls on a single file.
+- `ExtensionLoader` class now supports rich attribute errors.
 
 ##### ext.commands_v2
 

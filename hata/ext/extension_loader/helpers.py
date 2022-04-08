@@ -479,11 +479,10 @@ def _build_extension_tree(extensions):
         extension = extensions_to_unwrap.pop()
         
         for child_extension in extension.iter_child_extensions():
-            if extension in unwrapped_extensions:
-                continue
-            
-            unwrapped_extensions.add(child_extension)
-            extensions_to_unwrap.append(extension)
+            if child_extension not in unwrapped_extensions:
+                extensions_to_unwrap.append(child_extension)
+        
+        unwrapped_extensions.add(extension)
     
     
     extensions_to_check_ordered = sorted(unwrapped_extensions, reverse=True)

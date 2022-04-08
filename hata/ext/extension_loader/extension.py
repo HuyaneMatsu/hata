@@ -42,7 +42,7 @@ class Extension(RichAttributeErrorBaseType):
     _added_variable_names : `list of `str`
         A list of the added variables' names to the module.
     _child_extensions : `None`, ``WeakSet`` of ``Extension``
-        Child extensions of the extension.
+        Child extensions.
     _default_variables : `None`, `HybridValueDictionary` of (`str`, `Any`) items
         An optionally weak value dictionary to store objects for assigning them to modules before loading them.
         If it would be set as empty, then it is set as `None` instead.
@@ -54,8 +54,10 @@ class Extension(RichAttributeErrorBaseType):
         Internal slot used by the ``.extend_default_variables`` property.
     _locked : `bool`
         The internal slot used for the ``.locked`` property.
-    _module : `None` or module`
+    _module : `None`, `ModuleType`
         The extension's module. Set as `module` object if it the extension was already loaded.
+    _parent_extensions : `None`, ``WeakSet`` of ``Extension``
+        Parent extensions.
     _snapshot_difference : `None`, `list` of ``BaseSnapshotType``
         Snapshot difference if applicable. Defaults to `None`.
     _snapshot_extractions : `None`, `list` of `list` of ``BaseSnapshotType``
@@ -80,7 +82,7 @@ class Extension(RichAttributeErrorBaseType):
     """
     __slots__ = (
         '__weakref__', '_added_variable_names', '_child_extensions', '_default_variables', '_entry_point',
-        '_exit_point', '_extend_default_variables', '_locked', '_module', '_snapshot_difference',
+        '_exit_point', '_extend_default_variables', '_locked', '_module', '_parent_extensions', '_snapshot_difference',
         '_snapshot_extractions', '_spec', '_state', '_take_snapshot'
     )
     
@@ -148,6 +150,7 @@ class Extension(RichAttributeErrorBaseType):
         self = object.__new__(cls)
         self._added_variable_names = []
         self._child_extensions = None
+        self._parent_extensions = None
         self._default_variables = default_variables
         self._entry_point = entry_point
         self._exit_point = exit_point
@@ -420,10 +423,6 @@ class Extension(RichAttributeErrorBaseType):
                 if module is None:
                     # module is not imported yet, nice
                     module = module_from_spec(spec)
-                    # Set path. It is important when trying to reload.
-                    module.__path__ = spec.origin
-                    # Set spec, because at some cases that is not set either...
-                    module.__spec__ = spec
                     
                     added_variable_names = self._added_variable_names
                     if self._extend_default_variables:
@@ -487,6 +486,8 @@ class Extension(RichAttributeErrorBaseType):
                 # reload
                 module = self._module
                 
+                spec = self._spec
+                
                 added_variable_names = self._added_variable_names
                 if self._extend_default_variables:
                     for name, value in EXTENSION_LOADER._default_variables.items():
@@ -502,11 +503,8 @@ class Extension(RichAttributeErrorBaseType):
                 if self._take_snapshot:
                     snapshot_old = take_snapshot()
                 
-                # If parent module not in `sys.modules` we might an `ImportError`, so we manually add it, lol.
-                self._maybe_set_parent_module()
-                
                 try:
-                    reload_module(module)
+                    spec.loader.exec_module(module)
                 except DoNotLoadExtension:
                     loaded = False
                 else:
@@ -557,7 +555,7 @@ class Extension(RichAttributeErrorBaseType):
         ------
         SyntaxError
         """
-        if self.state == EXTENSION_STATE_LOADED:
+        if self._state == EXTENSION_STATE_LOADED:
             module = self._module
             if (module is not None):
                 file_name = self.file_name
@@ -589,6 +587,7 @@ class Extension(RichAttributeErrorBaseType):
         
         if state == EXTENSION_STATE_LOADED:
             self.clear_child_extensions()
+            self.clear_parent_extensions()
             
             module = self._module
             
@@ -754,6 +753,7 @@ class Extension(RichAttributeErrorBaseType):
         child_extensions = self._child_extensions
         if (child_extensions is None):
             child_extensions = WeakSet()
+            self._child_extensions = child_extensions
         
         child_extensions.add(extension)
     
@@ -800,7 +800,32 @@ class Extension(RichAttributeErrorBaseType):
         """
         Clears the child extensions of the extension.
         """
-        self._child_extensions = None
+        child_extensions = self._child_extensions
+        if (child_extensions is not None):
+            self._child_extensions = None
+            
+            for child_extension in child_extensions:
+                child_extension.remove_parent_extension(self)
+    
+    
+    def remove_child_extension(self, child_extension):
+        """
+        Removes the given extension from the extension's children.
+        
+        Parameters
+        ----------
+        child_extension : ``Extension``
+            The extension to remove.
+        """
+        child_extensions = self._child_extensions
+        if (child_extensions is not None):
+            try:
+                child_extensions.remove(child_extension)
+            except KeyError:
+                pass
+            else:
+                if not child_extensions:
+                    self._child_extensions = child_extensions
     
     
     def add_snapshot_extraction(self, snapshots):
@@ -838,22 +863,90 @@ class Extension(RichAttributeErrorBaseType):
         Clears the snapshot extractions of the extension.
         """
         self._snapshot_extractions = None
+
+
+    def add_parent_extension(self, extension):
+        """
+        Registers a parent extension.
+        
+        Parameters
+        ----------
+        extension : ``Extension``
+            The extension to register.
+        """
+        parent_extensions = self._parent_extensions
+        if (parent_extensions is None):
+            parent_extensions = WeakSet()
+            self._parent_extensions = parent_extensions
+        
+        parent_extensions.add(extension)
     
     
-    def _maybe_set_parent_module(self):
+    def iter_parent_extensions(self):
         """
-        Tries to set the parent module if required. This might be required when reloading the module.
+        Iterates over the parent extensions.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        parent_extension : `None`
         """
-        name = self.name
-        dot_index = name.rfind('.')
-        if dot_index == -1:
-            return
+        parent_extensions = self._parent_extensions
+        if (parent_extensions is not None):
+            yield from parent_extensions
+    
+    
+    def are_parent_extensions_present_in(self, extensions):
+        """
+        Returns whether all the parent extensions are present in the given `extensions`.
         
-        name = name[:dot_index]
-        if name in sys.modules:
-            return
+        Parameters
+        ----------
+        extensions : `iterable` of ``Extension``
+            Already present extensions to check satisfaction form.
         
-        module = ModuleType(name)
-        module.__path__ = get_directory_name(self.path)
+        Returns
+        -------
+        are_parent_extensions_present_in : `bool`
+        """
+        parent_extensions = self._parent_extensions
+        if (parent_extensions is None):
+            return True
         
-        sys.modules[name] = module
+        if parent_extensions <= extensions:
+            return True
+        
+        return False
+    
+    
+    def clear_parent_extensions(self):
+        """
+        Clears the parent extensions of the extension.
+        """
+        parent_extensions = self._parent_extensions
+        if (parent_extensions is not None):
+            self._parent_extensions = parent_extensions
+            
+            for parent_extension in parent_extensions:
+                parent_extension.remove_child_extension(self)
+    
+    
+    def remove_parent_extension(self, parent_extension):
+        """
+        Removes the given extension from the extension's parents.
+        
+        Parameters
+        ----------
+        parent_extension : ``Extension``
+            The extension to remove.
+        """
+        parent_extensions = self._parent_extensions
+        if (parent_extensions is not None):
+            try:
+                parent_extensions.remove(parent_extension)
+            except KeyError:
+                pass
+            else:
+                if not parent_extensions:
+                    self._parent_extensions = parent_extensions

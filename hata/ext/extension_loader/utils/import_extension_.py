@@ -1,5 +1,6 @@
 __all__ = ('import_extension',)
 
+from os.path import basename as get_file_name, splitext as split_file_name_and_extension
 from sys import _getframe as get_frame
 
 from ..extension import EXTENSIONS
@@ -100,6 +101,7 @@ def import_extension(extension_name, *variable_names):
     
     local_name = spec.name
     
+    is_init_file = (split_file_name_and_extension(get_file_name(spec.origin))[0] == '__init__')
     
     empty_count = 0
     for extension_name_part in extension_name_parts:
@@ -117,19 +119,24 @@ def import_extension(extension_name, *variable_names):
                 f'`{extension_name!r}`\'s scope out of parent root\'s scope.'
             )
         
-        built_name = '.'.join(local_name_parts[:-empty_count] + extension_name_parts[empty_count:])
+        extension_name_parts = extension_name_parts[empty_count:]
+        
+        empty_count = empty_count - is_init_file
+        if empty_count:
+            local_name_parts = local_name_parts[:-empty_count]
+        
+        built_name = '.'.join(local_name_parts+extension_name_parts)
         
     else:
         built_name = extension_name
     
-    try:
-        extension = EXTENSION_LOADER.load_extension(built_name)
-    except BaseException as err:
-        raise
+    extension = EXTENSION_LOADER.load_extension(built_name)
     
     current_extension = EXTENSIONS.get(local_name, None)
     if (current_extension is not None):
         extension.add_child_extension(current_extension)
+        current_extension.add_parent_extension(extension)
+    
     
     variable_names_length = len(variable_names)
     module = extension._module

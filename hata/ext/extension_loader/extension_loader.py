@@ -4,8 +4,8 @@ from functools import partial as partial_func
 from importlib import __file__ as IMPORTLIB_FILE_PATH
 
 from scarletio import (
-    HybridValueDictionary, Task, alchemy_incendiary, export, is_coroutine_function, render_exception_into,
-    run_coroutine, shield
+    HybridValueDictionary, RichAttributeErrorBaseType, Task, alchemy_incendiary, export, is_coroutine_function,
+    render_exception_into, run_coroutine, shield
 )
 
 from ...discord.core import KOKORO
@@ -176,45 +176,47 @@ def _ignore_module_import_frames(file_name, name, line_number, line):
     if file_name == EXTENSION_LOADER_EXTENSION_FILE_PATH:
         if name == '_load':
             if line in (
-                'reload_module(lib)',
-                'spec.loader.exec_module(lib)',
+                'reload_module(module)',
+                'spec.loader.exec_module(module)',
             ):
                 return False
     
     if file_name == EXTENSION_LOADER_EXTENSION_LOADER_FILE_PATH:
-        if name == '_load_extension':
+        if name == '_extension_loader_task':
             if line in (
-                'lib = await KOKORO.run_in_executor(extension._load)',
-                'await entry_point(lib)',
-                'entry_point(lib)',
+                'module = await KOKORO.run_in_executor(extension._load)',
+                'await entry_point(module)',
+                'entry_point(module)',
             ):
                 return False
         
-        if name == '_unload_extension':
+        if name == '_extension_unloader_task':
             if line in (
-                'await exit_point(lib)',
-                'exit_point(lib)',
+                'await exit_point(module)',
+                'exit_point(module)',
             ):
                 return False
             
             return False
     
-    if file_name == IMPORTLIB_FILE_PATH:
-        return False
+    # Importlib paths might contain important information about why python derps out when we trying to do something
+    # smarter as they ever expected!
+    # if file_name == IMPORTLIB_FILE_PATH:
+    #     return False
     
     return True
 
 
-def _pop_unloader_task_callback(task, extension):
+def _pop_unloader_task_callback(extension, task):
     """
     Removes the unloader task of the extension loader for the given extension.
     
     Parameters
     ----------
-    task : ``Task``
-        The finished task.
     extension : ``Extension``
         The extension to remove it's task of.
+    task : ``Task``
+        The finished task.
     """
     try:
         del EXTENSION_LOADER._unloader_tasks[extension]
@@ -222,16 +224,16 @@ def _pop_unloader_task_callback(task, extension):
         pass
 
 
-def _pop_loader_task_callback(task, extension):
+def _pop_loader_task_callback(extension, task):
     """
     Removes the loader task of the extension loader for the given extension.
     
     Parameters
     ----------
-    task : ``Task``
-        The finished task.
     extension : ``Extension``
         The extension to remove it's task of.
+    task : ``Task``
+        The finished task.
     """
     try:
         del EXTENSION_LOADER._loader_tasks[extension]
@@ -239,7 +241,7 @@ def _pop_loader_task_callback(task, extension):
         pass
 
 
-class ExtensionLoader:
+class ExtensionLoader(RichAttributeErrorBaseType):
     """
     There are some cases when you probably want to change some functional part of your client in runtime. Load,
     unload or reload code. Hata provides an easy to use (that's what she said) solution to solve this issue.
@@ -1165,7 +1167,7 @@ class ExtensionLoader:
         """
         error_messages = None
         
-        for extension in EXTENSIONS.values():
+        for extension in tuple(EXTENSIONS.values()):
             if extension._locked:
                 continue
             
@@ -1216,7 +1218,7 @@ class ExtensionLoader:
         """
         error_messages = None
         
-        for extension in EXTENSIONS.values():
+        for extension in tuple(EXTENSIONS.values()):
             if extension._locked:
                 continue
             
@@ -1359,7 +1361,7 @@ class ExtensionLoader:
         try:
             try:
                 # loading blocks, but unloading does not
-                lib = await KOKORO.run_in_executor(extension._load)
+                module = await KOKORO.run_in_executor(extension._load)
             except GeneratorExit:
                 raise
             
@@ -1375,7 +1377,7 @@ class ExtensionLoader:
                 
                 return ExtensionError(message)
             
-            if lib is None:
+            if module is None:
                 return # already loaded
             
             entry_point = extension._entry_point
@@ -1385,15 +1387,15 @@ class ExtensionLoader:
                     return
             
             if isinstance(entry_point, str):
-                entry_point = getattr(lib, entry_point, None)
+                entry_point = getattr(module, entry_point, None)
                 if entry_point is None:
                     return
             
             try:
                 if is_coroutine_function(entry_point):
-                    await entry_point(lib)
+                    await entry_point(module)
                 else:
-                    entry_point(lib)
+                    entry_point(module)
             except GeneratorExit:
                 raise
             
@@ -1486,9 +1488,9 @@ class ExtensionLoader:
         self._execute_counter += 1
         try:
             # loading blocks, but unloading does not
-            lib = extension._unload()
+            module = extension._unload()
             
-            if lib is None:
+            if module is None:
                 return # not loaded
             
             try:
@@ -1499,16 +1501,16 @@ class ExtensionLoader:
                         return
                 
                 if isinstance(exit_point, str):
-                    exit_point = getattr(lib, exit_point, None)
+                    exit_point = getattr(module, exit_point, None)
                     if exit_point is None:
                         return
                 
                 try:
                     
                     if is_coroutine_function(exit_point):
-                        await exit_point(lib)
+                        await exit_point(module)
                     else:
-                        exit_point(lib)
+                        exit_point(module)
                 except GeneratorExit:
                     raise
                 
@@ -1530,13 +1532,13 @@ class ExtensionLoader:
                 extension._unassign_variables()
                 
                 keys = []
-                lib_globals = lib.__dict__
-                for key in lib_globals:
+                module_globals = module.__dict__
+                for key in module_globals:
                     if (not key.startswith('__')) and (not key.endswith('__')):
                         keys.append(key)
                 
                 for key in keys:
-                    del lib_globals[key]
+                    del module_globals[key]
         finally:
             self._execute_counter -= 1
     

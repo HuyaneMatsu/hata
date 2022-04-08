@@ -1104,7 +1104,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         flags : ``ChannelFlag``
         """
-        return self.metadata.invitable
+        return self.metadata.flags
     
     
     @property

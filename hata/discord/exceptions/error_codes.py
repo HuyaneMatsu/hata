@@ -116,6 +116,8 @@ Error Codes
 +---------------------------------------------------------------+-----------+-----------+
 | unknown_scheduled_event_user                                  | 10071     | -         |
 +---------------------------------------------------------------+-----------+-----------+
+| unknown_tag                                                   | 10071     | -         |
++---------------------------------------------------------------+-----------+-----------+
 | bots_not_allowed                                              | 20001     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | only_bots_allowed                                             | 20002     | -         |
@@ -206,6 +208,10 @@ Error Codes
 +---------------------------------------------------------------+-----------+-----------+
 | rate_limit_edit_to_message_older_than_one_hour                | 30046     | -         |
 +---------------------------------------------------------------+-----------+-----------+
+| max_pinned_threads_in_forum_channel                           | 30047     | -         |
++---------------------------------------------------------------+-----------+-----------+
+| max_forum_channel_tags                                        | 30048     | -         |
++---------------------------------------------------------------+-----------+-----------+
 | unauthorized                                                  | 40001     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | email_verification_required                                   | 40002     | -         |
@@ -241,6 +247,8 @@ Error Codes
 | application_name_used                                         | 40041     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | interaction_already_acknowledged                              | 40060     | -         |
++---------------------------------------------------------------+-----------+-----------+
+| tag_name_not_unique                                           | 40061     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | missing_access                                                | 50001     | -         |
 +---------------------------------------------------------------+-----------+-----------+
@@ -506,6 +514,7 @@ unknown_guild_member_verification_form = 10068
 unknown_guild_welcome_screen = 10069
 unknown_scheduled_event = 10070
 unknown_scheduled_event_user = 10071
+unknown_tag = 10087
 
 bots_not_allowed = 20001
 only_bots_allowed = 20002
@@ -553,6 +562,8 @@ max_stickers = 30039
 rate_limit_prune = 30040
 rate_limit_widget_update = 30042
 rate_limit_edit_to_message_older_than_one_hour = 30046
+max_pinned_threads_in_forum_channel = 30047
+max_forum_channel_tags = 30048
 
 unauthorized = 40001
 email_verification_required = 40002
@@ -572,6 +583,7 @@ user_identity_verification_processing = 40035
 user_identity_verification_succeeded = 40036
 application_name_used = 40041
 interaction_already_acknowledged = 40060
+tag_name_not_unique = 40061
 
 missing_access = 50001
 invalid_account_type = 50002

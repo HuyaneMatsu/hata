@@ -1,3 +1,12 @@
+## 1.2.7 *\[2022-04-0?\]*
+
+#### Improvements
+
+- Add `ERROR_CODES.unknown_tag`.
+- Add `ERROR_CODES.max_pinned_threads_in_forum_channel`.
+- Add `ERROR_CODES.max_forum_channel_tags`.
+- Add `ERROR_CODES.tag_name_not_unique`.
+
 ## 1.2.6 *\[2022-04-07\]*
 
 ### Summary

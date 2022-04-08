@@ -10,6 +10,7 @@ from ...permission.permission import PERMISSION_NONE
 from ...utils import id_to_datetime
 
 from ..constants import AUTO_ARCHIVE_DEFAULT
+from ..flags import ChannelFlag
 from ..preinstanced import VideoQualityMode
 
 
@@ -21,6 +22,7 @@ CHANNEL_DEFAULT_ATTRIBUTES = {
     'auto_archive_after': AUTO_ARCHIVE_DEFAULT,
     'bitrate': 0,
     'default_auto_archive_after': AUTO_ARCHIVE_DEFAULT,
+    'flags': ChannelFlag(0),
     'icon': Icon(IconType.none, 0),
     'invitable': True,
     'nsfw': False,
@@ -168,6 +170,8 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
             | bitrate                       | `int`                                                     |
             +-------------------------------+-----------------------------------------------------------+
             | default_auto_archive_after    | `int`                                                     |
+            +-------------------------------+-----------------------------------------------------------+
+            | flags                         | ``ChannelFlag``                                           |
             +-------------------------------+-----------------------------------------------------------+
             | icon                          | ``Icon``                                                  |
             +-------------------------------+-----------------------------------------------------------+

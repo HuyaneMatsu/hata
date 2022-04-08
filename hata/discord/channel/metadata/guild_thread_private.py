@@ -2,8 +2,9 @@ __all__ = ('ChannelMetadataGuildThreadPrivate',)
 
 from scarletio import copy_docs
 
-from .. import channel_types as CHANNEL_TYPES
 from ...preconverters import preconvert_bool
+
+from .. import channel_types as CHANNEL_TYPES
 
 from .guild_thread_base import ChannelMetadataGuildThreadBase
 

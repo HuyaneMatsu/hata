@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ....channel import VideoQualityMode
+from ....channel import ChannelFlag, VideoQualityMode
 from ....permission import PermissionOverwrite
 
 from ...preinstanced import VoiceRegion
@@ -20,6 +20,18 @@ def convert_bool__open(name, data):
         after = not after
     
     return AuditLogChange('open', before, after)
+
+
+def convert_channel_flags(name, data):
+    before = data.get('old_value', None)
+    if (before is not None):
+        before = ChannelFlag(before)
+    
+    after = data.get('new_value', None)
+    if (after is not None):
+        after = ChannelFlag(after)
+    
+    return AuditLogChange(name, before, after)
 
 
 def convert_int__auto_archive_after(name, data):
@@ -75,6 +87,7 @@ CHANNEL_CONVERTERS = {
     'auto_archive_duration': convert_int__auto_archive_after,
     'bitrate': convert_nothing,
     'default_auto_archive_duration': convert_int__default_auto_archive_after,
+    'flags': convert_channel_flags,
     'invitable': convert_nothing,
     'locked': convert_bool__open,
     'name': convert_nothing,

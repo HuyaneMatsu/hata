@@ -511,6 +511,8 @@ class Channel(DiscordEntity, immortal=True):
             +-------------------------------+-----------------------------------------------------------+
             | default_auto_archive_after    | `int`                                                     |
             +-------------------------------+-----------------------------------------------------------+
+            | flags                         | ``ChannelFlag``                                           |
+            +-------------------------------+-----------------------------------------------------------+
             | icon                          | ``Icon``                                                  |
             +-------------------------------+-----------------------------------------------------------+
             | invitable                     | `bool`                                                    |
@@ -1089,6 +1091,20 @@ class Channel(DiscordEntity, immortal=True):
         open : `bool`
         """
         return self.metadata.open
+    
+    
+    @property
+    def flags(self):
+        """
+        Returns the channel's flags.
+        
+        Returns empty channel flags by default.
+        
+        Returns
+        -------
+        flags : ``ChannelFlag``
+        """
+        return self.metadata.invitable
     
     
     @property

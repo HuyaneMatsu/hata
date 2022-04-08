@@ -6,8 +6,12 @@
 - Add `ERROR_CODES.max_pinned_threads_in_forum_channel`.
 - Add `ERROR_CODES.max_forum_channel_tags`.
 - Add `ERROR_CODES.tag_name_not_unique`.
-- Move ut `invitable` field to only private threads.
+- Move out `ChannelMetadataThreadBase.invitable` field to `ChannelMetadataThreadPrivate`.
 - Add `ChannelFlag`.
+- Add default `flags` attribute to every `ChannelMetadataBase` subclass.
+- Add `ChannelMetadataThreadPublic.flags`.
+- Add `ChannelFlag` audit log converter.
+- Add `Channel.flags`.
 
 #### Bug Fixes
 

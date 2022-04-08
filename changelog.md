@@ -6,6 +6,11 @@
 - Add `ERROR_CODES.max_pinned_threads_in_forum_channel`.
 - Add `ERROR_CODES.max_forum_channel_tags`.
 - Add `ERROR_CODES.tag_name_not_unique`.
+- Move ut `invitable` field to only private threads.
+
+#### Bug Fixes
+
+- Thread metadata field were missing when calling `Channel.to_data()`.
 
 ## 1.2.6 *\[2022-04-07\]*
 

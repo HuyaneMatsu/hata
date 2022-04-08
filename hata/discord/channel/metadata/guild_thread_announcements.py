@@ -26,8 +26,6 @@ class ChannelMetadataGuildThreadAnnouncements(ChannelMetadataGuildThreadBase):
     auto_archive_after : `int`
         Duration in seconds to automatically archive the thread after recent activity. Can be one of: `3600`, `86400`,
         `259200`, `604800`.
-    invitable : `bool`
-        Whether non-moderators can invite other non-moderators to the threads. Only applicable for private threads.
     open : `bool`
         Whether the thread channel is open.
     slowmode : `int`

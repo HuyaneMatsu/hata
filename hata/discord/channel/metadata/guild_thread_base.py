@@ -36,8 +36,6 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
     auto_archive_after : `int`
         Duration in seconds to automatically archive the thread after recent activity. Can be one of: `3600`, `86400`,
         `259200`, `604800`.
-    invitable : `bool`
-        Whether non-moderators can invite other non-moderators to the threads. Only applicable for private threads.
     open : `bool`
         Whether the thread channel is open.
     slowmode : `int`
@@ -56,8 +54,7 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
         The channel's order group used when sorting channels.
     """
     __slots__ = (
-        '_created_at', 'archived', 'archived_at', 'auto_archive_after', 'invitable', 'open', 'owner_id', 'slowmode',
-        'thread_users'
+        '_created_at', 'archived', 'archived_at', 'auto_archive_after', 'open', 'owner_id', 'slowmode', 'thread_users'
     )
     
     @copy_docs(ChannelMetadataGuildBase.__new__)
@@ -114,9 +111,6 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
         if self.auto_archive_after != other.auto_archive_after:
             return False
         
-        if self.invitable != other.invitable:
-            return False
-        
         if self.open != other.open:
             return False
         
@@ -144,7 +138,6 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
         self.owner_id = 0
         self.slowmode = 0
         self.thread_users = None
-        self.invitable = True
         
         return self
     
@@ -207,8 +200,6 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
         self.archived_at = archived_at
         
         self.open = not data.get('locked', True)
-        
-        self.invitable = data.get('invitable', True)
     
     
     @copy_docs(ChannelMetadataGuildBase._difference_update_attributes)
@@ -252,13 +243,6 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
         if (self.open != open_):
             old_attributes['open'] = self.open
             self.open = open_
-        
-        
-        invitable = data.get('invitable', True)
-        if (self.invitable != invitable):
-            old_attributes['invitable'] = self.invitable
-            self.invitable = invitable
-        
         
         return old_attributes
     
@@ -362,14 +346,6 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
             open_ = preconvert_bool(open_, 'open')
             self.open_ = open_
         
-        try:
-            invitable = keyword_parameters.pop('invitable')
-        except KeyError:
-            pass
-        else:
-            invitable = preconvert_bool(invitable, 'invitable')
-            self.invitable = invitable
-        
         
         return self
     
@@ -387,7 +363,7 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
             data['owner_id'] = str(owner_id)
         
         thread_data = {}
-        thread_data['thread_metadata'] = thread_data
+        data['thread_metadata'] = thread_data
         
         thread_data['archived'] = self.archived
         
@@ -399,9 +375,6 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
         thread_data['archive_timestamp'] = archive_timestamp
         
         thread_data['locked'] = not self.open
-        
-        if self.type == CHANNEL_TYPES.guild_thread_private:
-            thread_data['invitable'] = self.invitable
         
         created_at = self._created_at
         if (created_at is not None):

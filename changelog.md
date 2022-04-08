@@ -7,6 +7,7 @@
 - Add `ERROR_CODES.max_forum_channel_tags`.
 - Add `ERROR_CODES.tag_name_not_unique`.
 - Move ut `invitable` field to only private threads.
+- Add `ChannelFlag`.
 
 #### Bug Fixes
 

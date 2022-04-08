@@ -3,6 +3,7 @@ from .metadata import *
 from .channel import *
 from .channel_types import *
 from .deprecation import *
+from .flags import *
 from .message_history import *
 from .message_iterator import *
 from .preinstanced import *
@@ -19,6 +20,7 @@ __all__ = (
     *channel.__all__,
     *channel_types.__all__,
     *deprecation.__all__,
+    *flags.__all__,
     *message_history.__all__,
     *message_iterator.__all__,
     *preinstanced.__all__,

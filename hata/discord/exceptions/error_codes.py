@@ -148,6 +148,8 @@ Error Codes
 +---------------------------------------------------------------+-----------+-----------+
 | guild_subscription_level_too_low                              | 20035     | -         |
 +---------------------------------------------------------------+-----------+-----------+
+| vanity_url_required_for_published_guilds                      | 20040     | -         |
++---------------------------------------------------------------+-----------+-----------+
 | max_guilds                                                    | 30001     | 100       |
 +---------------------------------------------------------------+-----------+-----------+
 | max_friends                                                   | 30001     | 10000     |
@@ -531,6 +533,7 @@ rate_limit_channel_write = 20028
 rate_limit_server_send = 20029
 name_contains_disallowed_word = 20031
 guild_subscription_level_too_low = 20035
+vanity_url_required_for_published_guilds = 20040
 
 max_guilds = 30001 # 100
 max_friends = 30001 # 10000

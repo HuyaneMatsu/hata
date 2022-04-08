@@ -14,6 +14,8 @@
 - Add `Channel.flags`.
 - Add `ChannelMetadataGuildForum.topic`.
 - Add `ChannelMetadataGuildForum.slowmode`.
+- Add `ApplicationCommand.guild`.
+- Add `ApplicationCommand.guild_id`.
 
 #### Bug Fixes
 

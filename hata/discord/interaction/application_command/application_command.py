@@ -2,7 +2,7 @@ __all__ = ('ApplicationCommand',)
 
 
 from ...bases import DiscordEntity
-from ...core import APPLICATION_COMMANDS
+from ...core import APPLICATION_COMMANDS, GUILDS
 from ...localizations.helpers import localized_dictionary_builder
 from ...localizations.utils import build_locale_dictionary, destroy_locale_dictionary
 from ...permission import Permission
@@ -76,6 +76,11 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         Set as `None` for context commands.
     
+    guild_id : `int`
+        The guild's identifier to which the command is bound to.
+        
+        Set as `0` if the command is global.
+    
     name : `str`
         The name of the command. It's length can be in range [1:32].
     
@@ -100,8 +105,8 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     ``ApplicationCommand``s are weakreferable.
     """
     __slots__ = (
-        'allow_by_default', 'application_id', 'description', 'description_localizations', 'name', 'name_localizations',
-        'options', 'required_permissions', 'target_type', 'version'
+        'allow_by_default', 'application_id', 'description', 'description_localizations', 'guild_id', 'name',
+        'name_localizations', 'options', 'required_permissions', 'target_type', 'version'
     )
     
     def __new__(cls, name, description=None, *, allow_by_default=True, description_localizations=None,
@@ -285,6 +290,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         self.name_localizations = name_localizations
         self.description = description
         self.description_localizations = description_localizations
+        self.guild_id = 0
         self.allow_by_default = allow_by_default
         self.options = options_processed
         self.required_permissions = required_permissions
@@ -364,6 +370,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         self.application_id = application_id
         self.description = None
         self.description_localizations = None
+        self.guild_id = 0
         self.name = ''
         self.name_localizations = None
         self.options = None
@@ -393,6 +400,12 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             self = APPLICATION_COMMANDS[application_command_id]
         except KeyError:
             self = cls._create_empty(application_command_id, int(data['application_id']))
+            
+            # guild_id
+            guild_id = data.get('guild_id', None)
+            if (guild_id is not None):
+                self.guild_id = int(guild_id)
+            
             APPLICATION_COMMANDS[application_command_id] = self
             
         self._update_attributes(data)
@@ -684,6 +697,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         data['description_localizations'] = destroy_locale_dictionary(self.description_localizations)
         
+        # guild_id
+        # Receive only
+        
         # name
         data['name'] = self.name
         
@@ -725,6 +741,12 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             # application_id
             repr_parts.append(', application_id=')
             repr_parts.append(repr(self.application_id))
+            
+            # guild_id
+            guild_id = self.guild_id
+            if guild_id:
+                repr_parts.append(', guild_id=')
+                repr_parts.append(repr(guild_id))
         
         # Required fields are `.name` and `.type`
         
@@ -882,6 +904,11 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         if (description_localizations is not None):
             description_localizations = description_localizations.copy()
         new.description_localizations = description_localizations
+        
+        
+        # guild_id
+        new.guild_id = self.guild_id
+        
         
         # name
         new.name = self.name
@@ -1162,6 +1189,20 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         is_slash_command : `bool`
         """
         return (self.target_type is ApplicationCommandTargetType.chat)
+    
+    
+    @property
+    def guild(self):
+        """
+        Returns the application command's guild.
+        
+        Returns
+        -------
+        guild : `None`, ``Guild``
+        """
+        guild_id = self.guild_id
+        if guild_id:
+            return GUILDS[guild_id]
     
     
     def apply_translation(self, translation_table, replace=False):

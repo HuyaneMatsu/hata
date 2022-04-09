@@ -332,7 +332,7 @@ class ObjectBinderBase(RichAttributeErrorBaseType):
         -------
         type_key : `tuple` ((`None`, `str`), (`None`, `str`))
         """
-        type_ = self.type_
+        type_ = self.type
         return getattr(type_, '__module__', None), getattr(type_, '__name__', None)
     
     
@@ -390,10 +390,10 @@ class ObjectBinderBase(RichAttributeErrorBaseType):
         """
         if self.supports_state_transfer:
             type_ = self.type
-            set_state = type.__setstate__
+            set_state = type_.__setstate__
             cache = self.cache
             
-            for key, state in states():
+            for key, state in states:
                 value = object.__new__(type_)
                 set_state(value, state)
                 

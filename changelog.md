@@ -39,7 +39,7 @@
 
 #### ext.extension_loader
 
-- Fix a dead lock when importing through an extension `__init__.py` file.
+- Fix a dead lock when importing through an extension's `__init__.py` file.
 
 ## 1.2.6 *\[2022-04-07\]*
 

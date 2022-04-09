@@ -16,6 +16,13 @@
 - Add `ChannelMetadataGuildForum.slowmode`.
 - Add `ApplicationCommand.guild`.
 - Add `ApplicationCommand.guild_id`.
+- Update `guild_ban_get_chunk` endpoint's rate limits.
+- Add `Client.guild_ban_get_chunk`.
+
+#### Renames, Deprecation & Removals
+
+- Rename `DiscordHTTPClient.guild_ban_get_all` to `.guild_ban_get_chunk`.
+- Rename `RATE_LIMIT_GROUPS.guild_ban_get_all` to `.guild_ban_get_chunk`.
 
 #### Bug Fixes
 

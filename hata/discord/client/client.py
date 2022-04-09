@@ -7522,9 +7522,81 @@ class Client(ClientUserPBase):
         await self.http.guild_edit(guild_id, data, reason)
     
     
+    async def guild_ban_get_chunk(self, guild, *, after=None, before=None, limit=None):
+        """
+        Returns a chunk of the guild's ban entries.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild``, `int`
+            The guild, what's bans will be requested
+        after : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
+            The timestamp after the banned users were created.
+        before : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
+            The timestamp before the banned users were created.
+        limit : `None`, `int` = `None`, Optional (Keyword only)
+            The amount of ban entries to request. Can be between 1 and 1000.
+        
+        Returns
+        -------
+        ban_entries : `list` of ``BanEntry`` elements
+            User, reason pairs for each ban entry.
+        
+        Raises
+        ------
+        TypeError
+            - If `guild` was not given neither as ``Guild``, `int`.
+            - If `after`, `before` was passed with an unexpected type.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        AssertionError
+            - If `limit` was not given as `int`.
+            - If `limit` is out of range [1:1000].
+        
+        See Also
+        --------
+        ``.guild_ban_get_all`` : Getting all ban entries of a guild.
+        """
+        guild_id = get_guild_id(guild)
+        
+        if limit is None:
+            limit = 1000
+        else:
+            if __debug__:
+                if not isinstance(limit, int):
+                    raise AssertionError(
+                        f'`limit` can be `int`, got {limit.__class__.__name__}; {limit!r}.'
+                    )
+                
+                if (limit < 1) or (limit > 1000):
+                    raise AssertionError(
+                        f'`limit` is out from the expected [1:1000] range, got {limit!r}.'
+                    )
+        
+        query_parameters = {}
+        
+        if limit != 1000:
+            query_parameters['limit'] = limit
+        
+        if (after is not None):
+            query_parameters['after'] = log_time_converter(after)
+        
+        if (before is not None):
+            query_parameters['before'] = log_time_converter(before)
+        
+        ban_datas = await self.http.guild_ban_get_chunk(guild_id, query_parameters)
+        return [BanEntry(User.from_data(ban_data['user']), ban_data.get('reason', None)) for ban_data in ban_datas]
+    
+    
     async def guild_ban_get_all(self, guild):
         """
-        Returns the guild's bans.
+        Returns the guild's ban entries.
+        
+        This method might need multiple requests to complete it's task
         
         This method is a coroutine.
         
@@ -7535,7 +7607,7 @@ class Client(ClientUserPBase):
         
         Returns
         -------
-        bans : `list` of ``BanEntry`` elements
+        ban_entries : `list` of ``BanEntry`` elements
             User, reason pairs for each ban entry.
         
         Raises
@@ -7546,11 +7618,30 @@ class Client(ClientUserPBase):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
+        
+        See Also
+        --------
+        ``.guild_ban_get_chunk`` : Getting a chunk of ban entries up to 1000 users.
         """
         guild_id = get_guild_id(guild)
         
-        data = await self.http.guild_ban_get_all(guild_id)
-        return [BanEntry(User.from_data(ban_data['user']), ban_data.get('reason', None)) for ban_data in data]
+
+        query_parameters = {'after': 0}
+        
+        ban_entries = []
+        
+        while True:
+            ban_datas = await self.http.guild_ban_get_chunk(guild_id, query_parameters)
+            
+            for ban_data in ban_datas:
+                ban_entries.append(BanEntry(User.from_data(ban_data['user']), ban_data.get('reason', None)))
+            
+            if len(ban_datas) < 1000:
+                break
+            
+            query_parameters['after'] = ban_entries[-1].user.id
+        
+        return ban_entries
     
     
     async def guild_ban_get(self, guild, user):
@@ -9321,7 +9412,7 @@ class Client(ClientUserPBase):
         return [ScheduledEvent(scheduled_event_data) for scheduled_event_data in scheduled_event_datas]
     
     
-    async def scheduled_event_user_get_chunk(self, scheduled_event, *, limit=None, before=None, after=None):
+    async def scheduled_event_user_get_chunk(self, scheduled_event, *, after=None, before=None, limit=None):
         """
         Requests a chunk user subscribed to a scheduled event.
         
@@ -9331,12 +9422,12 @@ class Client(ClientUserPBase):
         ----------
         scheduled_event : ``ScheduledEvent``, `tuple` `int` and `int`
             The scheduled event to get.
-        limit : `None`, `int` = `None`, Optional (Keyword only)
-            The amount of messages to request. Can be between 1 and 100.
         after : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
             The timestamp after the subscribed users were created.
         before : `None`, `int`, ``DiscordEntity``, `datetime` = `None`, Optional (Keyword only)
             The timestamp before the subscribed users were created.
+        limit : `None`, `int` = `None`, Optional (Keyword only)
+            The amount of scheduled event users to request. Can be between 1 and 100.
         
         Returns
         -------
@@ -9371,21 +9462,23 @@ class Client(ClientUserPBase):
                         f'`limit` is out from the expected [1:100] range, got {limit!r}.'
                     )
         
-        data = {}
+        query_parameters = {}
         
         if limit != 100:
-            data['limit'] = limit
+            query_parameters['limit'] = limit
         
         if (after is not None):
-            data['after'] = log_time_converter(after)
+            query_parameters['after'] = log_time_converter(after)
         
         if (before is not None):
-            data['before'] = log_time_converter(before)
+            query_parameters['before'] = log_time_converter(before)
         
         if guild_id:
-            data['with_member'] = True
+            query_parameters['with_member'] = True
         
-        scheduled_event_user_datas = await self.http.scheduled_event_user_get_chunk(guild_id, scheduled_event_id, data)
+        scheduled_event_user_datas = await self.http.scheduled_event_user_get_chunk(
+            guild_id, scheduled_event_id, query_parameters
+        )
         
         users = []
         for scheduled_event_user_data in scheduled_event_user_datas:
@@ -9422,10 +9515,10 @@ class Client(ClientUserPBase):
         """
         guild_id, scheduled_event_id = get_guild_id_and_scheduled_event_id(scheduled_event)
         
-        data = {'after': 0}
+        query_parameters = {'after': 0}
         
         if guild_id:
-            data['with_member'] = True
+            query_parameters['with_member'] = True
         
         users = []
         
@@ -9433,7 +9526,7 @@ class Client(ClientUserPBase):
             scheduled_event_user_datas = await self.http.scheduled_event_user_get_chunk(
                 guild_id,
                 scheduled_event_id,
-                data,
+                query_parameters,
             )
             
             for scheduled_event_user_data in scheduled_event_user_datas:
@@ -9444,7 +9537,7 @@ class Client(ClientUserPBase):
             if len(scheduled_event_user_datas) < 100:
                 break
             
-            data['after'] = users[-1].id
+            query_parameters['after'] = users[-1].id
         
         return users
     

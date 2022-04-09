@@ -860,13 +860,13 @@ Group Details
     - Limit : `OPT`
     - Resets after : `OPT`
 
-- guild_ban_get_all
+- guild_ban_get_chunk
     - Endpoint : `/guilds/{guild_id}/bans`
     - Method : `GET`
     - Required auth : `bot`
     - Limiter : `guild_id`
-    - Limit : `OPT`
-    - Resets after : `OPT`
+    - Limit : `10`
+    - Resets after : `10.0`
 
 - guild_ban_delete
     - Endpoint : `/guilds/{guild_id}/bans/{user_id}`
@@ -1959,7 +1959,7 @@ guild_get = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 guild_edit = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 guild_ack = RateLimitGroup() # untested
 audit_log_get_chunk = RateLimitGroup(LIMITER_GUILD, optimistic=True)
-guild_ban_get_all = RateLimitGroup(LIMITER_GUILD, optimistic=True)
+guild_ban_get_chunk = RateLimitGroup(LIMITER_GUILD)
 guild_ban_delete = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 guild_ban_get = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 guild_ban_add = RateLimitGroup(LIMITER_GUILD, optimistic=True)

@@ -904,11 +904,12 @@ class DiscordHTTPClient(HTTPClient):
             reason = reason,
         )
     
-    async def guild_ban_get_all(self, guild_id):
+    async def guild_ban_get_chunk(self, guild_id, query_parameters):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.guild_ban_get_all, guild_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.guild_ban_get_chunk, guild_id),
             METHOD_GET,
             f'{API_ENDPOINT}/guilds/{guild_id}/bans',
+            params = query_parameters,
         )
     
     async def guild_ban_get(self, guild_id, user_id):

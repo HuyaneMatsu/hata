@@ -1,6 +1,6 @@
 __all__ = ('bind',)
 
-from scarletio import WeakKeyDictionary, copy_docs
+from scarletio import RichAttributeErrorBaseType, WeakKeyDictionary, copy_docs
 
 
 def bind(bind_to, bind_with, name):
@@ -31,14 +31,14 @@ def bind(bind_to, bind_with, name):
     
     class Inventory(object):
         def __init__(self, parent_self):
-            self.user = parent_self
-            self.inv = []
+            self.user_id = parent_self.id
+            self.inventory = []
         
         def add_item(self, name):
-            self.inv.append(name)
+            self.inventory.append(name)
         
         def give_user(self, item, recipient):
-            del self.inv[self.inv.index(item)]
+            self.inventory.remove(item)
             recipient.inventory.add_item(item)
     
     bind(ClientUserBase, Inventory, 'inventory')
@@ -51,7 +51,7 @@ def bind(bind_to, bind_with, name):
     ```py
     from hata import ClientUserBase, bind
     
-    class InventorySize(object):
+    class ValueBinder(object):
         def __init__(self, parent_self):
             self.value = 10
         
@@ -61,13 +61,63 @@ def bind(bind_to, bind_with, name):
         def __set__(self, instance, value):
             self.value = value
     
-    bind(ClientUserBase, InventorySize, 'inventory_size')
+    bind(ClientUserBase, ValueBinder, 'value')
     
     # Usage:
     user.inventory_size += 10
     ```
     Descriptor binders are familiar ot normal descriptors, except, they are created per object and not per class.
     
+    Sometimes you want to clear extra binders with default values. For this you might want to define the `__bool__`
+    method.
+    ```py
+    DEFAULT_VALUE = 10
+    
+    class ValueBinder(object):
+        def __init__(self, parent_self):
+            self.value = DEFAULT_VALUE
+        
+        def __get__(self, instance, type_):
+            return self.value
+        
+        def __set__(self, instance, value):
+            self.value = value
+        
+        def __bool__(self):
+            return (self.value != DEFAULT_VALUE)
+    
+    
+    bind(ClientUserBase, ValueBinder, 'value')
+    
+    # Usage
+    ClientUserBase.value.clear()
+    ```
+    
+    A more advanced concept is reloading modules, which use bindings. For this define `__getstate__` and the
+    `__setstate__` magic methods.
+    
+    > Also defining `__bool__` is not required, but recommended.
+    ```py
+    class Inventory(object):
+        def __init__(self, parent_self):
+            self.user_id = parent_self.id
+            self.inventory = []
+        
+        def add_item(self, name):
+            self.inventory.append(name)
+        
+        def give_user(self, item, recipient):
+            self.inventory.remove(item)
+            recipient.inventory.add_item(item)
+        
+        def __getstate__(self):
+            return (self.user_id, self.inventory)
+        
+        def __setstate(self, state):
+            self.user_id, self.inventory = state
+    
+    bind(ClientUserBase, Inventory, 'inventory')
+    ```
     """
     if not isinstance(bind_to, type):
         raise TypeError(
@@ -81,19 +131,32 @@ def bind(bind_to, bind_with, name):
         )
     
     if hasattr(bind_to, name):
-        raise TypeError(
-            f'`bind_to` already has an attribute named, as bind_to={bind_to!r}, name={name!r}.'
-        )
+        old_binder = getattr(bind_to, name)
+        if not isinstance(old_binder, ObjectBinderBase):
+            raise TypeError(
+                f'`bind_to` already has an attribute named, as bind_to={bind_to!r}, name={name!r}.'
+            )
+    
+    else:
+        old_binder = None
     
     if (getattr(bind_with, '__get__', None) is not None):
-        binder = DescriptorObjectBinder(name, bind_with)
+        new_binder = DescriptorObjectBinder(name, bind_with)
     else:
-        binder = GenericObjectBinder(name, bind_with)
+        new_binder = GenericObjectBinder(name, bind_with)
     
-    setattr(bind_to, name, binder)
+    if (
+        (old_binder is not None) and
+        old_binder.supports_state_transfer and
+        new_binder.supports_state_transfer and
+        (old_binder.get_type_key() == new_binder.get_type_key())
+    ):
+        new_binder.set_states(old_binder.get_states(bind_to))
+    
+    setattr(bind_to, name, new_binder)
 
 
-class ObjectBinderBase:
+class ObjectBinderBase(RichAttributeErrorBaseType):
     """
     Object binder.
     
@@ -103,10 +166,14 @@ class ObjectBinderBase:
         The binding relation mapping.
     name : `str`
         The filed's name.
+    supports_clearing : `bool`
+        Whether clearing the bound objects is supported.
+    supports_state_transfer : `bool`
+        Whether the bound objects support state transfer.
     type : `type`
         The binded class.
     """
-    __slots__ = ('cache', 'name', 'type',)
+    __slots__ = ('cache', 'name', 'supports_clearing', 'supports_state_transfer', 'type')
     
     def __new__(cls, name, type_):
         """
@@ -119,10 +186,27 @@ class ObjectBinderBase:
         type_ : `type`
             The binded class.
         """
+        bool_method = getattr(type_, '__bool__', None)
+        if (bool_method is None):
+            supports_clearing = False
+        else:
+            supports_clearing = True
+        
+        get_state_method = getattr(type_, '__getstate__', None)
+        set_state_method = getattr(type_, '__setstate__', None)
+        if (get_state_method is None) or (set_state_method is None):
+            supports_state_transfer = False
+        else:
+            supports_state_transfer = True
+        
         self = object.__new__(cls)
         self.cache = WeakKeyDictionary()
         self.name = name
         self.type = type_
+        
+        self.supports_clearing = supports_clearing
+        self.supports_state_transfer = supports_state_transfer
+        
         return self
     
     
@@ -181,7 +265,142 @@ class ObjectBinderBase:
         """
         raise AttributeError(f'Cannot delete attribute: {self.name!r}.')
     
+    
+    def __repr__(self):
+        """Returns the object binder representation."""
+        repr_parts = ['<', self.__class__.__name__]
+        
+        repr_parts.append(' name=')
+        repr_parts.append(repr(self.name))
+        
+        repr_parts.append(', type=')
+        repr_parts.append(repr(self.type))
+        
+        length = len(self.cache)
+        if length:
+            repr_parts.append(', length=')
+            repr_parts.append(repr(length))
+        
+        supports_clearing = self.supports_clearing
+        if supports_clearing:
+            repr_parts.append(', supports_clearing=')
+            repr_parts.append(repr(supports_clearing))
+        
+        supports_state_transfer = self.supports_state_transfer
+        if supports_state_transfer:
+            repr_parts.append(', supports_state_transfer=')
+            repr_parts.append(repr(supports_state_transfer))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    def clear(self):
+        """
+        Clears the bound objects.
+        
+        Only those objects are cleared, which return `False` from their `__bool__` method.
+        
+        Returns
+        -------
+        cleared : `int`
+            The amount of objects freed.
+        """
+        if not self.supports_clearing:
+            return 0
+        
+        cache = self.cache
+        to_clear = []
+        
+        for key, value in cache.items():
+            if not value:
+                to_clear.append(key)
+        
+        for key in to_clear:
+            del cache[key]
+        
+        return len(to_clear)
+    
+    
+    def get_type_key(self):
+        """
+        Returns the type key of the object binder.
+        
+        It is used when transferring down states to match types.
+        
+        Returns
+        -------
+        type_key : `tuple` ((`None`, `str`), (`None`, `str`))
+        """
+        type_ = self.type_
+        return getattr(type_, '__module__', None), getattr(type_, '__name__', None)
+    
+    
+    def iter_true_items(self):
+        """
+        Iterates over all non empty bound objects & keys.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        key : `Any`
+            Objects to bound to.
+        value : ``.type``
+            The bound object.
+        """
+        if self.supports_clearing:
+            for key, value in self.cache.items():
+                if value:
+                    yield key, value
+        
+        else:
+            yield from self.cache.items()
+    
+    
+    def get_states(self, type_):
+        """
+        Gets the given object's states if applicable for the given `type_` instances.
+        
+        Returns
+        -------
+        states : `list` of `tuple` (`Any`, `Any`)
+        """
+        states = []
+        if self.supports_state_transfer:
+            get_state = self.type.__getstate__
+            
+            for key, value in self.iter_true_items():
+                if not isinstance(key, type_):
+                    continue
+                
+                state = get_state(value)
+                states.append((key, state))
+        
+        return states
+    
+    
+    def set_states(self, states):
+        """
+        Sets states of an another binder to this one.
+        
+        Parameters
+        ----------
+        states : `list` of `tuple` (`Any`, `Any`)
+        """
+        if self.supports_state_transfer:
+            type_ = self.type
+            set_state = type.__setstate__
+            cache = self.cache
+            
+            for key, state in states():
+                value = object.__new__(type_)
+                set_state(value, state)
+                
+                cache[key] = value
 
+
+@copy_docs(ObjectBinderBase)
 class GenericObjectBinder(ObjectBinderBase):
     __slots__ = ()
     

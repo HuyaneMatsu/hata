@@ -1,4 +1,4 @@
-## 1.2.7 *\[2022-04-0?\]*
+## 1.2.7 *\[2022-04-09\]*
 
 #### Improvements
 
@@ -18,6 +18,15 @@
 - Add `ApplicationCommand.guild_id`.
 - Update `guild_ban_get_chunk` endpoint's rate limits.
 - Add `Client.guild_ban_get_chunk`.
+- `ObjectBinderBase` now support rich attribute errors..
+- Add `ObjectBinderBase.clear`.
+- Add `ObjectBinderBase.supports_clearing`.
+- Add `ObjectBinderBase.supports_state_transfer`.
+- Add `ObjectBinderBase.__repr__`.
+- Add `ObjectBinderBase.iter_true_items`.
+- Add `ObjectBinderBase.get_states`.
+- Add `ObjectBinderBase.set_states`.
+- `ObjectBinderBase` now support re-assigning the same value.
 
 #### Renames, Deprecation & Removals
 
@@ -27,6 +36,10 @@
 #### Bug Fixes
 
 - Thread metadata field were missing when calling `Channel.to_data()`.
+
+#### ext.extension_loader
+
+- Fix a dead lock when importing through an extension `__init__.py` file.
 
 ## 1.2.6 *\[2022-04-07\]*
 

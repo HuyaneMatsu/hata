@@ -686,22 +686,27 @@ class Message(DiscordEntity, immortal=True):
             The ``.activity`` attribute the message.
             
             If called as classmethod defaults to `None`.
+        
         application : `None`, ``MessageApplication``., Optional (Keyword only)
             The ``.application`` attribute the message.
             
             If called as a classmethod defaults to `None`.
+        
         application_id : `int`, Optional (Keyword Only)
             The ``.application_id`` attribute of the message.
             
             If called as a classmethod defaults to `0`.
+        
         attachments : `None`, ((`list`, `tuple`) of ``Attachment``), Optional (Keyword only)
             The ``.attachments`` attribute of the message. If passed as an empty list, then will be as `None` instead.
             
             If called as a classmethod defaults to `None`.
+        
         author : `None`, ``ClientUserBase``, ``Webhook``, ``WebhookRepr``, Optional (Keyword only)
             The ``.author`` attribute of the message. If passed as `None` then it will be set as `ZEROUSER` instead.
             
             If called as a classmethod, defaults to `ZEROUSER`.
+        
         channel_id : ``Channel``, `int`, Optional if called as method (Keyword only)
             The ``.channel_id`` attribute of the message.
             
@@ -722,10 +727,12 @@ class Message(DiscordEntity, immortal=True):
             The `.cross_mentions` attribute of the message. If passed as an empty list, then will be set `None` instead.
             
             If called as a classmethod defaults to `None`.
+        
         referenced_message : `None`, ``Message`` ``MessageReference``, Optional (Keyword only)
             The ``.referenced_message`` attribute of the message.
             
             If called as a classmethod defaults to `None`.
+        
         deleted : `bool`, Optional (Keyword only)
             The ``.deleted`` attribute of the message. If called as a class method, defaults to `True`.
         
@@ -733,17 +740,20 @@ class Message(DiscordEntity, immortal=True):
             The ``.edited_at`` attribute of the message.
             
             If called as a classmethod, defaults to `None`.
+        
         embeds : `None`, (`list`, `tuple`) of ``EmbedBase``, Optional (Keyword only)
             The ``.embeds`` attribute of the message. If passed as an empty list, then is set as `None` instead. If
             passed as list and it contains any embeds, which are not type ``EmbedCore``, then those will be converted
             to ``EmbedCore`` as well.
             
             If called as a classmethod defaults to `None`.
+        
         everyone_mention : `bool`, `int` (`0`, `1`), Optional (Keyword only)
             The ``.everyone_mention`` attribute of the message. Accepts other `int` as `bool` as well, but
             their value still cannot be other than `0`, `1`.
             
             If called as a classmethod, defaults to `False`.
+        
         flags : ``MessageFlag``, `int`, Optional (Keyword only)
             The ``.flags`` attribute of the message. If passed as other `int` than ``MessageFlag``, then will
             be converted to ``MessageFlag``.
@@ -759,6 +769,7 @@ class Message(DiscordEntity, immortal=True):
             The ``.id`` attribute of the message. If passed as `str`, will be converted to `int`.
             
             If called as a classmethod defaults to `0`.
+        
         id_ : `int`, `str`, Optional (Keyword only)
             Alias of `id`.
         
@@ -769,20 +780,24 @@ class Message(DiscordEntity, immortal=True):
             The ``.nonce`` attribute of the message. If passed as `str` can be between length `0` and `32`.
             
             If called as a classmethod defaults to `None`.
+        
         pinned : `bool`, `int` (`0`, `1`), Optional (Keyword only)
             The ``.pinned`` attribute of the message. Accepts other `int` as `bool` as well, but their value
             still cannot be other than `0`, `1`.
             
             If called as a classmethod, defaults to `False`.
+        
         reactions : `None`, ``reaction_mapping``, Optional (Keyword only)
             The ``.reactions`` attribute of the message.
             
             If called as a classmethod defaults to `None`.
+        
         role_mentions : `None`, (`list`, `tuple`) of ``Role``, Optional (Keyword only)
             The ``.role_mentions`` attribute of the message. If passed as an empty `list`, will be set as `None`
             instead.
             
             If called as a classmethod defaults to `None`.
+        
         stickers : `None`, (`list`, `tuple`) of ``Sticker``, Optional (Keyword only)
             The ``.stickers`` attribute of the message.
             
@@ -798,11 +813,13 @@ class Message(DiscordEntity, immortal=True):
             still cannot be other than `0`, `1`.
             
             If called as a classmethod, defaults to `False`.
+        
         type : ``MessageType``, `int`, Optional (Keyword only)
             The ``.type`` attribute of the message. If passed as `int`, it will be converted to it's wrapper side
             ``MessageType`` representation.
             
-            If called as a classmethod defaults to ``MessageType.default`
+            If called as a classmethod defaults to `MessageType.default`
+        
         type_ : ``MessageType``, `int`, Optional (Keyword only)
             Alias of ``type`.
         

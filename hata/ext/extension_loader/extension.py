@@ -1,11 +1,8 @@
 __all__ = ('EXTENSIONS', )
 
 import sys
-from os.path import dirname as get_directory_name, join as join_paths, isfile as is_file
-from importlib import reload as reload_module
-from importlib.util import find_spec, module_from_spec, spec_from_file_location
+from importlib.util import module_from_spec, spec_from_file_location
 from py_compile import compile as compile_module
-from types import ModuleType
 
 from scarletio import HybridValueDictionary, RichAttributeErrorBaseType, WeakSet, WeakValueDictionary, include
 
@@ -423,6 +420,7 @@ class Extension(RichAttributeErrorBaseType):
                 if module is None:
                     # module is not imported yet, nice
                     module = module_from_spec(spec)
+                    sys.modules[spec.name] = module
                     
                     added_variable_names = self._added_variable_names
                     if self._extend_default_variables:
@@ -445,8 +443,6 @@ class Extension(RichAttributeErrorBaseType):
                         loaded = False
                     else:
                         loaded = True
-                    
-                    sys.modules[spec.name] = module
                     
                     if loaded:
                         if self._take_snapshot:

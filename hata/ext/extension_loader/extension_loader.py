@@ -93,7 +93,7 @@ def _try_get_extension(extension_name, extension_path):
         pass
 
 
-async def _get_extensions(name):
+async def _get_extensions(name, deep):
     """
     Gets the extensions with the given name.
     
@@ -101,6 +101,8 @@ async def _get_extensions(name):
     ----------
     name : `str`, `iterable` of `str`
         Extension by name to find.
+    deep : `bool`
+        Whether the extension with all of it's parent and with their child should be returned.
     
     Returns
     -------
@@ -129,7 +131,7 @@ async def _get_extensions(name):
                 f'No extensions found with the given name: {name!r}.'
             )
         
-        return _build_extension_tree(extensions)
+        return _build_extension_tree(extensions, deep)
     
     except GeneratorExit:
         raise
@@ -925,7 +927,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         return extension
     
     
-    def load(self, name):
+    def load(self, name, *, deep=False):
         """
         Loads the extension with the given name. If the extension is already loaded, will do nothing.
         
@@ -933,6 +935,8 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         ----------
         name : `str`, `iterable` of `str`
             The extension's name.
+        deep : `bool` = `False`, Optional (Keyword only)
+            Whether the extension with all of it's parent and with their child should be reloaded.
         
         Returns
         -------
@@ -949,10 +953,10 @@ class ExtensionLoader(RichAttributeErrorBaseType):
             - No extension is added with the given name.
             - Loading the extension failed.
         """
-        return run_coroutine(self._load_task(name), KOKORO)
+        return run_coroutine(self._load_task(name, deep), KOKORO)
     
     
-    async def _load_task(self, name):
+    async def _load_task(self, name, deep):
         """
         Loads the given extensions.
         
@@ -962,6 +966,8 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         ----------
         name : `str'
             The extension(s) name to load.
+        deep : `bool`
+            Whether the extension with all of it's parent and with their child should be reloaded.
 
         Returns
         -------
@@ -974,7 +980,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
             - No extension is added with the given name.
             - Loading the extension failed.
         """
-        extensions = await _get_extensions(name)
+        extensions = await _get_extensions(name, deep)
         
         error_messages = None
         
@@ -992,7 +998,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         return extensions
     
     
-    def unload(self, name):
+    def unload(self, name, *, deep=False):
         """
         Unloads the extension with the given name.
         
@@ -1000,6 +1006,8 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         ----------
         name : `str`, `iterable` of `str`
             The extension's name.
+        deep : `bool` = `False`, Optional (Keyword only)
+            Whether the extension with all of it's parent and with their child should be reloaded.
         
         Returns
         -------
@@ -1016,10 +1024,10 @@ class ExtensionLoader(RichAttributeErrorBaseType):
             - No extension is added with the given name.
             - Unloading the extension failed.
         """
-        return run_coroutine(self._unload_task(name), KOKORO)
+        return run_coroutine(self._unload_task(name, deep), KOKORO)
     
     
-    async def _unload_task(self, name):
+    async def _unload_task(self, name, deep):
         """
         Unloads the extension with the given name.
         
@@ -1029,6 +1037,8 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         ----------
         name : `str`, `iterable` of `str`
             The extension's name.
+        deep : `bool`
+            Whether the extension with all of it's parent and with their child should be reloaded.
         
         Returns
         -------
@@ -1041,7 +1051,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
             - No extension is added with the given name.
             - Unloading the extension failed.
         """
-        extensions = await _get_extensions(name)
+        extensions = await _get_extensions(name, deep)
         
         error_messages = None
         
@@ -1059,7 +1069,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         return extensions
     
     
-    def reload(self, name):
+    def reload(self, name, *, deep=False):
         """
         Reloads the extension with the given name.
         
@@ -1077,16 +1087,19 @@ class ExtensionLoader(RichAttributeErrorBaseType):
             
             When finished returns the reloaded extensions.
         
+        deep : `bool` = `False`, Optional (Keyword only)
+            Whether the extension with all of it's parent and with their child should be reloaded.
+        
         Raises
         ------
         ExtensionError
             - No extension is added with the given name.
             - Reloading the extension failed.
         """
-        return run_coroutine(self._reload_task(name), KOKORO)
+        return run_coroutine(self._reload_task(name, deep), KOKORO)
     
     
-    async def _reload_task(self, name):
+    async def _reload_task(self, name, deep):
         """
         Reloads the extension with the given name.
         
@@ -1096,6 +1109,8 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         ----------
         name : `str`, `iterable` of `str`
             The extension's name.
+        deep : `bool`
+            Whether the extension with all of it's parent and with their child should be reloaded.
         
         Returns
         -------
@@ -1108,7 +1123,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
             - No extension is added with the given name.
             - Reloading the extension failed.
         """
-        extensions = await _get_extensions(name)
+        extensions = await _get_extensions(name, deep)
         
         await self._check_for_syntax(extensions)
         

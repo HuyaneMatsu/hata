@@ -1,5 +1,6 @@
-from . import checks
 from .category import *
+from .checks import *
+from .client_wrapper_extension import *
 from .command import *
 from .command_helpers import *
 from .command_processor import *
@@ -11,12 +12,16 @@ from .responding import *
 from .utils import *
 from .wrappers import *
 
+
 __all__ = (
     'checks',
     'cooldown',
     'configure_converter',
     'setup_ext_commands_v2',
+    
     *category.__all__,
+    *checks.__all__,
+    *client_wrapper_extension.__all__,
     *command.__all__,
     *command_helpers.__all__,
     *command_processor.__all__,
@@ -29,9 +34,13 @@ __all__ = (
     *wrappers.__all__,
 )
 
-from .. import register_library_extension, add_library_extension_hook, register_setup_function
 
 from ...discord.client import Client
+
+from .. import register_library_extension, add_library_extension_hook, register_setup_function
+
+from . import checks
+
 
 configure_converter = CommandConverterConfigurerWrapper
 cooldown = CommandCooldownWrapper

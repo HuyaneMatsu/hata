@@ -5,13 +5,13 @@ from scarletio import KeepType
 from ...discord.client.utils import ClientWrapper
 from ...discord.events.handling_helpers import _EventHandlerManagerRouter
 
-from .application_command import SlasherApplicationCommand
-from .slasher import Slasher
+from .command import Command
+from .command_processor import CommandProcessor
 
 
-def interactions_getter(manager_router):
+def commands_getter(manager_router):
     """
-    Gets the slash command processor using `Client.slasher` of an ``_EventHandlerManagerRouter``.
+    Gets the command processor using `Client.command_processor` of an ``_EventHandlerManagerRouter``.
     
     Parameters
     ----------
@@ -20,16 +20,16 @@ def interactions_getter(manager_router):
     
     Returns
     -------
-    handlers : `list` of ``Slasher``
+    handlers : `list` of ``CommandProcessor``
     """
     handlers = []
     for client in manager_router.parent.clients:
-        manager = getattr(client, 'interactions', None)
+        manager = getattr(client, 'commands', None)
         if manager is None:
             continue
         
         handler = manager.parent
-        if isinstance(handler, Slasher):
+        if isinstance(handler, CommandProcessor):
             handlers.append(handler)
     
     return handlers
@@ -37,7 +37,7 @@ def interactions_getter(manager_router):
 
 def from_class_constructor(klass):
     """
-    Creates a slash command from the given class.
+    Creates a command from the given class.
     
     Parameters
     ----------
@@ -46,28 +46,27 @@ def from_class_constructor(klass):
     
     Returns
     -------
-    self : ``SlasherApplicationCommand``, ``Router``
+    self : ``Command``, ``Router``
     
     Raises
     ------
     BaseException
-        Any exception raised by the respective ``SlasherApplicationCommand`` constructor.
+        Any exception raised by the respective ``Command`` constructor.
     """
-    return SlasherApplicationCommand.from_class(klass)
+    return Command.from_class(klass)
 
 
 @KeepType(ClientWrapper)
 class ClientWrapper:
     
     @property
-    def interactions(self):
+    def commands(self):
         """
-        Returns a ``_EventHandlerManagerRouter``, with what slash commands can be added to more clients at the
+        Returns a ``_EventHandlerManagerRouter``, with what commands can be added to more clients at the
         same time.
         
         Returns
         -------
         event_handler_manager_router : ``_EventHandlerManagerRouter``
         """
-        return _EventHandlerManagerRouter(self, interactions_getter, from_class_constructor)
-
+        return _EventHandlerManagerRouter(self, commands_getter, from_class_constructor)

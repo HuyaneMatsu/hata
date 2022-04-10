@@ -1,4 +1,4 @@
-## 1.2.7 *\[2022-04-09\]*
+## 1.2.7 *\[2022-04-10\]*
 
 #### Improvements
 
@@ -40,6 +40,10 @@
 #### ext.extension_loader
 
 - Fix a dead lock when importing through an extension's `__init__.py` file.
+
+#### ext.commands_v2
+
+`ClientWrapperExtension` was not extended with the `.commands` decorator. (Gilgamesh#8939)
 
 ## 1.2.6 *\[2022-04-07\]*
 

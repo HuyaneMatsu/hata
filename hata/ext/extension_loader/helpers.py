@@ -460,13 +460,16 @@ def _get_path_extension_name(path):
     return ABSOLUTE_PATH_EXTENSION_NAME_PREFIX + file_name
 
 
-def _build_extension_tree(extensions):
+def _build_extension_tree(extensions, deep):
     """
     Builds a tree of extensions.
     
     Parameters
     ----------
     extensions : `list` of ``Extension``
+        A list of extension to build the tree form.
+    deep : `bool`
+        Whether the extension with all of it's parent and with their child should be returned.
     
     Returns
     -------
@@ -481,6 +484,11 @@ def _build_extension_tree(extensions):
         for child_extension in extension.iter_child_extensions():
             if child_extension not in unwrapped_extensions:
                 extensions_to_unwrap.append(child_extension)
+        
+        if deep:
+            for parent_extension in extension.iter_parent_extensions():
+                if parent_extension not in unwrapped_extensions:
+                    extensions_to_unwrap.append(parent_extension)
         
         unwrapped_extensions.add(extension)
     

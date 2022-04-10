@@ -431,7 +431,7 @@ class ClientUserBase(UserBase):
             if guild.owner_id == self.id:
                 return True
         
-        emoji_role_ids = emoji.roles
+        emoji_role_ids = emoji.role_ids
         if (emoji_role_ids is None):
             return True
         
@@ -439,7 +439,7 @@ class ClientUserBase(UserBase):
         if (guild_profile_role_ids is None):
             return False
         
-        if emoji_role_ids.isdisjoint(guild_profile_role_ids):
+        if set(emoji_role_ids) > set(guild_profile_role_ids):
             return False
         
         return True

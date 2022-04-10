@@ -1,3 +1,10 @@
+## 1.2.8 *\[2022-04-??\]*
+
+#### Bug Fixes
+
+- `ClientUserBase.can_use_emoji` could return incorrect value.
+
+
 ## 1.2.7 *\[2022-04-10\]*
 
 #### Improvements

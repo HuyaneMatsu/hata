@@ -60,8 +60,8 @@ set_docs(get_ipc_path,
     
     Parameters
     ----------
-    pipe : `None`, `str`
-        # TODO
+    pipe : `None`, `int`
+        The temporary inter process path's index value to connect to.
     
     Returns
     -------

@@ -5,7 +5,9 @@ from math import floor
 from os import getpid as get_process_identifier
 from sys import platform as PLATFORM
 
-from scarletio import Future, Task, from_json, future_or_timeout, run_coroutine, sleep, to_json
+from scarletio import (
+    Future, RichAttributeErrorBaseType, Task, from_json, future_or_timeout, run_coroutine, sleep, to_json
+)
 
 from ...discord.activity import ActivityRich
 from ...discord.channel import Channel
@@ -74,8 +76,10 @@ del channel_key_transformer
 del guild_key_transformer
 
 
-class RPCClient:
+class RPCClient(RichAttributeErrorBaseType):
     """
+    RPC client connecting to a local Discord client with IPC.
+    
     Attributes
     ----------
     _auto_nonce : `int`

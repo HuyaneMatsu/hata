@@ -28,6 +28,12 @@
 - Add `ObjectBinderBase.set_states`.
 - `ObjectBinderBase` now support re-assigning the same value.
 
+#### ext.extension_loader
+
+- Add `deep` parameter to `ExtensionLoader.load`.
+- Add `deep` parameter to `ExtensionLoader.unload`.
+- Add `deep` parameter to `ExtensionLoader.reload`.
+
 #### Renames, Deprecation & Removals
 
 - Rename `DiscordHTTPClient.guild_ban_get_all` to `.guild_ban_get_chunk`.

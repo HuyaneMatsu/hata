@@ -6,8 +6,10 @@ from ..bases import DiscordEntity, IconSlot
 from ..http import urls as module_urls
 
 
+ChannelMetadataGuildBase = include('ChannelMetadataGuildBase')
+CHANNEL_TYPES = include('CHANNEL_TYPES')
 create_partial_channel_from_id = include('create_partial_channel_from_id')
-create_partial_guild_from_id = include('create_partial_guild_from_id',)
+create_partial_guild_from_id = include('create_partial_guild_from_id')
 
 
 class WebhookSourceGuild(DiscordEntity):
@@ -170,7 +172,7 @@ class WebhookSourceChannel(DiscordEntity):
     @property
     def channel(self):
         """
-        Returns the guild of the webhook source channel.
+        Returns the channel of the webhook source channel.
         
         If the channel is not cached, creates a new one.
         
@@ -178,8 +180,11 @@ class WebhookSourceChannel(DiscordEntity):
         -------
         channel : ``Channel``
         """
-        channel = create_partial_channel_from_id(self.id, 5, 0)
+        channel = create_partial_channel_from_id(self.id, CHANNEL_TYPES.guild_announcements, 0)
+        
         if channel.partial:
-            channel.name = self.name
+            metadata = channel.metatdata
+            if isinstance(metadata, ChannelMetadataGuildBase):
+                metadata.name = self.name
         
         return channel

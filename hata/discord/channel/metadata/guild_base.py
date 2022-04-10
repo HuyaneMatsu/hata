@@ -2,7 +2,7 @@ __all__ = ('ChannelMetadataGuildBase',)
 
 from re import I as re_ignore_case, compile as re_compile, escape as re_escape
 
-from scarletio import copy_docs, include
+from scarletio import copy_docs, export, include
 
 from ...core import GUILDS
 from ...permission.permission import PERMISSION_MASK_VIEW_CHANNEL
@@ -14,6 +14,7 @@ from .base import ChannelMetadataBase
 Client = include('Client')
 
 
+@export
 class ChannelMetadataGuildBase(ChannelMetadataBase):
     """
     Base guild channel metadata type.

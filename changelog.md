@@ -1,9 +1,13 @@
 ## 1.2.8 *\[2022-04-??\]*
 
+#### Improvements
+
+- `Message.channel` now always returns a `Channel`. (WizzyGeek#2356)
+
 #### Bug Fixes
 
 - `ClientUserBase.can_use_emoji` could return incorrect value.
-
+- Fix an `AttributeError` in `WebhookSourceChannel.channel`.
 
 ## 1.2.7 *\[2022-04-10\]*
 

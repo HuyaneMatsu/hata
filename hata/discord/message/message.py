@@ -40,6 +40,8 @@ Channel = include('Channel')
 create_component = include('create_component')
 InteractionType = include('InteractionType')
 ComponentBase = include('ComponentBase')
+create_partial_channel_from_id = include('create_partial_channel_from_id')
+
 
 EMBED_UPDATE_NONE = 0
 EMBED_UPDATE_SIZE_UPDATE = 1
@@ -2151,11 +2153,9 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        guild : `None`, ``Channel``
+        guild : ``Channel``
         """
-        channel_id = self.channel_id
-        if channel_id:
-            return CHANNELS.get(channel_id, None)
+        return create_partial_channel_from_id(self.channel_id, -1, self.guild_id)
     
     
     @property

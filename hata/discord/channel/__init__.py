@@ -1,3 +1,5 @@
+from scarletio import export
+
 from .metadata import *
 
 from .channel import *
@@ -26,3 +28,6 @@ __all__ = (
     *preinstanced.__all__,
     *utils.__all__,
 )
+
+
+export(CHANNEL_TYPES, 'CHANNEL_TYPES')

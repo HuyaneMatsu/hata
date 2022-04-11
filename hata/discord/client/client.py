@@ -2342,7 +2342,7 @@ class Client(ClientUserPBase):
                 (name_localizations is not ...)
             ):
                 if (achievement is None):
-                    achievement = self.achievement_get(achievement_id)
+                    achievement = await self.achievement_get(achievement_id)
                 
                 if (name is not ...) or (name_localizations is not ...):
                     if (name is ...):

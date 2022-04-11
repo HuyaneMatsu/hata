@@ -1710,7 +1710,7 @@ class eventlist(list):
         self.kwargs = None
 
 # This class is a placeholder for the `with` statement support also for the `shortcut` property as well.
-class EventHandlerBase:
+class EventHandlerBase(RichAttributeErrorBaseType):
     """
     Base class for event handlers.
     """

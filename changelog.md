@@ -1,3 +1,13 @@
+## 1.2.9 *\[2022-04-??\]*
+
+#### Improvements
+
+- `EventHandlerBase` instances now support rich attribute errors.
+
+#### Bug Fixes
+
+- `Client.achievement_edit` could raise `TypeError` on older api versions.
+
 ## 1.2.8 *\[2022-04-11\]*
 
 #### Improvements

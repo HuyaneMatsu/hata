@@ -1178,7 +1178,7 @@ class ParameterSubSection:
             yield '</td>'
         
         if mask & PARAMETER_MASK_DEFAULT:
-            yield '<td class="parameter_table_keyword_only">'
+            yield '<td class="parameter_table_default">'
             
             default = self.default
             if (default is not None):
@@ -1310,22 +1310,22 @@ class ParameterSection:
         yield '<table class="parameter_table"><thead><tr>'
         
         if mask & PARAMETER_MASK_NAME:
-            yield '<th>Parameter</th>'
+            yield '<th class="parameter_table_name">Parameter</th>'
         
         if mask & PARAMETER_MASK_TYPE:
-            yield '<th>Type</th>'
+            yield '<th class="parameter_table_type">Type</th>'
         
         if mask & PARAMETER_MASK_OPTIONAL:
-            yield '<th>Optional</th>'
+            yield '<th class="parameter_table_optional">Optional</th>'
         
         if mask & PARAMETER_MASK_KEYWORD_ONLY:
-            yield '<th>Keyword only</th>'
+            yield '<th class="parameter_table_keyword_only">Keyword only</th>'
         
         if mask & PARAMETER_MASK_DEFAULT:
-            yield '<th>Default</th>'
+            yield '<th class="parameter_table_default">Default</th>'
         
         if mask & PARAMETER_MASK_DESCRIPTION:
-            yield '<th>Description</th>'
+            yield '<th class="parameter_table_description">Description</th>'
         
         yield '</tr></thead><tbody>'
         

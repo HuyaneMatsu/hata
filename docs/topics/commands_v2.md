@@ -306,7 +306,7 @@ async def avatar(ctx, user: 'User'=None):
 The default flags are the following:
 
 | Entity    | Included flags                            |
-+-----------+-------------------------------------------+
+|-----------|-------------------------------------------|
 | user      | mention, name, id                         |
 | client    | mention, name, id                         |
 | role      | mention, name, id                         |
@@ -320,7 +320,7 @@ The default flags are the following:
 Meanwhile these are all the applicable ones:
 
 | Entity    | Included flags                            |
-+-----------+-------------------------------------------+
+|-----------|-------------------------------------------|
 | user      | mention, name, id, everywhere, profile    |
 | client    | mention, name, id, everywhere             |
 | role      | mention, name, id, everywhere             |

@@ -14,7 +14,7 @@ class Category:
     """
     Category of commands.
     
-    Parameters
+    Attributes
     ----------
     _checks : `None`, `tuple` of ``CheckBase``
         The checks of the category.

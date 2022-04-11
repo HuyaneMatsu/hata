@@ -126,7 +126,7 @@ def run_console_till_interruption():
     interactive_console_locals = {}
     
     if module is None:
-        for variable_value, variable_name in frame.f_globals.items():
+        for variable_name, variable_value in frame.f_globals.items():
             if (variable_name not in IGNORED_CONSOLE_VARIABLES):
                 interactive_console_locals[variable_name] = variable_value
     

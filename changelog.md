@@ -1,4 +1,4 @@
-## 1.2.8 *\[2022-04-??\]*
+## 1.2.8 *\[2022-04-11\]*
 
 #### Improvements
 
@@ -8,6 +8,11 @@
 
 - `ClientUserBase.can_use_emoji` could return incorrect value.
 - Fix an `AttributeError` in `WebhookSourceChannel.channel`.
+- `run_console_till_interruption` could raise `TypeError`. (Gilgamesh#8939)
+
+##### ext.patchouli
+
+- `TypeSerializer` could raise `TypeError`. (typo) (Gilgamesh#8939)
 
 ## 1.2.7 *\[2022-04-10\]*
 

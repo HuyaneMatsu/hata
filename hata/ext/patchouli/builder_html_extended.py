@@ -1497,7 +1497,7 @@ class TypeSerializer:
             
             if section_attributes_i is None:
                 section_parts[SECTION_TYPE_INSTANCE_ATTRIBUTES] = \
-                    AttributeSection('Attributes', {instance_attribute_name}, object_)
+                    AttributeSection('Attributes', {instance_attribute_name}, object_, path)
             else:
                 section_attributes_i.add(instance_attribute_name)
             continue

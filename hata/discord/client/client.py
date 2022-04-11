@@ -14286,7 +14286,7 @@ class Client(ClientUserPBase):
             The respective guild.
         application_command : ``ApplicationCommand``, `int`
             The respective application command.
-        permission_overwrites : `None`, (`tuple`, `list` of `set`) of ``ApplicationCommandPermissionOverwrite``
+        permission_overwrites : `None`, (`tuple`, `list` , `set`) of ``ApplicationCommandPermissionOverwrite``
             The new permission overwrites of the given application command inside of the guild.
             
             Give it as `None` to remove all existing one.

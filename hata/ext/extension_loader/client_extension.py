@@ -24,8 +24,8 @@ class Client:
             if extension._state == EXTENSION_STATE_LOADED:
                 snapshot_difference = extension._snapshot_difference
                 if (snapshot_difference is not None):
-                    for client, client_snapshot_difference in snapshot_difference:
-                        if (self is client) and client_snapshot_difference:
+                    for snapshot in snapshot_difference:
+                        if (snapshot.client is self) and snapshot_difference:
                             extensions.append(extension)
                             break
         

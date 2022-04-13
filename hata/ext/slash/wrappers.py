@@ -218,6 +218,8 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
     ----------
     _wrapped : `Any`
         The slash command or other wrapper to wrap.
+    _autocomplete : `None`, `CoroutineFunction`
+        Auto complete function for the parameter.
     _channel_types : `None`, `tuple` of `int`
         The accepted channel types.
     _choices : `None`, `dict` of (`str`, `int`, `str`) items
@@ -236,11 +238,12 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         The parameter's internal type identifier.
     """
     __slots__ = (
-        '_channel_types', '_choices', '_description', '_max_value', '_min_value', '_name', '_parameter_name', '_type'
+        '_autocomplete', '_channel_types', '_choices', '_description', '_max_value', '_min_value', '_name',
+        '_parameter_name', '_type'
     )
     
-    def __new__(cls, parameter_name, type_or_choice, description=None, name=None, *, channel_types=None,
-            max_value=None, min_value=None):
+    def __new__(cls, parameter_name, type_or_choice, description=None, name=None, *, autocomplete=None,
+            channel_types=None, max_value=None, min_value=None):
         """
         Creates a partial function to wrap a slash command.
         
@@ -254,6 +257,8 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
             Description for the annotation.
         name : `None`, `str` = `None`, Optional
             Name to use instead of the parameter's.
+        autocomplete : `None`, `CoroutineFunction` = `None`, Optional (Keyword only)
+            Auto complete function for the parameter.
         channel_types : `None`, `iterable` of `int` = `None`, Optional (Keyword only)
             The accepted channel types.
         max_value : `None`, `int`, `float` = `None`, Optional (Keyword only)
@@ -307,16 +312,21 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
             description = parse_annotation_description(description, parameter_name)
         name = parse_annotation_name(name, parameter_name)
         
-        return partial_func(cls._decorate, cls, choices, description, name, parameter_name, type_, channel_types,
-            max_value, min_value)
+        return partial_func(
+            cls._decorate, cls, autocomplete, choices, description, name, parameter_name, type_, channel_types,
+            max_value, min_value
+        )
     
     
-    def _decorate(cls, choices, description, name, parameter_name, type_, channel_types, max_value, min_value, wrapped):
+    def _decorate(cls, autocomplete, choices, description, name, parameter_name, type_, channel_types, max_value,
+            min_value, wrapped):
         """
         Wraps given command.
         
         Parameters
         ----------
+        autocomplete : `None`, `CoroutineFunction`
+            Auto complete function for the parameter.
         choices : `None`, `dict` of (`str`, `int`, `str`) items
             Parameter's choices.
         description : `str`
@@ -342,6 +352,8 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
             The created instance.
         """
         self = object.__new__(cls)
+        
+        self._autocomplete = autocomplete
         self._choices = choices
         self._description = description
         self._name = name
@@ -370,6 +382,11 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         repr_parts.append(' (')
         repr_parts.append(repr(type_))
         repr_parts.append(')')
+        
+        autocomplete = self._autocomplete
+        if (autocomplete is not None):
+            repr_parts.append(', autocomplete=')
+            repr_parts.append(repr(autocomplete))
         
         choices = self.choices
         if (choices is not None):

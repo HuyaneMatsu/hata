@@ -1,5 +1,7 @@
 __all__ = ('Stats', )
 
+from scarletio import RichAttributeErrorBaseType
+
 from .constants import (
     LAVALINK_KEY_STATS_CPU, LAVALINK_KEY_STATS_CPU_CORES, LAVALINK_KEY_STATS_CPU_LAVALINK_LOAD,
     LAVALINK_KEY_STATS_CPU_SYSTEM_LOAD, LAVALINK_KEY_STATS_FRAME, LAVALINK_KEY_STATS_FRAME_DEFICIT,
@@ -10,7 +12,7 @@ from .constants import (
 )
 
 
-class Stats:
+class Stats(RichAttributeErrorBaseType):
     """
     Represents the stats of a Lavalink node.
     

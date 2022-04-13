@@ -555,3 +555,21 @@ class PlayerWebsocketClosedEvent(EventBase):
             hash_value ^= hash(reason)
         
         return hash_value
+    
+    
+    def should_reconnect(self):
+        """
+        Return whether the client should reconnect even against the closage.
+        
+        This method is based mostly on experimentations.
+        
+        Returns
+        -------
+        should_reconnect : `bool`
+        """
+        if not self.by_remote:
+            if self.code == 1006:
+                if self.reason == 'Abnormal closure':
+                    return True
+        
+        return False

@@ -1,6 +1,8 @@
 __all__ = ('SolarNode', )
 
-from scarletio import Future, Task, from_json, future_or_timeout, repeat_timeout, sleep, to_json
+from scarletio import (
+    Future, RichAttributeErrorBaseType, Task, from_json, future_or_timeout, repeat_timeout, sleep, to_json
+)
 from scarletio.web_common import ConnectionClosed, InvalidHandshake, WebSocketProtocolError
 
 from ...discord.core import KOKORO
@@ -20,7 +22,7 @@ from .stats import Stats
 EXTENSION_USER_AGENT = 'hata.ext.solarlink'
 DEFAULT_PENALTY = 9e30
 
-class SolarNode:
+class SolarNode(RichAttributeErrorBaseType):
     """
     Represents a Node connection with Lavalink.
     

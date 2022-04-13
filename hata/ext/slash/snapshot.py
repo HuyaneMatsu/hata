@@ -411,7 +411,7 @@ class SlasherSnapshotType(BaseSnapshotType):
         if client.running and client.application.id:
             slasher = getattr(client, 'slasher', None)
             if (slasher is not None):
-                slasher.sync()
+                EXTENSION_LOADER.add_done_callback_unique(slasher.sync)
         
         return new
     
@@ -456,6 +456,26 @@ class SlasherSnapshotType(BaseSnapshotType):
         if (removed_form_submit_commands is not None):
             for form_submit_command in removed_form_submit_commands:
                 slasher._add_form_submit_command(form_submit_command)
+    
+    
+    @copy_docs(BaseSnapshotType.__bool__)
+    def __bool__(self):
+        if (self.added_component_commands is not None):
+            return True
+        
+        if (self.added_form_submit_commands is not None):
+            return True
+        
+        if self.application_command_differences_by_guild_id:
+            return True
+        
+        if (self.removed_component_commands is not None):
+            return True
+        
+        if (self.removed_form_submit_commands is not None):
+            return True
+        
+        return False
 
 
 def runtime_sync_hook_is_executing_extension(client):

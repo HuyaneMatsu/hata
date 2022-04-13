@@ -3,7 +3,7 @@ __all__ = ('SolarPlayerBase', )
 from math import floor
 from time import monotonic
 
-from scarletio import Future, Task
+from scarletio import Future, RichAttributeErrorBaseType, Task
 
 from ...discord.channel import Channel
 from ...discord.client.request_helpers import get_channel_id
@@ -19,7 +19,7 @@ from .constants import (
 from .track import ConfiguredTrack
 
 
-class SolarPlayerBase:
+class SolarPlayerBase(RichAttributeErrorBaseType):
     """
     Base player of solar link.
     
@@ -232,6 +232,19 @@ class SolarPlayerBase:
         filter : `None`, ``Filter``
         """
         return self._filters.get(filter_type.identifier, None)
+    
+    
+    def iter_filters(self):
+        """
+        Iterates over the filters of the player.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        filter : ``Filter``
+        """
+        yield from self._filters.values()
     
     
     def remove_filter(self, filter_type):

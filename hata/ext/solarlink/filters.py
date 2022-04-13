@@ -3,7 +3,7 @@ __all__ = (
     'Vibrato', 'Volume'
 )
 
-from scarletio import copy_docs
+from scarletio import RichAttributeErrorBaseType, copy_docs
 
 from .constants import (
     LAVALINK_BAND_COUNT, LAVALINK_KEY_FILTER_CHANNEL_MIX, LAVALINK_KEY_FILTER_CHANNEL_MIX_LEFT_TO_LEFT,
@@ -16,7 +16,7 @@ from .constants import (
     LAVALINK_KEY_FILTER_EQUALIZER_BAND, LAVALINK_KEY_FILTER_EQUALIZER_GAIN, LAVALINK_KEY_FILTER_KARAOKE,
     LAVALINK_KEY_FILTER_KARAOKE_FILTER_BAND, LAVALINK_KEY_FILTER_KARAOKE_FILTER_WIDTH,
     LAVALINK_KEY_FILTER_KARAOKE_LEVEL, LAVALINK_KEY_FILTER_KARAOKE_MONO_LEVEL, LAVALINK_KEY_FILTER_LOW_PASS,
-    LAVALINK_KEY_FILTER_LOW_PASS_SMOOTHING, LAVALINK_KEY_FILTER_ROTATION, LAVALINK_KEY_FILTER_ROTATION_ROTATION_HZ,
+    LAVALINK_KEY_FILTER_LOW_PASS_SMOOTHING, LAVALINK_KEY_FILTER_ROTATION, LAVALINK_KEY_FILTER_ROTATION_ROTATION,
     LAVALINK_KEY_FILTER_TIMESCALE, LAVALINK_KEY_FILTER_TIMESCALE_PITCH, LAVALINK_KEY_FILTER_TIMESCALE_RATE,
     LAVALINK_KEY_FILTER_TIMESCALE_SPEED, LAVALINK_KEY_FILTER_TREMOLO, LAVALINK_KEY_FILTER_TREMOLO_DEPTH,
     LAVALINK_KEY_FILTER_TREMOLO_FREQUENCY, LAVALINK_KEY_FILTER_VIBRATO, LAVALINK_KEY_FILTER_VIBRATO_DEPTH,
@@ -41,7 +41,7 @@ FILTER_IDENTIFIER_VOLUME = 10
 # https://github.com/freyacodes/Lavalink/blob/master/IMPLEMENTATION.md#using-filters
 # https://github.com/natanbc/lavadsp/tree/master/src/main/java/com/github/natanbc/lavadsp
 
-class Filter:
+class Filter(RichAttributeErrorBaseType):
     """
     Represents filters applied to a solar client.
     
@@ -102,17 +102,25 @@ class Filter:
         return {}
 
 
-class Equalizer(Filter):
+
+class ChannelMix(Filter):
     """
-    There are 15 bands (0-14) that can be changed.
+    Mixes both channels (left and right), with a configurable factor on how much each channel affects the other.
     
-    "gain" is the multiplier for the given band. The default value is `0`. Valid values range from `-0.25` to `1.0`,
-    where `-0.25` means the given band is completely muted, and `0.25` means it is doubled. Modifying the gain could
-    also change the volume of the output.
+    With the defaults, both channels are kept independent from each other.
+    
+    Setting all factors to 0.5 means both channels get the same audio.
     
     Attributes
     ----------
-    _bands : `None` or `dict` of (`int`, `float`) items
+    _left_to_left : `float`
+        Left-to-left factor.
+    _left_to_right : `float`
+        Left-to-right factor.
+    _right_to_left : `float`
+        Right-to-left factor.
+    _right_to_right : `float`
+        Right-to-right factor.
     
     Class Attributes
     ----------------
@@ -121,56 +129,60 @@ class Equalizer(Filter):
     json_key : `str`
         The key of the filter used when serializing it.
     """
-    identifier = FILTER_IDENTIFIER_EQUALIZER
-    json_key = LAVALINK_KEY_FILTER_EQUALIZER
+    identifier = FILTER_IDENTIFIER_CHANNEL_MIX
+    json_key = LAVALINK_KEY_FILTER_CHANNEL_MIX
     
-    __slots__ = ('_bands',)
+    __slots__ = ('_left_to_left', '_left_to_right', '_right_to_left', '_right_to_right')
     
-    def __new__(cls, *band_gain_pairs):
+    def __new__(cls, left_to_left, left_to_right, right_to_right, right_to_left):
         """
-        Creates a new equalizer filter.
+        Creates a new channel mix filter.
         
         Parameters
         ----------
-        *band_gain_pairs : `tuple` (`int`, `float`)
-            band-gain pairs.
+        left_to_left : `float`
+            Left-to-left factor.
+        left_to_right : `float`
+            Left-to-right factor.
+        right_to_right : `float`
+            Right-to-right factor.
+        right_to_left : `float`
+            Right-to-left factor.
         
+        Raises
+        ------
         TypeError
-            If `band_gain_pairs` contains a non-tuple element.
-        ValueError
-            If a band is out of range [0:14].
+            - If `left_to_left` is not `float`.
+            - If `left_to_right` is not `float`.
+            - If `right_to_right` is not `float`.
+            - If `right_to_left` is not `float`.
         """
-        bands = None
+        if not isinstance(left_to_left, float):
+            raise TypeError(
+                f'`left_to_left` can be `float`, got {left_to_left.__class__.__name__}; {left_to_left!r}.'
+            )
         
-        for band_gain_pair in band_gain_pairs:
-            if not isinstance(band_gain_pair, tuple):
-                raise TypeError(
-                    f'`band_gain_pairs` can contain `tuple` elements, got '
-                    f'{band_gain_pair.__class__.__name__}; {band_gain_pair!r}; band_gain_pairs={band_gain_pairs!r}.'
-                )
-            
-            band, gain = band_gain_pair
-            
-            if (band < 0) or (band >= LAVALINK_BAND_COUNT):
-                raise ValueError(
-                    f'`band`, can be in range [0:14], got {band!r}.'
-                )
-            
-            if gain >= 1.0:
-                gain = 1.0
-            elif gain < -0.25:
-                gain = -0.25
-            elif gain == 0.0:
-                continue
-            
-            if bands is None:
-                bands = {}
-            
-            bands[band] = gain
+        if not isinstance(left_to_right, float):
+            raise TypeError(
+                f'`left_to_right` can be `float`, got {left_to_right.__class__.__name__}; {left_to_right!r}.'
+            )
+        
+        if not isinstance(right_to_right, float):
+            raise TypeError(
+                f'`right_to_right` can be `float`, got {right_to_right.__class__.__name__}; {right_to_right!r}.'
+            )
+        
+        if not isinstance(right_to_left, float):
+            raise TypeError(
+                f'`right_to_left` can be `float`, got {right_to_left.__class__.__name__}; {right_to_left!r}.'
+            )
         
         
         self = object.__new__(cls)
-        self._bands = bands
+        self._left_to_left = left_to_left
+        self._left_to_right = left_to_right
+        self._right_to_left = right_to_left
+        self._right_to_right = right_to_right
         return self
     
     
@@ -179,7 +191,16 @@ class Equalizer(Filter):
         if type(self) is not type(other):
             return NotImplemented
         
-        if self._bands != other._bands:
+        if self._left_to_left != other._left_to_left:
+            return False
+        
+        if self._left_to_right != other._left_to_right:
+            return False
+        
+        if self._right_to_left != other._right_to_left:
+            return False
+        
+        if self._right_to_right != other._right_to_right:
             return False
         
         return True
@@ -189,10 +210,25 @@ class Equalizer(Filter):
     def __hash__(self):
         hash_value = 0
         
-        bands = self._bands
-        if (bands is not None):
-            for item in bands.items():
-                hash_value ^= hash(item)
+        left_to_left = self._left_to_left
+        if (left_to_left != 1.0):
+            hash_value ^= (1 << 4)
+            hash_value ^= hash(left_to_left)
+        
+        left_to_right = self._left_to_right
+        if (left_to_right != 0.0):
+            hash_value ^= (1 << 8)
+            hash_value ^= hash(left_to_right)
+        
+        right_to_left = self._right_to_left
+        if (right_to_left != 0.0):
+            hash_value ^= (1 << 12)
+            hash_value ^= hash(right_to_left)
+        
+        right_to_right = self._right_to_right
+        if (right_to_right != 0.0):
+            hash_value ^= (1 << 16)
+            hash_value ^= hash(right_to_right)
         
         return hash_value
     
@@ -201,22 +237,17 @@ class Equalizer(Filter):
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__]
         
-        bands = self._bands
-        if (bands is not None):
-            repr_parts.append(' bands={')
-            field_added = False
-            
-            for band, gain in sorted(bands.items()):
-                if field_added:
-                    repr_parts.append(', ')
-                else:
-                    field_added = True
-                
-                repr_parts.append(repr(band))
-                repr_parts.append(': ')
-                repr_parts.append(repr(gain))
-            
-            repr_parts.append('}')
+        repr_parts.append(' left_to_left=')
+        repr_parts.append(format(self._left_to_left, '.02f'))
+        
+        repr_parts.append(' left_to_right=')
+        repr_parts.append(format(self._left_to_right, '.02f'))
+        
+        repr_parts.append(' right_to_right=')
+        repr_parts.append(format(self._right_to_right, '.02f'))
+        
+        repr_parts.append(' right_to_left=')
+        repr_parts.append(format(self._right_to_left, '.02f'))
         
         repr_parts.append('>')
         return ''.join(repr_parts)
@@ -224,323 +255,16 @@ class Equalizer(Filter):
     
     @copy_docs(Filter.__bool__)
     def __bool__(self):
-        if (self._bands is not None):
+        if self._left_to_left != 1.0:
             return True
         
-        return False
-    
-    
-    @copy_docs(Filter.to_data)
-    def to_data(self):
-        bands = self._bands
-        if (bands is None):
-            return []
-        
-        return [
-            {
-                LAVALINK_KEY_FILTER_EQUALIZER_BAND: band,
-                LAVALINK_KEY_FILTER_EQUALIZER_GAIN: gain,
-            }
-            for band, gain in self._bands
-        ]
-
-
-class Karaoke(Filter):
-    """
-    Uses equalization to eliminate part of a band, usually targeting vocals.
-    
-    Attributes
-    ----------
-    _filter_band : `float`
-        Filter band.
-    _filter_width : `float`
-        Filter width.
-    _level : `float`
-        Effect level.
-    _mono_level : `float`
-        Effect mono level.
-    
-    Class Attributes
-    ----------------
-    identifier : `int`
-        The filter type's internal identifier.
-    json_key : `str`
-        The key of the filter used when serializing it.
-    """
-    identifier = FILTER_IDENTIFIER_KARAOKE
-    json_key = LAVALINK_KEY_FILTER_KARAOKE
-    
-    __slots__ = ('_filter_band', '_filter_width', '_level', '_mono_level')
-    
-    def __new__(cls, *, level=1.0, mono_level=1.0, filter_band=220.0, filter_width=100.0):
-        """
-        Creates a new karaoke filter.
-        
-        Parameters
-        ----------
-        level : `float` = `1.0`, Optional (Keyword only)
-            Effect level.
-        
-        mono_level : `float` = `1.0`, Optional (Keyword only)
-            Effect mono level.
-            
-        filter_band : `float` = `220.0`, Optional (Keyword only)
-            Filter band.
-            
-        filter_width : `float` = `100.0`, Optional (Keyword only)
-            Filter width.
-        
-        Raises
-        ------
-        TypeError
-            - If `level` is not `float`.
-            - If `mono_level` is not `float`.
-            - If `filter_band` is not `float`.
-            - If `filter_width` is not `float`.
-        """
-        if not isinstance(level, float):
-            raise TypeError(
-                f'`level` can be `float`, got {level.__class__.__name__}; {level!r}.'
-            )
-        
-        if not isinstance(mono_level, float):
-            raise TypeError(
-                f'`mono_level` can be `float`, got {mono_level.__class__.__name__}; {mono_level!r}.'
-            )
-        
-        if not isinstance(filter_band, float):
-            raise TypeError(
-                f'`filter_band` can be `float`, got {filter_band.__class__.__name__}; {filter_band!r}.'
-            )
-        
-        if not isinstance(filter_width, float):
-            raise TypeError(
-                f'`filter_width` can be `float`, got {filter_width.__class__.__name__}; {filter_width!r}.'
-            )
-        
-        
-        self = object.__new__(cls)
-        self._filter_band = filter_band
-        self._filter_width = filter_width
-        self._level = level
-        self._mono_level = mono_level
-        return self
-    
-    
-    @copy_docs(Filter.__eq__)
-    def __eq__(self, other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        if self._filter_band != other._filter_band:
-            return False
-        
-        if self._filter_width != other._filter_width:
-            return False
-        
-        if self._level != other._level:
-            return False
-        
-        if self._mono_level != other._mono_level:
-            return False
-        
-        return True
-    
-    
-    @copy_docs(Filter.__hash__)
-    def __hash__(self):
-        hash_value = 0
-        hash_value ^= hash(self._filter_band)
-        hash_value ^= hash(self._filter_width)
-        hash_value ^= hash(self._level)
-        hash_value ^= hash(self._mono_level)
-        return hash_value
-    
-    
-    @copy_docs(Filter.__repr__)
-    def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
-        
-        repr_parts.append(' level=')
-        repr_parts.append(format(self._level, '.02f'))
-        
-        repr_parts.append(', mono_level=')
-        repr_parts.append(format(self._mono_level, '.02f'))
-        
-        repr_parts.append(', filter_band=')
-        repr_parts.append(format(self._filter_band, '.02f'))
-        
-        repr_parts.append(', filter_width=')
-        repr_parts.append(format(self._filter_width, '.02f'))
-        
-        repr_parts.append('>')
-        return ''.join(repr_parts)
-    
-        
-    @copy_docs(Filter.__bool__)
-    def __bool__(self):
-        return True
-    
-    
-    @copy_docs(Filter.to_data)
-    def to_data(self):
-        return {
-            LAVALINK_KEY_FILTER_KARAOKE_FILTER_BAND: self._filter_band,
-            LAVALINK_KEY_FILTER_KARAOKE_FILTER_WIDTH: self._filter_width,
-            LAVALINK_KEY_FILTER_KARAOKE_LEVEL: self._level,
-            LAVALINK_KEY_FILTER_KARAOKE_MONO_LEVEL: self._mono_level,
-        }
-
-
-class Timescale(Filter):
-    """
-    Changes the speed, pitch, and rate. All default to 1.
-    
-    Attributes
-    ----------
-    _pitch : `float`
-        Audio pitch.
-    _rate : `float`
-        Playback rate.
-    _speed : `float`
-        Playback speed.
-    
-    Class Attributes
-    ----------------
-    identifier : `int`
-        The filter type's internal identifier.
-    json_key : `str`
-        The key of the filter used when serializing it.
-    """
-    identifier = FILTER_IDENTIFIER_TIMESCALE
-    json_key = LAVALINK_KEY_FILTER_TIMESCALE
-    
-    __slots__ = ('_pitch', '_rate', '_speed')
-    
-    def __new__(cls, *, speed=1.0, pitch=1.0, rate=1.0):
-        """
-        Creates a new timescale filter.
-        
-        Parameters
-        ----------
-        speed : `float` = `1.0`, Optional (Keyword only)
-            Playback speed.
-        
-        pitch : `float` = `1.0`, Optional (Keyword only):
-            Audio pitch.
-        
-        rate : `float` = `1.0`, Optional (Keyword only):
-            Playback rate.
-        
-        Raises
-        ------
-        TypeError
-            - If `speed` is not `float`.
-            - If `pitch` is not `float`.
-            - If `rate` is not `float`.
-        """
-        if not isinstance(speed, float):
-            raise TypeError(
-                f'`speed` can be `float`, got {speed.__class__.__name__}; {speed!r}.'
-            )
-        
-        if not isinstance(pitch, float):
-            raise TypeError(
-                f'`pitch` can be `float`, got {pitch.__class__.__name__}; {pitch!r}.'
-            )
-        
-        if not isinstance(rate, float):
-            raise TypeError(
-                f'`rate` can be `float`, got {rate.__class__.__name__}; {rate!r}.'
-            )
-        
-        self = object.__new__(cls)
-        self._pitch = pitch
-        self._rate = rate
-        self._speed = speed
-        return self
-    
-    
-    @copy_docs(Filter.__eq__)
-    def __eq__(self, other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        if self._pitch != other._pitch:
-            return False
-        
-        if self._rate != other._rate:
-            return False
-        
-        if self._speed != other._speed:
-            return False
-        
-        return True
-    
-    
-    @copy_docs(Filter.__hash__)
-    def __hash__(self):
-        hash_value = 0
-        
-        pitch = self._pitch
-        if (pitch != 1.0):
-            hash_value ^= hash(pitch)
-        
-        rate = self._rate
-        if (rate != 1.0):
-            hash_value ^= hash(rate)
-        
-        speed = self._speed
-        if (speed != 1.0):
-            hash_value ^= hash(speed)
-        
-        return hash_value
-    
-    
-    @copy_docs(Filter.__repr__)
-    def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
-        
-        speed = self._speed
-        if (speed != 1.0):
-            field_added = True
-            
-            repr_parts.append(' speed=')
-            repr_parts.append(format(speed, '.02f'))
-        
-        else:
-            field_added = False
-        
-        pitch = self._pitch
-        if (pitch != 1.0):
-            if field_added:
-                repr_parts.append(',')
-            else:
-                field_added = True
-            repr_parts.append(' pitch=')
-            repr_parts.append(format(pitch, '.02f'))
-        
-        rate = self._rate
-        if (rate != 1.0):
-            if field_added:
-                repr_parts.append(',')
-            
-            repr_parts.append(' rate=')
-            repr_parts.append(format(rate, '.02f'))
-        
-        repr_parts.append('>')
-        return ''.join(repr_parts)
-    
-    
-    @copy_docs(Filter.__bool__)
-    def __bool__(self):
-        if self._pitch != 1.0:
+        if self._left_to_right != 0.0:
             return True
         
-        if self._rate != 1.0:
+        if self._right_to_right != 0.0:
             return True
         
-        if self._speed != 1.0:
+        if self._right_to_left != 1.0:
             return True
         
         return False
@@ -549,371 +273,10 @@ class Timescale(Filter):
     @copy_docs(Filter.to_data)
     def to_data(self):
         return {
-            LAVALINK_KEY_FILTER_TIMESCALE_PITCH: self._pitch,
-            LAVALINK_KEY_FILTER_TIMESCALE_RATE: self._rate,
-            LAVALINK_KEY_FILTER_TIMESCALE_SPEED: self._speed,
-        }
-    
-
-class Tremolo(Filter):
-    """
-    Uses amplification to create a shuddering effect, where the volume quickly oscillates.
-    
-    Example ``here:https://en.wikipedia.org/wiki/File:Fuse_Electronics_Tremolo_MK-III_Quick_Demo.ogv``.
-    
-    Attributes
-    ----------
-    _depth : `float`
-        Effect depth.
-    _frequency : `float`
-        Effect frequency.
-    
-    Class Attributes
-    ----------------
-    identifier : `int`
-        The filter type's internal identifier.
-    json_key : `str`
-        The key of the filter used when serializing it.
-    """
-    identifier = FILTER_IDENTIFIER_TREMOLO
-    json_key = LAVALINK_KEY_FILTER_TREMOLO
-    
-    __slots__ = ('_depth', '_frequency')
-    
-    def __new__(cls, frequency, depth):
-        """
-        Creates a new tremolo filter.
-        
-        Parameters
-        ----------
-        frequency : `float`
-            Effect frequency.
-        depth : `float`
-            Effect depth.
-        
-        Raises
-        ------
-        TypeError
-            - If `frequency` is not `float`.
-            - If `depth` is not `float`.
-        ValueError
-            - If `frequency` is out of `(0.0:)`.
-            - If `depth` is out of `(0.0:1.0]`.
-            
-        """
-        if not isinstance(frequency, float):
-            raise TypeError(
-                f'`frequency` can be `float`, got {frequency.__class__.__name__}; {frequency!r}.'
-            )
-        
-        if not isinstance(depth, float):
-            raise TypeError(
-                f'`depth` can be `float`, got {depth.__class__.__name__}; {depth!r}.'
-            )
-        
-        
-        if frequency <= 0.0:
-            raise ValueError(
-                f'`frequency` can be in range `(0.0:)`, got {frequency!r}.'
-        )
-        
-        
-        if (depth <= 0.0) or (depth > 1.0):
-            raise ValueError(
-                f'`depth` can be in range `(0.0:1.0]`, got {depth!r}.'
-        )
-        
-        
-        self = object.__new__(cls)
-        self._depth = depth
-        self._frequency = frequency
-        return self
-    
-    
-    @copy_docs(Filter.__eq__)
-    def __eq__(self, other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        if self._depth != other._depth:
-            return False
-        
-        if self._frequency != other._frequency:
-            return False
-        
-        return True
-    
-    
-    @copy_docs(Filter.__hash__)
-    def __hash__(self):
-        hash_value = 0
-        
-        depth = self._depth
-        if (depth != 0.0):
-            hash_value ^= hash(depth)
-        
-        hash_value ^= hash(self._frequency)
-        
-        return hash_value
-    
-    
-    @copy_docs(Filter.__repr__)
-    def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
-        
-        repr_parts.append(' depth=')
-        repr_parts.append(format(self._depth, '.02f'))
-        
-        repr_parts.append(', frequency=')
-        repr_parts.append(format(self._frequency, '.02f'))
-        
-        repr_parts.append('>')
-        return ''.join(repr_parts)
-    
-    
-    @copy_docs
-    def __bool__(self):
-        if self._depth != 0.0:
-            return True
-        
-        return False
-    
-    
-    @copy_docs(Filter.to_data)
-    def to_data(self):
-        return {
-            LAVALINK_KEY_FILTER_TREMOLO_DEPTH: self._depth,
-            LAVALINK_KEY_FILTER_TREMOLO_FREQUENCY: self._frequency,
-        }
-
-
-class Vibrato(Filter):
-    """
-    Similar to tremolo. While tremolo oscillates the volume, vibrato oscillates the pitch.
-    
-    Attributes
-    ----------
-    _depth : `float`
-        Effect depth.
-    _frequency : `float`
-        Effect frequency.
-    
-    Class Attributes
-    ----------------
-    identifier : `int`
-        The filter type's internal identifier.
-    json_key : `str`
-        The key of the filter used when serializing it.
-    """
-    identifier = FILTER_IDENTIFIER_VIBRATO
-    json_key = LAVALINK_KEY_FILTER_VIBRATO
-    
-    __slots__ = ('_depth', '_frequency')
-    
-    def __new__(cls, frequency, depth):
-        """
-        Creates a new vibrato filter.
-        
-        Parameters
-        ----------
-        frequency : `float`
-            Effect frequency.
-        depth : `float`
-            Effect depth.
-        
-        Raises
-        ------
-        TypeError
-            - If `frequency` is not `float`.
-            - If `depth` is not `float`.
-        ValueError
-            - If `frequency` is out of `(0.0:14.0]`.
-            - If `depth` is out of `(0.0:1.0]`.
-            
-        """
-        if not isinstance(frequency, float):
-            raise TypeError(
-                f'`frequency` can be `float`, got {frequency.__class__.__name__}; {frequency!r}.'
-            )
-        
-        if not isinstance(depth, float):
-            raise TypeError(
-                f'`depth` can be `float`, got {depth.__class__.__name__}; {depth!r}.'
-            )
-        
-        
-        if (frequency <= 0.0) or (frequency > 14.0):
-            raise ValueError(
-                f'`frequency` can be in range `(0.0:14.0]`, got {frequency!r}.'
-        )
-        
-        
-        if (depth <= 0.0) or (depth > 1.0):
-            raise ValueError(
-                f'`depth` can be in range `(0.0:1.0]`, got {depth!r}.'
-        )
-        
-        
-        self = object.__new__(cls)
-        self._depth = depth
-        self._frequency = frequency
-        return self
-    
-    
-    @copy_docs(Filter.__eq__)
-    def __eq__(self, other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        if self._depth != other._depth:
-            return False
-        
-        if self._frequency != other._frequency:
-            return False
-        
-        return True
-    
-    
-    @copy_docs(Filter.__hash__)
-    def __hash__(self):
-        hash_value = 0
-        
-        depth = self._depth
-        if (depth != 0.0):
-            hash_value ^= hash(depth)
-        
-        hash_value ^= hash(self._frequency)
-        
-        return hash_value
-    
-    
-    @copy_docs(Filter.__repr__)
-    def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
-        
-        repr_parts.append(' depth=')
-        repr_parts.append(format(self._depth, '.02f'))
-        
-        repr_parts.append(', frequency=')
-        repr_parts.append(format(self._frequency, '.02f'))
-        
-        repr_parts.append('>')
-        return ''.join(repr_parts)
-    
-    
-    @copy_docs
-    def __bool__(self):
-        if self._depth != 0.0:
-            return True
-        
-        return False
-    
-    
-    @copy_docs(Filter.to_data)
-    def to_data(self):
-        return {
-            LAVALINK_KEY_FILTER_VIBRATO_DEPTH: self._depth,
-            LAVALINK_KEY_FILTER_VIBRATO_FREQUENCY: self._frequency,
-        }
-
-
-class Rotation(Filter):
-    """
-    Rotates the sound around the stereo channels/user headphones aka Audio Panning.
-    
-    It can produce an effect similar to: ``this:https://youtu.be/QB9EB8mTKcc) (without the reverb).
-    
-    Attributes
-    ----------
-    _rotation_hz : `float`
-        The frequency of the audio rotating around the listener in Hz.
-        
-        > 0.2 is similar to the example video above.
-    
-    Class Attributes
-    ----------------
-    identifier : `int`
-        The filter type's internal identifier.
-    json_key : `str`
-        The key of the filter used when serializing it.
-    """
-    identifier = FILTER_IDENTIFIER_ROTATION
-    json_key = LAVALINK_KEY_FILTER_ROTATION
-    
-    __slots__ = ('_rotation_hz',)
-    
-    def __new__(cls, rotation_hz):
-        """
-        Creates a new rotation filter.
-        
-        Parameters
-        ----------
-        rotation_hz : `float`
-            The frequency of the audio rotating around the listener in Hz.
-        
-        Raises
-        ------
-        TypeError
-            - If `rotation_hz` is not `float`.
-            
-        """
-        if not isinstance(rotation_hz, float):
-            raise TypeError(
-                f'`rotation_hz` can be `float`, got {rotation_hz.__class__.__name__}; {rotation_hz!r}.'
-            )
-        
-        
-        self = object.__new__(cls)
-        self._rotation_hz = rotation_hz
-        return self
-    
-    
-    @copy_docs(Filter.__eq__)
-    def __eq__(self, other):
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        if self._rotation_hz != other._rotation_hz:
-            return False
-        
-        return True
-    
-    
-    @copy_docs(Filter.__hash__)
-    def __hash__(self):
-        hash_value = 0
-        
-        rotation_hz = self._rotation_hz
-        if (rotation_hz != 0.0):
-            hash_value ^= hash(rotation_hz)
-        
-        
-        return hash_value
-    
-    
-    @copy_docs(Filter.__repr__)
-    def __repr__(self):
-        repr_parts = ['<', self.__class__.__name__]
-        
-        repr_parts.append(' rotation_hz=')
-        repr_parts.append(format(self._rotation_hz, '.02f'))
-        
-        repr_parts.append('>')
-        return ''.join(repr_parts)
-    
-    
-    @copy_docs
-    def __bool__(self):
-        if self._rotation_hz != 0.0:
-            return True
-        
-        return False
-    
-    
-    @copy_docs(Filter.to_data)
-    def to_data(self):
-        return {
-            LAVALINK_KEY_FILTER_ROTATION_ROTATION_HZ: self._rotation_hz,
+            LAVALINK_KEY_FILTER_CHANNEL_MIX_LEFT_TO_LEFT: self._left_to_left,
+            LAVALINK_KEY_FILTER_CHANNEL_MIX_LEFT_TO_RIGHT: self._left_to_right,
+            LAVALINK_KEY_FILTER_CHANNEL_MIX_RIGHT_TO_LEFT: self._right_to_right,
+            LAVALINK_KEY_FILTER_CHANNEL_MIX_RIGHT_TO_RIGHT: self._right_to_left,
         }
 
 
@@ -1216,7 +579,7 @@ class Distortion(Filter):
         return ''.join(repr_parts)
     
     
-    @copy_docs
+    @copy_docs(Filter.__bool__)
     def __bool__(self):
         if self._cos_offset != 0.0:
             return True
@@ -1259,24 +622,18 @@ class Distortion(Filter):
         }
 
 
-class ChannelMix(Filter):
+class Equalizer(Filter):
     """
-    Mixes both channels (left and right), with a configurable factor on how much each channel affects the other.
+    There are 15 bands (0-14) that can be changed.
     
-    With the defaults, both channels are kept independent from each other.
-    
-    Setting all factors to 0.5 means both channels get the same audio.
+    "gain" is the multiplier for the given band. The default value is `0`. Valid values range from `-0.25` to `1.0`,
+    where `-0.25` means the given band is completely muted, and `0.25` means it is doubled. Modifying the gain could
+    also change the volume of the output.
     
     Attributes
     ----------
-    _left_to_left : `float`
-        Left-to-left factor.
-    _left_to_right : `float`
-        Left-to-right factor.
-    _right_to_left : `float`
-        Right-to-left factor.
-    _right_to_right : `float`
-        Right-to-right factor.
+    _bands : `None` or `dict` of (`int`, `float`) items
+        Bands.
     
     Class Attributes
     ----------------
@@ -1285,60 +642,56 @@ class ChannelMix(Filter):
     json_key : `str`
         The key of the filter used when serializing it.
     """
-    identifier = FILTER_IDENTIFIER_CHANNEL_MIX
-    json_key = LAVALINK_KEY_FILTER_CHANNEL_MIX
+    identifier = FILTER_IDENTIFIER_EQUALIZER
+    json_key = LAVALINK_KEY_FILTER_EQUALIZER
     
-    __slots__ = ('_left_to_left', '_left_to_right', '_right_to_left', '_right_to_right')
+    __slots__ = ('_bands',)
     
-    def __new__(cls, left_to_left, left_to_right, right_to_right, right_to_left):
+    def __new__(cls, *band_gain_pairs):
         """
-        Creates a new channel mix filter.
+        Creates a new equalizer filter.
         
         Parameters
         ----------
-        left_to_left : `float`
-            Left-to-left factor.
-        left_to_right : `float`
-            Left-to-right factor.
-        right_to_right : `float`
-            Right-to-right factor.
-        right_to_left : `float`
-            Right-to-left factor.
+        *band_gain_pairs : `tuple` (`int`, `float`)
+            band-gain pairs.
         
-        Raises
-        ------
         TypeError
-            - If `left_to_left` is not `float`.
-            - If `left_to_right` is not `float`.
-            - If `right_to_right` is not `float`.
-            - If `right_to_left` is not `float`.
+            If `band_gain_pairs` contains a non-tuple element.
+        ValueError
+            If a band is out of range [0:14].
         """
-        if not isinstance(left_to_left, float):
-            raise TypeError(
-                f'`left_to_left` can be `float`, got {left_to_left.__class__.__name__}; {left_to_left!r}.'
-            )
+        bands = None
         
-        if not isinstance(left_to_right, float):
-            raise TypeError(
-                f'`left_to_right` can be `float`, got {left_to_right.__class__.__name__}; {left_to_right!r}.'
-            )
-        
-        if not isinstance(right_to_right, float):
-            raise TypeError(
-                f'`right_to_right` can be `float`, got {right_to_right.__class__.__name__}; {right_to_right!r}.'
-            )
-        
-        if not isinstance(right_to_left, float):
-            raise TypeError(
-                f'`right_to_left` can be `float`, got {right_to_left.__class__.__name__}; {right_to_left!r}.'
-            )
+        for band_gain_pair in band_gain_pairs:
+            if not isinstance(band_gain_pair, tuple):
+                raise TypeError(
+                    f'`band_gain_pairs` can contain `tuple` elements, got '
+                    f'{band_gain_pair.__class__.__name__}; {band_gain_pair!r}; band_gain_pairs={band_gain_pairs!r}.'
+                )
+            
+            band, gain = band_gain_pair
+            
+            if (band < 0) or (band >= LAVALINK_BAND_COUNT):
+                raise ValueError(
+                    f'`band`, can be in range [0:14], got {band!r}.'
+                )
+            
+            if gain >= 1.0:
+                gain = 1.0
+            elif gain < -0.25:
+                gain = -0.25
+            elif gain == 0.0:
+                continue
+            
+            if bands is None:
+                bands = {}
+            
+            bands[band] = gain
         
         
         self = object.__new__(cls)
-        self._left_to_left = left_to_left
-        self._left_to_right = left_to_right
-        self._right_to_left = right_to_left
-        self._right_to_right = right_to_right
+        self._bands = bands
         return self
     
     
@@ -1347,16 +700,7 @@ class ChannelMix(Filter):
         if type(self) is not type(other):
             return NotImplemented
         
-        if self._left_to_left != other._left_to_left:
-            return False
-        
-        if self._left_to_right != other._left_to_right:
-            return False
-        
-        if self._right_to_left != other._right_to_left:
-            return False
-        
-        if self._right_to_right != other._right_to_right:
+        if self._bands != other._bands:
             return False
         
         return True
@@ -1366,25 +710,10 @@ class ChannelMix(Filter):
     def __hash__(self):
         hash_value = 0
         
-        left_to_left = self._left_to_left
-        if (left_to_left != 1.0):
-            hash_value ^= (1 << 4)
-            hash_value ^= hash(left_to_left)
-        
-        left_to_right = self._left_to_right
-        if (left_to_right != 0.0):
-            hash_value ^= (1 << 8)
-            hash_value ^= hash(left_to_right)
-        
-        right_to_left = self._right_to_left
-        if (right_to_left != 0.0):
-            hash_value ^= (1 << 12)
-            hash_value ^= hash(right_to_left)
-        
-        right_to_right = self._right_to_right
-        if (right_to_right != 0.0):
-            hash_value ^= (1 << 16)
-            hash_value ^= hash(right_to_right)
+        bands = self._bands
+        if (bands is not None):
+            for item in bands.items():
+                hash_value ^= hash(item)
         
         return hash_value
     
@@ -1393,34 +722,30 @@ class ChannelMix(Filter):
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' left_to_left=')
-        repr_parts.append(format(self._left_to_left, '.02f'))
-        
-        repr_parts.append(' left_to_right=')
-        repr_parts.append(format(self._left_to_right, '.02f'))
-        
-        repr_parts.append(' right_to_right=')
-        repr_parts.append(format(self._right_to_right, '.02f'))
-        
-        repr_parts.append(' right_to_left=')
-        repr_parts.append(format(self._right_to_left, '.02f'))
+        bands = self._bands
+        if (bands is not None):
+            repr_parts.append(' bands={')
+            field_added = False
+            
+            for band, gain in sorted(bands.items()):
+                if field_added:
+                    repr_parts.append(', ')
+                else:
+                    field_added = True
+                
+                repr_parts.append(repr(band))
+                repr_parts.append(': ')
+                repr_parts.append(repr(gain))
+            
+            repr_parts.append('}')
         
         repr_parts.append('>')
         return ''.join(repr_parts)
     
     
-    @copy_docs
+    @copy_docs(Filter.__bool__)
     def __bool__(self):
-        if self._left_to_left != 1.0:
-            return True
-        
-        if self._left_to_right != 0.0:
-            return True
-        
-        if self._right_to_right != 0.0:
-            return True
-        
-        if self._right_to_left != 1.0:
+        if (self._bands is not None):
             return True
         
         return False
@@ -1428,12 +753,164 @@ class ChannelMix(Filter):
     
     @copy_docs(Filter.to_data)
     def to_data(self):
+        bands = self._bands
+        if (bands is None):
+            return []
+        
+        return [
+            {
+                LAVALINK_KEY_FILTER_EQUALIZER_BAND: band,
+                LAVALINK_KEY_FILTER_EQUALIZER_GAIN: gain,
+            }
+            for band, gain in self._bands
+        ]
+
+
+class Karaoke(Filter):
+    """
+    Uses equalization to eliminate part of a band, usually targeting vocals.
+    
+    Attributes
+    ----------
+    _filter_band : `float`
+        Filter band.
+    _filter_width : `float`
+        Filter width.
+    _level : `float`
+        Effect level.
+    _mono_level : `float`
+        Effect mono level.
+    
+    Class Attributes
+    ----------------
+    identifier : `int`
+        The filter type's internal identifier.
+    json_key : `str`
+        The key of the filter used when serializing it.
+    """
+    identifier = FILTER_IDENTIFIER_KARAOKE
+    json_key = LAVALINK_KEY_FILTER_KARAOKE
+    
+    __slots__ = ('_filter_band', '_filter_width', '_level', '_mono_level')
+    
+    def __new__(cls, *, filter_band=220.0, filter_width=100.0, level=1.0, mono_level=1.0):
+        """
+        Creates a new karaoke filter.
+        
+        Parameters
+        ----------
+        filter_band : `float` = `220.0`, Optional (Keyword only)
+            Filter band.
+            
+        filter_width : `float` = `100.0`, Optional (Keyword only)
+            Filter width.
+        
+        level : `float` = `1.0`, Optional (Keyword only)
+            Effect level.
+        
+        mono_level : `float` = `1.0`, Optional (Keyword only)
+            Effect mono level.
+        
+        Raises
+        ------
+        TypeError
+            - If `level` is not `float`.
+            - If `mono_level` is not `float`.
+            - If `filter_band` is not `float`.
+            - If `filter_width` is not `float`.
+        """
+        if not isinstance(level, float):
+            raise TypeError(
+                f'`level` can be `float`, got {level.__class__.__name__}; {level!r}.'
+            )
+        
+        if not isinstance(mono_level, float):
+            raise TypeError(
+                f'`mono_level` can be `float`, got {mono_level.__class__.__name__}; {mono_level!r}.'
+            )
+        
+        if not isinstance(filter_band, float):
+            raise TypeError(
+                f'`filter_band` can be `float`, got {filter_band.__class__.__name__}; {filter_band!r}.'
+            )
+        
+        if not isinstance(filter_width, float):
+            raise TypeError(
+                f'`filter_width` can be `float`, got {filter_width.__class__.__name__}; {filter_width!r}.'
+            )
+        
+        self = object.__new__(cls)
+        self._filter_band = filter_band
+        self._filter_width = filter_width
+        self._level = level
+        self._mono_level = mono_level
+        return self
+    
+    
+    @copy_docs(Filter.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self._filter_band != other._filter_band:
+            return False
+        
+        if self._filter_width != other._filter_width:
+            return False
+        
+        if self._level != other._level:
+            return False
+        
+        if self._mono_level != other._mono_level:
+            return False
+        
+        return True
+    
+    
+    @copy_docs(Filter.__hash__)
+    def __hash__(self):
+        hash_value = 0
+        hash_value ^= hash(self._filter_band)
+        hash_value ^= hash(self._filter_width)
+        hash_value ^= hash(self._level)
+        hash_value ^= hash(self._mono_level)
+        return hash_value
+    
+    
+    @copy_docs(Filter.__repr__)
+    def __repr__(self):
+        repr_parts = ['<', self.__class__.__name__]
+        
+        repr_parts.append(' level=')
+        repr_parts.append(format(self._level, '.02f'))
+        
+        repr_parts.append(', mono_level=')
+        repr_parts.append(format(self._mono_level, '.02f'))
+        
+        repr_parts.append(', filter_band=')
+        repr_parts.append(format(self._filter_band, '.02f'))
+        
+        repr_parts.append(', filter_width=')
+        repr_parts.append(format(self._filter_width, '.02f'))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+        
+    @copy_docs(Filter.__bool__)
+    def __bool__(self):
+        return True
+    
+    
+    @copy_docs(Filter.to_data)
+    def to_data(self):
         return {
-            LAVALINK_KEY_FILTER_CHANNEL_MIX_LEFT_TO_LEFT: self._left_to_left,
-            LAVALINK_KEY_FILTER_CHANNEL_MIX_LEFT_TO_RIGHT: self._left_to_right,
-            LAVALINK_KEY_FILTER_CHANNEL_MIX_RIGHT_TO_LEFT: self._right_to_right,
-            LAVALINK_KEY_FILTER_CHANNEL_MIX_RIGHT_TO_RIGHT: self._right_to_left,
+            LAVALINK_KEY_FILTER_KARAOKE_FILTER_BAND: self._filter_band,
+            LAVALINK_KEY_FILTER_KARAOKE_FILTER_WIDTH: self._filter_width,
+            LAVALINK_KEY_FILTER_KARAOKE_LEVEL: self._level,
+            LAVALINK_KEY_FILTER_KARAOKE_MONO_LEVEL: self._mono_level,
         }
+
 
 
 class LowPass(Filter):
@@ -1516,7 +993,7 @@ class LowPass(Filter):
         return ''.join(repr_parts)
     
     
-    @copy_docs
+    @copy_docs(Filter.__bool__)
     def __bool__(self):
         if self._smoothing != 20.0:
             return True
@@ -1529,6 +1006,549 @@ class LowPass(Filter):
         return {
             LAVALINK_KEY_FILTER_LOW_PASS_SMOOTHING: self._smoothing,
         }
+
+
+
+class Rotation(Filter):
+    """
+    Rotates the sound around the stereo channels/user headphones aka Audio Panning.
+    
+    It can produce an effect similar to: ``this:https://youtu.be/QB9EB8mTKcc`` (without the reverb).
+    
+    Attributes
+    ----------
+    _rotation : `float`
+        The frequency of the audio rotating around the listener in seconds.
+        
+        > 0.2 is similar to the example video above.
+    
+    Class Attributes
+    ----------------
+    identifier : `int`
+        The filter type's internal identifier.
+    json_key : `str`
+        The key of the filter used when serializing it.
+    """
+    identifier = FILTER_IDENTIFIER_ROTATION
+    json_key = LAVALINK_KEY_FILTER_ROTATION
+    
+    __slots__ = ('_rotation',)
+    
+    def __new__(cls, rotation):
+        """
+        Creates a new rotation filter.
+        
+        Parameters
+        ----------
+        rotation : `float`
+            The frequency of the audio rotating around the listener in Hz.
+        
+        Raises
+        ------
+        TypeError
+            - If `rotation` is not `float`.
+            
+        """
+        if not isinstance(rotation, float):
+            raise TypeError(
+                f'`rotation` can be `float`, got {rotation.__class__.__name__}; {rotation!r}.'
+            )
+        
+        
+        self = object.__new__(cls)
+        self._rotation = rotation
+        return self
+    
+    
+    @copy_docs(Filter.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self._rotation != other._rotation:
+            return False
+        
+        return True
+    
+    
+    @copy_docs(Filter.__hash__)
+    def __hash__(self):
+        hash_value = 0
+        
+        rotation = self._rotation
+        if (rotation != 0.0):
+            hash_value ^= hash(rotation)
+        
+        
+        return hash_value
+    
+    
+    @copy_docs(Filter.__repr__)
+    def __repr__(self):
+        repr_parts = ['<', self.__class__.__name__]
+        
+        repr_parts.append(' rotation=')
+        repr_parts.append(format(self._rotation, '.02f'))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    @copy_docs(Filter.__bool__)
+    def __bool__(self):
+        if self._rotation != 0.0:
+            return True
+        
+        return False
+    
+    
+    @copy_docs(Filter.to_data)
+    def to_data(self):
+        return {
+            LAVALINK_KEY_FILTER_ROTATION_ROTATION: self._rotation,
+        }
+
+
+class Timescale(Filter):
+    """
+    Changes the speed, pitch, and rate. All default to 1.
+    
+    Attributes
+    ----------
+    _pitch : `float`
+        Audio pitch.
+    _rate : `float`
+        Playback rate.
+    _speed : `float`
+        Playback speed.
+    
+    Class Attributes
+    ----------------
+    identifier : `int`
+        The filter type's internal identifier.
+    json_key : `str`
+        The key of the filter used when serializing it.
+    """
+    identifier = FILTER_IDENTIFIER_TIMESCALE
+    json_key = LAVALINK_KEY_FILTER_TIMESCALE
+    
+    __slots__ = ('_pitch', '_rate', '_speed')
+    
+    def __new__(cls, *, pitch=1.0, rate=1.0, speed=1.0):
+        """
+        Creates a new timescale filter.
+        
+        Parameters
+        ----------
+        pitch : `float` = `1.0`, Optional (Keyword only):
+            Audio pitch.
+        
+        rate : `float` = `1.0`, Optional (Keyword only):
+            Playback rate.
+        
+        speed : `float` = `1.0`, Optional (Keyword only)
+            Playback speed.
+        
+        Raises
+        ------
+        TypeError
+            - If `speed` is not `float`.
+            - If `pitch` is not `float`.
+            - If `rate` is not `float`.
+        """
+        if not isinstance(speed, float):
+            raise TypeError(
+                f'`speed` can be `float`, got {speed.__class__.__name__}; {speed!r}.'
+            )
+        
+        if not isinstance(pitch, float):
+            raise TypeError(
+                f'`pitch` can be `float`, got {pitch.__class__.__name__}; {pitch!r}.'
+            )
+        
+        if not isinstance(rate, float):
+            raise TypeError(
+                f'`rate` can be `float`, got {rate.__class__.__name__}; {rate!r}.'
+            )
+        
+        if speed < 0:
+            raise ValueError(
+                f'`speed`, can be in range [0:], got {speed!r}.'
+            )
+        
+        if pitch < 0:
+            raise ValueError(
+                f'`pitch`, can be in range [0:], got {pitch!r}.'
+            )
+        
+        if rate < 0:
+            raise ValueError(
+                f'`rate`, can be in range [0:], got {rate!r}.'
+            )
+        
+        self = object.__new__(cls)
+        self._pitch = pitch
+        self._rate = rate
+        self._speed = speed
+        return self
+    
+    
+    @copy_docs(Filter.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self._pitch != other._pitch:
+            return False
+        
+        if self._rate != other._rate:
+            return False
+        
+        if self._speed != other._speed:
+            return False
+        
+        return True
+    
+    
+    @copy_docs(Filter.__hash__)
+    def __hash__(self):
+        hash_value = 0
+        
+        pitch = self._pitch
+        if (pitch != 1.0):
+            hash_value ^= hash(pitch)
+        
+        rate = self._rate
+        if (rate != 1.0):
+            hash_value ^= hash(rate)
+        
+        speed = self._speed
+        if (speed != 1.0):
+            hash_value ^= hash(speed)
+        
+        return hash_value
+    
+    
+    @copy_docs(Filter.__repr__)
+    def __repr__(self):
+        repr_parts = ['<', self.__class__.__name__]
+        
+        speed = self._speed
+        if (speed != 1.0):
+            field_added = True
+            
+            repr_parts.append(' speed=')
+            repr_parts.append(format(speed, '.02f'))
+        
+        else:
+            field_added = False
+        
+        pitch = self._pitch
+        if (pitch != 1.0):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            repr_parts.append(' pitch=')
+            repr_parts.append(format(pitch, '.02f'))
+        
+        rate = self._rate
+        if (rate != 1.0):
+            if field_added:
+                repr_parts.append(',')
+            
+            repr_parts.append(' rate=')
+            repr_parts.append(format(rate, '.02f'))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    @copy_docs(Filter.__bool__)
+    def __bool__(self):
+        if self._pitch != 1.0:
+            return True
+        
+        if self._rate != 1.0:
+            return True
+        
+        if self._speed != 1.0:
+            return True
+        
+        return False
+    
+    
+    @copy_docs(Filter.to_data)
+    def to_data(self):
+        return {
+            LAVALINK_KEY_FILTER_TIMESCALE_PITCH: self._pitch,
+            LAVALINK_KEY_FILTER_TIMESCALE_RATE: self._rate,
+            LAVALINK_KEY_FILTER_TIMESCALE_SPEED: self._speed,
+        }
+    
+
+
+class Tremolo(Filter):
+    """
+    Uses amplification to create a shuddering effect, where the volume quickly oscillates.
+    
+    Example ``here:https://en.wikipedia.org/wiki/File:Fuse_Electronics_Tremolo_MK-III_Quick_Demo.ogv``.
+    
+    Attributes
+    ----------
+    _depth : `float`
+        Effect depth.
+    _frequency : `float`
+        Effect frequency.
+    
+    Class Attributes
+    ----------------
+    identifier : `int`
+        The filter type's internal identifier.
+    json_key : `str`
+        The key of the filter used when serializing it.
+    """
+    identifier = FILTER_IDENTIFIER_TREMOLO
+    json_key = LAVALINK_KEY_FILTER_TREMOLO
+    
+    __slots__ = ('_depth', '_frequency')
+    
+    def __new__(cls, frequency, depth):
+        """
+        Creates a new tremolo filter.
+        
+        Parameters
+        ----------
+        frequency : `float`
+            Effect frequency.
+        depth : `float`
+            Effect depth.
+        
+        Raises
+        ------
+        TypeError
+            - If `frequency` is not `float`.
+            - If `depth` is not `float`.
+        ValueError
+            - If `frequency` is out of `(0.0:)`.
+            - If `depth` is out of `(0.0:1.0]`.
+            
+        """
+        if not isinstance(frequency, float):
+            raise TypeError(
+                f'`frequency` can be `float`, got {frequency.__class__.__name__}; {frequency!r}.'
+            )
+        
+        if not isinstance(depth, float):
+            raise TypeError(
+                f'`depth` can be `float`, got {depth.__class__.__name__}; {depth!r}.'
+            )
+        
+        
+        if frequency <= 0.0:
+            raise ValueError(
+                f'`frequency` can be in range `(0.0:)`, got {frequency!r}.'
+        )
+        
+        
+        if (depth <= 0.0) or (depth > 1.0):
+            raise ValueError(
+                f'`depth` can be in range `(0.0:1.0]`, got {depth!r}.'
+        )
+        
+        
+        self = object.__new__(cls)
+        self._depth = depth
+        self._frequency = frequency
+        return self
+    
+    
+    @copy_docs(Filter.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self._depth != other._depth:
+            return False
+        
+        if self._frequency != other._frequency:
+            return False
+        
+        return True
+    
+    
+    @copy_docs(Filter.__hash__)
+    def __hash__(self):
+        hash_value = 0
+        
+        depth = self._depth
+        if (depth != 0.0):
+            hash_value ^= hash(depth)
+        
+        hash_value ^= hash(self._frequency)
+        
+        return hash_value
+    
+    
+    @copy_docs(Filter.__repr__)
+    def __repr__(self):
+        repr_parts = ['<', self.__class__.__name__]
+        
+        repr_parts.append(' depth=')
+        repr_parts.append(format(self._depth, '.02f'))
+        
+        repr_parts.append(', frequency=')
+        repr_parts.append(format(self._frequency, '.02f'))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    @copy_docs(Filter.__bool__)
+    def __bool__(self):
+        if self._depth != 0.0:
+            return True
+        
+        return False
+    
+    
+    @copy_docs(Filter.to_data)
+    def to_data(self):
+        return {
+            LAVALINK_KEY_FILTER_TREMOLO_DEPTH: self._depth,
+            LAVALINK_KEY_FILTER_TREMOLO_FREQUENCY: self._frequency,
+        }
+
+
+class Vibrato(Filter):
+    """
+    Similar to tremolo. While tremolo oscillates the volume, vibrato oscillates the pitch.
+    
+    Attributes
+    ----------
+    _depth : `float`
+        Effect depth.
+    _frequency : `float`
+        Effect frequency.
+    
+    Class Attributes
+    ----------------
+    identifier : `int`
+        The filter type's internal identifier.
+    json_key : `str`
+        The key of the filter used when serializing it.
+    """
+    identifier = FILTER_IDENTIFIER_VIBRATO
+    json_key = LAVALINK_KEY_FILTER_VIBRATO
+    
+    __slots__ = ('_depth', '_frequency')
+    
+    def __new__(cls, frequency, depth):
+        """
+        Creates a new vibrato filter.
+        
+        Parameters
+        ----------
+        frequency : `float`
+            Effect frequency.
+        depth : `float`
+            Effect depth.
+        
+        Raises
+        ------
+        TypeError
+            - If `frequency` is not `float`.
+            - If `depth` is not `float`.
+        ValueError
+            - If `frequency` is out of `(0.0:14.0]`.
+            - If `depth` is out of `(0.0:1.0]`.
+            
+        """
+        if not isinstance(frequency, float):
+            raise TypeError(
+                f'`frequency` can be `float`, got {frequency.__class__.__name__}; {frequency!r}.'
+            )
+        
+        if not isinstance(depth, float):
+            raise TypeError(
+                f'`depth` can be `float`, got {depth.__class__.__name__}; {depth!r}.'
+            )
+        
+        
+        if (frequency <= 0.0) or (frequency > 14.0):
+            raise ValueError(
+                f'`frequency` can be in range `(0.0:14.0]`, got {frequency!r}.'
+        )
+        
+        
+        if (depth <= 0.0) or (depth > 1.0):
+            raise ValueError(
+                f'`depth` can be in range `(0.0:1.0]`, got {depth!r}.'
+        )
+        
+        
+        self = object.__new__(cls)
+        self._depth = depth
+        self._frequency = frequency
+        return self
+    
+    
+    @copy_docs(Filter.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        if self._depth != other._depth:
+            return False
+        
+        if self._frequency != other._frequency:
+            return False
+        
+        return True
+    
+    
+    @copy_docs(Filter.__hash__)
+    def __hash__(self):
+        hash_value = 0
+        
+        depth = self._depth
+        if (depth != 0.0):
+            hash_value ^= hash(depth)
+        
+        hash_value ^= hash(self._frequency)
+        
+        return hash_value
+    
+    
+    @copy_docs(Filter.__repr__)
+    def __repr__(self):
+        repr_parts = ['<', self.__class__.__name__]
+        
+        repr_parts.append(' depth=')
+        repr_parts.append(format(self._depth, '.02f'))
+        
+        repr_parts.append(', frequency=')
+        repr_parts.append(format(self._frequency, '.02f'))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    @copy_docs(Filter.__bool__)
+    def __bool__(self):
+        if self._depth != 0.0:
+            return True
+        
+        return False
+    
+    
+    @copy_docs(Filter.to_data)
+    def to_data(self):
+        return {
+            LAVALINK_KEY_FILTER_VIBRATO_DEPTH: self._depth,
+            LAVALINK_KEY_FILTER_VIBRATO_FREQUENCY: self._frequency,
+        }
+
 
 
 class Volume(Filter):
@@ -1567,11 +1587,18 @@ class Volume(Filter):
         ------
         TypeError
             - If `volume` is not `float`.
+        ValueError
+            - If volume is over `5`.
         """
         if not isinstance(volume, float):
             raise TypeError(
                 f'`volume` can be `float`, got {volume.__class__.__name__}; {volume!r}.'
             )
+        
+        if volume > 5.0:
+            raise ValueError(
+                f'`volume` can be in range `[0.0:5.0]`, got {volume!r}.'
+        )
         
         self = object.__new__(cls)
         self._volume = volume
@@ -1605,7 +1632,7 @@ class Volume(Filter):
         return ''.join(repr_parts)
     
     
-    @copy_docs
+    @copy_docs(Filter.__bool__)
     def __bool__(self):
         if self._volume != 1.0:
             return True

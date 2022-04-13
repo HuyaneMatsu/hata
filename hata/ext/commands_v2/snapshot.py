@@ -146,3 +146,20 @@ class CommandsV2SnapshotType(BaseSnapshotType):
         if (removed_categories is not None):
             for category in removed_categories:
                 command_processor._add_category(category)
+    
+    
+    @copy_docs(BaseSnapshotType.__bool__)
+    def __bool__(self):
+        if (self.added_categories is not None):
+            return True
+        
+        if (self.added_commands is not None):
+            return True
+        
+        if (self.removed_categories is not None):
+            return True
+        
+        if (self.removed_commands is not None):
+            return True
+        
+        return False

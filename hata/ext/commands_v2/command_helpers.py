@@ -671,6 +671,8 @@ def get_prefix_parser(prefix, prefix_ignore_case):
     """
     Validates whether the given prefix is correct.
     
+    Parameters
+    ----------
     prefix :  `str`, `tuple` of `str`, `callable`
         Prefix of the command processor.
         

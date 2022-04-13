@@ -3,7 +3,7 @@ __all__ = ('FailingAddress', 'RoutePlannerBase', 'RoutePlannerNanoIP', 'RoutePla
 
 import warnings
 
-from scarletio import copy_docs
+from scarletio import RichAttributeErrorBaseType, copy_docs
 
 from ...discord.utils import DATETIME_FORMAT_CODE, unix_time_to_datetime
 
@@ -19,7 +19,7 @@ from .constants import (
 )
 
 
-class FailingAddress:
+class FailingAddress(RichAttributeErrorBaseType):
     """
     Failed address.
     
@@ -108,7 +108,7 @@ def _route_planner_base_repr_generator(route_planner):
     repr_parts.append('>')
 
 
-class RoutePlannerBase:
+class RoutePlannerBase(RichAttributeErrorBaseType):
     """
     Base class of route planners.
     

@@ -54,6 +54,32 @@ async def default_track_end_event_handler(client, event):
         await event.player.skip(0)
 
 
+async def default_player_websocket_closed_event_handler(client, event):
+    """
+    Handles websocket close event.
+    
+    This method is a coroutine.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The respective client.
+    event : ``PlayerWebsocketClosedEvent``
+        The received websocket closed event.
+    """
+    player = event.player
+    if event.should_reconnect():
+        if player.is_playing():
+            current = player.get_current()
+            if (current is not None):
+                current = current.copy()
+                current.start_time = player.position
+                await player._play(current)
+    
+    else:
+        player.disconnect()
+
+
 class SolarLinkEventManager(EventHandlerPlugin):
     """
     Plugin to extend `client.events` auto registered when setting up the extension to a client.
@@ -79,7 +105,7 @@ class SolarLinkEventManager(EventHandlerPlugin):
     track_exception = Event(2, default_handler=default_track_exception_event_handler)
     track_start = Event(2)
     track_stuck = Event(2, default_handler=default_track_stuck_event_handler)
-    player_websocket_closed = Event(2)
+    player_websocket_closed = Event(2, default_handler=default_player_websocket_closed_event_handler)
     
     def __repr__(self):
         """Returns the plugin's representation."""

@@ -4,9 +4,29 @@
 
 - `EventHandlerBase` instances now support rich attribute errors.
 
+##### ext.extension_loader
+
+- `import_extension` now supports keyword parameters.
+- Add `ExtensionLoader.add_done_callback`.
+- Add `ExtensionLoader.add_done_callback_unique`.
+- Add `ExtensionLoader.call_done_callbacks`.
+- Add missing `EventHandlerSnapshotType.__repr__`.
+
+##### ext.slash
+
+- `SlashParameter` now supports rich attribute messages.
+- `SlasherApplicationCommandParameterConfigurerWrapper` now support `autocomplete` parameter.
+- `SlashParameter` now support `autocomplete` parameter.
+
 #### Bug Fixes
 
 - `Client.achievement_edit` could raise `TypeError` on older api versions.
+- `Client.extensions` could raise `TypeError`. (from 1.2.6)
+
+##### ext.extension_loader
+
+- `ExtensionLoader` will return the same instance if already instanced. (Gilgamesh#8939)
+- `ExtensionLoader.reload_all` raised `TypeError`. (from 1.2.7) (Forest#2913)
 
 ## 1.2.8 *\[2022-04-11\]*
 

@@ -121,28 +121,16 @@ class Extension(RichAttributeErrorBaseType):
         """
         if (name is None):
             name = _get_path_extension_name(path)
-            
-            from_path = True
-        else:
-            from_path = False
         
         try:
             return EXTENSIONS[name]
         except KeyError:
             pass
         
-        if from_path:
-            spec = spec_from_file_location(name, path)
-        else:
-            # `find_spec` can freeze with importing already imported modules, running the same code,
-            # causing `RuntimeError`, so we skip it. This can happen when switching threads from a loading file.
-            # spec = find_spec(name)
-            
-            spec = spec_from_file_location(name, path)
-            
-        
+        spec = spec_from_file_location(name, path)
         if spec is None:
             raise ModuleNotFoundError(name)
+        
         
         self = object.__new__(cls)
         self._added_variable_names = []
@@ -447,8 +435,8 @@ class Extension(RichAttributeErrorBaseType):
                     if loaded:
                         if self._take_snapshot:
                             snapshot_new = take_snapshot()
-                            
                             snapshot_difference = calculate_snapshot_difference(snapshot_new, snapshot_old)
+                            
                             for snapshot_extraction in self.iter_snapshot_extractions():
                                 snapshot_difference = calculate_snapshot_difference(
                                     snapshot_difference, snapshot_extraction

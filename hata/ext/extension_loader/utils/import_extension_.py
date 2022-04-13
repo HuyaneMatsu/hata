@@ -7,7 +7,7 @@ from ..extension import EXTENSIONS
 from ..extension_loader import EXTENSION_LOADER
 
 
-def import_extension(extension_name, *variable_names):
+def import_extension(extension_name, *variable_names, **keyword_parameters):
     """
     Imports from the given extension.
     
@@ -20,6 +20,9 @@ def import_extension(extension_name, *variable_names):
         Variables to load from the extension.
         
         > If no variable is defined, the module is returned instead.
+
+    **keyword_parameters : Keyword parameters
+        Additional parameters to create the extension with.
     
     Returns
     -------
@@ -130,7 +133,7 @@ def import_extension(extension_name, *variable_names):
     else:
         built_name = extension_name
     
-    extension = EXTENSION_LOADER.load_extension(built_name)
+    extension = EXTENSION_LOADER.load_extension(built_name, **keyword_parameters)
     
     current_extension = EXTENSIONS.get(local_name, None)
     if (current_extension is not None):

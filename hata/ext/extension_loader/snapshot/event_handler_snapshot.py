@@ -314,3 +314,30 @@ class EventHandlerSnapshotType(BaseSnapshotType):
             
             for event_handler in difference.iter_removed_event_handlers():
                 event_handler_manager(event_handler, name=event_handler_name)
+    
+    
+    @copy_docs(BaseSnapshotType.__repr__)
+    def __repr__(self):
+        repr_parts = ['<', self.__class__.__name__]
+        
+        client = self.client
+        if (client is not None):
+            repr_parts.append(' of ')
+            repr_parts.append(repr(client))
+        
+        
+        differences = self.differences
+        if differences:
+            repr_parts.append(', differences=')
+            repr_parts.append(repr(self.differences))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    @copy_docs(BaseSnapshotType.__bool__)
+    def __bool__(self):
+        if self.differences:
+            return True
+        
+        return False

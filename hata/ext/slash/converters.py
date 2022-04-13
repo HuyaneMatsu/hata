@@ -2,7 +2,7 @@ __all__ = ('SlashParameter', )
 
 import reprlib
 
-from scarletio import CallableAnalyzer, copy_docs, un_map_pack
+from scarletio import CallableAnalyzer, RichAttributeErrorBaseType, copy_docs, include, un_map_pack
 
 from ...discord.channel import CHANNEL_TYPES
 from ...discord.channel.deprecation import (
@@ -37,8 +37,13 @@ except ImportError:
     # ChadPython (PyPy)
     from re import _pattern_type as Pattern
 
+SlasherApplicationCommandParameterAutoCompleter = include('SlasherApplicationCommandParameterAutoCompleter')
+APPLICATION_COMMAND_FUNCTION_DEEPNESS = include('APPLICATION_COMMAND_FUNCTION_DEEPNESS')
+
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 INTERACTION_TYPE_APPLICATION_COMMAND_AUTOCOMPLETE = InteractionType.application_command_autocomplete
+
+
 
 async def converter_self_client(client, interaction_event):
     """
@@ -804,7 +809,7 @@ ANNOTATION_AUTO_COMPLETE_AVAILABILITY = frozenset((
     ANNOTATION_TYPE_EXPRESSION,
 ))
 
-class RegexMatcher:
+class RegexMatcher(RichAttributeErrorBaseType):
     """
     `custom_id` matcher for component commands.
     
@@ -989,7 +994,7 @@ def check_component_converters_satisfy_regex(parameter_converters, regex_matcher
         )
 
 
-class RegexMatch:
+class RegexMatch(RichAttributeErrorBaseType):
     """
     Matched regex pattern by ``RegexMatcher``.
     
@@ -1023,28 +1028,30 @@ class RegexMatch:
         return f'<{self.__class__.__name__} groups={self.groups!r}>'
 
 
-class SlashParameter:
+class SlashParameter(RichAttributeErrorBaseType):
     """
     A class, which can be used familiarly to tuples as an annotation, but it supports rich parameters as well.
     
     Attributes
     ----------
+    autocomplete : `None`, `CoroutineFunction`
+        Auto complete function for the parameter.
     channel_types : `None`, `iterable` of `int`
         The accepted channel types.
-    description : `None`, `str`
+    description : `None`, `str` = `None`, Optional
         Description for the annotation.
     max_value : `None`, `int`, `float`
         The maximal accepted value by the parameter.
     min_value : `None`, `int`, `float`
         The minimal accepted value by the parameter.
-    type_or_choice : `str`, `type`, `list`, `dict`
-        The annotation's value to use.
-    name : `None`, `str`
+    name : `None`, `str` = `None`, Optional
         Name to use instead of the parameter's.
+    type_or_choice : `None`, `str`, `type`, `list`, `dict`
+        The annotation's value to use.
     """
-    __slots__ = ('channel_types', 'description', 'max_value', 'min_value', 'name', 'type_or_choice')
+    __slots__ = ('autocomplete', 'channel_types', 'description', 'max_value', 'min_value', 'name', 'type_or_choice')
     
-    def __new__(cls, type_or_choice=None, description=None, name=None, *, channel_types=None,
+    def __new__(cls, type_or_choice=None, description=None, name=None, *, autocomplete=None, channel_types=None,
             max_value=None, min_value=None):
         """
         Creates a new ``Parameter``.
@@ -1057,6 +1064,8 @@ class SlashParameter:
             Description for the annotation.
         name : `None`, `str` = `None`, Optional
             Name to use instead of the parameter's.
+        autocomplete : `None`, `CoroutineFunction` = `None`, Optional (Keyword only)
+            Auto complete function for the parameter.
         channel_types : `None`, `iterable` of `int` = `None`, Optional (Keyword only)
             The accepted channel types.
         max_value : `None`, `int`, `float` = `None`, Optional (Keyword only)
@@ -1065,25 +1074,86 @@ class SlashParameter:
             The minimal accepted value by the parameter.
         """
         self = object.__new__(cls)
-        self.type_or_choice = type_or_choice
-        self.description = description
-        self.name = name
+        self.autocomplete = autocomplete
         self.channel_types = channel_types
+        self.description = description
         self.max_value = max_value
         self.min_value = min_value
+        self.name = name
+        self.type_or_choice = type_or_choice
         return self
     
+    
     def __repr__(self):
-        return ''.join([
-            '<', self.__class__.__name__,
-            ' channel_types=', repr(self.channel_types),
-            ', description=', repr(self.description),
-            ', max_value=', repr(self.max_value),
-            ', min_value=', repr(self.min_value),
-            ', type_or_choice=', repr(self.type_or_choice),
-            ', name=', repr(self.name),
-            '>',
-        ])
+        repr_parts = ['<', self.__class__.__name__]
+        
+        field_added = False
+        
+        autocomplete = self.autocomplete
+        if (autocomplete is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            repr_parts.append(' autocomplete=')
+            repr_parts.append(repr(autocomplete))
+        
+        channel_types = self.channel_types
+        if (channel_types is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            repr_parts.append(' channel_types=')
+            repr_parts.append(repr(channel_types))
+        
+        description = self.description
+        if (description is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            repr_parts.append(' description=')
+            repr_parts.append(repr(description))
+        
+        max_value = self.max_value
+        if (max_value is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            repr_parts.append(' max_value=')
+            repr_parts.append(repr(max_value))
+        
+        min_value = self.min_value
+        if (min_value is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            repr_parts.append(' min_value=')
+            repr_parts.append(repr(min_value))
+        
+        name = self.name
+        if (min_value is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            repr_parts.append(' name=')
+            repr_parts.append(repr(name))
+        
+        type_or_choice = self.type_or_choice
+        if (min_value is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            repr_parts.append(' type_or_choice=')
+            repr_parts.append(repr(type_or_choice))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
 
 
 def preprocess_channel_types(channel_types):
@@ -1627,6 +1697,8 @@ def parse_annotation_tuple(parameter):
         The maximal accepted value.
     min_value : `None`, `int`, `float`
         The minimal accepted value.
+    autocomplete : `None`, `CoroutineFunction`
+        Autocomplete function.
     
     Raises
     ------
@@ -1666,7 +1738,7 @@ def parse_annotation_tuple(parameter):
         name = None
     
     name = parse_annotation_name(name, parameter_name)
-    return choices, description, name, annotation_type, channel_types, None, None
+    return choices, description, name, annotation_type, channel_types, None, None, None
 
 
 def parse_annotation_slash_parameter(slash_parameter, parameter_name):
@@ -1696,6 +1768,8 @@ def parse_annotation_slash_parameter(slash_parameter, parameter_name):
         The maximal accepted value.
     min_value : `None`, `int`, `float`
         The minimal accepted value.
+    autocomplete : `None`, `CoroutineFunction`
+        Autocomplete function.
     
     Raises
     ------
@@ -1735,7 +1809,7 @@ def parse_annotation_slash_parameter(slash_parameter, parameter_name):
     
     name = parse_annotation_name(slash_parameter.name, parameter_name)
     
-    return choices, description, name, type_, channel_types, max_value, min_value
+    return choices, description, name, type_, channel_types, max_value, min_value, slash_parameter.autocomplete
 
 
 def parse_annotation_internal(annotation):
@@ -1798,6 +1872,8 @@ def parse_annotation(parameter):
         The maximal accepted value.
     min_value : `None`, `int`, `float`
         The minimal accepted value.
+    autocomplete : `None`, `CoroutineFunction`
+        Autocomplete function.
     
     Raises
     ------
@@ -1833,10 +1909,10 @@ def parse_annotation(parameter):
             choices = None
             channel_types = None
     
-    return choices, None, parameter.name, annotation_type, channel_types, None, None
+    return choices, None, parameter.name, annotation_type, channel_types, None, None, None
 
 
-class ParameterConverter:
+class ParameterConverter(RichAttributeErrorBaseType):
     """
     Base class for parameter converters.
     
@@ -1888,9 +1964,11 @@ class ParameterConverter:
         """
         pass
     
+    
     def __repr__(self):
         """Returns the parameter converter's representation."""
         return f'<{self.__class__.__name__}, parameter_name={self.parameter_name!r}>'
+    
     
     def as_option(self):
         """
@@ -1899,6 +1977,21 @@ class ParameterConverter:
         Returns
         -------
         option : `None`, ``ApplicationCommandOption``
+        """
+        pass
+    
+    
+    def bind_parent(self, parent):
+        """
+        Binds the parent command to self.
+        
+        This method might be called for a few types of command functions to bind themselves to a few interactive
+        parameters.
+        
+        Parameters
+        ----------
+        parent : `None`, ``SlasherApplicationCommandFunction``
+            The slasher application command function to bind to self.
         """
         pass
 
@@ -2392,7 +2485,7 @@ class SlashCommandParameterConverter(ParameterConverter):
     )
     
     def __new__(cls, parameter_name, type_, converter, name, description, default, required, choices, channel_types,
-            max_value, min_value):
+            max_value, min_value, autocomplete):
         """
         Creates a new ``SlashCommandParameterConverter`` from the given parameters.
         
@@ -2420,8 +2513,11 @@ class SlashCommandParameterConverter(ParameterConverter):
             The maximal accepted value by the converter.
         min_value : `None`, `int`, `float`
             The minimal accepted value by the converter.
+        autocomplete : `None`, ``SlasherApplicationCommandParameterAutoCompleter``
+            Auto completer if defined.
         """
         self = object.__new__(cls)
+        
         self.parameter_name = parameter_name
         self.auto_completer = None
         self.choices = choices
@@ -2434,6 +2530,12 @@ class SlashCommandParameterConverter(ParameterConverter):
         self.channel_types = channel_types
         self.max_value = max_value
         self.min_value = min_value
+        
+        if (autocomplete is not None):
+            auto_completer = SlasherApplicationCommandParameterAutoCompleter(
+                autocomplete, [parameter_name], APPLICATION_COMMAND_FUNCTION_DEEPNESS, None
+            )
+            self.register_auto_completer(auto_completer)
         
         return self
     
@@ -2605,6 +2707,13 @@ class SlashCommandParameterConverter(ParameterConverter):
             resolved = 0
         
         return resolved
+    
+    
+    @copy_docs(ParameterConverter.bind_parent)
+    def bind_parent(self, parent):
+        auto_completer = self.auto_completer
+        if (auto_completer is not None):
+            self.auto_completer = auto_completer._bind_parent(parent)
 
 
 def create_parameter_converter(parameter, parameter_configurer):
@@ -2642,7 +2751,8 @@ def create_parameter_converter(parameter, parameter_configurer):
         - If `annotation`'s 1st element's (description's) length is out of the expected range [2:100].
     """
     if parameter_configurer is None:
-        choices, description, name, annotation_type, channel_types, max_value, min_value = parse_annotation(parameter)
+        choices, description, name, annotation_type, channel_types, max_value, min_value, autocomplete = \
+            parse_annotation(parameter)
     else:
         choices = parameter_configurer._choices
         description = parameter_configurer._description
@@ -2651,6 +2761,7 @@ def create_parameter_converter(parameter, parameter_configurer):
         channel_types = parameter_configurer._channel_types
         max_value = parameter_configurer._max_value
         min_value = parameter_configurer._min_value
+        autocomplete = parameter_configurer._autocomplete
     
     if description is None:
         description = raw_name_to_display(name)
@@ -2667,8 +2778,10 @@ def create_parameter_converter(parameter, parameter_configurer):
     if is_internal:
         parameter_converter = InternalParameterConverter(parameter.name, annotation_type, converter)
     else:
-        parameter_converter = SlashCommandParameterConverter(parameter.name, annotation_type, converter, name,
-            description, default, required, choices, channel_types, max_value, min_value)
+        parameter_converter = SlashCommandParameterConverter(
+            parameter.name, annotation_type, converter, name, description, default, required, choices, channel_types,
+            max_value, min_value, autocomplete
+        )
     
     return parameter_converter
 

@@ -41,7 +41,7 @@ def _iter_configured_track_attributes(configured_track):
         yield LAVALINK_KEY_END_TIME, floor(end_time * 1000.0)
 
 
-class Track:
+class Track(RichAttributeErrorBaseType):
     """
     Represents an audio track sent by lavalink.
     
@@ -605,9 +605,31 @@ class ConfiguredTrack(RichAttributeErrorBaseType):
         url : `None`, `str`
         """
         return self.track.url
+    
+    
+    def copy(self):
+        """
+        Copies the configured track.
+        
+        Returns
+        -------
+        new : ``ConfiguredTrack``
+        """
+        added_attributes = self._added_attributes
+        if (added_attributes is not None):
+            added_attributes = added_attributes.copy()
+        
+        new = object.__new__(type(self))
+        
+        new._added_attributes = added_attributes
+        new.end_time = self.end_time
+        new.start_time = self.start_time
+        new.track = self.track
+        
+        return new
 
 
-class GetTracksResult:
+class GetTracksResult(RichAttributeErrorBaseType):
     """
     Returned by ``SolarClient.get_tracks`` if the request succeeded.
     

@@ -522,6 +522,10 @@ class ExtensionLoader(RichAttributeErrorBaseType):
     _default_variables : `None`, `HybridValueDictionary` of (`str`, `Any`) items
         An optionally weak value dictionary to store objects for assigning them to modules before loading them.
         If it would be set as empty, then it is set as `None` instead.
+    _done_callbacks : `None`, `list` of `callable`
+        Callbacks, which run when loading / unloading the extensions is done.
+        
+        > These callbacks are only called once, and then cleared out.
     _execute_counter : `int`
         Whether the extension loader is executing an extension.
     _extensions_by_name : `dict` of (`str`, ``Extension``) items
@@ -537,8 +541,8 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         The already created instance of the ``ExtensionLoader`` if there is any.
     """
     __slots__ = (
-        '_default_entry_point', '_default_exit_point', '_default_variables', '_execute_counter', '_extensions_by_name',
-        '_loader_tasks', '_unloader_tasks'
+        '_default_entry_point', '_default_exit_point', '_default_variables', '_done_callbacks', '_execute_counter',
+        '_extensions_by_name', '_loader_tasks', '_unloader_tasks'
     )
     
     _instance = None
@@ -555,13 +559,17 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         self = cls._instance
         if self is None:
             self = object.__new__(cls)
+            
             self._default_entry_point = 'setup'
             self._default_exit_point = 'teardown'
+            self._done_callbacks = None
             self._extensions_by_name = {}
             self._default_variables = HybridValueDictionary()
             self._execute_counter = 0
             self._loader_tasks = {}
             self._unloader_tasks = {}
+            
+            cls._instance = self
         
         return self
     
@@ -670,6 +678,8 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         """
         Adds an extension to the extension loader.
         
+        If the extension already exists, returns that one.
+        
         Parameters
         ----------
         name : `str`, `iterable` of `str`
@@ -722,6 +732,8 @@ class ExtensionLoader(RichAttributeErrorBaseType):
             take_snapshot_difference, default_variables):
         """
         Adds an extension to the extension loader.
+        
+        If the extension already exists, returns that one.
         
         Parameters
         ----------
@@ -1284,7 +1296,10 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         """
         error_messages = None
         
-        extensions = _build_extension_tree([extension for extension in EXTENSIONS.values() if not extension._locked])
+        extensions = _build_extension_tree(
+            [extension for extension in EXTENSIONS.values() if not extension._locked],
+            False,
+        )
         await self._check_for_syntax(extensions)
         
         for extension in extensions:
@@ -1428,7 +1443,10 @@ class ExtensionLoader(RichAttributeErrorBaseType):
                 
                 return ExtensionError(message)
         finally:
-            self._execute_counter -= 1
+            execute_counter = self._execute_counter - 1
+            self._execute_counter = execute_counter
+            if not execute_counter:
+                self.call_done_callbacks()
     
     
     async def _extension_unloader(self, extension):
@@ -1555,7 +1573,10 @@ class ExtensionLoader(RichAttributeErrorBaseType):
                 for key in keys:
                     del module_globals[key]
         finally:
-            self._execute_counter -= 1
+            execute_counter = self._execute_counter - 1
+            self._execute_counter = execute_counter
+            if not execute_counter:
+                self.call_done_callbacks()
     
     
     def __repr__(self):
@@ -1655,6 +1676,73 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         """
         for extension in extensions:
             extension._check_for_syntax()
+    
+    
+    def add_done_callback(self, callback):
+        """
+        Adds a done callback to be called when the loading / unloading extensions is finished.
+        
+        These callbacks are only called once, and then cleared out.
+        
+        Parameters
+        ----------
+        callback : `callable`
+        
+        Returns
+        -------
+        added : `bool`
+            Whether the callback was added.
+        """
+        done_callbacks = self._done_callbacks
+        if (done_callbacks is None):
+            done_callbacks = []
+            self._done_callbacks = done_callbacks
+        
+        done_callbacks.append(callback)
+        return True
+    
+    
+    def add_done_callback_unique(self, callback):
+        """
+        Adds a done callback to be called when the loading / unloading extensions is finished.
+        
+        > Ff the callback is already added, does nothing.
+        
+        These callbacks are only called once, and then cleared out.
+        
+        Parameters
+        ----------
+        callback : `callable`
+        
+        Returns
+        -------
+        added : `bool`
+            Whether the callback was added.
+        """
+        done_callbacks = self._done_callbacks
+        if (done_callbacks is None):
+            done_callbacks = []
+            self._done_callbacks = done_callbacks
+        
+        else:
+            if (callback in done_callbacks):
+                return False
+        
+        done_callbacks.append(callback)
+        return True
+    
+    
+    def call_done_callbacks(self):
+        print('called', self._done_callbacks)
+        """
+        Calls done callbacks of the extension loader.
+        """
+        done_callbacks = self._done_callbacks
+        if (done_callbacks is not None):
+            self._done_callbacks = done_callbacks
+            
+            for done_callback in done_callbacks:
+                KOKORO.call_soon(done_callback)
 
 
 EXTENSION_LOADER = ExtensionLoader()

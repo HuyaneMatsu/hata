@@ -122,3 +122,8 @@ class BaseSnapshotType(RichAttributeErrorBaseType):
         Reverts the snapshot.
         """
         pass
+    
+    
+    def __bool__(self):
+        """Returns whether the snapshot contains any changes."""
+        return False

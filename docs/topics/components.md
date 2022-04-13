@@ -529,16 +529,18 @@ async def pick(client, event):
     message = yield InteractionResponse(render_joined_users(users), allowed_mentions=None, components=BUTTON_ATTEND)
     
     try:
-        async for component_interaction in iter_component_interactions(message, timeout=60.0,
-                check=functools.partial(check_is_user_unique, users)):
+        async for component_interaction in iter_component_interactions(
+            message, timeout=60.0, check=functools.partial(check_is_user_unique, users)
+        ):
             users.append(component_interaction.user)
             
             # limit the amount of users to 10.
             if len(users) == 10:
                 break
             
-            yield InteractionResponse(render_joined_users(users), allowed_mentions=None,
-                event=component_interaction)
+            yield InteractionResponse(
+                render_joined_users(users), allowed_mentions=None, event=component_interaction
+            )
     
     except TimeoutError:
         component_interaction = None
@@ -556,8 +558,9 @@ async def pick(client, event):
     
     content = ''.join(content_parts)
     
-    yield InteractionResponse(content, allowed_mentions=most_liked, components=None, message=message,
-        event=component_interaction)
+    yield InteractionResponse(
+        content, allowed_mentions=most_liked, components=None, message=message, event=component_interaction
+    )
 ```
 
 # Using select

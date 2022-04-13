@@ -2,7 +2,7 @@ __all__ = ('SlasherApplicationCommand', )
 
 from functools import partial as partial_func
 
-from scarletio import WeakReferer, copy_docs, export, include
+from scarletio import WeakReferer, RichAttributeErrorBaseType, copy_docs, export, include
 
 from ...discord.client import Client
 from ...discord.events.handling_helpers import (
@@ -1913,7 +1913,7 @@ class SlasherApplicationCommand:
         return resolved
 
 
-class SlasherApplicationCommandFunction:
+class SlasherApplicationCommandFunction(RichAttributeErrorBaseType):
     """
     Represents an application command's backend implementation.
     
@@ -1983,6 +1983,9 @@ class SlasherApplicationCommandFunction:
         self._exception_handlers = None
         self._parent_reference = None
         self._self_reference = None
+        
+        for parameter_converter in parameter_converters:
+            parameter_converter.bind_parent(self)
         
         return self
     
@@ -2880,7 +2883,10 @@ class SlasherApplicationCommandCategory:
         return self_reference
 
 
-class SlasherApplicationCommandParameterAutoCompleter:
+export(APPLICATION_COMMAND_FUNCTION_DEEPNESS, 'APPLICATION_COMMAND_FUNCTION_DEEPNESS')
+
+@export
+class SlasherApplicationCommandParameterAutoCompleter(RichAttributeErrorBaseType):
     """
     Represents an application command parameter's auto completer.
     
@@ -2932,12 +2938,84 @@ class SlasherApplicationCommandParameterAutoCompleter:
             parent_reference = parent._get_self_reference()
         
         self = object.__new__(cls)
+        
         self._command = command
         self._parameter_converters = parameter_converters
         self.name_pairs = name_pairs
         self.deepness = deepness
         self._parent_reference = parent_reference
         self._exception_handlers = None
+        
+        return self
+    
+    
+    def _bind_parent(self, new_parent):
+        """
+        Binds the parent application command function to self.
+        
+        If the auto completer is already bound to an other object, will return a new one.
+        
+        Parameter
+        ---------
+        new_parent : `None`, ``SlasherApplicationCommandFunction``
+            The parent to bind to self.
+        
+        Returns
+        -------
+        new : ``SlasherApplicationCommandParameterAutoCompleter``
+            The new auto completer function bound to the new parent.
+        """
+        parent_reference = self._parent_reference
+        if (parent_reference is None):
+            self_parent = None
+        else:
+            self_parent = parent_reference()
+        
+        if (new_parent is None):
+            if (self_parent is None):
+                new = self
+                new._parent_reference = None
+            
+            else:
+                new = self.copy()
+                new._parent_reference = None
+        
+        else:
+            if (self_parent is None):
+                new = self
+                new._parent_reference = new_parent._get_self_reference()
+            
+            else:
+                if (new_parent is self_parent):
+                    new = self
+                
+                else:
+                    new = self.copy()
+                    new._parent_reference = new_parent._get_self_reference()
+        
+        return new
+    
+    
+    def copy(self):
+        """
+        Copies the parameter auto completer.
+        
+        Returns
+        -------
+        new : ``SlasherApplicationCommandFunction``
+        """
+        exception_handlers = self._exception_handlers
+        if (exception_handlers is not None):
+            exception_handlers = exception_handlers.copy()
+        
+        self = object.__new__(type(self))
+        
+        self._command = self._command
+        self._parameter_converters = self._parameter_converters
+        self.name_pairs = self.name_pairs
+        self.deepness = self.deepness
+        self._parent_reference = self._parent_reference
+        self._exception_handlers = exception_handlers
         
         return self
     

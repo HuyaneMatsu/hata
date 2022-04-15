@@ -12,7 +12,7 @@ Since there are no hata compatible top.gg api wrappers, Mama provides one for yo
 The extension can be setupped on your client either by passing `top_gg` as an extension, or by calling the
 `setup_ext_top_gg` with it.
 
-```py
+```py3
 from hata import Client
 
 Sakuya = Client(
@@ -22,7 +22,7 @@ Sakuya = Client(
 )
 ```
 or
-```py
+```py3
 from hata import Client
 from hata.ext.top_gg import setup_ext_top_gg
 
@@ -41,7 +41,7 @@ API. You can get your top.gg API token by going to `https://top.gg/bot/{your_bot
 By default the extension will auto post your bot stats each half hour. To disable it, use the `auto_post_bot_stats`
 optional parameter.
 
-```py
+```py3
 from hata import Client
 
 Sakuya = Client(
@@ -57,7 +57,7 @@ Sakuya = Client(
 Since `top.gg` has long global rate limits, you can turn off waiting for it (if hit for some weird reason). To do it,
 pass the `raise_on_top_gg_global_rate_limit` parameter as `True`.
 
-```py
+```py3
 from hata import Client
 
 Sakuya = Client(
@@ -69,7 +69,7 @@ Sakuya = Client(
 ```
 
 After passing it, you will get a ``TopGGGloballyRateLimited`` whenever the client is globally rate limited.
-```py
+```py3
 from hata.ext.top_gg import TopGGGloballyRateLimited
 
 try:
@@ -88,7 +88,7 @@ Here is a quick rundown of the api methods provided by the extension. For more d
 
 Returns whether the weekend multiplier is on.
 
-```py
+```py3
 is_weekend = await Sakuya.top_gg.get_weekend_status()
 ```
 
@@ -96,7 +96,7 @@ is_weekend = await Sakuya.top_gg.get_weekend_status()
 
 Returns the last 1000 voters.
 
-```py
+```py3
 voters = await Sakuya.top_gg.get_bot_voters()
 ```
 
@@ -104,7 +104,7 @@ voters = await Sakuya.top_gg.get_bot_voters()
 
 Returns your bot's information.
 
-```py
+```py3
 bot_info = await Sakuya.top_gg.get_bot_info()
 ```
 
@@ -112,7 +112,7 @@ bot_info = await Sakuya.top_gg.get_bot_info()
 
 Returns bot information based on the given query.
 
-```py
+```py3
 bots = await Sakuya.top_gg.get_bots(limit=50, offset=0, sort_by=None, search=None)
 ```
 
@@ -144,7 +144,7 @@ bots = await Sakuya.top_gg.get_bots(limit=50, offset=0, sort_by=None, search=Non
 
 Returns the information about the user.
 
-```py
+```py3
 user_info = await Sakuya.top_gg.get_user_info(user_id)
 ```
 
@@ -152,7 +152,7 @@ user_info = await Sakuya.top_gg.get_user_info(user_id)
 
 Returns whether the user voted in the last 12 hours.
 
-```py
+```py3
 voted = await Sakuya.top_gg.get_user_vote(user_id)
 ```
 
@@ -163,7 +163,7 @@ authorization, you are ready to define your vote route.
 
 Here is a minimal [flask](https://flask.palletsprojects.com/en/2.0.x/) example, showing how to:
 
-```py
+```py3
 from flask import Flask, Response, abort, request
 from hata.ext.top_gg import BotVote
 

@@ -101,13 +101,13 @@ Do not worry, you probably just need to authorize your bot with the `application
 To setup the extension you just pass `'slash'` into the client's `extensions` parameter, or use the `setup_ext_slash`
 function.
 
-```py
+```py3
 from hata import Client
 
 Nitori = Client(TOKEN, extensions='slash')
 ```
 or
-```py
+```py3
 from hata import Client
 from hata.ext.slash import setup_ext_slash
 
@@ -145,7 +145,7 @@ own.
 
 Here is an example how to define one.
 
-```py
+```py3
 from random import choice
 
 ERROR_MESSAGES = (
@@ -169,7 +169,7 @@ After the extension is setupped, commands can be added using the `client.interac
 > make sure to use only guild bound commands. The examples will show only guild commands, tho of course global
 > commands will be mentioned as well.
 
-```py
+```py3
 from hata import Embed
 
 @Nitori.interactions(guild=TEST_GUILD)
@@ -220,7 +220,7 @@ The possible parameter types are listed above in the [Limitations](#Limitations)
 complicated as might look for first time. All parameter has 3 fields what we need to fulfill; `name`, `type` and
 `description`. Their definition is expected in the following format: `name: (type, description)`.
 
-```py
+```py3
 from hata import Embed
 
 @Nitori.interactions(guild=TEST_GUILD)
@@ -238,7 +238,7 @@ async def cookie(event,
 Parameter definition can be defined with `SlashParameter`-s as well. An advantage of slash parameters, that they
 support keyword-only parameters, like `channel_types`, `min_value`, `max_value`.
 
-```py
+```py3
 from random import choice
 from hata import Embed
 from hata.ext.slash import P # P is a shortcut for `SlashParameter`
@@ -262,7 +262,7 @@ async def cake(event,
 If you do not like the annotation design, you can use the `configure_parameter` decorator. Since the main design is
 more intuitive, the rest of the examples will follow that one.
 
-```py
+```py3
 from hata import parse_emoji
 from hata.ext.slash import configure_parameter
 
@@ -298,7 +298,7 @@ Choice parameters go to the "annotation type field" and they can be either:
 >
 > Formatting choices into a table-like appearance might help, but it is up to you.
 
-```py
+```py3
 from hata import Embed
 
 @Nitori.interactions(guild=TEST_GUILD)
@@ -353,7 +353,7 @@ async def guild_icon(event,
 If you find defining choice parameters inside of the "function parameter definition" too confusing, consider creating
 a variable and annotate that instead.
 
-```py
+```py3
 GUILD_ICON_CHOICES = {
     'Icon': 'icon',
     'Banner': 'banner',
@@ -371,7 +371,7 @@ async def guild_icon(event,
 
 Same as list (using table-like formatting):
 
-```py
+```py3
 GUILD_ICON_CHOICES = [
     ('Icon'             , 'icon'             ),
     ('Banner'           , 'banner'           ),
@@ -383,7 +383,7 @@ GUILD_ICON_CHOICES = [
 
 When defining annotations only as `value`-s, the `name`-s will set as `str(value)`.
 
-```py
+```py3
 from random import random
 
 @Nitori.interactions(guild=TEST_GUILD)
@@ -407,7 +407,7 @@ String parameters can be auto-completed by using the `.autocomplete(...)` decora
 > Since hata's slash extension uses string type for `int` and for the internal `expression` one as well, those can be
 > auto completed too.
 
-```py
+```py3
 from hata import BUILTIN_EMOJIS
 
 EMOJI_CAKE = BUILTIN_EMOJIS['cake']
@@ -447,7 +447,7 @@ Examples are the  `cookie` command above for required and the `guild-icon` comma
 
 Lets improve the `cookie` command to not require user!
 
-```py
+```py3
 from hata import Embed
 
 @Nitori.interactions(guild=TEST_GUILD)
@@ -492,7 +492,7 @@ Whether the source message should be shown only for the invoker user. Defaults t
 
 This is a perfect time to change up our `/perms` command.
 
-```py
+```py3
 from hata import Embed
 
 @Nitori.interactions(guild=TEST_GUILD, show_for_invoking_user_only=True)
@@ -519,7 +519,7 @@ do the prettification for you internally.
 
 As an example: an already used function's name has conflict with the command's.
 
-```py
+```py3
 from hata import id_to_datetime, DATETIME_FORMAT_CODE, elapsed_time
 
 @Nitro.interactions(guild=TEST_GUILD, name='id-to-time')
@@ -535,7 +535,7 @@ async def idtotime(
 
 You can resolve name conflicts in an other way as well. Trailing `_` characters are ignored.
 
-```py
+```py3
 from hata import id_to_datetime, DATETIME_FORMAT_CODE, elapsed_time
 
 @Nitori.interactions(guild=TEST_GUILD)
@@ -552,7 +552,7 @@ async def id_to_datetime_(
 Description can be passed instead of defining as docstring. As an example this feature can be used when auto-generating
 commands, like:
 
-```py
+```py3
 class Action:
     __slots__ = ('action_name', 'embed_color', )
     
@@ -610,7 +610,7 @@ manually set permission overwrites will be wiped out there, so make sure you eit
 With `return` and `yield` statements, you can only send either `content` or `embed` fields. Using these statements is
 still way more comfy than typing out the whole client method, so there is a middle way, called `SlashResponse`.
 
-```py
+```py3
 from hata.ext.slash import SlashResponse
 
 @Nitori.interactions(guild=TEST_GUILD)
@@ -631,7 +631,7 @@ async def repeat(
 
 When checking the message's payload, it is indeed visible, that Koishi was not pinged.
 
-```py
+```py3
 ...
 "mention_everyone": false,
 "mention_roles": [],
@@ -643,7 +643,7 @@ When checking the message's payload, it is indeed visible, that Koishi was not p
 
 Sometimes you might wanna respond multiple times on an event. At this case use `yield` instead of `return`.
 
-```py
+```py3
 from random import random, choice
 from scarletio import sleep
 
@@ -675,7 +675,7 @@ async def improvise():
 
 The first response can be also empty just to acknowledge the event.
 
-```py
+```py3
 from time import perf_counter
 
 @Nitori.interactions(guild=TEST_GUILD, wait_for_acknowledgement=True)
@@ -702,13 +702,13 @@ By default, acknowledgement will run parallel with the command. To wait till the
 Acknowledging will never return a message object (Discord side), so it cannot be captured either, but followup messages
 will do. So can do the following with them:
 
-```py
+```py3
 message = yield content
 ```
 
 Exceptions can be captured on the same way as well.
 
-```py
+```py3
 try:
     yield content
 except BaseException as err:
@@ -719,7 +719,7 @@ After an interaction event is acknowledged with empty content, the second `yield
 causing no `Message` instance to be retrieved. `SlashResponse` will always acknowledge the respective event first,
 meaning it will always yield back a `Message` instance.
 
-```py
+```py3
 from scarletio import sleep
 from hata.ext.slash import SlashResponse
 
@@ -748,7 +748,7 @@ Sometimes you have more commands calling the same coroutine function, which exec
 This is all good, till the function is not a coroutine generator function. As we know you can yield from a generator
 inside of one, but this is not exactly true at the case of coroutine generators.
 
-```py
+```py3
 NEKO_LIFE = 'https://nekos.life/api/v2'
 
 async def get_neko_life(client, keyword):
@@ -782,7 +782,7 @@ Python misses asynchronous version of `yield from`, so you need to write out a f
 loop derpy, or `yield` or `return` it, because having regard to this case, it is allowed to `yield` and `return`
 `coroutine generator` object as well.
 
-```py
+```py3
 @Nitori.interactions(guild=TEST_GUILD)
 async def text_cat(client):
     """I will send text cats :3"""
@@ -804,7 +804,7 @@ Commands may be aborted using the `abort` function. It leaves from the command's
 content familiarly to `SlashResponse`. The one difference is, that abort should be mainly used to send end-command
 error message, so if only string `content` is passed to abort, it will show up only for the invoking user.
 
-```py
+```py3
 from hata import DiscordException, ERROR_CODES, Embed
 from hata.ext.slash import abort
 
@@ -856,7 +856,7 @@ Familiarly to the `name` interaction parameter mentioned [above](#name), the tai
 parameter names as well, but at some cases it is not enough. For this cases, you can add an extra third element to your
 annotation tuple, or to your `SlashParameter`.
 
-```py
+```py3
 @Nitori.interactions(guild=TEST_GUILD)
 async def user_id(event,
     user_id: ('user_id', 'Get the id of an other user?', 'user') = None,
@@ -894,7 +894,7 @@ The `target` parameter can be given in many ways to allow relaxing definitions:
 
 The most important thing about it, is of course an example!
 
-```py
+```py3
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from hata import Role, Embed, elapsed_time, DATETIME_FORMAT_CODE
@@ -955,7 +955,7 @@ Their main purpose is, that you can add or remove these commands from guilds man
 
 Here is an example how to do it:
 
-```py
+```py3
 from time import perf_counter
 from hata import Embed
 from hata.ext.slash import abort
@@ -1019,7 +1019,7 @@ bound one.
 It is possible to create a "category" command by creating a command with giving function as `None`. If you do not pass
 a function, then name and description can not be auto-detected, so you will need to pass those manually as well.
 
-```py
+```py3
 from random import choice
 from bs4 import BeautifulSoup 
 # `bs4` requires `lxml` library or you will get an error.
@@ -1075,7 +1075,7 @@ You can also set default sub-command, which is used if a sub command is selected
 
 > Sub-commands and default commands are not yet fully supported by Discord.
 
-```py
+```py3
 @SCARLET.interactions(is_default=True)
 async def devil(client, event):
     """Flandre & Remilia!"""
@@ -1094,7 +1094,7 @@ The first response message can be sent only with `Client.interaction_response_me
 acknowledge time still stands. You also may use `Client.interaction_application_command_acknowledge` to just
 acknowledge the event.
 
-```py
+```py3
 @Nitori.interactions(guild=TEST_GUILD)
 async def repeat(client, event,
     text: ('str', 'Uhum?')
@@ -1114,7 +1114,7 @@ The followup message methods are the following:
 
 An example using pure client methods:
 
-```py
+```py3
 from scarletio import sleep
 
 @Nitori.interactions(guild=TEST_GUILD)
@@ -1139,7 +1139,7 @@ async def kaboom(client, event):
 
 An example using mixed `yield` and `Client` methods:
 
-```py
+```py3
 from scarletio import sleep
 
 @Nitori.interactions(guild=TEST_GUILD)
@@ -1202,7 +1202,7 @@ Or a group covering multiple one.
 
 > Using `channel_id` prefix instead of `channel`, will give back their id instead.
 
-```py
+```py3
 @Nitori.interactions(guild=TEST_GUILD)
 async def thread_channel_name_length(
     channel: ('channel_group_thread', 'Select a thread channel.')
@@ -1219,7 +1219,7 @@ async def thread_channel_name_length(
 When using `SlashParameter` or `configure_parameter`, the `channel_types` keyword only parameter can be used to define
 the accepted channel types.
 
-```py
+```py3
 from hata import CHANNEL_TYPES
 from hata.ext.slash import configure_parameter
 
@@ -1231,7 +1231,7 @@ async def text_channel_name_length(channel):
 ```
 
 
-```py
+```py3
 from hata import CHANNEL_TYPES
 from hata.ext.slash import P
 
@@ -1248,7 +1248,7 @@ async def voice_channel_name_length(
 For `number` and `float` parameter types, you can define the minimal and the maximal accepted values with using the
 `min_value` and `max_value` parameters. It works for both `SlashParameter` and for `configure_parameter` as well.
 
-```py
+```py3
 from hata.ext.slash import P
 
 MOST_POPULAR_TOUHOU_CHARACTERS = [
@@ -1292,7 +1292,7 @@ decorator. The `target` parameter can be given either as `'user'` / `'message'`.
 
 > `'chat'` target works as well, but that refers to regular slash commands and will ot make any difference.
 
-```py
+```py3
 @Nitori.interactions(guild=TEST_GUILD, target='user')
 async def avatar(target):
     avatar_url = target.avatar_url_as(size=4096)
@@ -1306,7 +1306,7 @@ when defining a command, the first parameter which isn't client or event, will b
 Defining any other parameter will yield error, since context commands do not support any Discord side parameters.
 Sub commands are also not supported.
 
-```py
+```py3
 @Nitori.interactions(guild=TEST_GUILD, target='message')
 async def length(target):
     return len(target)
@@ -1321,7 +1321,7 @@ The amount of active commands can be get with using the `Client.slasher.get_glob
 
 > Non-global commands do not count as active commands.
 
-```py
+```py3
 @Nitori.interactions(guild=TEST_GUILD)
 async def command_count(client, event):
     global_command_count = client.slasher.get_global_command_count()

@@ -128,6 +128,7 @@ async def handle_voice_client_leave(client, voice_state, old_channel_id):
         return
     
     solar_player.channel_id = 0
+    await solar_player.disconnect()
 
 
 async def handle_voice_server_update(client, event):

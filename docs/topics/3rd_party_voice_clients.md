@@ -144,7 +144,7 @@ Voice client update usually operate with voice states which expose the following
 
 To deal with voice client connections you will need to use the respective guild gateway. To get it, do:
 
-```py
+```py3
 gateway = client.gateway_for(guild_id)
 ```
 
@@ -160,7 +160,7 @@ To overwrite (replace) one use the `overwrite=True` parameter.
 
 For joining, first get the gateway of the guild where you wish to join then call its `.change_voice_state`.
 
-```py
+```py3
 gateway = client.gateway_for(guild_id)
 await gateway.change_voice_state(guild_id, channel_id)
 ```
@@ -168,7 +168,7 @@ await gateway.change_voice_state(guild_id, channel_id)
 When you join the channel, `client.events.voice_client_join` will be called, in which you should update the voice client
 channel.
 
-```py
+```py3
 @client.events(overwrite=True)
 async def voice_client_join(client, voice_state):
     voice_client = get_voice_client(voice_state.guild_id)
@@ -182,12 +182,12 @@ async def voice_client_join(client, voice_state):
 
 Moving between voice channel is similar to joining.
 
-```py
+```py3
 gateway = client.gateway_for(guild_id)
 await gateway.change_voice_state(guild_id, channel_id)
 ```
 
-```py
+```py3
 @client.events(overwrite=True)
 async def voice_client_move(client, voice_state, old_channel_id):
     voice_client = get_voice_client(voice_state.guild_id)
@@ -199,12 +199,12 @@ async def voice_client_move(client, voice_state, old_channel_id):
 
 To leave from a voice channel, pass parameter `channel_id` as `0` to the `change_voice_state` method.
 
-```py
+```py3
 gateway = client.gateway_for(guild_id)
 await gateway.change_voice_state(guild_id, 0)
 ```
 
-```py
+```py3
 @client.events(overwrite=True)
 async def voice_client_leave(client, voice_state, old_channel_id):
     voice_client = get_voice_client(voice_state.guild_id)
@@ -218,12 +218,12 @@ To edit voice state use the `self_mute` and the `self_deaf` parameters of `chang
 
 Handling this event is optional, but its recommended overwriting it.
 
-```py
+```py3
 gateway = client.gateway_for(guild_id)
 await gateway.change_voice_state(guild_id, channel_id, self_mute=..., self_deaf=...)
 ```
 
-```py
+```py3
 @client.events(overwrite=True)
 async def voice_client_update(client, voice_state, old_attributes):
     ...
@@ -234,7 +234,7 @@ async def voice_client_update(client, voice_state, old_attributes):
 If you do not want to deal with ghost clients, just register an empty function or just disconnect the client from the
 voice channel.
 
-```py
+```py3
 @client.events(overwrite=True)
 async def voice_client_ghost(client, voice_state):
     voice_client = await join_voice_client(voice_state)
@@ -248,7 +248,7 @@ Shutting down voice clients and awaiting their shutdown.
 Since only after all `voice_client_shutdown` events are completed will the clients gateways disconnect, it is recommended to
 create parallel tasks for disconnects and to wait for their completion.
 
-```py
+```py3
 from hata import WaitTillAll
 
 @client.events(overwrite=True)
@@ -266,7 +266,7 @@ async def voice_client_shutdown(client):
 After connecting to a voice channel the `voice_server_update_event` is received. If the event has both `endpoint` and
 `token` set as non-`None` you are free to create your datagram connection.
 
-```py
+```py3
 @client.events(overwrite=True)
 async def voice_server_update(client, event):
     voice_client = get_voice_client(event.guild_id)
@@ -290,6 +290,6 @@ Even tho most objects will expose entity access too, e.g. they have `channel_id`
 
 In these cases use `USERS`, `GUILDS`, `CHANNELS` caches to access the entities.
 
-```py
+```py3
 channel = CHANNELS.get(channel_id, None)
 ```

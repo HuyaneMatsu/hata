@@ -481,11 +481,11 @@ def _build_extension_tree(extensions, deep):
     while extensions_to_unwrap:
         extension = extensions_to_unwrap.pop()
         
-        for child_extension in extension.iter_child_extensions():
-            if child_extension not in unwrapped_extensions:
-                extensions_to_unwrap.append(child_extension)
-        
         if deep:
+            for child_extension in extension.iter_child_extensions():
+                if child_extension not in unwrapped_extensions:
+                    extensions_to_unwrap.append(child_extension)
+            
             for parent_extension in extension.iter_parent_extensions():
                 if parent_extension not in unwrapped_extensions:
                     extensions_to_unwrap.append(parent_extension)

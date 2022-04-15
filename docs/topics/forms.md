@@ -23,7 +23,7 @@ of text inputs, but rows are inserted automatically if not defined.)
 To send a form response to the user just return the form from a slash or a component command, or use the
 `Client.interaction_form_send` method.
 
-```py
+```py3
 from hata.ext.slash import Form, TextInput, TextInputStyle
 
 INTRODUCTION_FORM = Form(
@@ -60,7 +60,7 @@ specify that you want to match forms submit interaction and not component intera
 `'form'` / `'form_submit'`.
 
 
-```py
+```py3
 from hata import Embed
 
 @Nitori.interactions(custom_id='introduction', target='form')
@@ -85,7 +85,7 @@ multiple regex `custom_id`-s are both supported.
 Additionally, form submit commands support keyword parameters as well. These are matched from the fields of the
 submitted form.
 
-```py
+```py3
 import re
 from hata import DiscordException, ERROR_CODES, Embed
 from hata.ext.slash import abort
@@ -190,7 +190,7 @@ If the annotation is neither string nor regex pattern, it is ignored.
 ![](assets/forms_0001.gif)
 
 
-```py
+```py3
 import re
 from hata import Embed
 from hata.ext.slash import Form, TextInput, TextInputStyle, abort
@@ -304,7 +304,7 @@ async def waifu_add_form_submit(
 
 ![](assets/forms_0002.gif)
 
-```py
+```py3
 # Get command
 
 @Nitori.interactions(guild=TEST_GUILD)
@@ -336,7 +336,7 @@ async def autocomplete_waifu_name(value):
 When using capturing groups or named capturing groups, you will get the captured values back as well. This can be
 useful when dynamically generating form fields.
 
-```py
+```py3
 CUSTOM_ID_WAIFU_EDIT_BASE = 'waifu.edit.'
 CUSTOM_ID_WAIFU_EDIT_REGEX = re.compile('waifu\.edit\.(.*)')
 CUSTOM_ID_WAIFU_FIELD_ALL = re.compile('waifu\.(?P<field>age|bio|hair)')
@@ -415,7 +415,7 @@ To capture multiple fields in one parameter you can use `*args`.
 
 When using capturing groups in regex, each element will be a tuple, similar to the keyword parameters above.
 
-```py
+```py3
 import re
 from hata import Embed, BUILTIN_EMOJIS
 from hata.ext.slash import Form, TextInput, TextInputStyle

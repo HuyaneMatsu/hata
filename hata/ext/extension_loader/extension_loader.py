@@ -919,16 +919,19 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         extension_name, extension_path = _get_extension_name_and_path(name)
         extension = _try_get_extension(extension_name, extension_path)
         
+        entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference, default_variables = \
+            validate_extension_parameters(*parameters, **keyword_parameters)
+    
         if (extension is None):
-            entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference, default_variables = \
-                validate_extension_parameters(*parameters, **keyword_parameters)
-            
             extension = self._add(
                 extension_name, extension_path, entry_point, exit_point, extend_default_variables, locked,
                 take_snapshot_difference, default_variables
             )
             
         else:
+            if (default_variables is not None):
+                extension.add_default_variables(**default_variables)
+            
             if extension.is_loaded():
                 return extension
         
@@ -939,7 +942,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         return extension
     
     
-    def load(self, name, *, deep=False):
+    def load(self, name, *, deep=True):
         """
         Loads the extension with the given name. If the extension is already loaded, will do nothing.
         
@@ -947,7 +950,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         ----------
         name : `str`, `iterable` of `str`
             The extension's name.
-        deep : `bool` = `False`, Optional (Keyword only)
+        deep : `bool` = `True`, Optional (Keyword only)
             Whether the extension with all of it's parent and with their child should be reloaded.
         
         Returns
@@ -1010,7 +1013,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         return extensions
     
     
-    def unload(self, name, *, deep=False):
+    def unload(self, name, *, deep=True):
         """
         Unloads the extension with the given name.
         
@@ -1018,7 +1021,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         ----------
         name : `str`, `iterable` of `str`
             The extension's name.
-        deep : `bool` = `False`, Optional (Keyword only)
+        deep : `bool` = `True`, Optional (Keyword only)
             Whether the extension with all of it's parent and with their child should be reloaded.
         
         Returns
@@ -1081,7 +1084,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         return extensions
     
     
-    def reload(self, name, *, deep=False):
+    def reload(self, name, *, deep=True):
         """
         Reloads the extension with the given name.
         
@@ -1089,6 +1092,9 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         ----------
         name : `str`, `iterable` of `str`
             The extension's name.
+
+        deep : `bool` = `True`, Optional (Keyword only)
+            Whether the extension with all of it's parent and with their child should be reloaded.
         
         Returns
         -------
@@ -1098,9 +1104,6 @@ class ExtensionLoader(RichAttributeErrorBaseType):
             reloading is done. However if called from a sync thread, will block till the reloading is done.
             
             When finished returns the reloaded extensions.
-        
-        deep : `bool` = `False`, Optional (Keyword only)
-            Whether the extension with all of it's parent and with their child should be reloaded.
         
         Raises
         ------
@@ -1733,7 +1736,6 @@ class ExtensionLoader(RichAttributeErrorBaseType):
     
     
     def call_done_callbacks(self):
-        print('called', self._done_callbacks)
         """
         Calls done callbacks of the extension loader.
         """

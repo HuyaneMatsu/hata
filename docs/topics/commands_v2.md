@@ -7,7 +7,7 @@ from the chat using a prefix, familiarly as a you would call the python function
 
 For example this is a command definition:
 
-```py
+```py3
 @client.commands
 async def ping():
     return 'pong'
@@ -21,7 +21,7 @@ also required a `prefix`, so pass that as well.
 > Naming your bots might be important when using multiple ones, so in the examples it will be called `NekoBot` from
 > now.
 
-```py
+```py3
 from hata import Client
 
 TOKEN = ''
@@ -37,7 +37,7 @@ async def NekoBot():
 
 The other way to add the extension is to use the `setup_ext_commands` function on the same way
 
-```py
+```py3
 from hata import Client
 from hata.ext.commands import setup_ext_commands
 
@@ -104,7 +104,7 @@ You can define them as any other parameter with annotation added. String annotat
 - `str`
 - `timedelta`
 
-```py
+```py3
 @NekoBot.commands
 async def repeat(ctx, to_repeat: str):
     await ctx.reply(to_repeat, allowed_mentions=None)
@@ -120,7 +120,7 @@ The command will accept one word as parameter, and then reply it back. You may u
 
 By using default values you can make parameters optional, like as in python.
 
-```py
+```py3
 @NekoBot.commands
 async def repeat(ctx, to_repeat: str=None):
     if to_repeat is None:
@@ -133,7 +133,7 @@ async def repeat(ctx, to_repeat: str=None):
 
 You may use keyword only parameters inside of commands.
 
-```py
+```py3
 @NekoBot.commands
 async def repeat(ctx, to_repeat: str=None, *, upper=False):
     if to_repeat is None:
@@ -151,7 +151,7 @@ parameter's value, as: `!repeat cakes upper: true`.
 
 You can use `*args` to allowing the user to pass multiple variables, on the same way as you do it in python.
 
-```py
+```py3
 @NekoBot.commands
 async def separate(*args: str):
     if args:
@@ -164,7 +164,7 @@ async def separate(*args: str):
 
 When using `**kwargs`, you allow the user to pass any keyword parameters
 
-```py
+```py3
 @NekoBot.commands
 async def keywords(**kwargs):
     if kwargs:
@@ -180,7 +180,7 @@ case of `*args`.
 
 You can use a set to define multi-type parameters.
 
-```py
+```py3
 @NekoBot.commands
 async def keywords(user: {'User', 'str'}):
     if isinstance(user, str):
@@ -194,7 +194,7 @@ async def keywords(user: {'User', 'str'}):
 Each not annotated parameter is auto annotated to `str`. However if a command's last not annotated parameter is
 positional, it will capture the rest of the respective message's content instead.
 
-```py
+```py3
 from hata import Embed
 
 @NekoBot.commands
@@ -209,7 +209,7 @@ async def pat(ctx, user, message):
 
 You can also use default values for the cases if no additional content is given.
 
-```py
+```py3
 from hata import Embed
 
 @NekoBot.commands
@@ -232,7 +232,7 @@ the `.commands` decorator. Overwriting these can be a great tool to make your bo
 Separators might be defined as encapsulators, where you define where a group starts and ends, or as a standalone
 separator to break up the input text.
 
-```py
+```py3
 @NekoBot.commands(separator=',')
 async def separate(*args):
     if not args:
@@ -245,7 +245,7 @@ async def separate(*args):
 |---------------------------------------------------|-----------------------------------------------------------------------|
 | `'Reach for the Moon, Immortal Smoke'`	        | `'Reach for the Moon'`,`'Immortal Smoke'`                             |
 
-```py
+```py3
 @NekoBot.commands(separator=('[', ']'))
 async def separate(*args):
     if not args:
@@ -259,7 +259,7 @@ async def separate(*args):
 | `'[Touhou vocal] Lost Emotion'`                   | `'[Touhou vocal]'`, `'Lost'`, `'Emotion'`                             |
 
 
-```py
+```py3
 @NekoBot.commands(separator=('*', '*'))
 async def separate(*args):
     if not args:
@@ -276,7 +276,7 @@ async def separate(*args):
 
 Assigners modify the assigner used at keyword parameters.
 
-```py
+```py3
 @NekoBot.commands(assigner='=')
 async def keywords(**kwargs):
     if kwargs:
@@ -291,7 +291,7 @@ Each entity parameter converter has converter flags., which define the was how t
 Like by default `User` converter wont allow you to access out-of-guild users. But by using `configure_converter
 you can modify this behaviour.
 
-```py
+```py3
 from hata.ext.commands_v2 import configure_converter
 
 @NekoBot.commands
@@ -339,7 +339,7 @@ Categories can be used to group up commands. Can be used for help commands, chec
 
 Categories can be created on the fly, by using the `category` keyword inside of the `.commands` decorator.
 
-```py
+```py3
 from hata.ext.commands_v2 import configure_converter
 
 @NekoBot.commands(category='utility')
@@ -354,7 +354,7 @@ async def avatar(ctx, user: 'User'=None):
 Although usually you want to create the category first to apply [checks](#checks) or description to it. If you have a
 created category, you can pass it directly to the `.commands` decorator instead of the category's name.
 
-```py
+```py3
 from hata.ext.commands_v2 import configure_converter
 
 UTILITY_CATEGORY = NekoBot.command_processor.create_category('utility')
@@ -371,7 +371,7 @@ async def avatar(ctx, user: 'User'=None):
 As on command processor, `.commands` works on categories as well.
 
 
-```py
+```py3
 from hata.ext.commands_v2 import configure_converter
 
 UTILITY_CATEGORY = NekoBot.command_processor.create_category('utility')
@@ -390,7 +390,7 @@ async def avatar(ctx, user: 'User'=None):
 When no category is passed to a command, they will be added to the command processor's default category. Default 
 category name can be set when initializing the extension on the client, with the `default_category_name` parameter.
 
-```py
+```py3
 from hata import Client
 
 TOKEN = ''
@@ -407,7 +407,7 @@ Default category can be get by using the `client.command_processor.get_default_c
 
 Checks can be applied to commands and to categories to check whether the user has permission to invoke the user.
 
-```py
+```py3
 import os
 from hata.ext.commands_v2 import checks
 
@@ -420,7 +420,7 @@ async def shutdown():
 
 An other way to apply checks it to pass them to `.commands` decorator.
 
-```py
+```py3
 import os
 from hata.ext.commands_v2 import checks
 
@@ -471,7 +471,7 @@ The following checks are implemented:
 
 Checks can be applied to categories at creation or later as well.
 
-```py
+```py3
 # At creation
 UTILITY_CATEGORY = NekoBot.command_processor.create_category('utility', checks=checks.owner_only())
 
@@ -488,7 +488,7 @@ The default precheck filters out bot message authors, and the channels, where th
 
 To change the command processor's precheck, use the `.command_processor.precheck` decorator.
 
-```py
+```py3
 @NekoBot.command_processor.precheck
 def filter_only_bots(client, message):
     return (not message.author.is_bot)
@@ -503,7 +503,7 @@ exception handler, returning `True` will stop the rest of being called, marking 
 
 Use the `.error` decorator to register exception handlers.
 
-```py
+```py3
 from hata.ext.commands_v2 import checks, CommandCheckError
 
 # Will catch every failed `checks.owner_only()` check.
@@ -517,7 +517,7 @@ async def handle_owner_only_error(ctx, exception):
     return False
 ```
 
-```py
+```py3
 from hata.ext.commands_v2 import checks, CommandParameterParsingError
 
 # Returns a role's identifier. If the role cannot be identified, an error message will be dropped to the user.
@@ -542,7 +542,7 @@ async def about_role_error_handler(ctx, exception):
 Cooldowns can be applied to commands by using the `cooldown` decorator. They can be either per `'user'`, `'channel'`
 or `'guild'`.
 
-```py
+```py3
 from hata.ext.commands_v2 import CommandCooldownError, cooldown
 
 EMOJI_CAKE = BUILTIN_EMOJIS['cake']
@@ -565,7 +565,7 @@ async def handle_cooldown_error(command_context, exception):
 
 Sub commands can be registered under other commands on the same way as they are registered to the client.
 
-```py
+```py3
 @NekoBot.commands
 async def upper():
     """Upper command."""
@@ -585,7 +585,7 @@ If command prefix and command name is found, but the command's name do not refer
 Not like as generic commands, to `unknown_command` always set parameters are passed. `return`-ed and `yield`-ed values
 are not forwarded, and if exception occurs, error handlers are not called either.
 
-```py
+```py3
 @NekoBot.command_processor.unknown_command
 async def command_processor(client, message, command_name):
     await client.message_create(message.channel, f'Could not find command named : {command_name!r}')

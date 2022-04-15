@@ -68,6 +68,7 @@ setup(
         'hata.ext.prettyprint',
         'hata.ext.slash',
         'hata.ext.slash.menus',
+        'hata.ext.solar_link',
         'hata.ext.top_gg',
         'hata.main',
         'hata.main.commands',

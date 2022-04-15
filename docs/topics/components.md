@@ -30,7 +30,7 @@ components. Some examples might clarify it more.
 
 Below are 3 examples on how to make 1 row have 3 buttons:
 
-```py
+```py3
 # The component itself
 components = Row(Button(...), Button(...), Button(...))
 
@@ -47,7 +47,7 @@ components = [
 
 Below are 3 examples on how to make 3 rows each having 1 button:
 
-```py
+```py3
 
 # List of components
 components = [
@@ -99,7 +99,7 @@ you will use only the `custom_id` parameter.
 
 Take a look at the following ping-pong command:
 
-```py
+```py3
 from random import random
 from hata import BUILTIN_EMOJIS
 from hata.ext.slash import Button, ButtonStyle, InteractionResponse
@@ -139,7 +139,7 @@ Usually you can separate component commands implementation in 3 parts: defining 
 command and defining the component interaction. Stick to this pattern, and you can't go wrong.
 
 
-```py
+```py3
 from hata import BUILTIN_EMOJIS, Emoji
 from hata.ext.slash import Button, ButtonStyle, InteractionResponse
 
@@ -177,7 +177,7 @@ async def cat_fed(event):
 You can pass regex as `custom_id` for component commands to match. It can be used to store specific states or button
 positions and then get the data back when clicked. Here is a short example for giving roles on button click.
 
-```py
+```py3
 import re
 from hata import Role
 from hata.ext.slash import Button, Row, set_permission, abort, InteractionResponse
@@ -227,7 +227,7 @@ Using multiple strings or regex `custom_id`-s work as well. Here is a simple poi
 This example could have been done with regex as well, but an advantage of strings is that their lookup time is `O(1)`,
 meanwhile regex ones are `O(n)`.
 
-```py
+```py3
 from hata import Embed, BUILTIN_EMOJIS
 from hata.ext.slash import InteractionResponse, Button, Row, ButtonStyle
 
@@ -278,7 +278,7 @@ async def poison_edit(event):
 The source message can be deleted, by first acknowledging it, then using the
 `.interaction_response_message_delete` client method.
 
-```py
+```py3
 from hata import BUILTIN_EMOJIS, Embed, DATETIME_FORMAT_CODE, elapsed_time
 from hata.ext.slash import Button, InteractionResponse
 
@@ -338,7 +338,7 @@ async def close_user_info(client, event):
 Sometimes you do not want to edit the source message, but want to notify the user, about anything in general. To do it
 create a response message.
 
-```py
+```py3
 
 ORIN_DANCE_IMAGES = [
     'https://cdn.discordapp.com/attachments/850843243695439892/850843328127959060/5e672f97dc555.gif',
@@ -397,7 +397,7 @@ async def party(client, event):
 
 You can wait for component interaction on a message by using the `wait_for_component_interaction` coroutine function.
 
-```py
+```py3
 import functools
 from hata import parse_emoji, Embed
 from hata.ext.slash import abort, Button, Row, InteractionResponse, ButtonStyle, wait_for_component_interaction
@@ -481,7 +481,7 @@ async def add_emoji(client, event,
 In the same way as `wait_for_component_interaction` returns on the first sufficient interaction,
 `iter_component_interactions` can be used to (async) iterate over multiple ones.
 
-```py
+```py3
 import functools
 from hata.ext.slash import Button, InteractionResponse, iter_component_interactions
 
@@ -568,7 +568,7 @@ async def pick(client, event):
 Selects are not as useful as buttons in practice, since lacking form functionality means, they are just a dynamic
 slash command choice parameter.
 
-```py
+```py3
 from import Embed
 from hata.ext.slash import Select, Option, InteractionResponse
 
@@ -681,7 +681,7 @@ async def handle_waifu_select(client, event):
 
 And advantage of select over generic choices might be, that you cna allow the user to select non, or multiple options.
 
-```py
+```py3
 import functools
 from hata import BUILTIN_EMOJIS
 from hata.ext.slash import InteractionResponse, Select, Option, wait_for_component_interaction

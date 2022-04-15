@@ -1,6 +1,5 @@
 __all__ = ('Slasher', )
 
-import warnings
 from functools import partial as partial_func
 
 from scarletio import Task, WaitTillAll, WeakKeyDictionary, WeakReferer, export, run_coroutine
@@ -83,6 +82,7 @@ def match_application_commands_to_commands(application_commands, commands, match
                     matched = []
                 
                 matched.append((application_command, command))
+                break
         
         if not commands:
             commands = None
@@ -353,7 +353,7 @@ class CommandState:
         name : `str`
             The command's name.
         target_type : ``ApplicationCommandTargetType``
-            The commands's target type.
+            The commands' target type.
         
         Returns
         -------
@@ -810,7 +810,7 @@ class Slasher(EventHandlerBase):
         Weak reference to the parent client.
     
     _command_states : `dict` of (`int`, ``CommandState``) items
-        The slasher's commands's states.
+        The slasher's commands' states.
     
     _command_unloading_behaviour : `int`
         Behaviour to describe what should happen when a command is unloaded.

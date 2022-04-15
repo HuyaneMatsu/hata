@@ -123,9 +123,14 @@ class Extension(RichAttributeErrorBaseType):
             name = _get_path_extension_name(path)
         
         try:
-            return EXTENSIONS[name]
+            self = EXTENSIONS[name]
         except KeyError:
             pass
+        else:
+            if (default_variables is not None):
+                self.add_default_variables(**default_variables)
+            
+            return self
         
         spec = spec_from_file_location(name, path)
         if spec is None:
@@ -410,43 +415,7 @@ class Extension(RichAttributeErrorBaseType):
                     module = module_from_spec(spec)
                     sys.modules[spec.name] = module
                     
-                    added_variable_names = self._added_variable_names
-                    if self._extend_default_variables:
-                        for name, value in EXTENSION_LOADER._default_variables.items():
-                            setattr(module, name, value)
-                            added_variable_names.append(name)
-                    
-                    default_variables = self._default_variables
-                    if (default_variables is not None):
-                        for name, value in default_variables.items():
-                            setattr(module, name, value)
-                            added_variable_names.append(name)
-                    
-                    if self._take_snapshot:
-                        snapshot_old = take_snapshot()
-                    
-                    try:
-                        spec.loader.exec_module(module)
-                    except DoNotLoadExtension:
-                        loaded = False
-                    else:
-                        loaded = True
-                    
-                    if loaded:
-                        if self._take_snapshot:
-                            snapshot_new = take_snapshot()
-                            snapshot_difference = calculate_snapshot_difference(snapshot_new, snapshot_old)
-                            
-                            for snapshot_extraction in self.iter_snapshot_extractions():
-                                snapshot_difference = calculate_snapshot_difference(
-                                    snapshot_difference, snapshot_extraction
-                                )
-                            
-                            self.clear_snapshot_extractions()
-                            
-                            self._snapshot_difference = snapshot_difference
-                            for child in self.iter_child_extensions():
-                                child.add_snapshot_extraction(snapshot_difference)
+                    loaded = self._load_module(module)
                 
                 else:
                     loaded = True
@@ -469,46 +438,7 @@ class Extension(RichAttributeErrorBaseType):
             if state in (EXTENSION_STATE_UNLOADED, EXTENSION_STATE_UNSATISFIED):
                 # reload
                 module = self._module
-                
-                spec = self._spec
-                
-                added_variable_names = self._added_variable_names
-                if self._extend_default_variables:
-                    for name, value in EXTENSION_LOADER._default_variables.items():
-                        setattr(module, name, value)
-                        added_variable_names.append(name)
-                
-                default_variables = self._default_variables
-                if (default_variables is not None):
-                    for name, value in default_variables.items():
-                        setattr(module, name, value)
-                        added_variable_names.append(name)
-                
-                if self._take_snapshot:
-                    snapshot_old = take_snapshot()
-                
-                try:
-                    spec.loader.exec_module(module)
-                except DoNotLoadExtension:
-                    loaded = False
-                else:
-                    loaded = True
-                
-                if loaded:
-                    if self._take_snapshot:
-                        snapshot_new = take_snapshot()
-                        
-                        snapshot_difference = calculate_snapshot_difference(snapshot_new, snapshot_old)
-                        for snapshot_extraction in self.iter_snapshot_extractions():
-                            snapshot_difference = calculate_snapshot_difference(
-                                snapshot_difference, snapshot_extraction
-                            )
-                        
-                        self.clear_snapshot_extractions()
-                        
-                        self._snapshot_difference = snapshot_difference
-                        for child in self.iter_child_extensions():
-                            child.add_snapshot_extraction(snapshot_difference)
+                loaded = self._load_module(module)
                 
                 if loaded:
                     state = EXTENSION_STATE_LOADED
@@ -525,6 +455,82 @@ class Extension(RichAttributeErrorBaseType):
         
         finally:
             LOADING_EXTENSIONS.discard(self)
+    
+    
+    def _load_module(self, module):
+        """
+        Loads the module and returns whether it was successfully loaded.
+        
+        Parameters
+        ----------
+        module : `ModuleType`
+            The module to load.
+        
+        Returns
+        -------
+        loaded : `bool`
+        
+        Raises
+        ------
+        BaseException
+            Any exception raised from the extension file.
+        """
+        spec = self._spec
+        
+        added_variable_names = self._added_variable_names
+        if self._extend_default_variables:
+            for name, value in EXTENSION_LOADER._default_variables.items():
+                setattr(module, name, value)
+                added_variable_names.append(name)
+        
+        default_variables = self._default_variables
+        if (default_variables is not None):
+            for name, value in default_variables.items():
+                setattr(module, name, value)
+                added_variable_names.append(name)
+        
+        
+        active_extensions_at_start = LOADING_EXTENSIONS.copy()
+        if self._take_snapshot:
+            snapshot_old = take_snapshot()
+        
+        try:
+            spec.loader.exec_module(module)
+        except DoNotLoadExtension:
+            loaded = False
+        else:
+            loaded = True
+        
+        
+        if loaded:
+            active_extensions_at_end = LOADING_EXTENSIONS.copy()
+            extension_intersection = active_extensions_at_start & active_extensions_at_end
+            extension_intersection.discard(self)
+            
+            if self._take_snapshot:
+                snapshot_new = take_snapshot()
+                snapshot_difference = calculate_snapshot_difference(snapshot_new, snapshot_old)
+                
+                for snapshot_extraction in self.iter_snapshot_extractions():
+                    snapshot_difference = calculate_snapshot_difference(
+                        snapshot_difference, snapshot_extraction
+                    )
+                
+                self.clear_snapshot_extractions()
+                
+                self._snapshot_difference = snapshot_difference
+                
+                for extension in extension_intersection:
+                    extension.add_snapshot_extraction(snapshot_difference)
+            
+            else:
+                for snapshot_extraction in self.iter_snapshot_extractions():
+                    for extension in extension_intersection:
+                        extension.add_snapshot_extraction(snapshot_extraction)
+                
+                self.clear_snapshot_extractions()
+        
+        return loaded
     
     
     def _check_for_syntax(self):
@@ -823,6 +829,7 @@ class Extension(RichAttributeErrorBaseType):
         snapshot_extractions = self._snapshot_extractions
         if (snapshot_extractions is None):
             snapshot_extractions = []
+            self._snapshot_extractions = snapshot_extractions
         
         snapshot_extractions.append(snapshots)
     

@@ -20,7 +20,7 @@ When creating your first bot make sure to enable all intents on the developer po
 
 Create a `main.py` file (any other name also works).
 
-```py
+```py3
 # Importing `Client` and `wait_for_interruption` from hata
 from hata import Client, wait_for_interruption
 
@@ -48,7 +48,7 @@ Pretty simple! Now try running `python3 main.py` and you should see your bot onl
 
 This is already pretty cool, but the bot does nothing yet. Let's make a simple ping-pong command.
 
-```py
+```py3
 # ... rest of the code
 
 # Handle the message creation event
@@ -71,7 +71,7 @@ Try running the bot and message it with `!ping`.
 
 Got stuck? This is our resulting code:
 
-```py
+```py3
 from hata import Client, wait_for_interruption
 
 
@@ -105,7 +105,7 @@ look up there how to do it.
 Hata has an already pre-made slash (and other interaction handling). It makes registering and
 handling commands easy. To add the extension to your client use the `extensions` parameter like `extensions='slash'`.
 
-```py
+```py3
 from hata import Client, wait_for_interruption
 
 # Add the `slash` extension to our client.

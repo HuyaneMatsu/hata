@@ -7,7 +7,7 @@ repository.
 
 When creating a client, you may pass an `ActivityRich` instance to the `activity` parameter.
 
-```py
+```py3
 from hata import ActivityRich, Client
 
 client = Client(
@@ -18,7 +18,7 @@ client = Client(
 
 To change the type of the activity, use the `type_` parameter of `ActivityRich`.
 
-```py
+```py3
 from hata import ACTIVITY_TYPES, ActivityRich, Client
 
 client = Client(
@@ -31,13 +31,13 @@ client = Client(
 
 If you have a channel entity
 
-```py
+```py3
 await client.message_create(channel, 'content')
 ```
 
 If you don't passing just the `id` is fine too.
 
-```py
+```py3
 await client.message_create(123456789123456789, 'content')
 ```
 
@@ -47,13 +47,13 @@ First you get / create the bot's direct message channel with the user.
 
 If you have the user entity:
 
-```py
+```py3
 channel = await client.channel_private_create(user)
 ```
 
 If you have just it's id:
 
-```py
+```py3
 channel = await client.channel_private_create(8899898989898989898)
 ```
 
@@ -62,7 +62,7 @@ channel = await client.channel_private_create(8899898989898989898)
 `Client.message_create` returns the created message (if you create a non empty one of course).
 You can access it's id like `message.id`.
 
-```py
+```py3
 message = await client.message_create(channel, 'content')
 message_id = message.id
 ```
@@ -74,7 +74,7 @@ To upload a file to Discord, you will need to use a file-like object, or it's da
 To upload a file from your file system, we recommend to use `scarletio.ReuAsyncIO`. It is which is an async file-like
 object which also handles retrying requests.
 
-```py
+```py3
 from scarletio import ReuAsyncIO
 
 with (await ReuAsyncIO('flan.png')) as file:
@@ -83,7 +83,7 @@ with (await ReuAsyncIO('flan.png')) as file:
 
 To upload multiple files, use a list.
 
-```py
+```py3
 from scarletio import ReuAsyncIO
 
 with (await ReuAsyncIO('flan.png')) as file_1, (await ReuAsyncIO('remi.png')) as file_2:
@@ -92,7 +92,7 @@ with (await ReuAsyncIO('flan.png')) as file_1, (await ReuAsyncIO('remi.png')) as
 
 To send a file with a different name, pass a `name` - `file` pair.
 
-```py
+```py3
 from scarletio import ReuAsyncIO
 
 with (await ReuAsyncIO('flan.png')) as file:
@@ -102,7 +102,7 @@ with (await ReuAsyncIO('flan.png')) as file:
 If you want to upload something from an url, you will have to request it first. To request anything, you can create
 a new http session, but it is recommended just to use the client's preexisting one.
 
-```py
+```py3
 async with client.http.get(file_url) as response:
     if response.status == 200:
         data = await response.read()
@@ -121,13 +121,13 @@ Since a `bytes` object has no name, it is highly recommended to define one when 
 
 To add a reaction on a message, use the `client.reaction_add` method.
 
-```py
+```py3
 await client.reaction_add(message, emoji)
 ```
 
 To get an builtin / unicode emoji, you can use the `BUILTIN_EMOJIS` dictionary.
 
-```py
+```py3
 from hata import BUILTIN_EMOJIS
 
 emoji = BUILTIN_EMOJIS['thumbsup']
@@ -136,7 +136,7 @@ emoji = BUILTIN_EMOJIS['thumbsup']
 If you are using constant emojis, it is recommended to create references to them. At the case of custom emojis it can
 be acquired `Emoji.precreate`
 
-```py
+```py3
 from hata import Emoji
 
 emoji = Emoji.precreate(704392145330634812)
@@ -147,7 +147,7 @@ emoji = Emoji.precreate(704392145330634812)
 When using constant entities, it is recommended to create them with the respective type's `.precreate` method.
 It creates a reference to the entity, which is picked up and updated when the entity is received from Discord.
 
-```py
+```py3
 from hata import User
 
 user = User.precreate(24343344487441449444)
@@ -156,7 +156,7 @@ user = User.precreate(24343344487441449444)
 It is possible to get entities dynamically from cache, with rich functionality methods, and at a few cases with client
 api methods as well.
 
-```py
+```py3
 from hata import USERS
 
 # from cache
@@ -175,7 +175,7 @@ user = await client.get_user(user_id)
 To make a web request you should use a non-blocking library. Hata already requires one, since it is necessary to
 communicate with Discord.
 
-```py
+```py3
 from scarletio import HTTPClient, get_event_loop
 
 session = HTTPClient(get_event_loop())
@@ -190,7 +190,7 @@ async with session.get('https://nekos.life/api/v2/cat') as response:
 Since web resources are cached per sessions it is recommended to reuse the same one. For this reason using the client's
 http session is the preferred way of doing web requests.
 
-```py
+```py3
 async with client.http.get('https://nekos.life/api/v2/cat') as response:
     if response.status == 200:
         data = await response.json()
@@ -204,7 +204,7 @@ A special case is, when using an uploaded attachment within an embed. To do it, 
 embed instead of defining the image's url, do `attachment://image.png`, where `image.png` is the name of the file you
 send.
 
-```py
+```py3
 from hata import Embed, ReuAsyncIO
 
 with (await ReuAsyncIO('some_file_path')) as file:

@@ -3,6 +3,7 @@
 #### Improvements
 
 - `EventHandlerBase` instances now support rich attribute errors.
+- Define we want to use python3 highlights in md files, because some highlighters people still use python2 as default.
 
 ##### ext.extension_loader
 
@@ -11,6 +12,11 @@
 - Add `ExtensionLoader.add_done_callback_unique`.
 - Add `ExtensionLoader.call_done_callbacks`.
 - Add missing `EventHandlerSnapshotType.__repr__`.
+- Improve snapshot extraction inheritance logic.
+- Add `deep` parameter of `ExtensionLoader.load` defaults to `True`.
+- Add `deep` parameter of `ExtensionLoader.unload` defaults to `True`.
+- Add `deep` parameter of `ExtensionLoader.reload` defaults to `True`.
+- Building shallow extensions trees  wont include children and parents.
 
 ##### ext.slash
 
@@ -27,6 +33,13 @@
 
 - `ExtensionLoader` will return the same instance if already instanced. (Gilgamesh#8939)
 - `ExtensionLoader.reload_all` raised `TypeError`. (from 1.2.7) (Forest#2913)
+- `Extension.add_snapshot_extraction` was not storing the snapshots correctly.
+- `Extension` default variables were not updated even if required. This could cause bugs when reloading nested
+      extensions.
+
+##### ext.slash
+
+- `IndexError` in `match_application_commands_to_commands`. (Gilgamesh#8939)
 
 ## 1.2.8 *\[2022-04-11\]*
 

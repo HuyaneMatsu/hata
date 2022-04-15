@@ -3,7 +3,7 @@
 #### Improvements
 
 - `EventHandlerBase` instances now support rich attribute errors.
-- Define we want to use python3 highlights in md files, because some highlighters people still use python2 as default.
+- Define we want to use python3 highlights in md files, because some highlighters still use python2 as default.
 
 ##### ext.extension_loader
 

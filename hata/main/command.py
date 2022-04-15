@@ -45,6 +45,8 @@ class Command(RichAttributeErrorBaseType):
         description : `str`
             The command's description.
         """
+        if file_name.endswith('.py'):
+            filename = filename[:-3]
         if (alters is not None):
             if alters:
                 alters = frozenset(alters)

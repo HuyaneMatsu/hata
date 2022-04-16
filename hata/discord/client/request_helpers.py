@@ -752,7 +752,7 @@ def get_channel_id(channel, type_checker):
     """
     while True:
         if isinstance(channel, Channel):
-            if type_checker(channel) or channel.partiaL:
+            if type_checker(channel) or channel.partial:
                 channel_id = channel.id
                 break
         
@@ -792,7 +792,7 @@ def get_guild_id_and_channel_id(channel, type_checker):
     """
     while True:
         if isinstance(channel, Channel):
-            if type_checker(channel) or channel.partiaL:
+            if type_checker(channel) or channel.partial:
                 snowflake_pair = channel.guild_id, channel.id
                 break
         

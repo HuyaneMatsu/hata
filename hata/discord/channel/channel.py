@@ -1987,7 +1987,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         is_guild_text : `bool`
         """
-        return self.metadata.type in CHANNEL_TYPES.guild_text
+        return self.metadata.type == CHANNEL_TYPES.guild_text
     
     
     def is_private(self):
@@ -1998,7 +1998,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         is_private : `bool`
         """
-        return self.metadata.type in CHANNEL_TYPES.private
+        return self.metadata.type == CHANNEL_TYPES.private
         
         
     def is_guild_voice(self):
@@ -2011,7 +2011,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         is_guild_voice : `bool`
         """
-        return self.metadata.type in CHANNEL_TYPES.guild_voice
+        return self.metadata.type == CHANNEL_TYPES.guild_voice
     
     
     def is_private_group(self):
@@ -2022,7 +2022,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         is_private_group : `bool`
         """
-        return self.metadata.type in CHANNEL_TYPES.private_group
+        return self.metadata.type == CHANNEL_TYPES.private_group
     
     
     def is_guild_category(self):
@@ -2033,7 +2033,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         is_guild_category : `bool`
         """
-        return self.metadata.type in CHANNEL_TYPES.guild_category
+        return self.metadata.type == CHANNEL_TYPES.guild_category
     
     
     def is_guild_announcements(self):
@@ -2044,7 +2044,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         is_guild_announcements : `bool`
         """
-        return self.metadata.type in CHANNEL_TYPES.guild_announcements
+        return self.metadata.type == CHANNEL_TYPES.guild_announcements
     
     
     def is_guild_store(self):
@@ -2057,7 +2057,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         is_guild_store : `bool`
         """
-        return self.metadata.type in CHANNEL_TYPES.guild_store
+        return self.metadata.type == CHANNEL_TYPES.guild_store
     
     
     def is_thread(self):
@@ -2070,7 +2070,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         is_thread : `bool`
         """
-        return self.metadata.type in CHANNEL_TYPES.thread
+        return self.metadata.type == CHANNEL_TYPES.thread
     
     
     def is_guild_thread_announcements(self):
@@ -2081,7 +2081,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         is_guild_thread_announcements : `bool`
         """
-        return self.metadata.type in CHANNEL_TYPES.guild_thread_announcements
+        return self.metadata.type == CHANNEL_TYPES.guild_thread_announcements
     
     
     def is_guild_thread_public(self):
@@ -2092,7 +2092,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         is_guild_thread_public : `bool`
         """
-        return self.metadata.type in CHANNEL_TYPES.guild_thread_public
+        return self.metadata.type == CHANNEL_TYPES.guild_thread_public
     
     
     def is_guild_thread_private(self):
@@ -2103,7 +2103,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         is_guild_thread_private : `bool`
         """
-        return self.metadata.type in CHANNEL_TYPES.guild_thread_private
+        return self.metadata.type == CHANNEL_TYPES.guild_thread_private
     
     
     def is_guild_stage(self):
@@ -2114,7 +2114,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         is_guild_stage : `bool`
         """
-        return self.metadata.type in CHANNEL_TYPES.guild_stage
+        return self.metadata.type == CHANNEL_TYPES.guild_stage
     
     
     def is_guild_directory(self):
@@ -2125,7 +2125,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         is_guild_directory : `bool`
         """
-        return self.metadata.type in CHANNEL_TYPES.guild_directory
+        return self.metadata.type == CHANNEL_TYPES.guild_directory
     
     
     def is_guild_forum(self):
@@ -2136,4 +2136,4 @@ class Channel(DiscordEntity, immortal=True):
         -------
         is_guild_forum : `bool`
         """
-        return self.metadata.type in CHANNEL_TYPES.guild_forum
+        return self.metadata.type == CHANNEL_TYPES.guild_forum

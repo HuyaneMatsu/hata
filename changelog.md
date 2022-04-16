@@ -1,6 +1,11 @@
-## 1.2.10 *\[2022-04-??\]*
+## 1.2.10 *\[2022-04-14\]*
 
 #### Bug Fixes
+
+- Fix an `AttributeError` in `get_channel_id`. (koish#5800)
+- Fix an `AttributeError` in `get_guild_id_and_channel_id`. (koish#5800)
+- Fix a `TypeError` in `Channel.is_guild_voice`. (koish#5800)
+- Fix a `TypeError` in `Channel.is_...` non-group methods.
 
 ##### hata.ext.commands_v2
 

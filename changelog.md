@@ -1,4 +1,8 @@
-## 1.2.9 *\[2022-04-??\]*
+## 1.2.9 *\[2022-04-16\]*
+
+### Summary
+
+- Add `hata.ext.solar_link`.
 
 #### Improvements
 

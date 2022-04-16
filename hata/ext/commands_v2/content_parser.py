@@ -1574,7 +1574,7 @@ STICKER_EMOJI = ConverterSetting(
 )
 
 
-async def guild_converter(command_context, part, content_parser_parameter_detail):
+async def guild_converter(command_context, content_parser_parameter_detail, part):
     parsed = ID_RP.fullmatch(part)
     if (parsed is None):
         return None
@@ -1773,7 +1773,7 @@ CONVERTER_MESSAGE = ConverterSetting(
     requires_part = True,
 )
 
-async def invite_converter(command_context, part, content_parser_parameter_detail):
+async def invite_converter(command_context, content_parser_parameter_detail, part):
     flags = content_parser_parameter_detail.flags
     
     # It would not be a Huyane code without some GOTO

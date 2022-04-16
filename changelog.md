@@ -1,3 +1,12 @@
+## 1.2.10 *\[2022-04-??\]*
+
+#### Bug Fixes
+
+##### hata.ext.commands_v2
+
+- Fix a `TypeError` in `guild_converter`. (Gilgamesh#8939)
+- Fix a `TypeError` in `invite_converter`.
+
 ## 1.2.9 *\[2022-04-16\]*
 
 ### Summary

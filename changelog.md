@@ -13,7 +13,7 @@
 
 #### Bug Fixes
 
-- Fix an `AttributeErsror` in `get_channel_id`. (koish#5800)
+- Fix an `AttributeError` in `get_channel_id`. (koish#5800)
 - Fix an `AttributeError` in `get_guild_id_and_channel_id`. (koish#5800)
 - Fix a `TypeError` in `Channel.is_guild_voice`. (koish#5800)
 - Fix a `TypeError` in `Channel.is_...` non-group methods.

@@ -162,6 +162,7 @@ class ContentParameterParserContextBase(RichAttributeErrorBaseType):
         """
         return ''
 
+
 class ContentParameterParserContextSeparator(ContentParameterParserContextBase):
     """
     Separator pattern based parsing context returned by ``ContentParameterParser``.
@@ -659,6 +660,8 @@ class ConverterSetting(RichAttributeErrorBaseType):
     ----------
     all_flags : ``ConverterFlag``
         All the flags which the converter picks up.
+    alternative_checked_types : `None`, `dict` of (`str`, `callable`) items
+        Alternative string names to checkers.
     alternative_type_name : `None`, `str`
         Alternative string name for the parser, which allows picking up a respective converter.
     alternative_types : `None`, `list` of `type`
@@ -675,12 +678,12 @@ class ConverterSetting(RichAttributeErrorBaseType):
         Whether the converter processes any flags.
     """
     __slots__ = (
-        'all_flags', 'alternative_type_name', 'alternative_types', 'converter', 'default_flags', 'default_type',
-        'requires_part', 'uses_flags'
+        'all_flags', 'alternative_checked_types', 'alternative_type_name', 'alternative_types', 'converter',
+        'default_flags', 'default_type', 'requires_part', 'uses_flags'
     )
     
     def __new__(cls, converter, uses_flags, default_flags, all_flags, alternative_type_name, default_type,
-            alternative_types, requires_part):
+            alternative_types, requires_part, *, alternative_checked_types=None):
         """
         Creates a new ``ConverterSetting`` to store settings related to a converter function.
         
@@ -702,21 +705,15 @@ class ConverterSetting(RichAttributeErrorBaseType):
             A list of the alternatively accepted types.
         requires_part : `bool`
             Whether the converter requires data to parse or it just produces it's result on the fly.
+        alternative_checked_types : `None`, `dict` of (`str`, `callable`) items, Optional (Keyword only)
+            Alternative `type-name` - `checker` pairs.
         
         Raises
         -------
         TypeError
-            - If `converter` is not `function` type.
-            - If `converter` is not `async`.
-            - If `converter` accepts bad amount of parameters.
-            - If `uses_flags` was not given as `bool`, nether as `int` as `0`, `1`.
-            - If `default_flags`, `all_flags` was not given as `ConverterFlag`.
-            - If `alternative_type_name` was not given as `None`, neither as `str`.
-            - If `default_type` was not given as `None`, neither as `type`.
-            - If `alternative_types` was not given as `None`, neither as `iterable` of `type`.
-            - If `requires_part` was not to given as `bool`.
+            - If any parameter's type is incorrect.
         ValueError
-            If `uses_flags` is given as `true`, but at the same time `all_flags` was not given as
+            - If `uses_flags` is given as `true`, but at the same time `all_flags` was not given as
             `ConverterFlag(0)`
         """
         if not isinstance(converter, FunctionType):
@@ -794,7 +791,7 @@ class ConverterSetting(RichAttributeErrorBaseType):
             alternative_types_processed = None
         
         else:
-            alternative_types_type = alternative_types.__class__
+            alternative_types_type = type(alternative_types)
             if not hasattr(alternative_types_type, '__iter__'):
                 raise TypeError(
                     f'`alternative_types` can be `None`, `iterable` of `type`, got '
@@ -812,7 +809,7 @@ class ConverterSetting(RichAttributeErrorBaseType):
                     )
                 
                 alternative_types_processed.append(alternative_type)
-                index +=1
+                index += 1
             
             if not alternative_types_processed:
                  alternative_types_processed = None
@@ -823,6 +820,38 @@ class ConverterSetting(RichAttributeErrorBaseType):
                 f'`{ConverterFlag.__name__}(0)`, got {all_flags!r}.'
             )
         
+        
+        if (alternative_checked_types is None):
+            alternative_checked_types_processed = None
+        
+        else:
+            if not isinstance(alternative_checked_types, dict):
+                raise TypeError(
+                    f'`alternative_checked_types` can be `dict`, got {alternative_checked_types.__class__.__name__}; '
+                    f'{alternative_checked_types!r}.'
+                )
+            
+            alternative_checked_types_processed = {}
+            
+            for key, value in alternative_checked_types.items():
+                if not isinstance(key, str):
+                    raise TypeError(
+                        f'`alternative_checked_types`\'s keys can be `str`, got {key.__class__.__name__}; {key!r}.'
+                    )
+                
+                if not callable(value):
+                    raise TypeError(
+                        f'`alternative_checked_types`\'s values can be `callable`, got '
+                        f'{key.__class__.__name__}; {key!r}.'
+                    )
+                
+                alternative_checked_types_processed[key] = value
+            
+            
+            if not alternative_checked_types_processed:
+                alternative_checked_types_processed = None
+        
+        
         self = object.__new__(cls)
         self.converter = converter
         self.uses_flags = uses_flags
@@ -832,6 +861,8 @@ class ConverterSetting(RichAttributeErrorBaseType):
         self.default_type = default_type
         self.alternative_types = alternative_types_processed
         self.requires_part = requires_part
+        self.alternative_checked_types = alternative_checked_types_processed
+        
         
         if (default_type is not None):
             CONVERTER_SETTING_TYPE_TO_SETTING[default_type] = self
@@ -847,6 +878,11 @@ class ConverterSetting(RichAttributeErrorBaseType):
                 CONVERTER_SETTING_TYPE_TO_SETTING[alternative_type] = self
                 CONVERTER_SETTING_NAME_TO_SETTING[alternative_type.__name__] = self
                 CONVERTER_NAME_TO_TYPE[alternative_type.__name__] = alternative_type
+        
+        if (alternative_checked_types_processed is not None):
+            for alternative_type_name in alternative_checked_types_processed.keys():
+                CONVERTER_SETTING_NAME_TO_SETTING[alternative_type_name] = self
+        
         
         return self
     
@@ -870,10 +906,35 @@ class ConverterSetting(RichAttributeErrorBaseType):
             repr_parts.append(', default_type=')
             repr_parts.append(default_type_name)
             
+            
             alternative_type_name = self.alternative_type_name
             if alternative_type_name != default_type_name:
                 repr_parts.append(', alternative_type_name=')
                 repr_parts.append(repr(alternative_type_name))
+            
+            
+            alternative_checked_types = self.alternative_checked_types
+            if (alternative_checked_types is not None):
+                alternative_checked_types_names = list(alternative_checked_types.keys())
+                
+                repr_parts.append(', alternative_checked_types=[')
+                
+                index = 0
+                limit = len(alternative_checked_types_names)
+                while True:
+                    alternative_checked_types_name= alternative_checked_types_names[index]
+                    index += 1
+                    
+                    repr_parts.append(alternative_checked_types_name)
+                    
+                    if index == limit:
+                        break
+                    
+                    repr_parts.append(', ')
+                    continue
+                
+                repr_parts.append(']')
+            
             
             alternative_types = self.alternative_types
             if (alternative_types is not None):
@@ -895,6 +956,7 @@ class ConverterSetting(RichAttributeErrorBaseType):
                 
                 repr_parts.append(']')
         
+        
         if self.uses_flags:
             default_flags = self.default_flags
             repr_parts.append(', default_flags=')
@@ -915,6 +977,9 @@ class ConverterSetting(RichAttributeErrorBaseType):
             return NotImplemented
         
         if self.all_flags != other.all_flags:
+            return False
+        
+        if self.alternative_checked_types != other.alternative_checked_types:
             return False
         
         if self.alternative_type_name != other.alternative_type_name:
@@ -947,6 +1012,19 @@ class ConverterSetting(RichAttributeErrorBaseType):
         
         # all_flags
         hash_value ^= self.all_flags
+        
+        # alternative_checked_types
+        alternative_checked_types = self.alternative_checked_types
+        if (alternative_checked_types is not None):
+            hash_value ^= len(alternative_checked_types) << 14
+            for alternative_checked_type_name, alternative_checked_type_checker in alternative_checked_types.items():
+                hash_value ^= hash(alternative_checked_type_name)
+                
+                try:
+                    alternative_checked_type_checker_hash = hash(alternative_checked_type_checker)
+                except TypeError:
+                    alternative_checked_type_checker_hash = object.__hash__(alternative_checked_type_checker)
+                hash_value ^= alternative_checked_type_checker_hash
         
         # alternative_type_name
         alternative_type_name = self.alternative_type_name
@@ -1093,7 +1171,7 @@ if CACHE_USER:
                     channel = message.channel
                     guild = message.guild
                     if guild is None:
-                        if (not isinstance(channel, ChannelGuildBase)):
+                        if not channel.is_in_group_guild():
                             for user in channel.users:
                                 if user.id == id_:
                                     return user
@@ -1115,7 +1193,7 @@ if CACHE_USER:
             channel = message.channel
             guild = channel.guild
             if (guild is None):
-                if isinstance(channel, ChannelGuildBase):
+                if channel.is_in_group_guild():
                     user = None
                 else:
                     user = channel.get_user_like(part)
@@ -1178,7 +1256,7 @@ else:
                     channel = message.channel
                     guild = message.guild
                     if guild is None:
-                        if (not isinstance(channel, ChannelGuildBase)):
+                        if not channel.is_in_group_guild():
                             for user in channel.users:
                                 if user.id == id_:
                                     return user
@@ -1210,7 +1288,7 @@ else:
             channel = message.channel
             guild = channel.guild
             if (guild is None):
-                if (not isinstance(channel, ChannelGuildBase)):
+                if not channel.is_in_group_guild():
                     user = channel.get_user_like(part)
                     if (user is not None):
                         return user
@@ -1329,9 +1407,9 @@ CONVERTER_CLIENT = ConverterSetting(
     requires_part = True,
 )
 
-async def channel_converter(command_context, content_parser_parameter_detail, part):
+
+async def _channel_converter_internal(command_context, content_parser_parameter_detail, part):
     flags = content_parser_parameter_detail.flags
-    channel_type = content_parser_parameter_detail.type
     message = command_context.message
     
     if flags & CONVERTER_FLAG_ID:
@@ -1345,14 +1423,13 @@ async def channel_converter(command_context, content_parser_parameter_detail, pa
                 except KeyError:
                     pass
                 else:
-                    if ((channel_type is None) or isinstance(channel, channel_type)):
-                        return channel
+                    return channel
             
             else:
                 channel = message.channel
                 guild = message.guild
                 if guild is None:
-                    if ((channel_type is None) or isinstance(channel, channel_type)) and channel.id == id_:
+                    if channel.id == id_:
                         return channel
                 
                 else:
@@ -1361,27 +1438,43 @@ async def channel_converter(command_context, content_parser_parameter_detail, pa
                     except KeyError:
                         pass
                     else:
-                        if ((channel_type is None) or isinstance(channel, channel_type)):
-                            return channel
+                        return channel
     
     if flags & CONVERTER_FLAG_MENTION:
         channel = parse_channel_mention(part, message)
         if (channel is not None):
-            if ((channel_type is None) or isinstance(channel, channel_type)):
-                return channel
+            return channel
     
     if flags & CONVERTER_FLAG_NAME:
         channel = message.channel
         guild = channel.guild
         if guild is None:
-            if ((channel_type is None) or isinstance(channel, channel_type)) and channel.has_name_like(part):
+            if channel.has_name_like(part):
                 return channel
         else:
-            channel = guild.get_channel_like(part, type_=channel_type)
+            channel = guild.get_channel_like(part)
             if (channel is not None):
                 return channel
     
     return None
+
+
+async def channel_converter(command_context, content_parser_parameter_detail, part):
+    channel = await _channel_converter_internal(command_context, content_parser_parameter_detail, part)
+    if (channel is not None):
+        type_checker = content_parser_parameter_detail.type_checker
+        if type_checker is None:
+            channel_type = content_parser_parameter_detail.type
+            if (channel_type is not None):
+                if not isinstance(channel, channel_type):
+                    channel = None
+        
+        else:
+            if not type_checker(channel):
+                channel = None
+    
+    return channel
+
 
 CONVERTER_CHANNEL = ConverterSetting(
     converter = channel_converter,
@@ -1406,6 +1499,33 @@ CONVERTER_CHANNEL = ConverterSetting(
         ChannelDirectory,
     ],
     requires_part = True,
+    alternative_checked_types = {
+        'group_messageable': Channel.is_in_group_messageable,
+        'group_guild_messageable': Channel.is_in_group_guild_messageable,
+        'group_guild_main_text': Channel.is_in_group_guild_main_text,
+        'group_connectable': Channel.is_in_group_connectable,
+        'group_guild_connectable': Channel.is_in_group_guild_connectable,
+        'group_private': Channel.is_in_group_private,
+        'group_guild': Channel.is_in_group_guild,
+        'group_thread': Channel.is_in_group_thread,
+        'group_can_contain_threads': Channel.is_in_group_can_contain_threads,
+        'group_can_create_invite_to': Channel.is_in_group_can_create_invite_to,
+        'group_guild_movable': Channel.is_in_group_guild_movable,
+        'guild_text': Channel.is_guild_text,
+        'private': Channel.is_private,
+        'guild_voice': Channel.is_guild_voice,
+        'private_group': Channel.is_private_group,
+        'guild_category': Channel.is_guild_category,
+        'guild_announcements': Channel.is_guild_announcements,
+        'guild_store': Channel.is_guild_store,
+        'thread': Channel.is_thread,
+        'guild_thread_announcements': Channel.is_guild_thread_announcements,
+        'guild_thread_public': Channel.is_guild_thread_public,
+        'guild_thread_private': Channel.is_guild_thread_private,
+        'guild_stage': Channel.is_guild_stage,
+        'guild_directory': Channel.is_guild_directory,
+        'guild_forum': Channel.is_guild_forum,
+    }
 )
 
 async def role_converter(command_context, content_parser_parameter_detail, part):
@@ -1918,10 +2038,12 @@ class ContentParserParameterDetail(RichAttributeErrorBaseType):
         Converter flags to customize the events.
     type : `None`, `type`
         The type or subtype of the annotation to parse.
+    type_checker : `None`, `callable`
+        Additional type checker.
     """
-    __slots__ = ('converter_setting', 'flags', 'type',)
+    __slots__ = ('converter_setting', 'flags', 'type', 'type_checker')
     
-    def __new__(cls, converter_setting, type_):
+    def __new__(cls, converter_setting, type_, type_checker):
         """
         Creates a new ``ContentParserParameterDetail`` with the given parameters.
         
@@ -1931,11 +2053,14 @@ class ContentParserParameterDetail(RichAttributeErrorBaseType):
             The converter setting used by the parameter.
         type_ : `None`, `type`
             The type or subtype of the annotation to parse.
+    type_checker : `None`, `callable`
+        Additional type checker.
         """
         self = object.__new__(cls)
         self.converter_setting = converter_setting
         self.flags = converter_setting.default_flags
         self.type = type_
+        self.type_checker = type_checker
         return self
     
     
@@ -1950,6 +2075,11 @@ class ContentParserParameterDetail(RichAttributeErrorBaseType):
             repr_parts.append(', type=')
             repr_parts.append(repr(type_))
         
+        type_checker = self.type_checker
+        if (type_checker is not None):
+            repr_parts.append(', type_checker=')
+            repr_parts.append(repr(type_checker))
+            
         flags = self.flags
         if (flags != converter_setting.default_flags):
             repr_parts.append(', flags=')
@@ -1973,6 +2103,9 @@ class ContentParserParameterDetail(RichAttributeErrorBaseType):
         if self.type != other.type:
             return False
         
+        if self.type_checker != other.type_checker:
+            return False
+        
         return True
     
     
@@ -1984,11 +2117,18 @@ class ContentParserParameterDetail(RichAttributeErrorBaseType):
         if (type_ is not None):
             try:
                 type_hash = hash(type_)
-            except KeyError:
-                type_hash = object.__hash__(type)
-            
+            except TypeError:
+                type_hash = object.__hash__(type_)
             hash_value ^= type_hash
         
+        type_checker = self.type_checker
+        if (type_checker is not None):
+            try:
+                type_checker_hash = hash(type_checker)
+            except TypeError:
+                type_checker_hash = object.__hash__(type_checker)
+            hash_value ^= type_checker_hash
+            
         return hash_value
 
 
@@ -2139,7 +2279,7 @@ class ContentParserParameter(RichAttributeErrorBaseType):
         
         details_length = len(details)
         if details_length == 0:
-            detail = ContentParserParameterDetail(CONVERTER_NONE, CONVERTER_NONE.default_type)
+            detail = ContentParserParameterDetail(CONVERTER_NONE, CONVERTER_NONE.default_type, None)
             details = None
         elif details_length == 1:
             detail = details[0]
@@ -2185,7 +2325,7 @@ class ContentParserParameter(RichAttributeErrorBaseType):
         return self
     
     def __repr__(self):
-        """Returns the inter's representation."""
+        """Returns the content parser parameter's representation."""
         repr_parts = ['<', self.__class__.__name__,
             ' name=', repr(self.name),
          ]
@@ -2337,7 +2477,7 @@ class ContentParserParameter(RichAttributeErrorBaseType):
         if self.detail is None:
             raise RuntimeError('Converter setting cannot be set if the parser is multi type.')
         
-        self.detail = ContentParserParameterDetail(converter_setting, converter_setting.default_type)
+        self.detail = ContentParserParameterDetail(converter_setting, converter_setting.default_type, None)
     
     
     async def parse(self, command_context, part):
@@ -2424,7 +2564,13 @@ def get_detail_for_str(annotation):
     
     annotation_type = CONVERTER_NAME_TO_TYPE.get(annotation, None)
     
-    return ContentParserParameterDetail(converter_setting, annotation_type)
+    alternative_checked_types = converter_setting.alternative_checked_types
+    if alternative_checked_types is None:
+        type_checker = None
+    else:
+        type_checker = alternative_checked_types.get(annotation, None)
+    
+    return ContentParserParameterDetail(converter_setting, annotation_type, type_checker)
 
 
 def get_detail_for_type(annotation):
@@ -2452,7 +2598,7 @@ def get_detail_for_type(annotation):
             f'There is no converter registered for {annotation!r}.'
         ) from None
     
-    return ContentParserParameterDetail(converter_setting, annotation)
+    return ContentParserParameterDetail(converter_setting, annotation, None)
 
 
 

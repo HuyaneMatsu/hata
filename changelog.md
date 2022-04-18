@@ -1,8 +1,19 @@
-## 1.2.10 *\[2022-04-14\]*
+## 1.2.10 *\[2022-04-??\]*
+
+#### Improvements
+
+- `Guild.get_channel_like`'s `type` parameter is replaced with `type_checker`.
+
+##### hata.ext.commands_v2
+
+- Add `alternative_checked_types` to `ConverterSetting`.
+- Channel parameter annotations are now picked up familiarly to slash commands in favor of deprecating the type usage.
+
+## 1.2.10 *\[2022-04-16\]*
 
 #### Bug Fixes
 
-- Fix an `AttributeError` in `get_channel_id`. (koish#5800)
+- Fix an `AttributeErsror` in `get_channel_id`. (koish#5800)
 - Fix an `AttributeError` in `get_guild_id_and_channel_id`. (koish#5800)
 - Fix a `TypeError` in `Channel.is_guild_voice`. (koish#5800)
 - Fix a `TypeError` in `Channel.is_...` non-group methods.

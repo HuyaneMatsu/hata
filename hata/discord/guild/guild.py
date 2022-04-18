@@ -1724,7 +1724,7 @@ class Guild(DiscordEntity, immortal=True):
         return default
     
     
-    def get_channel_like(self, name, default=None, type_=None):
+    def get_channel_like(self, name, default=None, type_checker=None, *, type_=None):
         """
         Searches a channel of the guild, whats name starts with the given string and returns the first find.
         
@@ -1734,13 +1734,26 @@ class Guild(DiscordEntity, immortal=True):
             The name to search for.
         default : `Any` = `None`, Optional
             The value what is returned when no channel was found. Defaults to `None`.
-        type_ : `None`, `type`, `tuple` of `type` = `None`, Optional
-            Whether only specific channel type instances are accepted.
+        type_checker : `None` callable` = `None`, Optional
+            Checks whether a specific entity's type is correct.
         
         Returns
         -------
         channel : ``Channel``, `default`
         """
+        if isinstance(type_checker, type):
+            type_ = type_checker
+            type_checker = None
+        
+        if (type_ is not None):
+            warnings.warn(
+                f'`{self.__class__.__name__}.get_channel_like`\'s `type` parameter has been changed to '
+                f'`type_checker`, which is a `callable` instead of an expected `type`. Please use that instead.'
+                f'The `type` parameter will be removed at 2022 Jul.'
+            )
+            
+            type_checker = lambda value: isinstance(value, type_)
+        
         if name.startswith('#'):
             name = name[1:]
         
@@ -1754,7 +1767,7 @@ class Guild(DiscordEntity, immortal=True):
         accurate_name_length = 101
         
         for channel in self.channels.values():
-            if (type_ is not None) and (not isinstance(channel, type_)):
+            if (type_checker is not None) and (not type_checker(channel)):
                 continue
             
             channel_name = channel.name

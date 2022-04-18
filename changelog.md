@@ -1,13 +1,20 @@
-## 1.2.10 *\[2022-04-??\]*
+## 1.2.11 *\[2022-04-18\]*
 
 #### Improvements
 
 - `Guild.get_channel_like`'s `type` parameter is replaced with `type_checker`.
+- Enable calling `hata` without `python3 -m`. (WizzyGeek#2356)
+- `run_console_till_interruption` will now indeed stop at interruption and not only at system exit. (Gilgamesh#8939)
 
 ##### hata.ext.commands_v2
 
 - Add `alternative_checked_types` to `ConverterSetting`.
 - Channel parameter annotations are now picked up familiarly to slash commands in favor of deprecating the type usage.
+
+#### Bug Fixes
+
+- `Client.message_get_chunk_from_zero` could raise `AttributeError`.
+- `Client.message_get_chunk` could raise `AttributeError`. (winwinwinwin#0001)
 
 ## 1.2.10 *\[2022-04-16\]*
 

@@ -3572,7 +3572,8 @@ class Client(ClientUserPBase):
             data['before'] = log_time_converter(before)
         
         # Set some collection delay.
-        channel._add_message_collection_delay(60.0)
+        if (channel is not None):
+            channel._add_message_collection_delay(60.0)
         
         message_datas = await self.http.message_get_chunk(channel_id, data)
         return process_message_chunk(message_datas, channel)
@@ -3625,7 +3626,8 @@ class Client(ClientUserPBase):
                 )
         
         # Set some collection delay.
-        channel._add_message_collection_delay(60.0)
+        if (channel is not None):
+            channel._add_message_collection_delay(60.0)
         
         data = {'limit': limit, 'before': 9223372036854775807}
         data = await self.http.message_get_chunk(channel_id, data)

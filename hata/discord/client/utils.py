@@ -140,6 +140,7 @@ def run_console_till_interruption():
         banner = create_banner(PACKAGE),
         exit_message = create_exit_message(PACKAGE),
         callback = _console_exit_callback,
+        stop_on_interruption = True,
     )
 
 

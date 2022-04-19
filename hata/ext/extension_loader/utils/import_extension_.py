@@ -1,7 +1,8 @@
 __all__ = ('import_extension',)
 
 from os.path import basename as get_file_name, splitext as split_file_name_and_extension
-from sys import _getframe as get_frame
+
+from scarletio import get_last_module_frame
 
 from ..extension import EXTENSIONS
 from ..extension_loader import EXTENSION_LOADER
@@ -94,9 +95,13 @@ def import_extension(extension_name, *variable_names, **keyword_parameters):
             f'`extension_name`\s syntax is incorrect; Cannot end with dot character; got: {extension_name!r}.'
         )
     
-    # Get local frame and build the extension name to load
-    frame = get_frame().f_back
-    spec = frame.f_globals.get('__spec__', None)
+    
+    frame = get_last_module_frame()
+    if (frame is None):
+        spec = None
+    else:
+        spec = frame.f_globals.get('__spec__', None)
+    
     if spec is None:
         raise RuntimeError(
             f'`import_extension` can only be called from an extension.'

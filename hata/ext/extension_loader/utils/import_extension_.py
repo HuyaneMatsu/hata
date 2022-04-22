@@ -2,12 +2,13 @@ __all__ = ('import_extension',)
 
 from os.path import basename as get_file_name, splitext as split_file_name_and_extension
 
-from scarletio import get_last_module_frame
+from scarletio import export, get_last_module_frame
 
 from ..extension import EXTENSIONS
 from ..extension_loader import EXTENSION_LOADER
 
 
+@export
 def import_extension(extension_name, *variable_names, **keyword_parameters):
     """
     Imports from the given extension.
@@ -145,9 +146,8 @@ def import_extension(extension_name, *variable_names, **keyword_parameters):
         extension.add_child_extension(current_extension)
         current_extension.add_parent_extension(extension)
     
-    
     variable_names_length = len(variable_names)
-    module = extension._module
+    module = extension._spec.get_module_proxy()
     if variable_names_length == 0:
         return module
     

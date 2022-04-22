@@ -10,8 +10,9 @@ from scarletio import (
 
 from ...discord.core import KOKORO
 
+from .constants import EXTENSION_STATE_LOADED, EXTENSIONS
 from .exceptions import ExtensionError
-from .extension import EXTENSIONS, EXTENSION_STATE_LOADED, Extension, __file__ as EXTENSION_LOADER_EXTENSION_FILE_PATH
+from .extension import Extension, __file__ as EXTENSION_LOADER_EXTENSION_FILE_PATH
 from .helpers import (
     PROTECTED_NAMES, _build_extension_tree, _get_extension_name_and_path, _get_path_extension_name,
     _iter_extension_names_and_paths, _validate_entry_or_exit, validate_extension_parameters
@@ -746,7 +747,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         exit_point : `None`, `str`, `callable`
             Extension specific exit point, to use over the extension loader's default.
         extend_default_variables : `bool`
-            Whether the extension should use the loader's default variables or just it's own's.
+            Whether the extension should use the loader's default variables or just it's own.
         locked : `bool`
             Whether the given extension(s) should not be affected by `.{}_all` methods.
         take_snapshot_difference : `bool`

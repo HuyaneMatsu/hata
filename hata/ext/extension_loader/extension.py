@@ -1,33 +1,24 @@
-__all__ = ('EXTENSIONS', )
+__all__ = ()
 
-import sys
+import sys, warnings
 from importlib.util import module_from_spec, spec_from_file_location
 from py_compile import compile as compile_module
 
-from scarletio import HybridValueDictionary, RichAttributeErrorBaseType, WeakSet, WeakValueDictionary, include
+from scarletio import HybridValueDictionary, RichAttributeErrorBaseType, WeakSet, include
 
+from .constants import (
+    EXTENSIONS, EXTENSION_STATE_LOADED, EXTENSION_STATE_UNDEFINED, EXTENSION_STATE_UNLOADED,
+    EXTENSION_STATE_UNSATISFIED, EXTENSION_STATE_VALUE_TO_NAME, LOADING_EXTENSIONS
+)
 from .exceptions import DoNotLoadExtension
-from .snapshot import calculate_snapshot_difference, revert_snapshot, take_snapshot
+from .extension_root import register_extension_root
 from .helpers import PROTECTED_NAMES, _get_path_extension_name, _validate_entry_or_exit
+from .import_overwrite.module_spec_type import ExtensionModuleSpecType
+from .import_overwrite.module_proxy_type import ExtensionModuleProxyType
+from .snapshot import calculate_snapshot_difference, revert_snapshot, take_snapshot
 
 
 EXTENSION_LOADER = include('EXTENSION_LOADER')
-
-EXTENSIONS = WeakValueDictionary()
-
-EXTENSION_STATE_UNDEFINED = 0
-EXTENSION_STATE_LOADED = 1
-EXTENSION_STATE_UNLOADED = 2
-EXTENSION_STATE_UNSATISFIED = 3
-
-EXTENSION_STATE_VALUE_TO_NAME = {
-    EXTENSION_STATE_UNDEFINED: 'undefined',
-    EXTENSION_STATE_LOADED: 'loaded',
-    EXTENSION_STATE_UNLOADED: 'unloaded',
-    EXTENSION_STATE_UNSATISFIED: 'unsatisfied',
-}
-
-LOADING_EXTENSIONS = set()
 
 
 class Extension(RichAttributeErrorBaseType):
@@ -51,15 +42,13 @@ class Extension(RichAttributeErrorBaseType):
         Internal slot used by the ``.extend_default_variables`` property.
     _locked : `bool`
         The internal slot used for the ``.locked`` property.
-    _module : `None`, `ModuleType`
-        The extension's module. Set as `module` object if it the extension was already loaded.
     _parent_extensions : `None`, ``WeakSet`` of ``Extension``
         Parent extensions.
     _snapshot_difference : `None`, `list` of ``BaseSnapshotType``
         Snapshot difference if applicable. Defaults to `None`.
     _snapshot_extractions : `None`, `list` of `list` of ``BaseSnapshotType``
         Additional snapshots to extract from own.
-    _spec : `ModuleSpec`
+    _spec : ``ExtensionModuleSpecType``
         The module specification for the extension's module's import system related state.
     _state : `int`
         The state of the extension. Can be:
@@ -79,7 +68,7 @@ class Extension(RichAttributeErrorBaseType):
     """
     __slots__ = (
         '__weakref__', '_added_variable_names', '_child_extensions', '_default_variables', '_entry_point',
-        '_exit_point', '_extend_default_variables', '_locked', '_module', '_parent_extensions', '_snapshot_difference',
+        '_exit_point', '_extend_default_variables', '_locked', '_parent_extensions', '_snapshot_difference',
         '_snapshot_extractions', '_spec', '_state', '_take_snapshot'
     )
     
@@ -100,7 +89,7 @@ class Extension(RichAttributeErrorBaseType):
         exit_point : `None`, `str`, `callable`
             The exit point of the extension.
         extend_default_variables : `bool`
-            Whether the extension should use the loader's default variables or just it's own's.
+            Whether the extension should use the loader's default variables or just it's own.
         locked : `bool`
             Whether the extension should be picked up by the `{}_all` methods of the extension loader.
         take_snapshot_difference: `bool`
@@ -136,6 +125,8 @@ class Extension(RichAttributeErrorBaseType):
         if spec is None:
             raise ModuleNotFoundError(name)
         
+        spec = ExtensionModuleSpecType(spec)
+        register_extension_root(name)
         
         self = object.__new__(cls)
         self._added_variable_names = []
@@ -146,7 +137,6 @@ class Extension(RichAttributeErrorBaseType):
         self._exit_point = exit_point
         self._extend_default_variables = extend_default_variables
         self._locked = locked
-        self._module = None
         self._snapshot_difference = None
         self._snapshot_extractions = None
         self._spec = spec
@@ -332,7 +322,7 @@ class Extension(RichAttributeErrorBaseType):
     @property
     def extend_default_variables(self):
         """
-        Get-set descriptor to define whether the extension uses the loader's default variables or just it's own's.
+        Get-set descriptor to define whether the extension uses the loader's default variables or just it's own.
         
         Accepts and returns `bool`.
         """
@@ -393,6 +383,8 @@ class Extension(RichAttributeErrorBaseType):
         ------
         ImportError
             Circular imports.
+        RuntimeError
+            Module already imported.
         BaseException
             Any exception raised from the extension file.
         """
@@ -409,18 +401,24 @@ class Extension(RichAttributeErrorBaseType):
             if state == EXTENSION_STATE_UNDEFINED:
                 
                 spec = self._spec
-                module = sys.modules.get(spec.name, None)
-                if module is None:
-                    # module is not imported yet, nice
-                    module = module_from_spec(spec)
-                    sys.modules[spec.name] = module
+                
+                maybe_proxy_module = sys.modules.get(spec.name, None)
+                if (maybe_proxy_module is not None) and (not isinstance(maybe_proxy_module, ExtensionModuleProxyType)):
+                    raise RuntimeError(
+                        f'Module `{spec.name}` is already imported.'
+                    )
+                
+                module = spec.get_module()
+                
+                if (module is None):
+                    proxy_module = module_from_spec(spec)
+                    sys.modules[spec.name] = proxy_module
                     
-                    loaded = self._load_module(module)
+                    module = spec.get_module()
+                    loaded = self._load_module()
                 
                 else:
                     loaded = True
-                
-                self._module = module
                 
                 if loaded:
                     state = EXTENSION_STATE_LOADED
@@ -437,11 +435,11 @@ class Extension(RichAttributeErrorBaseType):
             
             if state in (EXTENSION_STATE_UNLOADED, EXTENSION_STATE_UNSATISFIED):
                 # reload
-                module = self._module
-                loaded = self._load_module(module)
+                loaded = self._load_module()
                 
                 if loaded:
                     state = EXTENSION_STATE_LOADED
+                    module =  self._spec.get_module()
                 else:
                     state = EXTENSION_STATE_UNSATISFIED
                     module = None
@@ -457,14 +455,9 @@ class Extension(RichAttributeErrorBaseType):
             LOADING_EXTENSIONS.discard(self)
     
     
-    def _load_module(self, module):
+    def _load_module(self):
         """
         Loads the module and returns whether it was successfully loaded.
-        
-        Parameters
-        ----------
-        module : `ModuleType`
-            The module to load.
         
         Returns
         -------
@@ -476,6 +469,7 @@ class Extension(RichAttributeErrorBaseType):
             Any exception raised from the extension file.
         """
         spec = self._spec
+        module = spec.get_module()
         
         added_variable_names = self._added_variable_names
         if self._extend_default_variables:
@@ -491,8 +485,11 @@ class Extension(RichAttributeErrorBaseType):
         
         
         active_extensions_at_start = LOADING_EXTENSIONS.copy()
+        
         if self._take_snapshot:
             snapshot_old = take_snapshot()
+        else:
+            snapshot_old = None
         
         try:
             spec.loader.exec_module(module)
@@ -501,13 +498,12 @@ class Extension(RichAttributeErrorBaseType):
         else:
             loaded = True
         
-        
         if loaded:
             active_extensions_at_end = LOADING_EXTENSIONS.copy()
             extension_intersection = active_extensions_at_start & active_extensions_at_end
             extension_intersection.discard(self)
             
-            if self._take_snapshot:
+            if (snapshot_old is not None):
                 snapshot_new = take_snapshot()
                 snapshot_difference = calculate_snapshot_difference(snapshot_new, snapshot_old)
                 
@@ -545,17 +541,15 @@ class Extension(RichAttributeErrorBaseType):
         ------
         SyntaxError
         """
-        if self._state == EXTENSION_STATE_LOADED:
-            module = self._module
-            if (module is not None):
-                file_name = self.file_name
-                # python files might not be `.py` files, which we should not compile.
-                if file_name.endswith('.py'):
-                    try:
-                        compile_module(file_name)
-                    except FileNotFoundError:
-                        # If the file is deleted, is fine.
-                        pass
+        if (self._state == EXTENSION_STATE_LOADED) and self._spec.is_initialised():
+            file_name = self.file_name
+            # python files might not be `.py` files, which we should not compile.
+            if file_name.endswith('.py'):
+                try:
+                    compile_module(file_name)
+                except FileNotFoundError:
+                    # If the file is deleted, is fine.
+                    pass
     
     
     def _unload(self):
@@ -579,15 +573,13 @@ class Extension(RichAttributeErrorBaseType):
             self.clear_child_extensions()
             self.clear_parent_extensions()
             
-            module = self._module
-            
             snapshot_difference = self._snapshot_difference
             if (snapshot_difference is not None):
                 self._snapshot_difference = None
                 revert_snapshot(snapshot_difference)
             
             self._state = EXTENSION_STATE_UNLOADED
-            return module
+            return self._spec.get_module()
         
         if state in (EXTENSION_STATE_UNLOADED, EXTENSION_STATE_UNSATISFIED):
             return None
@@ -598,7 +590,7 @@ class Extension(RichAttributeErrorBaseType):
         """
         Unassigns the assigned variables to the respective module and clears ``._added_variable_names``.
         """
-        module = self._module
+        module = self._spec.get_module()
         if module is None:
             return
         
@@ -701,7 +693,7 @@ class Extension(RichAttributeErrorBaseType):
         
         if state == EXTENSION_STATE_LOADED:
             self._state = EXTENSION_STATE_UNLOADED
-            module = self._module
+            module = self._spec.get_module()
             
             if self._extend_default_variables:
                 for name in EXTENSION_LOADER._default_variables:
@@ -941,3 +933,27 @@ class Extension(RichAttributeErrorBaseType):
             else:
                 if not parent_extensions:
                     self._parent_extensions = parent_extensions
+    
+    
+    @property
+    def _module(self):
+        """
+        Deprecated attribute of ``Extension``.
+        """
+        warnings.warn(
+            f'`{self.__class__.__name__}._module` is deprecated, please use `._spec.get_module()` instead.',
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return self._spec.get_module()
+    
+    
+    def get_module(self):
+        """
+        Returns the module of the extension.
+        
+        Returns
+        -------
+        module : `None`, `ModuleType`
+        """
+        return self._spec.get_module()

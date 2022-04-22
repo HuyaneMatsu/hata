@@ -41,6 +41,7 @@ class ExtensionError(Exception):
         
         return '\n\n'.join(message)
     
+    
     @property
     def messages(self):
         """
@@ -56,6 +57,7 @@ class ExtensionError(Exception):
         
         return message
     
+    
     def __len__(self):
         """Returns the amount of messages, what the extension error contains."""
         message = self._message
@@ -64,9 +66,11 @@ class ExtensionError(Exception):
         
         return len(message)
     
+    
     def __repr__(self):
         """Returns the exception error's representation."""
         return f'{self.__class__.__name__} ({len(self)}):\n{self.message}\n'
+    
     
     __str__ = __repr__
 

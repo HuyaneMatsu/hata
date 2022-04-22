@@ -1,10 +1,13 @@
 __all__ = ('ExtensionModuleProxyType',)
 
+import warnings
 from types import ModuleType
 
-from scarletio import get_last_module_frame
+from scarletio import get_last_module_frame, include
 
 from ..constants import EXTENSIONS
+
+ExtensionModuleSpecType = include('ExtensionModuleSpecType')
 
 
 class ExtensionModuleProxyType(ModuleType):
@@ -24,6 +27,34 @@ class ExtensionModuleProxyType(ModuleType):
         
         self.__spec__ = spec
         self.__file__ = spec.origin
+    
+    
+    def __setattr__(self, attribute_name, attribute_value):
+        ModuleType.__setattr__(self, attribute_name, attribute_value)
+        
+        if attribute_name in {
+            '__spec__',
+            '__loader__',
+            '__package__',
+            '__spec__',
+            '__path__',
+            '__file__',
+            '__cached__',
+        }:
+            pass
+        
+        elif isinstance(attribute_value, ExtensionModuleProxyType):
+            spec = self.__spec__
+            
+            module = spec.get_module()
+            if (module is not None):
+                setattr(module, attribute_name, attribute_value)
+        
+        else:
+            warnings.warn(
+                f'Unallowed attribute assignment: `{attribute_name} = {attribute_value!r}` of type '
+                f'`{type(attribute_value).__name__}` to `{self.__spec__.name}`'
+            )
     
     
     def __getattr__(self, attribute_name):
@@ -50,9 +81,8 @@ class ExtensionModuleProxyType(ModuleType):
         
         current_extension = EXTENSIONS.get(spec.name, None)
         
-        if (extension is not None) and (current_extension is not None):
+        if (extension is not None) and (current_extension is not None) and (extension is not current_extension):
             extension.add_child_extension(current_extension)
             current_extension.add_parent_extension(extension)
         
         return attribute_value
-

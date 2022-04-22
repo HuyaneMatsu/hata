@@ -1,9 +1,13 @@
 __all__ = ()
 
 from importlib.machinery import ModuleSpec
+
+from scarletio import export
+
 from .source_loader import ExtensionSourceLoader
 
 
+@export
 class ExtensionModuleSpecType(ModuleSpec):
     """
     Extends the builtin spec with extension checking.

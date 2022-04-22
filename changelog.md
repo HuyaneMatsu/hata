@@ -1,3 +1,18 @@
+## 1.2.12 *\[2022-04-??\]*
+
+#### Improvements
+
+##### hata.ext.extension_loader
+
+- Add `blocking` parameter to `ExtensionLoader.load`.
+- Add `blocking` parameter to `ExtensionLoader.unload`.
+- Add `blocking` parameter to `ExtensionLoader.reload`.
+- Add `blocking` parameter to `ExtensionLoader.load_all`.
+- Add `blocking` parameter to `ExtensionLoader.unload_all`.
+- Add `blocking` parameter to `ExtensionLoader.reload_all`.
+- Add `blocking` parameter to `ExtensionLoader.load_extension`.
+- Cross extension `import` statements are now picked up.
+
 ## 1.2.11 *\[2022-04-18\]*
 
 #### Improvements

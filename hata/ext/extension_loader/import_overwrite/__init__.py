@@ -4,6 +4,7 @@ from .module_spec_type import *
 from .source_loader import *
 from .spec_finder_helpers import *
 from .tools import *
+from .utils import *
 
 __all__ = (
     *extension_finder.__all__,
@@ -12,6 +13,7 @@ __all__ = (
     *source_loader.__all__,
     *spec_finder_helpers.__all__,
     *tools.__all__,
+    *utils.__all__,
 )
 
 

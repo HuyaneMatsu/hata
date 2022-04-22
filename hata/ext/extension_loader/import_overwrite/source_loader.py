@@ -1,12 +1,12 @@
 __all__ = ()
 
+import gc
 from importlib.machinery import SourceFileLoader
-from types import ModuleType
 
 from scarletio import include
 
 from .module_proxy_type import ExtensionModuleProxyType
-
+from .utils import create_module_from_spec
 
 import_extension = include('import_extension')
 
@@ -57,9 +57,7 @@ class ExtensionSourceLoader(SourceFileLoader):
         
         module = self._module
         if module is None:
-            module = ModuleType(self.name)
-            module.__spec__ = spec
-            module.__file__ = spec.origin
+            module = create_module_from_spec(spec)
             self._module = module
         
         return module_proxy
@@ -91,3 +89,6 @@ class ExtensionSourceLoader(SourceFileLoader):
             import_extension(self.name)
         else:
             SourceFileLoader.exec_module(self, self._module)
+        
+        gc.collect()
+        gc.collect()

@@ -244,6 +244,28 @@ def _pop_loader_task_callback(extension, task):
         pass
 
 
+def _run_maybe_blocking(coroutine, blocking):
+    """
+    Starts the given coroutine inside of a task. Returns a wrapped task, or it's result depending from where it was
+    called.
+    
+    Parameters
+    ----------
+    coroutine : `CoroutineType`
+        The coroutine to run.
+    blocking : `bool`
+        Whether the operation should be blocking when called from a non-async thread.
+    
+    Returns
+    -------
+    result : `None`, ``Task``, ``FutureAsyncWrapper``
+    """
+    if blocking:
+        return run_coroutine(coroutine, KOKORO)
+    else:
+        return KOKORO.create_task_thread_safe(coroutine)
+
+
 class ExtensionLoader(RichAttributeErrorBaseType):
     """
     There are some cases when you probably want to change some functional part of your client in runtime. Load,
@@ -822,7 +844,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
             extension._unlink()
     
     
-    def load_extension(self, name, *parameters, **keyword_parameters):
+    def load_extension(self, name, *parameters, blocking=True, **keyword_parameters):
         """
         Adds, then loads the extension.
         
@@ -830,8 +852,13 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         ----------
         name : `str`, `iterable` of `str`
             The extension's name to load.
+        
         *parameters : Parameters
             Additional parameters to create the extension with.
+        
+        blocking : `bool` = `True`, Optional (Keyword only)
+            Whether the operation should be blocking when called from a non-async thread.
+        
         **keyword_parameters : Keyword parameters
             Additional parameters to create the extension with.
         
@@ -875,7 +902,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         ExtensionError
             The extension failed to load correctly.
         """
-        return run_coroutine(self._load_extension_task(name, parameters, keyword_parameters), KOKORO)
+        return _run_maybe_blocking(self._load_extension_task(name, parameters, keyword_parameters), blocking)
     
     
     async def _load_extension_task(self, name, parameters, keyword_parameters):
@@ -943,7 +970,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         return extension
     
     
-    def load(self, name, *, deep=True):
+    def load(self, name, *, blocking=True, deep=True):
         """
         Loads the extension with the given name. If the extension is already loaded, will do nothing.
         
@@ -963,13 +990,16 @@ class ExtensionLoader(RichAttributeErrorBaseType):
             
             When finished returns the loaded extension.
         
+        blocking : `bool` = `True`, Optional (Keyword only)
+            Whether the operation should be blocking when called from a non-async thread.
+        
         Raises
         ------
         ExtensionError
             - No extension is added with the given name.
             - Loading the extension failed.
         """
-        return run_coroutine(self._load_task(name, deep), KOKORO)
+        return _run_maybe_blocking(self._load_task(name, deep), blocking)
     
     
     async def _load_task(self, name, deep):
@@ -1014,7 +1044,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         return extensions
     
     
-    def unload(self, name, *, deep=True):
+    def unload(self, name, *, blocking=True, deep=True):
         """
         Unloads the extension with the given name.
         
@@ -1022,8 +1052,12 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         ----------
         name : `str`, `iterable` of `str`
             The extension's name.
+        
         deep : `bool` = `True`, Optional (Keyword only)
             Whether the extension with all of it's parent and with their child should be reloaded.
+        
+        blocking : `bool` = `True`, Optional (Keyword only)
+            Whether the operation should be blocking when called from a non-async thread.
         
         Returns
         -------
@@ -1040,7 +1074,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
             - No extension is added with the given name.
             - Unloading the extension failed.
         """
-        return run_coroutine(self._unload_task(name, deep), KOKORO)
+        return _run_maybe_blocking(self._unload_task(name, deep), blocking)
     
     
     async def _unload_task(self, name, deep):
@@ -1085,7 +1119,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         return extensions
     
     
-    def reload(self, name, *, deep=True):
+    def reload(self, name, *, blocking=True, deep=True):
         """
         Reloads the extension with the given name.
         
@@ -1096,6 +1130,9 @@ class ExtensionLoader(RichAttributeErrorBaseType):
 
         deep : `bool` = `True`, Optional (Keyword only)
             Whether the extension with all of it's parent and with their child should be reloaded.
+        
+        blocking : `bool` = `True`, Optional (Keyword only)
+            Whether the operation should be blocking when called from a non-async thread.
         
         Returns
         -------
@@ -1112,7 +1149,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
             - No extension is added with the given name.
             - Reloading the extension failed.
         """
-        return run_coroutine(self._reload_task(name, deep), KOKORO)
+        return _run_maybe_blocking(self._reload_task(name, deep), blocking)
     
     
     async def _reload_task(self, name, deep):
@@ -1162,7 +1199,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         return extensions
     
     
-    def load_all(self):
+    def load_all(self, *, blocking=True):
         """
         Loads all the extension of the extension loader. If anything goes wrong, raises an ``ExtensionError`` only
         at the end, with the exception(s).
@@ -1172,13 +1209,15 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         task : `None`, ``Task``, ``FutureAsyncWrapper``
             If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             loading is done. However if called from a sync thread, will block till the loading is done.
+        blocking : `bool` = `True`, Optional (Keyword only)
+            Whether the operation should be blocking when called from a non-async thread.
         
         Raises
         ------
         ExtensionError
             If any extension failed to load correctly.
         """
-        return run_coroutine(self._load_all_task(), KOKORO)
+        return _run_maybe_blocking(self._load_all_task(), blocking)
     
     
     async def _load_all_task(self):
@@ -1213,7 +1252,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
             raise ExtensionError(error_messages) from None
     
     
-    def unload_all(self):
+    def unload_all(self, *, blocking=True):
         """
         Unloads all the extension of the extension loader. If anything goes wrong, raises an ``ExtensionError`` only
         at the end, with the exception(s).
@@ -1223,13 +1262,15 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         task : `None`, ``Task``, ``FutureAsyncWrapper``
             If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             unloading is done. However if called from a sync thread, will block till the unloading is done.
+        blocking : `bool` = `True`, Optional (Keyword only)
+            Whether the operation should be blocking when called from a non-async thread.
         
         Raises
         ------
         ExtensionError
             If any extension failed to unload correctly.
         """
-        return run_coroutine(self._unload_all_task(), KOKORO)
+        return _run_maybe_blocking(self._unload_all_task(), blocking)
     
     
     async def _unload_all_task(self):
@@ -1264,7 +1305,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
             raise ExtensionError(error_messages) from None
     
     
-    def reload_all(self):
+    def reload_all(self, *, blocking=True):
         """
         Reloads all the extension of the extension loader. If anything goes wrong, raises an ``ExtensionError`` only
         at the end, with the exception(s).
@@ -1274,13 +1315,15 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         task : `None`, ``Task``, ``FutureAsyncWrapper``
             If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             reloading is done. However if called from a sync thread, will block till the reloading is done.
+        blocking : `bool` = `True`, Optional (Keyword only)
+            Whether the operation should be blocking when called from a non-async thread.
         
         Raises
         ------
         ExtensionError
             If any extension failed to reload correctly.
         """
-        return run_coroutine(self._reload_all_task(), KOKORO)
+        return _run_maybe_blocking(self._reload_all_task(), blocking)
     
     
     async def _reload_all_task(self):

@@ -1693,7 +1693,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        extension : `list` of ``Extension``
+        extensions : `list` of ``Extension``
             A list of extensions to check their syntax.
         
         Raises
@@ -1711,7 +1711,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        extension : `list` of ``Extension``
+        extensions : `list` of ``Extension``
             A list of extensions to check their syntax.
         
         Raises

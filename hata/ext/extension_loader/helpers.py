@@ -365,7 +365,7 @@ def _iter_directory(import_name, directory_path):
     
     Parameters
     ----------
-    extension_name : `None`, `str`
+    import_name : `None`, `str`
         The name of the extension if we would import it.
     directory_path : `str`
         Path to the directory

@@ -121,7 +121,7 @@ async def ping_pong():
     else:
         button = BUTTON_PONG
     
-    return InteractionResponse(f'**ping {EMOJI_PING_PONG:e} pong**', components=button)
+    return InteractionResponse(f'**ping {EMOJI_PING_PONG} pong**', components=button)
 
 
 @Nitori.interactions(custom_id=CUSTOM_ID_PING)
@@ -155,7 +155,7 @@ CAT_FEEDER_CUSTOM_ID = 'cat_feeder.click'
 async def cat_feeder():
     """Hungry cat feeder!"""
     return InteractionResponse(
-        f'Please feed my cat {CAT_FEEDER_CAT_EMOJI:e}, she is hungry.',
+        f'Please feed my cat {CAT_FEEDER_CAT_EMOJI}, she is hungry.',
         components = Button('Feed cat', CAT_FEEDER_FOOD_EMOJI, custom_id=CAT_FEEDER_CUSTOM_ID, style=ButtonStyle.green)
     )
 
@@ -164,7 +164,7 @@ async def cat_feeder():
 @Nitori.interactions(custom_id=CAT_FEEDER_CUSTOM_ID)
 async def cat_fed(event):
     return (
-        f'Please feed my cat {CAT_FEEDER_CAT_EMOJI:e}, she is hungry.\n'
+        f'Please feed my cat {CAT_FEEDER_CAT_EMOJI}, she is hungry.\n'
         f'\n'
         f'Thanks, {event.user:f} for feeding my cat.'
     )
@@ -690,21 +690,21 @@ EMOJI_ELEPHANT = BUILTIN_EMOJIS['elephant']
 LABEL_ELEPHANT = 'elephant'
 DESCRIPTION_ELEPHANT = (
     f'Visiting big elephants.\n'
-    f'{EMOJI_ELEPHANT:e} sugoi {EMOJI_ELEPHANT:e}'
+    f'{EMOJI_ELEPHANT} sugoi {EMOJI_ELEPHANT}'
 )
 
 EMOJI_LION = BUILTIN_EMOJIS['lion']
 LABEL_LION = 'lion'
 DESCRIPTION_LION = (
     f'Peeking at scary lions.\n'
-    f'(I love cats {EMOJI_LION:e})'
+    f'(I love cats {EMOJI_LION})'
 )
 
 EMOJI_ZEBRA = BUILTIN_EMOJIS['zebra']
 LABEL_ZEBRA = 'zebra'
 DESCRIPTION_ZEBRA = (
     f'Watching prison horses be like.\n'
-    f'{EMOJI_ZEBRA:e} are cute!'
+    f'{EMOJI_ZEBRA} are cute!'
 )
 
 

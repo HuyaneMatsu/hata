@@ -12,7 +12,6 @@ from ...discord.core import KOKORO
 from .constants import EXTENSION_STATE_LOADED, EXTENSIONS
 from .exceptions import ExtensionError
 from .extension import Extension, __file__ as EXTENSION_LOADER_EXTENSION_FILE_PATH
-from .extension_root import maybe_register_extension_directory_root
 from .helpers import (
     PROTECTED_NAMES, _build_extension_tree, _get_extension_name_and_path, _get_path_extension_name,
     _iter_extension_names_and_paths, _validate_entry_or_exit, validate_extension_parameters
@@ -741,8 +740,6 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         extension_names_and_paths = set(_iter_extension_names_and_paths(name, register_directories_as_roots=True))
         entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference, default_variables = \
             validate_extension_parameters(*args, **kwargs)
-        
-        maybe_register_extension_directory_root(name)
         
         for extension_name, extension_path in extension_names_and_paths:
             self._add(

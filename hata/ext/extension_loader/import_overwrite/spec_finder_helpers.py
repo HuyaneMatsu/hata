@@ -24,7 +24,7 @@ def create_spec_if_exists(full_name, path):
     """
     if is_directory(path):
         path = join_paths(path, '__init__.py')
-        if not exists(path):
+        if exists(path):
             return spec_from_file_location(full_name, path)
         
         return None

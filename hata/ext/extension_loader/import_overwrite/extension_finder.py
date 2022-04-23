@@ -32,9 +32,6 @@ class ExtensionFinder(PathFinder):
         if not is_in_extension_root(full_name):
             return None
         
-        if paths is None:
-            paths = sys.path
-        
         spec = find_spec_in_paths(full_name, paths)
         if spec is None:
             return None

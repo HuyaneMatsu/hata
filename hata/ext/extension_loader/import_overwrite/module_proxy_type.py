@@ -86,3 +86,20 @@ class ExtensionModuleProxyType(ModuleType):
             current_extension.add_parent_extension(extension)
         
         return attribute_value
+    
+    
+    def __repr__(self):
+        spec = getattr(self, '__spec__', None)
+        
+        repr_parts = ['<', type(self).__name__]
+        
+        if spec is None:
+            repr_parts.append(' unknown location')
+        
+        else:
+            repr_parts.append(' from ')
+            repr_parts.append(spec.name)
+        
+        repr_parts.append('>')
+        
+        return ''.join(repr_parts)

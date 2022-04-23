@@ -2,6 +2,9 @@
 
 #### Improvements
 
+- Add `UserBase.has_name_like`.
+- Add `UserBase.has_name_like_at`.
+
 ##### hata.ext.extension_loader
 
 - Add `blocking` parameter to `ExtensionLoader.load`.

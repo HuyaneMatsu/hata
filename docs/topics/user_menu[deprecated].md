@@ -190,7 +190,7 @@ class CatFeeder:
         if isinstance(exception, TimeoutError):
             menu = self.menu
             
-            content = f'The {self.cat}has been fed by {len(self.reacted)} people.'
+            content = f'The {self.cat} has been fed by {len(self.reacted)} people.'
             await menu.client.message_edit(menu.message, content)
             
             if menu.channel.cached_permissions_for(menu.client).can_manage_messages:

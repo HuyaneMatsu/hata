@@ -1,7 +1,7 @@
 __all__ = ('Channel',)
 
 from collections import deque
-from re import I as re_ignore_case, escape as re_escape, match as re_match
+from re import I as re_ignore_case, escape as re_escape, search as re_search
 
 from scarletio import LOOP_TIME, export
 
@@ -374,11 +374,11 @@ class Channel(DiscordEntity, immortal=True):
         Parameters
         ----------
         name : `str`
-            The name of the channel
+            The name of the channel.
         
         Returns
         -------
-        channel : ``Channel``
+        has_name_like : `bool`
         """
         if name.startswith('#'):
             name = name[1:]
@@ -387,7 +387,7 @@ class Channel(DiscordEntity, immortal=True):
         if (target_name_length < 2) or (target_name_length > 100):
             return False
         
-        if re_match(re_escape(name), self.name, re_ignore_case) is None:
+        if re_search(re_escape(name), self.name, re_ignore_case) is None:
             return False
         
         return True

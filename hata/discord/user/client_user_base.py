@@ -1,5 +1,7 @@
 __all__ = ('ClientUserBase', 'ClientUserPBase',)
 
+from re import I as re_ignore_case, escape as re_escape, search as re_search
+
 from scarletio import copy_docs
 
 from ..activity import ActivityCustom, ActivityRich, create_activity_from_data
@@ -372,6 +374,32 @@ class ClientUserBase(UserBase):
                 return nick
         
         return self.name
+    
+    
+    @copy_docs(UserBase.has_name_like_at)
+    def has_name_like_at(self, name, guild):
+        if name.startswith('@'):
+            name = name[1:]
+        
+        target_name_length = len(name)
+        if (target_name_length < 1) or (target_name_length > 32):
+            return False
+        
+        name_escaped = re_escape(name)
+        if re_search(name_escaped, self.name, re_ignore_case) is not None:
+            return True
+        
+        guild_id = _try_get_guild_id(guild)
+        try:
+            guild_profile = self.guild_profiles[guild_id]
+        except KeyError:
+            pass
+        else:
+            nick = guild_profile.nick
+            if re_search(name_escaped, nick, re_ignore_case) is not None:
+                return True
+        
+        return False
     
     
     @copy_docs(UserBase.has_role)

@@ -1,5 +1,7 @@
 __all__ = ('UserBase', )
 
+from re import I as re_ignore_case, escape as re_escape, search as re_search
+
 from scarletio import export, include
 
 from ..bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
@@ -555,6 +557,53 @@ class UserBase(DiscordEntity, immortal=True):
         name : `str`
         """
         return self.name
+    
+    
+    def has_name_like(self, name):
+        """
+        Returns whether the user's name is like the given string.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name of the user.
+        
+        Returns
+        -------
+        has_name_like : `bool`
+        """
+        if name.startswith('@'):
+            name = name[1:]
+        
+        target_name_length = len(name)
+        if (target_name_length < 1) or (target_name_length > 32):
+            return False
+        
+        if re_search(re_escape(name), self.name, re_ignore_case) is None:
+            return False
+        
+        return True
+    
+    
+    def has_name_like_at(self, name, guild):
+        """
+        Returns whether the user's name is like the given string.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name of the user.
+        
+        guild : `None`, ``Guild``, `int`
+            The guild, where the user's nick will be also checked.
+            
+            Can be given as `None`.
+        
+        Returns
+        -------
+        has_name_like : `bool`
+        """
+        return self.has_name_like(name)
     
     
     def mentioned_in(self, message):

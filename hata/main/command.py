@@ -19,21 +19,21 @@ class Command(RichAttributeErrorBaseType):
         The command's description.
     file_name : `str`
         The command's file's name.
-    folder_name : `str`
-        The command's folder_name.
+    diretcory_name : `str`
+        The command's diretcory_name.
     name : `str`
         The command's name.
     usage : `str`
         The command's usage.
     """
-    __slots__ = ('alters', 'description', 'file_name', 'folder_name', 'name', 'usage')
+    __slots__ = ('alters', 'description', 'file_name', 'diretcory_name', 'name', 'usage')
     
-    def __new__(cls, folder_name, file_name, name, alters, usage, description):
+    def __new__(cls, diretcory_name, file_name, name, alters, usage, description):
         """
         Parameters
         ----------
-        folder_name : `str`
-            The command's folder_name.
+        diretcory_name : `str`
+            The command's diretcory_name.
         file_name : `str`
             The command's file's name.
         name : `str`
@@ -58,7 +58,7 @@ class Command(RichAttributeErrorBaseType):
         self.alters = alters
         self.description = description
         self.file_name = file_name
-        self.folder_name = folder_name
+        self.diretcory_name = diretcory_name
         self.name = name
         self.usage = usage
         
@@ -74,8 +74,8 @@ class Command(RichAttributeErrorBaseType):
                     RuntimeError,
                     (
                         f'Multiple commands with name: {name}\n'
-                        f'- {old_command.folder_name}.{old_command.name}\n'
-                        f'- {folder_name}.{name}'
+                        f'- {old_command.diretcory_name}.{old_command.name}\n'
+                        f'- {diretcory_name}.{name}'
                     ),
                 )
         
@@ -107,8 +107,8 @@ class Command(RichAttributeErrorBaseType):
             file_name_hash_value = object.__hash__(file_name)
         hash_value ^= file_name_hash_value
         
-        # folder_name
-        hash_value ^= hash(self.folder_name)
+        # diretcory_name
+        hash_value ^= hash(self.diretcory_name)
         
         # name
         hash_value ^= hash(self.name)
@@ -136,8 +136,8 @@ class Command(RichAttributeErrorBaseType):
         if self.file_name != other.file_name:
             return False
         
-        # folder_name
-        if self.folder_name != other.folder_name:
+        # diretcory_name
+        if self.diretcory_name != other.diretcory_name:
             return False
         
         # name
@@ -159,7 +159,7 @@ class Command(RichAttributeErrorBaseType):
         repr_parts.append(self.name)
         repr_parts.append(' from ')
         
-        repr_parts.append(self.folder_name)
+        repr_parts.append(self.diretcory_name)
         repr_parts.append('.')
         repr_parts.append(self.file_name)
         
@@ -175,7 +175,7 @@ class Command(RichAttributeErrorBaseType):
         -------
         command_function : `FunctionType`
         """
-        access_path_parts = [*COMMAND_IMPORT_ROUTE, self.folder_name, self.file_name]
+        access_path_parts = [*COMMAND_IMPORT_ROUTE, self.diretcory_name, self.file_name]
         module = __import__('.'.join(access_path_parts))
         
         for access_path_part in access_path_parts[1:]:

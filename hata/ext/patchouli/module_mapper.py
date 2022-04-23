@@ -1,5 +1,5 @@
 __all__ = (
-    'AttributeUnitBase', 'ClassAttributeUnit', 'FolderedUnit', 'FunctionUnit', 'InstanceAttributeUnit',
+    'AttributeUnitBase', 'ClassAttributeUnit', 'DirectoryUnit', 'FunctionUnit', 'InstanceAttributeUnit',
     'MAPPED_OBJECTS', 'ModuleUnit', 'ObjectedUnitBase', 'PropertyUnit', 'TypeUnit', 'UnitBase', 'map_module',
     'search_paths'
 )
@@ -533,7 +533,7 @@ class UnitBase:
         
         if not reference_parts[-1]:
             del reference_parts[-1]
-            if isinstance(self, FolderedUnit):
+            if isinstance(self, DirectoryUnit):
                 if not reference_parts:
                     return self
                 
@@ -547,7 +547,7 @@ class UnitBase:
             else:
                 return direct_lookup_in(parent, reference_parts)
         
-        if isinstance(self, FolderedUnit):
+        if isinstance(self, DirectoryUnit):
             object_ = lookup_from(self, reference_parts)
             if (object_ is not None):
                 return object_
@@ -564,14 +564,15 @@ class UnitBase:
             
             path = path.parent
 
+
 def direct_lookup_in(object_, reference_parts):
     """
-    Looks up the given reference in a foldered unit directly.
+    Looks up the given reference in a deep unit directly.
     
     Parameters
     ----------
     object_ : ``UnitBase``
-        The folder to lookup up from.
+        The directory to lookup up from.
     reference_parts : `list` of `str`
         Reference parts to lookup.
         
@@ -585,7 +586,7 @@ def direct_lookup_in(object_, reference_parts):
     reference_parts = reference_parts.copy()
     
     while reference_parts:
-        if not isinstance(object_, FolderedUnit):
+        if not isinstance(object_, DirectoryUnit):
             # Cannot move further deep, the reference will not be found, leave.
             object_ = None
             break
@@ -601,14 +602,15 @@ def direct_lookup_in(object_, reference_parts):
     # No more reference part to lookup, return object.
     return object_
 
-def lookup_from(folder, reference_parts):
+
+def lookup_from(directory, reference_parts):
     """
-    Looks up the given reference in the folder and in all of it's sub-folders.
+    Looks up the given reference in the directory and in all of it's sub-directories.
     
     Parameters
     ----------
-    folder : ``UnitBase``
-        The folder to look up from.
+    directory : ``UnitBase``
+        The directory to look up from.
     reference_parts : `list` of `str`
         Reference parts to lookup.
         
@@ -619,12 +621,12 @@ def lookup_from(folder, reference_parts):
     object_ : ``UnitBase``
         The unit-base if anything found matching the references.
     """
-    if not isinstance(folder, FolderedUnit):
+    if not isinstance(directory, DirectoryUnit):
         return None
     
     search_for = reference_parts[-1]
     
-    for sub_name, sub_object in folder.references.items():
+    for sub_name, sub_object in directory.references.items():
         if sub_name == search_for:
             if len(reference_parts)  == 1:
                 return sub_object
@@ -896,9 +898,9 @@ class FunctionUnit(ObjectedUnitBase):
         return self
 
 
-class FolderedUnit(ObjectedUnitBase):
+class DirectoryUnit(ObjectedUnitBase):
     """
-    Represents a foldered unit.
+    Represents a directory like unit.
     
     Attributes
     ----------
@@ -913,21 +915,21 @@ class FolderedUnit(ObjectedUnitBase):
     path : ``QualPath``
         The path to the unit.
     references : `dict` of (`str`, `UnitBase`) items
-        The references of the object to the objects contained by itself. AKA it's folder.
+        The references of the object to the objects contained by itself. AKA it's directory.
     object : `property-like`
         The represented unit.
     """
     __slots__ = ('references',)
     
     def __repr__(self):
-        """Returns the foldered unit's representation."""
+        """Returns the directory like unit's representation."""
         return (
             f'<{self.__class__.__name__} name={self.name!r}, path={self.path!s}, reference count='
             f'{len(self.references)!r}>'
         )
 
 
-class TypeUnit(FolderedUnit):
+class TypeUnit(DirectoryUnit):
     """
     Represents a type.
     
@@ -944,7 +946,7 @@ class TypeUnit(FolderedUnit):
     path : ``QualPath``
         The path to the type.
     references : `dict` of (`str`, `UnitBase`) items
-        The references of the type to the objects contained by itself. AKA it's folder.
+        The references of the type to the objects contained by itself. AKA it's directory.
     object : `type`
         The represented type.
     """
@@ -979,7 +981,7 @@ class TypeUnit(FolderedUnit):
         return self
 
 
-class ModuleUnit(FolderedUnit):
+class ModuleUnit(DirectoryUnit):
     """
     Represents a module.
     
@@ -996,7 +998,7 @@ class ModuleUnit(FolderedUnit):
     path : ``QualPath``
         The path to the module.
     references : `dict` of (`str`, `UnitBase`) items
-        The references of the module to the objects contained by itself. AKA it's folder.
+        The references of the module to the objects contained by itself. AKA it's directory.
     object : `module`
         The represented module.
     """

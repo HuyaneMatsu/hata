@@ -21,3 +21,6 @@ LOADING_EXTENSIONS = set()
 
 # Extension roots define core part for extensions.
 EXTENSION_ROOTS = set()
+
+
+ABSOLUTE_PATH_EXTENSION_NAME_PREFIX = '<extension>.'

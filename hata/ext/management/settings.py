@@ -19,7 +19,7 @@ class ProjectSettings:
     Parameters
     ----------
     bot_directories : `list` of `str`
-        Directories of each bot folder.
+        Directories of each bot.
     directory_path : `str`
         Path to the project settings file.
     """

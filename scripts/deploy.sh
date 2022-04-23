@@ -3,20 +3,20 @@ set -e
 
 LIBRARY_NAME="hata"
 
-# Get correct folder
+# Get correct directory
 
-folder_name=${PWD##*/}
+directory_name=${PWD##*/}
 
-if [ "$folder_name" = "scripts" ]
+if [ "$directory_name" = "scripts" ]
 then
-    echo "Script called from the scripts folder moving to outer directory."
+    echo "Script called from the scripts directory moving to outer directory."
     cd ..
-    folder_name=${PWD##*/}
+    directory_name=${PWD##*/}
 fi
 
-if [[ "$folder_name" != *$LIBRARY_NAME* ]]
+if [[ "$directory_name" != *$LIBRARY_NAME* ]]
 then
-    echo "Upper folder is probably not a $LIBRARY_NAME folder, since it has no $LIBRARY_NAME in it's name; Exiting"
+    echo "Upper directory is probably not a $LIBRARY_NAME directory, since it has no $LIBRARY_NAME in it's name; Exiting"
     return 0 2>/dev/null || exit 0
 fi
 

@@ -2674,7 +2674,7 @@ Add the rest of the thread endpoints to client.
 ##### ext.extension_loader
 
 - Load all sub files from an extension. (Pichu#0357)
-- `ExtensionLoader.load_extension`, `.load`, `.unload`, `.reload` now accepts iterable and folders as well.
+- `ExtensionLoader.load_extension`, `.load`, `.unload`, `.reload` now accepts iterable and directories as well.
 
 ##### ext.slash
 
@@ -2884,7 +2884,7 @@ Add `extensions` parameter to `Client`'s constructor.
 - Threads were badly bound and unbound from a guild.
 
 ##### ext.extension_loader
-- Folder loading failed (typo).
+- Directory loading failed (typo).
 
 #### Renames, Deprecation & Removals
 

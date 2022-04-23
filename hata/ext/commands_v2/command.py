@@ -1364,7 +1364,7 @@ class CommandFunction:
 
 class CommandCategory:
     """
-    Folder for sub-commands of a ``Command``.
+    Directory for sub-commands of a ``Command``.
     
     Attributes
     ----------

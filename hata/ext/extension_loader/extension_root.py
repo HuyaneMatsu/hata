@@ -2,7 +2,6 @@ __all__ = ()
 
 from .constants import EXTENSION_ROOTS
 
-
 def is_tuple_starting_with(tuple_1, tuple_2):
     """
     Returns whether `tuple_1` starts with `tuple_2`.

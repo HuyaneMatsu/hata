@@ -1,5 +1,5 @@
 """
-Hata extensions come into this folder.
+Hata extensions come into this directory.
 
 If a hata library extension is imported, it should register itself with the ``register_library_extension``, so if an
 other library extension is imported, it can register a hook to run only if both are imported.

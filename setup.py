@@ -77,7 +77,7 @@ setup(
         'hata.utils',
     ],
     url = 'https://github.com/HuyaneMatsu/hata',
-    license = 'MIT',
+    license = 'BSD',
     author = 'HuyaneMatsu',
     author_email = 're.ism.tm@gmail.com',
     description = 'A powerful asynchronous library for creating Discord bots in Python.',
@@ -86,7 +86,7 @@ setup(
     classifiers = [
         'Development Status :: 5 - Production/Stable',
         
-        'License :: OSI Approved :: MIT License',
+        'License :: OSI Approved :: BSD License',
         
         'Intended Audience :: Developers',
         

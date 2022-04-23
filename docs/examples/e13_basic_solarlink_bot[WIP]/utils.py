@@ -1,5 +1,5 @@
 # Shared functionality used by multiple commands
-# If too crowded, you might want to crate a separate folder for it.
+# If too crowded, you might want to crate a separate directory for it.
 
 from hata.ext.slash import abort
 

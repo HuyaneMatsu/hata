@@ -46,13 +46,13 @@ def create_file_structure(directory, structure):
             paths = paths[:paths_length - 1]
         
         if (paths is None):
-            folder_path = directory
+            directory_path = directory
         else:
-            folder_path = join_paths(directory, *paths)
-            make_directories(folder_path, exist_ok=True)
+            directory_path = join_paths(directory, *paths)
+            make_directories(directory_path, exist_ok=True)
         
         if (file_name is not None):
-            file_path = join_paths(folder_path, file_name)
+            file_path = join_paths(directory_path, file_name)
             
             file = open(file_path, 'w')
             

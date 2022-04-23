@@ -1,6 +1,6 @@
 ### Where can I find usage examples?
 
-Examples can be found in the [examples folder](https://github.com/HuyaneMatsu/hata/tree/master/docs/examples) of the
+Examples can be found in the [examples directory](https://github.com/HuyaneMatsu/hata/tree/master/docs/examples) of the
 repository.
 
 ### How do I set activity?

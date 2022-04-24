@@ -89,9 +89,8 @@ def __main__():
     else:
         command_function = command.get_command_function()
     
-    return command_function
+    return command_function()
 
 
 if __name__ == '__main__':
-    # Do tail call.
-    __main__()()
+    __main__()

@@ -12,6 +12,7 @@ from scarletio import CallableAnalyzer, HybridValueDictionary
 from .constants import ABSOLUTE_PATH_EXTENSION_NAME_PREFIX
 from .extension_root import register_extension_root
 
+
 def _validate_entry_or_exit(point):
     """
     Validates the given entry or exit point, returning `True`, if they passed.

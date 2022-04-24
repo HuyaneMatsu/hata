@@ -91,35 +91,3 @@ class ExtensionSourceLoader(SourceFileLoader):
             import_extension(self.name)
         else:
             SourceFileLoader.exec_module(self, self._module)
-            self._try_backlink_module()
-    
-    
-    def _try_backlink_module(self):
-        """
-        Tries to back-link the owned module.
-        
-        This is needed when reloading the module.
-        """
-        name = self.name
-        dot_index = name.rfind('.')
-        if dot_index == -1:
-            return
-        
-        parent_name = name[:dot_index]
-        
-        parent_module = sys.modules.get(parent_name, None)
-        if not isinstance(parent_module, ExtensionModuleProxyType):
-            return
-        
-        spec = getattr(parent_module, '__spec__', None)
-        if (spec is None):
-            return
-        
-        module = spec.get_module()
-        if module is None:
-            return
-        
-        try:
-            setattr(module, name[dot_index + 1:], self._module_proxy)
-        except AttributeError:
-            pass

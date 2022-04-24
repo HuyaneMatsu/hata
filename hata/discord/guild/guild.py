@@ -2415,7 +2415,7 @@ class Guild(DiscordEntity, immortal=True):
     
     def _update_counts_only(self, data):
         """
-        Updates the guilds's counts if given.
+        Updates the guilds' counts if given.
         
         Parameters
         ----------

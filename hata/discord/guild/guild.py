@@ -1266,22 +1266,28 @@ class Guild(DiscordEntity, immortal=True):
         -------
         user : ``ClientUserBase``, `default`
         """
-        if (not 1 < len(name) < 38):
+        name_length = len(name)
+        if name_length < 1:
             return default
         
         users = self.users
-        if len(name) > 6 and name[-5] == '#':
-            try:
-                discriminator = int(name[-4:])
-            except ValueError:
-                pass
-            else:
-                name = name[:-5]
-                for user in users.values():
-                    if (user.discriminator == discriminator) and (user.name == name):
-                        return user
         
-        if len(name) > 32:
+        if name_length > 6:
+            if name_length > 37:
+                return default
+            
+            if name[-5] == '#':
+                try:
+                    discriminator = int(name[-4:])
+                except ValueError:
+                    pass
+                else:
+                    stripped_name = name[:-5]
+                    for user in users.values():
+                        if (user.discriminator == discriminator) and (user.name == stripped_name):
+                            return user
+        
+        if name_length > 32:
             return default
         
         for user in users.values():
@@ -1316,22 +1322,28 @@ class Guild(DiscordEntity, immortal=True):
         -------
         user : ``ClientUserBase``, `default`
         """
-        if (not 1 < len(name) < 38):
+        name_length = len(name)
+        if name_length < 1:
             return default
         
         users = self.users
-        if len(name) > 6 and name[-5] == '#':
-            try:
-                discriminator = int(name[-4:])
-            except ValueError:
-                pass
-            else:
-                name_ = name[:-5]
-                for user in users.values():
-                    if (user.discriminator == discriminator) and (user.name == name_):
-                        return user
         
-        if len(name) > 32:
+        if name_length > 6:
+            if name_length > 37:
+                return default
+            
+            if name[-5] == '#':
+                try:
+                    discriminator = int(name[-4:])
+                except ValueError:
+                    pass
+                else:
+                    stripped_name = name[:-5]
+                    for user in users.values():
+                        if (user.discriminator == discriminator) and (user.name == stripped_name):
+                            return user
+        
+        if name_length > 32:
             return default
         
         pattern = re_compile(re_escape(name), re_ignore_case)
@@ -1367,23 +1379,30 @@ class Guild(DiscordEntity, immortal=True):
         users : `list` of ``ClientUserBase``
         """
         result = []
-        if (not 1 < len(name) < 38):
+        
+        name_length = len(name)
+        if name_length < 0:
             return result
         
         users = self.users
-        if len(name) > 6 and name[-5] == '#':
-            try:
-                discriminator = int(name[-4:])
-            except ValueError:
-                pass
-            else:
-                name_ = name[:-5]
-                for user in users.values():
-                    if (user.discriminator == discriminator) and (user.name == name_):
-                        result.append(user)
-                        break
         
-        if len(name) > 32:
+        if name_length > 6:
+            if name_length > 37:
+                return result
+            
+            if name[-5] == '#':
+                try:
+                    discriminator = int(name[-4:])
+                except ValueError:
+                    pass
+                else:
+                    stripped_name = name[:-5]
+                    for user in users.values():
+                        if (user.discriminator == discriminator) and (user.name == stripped_name):
+                            result.append(user)
+                            break
+        
+        if name_length > 32:
             return result
         
         pattern = re_compile(re_escape(name), re_ignore_case)

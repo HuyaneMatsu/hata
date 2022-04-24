@@ -575,8 +575,25 @@ class UserBase(DiscordEntity, immortal=True):
         if name.startswith('@'):
             name = name[1:]
         
-        target_name_length = len(name)
-        if (target_name_length < 1) or (target_name_length > 32):
+        name_length = len(name)
+        if name_length < 1:
+            return False
+        
+        if name_length > 5:
+            if name_length > 37:
+                return False
+            
+            if name[-5] == '#':
+                try:
+                    discriminator = int(name[-4:])
+                except ValueError:
+                    pass
+                else:
+                    stripped_name = name[:-5]
+                    if (self.discriminator == discriminator) and (self.name == stripped_name):
+                        return True
+        
+        if name_length > 32:
             return False
         
         if re_search(re_escape(name), self.name, re_ignore_case) is None:

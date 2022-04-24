@@ -1,6 +1,6 @@
 __all__ = ()
 
-import gc
+import sys
 from importlib.machinery import SourceFileLoader
 
 from scarletio import include
@@ -60,6 +60,8 @@ class ExtensionSourceLoader(SourceFileLoader):
             module = create_module_from_spec(spec)
             self._module = module
         
+        sys.modules[self.name] = module_proxy
+        
         return module_proxy
     
     
@@ -89,6 +91,35 @@ class ExtensionSourceLoader(SourceFileLoader):
             import_extension(self.name)
         else:
             SourceFileLoader.exec_module(self, self._module)
+            self._try_backlink_module()
+    
+    
+    def _try_backlink_module(self):
+        """
+        Tries to back-link the owned module.
         
-        gc.collect()
-        gc.collect()
+        This is needed when reloading the module.
+        """
+        name = self.name
+        dot_index = name.rfind('.')
+        if dot_index == -1:
+            return
+        
+        parent_name = name[:dot_index]
+        
+        parent_module = sys.modules.get(parent_name, None)
+        if not isinstance(parent_module, ExtensionModuleProxyType):
+            return
+        
+        spec = getattr(parent_module, '__spec__', None)
+        if (spec is None):
+            return
+        
+        module = spec.get_module()
+        if module is None:
+            return
+        
+        try:
+            setattr(module, name[dot_index + 1:], self._module_proxy)
+        except AttributeError:
+            pass

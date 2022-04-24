@@ -1337,7 +1337,7 @@ class Guild(DiscordEntity, immortal=True):
         pattern = re_compile(re_escape(name), re_ignore_case)
         guild_id = self.id
         for user in self.users.values():
-            if (pattern.match(user.name) is not None):
+            if (pattern.search(user.name) is not None):
                 return user
             
             nick = user.guild_profiles[guild_id].nick
@@ -1345,7 +1345,7 @@ class Guild(DiscordEntity, immortal=True):
             if nick is None:
                 continue
             
-            if pattern.match(nick) is None:
+            if pattern.search(nick) is None:
                 continue
             
             return user
@@ -1389,15 +1389,16 @@ class Guild(DiscordEntity, immortal=True):
         pattern = re_compile(re_escape(name), re_ignore_case)
         guild_id = self.id
         for user in self.users.values():
-            if pattern.match(user.name) is None:
+            if pattern.search(user.name) is None:
                 nick = user.guild_profiles[guild_id].nick
                 if nick is None:
                     continue
                 
-                if pattern.match(nick) is None:
+                if pattern.search(nick) is None:
                     continue
             
             result.append(user)
+        
         return result
     
     
@@ -1425,12 +1426,12 @@ class Guild(DiscordEntity, immortal=True):
         guild_id = self.id
         for user in self.users.values():
             profile = user.guild_profiles[guild_id]
-            if pattern.match(user.name) is None:
+            if pattern.search(user.name) is None:
                 nick = profile.nick
                 if nick is None:
                     continue
                 
-                if pattern.match(nick) is None:
+                if pattern.search(nick) is None:
                     continue
             
             joined_at = profile.joined_at
@@ -1775,7 +1776,7 @@ class Guild(DiscordEntity, immortal=True):
             if name_length > accurate_name_length:
                 continue
             
-            if pattern.match(channel_name) is None:
+            if pattern.search(channel_name) is None:
                 continue
 
             if name_length < accurate_name_length:
@@ -1843,7 +1844,7 @@ class Guild(DiscordEntity, immortal=True):
             if name_length > accurate_name_length:
                 continue
             
-            if pattern.match(role_name) is None:
+            if pattern.search(role_name) is None:
                 continue
             
             if name_length < accurate_name_length:

@@ -1,6 +1,6 @@
 __all__ = ('ClientUserBase', 'ClientUserPBase',)
 
-from re import I as re_ignore_case, escape as re_escape, search as re_search
+from re import I as re_ignore_case, escape as re_escape, compile as re_compile
 
 from scarletio import copy_docs
 
@@ -385,8 +385,9 @@ class ClientUserBase(UserBase):
         if (target_name_length < 1) or (target_name_length > 32):
             return False
         
-        name_escaped = re_escape(name)
-        if re_search(name_escaped, self.name, re_ignore_case) is not None:
+        pattern = re_compile(re_escape(name), re_ignore_case)
+        
+        if pattern.search(self.name) is not None:
             return True
         
         guild_id = _try_get_guild_id(guild)
@@ -396,7 +397,7 @@ class ClientUserBase(UserBase):
             pass
         else:
             nick = guild_profile.nick
-            if re_search(name_escaped, nick, re_ignore_case) is not None:
+            if pattern.search(nick) is not None:
                 return True
         
         return False

@@ -244,7 +244,7 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         pattern = re_compile(re_escape(name), re_ignore_case)
         
         for user in users:
-            if pattern.match(user.name) is not None:
+            if pattern.search(user.name) is not None:
                 return user
             
             try:
@@ -256,7 +256,7 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
             if nick is None:
                 continue
             
-            if pattern.match(nick) is None:
+            if pattern.search(nick) is None:
                 continue
             
             return user
@@ -296,7 +296,7 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         pattern = re_compile(re_escape(name), re_ignore_case)
         
         for user in users:
-            if pattern.match(user.name) is not None:
+            if pattern.search(user.name) is not None:
                 result.append(user)
                 continue
             
@@ -309,7 +309,7 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
             if nick is None:
                 continue
             
-            if pattern.match(nick) is None:
+            if pattern.search(nick) is None:
                 continue
             
             result.append(user)

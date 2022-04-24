@@ -411,8 +411,7 @@ class Extension(RichAttributeErrorBaseType):
                 module = spec.get_module()
                 
                 if (module is None):
-                    proxy_module = module_from_spec(spec)
-                    sys.modules[spec.name] = proxy_module
+                    module_from_spec(spec)
                     
                     module = spec.get_module()
                     loaded = self._load_module()
@@ -435,6 +434,7 @@ class Extension(RichAttributeErrorBaseType):
             
             if state in (EXTENSION_STATE_UNLOADED, EXTENSION_STATE_UNSATISFIED):
                 # reload
+                module_from_spec(self._spec)
                 loaded = self._load_module()
                 
                 if loaded:
@@ -579,7 +579,14 @@ class Extension(RichAttributeErrorBaseType):
                 revert_snapshot(snapshot_difference)
             
             self._state = EXTENSION_STATE_UNLOADED
-            return self._spec.get_module()
+            
+            spec = self._spec
+            try:
+                del sys.modules[spec.name]
+            except KeyError:
+                pass
+            
+            return spec.get_module()
         
         if state in (EXTENSION_STATE_UNLOADED, EXTENSION_STATE_UNSATISFIED):
             return None

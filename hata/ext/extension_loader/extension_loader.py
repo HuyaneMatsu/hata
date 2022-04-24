@@ -1181,17 +1181,26 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         
         for extension in extensions:
             exception = await self._extension_unloader(extension)
-            if (exception is None):
-                exception = await self._extension_loader(extension)
-            
             if (exception is not None):
                 if error_messages is None:
-                    error_messages = []
+                    error_messages = {}
                 
-                error_messages.append(exception.message)
+                error_messages[extension.name] = exception.message
+        
+        
+        for extension in extensions:
+            if (error_messages is not None) and (extension.name in error_messages):
+                continue
+            
+            exception = await self._extension_loader(extension)
+            if (exception is not None):
+                if error_messages is None:
+                    error_messages = {}
+                
+                error_messages[extension.name] = exception.message
         
         if (error_messages is not None):
-            raise ExtensionError(error_messages) from None
+            raise ExtensionError([*error_messages.values()]) from None
         
         return extensions
     

@@ -1,8 +1,8 @@
 __all__ = ()
 
-import sys
 from importlib.machinery import PathFinder, ExtensionFileLoader
 
+from ..constants import EXTENSIONS
 from ..extension_root import is_in_extension_root
 
 from .spec_finder_helpers import find_spec_in_paths
@@ -29,6 +29,13 @@ class ExtensionFinder(PathFinder):
             
             > Could not find a case where this value is actually used.
         """
+        try:
+            extension = EXTENSIONS[full_name]
+        except KeyError:
+            pass
+        else:
+            return extension._spec
+        
         if not is_in_extension_root(full_name):
             return None
         

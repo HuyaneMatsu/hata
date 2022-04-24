@@ -1,9 +1,10 @@
-## 1.2.12 *\[2022-04-??\]*
+## 1.2.12 *\[2022-04-24\]*
 
 #### Improvements
 
 - Add `UserBase.has_name_like`.
 - Add `UserBase.has_name_like_at`.
+` Improve `.get_user_like` and `.get_users_like` methods.
 
 ##### hata.ext.extension_loader
 

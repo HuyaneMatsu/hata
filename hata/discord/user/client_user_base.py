@@ -414,8 +414,9 @@ class ClientUserBase(UserBase):
             pass
         else:
             nick = guild_profile.nick
-            if pattern.search(nick) is not None:
-                return True
+            if (nick is not None):
+                if pattern.search(nick) is not None:
+                    return True
         
         return False
     

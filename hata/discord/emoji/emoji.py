@@ -40,8 +40,10 @@ class Emoji(DiscordEntity, immortal=True):
         The emoji's guild's identifier.
     managed : `bool`
         Whether the emoji is managed by an integration.
-    name : `int`
+    name : `str`
         The emoji's name.
+    require_colons : `bool`
+        Whether it is required to use colons for the emoji to show up.
     role_ids : `None`, `tuple` of `int`
         A set of role identifiers for which the custom emoji is whitelisted to. If the emoji is not limited for
         specific roles, then this value is set to `None`. If the emoji is a builtin (unicode) emoji, then this

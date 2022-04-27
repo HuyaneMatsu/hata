@@ -1,3 +1,9 @@
+## 1.2.13 *\[2022-04-27\]*
+
+#### Bug Fixes
+
+- Fix a `TypeError` in `ClientUserBase.has_name_like_at`.
+
 ## 1.2.12 *\[2022-04-24\]*
 
 #### Improvements

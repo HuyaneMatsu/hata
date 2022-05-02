@@ -1,3 +1,10 @@
+## 1.2.14 *\[2022-05-??\]*
+
+#### Improvements
+
+- Add `AuditLog.application_commands`.
+- `AuditLog` now supports rich attribute messages.
+
 ## 1.2.13 *\[2022-04-27\]*
 
 #### Bug Fixes

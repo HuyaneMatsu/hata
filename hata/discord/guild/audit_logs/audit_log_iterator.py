@@ -20,6 +20,9 @@ class AuditLogIterator(AuditLog):
     ----------
     _self_reference : `None` or ``WeakReferer`` to ``AuditLog``
         Weak reference to the audit log itself.
+    application_commands : `dict` of (`int`, ``ApplicationCommand``) items
+        A dictionary what contains the mentioned application commands by the audi log entries. The keys are the `id`-s
+        of the application commands, meanwhile the values are teh application commands themselves.
     entries : `list` of ``AuditLogEntry``
         A list of audit log entries, what the audit log contains.
     guild : ``Guild``
@@ -171,6 +174,7 @@ class AuditLogIterator(AuditLog):
         audit_log : ``AuditLog``
         """
         audit_log = object.__new__(AuditLog)
+        audit_log.application_commands = self.application_commands
         audit_log.entries = self.entries
         audit_log.guild = self.guild
         audit_log.integrations = self.integrations

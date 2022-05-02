@@ -297,7 +297,7 @@ class AuditLogEvent(PreinstancedBase):
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
     | thread_delete                         | thread delete                         | 112   | thread                        |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
-    | application_command_permission_update | application command permission update | 121   | none                          |
+    | application_command_permission_update | application command permission update | 121   | application_command           |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
     | auto_moderation_rule_create           | auto moderation rule create           | 140   | auto_moderation               |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+

@@ -18,7 +18,7 @@ class AuditLogEntry:
     Attributes
     ----------
     _parent_reference : ``WeakReferer`` to ``AuditLog``
-        Reference to the audit log entry keys's parent.
+        Reference to the audit log entry keys' parent.
     changes : `list` of ``AuditLogChange``
         The changes of the entry.
     details : `None`, `dict` of (l`str`, `Any`) items
@@ -48,7 +48,7 @@ class AuditLogEntry:
             Data received from Discord.
         parent : ``AuditLog``
             The parent of the entry, what contains the respective guild, the included users, webhooks and the
-            integrations to work with.
+            integrations, etc... to work with.
         """
         self._parent_reference = parent._get_self_reference()
         self.id = int(data['id'])

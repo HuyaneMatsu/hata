@@ -122,7 +122,11 @@ def target_converter_thread(entry):
 
 
 def target_converter_application_command(entry):
-    return None
+    target_id = entry.target_id
+    if target_id:
+        parent = entry.parent
+        if (parent is not None):
+            return parent.application_commands(target_id, None)
 
 
 def target_converter_auto_moderation(entry):

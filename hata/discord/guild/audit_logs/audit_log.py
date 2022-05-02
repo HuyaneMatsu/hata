@@ -1,9 +1,10 @@
 __all__ = ('AuditLog', )
 
-from scarletio import WeakReferer
+from scarletio import RichAttributeErrorBaseType, WeakReferer
 
 from ...channel import Channel
 from ...integration import Integration
+from ...interaction import ApplicationCommand
 from ...scheduled_event import ScheduledEvent
 from ...user import User
 from ...webhook import Webhook
@@ -11,7 +12,7 @@ from ...webhook import Webhook
 from .audit_log_entry import AuditLogEntry
 
 
-class AuditLog:
+class AuditLog(RichAttributeErrorBaseType):
     """
     Whenever an admin action is performed on the API, an audit log entry is added to the respective guild's audit
     logs. This class represents a requested  collections of these entries.
@@ -20,6 +21,9 @@ class AuditLog:
     ----------
     _self_reference : `None` or ``WeakReferer`` to ``AuditLog``
         Weak reference to the audit log itself.
+    application_commands : `dict` of (`int`, ``ApplicationCommand``) items
+        A dictionary what contains the mentioned application commands by the audi log entries. The keys are the `id`-s
+        of the application commands, meanwhile the values are teh application commands themselves.
     entries : `list` of ``AuditLogEntry``
         A list of audit log entries, what the audit log contains.
     guild : ``Guild``
@@ -39,8 +43,8 @@ class AuditLog:
         webhooks, meanwhile the values are the values themselves.
     """
     __slots__ = (
-        '__weakref__', '_self_reference', 'entries', 'guild', 'integrations', 'scheduled_events', 'threads', 'users',
-        'webhooks'
+        '__weakref__', '_self_reference', 'application_commands', 'entries', 'guild', 'integrations',
+        'scheduled_events', 'threads', 'users', 'webhooks'
     )
     
     def __new__(cls, data, guild):
@@ -56,6 +60,7 @@ class AuditLog:
         """
         self = object.__new__(cls)
         self._self_reference = None
+        self.application_commands = {}
         self.entries = []
         self.guild = guild
         self.integrations = {}
@@ -99,6 +104,18 @@ class AuditLog:
             for user_data in users_data:
                 user = User.from_data(user_data)
                 users[user.id] = user
+        
+        
+        try:
+            application_command_datas = data['application_commands']
+        except KeyError:
+            pass
+        else:
+            application_commands = self.application_commands
+            
+            for application_command_data in application_command_datas:
+                application_command = ApplicationCommand.from_data(application_command_data)
+                application_commands[application_command.id] = application_command
         
         
         try:

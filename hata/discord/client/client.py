@@ -10031,7 +10031,7 @@ class Client(ClientUserPBase):
         
         thread_channel = Channel(channel_data, self, guild_id)
         
-        message_data = thread_channel.get('message', None)
+        message_data = channel_data.get('message', None)
         if (message_data is None):
             message = None
         else:

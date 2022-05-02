@@ -9,7 +9,6 @@ from ...permission.permission import PERMISSION_NONE
 from ...preconverters import preconvert_bool, preconvert_int, preconvert_int_options
 from ...utils import datetime_to_timestamp, id_to_datetime, timestamp_to_datetime
 
-from .. import channel_types as CHANNEL_TYPES
 from ..constants import AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
 
 from .guild_base import ChannelMetadataGuildBase

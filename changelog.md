@@ -7,6 +7,8 @@
 - Add `MessageType.auto_moderation_action`.
 - Update `MessageType.name`-s.
 - Add `GuildFeature.auto_moderation_enabled`.
+- Add `Client.forum_thread_create`.
+- Add `slowmode` parameter to `Client.thread_create`.
 
 ## 1.2.13 *\[2022-04-27\]*
 

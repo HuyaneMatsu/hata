@@ -10,7 +10,9 @@ from ..color import Color
 from ..utils import is_url, url_cutter
 
 
-EXTRA_EMBED_TYPES = frozenset(('application_news', 'article', 'gifv', 'image', 'link', 'tweet', 'video'))
+EXTRA_EMBED_TYPES = frozenset((
+    'application_news', 'article', 'auto_moderation_message''gifv', 'image', 'link', 'tweet', 'video'
+))
 
 
 class EmbedThumbnail:

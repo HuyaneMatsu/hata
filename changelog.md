@@ -4,6 +4,9 @@
 
 - Add `AuditLog.application_commands`.
 - `AuditLog` now supports rich attribute messages.
+- Add `MessageType.auto_moderation_action`.
+- Update `MessageType.name`-s.
+- Add `GuildFeature.auto_moderation_enabled`.
 
 ## 1.2.13 *\[2022-04-27\]*
 

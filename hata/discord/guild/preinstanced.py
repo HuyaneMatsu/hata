@@ -421,6 +421,8 @@ class GuildFeature(PreinstancedBase):
     +-----------------------------------+-----------------------------------+-------------------------------------------+
     | verification_screen_enabled       | verification screen enabled       | MEMBER_VERIFICATION_GATE_ENABLED          |
     +-----------------------------------+-----------------------------------+-------------------------------------------+
+    | aut_moderation_enabled            | auto moderation enabled           | AUTO_MODERATION                           |
+    +-----------------------------------+-----------------------------------+-------------------------------------------+
     """
     INSTANCES = {}
     VALUE_TYPE = str
@@ -494,6 +496,7 @@ class GuildFeature(PreinstancedBase):
     verified = P('VERIFIED', 'verified')
     vip_voice_regions = P('VIP_REGIONS', 'vip_voice_regions')
     welcome_screen_enabled = P('WELCOME_SCREEN_ENABLED', 'welcome screen enabled')
+    auto_moderation_enabled = P('AUTO_MODERATION', 'auto moderation enabled')
 
 
 class NsfwLevel(PreinstancedBase):

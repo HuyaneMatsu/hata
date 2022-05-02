@@ -1,5 +1,6 @@
 __all__ = ('ApplicationCommand',)
 
+import warnings
 
 from ...bases import DiscordEntity
 from ...core import APPLICATION_COMMANDS, GUILDS
@@ -63,6 +64,11 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     allow_by_default : `bool`
         Whether the command is enabled by default for everyone who has `use_application_commands` permission.
     
+        > This field is deprecated.
+    
+    allow_in_dm : `bool`
+        Whether the command can be used in private (dm) channels.
+    
     application_id : `int`
         The application command's application's id.
     
@@ -91,7 +97,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         The parameters of the command. It's length can be in range [0:25]. If would be set as empty list, instead is
         set as `None`.
     
-    required_permissions : `None`, ``Permission``
+    required_permissions : ``Permission``
         The required permissions to use the application command inside of a guild.
     
     target_type : ``ApplicationCommandTargetType``
@@ -105,11 +111,11 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     ``ApplicationCommand``s are weakreferable.
     """
     __slots__ = (
-        'allow_by_default', 'application_id', 'description', 'description_localizations', 'guild_id', 'name',
-        'name_localizations', 'options', 'required_permissions', 'target_type', 'version'
+        'allow_by_default', 'allow_in_dm', 'application_id', 'description', 'description_localizations', 'guild_id',
+        'name', 'name_localizations', 'options', 'required_permissions', 'target_type', 'version'
     )
     
-    def __new__(cls, name, description=None, *, allow_by_default=True, description_localizations=None,
+    def __new__(cls, name, description=None, *, allow_by_default=None, allow_in_dm=None, description_localizations=None,
             name_localizations=None, options=None, required_permissions=None, target_type=None):
         """
         Creates a new ``ApplicationCommand`` with the given parameters.
@@ -129,6 +135,11 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             
             Defaults to `True`.
         
+        allow_in_dm : `None`, `bool` = `None`, Optional (Keyword only)
+            Whether the command can be used in private channels (dm).
+            
+            Defaults to `True`
+        
         description_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
                 (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`) = `None`, Optional (Keyword only)
             Localized descriptions of the application command.
@@ -142,8 +153,6 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         required_permissions : `None`, ``Permission``, `int` = `None`, Optional (Keyword only)
             The required permissions to use the application command inside of a guild.
-            
-            If given as non-null value, turns off `allow_by_default` to `False` by default.
         
         target_type : `None`, `int`, ``ApplicationCommandTargetType`` = `None`, Optional (Keyword only)
             The application command's target type.
@@ -169,6 +178,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                 instances.
             - If `options`'s length is out of range [0:25].
             - If `allow_by_default` was not given as `bool`.
+            - If `allow_in_dm` is not `bool`.
         """
         # id
         # Internal attribute
@@ -178,11 +188,26 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             allow_by_default = True
         
         else:
+            warnings.warn(
+                f'`allow_by_default` is deprecated, please use `required_permissions` and `allow_in_dm` instead.',
+                FutureWarning,
+                stacklevel = 1,
+            )
             if __debug__:
                 if not isinstance(allow_by_default, bool):
                     raise AssertionError(
                         f'`allow_by_default` can be `bool`, got {allow_by_default.__class__.__name__}; '
                         f'{allow_by_default!r}.'
+                    )
+        
+        
+        if (allow_in_dm is None):
+            allow_in_dm = True
+        else:
+            if __debug__:
+                if not isinstance(allow_in_dm, bool):
+                    raise AssertionError(
+                        f'`allow_in_dm` can be `bool`, got {allow_in_dm.__class__.__name__}; {allow_in_dm!r}.'
                     )
         
         # description
@@ -250,7 +275,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         # required_permissions
         if (required_permissions is None):
-            pass
+            required_permissions = Permission()
         elif isinstance(required_permissions, int):
             required_permissions = Permission(required_permissions)
         
@@ -292,6 +317,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         self.description_localizations = description_localizations
         self.guild_id = 0
         self.allow_by_default = allow_by_default
+        this.allow_in_dm = allow_in_dm
         self.options = options_processed
         self.required_permissions = required_permissions
         self.target_type = target_type
@@ -367,6 +393,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         self = object.__new__(cls)
         self.id = application_command_id
         self.allow_by_default = True
+        self.allow_in_dm = True
         self.application_id = application_id
         self.description = None
         self.description_localizations = None
@@ -374,7 +401,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         self.name = ''
         self.name_localizations = None
         self.options = None
-        self.required_permissions = None
+        self.required_permissions = Permission()
         self.target_type = ApplicationCommandTargetType.none
         self.version = 0
         return self
@@ -432,6 +459,14 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         else:
             self.allow_by_default = allow_by_default
         
+        # allow_in_dm
+        try:
+            allow_in_dm = data['dm_permission']
+        except KeyError:
+            pass
+        else:
+            self.allow_in_dm = allow_in_dm
+        
         # application_id
         # Do not update, cannot be changed
         
@@ -487,7 +522,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         except KeyError:
             pass
         else:
-            if (required_permissions is not None):
+            if (required_permissions is None):
+                required_permissions = Permission()
+            else:
                 required_permissions = Permission(required_permissions)
             self.required_permissions = required_permissions
         
@@ -538,13 +575,15 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             +---------------------------+---------------------------------------------------+
             | allow_by_default          | `bool`                                            |
             +---------------------------+---------------------------------------------------+
+            | allow_in_dm               | `bool`                                            |
+            +---------------------------+---------------------------------------------------+
             | name                      | `str`                                             |
             +---------------------------+---------------------------------------------------+
             | name_localizations        | `None`, `dict` of (``Locale``, `str`) items       |
             +---------------------------+---------------------------------------------------+
             | options                   | `None`, `list` of ``ApplicationCommandOption``    |
             +---------------------------+---------------------------------------------------+
-            | required_permissions      | `None`, ``Permission``                            |
+            | required_permissions      | ``Permission``                                    |
             +---------------------------+---------------------------------------------------+
             | target_type               | ``ApplicationCommandTargetType``                  |
             +---------------------------+---------------------------------------------------+
@@ -565,6 +604,16 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             if self.allow_by_default != self.allow_by_default:
                 old_attributes['allow_by_default'] = allow_by_default
                 self.allow_by_default = allow_by_default
+        
+        # allow_in_dm
+        try:
+            allow_in_dm = data['dm_permission']
+        except KeyError:
+            pass
+        else:
+            if self.allow_in_dm != allow_in_dm:
+                old_attributes['allow_in_dm'] = allow_in_dm
+                self.allow_in_dm = allow_in_dm
         
         # application_id
         # Do not update, cannot be changed
@@ -634,7 +683,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         except KeyError:
             pass
         else:
-            if (required_permissions is not None):
+            if (required_permissions is None):
+                required_permissions = Permission()
+            else:
                 required_permissions = Permission(required_permissions)
             
             if self.required_permissions != required_permissions:
@@ -683,9 +734,12 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         # id
         # Receive only
         
-        # allow_by_default
+        # allow_by_default | This field is deprecated
         # Always add this to data, so if we update the command with it, will be always updated.
         data['default_permission'] = self.allow_by_default
+        
+        # allow_in_dm
+        data['dm_permission'] = self.allow_in_dm
         
         # application_id
         # Receive only
@@ -763,7 +817,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             repr_parts.append(repr(target_type.value))
             repr_parts.append(')')
         
-        # Extra fields: `.description`, `.options`, `.allow_by_default`, `.required_permissions`,
+        # Extra fields: `.description`, `.options`, `.allow_by_default`, `.allow_in_dm`, `.required_permissions`,
         #    `.name_localizations`, `.description_localizations`
         
         # description
@@ -772,12 +826,16 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             repr_parts.append(', description=')
             repr_parts.append(repr(self.description))
         
-        # allow_by_default
+        # allow_by_default | Deprecated
         if not self.allow_by_default:
             repr_parts.append(', allow_by_default=False')
         
+        # allow_in_dm
+        if not self.allow_in_dm:
+            repr_parts.append(', allow_in_dm=False')
+        
         required_permissions = self.required_permissions
-        if (required_permissions is not None):
+        if required_permissions:
             repr_parts.append(', required_permissions=')
             repr_parts.append(required_permissions.__format__('d'))
         
@@ -892,6 +950,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         # allow_by_default
         new.allow_by_default = self.allow_by_default
         
+        # allow_in_dm
+        new.allow_in_dm = self.allow_in_dm
+        
         # application_id
         new.application_id = 0
         
@@ -956,6 +1017,10 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         if self.allow_by_default != other.allow_by_default:
             return False
         
+        # allow_in_dm
+        if self.allow_in_dm != other.allow_in_dm:
+            return False
+        
         # description
         if self.description != other.description:
             return False
@@ -1002,6 +1067,10 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         # allow_by_default
         if self.allow_by_default != other.allow_by_default:
+            return True
+        
+        # allow_in_dm
+        if self.allow_in_dm != other.allow_in_dm:
             return True
         
         # description

@@ -44,8 +44,9 @@ Slasher = include('Slasher')
 # Routers
 
 SLASH_COMMAND_PARAMETER_NAMES = (
-    'allow_by_default', 'allowed_mentions', 'command', 'delete_on_unload', 'description', 'guild', 'is_default',
-    'is_global', 'name', 'required_permissions', 'show_for_invoking_user_only', 'target', 'wait_for_acknowledgement'
+    'allow_by_default', 'allow_in_dm', 'allowed_mentions', 'command', 'delete_on_unload', 'description', 'guild',
+    'is_default', 'is_global', 'name', 'required_permissions', 'show_for_invoking_user_only', 'target',
+    'wait_for_acknowledgement'
 )
 
 SLASH_COMMAND_NAME_NAME = 'name'
@@ -290,6 +291,31 @@ def _validate_allow_by_default(allow_by_default):
         allow_by_default = preconvert_bool(allow_by_default, 'allow_by_default')
     
     return allow_by_default
+
+
+def _validate_allow_in_dm(allow_in_dm):
+    """
+    Validates the given `allow_in_dm` value.
+    
+    Parameters
+    ----------
+    allow_in_dm : `None`, `bool`
+        The `allow_in_dm` value to validate.
+    
+    Returns
+    -------
+    allow_in_dm : `None`, `bool`
+        The validated `allow_in_dm` value.
+    
+    Raises
+    ------
+    TypeError
+        If `allow_in_dm` was not given as `None`, `bool`.
+    """
+    if (allow_in_dm is not None):
+        allow_in_dm = preconvert_bool(allow_in_dm, 'allow_in_dm')
+    
+    return allow_in_dm
 
 
 def _validate_required_permissions(required_permissions):
@@ -668,6 +694,9 @@ class SlasherApplicationCommand:
     allow_by_default : `None`, `bool`
         Whether the command is enabled by default for everyone who has `use_application_commands` permission.
     
+    allow_in_dm : `None`, `bool`
+        Whether the command can be used in private channels (dm).
+    
     description : `str`
         Application command description. It's length can be in range [2:100].
     
@@ -700,8 +729,8 @@ class SlasherApplicationCommand:
     __slots__ = (
         '__weakref__', '_auto_completers', '_command', '_exception_handlers', '_parent_reference',
         '_permission_overwrites', '_registered_application_command_ids', '_schema', '_self_reference', '_sub_commands',
-        '_unloading_behaviour', 'allow_by_default', 'description', 'guild_ids', 'is_default', 'is_global', 'name',
-        'required_permissions', 'target'
+        '_unloading_behaviour', 'allow_by_default', 'allow_in_dm', 'description', 'guild_ids', 'is_default',
+        'is_global', 'name', 'required_permissions', 'target'
     )
     
     def _register_guild_and_application_command_id(self, guild_id, application_command_id):
@@ -861,10 +890,10 @@ class SlasherApplicationCommand:
             SLASH_COMMAND_COMMAND_NAME)
     
     
-    def __new__(cls, func, name=None, description=None, is_global=None,
-            guild=None, is_default=None, delete_on_unload=None, allow_by_default=None, required_permissions=None,
-            target=None, **kwargs,
-        ):
+    def __new__(
+        cls, func, name=None, description=None, is_global=None, guild=None, is_default=None, delete_on_unload=None,
+        allow_by_default=None, allow_in_dm=None, required_permissions=None, target=None, **kwargs,
+    ):
         """
         Creates a new ``SlasherApplicationCommand`` with the given parameters.
         
@@ -889,6 +918,8 @@ class SlasherApplicationCommand:
             Whether the command should be deleted from Discord when removed.
         allow_by_default : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
+        allow_in_dm : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
+            Whether the command can be used in private channels (dm).
         required_permissions : `None`, `int`, ``Permission``, `tuple` of (`None`, `int`, ``Permission``,
                 `Ellipsis`) = `None`, Optional
             The required permissions to use the application command inside of a guild.
@@ -939,6 +970,7 @@ class SlasherApplicationCommand:
             _validate_delete_on_unload)
         allow_by_default, route_to = _check_maybe_route('allow_by_default', allow_by_default, route_to,
             _validate_allow_by_default)
+        allow_in_dm, route_to = _check_maybe_route('allow_in_dm', allow_in_dm, route_to, _validate_allow_in_dm)
         required_permissions, route_to = _check_maybe_route('required_permissions', required_permissions, route_to,
             _validate_required_permissions)
         
@@ -954,6 +986,7 @@ class SlasherApplicationCommand:
             is_default = route_value(is_default, route_to)
             unloading_behaviour = route_value(unloading_behaviour, route_to)
             allow_by_default = route_value(allow_by_default, route_to)
+            allow_in_dm = route_value(allow_in_dm, route_to)
             required_permissions = route_value(required_permissions, route_to)
             target = route_value(target, route_to)
             
@@ -1008,10 +1041,10 @@ class SlasherApplicationCommand:
             
             for (
                 name, description, is_global, guild_ids, is_default, unloading_behaviour, allow_by_default,
-                required_permissions
+                required_permissions, allow_in_dm
             ) in zip(
                 name, description, is_global, guild_ids, is_default, unloading_behaviour, allow_by_default,
-                required_permissions
+                required_permissions, allow_in_dm
             ):
                 
                 if is_global and (guild_ids is not None):
@@ -1040,6 +1073,7 @@ class SlasherApplicationCommand:
                 self.is_default = is_default
                 self._unloading_behaviour = unloading_behaviour
                 self.allow_by_default = allow_by_default
+                self.allow_in_dm = allow_in_dm
                 self.required_permissions = required_permissions
                 self._permission_overwrites = None
                 self.target = target
@@ -1085,6 +1119,7 @@ class SlasherApplicationCommand:
             self.is_default = is_default
             self._unloading_behaviour = unloading_behaviour
             self.allow_by_default = allow_by_default
+            self.allow_in_dm = allow_in_dm
             self.required_permissions = required_permissions
             self._permission_overwrites = None
             self.target = target
@@ -1122,6 +1157,11 @@ class SlasherApplicationCommand:
         if (allow_by_default is not None):
             repr_parts.append(', allow_by_default=')
             repr_parts.append(repr(allow_by_default))
+        
+        allow_in_dm = self.allow_in_dm
+        if (allow_in_dm is not None):
+            repr_parts.append(', allow_in_dm=')
+            repr_parts.append(repr(allow_in_dm))
         
         required_permissions = self.required_permissions
         if (required_permissions is not None):
@@ -1285,6 +1325,7 @@ class SlasherApplicationCommand:
             self.name,
             self.description,
             allow_by_default = self.allow_by_default,
+            allow_in_dm = self.allow_in_dm,
             options = options,
             required_permissions = self.required_permissions,
             target_type = self.target,
@@ -1350,6 +1391,7 @@ class SlasherApplicationCommand:
         new.name = self.name
         new._unloading_behaviour = self._unloading_behaviour
         new.allow_by_default = self.allow_by_default
+        new.allow_in_dm = self.allow_in_dm
         new.required_permissions = self.required_permissions
         
         permission_overwrites = self._permission_overwrites
@@ -1555,6 +1597,9 @@ class SlasherApplicationCommand:
             return False
         
         if self.allow_by_default != other.allow_by_default:
+            return False
+        
+        if self.allow_in_dm != other.allow_in_dm:
             return False
         
         if self.required_permissions != other.required_permissions:

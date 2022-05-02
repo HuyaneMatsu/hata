@@ -10,6 +10,16 @@
 - Add `Client.forum_thread_create`.
 - Add `slowmode` parameter to `Client.thread_create`.
 - Add `ERROR_CODES.cannot_edit_sticker_within_message`.
+- Increase max application command permission overwrite count from `10` -> `100`.
+- Mark `allow_by_default` parameter in `ApplicationCommand.__new__` as deprecated.
+- Add `ApplicationCommand.allow_in_dm`.
+- Deprecate `ApplicationCommand.allow_by_default`.
+- `ApplicationCommand.required_permissions` now defaults to `Permission()` from `None`.
+- Add `application_command_id` audit log change key converter.
+
+##### hata.ext.slash
+
+- Add `allow_in_dm` is now accepted by `SlasherApplicationCommand`.
 
 ## 1.2.13 *\[2022-04-27\]*
 

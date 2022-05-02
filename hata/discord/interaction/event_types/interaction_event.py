@@ -1,13 +1,12 @@
 __all__ = ('InteractionEvent',)
 
-from scarletio import Future, export, future_or_timeout, shield
+from scarletio import Future, export, future_or_timeout, include, shield
 
 from ...bases import DiscordEntity, EventBase
 from ...core import (
     APPLICATION_ID_TO_CLIENT, CHANNELS, GUILDS, INTERACTION_EVENT_MESSAGE_WAITERS, INTERACTION_EVENT_RESPONSE_WAITERS,
     KOKORO
 )
-from ...guild import create_partial_guild_from_id
 from ...localizations.utils import get_locale
 from ...message import Message
 from ...permission import Permission
@@ -25,6 +24,9 @@ from .application_command_interaction import ApplicationCommandInteraction
 from .component_interaction import ComponentInteraction
 from .form_submit_interaction import FormSubmitInteraction
 from .preinstanced import InteractionType
+
+
+create_partial_guild_from_id = include('create_partial_guild_from_id')
 
 
 INTERACTION_TYPE_TABLE = {

@@ -9,6 +9,7 @@
 - Add `GuildFeature.auto_moderation_enabled`.
 - Add `Client.forum_thread_create`.
 - Add `slowmode` parameter to `Client.thread_create`.
+- Add `ERROR_CODES.cannot_edit_sticker_within_message`.
 
 ## 1.2.13 *\[2022-04-27\]*
 

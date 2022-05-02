@@ -338,6 +338,8 @@ Error Codes
 +---------------------------------------------------------------+-----------+-----------+
 | cannot_delete_community_channel                               | 50074     | -         |
 +---------------------------------------------------------------+-----------+-----------+
+| cannot_edit_sticker_within_message                            | 50080     | -         |
++---------------------------------------------------------------+-----------+-----------+
 | invalid_sticker_sent                                          | 50081     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | invalid_action_for_archived_thread                            | 50083     | -         |
@@ -631,6 +633,7 @@ invalid_guild = 50055
 invalid_message_type = 50068
 payment_source_required_to_redeem_gift = 50070
 cannot_delete_community_channel = 50074
+cannot_edit_sticker_within_message = 50080
 invalid_sticker_sent = 50081
 invalid_action_for_archived_thread = 50083
 invalid_thread_notification_setting = 50084

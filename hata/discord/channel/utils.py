@@ -326,7 +326,7 @@ def cr_pg_channel_object(
     
     
     _maybe_add_channel_default_auto_archive_after_field_to_data(
-        channel_type, channel, channel_data, default_auto_archive_after
+        channel_type, None, channel_data, default_auto_archive_after
     )
     
     

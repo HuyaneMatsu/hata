@@ -769,7 +769,12 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         data['options'] = option_datas
         
         # required_permissions
-        data['default_member_permissions'] = self.required_permissions
+        required_permissions = self.required_permissions
+        if required_permissions:
+            raw_required_permissions = required_permissions
+        else:
+            raw_required_permissions = None
+        data['default_member_permissions'] = raw_required_permissions
         
         # target_type
         data['type'] = self.target_type.value

@@ -457,7 +457,7 @@ async def rate_cakes(
     )
 
 @rate_cakes.autocomplete('cake-1', 'cake-2', 'cake-3', 'cake-4', 'cake-5')
-async def autocomplete_cake_type(value):
+async def autocomplete_cake_name(value):
     if value is None:
         return CAKE_NAMES[:20]
     

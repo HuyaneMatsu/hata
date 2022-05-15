@@ -400,43 +400,6 @@ async def roll(
 
 ![](assets/slash_0005.png)
 
-# Auto completed parameters
-
-String parameters can be auto-completed by using the `.autocomplete(...)` decorator after adding the command.
-
-> Since hata's slash extension uses string type for `int` and for the internal `expression` one as well, those can be
-> auto completed too.
-
-```py3
-from hata import BUILTIN_EMOJIS
-
-EMOJI_CAKE = BUILTIN_EMOJIS['cake']
-
-@Nitori.interactions(guild=TEST_GUILD)
-async def cake_love(
-    cake_type: ('str', 'Please define a cake type to pick from.')
-):
-    return f'Hmmm, yes, I love {cake_type} {EMOJI_CAKE} as well.'
-
-CAKE_NAMES = [
-    'butter', 'pound', 'sponge', 'genoise', 'biscuit', 'angel food', 'chiffon', 'baked flourless', 'unbaked flourless',
-    'carrot', 'red velvet'
-]
-
-@cake_love.autocomplete('cake_type') # Define which parameter we want to auto-complete.
-async def autocomplete_cake_type(value):
-    if value is None:
-        return CAKE_NAMES[:20]
-    
-    value = value.casefold()
-    return [cake_name for cake_name in CAKE_NAMES if (value in cake_name)]
-```
-
-Autocomplete functions support 1 additional parameter outside of client and event, which is the value what the user
-already typed. This value defaults to `None` if the user didn't yet type anything.
-
-Choice parameters cannot be auto completed.
-
 # Required & not required parameters
 
 Whether a command parameter is required or not, is defined whether you assign default value to it.
@@ -591,6 +554,57 @@ del action_name, embed_color
 ### delete_on_unload
 
 Command specific setting, to overwrite the parent slasher's [delete_commands_on_unload](#delete_commands_on_unload).
+
+### allow_in_dm
+
+Whether the command can be used in private channels. This parameter is only meaningful for global commands. Can be
+used to *disable* commands in dm.
+
+```py3
+from hata import Embed
+
+@Nitori.interactions(is_global=True, allow_in_dm=False)
+async def guild_features(event):
+    """Shows the guild's features."""
+    guild = event.guild
+    
+    return Embed(
+        f'{guild.name}\'s features',    
+        ', '.join(sorted(feature.name for feature in guild.features)),
+    ).add_thumbnail(
+        guild.icon_url
+    )
+```
+
+### required_permissions
+
+Allows you to customize the required permissions to see & use the command.
+
+```py3
+from hata import DiscordException, Permission
+
+@Nitori.interactions(guild=TEST_GUILD, required_permissions=Permission().update_by_keys(manage_channel=True))
+async def channel_create(
+    client, event, name: (str, 'The channel\'s name to create.')
+):
+    """Creates a channel"""
+    
+    name_length = len(name)
+    if (name_length < 2) or (name_length > 32):
+        return 'Please keep name length between 2 and 32 characters.'
+    
+    try:
+        await client.channel_create(event.guild, name, parent=event.channel.parent)
+    except DiscordException as err:
+        # Error message can be over 2k length
+        reason = str(err)
+        if len(reason) > 1900:
+            reason = reason[:1900] + '...'
+        
+        return f'Creating channel failed:\n{reason}'
+    
+    return 'Successfully created the channel.'
+```
 
 ### allow_by_default
 

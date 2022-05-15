@@ -1,3 +1,13 @@
+## 1.2.15 *\[2022-05-??\]*
+
+#### Improvements
+
+- Allow auto completing `number` and `float` parameters as well.
+
+#### Bug Fixes
+
+- Fix a `NameError` in `cr_pg_channel_object`.
+
 ## 1.2.14 *\[2022-05-05\]*
 
 #### Improvements
@@ -13,9 +23,12 @@
 - Increase max application command permission overwrite count from `10` -> `100`.
 - Mark `allow_by_default` parameter in `ApplicationCommand.__new__` as deprecated.
 - Add `ApplicationCommand.allow_in_dm`.
-- Deprecate `ApplicationCommand.allow_by_default`.
 - `ApplicationCommand.required_permissions` now defaults to `Permission()` from `None`.
 - Add `application_command_id` audit log change key converter.
+
+#### Renames, Deprecation & Removals
+
+- Deprecate `ApplicationCommand.allow_by_default`.
 
 ##### hata.ext.slash
 

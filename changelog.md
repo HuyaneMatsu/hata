@@ -3,10 +3,31 @@
 #### Improvements
 
 - Allow auto completing `number` and `float` parameters as well.
+- `GuildUserChunkEvent.channel` will not return `None` anymore.
+- `EmbeddedActivityState.channel` will not return `None` anymore.
+- `WelcomeScreen` now supports rich attribute errors.
+- `WelcomeChannel` now supports rich attribute errors.
+- `WelcomeChannel.channel` will not return `None` anymore.
+- `WebhookBase.channel` will not return `None` anymore.
+- `VoiceClient.channel` will not return `None` anymore.
+- `VoiceClient` now supports rich attribute errors.
+- `VoiceState.channel` will not return `None` anymore.
+- `ScheduledEvent.channel` will not return `None` if it **can have** channel.
+- `MessageReference.channel` will not return `None` if it **can have** channel.
+- `MessageReference` now supports rich attribute errors.
+
+##### ext.slash
+
+- Allow pep 593 annotations. (WizzyGeek#2356)
+
+##### ext.solar_link
+
+- `SolarPlayerBase.channel` will not return `None` anymore.
 
 #### Bug Fixes
 
 - Fix a `NameError` in `cr_pg_channel_object`.
+- `MessageReference.channel_id` could been `None`.
 
 ## 1.2.14 *\[2022-05-05\]*
 

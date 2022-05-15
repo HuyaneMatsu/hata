@@ -1363,7 +1363,7 @@ def create_annotation_choice_from_str(value):
 
 def parse_annotation_choice_from_tuple(annotation):
     """
-    Creates an annotation choice form an int.
+    Creates an annotation choice form a tuple.
     
     Parameters
     -------
@@ -1674,7 +1674,7 @@ def parse_annotation_name(name, parameter_name):
     return name
 
 
-def parse_annotation_tuple(parameter):
+def parse_annotation_tuple(parameter, annotation_tuple):
     """
     Parses an annotated tuple.
     
@@ -1682,6 +1682,8 @@ def parse_annotation_tuple(parameter):
     ----------
     parameter : ``Parameter``
         The respective parameter's representation.
+    annotation_tuple : `tuple`
+        The annotated tuple.
     
     Returns
     -------
@@ -1708,51 +1710,49 @@ def parse_annotation_tuple(parameter):
         - If `parameter` annotation tuple's length is out of range [2:3].
         - If `parameter` annotation's refers to an internal type.
     """
-    parameter_name = parameter.name
-    annotation = parameter.annotation
-    annotation_tuple_length = len(annotation)
+    annotation_tuple_length = len(annotation_tuple)
     if annotation_tuple_length not in (1, 2, 3):
         raise ValueError(
-            f'Parameter `{parameter_name}` has annotation as `tuple`, but it\'s length is not in '
-            f'range [1:3], got {annotation_tuple_length!r}; {annotation!r}.'
+            f'Parameter `{parameter.name}` has annotation as `tuple`, but it\'s length is not in '
+            f'range [1:3], got {annotation_tuple_length!r}; {annotation_tuple!r}.'
         )
     
-    annotation_value = annotation[0]
-    annotation_type, choices, channel_types = parse_annotation_type_and_choice(annotation_value, parameter_name)
+    annotation_value = annotation_tuple[0]
+    annotation_type, choices, channel_types = parse_annotation_type_and_choice(annotation_value, parameter.name)
     
     if annotation_type in INTERNAL_ANNOTATION_TYPES:
         raise ValueError(
             f'`Internal annotations cannot be given inside of a tuple, got annotation for: '
-            f'{ANNOTATION_TYPE_TO_STR_ANNOTATION[annotation_type]!r}; annotation={annotation!r}.'
+            f'{ANNOTATION_TYPE_TO_STR_ANNOTATION[annotation_type]!r}; annotation={annotation_tuple!r}.'
         )
     
     if annotation_tuple_length > 1:
-        description = annotation[1]
+        description = annotation_tuple[1]
     else:
         description = None
     
     if (description is not None):
-        description = parse_annotation_description(description, parameter_name)
+        description = parse_annotation_description(description, parameter.name)
     
     if annotation_tuple_length > 2:
-        name = annotation[2]
+        name = annotation_tuple[2]
     else:
         name = None
     
-    name = parse_annotation_name(name, parameter_name)
+    name = parse_annotation_name(name, parameter.name)
     return choices, description, name, annotation_type, channel_types, None, None, None
 
 
-def parse_annotation_slash_parameter(slash_parameter, parameter_name):
+def parse_annotation_slash_parameter(parameter, slash_parameter):
     """
     Parses an annotated ``SlashParameter``.
     
     Parameters
     ----------
+    parameter : ``Parameter``
+        The respective parameter's representation.
     slash_parameter : ``SlashParameter``
         The respective parameter's representation.
-    parameter_name : `str`
-        The parameter's name.
     
     Returns
     -------
@@ -1795,9 +1795,9 @@ def parse_annotation_slash_parameter(slash_parameter, parameter_name):
     """
     type_or_choice = slash_parameter.type_or_choice
     if type_or_choice is None:
-        type_or_choice = parameter_name
+        type_or_choice = parameter.name
     
-    type_, choices, parsed_channel_types = parse_annotation_type_and_choice(type_or_choice, parameter_name)
+    type_, choices, parsed_channel_types = parse_annotation_type_and_choice(type_or_choice, parameter.name)
     
     processed_channel_types = preprocess_channel_types(slash_parameter.channel_types)
     channel_types = postprocess_channel_types(processed_channel_types, parsed_channel_types)
@@ -1807,11 +1807,158 @@ def parse_annotation_slash_parameter(slash_parameter, parameter_name):
     
     description = slash_parameter.description
     if (description is not None):
-        description = parse_annotation_description(description, parameter_name)
+        description = parse_annotation_description(description, parameter.name)
     
-    name = parse_annotation_name(slash_parameter.name, parameter_name)
+    name = parse_annotation_name(slash_parameter.name, parameter.name)
     
     return choices, description, name, type_, channel_types, max_value, min_value, slash_parameter.autocomplete
+
+
+def is_pep_593_typing(annotation_value):
+    """
+    Returns whether the given annotation is a rich shit typing.
+    
+    Parameters
+    ----------
+    annotation_value : `Any`
+        The parameter to decide whether it is a ``pep 593 typing:https://peps.python.org/pep-0593/``.
+    
+    Returns
+    -------
+    is_pep_593_typing : `bool`
+    """
+    try:
+        parameters = getattr(annotation_value, '__args__')
+    except AttributeError:
+        return False
+    
+    if not isinstance(parameters, tuple):
+        return False
+    
+    try:
+        metadata = getattr(annotation_value, '__metadata__')
+    except AttributeError:
+        return False
+    
+    if not isinstance(metadata, tuple):
+        return False
+    
+    return True
+
+
+def parse_pep_593_typing(parameter, annotation_value):
+    """
+    Parameters
+    ----------
+    parameter : ``Parameter``
+        The respective parameter's representation.
+    parameter_name : `str`
+        The parameter's name.
+    
+    Returns
+    -------
+    choices : `None`, `dict` of (`str`, `int`, `str`) items
+        Parameter's choices.
+    description : `str`
+        Parameter's description.
+    name : `str`
+        The parameter's name.
+    type_ : `int`
+        The parameter's internal type identifier.
+    channel_types : `None`, `tuple` of `int`
+        The accepted channel types.
+    max_value : `None`, `int`, `float`
+        The maximal accepted value.
+    min_value : `None`, `int`, `float`
+        The minimal accepted value.
+    autocomplete : `None`, `CoroutineFunction`
+        Autocomplete function.
+    
+    Raises
+    ------
+    ValueError
+        - If `parameter` annotation tuple's length  is out of range [2:3].
+        - If `parameter` annotation tuple refers to an internal type.
+    TypeError
+        - If the parameter's type refers to an unknown type or string value.
+    """
+    metadata = annotation_value.__metadata__
+    metadata_length = len(metadata)
+    
+    if metadata_length == 0:
+        # Nice try, wont work!
+        return parse_annotation_fallback(parameter, None)
+    
+    if metadata_length == 1:
+        metadata_value = metadata[0]
+        if isinstance(metadata_value, tuple):
+            if len(metadata_value) == 0:
+                return parse_annotation_fallback(parameter, None)
+            else:
+                return parse_annotation_tuple(parameter, metadata_value)
+        
+        elif isinstance(metadata_value, SlashParameter):
+            return parse_annotation_slash_parameter(parameter, metadata_value)
+        
+        return parse_annotation_fallback(parameter, metadata_value)
+    
+    return parse_annotation_tuple(parameter, metadata)
+
+
+def parse_annotation_fallback(parameter, annotation_value):
+    """
+    Tries to parse annotation from the given value.
+    
+    Parameters
+    ----------
+    parameter : ``Parameter``
+        The respective parameter's representation.
+    annotation_value : `None`, `Any`
+        The annotated value to interpret.
+    
+    Returns
+    -------
+    choices : `None`, `dict` of (`str`, `int`, `str`) items
+        Parameter's choices.
+    description : `None`, `str`
+        Parameter's description.
+        
+        > Returned as `None` for internal parameters or if `description` could nto be detected.
+    name : `str`
+        The parameter's name.
+    type_ : `int`
+        The parameter's internal type identifier.
+    channel_types : `None`, `tuple` of `int`
+        The accepted channel types.
+    max_value : `None`, `int`, `float`
+        The maximal accepted value.
+    min_value : `None`, `int`, `float`
+        The minimal accepted value.
+    autocomplete : `None`, `CoroutineFunction`
+        Autocomplete function.
+    
+    Raises
+    ------
+    TypeError
+        Parameter's type refers to an unknown type or string value.
+    """
+    if annotation_value is None:
+        annotation_value = parameter.name
+    
+    if not isinstance(annotation_value, (str, type)):
+        raise TypeError(
+            f'Parameter `{parameter.name}` is not `tuple`, `str`, `str`, got '
+            f'{annotation_value.__class__.__name__}; {annotation_value!r}.'
+        )
+    else:
+        annotation_type = parse_annotation_internal(annotation_value)
+        if annotation_type is None:
+            annotation_type, choices, channel_types = parse_annotation_type_and_choice(annotation_value, parameter.name)
+        else:
+            choices = None
+            channel_types = None
+    
+    return choices, None, parameter.name, annotation_type, channel_types, None, None, None
 
 
 def parse_annotation_internal(annotation):
@@ -1883,35 +2030,25 @@ def parse_annotation(parameter):
         - If `parameter` annotation tuple's length  is out of range [2:3].
         - If `parameter` annotation tuple refers to an internal type.
     TypeError
-        Parameter's type refers to an unknown type or string value.
+        - If the parameter's type refers to an unknown type or string value.
     """
-    if parameter.has_annotation:
-        annotation_value = parameter.annotation
-        if isinstance(annotation_value, tuple):
-            if len(annotation_value) == 0:
-                annotation_value = parameter.name
-            else:
-                return parse_annotation_tuple(parameter)
+    if not parameter.has_annotation:
+        return parse_annotation_fallback(parameter, None)
         
-        elif isinstance(annotation_value, SlashParameter):
-            return parse_annotation_slash_parameter(annotation_value, parameter.name)
-    else:
-        annotation_value = parameter.name
-    
-    if not isinstance(annotation_value, (str, type)):
-        raise TypeError(
-            f'Parameter `{parameter.name}` is not `tuple`, `str`, `str`, got '
-            f'{annotation_value.__class__.__name__}; {annotation_value!r}.'
-        )
-    else:
-        annotation_type = parse_annotation_internal(annotation_value)
-        if annotation_type is None:
-            annotation_type, choices, channel_types = parse_annotation_type_and_choice(annotation_value, parameter.name)
+    annotation_value = parameter.annotation
+    if isinstance(annotation_value, tuple):
+        if len(annotation_value) == 0:
+            return parse_annotation_fallback(parameter, None)
         else:
-            choices = None
-            channel_types = None
+            return parse_annotation_tuple(parameter, annotation_value)
     
-    return choices, None, parameter.name, annotation_type, channel_types, None, None, None
+    elif isinstance(annotation_value, SlashParameter):
+        return parse_annotation_slash_parameter(parameter, annotation_value)
+    
+    elif is_pep_593_typing(annotation_value):
+        return parse_pep_593_typing(parameter, annotation_value)
+    
+    return parse_annotation_fallback(parameter, annotation_value)
 
 
 class ParameterConverter(RichAttributeErrorBaseType):

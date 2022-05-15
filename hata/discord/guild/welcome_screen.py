@@ -2,15 +2,14 @@ __all__ = ('WelcomeChannel', 'WelcomeScreen')
 
 import reprlib
 
-from scarletio import BaseMethodDescriptor
+from scarletio import BaseMethodDescriptor, RichAttributeErrorBaseType
 
-from ..channel import CHANNEL_TYPES, Channel
-from ..core import CHANNELS
+from ..channel import CHANNEL_TYPES, Channel, create_partial_channel_from_id
 from ..emoji import Emoji, create_partial_emoji_from_data
 from ..preconverters import preconvert_snowflake
 
 
-class WelcomeScreen:
+class WelcomeScreen(RichAttributeErrorBaseType):
     """
     Represents a guild's welcome screen.
     
@@ -87,7 +86,7 @@ class WelcomeScreen:
         return True
 
 
-class WelcomeChannel:
+class WelcomeChannel(RichAttributeErrorBaseType):
     """
     Represents a featured channel by a welcome screen.
     
@@ -281,13 +280,7 @@ class WelcomeChannel:
         -------
         channel : ``Channel``
         """
-        channel_id = self.channel_id
-        try:
-            channel = CHANNELS[channel_id]
-        except KeyError:
-            channel = Channel._from_partial_data({'type': CHANNEL_TYPES.guild_text}, channel_id, 0)
-        
-        return channel
+        return create_partial_channel_from_id(self.channel_id, CHANNEL_TYPES.guild_text, 0)
     
     
     def __repr__(self):

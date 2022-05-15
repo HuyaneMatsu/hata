@@ -5,14 +5,14 @@ from datetime import datetime
 from functools import partial as partial_func
 
 from scarletio import (
-    DOCS_ENABLED, DatagramMergerReadProtocol, Event, Future, Lock, Task, export, future_or_timeout, skip_poll_cycle,
-    sleep
+    DOCS_ENABLED, DatagramMergerReadProtocol, Event, Future, Lock, Task, export, future_or_timeout,
+    RichAttributeErrorBaseType, skip_poll_cycle, sleep
 )
 from scarletio.web_common import ConnectionClosed, InvalidHandshake, WebSocketProtocolError
 
 from ..bases import maybe_snowflake
-from ..channel import Channel
-from ..core import CHANNELS, GUILDS, KOKORO
+from ..channel import Channel, create_partial_channel_from_id
+from ..core import GUILDS, KOKORO
 from ..exceptions import VOICE_CLIENT_DISCONNECT_CLOSE_CODE, VOICE_CLIENT_RECONNECT_CLOSE_CODE
 from ..gateway.voice_client_gateway import DiscordGatewayVoice, SecretBox
 from ..user import User
@@ -26,7 +26,7 @@ from .utils import try_get_voice_region
 
 
 @export
-class VoiceClient:
+class VoiceClient(RichAttributeErrorBaseType):
     """
     Represents a client what is joined to a voice channel.
     
@@ -81,9 +81,9 @@ class VoiceClient:
     _video_sources : `dict` of (`int`, `int`) items
         `user_id` - `video_source` mapping. Not used for now.
     call_after : `callable` (`awaitable`)
-        A coroutine function what is awaited, when the voice clients's current audio finishes playing. By default
+        A coroutine function what is awaited, when the voice clients' current audio finishes playing. By default
         this attribute is set to the ``._play_next`` function of the voice client (plays the next audio at the voice
-        clients's ``.queue`` as expected.
+        clients' ``.queue`` as expected.
         
         This attribute of the client can be modified freely. To it `2` parameters are passed:
          +------------------+---------------------------+
@@ -396,7 +396,7 @@ class VoiceClient:
     
     def _remove_source(self, user_id):
         """
-        Un-links the audio and video streams's source listening to the given user (id), causing the affected audio
+        Un-links the audio and video streams' source listening to the given user (id), causing the affected audio
         str-eam(s) to stop receiving audio data at the meanwhile.
         
         Parameters
@@ -1341,9 +1341,9 @@ class VoiceClient:
         
         Returns
         -------
-        channel : `None`, ``Channel``
+        channel : ``Channel``
         """
-        return CHANNELS.get(self.channel_id, None)
+        return create_partial_channel_from_id(self.channel_id, -1, self.guild_id)
     
     
     @property

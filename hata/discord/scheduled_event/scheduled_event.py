@@ -2,7 +2,7 @@ __all__ = ('ScheduledEvent', )
 
 from ..bases import DiscordEntity, IconSlot
 from ..channel import CHANNEL_TYPES, create_partial_channel_from_id
-from ..core import CHANNELS, GUILDS, SCHEDULED_EVENTS
+from ..core import GUILDS, SCHEDULED_EVENTS
 from ..http import urls as module_urls
 from ..user import User, ZEROUSER
 from ..utils import timestamp_to_datetime
@@ -427,7 +427,7 @@ class ScheduledEvent(DiscordEntity):
         """
         channel_id = self.channel_id
         if channel_id:
-            return CHANNELS.get(channel_id, None)
+            return create_partial_channel_from_id(channel_id, -1, self.guild_id)
     
     
     @property

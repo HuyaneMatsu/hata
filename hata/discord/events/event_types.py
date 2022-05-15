@@ -5,7 +5,8 @@ from scarletio import copy_docs, set_docs
 from ...env import CACHE_PRESENCE
 
 from ..bases import EventBase
-from ..core import CHANNELS, GUILDS
+from ..channel import create_partial_channel_from_id
+from ..core import GUILDS
 from ..user import User
 
 
@@ -438,9 +439,9 @@ class WebhookUpdateEvent(EventBase):
         
         Returns
         -------
-        channel : `None`, ``Channel``
+        channel : ``Channel``
         """
-        return CHANNELS.get(self.channel_id, None)
+        return create_partial_channel_from_id(self.channel_id, -1, self.guild_id)
     
     
     @property

@@ -2,7 +2,8 @@ __all__ = ('VoiceState', )
 
 from scarletio import include
 
-from ..core import CHANNELS, GUILDS
+from ..core import GUILDS
+from ..channel import create_partial_channel_from_id
 from ..utils import timestamp_to_datetime
 
 from .utils import create_partial_user_from_id
@@ -137,6 +138,7 @@ class VoiceState:
         """
         self._cache_user = user
     
+    
     @property
     def channel(self):
         """
@@ -144,11 +146,9 @@ class VoiceState:
         
         Returns
         -------
-        channel : `None`, ``Channel``
+        channel : ``Channel``
         """
-        channel_id = self.channel_id
-        if channel_id:
-            return CHANNELS[channel_id]
+        return create_partial_channel_from_id(self.channel_id, -1, self.guild_id)
     
     
     @property

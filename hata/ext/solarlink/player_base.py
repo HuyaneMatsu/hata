@@ -5,9 +5,9 @@ from time import monotonic
 
 from scarletio import Future, RichAttributeErrorBaseType, Task
 
-from ...discord.channel import Channel
+from ...discord.channel import Channel, create_partial_channel_from_id
 from ...discord.client.request_helpers import get_channel_id
-from ...discord.core import CHANNELS, GUILDS, KOKORO
+from ...discord.core import GUILDS, KOKORO
 
 from .constants import (
     LAVALINK_BAND_COUNT, LAVALINK_KEY_GUILD_ID, LAVALINK_KEY_NODE_OPERATION, LAVALINK_KEY_NODE_OPERATION_PLAYER_DESTROY,
@@ -574,11 +574,9 @@ class SolarPlayerBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        channel : `None`, ``Channel``
+        channel : ``Channel``
         """
-        channel_id = self.channel_id
-        if channel_id:
-            return CHANNELS.get(channel_id, None)
+        return create_partial_channel_from_id(self.channel_id, -1, self.guild_id)
     
     
     @property

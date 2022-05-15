@@ -1,12 +1,15 @@
 __all__ = ('WebhookBase',)
 
-from scarletio import copy_docs
+from scarletio import copy_docs, include
 
 from ..core import CHANNELS
 from ..permission.permission import PERMISSION_MASK_USE_EXTERNAL_EMOJIS
 from ..user import UserBase
 
 from .preinstanced import WebhookType
+
+
+create_partial_channel_from_id = include('create_partial_channel_from_id')
 
 
 class WebhookBase(UserBase):
@@ -79,9 +82,9 @@ class WebhookBase(UserBase):
         
         Returns
         -------
-        channel : `None`, ``Channel``
+        channel : ``Channel``
         """
-        return CHANNELS.get(self.channel_id, None)
+        return create_partial_channel_from_id(self.channel_id, -1, 0)
     
     
     @property

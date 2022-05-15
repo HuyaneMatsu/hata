@@ -1,6 +1,11 @@
 __all__ = ('MessageReference',)
 
-from ..core import CHANNELS, GUILDS, MESSAGES
+from scarletio import include
+
+from ..core import GUILDS, MESSAGES
+
+
+create_partial_channel_from_id = include('create_partial_channel_from_id')
 
 
 class MessageReference:
@@ -53,7 +58,7 @@ class MessageReference:
         
         channel_id = data.get('channel_id', None)
         if channel_id is None:
-            channel_id = None
+            channel_id = 0
         else:
             channel_id = int(channel_id)
         
@@ -74,6 +79,7 @@ class MessageReference:
         
         return self
     
+    
     @property
     def channel(self):
         """
@@ -87,13 +93,14 @@ class MessageReference:
         if channel is ...:
             channel_id = self.channel_id
             if channel_id:
-                channel = CHANNELS.get(channel_id, None)
+                channel = create_partial_channel_from_id(channel_id, -1, self.guild_id)
             else:
                 channel = None
             
             self._channel = channel
         
         return channel
+    
     
     @property
     def guild(self):
@@ -115,6 +122,7 @@ class MessageReference:
             self._guild = guild
         
         return guild
+    
     
     @property
     def message(self):

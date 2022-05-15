@@ -4,7 +4,8 @@ __all__ = ('EmbeddedActivityState',)
 from scarletio import RichAttributeErrorBaseType
 
 from ..activity import ActivityRich
-from ..core import CHANNELS, EMBEDDED_ACTIVITY_STATES, GUILDS
+from ..channel import create_partial_channel_from_id
+from ..core import EMBEDDED_ACTIVITY_STATES, GUILDS
 from ..user import create_partial_user_from_id
 
 
@@ -319,9 +320,9 @@ class EmbeddedActivityState(RichAttributeErrorBaseType):
         
         Returns
         -------
-        channel : `None`, ``Channel``
+        channel : ``Channel``
         """
-        return CHANNELS.get(self.channel_id, None)
+        return create_partial_channel_from_id(self.channel_id, -1, self.guild_id)
     
     
     @property

@@ -11,16 +11,15 @@ from ...discord.events.handling_helpers import EventHandlerBase, Router, asyncli
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.interaction import ApplicationCommand, InteractionEvent, InteractionType
 
-from .application_command import (
-    APPLICATION_COMMAND_HANDLER_DEEPNESS, SlasherApplicationCommand, SlasherApplicationCommandParameterAutoCompleter,
-    _build_auto_complete_parameter_names, _register_autocomplete_function
+from .command import (
+    APPLICATION_COMMAND_HANDLER_DEEPNESS, COMMAND_TARGETS_COMPONENT_COMMAND, COMMAND_TARGETS_FORM_COMPONENT_COMMAND,
+    ComponentCommand, FormSubmitCommand, SlasherApplicationCommand, SlasherApplicationCommandParameterAutoCompleter
 )
-from .component_command import COMMAND_TARGETS_COMPONENT_COMMAND, ComponentCommand
+from .command.helpers import _build_auto_complete_parameter_names, _register_auto_complete_function
 from .exceptions import (
-    _register_exception_handler, _validate_random_error_message_getter, SlasherSyncError,
+    SlasherSyncError, _register_exception_handler, _validate_random_error_message_getter,
     default_slasher_exception_handler, default_slasher_random_error_message_getter, test_exception_handler
 )
-from .form_submit_command import COMMAND_TARGETS_FORM_COMPONENT_COMMAND, FormSubmitCommand
 from .helpers import validate_translation_table
 from .utils import (
     RUNTIME_SYNC_HOOKS, SYNC_ID_GLOBAL, SYNC_ID_MAIN, SYNC_ID_NON_GLOBAL, UNLOADING_BEHAVIOUR_DELETE,
@@ -3144,7 +3143,7 @@ class Slasher(EventHandlerBase):
         parameter_names = _build_auto_complete_parameter_names(parameter_name, parameter_names)
         
         if (function is None):
-            return partial_func(_register_autocomplete_function, self, parameter_names)
+            return partial_func(_register_auto_complete_function, self, parameter_names)
             
         return self._add_autocomplete_function(parameter_names, function)
     

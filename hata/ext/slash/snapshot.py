@@ -8,9 +8,8 @@ from ..extension_loader.snapshot.helpers import (
     _get_list_difference, _get_set_difference, _merge_list_groups, _merge_set_groups
 )
 
-from .application_command import SYNC_ID_NON_GLOBAL
 from .slasher import Slasher
-from .utils import RUNTIME_SYNC_HOOKS
+from .utils import RUNTIME_SYNC_HOOKS, SYNC_ID_NON_GLOBAL
 
 
 class ApplicationCommandDifference(RichAttributeErrorBaseType):

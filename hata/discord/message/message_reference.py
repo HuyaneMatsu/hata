@@ -1,6 +1,6 @@
 __all__ = ('MessageReference',)
 
-from scarletio import include
+from scarletio import RichAttributeErrorBaseType, include
 
 from ..core import GUILDS, MESSAGES
 
@@ -8,7 +8,7 @@ from ..core import GUILDS, MESSAGES
 create_partial_channel_from_id = include('create_partial_channel_from_id')
 
 
-class MessageReference:
+class MessageReference(RichAttributeErrorBaseType):
     """
     A cross guild reference used as a ``Message``'s `.cross_reference` at crosspost messages.
     

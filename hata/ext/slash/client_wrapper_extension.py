@@ -5,7 +5,7 @@ from scarletio import KeepType
 from ...discord.client.utils import ClientWrapper
 from ...discord.events.handling_helpers import _EventHandlerManagerRouter
 
-from .application_command import SlasherApplicationCommand
+from .command import SlasherApplicationCommand
 from .slasher import Slasher
 
 

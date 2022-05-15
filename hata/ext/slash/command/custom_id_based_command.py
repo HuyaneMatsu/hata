@@ -3,13 +3,13 @@ __all__ = ('CustomIdBasedCommand', )
 
 from functools import partial as partial_func
 
-from ...discord.events.handling_helpers import create_event_from_class
-from ...discord.interaction.components.constants import COMPONENT_CUSTOM_ID_LENGTH_MAX
+from ....discord.events.handling_helpers import create_event_from_class
+from ....discord.interaction.components.constants import COMPONENT_CUSTOM_ID_LENGTH_MAX
 
-from .converters import (
+from ..converters import (
     RegexMatcher, check_component_converters_satisfy_regex, check_component_converters_satisfy_string
 )
-from .exceptions import _register_exception_handler, test_exception_handler
+from ..exceptions import _register_exception_handler, test_exception_handler
 
 
 try:

@@ -1,15 +1,13 @@
 """
 Hata extensions for supporting interactions.
 """
-from .application_command import *
+from .command import *
+
 from .components import *
-from .component_command import *
 from .converters import *
-from .custom_id_based_command import *
 from .event_handlers import *
 from .exceptions import *
 from .expression_parser import *
-from .form_submit_command import *
 from .helpers import *
 from .responding import *
 from .response_modifier import *
@@ -23,15 +21,14 @@ __all__ = (
     'configure_parameter',
     'set_permission',
     'setup_ext_slash',
-    *application_command.__all__,
+    
+    *command.__all__,
+    
     *components.__all__,
-    *component_command.__all__,
     *converters.__all__,
-    *custom_id_based_command.__all__,
     *event_handlers.__all__,
     *exceptions.__all__,
     *expression_parser.__all__,
-    *form_submit_command.__all__,
     *helpers.__all__,
     *responding.__all__,
     *response_modifier.__all__,

@@ -1,42 +1,47 @@
-__all__ = ('SlasherApplicationCommand', )
+__all__ = (
+    'APPLICATION_COMMAND_HANDLER_DEEPNESS', 'SlasherApplicationCommand',
+    'SlasherApplicationCommandParameterAutoCompleter'
+)
 
 from functools import partial as partial_func
 
 from scarletio import WeakReferer, RichAttributeErrorBaseType, copy_docs, export, include
 
-from ...discord.client import Client
-from ...discord.events.handling_helpers import (
+from ....discord.client import Client
+from ....discord.events.handling_helpers import (
     Router, _EventHandlerManager, check_name, create_event_from_class, route_name, route_value
 )
-from ...discord.guild import Guild
-from ...discord.interaction import (
+from ....discord.guild import Guild
+from ....discord.interaction import (
     APPLICATION_COMMAND_CONTEXT_TARGET_TYPES, ApplicationCommand, ApplicationCommandOption,
     ApplicationCommandOptionType, ApplicationCommandTargetType, InteractionEvent
 )
-from ...discord.interaction.application_command.constants import (
+from ....discord.interaction.application_command.constants import (
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN,
     APPLICATION_COMMAND_NAME_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_OPTIONS_MAX,
     APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
 )
-from ...discord.permission import Permission
-from ...discord.preconverters import preconvert_bool, preconvert_flag, preconvert_snowflake
+from ....discord.permission import Permission
+from ....discord.preconverters import preconvert_bool, preconvert_flag, preconvert_snowflake
 
-from .converters import (
+from ..converters import (
     InternalParameterConverter, SlashCommandParameterConverter,
     get_application_command_parameter_auto_completer_converters, get_context_command_parameter_converters,
     get_slash_command_parameter_converters
 )
-from .exceptions import (
+from ..exceptions import (
     SlasherApplicationCommandParameterConversionError, _register_exception_handler, handle_command_exception,
     test_exception_handler
 )
-from .responding import process_auto_completer_coroutine, process_command_coroutine
-from .response_modifier import ResponseModifier
-from .utils import (
+from ..responding import process_auto_completer_coroutine, process_command_coroutine
+from ..response_modifier import ResponseModifier
+from ..utils import (
     SYNC_ID_GLOBAL, SYNC_ID_NON_GLOBAL, UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_INHERIT,
     UNLOADING_BEHAVIOUR_KEEP, _check_maybe_route, normalize_description, raw_name_to_display
 )
-from .wrappers import SlasherCommandWrapper, get_parameter_configurers
+from ..wrappers import SlasherCommandWrapper, get_parameter_configurers
+
+from .helpers import _build_auto_complete_parameter_names, _register_auto_complete_function
 
 
 Slasher = include('Slasher')
@@ -478,117 +483,6 @@ def _generate_description_from(command, name, description):
     return description
 
 
-def _checkout_auto_complete_parameter_name(parameter_name):
-    """
-    Checks out one parameter name to auto complete.
-    
-    Parameters
-    ----------
-    parameter_name : `str`
-        The parameter's name to auto complete.
-    
-    Returns
-    -------
-    parameter_name : `str`
-        The validated parameter name to autocomplete.
-    
-    Raises
-    ------
-    TypeError
-        If `parameter_name` is not `str`.
-    ValueError
-        If `parameter_name` is an empty string.
-    """
-    if type(parameter_name) is str:
-        pass
-    elif isinstance(parameter_name, str):
-        parameter_name = str(parameter_name)
-    else:
-        raise TypeError(
-            f'`parameter_name` can be `str`, got '
-            f'{parameter_name.__class__.__name__}; {parameter_name!r}.'
-        )
-    
-    if not parameter_name:
-        raise ValueError(
-            f'`parameter_name` cannot be empty string.'
-        )
-    
-    return parameter_name
-
-
-def _build_auto_complete_parameter_names(parameter_name, parameter_names):
-    """
-    Builds a checks out parameter names.
-    
-    Parameters
-    ----------
-    parameter_name : `str`
-        The parameter's name to auto complete.
-    parameter_names : `tuple` of `str`
-        Additional parameter to autocomplete.
-    
-    Returns
-    -------
-    processed_parameter_names : `list` of `str`
-        The processed parameter names.
-    
-    Raises
-    ------
-    TypeError
-        If `parameter_name` is not `str`.
-    ValueError
-        If `parameter_name` is an empty string.
-    """
-    processed_parameter_names = []
-    
-    parameter_name = _checkout_auto_complete_parameter_name(parameter_name)
-    processed_parameter_names.append(parameter_name)
-    
-    if parameter_names:
-        for iter_parameter_name in parameter_names:
-            iter_parameter_name = _checkout_auto_complete_parameter_name(iter_parameter_name)
-            processed_parameter_names.append(iter_parameter_name)
-    
-    return processed_parameter_names
-
-
-def _register_autocomplete_function(parent, parameter_names, function):
-    """
-    Returned by `.autocomplete` decorators wrapped inside of `functools.partial` if `function` is not given.
-    
-    Parameters
-    ----------
-    parent : ``Slasher``, ``SlasherApplicationCommand``, ``SlasherApplicationCommandFunction``,
-            ``SlasherApplicationCommandCategory``
-        The parent entity to register the auto completer to.
-    parameter_names : `list` of `str`
-        The parameters' names.
-    function : `async-callable`
-        The function to register as auto completer.
-    
-    Returns
-    -------
-    auto_completer : ``SlasherApplicationCommandParameterAutoCompleter``
-        The registered auto completer
-    
-    Raises
-    ------
-    RuntimeError
-        - `function` cannot be `None`.
-        - If the application command function has no parameter named, like `parameter_name`.
-        - If the parameter cannot be auto completed.
-    TypeError
-        If `function` is not an asynchronous.
-    """
-    if (function is None):
-        raise RuntimeError(
-            f'`function` cannot be `None`.'
-        )
-    
-    return parent._add_autocomplete_function(parameter_names, function)
-
-
 def _reset_parent_schema(entity):
     """
     Resets the command category's or function's parent's schema.
@@ -611,6 +505,7 @@ def _reset_parent_schema(entity):
         if isinstance(entity, SlasherApplicationCommand):
             _reset_slasher_application_command_schema(entity)
             break
+
 
 def _reset_slasher_application_command_schema(entity):
     """
@@ -1797,7 +1692,7 @@ class SlasherApplicationCommand:
         parameter_names = _build_auto_complete_parameter_names(parameter_name, parameter_names)
         
         if (function is None):
-            return partial_func(_register_autocomplete_function, self, parameter_names)
+            return partial_func(_register_auto_complete_function, self, parameter_names)
         
         return self._add_autocomplete_function(parameter_names, function)
     
@@ -2306,7 +2201,7 @@ class SlasherApplicationCommandFunction(RichAttributeErrorBaseType):
         parameter_names = _build_auto_complete_parameter_names(parameter_name, parameter_names)
         
         if (function is None):
-            return partial_func(_register_autocomplete_function, self, parameter_names)
+            return partial_func(_register_auto_complete_function, self, parameter_names)
         
         return self._add_autocomplete_function(parameter_names, function)
     
@@ -2805,7 +2700,7 @@ class SlasherApplicationCommandCategory:
         parameter_names = _build_auto_complete_parameter_names(parameter_name, parameter_names)
         
         if (function is None):
-            return partial_func(_register_autocomplete_function, self, parameter_names)
+            return partial_func(_register_auto_complete_function, self, parameter_names)
             
         return self._add_autocomplete_function(parameter_names, function)
     

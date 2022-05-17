@@ -43,9 +43,72 @@ async def autocomplete_cake_name(value):
 ```
 
 Autocomplete functions support **1 additional parameter** outside the client and event, which is the value the user
-already typed. This value defaults to `None` if the user didn't yet type anything.
+already typed. This value defaults to `None` if the user didn't type anything yet.
 
-#### Exclusive auto completion
+#### Dependent auto completion
+
+Sometimes you'll want your auto-complete parameters to directly depend on each other.
+For example (as in below code) if you have food product (categories), and you want only types for **that** food category.
+
+The main disadvantage of implementing such a system is that the user might break up parameter order or just give bad
+parameters. For example, in the discord client, the user can select type before he selects category of food.
+You have to handle these cases yourself (in below code example these are appropriately handled).
+
+In the below example we use the `event.interaction.get_value_of(*option_names)` method which returns the parameter
+values for the given **option stack**. This means that if you're dealing with sub-commands you will need to mention
+the sub-command name before the parameter.
+
+```py3
+from hata.ext.slash import abort
+
+PRODUCT_TYPES = {
+    'pudding': ['choco', 'dark choco', 'strawberry', 'vanilla'],
+    'croissant': ['choco', 'cherry', 'hazelnut', 'strawberry', 'vanilla'],
+}
+
+
+def get_option_like(options, name):
+    name = name.casefold()
+    
+    for option in options:
+        if name in option:
+            return option
+
+
+def get_options_like(options, name):
+    name = name.casefold()
+    
+    return [option for option in options if name in option]
+
+
+@Nitori.interactions(guild=TEST_GUILD)
+async def shop(
+    product: ([*PRODUCT_TYPES], 'Select a product to buy.'),
+    type_: ('str', 'Select a type'),
+):
+    """Buy some sweets."""
+    type_ = get_option_like(PRODUCT_TYPES[product], type_),
+    if type_ is None:
+        abort('Invalid product type.')
+    
+    return f'You just bought a {type_} {product}'
+
+
+@shop.autocomplete('type_')
+async def autocomplete_product_type(event, value):
+    product = event.intearction.get_value_of('product')
+    if product is None:
+        return
+    
+    options = PRODUCT_TYPES[product]
+    
+    if value is None:
+        return options[:25]
+    
+    return get_options_like(options, value)
+```
+
+#### Dependent exclusive auto completion
 
 Sometimes your auto-completed parameters might rely on each other in a way that you want to exclude some of them from
 showing in auto-completion if they were previously selected.
@@ -131,69 +194,6 @@ async def exclusive_autocomplete_cake_name(event, actual_cake_name):
         
         else:
             return cake_names
-```
-
-#### Dependent auto completion
-
-Sometimes you'll want your auto-complete parameters to directly depend on each other.
-For example (as in below code) if you have food product (categories), and you want only types for **that** food category.
-
-The main disadvantage of implementing such a system is that the user might break up parameter order or just give bad
-parameters. For example, in the discord client, the user can select type before he selects category of food.
-You have to handle these cases yourself (in below code example these are appropriately handled).
-
-In the below example we use the `event.interaction.get_value_of(*option_names)` method which returns the parameter
-values for the given **option stack**. This means that if you're dealing with sub-commands you will need to mention
-the sub-command name before the parameter.
-
-```py3
-from hata.ext.slash import abort
-
-PRODUCT_TYPES = {
-    'pudding': ['choco', 'dark choco', 'strawberry', 'vanilla'],
-    'croissant': ['choco', 'cherry', 'hazelnut', 'strawberry', 'vanilla'],
-}
-
-
-def get_option_like(options, name):
-    name = name.casefold()
-    
-    for option in options:
-        if name in option:
-            return option
-
-
-def get_options_like(options, name):
-    name = name.casefold()
-    
-    return [option for option in options if name in option]
-
-
-@Nitori.interactions(guild=TEST_GUILD)
-async def shop(
-    product: ([*PRODUCT_TYPES], 'Select a product to buy.'),
-    type_: ('str', 'Select a type'),
-):
-    """Buy some sweets."""
-    type_ = get_option_like(PRODUCT_TYPES[product], type_),
-    if type_ is None:
-        abort('Invalid product type.')
-    
-    return f'You just bought a {type_} {product}'
-
-
-@shop.autocomplete('type_')
-async def autocomplete_product_type(event, value):
-    product = event.intearction.get_value_of('product')
-    if product is None:
-        return
-    
-    options = PRODUCT_TYPES[product]
-    
-    if value is None:
-        return options[:25]
-    
-    return get_options_like(options, value)
 ```
 
 #### Sharing auto-completer
@@ -296,13 +296,13 @@ This might be dangerous and could cause happy accidents (accidentally overwritin
 setting handler and forgetting about it then wondering from where your commands pull their arguments etc.)
 
 
-#### Autocompleted parameter definition
+#### Keyword parameter
 
 When defining a bigger command you might consider splitting the code into multiple files.
 
 When the auto-completer is split, you might want to consider adding it inside the parameter definition and not
 within a decorator.
-This is completely optional, and you can choose either decorator or kwarg depending on your preference.
+This is completely optional, and you can choose either decorator or keyword parameter depending on your preference.
 
 ```py3
 from hata.ext.slash import P, abort

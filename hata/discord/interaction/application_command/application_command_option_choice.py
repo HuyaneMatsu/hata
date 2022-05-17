@@ -1,5 +1,7 @@
 __all__ = ('ApplicationCommandOptionChoice',)
 
+from enum import Enum
+
 from scarletio import RichAttributeErrorBaseType
 
 from ...localizations.helpers import localized_dictionary_builder
@@ -33,9 +35,9 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        name : `str`
+        name : `str`, `Enum`
             The choice's name. It's length can be in range [1:100].
-        value : `None`, `str`, `int`, `float` = `None`, Optional
+        value : `None`, `str`, `int`, `float`, `Enum` = `None`, Optional
             The choice's value.
             
             Defaults to `name` parameter if not given.
@@ -48,22 +50,45 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         ------
         TypeError
             - If `name_localizations`'s or any of it's item's type is incorrect.
+            - If `name`'s type is incorrect.
+            - If `value`'s type is incorrect.
         ValueError
             - If `name_localizations` has an item with incorrect structure.
         AssertionError
-            - If `name` is not `str`.
             - If `name`'s length is out of range [1:100].
-            - If `value` is neither `str`, `int` nor `float`.
             - If `value` is `str` and it's length is out of range [0:100].
         """
-        # name
+        if isinstance(name, str):
+            choice_name = name
+        
+        if isinstance(name, Enum):
+            if value is None:
+                choice_name = name.name
+                
+                if not isinstance(choice_name, str):
+                    raise TypeError(
+                        f'`{Enum.__name__}` choice\'s `.name` should be `str`, '
+                        f'got {choice_name.__class__.__name__}; {choice_name!r}; name={name!r}; value={value!r}..'
+                    )
+                    
+                value = name.value
+            else:
+                choice_name = name.value
+                
+                if not isinstance(choice_name, str):
+                    raise TypeError(
+                        f'`{Enum.__name__}` choice\'s `.value` should be `str`, '
+                        f'got {choice_name.__class__.__name__}; {choice_name!r}; name={name!r}; value={value!r}.'
+                    )
+        
+        else:
+            raise TypeError(
+                f'`name` can be `str`, `{Enum.__name__}`, got {name.__class__.__name__}; {name!r}.'
+            )
+        
+        
         if __debug__:
-            if not isinstance(name, str):
-                raise AssertionError(
-                    f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
-                )
-            
-            name_length = len(name)
+            name_length = len(choice_name)
             if (
                 name_length < APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN or
                 name_length > APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX
@@ -71,7 +96,7 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
                 raise AssertionError(
                     f'`name` length can be in range '
                     f'[{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN}:{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX}], '
-                    f'got {name_length!r}; {name!r}.'
+                    f'got {name_length!r}; {choice_name!r}.'
                 )
         
         # name_localizations
@@ -79,33 +104,42 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         
         # value
         if value is None:
-            value = name
+            choice_value = choice_name
         
-        if __debug__:
-            if isinstance(value, str):
-                value_length = len(value)
-                if (
-                    value_length < APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN or
-                    value_length > APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MAX
-                ):
-                    raise AssertionError(
-                        f'`value` length` can be in range '
-                        f'[{APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN}:{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX}]'
-                        f'got {value_length!r}; {value!r}.'
-                    )
-            
-            elif isinstance(value, (int, float)):
-                pass
-            
-            else:
-                raise AssertionError(f'`value` type can be either `str`, `int`, `float`, '
-                    f'got {value.__class__.__name__}; {value!r}.')
+        elif isinstance(value, (str, int, float)):
+            choice_value = value
         
+        elif isinstance(value, Enum):
+            choice_value = value
+            
+            if not isinstance(choice_value, (str, int, float)):
+                raise TypeError(
+                    f'`{Enum.__name__}` choice\'s `.value` can be `str`, `int`, `float`, '
+                    f'got {choice_value.__class__.__name__}; {choice_value!r}; value={value!r}.'
+                )
+            
+        else:
+            raise TypeError(
+                f'`value` type can be `str`, `int`, `float`, `{Enum.__name__}`, '
+                f'got {value.__class__.__name__}; {value!r}.'
+            )
+        
+        if isinstance(choice_value, str):
+            value_length = len(value)
+            if (
+                value_length < APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN or
+                value_length > APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MAX
+            ):
+                raise AssertionError(
+                    f'`value` length` can be in range '
+                    f'[{APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN}:{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX}]'
+                    f'got {value_length!r}; {value!r}.'
+                )
         
         self = object.__new__(cls)
-        self.name = name
+        self.name = choice_name
         self.name_localizations = name_localizations
-        self.value = value
+        self.value = choice_value
         return self
     
     

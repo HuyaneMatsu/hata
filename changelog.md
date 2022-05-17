@@ -16,6 +16,8 @@
 - `MessageReference.channel` will not return `None` if it **can have** channel.
 - `MessageReference` now supports rich attribute errors.
 - Add `MessageType.role_subscription_purchase`.
+- `ApplicationCommandOptionChoice.__new__`'s `name` parameter can be `Enum`.
+- `ApplicationCommandOptionChoice.__new__`'s `value` parameter can be `Enum`.
 
 ##### ext.slash
 

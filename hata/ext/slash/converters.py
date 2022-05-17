@@ -1362,43 +1362,6 @@ def create_annotation_choice_from_str(value):
     return (value, value)
 
 
-def parse_annotation_choice_from_name_value_pair(name, value):
-    """
-    Creates a choice form a tuple.
-    
-    Parameters
-    -------
-    name : `str`
-        Choice name.
-    value : `str`, `int`, float`
-        Choice value.
-    
-    Returns
-    -------
-    choice : `tuple` (`str`, (`str`, `int`, `float`))
-        The validated choice.
-    
-    Raises
-    ------
-    TypeError
-        - If the choice's name's type is incorrect.
-        - If the choice's value's type is incorrect.
-    ValueError
-        - If the choice's length is invalid.
-    """
-    if not isinstance(name, str):
-        raise TypeError(
-            f'`annotation-name` can be `str`, got {name.__class__.__name__}; {name!r}.'
-        )
-    
-    if not isinstance(value, (str, int, float)):
-        raise TypeError(
-            f'`annotation-value` can be `str`, `int`, `float`, got {value.__class__.__name__}; {value!r}.'
-        )
-    
-    return (name, value)
-
-
 def parse_annotation_choice_from_enum_member(enum_member):
     """
     Creates a choice form an enum member.
@@ -1421,7 +1384,51 @@ def parse_annotation_choice_from_enum_member(enum_member):
     ValueError
         - If the choice's length is invalid.
     """
-    return parse_annotation_choice_from_name_value_pair(enum_member.name, enum_member.value)
+    _validate_choice_name(enum_member.name)
+    _validate_choice_value(enum_member.value)
+    
+    return enum_member.name, enum_member.value
+
+
+def _validate_choice_name(name):
+    """
+    Validates the given choice's name.
+    
+    Parameters
+    ----------
+    name : `str`
+        The choice's name.
+    
+    Raises
+    ------
+    TypeError
+        - If the `name`'s type is incorrect.
+    """
+    if not isinstance(name, str):
+        raise TypeError(
+            f'`annotation-name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+        )
+
+
+def _validate_choice_value(value):
+    """
+    Validates the given choice's value.
+    
+    Parameters
+    ----------
+    value : `str`, `int`, `float`
+        The choice's value.
+    
+    Raises
+    ------
+    TypeError
+        - If the `value`'s type is incorrect.
+    """
+
+    if not isinstance(value, (str, int, float)):
+        raise TypeError(
+            f'`annotation-value` can be `str`, `int`, `float`, got {value.__class__.__name__}; {value!r}.'
+        )
 
 
 def parse_annotation_choice_from_tuple(annotation):
@@ -1468,7 +1475,12 @@ def parse_annotation_choice_from_tuple(annotation):
         )
     
     # if annotation_length == 2:
-    return parse_annotation_choice_from_name_value_pair(*annotation)
+    name, value = annotation
+    
+    _validate_choice_name(name)
+    _validate_choice_value(value)
+    
+    return (name, value)
 
 
 def parse_annotation_choice(annotation_choice):

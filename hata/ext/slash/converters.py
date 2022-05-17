@@ -1321,7 +1321,7 @@ def create_annotation_choice_from_int(value):
     
     Returns
     -------
-    choice : `tuple` (`str`, (`str`, `int`, `float`))
+    choice : `tuple` (`str`, `int`)
         The validated annotation choice.
     """
     return (str(value), value)
@@ -1338,7 +1338,7 @@ def create_annotation_choice_from_float(value):
     
     Returns
     -------
-    choice : `tuple` (`str`, (`str`, `int`, `float`))
+    choice : `tuple` (`str`, `float`)
         The validated annotation choice.
     """
     return (str(value), value)
@@ -1355,7 +1355,7 @@ def create_annotation_choice_from_str(value):
     
     Returns
     -------
-    choice : `tuple` (`str`, (`str`, `int`, `float`))
+    choice : `tuple` (`str`, `str`)
         The validated annotation choice.
     """
     # make sure
@@ -1373,7 +1373,7 @@ def parse_annotation_choice_from_enum_member(enum_member):
     
     Returns
     -------
-    choice : `tuple` (`str`, (`str`, `int`, `float`))
+    choice : `tuple` (`str`, `Enum`)
         The validated choice.
     
     Raises
@@ -1387,7 +1387,7 @@ def parse_annotation_choice_from_enum_member(enum_member):
     _validate_choice_name(enum_member.name)
     _validate_choice_value(enum_member.value)
     
-    return enum_member.name, enum_member.value
+    return enum_member.name, enum_member
 
 
 def _validate_choice_name(name):
@@ -1538,7 +1538,7 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
     -------
     annotation_type : `int`
         Internal identifier about the annotation.
-    choices : `None`, `dict` of (`int`, `str`, `str`) items
+    choices : `None`, `dict` of ((`int`, `float`, `str`, `Enum`), `str`) items
         Choices if applicable.
     channel_types : `None`, `tuple` of `int`
         The accepted channel types.
@@ -1567,6 +1567,7 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
             ) from None
         
         choices = None
+    
     elif (isinstance(annotation_value, type) and not issubclass(annotation_value, Enum)):
         try:
             annotation_type, channel_types = TYPE_ANNOTATION_TO_ANNOTATION_TYPE[annotation_value]
@@ -1635,8 +1636,10 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
         for name, value in choice_elements:
             if isinstance(value, str):
                 type_ = str
+            
             elif isinstance(value, int):
                 type_ = int
+            
             else:
                 type_ = float
             
@@ -1656,7 +1659,7 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
         else:
             annotation_type = ANNOTATION_TYPE_FLOAT
         
-        choices = {value:name for name, value in choice_elements}
+        choices = {value: name for name, value in choice_elements}
         
         channel_types = None
     
@@ -1760,7 +1763,7 @@ def parse_annotation_tuple(parameter, annotation_tuple):
     
     Returns
     -------
-    choices : `None`, `dict` of (`str`, `int`, `str`) items
+    choices : `None`, `dict` of ((`int`, `float`, `str`, `Enum`), `str`) items
         Parameter's choices.
     description : `str`
         Parameter's description.
@@ -1829,7 +1832,7 @@ def parse_annotation_slash_parameter(parameter, slash_parameter):
     
     Returns
     -------
-    choices : `None`, `dict` of (`str`, `int`, `str`) items
+    choices : `None`, `dict` of ((`int`, `float`, `str`, `Enum`), `str`)) items
         Parameter's choices.
     description : `str`
         Parameter's description.
@@ -1930,7 +1933,7 @@ def parse_pep_593_typing(parameter, annotation_value):
     
     Returns
     -------
-    choices : `None`, `dict` of (`str`, `int`, `str`) items
+    choices : `None`, `dict` of ((`int`, `float`, `str`, `Enum`), `str`) items
         Parameter's choices.
     description : `str`
         Parameter's description.
@@ -1991,7 +1994,7 @@ def parse_annotation_fallback(parameter, annotation_value):
     
     Returns
     -------
-    choices : `None`, `dict` of (`str`, `int`, `str`) items
+    choices : `None`, `dict` of ((`int`, `float`, `str`, `Enum`), `str`) items
         Parameter's choices.
     description : `None`, `str`
         Parameter's description.
@@ -2078,7 +2081,7 @@ def parse_annotation(parameter):
     
     Returns
     -------
-    choices : `None`, `dict` of (`str`, `int`, `str`) items
+    choices : `None`, `dict` of ((`int`, `float`, `str`, `Enum`), `str`) items
         Parameter's choices.
     description : `None`, `str`
         Parameter's description.
@@ -2615,7 +2618,7 @@ class InternalParameterConverter(ParameterConverter):
     ----------
     parameter_name : `str`
         The parameter's name.
-    converter : `func`
+    converter : `FunctionType`
         The converter to use to convert a value to it's desired type.
     type : `int`
         Internal identifier of the converter.
@@ -2632,7 +2635,7 @@ class InternalParameterConverter(ParameterConverter):
             The parameter's name.
         type_ : `int`
             Internal identifier of the converter.
-        converter : `func`
+        converter : `FunctionType`
             The converter to use to convert a value to it's desired type.
         """
         self = object.__new__(cls)
@@ -2672,9 +2675,9 @@ class SlashCommandParameterConverter(ParameterConverter):
         Auto completer if registered.
     channel_types : `None`, `tuple` of `int`
         The accepted channel types.
-    choices : `None`, `dict` of (`str`, `int`, `str`)
+    choices : `None`, `dict` of ((`int`, `float`, `str`, `Enum`), `str`) items
         The choices to choose from if applicable. The keys are choice vales meanwhile the values are choice names.
-    converter : `func`
+    converter : `FunctionType`
         The converter to use to convert a value to it's desired type.
     default : `Any`
         Default value of the parameter.
@@ -2707,7 +2710,7 @@ class SlashCommandParameterConverter(ParameterConverter):
             The parameter's name.
         type_ : `int`
             Internal identifier of the converter.
-        converter : `func`
+        converter : `FunctionType`
             The converter to use to convert a value to it's desired type.
         name : `str`
             The parameter's name.
@@ -2717,7 +2720,7 @@ class SlashCommandParameterConverter(ParameterConverter):
             Default value of the parameter.
         required : `bool`
             Whether the the parameter is required.
-        choices : `None`, `dict` of (`str`, `int`, `str`)
+        choices : `None`, `dict` of ((`int`, `float`, `str`, `Enum`), `str`) items
             The choices to choose from if applicable. The keys are choice vales meanwhile the values are choice names.
         channel_types : `None`, `tuple` of `int`
             The accepted channel types.

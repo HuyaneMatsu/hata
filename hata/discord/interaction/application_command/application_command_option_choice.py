@@ -61,7 +61,7 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         if isinstance(name, str):
             choice_name = name
         
-        if isinstance(name, Enum):
+        elif isinstance(name, Enum):
             if value is None:
                 choice_name = name.name
                 

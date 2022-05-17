@@ -15,6 +15,7 @@
 - `ScheduledEvent.channel` will not return `None` if it **can have** channel.
 - `MessageReference.channel` will not return `None` if it **can have** channel.
 - `MessageReference` now supports rich attribute errors.
+- Add `MessageType.role_subscription_purchase`.
 
 ##### ext.slash
 

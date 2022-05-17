@@ -257,29 +257,6 @@ async def cake(event,
     return Embed(description=f'{event.user:f} just gifted a cookie to {user:f} !').add_image(choice(CAKES))
 ```
 
-## configure_parameter
-
-If you do not like the annotation design, you can use the `configure_parameter` decorator. Since the main design is
-more intuitive, the rest of the examples will follow that one.
-
-```py3
-from hata import parse_emoji
-from hata.ext.slash import configure_parameter
-
-@Nitori.interactions(guild=TEST_GUILD)
-@configure_parameter('emoji', str, 'Yes?')
-async def show_emoji(emoji):
-    """Shows the given custom emoji."""
-    emoji = parse_emoji(emoji)
-    if emoji is None:
-        return 'That\'s not an emoji.'
-    
-    if emoji.is_unicode_emoji():
-        return 'That\' an unicode emoji, cannot link it.'
-    
-    return f'**Name:** {emoji} **Link:** {emoji.url}'
-```
-
 # Choice parameters
 
 Slash commands support choice parameters, for string and integer types. Each choice has a `name` and a
@@ -293,6 +270,7 @@ Choice parameters go to the "annotation type field" and they can be either:
 - Set of `value`-s.
 - Iterables of `name - value` pairs.
 - Iterables of `value`-s.
+- Enum
 
 > Dictionary and set choices are sorted alphabetically, so if order matters for you, use list.
 >
@@ -1177,8 +1155,7 @@ async def kaboom_mixed(client, event):
 # Specifying channel parameter types
 
 The accepted channel types by channel parameters can be defined by 3 ways. Either by modifying the
-annotated type, or by using the `channel_types` parameter with `SlashParameter` or with the `configure_parameter`
-decorator.
+annotated type, or by using the `channel_types` parameter with `SlashParameter`.
 
 ## Modifying the annotated type
 
@@ -1212,7 +1189,7 @@ Or a group covering multiple one.
 - `channel_group_guild_connectable`
 - `channel_group_guild`
 - `channel_group_thread`
-- `channel_group_cahn_contain_threads`
+- `channel_group_can_contain_threads`
 
 > Using `channel_id` prefix instead of `channel`, will give back their id instead.
 
@@ -1229,20 +1206,7 @@ async def thread_channel_name_length(
 
 ## The `channel_types` parameter
 
-
-When using `SlashParameter` or `configure_parameter`, the `channel_types` keyword only parameter can be used to define
-the accepted channel types.
-
-```py3
-from hata import CHANNEL_TYPES
-from hata.ext.slash import configure_parameter
-
-@Nitori.interactions(guild=TEST_GUILD)
-@configure_parameter('channel', 'channel', 'Select a text channel', channel_types=[CHANNEL_TYPES.guild_text])
-async def text_channel_name_length(channel):
-    """Returns the selected text channel's name's length."""
-    return len(channel.name)
-```
+When using `SlashParameter`, the `channel_types` keyword only parameter can be used to define the accepted channel types.
 
 
 ```py3
@@ -1260,7 +1224,7 @@ async def voice_channel_name_length(
 # Specifying input value range
 
 For `number` and `float` parameter types, you can define the minimal and the maximal accepted values with using the
-`min_value` and `max_value` parameters. It works for both `SlashParameter` and for `configure_parameter` as well.
+`min_value` and `max_value` parameters.
 
 ```py3
 from hata.ext.slash import P
@@ -1423,5 +1387,5 @@ Removed slash commands may not disappear after they are removed. This can have m
 ----
 
 <p align="right">
-    <a href="./components.md">Next up: Components</a>
+    <a href="./auto_completion.md">Next up: Auto completion</a>
 </p>

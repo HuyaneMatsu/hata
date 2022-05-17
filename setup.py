@@ -68,6 +68,7 @@ setup(
         'hata.ext.patchouli',
         'hata.ext.prettyprint',
         'hata.ext.slash',
+        'hata.ext.slash.command',
         'hata.ext.slash.menus',
         'hata.ext.solarlink',
         'hata.ext.top_gg',

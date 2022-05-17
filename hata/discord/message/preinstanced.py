@@ -292,53 +292,55 @@ class MessageType(PreinstancedBase):
     +===========================================+===========================================+===================================================+=======+
     | default                                   | default                                   | MESSAGE_DEFAULT_CONVERTER                         | 0     |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | add_user                                  | add_user                                  | convert_add_user                                  | 1     |
+    | add_user                                  | add user                                  | convert_add_user                                  | 1     |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | remove_user                               | remove_user                               | convert_remove_user                               | 2     |
+    | remove_user                               | remove user                               | convert_remove_user                               | 2     |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
     | call                                      | call                                      | convert_call                                      | 3     |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | channel_name_change                       | channel_name_change                       | convert_channel_name_change                       | 4     |
+    | channel_name_change                       | channel name change                       | convert_channel_name_change                       | 4     |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | channel_icon_change                       | channel_icon_change                       | convert_channel_icon_change                       | 5     |
+    | channel_icon_change                       | channel icon change                       | convert_channel_icon_change                       | 5     |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | new_pin                                   | new_pin                                   | convert_new_pin                                   | 6     |
+    | new_pin                                   | new pin                                   | convert_new_pin                                   | 6     |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
     | welcome                                   | welcome                                   | convert_welcome                                   | 7     |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub                             | new_guild_sub                             | convert_new_guild_sub                             | 8     |
+    | new_guild_sub                             | new guild sub                             | convert_new_guild_sub                             | 8     |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub_t1                          | new_guild_sub_t1                          | convert_new_guild_sub_t1                          | 9     |
+    | new_guild_sub_t1                          | new guild sub t1                          | convert_new_guild_sub_t1                          | 9     |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub_t2                          | new_guild_sub_t2                          | convert_new_guild_sub_t2                          | 10    |
+    | new_guild_sub_t2                          | new guild sub t2                          | convert_new_guild_sub_t2                          | 10    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub_t3                          | new_guild_sub_t3                          | convert_new_guild_sub_t3                          | 11    |
+    | new_guild_sub_t3                          | new guild sub t3                          | convert_new_guild_sub_t3                          | 11    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | new_follower_channel                      | new_follower_channel                      | convert_new_follower_channel                      | 12    |
+    | new_follower_channel                      | new follower channel                      | convert_new_follower_channel                      | 12    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
     | stream                                    | stream                                    | convert_stream                                    | 13    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | discovery_disqualified                    | discovery_disqualified                    | convert_discovery_disqualified                    | 14    |
+    | discovery_disqualified                    | discovery disqualified                    | convert_discovery_disqualified                    | 14    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | discovery_requalified                     | discovery_requalified                     | convert_discovery_requalified                     | 15    |
+    | discovery_requalified                     | discovery requalified                     | convert_discovery_requalified                     | 15    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | discovery_grace_period_initial_warning    | discovery_grace_period_initial_warning    | convert_discovery_grace_period_initial_warning    | 16    |
+    | discovery_grace_period_initial_warning    | discovery grace period initial warning    | convert_discovery_grace_period_initial_warning    | 16    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | discovery_grace_period_final_warning      | discovery_grace_period_final_warning      | convert_discovery_grace_period_final_warning      | 17    |
+    | discovery_grace_period_final_warning      | discovery grace period final warning      | convert_discovery_grace_period_final_warning      | 17    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | thread_created                            | thread_created                            | convert_thread_created                            | 18    |
+    | thread_created                            | thread created                            | convert_thread_created                            | 18    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | inline_reply                              | inline_reply                              | MESSAGE_DEFAULT_CONVERTER                         | 19    |
+    | inline_reply                              | inline reply                              | MESSAGE_DEFAULT_CONVERTER                         | 19    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | slash_command                             | slash_command                             | MESSAGE_DEFAULT_CONVERTER                         | 20    |
+    | slash_command                             | slash command                             | MESSAGE_DEFAULT_CONVERTER                         | 20    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | thread_started                            | thread_started                            | MESSAGE_DEFAULT_CONVERTER                         | 21    |
+    | thread_started                            | thread started                            | MESSAGE_DEFAULT_CONVERTER                         | 21    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | invite_reminder                           | invite_reminder                           | convert_invite_reminder                           | 22    |
+    | invite_reminder                           | invite reminder                           | convert_invite_reminder                           | 22    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | context_command                           | context_command                           | MESSAGE_DEFAULT_CONVERTER                         | 23    |
+    | context_command                           | context command                           | MESSAGE_DEFAULT_CONVERTER                         | 23    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | auto_moderation_action                    | auto_moderation_action                    | MESSAGE_DEFAULT_CONVERTER                         | 24    |
+    | auto_moderation_action                    | auto moderation_action                    | MESSAGE_DEFAULT_CONVERTER                         | 24    |
+    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
+    | role_subscription_purchase                | role subscription purchase                | MESSAGE_DEFAULT_CONVERTER                         | 25    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
     """
     INSTANCES = {}
@@ -422,6 +424,7 @@ class MessageType(PreinstancedBase):
     invite_reminder = P(22, 'invite reminder', convert_invite_reminder)
     context_command = P(23, 'context command', MESSAGE_DEFAULT_CONVERTER)
     convert_auto_moderation_action = P(24, 'convert auto moderation action', MESSAGE_DEFAULT_CONVERTER)
+    role_subscription_purchase = P (25, 'role subscription purchase', MESSAGE_DEFAULT_CONVERTER)
 
 
 del convert_add_user

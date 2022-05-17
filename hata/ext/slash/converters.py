@@ -1,6 +1,7 @@
 __all__ = ('SlashParameter', )
 
 import reprlib
+from enum import Enum
 
 from scarletio import CallableAnalyzer, RichAttributeErrorBaseType, copy_docs, include, un_map_pack
 
@@ -1361,6 +1362,68 @@ def create_annotation_choice_from_str(value):
     return (value, value)
 
 
+def parse_annotation_choice_from_name_value_pair(name, value):
+    """
+    Creates a choice form a tuple.
+    
+    Parameters
+    -------
+    name : `str`
+        Choice name.
+    value : `str`, `int`, float`
+        Choice value.
+    
+    Returns
+    -------
+    choice : `tuple` (`str`, (`str`, `int`, `float`))
+        The validated choice.
+    
+    Raises
+    ------
+    TypeError
+        - If the choice's name's type is incorrect.
+        - If the choice's value's type is incorrect.
+    ValueError
+        - If the choice's length is invalid.
+    """
+    if not isinstance(name, str):
+        raise TypeError(
+            f'`annotation-name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+        )
+    
+    if not isinstance(value, (str, int, float)):
+        raise TypeError(
+            f'`annotation-value` can be `str`, `int`, `float`, got {value.__class__.__name__}; {value!r}.'
+        )
+    
+    return (name, value)
+
+
+def parse_annotation_choice_from_enum_member(enum_member):
+    """
+    Creates a choice form an enum member.
+    
+    Parameters
+    -------
+    enum_member : `Enum`
+        The member of an enum.
+    
+    Returns
+    -------
+    choice : `tuple` (`str`, (`str`, `int`, `float`))
+        The validated choice.
+    
+    Raises
+    ------
+    TypeError
+        - If the choice's name's type is incorrect.
+        - If the choice's value's type is incorrect.
+    ValueError
+        - If the choice's length is invalid.
+    """
+    return parse_annotation_choice_from_name_value_pair(enum_member.name, enum_member.value)
+
+
 def parse_annotation_choice_from_tuple(annotation):
     """
     Creates an annotation choice form a tuple.
@@ -1378,10 +1441,10 @@ def parse_annotation_choice_from_tuple(annotation):
     Raises
     ------
     TypeError
-        - `annotation`'s name's type is incorrect.
-        - `annotation`'s value's type is incorrect.
+        - If the choice's name's type is incorrect.
+        - If the choice's value's type is incorrect.
     ValueError
-        `annotation`'s length is invalid.
+        - If the choice's length is invalid.
     """
     annotation_length = len(annotation)
     if (annotation_length < 1 or annotation_length > 2):
@@ -1405,19 +1468,7 @@ def parse_annotation_choice_from_tuple(annotation):
         )
     
     # if annotation_length == 2:
-    
-    name, value = annotation
-    if not isinstance(name, str):
-        raise TypeError(
-            f'`annotation-name` can be `str`, got {name.__class__.__name__}; {name!r}.'
-        )
-    
-    if not isinstance(value, (str, int, float)):
-        raise TypeError(
-            f'`annotation-value` can be `str`, `int`, `float`, got {value.__class__.__name__}; {value!r}.'
-        )
-    
-    return (name, value)
+    return parse_annotation_choice_from_name_value_pair(*annotation)
 
 
 def parse_annotation_choice(annotation_choice):
@@ -1504,7 +1555,7 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
             ) from None
         
         choices = None
-    elif isinstance(annotation_value, type):
+    elif (isinstance(annotation_value, type) and not issubclass(annotation_value, Enum)):
         try:
             annotation_type, channel_types = TYPE_ANNOTATION_TO_ANNOTATION_TYPE[annotation_value]
         except KeyError:
@@ -1514,6 +1565,7 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
             ) from None
         
         choices = None
+    
     else:
         choice_elements = []
         if isinstance(annotation_value, list):
@@ -1527,12 +1579,21 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
                 choice_elements.append(choice_element)
             
             choice_elements.sort()
+        
         elif isinstance(annotation_value, dict):
             for annotation_choice in annotation_value.items():
                 choice_element = parse_annotation_choice_from_tuple(annotation_choice)
                 choice_elements.append(choice_element)
             
             choice_elements.sort()
+        
+        elif issubclass(annotation_value, Enum):
+            for enum_member in annotation_value.__members__.values():
+                choice_element = parse_annotation_choice_from_enum_member(enum_member)
+                choice_elements.append(choice_element)
+            
+            choice_elements.sort()
+        
         elif hasattr(type(annotation_value), '__iter__'):
             for annotation_choice in annotation_value:
                 choice_element = parse_annotation_choice(annotation_choice)

@@ -222,6 +222,8 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         Auto complete function for the parameter.
     _channel_types : `None`, `tuple` of `int`
         The accepted channel types.
+    _choice_enum_type : `None`, `type`
+        Enum type of `choices` if applicable.
     _choices : `None`, `dict` of (`str`, `int`, `str`) items
         Parameter's choices.
     _description : `None`, `str`
@@ -238,8 +240,8 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         The parameter's internal type identifier.
     """
     __slots__ = (
-        '_autocomplete', '_channel_types', '_choices', '_description', '_max_value', '_min_value', '_name',
-        '_parameter_name', '_type'
+        '_autocomplete', '_channel_types', '_choice_enum_type', '_choices', '_description', '_max_value', '_min_value',
+        '_name', '_parameter_name', '_type'
     )
     
     def __new__(cls, parameter_name, type_or_choice, description=None, name=None, *, autocomplete=None,
@@ -300,7 +302,9 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
                 f'`parameter_name` can be `str`, got {parameter_name.__class__.__name__}; {parameter_name!r}.'
             )
         
-        type_, choices, parsed_channel_types = parse_annotation_type_and_choice(type_or_choice, parameter_name)
+        type_, choice_enum_type, choices, parsed_channel_types = parse_annotation_type_and_choice(
+            type_or_choice, parameter_name
+        )
         
         type_, max_value = process_max_and_min_value(type_, max_value, 'max_value')
         type_, min_value = process_max_and_min_value(type_, min_value, 'min_value')
@@ -310,15 +314,16 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         
         if (description is not None):
             description = parse_annotation_description(description, parameter_name)
+        
         name = parse_annotation_name(name, parameter_name)
         
         return partial_func(
-            cls._decorate, cls, autocomplete, choices, description, name, parameter_name, type_, channel_types,
-            max_value, min_value
+            cls._decorate, cls, autocomplete, choice_enum_type, choices, description, name, parameter_name, type_,
+            channel_types, max_value, min_value
         )
     
     
-    def _decorate(cls, autocomplete, choices, description, name, parameter_name, type_, channel_types, max_value,
+    def _decorate(cls, autocomplete, choice_enum_type, choices, description, name, parameter_name, type_, channel_types, max_value,
             min_value, wrapped):
         """
         Wraps given command.
@@ -327,7 +332,9 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         ----------
         autocomplete : `None`, `CoroutineFunction`
             Auto complete function for the parameter.
-        choices : `None`, `dict` of (`str`, `int`, `str`) items
+        choice_enum_type : `None`, `type`
+            Enum type of `choices` if applicable.
+        choices : `None`, `dict` of ((`str`, `int`, `float`, `Enum`), `str`) items
             Parameter's choices.
         description : `str`
             Parameter's description.
@@ -354,6 +361,7 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         self = object.__new__(cls)
         
         self._autocomplete = autocomplete
+        self._choice_enum_type = choice_enum_type
         self._choices = choices
         self._description = description
         self._name = name
@@ -387,6 +395,11 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         if (autocomplete is not None):
             repr_parts.append(', autocomplete=')
             repr_parts.append(repr(autocomplete))
+        
+        choice_enum_type = self._choice_enum_type
+        if (choice_enum_type is not None):
+            repr_parts.append(', choice_enum_type=')
+            repr_parts.append(choice_enum_type.__name__)
         
         choices = self.choices
         if (choices is not None):

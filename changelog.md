@@ -22,6 +22,7 @@
 ##### ext.slash
 
 - Allow pep 593 annotations. (WizzyGeek#2356)
+- Allow enums as choices. (WizzyGeek#2356)
 
 ##### ext.solar_link
 

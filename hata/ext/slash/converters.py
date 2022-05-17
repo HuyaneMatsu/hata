@@ -812,6 +812,7 @@ ANNOTATION_AUTO_COMPLETE_AVAILABILITY = frozenset((
     ANNOTATION_TYPE_FLOAT,
 ))
 
+
 class RegexMatcher(RichAttributeErrorBaseType):
     """
     `custom_id` matcher for component commands.
@@ -1540,6 +1541,8 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
         Internal identifier about the annotation.
     choices : `None`, `dict` of ((`int`, `float`, `str`, `Enum`), `str`) items
         Choices if applicable.
+    choice_enum_type : `None`, `type`
+        Enum type of `choices` if applicable.
     channel_types : `None`, `tuple` of `int`
         The accepted channel types.
     
@@ -1567,6 +1570,7 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
             ) from None
         
         choices = None
+        choice_enum_type = None
     
     elif (isinstance(annotation_value, type) and not issubclass(annotation_value, Enum)):
         try:
@@ -1578,6 +1582,7 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
             ) from None
         
         choices = None
+        choice_enum_type = None
     
     else:
         choice_elements = []
@@ -1585,6 +1590,8 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
             for annotation_choice in annotation_value:
                 choice_element = parse_annotation_choice(annotation_choice)
                 choice_elements.append(choice_element)
+            
+            choice_enum_type = None
         
         elif isinstance(annotation_value, set):
             for annotation_choice in annotation_value:
@@ -1592,6 +1599,8 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
                 choice_elements.append(choice_element)
             
             choice_elements.sort()
+            
+            choice_enum_type = None
         
         elif isinstance(annotation_value, dict):
             for annotation_choice in annotation_value.items():
@@ -1599,6 +1608,8 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
                 choice_elements.append(choice_element)
             
             choice_elements.sort()
+            
+            choice_enum_type = None
         
         elif issubclass(annotation_value, Enum):
             for enum_member in annotation_value.__members__.values():
@@ -1606,11 +1617,15 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
                 choice_elements.append(choice_element)
             
             choice_elements.sort()
+            
+            choice_enum_type = annotation_value
         
         elif hasattr(type(annotation_value), '__iter__'):
             for annotation_choice in annotation_value:
                 choice_element = parse_annotation_choice(annotation_choice)
                 choice_elements.append(choice_element)
+            
+            choice_enum_type = None
         
         else:
             raise TypeError(
@@ -1634,6 +1649,9 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
         # Check annotation type
         expected_type = None
         for name, value in choice_elements:
+            if (choice_enum_type is not None):
+                value = value.value
+            
             if isinstance(value, str):
                 type_ = str
             
@@ -1663,7 +1681,7 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
         
         channel_types = None
     
-    return annotation_type, choices, channel_types
+    return annotation_type, choice_enum_type, choices, channel_types
 
 
 def parse_annotation_description(description, parameter_name):
@@ -1779,6 +1797,8 @@ def parse_annotation_tuple(parameter, annotation_tuple):
         The minimal accepted value.
     autocomplete : `None`, `CoroutineFunction`
         Autocomplete function.
+    choice_enum_type : `None`, `type`
+        Enum type of `choices` if applicable.
     
     Raises
     ------
@@ -1794,7 +1814,9 @@ def parse_annotation_tuple(parameter, annotation_tuple):
         )
     
     annotation_value = annotation_tuple[0]
-    annotation_type, choices, channel_types = parse_annotation_type_and_choice(annotation_value, parameter.name)
+    annotation_type, choice_enum_type, choices, channel_types = parse_annotation_type_and_choice(
+        annotation_value, parameter.name
+    )
     
     if annotation_type in INTERNAL_ANNOTATION_TYPES:
         raise ValueError(
@@ -1816,7 +1838,7 @@ def parse_annotation_tuple(parameter, annotation_tuple):
         name = None
     
     name = parse_annotation_name(name, parameter.name)
-    return choices, description, name, annotation_type, channel_types, None, None, None
+    return choices, description, name, annotation_type, channel_types, None, None, None, choice_enum_type
 
 
 def parse_annotation_slash_parameter(parameter, slash_parameter):
@@ -1848,6 +1870,8 @@ def parse_annotation_slash_parameter(parameter, slash_parameter):
         The minimal accepted value.
     autocomplete : `None`, `CoroutineFunction`
         Autocomplete function.
+    choice_enum_type : `None`, `type`
+        Enum type of `choices` if applicable.
     
     Raises
     ------
@@ -1873,7 +1897,9 @@ def parse_annotation_slash_parameter(parameter, slash_parameter):
     if type_or_choice is None:
         type_or_choice = parameter.name
     
-    type_, choices, parsed_channel_types = parse_annotation_type_and_choice(type_or_choice, parameter.name)
+    type_, choice_enum_type, choices, parsed_channel_types = parse_annotation_type_and_choice(
+        type_or_choice, parameter.name
+    )
     
     processed_channel_types = preprocess_channel_types(slash_parameter.channel_types)
     channel_types = postprocess_channel_types(processed_channel_types, parsed_channel_types)
@@ -1887,7 +1913,10 @@ def parse_annotation_slash_parameter(parameter, slash_parameter):
     
     name = parse_annotation_name(slash_parameter.name, parameter.name)
     
-    return choices, description, name, type_, channel_types, max_value, min_value, slash_parameter.autocomplete
+    return (
+        choices, description, name, type_, channel_types, max_value, min_value, slash_parameter.autocomplete,
+        choice_enum_type
+    )
 
 
 def is_pep_593_typing(annotation_value):
@@ -1949,6 +1978,8 @@ def parse_pep_593_typing(parameter, annotation_value):
         The minimal accepted value.
     autocomplete : `None`, `CoroutineFunction`
         Autocomplete function.
+    choice_enum_type : `None`, `type`
+        Enum type of `choices` if applicable.
     
     Raises
     ------
@@ -2012,6 +2043,8 @@ def parse_annotation_fallback(parameter, annotation_value):
         The minimal accepted value.
     autocomplete : `None`, `CoroutineFunction`
         Autocomplete function.
+    choice_enum_type : `None`, `type`
+        Enum type of `choices` if applicable.
     
     Raises
     ------
@@ -2029,12 +2062,15 @@ def parse_annotation_fallback(parameter, annotation_value):
     else:
         annotation_type = parse_annotation_internal(annotation_value)
         if annotation_type is None:
-            annotation_type, choices, channel_types = parse_annotation_type_and_choice(annotation_value, parameter.name)
+            annotation_type, choice_enum_type, choices, channel_types = parse_annotation_type_and_choice(
+                annotation_value, parameter.name
+            )
         else:
+            choice_enum_type = None
             choices = None
             channel_types = None
     
-    return choices, None, parameter.name, annotation_type, channel_types, None, None, None
+    return choices, None, parameter.name, annotation_type, channel_types, None, None, None, choice_enum_type
 
 
 def parse_annotation_internal(annotation):
@@ -2099,6 +2135,8 @@ def parse_annotation(parameter):
         The minimal accepted value.
     autocomplete : `None`, `CoroutineFunction`
         Autocomplete function.
+    choice_enum_type : `None`, `type`
+        Enum type of `choices` if applicable.
     
     Raises
     ------
@@ -2618,7 +2656,7 @@ class InternalParameterConverter(ParameterConverter):
     ----------
     parameter_name : `str`
         The parameter's name.
-    converter : `FunctionType`
+    converter : `CoroutineFunctionType`
         The converter to use to convert a value to it's desired type.
     type : `int`
         Internal identifier of the converter.
@@ -2635,7 +2673,7 @@ class InternalParameterConverter(ParameterConverter):
             The parameter's name.
         type_ : `int`
             Internal identifier of the converter.
-        converter : `FunctionType`
+        converter : `CoroutineFunctionType`
             The converter to use to convert a value to it's desired type.
         """
         self = object.__new__(cls)
@@ -2675,9 +2713,11 @@ class SlashCommandParameterConverter(ParameterConverter):
         Auto completer if registered.
     channel_types : `None`, `tuple` of `int`
         The accepted channel types.
+    choice_enum_type : `None`, `type`
+        Enum type of `choices` if applicable.
     choices : `None`, `dict` of ((`int`, `float`, `str`, `Enum`), `str`) items
         The choices to choose from if applicable. The keys are choice vales meanwhile the values are choice names.
-    converter : `FunctionType`
+    converter : `CoroutineFunctionType`
         The converter to use to convert a value to it's desired type.
     default : `Any`
         Default value of the parameter.
@@ -2695,12 +2735,12 @@ class SlashCommandParameterConverter(ParameterConverter):
         Internal identifier of the converter.
     """
     __slots__ = (
-        'auto_completer', 'channel_types', 'choices', 'converter', 'default', 'description', 'max_value', 'min_value',
-        'name', 'required', 'type'
+        'auto_completer', 'channel_types', 'choice_enum_type', 'choices', 'converter', 'default', 'description',
+        'max_value', 'min_value', 'name', 'required', 'type'
     )
     
-    def __new__(cls, parameter_name, type_, converter, name, description, default, required, choices, channel_types,
-            max_value, min_value, autocomplete):
+    def __new__(cls, parameter_name, type_, converter, name, description, default, required, choice_enum_type, choices,
+            channel_types, max_value, min_value, autocomplete):
         """
         Creates a new ``SlashCommandParameterConverter`` from the given parameters.
         
@@ -2710,7 +2750,7 @@ class SlashCommandParameterConverter(ParameterConverter):
             The parameter's name.
         type_ : `int`
             Internal identifier of the converter.
-        converter : `FunctionType`
+        converter : `CoroutineFunctionType`
             The converter to use to convert a value to it's desired type.
         name : `str`
             The parameter's name.
@@ -2720,6 +2760,8 @@ class SlashCommandParameterConverter(ParameterConverter):
             Default value of the parameter.
         required : `bool`
             Whether the the parameter is required.
+        choice_enum_type : `None`, `type`
+            Enum type of `choices` if applicable.
         choices : `None`, `dict` of ((`int`, `float`, `str`, `Enum`), `str`) items
             The choices to choose from if applicable. The keys are choice vales meanwhile the values are choice names.
         channel_types : `None`, `tuple` of `int`
@@ -2735,6 +2777,7 @@ class SlashCommandParameterConverter(ParameterConverter):
         
         self.parameter_name = parameter_name
         self.auto_completer = None
+        self.choice_enum_type = choice_enum_type
         self.choices = choices
         self.converter = converter
         self.default = default
@@ -2762,10 +2805,26 @@ class SlashCommandParameterConverter(ParameterConverter):
         if (value is None):
             if not self.required:
                 return self.default
+        
         else:
             converted_value = await self.converter(client, interaction_event, value)
-            if (converted_value is not None) and ((choices is None) or (converted_value in choices)):
-                return converted_value
+            if (converted_value is not None):
+                if (choices is None):
+                    return converted_value
+                
+                choice_enum_type = self.choice_enum_type
+                if (choice_enum_type is None):
+                    if (converted_value in choices):
+                        return converted_value
+                
+                else:
+                    try:
+                        converted_value = choice_enum_type(converted_value)
+                    except ValueError:
+                        pass
+                    else:
+                        return converted_value
+        
         
         raise SlasherApplicationCommandParameterConversionError(
             self.name,
@@ -2836,7 +2895,12 @@ class SlashCommandParameterConverter(ParameterConverter):
         if choices is None:
             option_choices = None
         else:
-            option_choices = [ApplicationCommandOptionChoice(name, str(value)) for value, name in choices.items()]
+            is_enum = (self.choice_enum_type is not None)
+            
+            option_choices = [
+                ApplicationCommandOptionChoice(name, str(value.value if is_enum else value))
+                for value, name in choices.items()
+            ]
         
         option_type = ANNOTATION_TYPE_TO_OPTION_TYPE[self.type]
         
@@ -2966,9 +3030,12 @@ def create_parameter_converter(parameter, parameter_configurer):
         - If `annotation`'s 1st element's (description's) length is out of the expected range [2:100].
     """
     if parameter_configurer is None:
-        choices, description, name, annotation_type, channel_types, max_value, min_value, autocomplete = \
-            parse_annotation(parameter)
+        (
+            choices, description, name, annotation_type, channel_types, max_value, min_value, autocomplete,
+            choice_enum_type
+        ) = parse_annotation(parameter)
     else:
+        choice_enum_type = parameter_configurer._choice_enum_type
         choices = parameter_configurer._choices
         description = parameter_configurer._description
         name = parameter_configurer._name
@@ -2992,10 +3059,11 @@ def create_parameter_converter(parameter, parameter_configurer):
     
     if is_internal:
         parameter_converter = InternalParameterConverter(parameter.name, annotation_type, converter)
+    
     else:
         parameter_converter = SlashCommandParameterConverter(
-            parameter.name, annotation_type, converter, name, description, default, required, choices, channel_types,
-            max_value, min_value, autocomplete
+            parameter.name, annotation_type, converter, name, description, default, required, choice_enum_type,
+            choices, channel_types, max_value, min_value, autocomplete
         )
     
     return parameter_converter

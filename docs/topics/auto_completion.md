@@ -1,18 +1,18 @@
 # Introduction
 
-Auto completion is a great tool to improve command usability as it provides dynamic options for the user to select
+Auto-completion is a great tool to improve command usability as it provides dynamic options for the user to select
 from.
 
-Do you know how the choice parameter only has up to 25 options? An auto completed parameter can only **display**
-up to `25` options as well, however based on user input you can change the displayed options, theoretically
+Do you know how the 'choice' parameter only has up to 25 options? An auto completed parameter can only **display**
+up to `25` options as well, however based on user input you can change those displayed options, theoretically
 allowing you to have infinite amount of options.
 
-> A parameter cannot have choices and be auto completed at the same time. The same types of parameters can have
-> choices & auto completion, so string based, number and float ones.
+> A parameter cannot have choices and be auto completed at the same time. 
+> Both of these support same types, which are: string based, integers and floats
 
 #### Decorator
 
-You may register auto completion function with the `.autocomplete(...)` decorator after adding the command.
+You can register auto-complete function with the `.autocomplete(...)` decorator after adding the command.
 
 ```py3
 from hata import BUILTIN_EMOJIS
@@ -42,19 +42,21 @@ async def autocomplete_cake_name(value):
     return [cake_name for cake_name in CAKE_NAMES if (value in cake_name)]
 ```
 
-Autocomplete functions support **1 additional parameter** outside of client and event, which is the value what the user
+Autocomplete functions support **1 additional parameter** outside the client and event, which is the value the user
 already typed. This value defaults to `None` if the user didn't yet type anything.
 
 #### Exclusive auto completion
 
-Sometimes your auto completed parameters might rely on each other. A common case is when you have multiple of the same
-parameter.
+Sometimes your auto-completed parameters might rely on each other in a way that you want to exclude some of them from
+showing in auto-completion if they were previously selected.
+A common case is when you have multiple similar parameters.
 
-> When doing multiple filtering having a `get_one_like` and a `get_multiple_like` function might be handy.
+> If doing multiple filterings then having a `get_one_like` and `get_multiple_like` functions might be handy.
 
-This example showcases the `event.interaction.get_non_focused_values()` method, which returns a dictionary of
-`parameter-name` - `value` pairs. Using it can be great help when you want to get **all** the parameter which the user
-already filled out. This also includes the parameters filled out with *null* value (so values can be `None`).
+In the below example we use the `event.interaction.get_non_focused_values()` method which returns a dictionary of
+`parameter-name` - `value` pairs. Using it can be great help when you want to get **all** the parameters which the user
+already filled out (so you can do something with them, in this case exclude them).
+This also includes parameters filled out with *null* value (so values can be `None`).
 
 ```py3
 from random import choice
@@ -67,7 +69,6 @@ CAKE_NAMES = [
     'carrot', 'red velvet'
 ]
 
-# Define `get_one_like˙ function
 def get_cake_name_like(name):
     name = name.casefold()
     
@@ -76,7 +77,6 @@ def get_cake_name_like(name):
             return cake_name
 
 
-# Define `get_multiple_like` function
 def get_cake_names_like(name):
     name = name.casefold()
     
@@ -135,13 +135,16 @@ async def exclusive_autocomplete_cake_name(event, actual_cake_name):
 
 #### Dependent auto completion
 
-At cases you might want to have an auto completion, where parameters depend on each other. The main disadvantage of
-implementing such a system, that the use might break up parameter order, or just give bad parameters ruining the whole
-idea.
+Sometimes you'll want your auto-complete parameters to directly depend on each other.
+For example (as in below code) if you have food product (categories), and you want only types for **that** food category.
 
-This example showcases the usage of `event.interaction.get_value_of(*option_names)` which returns the parameter's
-value for the given **option stack**. This means when dealing with sub-commands, you will need to mention their name
-before the parameter's.
+The main disadvantage of implementing such a system is that the user might break up parameter order or just give bad
+parameters. For example, in the discord client, the user can select type before he selects category of food.
+You have to handle these cases yourself (in below code example these are appropriately handled).
+
+In the below example we use the `event.interaction.get_value_of(*option_names)` method which returns the parameter
+values for the given **option stack**. This means that if you're dealing with sub-commands you will need to mention
+the sub-command name before the parameter.
 
 ```py3
 from hata.ext.slash import abort
@@ -193,9 +196,9 @@ async def autocomplete_product_type(event, value):
     return get_options_like(options, value)
 ```
 
-#### Sharing auto completers
+#### Sharing auto-completer
 
-You may add the same auto completer to multiple commands, with using multiple decorators.
+You may add the same auto-completer to multiple commands, with using multiple decorators.
 
 ```py3
 from hata.ext.slash import abort
@@ -274,30 +277,32 @@ async def auto_complete_spell_name(value):
 ##### Sharing within command root
 
 ```py3
-@SPELL_COMMANDS.autocomple('spell')
+@SPELL_COMMANDS.autocomplete('spell')
 async def auto_complete_spell_name(value):
     ...
 ```
-At this case it would be applied to **every** sub-command's parameter, which has the given name.
+In this case it would be applied to **every** sub-command parameter, which has the given parameter name.
 
 ##### Sharing globally
 
-You may also register an auto completer directly to the interaction handler:
+You may also register an auto-completer directly to the interaction handler:
 
 ```py3
 @Nitori.slasher.autocomplete(...):
 async def ...
 ```
 
-This might be dangerous and could cause happy accidents.
+This might be dangerous and could cause happy accidents (accidentally overwriting handler,
+setting handler and forgetting about it then wondering from where your commands pull their arguments etc.)
 
 
 #### Autocompleted parameter definition
 
 When defining a bigger command you might consider splitting the code into multiple files.
 
-When the auto completer is split down, you might want to consider adding it inside of the parameter definition and not
-wth a decorator.
+When the auto-completer is split, you might want to consider adding it inside the parameter definition and not
+within a decorator.
+This is completely optional, and you can choose either decorator or kwarg depending on your preference.
 
 ```py3
 from hata.ext.slash import P, abort

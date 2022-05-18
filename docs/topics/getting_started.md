@@ -1,4 +1,4 @@
-# Get started
+# Getting started
 
 To get started with Discord bots, first you need a discord application and add a bot to it. This tutorial will show to
 how to do it.

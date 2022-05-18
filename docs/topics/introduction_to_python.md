@@ -27,6 +27,10 @@ If you don't know any python, but want to learn it, here are some links, where y
 
 ----
 
+<p align="left">
+    <a href="./getting_started.md">Previously: Getting started</a>
+</p>
+
 <p align="right">
     <a href="./first_bot.md">Next up: First Hata bot</a>
 </p>

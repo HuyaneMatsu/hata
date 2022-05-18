@@ -138,3 +138,9 @@ parameters as well!
 ## What's next?
 
 Considered creating slash commands? Check out our detailed [slash](slash.md) extension guide.
+
+----
+
+<p align="left">
+    <a href="./introduction_to_python.md">Previously: Introduction to Python</a>
+</p>

@@ -71,16 +71,16 @@ async def grocery_bag(
     
     for count, name in zip(
         (cucumber, strawberry, orange, watermelon),
-        ('cucumber', 'starwberry', 'orange', 'watermelon'),
+        ('cucumber', 'strawberry', 'orange', 'watermelon'),
     ):
         if count:
             in_bag.append(f'{name}: {count}')
     
-    if count:
-        description = '*nothing*'
-    else:
+    if in_bag:
         description = '\n'.join(in_bag)
-         
+    else:
+        description = '*nothing*'
+    
     return Embed(
         'In bag',
         description,

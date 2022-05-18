@@ -19,8 +19,10 @@ Hata has tutorials in guides.
 - [slash](slash.md): Everything what you need to know about hata slash extension.
     
     With continuation:
+    - [auto-completion](auto_completion.md): Auto-completing slash command parameters.
     - [components](components.md): Using components and interacting with them.
     - [forms](forms.md): Building forms and receiving them.
+    - [typing](typing_interactions.md): Typing interactions on the [pep 484](https://peps.python.org/pep-0484/) way.
 
 - [commands_v2](commands_v2.md): Everything what you should know about command framework.
 

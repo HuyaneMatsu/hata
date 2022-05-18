@@ -480,3 +480,9 @@ async def rate_cake_form_submit(
 ```
 
 ![](assets/forms_0005.gif)
+
+----
+
+<p align="right">
+    <a href="./typing_interactions.md">Next up: Typing interactions</a>
+</p>

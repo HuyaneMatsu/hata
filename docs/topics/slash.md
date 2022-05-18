@@ -37,7 +37,7 @@ The parameter types can be the following:
 |-------------------|---------------|-----------------------|-----------------------|---------------------------|
 | attachment        | attachment    | `'attachment'`        | `Attachment`          | `Attachment`              |
 | boolean           | boolean       | `'bool'`              | `bool`                | `bool`                    |
-| channel           | channel       | `'channel'`           | `ChannelBase`         | `ChannelBase`             |
+| channel           | channel       | `'channel'`           | `Channel`             | `Channel`                 |
 | channel_id        | channel       | `'channel_id'`        | N/A                   | `int`                     |
 | expression        | string        | `'expression'`        | N/A                   | `int` / `float`           |
 | float             | float         | `'float'`             | `float`               | `float`                   |
@@ -257,10 +257,42 @@ async def cake(event,
     return Embed(description=f'{event.user:f} just gifted a cookie to {user:f} !').add_image(choice(CAKES))
 ```
 
+# Optional parameters
+
+Whether a command parameter is required or not, is defined whether you assign default value to it.
+
+Examples are the  `cookie` command above for required and the `guild-icon` command for not required one.
+
+> Do not forget that in python default-value parameters always follows non-default-value parameters.
+
+Lets improve the `cookie` command to not require user!
+
+```py3
+from hata import Embed
+
+@Nitori.interactions(guild=TEST_GUILD)
+async def cookie(client, event,
+    user: ('user', 'To who?') = None,
+):
+    """Gifts a cookie!"""
+    if user is None:
+        source_user = client
+        target_user = event.user
+    else:
+        source_user = event.user
+        target_user = user
+    
+    return Embed(description=f'{source_user:f} just gifted a cookie to {target_user:f} !')
+```
+
+![](assets/slash_0006.png)
+
+![](assets/slash_0007.png)
+
 # Choice parameters
 
-Slash commands support choice parameters, for string and integer types. Each choice has a `name` and a
-`value` field. All values must be the same type, either `str` or `int` as mentioned above.
+Slash commands support choice parameters, for string, integer and float types. Each choice has a `name` and a
+`value` field. All values must be the same type, either `str`, `int` or `float` as mentioned above.
 
 Choice parameters go to the "annotation type field" and they can be either:
 - Dictionary of `name - value` items.
@@ -378,37 +410,46 @@ async def roll(
 
 ![](assets/slash_0005.png)
 
-# Required & not required parameters
+### Enums
 
-Whether a command parameter is required or not, is defined whether you assign default value to it.
-
-Examples are the  `cookie` command above for required and the `guild-icon` command for not required one.
-
-> Do not forget that in python default-value parameters always follows non-default-value parameters.
-
-Lets improve the `cookie` command to not require user!
+Enums may also be used as choices. Other limitations still apply.
 
 ```py3
+from enum import Enum
+
 from hata import Embed
 
+
+class PetInfoFieldType(Enum):
+    all = 'all'
+    starve = 'hunger'
+    love = 'love'
+    energy = 'energy'
+
+
+def create_pet_info_field(field, user):
+     return f'**{field.value}**: {(user.id >> (22 + len(field.value))) % 101}'
+
+
 @Nitori.interactions(guild=TEST_GUILD)
-async def cookie(client, event,
-    user: ('user', 'To who?') = None,
-):
-    """Gifts a cookie!"""
-    if user is None:
-        source_user = client
-        target_user = event.user
-    else:
-        source_user = event.user
-        target_user = user
+async def pet_info(client, event, field: PetInfoFieldType = PetInfoFieldType.all):
+    user = event.user
     
-    return Embed(description=f'{source_user:f} just gifted a cookie to {target_user:f} !')
+    if field == PetInfoFieldType.all:
+        description = '\n'.join(
+            create_pet_info_field(field, user) for field in PetInfoFieldType
+            if field != PetInfoFieldType.all
+        )
+    
+    else:
+        description = create_pet_info_field(field, user)
+    
+    
+    return Embed(
+        f'{event.user}\'s pet info',
+        description,
+    )
 ```
-
-![](assets/slash_0006.png)
-
-![](assets/slash_0007.png)
 
 # Decorator parameters
 

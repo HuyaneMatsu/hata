@@ -53,7 +53,7 @@ potential.
 
 > Since hata does *"structure"* checking, you could port it to lower python versions as well if required.
 
-```py
+```py3
 from typing import Annotated
 
 from hata import Embed
@@ -89,7 +89,7 @@ async def grocery_bag(
 
 You may also spread out the annotation into multiple metadata fields.
 
-```py
+```py3
 from typing import Annotated
 
 @Nitori.interactions(guild=TEST_GUILD)

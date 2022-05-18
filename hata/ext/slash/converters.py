@@ -1611,7 +1611,7 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
             
             choice_enum_type = None
         
-        elif issubclass(annotation_value, Enum):
+        elif isinstance(annotation_value, type) and issubclass(annotation_value, Enum):
             for enum_member in annotation_value.__members__.values():
                 choice_element = parse_annotation_choice_from_enum_member(enum_member)
                 choice_elements.append(choice_element)

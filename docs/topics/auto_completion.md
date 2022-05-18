@@ -10,7 +10,7 @@ allowing you to have infinite amount of options.
 > A parameter cannot have choices and be auto completed at the same time. 
 > Both of these support same types, which are: string based, integers and floats
 
-#### Decorator
+## Decorator
 
 You can register auto-complete function with the `.autocomplete(...)` decorator after adding the command.
 
@@ -45,7 +45,7 @@ async def autocomplete_cake_name(value):
 Autocomplete functions support **1 additional parameter** outside the client and event, which is the value the user
 already typed. This value defaults to `None` if the user didn't type anything yet.
 
-#### Dependent auto completion
+### Dependent auto completion
 
 Sometimes you'll want your auto-complete parameters to directly depend on each other.
 For example (as in below code) if you have food product (categories), and you want only types for **that** food category.
@@ -108,7 +108,7 @@ async def autocomplete_product_type(event, value):
     return get_options_like(options, value)
 ```
 
-#### Dependent exclusive auto completion
+### Dependent exclusive auto completion
 
 Sometimes your auto-completed parameters might rely on each other in a way that you want to exclude some of them from
 showing in auto-completion if they were previously selected.
@@ -196,7 +196,7 @@ async def exclusive_autocomplete_cake_name(event, actual_cake_name):
             return cake_names
 ```
 
-#### Sharing auto-completer
+## Sharing auto-completer
 
 You may add the same auto-completer to multiple commands, with using multiple decorators.
 
@@ -274,7 +274,7 @@ async def auto_complete_spell_name(value):
     return get_spells_like(value)
 ```
 
-##### Sharing within command root
+### Sharing within command root
 
 ```py3
 @SPELL_COMMANDS.autocomplete('spell')
@@ -283,7 +283,7 @@ async def auto_complete_spell_name(value):
 ```
 In this case it would be applied to **every** sub-command parameter, which has the given parameter name.
 
-##### Sharing globally
+### Sharing globally
 
 You may also register an auto-completer directly to the interaction handler:
 
@@ -296,7 +296,7 @@ This might be dangerous and could cause happy accidents (accidentally overwritin
 setting handler and forgetting about it then wondering from where your commands pull their arguments etc.)
 
 
-#### Keyword parameter
+## Keyword parameter
 
 When defining a bigger command you might consider splitting the code into multiple files.
 
@@ -337,6 +337,10 @@ async def get_sticker_id(
 ```
 
 ----
+
+<p align="left">
+    <a href="./slash.md">Previously: Slash & Context commands</a>
+</p>
 
 <p align="right">
     <a href="./components.md">Next up: Components</a>

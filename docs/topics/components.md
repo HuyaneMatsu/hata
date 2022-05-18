@@ -767,6 +767,10 @@ async def zoo(event):
 
 ----
 
+<p align="left">
+    <a href="./auto_completion.md">Previously: Auto completion</a>
+</p>
+
 <p align="right">
     <a href="./forms.md">Next up: Forms</a>
 </p>

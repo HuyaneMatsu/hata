@@ -101,3 +101,9 @@ async def set_difficulty(
     
     return 'Crazy moon rabbit mode activated!'
 ```
+
+----
+
+<p align="left">
+    <a href="./forms.md">Previously: Forms</a>
+</p>

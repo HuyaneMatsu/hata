@@ -16,7 +16,7 @@ Hata has tutorials in guides.
 
 #### Extension topics:
 
-- [slash](slash.md): Everything what you need to know about hata slash extension.
+- [slash](slash.md): Creating slash and context commands.
     
     With continuation:
     - [auto-completion](auto_completion.md): Auto-completing slash command parameters.

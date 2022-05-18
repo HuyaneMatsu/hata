@@ -483,6 +483,10 @@ async def rate_cake_form_submit(
 
 ----
 
+<p align="left">
+    <a href="./components.md">Previously: Components</a>
+</p>
+
 <p align="right">
     <a href="./typing_interactions.md">Next up: Typing interactions</a>
 </p>

@@ -17,12 +17,13 @@ You can register auto-complete function with the `.autocomplete(...)` decorator 
 ```py3
 from hata import BUILTIN_EMOJIS
 
-EMOJI_CAKE = BUILTIN_EMOJIS['cake']
 
 CAKE_NAMES = [
     'butter', 'pound', 'sponge', 'genoise', 'biscuit', 'angel food', 'chiffon', 'baked flourless', 'unbaked flourless',
     'carrot', 'red velvet'
 ]
+
+EMOJI_CAKE = BUILTIN_EMOJIS['cake']
 
 
 @Nitori.interactions(guild=TEST_GUILD)
@@ -41,6 +42,8 @@ async def autocomplete_cake_name(value):
     value = value.casefold()
     return [cake_name for cake_name in CAKE_NAMES if (value in cake_name)]
 ```
+
+![](assets/auto_completion_0000.gif)
 
 Autocomplete functions support **1 additional parameter** outside the client and event, which is the value the user
 already typed. This value defaults to `None` if the user didn't type anything yet.
@@ -87,7 +90,7 @@ async def shop(
     type_: ('str', 'Select a type'),
 ):
     """Buy some sweets."""
-    type_ = get_option_like(PRODUCT_TYPES[product], type_),
+    type_ = get_option_like(PRODUCT_TYPES[product], type_)
     if type_ is None:
         abort('Invalid product type.')
     
@@ -96,7 +99,7 @@ async def shop(
 
 @shop.autocomplete('type_')
 async def autocomplete_product_type(event, value):
-    product = event.intearction.get_value_of('product')
+    product = event.interaction.get_value_of('product')
     if product is None:
         return
     
@@ -107,6 +110,8 @@ async def autocomplete_product_type(event, value):
     
     return get_options_like(options, value)
 ```
+
+![](assets/auto_completion_0001.gif)
 
 ### Dependent exclusive auto completion
 
@@ -196,6 +201,8 @@ async def exclusive_autocomplete_cake_name(event, actual_cake_name):
             return cake_names
 ```
 
+![](assets/auto_completion_0002.gif)
+
 ## Sharing auto-completer
 
 You may add the same auto-completer to multiple commands, with using multiple decorators.
@@ -274,6 +281,8 @@ async def auto_complete_spell_name(value):
     return get_spells_like(value)
 ```
 
+![](assets/auto_completion_0003.gif)
+
 ### Sharing within command root
 
 ```py3
@@ -330,11 +339,13 @@ async def get_sticker_id(
         abort('Please use the command inside of a guild')
     
     sticker = guild.get_sticker_like(sticker)
-    if sticker:
+    if sticker is None:
         abort('Unknown sticker')
     
     return f'{sticker.name}\'s id: `{sticker.id}`'
 ```
+
+![](assets/auto_completion_0004.gif)
 
 ----
 

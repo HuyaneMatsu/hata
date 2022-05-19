@@ -451,6 +451,8 @@ async def pet_info(client, event, field: PetInfoFieldType = PetInfoFieldType.all
     )
 ```
 
+![](assets/slash_0029.gif)
+
 # Decorator parameters
 
 `client.interactions` has no requires parameters, so can be used just as `@client.interactions` decorator, however in

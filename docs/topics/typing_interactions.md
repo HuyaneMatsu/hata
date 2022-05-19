@@ -28,6 +28,8 @@ async def show_emoji(
     return f'**Name:** {emoji} **Link:** {emoji.url}'
 ```
 
+![](assets/typing_interactions_0000.gif)
+
 `configure_parameter` supports every parameter that `SlashParameter` (`P`) does.
 
 ```py3
@@ -42,6 +44,8 @@ async def text_channel_name_length(
     """Returns the selected text channel's name's length."""
     return len(channel.name)
 ```
+
+![](assets/typing_interactions_0001.gif)
 
 ## Annotated
 
@@ -87,6 +91,8 @@ async def grocery_bag(
     )
 ```
 
+![](assets/typing_interactions_0002.gif)
+
 You may also spread out the annotation into multiple metadata fields.
 
 ```py3
@@ -96,11 +102,13 @@ from typing import Annotated
 async def set_difficulty(
     difficulty: Annotated[str, ['easy', 'lunatic'], 'difficulty'],
 ):
-    if difficulty == 'low':
+    if difficulty == 'easy':
         return 'Only kids play on easy mode.\nHow lame!'
     
     return 'Crazy moon rabbit mode activated!'
 ```
+
+![](assets/typing_interactions_0003.gif)
 
 ----
 

@@ -420,16 +420,18 @@ import re
 from hata import Embed, BUILTIN_EMOJIS
 from hata.ext.slash import Form, TextInput, TextInputStyle
 
+
+CAKE_NAMES = [
+    'butter', 'pound', 'sponge', 'genoise', 'biscuit', 'angel food', 'chiffon', 'baked flourless', 'unbaked flourless',
+    'carrot', 'red velvet'
+]
+
 EMOJI_CAKE = BUILTIN_EMOJIS['cake']
 
 CUSTOM_ID_RATE_CAKE = 'rate_cake'
 CUSTOM_ID_RATE_CAKE_FIELD = 'rate_cake.field'
 
 
-CAKE_NAMES = [
-    'butter', 'pound', 'sponge', 'genoise', 'biscuit', 'angel food', 'chiffon', 'baked flourless', 'unbaked flourless',
-    'carrot', 'red velvet'
-]
 
 @Nitori.interactions(guild=TEST_GUILD)
 async def rate_cakes(

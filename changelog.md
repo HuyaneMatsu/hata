@@ -18,6 +18,8 @@
 - Add `MessageType.role_subscription_purchase`.
 - `ApplicationCommandOptionChoice.__new__`'s `name` parameter can be `Enum`.
 - `ApplicationCommandOptionChoice.__new__`'s `value` parameter can be `Enum`.
+- Add `ApplicationCommandCountUpdate`.
+- Add `Client.events.application_command_count_update`.
 
 ##### ext.slash
 

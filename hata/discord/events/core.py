@@ -269,6 +269,7 @@ add_event_handler('embedded_activity_delete', 2, 'EMBEDDED_ACTIVITY_UPDATE',)
 add_event_handler('embedded_activity_update', 3, 'EMBEDDED_ACTIVITY_UPDATE',)
 add_event_handler('embedded_activity_user_add', 3, 'EMBEDDED_ACTIVITY_UPDATE',)
 add_event_handler('embedded_activity_user_delete', 3, 'EMBEDDED_ACTIVITY_UPDATE',)
+add_event_handler('application_command_count_update', 2, 'GUILD_APPLICATION_COMMAND_INDEX_UPDATE',)
 
 
 class ParserSettingOption:

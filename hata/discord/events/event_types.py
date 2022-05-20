@@ -1,4 +1,4 @@
-__all__ = ('GuildUserChunkEvent', 'VoiceServerUpdateEvent', 'WebhookUpdateEvent',)
+__all__ = ('ApplicationCommandCountUpdate', 'GuildUserChunkEvent', 'VoiceServerUpdateEvent', 'WebhookUpdateEvent',)
 
 from scarletio import copy_docs, set_docs
 
@@ -7,6 +7,7 @@ from ...env import CACHE_PRESENCE
 from ..bases import EventBase
 from ..channel import create_partial_channel_from_id
 from ..core import GUILDS
+from ..interaction import ApplicationCommandTargetType
 from ..user import User
 
 
@@ -442,6 +443,145 @@ class WebhookUpdateEvent(EventBase):
         channel : ``Channel``
         """
         return create_partial_channel_from_id(self.channel_id, -1, self.guild_id)
+    
+    
+    @property
+    def guild(self):
+        """
+        Returns the event's guild from cache.
+        
+        Returns
+        -------
+        guild : `None`, ``Guild``
+        """
+        guild_id = self.guild_id
+        if guild_id:
+            return GUILDS.get(guild_id, None)
+
+
+
+class ApplicationCommandCountUpdate(EventBase):
+    """
+    Represents a `GUILD_APPLICATION_COMMAND_INDEX_UPDATE` event.
+    
+    Attributes
+    ----------
+    counts : `dict` of (``ApplicationCommandTargetType``, `int`) items
+        The count of the application commands by target type.
+    guild_id : `int`
+        The respective guild's identifier.
+    
+    Examples
+    --------
+    The event can be unpacked like:
+    
+    ```py
+    guild_id, channel_id = event
+    ```
+    """
+    __slots__ = ('counts', 'guild_id')
+    
+    def __new__(cls, data):
+        """
+        Creates a new application command count update event from the given data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Application command count update data.
+        """
+        raw_counts = data['application_command_counts']
+        
+        counts = {
+            ApplicationCommandTargetType.get(int(application_command_target_type_string)): count
+            for application_command_target_type_string, count in raw_counts.items()
+        }
+        
+        guild_id = data.get('guild_id', None)
+        # non guild check ??
+        if guild_id is None:
+            guild_id = 0
+        else:
+            guild_id = int(guild_id)
+        
+        self = object.__new__(cls)
+        self.counts = counts
+        self.guild_id = guild_id
+        
+        return self
+    
+    
+    @copy_docs(EventBase.__repr__)
+    def __repr__(self):
+        repr_parts = ['<', self.__class__.__name__,]
+        
+        repr_parts.append(' guild_id=')
+        repr_parts.append(repr(self.guild_id))
+        
+        repr_parts.append(', counts={')
+        
+        items = sorted(self.counts.items())
+        item_count = len(items)
+        if item_count:
+            index = 0
+            while True:
+                application_command_target_type, count = items[index]
+                repr_parts.append(application_command_target_type.name)
+                repr_parts.append(': ')
+                repr_parts.append(str(count))
+                
+                index += 1
+                if index == item_count:
+                    break
+                
+                repr_parts.append(', ')
+                continue
+        
+        repr_parts.append('}')
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    @copy_docs(EventBase.__len__)
+    def __len__(self):
+        return 2
+    
+    
+    @copy_docs(EventBase.__iter__)
+    def __iter__(self):
+        yield self.guild_id
+        yield self.counts
+    
+    
+    @copy_docs(EventBase.__eq__)
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        # counts
+        if self.counts != other.counts:
+            return False
+        
+        # guild_id
+        if self.guild_id != other.guild_id:
+            return False
+        
+        return True
+    
+    
+    @copy_docs(EventBase.__hash__)
+    def __hash__(self):
+        hash_value = 0
+        
+        # counts
+        for application_command_target_type, count in self.counts.items():
+            hash_value ^= application_command_target_type * count * count
+        
+        # guild_id
+        hash_value ^= self.guild_id
+        
+        return hash_value
     
     
     @property

@@ -176,7 +176,7 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
     +-------------------------------+-------------------+
     | send_messages_in_threads      | 38                |
     +-------------------------------+-------------------+
-    | use_embedded_activities     | 39                |
+    | use_embedded_activities       | 39                |
     +-------------------------------+-------------------+
     | moderate_users                | 40                |
     +-------------------------------+-------------------+

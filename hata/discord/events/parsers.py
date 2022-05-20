@@ -35,7 +35,7 @@ from ..user import (
 from ..utils import Gift, Relationship
 
 from .core import DEFAULT_EVENT_HANDLER, add_parser, maybe_ensure_launch
-from .event_types import GuildUserChunkEvent, VoiceServerUpdateEvent
+from .event_types import ApplicationCommandCountUpdate, GuildUserChunkEvent, VoiceServerUpdateEvent
 from .filters import (
     filter_clients, filter_clients_or_me, filter_content_intent_client, filter_just_me, first_client,
     first_client_or_me, first_content_intent_client
@@ -4582,3 +4582,22 @@ del EMBEDDED_ACTIVITY_UPDATE__CAL_SC, \
     EMBEDDED_ACTIVITY_UPDATE__CAL_MC, \
     EMBEDDED_ACTIVITY_UPDATE__OPT_SC, \
     EMBEDDED_ACTIVITY_UPDATE__OPT_MC
+
+
+def GUILD_APPLICATION_COMMAND_INDEX_UPDATE__CAL(client, data):
+    event = ApplicationCommandCountUpdate(data)
+    
+    Task(client.events.application_command_count_update(client, event), KOKORO)
+
+
+def GUILD_APPLICATION_COMMAND_INDEX_UPDATE__OPT(client, data):
+    pass
+
+add_parser(
+    'GUILD_APPLICATION_COMMAND_INDEX_UPDATE',
+    GUILD_APPLICATION_COMMAND_INDEX_UPDATE__CAL,
+    GUILD_APPLICATION_COMMAND_INDEX_UPDATE__CAL,
+    GUILD_APPLICATION_COMMAND_INDEX_UPDATE__OPT,
+    GUILD_APPLICATION_COMMAND_INDEX_UPDATE__OPT)
+del GUILD_APPLICATION_COMMAND_INDEX_UPDATE__CAL, \
+    GUILD_APPLICATION_COMMAND_INDEX_UPDATE__OPT

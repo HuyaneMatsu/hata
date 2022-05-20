@@ -217,6 +217,9 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     
     Additional Event Attributes
     ---------------------------
+    application_command_count_update(client: ``Client``, event: ``ApplicationCommandCountUpdate``)
+        Called when a guild's application commands changed.
+    
     application_command_create(client: ``Client``, guild_id: `int`, application_command: ``ApplicationCommand``)
         Called when you create an application guild bound to a guild.
     

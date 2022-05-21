@@ -1,4 +1,4 @@
-## 1.2.15 *\[2022-05-??\]*
+## 1.2.15 *\[2022-05-21\]*
 
 #### Improvements
 
@@ -20,6 +20,8 @@
 - `ApplicationCommandOptionChoice.__new__`'s `value` parameter can be `Enum`.
 - Add `ApplicationCommandCountUpdate`.
 - Add `Client.events.application_command_count_update`.
+- Ad `previously` button to docs.
+
 
 ##### ext.slash
 
@@ -34,6 +36,7 @@
 
 - Fix a `NameError` in `cr_pg_channel_object`.
 - `MessageReference.channel_id` could been `None`.
+- Fix `TypeError` in `preconvert_int_options`. (Coryf88#0317)
 
 ## 1.2.14 *\[2022-05-05\]*
 

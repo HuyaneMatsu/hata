@@ -1,3 +1,16 @@
+## 1.2.16 *\[2022-05-??\]*
+
+#### Renames, Deprecation & Removals
+- Rename `MessageType.convert_auto_moderation_action` to `.auto_moderation_action`. (Ops)
+- Deprecate `MessageType.new_guild_sub`.
+- Deprecate `MessageType.new_guild_sub_t1`.
+- Deprecate `MessageType.new_guild_sub_t2`.
+- Deprecate `MessageType.new_guild_sub_t3`.
+- Rename `MessageType.new_guild_sub` to `.new_guild_subscription`.
+- Rename `MessageType.new_guild_sub_t1` to `.new_guild_subscription_tier_1`.
+- Rename `MessageType.new_guild_sub_t2` to `.new_guild_subscription_tier_2`.
+- Rename `MessageType.new_guild_sub_t3` to `.new_guild_subscription_tier_3`.
+
 ## 1.2.15 *\[2022-05-21\]*
 
 #### Improvements

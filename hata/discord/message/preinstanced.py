@@ -1,6 +1,8 @@
 __all__ = ('MessageType', 'MessageActivityType')
 
-from scarletio import any_to_any
+import warnings
+
+from scarletio import any_to_any, class_property
 
 from ..activity import ACTIVITY_TYPES
 from ..bases import Preinstance as P, PreinstancedBase
@@ -150,7 +152,7 @@ def convert_welcome(self):
 
     return join_messages[int(self.created_at.timestamp()) % len(join_messages)].format(self.author.name)
 
-def convert_new_guild_sub(self):
+def convert_new_guild_subscription(self):
     guild = self.channel.guild
     if guild is None:
         guild_name = 'None'
@@ -158,7 +160,7 @@ def convert_new_guild_sub(self):
         guild_name = guild.name
     return f'{self.author.name} boosted {guild_name} with Nitro!'
 
-def convert_new_guild_sub_t1(self):
+def convert_new_guild_subscription_tier_1(self):
     guild = self.channel.guild
     if guild is None:
         guild_name = 'None'
@@ -167,7 +169,7 @@ def convert_new_guild_sub_t1(self):
         
     return f'{self.author.name} boosted {guild_name} with Nitro! {guild_name} has achieved level 1!'
 
-def convert_new_guild_sub_t2(self):
+def convert_new_guild_subscription_tier_2(self):
     guild = self.channel.guild
     if guild is None:
         guild_name = 'None'
@@ -176,7 +178,7 @@ def convert_new_guild_sub_t2(self):
     
     return f'{self.author.name} boosted {guild_name} with Nitro! {guild_name} has achieved level 2!'
 
-def convert_new_guild_sub_t3(self):
+def convert_new_guild_subscription_tier_3(self):
     guild = self.channel.guild
     if guild is None:
         guild_name = 'None'
@@ -306,13 +308,13 @@ class MessageType(PreinstancedBase):
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
     | welcome                                   | welcome                                   | convert_welcome                                   | 7     |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub                             | new guild sub                             | convert_new_guild_sub                             | 8     |
+    | new_guild_sub                             | new guild sub                             | convert_new_guild_subscription                             | 8     |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub_t1                          | new guild sub t1                          | convert_new_guild_sub_t1                          | 9     |
+    | new_guild_sub_t1                          | new guild sub t1                          | convert_new_guild_subscription_tier_1                          | 9     |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub_t2                          | new guild sub t2                          | convert_new_guild_sub_t2                          | 10    |
+    | new_guild_sub_t2                          | new guild sub t2                          | convert_new_guild_subscription_tier_2                          | 10    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub_t3                          | new guild sub t3                          | convert_new_guild_sub_t3                          | 11    |
+    | new_guild_sub_t3                          | new guild sub t3                          | convert_new_guild_subscription_tier_3                          | 11    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
     | new_follower_channel                      | new follower channel                      | convert_new_follower_channel                      | 12    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
@@ -405,26 +407,73 @@ class MessageType(PreinstancedBase):
     channel_icon_change = P(5, 'channel icon change', convert_channel_icon_change)
     new_pin = P(6, 'new pin', convert_new_pin)
     welcome = P(7, 'welcome', convert_welcome)
-    new_guild_sub = P(8, 'new guild sub', convert_new_guild_sub)
-    new_guild_sub_t1 = P(9, 'new guild sub t1', convert_new_guild_sub_t1)
-    new_guild_sub_t2 = P(10, 'new guild sub t2', convert_new_guild_sub_t2)
-    new_guild_sub_t3 = P(11, 'new guild sub t3', convert_new_guild_sub_t3)
+    new_guild_subscription = P(8, 'new guild subscription', convert_new_guild_subscription)
+    new_guild_subscription_tier_1 = P(9, 'new guild subscription tier 1', convert_new_guild_subscription_tier_1)
+    new_guild_subscription_tier_2 = P(10, 'new guild subscription tier 2', convert_new_guild_subscription_tier_2)
+    new_guild_subscription_tier_3 = P(11, 'new guild subscription tier 3', convert_new_guild_subscription_tier_3)
     new_follower_channel = P(12, 'new follower channel', convert_new_follower_channel)
     stream = P(13, 'stream', convert_stream)
     discovery_disqualified = P(14, 'discovery disqualified', convert_discovery_disqualified)
     discovery_requalified = P(15, 'discovery requalified', convert_discovery_requalified)
-    discovery_grace_period_initial_warning = P(16, 'discovery grace period initial warning',
-        convert_discovery_grace_period_initial_warning)
-    discovery_grace_period_final_warning = P(17, 'discovery grace period final warning',
-        convert_discovery_grace_period_final_warning)
+    discovery_grace_period_initial_warning = P(
+        16, 'discovery grace period initial warning', convert_discovery_grace_period_initial_warning
+    )
+    discovery_grace_period_final_warning = P(
+        17, 'discovery grace period final warning', convert_discovery_grace_period_final_warning
+    )
     thread_created = P(18, 'thread created', convert_thread_created)
     inline_reply = P(19, 'inline reply', MESSAGE_DEFAULT_CONVERTER)
     slash_command = P(20, 'slash command', MESSAGE_DEFAULT_CONVERTER)
     thread_started = P(21, 'thread started', MESSAGE_DEFAULT_CONVERTER)
     invite_reminder = P(22, 'invite reminder', convert_invite_reminder)
     context_command = P(23, 'context command', MESSAGE_DEFAULT_CONVERTER)
-    convert_auto_moderation_action = P(24, 'convert auto moderation action', MESSAGE_DEFAULT_CONVERTER)
+    auto_moderation_action = P(24, 'auto moderation action', MESSAGE_DEFAULT_CONVERTER)
     role_subscription_purchase = P (25, 'role subscription purchase', MESSAGE_DEFAULT_CONVERTER)
+    
+    
+    @class_property
+    def new_guild_sub(cls):
+        warnings.warn(
+            (
+                f'`{cls.__name__}.new_guild_sub` is deprecated and will be removed in 2022 Nov.'
+                f'Please use `.new_guild_subscription` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+
+    @class_property
+    def new_guild_sub_t1(cls):
+        warnings.warn(
+            (
+                f'`{cls.__name__}.new_guild_sub_t1` is deprecated and will be removed in 2022 Nov.'
+                f'Please use `.new_guild_subscription_tier_1` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+
+    @class_property
+    def new_guild_sub_t2(cls):
+        warnings.warn(
+            (
+                f'`{cls.__name__}.new_guild_sub_t2` is deprecated and will be removed in 2022 Nov.'
+                f'Please use `.new_guild_subscription_tier_2` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+    
+    @class_property
+    def new_guild_sub_t3(cls):
+        warnings.warn(
+            (
+                f'`{cls.__name__}.new_guild_sub_t3` is deprecated and will be removed in 2022 Nov.'
+                f'Please use `.new_guild_subscription_tier_3` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
 
 
 del convert_add_user
@@ -434,10 +483,10 @@ del convert_channel_name_change
 del convert_channel_icon_change
 del convert_new_pin
 del convert_welcome
-del convert_new_guild_sub
-del convert_new_guild_sub_t1
-del convert_new_guild_sub_t2
-del convert_new_guild_sub_t3
+del convert_new_guild_subscription
+del convert_new_guild_subscription_tier_1
+del convert_new_guild_subscription_tier_2
+del convert_new_guild_subscription_tier_3
 del convert_new_follower_channel
 del convert_stream
 del convert_discovery_disqualified

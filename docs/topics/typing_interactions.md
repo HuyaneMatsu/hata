@@ -1,12 +1,12 @@
 # Introduction
 
-If you want to type your slash commands on the [pep 484](https://peps.python.org/pep-0484/) way, there are two ways of
-doing it.
+If you want to type your slash commands with the [pep 484](https://peps.python.org/pep-0484/) way,
+there are two ways of doing it.
 
 ## configure_parameter
 
 The `configure_parameter` decorator allows you to configure a *slash* command parameter. To do so, pass the respective
-parameter's name as the first parameter into `configure_parameter`. 
+parameter name as the first parameter in `configure_parameter`. 
 
 ```py3
 from hata import parse_emoji
@@ -41,7 +41,7 @@ from hata.ext.slash import P
 async def text_channel_name_length(
     channel: Channel
 ):
-    """Returns the selected text channel's name's length."""
+    """Returns the selected text channel name length."""
     return len(channel.name)
 ```
 
@@ -52,7 +52,7 @@ async def text_channel_name_length(
 `Annotated` is a new typing feature introduced in python 3.9 by [pep 593](https://peps.python.org/pep-0593/).
 It allows you to extend [pep 484](https://peps.python.org/pep-0484/) annotations with arbitrary metadata.
 
-The interaction parameter parser only uses the added metadata, enables you to use both systems for their maximal
+The interaction parameter parser only uses the added metadata, enabling you to use both systems with maximum
 potential.
 
 > Since hata does *"structure"* checking, you could port it to lower python versions as well if required.
@@ -93,7 +93,7 @@ async def grocery_bag(
 
 ![](assets/typing_interactions_0002.gif)
 
-You may also spread out the annotation into multiple metadata fields.
+You can also spread out annotation to multiple metadata fields.
 
 ```py3
 from typing import Annotated

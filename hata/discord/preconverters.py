@@ -557,7 +557,7 @@ def preconvert_int_options(value, name, options):
     
     if value not in options:
         raise ValueError(
-            f'`{name}` can be any of: {", ".join(options)}, got {value!r}.'
+            f'`{name}` can be any of: {", ".join(str(option) for option in options)}, got {value!r}.'
         )
     
     return value

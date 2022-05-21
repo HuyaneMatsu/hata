@@ -2186,7 +2186,7 @@ class Message(DiscordEntity, immortal=True):
         -----
         The converting can not display join messages, call messages and private channel names correctly.
         """
-        return self.type.convert(self)
+        return self.type.converter(self)
     
     
     @property

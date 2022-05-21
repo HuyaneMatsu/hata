@@ -268,7 +268,7 @@ class MessageType(PreinstancedBase):
     
     Attributes
     ----------
-    convert : `function`
+    converter : `function`
         The converter function of the message type, what tries to convert the message's content to it's Discord side
         representation.
     name : `str`
@@ -280,7 +280,7 @@ class MessageType(PreinstancedBase):
     DEFAULT_NAME : `str` = `'Undefined'`
         The default name of the message types.
     DEFAULT_CONVERT : `function`
-        The default ``.convert`` attribute of the message types.
+        The default ``.converter`` attribute of the message types.
     
     Class Attributes
     ----------------
@@ -290,7 +290,7 @@ class MessageType(PreinstancedBase):
     Every predefined message type can be accessed as class attribute as well:
     
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | Class attribute name                      | Name                                      | convert                                           | value |
+    | Class attribute name                      | Name                                      | converter                                         | value |
     +===========================================+===========================================+===================================================+=======+
     | default                                   | default                                   | MESSAGE_DEFAULT_CONVERTER                         | 0     |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
@@ -308,13 +308,13 @@ class MessageType(PreinstancedBase):
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
     | welcome                                   | welcome                                   | convert_welcome                                   | 7     |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub                             | new guild sub                             | convert_new_guild_subscription                             | 8     |
+    | new_guild_sub                             | new guild sub                             | convert_new_guild_subscription                    | 8     |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub_t1                          | new guild sub t1                          | convert_new_guild_subscription_tier_1                          | 9     |
+    | new_guild_sub_t1                          | new guild sub t1                          | convert_new_guild_subscription_tier_1             | 9     |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub_t2                          | new guild sub t2                          | convert_new_guild_subscription_tier_2                          | 10    |
+    | new_guild_sub_t2                          | new guild sub t2                          | convert_new_guild_subscription_tier_2             | 10    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub_t3                          | new guild sub t3                          | convert_new_guild_subscription_tier_3                          | 11    |
+    | new_guild_sub_t3                          | new guild sub t3                          | convert_new_guild_subscription_tier_3             | 11    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
     | new_follower_channel                      | new follower channel                      | convert_new_follower_channel                      | 12    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
@@ -348,7 +348,7 @@ class MessageType(PreinstancedBase):
     INSTANCES = {}
     VALUE_TYPE = int
     
-    __slots__ = ('convert',)
+    __slots__ = ('converter',)
     
     @classmethod
     def _from_value(cls, value):
@@ -368,7 +368,7 @@ class MessageType(PreinstancedBase):
         self = object.__new__(cls)
         self.name = cls.DEFAULT_NAME
         self.value = value
-        self.convert = MESSAGE_DEFAULT_CONVERTER
+        self.converter = MESSAGE_DEFAULT_CONVERTER
         
         return self
     
@@ -388,14 +388,14 @@ class MessageType(PreinstancedBase):
         """
         self.value = value
         self.name = name
-        self.convert = convert
+        self.converter = convert
         
         self.INSTANCES[value] = self
     
     
     def __repr__(self):
         """Returns the representation of the message type."""
-        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r}, convert={self.convert!r})'
+        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r}, converter={self.converter!r})'
     
     
     # predefined
@@ -470,6 +470,17 @@ class MessageType(PreinstancedBase):
             (
                 f'`{cls.__name__}.new_guild_sub_t3` is deprecated and will be removed in 2022 Nov.'
                 f'Please use `.new_guild_subscription_tier_3` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+    
+    @property
+    def convert(self):
+        warnings.warn(
+            (
+                f'`{self.___class__.__name__}.convert` is deprecated and will be removed in 2022 Nov.'
+                f'Please use `.converter` instead.'
             ),
             FutureWarning,
             stacklevel = 2,

@@ -439,7 +439,7 @@ class MessageType(PreinstancedBase):
                 f'Please use `.new_guild_subscription` instead.'
             ),
             FutureWarning,
-            stacklevel = 2,
+            stacklevel = 3,
         )
 
     @class_property
@@ -450,7 +450,7 @@ class MessageType(PreinstancedBase):
                 f'Please use `.new_guild_subscription_tier_1` instead.'
             ),
             FutureWarning,
-            stacklevel = 2,
+            stacklevel = 3,
         )
 
     @class_property
@@ -461,7 +461,7 @@ class MessageType(PreinstancedBase):
                 f'Please use `.new_guild_subscription_tier_2` instead.'
             ),
             FutureWarning,
-            stacklevel = 2,
+            stacklevel = 3,
         )
     
     @class_property
@@ -472,7 +472,7 @@ class MessageType(PreinstancedBase):
                 f'Please use `.new_guild_subscription_tier_3` instead.'
             ),
             FutureWarning,
-            stacklevel = 2,
+            stacklevel = 3,
         )
     
     @property
@@ -483,7 +483,7 @@ class MessageType(PreinstancedBase):
                 f'Please use `.converter` instead.'
             ),
             FutureWarning,
-            stacklevel = 2,
+            stacklevel = 3,
         )
 
 

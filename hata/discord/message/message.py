@@ -88,7 +88,7 @@ MESSAGE_CACHE_FIELD_KEYS = (
 MESSAGE_TYPE_VALUES_WITH_CONTENT_FIELDS = frozenset((
     message_type.value
     for message_type in MessageType.INSTANCES.values()
-    if message_type.convert is MESSAGE_DEFAULT_CONVERTER
+    if message_type.converter is MESSAGE_DEFAULT_CONVERTER
 ))
 
 MESSAGE_CONTENT_FIELDS = (

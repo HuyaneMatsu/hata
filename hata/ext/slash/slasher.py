@@ -930,7 +930,7 @@ class Slasher(EventHandlerBase):
     
     __event_name__ = 'interaction_create'
     
-    SUPPORTED_TYPES = (SlashCommand, ComponentCommand)
+    SUPPORTED_TYPES = (SlashCommand, ContextCommand, ComponentCommand, FormSubmitCommand)
     
     def __new__(cls, client, delete_commands_on_unload=False, use_default_exception_handler=True,
             random_error_message_getter=None, translation_table=None):

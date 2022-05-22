@@ -1,5 +1,27 @@
 ## 1.2.16 *\[2022-05-??\]*
 
+#### Improvements
+
+##### ext.slash
+
+- Add `CommandBase`.
+- Add `CommandBaseApplicationCommand`.
+- Add `ContextCommand`
+- Add `__hash__` & `__eq__` to all `CommandBase` subclass.
+- `SlasherCommandWrapper` now support rich attribute errors.
+- `CommandChange` now support rich attribute errors.
+- `CommandState` now support rich attribute errors.
+
+#### Bug Fixes
+
+##### ext.slash
+
+- Fix various missing attribute issues in `CommandBase` subclasses, in `.copy`, `__eq__` methods.
+- `Slasher.create_event` nwo correctly registers `FormSubmitCommand`-s.
+- `Slasher.create_event` nwo correctly identifies `FormSubmitCommand`-s.
+- `Slasher.delete_event` wont fail on `ComponentCommand`-s, `FormSubmitCommand`-s.
+
+
 #### Renames, Deprecation & Removals
 - Rename `MessageType.convert_auto_moderation_action` to `.auto_moderation_action`. (Ops)
 - Deprecate `MessageType.new_guild_sub`.
@@ -10,6 +32,16 @@
 - Rename `MessageType.new_guild_sub_t1` to `.new_guild_subscription_tier_1`.
 - Rename `MessageType.new_guild_sub_t2` to `.new_guild_subscription_tier_2`.
 - Rename `MessageType.new_guild_sub_t3` to `.new_guild_subscription_tier_3`.
+
+##### ext.slash
+
+- Rename `SlasherApplicationCommand` to `SlashCommand`.
+- Rename `SlasherApplicationCommandFunction` to `SlashCommandFunction`.
+- Rename `SlasherApplicationCommandCategory` to `SlashCommandCategory`.
+- Rename `CustomIdBasedCommand` to `CommandBaseCustomId`.
+- Rename `.call_auto_completion` to `.invoke_auto_completion`.
+- Rename `SlashCommandFunction._command` to `._command_function`.
+- Rename `SlasherApplicationCommandParameterAutoCompleter` to `SlashCommandParameterAutoCompleter`.
 
 ## 1.2.15 *\[2022-05-21\]*
 

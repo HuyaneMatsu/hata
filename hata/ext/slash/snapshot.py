@@ -18,9 +18,9 @@ class ApplicationCommandDifference(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    added_application_commands : `None`, `list` of ``SlashCommand``
+    added_application_commands : `None`, `list` of ``CommandBaseApplicationCommand``
         The added application commands.
-    removed_application_commands : `None`, `list` of ``SlashCommand``
+    removed_application_commands : `None`, `list` of ``CommandBaseApplicationCommand``
         The removed application commands.
     """
     __slots__ = ('added_application_commands', 'removed_application_commands',)
@@ -81,7 +81,7 @@ class ApplicationCommandDifference(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        application_command : ``SlashCommand``
+        application_command : ``CommandBaseApplicationCommand``
             The application command to add.
         """
         added_application_commands = self.added_application_commands
@@ -108,7 +108,7 @@ class ApplicationCommandDifference(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        application_command : ``SlashCommand``
+        application_command : ``CommandBaseApplicationCommand``
             The application command to remove.
         """
         added_application_commands = self.added_application_commands
@@ -137,7 +137,7 @@ class ApplicationCommandDifference(RichAttributeErrorBaseType):
         
         Yields
         ------
-        added_application_command : ``SlashCommand``
+        added_application_command : ``CommandBaseApplicationCommand``
         """
         added_application_commands = self.added_application_commands
         if (added_application_commands is not None):
@@ -152,7 +152,7 @@ class ApplicationCommandDifference(RichAttributeErrorBaseType):
         
         Yields
         ------
-        removed_application_command : ``SlashCommand``
+        removed_application_command : ``CommandBaseApplicationCommand``
         """
         removed_application_commands = self.removed_application_commands
         if (removed_application_commands is not None):

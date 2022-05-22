@@ -75,7 +75,7 @@
 
 ##### hata.ext.slash
 
-- Add `allow_in_dm` is now accepted by `SlashCommand`.
+- Add `allow_in_dm` is now accepted by `SlasherApplicationCommand`.
 
 ## 1.2.13 *\[2022-04-27\]*
 
@@ -535,8 +535,8 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 - `FormSubmitCommand.__call__` ignored `GeneratorExit`.
 - `handle_command_exception` ignored `GeneratorExit`.
 - `ComponentCommand.__call__` ignored `GeneratorExit`.
-- `SlashCommandFunction.__call__` ignored `GeneratorExit`.
-- `SlashCommandParameterAutoCompleter.__call__` ignored `GeneratorExit`.
+- `SlasherApplicationCommandFunction.__call__` ignored `GeneratorExit`.
+- `SlasherApplicationCommandParameterAutoCompleter.__call__` ignored `GeneratorExit`.
 
 #### Renames, Deprecation & Removals
 
@@ -837,9 +837,9 @@ Rework audit logs once again.
 - Add `id_difference_to_timedelta`.
 
 ##### ext.slash
-- `show_for_invoking_user_only` parameter of `SlashCommand.__new__` is now keyword only and is not routed
+- `show_for_invoking_user_only` parameter of `SlasherApplicationCommand.__new__` is now keyword only and is not routed
     anymore.
-- Add `allowed_mentions` parameter to `SlashCommand.__new__`.
+- Add `allowed_mentions` parameter to `SlasherApplicationCommand.__new__`.
 
 #### Bug Fixes
 
@@ -1268,7 +1268,7 @@ cache.
 
 ##### ext.slash
 - `CompoenntCommand.__new__` could raise exception with bad error message.
-- `SlashCommand.__new__` could pass `None` to `raw_name_to_display` dropping `TypeError` if routing.
+- `SlasherApplicationCommand.__new__` could pass `None` to `raw_name_to_display` dropping `TypeError` if routing.
 
 #### Renames, Deprecation & Removals
 
@@ -1389,10 +1389,10 @@ Update file uploading system.
 - Fix a `TypeError` in `parse_cookie_date`. (Gilgamesh#8939)
 
 ##### ext.slash
-- `SlashCommandParameterAutoCompleter` has no exception handlers implemented.
-- `SlashCommand.create_event` returned incorrect value.
-- `SlashCommandCategory.create_event` returned incorrect value.
-- Fix a `TypeError` in `SlashCommandCategory.as_option`.
+- `SlasherApplicationCommandParameterAutoCompleter` has no exception handlers implemented.
+- `SlasherApplicationCommand.create_event` returned incorrect value.
+- `SlasherApplicationCommandCategory.create_event` returned incorrect value.
+- Fix a `TypeError` in `SlasherApplicationCommandCategory.as_option`.
 - A bad logic could cause auto completion not be called inside of sub commands.
 
 ## 1.1.112 *\[2021-10-19\]*
@@ -1599,8 +1599,8 @@ Add auto completion for slash commands.
 #### Bug Fixes
 
 ##### ext.slash
-- `SlashCommand.create_event`, `SlashCommand.create_event_from_class`
-    `SlashCommandCategory.create_event` and `SlashCommandCategory.create_event_from_class`
+- `SlasherApplicationCommand.create_event`, `SlasherApplicationCommand.create_event_from_class`
+    `SlasherApplicationCommandCategory.create_event` and `SlasherApplicationCommandCategory.create_event_from_class`
     returned itself instead of the registered sub-command / sub-command-category.
 
 ## 1.1.105 *\[2021-09-21\]*
@@ -1718,7 +1718,7 @@ Stop creating functions runtime, but now we remove lambdas.
 - Add `Slasher._get_command_count_with_sub_commands`.
 - Add `Slasher.get_guild_command_count_with_sub_commands`.
 - Add `CommandState.get_active_command_count_with_sub_commands`
-- Add `SlashCommand.get_real_command_count`.
+- Add `SlasherApplicationCommand.get_real_command_count`.
 
 ##### hata.ext.asyncio
 
@@ -1932,15 +1932,15 @@ Sync slash extension's type names with recent application command target type ad
 #### Renames, Deprecation & Removals
 
 ##### ext.slash
-- Rename `SlashCommand` to `SlashCommand`.
-- Rename `SlashCommandParameterConversionError` to `SlashCommandParameterConversionError`
+- Rename `SlashCommand` to `SlasherApplicationCommand`.
+- Rename `SlashCommandParameterConversionError` to `SlasherApplicationCommandParameterConversionError`
 - Rename `SlashCommandWrapper` to `SlasherCommandWrapper`.
 - Rename `SlashCommandError` to `SlasherCommandError`.
-- Rename `SlasherApplicationCommandPermissionOverwriteWrapper` to `SlasherApplicationCommandPermissionOverwriteWrapper`.
-- Rename `SlasherApplicationCommandParameterConfigurerWrapper` to `SlasherApplicationCommandParameterConfigurerWrapper`.
-- Rename `SlashCommandCategory` to `SlashCommandCategory`.
-- Rename `SlashCommandFunction` to `SlashCommandFunction`.
-- Rename `SlashCommand` to `SlashCommand`.
+- Rename `SlashCommandPermissionOverwriteWrapper` to `SlasherApplicationCommandPermissionOverwriteWrapper`.
+- Rename `SlashCommandParameterConfigurerWrapper` to `SlasherApplicationCommandParameterConfigurerWrapper`.
+- Rename `SlashCommandCategory` to `SlasherApplicationCommandCategory`.
+- Rename `SlashCommandFunction` to `SlasherApplicationCommandFunction`.
+- Rename `SlashCommand` to `SlasherApplicationCommand`.
 - Rename `._add_slash_command` to `._add_application_command`.
 - Rename `._remove_slash_command` to `._remove_application_command`.
 - Rename `.get_should_remove_slash_commands` to `get_should_remove_application_commands`.
@@ -2063,7 +2063,7 @@ Make multiple entities to weakly bound to other ones.
 - `ApplicationCommandPermissionOverwrite.target` could raise `NameError`.
 
 ##### ext.slash
-- Fix `AttributeError` in `SlasherApplicationCommandParameterConfigurerWrapper`.
+- Fix `AttributeError` in `SlashCommandParameterConfigurerWrapper`.
 
 #### Renames, Deprecation & Removals
 
@@ -2109,7 +2109,7 @@ Make multiple entities to weakly bound to other ones.
 
 ##### ext.slash
 - Rename `SlashCommand._overwrite` to `._permission_overwrites`.
-- Rename `SlasherApplicationCommandPermissionOverwriteWrapper._overwrite` to `._permission_overwrite`.
+- Rename `SlashCommandPermissionOverwriteWrapper._overwrite` to `._permission_overwrite`.
 - Rename `SlashCommand.add_overwrite` to `.add_permission_overwrite`.
 - Rename `SlashCommand._get_sync_permission_ids` to `._get_permission_sync_ids`.
 - Rename `SlashCommand.get_permission_overwrite_for` to `.get_permission_overwrites_for`.

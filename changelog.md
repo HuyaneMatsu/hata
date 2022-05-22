@@ -7,7 +7,7 @@
 - Add `CommandBase`.
 - Add `CommandBaseApplicationCommand`.
 - Add `ContextCommand`
-- Add `__hash__` & `_._eq__` to all `CommandBase` subclass.
+- Add `__hash__` & `__eq__` to all `CommandBase` subclass.
 - `SlasherCommandWrapper` now support rich attribute errors.
 - `CommandChange` now support rich attribute errors.
 - `CommandState` now support rich attribute errors.
@@ -16,7 +16,7 @@
 
 ##### ext.slash
 
-- Fix various missing attribute issues in `CommandBase` subclasses, in `.copy`, `__eq__` methods.
+- Fix various missing attribute issues in `CommandBase` subclasses, in `.copy`, `.__eq__` methods.
 - `Slasher.create_event` now correctly registers `FormSubmitCommand`-s.
 - `Slasher.create_event` now correctly identifies `FormSubmitCommand`-s.
 - `Slasher.delete_event` wont fail on `ComponentCommand`-s, `FormSubmitCommand`-s.

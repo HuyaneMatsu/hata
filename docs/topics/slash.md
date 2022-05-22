@@ -202,14 +202,14 @@ are also other interaction related client methods, which are mentioned [later](#
 
 An interaction event has the following top level attributes, which you may use up to produce a proper response:
 
-| Name              | Type                                                          | Notes                                                                                                         |
+| Name              | Type              | Notes                                                                                                         |
 |-------------------|---------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
-| channel           | `None`, `ChannelText`, `ChannelThread`, `ChannelPrivate`      | The channel from where the interaction was called. Might be a partial or `None`.                              |
-| channel_id        | `int`                                                         | The interaction event's channel's identifier.                                                                 |
-| guild             | `None`, `Guild`                                               | The channel's guild. Might be partial or `None`                                                               |
-| guild_id          | `int`                                                         | The interaction event's guild's identifier. Set as `0` if the interaction is received from a private channel. |
-| user              | `Client`, `User`                                              | The user who called the interaction.                                                                          |
-| user_permissions  | `Permission`                                                  | The user's permissions in the respective channel.                                                             |
+| channel           | `Channel`         | The channel from where the interaction was called. Might be a partial or `None`.                              |
+| channel_id        | `int`             | The interaction event's channel's identifier.                                                                 |
+| guild             | `None`, `Guild`   | The channel's guild. Might be partial or `None`                                                               |
+| guild_id          | `int`             | The interaction event's guild's identifier. Set as `0` if the interaction is received from a private channel. |
+| user              | `Client`, `User`  | The user who called the interaction.                                                                          |
+| user_permissions  | `Permission`      | The user's permissions in the respective channel.                                                             |
 
 > The rest of the attributes should be ignored if you are **not** writing your own interaction handler.
 
@@ -913,11 +913,11 @@ permission overwrite for up to 10 users or roles in each guild!
 
 The decorator accepts 3 parameters:
 
-| Name              | Type                                                                              | Description                                                   |
-|-------------------|-----------------------------------------------------------------------------------|---------------------------------------------------------------|
-| guild             | `Guild`  or `int`                                                                 | The guild where the overwrite is applied in.                  |
-| target            | `ClientUserBase`, `Role`, `ChannelBase`, `tuple` ((`str`, `type`), `int`)         | The target entity. Can be either role or user.                |
-| allow             | `bool`                                                                            | Whether the command should be allowed for the target entity.  |
+| Name              | Type                                                                  | Description                                                   |
+|-------------------|-----------------------------------------------------------------------|---------------------------------------------------------------|
+| guild             | `Guild`  or `int`                                                     | The guild where the overwrite is applied in.                  |
+| target            | `ClientUserBase`, `Role`, `Channel`, `tuple` ((`str`, `type`), `int`) | The target entity. Can be either role or user.                |
+| allow             | `bool`                                                                | Whether the command should be allowed for the target entity.  |
 
 The `target` parameter can be given in many ways to allow relaxing definitions:
 
@@ -1202,11 +1202,8 @@ annotated type, or by using the `channel_types` parameter with `SlashParameter`.
 
 ## Modifying the annotated type
 
-Channel types can be defined by changing the annotated type. By default defining it as `ChannelBase`, or as
-`'channel'` will accept all the channel types. But you can pass specific channel types as well, like: `ChannelText`,
-or `ChannelVoiceBase` (their string version works as well).
-
-Or an another consideration can be using their system name:
+Channel types can be defined by changing the annotated type. By default defining it as `Channel`, or as
+`'channel'` will accept all the channel types. But you can pass specific channel types' "system" name as well
 
 - `channel_guild_text`
 - `channel_private`
@@ -1222,7 +1219,7 @@ Or an another consideration can be using their system name:
 - `channel_guild_directory`
 - `channel_guild_forum`
 
-Or a group covering multiple one.
+Or use group names covering multiple one.
 
 - `channel_group_messageable`
 - `channel_group_guild_messageable`

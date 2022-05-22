@@ -1,4 +1,4 @@
-__all__ = ('SlasherApplicationCommandParameterConversionError', 'SlasherCommandError', 'SlasherSyncError')
+__all__ = ('SlashCommandParameterConversionError', 'SlasherCommandError', 'SlasherSyncError')
 
 from random import choice
 
@@ -9,7 +9,7 @@ from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.interaction import InteractionType
 
 
-SlasherApplicationCommand = include('SlasherApplicationCommand')
+SlashCommand = include('SlashCommand')
 Slasher = include('Slasher')
 
 class SlasherCommandError(Exception):
@@ -30,7 +30,7 @@ class SlasherCommandError(Exception):
         return ''
 
 
-class SlasherApplicationCommandParameterConversionError(SlasherCommandError):
+class SlashCommandParameterConversionError(SlasherCommandError):
     """
     Exception raised when a command's parameter's parsing fails.
     
@@ -51,7 +51,7 @@ class SlasherApplicationCommandParameterConversionError(SlasherCommandError):
     """
     def __init__(self, parameter_name, received_value, excepted_type, expected_values):
         """
-        Creates a new ``SlasherApplicationCommandParameterConversionError`` with the given parameters.
+        Creates a new ``SlashCommandParameterConversionError`` with the given parameters.
         
         Parameters
         ----------
@@ -277,7 +277,7 @@ async def default_slasher_exception_handler(client, interaction_event, command, 
         The respective client.
     interaction_event : ``InteractionEvent``
         The received interaction event.
-    command : ``SlasherApplicationCommand``, ``ComponentCommand``
+    command : ``SlashCommand``, ``ComponentCommand``
         The command, which raised.
     exception : `BaseException`
         The occurred exception.
@@ -374,7 +374,7 @@ async def _render_application_command_exception(client, command, exception):
     ----------
     client : ``Client``
         The respective client.
-    command : ``SlasherApplicationCommand``, ``ComponentCommand``
+    command : ``SlashCommand``, ``ComponentCommand``
         The command, which raised.
     exception : `BaseException`
         The occurred exception.
@@ -390,8 +390,8 @@ async def handle_command_exception(entity, client, interaction_event, exception)
 
     Parameters
     ----------
-    entity : ``ComponentCommand``, ``Slasher``, ``SlasherApplicationCommand``, ``SlasherApplicationCommandCategory``,
-            ``SlasherApplicationCommandFunction``, ``SlasherApplicationCommandParameterAutoCompleter``
+    entity : ``ComponentCommand``, ``Slasher``, ``SlashCommand``, ``SlashCommandCategory``,
+            ``SlashCommandFunction``, ``SlashCommandParameterAutoCompleter``
         The entity to iterate it's exception handlers.
     client : ``Client``
         The respective client.
@@ -435,9 +435,9 @@ def test_exception_handler(exception_handler):
         +-------------------+-------------------------------------------------------------------------------+
         | interaction_event | ``InteractionEvent``                                                          |
         +-------------------+-------------------------------------------------------------------------------+
-        | command           | ``ComponentCommand``, ``SlasherApplicationCommand``,                          |
-        |                   | ``SlasherApplicationCommandFunction``, ``SlasherApplicationCommandCategory``, |
-        |                   | ``SlasherApplicationCommandParameterAutoCompleter``                           |
+        | command           | ``ComponentCommand``, ``SlashCommand``,                          |
+        |                   | ``SlashCommandFunction``, ``SlashCommandCategory``, |
+        |                   | ``SlashCommandParameterAutoCompleter``                           |
         +-------------------+-------------------------------------------------------------------------------+
         | exception         | `BaseException`                                                               |
         +-------------------+-------------------------------------------------------------------------------+
@@ -485,8 +485,8 @@ def _register_exception_handler(parent, first, exception_handler):
     
     Parameters
     ----------
-    parent : ``Slasher``, ``SlasherApplicationCommand`, ``SlasherApplicationCommandCategory``, ``ComponentCommand``,
-            ``SlasherApplicationCommandFunction``, ``SlasherApplicationCommandParameterAutoCompleter``
+    parent : ``Slasher``, ``SlashCommand`, ``SlashCommandCategory``, ``ComponentCommand``,
+            ``SlashCommandFunction``, ``SlashCommandParameterAutoCompleter``
         The slasher to register the exception handler to.
     first : `bool`
         Whether the exception handler should run first.
@@ -516,8 +516,8 @@ def _iter_exception_handlers(entity):
     
     Parameters
     ----------
-    entity : ``ComponentCommand``, ``Slasher``, ``SlasherApplicationCommand``, ``SlasherApplicationCommandCategory``,
-            ``SlasherApplicationCommandFunction``, ``SlasherApplicationCommandParameterAutoCompleter``
+    entity : ``ComponentCommand``, ``Slasher``, ``SlashCommand``, ``SlashCommandCategory``,
+            ``SlashCommandFunction``, ``SlashCommandParameterAutoCompleter``
         The entity to iterate it's exception handlers.
     
     Yields
@@ -549,7 +549,7 @@ class SlasherSyncError(BaseException):
     
     Attributes
     ----------
-    entity: ``SlasherApplicationCommand``
+    entity: ``SlashCommand``
         The entity, who's sync failed.
     """
     def __init__(self, entity, err):
@@ -558,7 +558,7 @@ class SlasherSyncError(BaseException):
         
         Parameters
         ----------
-        entity: ``SlasherApplicationCommand``
+        entity: ``SlashCommand``
             The entity, who's sync failed.
         err : ``BaseException``
             Source exception.

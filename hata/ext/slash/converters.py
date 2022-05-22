@@ -26,7 +26,7 @@ from ...discord.message import Attachment
 from ...discord.role import Role
 from ...discord.user import User, UserBase
 
-from .exceptions import SlasherApplicationCommandParameterConversionError
+from .exceptions import SlashCommandParameterConversionError
 from .expression_parser import evaluate_text
 from .utils import normalize_description, raw_name_to_display
 
@@ -38,7 +38,7 @@ except ImportError:
     # ChadPython (PyPy)
     from re import _pattern_type as Pattern
 
-SlasherApplicationCommandParameterAutoCompleter = include('SlasherApplicationCommandParameterAutoCompleter')
+SlashCommandParameterAutoCompleter = include('SlashCommandParameterAutoCompleter')
 APPLICATION_COMMAND_FUNCTION_DEEPNESS = include('APPLICATION_COMMAND_FUNCTION_DEEPNESS')
 
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
@@ -2212,7 +2212,7 @@ class ParameterConverter(RichAttributeErrorBaseType):
         
         Raises
         ------
-        SlasherApplicationCommandParameterConversionError
+        SlashCommandParameterConversionError
             The parameter cannot be parsed.
         """
         pass
@@ -2243,7 +2243,7 @@ class ParameterConverter(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        parent : `None`, ``SlasherApplicationCommandFunction``
+        parent : `None`, ``SlashCommandFunction``
             The slasher application command function to bind to self.
         """
         pass
@@ -2709,7 +2709,7 @@ class SlashCommandParameterConverter(ParameterConverter):
     ----------
     parameter_name : `str`
         The parameter's name.
-    auto_completer : `None`, ``SlasherApplicationCommandParameterAutoCompleter``
+    auto_completer : `None`, ``SlashCommandParameterAutoCompleter``
         Auto completer if registered.
     channel_types : `None`, `tuple` of `int`
         The accepted channel types.
@@ -2770,7 +2770,7 @@ class SlashCommandParameterConverter(ParameterConverter):
             The maximal accepted value by the converter.
         min_value : `None`, `int`, `float`
             The minimal accepted value by the converter.
-        autocomplete : `None`, ``SlasherApplicationCommandParameterAutoCompleter``
+        autocomplete : `None`, ``SlashCommandParameterAutoCompleter``
             Auto completer if defined.
         """
         self = object.__new__(cls)
@@ -2790,7 +2790,7 @@ class SlashCommandParameterConverter(ParameterConverter):
         self.min_value = min_value
         
         if (autocomplete is not None):
-            auto_completer = SlasherApplicationCommandParameterAutoCompleter(
+            auto_completer = SlashCommandParameterAutoCompleter(
                 autocomplete, [parameter_name], APPLICATION_COMMAND_FUNCTION_DEEPNESS, None
             )
             self.register_auto_completer(auto_completer)
@@ -2826,7 +2826,7 @@ class SlashCommandParameterConverter(ParameterConverter):
                         return converted_value
         
         
-        raise SlasherApplicationCommandParameterConversionError(
+        raise SlashCommandParameterConversionError(
             self.name,
             value,
             ANNOTATION_TYPE_TO_REPRESENTATION.get(self.type, '???'),
@@ -2953,7 +2953,7 @@ class SlashCommandParameterConverter(ParameterConverter):
         
         Parameters
         ----------
-        auto_completer : ``SlasherApplicationCommandParameterAutoCompleter``
+        auto_completer : ``SlashCommandParameterAutoCompleter``
             The auto completer to register.
         
         Returns
@@ -3230,7 +3230,7 @@ def get_slash_command_parameter_converters(func, parameter_configurers):
     Parameters
     ----------
     func : `async-callable`
-        The function used by a ``SlasherApplicationCommand``.
+        The function used by a ``SlashCommand``.
     parameter_configurers : `None`, `dict` of (`str`, ``SlasherApplicationCommandParameterConfigurerWrapper``) items
         Parameter configurers to overwrite annotations.
     
@@ -3358,7 +3358,7 @@ def get_context_command_parameter_converters(func):
     Parameters
     ----------
     func : `async-callable`
-        The function used by a ``SlasherApplicationCommand``.
+        The function used by a ``SlashCommand``.
     
     Returns
     -------
@@ -3415,7 +3415,7 @@ def get_application_command_parameter_auto_completer_converters(func):
     Parameters
     ----------
     func : `async-callable`
-        The function used by a ``SlasherApplicationCommand``.
+        The function used by a ``SlashCommand``.
     
     Returns
     -------

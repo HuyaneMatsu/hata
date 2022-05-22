@@ -1,5 +1,7 @@
 __all__ = ()
 
+from scarletio import RichAttributeErrorBaseType
+
 from ...discord.allowed_mentions import AllowedMentionProxy
 from ...discord.preconverters import preconvert_bool
 
@@ -78,7 +80,7 @@ def _validate_wait_for_acknowledgement(wait_for_acknowledgement):
     return wait_for_acknowledgement
 
 
-class ResponseModifier:
+class ResponseModifier(RichAttributeErrorBaseType):
     """
     Modifies values returned and yielded to command coroutine processor.
     
@@ -392,4 +394,3 @@ def un_map_pack_response_edition_modifier(response_modifier):
     dictionary = {}
     response_modifier.apply_to_edition(dictionary)
     return dictionary
-

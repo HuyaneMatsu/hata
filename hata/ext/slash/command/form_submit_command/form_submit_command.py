@@ -1,34 +1,23 @@
-__all__ = ('COMMAND_TARGETS_FORM_COMPONENT_COMMAND', 'FormSubmitCommand', )
+__all__ = ('FormSubmitCommand', )
 
 from scarletio import copy_docs
 
-from ....discord.events.handling_helpers import Router, check_name, route_name, route_value
+from .....discord.events.handling_helpers import Router, check_name, route_name, route_value
 
-from ..converters import get_form_submit_command_parameter_converters
-from ..exceptions import handle_command_exception
-from ..responding import process_command_coroutine
-from ..response_modifier import ResponseModifier
-from ..utils import _check_maybe_route
-from ..wrappers import SlasherCommandWrapper
+from ...converters import get_form_submit_command_parameter_converters
+from ...exceptions import handle_command_exception
+from ...responding import process_command_coroutine
+from ...response_modifier import ResponseModifier
+from ...utils import _check_maybe_route
+from ...wrappers import SlasherCommandWrapper
 
-from .custom_id_based_command import (
-    CustomIdBasedCommand, _validate_custom_ids, _validate_name, split_and_check_satisfaction
-)
+from ..command_base_custom_id import CommandBaseCustomId
+from ..command_base_custom_id.helpers import _validate_custom_ids, _validate_name, split_and_check_satisfaction
 
-try:
-    # CPython
-    from re import Pattern
-except ImportError:
-    # ChadPython (PyPy)
-    from re import _pattern_type as Pattern
-
-COMMAND_TARGETS_FORM_COMPONENT_COMMAND = frozenset((
-    'form',
-    'form_submit',
-))
+from .constants import COMMAND_TARGETS_FORM_COMPONENT_COMMAND
 
 
-class FormSubmitCommand(CustomIdBasedCommand):
+class FormSubmitCommand(CommandBaseCustomId):
     """
     A command, which is called if a message component interaction is received with a matched `custom_id`.
     
@@ -41,7 +30,7 @@ class FormSubmitCommand(CustomIdBasedCommand):
         
         Same as ``Slasher._exception_handlers``.
     
-    _parent_reference : `None`, ``WeakReferer`` to ``SlasherApplicationCommand``
+    _parent_reference : `None`, ``WeakReferer`` to ``SlashCommand``
         The parent slasher of the component command.
     _parameter_converters : `tuple` of ``ParameterConverter``
         Parsers to parse command parameters.
@@ -199,7 +188,7 @@ class FormSubmitCommand(CustomIdBasedCommand):
             return self
     
     
-    @copy_docs(CustomIdBasedCommand.__call__)
+    @copy_docs(CommandBaseCustomId.__call__)
     async def __call__(self, client, interaction_event, regex_match):
         # Positional parameters
         positional_parameters = []
@@ -298,9 +287,9 @@ class FormSubmitCommand(CustomIdBasedCommand):
         return
     
     
-    @copy_docs(CustomIdBasedCommand.copy)
+    @copy_docs(CommandBaseCustomId.copy)
     def copy(self):
-        new = CustomIdBasedCommand.copy(self)
+        new = CommandBaseCustomId.copy(self)
         
         new._keyword_parameter_converters = self._keyword_parameter_converters
         new._multi_parameter_converter = self._multi_parameter_converter

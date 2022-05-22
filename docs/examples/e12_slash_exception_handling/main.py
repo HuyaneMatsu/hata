@@ -31,10 +31,10 @@ async def slash_error(client, interaction_event, command, exception):
     It'll give:
         client              :   Client                                          | Client
         interaction_event   :   InteractionEvent                                | Event
-        command             :   ComponentCommand, SlasherApplicationCommand,    | The command that was invoked
-                                SlasherApplicationCommandCategory,              |
-                                SlasherApplicationCommandFunction,              |
-                                SlasherApplicationCommandParameterAutoCompleter |
+        command             :   ComponentCommand, SlashCommand,                 | The command that was invoked
+                                SlashCommandCategory,                           |
+                                SlashCommandFunction,                           |
+                                SlashCommandParameterAutoCompleter              |
                                 FormSubmitCommand                               |
         exception           :   BaseException                                   | The exception that was raised
 

@@ -2,20 +2,28 @@ __all__ = ('Slasher', )
 
 from functools import partial as partial_func
 
-from scarletio import Task, WaitTillAll, WeakKeyDictionary, WeakReferer, export, run_coroutine
+from scarletio import (
+    RichAttributeErrorBaseType, Task, WaitTillAll, WeakKeyDictionary, WeakReferer, export, run_coroutine
+)
 
 from ...discord.client import Client
 from ...discord.client.request_helpers import get_guild_id
 from ...discord.core import KOKORO
 from ...discord.events.handling_helpers import EventHandlerBase, Router, asynclist
 from ...discord.exceptions import DiscordException, ERROR_CODES
-from ...discord.interaction import ApplicationCommand, InteractionEvent, InteractionType
+from ...discord.interaction import (
+    APPLICATION_COMMAND_CONTEXT_TARGET_TYPES, ApplicationCommand, ApplicationCommandTargetType, InteractionEvent,
+    InteractionType
+)
 
 from .command import (
-    APPLICATION_COMMAND_HANDLER_DEEPNESS, COMMAND_TARGETS_COMPONENT_COMMAND, COMMAND_TARGETS_FORM_COMPONENT_COMMAND,
-    ComponentCommand, FormSubmitCommand, SlasherApplicationCommand, SlasherApplicationCommandParameterAutoCompleter
+    CommandBase, CommandBaseApplicationCommand, ComponentCommand, ContextCommand, FormSubmitCommand, SlashCommand,
+    SlashCommandParameterAutoCompleter, validate_application_target_type
 )
-from .command.helpers import _build_auto_complete_parameter_names, _register_auto_complete_function
+from .command.command_base_application_command.constants import APPLICATION_COMMAND_HANDLER_DEEPNESS
+from .command.component_command.constants import COMMAND_TARGETS_COMPONENT_COMMAND
+from .command.form_submit_command.constants import COMMAND_TARGETS_FORM_COMPONENT_COMMAND
+from .command.slash_command.helpers import _build_auto_complete_parameter_names, _register_auto_complete_function
 from .exceptions import (
     SlasherSyncError, _register_exception_handler, _validate_random_error_message_getter,
     default_slasher_exception_handler, default_slasher_random_error_message_getter, test_exception_handler
@@ -41,16 +49,16 @@ def match_application_commands_to_commands(application_commands, commands, match
     ----------
     application_commands : `list` of ``ApplicationCommand``
         Received application commands.
-    commands : `None`, `list` of ``SlasherApplicationCommand``
+    commands : `None`, `list` of ``CommandBaseApplicationCommand``
         A list of slash commands if any.
     match_schema : `bool`
         Whether schema or just name should be matched.
     
     Returns
     -------
-    commands : `None`, `list` of ``SlasherApplicationCommand``
+    commands : `None`, `list` of ``CommandBaseApplicationCommand``
         The remaining matched commands.
-    matched : `None`, `list` of `tuple` (``ApplicationCommand``, ``SlasherApplicationCommand`)
+    matched : `None`, `list` of `tuple` (``ApplicationCommand``, ``CommandBaseApplicationCommand`)
         The matched commands in pairs.
     """
     matched = None
@@ -96,7 +104,8 @@ COMMAND_STATE_IDENTIFIER_ACTIVE = 3
 COMMAND_STATE_IDENTIFIER_KEPT = 4
 COMMAND_STATE_IDENTIFIER_NON_GLOBAL = 5
 
-class CommandChange:
+
+class CommandChange(RichAttributeErrorBaseType):
     """
     Represents an added or removed command inside of ``CommandState._changes``
     
@@ -104,7 +113,7 @@ class CommandChange:
     ----------
     added : `bool`
         Whether the command was added.
-    command : ``SlasherApplicationCommand``
+    command : ``CommandBaseApplicationCommand``
         The command itself.
     """
     __slots__ = ('added', 'command')
@@ -117,7 +126,7 @@ class CommandChange:
         ----------
         added : `bool`
             Whether the command was added.
-        command : ``SlasherApplicationCommand``
+        command : ``CommandBaseApplicationCommand``
             The command itself.
         """
         self.added = added
@@ -137,19 +146,19 @@ class CommandChange:
         return 2
 
 
-class CommandState:
+class CommandState(RichAttributeErrorBaseType):
     """
     Represents command's state inside of a guild.
     
     Attributes
     ----------
-    _active : `None`, `list` of ``SlasherApplicationCommand``
+    _active : `None`, `list` of ``CommandBaseApplicationCommand``
         Active slash commands, which were added.
     _changes : `None`, `list` of ``CommandChange``
         Newly added or removed commands in order.
     _is_non_global : `bool`
         Whether the command state is a command state of non global commands.
-    _kept : `None`, `list` of ``SlasherApplicationCommand``
+    _kept : `None`, `list` of ``CommandBaseApplicationCommand``
         Slash commands, which are removed, but should not be deleted.
     """
     __slots__ = ('_active', '_changes', '_is_non_global', '_kept', )
@@ -221,7 +230,7 @@ class CommandState:
         
         Returns
         -------
-        commands : `list` of ``SlasherApplicationCommand``
+        commands : `list` of ``CommandBaseApplicationCommand``
         """
         commands = []
         active = self._active
@@ -261,7 +270,7 @@ class CommandState:
         
         Returns
         -------
-        commands : `list` of ``SlasherApplicationCommand``
+        commands : `list` of ``CommandBaseApplicationCommand``
         """
         commands = []
         kept = self._kept
@@ -293,7 +302,7 @@ class CommandState:
         
         Returns
         -------
-        commands : `list` of ``SlasherApplicationCommand``
+        commands : `list` of ``CommandBaseApplicationCommand``
         """
         commands = []
         
@@ -356,7 +365,7 @@ class CommandState:
         
         Returns
         -------
-        command : `None`, ``SlasherApplicationCommand``
+        command : `None`, ``CommandBaseApplicationCommand``
             The purged command if any.
         purged_from_identifier : `int`
             From which internal container was the command purged from.
@@ -411,7 +420,7 @@ class CommandState:
         
         Returns
         -------
-        command : `None`, ``SlasherApplicationCommand``
+        command : `None`, ``CommandBaseApplicationCommand``
             The purged command if any.
         purged_from_identifier : `int`
             From which internal container was the command purged from.
@@ -465,7 +474,7 @@ class CommandState:
         
         Parameters
         ----------
-        command : ``SlasherApplicationCommand``
+        command : ``CommandBaseApplicationCommand``
             The slash command.
         """
         if self._is_non_global:
@@ -485,7 +494,7 @@ class CommandState:
         
         Parameters
         ----------
-        command : ``SlasherApplicationCommand``
+        command : ``CommandBaseApplicationCommand``
             The slash command.
         """
         if self._is_non_global:
@@ -505,7 +514,7 @@ class CommandState:
         
         Parameters
         ----------
-        command : ``SlasherApplicationCommand``
+        command : ``CommandBaseApplicationCommand``
             The slash command.
         """
         if self._is_non_global:
@@ -520,12 +529,12 @@ class CommandState:
         
         Parameters
         ----------
-        command : ``SlasherApplicationCommand``
+        command : ``CommandBaseApplicationCommand``
             The command to add.
         
         Returns
         -------
-        command : ``SlasherApplicationCommand``
+        command : ``CommandBaseApplicationCommand``
             The existing command or the given one.
         
         action_identifier : `int`
@@ -615,7 +624,7 @@ class CommandState:
         
         Parameters
         ----------
-        command : ``SlasherApplicationCommand``
+        command : ``CommandBaseApplicationCommand``
             The command to add.
         slasher_unloading_behaviour : `int`
             The parent slasher's unload behaviour.
@@ -632,7 +641,7 @@ class CommandState:
         
         Returns
         -------
-        command : ``SlasherApplicationCommand``
+        command : ``CommandBaseApplicationCommand``
             The existing command or the given one.
         action_identifier : `int`
             The action what took place.
@@ -799,7 +808,7 @@ class Slasher(EventHandlerBase):
     
     Attributes
     ----------
-    _auto_completers : `None`, `list` of ``SlasherApplicationCommandParameterAutoCompleter``
+    _auto_completers : `None`, `list` of ``SlashCommandParameterAutoCompleter``
         Auto completer functions.
     
     _call_later : `None`, `list` of `tuple` (`bool`, `Any`)
@@ -843,9 +852,9 @@ class Slasher(EventHandlerBase):
         +-------------------+-------------------------------------------------------------------------------+
         | interaction_event | ``InteractionEvent``                                                          |
         +-------------------+-------------------------------------------------------------------------------+
-        | command           | ``ComponentCommand``, ``SlasherApplicationCommand``,                          |
-        |                   | ``SlasherApplicationCommandFunction``, ``SlasherApplicationCommandCategory``  |
-        |                   | ``SlasherApplicationCommandParameterAutoCompleter``, ``FormSubmitCommand``    |
+        | command           | ``ComponentCommand``, ``ContextCommand``, ``SlashCommand``,                   |
+        |                   | ``SlashCommandFunction``, ``SlashCommandCategory``                            |
+        |                   | ``SlashCommandParameterAutoCompleter``, ``FormSubmitCommand``                 |
         +-------------------+-------------------------------------------------------------------------------+
         | exception         | `BaseException`                                                               |
         +-------------------+-------------------------------------------------------------------------------+
@@ -895,7 +904,7 @@ class Slasher(EventHandlerBase):
     _translation_table : `None`, `dict` of (``Locale`, `dict` of (`str`, `str`) items) items
         Translation table for the commands of the slasher.
     
-    command_id_to_command : `dict` of (`int`, ``SlasherApplicationCommand``) items
+    command_id_to_command : `dict` of (`int`, ``SlashCommand``) items
         A dictionary where the keys are application command id-s and the keys are their respective command.
     
     Class Attributes
@@ -903,7 +912,7 @@ class Slasher(EventHandlerBase):
     __event_name__ : `str` = 'interaction_create'
         Tells for the ``EventHandlerManager`` that ``Slasher`` is a `interaction_create` event handler.
     
-    SUPPORTED_TYPES : `tuple` (``SlasherApplicationCommand``, ``ComponentCommand``, ``FormSubmitCommand``)
+    SUPPORTED_TYPES : `tuple` (``SlashCommand``, ``ComponentCommand``, ``FormSubmitCommand``)
         Tells to ``eventlist`` what exact types the ``Slasher`` accepts.
     
     Notes
@@ -921,7 +930,7 @@ class Slasher(EventHandlerBase):
     
     __event_name__ = 'interaction_create'
     
-    SUPPORTED_TYPES = (SlasherApplicationCommand, ComponentCommand)
+    SUPPORTED_TYPES = (SlashCommand, ComponentCommand)
     
     def __new__(cls, client, delete_commands_on_unload=False, use_default_exception_handler=True,
             random_error_message_getter=None, translation_table=None):
@@ -1158,7 +1167,7 @@ class Slasher(EventHandlerBase):
         
         else:
             if (command is not None):
-                await command.call_auto_completion(client, interaction_event, auto_complete_option)
+                await command.invoke_auto_completion(client, interaction_event, auto_complete_option)
     
     
     async def _dispatch_form_submit_event(self, client, interaction_event):
@@ -1251,7 +1260,7 @@ class Slasher(EventHandlerBase):
         self._component_interaction_waiters[message] = actual_waiter
     
     
-    def create_event(self, func, *args, **kwargs):
+    def create_event(self, func, *args, target=None, **kwargs):
         """
         Adds a slash command.
         
@@ -1259,6 +1268,7 @@ class Slasher(EventHandlerBase):
         ----------
         func : `async-callable`
             The function used as the command when using the respective slash command.
+        
         name : `None`, `str`, `tuple` of (`str`, `Ellipsis`, `None`)
             The command's name if applicable. If not given or if given as `None`, the `func`'s name will be use
             instead.
@@ -1284,10 +1294,12 @@ class Slasher(EventHandlerBase):
             Which user or role can the response message ping (or everyone).
         show_for_invoking_user_only : `bool`, Optional (Keyword only)
             Whether the response message should only be shown for the invoking user.
+        target : `None`, `int`, `str`, ``ApplicationCommandTargetType`` = `None`, Optional
+            The target type of the command.
         
         Returns
         -------
-        func : ``SlasherApplicationCommand``, ``ComponentCommand``
+        func : ``CommandBase``
              The created or added command.
         
         Raises
@@ -1300,7 +1312,7 @@ class Slasher(EventHandlerBase):
         if isinstance(func, Router):
             func = func[0]
         
-        if isinstance(func, SlasherApplicationCommand):
+        if isinstance(func, CommandBaseApplicationCommand):
             self._add_application_command(func)
             return func
         
@@ -1308,12 +1320,18 @@ class Slasher(EventHandlerBase):
             self._add_component_command(func)
             return func
         
+        if isinstance(func, FormSubmitCommand):
+            self._add_form_submit_command(func)
+            return func
+        
+        
         if 'custom_id' in kwargs:
-            target = kwargs.get('target', None)
             if (target is None) or (target in COMMAND_TARGETS_COMPONENT_COMMAND):
                 command = ComponentCommand(func, *args, **kwargs)
+            
             elif (target in COMMAND_TARGETS_FORM_COMPONENT_COMMAND):
                 command = FormSubmitCommand(func, *args, **kwargs)
+            
             else:
                 raise ValueError(
                     f'Unknown command target: {target!r}; If `custom_id` parameter is given, `target` '
@@ -1321,14 +1339,18 @@ class Slasher(EventHandlerBase):
                 )
         
         else:
-            command = SlasherApplicationCommand(func, *args, **kwargs)
+            target = validate_application_target_type(target)
+            if target in APPLICATION_COMMAND_CONTEXT_TARGET_TYPES:
+                command = ContextCommand(func, *args, **kwargs, target=target)
+            else:
+                command = SlashCommand(func, *args, **kwargs)
         
         if isinstance(command, Router):
             command = command[0]
         
         # Register command
         
-        if isinstance(command, SlasherApplicationCommand):
+        if isinstance(command, CommandBaseApplicationCommand):
             self._add_application_command(command)
         
         elif isinstance(command, ComponentCommand):
@@ -1343,6 +1365,7 @@ class Slasher(EventHandlerBase):
         
         return command
     
+    
     def create_event_from_class(self, klass):
         """
         Breaks down the given class to it's class attributes and tries to add it as a slash command.
@@ -1354,7 +1377,7 @@ class Slasher(EventHandlerBase):
         
         Returns
         -------
-        func : ``SlasherApplicationCommand``, ``ComponentCommand``
+        func : ``CommandBase``
              The created or added command.
         
         Raises
@@ -1364,15 +1387,34 @@ class Slasher(EventHandlerBase):
         ValueError
             If Any attribute's value is incorrect.
         """
+        target = getattr(klass, 'target', None)
+        
         if hasattr(klass, 'custom_id'):
-            command = ComponentCommand.from_class(klass)
+            if (target is None) or (target in COMMAND_TARGETS_COMPONENT_COMMAND):
+                command = ComponentCommand.from_class(klass)
+            
+            elif (target in COMMAND_TARGETS_FORM_COMPONENT_COMMAND):
+                command = FormSubmitCommand.from_class(klass)
+            
+            else:
+                raise ValueError(
+                    f'Unknown command target: {target!r}; If `custom_id` parameter is given, `target` '
+                    f'can be any of: `{COMMAND_TARGETS_COMPONENT_COMMAND | COMMAND_TARGETS_FORM_COMPONENT_COMMAND}`.'
+                )
+        
         else:
-            command = SlasherApplicationCommand.from_class(klass)
+            target = validate_application_target_type(target)
+            if target in APPLICATION_COMMAND_CONTEXT_TARGET_TYPES:
+                command = ContextCommand.from_class(klass)
+            
+            else:
+                command = SlashCommand.from_class(klass)
+        
         
         if isinstance(command, Router):
             command = command[0]
         
-        if isinstance(command, SlasherApplicationCommand):
+        if isinstance(command, SlashCommand):
             self._add_application_command(command)
         else:
             self._add_component_command(command)
@@ -1386,7 +1428,7 @@ class Slasher(EventHandlerBase):
         
         Parameters
         ---------
-        command : ``SlasherApplicationCommand``
+        command : ``CommandBaseApplicationCommand``
             The command to add.
         """
         command._parent_reference = self._get_self_reference()
@@ -1405,7 +1447,7 @@ class Slasher(EventHandlerBase):
         
         Parameters
         ---------
-        command : ``SlasherApplicationCommand``
+        command : ``CommandBaseApplicationCommand``
             The command to add.
         """
         for sync_id in command._iter_sync_ids():
@@ -1558,13 +1600,14 @@ class Slasher(EventHandlerBase):
         
         return registered_any
     
+    
     def delete_event(self, func, name=None):
         """
         A method to remove a command by itself, or by it's function and name combination if defined.
         
         Parameters
         ----------
-        func : ``SlasherApplicationCommand``, ``Router`` of ``SlasherApplicationCommand``
+        func : ``CommandBase``, ``Router`` of ``CommandBase``
             The command to remove.
         name : `None`, `str` = `None`, Optional
             The command's name to remove.
@@ -1572,26 +1615,37 @@ class Slasher(EventHandlerBase):
         Raises
         ------
         TypeError
-            If `func` was not given neither as ``SlasherApplicationCommand`` not as ``Router`` of ``SlasherApplicationCommand``.
+            If `func` was not given neither as ``CommandBase`` not as ``Router`` of ``CommandBase``.
         """
         if isinstance(func, Router):
             for sub_func in func:
-                if not isinstance(sub_func, SlasherApplicationCommand):
+                if not isinstance(sub_func, CommandBase):
                     raise TypeError(
-                        f'`func` can be `{SlasherApplicationCommand.__name__}`, '
-                        f'`{Router.__name__}` of `{SlasherApplicationCommand.__name__}`, got {func!r}.'
+                        f'`func` can be `{CommandBase.__name__}`, '
+                        f'`{Router.__name__}` of `{CommandBase.__name__}`, got {func!r}.'
                     )
             
-            for sub_func in func:
-                self._remove_application_command(sub_func)
-                
-        elif isinstance(func, SlasherApplicationCommand):
-            self._remove_application_command(func)
+            commands = tuple(func)
+        
+        elif isinstance(func, CommandBase):
+            commands = (func, )
+        
         else:
             raise TypeError(
-                f'`func` can be `{SlasherApplicationCommand.__name__}`, `{Router.__name__}` of '
-                f'`{SlasherApplicationCommand.__name__}`, got {func!r}.'
+                f'`func` can be `{CommandBase.__name__}`, `{Router.__name__}` of '
+                f'`{CommandBase.__name__}`, got {func!r}.'
             )
+        
+        for command in commands:
+            if isinstance(command, CommandBaseApplicationCommand):
+                self._remove_application_command(func)
+            
+            elif isinstance(command, ComponentCommand):
+                self._remove_component_command(func)
+            
+            elif isinstance(command, FormSubmitCommand):
+                self._remove_form_submit_command(func)
+    
     
     async def _try_get_command_by_id(self, client, interaction_event):
         """
@@ -1692,13 +1746,14 @@ class Slasher(EventHandlerBase):
         
         return await task
     
+    
     def _unregister_helper(self, command, command_state, guild_id):
         """
         Unregisters all the call relations of the given command.
         
         Parameters
         ----------
-        command : `None`, ``SlasherApplicationCommand``
+        command : `None`, ``CommandBaseApplicationCommand``
             The slash command to unregister.
         command_state : `None`, ``CommandState``
             The command's respective state instance.
@@ -1722,7 +1777,7 @@ class Slasher(EventHandlerBase):
         
         Parameters
         ----------
-        command : `None`, ``SlasherApplicationCommand``
+        command : `None`, ``CommandBaseApplicationCommand``
             The slash command to register.
         command_state : `None`, ``CommandState``
             The command's respective state instance.
@@ -1743,7 +1798,7 @@ class Slasher(EventHandlerBase):
         
         Parameters
         ----------
-        command : `None`, ``SlasherApplicationCommand``
+        command : `None`, ``CommandBaseApplicationCommand``
             The slash command to register.
         command_state : `None`, ``CommandState``
             The command's respective state instance.
@@ -2063,7 +2118,7 @@ class Slasher(EventHandlerBase):
         ----------
         client : ``Client``
             The respective client.
-        command : ``SlasherApplicationCommand``
+        command : ``CommandBaseApplicationCommand``
             The non_global command what replaced the slash command.
         command_state : ``CommandState``
             The command's command state.
@@ -2110,7 +2165,7 @@ class Slasher(EventHandlerBase):
         ----------
         client : ``Client``
             The respective client.
-        command : ``SlasherApplicationCommand``
+        command : ``CommandBaseApplicationCommand``
             The non_global command what replaced the slash command.
         guild_id : `int`
             The respective guild's identifier where the command is.
@@ -2172,7 +2227,7 @@ class Slasher(EventHandlerBase):
         ----------
         client : ``Client``
             The respective client.
-        command : ``SlasherApplicationCommand``
+        command : ``CommandBaseApplicationCommand``
             The non_global command what replaced the slash command.
         command_state : ``CommandState``
             The command's command state.
@@ -2223,7 +2278,7 @@ class Slasher(EventHandlerBase):
         ----------
         client : ``Client``
             The respective client.
-        command : ``SlasherApplicationCommand``
+        command : ``CommandBaseApplicationCommand``
             The slash command to update the application command to.
         command_state : ``CommandState``
             The command's command state.
@@ -2277,7 +2332,7 @@ class Slasher(EventHandlerBase):
         ----------
         client : ``Client``
             The respective client.
-        command : `None`, ``SlasherApplicationCommand``
+        command : `None`, ``CommandBaseApplicationCommand``
             The slash command to delete.
         command_state : ``CommandState``
             The command's command state.
@@ -2330,7 +2385,7 @@ class Slasher(EventHandlerBase):
         ----------
         client : ``Client``
             The respective client.
-        command : `None`, ``SlasherApplicationCommand``
+        command : `None`, ``CommandBaseApplicationCommand``
             The slash command to create.
         command_state : ``CommandState``
             The command's command state.
@@ -2841,13 +2896,13 @@ class Slasher(EventHandlerBase):
         
         Parameters
         ---------
-        custom_id_based_command : ``CustomIdBasedCommand``
+        custom_id_based_command : ``CommandBaseCustomId``
             The command to add.
-        custom_id_based_commands : `set` of ``CustomIdBasedCommand``
+        custom_id_based_commands : `set` of ``CommandBaseCustomId``
             A set of all the added commands.
-        string_custom_id_to_custom_id_based_command : `dict` of (`str`, ``CustomIdBasedCommand``) items
+        string_custom_id_to_custom_id_based_command : `dict` of (`str`, ``CommandBaseCustomId``) items
             A dictionary which contains commands by their `custom_id`.
-        regex_custom_id_to_custom_id_based_command : ``dict` of (``RegexMatcher``, ``CustomIdBasedCommand``) items
+        regex_custom_id_to_custom_id_based_command : ``dict` of (``RegexMatcher``, ``CommandBaseCustomId``) items
             A dictionary which contains commands based on regex patterns.
         
         Raises
@@ -2957,13 +3012,13 @@ class Slasher(EventHandlerBase):
         
         Parameters
         ---------
-        custom_id_based_command : ``CustomIdBasedCommand``
+        custom_id_based_command : ``CommandBaseCustomId``
             The command to remove.
-        custom_id_based_commands : `set` of ``CustomIdBasedCommand``
+        custom_id_based_commands : `set` of ``CommandBaseCustomId``
             A set of all the added commands.
-        string_custom_id_to_custom_id_based_command : `dict` of (`str`, ``CustomIdBasedCommand``) items
+        string_custom_id_to_custom_id_based_command : `dict` of (`str`, ``CommandBaseCustomId``) items
             A dictionary which contains commands by their `custom_id`.
-        regex_custom_id_to_custom_id_based_command : ``dict` of (``RegexMatcher``, ``CustomIdBasedCommand``) items
+        regex_custom_id_to_custom_id_based_command : ``dict` of (``RegexMatcher``, ``CommandBaseCustomId``) items
             A dictionary which contains commands based on regex patterns.
         """
         try:
@@ -3172,10 +3227,10 @@ class Slasher(EventHandlerBase):
         TypeError
             If `function` is not an asynchronous.
         """
-        if isinstance(function, SlasherApplicationCommandParameterAutoCompleter):
+        if isinstance(function, SlashCommandParameterAutoCompleter):
             function = function._command
         
-        auto_completer = SlasherApplicationCommandParameterAutoCompleter(
+        auto_completer = SlashCommandParameterAutoCompleter(
             function,
             parameter_names,
             APPLICATION_COMMAND_HANDLER_DEEPNESS,
@@ -3211,7 +3266,7 @@ class Slasher(EventHandlerBase):
         
         Parameters
         ----------
-        command : ``SlasherApplicationCommand``
+        command : ``CommandBaseApplicationCommand``
         """
         for sync_id in command._iter_sync_ids():
             self._sync_done.discard(sync_id)

@@ -5,7 +5,7 @@ from scarletio import KeepType
 from ...discord.client.utils import ClientWrapper
 from ...discord.events.handling_helpers import _EventHandlerManagerRouter
 
-from .command import SlasherApplicationCommand
+from .command import SlashCommand
 from .slasher import Slasher
 
 
@@ -46,14 +46,14 @@ def from_class_constructor(klass):
     
     Returns
     -------
-    self : ``SlasherApplicationCommand``, ``Router``
+    self : ``SlashCommand``, ``Router``
     
     Raises
     ------
     BaseException
-        Any exception raised by the respective ``SlasherApplicationCommand`` constructor.
+        Any exception raised by the respective ``SlashCommand`` constructor.
     """
-    return SlasherApplicationCommand.from_class(klass)
+    return SlashCommand.from_class(klass)
 
 
 @KeepType(ClientWrapper)

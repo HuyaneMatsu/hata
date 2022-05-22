@@ -6,6 +6,8 @@ __all__ = (
 import reprlib
 from functools import partial as partial_func
 
+from scarletio import RichAttributeErrorBaseType
+
 from ...discord.guild import Guild
 from ...discord.interaction import ApplicationCommandPermissionOverwrite
 from ...discord.preconverters import preconvert_snowflake
@@ -16,9 +18,9 @@ from .converters import (
 )
 
 
-class SlasherCommandWrapper:
+class SlasherCommandWrapper(RichAttributeErrorBaseType):
     """
-    Wraps a slash command enabling the wrapper to postprocess the created slash command.
+    Wraps a slasher command enabling the wrapper to postprocess the created slash command.
     
     Attributes
     ----------
@@ -60,6 +62,7 @@ class SlasherCommandWrapper:
         self._wrapped = wrapped
         return self
     
+    
     def apply(self, slasher_application_command):
         """
         Applies the wrapper's changes on the respective slash command.
@@ -68,13 +71,15 @@ class SlasherCommandWrapper:
         
         Parameters
         ----------
-        slasher_application_command : ``SlasherApplicationCommand``
+        slasher_application_command : ``SlashCommand``
         """
         pass
+    
     
     def __repr__(self):
         """Returns the slash command wrapper's representation."""
         return f'<{self.__class__.__name__} wrapped={self._wrapped!r}>'
+    
     
     def fetch_function_and_wrappers_back(self):
         """
@@ -197,7 +202,7 @@ class SlasherApplicationCommandPermissionOverwriteWrapper(SlasherCommandWrapper)
         
         Parameters
         ----------
-        slasher_application_command : ``SlasherApplicationCommand``
+        slasher_application_command : ``SlashCommand``
         """
         slasher_application_command.add_permission_overwrite(self._guild_id, self._permission_overwrite)
     

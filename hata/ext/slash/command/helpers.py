@@ -1,111 +1,79 @@
-__all__ = ()
+__all__ = ('validate_application_target_type', )
 
-def _checkout_auto_complete_parameter_name(parameter_name):
+from ....discord.interaction import ApplicationCommandTargetType
+
+
+DEFAULT_APPLICATION_COMMAND_TARGET_TYPE = ApplicationCommandTargetType.chat
+
+APPLICATION_COMMAND_TARGET_TYPES_BY_NAME = {
+    application_command_target_type.name: application_command_target_type for
+    application_command_target_type in ApplicationCommandTargetType.INSTANCES.values()
+}
+
+APPLICATION_COMMAND_TARGET_TYPES_BY_VALUE = {
+    application_command_target_type.value: application_command_target_type for
+    application_command_target_type in ApplicationCommandTargetType.INSTANCES.values()
+}
+
+
+def validate_application_target_type(target):
     """
-    Checks out one parameter name to auto complete.
+    Validates the given ``ApplicationCommandTargetType`` value.
     
     Parameters
     ----------
-    parameter_name : `str`
-        The parameter's name to auto complete.
+    target : `None`, `int`, `str`, ``ApplicationCommandTargetType``
+        The `target` to validate.
     
     Returns
     -------
-    parameter_name : `str`
-        The validated parameter name to autocomplete.
+    target : ``ApplicationCommandTargetType``
+        The validated `target`.
     
     Raises
     ------
-    TypeError
-        If `parameter_name` is not `str`.
     ValueError
-        If `parameter_name` is an empty string.
+        - If `target` could not be matched by any expected target type name or value.
+    TypeError
+        - If `target` is neither `None`, `int`, `str`, nor ``ApplicationCommandTargetType``.
     """
-    if type(parameter_name) is str:
+    if target is None:
+        target = ApplicationCommandTargetType.none
+    
+    elif isinstance(target, ApplicationCommandTargetType):
         pass
-    elif isinstance(parameter_name, str):
-        parameter_name = str(parameter_name)
+    
+    elif isinstance(target, str):
+        if type(target) is not str:
+            target = str(target)
+        
+        target = target.lower()
+        
+        try:
+            target = APPLICATION_COMMAND_TARGET_TYPES_BY_NAME[target]
+        except KeyError:
+            raise ValueError(
+                f'Unknown `target` name: {target!r}.'
+            ) from None
+    
+    elif isinstance(target, int):
+        if type(target) is not int:
+            target = int(target)
+        
+        try:
+            target = APPLICATION_COMMAND_TARGET_TYPES_BY_NAME[target]
+        except KeyError:
+            raise ValueError(
+                f'Unknown `target` value: {target!r}.'
+            ) from None
+    
     else:
         raise TypeError(
-            f'`parameter_name` can be `str`, got '
-            f'{parameter_name.__class__.__name__}; {parameter_name!r}.'
+            f'`target` can be `None`, `{ApplicationCommandTargetType.__name__}`, `str`,  `int`, got '
+            f'{target.__class__.__name__}; {target!r}.'
         )
     
-    if not parameter_name:
-        raise ValueError(
-            f'`parameter_name` cannot be empty string.'
-        )
+    if target is ApplicationCommandTargetType.none:
+        target = DEFAULT_APPLICATION_COMMAND_TARGET_TYPE
     
-    return parameter_name
-
-
-def _build_auto_complete_parameter_names(parameter_name, parameter_names):
-    """
-    Builds a checks out parameter names.
-    
-    Parameters
-    ----------
-    parameter_name : `str`
-        The parameter's name to auto complete.
-    parameter_names : `tuple` of `str`
-        Additional parameter to autocomplete.
-    
-    Returns
-    -------
-    processed_parameter_names : `list` of `str`
-        The processed parameter names.
-    
-    Raises
-    ------
-    TypeError
-        If `parameter_name` is not `str`.
-    ValueError
-        If `parameter_name` is an empty string.
-    """
-    processed_parameter_names = []
-    
-    parameter_name = _checkout_auto_complete_parameter_name(parameter_name)
-    processed_parameter_names.append(parameter_name)
-    
-    if parameter_names:
-        for iter_parameter_name in parameter_names:
-            iter_parameter_name = _checkout_auto_complete_parameter_name(iter_parameter_name)
-            processed_parameter_names.append(iter_parameter_name)
-    
-    return processed_parameter_names
-
-
-def _register_auto_complete_function(parent, parameter_names, function):
-    """
-    Returned by `.autocomplete` decorators wrapped inside of `functools.partial` if `function` is not given.
-    
-    Parameters
-    ----------
-    parent : ``Slasher``, ``SlasherApplicationCommand``, ``SlasherApplicationCommandFunction``,
-            ``SlasherApplicationCommandCategory``
-        The parent entity to register the auto completer to.
-    parameter_names : `list` of `str`
-        The parameters' names.
-    function : `async-callable`
-        The function to register as auto completer.
-    
-    Returns
-    -------
-    auto_completer : ``SlasherApplicationCommandParameterAutoCompleter``
-        The registered auto completer
-    
-    Raises
-    ------
-    RuntimeError
-        - `function` cannot be `None`.
-        - If the application command function has no parameter named, like `parameter_name`.
-        - If the parameter cannot be auto completed.
-    TypeError
-        If `function` is not an asynchronous.
-    """
-    if (function is None):
-        raise RuntimeError(
-            f'`function` cannot be `None`.'
-        )
-    
-    return parent._add_autocomplete_function(parameter_names, function)
+    return target

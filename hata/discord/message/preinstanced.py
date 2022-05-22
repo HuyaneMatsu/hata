@@ -483,7 +483,7 @@ class MessageType(PreinstancedBase):
                 f'Please use `.converter` instead.'
             ),
             FutureWarning,
-            stacklevel = 3,
+            stacklevel = 2,
         )
 
 

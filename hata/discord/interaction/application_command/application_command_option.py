@@ -173,7 +173,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
             - If `channel_types` is given, but `type_` is not `ApplicationCommandOptionType.channel`.
             - If `autocomplete` is not `bool`.
             - If both `autocomplete` and `choices` are defined.
-            - If `autocomplete` is defined, but the parameters's type is not string.
+            - If `autocomplete` is defined, but the parameters' type is not string.
         """
         
         # autocomplete

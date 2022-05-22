@@ -932,8 +932,10 @@ class Slasher(EventHandlerBase):
     
     SUPPORTED_TYPES = (SlashCommand, ContextCommand, ComponentCommand, FormSubmitCommand)
     
-    def __new__(cls, client, delete_commands_on_unload=False, use_default_exception_handler=True,
-            random_error_message_getter=None, translation_table=None):
+    def __new__(
+        cls, client, delete_commands_on_unload=False, use_default_exception_handler=True,
+        random_error_message_getter=None, translation_table=None
+    ):
         """
         Creates a new interaction event handler.
         
@@ -1089,7 +1091,7 @@ class Slasher(EventHandlerBase):
             await client.events.error(client, f'{self!r}._dispatch_application_command_event', err)
         else:
             if (command is not None):
-                await command(client, interaction_event)
+                await command.invoke(client, interaction_event)
     
     
     async def _dispatch_component_event(self, client, interaction_event):
@@ -1134,7 +1136,7 @@ class Slasher(EventHandlerBase):
         else:
             regex_match = None
         
-        await component_command(client, interaction_event, regex_match)
+        await component_command.invoke(client, interaction_event, regex_match)
     
     
     async def _dispatch_application_command_autocomplete_event(self, client, interaction_event):
@@ -1199,7 +1201,7 @@ class Slasher(EventHandlerBase):
         else:
             regex_match = None
         
-        await form_submit_command(client, interaction_event, regex_match)
+        await form_submit_command.invoke(client, interaction_event, regex_match)
     
     
     def add_component_interaction_waiter(self, message, waiter):

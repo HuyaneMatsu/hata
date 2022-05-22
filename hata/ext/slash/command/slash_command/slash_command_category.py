@@ -88,7 +88,7 @@ class SlashCommandCategory(RichAttributeErrorBaseType):
         return self
     
     
-    async def __call__(self, client, interaction_event, options):
+    async def invoke(self, client, interaction_event, options):
         """
         Calls the slash command category.
         
@@ -113,7 +113,7 @@ class SlashCommandCategory(RichAttributeErrorBaseType):
         except KeyError:
             pass
         else:
-            await sub_command(client, interaction_event, option.options)
+            await sub_command.invoke(client, interaction_event, option.options)
             return
         
         # Do not put this into the `except` branch.

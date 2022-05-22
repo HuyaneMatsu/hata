@@ -396,13 +396,13 @@ class SlashCommand(CommandBaseApplicationCommand):
                  repr_parts.append(repr(description))
     
     
-    @copy_docs(CommandBaseApplicationCommand.__call__)
-    async def __call__(self, client, interaction_event):
+    @copy_docs(CommandBaseApplicationCommand.invoke)
+    async def invoke(self, client, interaction_event):
         options = interaction_event.interaction.options
         
         command = self._command
         if (command is not None):
-            await command(client, interaction_event, options)
+            await command.invoke(client, interaction_event, options)
             return
         
         if (options is None) or (len(options) != 1):
@@ -415,7 +415,7 @@ class SlashCommand(CommandBaseApplicationCommand):
         except KeyError:
             pass
         else:
-            await sub_command(client, interaction_event, option.options)
+            await sub_command.invoke(client, interaction_event, option.options)
             return
         
         # Do not put this into the `except` branch.

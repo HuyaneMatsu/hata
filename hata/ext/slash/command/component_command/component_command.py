@@ -178,8 +178,8 @@ class ComponentCommand(CommandBaseCustomId):
             return self
     
     
-    @copy_docs(CommandBaseCustomId.__call__)
-    async def __call__(self, client, interaction_event, regex_match):
+    @copy_docs(CommandBaseCustomId.invoke)
+    async def invoke(self, client, interaction_event, regex_match):
         parameters = []
         
         for parameter_converter in self._parameter_converters:

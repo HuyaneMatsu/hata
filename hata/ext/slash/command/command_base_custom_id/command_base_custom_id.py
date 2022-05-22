@@ -144,7 +144,7 @@ class CommandBaseCustomId(CommandBase):
                 repr_parts.append(repr(response_modifier))
     
     
-    async def __call__(self, client, interaction_event, regex_match):
+    async def invoke(self, client, interaction_event, regex_match):
         """
         Calls the command.
         

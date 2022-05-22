@@ -134,7 +134,7 @@ class CommandBase(RichAttributeErrorBaseType):
         return ''.join(repr_parts)
     
     
-    async def __call__(self, client, interaction_event):
+    async def invoke(self, client, interaction_event):
         """
         Calls the command.
         

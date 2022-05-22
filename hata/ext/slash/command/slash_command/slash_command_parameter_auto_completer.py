@@ -237,7 +237,7 @@ class SlashCommandParameterAutoCompleter(RichAttributeErrorBaseType):
         return True
     
     
-    async def __call__(self, client, interaction_event):
+    async def invoke(self, client, interaction_event):
         """
         Calls the parameter auto completer.
         

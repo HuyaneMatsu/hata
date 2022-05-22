@@ -42,6 +42,8 @@
 - Rename `.call_auto_completion` to `.invoke_auto_completion`.
 - Rename `SlashCommandFunction._command` to `._command_function`.
 - Rename `SlasherApplicationCommandParameterAutoCompleter` to `SlashCommandParameterAutoCompleter`.
+- Rename `CommandBase.__call__` to `.invoke`.
+- Rename `SlashCommandParameterAutoCompleter.__call__` to `.invoke`.
 
 ## 1.2.15 *\[2022-05-21\]*
 

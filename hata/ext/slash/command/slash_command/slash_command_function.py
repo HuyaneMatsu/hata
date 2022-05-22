@@ -101,7 +101,7 @@ class SlashCommandFunction(RichAttributeErrorBaseType):
         return self
     
     
-    async def __call__(self, client, interaction_event, options):
+    async def invoke(self, client, interaction_event, options):
         """
         Calls the slash command function.
         
@@ -213,7 +213,7 @@ class SlashCommandFunction(RichAttributeErrorBaseType):
         
         auto_completer = parameter_converter.auto_completer
         if (auto_completer is not None):
-            await auto_completer(client, interaction_event)
+            await auto_completer.invoke(client, interaction_event)
         
     
     def _get_auto_completable_parameters(self):

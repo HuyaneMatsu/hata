@@ -318,8 +318,8 @@ class ContextCommand(CommandBaseApplicationCommand):
             repr_parts.append(self.target.name)
     
     
-    @copy_docs(CommandBaseApplicationCommand.__call__)
-    async def __call__(self, client, interaction_event):
+    @copy_docs(CommandBaseApplicationCommand.invoke)
+    async def invoke(self, client, interaction_event):
         parameters = []
         
         for parameter_converter in self._parameter_converters:

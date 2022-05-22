@@ -188,8 +188,8 @@ class FormSubmitCommand(CommandBaseCustomId):
             return self
     
     
-    @copy_docs(CommandBaseCustomId.__call__)
-    async def __call__(self, client, interaction_event, regex_match):
+    @copy_docs(CommandBaseCustomId.invoke)
+    async def invoke(self, client, interaction_event, regex_match):
         # Positional parameters
         positional_parameters = []
         

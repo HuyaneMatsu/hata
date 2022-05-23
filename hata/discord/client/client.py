@@ -2017,15 +2017,17 @@ class Client(ClientUserPBase):
         """
         if isinstance(access, (OA2Access, UserOA2)):
             if __debug__:
-                if 'connections' not in access.scopes:
+                if 'guilds' not in access.scopes:
                     raise AssertionError(
                         f'The given `access` not grants `\'guilds\'` scope, what is required, '
                         f'got {access!r}.'
                     )
             
             access_token = access.access_token
+        
         elif isinstance(access, str):
             access_token = access
+        
         else:
             raise TypeError(
                 f'`access` can be `{OA2Access.__name__}`, `{UserOA2.__name__}` `str`'
@@ -14533,13 +14535,22 @@ class Client(ClientUserPBase):
         return ApplicationCommandPermission.from_data(permission_data)
     
     
-    async def application_command_permission_edit(self, guild, application_command, permission_overwrites):
+    async def application_command_permission_edit(self, access, guild, application_command, permission_overwrites=...):
         """
         Edits the permissions of the given `application_command` in the given `guild`.
         
-        > The new permissions will permission overwrite the existing permission of an application command.
+        > The new permissions will overwrite the existing permission of an application command.
         >
         > A command will lose it's permissions on rename.
+        
+        The endpoint requires oauth access with `applications.commands.permissions.update` scope.
+        
+        The user with the scope must have in the guild:
+        
+        - Permission to manage guild and roles.
+        - Ability to invoke the respective command.
+        - Permission to manage the resources that will be affected. The can be roles, users and channels depending on
+            the permission types.
         
         This method is a coroutine.
         
@@ -14574,12 +14585,48 @@ class Client(ClientUserPBase):
             - If `permission_overwrites` contains a non ``ApplicationCommandPermissionOverwrite`` element.
             - If `permission_overwrites` contains more than 10 elements.
         """
+        if (permission_overwrites is ...):
+            warnings.warn(
+                (
+                    f'`{self.__class__.__name__}.application_command_permission_edit` accepts `4` parameters: '
+                    f'`access`, `guild`, `application_command`, `permission_overwrites`.\n'
+                    f'Oauth2 access with `applications.commands.permissions.update` scope is required to edit '
+                    f'application command permission overwrites. (Bots are blocked down from the endpoint.)\n'
+                    f'Returning without further code execution...'
+                ),
+                RuntimeWarning,
+                stacklevel = 2,
+            )
+            return
+        
+        # application_id
         application_id = self.application.id
         if __debug__:
             if application_id == 0:
                 raise AssertionError(
                     'The client\'s application is not yet synced.'
                 )
+        
+        # access_token
+        if isinstance(access, (OA2Access, UserOA2)):
+            if __debug__:
+                if 'applications.commands.permissions.update' not in access.scopes:
+                    raise AssertionError(
+                        f'The given `access` not grants `\'applications.commands.permissions.update\'` scope, '
+                        f'what is required, got {access!r}.'
+                    )
+            
+            access_token = access.access_token
+        
+        elif isinstance(access, str):
+            access_token = access
+        
+        else:
+            raise TypeError(
+                f'`access` can be `{OA2Access.__name__}`, `{UserOA2.__name__}` `str`'
+                f', got {access.__class__.__name__}; {access!r}.'
+            )
+        
         
         guild_id = get_guild_id(guild)
         
@@ -14630,8 +14677,13 @@ class Client(ClientUserPBase):
                     )
         
         data = {'permissions': permission_overwrite_datas}
-        permission_data = await self.http.application_command_permission_edit(application_id, guild_id,
-            application_command_id, data)
+        
+        headers = IgnoreCaseMultiValueDictionary()
+        headers[AUTHORIZATION] = f'Bearer {access_token}'
+        
+        permission_data = await self.http.application_command_permission_edit(
+            application_id, guild_id, application_command_id, data, headers
+        )
         
         return ApplicationCommandPermission.from_data(permission_data)
     

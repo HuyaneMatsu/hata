@@ -1844,13 +1844,16 @@ class DiscordHTTPClient(HTTPClient):
             f'/permissions',
         )
     
-    async def application_command_permission_edit(self, application_id, guild_id, application_command_id, data):
+    async def application_command_permission_edit(
+        self, application_id, guild_id, application_command_id, data, headers
+    ):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.application_command_permission_edit, NO_SPECIFIC_RATE_LIMITER),
             METHOD_PUT,
             f'{API_ENDPOINT}/applications/{application_id}/guilds/{guild_id}/commands/{application_command_id}'
             f'/permissions',
             data,
+            headers = headers,
         )
     
     async def application_command_permission_get_all_guild(self, application_id, guild_id):

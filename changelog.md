@@ -2,6 +2,9 @@
 
 #### Improvements
 
+- Boost level 0 sticker count is now 5.
+- `OA2Access` now support rich attribute errors.
+
 ##### ext.slash
 
 - Add `CommandBase`.
@@ -13,6 +16,8 @@
 - `CommandState` now support rich attribute errors.
 
 #### Bug Fixes
+
+- `Client.user_guild_get_all` asserted down bad scope.
 
 ##### ext.slash
 

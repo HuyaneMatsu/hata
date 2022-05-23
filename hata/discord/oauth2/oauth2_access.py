@@ -1,14 +1,15 @@
 __all__ = ('OA2Access', )
 
 import warnings
-
 from datetime import datetime, timedelta
 from time import time as time_now
+
+from scarletio import RichAttributeErrorBaseType
 
 from .helpers import OAUTH2_SCOPES
 
 
-class OA2Access:
+class OA2Access(RichAttributeErrorBaseType):
     """
     Represents a Discord oauth2 access object, what is returned by ``Client.activate_authorization_code`` if
     activating the authorization code went successfully.
@@ -120,6 +121,19 @@ class OA2Access:
     
     def __repr__(self):
         """Returns the representation of the achievement."""
-        state = 'active' if (self.created_at.timestamp() + self.expires_after > time_now()) else 'expired'
-        return (f'<{self.__class__.__name__} {state}, access_token={self.access_token!r}, scopes count='
-            f'{len(self.scopes)}>')
+        repr_parts = ['<', self.__class__.__name__]
+        
+        if self.created_at.timestamp() + self.expires_after > time_now():
+            state = 'active'
+        else:
+            state = 'expired'
+        
+        repr_parts.append(' ')
+        repr_parts.append(state)
+        
+        repr_parts.append('scope count=')
+        repr_parts.append(str(len(self.scopes)))
+        
+        repr_parts.append('>')
+        
+        return ''.join(repr_parts)

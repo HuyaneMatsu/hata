@@ -2766,7 +2766,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         limit : `int`
         """
-        limit = (0, 15, 30, 60)[self.premium_tier]
+        limit = (5, 15, 30, 60)[self.premium_tier]
         if limit < 30 and (GuildFeature.more_sticker in self.features):
             limit = 30
         

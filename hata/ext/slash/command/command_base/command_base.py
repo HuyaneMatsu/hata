@@ -148,8 +148,8 @@ class CommandBase(RichAttributeErrorBaseType):
             The received interaction event.
         """
         return
-
-
+    
+    
     def __hash__(self):
         """Returns the command's hash value."""
         hash_value = 0

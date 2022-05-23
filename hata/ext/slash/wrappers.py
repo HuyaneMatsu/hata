@@ -1,10 +1,8 @@
 __all__ = (
-    'SlasherApplicationCommandParameterConfigurerWrapper', 'SlasherApplicationCommandPermissionOverwriteWrapper',
-    'SlasherCommandWrapper'
+    'ApplicationCommandParameterConfigurerWrapper', 'ApplicationCommandPermissionOverwriteWrapper', 'CommandWrapper'
 )
 
 import reprlib
-from functools import partial as partial_func
 
 from scarletio import RichAttributeErrorBaseType
 
@@ -18,9 +16,9 @@ from .converters import (
 )
 
 
-class SlasherCommandWrapper(RichAttributeErrorBaseType):
+class CommandWrapper(RichAttributeErrorBaseType):
     """
-    Wraps a slasher command enabling the wrapper to postprocess the created slash command.
+    Wraps a command enabling the wrapper to postprocess the created command.
     
     Attributes
     ----------
@@ -31,18 +29,18 @@ class SlasherCommandWrapper(RichAttributeErrorBaseType):
     
     def __new__(cls):
         """
-        Creates a partial function to wrap a slash command.
+        Creates a partial function to wrap a command.
         
         Subclasses should overwrite this method.
-        
-        Returns
-        -------
-        wrapper : `functools.partial` of ``SlasherCommandWrapper._decorate``
-            Partial function to wrap a slash command.
         """
-        return partial_func(cls._decorate, cls)
+        self = RichAttributeErrorBaseType.__new__(cls)
+        
+        self._wrapped = None
+        
+        return self
     
-    def _decorate(cls, wrapped):
+    
+    def __call__(self, wrapped):
         """
         Wraps the given command.
         
@@ -51,33 +49,41 @@ class SlasherCommandWrapper(RichAttributeErrorBaseType):
         Parameters
         ----------
         wrapped : `Any`
-            The slash command or other wrapper to wrap.
+            The command or other wrapper to wrap.
+        
+        Raises
+        -------
+        RuntimeError
+            - If `self` is already wrapped.
         
         Returns
         -------
-        self : ``SlasherCommandWrapper``
-            The created instance.
+        self : ``CommandWrapper``
         """
-        self = object.__new__(cls)
+        if (self._wrapped is not None):
+            raise RuntimeError(
+                f'`{self!r}` is already wrapped; got {wrapped!r}.'
+            )
+        
         self._wrapped = wrapped
         return self
     
     
-    def apply(self, slasher_application_command):
+    def apply(self, command):
         """
-        Applies the wrapper's changes on the respective slash command.
+        Applies the wrapper's changes on the respective command.
         
         Subclasses should overwrite this method.
         
         Parameters
         ----------
-        slasher_application_command : ``SlashCommand``
+        command : ``CommandBaseApplicationCommand``
         """
         pass
     
     
     def __repr__(self):
-        """Returns the slash command wrapper's representation."""
+        """Returns the command wrapper's representation."""
         return f'<{self.__class__.__name__} wrapped={self._wrapped!r}>'
     
     
@@ -89,13 +95,13 @@ class SlasherCommandWrapper(RichAttributeErrorBaseType):
         -------
         function : `Any`
             The wrapped function.
-        wrappers : `list` of ``SlasherCommandWrapper``
+        wrappers : `list` of ``CommandWrapper``
             The fetched back wrappers.
         """
         wrappers = [self]
         maybe_wrapper = self._wrapped
         while True:
-            if isinstance(maybe_wrapper, SlasherCommandWrapper):
+            if isinstance(maybe_wrapper, CommandWrapper):
                 wrappers.append(maybe_wrapper)
                 maybe_wrapper = maybe_wrapper._wrapped
             else:
@@ -106,9 +112,9 @@ class SlasherCommandWrapper(RichAttributeErrorBaseType):
         return function, wrappers
 
 
-class SlasherApplicationCommandPermissionOverwriteWrapper(SlasherCommandWrapper):
+class ApplicationCommandPermissionOverwriteWrapper(CommandWrapper):
     """
-    Wraps a slash to command allowing / disallowing it only for the given user or role inside of a guild.
+    Wraps a command allowing / disallowing it only for the given user or role inside of a guild.
     
     Attributes
     ----------
@@ -123,7 +129,7 @@ class SlasherApplicationCommandPermissionOverwriteWrapper(SlasherCommandWrapper)
     
     def __new__(cls, guild, target, allow):
         """
-        Creates a partial function to wrap a slash command.
+        Creates a partial function to wrap a command.
         
         Parameters
         ----------
@@ -151,11 +157,6 @@ class SlasherApplicationCommandPermissionOverwriteWrapper(SlasherCommandWrapper)
         
         allow : `bool`
             Whether the respective application command should be enabled for the respective entity.
-        
-        Returns
-        -------
-        wrapper : `functools.partial` of ``SlasherCommandWrapper._decorate``
-            Partial function to wrap a slash command.
         """
         if isinstance(guild, Guild):
             guild_id = guild.id
@@ -166,63 +167,43 @@ class SlasherApplicationCommandPermissionOverwriteWrapper(SlasherCommandWrapper)
                 f'`guild` can be `{Guild.__class__.__name__}`, `int`, got {guild.__class__.__name__}; {guild!r}.'
             )
         
-        overwrite = ApplicationCommandPermissionOverwrite(target, allow)
+        permission_overwrite = ApplicationCommandPermissionOverwrite(target, allow)
         
-        return partial_func(cls._decorate, cls, guild_id, overwrite)
-    
-    
-    def _decorate(cls, guild_id, permission_overwrite, wrapped):
-        """
-        Wraps given command.
+        self = CommandWrapper.__new__(cls)
         
-        Parameters
-        ----------
-        guild_id : `int`
-            The guild id where the overwrites should be applied to.
-        permission_overwrite : ``ApplicationCommandPermissionOverwrite``
-            The permission overwrite to apply.
-        wrapped : `Any`
-            The slash command or other wrapper to wrap.
-        
-        Returns
-        -------
-        self : ``SlasherCommandWrapper``
-            The created instance.
-        """
-        self = object.__new__(cls)
         self._guild_id = guild_id
         self._permission_overwrite = permission_overwrite
-        self._wrapped = wrapped
+        
         return self
     
     
-    def apply(self, slasher_application_command):
+    def apply(self, command):
         """
-        Applies the wrapper's changes on the respective slash command.
+        Applies the wrapper's changes on the respective command.
         
         Parameters
         ----------
-        slasher_application_command : ``SlashCommand``
+        command : ``CommandBaseApplicationCommand``
         """
-        slasher_application_command.add_permission_overwrite(self._guild_id, self._permission_overwrite)
+        command.add_permission_overwrite(self._guild_id, self._permission_overwrite)
     
     
     def __repr__(self):
-        """Returns the slash command wrapper's representation."""
+        """Returns the command wrapper's representation."""
         return (
             f'<{self.__class__.__name__} wrapped={self._wrapped!r}, guild_id={self._guild_id!r}, '
             f'overwrite={self._permission_overwrite!r}>'
         )
 
 
-class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper):
+class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
     """
-    Wraps a slash command enabling you to modify it's parameter's annotations.
+    Wraps a command enabling you to modify it's parameter's annotations.
     
     Attributes
     ----------
     _wrapped : `Any`
-        The slash command or other wrapper to wrap.
+        The command or other wrapper to wrap.
     _autocomplete : `None`, `CoroutineFunction`
         Auto complete function for the parameter.
     _channel_types : `None`, `tuple` of `int`
@@ -252,7 +233,7 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
     def __new__(cls, parameter_name, type_or_choice, description=None, name=None, *, autocomplete=None,
             channel_types=None, max_value=None, min_value=None):
         """
-        Creates a partial function to wrap a slash command.
+        Creates a partial function to wrap a command.
         
         Parameters
         ----------
@@ -275,8 +256,8 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         
         Returns
         -------
-        wrapper : `functools.partial` of ``SlasherCommandWrapper._decorate``
-            Partial function to wrap a slash command.
+        wrapper : `functools.partial` of ``CommandWrapper._decorate``
+            Partial function to wrap a command.
         
         Raises
         ------
@@ -322,48 +303,7 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         
         name = parse_annotation_name(name, parameter_name)
         
-        return partial_func(
-            cls._decorate, cls, autocomplete, choice_enum_type, choices, description, name, parameter_name, type_,
-            channel_types, max_value, min_value
-        )
-    
-    
-    def _decorate(cls, autocomplete, choice_enum_type, choices, description, name, parameter_name, type_, channel_types, max_value,
-            min_value, wrapped):
-        """
-        Wraps given command.
-        
-        Parameters
-        ----------
-        autocomplete : `None`, `CoroutineFunction`
-            Auto complete function for the parameter.
-        choice_enum_type : `None`, `type`
-            Enum type of `choices` if applicable.
-        choices : `None`, `dict` of ((`str`, `int`, `float`, `Enum`), `str`) items
-            Parameter's choices.
-        description : `str`
-            Parameter's description.
-        name : `str`
-            The parameter's name.
-        parameter_name : `str`
-            The parameter's internal name.
-        type_ : `int`
-            The parameter's internal type identifier.
-        channel_types : `None`, `tuple` of `int`
-            The accepted channel types.
-        max_value : `None`, `int`, `float`
-            The maximal accepted value by the parameter.
-        min_value : `None`, `int`, `float`
-            The minimal accepted value by the parameter.
-        wrapped : `Any`
-            The slash command or other wrapper to wrap.
-        
-        Returns
-        -------
-        self : ``SlasherCommandWrapper``
-            The created instance.
-        """
-        self = object.__new__(cls)
+        self = CommandWrapper.__new__(cls)
         
         self._autocomplete = autocomplete
         self._choice_enum_type = choice_enum_type
@@ -373,7 +313,6 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
         self._parameter_name = parameter_name
         self._type = type_
         self._channel_types = channel_types
-        self._wrapped = wrapped
         self._max_value = max_value
         self._min_value = min_value
         
@@ -381,7 +320,7 @@ class SlasherApplicationCommandParameterConfigurerWrapper(SlasherCommandWrapper)
     
     
     def __repr__(self):
-        """Returns the slash command wrapper's representation."""
+        """Returns the command wrapper's representation."""
         repr_parts = [
             '<', self.__class__.__name__,
             ' wrapped=', repr(self._wrapped),
@@ -446,19 +385,19 @@ def get_parameter_configurers(wrappers):
     
     Parameters
     ----------
-    wrappers : `None`, `list` of ``SlasherCommandWrapper``
+    wrappers : `None`, `list` of ``CommandWrapper``
         The fetched back wrappers if any.
     
     Returns
     -------
-    parameter_configurers : `None`, `dict` of (`str`, ``SlasherApplicationCommandParameterConfigurerWrapper``) items
+    parameter_configurers : `None`, `dict` of (`str`, ``ApplicationCommandParameterConfigurerWrapper``) items
         The collected parameter configurers if any.
     """
     parameter_configurers = None
     
     if (wrappers is not None):
         for wrapper in wrappers:
-            if isinstance(wrapper, SlasherApplicationCommandParameterConfigurerWrapper):
+            if isinstance(wrapper, ApplicationCommandParameterConfigurerWrapper):
                 if parameter_configurers is None:
                     parameter_configurers = {}
                 

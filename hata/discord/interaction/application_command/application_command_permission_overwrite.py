@@ -26,6 +26,7 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
     
     target_id : `int`
         The represented entity's identifier.
+    
     target_type : ``ApplicationCommandPermissionOverwriteTargetType``
     
         The target entity's type.

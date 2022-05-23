@@ -1,5 +1,6 @@
 __all__ = ('Slasher', )
 
+import warnings
 from functools import partial as partial_func
 
 from scarletio import (
@@ -29,6 +30,7 @@ from .exceptions import (
     default_slasher_exception_handler, default_slasher_random_error_message_getter, test_exception_handler
 )
 from .helpers import validate_translation_table
+from .permission_mismatch import PermissionMismatchWarning, create_permission_mismatch_message
 from .utils import (
     RUNTIME_SYNC_HOOKS, SYNC_ID_GLOBAL, SYNC_ID_MAIN, SYNC_ID_NON_GLOBAL, UNLOADING_BEHAVIOUR_DELETE,
     UNLOADING_BEHAVIOUR_KEEP
@@ -43,14 +45,14 @@ INTERACTION_TYPE_FORM_SUBMIT = InteractionType.form_submit
 
 def match_application_commands_to_commands(application_commands, commands, match_schema):
     """
-    Matches the given application commands to slash commands.
+    Matches the given application commands to application commands.
     
     Parameters
     ----------
     application_commands : `list` of ``ApplicationCommand``
         Received application commands.
     commands : `None`, `list` of ``CommandBaseApplicationCommand``
-        A list of slash commands if any.
+        A list of application commands if any.
     match_schema : `bool`
         Whether schema or just name should be matched.
     
@@ -153,7 +155,7 @@ class CommandState(RichAttributeErrorBaseType):
     Attributes
     ----------
     _active : `None`, `list` of ``CommandBaseApplicationCommand``
-        Active slash commands, which were added.
+        Active application commands, which were added.
     _changes : `None`, `list` of ``CommandChange``
         Newly added or removed commands in order.
     _is_non_global : `bool`
@@ -475,7 +477,7 @@ class CommandState(RichAttributeErrorBaseType):
         Parameters
         ----------
         command : ``CommandBaseApplicationCommand``
-            The slash command.
+            The application command.
         """
         if self._is_non_global:
             return
@@ -495,7 +497,7 @@ class CommandState(RichAttributeErrorBaseType):
         Parameters
         ----------
         command : ``CommandBaseApplicationCommand``
-            The slash command.
+            The application command.
         """
         if self._is_non_global:
             return
@@ -515,7 +517,7 @@ class CommandState(RichAttributeErrorBaseType):
         Parameters
         ----------
         command : ``CommandBaseApplicationCommand``
-            The slash command.
+            The application command.
         """
         if self._is_non_global:
             return
@@ -1264,12 +1266,12 @@ class Slasher(EventHandlerBase):
     
     def create_event(self, func, *args, target=None, **kwargs):
         """
-        Adds a slash command.
+        Adds a command.
         
         Parameters
         ----------
         func : `async-callable`
-            The function used as the command when using the respective slash command.
+            The function used as the command when using the respective command.
         
         name : `None`, `str`, `tuple` of (`str`, `Ellipsis`, `None`)
             The command's name if applicable. If not given or if given as `None`, the `func`'s name will be use
@@ -1277,7 +1279,7 @@ class Slasher(EventHandlerBase):
         description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`), Optional
             Description to use instead of the function's docstring.
         is_global : `None`, `bool`, `tuple` of (`bool`, `Ellipsis`), Optional
-            Whether the slash command is global. Defaults to `False`.
+            Whether the application command command is global. Defaults to `False`.
         guild : `None`, ``Guild``,  `int`, (`list`, `set`) of (`int`, ``Guild``) or \
                 `tuple` of (`None`, ``Guild``,  `int`, `Ellipsis`, (`list`, `set`) of (`int`, ``Guild``)), Optional
             To which guild(s) the command is bound to.
@@ -1370,7 +1372,7 @@ class Slasher(EventHandlerBase):
     
     def create_event_from_class(self, klass):
         """
-        Breaks down the given class to it's class attributes and tries to add it as a slash command.
+        Breaks down the given class to it's class attributes and tries to add it as a command.
         
         Parameters
         ----------
@@ -1426,7 +1428,7 @@ class Slasher(EventHandlerBase):
     
     def _add_application_command(self, command):
         """
-        Adds a slash command to the ``Slasher`` if applicable.
+        Adds a application command to the ``Slasher`` if applicable.
         
         Parameters
         ---------
@@ -1445,7 +1447,7 @@ class Slasher(EventHandlerBase):
     
     def _register_application_command(self, command):
         """
-        Registers the given slash command.
+        Registers the given application command.
         
         Parameters
         ---------
@@ -1500,7 +1502,7 @@ class Slasher(EventHandlerBase):
     
     def _unregister_application_command(self, command):
         """
-        Unregisters the given slash command.
+        Unregisters the given application command.
         
         Parameters
         ----------
@@ -1756,7 +1758,7 @@ class Slasher(EventHandlerBase):
         Parameters
         ----------
         command : `None`, ``CommandBaseApplicationCommand``
-            The slash command to unregister.
+            The application command to unregister.
         command_state : `None`, ``CommandState``
             The command's respective state instance.
         guild_id : `int`
@@ -1780,7 +1782,7 @@ class Slasher(EventHandlerBase):
         Parameters
         ----------
         command : `None`, ``CommandBaseApplicationCommand``
-            The slash command to register.
+            The application command to register.
         command_state : `None`, ``CommandState``
             The command's respective state instance.
         guild_id : `int`
@@ -1794,6 +1796,7 @@ class Slasher(EventHandlerBase):
             if (command_state is not None):
                 command_state.activate(command)
     
+    
     def _keep_helper(self, command, command_state, guild_id):
         """
         Marks the given command to be kept at the given guild.
@@ -1801,7 +1804,7 @@ class Slasher(EventHandlerBase):
         Parameters
         ----------
         command : `None`, ``CommandBaseApplicationCommand``
-            The slash command to register.
+            The application command to register.
         command_state : `None`, ``CommandState``
             The command's respective state instance.
         guild_id : `int`
@@ -1817,6 +1820,7 @@ class Slasher(EventHandlerBase):
             
             if (command_state is not None):
                 command_state.keep(command)
+    
     
     async def _sync_guild_task(self, client, guild_id):
         """
@@ -1888,8 +1892,10 @@ class Slasher(EventHandlerBase):
                 guild_added_commands, True)
             if (matched is not None):
                 for application_command, command in matched:
-                    callback = (type(self)._register_command, self, client, command, guild_command_state, guild_id,
-                        application_command)
+                    callback = (
+                        type(self)._sync_permissions_then_register, self, client, command, guild_command_state,
+                        guild_id, application_command
+                    )
                     
                     if command_register_callbacks is None:
                         command_register_callbacks = []
@@ -1899,8 +1905,10 @@ class Slasher(EventHandlerBase):
                 non_global_added_commands, True)
             if (matched is not None):
                 for application_command, command in matched:
-                    callback = (type(self)._register_command, self, client, command, non_global_command_state, guild_id,
-                        application_command)
+                    callback = (
+                        type(self)._sync_permissions_then_register, self, client, command, non_global_command_state,
+                        guild_id, application_command
+                    )
                     
                     if command_register_callbacks is None:
                         command_register_callbacks = []
@@ -1910,8 +1918,10 @@ class Slasher(EventHandlerBase):
                 guild_added_commands, False)
             if (matched is not None):
                 for application_command, command in matched:
-                    callback = (type(self)._edit_command, self, client, command, guild_command_state, guild_id,
-                        application_command,)
+                    callback = (
+                        type(self)._edit_command, self, client, command, guild_command_state, guild_id,
+                        application_command
+                    )
                     
                     if command_edit_callbacks is None:
                         command_edit_callbacks = []
@@ -1921,8 +1931,10 @@ class Slasher(EventHandlerBase):
                 non_global_added_commands, False)
             if (matched is not None):
                 for application_command, command in matched:
-                    callback = (type(self)._edit_guild_command_to_non_global, self, client, command,
-                        non_global_command_state, guild_id, application_command)
+                    callback = (
+                        type(self)._edit_guild_command_to_non_global, self, client, command,
+                        non_global_command_state, guild_id, application_command
+                    )
                     if command_edit_callbacks is None:
                         command_edit_callbacks = []
                     command_edit_callbacks.append(callback)
@@ -1943,8 +1955,10 @@ class Slasher(EventHandlerBase):
                 guild_removed_commands, True)
             if (matched is not None):
                 for application_command, command in matched:
-                    callback = (type(self)._delete_command, self, client, command, guild_command_state, guild_id,
-                        application_command)
+                    callback = (
+                        type(self)._delete_command, self, client, command, guild_command_state, guild_id,
+                        application_command
+                    )
                     if command_delete_callbacks is None:
                         command_delete_callbacks = []
                     command_delete_callbacks.append(callback)
@@ -1968,12 +1982,14 @@ class Slasher(EventHandlerBase):
                 command_delete_callbacks.append(callback)
             
             success = True
-            for callbacks in (command_register_callbacks, command_delete_callbacks, command_edit_callbacks, \
-                    command_create_callbacks):
+            for callbacks in (
+                command_register_callbacks, command_delete_callbacks, command_edit_callbacks, command_create_callbacks
+            ):
                 if (callbacks is not None):
                     done, pending = await WaitTillAll(
                         [Task(callback[0](*callback[1:]), KOKORO) for callback in callbacks],
-                        KOKORO)
+                        KOKORO,
+                    )
                     
                     for future in done:
                         if not future.result():
@@ -1990,6 +2006,7 @@ class Slasher(EventHandlerBase):
             self._sync_done.add(guild_id)
         
         return success
+    
     
     async def _sync_global_task(self, client):
         """
@@ -2046,8 +2063,10 @@ class Slasher(EventHandlerBase):
                 global_added_commands, True)
             if (matched is not None):
                 for application_command, command in matched:
-                    callback = (type(self)._register_command, self, client, command, global_command_state,
-                        SYNC_ID_GLOBAL, application_command)
+                    callback = (
+                        type(self)._sync_permissions_then_register, self, client, command, global_command_state,
+                        SYNC_ID_GLOBAL, application_command
+                    )
                     
                     if command_register_callbacks is None:
                         command_register_callbacks = []
@@ -2063,8 +2082,10 @@ class Slasher(EventHandlerBase):
                 global_removed_commands, True)
             if (matched is not None):
                 for application_command, command in matched:
-                    callback = (type(self)._delete_command, self, client, command, global_command_state, SYNC_ID_GLOBAL,
-                        application_command)
+                    callback = (
+                        type(self)._delete_command, self, client, command, global_command_state, SYNC_ID_GLOBAL,
+                        application_command
+                    )
                     if command_delete_callbacks is None:
                         command_delete_callbacks = []
                     command_delete_callbacks.append(callback)
@@ -2092,7 +2113,8 @@ class Slasher(EventHandlerBase):
                 if (callbacks is not None):
                     done, pending = await WaitTillAll(
                         [Task(callback[0](*callback[1:]), KOKORO) for callback in callbacks],
-                        KOKORO)
+                        KOKORO,
+                    )
                     
                     for future in done:
                         if not future.result():
@@ -2110,9 +2132,10 @@ class Slasher(EventHandlerBase):
         
         return success
     
-    async def _register_command(self, client, command, command_state, guild_id, application_command):
+    
+    async def _sync_permissions_then_register(self, client, command, command_state, guild_id, application_command):
         """
-        Finishes registering the command.
+        Syncs the command's permissions, then registers it.
         
         This method is a coroutine.
         
@@ -2121,7 +2144,7 @@ class Slasher(EventHandlerBase):
         client : ``Client``
             The respective client.
         command : ``CommandBaseApplicationCommand``
-            The non_global command what replaced the slash command.
+            The command to sync it's permissions of and register.
         command_state : ``CommandState``
             The command's command state.
         guild_id : `int`
@@ -2134,11 +2157,43 @@ class Slasher(EventHandlerBase):
         success : `bool`
             Whether the command was registered successfully.
         """
+        success = await self._sync_permissions(client, command, guild_id, application_command)
+        if not success:
+            return False
+        
+        self._register_helper(command, command_state, guild_id, application_command.id)
+        return True
+    
+    
+    async def _sync_permissions(self, client, command, guild_id, application_command):
+        """
+        Syncs the command's permissions.
+        
+        This method is a coroutine.
+        
+        Attributes
+        ----------
+        client : ``Client``
+            The respective client.
+        command : ``CommandBaseApplicationCommand``
+            The command to sync it's permissions of.
+        guild_id : `int`
+            The respective guild's identifier where the command is.
+        application_command : ``ApplicationCommand``
+            The respective application command.
+        
+        Returns
+        -------
+        success : `bool`
+            Whether the command's permissions were synced successfully.
+        """
         if guild_id == SYNC_ID_GLOBAL:
             tasks = []
             for permission_guild_id in command._get_permission_sync_ids():
-                task = Task(self._register_command_task(client, command, permission_guild_id, application_command),
-                    KOKORO)
+                task = Task(
+                    self._sync_permissions_task(client, command, permission_guild_id, application_command),
+                    KOKORO,
+                )
                 tasks.append(task)
             
             if tasks:
@@ -2152,12 +2207,14 @@ class Slasher(EventHandlerBase):
                 if not success:
                     return False
         else:
-            await self._register_command_task(client, command, guild_id, application_command)
+            success = await self._sync_permissions_task(client, command, guild_id, application_command)
+            if not success:
+                return False
         
-        self._register_helper(command, command_state, guild_id, application_command.id)
         return True
     
-    async def _register_command_task(self, client, command, guild_id, application_command):
+    
+    async def _sync_permissions_task(self, client, command, guild_id, application_command):
         """
         Syncs a command's permissions inside of a guild.
         
@@ -2168,7 +2225,7 @@ class Slasher(EventHandlerBase):
         client : ``Client``
             The respective client.
         command : ``CommandBaseApplicationCommand``
-            The non_global command what replaced the slash command.
+            The command to sync it's permissions of.
         guild_id : `int`
             The respective guild's identifier where the command is.
         application_command : ``ApplicationCommand``
@@ -2177,25 +2234,36 @@ class Slasher(EventHandlerBase):
         Returns
         -------
         success : `bool`
-            Whether the command was registered successfully.
+            Whether the command's permissions were synced successfully.
         """
         success, permission = await self._get_permission_for(client, guild_id, application_command.id)
         if not success:
             return False
         
-        permission_overwrites = command.get_permission_overwrites_for(guild_id)
+        expected_permission_overwrites = command.get_permission_overwrites_for(guild_id)
         
         if permission is None:
             current_permission_overwrites = None
         else:
             current_permission_overwrites = permission.permission_overwrites
         
-        if permission_overwrites != current_permission_overwrites:
+        if expected_permission_overwrites != current_permission_overwrites:
+            warnings.warn(
+                create_permission_mismatch_message(
+                    application_command,
+                    guild_id,
+                    current_permission_overwrites,
+                    expected_permission_overwrites,
+                ),
+                PermissionMismatchWarning,
+            )
+            
+            """
             try:
                 permission = await client.application_command_permission_edit(
                     guild_id,
                     application_command,
-                    permission_overwrites,
+                    expected_permission_overwrites,
                 )
             except GeneratorExit:
                 raise
@@ -2204,7 +2272,7 @@ class Slasher(EventHandlerBase):
                 if not isinstance(err, ConnectionError):
                     await client.events.error(
                         client,
-                        f'{self!r}._register_command',
+                        f'{self!r}._sync_permissions',
                         SlasherSyncError(command, err),
                     )
                 return False
@@ -2215,6 +2283,7 @@ class Slasher(EventHandlerBase):
                 per_guild = self._synced_permissions[guild_id] = {}
             
             per_guild[permission.application_command_id] = permission
+            """
         
         return True
     
@@ -2230,7 +2299,7 @@ class Slasher(EventHandlerBase):
         client : ``Client``
             The respective client.
         command : ``CommandBaseApplicationCommand``
-            The non_global command what replaced the slash command.
+            The non_global command what replaced the application command.
         command_state : ``CommandState``
             The command's command state.
         guild_id : `int`
@@ -2267,7 +2336,12 @@ class Slasher(EventHandlerBase):
             )
             return False
         
-        return await self._register_command(client, command, command_state, guild_id, application_command)
+        success = await self._sync_permissions(client, command, guild_id, application_command)
+        if not success:
+            return False
+        
+        self._register_helper(command, command_state, guild_id, application_command.id)
+        return True
     
     
     async def _edit_command(self, client, command, command_state, guild_id, application_command):
@@ -2281,7 +2355,7 @@ class Slasher(EventHandlerBase):
         client : ``Client``
             The respective client.
         command : ``CommandBaseApplicationCommand``
-            The slash command to update the application command to.
+            The application command to update the application command to.
         command_state : ``CommandState``
             The command's command state.
         guild_id : `int`
@@ -2321,7 +2395,12 @@ class Slasher(EventHandlerBase):
             )
             return False
         
-        return await self._register_command(client, command, command_state, guild_id, application_command)
+        success = await self._sync_permissions(client, command, guild_id, application_command)
+        if not success:
+            return False
+        
+        self._register_helper(command, command_state, guild_id, application_command.id)
+        return True
     
     
     async def _delete_command(self, client, command, command_state, guild_id, application_command):
@@ -2335,7 +2414,7 @@ class Slasher(EventHandlerBase):
         client : ``Client``
             The respective client.
         command : `None`, ``CommandBaseApplicationCommand``
-            The slash command to delete.
+            The application command to delete.
         command_state : ``CommandState``
             The command's command state.
         guild_id : `int`
@@ -2388,7 +2467,7 @@ class Slasher(EventHandlerBase):
         client : ``Client``
             The respective client.
         command : `None`, ``CommandBaseApplicationCommand``
-            The slash command to create.
+            The application command to create.
         command_state : ``CommandState``
             The command's command state.
         guild_id : `int`
@@ -2421,12 +2500,18 @@ class Slasher(EventHandlerBase):
             )
             return False
         
-        return await self._register_command(client, command, command_state, guild_id, application_command)
+        
+        success = await self._sync_permissions(client, command, guild_id, application_command)
+        if not success:
+            return False
+        
+        self._register_helper(command, command_state, guild_id, application_command.id)
+        return True
     
     
     def sync(self):
         """
-        Syncs the slash commands with the client.
+        Syncs the application commands with the client.
         
         The return of the method depends on the thread, from which it was called from.
         
@@ -2454,7 +2539,7 @@ class Slasher(EventHandlerBase):
     
     async def _do_main_sync(self, client):
         """
-        Syncs the slash commands with the client. This method is the internal method of ``.sync``.
+        Syncs the application commands with the client. This method is the internal method of ``.sync``.
         
         This method is a coroutine.
         
@@ -2481,7 +2566,7 @@ class Slasher(EventHandlerBase):
     
     async def _do_main_sync_task(self, client):
         """
-        Syncs the slash commands with the client. This method is the internal coroutine of the ``._do_main_sync``
+        Syncs the application commands with the client. This method is the internal coroutine of the ``._do_main_sync``
         method.
         
         This method is a coroutine.
@@ -2990,8 +3075,10 @@ class Slasher(EventHandlerBase):
         component_command : ``ComponentCommand``
             The command to remove.
         """
-        self._remove_custom_id_based_command(component_command, self._component_commands,
-            self._string_custom_id_to_component_command, self._regex_custom_id_to_component_command)
+        self._remove_custom_id_based_command(
+            component_command, self._component_commands, self._string_custom_id_to_component_command,
+            self._regex_custom_id_to_component_command
+        )
     
     
     def _remove_form_submit_command(self, form_submit_command):
@@ -3003,12 +3090,16 @@ class Slasher(EventHandlerBase):
         form_submit_command : ``FormSubmitCommand``
             The command to remove.
         """
-        self._add_custom_id_based_command(form_submit_command, self._form_submit_commands,
-            self._string_custom_id_to_form_submit_command, self._regex_custom_id_to_form_submit_command)
+        self._add_custom_id_based_command(
+            form_submit_command, self._form_submit_commands, self._string_custom_id_to_form_submit_command,
+            self._regex_custom_id_to_form_submit_command
+        )
     
     
-    def _remove_custom_id_based_command(self, custom_id_based_command, custom_id_based_commands,
-            string_custom_id_to_custom_id_based_command, regex_custom_id_to_custom_id_based_command):
+    def _remove_custom_id_based_command(
+        self, custom_id_based_command, custom_id_based_commands,
+        string_custom_id_to_custom_id_based_command, regex_custom_id_to_custom_id_based_command
+    ):
         """
         Removes a custom id based command from the ``Slasher`` if applicable.
         

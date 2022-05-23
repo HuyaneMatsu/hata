@@ -9,7 +9,7 @@ from ...exceptions import handle_command_exception
 from ...responding import process_command_coroutine
 from ...response_modifier import ResponseModifier
 from ...utils import _check_maybe_route
-from ...wrappers import SlasherCommandWrapper
+from ...wrappers import CommandWrapper
 
 from ..command_base_custom_id import CommandBaseCustomId
 from ..command_base_custom_id.helpers import _validate_custom_ids, _validate_name, split_and_check_satisfaction
@@ -107,7 +107,7 @@ class ComponentCommand(CommandBaseCustomId):
                 f'values, got {target!r}'
             )
         
-        if (func is not None) and isinstance(func, SlasherCommandWrapper):
+        if (func is not None) and isinstance(func, CommandWrapper):
             command, wrappers = func.fetch_function_and_wrappers_back()
         else:
             command = func

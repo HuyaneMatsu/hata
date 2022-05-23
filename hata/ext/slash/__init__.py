@@ -9,6 +9,7 @@ from .event_handlers import *
 from .exceptions import *
 from .expression_parser import *
 from .helpers import *
+from .permission_mismatch import *
 from .responding import *
 from .response_modifier import *
 from .slasher import *
@@ -30,6 +31,7 @@ __all__ = (
     *exceptions.__all__,
     *expression_parser.__all__,
     *helpers.__all__,
+    *permission_mismatch.__all__,
     *responding.__all__,
     *response_modifier.__all__,
     *slasher.__all__,
@@ -44,8 +46,8 @@ from .event_handlers import _do_initial_sync, _application_command_create_watche
     _application_command_delete_watcher, _application_command_permission_update_watcher
 from .client_wrapper_extension import *
 
-set_permission = SlasherApplicationCommandPermissionOverwriteWrapper
-configure_parameter = SlasherApplicationCommandParameterConfigurerWrapper
+set_permission = ApplicationCommandPermissionOverwriteWrapper
+configure_parameter = ApplicationCommandParameterConfigurerWrapper
 P = SlashParameter
 
 

@@ -6,7 +6,7 @@ from .....discord.events.handling_helpers import Router, check_name, route_name,
 
 from ...converters import get_context_command_parameter_converters
 from ...utils import _check_maybe_route, raw_name_to_display
-from ...wrappers import SlasherCommandWrapper
+from ...wrappers import CommandWrapper
 from ...exceptions import handle_command_exception
 from ...responding import process_command_coroutine
 
@@ -176,7 +176,7 @@ class ContextCommand(CommandBaseApplicationCommand):
         ValueError
             If a parameter's value is incorrect.
         """
-        if (func is not None) and isinstance(func, SlasherCommandWrapper):
+        if (func is not None) and isinstance(func, CommandWrapper):
             command, wrappers = func.fetch_function_and_wrappers_back()
         else:
             command = func

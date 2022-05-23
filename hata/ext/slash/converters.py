@@ -3003,7 +3003,7 @@ def create_parameter_converter(parameter, parameter_configurer):
     ----------
     parameter : ``Parameter``
         The parameter to create converter from.
-    parameter_configurer : `None`, ``SlasherApplicationCommandParameterConfigurerWrapper``
+    parameter_configurer : `None`, ``ApplicationCommandParameterConfigurerWrapper``
         Parameter configurer for the parameter if any.
     
     Returns
@@ -3231,7 +3231,7 @@ def get_slash_command_parameter_converters(func, parameter_configurers):
     ----------
     func : `async-callable`
         The function used by a ``SlashCommand``.
-    parameter_configurers : `None`, `dict` of (`str`, ``SlasherApplicationCommandParameterConfigurerWrapper``) items
+    parameter_configurers : `None`, `dict` of (`str`, ``ApplicationCommandParameterConfigurerWrapper``) items
         Parameter configurers to overwrite annotations.
     
     Returns

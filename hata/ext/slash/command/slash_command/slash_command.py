@@ -12,7 +12,7 @@ from ...converters import get_slash_command_parameter_converters
 from ...exceptions import SlashCommandParameterConversionError, handle_command_exception
 from ...response_modifier import ResponseModifier
 from ...utils import _check_maybe_route, raw_name_to_display
-from ...wrappers import SlasherCommandWrapper, get_parameter_configurers
+from ...wrappers import CommandWrapper, get_parameter_configurers
 
 from ..command_base_application_command import CommandBaseApplicationCommand
 from ..command_base_application_command.constants import (
@@ -214,7 +214,7 @@ class SlashCommand(CommandBaseApplicationCommand):
         ValueError
             If a parameter's value is incorrect.
         """
-        if (func is not None) and isinstance(func, SlasherCommandWrapper):
+        if (func is not None) and isinstance(func, CommandWrapper):
             command, wrappers = func.fetch_function_and_wrappers_back()
         else:
             command = func

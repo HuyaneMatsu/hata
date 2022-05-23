@@ -435,7 +435,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 
 #### Improvements
 
-- Add `ApplicationCommand.verison`.
+- Add `ApplicationCommand.version`.
 - Add `ApplicationCommand.edited_at`.
 - Add `e` format code to `ApplicationCommand`.
 - Add `ApplicationCommand._create_empty`.

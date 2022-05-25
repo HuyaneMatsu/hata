@@ -3,6 +3,7 @@ __all__ = ('PermissionMismatchWarning',)
 import warnings
 
 from ...discord.application import Team
+from ...discord.interaction import ApplicationCommandPermissionOverwriteTargetType
 
 
 class PermissionMismatchWarning(RuntimeWarning):
@@ -175,9 +176,156 @@ def check_and_warn_can_request_owners_access_of(client):
         (
             f'\n'
             f'Requesting owner\'s access impossible:\n'
-            f'reason = {failure_reason}\n'
-            f'client = {client!r}'
+            f'reason: {failure_reason}\n'
+            f'client: {client!r}'
         ),
         PermissionMismatchWarning,
     )
+    return False
+
+
+
+def _reduce_application_command_permission_overwrites(guild_id, application_command_permission_overwrites):
+    """
+    Removes the application command permission overwrites which do nothing at all.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        The respective guild's identifier where the command is.
+    application_command_permission_overwrites : `None`, `list` of ``ApplicationCommandPermissionOverwrite``
+        The application command permission overwrites to reduce.
+    
+    Returns
+    -------
+    reduced : `None`
+    """
+    # Optimal case
+    if application_command_permission_overwrites is None:
+        return None
+    
+    # Group up
+    default_role_permission_overwrite = None
+    mentionable_permission_overwrites = None
+    default_channel_permission_overwrite = None
+    channel_permission_overwrites = None
+    unknown_permission_overwrites = None
+    
+    for application_command_permission_overwrite in application_command_permission_overwrites:
+        target_type = application_command_permission_overwrite.target_type
+        if target_type is ApplicationCommandPermissionOverwriteTargetType.user:
+            if mentionable_permission_overwrites is None:
+                mentionable_permission_overwrites = []
+            
+            mentionable_permission_overwrites.append(application_command_permission_overwrite)
+        
+        elif target_type is ApplicationCommandPermissionOverwriteTargetType.role:
+            if application_command_permission_overwrite.target_id == guild_id:
+                default_role_permission_overwrite = application_command_permission_overwrite
+            
+            else:
+                if mentionable_permission_overwrites is None:
+                    mentionable_permission_overwrites = []
+                
+                mentionable_permission_overwrites.append(application_command_permission_overwrite)
+        
+        elif target_type is ApplicationCommandPermissionOverwriteTargetType.channel:
+            if application_command_permission_overwrite.target_id in (0, guild_id - 1):
+                default_channel_permission_overwrite = application_command_permission_overwrite
+            
+            else:
+                if channel_permission_overwrites is None:
+                    channel_permission_overwrites = []
+                
+                channel_permission_overwrites.append(application_command_permission_overwrite)
+        
+        else:
+            if unknown_permission_overwrites is None:
+                unknown_permission_overwrites = []
+            
+            unknown_permission_overwrites.append(application_command_permission_overwrite)
+    
+    # process
+    
+    reduced = []
+    
+    if default_role_permission_overwrite is None:
+        default_role_allow = True
+    elif default_role_permission_overwrite.allow:
+        default_role_allow = True
+    else:
+        default_role_allow = False
+        
+        reduced.append(default_role_permission_overwrite)
+    
+    
+    if default_channel_permission_overwrite is None:
+        default_channel_allow = True
+    elif default_channel_permission_overwrite.allow:
+        default_channel_allow = True
+    else:
+        default_channel_allow = False
+        
+        reduced.append(default_channel_permission_overwrite)
+    
+    
+    if (mentionable_permission_overwrites is not None):
+        for mentionable_permission_overwrite in mentionable_permission_overwrites:
+            if mentionable_permission_overwrite.allow != default_role_allow:
+                reduced.append(mentionable_permission_overwrite)
+    
+    if (channel_permission_overwrites is not None):
+        for channel_permission_overwrite in channel_permission_overwrites:
+            if channel_permission_overwrite.allow != default_channel_allow:
+                reduced.append(channel_permission_overwrite)
+    
+    
+    if (unknown_permission_overwrites is not None):
+        reduced.extend(unknown_permission_overwrites)
+    
+    if not reduced:
+        return None
+        
+    reduced.sort()
+    return reduced
+
+
+def are_application_command_permission_overwrites_equal(
+    guild_id,
+    current_application_command_permission_overwrites,
+    expected_application_command_permission_overwrites,
+):
+    """
+    Returns whether the two application command permission overwrites are equal.
+    
+    Parameters
+    ----------
+    guild_id : `int`
+        The respective guild's identifier where the command is.
+    current_application_command_permission_overwrites : `None`, `list` of ``ApplicationCommandPermissionOverwrite``
+        The actual permission overwrites of the command.
+    expected_application_command_permission_overwrites : `None`, `list` of ``ApplicationCommandPermissionOverwrite``
+        The expected permission overwrites of the command.
+    
+    Returns
+    -------
+    are_equal : `bool`
+    """
+    if (
+        (current_application_command_permission_overwrites is None) and
+        (expected_application_command_permission_overwrites is None)
+    ):
+        return True
+    
+    current_application_command_permission_overwrites = _reduce_application_command_permission_overwrites(
+        guild_id, current_application_command_permission_overwrites 
+    )
+    
+    expected_application_command_permission_overwrites = _reduce_application_command_permission_overwrites(
+        guild_id, expected_application_command_permission_overwrites
+    )
+    
+    if current_application_command_permission_overwrites == expected_application_command_permission_overwrites:
+        return True
+    
     return False

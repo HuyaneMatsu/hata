@@ -33,7 +33,8 @@ from .exceptions import (
 )
 from .helpers import validate_translation_table
 from .permission_mismatch import (
-    PermissionMismatchWarning, check_and_warn_can_request_owners_access_of, create_permission_mismatch_message
+    PermissionMismatchWarning, are_application_command_permission_overwrites_equal,
+    check_and_warn_can_request_owners_access_of, create_permission_mismatch_message
 )
 from .utils import (
     RUNTIME_SYNC_HOOKS, SYNC_ID_GLOBAL, SYNC_ID_MAIN, SYNC_ID_NON_GLOBAL, UNLOADING_BEHAVIOUR_DELETE,
@@ -2366,9 +2367,11 @@ class Slasher(EventHandlerBase):
         else:
             current_permission_overwrites = permission.permission_overwrites
         
-        if expected_permission_overwrites == current_permission_overwrites:
+        if are_application_command_permission_overwrites_equal(
+            guild_id, expected_permission_overwrites, current_permission_overwrites
+        ):
             return True
-            
+        
         if self._enforce_application_command_permissions:
             access = await self._get_owners_access(client)
             

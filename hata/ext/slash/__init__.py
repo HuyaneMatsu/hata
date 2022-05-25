@@ -66,15 +66,28 @@ def setup_ext_slash(client, **kwargs):
     
     Other Parameters
     ----------------
-    delete_commands_on_unload: `bool`, Optional
+    assert_application_command_permission_missmatch_at : `None`, `int`, ``Guild``, `iterable` of (`int`, ``Guild``)
+            = `None`, Optional (Keyword only)
+        Guilds, where permission overwrites missmatch should be asserted.
+    
+    delete_commands_on_unload: `bool`, Optional (Keyword only)
         Whether commands should be deleted when unloaded.
-    use_default_exception_handler : `bool`, Optional
-        Whether the default slash exception handler should be added as an exception handler.
-    random_error_message_getter : `None`, `FunctionType` = `None`, Optional
+    
+    enforce_application_command_permissions : `bool` = `False`, Optional (Keyword only)
+        Whether application command permissions should be enforced where they are asserted.
+        
+        > This only works if the application is NOT owned by a team.
+    random_error_message_getter : `None`, `FunctionType` = `None`, Optional (Keyword only)
         Random error message getter used by the default exception handler.
+    
     translation_table : `None`, `str`, `dict` of ((``Locale``, `str`),
             (`None`, `dict` of (`str`, (`None`, `str`)) items)) items, Optional
         Translation table for the commands of the slasher.
+    
+    use_default_exception_handler : `bool`, Optional (Keyword only)
+        Whether the default slash exception handler should be added as an exception handler.
+    
+    
     
     Returns
     -------
@@ -122,9 +135,11 @@ register_setup_function(
     setup_ext_slash,
     None,
     (
+        'assert_application_command_permission_missmatch_at',
         'delete_commands_on_unload',
-        'use_default_exception_handler',
+        'enforce_application_command_permissions',
         'random_error_message_getter',
         'translation_table',
+        'use_default_exception_handler',
     ),
 )

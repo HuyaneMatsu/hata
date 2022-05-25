@@ -1,5 +1,10 @@
 __all__ = ('PermissionMismatchWarning',)
 
+import warnings
+
+from ...discord.application import Team
+
+
 class PermissionMismatchWarning(RuntimeWarning):
     """
     Warnings used when an application has different permissions than expected.
@@ -134,3 +139,45 @@ def create_permission_mismatch_message(
     
     
     return ''.join(message_parts)
+
+
+def check_and_warn_can_request_owners_access_of(client):
+    """
+    Checks whether the client's access can be requested. If it cannot drops a warning.
+    
+    Parameters
+    ----------
+    client : ``Client``
+        The respective client.
+    
+    Returns
+    -------
+    can_request_owners_access : `bool`
+    """
+    while True:
+        secret = client.secret
+        if secret is None:
+            failure_reason = '`client.secret` is None`.'
+            break
+        
+        if isinstance(client.application.owner, Team):
+            failure_reason = 'Client application owned by team.'
+            break
+        
+        failure_reason = True
+        break
+    
+    if failure_reason is None:
+        return True
+    
+    
+    warnings.warn(
+        (
+            f'\n'
+            f'Requesting owner\'s access impossible:\n'
+            f'reason = {failure_reason}\n'
+            f'client = {client!r}'
+        ),
+        PermissionMismatchWarning,
+    )
+    return False

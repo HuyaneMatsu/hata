@@ -1,6 +1,7 @@
 __all__ = ('Slasher', )
 
 import warnings
+from datetime import datetime, timedelta
 from functools import partial as partial_func
 
 from scarletio import (
@@ -12,6 +13,7 @@ from ...discord.client.request_helpers import get_guild_id
 from ...discord.core import KOKORO
 from ...discord.events.handling_helpers import EventHandlerBase, Router, asynclist
 from ...discord.exceptions import DiscordException, ERROR_CODES
+from ...discord.guild import Guild
 from ...discord.interaction import (
     APPLICATION_COMMAND_CONTEXT_TARGET_TYPES, ApplicationCommand, ApplicationCommandTargetType, InteractionEvent,
     InteractionType
@@ -30,7 +32,9 @@ from .exceptions import (
     default_slasher_exception_handler, default_slasher_random_error_message_getter, test_exception_handler
 )
 from .helpers import validate_translation_table
-from .permission_mismatch import PermissionMismatchWarning, create_permission_mismatch_message
+from .permission_mismatch import (
+    PermissionMismatchWarning, check_and_warn_can_request_owners_access_of, create_permission_mismatch_message
+)
 from .utils import (
     RUNTIME_SYNC_HOOKS, SYNC_ID_GLOBAL, SYNC_ID_MAIN, SYNC_ID_NON_GLOBAL, UNLOADING_BEHAVIOUR_DELETE,
     UNLOADING_BEHAVIOUR_KEEP
@@ -41,6 +45,9 @@ INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 INTERACTION_TYPE_MESSAGE_COMPONENT = InteractionType.message_component
 INTERACTION_TYPE_APPLICATION_COMMAND_AUTOCOMPLETE = InteractionType.application_command_autocomplete
 INTERACTION_TYPE_FORM_SUBMIT = InteractionType.form_submit
+
+# It is 7 days, but lets re-request after 6
+OWNERS_ACCESS_REQUEST_INTERVAL = timedelta(days=6)
 
 
 def match_application_commands_to_commands(application_commands, commands, match_schema):
@@ -810,6 +817,9 @@ class Slasher(EventHandlerBase):
     
     Attributes
     ----------
+    _assert_application_command_permission_missmatch_at : `None`, `set` of `int`
+        The guilds' identifier, where permission overwrites missmatch should be asserted.
+    
     _auto_completers : `None`, `list` of ``SlashCommandParameterAutoCompleter``
         Auto completer functions.
     
@@ -841,6 +851,11 @@ class Slasher(EventHandlerBase):
     _component_interaction_waiters : ``WeakKeyDictionary`` of (``Message``, `async-callable`) items
         Whenever a component interaction is received on a message, it's respective waiters will be endured inside of
         a ``Task``.
+    
+    _enforce_application_command_permissions : `bool`
+        Whether application command permissions should be enforced where they are asserted.
+        
+        > This only works if the application is NOT owned by a team.
     
     _exception_handlers : `None`, `list` of `CoroutineFunction`
         Exception handlers added with ``.error`` to the interaction handler.
@@ -893,6 +908,15 @@ class Slasher(EventHandlerBase):
     _get_permission_tasks : `dict` of (`int`, ``Task``) items
         A dictionary of `guild-id` - `permission getter` tasks.
     
+    _owners_access : `None`, ``OA2Access`
+        Oauth2 access of the client's owner.
+    
+    _owners_access_get_impossible : `bool`
+        Whether the retrieving the owner's access is possible.
+    
+    _owners_access_get_task : `None`, ``Task``
+        Synchronised task for requesting the owner's access.
+    
     _sync_should : `set` of `int`
         A set of guild id-s which should be synced.
     
@@ -922,12 +946,14 @@ class Slasher(EventHandlerBase):
     ``Slasher``-s are weakreferable.
     """
     __slots__ = (
-        '__weakref__', '_auto_completers', '_call_later', '_client_reference', '_command_states',
-        '_command_unloading_behaviour', '_component_commands', '_component_interaction_waiters', '_exception_handlers',
-        '_form_submit_commands', '_get_permission_tasks', '_random_error_message_getter',
-        '_regex_custom_id_to_component_command', '_regex_custom_id_to_form_submit_command', '_self_reference',
-        '_string_custom_id_to_component_command', '_string_custom_id_to_form_submit_command', '_sync_done',
-        '_sync_should', '_sync_tasks', '_synced_permissions', '_translation_table', 'command_id_to_command'
+        '__weakref__', '_assert_application_command_permission_missmatch_at', '_auto_completers', '_call_later',
+        '_client_reference', '_command_states', '_command_unloading_behaviour', '_component_commands',
+        '_component_interaction_waiters', '_enforce_application_command_permissions', '_exception_handlers',
+        '_form_submit_commands', '_get_permission_tasks', '_owners_access', '_owners_access_get_impossible',
+        '_owners_access_get_task', '_random_error_message_getter', '_regex_custom_id_to_component_command',
+        '_regex_custom_id_to_form_submit_command', '_self_reference', '_string_custom_id_to_component_command',
+        '_string_custom_id_to_form_submit_command', '_sync_done', '_sync_should', '_sync_tasks', '_synced_permissions',
+        '_translation_table', 'command_id_to_command'
     )
     
     __event_name__ = 'interaction_create'
@@ -935,8 +961,14 @@ class Slasher(EventHandlerBase):
     SUPPORTED_TYPES = (SlashCommand, ContextCommand, ComponentCommand, FormSubmitCommand)
     
     def __new__(
-        cls, client, delete_commands_on_unload=False, use_default_exception_handler=True,
-        random_error_message_getter=None, translation_table=None
+        cls,
+        client,
+        assert_application_command_permission_missmatch_at = None,
+        delete_commands_on_unload = False,
+        enforce_application_command_permissions = False,
+        use_default_exception_handler = True,
+        random_error_message_getter = None,
+        translation_table = None
     ):
         """
         Creates a new interaction event handler.
@@ -945,15 +977,28 @@ class Slasher(EventHandlerBase):
         ----------
         client : ``Client``
             The owner client instance.
-        delete_commands_on_unload : `bool` = `False`, Optional
+            
+        assert_application_command_permission_missmatch_at : `None`, `int`, ``Guild``, `iterable` of (`int`, ``Guild``)
+                = `None`, Optional (Keyword only)
+            Guilds, where permission overwrites missmatch should be asserted.
+        
+        delete_commands_on_unload: `bool`, Optional (Keyword only)
             Whether commands should be deleted when unloaded.
-        use_default_exception_handler : `bool` = `True`, Optional
-            Whether the default slash exception handler should be added as an exception handler.
-        random_error_message_getter : `None`, `FunctionType` = `None`, Optional
+        
+        enforce_application_command_permissions : `bool` = `False`, Optional (Keyword only)
+            Whether application command permissions should be enforced where they are asserted.
+            
+            > This only works if the application is NOT owned by a team.
+        
+        random_error_message_getter : `None`, `FunctionType` = `None`, Optional (Keyword only)
             Random error message getter used by the default exception handler.
+        
         translation_table : `None`, `str`, `dict` of ((``Locale``, `str`),
                 (`None`, `dict` of (`str`, (`None`, `str`)) items)) items, Optional
             Translation table for the commands of the slasher.
+        
+        use_default_exception_handler : `bool`, Optional (Keyword only)
+            Whether the default slash exception handler should be added as an exception handler.
         
         Raises
         ------
@@ -965,6 +1010,7 @@ class Slasher(EventHandlerBase):
             - If `client` was not given as ``Client``.
             - If `translation_table`'s structure is incorrect.
         """
+        # client
         if not isinstance(client, Client):
             raise TypeError(
                 f'`client` can be `{Client.__name__}`, got {client.__class__.__name__}; {client!r}.'
@@ -972,6 +1018,49 @@ class Slasher(EventHandlerBase):
         
         client_reference = WeakReferer(client)
         
+        # assert_application_command_permission_missmatch_at
+        
+        if assert_application_command_permission_missmatch_at is None:
+            asserted_guild_ids = None
+        else:
+            asserted_guild_ids = set()
+            
+            if isinstance(assert_application_command_permission_missmatch_at, Guild):
+                asserted_guild_ids.add(assert_application_command_permission_missmatch_at.id)
+            
+            elif type(assert_application_command_permission_missmatch_at) is int:
+                asserted_guild_ids.add(assert_application_command_permission_missmatch_at)
+            
+            elif isinstance(assert_application_command_permission_missmatch_at, int):
+                asserted_guild_ids.add(int(assert_application_command_permission_missmatch_at))
+            
+            else:
+                iterator = getattr(type(assert_application_command_permission_missmatch_at), '__iter__', None)
+                if iterator is None:
+                    raise TypeError(
+                        f'`assert_application_command_permission_missmatch_at` can be `iterable`, got {assert_application_command_permission_missmatch_at.__class__.__name__}; '
+                        f'{assert_application_command_permission_missmatch_at!r}.'
+                    )
+                
+                for additional_owner in iterator(assert_application_command_permission_missmatch_at):
+                    if type(additional_owner) is int:
+                        pass
+                    elif isinstance(additional_owner, int):
+                        additional_owner = int(additional_owner)
+                    elif isinstance(additional_owner, Guild):
+                        additional_owner = additional_owner.id
+                    else:
+                        raise TypeError(
+                            f'`assert_application_command_permission_missmatch_at` contains a non `int`, `{Guild.__name__}` , got '
+                            f'{additional_owner.__class__.__name__}; {additional_owner!r}.'
+                        )
+                    
+                    asserted_guild_ids.add(additional_owner)
+                
+                if (not asserted_guild_ids):
+                    asserted_guild_ids = None
+        
+        # delete_commands_on_unload
         if type(delete_commands_on_unload) is bool:
             pass
         elif isinstance(delete_commands_on_unload, bool):
@@ -982,6 +1071,33 @@ class Slasher(EventHandlerBase):
                 f'{delete_commands_on_unload.__class__.__name__}; {delete_commands_on_unload!r}.'
             )
         
+        if delete_commands_on_unload:
+            command_unloading_behaviour = UNLOADING_BEHAVIOUR_DELETE
+        else:
+            command_unloading_behaviour = UNLOADING_BEHAVIOUR_KEEP
+        
+        # enforce_application_command_permissions
+        if type(enforce_application_command_permissions) is bool:
+            pass
+        elif isinstance(enforce_application_command_permissions, bool):
+            enforce_application_command_permissions = bool(enforce_application_command_permissions)
+        else:
+            raise TypeError(
+                f'`enforce_application_command_permissions` can be `bool`, got '
+                f'{enforce_application_command_permissions.__class__.__name__};'
+                f'{enforce_application_command_permissions!r}.'
+            )
+        
+        # random_error_message_getter
+        if random_error_message_getter is None:
+            random_error_message_getter = default_slasher_random_error_message_getter
+        else:
+            _validate_random_error_message_getter(random_error_message_getter)
+        
+        # translation_table
+        translation_table = validate_translation_table(translation_table)
+        
+        # use_default_exception_handler
         if type(use_default_exception_handler) is bool:
             pass
         elif isinstance(use_default_exception_handler, bool):
@@ -992,24 +1108,11 @@ class Slasher(EventHandlerBase):
                 f'{use_default_exception_handler.__class__.__name__}; {use_default_exception_handler!r}.'
             )
         
-        
-        if delete_commands_on_unload:
-            command_unloading_behaviour = UNLOADING_BEHAVIOUR_DELETE
-        else:
-            command_unloading_behaviour = UNLOADING_BEHAVIOUR_KEEP
-        
-        
         if use_default_exception_handler:
             exception_handlers = [default_slasher_exception_handler]
         else:
             exception_handlers = None
         
-        if random_error_message_getter is None:
-            random_error_message_getter = default_slasher_random_error_message_getter
-        else:
-            _validate_random_error_message_getter(random_error_message_getter)
-        
-        translation_table = validate_translation_table(translation_table)
         
         self = object.__new__(cls)
         self._call_later = None
@@ -1038,6 +1141,14 @@ class Slasher(EventHandlerBase):
         self._exception_handlers = exception_handlers
         self._self_reference = None
         self._auto_completers = None
+        
+        self._assert_application_command_permission_missmatch_at = asserted_guild_ids
+        self._enforce_application_command_permissions = enforce_application_command_permissions
+        
+        self._owners_access = None
+        self._owners_access_get_impossible = False
+        self._owners_access_get_task = None
+        
         
         return self
     
@@ -2187,9 +2298,16 @@ class Slasher(EventHandlerBase):
         success : `bool`
             Whether the command's permissions were synced successfully.
         """
+        assert_application_command_permission_missmatch_at = self._assert_application_command_permission_missmatch_at
+        if (assert_application_command_permission_missmatch_at is None):
+            return True
+        
         if guild_id == SYNC_ID_GLOBAL:
             tasks = []
             for permission_guild_id in command._get_permission_sync_ids():
+                if permission_guild_id not in assert_application_command_permission_missmatch_at:
+                    continue
+                
                 task = Task(
                     self._sync_permissions_task(client, command, permission_guild_id, application_command),
                     KOKORO,
@@ -2206,12 +2324,13 @@ class Slasher(EventHandlerBase):
                 
                 if not success:
                     return False
-        else:
-            success = await self._sync_permissions_task(client, command, guild_id, application_command)
-            if not success:
-                return False
+            
+            return True
         
-        return True
+        if guild_id not in assert_application_command_permission_missmatch_at:
+            return True
+        
+        return await self._sync_permissions_task(client, command, guild_id, application_command)
     
     
     async def _sync_permissions_task(self, client, command, guild_id, application_command):
@@ -2247,45 +2366,57 @@ class Slasher(EventHandlerBase):
         else:
             current_permission_overwrites = permission.permission_overwrites
         
-        if expected_permission_overwrites != current_permission_overwrites:
-            warnings.warn(
-                create_permission_mismatch_message(
-                    application_command,
-                    guild_id,
-                    current_permission_overwrites,
-                    expected_permission_overwrites,
-                ),
-                PermissionMismatchWarning,
-            )
+        if expected_permission_overwrites == current_permission_overwrites:
+            return True
             
-            """
-            try:
-                permission = await client.application_command_permission_edit(
-                    guild_id,
-                    application_command,
-                    expected_permission_overwrites,
-                )
-            except GeneratorExit:
-                raise
+        if self._enforce_application_command_permissions:
+            access = await self._get_owners_access(client)
             
-            except BaseException as err:
-                if not isinstance(err, ConnectionError):
-                    await client.events.error(
-                        client,
-                        f'{self!r}._sync_permissions',
-                        SlasherSyncError(command, err),
+            if (access is not None):
+                try:
+                    permission = await client.application_command_permission_edit(
+                        access,
+                        guild_id,
+                        application_command,
+                        expected_permission_overwrites,
                     )
-                return False
+                except GeneratorExit:
+                    raise
+                
+                except BaseException as err:
+                    if not isinstance(err, ConnectionError):
+                        await client.events.error(
+                            client,
+                            f'{self!r}._sync_permissions',
+                            SlasherSyncError(command, err),
+                        )
+                    return False
+                
+                try:
+                    per_guild = self._synced_permissions[guild_id]
+                except KeyError:
+                    per_guild = self._synced_permissions[guild_id] = {}
+                
+                per_guild[permission.application_command_id] = permission
+                
+                return True
             
-            try:
-                per_guild = self._synced_permissions[guild_id]
-            except KeyError:
-                per_guild = self._synced_permissions[guild_id] = {}
-            
-            per_guild[permission.application_command_id] = permission
-            """
+            else:
+                success = False
+        else:
+            success = True
         
-        return True
+        warnings.warn(
+            create_permission_mismatch_message(
+                application_command,
+                guild_id,
+                current_permission_overwrites,
+                expected_permission_overwrites,
+            ),
+            PermissionMismatchWarning,
+        )
+        
+        return success
     
     
     async def _edit_guild_command_to_non_global(self, client, command, command_state, guild_id, application_command):
@@ -3366,3 +3497,85 @@ class Slasher(EventHandlerBase):
             self._sync_should.add(sync_id)
         
         self._maybe_sync()
+    
+    
+    async def _get_owners_access(self, client):
+        """
+        Tries to request the client's oauth2 access.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The respective client.
+        
+        Returns
+        -------
+        owners_access : `None`, ``OA2Access``
+        """
+        owners_access = self._owners_access
+        if (owners_access is None):
+            if self._owners_access_get_impossible:
+                return None
+            
+            if not check_and_warn_can_request_owners_access_of(client):
+                self._owners_access_get_impossible = True
+                return None
+            
+        else:
+            if (owners_access.created_at + OWNERS_ACCESS_REQUEST_INTERVAL) >= datetime.utcnow():
+                return owners_access
+        
+        
+        task = self._owners_access_get_task 
+        if (task is None):
+            task = self._get_owners_access_task(client)
+            
+            self._owners_access_get_task = task
+            
+            try:
+                owners_access = await task 
+            finally:
+                self._owners_access_get_task = None
+            
+            self._owners_access = owners_access
+        
+        else:
+            owners_access = await task
+        
+        return owners_access
+    
+    
+    async def _get_owners_access_task(self, client):
+        """
+        Requests the client's owner's access. This method is synchronised by ``._get_owners_access``.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        client : ``Client``
+            The respective client.
+        
+        Returns
+        -------
+        owners_access : `None`, ``OA2Access``
+        """
+        try:
+           owners_access = await client.owners_access('applications.commands.permissions.update')
+        except GeneratorExit:
+            raise
+        
+        except BaseException as err:
+            if isinstance(err, ConnectionError):
+                return None
+            
+            await client.events.error(
+                client,
+                f'{self!r}._get_owners_access_task',
+                SlasherSyncError(None, err),
+            )
+            return None
+        
+        return owners_access

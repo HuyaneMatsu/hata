@@ -2482,7 +2482,7 @@ class Client(ClientUserPBase):
         user : ``ClientUserBase``, `int`
             The user, who's achievement will be updated.
         achievement : ``Achievement``, `int`
-            The achievement, which's state will be updated
+            The achievement, what's state will be updated
         percent_complete : `int`
             The completion percentage of the achievement.
         
@@ -16731,7 +16731,7 @@ class Client(ClientUserPBase):
     
     def start(self):
         """
-        Starts the clients's connecting to Discord. If the client is already running, raises `RuntimeError`.
+        Starts the clients' connecting to Discord. If the client is already running, raises `RuntimeError`.
         
         The return of the method depends on the thread, from which it was called from.
         

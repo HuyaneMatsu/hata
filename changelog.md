@@ -4,6 +4,7 @@
 
 - Boost level 0 sticker count is now 5.
 - `OA2Access` now support rich attribute errors.
+- `OA2Access.__repr__` will no longer display the token. :derp:
 
 ##### ext.slash
 
@@ -14,6 +15,9 @@
 - `SlasherCommandWrapper` now support rich attribute errors.
 - `CommandChange` now support rich attribute errors.
 - `CommandState` now support rich attribute errors.
+- Add `assert_application_command_permission_missmatch_at` parameter to `Slasher.__new__`.
+- Add `enforce_application_command_permissions` parameter to `Slasher.__new__`.
+
 
 #### Bug Fixes
 

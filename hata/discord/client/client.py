@@ -14558,8 +14558,11 @@ class Client(ClientUserPBase):
         ----------
         guild : ``Guild``, `int`
             The respective guild.
-        application_command : ``ApplicationCommand``, `int`
+        application_command : `None`, ``ApplicationCommand``, `int`
             The respective application command.
+            
+            Can be `None` (or `0`) if you want to edit the default overwrites for all guild level application commands.
+            
         permission_overwrites : `None`, (`tuple`, `list` , `set`) of ``ApplicationCommandPermissionOverwrite``
             The new permission overwrites of the given application command inside of the guild.
             
@@ -14630,8 +14633,12 @@ class Client(ClientUserPBase):
         
         guild_id = get_guild_id(guild)
         
-        if isinstance(application_command, ApplicationCommand):
+        if application_command_id is None:
+            application_command_id = 0
+        
+        elif isinstance(application_command, ApplicationCommand):
             application_command_id = application_command.id
+        
         else:
             application_command_id = maybe_snowflake(application_command)
             if application_command_id is None:
@@ -14639,6 +14646,9 @@ class Client(ClientUserPBase):
                     f'`application_command` can be `{ApplicationCommand.__name__}`, `int`, got '
                     f'{application_command.__class__.__name__}; {application_command!r}.'
                 )
+        
+        if application_command_id == 0:
+            application_command_id = application_id
         
         permission_overwrite_datas = []
         if (permission_overwrites is not None):

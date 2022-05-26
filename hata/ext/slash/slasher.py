@@ -909,6 +909,9 @@ class Slasher(EventHandlerBase):
     _get_permission_tasks : `dict` of (`int`, ``Task``) items
         A dictionary of `guild-id` - `permission getter` tasks.
     
+    _guild_level_permission_overwrites : `None`, `dict` of `set` of ``ApplicationCommandPermissionOverwrite``
+        Guild level permission overwrites to apply.
+    
     _owners_access : `None`, ``OA2Access`
         Oauth2 access of the client's owner.
     
@@ -950,11 +953,11 @@ class Slasher(EventHandlerBase):
         '__weakref__', '_assert_application_command_permission_missmatch_at', '_auto_completers', '_call_later',
         '_client_reference', '_command_states', '_command_unloading_behaviour', '_component_commands',
         '_component_interaction_waiters', '_enforce_application_command_permissions', '_exception_handlers',
-        '_form_submit_commands', '_get_permission_tasks', '_owners_access', '_owners_access_get_impossible',
-        '_owners_access_get_task', '_random_error_message_getter', '_regex_custom_id_to_component_command',
-        '_regex_custom_id_to_form_submit_command', '_self_reference', '_string_custom_id_to_component_command',
-        '_string_custom_id_to_form_submit_command', '_sync_done', '_sync_should', '_sync_tasks', '_synced_permissions',
-        '_translation_table', 'command_id_to_command'
+        '_form_submit_commands', '_get_permission_tasks', '_guild_level_permission_overwrites', '_owners_access',
+        '_owners_access_get_impossible', '_owners_access_get_task', '_random_error_message_getter',
+        '_regex_custom_id_to_component_command', '_regex_custom_id_to_form_submit_command', '_self_reference',
+        '_string_custom_id_to_component_command', '_string_custom_id_to_form_submit_command', '_sync_done',
+        '_sync_should', '_sync_tasks', '_synced_permissions', '_translation_table', 'command_id_to_command'
     )
     
     __event_name__ = 'interaction_create'
@@ -1149,7 +1152,7 @@ class Slasher(EventHandlerBase):
         self._owners_access = None
         self._owners_access_get_impossible = False
         self._owners_access_get_task = None
-        
+        self._guild_level_permission_overwrites = None
         
         return self
     
@@ -1808,6 +1811,7 @@ class Slasher(EventHandlerBase):
         else:
             return command
     
+    
     async def _sync_guild(self, client, guild_id):
         """
         Syncs the respective guild's commands if not yet synced.
@@ -1887,6 +1891,7 @@ class Slasher(EventHandlerBase):
             if (command_state is not None):
                 command_state.delete(command)
     
+    
     def _register_helper(self, command, command_state, guild_id, application_command_id):
         """
         Registers the given command, guild id, application command relationship.
@@ -1963,12 +1968,14 @@ class Slasher(EventHandlerBase):
             # No internet connection
             if not isinstance(err, ConnectionError):
                 await client.events.error(client, f'{self!r}._sync_guild_task', err)
+        
         else:
             guild_command_state = self._command_states.get(guild_id, None)
             if guild_command_state is None:
                 guild_added_commands = None
                 guild_keep_commands = None
                 guild_removed_commands = None
+            
             else:
                 guild_added_commands = guild_command_state.get_should_add_application_commands()
                 if not guild_added_commands:
@@ -1999,9 +2006,11 @@ class Slasher(EventHandlerBase):
             command_edit_callbacks = None
             command_delete_callbacks = None
             command_register_callbacks = None
+            guild_permission_sync_callbacks = None
             
-            guild_added_commands, matched = match_application_commands_to_commands(application_commands,
-                guild_added_commands, True)
+            guild_added_commands, matched = match_application_commands_to_commands(
+                application_commands, guild_added_commands, True
+            )
             if (matched is not None):
                 for application_command, command in matched:
                     callback = (
@@ -2013,8 +2022,9 @@ class Slasher(EventHandlerBase):
                         command_register_callbacks = []
                     command_register_callbacks.append(callback)
             
-            non_global_added_commands, matched = match_application_commands_to_commands(application_commands,
-                non_global_added_commands, True)
+            non_global_added_commands, matched = match_application_commands_to_commands(
+                application_commands, non_global_added_commands, True
+            )
             if (matched is not None):
                 for application_command, command in matched:
                     callback = (
@@ -2026,8 +2036,9 @@ class Slasher(EventHandlerBase):
                         command_register_callbacks = []
                     command_register_callbacks.append(callback)
             
-            guild_added_commands, matched = match_application_commands_to_commands(application_commands,
-                guild_added_commands, False)
+            guild_added_commands, matched = match_application_commands_to_commands(
+                application_commands, guild_added_commands, False
+            )
             if (matched is not None):
                 for application_command, command in matched:
                     callback = (
@@ -2039,8 +2050,9 @@ class Slasher(EventHandlerBase):
                         command_edit_callbacks = []
                     command_edit_callbacks.append(callback)
             
-            non_global_added_commands, matched = match_application_commands_to_commands(application_commands,
-                non_global_added_commands, False)
+            non_global_added_commands, matched = match_application_commands_to_commands(
+                application_commands, non_global_added_commands, False
+            )
             if (matched is not None):
                 for application_command, command in matched:
                     callback = (
@@ -2051,20 +2063,23 @@ class Slasher(EventHandlerBase):
                         command_edit_callbacks = []
                     command_edit_callbacks.append(callback)
             
-            guild_keep_commands, matched = match_application_commands_to_commands(application_commands,
-                guild_keep_commands, True)
+            guild_keep_commands, matched = match_application_commands_to_commands(
+                application_commands, guild_keep_commands, True
+            )
             if (matched is not None):
                 for application_command, command in matched:
                     self._keep_helper(command, guild_command_state, guild_id)
             
-            non_global_keep_commands, matched = match_application_commands_to_commands(application_commands,
-                non_global_keep_commands, True)
+            non_global_keep_commands, matched = match_application_commands_to_commands(
+                application_commands, non_global_keep_commands, True
+            )
             if (matched is not None):
                 for application_command, command in matched:
                     self._keep_helper(command, non_global_command_state, guild_id)
             
-            guild_removed_commands, matched = match_application_commands_to_commands(application_commands,
-                guild_removed_commands, True)
+            guild_removed_commands, matched = match_application_commands_to_commands(
+                application_commands, guild_removed_commands, True
+            )
             if (matched is not None):
                 for application_command, command in matched:
                     callback = (
@@ -2093,9 +2108,21 @@ class Slasher(EventHandlerBase):
                     command_delete_callbacks = []
                 command_delete_callbacks.append(callback)
             
+            assert_application_command_permission_missmatch_at = \
+                self._assert_application_command_permission_missmatch_at
+            
+            if (
+                (assert_application_command_permission_missmatch_at is not None) and
+                (guild_id in assert_application_command_permission_missmatch_at)
+            ):
+                guild_permission_sync_callbacks = [
+                    (type(self)._sync_permissions_task, self, client, guild_id, None, None),
+                ]
+            
             success = True
             for callbacks in (
-                command_register_callbacks, command_delete_callbacks, command_edit_callbacks, command_create_callbacks
+                guild_permission_sync_callbacks, command_register_callbacks, command_delete_callbacks,
+                command_edit_callbacks, command_create_callbacks,
             ):
                 if (callbacks is not None):
                     done, pending = await WaitTillAll(
@@ -2153,6 +2180,7 @@ class Slasher(EventHandlerBase):
                 global_added_commands = None
                 global_keep_commands = None
                 global_removed_commands = None
+            
             else:
                 global_added_commands = global_command_state.get_should_add_application_commands()
                 if not global_added_commands:
@@ -2171,8 +2199,9 @@ class Slasher(EventHandlerBase):
             command_delete_callbacks = None
             command_register_callbacks = None
             
-            global_added_commands, matched = match_application_commands_to_commands(application_commands,
-                global_added_commands, True)
+            global_added_commands, matched = match_application_commands_to_commands(
+                application_commands, global_added_commands, True
+            )
             if (matched is not None):
                 for application_command, command in matched:
                     callback = (
@@ -2184,14 +2213,16 @@ class Slasher(EventHandlerBase):
                         command_register_callbacks = []
                     command_register_callbacks.append(callback)
             
-            global_keep_commands, matched = match_application_commands_to_commands(application_commands,
-                global_keep_commands, True)
+            global_keep_commands, matched = match_application_commands_to_commands(
+                application_commands, global_keep_commands, True
+            )
             if (matched is not None):
                 for application_command, command in matched:
                     self._keep_helper(command, global_command_state, SYNC_ID_GLOBAL)
             
-            global_removed_commands, matched = match_application_commands_to_commands(application_commands,
-                global_removed_commands, True)
+            global_removed_commands, matched = match_application_commands_to_commands(
+                application_commands, global_removed_commands, True
+            )
             if (matched is not None):
                 for application_command, command in matched:
                     callback = (
@@ -2310,7 +2341,7 @@ class Slasher(EventHandlerBase):
                     continue
                 
                 task = Task(
-                    self._sync_permissions_task(client, command, permission_guild_id, application_command),
+                    self._sync_permissions_task(client, permission_guild_id, command, application_command),
                     KOKORO,
                 )
                 tasks.append(task)
@@ -2331,12 +2362,15 @@ class Slasher(EventHandlerBase):
         if guild_id not in assert_application_command_permission_missmatch_at:
             return True
         
-        return await self._sync_permissions_task(client, command, guild_id, application_command)
+        return await self._sync_permissions_task(client, guild_id, command, application_command)
     
     
-    async def _sync_permissions_task(self, client, command, guild_id, application_command):
+    async def _sync_permissions_task(self, client, guild_id, command, application_command):
         """
         Syncs a command's permissions inside of a guild.
+        
+        `command` and `application_command` parameters might be given as `None`. At that case guild level
+        permission overwrite matching is performed.
         
         This method is a coroutine.
         
@@ -2344,11 +2378,11 @@ class Slasher(EventHandlerBase):
         ----------
         client : ``Client``
             The respective client.
-        command : ``CommandBaseApplicationCommand``
-            The command to sync it's permissions of.
         guild_id : `int`
             The respective guild's identifier where the command is.
-        application_command : ``ApplicationCommand``
+        command : `None`, ``CommandBaseApplicationCommand``
+            The command to sync it's permissions of.
+        application_command : `None`, ``ApplicationCommand``
             The respective application command.
         
         Returns
@@ -2356,11 +2390,20 @@ class Slasher(EventHandlerBase):
         success : `bool`
             Whether the command's permissions were synced successfully.
         """
-        success, permission = await self._get_permission_for(client, guild_id, application_command.id)
+        if application_command is None:
+            application_command_id = 0
+        else:
+            application_command_id = application_command.id
+        
+        
+        success, permission = await self._get_permission_for(client, guild_id, application_command_id)
         if not success:
             return False
         
-        expected_permission_overwrites = command.get_permission_overwrites_for(guild_id)
+        if command is None:
+            expected_permission_overwrites = self._get_permission_overwrites_for_guild(guild_id)
+        else:
+            expected_permission_overwrites = command.get_permission_overwrites_for(guild_id)
         
         if permission is None:
             current_permission_overwrites = None
@@ -2390,7 +2433,7 @@ class Slasher(EventHandlerBase):
                     if not isinstance(err, ConnectionError):
                         await client.events.error(
                             client,
-                            f'{self!r}._sync_permissions',
+                            f'{self!r}._sync_permissions_task',
                             SlasherSyncError(command, err),
                         )
                     return False
@@ -2402,22 +2445,26 @@ class Slasher(EventHandlerBase):
                 
                 per_guild[permission.application_command_id] = permission
                 
-                return True
+                warn = False
+                success = True
             
             else:
+                warn = True
                 success = False
         else:
+            warn = True
             success = True
         
-        warnings.warn(
-            create_permission_mismatch_message(
-                application_command,
-                guild_id,
-                current_permission_overwrites,
-                expected_permission_overwrites,
-            ),
-            PermissionMismatchWarning,
-        )
+        if warn:
+            warnings.warn(
+                create_permission_mismatch_message(
+                    application_command,
+                    guild_id,
+                    current_permission_overwrites,
+                    expected_permission_overwrites,
+                ),
+                PermissionMismatchWarning,
+            )
         
         return success
     
@@ -2933,10 +2980,14 @@ class Slasher(EventHandlerBase):
         ----------
         client : ``Client``
             The respective client.
+        
         guild_id : `int`
             The respective guild's identifier where the command is.
+        
         application_command_id : `int`
             The respective application command's identifier.
+            
+            If passed as `None` will return the guild level permission overwrites instead.
         """
         try:
             per_guild = self._synced_permissions[guild_id]
@@ -2999,14 +3050,20 @@ class Slasher(EventHandlerBase):
                     per_guild = self._synced_permissions[guild_id] = {}
                 
                 for permission in permissions:
-                    per_guild[permission.application_command_id] = permission
+                    application_command_id = permission.application_command_id
+                    if application_command_id == client.application.id:
+                        application_command_id = 0
+                    
+                    per_guild[application_command_id] = permission
                 
                 return True, per_guild
+        
         finally:
             try:
                 del self._get_permission_tasks[guild_id]
             except KeyError:
                 pass
+    
     
     def _maybe_sync(self):
         """
@@ -3582,3 +3639,59 @@ class Slasher(EventHandlerBase):
             return None
         
         return owners_access
+    
+    
+    def _get_permission_overwrites_for_guild(self, guild_id):
+        """
+        Gets the permission overwrites for the given guild id.
+        
+        Parameters
+        ----------
+        guild_id : `int`
+            The guild's identifier, what's permission overwrites we want to get.
+        
+        Returns
+        -------
+        permission_overwrites : `None`, `list` of ``ApplicationCommandPermissionOverwrite``
+        """
+        guild_level_permission_overwrites = self._guild_level_permission_overwrites
+        if guild_level_permission_overwrites is None:
+            permission_overwrites = None
+        
+        else:
+            try:
+                permission_overwrites = guild_level_permission_overwrites[guild_id]
+            except KeyError:
+                permission_overwrites = None
+            else:
+                permission_overwrites = sorted(permission_overwrites)
+        
+        return permission_overwrites
+    
+    
+    def _add_permission_overwrites_for_guild(self, guild_id, application_command_permission_overwrite):
+        """
+        Adds a permission overwrite for the given guild.
+        
+        Parameters
+        ----------
+        guild_id : `int`
+            The respective guild's identifier.
+        application_command_permission_overwrite : ``ApplicationCommandPermissionOverwrite``
+            The application command permission overwrite to add.
+        """
+        guild_level_permission_overwrites = self._guild_level_permission_overwrites
+        if guild_level_permission_overwrites is None:
+            guild_level_permission_overwrites = {}
+            self._guild_level_permission_overwrites = guild_level_permission_overwrites
+        
+        try:
+            permission_overwrites = guild_level_permission_overwrites[guild_id]
+        except KeyError:
+            permission_overwrites = set()
+            guild_level_permission_overwrites[guild_id] = permission_overwrites
+        
+        permission_overwrites.add(application_command_permission_overwrite)
+        
+        self._sync_should.add(guild_id)
+        self._sync_done.discard(guild_id)

@@ -102,11 +102,12 @@ def create_permission_mismatch_message(
     message_parts.append('\n    guild id = ')
     message_parts.append(str(guild_id))
     
-    message_parts.append('\n    command id = ')
-    message_parts.append(str(application_command.id))
-    
-    message_parts.append('\n    command name = ')
-    message_parts.append(str(application_command.name))
+    if (application_command is not None):
+        message_parts.append('\n    command id = ')
+        message_parts.append(str(application_command.id))
+        
+        message_parts.append('\n    command name = ')
+        message_parts.append(str(application_command.name))
     
     
     if current_application_command_permission_overwrites is None:
@@ -230,7 +231,11 @@ def _reduce_application_command_permission_overwrites(guild_id, application_comm
                 mentionable_permission_overwrites.append(application_command_permission_overwrite)
         
         elif target_type is ApplicationCommandPermissionOverwriteTargetType.channel:
-            if application_command_permission_overwrite.target_id in (0, guild_id - 1):
+            if application_command_permission_overwrite.target_id == 0:
+                default_channel_permission_overwrite = application_command_permission_overwrite
+            
+            elif application_command_permission_overwrite.target_id == guild_id - 1:
+                application_command_permission_overwrite.target_id = 0
                 default_channel_permission_overwrite = application_command_permission_overwrite
             
             else:

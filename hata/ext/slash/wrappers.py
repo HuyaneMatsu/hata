@@ -4,8 +4,9 @@ __all__ = (
 
 import reprlib
 
-from scarletio import RichAttributeErrorBaseType
+from scarletio import RichAttributeErrorBaseType, copy_docs, include
 
+from ...discord.client import Client
 from ...discord.guild import Guild
 from ...discord.interaction import ApplicationCommandPermissionOverwrite
 from ...discord.preconverters import preconvert_snowflake
@@ -14,6 +15,9 @@ from .converters import (
     ANNOTATION_TYPE_TO_STR_ANNOTATION, parse_annotation_description, parse_annotation_name,
     parse_annotation_type_and_choice, postprocess_channel_types, preprocess_channel_types, process_max_and_min_value
 )
+
+
+Slasher = include('Slasher')
 
 
 class CommandWrapper(RichAttributeErrorBaseType):
@@ -194,6 +198,58 @@ class ApplicationCommandPermissionOverwriteWrapper(CommandWrapper):
             f'<{self.__class__.__name__} wrapped={self._wrapped!r}, guild_id={self._guild_id!r}, '
             f'overwrite={self._permission_overwrite!r}>'
         )
+    
+    
+    def __matmul__(self, other):
+        """Calls the wrapper to wrap a client applying self globally."""
+        return self._apply_globally(other)
+    
+    
+    @copy_docs(__matmul__)
+    def __rmatmul__(self, other):
+        return self._apply_globally(other)
+    
+    
+    def _apply_globally(self, other):
+        """
+        Applies the permission globally to all commands to a client.
+        
+        Here is an example which enables all commands in the guild only for the given role:
+        ```py
+        client@set_permission(guild_id, ('role', guild_id), False)
+        client@set_permission(guild_id, ('role', role_id), True)
+        ```
+        
+        Parameters
+        ----------
+        other : ``Client``, ``Slasher``
+            The object to add the permission overwrite to.
+        
+        Returns
+        -------
+        other : `other`, `NotImplemented`
+            Returns `NotImplemented` if `other`'s type is unexpected.
+        
+        Raises
+        ------
+        RuntimeError
+            - If `other` has no `slash` extension setupped on it.
+        """
+        if isinstance(other, Client):
+            slasher = getattr(other, 'slasher', None)
+            if other is None:
+                raise RuntimeError(
+                    f'Client {other!r} has no slash extension setupped.'
+                )
+            
+        elif isinstance(other, Slasher):
+            slasher = other
+        
+        else:
+            raise NotImplemented
+        
+        slasher._add_permission_overwrites_for_guild(self._guild_id, self._permission_overwrite)
+        return other
 
 
 class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):

@@ -5,6 +5,9 @@
 - Boost level 0 sticker count is now 5.
 - `OA2Access` now support rich attribute errors.
 - `OA2Access.__repr__` will no longer display the token. :derp:
+- `Client.application_command_permission_edit` now accepts `5` parameters from old `4` since it required oauth2 access.
+    Warning dropped.
+- `Client.application_command_permission_edit`'s `application_command` parameter accepts `None` (or `0`) as well.
 
 ##### ext.slash
 
@@ -22,6 +25,7 @@
 #### Bug Fixes
 
 - `Client.user_guild_get_all` asserted down bad scope.
+- `Fix `AttributeError` in `ChannelMetadataGuildBase._from_partial_data` (I hate `super`).
 
 ##### ext.slash
 
@@ -835,7 +839,7 @@ Rework audit logs once again.
 ##### ext.slash
 - Default slasher exception handler now forwards error message for message component interactions as well.
 - Add `suppress_embeds` parameter to `InteractionResponse.__init__`.
-- Add `suppress_emebds` parameter to `abort`.
+- Add `suppress_embeds` parameter to `abort`.
 
 #### Bug Fixes
 
@@ -1259,7 +1263,7 @@ cache.
 - Fix bad logic in `EventThread.create_server`. (Forest#2913)
 
 ##### ext.slash
-- `abort` was not defining `đhow_for_invoking_user_only` by default. (When was this bug made?)
+- `abort` was not defining `show_for_invoking_user_only` by default. (When was this bug made?)
 
 #### Renames, Deprecation & Removals
 
@@ -1284,7 +1288,7 @@ cache.
 - Add `boost_progress_bar_enabled` parameter to `Client.guild_edit`.
 - Add `boost_progress_bar_enabled` parameter to `Client.guild_create`.
 - Add `DiscordException.sent_data`.
-- Add `DiscordException.recevied_data`.
+- Add `DiscordException.received_data`.
 - Add `ERROR_CODES.exactly_one_guild_id_parameter_is_required`.
 - Add `channel_banner_url` for future reference.
 - Add `channel_banner_url_as` for future reference.
@@ -1310,12 +1314,12 @@ cache.
 #### Bug Fixes
 
 ##### ext.slash
-- `CompoenntCommand.__new__` could raise exception with bad error message.
+- `ComponentCommand.__new__` could raise exception with bad error message.
 - `SlasherApplicationCommand.__new__` could pass `None` to `raw_name_to_display` dropping `TypeError` if routing.
 
 #### Renames, Deprecation & Removals
 
-- Deprecate `DiscordException.data`, use `.recevied_data` instead.
+- Deprecate `DiscordException.data`, use `.received_data` instead.
 - Rename `DiscordException._cr_code` to `._get_code`.
 - Rename `DiscordException._cr_messages` to `._create_messages`.
 
@@ -1807,8 +1811,8 @@ Use dynamic fields for messages in favor of the incoming message content intent.
 - Add `InteractionEvent.voice_client`.
 - `Message.partial` works accordingly.
 - Add `Message.has_partial`.
-- Add `Messsage.has_channel_mentions`.
-- Add `Messsage.has_type`.
+- Add `Message.has_channel_mentions`.
+- Add `Message.has_type`.
 - Add `Message._create_empty`.
 - Add `Message._clear_cache`.
 - Add `message.is_deletable`.
@@ -2017,7 +2021,7 @@ Make multiple entities to weakly bound to other ones.
 - `ApplicationCommand.description` is now optional for context application commands.
 - Add `ApplicationCommandInteraction.resolved_messages`.
 - Add `ApplicationCommandInteraction.target_id`.
-- Add `ApplicationCommandInteraction.resovle_entity`.
+- Add `ApplicationCommandInteraction.resolve_entity`.
 - Add `ApplicationCommandInteraction.target`.
 - `ApplicationCommandInteraction.options` is now `tuple`, `None` (from `list`, `None`)
 - Add `id_to_datetime`.
@@ -2059,7 +2063,7 @@ Make multiple entities to weakly bound to other ones.
 - `Guild.widget_channel` is now a property.
 - Add `Client.guilds`.
 - Add `WebhookBase.channel_id`.
-- `WebhokBase.channel` is now a property.
+- `WebhookBase.channel` is now a property.
 - `User.guild_profiles` is now `guild_id` - `GuildProfile` relation (from `Guild` - `GuildProfile`).
 - `User.thread_profiles` is now `None` / `thread_id` - `ThreadProfile` relation (from `None` /
     `ChannelThread` - `ThreadProfile`).
@@ -2115,12 +2119,12 @@ Make multiple entities to weakly bound to other ones.
 - Deprecate `time_to_id`.
 - Remove `Emoji._delete`.
 - Remove `Sticker._delete`.
-- Remove `PermissionOverwrite.taget_role`.
-- Remove `PermissionOverwrite.targte_user_id`.
+- Remove `PermissionOverwrite.target_role`.
+- Remove `PermissionOverwrite.target_user_id`.
 - Rename `.overwrites` to `.permission_overwrites`.
 - Rename `._invalidate_perm_cache` to `._invalidate_permission_cache`
 - Rename `._cache_perm` to `._permission_cache`.
-- Rename `overwrties` parameter of `cr_pg_channel_object` to `permission_overwrties`.
+- Rename `overwrites` parameter of `cr_pg_channel_object` to `permission_overwrites`.
 - Deprecate `overwrites` parameter of `cr_pg_channel_object`.
 - Rename `cr_p_overwrite_object` to `cr_p_permission_overwrite_object`.
 - Deprecate `cr_p_overwrite_object`.
@@ -2240,7 +2244,7 @@ Fix threads a lil bit.
 
 - Fix an `AttributeError` in `Client.guild_sync`. (Pichu#0357)
 - Fix a `NameError` in `EventThread.open_unix_connection`.
-- Fix a `TypeError` in `EventTherad.create_unix_connection`.
+- Fix a `TypeError` in `EventThread.create_unix_connection`.
 - `User.__new__` was not setting `.thread_profiles`.
 - Fix an `AttributeError` in `Client.thread_create`.
 - `ChannelThread._create_empty` was not setting `.thread_users`.
@@ -2301,7 +2305,7 @@ Add rich creation for rich activity and for sub activity types.
 
 #### Renames, Deprecation & Removals
 
-- Remove `Activitbase.created`.
+- Remove `ActivityBase.created`.
 - Rename `GuildFeature.thread_archive_3_day` to `thread_archive_three_day`.
 - Rename `GuildFeature.thread_archive_7_day` to `thread_archive_seven_day`.
 
@@ -2446,13 +2450,13 @@ Add guild sticker methods.
 - `Client.message_create`'s `sticker` parameter passed as `Sticker` raised `TypeError`.
 
 ##### ext.slash
-- Fix a `TypeError` in `SlashComamnd._get_sync_permission_ids`.
+- Fix a `TypeError` in `SlashCommand._get_sync_permission_ids`.
 - Fix an `AttributeError` in `Slasher._register_command`.
 
 #### Renames, Deprecation & Removals
 
-- Rename `GuilFeatures.vanity` to `.vanity_invite`.
-- Deprecate `GuilFeatures.vanity`.
+- Rename `GuildFeatures.vanity` to `.vanity_invite`.
+- Deprecate `GuildFeatures.vanity`.
 - Rename `RATE_LIMIT_GROUPS.guild_emoji_get_all` to `.guild_emoji_get_all` (Now matches sticker endpoints).
 - Rename `DiscordHTTPClient.guild_emoji_get_all` to `.guild_emoji_get_all` (Now matches sticker endpoints).
 - Rename `Sticker.format_type` to `.format`.
@@ -2621,7 +2625,7 @@ Add sticker related endpoints and such.
 - Stickers are now cached.
 - Add `Sticker._update_no_return`.
 - Add `Sticker._update`.
-- `Sticker.tags` use `frozsenset` + `None` (from `list` + `None`).
+- `Sticker.tags` use `frozenset` + `None` (from `list` + `None`).
 - Add `RATE_LIMIT_GROUPS.sticker_guild_get_all`.
 - Add `DiscordHTTPClient.sticker_guild_get_all`.
 - Add `ERROR_CODES.unknown_sticker`.
@@ -2765,7 +2769,7 @@ Update stickers.
 - Rename `Sticker.type` to `.format_type`.
 - Remove `Sticker.asset`.
 - Remove `Sticker.preview_asset`.
-- Rename `SlashResponse` to `Interactionresponse`.
+- Rename `SlashResponse` to `InteractionResponse`.
 - Deprecate `SlashResponse`.
 
 ## 1.1.81 *\[2021-05-28\]*
@@ -3007,7 +3011,7 @@ Add `extensions` parameter to `Client`'s constructor.
 - Add `DiscordHTTPClient.thread_create_public`.
 - Add `RATE_LIMIT_GROUPS.thread_create_public`.
 - Add `Client.thread_create`.
-- Add `WebhookType.applicaion`.
+- Add `WebhookType.application`.
 - Add `Message.attachment`. (Forest#2913)
 
 #### Bug fixed
@@ -3068,7 +3072,7 @@ Reduce `Message` entity size.
 
 #### Bug fixed
 
-- Fix a `NmaeError` in `MessageType._from_value`.
+- Fix a `NameError` in `MessageType._from_value`.
 - Fix an `AttributeError` in `ApplicationCommandPermissionOverwrite.__hash__`.
 - `create_partial_emoji_data` could miss `animated` field.
 - `create_partial_emoji` could miss `emoji_animated` field.
@@ -3111,7 +3115,7 @@ Redo error code names, dispatch event parsing and add thread support.
 - Rework `Client.webhook_message_get` to accept `webhook_id-webhook_token` pair.
 - Add `AllowedMentionPRoxy.update`.
 - Add `ApplicationCommandOptionType.mentionable`.
-- `ChannelPrivate.guild` and `ChannelGroup.guild` is now a property of `Channelbase`.
+- `ChannelPrivate.guild` and `ChannelGroup.guild` is now a property of `ChannelBase`.
 - Reduce `channel.py` size by spamming `copy_docs` calls.
 - Update `ChannelThread`.
 - Add `Guild_create_empty` to reduce duped code.
@@ -3126,7 +3130,7 @@ Redo error code names, dispatch event parsing and add thread support.
 - Add `auto_archive_after` parameter to `cr_pg_channel_object`.
 - Add `open_` parameter to `cr_pg_channel_object`.
 - Add `ERROR_CODES.unknown_session`.
-- Add `ERROR_CDEOS.unknown_store_directory_layout`.
+- Add `ERROR_CODES.unknown_store_directory_layout`.
 - Add `ERROR_CODES.application_name_used`.
 - Add `ERROR_CODES.invalid_role`.
 - Add `ERROR_CODES.payment_source_required_to_redeem_gift`.
@@ -3351,7 +3355,7 @@ Add components.
 
 #### New Features
 
-- Add `InteractionType.message_compontent`.
+- Add `InteractionType.message_component`.
 - Add `Component`.
 - Add `Message.component`.
 - Add `ComponentType`.
@@ -3367,7 +3371,7 @@ Add components.
 
 #### Improvements
 
-- Add `components` parameter to `Client.message_cerate`.
+- Add `components` parameter to `Client.message_create`.
 - Add `components` parameter to `Client.message_edit`.
 - Add `components` parameter to `Client.interaction_response_message_create`.
 - Add `components` parameter to `Client.interaction_response_followup_create`.
@@ -3493,7 +3497,7 @@ Add components.
 - Rename `ChooseMenu.timeouter` to `._timeouter`.
 - Rename `WaitAndContinue._canceller` to `._canceller_function`
 - Rename `WaitAndContinue.timeouter` to `._timeouter`.
-- Rename `Pagiantion.page` to `.page_index`.
+- Rename `Pagination.page` to `.page_index`.
 
 ## 1.1.67  *\[2021-04-20\]*
 
@@ -3565,7 +3569,7 @@ Use `export` & `include`.
 #### Bug Fixes
 
 ##### ext.slash
-- `Slasher.__delvenet__` with unloading behavior delete was not deleting the commands. (Gilgamesh#8939)
+- `Slasher.__delevent__` with unloading behavior delete was not deleting the commands. (Gilgamesh#8939)
 
 
 ## 1.1.65  *\[2021-04-14\]*

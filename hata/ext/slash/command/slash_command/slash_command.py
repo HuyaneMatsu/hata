@@ -480,7 +480,7 @@ class SlashCommand(CommandBaseApplicationCommand):
         hash_value = CommandBaseApplicationCommand.__hash__(self)
         
         # _auto_completers
-        auto_completers = self.auto_completers
+        auto_completers = self._auto_completers
         if (auto_completers is not None):
             hash_value ^= len(auto_completers) << 22
             

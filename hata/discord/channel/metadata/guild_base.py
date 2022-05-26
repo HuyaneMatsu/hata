@@ -81,7 +81,7 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
     @classmethod
     @copy_docs(ChannelMetadataBase._from_partial_data)
     def _from_partial_data(cls, data):
-        self = super(ChannelMetadataBase, cls)._from_partial_data(data)
+        self = super(ChannelMetadataGuildBase, cls)._from_partial_data(data)
         
         if (data is not None):
             try:

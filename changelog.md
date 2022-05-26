@@ -8,7 +8,10 @@
 - `Client.application_command_permission_edit` now accepts `5` parameters from old `4` since it required oauth2 access.
     Warning dropped.
 - `Client.application_command_permission_edit`'s `application_command` parameter accepts `None` (or `0`) as well.
-
+- `PermissionOverwrite` now support rich error messages.
+- Add `ApplicationCommandPermissionOverwrite.copy_with`.
+- `Client.application_command_permission_edit` now accepts role overwrites with id of `0` defaulting to the guild's
+    default role.
 ##### ext.slash
 
 - Add `CommandBase`.
@@ -20,12 +23,14 @@
 - `CommandState` now support rich attribute errors.
 - Add `assert_application_command_permission_missmatch_at` parameter to `Slasher.__new__`.
 - Add `enforce_application_command_permissions` parameter to `Slasher.__new__`.
-
+- `set_permission` now can be matmul-ed with null, type of self, client, slasher instances.
 
 #### Bug Fixes
 
 - `Client.user_guild_get_all` asserted down bad scope.
 - `Fix `AttributeError` in `ChannelMetadataGuildBase._from_partial_data` (I hate `super`).
+- `Client.application_command_permission_edit` could change inputted ``ApplicationCommandPermissionOverwrite``'s hash
+    value.
 
 ##### ext.slash
 

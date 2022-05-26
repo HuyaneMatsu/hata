@@ -14669,11 +14669,11 @@ class Client(ClientUserPBase):
                         )
                 
                 # We update channel permission overwrites with id of 0
-                if (
-                        permission_overwrite.target_type is ApplicationCommandPermissionOverwriteTargetType.channel and
-                        permission_overwrite.target_id == 0
-                ):
-                    permission_overwrite.target_id = guild_id - 1
+                if permission_overwrite.target_type is ApplicationCommandPermissionOverwriteTargetType.channel:
+                    permission_overwrite = permission_overwrite.copy_with(target = ('channel', guild_id - 1))
+                
+                elif permission_overwrite.target_type is ApplicationCommandPermissionOverwriteTargetType.role:
+                    permission_overwrite = permission_overwrite.copy_with(target = ('role', guild_id))
                 
                 permission_overwrite_datas.append(permission_overwrite.to_data())
             

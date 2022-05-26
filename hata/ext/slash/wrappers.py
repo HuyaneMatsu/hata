@@ -201,13 +201,44 @@ class ApplicationCommandPermissionOverwriteWrapper(CommandWrapper):
     
     
     def __matmul__(self, other):
-        """Calls the wrapper to wrap a client applying self globally."""
-        return self._apply_globally(other)
+        """Calls the wrapper to wrap a client applying self globally. Can also be used to just apply it to `None`"""
+        return self._apply_to(other)
     
     
     @copy_docs(__matmul__)
     def __rmatmul__(self, other):
-        return self._apply_globally(other)
+        return self._apply_to(other)
+    
+    
+    def _apply_to(self, other):
+        """
+        Tries to apply self to to other.
+        
+        Parameters
+        ----------
+        other : `None`, ``ApplicationCommandPermissionOverwriteWrapper``, ``Client``, ``Slasher``
+            The object to apply self to.
+        
+        Returns
+        -------
+        other : `other`, `self`, `NotImplemented`
+            Returns `NotImplemented` if `other`'s type is incompatible.
+        
+        Raises
+        ------
+        RuntimeError
+            - If `other` is a ``Client`` and it has no `slash` extension setupped.
+        """
+        if (other is None):
+            return self
+        
+        if type(self) is type(other):
+            return self(other)
+        
+        if isinstance(other, (Client, Slasher)):
+            return self._apply_globally(other)
+        
+        return NotImplemented
     
     
     def _apply_globally(self, other):
@@ -227,8 +258,7 @@ class ApplicationCommandPermissionOverwriteWrapper(CommandWrapper):
         
         Returns
         -------
-        other : `other`, `NotImplemented`
-            Returns `NotImplemented` if `other`'s type is unexpected.
+        other : `other`
         
         Raises
         ------
@@ -242,11 +272,8 @@ class ApplicationCommandPermissionOverwriteWrapper(CommandWrapper):
                     f'Client {other!r} has no slash extension setupped.'
                 )
             
-        elif isinstance(other, Slasher):
-            slasher = other
-        
         else:
-            raise NotImplemented
+            slasher = other
         
         slasher._add_permission_overwrites_for_guild(self._guild_id, self._permission_overwrite)
         return other

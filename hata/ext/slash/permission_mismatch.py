@@ -221,7 +221,14 @@ def _reduce_application_command_permission_overwrites(guild_id, application_comm
             mentionable_permission_overwrites.append(application_command_permission_overwrite)
         
         elif target_type is ApplicationCommandPermissionOverwriteTargetType.role:
-            if application_command_permission_overwrite.target_id == guild_id:
+            if application_command_permission_overwrite.target_id == 0:
+                default_role_permission_overwrite = application_command_permission_overwrite
+            
+            elif application_command_permission_overwrite.target_id == guild_id:
+                application_command_permission_overwrite = application_command_permission_overwrite.copy_width(
+                    target = ('role', 0)
+                )
+                
                 default_role_permission_overwrite = application_command_permission_overwrite
             
             else:
@@ -235,7 +242,9 @@ def _reduce_application_command_permission_overwrites(guild_id, application_comm
                 default_channel_permission_overwrite = application_command_permission_overwrite
             
             elif application_command_permission_overwrite.target_id == guild_id - 1:
-                application_command_permission_overwrite.target_id = 0
+                application_command_permission_overwrite = application_command_permission_overwrite.copy_width(
+                    target = ('channel', 0)
+                )
                 default_channel_permission_overwrite = application_command_permission_overwrite
             
             else:

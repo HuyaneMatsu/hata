@@ -1,6 +1,6 @@
 __all__ = ('PermissionOverwrite', )
 
-from scarletio import include
+from scarletio import RichAttributeErrorBaseType, include
 
 from ..permission import Permission
 
@@ -15,7 +15,8 @@ Role = include('Role')
 PERMISSION_OVERWRITE_TYPE_ROLE = PermissionOverwriteTargetType.role
 PERMISSION_OVERWRITE_TYPE_USER = PermissionOverwriteTargetType.user
 
-class PermissionOverwrite:
+
+class PermissionOverwrite(RichAttributeErrorBaseType):
     """
     Represents a permission overwrite of a guild channel.
     
@@ -45,6 +46,7 @@ class PermissionOverwrite:
         self.target_type = PermissionOverwriteTargetType.get(get_permission_overwrite_key_value(data))
         self.allow = Permission(data[PERMISSION_ALLOW_KEY])
         self.deny = Permission(data[PERMISSION_DENY_KEY])
+    
     
     @property
     def target(self):

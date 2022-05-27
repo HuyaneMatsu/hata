@@ -627,17 +627,6 @@ async def channel_create(
     return 'Successfully created the channel.'
 ```
 
-### allow_by_default
-
-Whether the command should be allowed by default for everyone. Defaults to `True` of course. Not allowed commands
-in the GUI are not hidden, they show up as gray.
-
-Command permission overwrites can be set manually or with the [set_permission](#Set command permissions) decorator.
-If a command inside of the guild has permission set with the `set_permission` decorator, then all other command's
-manually set permission overwrites will be wiped out there, so make sure you either want manual or pre-set overwrites.
-
-> Permission overwrites are buggy from Discord side, I take no responsibility if they do not work as expected.
-
 # Tricks and Tips
 
 ### Sending rich response
@@ -904,80 +893,6 @@ async def user_id(event,
 ```
 
 ![](assets/slash_0020.png)
-
-### Set command permissions
-
-Default command permissions can be set with the `allow_by_default` command parameter and they can be overwritten with
-the `set_permission` decorator. With `set_permission` you can set 1 overwrite, but with using more you can set
-permission overwrite for up to 10 users or roles in each guild!
-
-The decorator accepts 3 parameters:
-
-| Name              | Type                                                                  | Description                                                   |
-|-------------------|-----------------------------------------------------------------------|---------------------------------------------------------------|
-| guild             | `Guild`  or `int`                                                     | The guild where the overwrite is applied in.                  |
-| target            | `ClientUserBase`, `Role`, `Channel`, `tuple` ((`str`, `type`), `int`) | The target entity. Can be either role or user.                |
-| allow             | `bool`                                                                | Whether the command should be allowed for the target entity.  |
-
-The `target` parameter can be given in many ways to allow relaxing definitions:
-
-| Description                                                       | Example                   |
-|-------------------------------------------------------------------|---------------------------|
-| The entity itself.                                                | `Role.precreate(role_id)` |
-| A `tuple` of the entity's type and of it's identifier.            | `(Role, role_id)`         |
-| A `tuple` of the entity's type's name and of it's identifier.     | `('role', role_id)`       |
-
-The most important thing about it, is of course an example!
-
-```py3
-from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
-from hata import Role, Embed, elapsed_time, DATETIME_FORMAT_CODE
-from hata.ext.slash import SlashResponse, set_permission
-
-MODERATOR_ROLE = Role.precreate(MODERATOR_ROLE_ID)
-
-@Nitori.interactions(guild=TEST_GUILD, allow_by_default=False)
-@set_permission(TEST_GUILD, MODERATOR_ROLE, True)
-async def latest_users(event):
-    """Shows the new users of the guild."""
-    date_limit = datetime.utcnow() - timedelta(days=7)
-    
-    users = []
-    guild = event.guild
-    for user in guild.users.values():
-        # `joined_at` might be set as `None` if the user is a lurker.
-        # We can ignore lurkers, so use `created_at` which defaults to Discord epoch.
-        created_at = user.guild_profiles[guild.id].created_at
-        if created_at > date_limit:
-            users.append((created_at, user))
-    
-    users.sort(reverse=True)
-    del users[10:]
-    
-    embed = Embed('Recently joined users')
-    if users:
-        for index, (joined_at, user) in enumerate(users, 1):
-            created_at = user.created_at
-            embed.add_field(
-                f'{index}. {user.full_name}',
-                (
-                    f'Id : {user.id}\n'
-                    f'Mention : {user.mention}\n'
-                    '\n'
-                    f'Joined : {joined_at:{DATETIME_FORMAT_CODE}} [*{elapsed_time(joined_at)} ago*]\n'
-                    f'Created : {created_at:{DATETIME_FORMAT_CODE}} [*{elapsed_time(created_at)} ago*]\n'
-                    f'Difference : {elapsed_time(relativedelta(created_at, joined_at))}'
-                ),
-            )
-    
-    else:
-        embed.description = '*none*'
-    
-    return SlashResponse(embed=embed, allowed_mentions=None)
-```
-
-![](assets/slash_0021.png)
 
 # Non-global commands
 

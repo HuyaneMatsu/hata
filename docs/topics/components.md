@@ -183,8 +183,6 @@ from hata import Role
 from hata.ext.slash import Button, Row, set_permission, abort, InteractionResponse
 
 
-ROLE_OWNER = Role.precreate(403581319139033090)
-
 ROLE_NSFW_ACCESS = Role.precreate(828576094776590377)
 ROLE_ANNOUNCEMENTS = Role.precreate(538397994421190657)
 
@@ -199,14 +197,13 @@ ROLE_CLAIMER_ROLES = {
 }
 
 
-@Nitori.interactions(guild=TEST_GUILD, allow_by_default=False)
-@set_permission(TEST_GUILD, ROLE_OWNER, True)
+@Nitori.interactions(guild=TEST_GUILD, required_permissions=Permission().update_by_keys(administrator=True))
 async def role_claimer(event):
     """Role claimer message. (Owner only)"""
     
     # Double check.
-    if not event.user.has_role(ROLE_OWNER):
-        abort('Owner only')
+    if not event.user_permissions.can_administrator:
+        abort('Admin only')
     
     return InteractionResponse('Claim role by clicking on it', components=ROLE_CLAIMER_COMPONENTS)
 

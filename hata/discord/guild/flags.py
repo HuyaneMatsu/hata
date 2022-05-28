@@ -2,6 +2,7 @@ __all__ = ('SystemChannelFlag',)
 
 from ..bases import ReverseFlagBase
 
+
 class SystemChannelFlag(ReverseFlagBase):
     """
     The flags of a ``Guild``'s system channel.
@@ -11,33 +12,39 @@ class SystemChannelFlag(ReverseFlagBase):
     
     The implemented system channel flags are the following:
     
-    +---------------------------+-------------------+
-    | Respective name           | Bitwise position  |
-    +===========================+===================+
-    | welcome                   | 0                 |
-    +---------------------------+-------------------+
-    | boost                     | 1                 |
-    +---------------------------+-------------------+
-    | setup_tips                | 2                 |
-    +---------------------------+-------------------+
-    | join_sticker_replies      | 3                 |
-    +---------------------------+-------------------+
+    +---------------------------------------+-------------------+
+    | Respective name                       | Bitwise position  |
+    +=======================================+===================+
+    | welcome                               | 0                 |
+    +---------------------------------------+-------------------+
+    | boost                                 | 1                 |
+    +---------------------------------------+-------------------+
+    | setup_tips                            | 2                 |
+    +---------------------------------------+-------------------+
+    | join_sticker_replies                  | 3                 |
+    +---------------------------------------+-------------------+
+    | role_subscription_purchase            | 4                 |
+    +---------------------------------------+-------------------+
+    | role_subscription_purchase_replies    | 5                 |
+    +---------------------------------------+-------------------+
     
     There are also predefined ``SystemChannelFlag``-s:
     
-    +-----------------------+-----------------------+
-    | Class attribute name  | value                 |
-    +=======================+=======================+
-    | NONE                  | ActivityFlag(0b1111)  |
-    +-----------------------+-----------------------+
-    | ALL                   | ActivityFlag(0b0000)  |
-    +-----------------------+-----------------------+
+    +-----------------------+---------------------------+
+    | Class attribute name  | value                     |
+    +=======================+===========================+
+    | NONE                  | ActivityFlag(0b111111)    |
+    +-----------------------+---------------------------+
+    | ALL                   | ActivityFlag(0b000000)    |
+    +-----------------------+----------------------------+
     """
     __keys__ = {
         'welcome': 0,
         'boost': 1,
         'setup_tips': 2,
         'join_sticker_replies': 3,
+        'role_subscription_purchase': 4,
+        'role_subscription_purchase_replies': 5,
     }
     
     @property
@@ -65,5 +72,6 @@ class SystemChannelFlag(ReverseFlagBase):
     NONE = NotImplemented
     ALL = NotImplemented
 
-SystemChannelFlag.NONE = SystemChannelFlag(0b1111)
-SystemChannelFlag.ALL = SystemChannelFlag(0b0000)
+
+SystemChannelFlag.NONE = SystemChannelFlag(0b111111)
+SystemChannelFlag.ALL = SystemChannelFlag(0b000000)

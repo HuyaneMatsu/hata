@@ -921,7 +921,9 @@ async def ping():
 
 
 @Nitori.interactions(is_global=True)
-async def enable_ping(client, event,
+async def enable_ping(
+    client,
+    event,
     allow: ('bool', 'Enable?')=True,
 ):
     """Enables the ping command in your guild."""

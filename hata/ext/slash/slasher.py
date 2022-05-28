@@ -1404,6 +1404,9 @@ class Slasher(EventHandlerBase):
             Whether the command should be deleted from Discord when removed.
         allow_by_default : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
+            
+            > This field is deprecated.
+        
         allow_in_dm : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the command can be used in private channels (dm).
         custom_id : `str`, (`list`, `set`) of `str`, `tuple` of (`str`, (`list`, `set`) of `str`)

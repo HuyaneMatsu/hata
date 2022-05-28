@@ -26,9 +26,13 @@ class MessageFlag(FlagBase):
     +-------------------------------------------+-------------------+
     | invoking_user_only                        | 6                 |
     +-------------------------------------------+-------------------+
-    | loading                                   | 7                 |
+    | loading    e                               | 7                 |
     +-------------------------------------------+-------------------+
     | failed_to_mention_some_roles_in_thread    | 8                 |
+    +-------------------------------------------+-------------------+
+    | ???                                       | 9                 |
+    +-------------------------------------------+-------------------+
+    | should_show_link_not_discord_warning      | 10                |
     +-------------------------------------------+-------------------+
     """
     __keys__ = {
@@ -41,4 +45,5 @@ class MessageFlag(FlagBase):
         'invoking_user_only': 6,
         'loading': 7,
         'failed_to_mention_some_roles_in_thread': 8,
+        'should_show_link_not_discord_warning': 10,
     }

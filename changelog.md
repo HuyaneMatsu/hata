@@ -12,6 +12,12 @@
 - Add `ApplicationCommandPermissionOverwrite.copy_with`.
 - `Client.application_command_permission_edit` now accepts role overwrites with id of `0` defaulting to the guild's
     default role.
+- Add `SystemChannelFlag.role_subscription_purchase`.
+- Add `SystemChannelFlag.role_subscription_purchase_replies`.
+- Add `MessageFlag.should_show_link_not_discord_warning`.
+- Add `ERROR_CODES.auto_moderation_title_blocked`.
+- Add `ERROR_CODES.poggermode_temporarily_disabled`.
+
 ##### ext.slash
 
 - Add `CommandBase`.
@@ -50,6 +56,9 @@
 - Rename `MessageType.new_guild_sub_t1` to `.new_guild_subscription_tier_1`.
 - Rename `MessageType.new_guild_sub_t2` to `.new_guild_subscription_tier_2`.
 - Rename `MessageType.new_guild_sub_t3` to `.new_guild_subscription_tier_3`.
+- Rename `ERROR_CODES.sticker_animation_duration_exceeds_5_second` to
+    `.sticker_animation_duration_exceeds_five_seconds`.
+- Deprecate `ERROR_CODES.sticker_animation_duration_exceeds_5_second`.
 
 ##### ext.slash
 

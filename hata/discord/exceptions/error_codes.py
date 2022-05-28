@@ -1,5 +1,6 @@
 __all__ = ()
 
+import warnings
 
 __doc__ = """
 The possible json error codes received from Discord HTTP API requests.
@@ -460,7 +461,9 @@ Error Codes
 +---------------------------------------------------------------+-----------+-----------+
 | sticker_frame_rate_out_of_expected_range                      | 170006    | ?-400 ms  |
 +---------------------------------------------------------------+-----------+-----------+
-| sticker_animation_duration_exceeds_5_second                   | 170007    | -         |
+| sticker_animation_duration_exceeds_five_second                | 170007    | -         |
++---------------------------------------------------------------+-----------+-----------+
+| poggermode_temporarily_disabled                               | 170008    | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | cannot_update_finished_scheduled_event                        | 180000    | -         |
 +---------------------------------------------------------------+-----------+-----------+
@@ -473,6 +476,8 @@ Error Codes
 | terms_of_service_required                                     | 190002    | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | auto_moderation_message_blocked                               | 200000    | -         |
++---------------------------------------------------------------+-----------+-----------+
+| auto_moderation_title_blocked                                 | 200001    | -         |
 +---------------------------------------------------------------+-----------+-----------+
 """
 unknown_account = 10001
@@ -704,7 +709,8 @@ max_active_announcement_threads = 160007
 invalid_lottie_json = 170001
 sticker_maximum_dimensions_exceeded = 170005
 sticker_frame_rate_out_of_expected_range = 170006
-sticker_animation_duration_exceeds_5_second = 170007
+sticker_animation_duration_exceeds_five_second = 170007
+poggermode_temporarily_disabled = 170008
 
 cannot_update_finished_scheduled_event = 180000
 exactly_one_guild_id_parameter_is_required = 180001
@@ -714,3 +720,20 @@ privacy_policy_required = 190001
 terms_of_service_required = 190002
 
 auto_moderation_message_blocked = 200000
+auto_moderation_title_blocked = 200001
+
+
+def __getattr__(attribute_name):
+    if 'attribute_name' == 'sticker_animation_duration_exceeds_5_second':
+        warnings.warn(
+            (
+                f'`ERROR_CODES.sticker_animation_duration_exceeds_5_second` is deprecated and will be removed in'
+                f'2022 August. Please use `.sticker_animation_duration_exceeds_five_second` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+    
+        return sticker_animation_duration_exceeds_five_second
+        
+    raise AttributeError(attribute_name)

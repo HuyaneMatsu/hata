@@ -28,7 +28,7 @@ def create_module_from_spec(spec):
     
     Parameters
     ----------
-    spec : ``ExtensionModuleSpecType``
+    spec : ``PluginModuleSpecType``
         The module spec to create it's module for.
     
     Returns

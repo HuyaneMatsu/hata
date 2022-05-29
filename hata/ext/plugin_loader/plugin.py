@@ -7,30 +7,30 @@ from py_compile import compile as compile_module
 from scarletio import HybridValueDictionary, RichAttributeErrorBaseType, WeakSet, include
 
 from .constants import (
-    EXTENSIONS, EXTENSION_STATE_LOADED, EXTENSION_STATE_UNDEFINED, EXTENSION_STATE_UNLOADED,
-    EXTENSION_STATE_UNSATISFIED, EXTENSION_STATE_VALUE_TO_NAME, LOADING_EXTENSIONS
+    PLUGINS, PLUGIN_STATE_LOADED, PLUGIN_STATE_UNDEFINED, PLUGIN_STATE_UNLOADED,
+    PLUGIN_STATE_UNSATISFIED, PLUGIN_STATE_VALUE_TO_NAME, LOADING_PLUGINS
 )
-from .exceptions import DoNotLoadExtension
-from .extension_root import register_extension_root
-from .helpers import PROTECTED_NAMES, _get_path_extension_name, _validate_entry_or_exit
-from .import_overwrite.module_spec_type import ExtensionModuleSpecType
-from .import_overwrite.module_proxy_type import ExtensionModuleProxyType
+from .exceptions import DoNotLoadPlugin
+from .plugin_root import register_plugin_root
+from .helpers import PROTECTED_NAMES, _get_path_plugin_name, _validate_entry_or_exit
+from .import_overwrite.module_spec_type import PluginModuleSpecType
+from .import_overwrite.module_proxy_type import PluginModuleProxyType
 from .snapshot import calculate_snapshot_difference, revert_snapshot, take_snapshot
 
 
-EXTENSION_LOADER = include('EXTENSION_LOADER')
+PLUGIN_LOADER = include('PLUGIN_LOADER')
 
 
-class Extension(RichAttributeErrorBaseType):
+class Plugin(RichAttributeErrorBaseType):
     """
-    Represents an extension.
+    Represents an plugin.
     
     Attributes
     ----------
     _added_variable_names : `list of `str`
         A list of the added variables' names to the module.
-    _child_extensions : `None`, ``WeakSet`` of ``Extension``
-        Child extensions.
+    _child_plugins : `None`, ``WeakSet`` of ``Plugin``
+        Child plugins.
     _default_variables : `None`, `HybridValueDictionary` of (`str`, `Any`) items
         An optionally weak value dictionary to store objects for assigning them to modules before loading them.
         If it would be set as empty, then it is set as `None` instead.
@@ -42,58 +42,58 @@ class Extension(RichAttributeErrorBaseType):
         Internal slot used by the ``.extend_default_variables`` property.
     _locked : `bool`
         The internal slot used for the ``.locked`` property.
-    _parent_extensions : `None`, ``WeakSet`` of ``Extension``
-        Parent extensions.
+    _parent_plugins : `None`, ``WeakSet`` of ``Plugin``
+        Parent plugins.
     _snapshot_difference : `None`, `list` of ``BaseSnapshotType``
         Snapshot difference if applicable. Defaults to `None`.
     _snapshot_extractions : `None`, `list` of `list` of ``BaseSnapshotType``
         Additional snapshots to extract from own.
-    _spec : ``ExtensionModuleSpecType``
-        The module specification for the extension's module's import system related state.
+    _spec : ``PluginModuleSpecType``
+        The module specification for the plugin's module's import system related state.
     _state : `int`
-        The state of the extension. Can be:
+        The state of the plugin. Can be:
         +-------------------------------+-------+
         | Respective name               | Value |
         +===============================+=======+
-        | EXTENSION_STATE_UNDEFINED     | 0     |
+        | PLUGIN_STATE_UNDEFINED        | 0     |
         +-------------------------------+-------+
-        | EXTENSION_STATE_LOADED        | 1     |
+        | PLUGIN_STATE_LOADED           | 1     |
         +-------------------------------+-------+
-        | EXTENSION_STATE_UNLOADED      | 2     |
+        | PLUGIN_STATE_UNLOADED         | 2     |
         +-------------------------------+-------+
-        | EXTENSION_STATE_UNSATISFIED   | 3     |
+        | PLUGIN_STATE_UNSATISFIED      | 3     |
         +-------------------------------+-------+
     _take_snapshot : `bool`
         Whether snapshot difference should be taken.
     """
     __slots__ = (
-        '__weakref__', '_added_variable_names', '_child_extensions', '_default_variables', '_entry_point',
-        '_exit_point', '_extend_default_variables', '_locked', '_parent_extensions', '_snapshot_difference',
+        '__weakref__', '_added_variable_names', '_child_plugins', '_default_variables', '_entry_point',
+        '_exit_point', '_extend_default_variables', '_locked', '_parent_plugins', '_snapshot_difference',
         '_snapshot_extractions', '_spec', '_state', '_take_snapshot'
     )
     
     def __new__(cls, name, path, entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference,
             default_variables, ):
         """
-        Creates an extension with the given parameters. If an extension already exists with the given name, returns
+        Creates an plugin with the given parameters. If an plugin already exists with the given name, returns
         that.
         
         Parameters
         ----------
         name : `None`, `str`
-            The extension's name (or import path).
+            The plugin's name (or import path).
         path : `str`
-            Path to the extension file.
+            Path to the plugin file.
         entry_point : `None`, `str`, `callable`
-            The entry point of the extension.
+            The entry point of the plugin.
         exit_point : `None`, `str`, `callable`
-            The exit point of the extension.
+            The exit point of the plugin.
         extend_default_variables : `bool`
-            Whether the extension should use the loader's default variables or just it's own.
+            Whether the plugin should use the loader's default variables or just it's own.
         locked : `bool`
-            Whether the extension should be picked up by the `{}_all` methods of the extension loader.
+            Whether the plugin should be picked up by the `{}_all` methods of the plugin loader.
         take_snapshot_difference: `bool`
-            Whether snapshots should be taken before and after loading an extension, and when the extension is unloaded,
+            Whether snapshots should be taken before and after loading an plugin, and when the plugin is unloaded,
             the snapshot difference should be reverted.
         default_variables : `None`, `HybridValueDictionary` of (`str`, `Any`) items
             An optionally weak value dictionary to store objects for assigning them to modules before loading them.
@@ -101,18 +101,18 @@ class Extension(RichAttributeErrorBaseType):
         
         Returns
         -------
-        self : ``Extension``
+        self : ``Plugin``
         
         Raises
         ------
         ModuleNotFoundError
-            If the extension was not found.
+            If the plugin was not found.
         """
         if (name is None):
-            name = _get_path_extension_name(path)
+            name = _get_path_plugin_name(path)
         
         try:
-            self = EXTENSIONS[name]
+            self = PLUGINS[name]
         except KeyError:
             pass
         else:
@@ -125,13 +125,13 @@ class Extension(RichAttributeErrorBaseType):
         if spec is None:
             raise ModuleNotFoundError(name)
         
-        spec = ExtensionModuleSpecType(spec)
-        register_extension_root(name)
+        spec = PluginModuleSpecType(spec)
+        register_plugin_root(name)
         
         self = object.__new__(cls)
         self._added_variable_names = []
-        self._child_extensions = None
-        self._parent_extensions = None
+        self._child_plugins = None
+        self._parent_plugins = None
         self._default_variables = default_variables
         self._entry_point = entry_point
         self._exit_point = exit_point
@@ -140,21 +140,21 @@ class Extension(RichAttributeErrorBaseType):
         self._snapshot_difference = None
         self._snapshot_extractions = None
         self._spec = spec
-        self._state = EXTENSION_STATE_UNDEFINED
+        self._state = PLUGIN_STATE_UNDEFINED
         self._take_snapshot = take_snapshot_difference
         
-        EXTENSIONS[name] = self
+        PLUGINS[name] = self
         
         return self
     
     
     def __hash__(self):
-        """Returns the extension's ``._spec``'s `.origin`'s hash."""
+        """Returns the plugin's ``._spec``'s `.origin`'s hash."""
         return hash(self._spec.origin)
     
     
     def __repr__(self):
-        """Returns the extension's representation."""
+        """Returns the plugin's representation."""
         repr_parts = []
         repr_parts.append('<')
         repr_parts.append(self.__class__.__name__)
@@ -163,7 +163,7 @@ class Extension(RichAttributeErrorBaseType):
         
         state = self._state
         repr_parts.append(', state=')
-        state_name = EXTENSION_STATE_VALUE_TO_NAME.get(state, '???')
+        state_name = PLUGIN_STATE_VALUE_TO_NAME.get(state, '???')
         repr_parts.append(state_name)
         repr_parts.append(' (')
         repr_parts.append(repr(state))
@@ -207,12 +207,12 @@ class Extension(RichAttributeErrorBaseType):
     
     def add_default_variables(self, **variables):
         """
-        Adds default variables to the extension.
+        Adds default variables to the plugin.
         
         Parameters
         ----------
         **variables : Keyword Parameters
-            Variables to assigned to the extension's module before it is loaded.
+            Variables to assigned to the plugin's module before it is loaded.
         
         Raises
         ------
@@ -237,7 +237,7 @@ class Extension(RichAttributeErrorBaseType):
     
     def remove_default_variables(self, *names):
         """
-        Removes the mentioned default variables of the extension.
+        Removes the mentioned default variables of the plugin.
         
         If a variable with a specified name is not found, no error is raised.
         
@@ -264,7 +264,7 @@ class Extension(RichAttributeErrorBaseType):
     
     def clear_default_variables(self):
         """
-        Removes all the default variables of the extension.
+        Removes all the default variables of the plugin.
         """
         self._default_variables = None
     
@@ -272,7 +272,7 @@ class Extension(RichAttributeErrorBaseType):
     @property
     def entry_point(self):
         """
-        Get-set-del descriptor for modifying the extension's entry point.
+        Get-set-del descriptor for modifying the plugin's entry point.
         
         Accepts and returns `None`, `str` or a `callable`. If invalid type is given, raises `TypeError`.
         """
@@ -298,7 +298,7 @@ class Extension(RichAttributeErrorBaseType):
     @property
     def exit_point(self):
         """
-        Get-set-del descriptor for modifying the extension's exit point.
+        Get-set-del descriptor for modifying the plugin's exit point.
         
         Accepts and returns `None`, `str` or a `callable`. If invalid type is given, raises `TypeError`.
         """
@@ -322,7 +322,7 @@ class Extension(RichAttributeErrorBaseType):
     @property
     def extend_default_variables(self):
         """
-        Get-set descriptor to define whether the extension uses the loader's default variables or just it's own.
+        Get-set descriptor to define whether the plugin uses the loader's default variables or just it's own.
         
         Accepts and returns `bool`.
         """
@@ -348,8 +348,8 @@ class Extension(RichAttributeErrorBaseType):
     @property
     def locked(self):
         """
-        Get-set property to define whether the extension should be picked up by the `{}_all` methods of the
-        extension loader.
+        Get-set property to define whether the plugin should be picked up by the `{}_all` methods of the
+        plugin loader.
         
         Accepts and returns `bool`.
         """
@@ -386,24 +386,24 @@ class Extension(RichAttributeErrorBaseType):
         RuntimeError
             Module already imported.
         BaseException
-            Any exception raised from the extension file.
+            Any exception raised from the plugin file.
         """
-        if self in LOADING_EXTENSIONS:
+        if self in LOADING_PLUGINS:
             raise ImportError(
                 f'{self.name} is already being loaded. This can happen if there are circular imports. The following '
-                f'extensions are being loaded right now: '
-                f'{", ".join(extension.name for extension in LOADING_EXTENSIONS)}'
+                f'plugins are being loaded right now: '
+                f'{", ".join(plugin.name for plugin in LOADING_PLUGINS)}'
             )
         
         try:
-            LOADING_EXTENSIONS.add(self)
+            LOADING_PLUGINS.add(self)
             state = self._state
-            if state == EXTENSION_STATE_UNDEFINED:
+            if state == PLUGIN_STATE_UNDEFINED:
                 
                 spec = self._spec
                 
                 maybe_proxy_module = sys.modules.get(spec.name, None)
-                if (maybe_proxy_module is not None) and (not isinstance(maybe_proxy_module, ExtensionModuleProxyType)):
+                if (maybe_proxy_module is not None) and (not isinstance(maybe_proxy_module, PluginModuleProxyType)):
                     raise RuntimeError(
                         f'Module `{spec.name}` is already imported.'
                     )
@@ -420,28 +420,28 @@ class Extension(RichAttributeErrorBaseType):
                     loaded = True
                 
                 if loaded:
-                    state = EXTENSION_STATE_LOADED
+                    state = PLUGIN_STATE_LOADED
                 else:
-                    state = EXTENSION_STATE_UNSATISFIED
+                    state = PLUGIN_STATE_UNSATISFIED
                     module = None
                 
                 self._state = state
                 return module
             
-            if state == EXTENSION_STATE_LOADED:
+            if state == PLUGIN_STATE_LOADED:
                 # return None -> already loaded
                 return None
             
-            if state in (EXTENSION_STATE_UNLOADED, EXTENSION_STATE_UNSATISFIED):
+            if state in (PLUGIN_STATE_UNLOADED, PLUGIN_STATE_UNSATISFIED):
                 # reload
                 module_from_spec(self._spec)
                 loaded = self._load_module()
                 
                 if loaded:
-                    state = EXTENSION_STATE_LOADED
+                    state = PLUGIN_STATE_LOADED
                     module =  self._spec.get_module()
                 else:
-                    state = EXTENSION_STATE_UNSATISFIED
+                    state = PLUGIN_STATE_UNSATISFIED
                     module = None
                 
                 self._state = state
@@ -452,7 +452,7 @@ class Extension(RichAttributeErrorBaseType):
             # no more cases
         
         finally:
-            LOADING_EXTENSIONS.discard(self)
+            LOADING_PLUGINS.discard(self)
     
     
     def _load_module(self):
@@ -466,14 +466,14 @@ class Extension(RichAttributeErrorBaseType):
         Raises
         ------
         BaseException
-            Any exception raised from the extension file.
+            Any exception raised from the plugin file.
         """
         spec = self._spec
         module = spec.get_module()
         
         added_variable_names = self._added_variable_names
         if self._extend_default_variables:
-            for name, value in EXTENSION_LOADER._default_variables.items():
+            for name, value in PLUGIN_LOADER._default_variables.items():
                 setattr(module, name, value)
                 added_variable_names.append(name)
         
@@ -484,7 +484,7 @@ class Extension(RichAttributeErrorBaseType):
                 added_variable_names.append(name)
         
         
-        active_extensions_at_start = LOADING_EXTENSIONS.copy()
+        active_plugins_at_start = LOADING_PLUGINS.copy()
         
         if self._take_snapshot:
             snapshot_old = take_snapshot()
@@ -493,15 +493,15 @@ class Extension(RichAttributeErrorBaseType):
         
         try:
             spec.loader.exec_module(module)
-        except DoNotLoadExtension:
+        except DoNotLoadPlugin:
             loaded = False
         else:
             loaded = True
         
         if loaded:
-            active_extensions_at_end = LOADING_EXTENSIONS.copy()
-            extension_intersection = active_extensions_at_start & active_extensions_at_end
-            extension_intersection.discard(self)
+            active_plugins_at_end = LOADING_PLUGINS.copy()
+            plugin_intersection = active_plugins_at_start & active_plugins_at_end
+            plugin_intersection.discard(self)
             
             if (snapshot_old is not None):
                 snapshot_new = take_snapshot()
@@ -516,13 +516,13 @@ class Extension(RichAttributeErrorBaseType):
                 
                 self._snapshot_difference = snapshot_difference
                 
-                for extension in extension_intersection:
-                    extension.add_snapshot_extraction(snapshot_difference)
+                for plugin in plugin_intersection:
+                    plugin.add_snapshot_extraction(snapshot_difference)
             
             else:
                 for snapshot_extraction in self.iter_snapshot_extractions():
-                    for extension in extension_intersection:
-                        extension.add_snapshot_extraction(snapshot_extraction)
+                    for plugin in plugin_intersection:
+                        plugin.add_snapshot_extraction(snapshot_extraction)
                 
                 self.clear_snapshot_extractions()
         
@@ -541,7 +541,7 @@ class Extension(RichAttributeErrorBaseType):
         ------
         SyntaxError
         """
-        if (self._state == EXTENSION_STATE_LOADED) and self._spec.is_initialised():
+        if (self._state == PLUGIN_STATE_LOADED) and self._spec.is_initialised():
             file_name = self.file_name
             # python files might not be `.py` files, which we should not compile.
             if file_name.endswith('.py'):
@@ -566,19 +566,19 @@ class Extension(RichAttributeErrorBaseType):
             If `check_for_syntax` and the file's syntax is incorrect.
         """
         state = self._state
-        if state == EXTENSION_STATE_UNDEFINED:
+        if state == PLUGIN_STATE_UNDEFINED:
             return None
         
-        if state == EXTENSION_STATE_LOADED:
-            self.clear_child_extensions()
-            self.clear_parent_extensions()
+        if state == PLUGIN_STATE_LOADED:
+            self.clear_child_plugins()
+            self.clear_parent_plugins()
             
             snapshot_difference = self._snapshot_difference
             if (snapshot_difference is not None):
                 self._snapshot_difference = None
                 revert_snapshot(snapshot_difference)
             
-            self._state = EXTENSION_STATE_UNLOADED
+            self._state = PLUGIN_STATE_UNLOADED
             
             spec = self._spec
             try:
@@ -588,7 +588,7 @@ class Extension(RichAttributeErrorBaseType):
             
             return spec.get_module()
         
-        if state in (EXTENSION_STATE_UNLOADED, EXTENSION_STATE_UNSATISFIED):
+        if state in (PLUGIN_STATE_UNLOADED, PLUGIN_STATE_UNSATISFIED):
             return None
         
         # no more cases
@@ -614,7 +614,7 @@ class Extension(RichAttributeErrorBaseType):
     @property
     def name(self):
         """
-        Returns the extension's name.
+        Returns the plugin's name.
         
         Returns
         -------
@@ -626,7 +626,7 @@ class Extension(RichAttributeErrorBaseType):
     @property
     def path(self):
         """
-        Returns the extension's name.
+        Returns the plugin's name.
         
         Returns
         -------
@@ -638,7 +638,7 @@ class Extension(RichAttributeErrorBaseType):
     @property
     def short_name(self):
         """
-        Returns the extension's name's shortened version.
+        Returns the plugin's name's shortened version.
         
         Returns
         -------
@@ -657,7 +657,7 @@ class Extension(RichAttributeErrorBaseType):
     @property
     def file_name(self):
         """
-        Returns the extension's file's name.
+        Returns the plugin's file's name.
         
         Returns
         -------
@@ -668,42 +668,42 @@ class Extension(RichAttributeErrorBaseType):
     
     def is_loaded(self):
         """
-        Returns whether the extension is loaded.
+        Returns whether the plugin is loaded.
         
         Returns
         -------
         is_loaded : `bool`
         """
-        return (self._state == EXTENSION_STATE_LOADED)
+        return (self._state == PLUGIN_STATE_LOADED)
     
    
     def is_unsatisfied(self):
         """
-        Returns whether the extension is unsatisfied.
+        Returns whether the plugin is unsatisfied.
         
         Returns
         -------
         is_unsatisfied : `bool`
         """
-        return (self._state == EXTENSION_STATE_UNSATISFIED)
+        return (self._state == PLUGIN_STATE_UNSATISFIED)
     
     
     def _unlink(self):
         """
-        Removes the extension's module from the loaded ones.
+        Removes the plugin's module from the loaded ones.
         
-        Should not be called on loaded extensions.
+        Should not be called on loaded plugins.
         """
         state = self._state
-        if state == EXTENSION_STATE_UNDEFINED:
+        if state == PLUGIN_STATE_UNDEFINED:
             return
         
-        if state == EXTENSION_STATE_LOADED:
-            self._state = EXTENSION_STATE_UNLOADED
+        if state == PLUGIN_STATE_LOADED:
+            self._state = PLUGIN_STATE_UNLOADED
             module = self._spec.get_module()
             
             if self._extend_default_variables:
-                for name in EXTENSION_LOADER._default_variables:
+                for name in PLUGIN_LOADER._default_variables:
                     try:
                         delattr(module, name)
                     except AttributeError:
@@ -720,7 +720,7 @@ class Extension(RichAttributeErrorBaseType):
                 pass
             return
         
-        if state in (EXTENSION_STATE_UNLOADED, EXTENSION_STATE_UNSATISFIED):
+        if state in (PLUGIN_STATE_UNLOADED, PLUGIN_STATE_UNSATISFIED):
             try:
                 del sys.modules[self._spec.name]
             except KeyError:
@@ -730,96 +730,96 @@ class Extension(RichAttributeErrorBaseType):
         # no more cases
     
     
-    def add_child_extension(self, extension):
+    def add_child_plugin(self, plugin):
         """
-        Registers a child extension.
+        Registers a child plugin.
         
         Parameters
         ----------
-        extension : ``Extension``
-            The extension to register.
+        plugin : ``Plugin``
+            The plugin to register.
         """
-        child_extensions = self._child_extensions
-        if (child_extensions is None):
-            child_extensions = WeakSet()
-            self._child_extensions = child_extensions
+        child_plugins = self._child_plugins
+        if (child_plugins is None):
+            child_plugins = WeakSet()
+            self._child_plugins = child_plugins
         
-        child_extensions.add(extension)
+        child_plugins.add(plugin)
     
     
-    def iter_child_extensions(self):
+    def iter_child_plugins(self):
         """
-        Iterates over the child extensions.
+        Iterates over the child plugins.
         
         This method is an iterable generator.
         
         Yields
         ------
-        child_extension : `None`
+        child_plugin : `None`
         """
-        child_extensions = self._child_extensions
-        if (child_extensions is not None):
-            yield from child_extensions
+        child_plugins = self._child_plugins
+        if (child_plugins is not None):
+            yield from child_plugins
     
     
-    def are_child_extensions_present_in(self, extensions):
+    def are_child_plugins_present_in(self, plugins):
         """
-        Returns whether all the child extensions are present in the given `extensions`.
+        Returns whether all the child plugins are present in the given `plugins`.
         
         Parameters
         ----------
-        extensions : `iterable` of ``Extension``
-            Already present extensions to check satisfaction form.
+        plugins : `iterable` of ``Plugin``
+            Already present plugins to check satisfaction form.
         
         Returns
         -------
-        are_child_extensions_present_in : `bool`
+        are_child_plugins_present_in : `bool`
         """
-        child_extensions = self._child_extensions
-        if (child_extensions is None):
+        child_plugins = self._child_plugins
+        if (child_plugins is None):
             return True
         
-        if child_extensions <= extensions:
+        if child_plugins <= plugins:
             return True
         
         return False
     
     
-    def clear_child_extensions(self):
+    def clear_child_plugins(self):
         """
-        Clears the child extensions of the extension.
+        Clears the child plugins of the plugin.
         """
-        child_extensions = self._child_extensions
-        if (child_extensions is not None):
-            self._child_extensions = None
+        child_plugins = self._child_plugins
+        if (child_plugins is not None):
+            self._child_plugins = None
             
-            for child_extension in child_extensions:
-                child_extension.remove_parent_extension(self)
+            for child_plugin in child_plugins:
+                child_plugin.remove_parent_plugin(self)
     
     
-    def remove_child_extension(self, child_extension):
+    def remove_child_plugin(self, child_plugin):
         """
-        Removes the given extension from the extension's children.
+        Removes the given plugin from the plugin's children.
         
         Parameters
         ----------
-        child_extension : ``Extension``
-            The extension to remove.
+        child_plugin : ``Plugin``
+            The plugin to remove.
         """
-        child_extensions = self._child_extensions
-        if (child_extensions is not None):
+        child_plugins = self._child_plugins
+        if (child_plugins is not None):
             try:
-                child_extensions.remove(child_extension)
+                child_plugins.remove(child_plugin)
             except KeyError:
                 pass
             else:
-                if not child_extensions:
-                    self._child_extensions = child_extensions
+                if not child_plugins:
+                    self._child_plugins = child_plugins
     
     
     def add_snapshot_extraction(self, snapshots):
         """
-        Adds snapshot extraction to the extension.
+        Adds snapshot extraction to the plugin.
         
         Parameters
         ----------
@@ -835,7 +835,7 @@ class Extension(RichAttributeErrorBaseType):
     
     def iter_snapshot_extractions(self):
         """
-        Iterates over the snapshot extractions of the extension.
+        Iterates over the snapshot extractions of the plugin.
         
         This method is an iterable generator.
         
@@ -850,102 +850,102 @@ class Extension(RichAttributeErrorBaseType):
     
     def clear_snapshot_extractions(self):
         """
-        Clears the snapshot extractions of the extension.
+        Clears the snapshot extractions of the plugin.
         """
         self._snapshot_extractions = None
 
 
-    def add_parent_extension(self, extension):
+    def add_parent_plugin(self, plugin):
         """
-        Registers a parent extension.
+        Registers a parent plugin.
         
         Parameters
         ----------
-        extension : ``Extension``
-            The extension to register.
+        plugin : ``Plugin``
+            The plugin to register.
         """
-        parent_extensions = self._parent_extensions
-        if (parent_extensions is None):
-            parent_extensions = WeakSet()
-            self._parent_extensions = parent_extensions
+        parent_plugins = self._parent_plugins
+        if (parent_plugins is None):
+            parent_plugins = WeakSet()
+            self._parent_plugins = parent_plugins
         
-        parent_extensions.add(extension)
+        parent_plugins.add(plugin)
     
     
-    def iter_parent_extensions(self):
+    def iter_parent_plugins(self):
         """
-        Iterates over the parent extensions.
+        Iterates over the parent plugins.
         
         This method is an iterable generator.
         
         Yields
         ------
-        parent_extension : `None`
+        parent_plugin : `None`
         """
-        parent_extensions = self._parent_extensions
-        if (parent_extensions is not None):
-            yield from parent_extensions
+        parent_plugins = self._parent_plugins
+        if (parent_plugins is not None):
+            yield from parent_plugins
     
     
-    def are_parent_extensions_present_in(self, extensions):
+    def are_parent_plugins_present_in(self, plugins):
         """
-        Returns whether all the parent extensions are present in the given `extensions`.
+        Returns whether all the parent plugins are present in the given `plugins`.
         
         Parameters
         ----------
-        extensions : `iterable` of ``Extension``
-            Already present extensions to check satisfaction form.
+        plugins : `iterable` of ``Plugin``
+            Already present plugins to check satisfaction form.
         
         Returns
         -------
-        are_parent_extensions_present_in : `bool`
+        are_parent_plugins_present_in : `bool`
         """
-        parent_extensions = self._parent_extensions
-        if (parent_extensions is None):
+        parent_plugins = self._parent_plugins
+        if (parent_plugins is None):
             return True
         
-        if parent_extensions <= extensions:
+        if parent_plugins <= plugins:
             return True
         
         return False
     
     
-    def clear_parent_extensions(self):
+    def clear_parent_plugins(self):
         """
-        Clears the parent extensions of the extension.
+        Clears the parent plugins of the plugin.
         """
-        parent_extensions = self._parent_extensions
-        if (parent_extensions is not None):
-            self._parent_extensions = parent_extensions
+        parent_plugins = self._parent_plugins
+        if (parent_plugins is not None):
+            self._parent_plugins = parent_plugins
             
-            for parent_extension in parent_extensions:
-                parent_extension.remove_child_extension(self)
+            for parent_plugin in parent_plugins:
+                parent_plugin.remove_child_plugin(self)
     
     
-    def remove_parent_extension(self, parent_extension):
+    def remove_parent_plugin(self, parent_plugin):
         """
-        Removes the given extension from the extension's parents.
+        Removes the given plugin from the plugin's parents.
         
         Parameters
         ----------
-        parent_extension : ``Extension``
-            The extension to remove.
+        parent_plugin : ``Plugin``
+            The plugin to remove.
         """
-        parent_extensions = self._parent_extensions
-        if (parent_extensions is not None):
+        parent_plugins = self._parent_plugins
+        if (parent_plugins is not None):
             try:
-                parent_extensions.remove(parent_extension)
+                parent_plugins.remove(parent_plugin)
             except KeyError:
                 pass
             else:
-                if not parent_extensions:
-                    self._parent_extensions = parent_extensions
+                if not parent_plugins:
+                    self._parent_plugins = parent_plugins
     
     
     @property
     def _module(self):
         """
-        Deprecated attribute of ``Extension``.
+        Deprecated attribute of ``Plugin``.
         """
         warnings.warn(
             f'`{self.__class__.__name__}._module` is deprecated, please use `._spec.get_module()` instead.',
@@ -957,7 +957,7 @@ class Extension(RichAttributeErrorBaseType):
     
     def get_module(self):
         """
-        Returns the module of the extension.
+        Returns the module of the plugin.
         
         Returns
         -------

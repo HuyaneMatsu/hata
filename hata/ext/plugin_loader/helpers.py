@@ -9,8 +9,8 @@ from sys import path as route_paths
 
 from scarletio import CallableAnalyzer, HybridValueDictionary
 
-from .constants import ABSOLUTE_PATH_EXTENSION_NAME_PREFIX
-from .extension_root import register_extension_root
+from .constants import ABSOLUTE_PATH_PLUGIN_NAME_PREFIX
+from .plugin_root import register_plugin_root
 
 
 def _validate_entry_or_exit(point):
@@ -60,25 +60,25 @@ def _validate_entry_or_exit(point):
     return False
 
 
-def validate_extension_parameters(entry_point=None, exit_point=None, extend_default_variables=True, locked=False,
+def validate_plugin_parameters(entry_point=None, exit_point=None, extend_default_variables=True, locked=False,
         take_snapshot_difference=True, **variables):
     """
-    Validates extension parameters.
+    Validates plugin parameters.
     
     Parameters
     ----------
     entry_point : `None`, `str`, `callable`, = `None` Optional
-        Extension specific entry point, to use over the extension loader's default.
+        Plugin specific entry point, to use over the plugin loader's default.
     exit_point : `None`, `str`, `callable` = `None`, Optional
-        Extension specific exit point, to use over the extension loader's default.
+        Plugin specific exit point, to use over the plugin loader's default.
     extend_default_variables : `bool` = `True`, Optional
-        Whether the extension should use the loader's default variables or just it's own.
+        Whether the plugin should use the loader's default variables or just it's own.
     locked : `bool` = `False`, Optional
-        Whether the given extension(s) should not be affected by `.{}_all` methods.
+        Whether the given plugin(s) should not be affected by `.{}_all` methods.
     take_snapshot_difference : `bool` = `True`, Optional
         Whether snapshot feature should be used.
     **variables : Keyword parameters
-        Variables to assign to an extension(s)'s module before they are loaded.
+        Variables to assign to an plugin(s)'s module before they are loaded.
     
     Raises
     ------
@@ -98,13 +98,13 @@ def validate_extension_parameters(entry_point=None, exit_point=None, extend_defa
     Returns
     -------
     entry_point : `None`, `str`, `callable`
-        Extension specific entry point, to use over the extension loader's default.
+        Plugin specific entry point, to use over the plugin loader's default.
     exit_point : `None`, `str`, `callable`
-        Extension specific exit point, to use over the extension loader's default.
+        Plugin specific exit point, to use over the plugin loader's default.
     extend_default_variables : `bool`
-        Whether the extension should use the loader's default variables or just it's own.
+        Whether the plugin should use the loader's default variables or just it's own.
     locked : `bool`
-        Whether the given extension(s) should not be affected by `.{}_all` methods.
+        Whether the given plugin(s) should not be affected by `.{}_all` methods.
     take_snapshot_difference : `bool`
         Whether snapshot feature should be used.
     default_variables : `None`, `HybridValueDictionary` of (`str`, `Any`) items
@@ -113,13 +113,13 @@ def validate_extension_parameters(entry_point=None, exit_point=None, extend_defa
     """
     if not _validate_entry_or_exit(entry_point):
         raise TypeError(
-            f'`validate_extension_parameters` expected `None`, `str` or a `callable` as `entry_point`, got '
+            f'`validate_plugin_parameters` expected `None`, `str` or a `callable` as `entry_point`, got '
             f'{entry_point.__class__.__name__}; {entry_point!r}.'
         )
     
     if not _validate_entry_or_exit(exit_point):
         raise TypeError(
-            f'`validate_extension_parameters` expected `None`, `str` or a `callable` as `exit_point`, got '
+            f'`validate_plugin_parameters` expected `None`, `str` or a `callable` as `exit_point`, got '
             f'{exit_point.__class__.__name__}; {exit_point!r}.'
         )
     
@@ -168,12 +168,12 @@ PROTECTED_NAMES = frozenset((
 
 
 
-PYTHON_EXTENSION_NAMES = frozenset(('.py', '.pyd', '.pyc', '.so'))
+PYTHON_FILE_POSTFIX_NAMES = frozenset(('.py', '.pyd', '.pyc', '.so'))
 
 
-def _get_extension_name_and_path(name):
+def _get_plugin_name_and_path(name):
     """
-    fetches the name and the path of the first matched extension. If non is matched raised `ImportError`.
+    fetches the name and the path of the first matched plugin. If non is matched raised `ImportError`.
     
     Parameters
     ----------
@@ -182,17 +182,17 @@ def _get_extension_name_and_path(name):
     
     Raises
     ------
-    extension_name : `None`, `str`
-        Extension's  name.
-    extension_path : `str`
-        Path of the extension file.
+    plugin_name : `None`, `str`
+        Plugin's  name.
+    plugin_path : `str`
+        Path of the plugin file.
     
     Raises
     ------
     ImportError
         - Could not resolve the given `name`.
     ImportError
-        - If `name` could not be detected as an extension.
+        - If `name` could not be detected as an plugin.
     TypeError
         - If `name` is not `str` nor an `iterable` of `str`.
     """
@@ -201,23 +201,23 @@ def _get_extension_name_and_path(name):
             f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
         )
     
-    generator = _iter_extension_names_and_paths(name)
+    generator = _iter_plugin_names_and_paths(name)
     try:
-        extension_pair = generator.send(None)
+        plugin_pair = generator.send(None)
     except StopIteration:
         raise ImportError(
-            f'No extensions found with the given name: {name!r}.'
+            f'No plugins found with the given name: {name!r}.'
         ) from None
     
     else:
         generator.close()
     
-    return extension_pair
+    return plugin_pair
 
 
-def _iter_extension_names_and_paths(name, *, register_directories_as_roots=False):
+def _iter_plugin_names_and_paths(name, *, register_directories_as_roots=False):
     """
-    Fetches the names and the paths of the given extension.
+    Fetches the names and the paths of the given plugin.
     
     This function is a generator.
     
@@ -230,22 +230,22 @@ def _iter_extension_names_and_paths(name, *, register_directories_as_roots=False
     
     Yields
     ------
-    extension_name : `None`, `str`
-        Extension's  name.
-    extension_path : `str`
-        Path of the extension file.
+    plugin_name : `None`, `str`
+        Plugin's  name.
+    plugin_path : `str`
+        Path of the plugin file.
     
     Raises
     ------
     ImportError
         - Could not resolve the given `name`.
     ImportError
-        - If `name` could not be detected as an extension.
+        - If `name` could not be detected as an plugin.
     TypeError
         - If `name` is not `str` nor an `iterable` of `str`.
     """
     for name in _iter_name_maybe_iterable(name):
-        if name.startswith(ABSOLUTE_PATH_EXTENSION_NAME_PREFIX):
+        if name.startswith(ABSOLUTE_PATH_PLUGIN_NAME_PREFIX):
             yield name
             return
         
@@ -265,10 +265,10 @@ def _iter_name_maybe_iterable(name):
     
     Yields
     ------
-    extension_name : `None`, `str`
-        The extension's name.
-    extension_path : `str`
-        Path of the extension file.
+    plugin_name : `None`, `str`
+        The plugin's name.
+    plugin_path : `str`
+        Path of the plugin file.
     
     Raises
     ------
@@ -313,21 +313,21 @@ def _lookup_path(import_name_or_path, register_directories_as_roots):
     Parameters
     ----------
     import_name_or_path : `str`
-        An extension's import name, or it's absolute path.
+        An plugin's import name, or it's absolute path.
     register_directories_as_roots : `bool`
         Whether directory roots should be registered.
     
     Yields
     ------
-    extension_name : `None`, `str`
-        Import name to an extension file.
-    extension_path : `str`
+    plugin_name : `None`, `str`
+        Import name to an plugin file.
+    plugin_path : `str`
         Path of the file.
     
     Raise
     -----
     ImportError
-        If `import_name_or_path` name could not be detected as en extension.
+        If `import_name_or_path` name could not be detected as en plugin.
     """
     if is_absolute_path_name(import_name_or_path):
         if exists(import_name_or_path):
@@ -344,18 +344,18 @@ def _lookup_path(import_name_or_path, register_directories_as_roots):
             path = join_paths(base_path, path_end)
             if exists(path) and is_directory(path):
                 if register_directories_as_roots:
-                    register_extension_root(import_name_or_path)
+                    register_plugin_root(import_name_or_path)
                 yield from _iter_directory(import_name_or_path, path)
                 return
             
-            for python_extension_name in PYTHON_EXTENSION_NAMES:
-                file_path = path + python_extension_name
+            for python_plugin_name in PYTHON_FILE_POSTFIX_NAMES:
+                file_path = path + python_plugin_name
                 if exists(file_path) and is_file(file_path):
                     yield import_name_or_path, file_path
                     return
     
     raise ImportError(
-        f'The given `import_name_or_path` could not be detected as an extension nor an absolute path, '
+        f'The given `import_name_or_path` could not be detected as an plugin nor an absolute path, '
         f'got {import_name_or_path!r}.'
     )
 
@@ -367,19 +367,19 @@ def _iter_directory(import_name, directory_path):
     Parameters
     ----------
     import_name : `None`, `str`
-        The name of the extension if we would import it.
+        The name of the plugin if we would import it.
     directory_path : `str`
         Path to the directory
     
     Yields
     ------
-    extension_name : `None`, `str`
+    plugin_name : `None`, `str`
         Detected import names for each applicable file in the directory.
-    extension_path : `str`
+    plugin_path : `str`
         Path of the file.
     """
-    for python_extension_name in PYTHON_EXTENSION_NAMES:
-        file_path = join_paths(directory_path, f'__init__{python_extension_name}')
+    for python_plugin_name in PYTHON_FILE_POSTFIX_NAMES:
+        file_path = join_paths(directory_path, f'__init__{python_plugin_name}')
         if exists(file_path) and is_file(file_path):
             yield import_name, file_path
             return
@@ -391,12 +391,12 @@ def _iter_directory(import_name, directory_path):
         path = join_paths(directory_path, file_name)
         
         if is_file(path):
-            for python_extension_name in PYTHON_EXTENSION_NAMES:
-                if file_name.endswith(python_extension_name):
+            for python_plugin_name in PYTHON_FILE_POSTFIX_NAMES:
+                if file_name.endswith(python_plugin_name):
                     if import_name is None:
                         import_name_value = None
                     else:
-                        import_name_value = f'{import_name}.{file_name[:-len(python_extension_name)]}'
+                        import_name_value = f'{import_name}.{file_name[:-len(python_plugin_name)]}'
                     yield import_name_value, path
                     break
             
@@ -414,9 +414,9 @@ def _iter_directory(import_name, directory_path):
         continue
 
 
-def _get_path_extension_name(path):
+def _get_path_plugin_name(path):
     """
-    Creates extension name from the given path.
+    Creates plugin name from the given path.
     
     Parameter
     ---------
@@ -425,69 +425,69 @@ def _get_path_extension_name(path):
     
     Returns
     -------
-    extension_name : `str`
+    plugin_name : `str`
     """
     file_name = base_name(path)
     dot_index = file_name.rfind('.')
     if dot_index != -1:
         file_name = file_name[:dot_index]
     
-    return ABSOLUTE_PATH_EXTENSION_NAME_PREFIX + file_name
+    return ABSOLUTE_PATH_PLUGIN_NAME_PREFIX + file_name
 
 
-def _build_extension_tree(extensions, deep):
+def _build_plugin_tree(plugins, deep):
     """
-    Builds a tree of extensions.
+    Builds a tree of plugins.
     
     Parameters
     ----------
-    extensions : `list` of ``Extension``
-        A list of extension to build the tree form.
+    plugins : `list` of ``Plugin``
+        A list of plugin to build the tree form.
     deep : `bool`
-        Whether the extension with all of it's parent and with their child should be returned.
+        Whether the plugin with all of it's parent and with their child should be returned.
     
     Returns
     -------
-    extensions : `list` of ``Extension``
+    plugins : `list` of ``Plugin``
     """
-    extensions_to_unwrap = [*extensions]
-    unwrapped_extensions = set()
+    plugins_to_unwrap = [*plugins]
+    unwrapped_plugins = set()
     
-    while extensions_to_unwrap:
-        extension = extensions_to_unwrap.pop()
+    while plugins_to_unwrap:
+        plugin = plugins_to_unwrap.pop()
         
         if deep:
-            for child_extension in extension.iter_child_extensions():
-                if child_extension not in unwrapped_extensions:
-                    extensions_to_unwrap.append(child_extension)
+            for child_plugin in plugin.iter_child_plugins():
+                if child_plugin not in unwrapped_plugins:
+                    plugins_to_unwrap.append(child_plugin)
             
-            for parent_extension in extension.iter_parent_extensions():
-                if parent_extension not in unwrapped_extensions:
-                    extensions_to_unwrap.append(parent_extension)
+            for parent_plugin in plugin.iter_parent_plugins():
+                if parent_plugin not in unwrapped_plugins:
+                    plugins_to_unwrap.append(parent_plugin)
         
-        unwrapped_extensions.add(extension)
+        unwrapped_plugins.add(plugin)
     
     
-    extensions_to_check_ordered = sorted(unwrapped_extensions, reverse=True)
+    plugins_to_check_ordered = sorted(unwrapped_plugins, reverse=True)
     
-    extensions_satisfied = set()
-    extensions_satisfied_ordered = []
+    plugins_satisfied = set()
+    plugins_satisfied_ordered = []
     
-    while extensions_to_check_ordered:
-        for index in reversed(range(len(extensions_to_check_ordered))):
-            extension = extensions_to_check_ordered[index]
+    while plugins_to_check_ordered:
+        for index in reversed(range(len(plugins_to_check_ordered))):
+            plugin = plugins_to_check_ordered[index]
             
-            if not extension.are_child_extensions_present_in(extensions_satisfied):
+            if not plugin.are_child_plugins_present_in(plugins_satisfied):
                 continue
             
-            extensions_satisfied.add(extension)
-            extensions_satisfied_ordered.append(extension)
-            del extensions_to_check_ordered[index]
+            plugins_satisfied.add(plugin)
+            plugins_satisfied_ordered.append(plugin)
+            del plugins_to_check_ordered[index]
             break
 
         else:
             raise RuntimeError(
-                f'Extensions with circular satisfaction: {extensions_to_check_ordered!r}'
+                f'Plugins with circular satisfaction: {plugins_to_check_ordered!r}'
             )
     
-    return extensions_satisfied_ordered
+    return plugins_satisfied_ordered

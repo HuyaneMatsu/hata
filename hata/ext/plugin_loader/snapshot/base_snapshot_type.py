@@ -95,7 +95,7 @@ class BaseSnapshotType(RichAttributeErrorBaseType):
     @property
     def client(self):
         """
-        Returns the snapshots's client.
+        Returns the snapshot's client.
         """
         return self._client_reference()
     

@@ -3698,3 +3698,33 @@ class Slasher(EventHandlerBase):
         
         self._sync_should.add(guild_id)
         self._sync_done.discard(guild_id)
+    
+    
+    def _remove_permission_overwrite_for_guild(self, guild_id, application_command_permission_overwrite):
+        """
+        Removes a permission overwrite for the given guild.
+        
+        Parameters
+        ----------
+        guild_id : `int`
+            The respective guild's identifier.
+        application_command_permission_overwrite : ``ApplicationCommandPermissionOverwrite``
+            The application command permission overwrite to remove.
+        """
+        guild_level_permission_overwrites = self._guild_level_permission_overwrites
+        if guild_level_permission_overwrites is not None:
+            try:
+                permission_overwrites = guild_level_permission_overwrites[guild_id]
+            except KeyError:
+                pass
+            else:
+                try:
+                    permission_overwrites.remove(application_command_permission_overwrite)
+                except ValueError:
+                    pass
+                else:
+                    if not permission_overwrites:
+                        del guild_level_permission_overwrites[guild_id]
+        
+        self._sync_should.add(guild_id)
+        self._sync_done.discard(guild_id)

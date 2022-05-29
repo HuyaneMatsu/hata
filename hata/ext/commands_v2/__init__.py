@@ -113,7 +113,7 @@ def snapshot_hook():
 
 
 register_library_extension('HuyaneMatsu.commands_v2')
-add_library_extension_hook(snapshot_hook, ['HuyaneMatsu.extension_loader'])
+add_library_extension_hook(snapshot_hook, ['HuyaneMatsu.plugin_loader'])
 
 def command_utils_hook():
     from . import extension_hook_command_utils

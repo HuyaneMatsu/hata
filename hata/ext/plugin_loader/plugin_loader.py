@@ -1,5 +1,6 @@
-__all__ = ('EXTENSION_LOADER', 'ExtensionLoader', )
+__all__ = ('PLUGIN_LOADER', 'PluginLoader', )
 
+import warnings
 from functools import partial as partial_func
 
 from scarletio import (
@@ -9,16 +10,16 @@ from scarletio import (
 
 from ...discord.core import KOKORO
 
-from .constants import EXTENSION_STATE_LOADED, EXTENSIONS
-from .exceptions import ExtensionError
-from .extension import Extension, __file__ as EXTENSION_LOADER_EXTENSION_FILE_PATH
+from .constants import PLUGIN_STATE_LOADED, PLUGINS
+from .exceptions import PluginError
+from .plugin import Plugin, __file__ as PLUGIN_LOADER_PLUGIN_FILE_PATH
 from .helpers import (
-    PROTECTED_NAMES, _build_extension_tree, _get_extension_name_and_path, _get_path_extension_name,
-    _iter_extension_names_and_paths, _validate_entry_or_exit, validate_extension_parameters
+    PROTECTED_NAMES, _build_plugin_tree, _get_plugin_name_and_path, _get_path_plugin_name,
+    _iter_plugin_names_and_paths, _validate_entry_or_exit, validate_plugin_parameters
 )
 
 
-EXTENSION_LOADER_EXTENSION_LOADER_FILE_PATH = __file__
+PLUGIN_LOADER_PLUGIN_LOADER_FILE_PATH = __file__
 
 
 def _render_exception_message(exception, header):
@@ -63,98 +64,98 @@ async def _render_exception_message_async(exception, header):
     return await KOKORO.run_in_executor(alchemy_incendiary(_render_exception_message, (exception, header)))
 
 
-def _try_get_extension(extension_name, extension_path):
+def _try_get_plugin(plugin_name, plugin_path):
     """
-    Tries to get extension for the given name or path.
+    Tries to get plugin for the given name or path.
     
     Parameters
     ----------
-    extension_name : `None`, `str`
-        Extension's  name.
-    extension_path : `str`
-        Path of the extension file.
+    plugin_name : `None`, `str`
+        Plugin's  name.
+    plugin_path : `str`
+        Path of the plugin file.
     
     Returns
     -------
-    extension : `None`, ``Extension``
-        The found extension if any.
+    plugin : `None`, ``Plugin``
+        The found plugin if any.
     """
     try:
-        return EXTENSION_LOADER._extensions_by_name[extension_path]
+        return PLUGIN_LOADER._plugins_by_name[plugin_path]
     except KeyError:
         pass
     
-    if extension_name is None:
-        extension_name = _get_path_extension_name(extension_path)
+    if plugin_name is None:
+        plugin_name = _get_path_plugin_name(plugin_path)
     
     try:
-        return EXTENSION_LOADER._extensions_by_name[extension_name]
+        return PLUGIN_LOADER._plugins_by_name[plugin_name]
     except KeyError:
         pass
 
 
-async def _get_extensions(name, deep):
+async def _get_plugins(name, deep):
     """
-    Gets the extensions with the given name.
+    Gets the plugins with the given name.
     
     Parameters
     ----------
     name : `str`, `iterable` of `str`
-        Extension by name to find.
+        Plugin by name to find.
     deep : `bool`
-        Whether the extension with all of it's parent and with their child should be returned.
+        Whether the plugin with all of it's parent and with their child should be returned.
     
     Returns
     -------
-    extensions : `list` of ``Extension``
-        The found extensions.
+    plugins : `list` of ``Plugin``
+        The found plugins.
     
     Raises
     ------
-    ExtensionError
-        If an extension could not be found.
+    PluginError
+        If an plugin could not be found.
     """
     try:
-        extensions = set()
+        plugins = set()
         
-        extension_names_and_paths = set(_iter_extension_names_and_paths(name))
-        for extension_name, extension_path in extension_names_and_paths:
-            extension = _try_get_extension(extension_name, extension_path)
-            if extension is None:
-                raise ExtensionError(f'No extension was added with name: `{extension_name}`.')
+        plugin_names_and_paths = set(_iter_plugin_names_and_paths(name))
+        for plugin_name, plugin_path in plugin_names_and_paths:
+            plugin = _try_get_plugin(plugin_name, plugin_path)
+            if plugin is None:
+                raise PluginError(f'No plugin was added with name: `{plugin_name}`.')
             
-            extensions.add(extension)
+            plugins.add(plugin)
             continue
         
-        if not extensions:
-            raise ExtensionError(
-                f'No extensions found with the given name: {name!r}.'
+        if not plugins:
+            raise PluginError(
+                f'No plugins found with the given name: {name!r}.'
             )
         
-        return _build_extension_tree(extensions, deep)
+        return _build_plugin_tree(plugins, deep)
     
     except GeneratorExit:
         raise
     
-    except ExtensionError:
+    except PluginError:
         raise
     
     except BaseException as err:
         message = await _render_exception_message_async(
             err,
             [
-                'Exception occurred meanwhile looking up extensions for name: `',
+                'Exception occurred meanwhile looking up plugins for name: `',
                 repr(name),
                 '`.\n',
             ]
         )
         
-        raise ExtensionError(message)
+        raise PluginError(message)
 
 
 def _ignore_module_import_frames(file_name, name, line_number, line):
     """
-    Ignores import frames of extension loading.
+    Ignores import frames of plugin loading.
     
     Parameters
     ----------
@@ -177,7 +178,7 @@ def _ignore_module_import_frames(file_name, name, line_number, line):
     if file_name.startswith('<') and file_name.endswith('>'):
         should_show_frame = False
     
-    elif file_name == EXTENSION_LOADER_EXTENSION_FILE_PATH:
+    elif file_name == PLUGIN_LOADER_PLUGIN_FILE_PATH:
         if name == '_load':
             if line == 'loaded = self._load_module()':
                 should_show_frame = False
@@ -186,16 +187,16 @@ def _ignore_module_import_frames(file_name, name, line_number, line):
             if line == 'spec.loader.exec_module(module)':
                 should_show_frame = False
     
-    elif file_name == EXTENSION_LOADER_EXTENSION_LOADER_FILE_PATH:
-        if name == '_extension_loader_task':
+    elif file_name == PLUGIN_LOADER_PLUGIN_LOADER_FILE_PATH:
+        if name == '_plugin_loader_task':
             if line in (
-                'module = await KOKORO.run_in_executor(extension._load)',
+                'module = await KOKORO.run_in_executor(plugin._load)',
                 'await entry_point(module)',
                 'entry_point(module)',
             ):
                 should_show_frame = False
         
-        elif name == '_extension_unloader_task':
+        elif name == '_plugin_unloader_task':
             if line in (
                 'await exit_point(module)',
                 'exit_point(module)',
@@ -205,36 +206,36 @@ def _ignore_module_import_frames(file_name, name, line_number, line):
     return should_show_frame
 
 
-def _pop_unloader_task_callback(extension, task):
+def _pop_unloader_task_callback(plugin, task):
     """
-    Removes the unloader task of the extension loader for the given extension.
+    Removes the unloader task of the plugin loader for the given plugin.
     
     Parameters
     ----------
-    extension : ``Extension``
-        The extension to remove it's task of.
+    plugin : ``Plugin``
+        The plugin to remove it's task of.
     task : ``Task``
         The finished task.
     """
     try:
-        del EXTENSION_LOADER._unloader_tasks[extension]
+        del PLUGIN_LOADER._unloader_tasks[plugin]
     except KeyError:
         pass
 
 
-def _pop_loader_task_callback(extension, task):
+def _pop_loader_task_callback(plugin, task):
     """
-    Removes the loader task of the extension loader for the given extension.
+    Removes the loader task of the plugin loader for the given plugin.
     
     Parameters
     ----------
-    extension : ``Extension``
-        The extension to remove it's task of.
+    plugin : ``Plugin``
+        The plugin to remove it's task of.
     task : ``Task``
         The finished task.
     """
     try:
-        del EXTENSION_LOADER._loader_tasks[extension]
+        del PLUGIN_LOADER._loader_tasks[plugin]
     except KeyError:
         pass
 
@@ -261,20 +262,20 @@ def _run_maybe_blocking(coroutine, blocking):
         return KOKORO.create_task_thread_safe(coroutine)
 
 
-class ExtensionLoader(RichAttributeErrorBaseType):
+class PluginLoader(RichAttributeErrorBaseType):
     """
     There are some cases when you probably want to change some functional part of your client in runtime. Load,
     unload or reload code. Hata provides an easy to use (that's what she said) solution to solve this issue.
     
-    It is called extension loader is an extension of hata. It is separated from `commands` extension, but it does not
-    mean they do not go well together. But what more, extension loader was made to complement it.
+    It is called plugin loader is an plugin of hata. It is separated from `commands` plugin, but it does not
+    mean they do not go well together. But what more, plugin loader was made to complement it.
     
     Usage
     -----
-    The ``ExtensionLoader`` class is instanced already as `EXTENSION_LOADER` and that can be imported as well from
-    `extension_loader.py`. Instancing the class again will yield the same object.
+    The ``PluginLoader`` class is instanced already as `PLUGIN_LOADER` and that can be imported as well from
+    `plugin_loader.py`. Instancing the class again will yield the same object.
     
-    Because hata can have more clients, we needed a special extension loader what can handle using more clients at any
+    Because hata can have more clients, we needed a special plugin loader what can handle using more clients at any
     file, so the choice ended up on a  really interesting idea: assign variables to a module before it is (re)loaded.
     
     To show this is not blackmagic, here is an example:
@@ -282,17 +283,17 @@ class ExtensionLoader(RichAttributeErrorBaseType):
     **main.py**
     
     ```py
-    from hata.ext.extension_loader import EXTENSION_LOADER
+    from hata.ext.plugin_loader import PLUGIN_LOADER
     from datetime import datetime
     
     cake = 'cake'
     now = datetime.utcnow()
     
-    EXTENSION_LOADER.add_default_variables(cake=cake, now=now)
-    EXTENSION_LOADER.load_extension('extension')
+    PLUGIN_LOADER.add_default_variables(cake=cake, now=now)
+    PLUGIN_LOADER.load_plugin('plugin')
     ```
     
-    **extension.py**
+    **plugin.py**
     
     ```py
     print(cake, now)
@@ -319,8 +320,8 @@ class ExtensionLoader(RichAttributeErrorBaseType):
     Because now we have the interpreter, you can change the variables.
     
     ```py
-    >>> EXTENSION_LOADER.add_default_variables(cake='cakes taste good, and now is:')
-    >>> EXTENSION_LOADER.reload_all()
+    >>> PLUGIN_LOADER.add_default_variables(cake='cakes taste good, and now is:')
+    >>> PLUGIN_LOADER.reload_all()
     ```
     
     And a different text is printed out:
@@ -329,17 +330,17 @@ class ExtensionLoader(RichAttributeErrorBaseType):
     cakes taste good, and now is: 2020-03-14 09:40:41.587673
     ```
     
-    Now lets edit `extension.py`.
+    Now lets edit `plugin.py`.
     
     ```py
     cake = cake.split()
     print(*cake, now, sep='\\n')
     ```
     
-    And reload the extension:
+    And reload the plugin:
     
     ```py
-    >>> EXTENSION_LOADER.reload_all()
+    >>> PLUGIN_LOADER.reload_all()
     ```
     
     The printed text really changed again:
@@ -354,18 +355,18 @@ class ExtensionLoader(RichAttributeErrorBaseType):
     2020-03-14 09:40:41.587673
     ```
     
-    If you remove default variables and the extension file still uses them, you get an ``ExtensionError``:
+    If you remove default variables and the plugin file still uses them, you get an ``PluginError``:
     
     ```py
-    >>> EXTENSION_LOADER.remove_default_variables('cake')
-    >>> EXTENSION_LOADER.reload_all()
+    >>> PLUGIN_LOADER.remove_default_variables('cake')
+    >>> PLUGIN_LOADER.reload_all()
     ```
     
     ```
     Traceback (most recent call last):
       File "<pyshell#13>", line 1, in <module>
-        EXTENSION_LOADER.reload_all()
-      File ".../hata/ext/extension_loader/extension_loader.py", line 652, in reload_all
+        PLUGIN_LOADER.reload_all()
+      File ".../hata/ext/plugin_loader/plugin_loader.py", line 652, in reload_all
         task.sync_wrap().wait()
       File ".../scarletio/core/traps/future_sync_wrapper.py", line 823, in wait
         return self.result()
@@ -373,106 +374,106 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         raise exception
       File ".../scarletio/core/traps/task.py", line 1602, in _step
         result = coroutine.throw(exception)
-      File ".../hata/ext/extension_loader/extension_loader.py", line 670, in _reload_all_task
-        raise ExtensionError(error_messages) from None
-    hata.ext.extension_loader.ExtensionError: ExtensionError (1):
-    Exception occurred meanwhile loading an extension: `extension`.
+      File ".../hata/ext/plugin_loader/plugin_loader.py", line 670, in _reload_all_task
+        raise PluginError(error_messages) from None
+    hata.ext.plugin_loader.PluginError: PluginError (1):
+    Exception occurred meanwhile loading an plugin: `plugin`.
     
     Traceback (most recent call last):
-      File ".../extension.py", line 1, in <module>
+      File ".../plugin.py", line 1, in <module>
         cake = cake.split()
     NameError("name 'cake' is not defined")
     ```
     
-    Adding Extensions
+    Adding Plugins
     -----------------
-    Extensions can be added with the `.add` method.
+    Plugins can be added with the `.add` method.
     
     ```py
-    EXTENSION_LOADER.add('cute_commands')
+    PLUGIN_LOADER.add('cute_commands')
     ```
     
-    Or more extension can be added as well by passing an iterable:
+    Or more plugin can be added as well by passing an iterable:
     
     ```py
-    EXTENSION_LOADER.add(['cute_commands', 'nice_commands'])
+    PLUGIN_LOADER.add(['cute_commands', 'nice_commands'])
     ```
     
-    If an extension's file is not found, then `.add` will raise  `ModuleNotFoundError`. If the passed parameter is not
+    If an plugin's file is not found, then `.add` will raise  `ModuleNotFoundError`. If the passed parameter is not
     `str` or not `iterable` of `str`, `TypeError` is raised.
     
     Loading
     -------
-    Extensions can be loaded by their name:
+    Plugins can be loaded by their name:
     
     ```py
-    EXTENSION_LOADER.load('cute_commands')
+    PLUGIN_LOADER.load('cute_commands')
     ```
     
-    All extension can be loaded by using:
+    All plugin can be loaded by using:
     
     ```py
-    EXTENSION_LOADER.load_all()
+    PLUGIN_LOADER.load_all()
     ```
     
-    Or extension can be added and loaded at the same time as well:
+    Or plugin can be added and loaded at the same time as well:
     
     ```py
-    EXTENSION_LOADER.load_extension('cute_commands')
+    PLUGIN_LOADER.load_plugin('cute_commands')
     ```
     
-    `.load_extension` method supports all the keyword parameters as `.add`.
+    `.load_plugin` method supports all the keyword parameters as `.add`.
     
-    ##### Passing variables to extensions
+    ##### Passing variables to plugins
     
-    You can pass variables to extensions with the `.add_default_variables` method:
+    You can pass variables to plugins with the `.add_default_variables` method:
     
     ```py
-    EXTENSION_LOADER.add_default_variables(cake=cake, now=now)
+    PLUGIN_LOADER.add_default_variables(cake=cake, now=now)
     ```
     
-    Adding or removing variables wont change the already loaded extensions' state, those needs to be reloaded to see
+    Adding or removing variables wont change the already loaded plugins' state, those needs to be reloaded to see
     them.
     
-    Or pass variables to just specific extensions:
+    Or pass variables to just specific plugins:
     
     ```py
-    EXTENSION_LOADER.add('cute_commands', cake=cake, now=now)
+    PLUGIN_LOADER.add('cute_commands', cake=cake, now=now)
     ```
     
-    You can specify if the extension should use just it's own variables and ignore the default ones too:
+    You can specify if the plugin should use just it's own variables and ignore the default ones too:
     
     ```py
-    EXTENSION_LOADER.add('cute_commands', extend_default_variables=False, cake=cake, now=now)
+    PLUGIN_LOADER.add('cute_commands', extend_default_variables=False, cake=cake, now=now)
     ```
     
     Every variable added is stored in an optionally weak value dictionary, but you are able remove the added variables as well:
     
     ```py
-    EXTENSION_LOADER.remove_default_variables('cake', 'now')
+    PLUGIN_LOADER.remove_default_variables('cake', 'now')
     ```
     
-    The extensions can be accessed by their name as well, then you can use their properties to modify them.
+    The plugins can be accessed by their name as well, then you can use their properties to modify them.
     
     ```py
-    EXTENSION_LOADER.get_extension('cute_commands').remove_default_variables('cake')
+    PLUGIN_LOADER.get_plugin('cute_commands').remove_default_variables('cake')
     ```
     
     Unloading And Exit Point
     ------------------------
-    You can unload extension on the same way as loading them.
+    You can unload plugin on the same way as loading them.
     
     ```py
-    EXTENSION_LOADER.unload('cute_commands')
+    PLUGIN_LOADER.unload('cute_commands')
     ```
     
     Or unload all:
     
     ```py
-    EXTENSION_LOADER.unload_all()
+    PLUGIN_LOADER.unload_all()
     ```
     
-    When unloading an extension, the extension loader will search a function at the extension, what we call
+    When unloading an plugin, the plugin loader will search a function at the plugin, what we call
     `exit_point` and will run it. By default it looks for a variable named `teardown`. `exit_point` acts on the same
     way as the `entry_point`, so it can be modified for looking for other name to defining and passing a callable
     (can be async again).
@@ -480,41 +481,41 @@ class ExtensionLoader(RichAttributeErrorBaseType):
     Can be set almost on the same way as well:
     
     ```py
-    EXTENSION_LOADER.default_exit_point = 'exit'
+    PLUGIN_LOADER.default_exit_point = 'exit'
     ```
     
     Or:
     
     ```py
-    EXTENSION_LOADER.add('cute_commands', exit_point='exit')
+    PLUGIN_LOADER.add('cute_commands', exit_point='exit')
     ```
     
     There are also methods for reloading: `.reload(name)` and `.reload_all()`
     
-    Removing Extensions
+    Removing Plugins
     -------------------
     
-    Unloaded extensions can be removed from the extension loader by using the `.remove` method:
+    Unloaded plugins can be removed from the plugin loader by using the `.remove` method:
     
     ```py
-    EXTENSION_LOADER.remove('cute_commands')
+    PLUGIN_LOADER.remove('cute_commands')
     ```
     
-    Or more extension with an iterable:
+    Or more plugin with an iterable:
     
     ```py
-    EXTENSION_LOADER.remove(['cute_commands', 'nice_commands'])
+    PLUGIN_LOADER.remove(['cute_commands', 'nice_commands'])
     ```
     
-    Removing loaded extension will yield `RuntimeError`.
+    Removing loaded plugin will yield `RuntimeError`.
     
     Threading Model
     ---------------
-    When you call the different methods of the extension loader, they ll run on the ``Clients`` thread, what is named
+    When you call the different methods of the plugin loader, they ll run on the ``Clients`` thread, what is named
     `KOKORO` internally.
     
     These methods are:
-    - ``.load_extension``
+    - ``.load_plugin``
     - ``.load``
     - ``.load_all``
     - ``.unload``
@@ -522,14 +523,14 @@ class ExtensionLoader(RichAttributeErrorBaseType):
     - ``.reload``
     - ``.reload_all``
     
-    Meanwhile loading and executing the extension's code the thread is switched to an executor, so blocking tasks can
+    Meanwhile loading and executing the plugin's code the thread is switched to an executor, so blocking tasks can
     be executed easily. The exception under this rule are the `entry_point`-s and the `exit_point`-s, which always run
     on the same thread as the clients, that is why they can be async as well.
     
     These methods also act differently depending from which thread they were called from. Whenever they are called from
     the client's thread, a ``Task`` is returned what can be `awaited`. If called from other ``EventThread``, then the
     task is async wrapped and that is returned. When calling from any other thread (like the main thread for example),
-    the task is sync wrapped and the thread is blocked till the extension's loading is finished.
+    the task is sync wrapped and the thread is blocked till the plugin's loading is finished.
     
     Attributes
     ----------
@@ -541,38 +542,38 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         An optionally weak value dictionary to store objects for assigning them to modules before loading them.
         If it would be set as empty, then it is set as `None` instead.
     _done_callbacks : `None`, `list` of `callable`
-        Callbacks, which run when loading / unloading the extensions is done.
+        Callbacks, which run when loading / unloading the plugins is done.
         
         > These callbacks are only called once, and then cleared out.
     _execute_counter : `int`
-        Whether the extension loader is executing an extension.
-    _extensions_by_name : `dict` of (`str`, ``Extension``) items
-        A dictionary of the added extensions to the extension loader in `extension-name` - ``Extension`` relation.
-    _loader_tasks : `dict` of (``Extension``, ``Task``) items
-        Active extension loading tasks.
-    _unloader_tasks : `dict` of (``Extension``, ``Task``) items
-        Active extension unloading tasks.
+        Whether the plugin loader is executing an plugin.
+    _plugins_by_name : `dict` of (`str`, ``Plugin``) items
+        A dictionary of the added plugins to the plugin loader in `plugin-name` - ``Plugin`` relation.
+    _loader_tasks : `dict` of (``Plugin``, ``Task``) items
+        Active plugin loading tasks.
+    _unloader_tasks : `dict` of (``Plugin``, ``Task``) items
+        Active plugin unloading tasks.
     
     Class Attributes
     ---------------
-    _instance : `None`, ``ExtensionLoader``
-        The already created instance of the ``ExtensionLoader`` if there is any.
+    _instance : `None`, ``PluginLoader``
+        The already created instance of the ``PluginLoader`` if there is any.
     """
     __slots__ = (
         '_default_entry_point', '_default_exit_point', '_default_variables', '_done_callbacks', '_execute_counter',
-        '_extensions_by_name', '_loader_tasks', '_unloader_tasks'
+        '_plugins_by_name', '_loader_tasks', '_unloader_tasks'
     )
     
     _instance = None
     
     def __new__(cls):
         """
-        Creates an ``ExtensionLoader``. If the `ExtensionLoader` was instanced already, then returns that
+        Creates an ``PluginLoader``. If the `PluginLoader` was instanced already, then returns that
         instead.
         
         Returns
         -------
-        self : ``ExtensionLoader``
+        self : ``PluginLoader``
         """
         self = cls._instance
         if self is None:
@@ -581,7 +582,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
             self._default_entry_point = 'setup'
             self._default_exit_point = 'teardown'
             self._done_callbacks = None
-            self._extensions_by_name = {}
+            self._plugins_by_name = {}
             self._default_variables = HybridValueDictionary()
             self._execute_counter = 0
             self._loader_tasks = {}
@@ -595,7 +596,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
     @property
     def default_entry_point(self):
         """
-        Get-set-del descriptor for modifying the extension loader's default entry point.
+        Get-set-del descriptor for modifying the plugin loader's default entry point.
         
         Accepts and returns `None`, `str` or a `callable`. If invalid type is given, raises `TypeError`.
         """
@@ -619,7 +620,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
     @property
     def default_exit_point(self):
         """
-        Get-set-del descriptor for modifying the extension loader's default exit point.
+        Get-set-del descriptor for modifying the plugin loader's default exit point.
         
         Accepts and returns `None`, `str` or a `callable`. If invalid type is given, raises `TypeError`.
         """
@@ -644,12 +645,12 @@ class ExtensionLoader(RichAttributeErrorBaseType):
     
     def add_default_variables(self, **variables):
         """
-        Adds default variables to the extension loader.
+        Adds default variables to the plugin loader.
         
         Parameters
         ----------
         **variables : Keyword Parameters
-            Variables to assigned to an extension's module before it is loaded.
+            Variables to assigned to an plugin's module before it is loaded.
         
         Raises
         ------
@@ -668,7 +669,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
     
     def remove_default_variables(self, *names):
         """
-        Removes the mentioned default variables of the extension loader.
+        Removes the mentioned default variables of the plugin loader.
         
         If a variable with a specified name is not found, no error is raised.
         
@@ -687,39 +688,39 @@ class ExtensionLoader(RichAttributeErrorBaseType):
     
     def clear_default_variables(self):
         """
-        Removes all the default variables of the extension loader.
+        Removes all the default variables of the plugin loader.
         """
         self._default_variables.clear()
     
     
     def add(self, name, *args, **kwargs):
         """
-        Adds an extension to the extension loader.
+        Registers a plugin to the plugin loader.
         
-        If the extension already exists, returns that one.
+        If the plugin already exists, returns that one.
         
         Parameters
         ----------
         name : `str`, `iterable` of `str`
-            The extension's name to load.
+            The plugin's name to load.
         *args : Parameters
-            Additional parameters to create the extension with.
+            Additional parameters to create the plugin with.
         **kwargs : Keyword parameters
-            Additional parameters to create the extension with.
+            Additional parameters to create the plugin with.
         
         Other Parameters
         ----------------
         entry_point : `None`, `str`, `callable`, Optional
-            Extension specific entry point, to use over the extension loader's default.
+            Plugin specific entry point, to use over the plugin loader's default.
         exit_point : `None`, `str`, `callable`, Optional
-            Extension specific exit point, to use over the extension loader's default.
+            Plugin specific exit point, to use over the plugin loader's default.
         locked : `bool`, Optional
-            Whether the given extension(s) should not be affected by `.{}_all` methods.
+            Whether the given plugin(s) should not be affected by `.{}_all` methods.
         take_snapshot_difference : `bool`, Optional
             Whether snapshot feature should be used.
         **variables : Keyword parameters
-            Variables to assign to an extension(s)'s module before they are loaded.
-            
+            Variables to assign to an plugin(s)'s module before they are loaded.
+        
         Raises
         ------
         ImportError
@@ -737,38 +738,38 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         ValueError
             If a variable name is would be used, what is `module` attribute.
         """
-        extension_names_and_paths = set(_iter_extension_names_and_paths(name, register_directories_as_roots=True))
+        plugin_names_and_paths = set(_iter_plugin_names_and_paths(name, register_directories_as_roots=True))
         entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference, default_variables = \
-            validate_extension_parameters(*args, **kwargs)
+            validate_plugin_parameters(*args, **kwargs)
         
-        for extension_name, extension_path in extension_names_and_paths:
+        for plugin_name, plugin_path in plugin_names_and_paths:
             self._add(
-                extension_name, extension_path, entry_point, exit_point, extend_default_variables, locked,
+                plugin_name, plugin_path, entry_point, exit_point, extend_default_variables, locked,
                 take_snapshot_difference, default_variables
             )
     
     
-    def _add(self, extension_name, extension_path, entry_point, exit_point, extend_default_variables, locked,
+    def _add(self, plugin_name, plugin_path, entry_point, exit_point, extend_default_variables, locked,
             take_snapshot_difference, default_variables):
         """
-        Adds an extension to the extension loader.
+        Adds an plugin to the plugin loader.
         
-        If the extension already exists, returns that one.
+        If the plugin already exists, returns that one.
         
         Parameters
         ----------
-        extension_name : `None`, `str`
-            The extension's name to add.
-        extension_path : `None`, `str`
-            Path of the extension to add.
+        plugin_name : `None`, `str`
+            The plugin's name to add.
+        plugin_path : `None`, `str`
+            Path of the plugin to add.
         entry_point : `None`, `str`, `callable`
-            Extension specific entry point, to use over the extension loader's default.
+            Plugin specific entry point, to use over the plugin loader's default.
         exit_point : `None`, `str`, `callable`
-            Extension specific exit point, to use over the extension loader's default.
+            Plugin specific exit point, to use over the plugin loader's default.
         extend_default_variables : `bool`
-            Whether the extension should use the loader's default variables or just it's own.
+            Whether the plugin should use the loader's default variables or just it's own.
         locked : `bool`
-            Whether the given extension(s) should not be affected by `.{}_all` methods.
+            Whether the given plugin(s) should not be affected by `.{}_all` methods.
         take_snapshot_difference : `bool`
             Whether snapshot feature should be used.
         default_variables : `None`, `HybridValueDictionary` of (`str`, `Any`) items
@@ -777,108 +778,108 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         
         Returns
         -------
-        extension : ``Extension``
-            The registered extension.
+        plugin : ``Plugin``
+            The registered plugin.
         """
-        extension = Extension(
-            extension_name, extension_path, entry_point, exit_point, extend_default_variables,
+        plugin = Plugin(
+            plugin_name, plugin_path, entry_point, exit_point, extend_default_variables,
             locked, take_snapshot_difference, default_variables
         )
         
-        self._extensions_by_name[extension.name] = extension
-        self._extensions_by_name[extension.file_name] = extension
+        self._plugins_by_name[plugin.name] = plugin
+        self._plugins_by_name[plugin.file_name] = plugin
         
-        short_name = extension.short_name
+        short_name = plugin.short_name
         if (short_name is not None):
-            self._extensions_by_name.setdefault(extension.short_name, extension)
+            self._plugins_by_name.setdefault(plugin.short_name, plugin)
         
-        return extension
+        return plugin
     
     
     def remove(self, name):
         """
-        Removes one or more extensions from the extension loader.
+        Removes one or more plugins from the plugin loader.
         
-        If any of the extensions is not found, no errors will be raised.
+        If any of the plugins is not found, no errors will be raised.
         
         Parameters
         ----------
         name : `str`, `iterable` of `str`
-            The extension(s)'s name(s) to remove.
+            The plugin(s)'s name(s) to remove.
         
         Raises
         ------
         TypeError
             If `name` was not given as `str`, `iterable` of `str`.
         RuntimeError
-            If a loaded extension would be removed.
+            If a loaded plugin would be removed.
         """
-        extension_names_and_paths = set(_iter_extension_names_and_paths(name))
+        plugin_names_and_paths = set(_iter_plugin_names_and_paths(name))
         
-        for extension_name, extension_path in extension_names_and_paths:
-            if (extension_name is None):
-                extension_name = _get_path_extension_name(extension_path)
+        for plugin_name, plugin_path in plugin_names_and_paths:
+            if (plugin_name is None):
+                plugin_name = _get_path_plugin_name(plugin_path)
             
             try:
-                extension = self._extensions_by_name[extension_name]
+                plugin = self._plugins_by_name[plugin_name]
             except KeyError:
                 continue
             
-            if extension._state == EXTENSION_STATE_LOADED:
+            if plugin._state == PLUGIN_STATE_LOADED:
                 raise RuntimeError(
-                    f'Extension `{name!r}` can not be removed meanwhile it is loaded.'
+                    f'Plugin `{name!r}` can not be removed meanwhile it is loaded.'
                 )
         
-        for extension_name, extension_path in extension_names_and_paths:
-            if (extension_name is None):
-                extension_name = _get_path_extension_name(extension_path)
+        for plugin_name, plugin_path in plugin_names_and_paths:
+            if (plugin_name is None):
+                plugin_name = _get_path_plugin_name(plugin_path)
             
             try:
-                extension = self._extensions_by_name[extension_name]
+                plugin = self._plugins_by_name[plugin_name]
             except KeyError:
                 continue
             
-            extension._unlink()
+            plugin._unlink()
     
     
-    def load_extension(self, name, *parameters, blocking=True, **keyword_parameters):
+    def load_plugin(self, name, *parameters, blocking=True, **keyword_parameters):
         """
-        Adds, then loads the extension.
+        Adds, then loads the plugin.
         
         Parameters
         ----------
         name : `str`, `iterable` of `str`
-            The extension's name to load.
+            The plugin's name to load.
         
         *parameters : Parameters
-            Additional parameters to create the extension with.
+            Additional parameters to create the plugin with.
         
         blocking : `bool` = `True`, Optional (Keyword only)
             Whether the operation should be blocking when called from a non-async thread.
         
         **keyword_parameters : Keyword parameters
-            Additional parameters to create the extension with.
+            Additional parameters to create the plugin with.
         
         Other Parameters
         ----------------
         entry_point : `None`, `str`, `callable`, Optional
-            Extension specific entry point, to use over the extension loader's default.
+            Plugin specific entry point, to use over the plugin loader's default.
         exit_point : `None`, `str`, `callable`, Optional
-            Extension specific exit point, to use over the extension loader's default.
+            Plugin specific exit point, to use over the plugin loader's default.
         locked : `bool`, Optional
-            Whether the given extension(s) should not be affected by `.{}_all` methods.
+            Whether the given plugin(s) should not be affected by `.{}_all` methods.
         take_snapshot_difference : `bool`, Optional
             Whether snapshot feature should be used.
         **variables : Keyword parameters
-            Variables to assign to an extension(s)'s module before they are loaded.
+            Variables to assign to an plugin(s)'s module before they are loaded.
         
         Returns
         -------
-        task : `set` of ``Extension``, ``Task`` -> ``Extension``, ``FutureAsyncWrapper`` -> ``Extension``
+        task : `set` of ``Plugin``, ``Task`` -> ``Plugin``, ``FutureAsyncWrapper`` -> ``Plugin``
             If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             loading is done. However if called from a sync thread, will block till the loading is done.
             
-            When finished returns the loaded extension.
+            When finished returns the loaded plugin.
         
         Raises
         ------
@@ -896,31 +897,31 @@ class ExtensionLoader(RichAttributeErrorBaseType):
             - If `name` was not given as `str`, `iterable` of `str`.
         ValueError
             If a variable name is would be used, what is `module` attribute.
-        ExtensionError
-            The extension failed to load correctly.
+        PluginError
+            The plugin failed to load correctly.
         """
-        return _run_maybe_blocking(self._load_extension_task(name, parameters, keyword_parameters), blocking)
+        return _run_maybe_blocking(self._load_plugin_task(name, parameters, keyword_parameters), blocking)
     
     
-    async def _load_extension_task(self, name, parameters, keyword_parameters):
+    async def _load_plugin_task(self, name, parameters, keyword_parameters):
         """
-        Adds, then loads the extension.
+        Adds, then loads the plugin.
         
         This method is a coroutine.
         
         Parameters
         ----------
         name : `str`
-            The extension's name.
+            The plugin's name.
         parameters : `tuple` of `Any`
-            Additional parameters to create the extension with.
+            Additional parameters to create the plugin with.
         keyword_parameters : `dict` of (`str`, `Any`) items
-            Additional parameters to create the extension with.
+            Additional parameters to create the plugin with.
         
         Returns
         -------
-        extension : ``Extension``
-            The loaded extension.
+        plugin : ``Plugin``
+            The loaded plugin.
         
         Raises
         ------
@@ -938,97 +939,97 @@ class ExtensionLoader(RichAttributeErrorBaseType):
             - If `name` was not given as `str`, `iterable` of `str`.
         ValueError
             If a variable name is would be used, what is `module` attribute.
-        ExtensionError
-            The extension failed to load correctly.
+        PluginError
+            The plugin failed to load correctly.
         """
-        extension_name, extension_path = _get_extension_name_and_path(name)
-        extension = _try_get_extension(extension_name, extension_path)
+        plugin_name, plugin_path = _get_plugin_name_and_path(name)
+        plugin = _try_get_plugin(plugin_name, plugin_path)
         
         entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference, default_variables = \
-            validate_extension_parameters(*parameters, **keyword_parameters)
+            validate_plugin_parameters(*parameters, **keyword_parameters)
     
-        if (extension is None):
-            extension = self._add(
-                extension_name, extension_path, entry_point, exit_point, extend_default_variables, locked,
+        if (plugin is None):
+            plugin = self._add(
+                plugin_name, plugin_path, entry_point, exit_point, extend_default_variables, locked,
                 take_snapshot_difference, default_variables
             )
             
         else:
             if (default_variables is not None):
-                extension.add_default_variables(**default_variables)
+                plugin.add_default_variables(**default_variables)
             
-            if extension.is_loaded():
-                return extension
+            if plugin.is_loaded():
+                return plugin
         
-        extension_error = await self._extension_loader(extension)
-        if (extension_error is not None):
-            raise extension_error
+        plugin_error = await self._plugin_loader(plugin)
+        if (plugin_error is not None):
+            raise plugin_error
         
-        return extension
+        return plugin
     
     
     def load(self, name, *, blocking=True, deep=True):
         """
-        Loads the extension with the given name. If the extension is already loaded, will do nothing.
+        Loads the plugin with the given name. If the plugin is already loaded, will do nothing.
         
         Parameters
         ----------
         name : `str`, `iterable` of `str`
-            The extension's name.
+            The plugin's name.
         deep : `bool` = `True`, Optional (Keyword only)
-            Whether the extension with all of it's parent and with their child should be reloaded.
+            Whether the plugin with all of it's parent and with their child should be reloaded.
         
         Returns
         -------
-        task : `list` of ``Extension``, ``Task`` -> `list` of ``Extension``,
-                ``FutureAsyncWrapper`` -> `list` of ``Extension``
+        task : `list` of ``Plugin``, ``Task`` -> `list` of ``Plugin``,
+                ``FutureAsyncWrapper`` -> `list` of ``Plugin``
             If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             loading is done. However if called from a sync thread, will block till the loading is done.
             
-            When finished returns the loaded extension.
+            When finished returns the loaded plugin.
         
         blocking : `bool` = `True`, Optional (Keyword only)
             Whether the operation should be blocking when called from a non-async thread.
         
         Raises
         ------
-        ExtensionError
-            - No extension is added with the given name.
-            - Loading the extension failed.
+        PluginError
+            - No plugin is added with the given name.
+            - Loading the plugin failed.
         """
         return _run_maybe_blocking(self._load_task(name, deep), blocking)
     
     
     async def _load_task(self, name, deep):
         """
-        Loads the given extensions.
+        Loads the given plugins.
         
         This method is a coroutine.
         
         Parameters
         ----------
         name : `str'
-            The extension(s) name to load.
+            The plugin(s) name to load.
         deep : `bool`
-            Whether the extension with all of it's parent and with their child should be reloaded.
+            Whether the plugin with all of it's parent and with their child should be reloaded.
 
         Returns
         -------
-        extensions : `list` of ``Extension``
-            The loaded extensions.
+        plugins : `list` of ``Plugin``
+            The loaded plugins.
         
         Raises
         ------
-        ExtensionError
-            - No extension is added with the given name.
-            - Loading the extension failed.
+        PluginError
+            - No plugin is added with the given name.
+            - Loading the plugin failed.
         """
-        extensions = await _get_extensions(name, deep)
+        plugins = await _get_plugins(name, deep)
         
         error_messages = None
         
-        for extension in extensions:
-            exception = await self._extension_loader(extension)
+        for plugin in plugins:
+            exception = await self._plugin_loader(plugin)
             if (exception is not None):
                 if error_messages is None:
                     error_messages = []
@@ -1036,74 +1037,74 @@ class ExtensionLoader(RichAttributeErrorBaseType):
                 error_messages.append(exception.message)
         
         if (error_messages is not None):
-            raise ExtensionError(error_messages) from None
+            raise PluginError(error_messages) from None
         
-        return extensions
+        return plugins
     
     
     def unload(self, name, *, blocking=True, deep=True):
         """
-        Unloads the extension with the given name.
+        Unloads the plugin with the given name.
         
         Parameters
         ----------
         name : `str`, `iterable` of `str`
-            The extension's name.
+            The plugin's name.
         
         deep : `bool` = `True`, Optional (Keyword only)
-            Whether the extension with all of it's parent and with their child should be reloaded.
+            Whether the plugin with all of it's parent and with their child should be reloaded.
         
         blocking : `bool` = `True`, Optional (Keyword only)
             Whether the operation should be blocking when called from a non-async thread.
         
         Returns
         -------
-        task : `list` of ``Extension``, ``Task`` -> `list` of ``Extension``,
-                ``FutureAsyncWrapper`` -> `list` of ``Extension``
+        task : `list` of ``Plugin``, ``Task`` -> `list` of ``Plugin``,
+                ``FutureAsyncWrapper`` -> `list` of ``Plugin``
             If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             unloading is done. However if called from a sync thread, will block till the unloading is done.
             
-            When finished returns the unloaded extension.
+            When finished returns the unloaded plugin.
         
         Raises
         ------
-        ExtensionError
-            - No extension is added with the given name.
-            - Unloading the extension failed.
+        PluginError
+            - No plugin is added with the given name.
+            - Unloading the plugin failed.
         """
         return _run_maybe_blocking(self._unload_task(name, deep), blocking)
     
     
     async def _unload_task(self, name, deep):
         """
-        Unloads the extension with the given name.
+        Unloads the plugin with the given name.
         
         This method is a coroutine.
         
         Parameters
         ----------
         name : `str`, `iterable` of `str`
-            The extension's name.
+            The plugin's name.
         deep : `bool`
-            Whether the extension with all of it's parent and with their child should be reloaded.
+            Whether the plugin with all of it's parent and with their child should be reloaded.
         
         Returns
         -------
-        extensions : `list` of ``Extension``
-            The unloaded extensions.
+        plugins : `list` of ``Plugin``
+            The unloaded plugins.
         
         Raises
         ------
-        ExtensionError
-            - No extension is added with the given name.
-            - Unloading the extension failed.
+        PluginError
+            - No plugin is added with the given name.
+            - Unloading the plugin failed.
         """
-        extensions = await _get_extensions(name, deep)
+        plugins = await _get_plugins(name, deep)
         
         error_messages = None
         
-        for extension in extensions:
-            exception = await self._extension_unloader(extension)
+        for plugin in plugins:
+            exception = await self._plugin_unloader(plugin)
             if (exception is not None):
                 if error_messages is None:
                     error_messages = []
@@ -1111,103 +1112,103 @@ class ExtensionLoader(RichAttributeErrorBaseType):
                 error_messages.append(exception.message)
         
         if (error_messages is not None):
-            raise ExtensionError(error_messages) from None
+            raise PluginError(error_messages) from None
         
-        return extensions
+        return plugins
     
     
     def reload(self, name, *, blocking=True, deep=True):
         """
-        Reloads the extension with the given name.
+        Reloads the plugin with the given name.
         
         Parameters
         ----------
         name : `str`, `iterable` of `str`
-            The extension's name.
+            The plugin's name.
 
         deep : `bool` = `True`, Optional (Keyword only)
-            Whether the extension with all of it's parent and with their child should be reloaded.
+            Whether the plugin with all of it's parent and with their child should be reloaded.
         
         blocking : `bool` = `True`, Optional (Keyword only)
             Whether the operation should be blocking when called from a non-async thread.
         
         Returns
         -------
-        task : `list` of ``Extension``, ``Task`` -> `list` of ``Extension``,
-                ``FutureAsyncWrapper`` -> `list` of ``Extension``
+        task : `list` of ``Plugin``, ``Task`` -> `list` of ``Plugin``,
+                ``FutureAsyncWrapper`` -> `list` of ``Plugin``
             If the method is called from an ``EventThread``, then returns an awaitable, what will yield when the
             reloading is done. However if called from a sync thread, will block till the reloading is done.
             
-            When finished returns the reloaded extensions.
+            When finished returns the reloaded plugins.
         
         Raises
         ------
-        ExtensionError
-            - No extension is added with the given name.
-            - Reloading the extension failed.
+        PluginError
+            - No plugin is added with the given name.
+            - Reloading the plugin failed.
         """
         return _run_maybe_blocking(self._reload_task(name, deep), blocking)
     
     
     async def _reload_task(self, name, deep):
         """
-        Reloads the extension with the given name.
+        Reloads the plugin with the given name.
         
         This method is a coroutine.
         
         Parameters
         ----------
         name : `str`, `iterable` of `str`
-            The extension's name.
+            The plugin's name.
         deep : `bool`
-            Whether the extension with all of it's parent and with their child should be reloaded.
+            Whether the plugin with all of it's parent and with their child should be reloaded.
         
         Returns
         -------
-        extensions : `list` of ``Extension``
-            The reloaded extensions.
+        plugins : `list` of ``Plugin``
+            The reloaded plugins.
         
         Raises
         ------
-        ExtensionError
-            - No extension is added with the given name.
-            - Reloading the extension failed.
+        PluginError
+            - No plugin is added with the given name.
+            - Reloading the plugin failed.
         """
-        extensions = await _get_extensions(name, deep)
+        plugins = await _get_plugins(name, deep)
         
-        await self._check_for_syntax(extensions)
+        await self._check_for_syntax(plugins)
         
         error_messages = None
         
-        for extension in extensions:
-            exception = await self._extension_unloader(extension)
+        for plugin in plugins:
+            exception = await self._plugin_unloader(plugin)
             if (exception is not None):
                 if error_messages is None:
                     error_messages = {}
                 
-                error_messages[extension.name] = exception.message
+                error_messages[plugin.name] = exception.message
         
         
-        for extension in extensions:
-            if (error_messages is not None) and (extension.name in error_messages):
+        for plugin in plugins:
+            if (error_messages is not None) and (plugin.name in error_messages):
                 continue
             
-            exception = await self._extension_loader(extension)
+            exception = await self._plugin_loader(plugin)
             if (exception is not None):
                 if error_messages is None:
                     error_messages = {}
                 
-                error_messages[extension.name] = exception.message
+                error_messages[plugin.name] = exception.message
         
         if (error_messages is not None):
-            raise ExtensionError([*error_messages.values()]) from None
+            raise PluginError([*error_messages.values()]) from None
         
-        return extensions
+        return plugins
     
     
     def load_all(self, *, blocking=True):
         """
-        Loads all the extension of the extension loader. If anything goes wrong, raises an ``ExtensionError`` only
+        Loads all the plugin of the plugin loader. If anything goes wrong, raises an ``PluginError`` only
         at the end, with the exception(s).
         
         Returns
@@ -1220,34 +1221,34 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         
         Raises
         ------
-        ExtensionError
-            If any extension failed to load correctly.
+        PluginError
+            If any plugin failed to load correctly.
         """
         return _run_maybe_blocking(self._load_all_task(), blocking)
     
     
     async def _load_all_task(self):
         """
-        Loads all the extensions of the extension loader.
+        Loads all the plugins of the plugin loader.
         
-        Loads each extension one after the other. The raised exceptions' messages are collected into one exception,
-        what will be raised only at the end. If any of the extensions raises, will still try to unload the leftover
+        Loads each plugin one after the other. The raised exceptions' messages are collected into one exception,
+        what will be raised only at the end. If any of the plugins raises, will still try to unload the leftover
         ones.
         
         This method is a coroutine.
         
         Raises
         ------
-        ExtensionError
-            If any extension failed to load correctly.
+        PluginError
+            If any plugin failed to load correctly.
         """
         error_messages = None
         
-        for extension in tuple(EXTENSIONS.values()):
-            if extension._locked:
+        for plugin in tuple(PLUGINS.values()):
+            if plugin._locked:
                 continue
             
-            exception = await self._extension_loader(extension)
+            exception = await self._plugin_loader(plugin)
             if (exception is not None):
                 if error_messages is None:
                     error_messages = []
@@ -1255,12 +1256,12 @@ class ExtensionLoader(RichAttributeErrorBaseType):
                 error_messages.append(exception.message)
         
         if (error_messages is not None):
-            raise ExtensionError(error_messages) from None
+            raise PluginError(error_messages) from None
     
     
     def unload_all(self, *, blocking=True):
         """
-        Unloads all the extension of the extension loader. If anything goes wrong, raises an ``ExtensionError`` only
+        Unloads all the plugin of the plugin loader. If anything goes wrong, raises an ``PluginError`` only
         at the end, with the exception(s).
         
         Returns
@@ -1273,34 +1274,34 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         
         Raises
         ------
-        ExtensionError
-            If any extension failed to unload correctly.
+        PluginError
+            If any plugin failed to unload correctly.
         """
         return _run_maybe_blocking(self._unload_all_task(), blocking)
     
     
     async def _unload_all_task(self):
         """
-        Unloads all the extensions of the extension loader.
+        Unloads all the plugins of the plugin loader.
         
-        Unloads each extension one after the other. The raised exceptions' messages are collected into one exception,
-        what will be raised only at the end. If any of the extensions raises, will still try to unload the leftover
+        Unloads each plugin one after the other. The raised exceptions' messages are collected into one exception,
+        what will be raised only at the end. If any of the plugins raises, will still try to unload the leftover
         ones.
         
         This method is a coroutine.
         
         Raises
         ------
-        ExtensionError
-            If any extension failed to unload correctly.
+        PluginError
+            If any plugin failed to unload correctly.
         """
         error_messages = None
         
-        for extension in tuple(EXTENSIONS.values()):
-            if extension._locked:
+        for plugin in tuple(PLUGINS.values()):
+            if plugin._locked:
                 continue
             
-            exception = await self._extension_unloader(extension)
+            exception = await self._plugin_unloader(plugin)
             if (exception is not None):
                 if error_messages is None:
                     error_messages = []
@@ -1308,12 +1309,12 @@ class ExtensionLoader(RichAttributeErrorBaseType):
                 error_messages.append(exception.message)
             
         if (error_messages is not None):
-            raise ExtensionError(error_messages) from None
+            raise PluginError(error_messages) from None
     
     
     def reload_all(self, *, blocking=True):
         """
-        Reloads all the extension of the extension loader. If anything goes wrong, raises an ``ExtensionError`` only
+        Reloads all the plugin of the plugin loader. If anything goes wrong, raises an ``PluginError`` only
         at the end, with the exception(s).
         
         Returns
@@ -1326,39 +1327,39 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         
         Raises
         ------
-        ExtensionError
-            If any extension failed to reload correctly.
+        PluginError
+            If any plugin failed to reload correctly.
         """
         return _run_maybe_blocking(self._reload_all_task(), blocking)
     
     
     async def _reload_all_task(self):
         """
-        Reloads all the extensions of the extension loader.
+        Reloads all the plugins of the plugin loader.
         
-        If an extension is not unloaded, will load it, if the extension is loaded, will unload, then load it.
-        Reloads each extension one after the other. The raised exceptions' messages are collected into one exception,
-        what will be raised at the end. If any of the extensions raises, will still try to reload the leftover ones.
+        If an plugin is not unloaded, will load it, if the plugin is loaded, will unload, then load it.
+        Reloads each plugin one after the other. The raised exceptions' messages are collected into one exception,
+        what will be raised at the end. If any of the plugins raises, will still try to reload the leftover ones.
         
         This method is a coroutine.
         
         Raises
         ------
-        ExtensionError
-            If any extension failed to reload correctly.
+        PluginError
+            If any plugin failed to reload correctly.
         """
         error_messages = None
         
-        extensions = _build_extension_tree(
-            [extension for extension in EXTENSIONS.values() if not extension._locked],
+        plugins = _build_plugin_tree(
+            [plugin for plugin in PLUGINS.values() if not plugin._locked],
             False,
         )
-        await self._check_for_syntax(extensions)
+        await self._check_for_syntax(plugins)
         
-        for extension in extensions:
-            exception = await self._extension_unloader(extension)
+        for plugin in plugins:
+            exception = await self._plugin_unloader(plugin)
             if (exception is None):
-                exception = await self._extension_loader(extension)
+                exception = await self._plugin_loader(plugin)
             
             if (exception is not None):
                 if error_messages is None:
@@ -1367,26 +1368,26 @@ class ExtensionLoader(RichAttributeErrorBaseType):
                 error_messages.append(exception.message)
         
         if (error_messages is not None):
-            raise ExtensionError(error_messages) from None
+            raise PluginError(error_messages) from None
     
     
-    async def _extension_loader(self, extension):
+    async def _plugin_loader(self, plugin):
         """
-        Loads the given extension. This method synchronises extension loading.
+        Loads the given plugin. This method synchronises plugin loading.
         
         This method is a coroutine.
         
         Parameters
         ----------
-        extension : ``Extension``
-            The extension to unload.
+        plugin : ``Plugin``
+            The plugin to unload.
         
         Returns
         -------
-        exception : `None`, ``ExtensionError``
+        exception : `None`, ``PluginError``
         """
         try:
-            unloader_task = self._unloader_tasks[extension]
+            unloader_task = self._unloader_tasks[plugin]
         except KeyError:
             pass
         else:
@@ -1402,12 +1403,12 @@ class ExtensionLoader(RichAttributeErrorBaseType):
                 unloader_task = None
             
         try:
-            loader_task = self._loader_tasks[extension]
+            loader_task = self._loader_tasks[plugin]
         except KeyError:
-            loader_task = Task(self._extension_loader_task(extension), KOKORO)
-            loader_task.add_done_callback(partial_func(_pop_loader_task_callback, extension))
+            loader_task = Task(self._plugin_loader_task(plugin), KOKORO)
+            loader_task.add_done_callback(partial_func(_pop_loader_task_callback, plugin))
             
-            self._loader_tasks[extension] = loader_task
+            self._loader_tasks[plugin] = loader_task
         
         try:
             return await shield(loader_task, KOKORO)
@@ -1415,9 +1416,9 @@ class ExtensionLoader(RichAttributeErrorBaseType):
             loader_task = None
     
     
-    async def _extension_loader_task(self, extension):
+    async def _plugin_loader_task(self, plugin):
         """
-        Loads the extension. If the extension is loaded, will do nothing.
+        Loads the plugin. If the plugin is loaded, will do nothing.
         
         Loading an exception can be separated to 4 parts:
         
@@ -1426,25 +1427,25 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         - Find the entry point (if needed).
         - Ensure the entry point (if found).
         
-        If any of these fails, an ``ExtensionError`` will be raised. If step 1 raises, then a traceback will be
+        If any of these fails, an ``PluginError`` will be raised. If step 1 raises, then a traceback will be
         included as well.
         
         This method is a coroutine.
         
         Parameters
         ----------
-        extension : ``Extension``
-            The extension to load.
+        plugin : ``Plugin``
+            The plugin to load.
         
         Returns
         -------
-        exception : `None`, ``ExtensionError``
+        exception : `None`, ``PluginError``
         """
         self._execute_counter += 1
         try:
             try:
                 # loading blocks, but unloading does not
-                module = await KOKORO.run_in_executor(extension._load)
+                module = await KOKORO.run_in_executor(plugin._load)
             except GeneratorExit:
                 raise
             
@@ -1452,18 +1453,18 @@ class ExtensionLoader(RichAttributeErrorBaseType):
                 message = await _render_exception_message_async(
                     err,
                     [
-                        'Exception occurred meanwhile loading an extension: `',
-                        extension.name,
+                        'Exception occurred meanwhile loading an plugin: `',
+                        plugin.name,
                         '`.\n\n',
                     ],
                 )
                 
-                return ExtensionError(message)
+                return PluginError(message)
             
             if module is None:
                 return # already loaded
             
-            entry_point = extension._entry_point
+            entry_point = plugin._entry_point
             if entry_point is None:
                 entry_point = self._default_entry_point
                 if entry_point is None:
@@ -1486,15 +1487,15 @@ class ExtensionLoader(RichAttributeErrorBaseType):
                 message = await _render_exception_message_async(
                     err,
                     [
-                        'Exception occurred meanwhile entering an extension: `',
-                        extension.name,
+                        'Exception occurred meanwhile entering an plugin: `',
+                        plugin.name,
                         '`.\nAt entry_point:',
                         repr(entry_point),
                         '\n\n',
                     ],
                 )
                 
-                return ExtensionError(message)
+                return PluginError(message)
         finally:
             execute_counter = self._execute_counter - 1
             self._execute_counter = execute_counter
@@ -1502,23 +1503,23 @@ class ExtensionLoader(RichAttributeErrorBaseType):
                 self.call_done_callbacks()
     
     
-    async def _extension_unloader(self, extension):
+    async def _plugin_unloader(self, plugin):
         """
-        Unloads the given extension. This method synchronises extension unloading.
+        Unloads the given plugin. This method synchronises plugin unloading.
         
         This method is a coroutine.
         
         Parameters
         ----------
-        extension : ``Extension``
-            The extension to unload.
+        plugin : ``Plugin``
+            The plugin to unload.
         
         Returns
         -------
-        exception : `None`, ``ExtensionError``
+        exception : `None`, ``PluginError``
         """
         try:
-            loader_task = self._loader_tasks[extension]
+            loader_task = self._loader_tasks[plugin]
         except KeyError:
             pass
         else:
@@ -1534,12 +1535,12 @@ class ExtensionLoader(RichAttributeErrorBaseType):
                 loader_task = None
         
         try:
-            unloader_task = self._unloader_tasks[extension]
+            unloader_task = self._unloader_tasks[plugin]
         except KeyError:
-            unloader_task = Task(self._extension_unloader_task(extension), KOKORO)
-            unloader_task.add_done_callback(partial_func(_pop_unloader_task_callback, extension, ))
+            unloader_task = Task(self._plugin_unloader_task(plugin), KOKORO)
+            unloader_task.add_done_callback(partial_func(_pop_unloader_task_callback, plugin, ))
             
-            self._unloader_tasks[extension] = unloader_task
+            self._unloader_tasks[plugin] = unloader_task
         
         try:
             return await shield(unloader_task, KOKORO)
@@ -1547,9 +1548,9 @@ class ExtensionLoader(RichAttributeErrorBaseType):
             unloader_task = None
 
     
-    async def _extension_unloader_task(self, extension):
+    async def _plugin_unloader_task(self, plugin):
         """
-        Unloads the extension. If the extension is not loaded, will do nothing.
+        Unloads the plugin. If the plugin is not loaded, will do nothing.
         
         Loading an exception can be separated to 3 parts:
         
@@ -1557,30 +1558,30 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         - Ensure the exit point (if found).
         - Remove the default variables.
         
-        If any of these fails, an ``ExtensionError`` will be raised. If step 2 raises, then a traceback will be
+        If any of these fails, an ``PluginError`` will be raised. If step 2 raises, then a traceback will be
         included as well.
         
         This method is a coroutine.
         
         Parameters
         ----------
-        extension : ``Extension``
-            The extension to unload.
+        plugin : ``Plugin``
+            The plugin to unload.
         
         Returns
         -------
-        exception : `None`, ``ExtensionError``
+        exception : `None`, ``PluginError``
         """
         self._execute_counter += 1
         try:
             # loading blocks, but unloading does not
-            module = extension._unload()
+            module = plugin._unload()
             
             if module is None:
                 return # not loaded
             
             try:
-                exit_point = extension._exit_point
+                exit_point = plugin._exit_point
                 if exit_point is None:
                     exit_point = self._default_exit_point
                     if exit_point is None:
@@ -1604,18 +1605,18 @@ class ExtensionLoader(RichAttributeErrorBaseType):
                     message = await _render_exception_message_async(
                         err,
                         [
-                            'Exception occurred meanwhile unloading an extension: `',
-                            extension.name,
+                            'Exception occurred meanwhile unloading an plugin: `',
+                            plugin.name,
                             '`.\nAt exit_point:',
                             repr(exit_point),
                             '\n\n',
                         ],
                     )
                     
-                    return ExtensionError(message)
+                    return PluginError(message)
             
             finally:
-                extension._unassign_variables()
+                plugin._unassign_variables()
                 
                 keys = []
                 module_globals = module.__dict__
@@ -1633,12 +1634,12 @@ class ExtensionLoader(RichAttributeErrorBaseType):
     
     
     def __repr__(self):
-        """Returns the extension loader's representation."""
+        """Returns the plugin loader's representation."""
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' extension count=',
-            repr(len(EXTENSIONS)),
+            ' plugin count=',
+            repr(len(PLUGINS)),
         ]
         
         entry_point = self._default_entry_point
@@ -1661,79 +1662,79 @@ class ExtensionLoader(RichAttributeErrorBaseType):
         return ''.join(repr_parts)
     
     
-    def is_processing_extension(self):
+    def is_processing_plugin(self):
         """
-        Returns whether the extension loader is processing an extension.
+        Returns whether the plugin loader is processing an plugin.
         
         Returns
         -------
-        is_processing_extension : `bool`
+        is_processing_plugin : `bool`
         """
         if self._execute_counter:
-            is_processing_extension = True
+            is_processing_plugin = True
         else:
-            is_processing_extension = False
+            is_processing_plugin = False
         
-        return is_processing_extension
+        return is_processing_plugin
     
     
-    def get_extension(self, name):
+    def get_plugin(self, name):
         """
-        Returns the extension loader's extension with the given name.
+        Returns the plugin loader's plugin with the given name.
         
         Parameters
         ----------
         name : `str`
-            An extension's name.
+            An plugin's name.
         
         Returns
         -------
-        extension : ``Extension``, `None`.
-            The matched extension if any.
+        plugin : ``Plugin``, `None`.
+            The matched plugin if any.
         """
-        return self._extensions_by_name.get(name, None)
+        return self._plugins_by_name.get(name, None)
     
     
-    async def _check_for_syntax(self, extensions):
+    async def _check_for_syntax(self, plugins):
         """
-        Checks whether the extensions can be reloaded.
+        Checks whether the plugins can be reloaded.
         
         This function is a coroutine.
         
         Parameters
         ----------
-        extensions : `list` of ``Extension``
-            A list of extensions to check their syntax.
+        plugins : `list` of ``Plugin``
+            A list of plugins to check their syntax.
         
         Raises
         ------
         SyntaxError
         """
-        return await KOKORO.run_in_executor(alchemy_incendiary(self._check_for_syntax_blocking, (extensions,)))
+        return await KOKORO.run_in_executor(alchemy_incendiary(self._check_for_syntax_blocking, (plugins,)))
     
     
-    def _check_for_syntax_blocking(self, extensions):
+    def _check_for_syntax_blocking(self, plugins):
         """
-        Checks whether the extensions can be reloaded.
+        Checks whether the plugins can be reloaded.
         
         This method is blocking and ran inside of an executor by ``._check_for_syntax``.
         
         Parameters
         ----------
-        extensions : `list` of ``Extension``
-            A list of extensions to check their syntax.
+        plugins : `list` of ``Plugin``
+            A list of plugins to check their syntax.
         
         Raises
         ------
         SyntaxError
         """
-        for extension in extensions:
-            extension._check_for_syntax()
+        for plugin in plugins:
+            plugin._check_for_syntax()
     
     
     def add_done_callback(self, callback):
         """
-        Adds a done callback to be called when the loading / unloading extensions is finished.
+        Adds a done callback to be called when the loading / unloading plugins is finished.
         
         These callbacks are only called once, and then cleared out.
         
@@ -1757,7 +1758,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
     
     def add_done_callback_unique(self, callback):
         """
-        Adds a done callback to be called when the loading / unloading extensions is finished.
+        Adds a done callback to be called when the loading / unloading plugins is finished.
         
         > Ff the callback is already added, does nothing.
         
@@ -1787,7 +1788,7 @@ class ExtensionLoader(RichAttributeErrorBaseType):
     
     def call_done_callbacks(self):
         """
-        Calls done callbacks of the extension loader.
+        Calls done callbacks of the plugin loader.
         """
         done_callbacks = self._done_callbacks
         if (done_callbacks is not None):
@@ -1795,7 +1796,32 @@ class ExtensionLoader(RichAttributeErrorBaseType):
             
             for done_callback in done_callbacks:
                 KOKORO.call_soon(done_callback)
+    
+    
+    
+    def __getattr__(self, attribute_name):
+        """Warns deprecations."""
+        
+        new_attribute_name = attribute_name.replace('extension', 'plugin')
+        if attribute_name != new_attribute_name:
+            try:
+                value = object.__getattribute__(self, new_attribute_name)
+            except AttributeError:
+                pass
+            else:
+                warnings.warn(
+                    (
+                        f'`{self!r}.{attribute_name}` is deprecated and will be removed in 2022 December. Please use '
+                        f'`.{new_attribute_name}` instead,'
+                    ),
+                    FutureWarning,
+                    stacklevel = 2
+                )
+                
+                return value
+        
+        return RichAttributeErrorBaseType.__getattr__(self, new_attribute_name)
 
 
-EXTENSION_LOADER = ExtensionLoader()
-export(EXTENSION_LOADER, 'EXTENSION_LOADER')
+PLUGIN_LOADER = PluginLoader()
+export(PLUGIN_LOADER, 'PLUGIN_LOADER')

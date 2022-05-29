@@ -2,8 +2,8 @@ __all__ = ('CommandsV2SnapshotType',)
 
 from scarletio import copy_docs
 
-from ..extension_loader import BaseSnapshotType
-from ..extension_loader.snapshot.helpers import  _get_set_difference, _merge_set_groups
+from ..plugin_loader import BaseSnapshotType
+from ..plugin_loader.snapshot.helpers import  _get_set_difference, _merge_set_groups
 
 from .command_processor import CommandProcessor
 

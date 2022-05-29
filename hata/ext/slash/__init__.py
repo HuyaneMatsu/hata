@@ -128,7 +128,7 @@ def snapshot_hook():
 
 
 register_library_extension('HuyaneMatsu.slash')
-add_library_extension_hook(snapshot_hook, ['HuyaneMatsu.extension_loader'])
+add_library_extension_hook(snapshot_hook, ['HuyaneMatsu.plugin_loader'])
 
 register_setup_function(
     'HuyaneMatsu.slash',

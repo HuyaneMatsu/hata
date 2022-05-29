@@ -1,29 +1,27 @@
-from .import_overwrite import *
-from .snapshot import *
-from .utils import *
+__all__ = ()
 
-from .client_extension import *
-from .constants import *
-from .exceptions import *
-from .extension import *
-from .extension_loader import *
-from .extension_root import *
-from .helpers import *
+import warnings
 
-__all__ = (
-    *import_overwrite.__all__,
-    *snapshot.__all__,
-    *utils.__all__,
+from .. import plugin_loader
+
+
+def __getattr__(attribute_name):
+    print('B', attribute_name)
+    new_attribute_name = attribute_name.replace(
+        'extension', 'plugin'
+    ).replace(
+        'EXTENSION', 'PLUGIN'
+    ).replace(
+        'Extension', 'Plugin'
+    )
     
-    *client_extension.__all__,
-    *constants.__all__,
-    *exceptions.__all__,
-    *extension.__all__,
-    *extension_loader.__all__,
-    *extension_root.__all__,
-    *helpers.__all__,
-)
-
-from .. import register_library_extension
-register_library_extension('HuyaneMatsu.extension_loader')
-del register_library_extension
+    warnings.warn(
+        (
+            f'`extension_loader.{attribute_name}` extension is deprecated and will be removed in 2022 December, '
+            f'please use `plugin_loader.{new_attribute_name}` instead.'
+        ),
+        FutureWarning,
+        stacklevel = 2,
+    )
+    
+    return getattr(plugin_loader, new_attribute_name)

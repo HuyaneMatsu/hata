@@ -1,6 +1,6 @@
 from dotenv import dotenv_values
 from hata import Client, wait_for_interruption
-from hata.ext.extension_loader import EXTENSION_LOADER
+from hata.ext.plugin_loader import EXTENSION_LOADER
 
 config = dotenv_values('.env')
 

@@ -1,26 +1,26 @@
-__all__ = ('ExtensionModuleProxyType',)
+__all__ = ('PluginModuleProxyType',)
 
 import warnings
 from types import ModuleType
 
 from scarletio import get_last_module_frame, include
 
-from ..constants import EXTENSIONS
+from ..constants import PLUGINS
 
-ExtensionModuleSpecType = include('ExtensionModuleSpecType')
+PluginModuleSpecType = include('PluginModuleSpecType')
 
 
-class ExtensionModuleProxyType(ModuleType):
+class PluginModuleProxyType(ModuleType):
     """
-    Represents an extension module's proxy.
+    Represents an plugin module's proxy.
     """
     def __init__(self, spec):
         """
-        Creates a new extension module proxy.
+        Creates a new plugin module proxy.
         
         Parameters
         ----------
-        spec : ``ExtensionModuleSpecType``
+        spec : ``PluginModuleSpecType``
             Module specification.
         """
         ModuleType.__init__(self, spec.name)
@@ -43,7 +43,7 @@ class ExtensionModuleProxyType(ModuleType):
         }:
             pass
         
-        elif isinstance(attribute_value, ExtensionModuleProxyType):
+        elif isinstance(attribute_value, PluginModuleProxyType):
             spec = self.__spec__
             
             module = spec.get_module()
@@ -63,7 +63,7 @@ class ExtensionModuleProxyType(ModuleType):
         
         if module is None:
             raise RuntimeError(
-                f'Extension, {self.__extension__!r} is not yet initialized!'
+                f'Plugin, {self.__plugin__!r} is not yet initialized!'
             )
         
         attribute_value = getattr(module, attribute_name)
@@ -75,15 +75,15 @@ class ExtensionModuleProxyType(ModuleType):
             spec = frame.f_globals.get('__spec__', None)
         
         if spec is None:
-            extension = None
+            plugin = None
         else:
-            extension = EXTENSIONS.get(spec.name)
+            plugin = PLUGINS.get(spec.name)
         
-        current_extension = EXTENSIONS.get(spec.name, None)
+        current_plugin = PLUGINS.get(spec.name, None)
         
-        if (extension is not None) and (current_extension is not None) and (extension is not current_extension):
-            extension.add_child_extension(current_extension)
-            current_extension.add_parent_extension(extension)
+        if (plugin is not None) and (current_plugin is not None) and (plugin is not current_plugin):
+            plugin.add_child_plugin(current_plugin)
+            current_plugin.add_parent_plugin(plugin)
         
         return attribute_value
     

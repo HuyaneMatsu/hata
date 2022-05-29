@@ -3,8 +3,8 @@ __all__ = ('SlasherSnapshotType', )
 
 from scarletio import RichAttributeErrorBaseType, copy_docs
 
-from ..extension_loader import BaseSnapshotType, EXTENSION_LOADER
-from ..extension_loader.snapshot.helpers import (
+from ..plugin_loader import BaseSnapshotType, EXTENSION_LOADER
+from ..plugin_loader.snapshot.helpers import (
     _get_list_difference, _get_set_difference, _merge_list_groups, _merge_set_groups
 )
 
@@ -247,8 +247,244 @@ class ApplicationCommandDifference(RichAttributeErrorBaseType):
             return other._subtract(self)
         
         return NotImplemented
+
+
+class PermissionOverwriteDifference(RichAttributeErrorBaseType):
+    """
+    Snapshot for permission overwrites.
+    
+    Attributes
+    ----------
+    added_permission_overwrites : `None`, `list` of ``ApplicationCommandPermissionOverwrite``
+        The added permission overwrites.
+    removed_permission_overwrites : `None`, `list` of ``ApplicationCommandPermissionOverwrite``
+        The removed permission overwrites.
+    """
+    __slots__ = ('added_permission_overwrites', 'removed_permission_overwrites',)
+    
+    def __new__(cls):
+        """
+        Creates a new permission overwrite snapshot.
+        """
+        self = object.__new__(cls)
+        self.added_permission_overwrites = None
+        self.removed_permission_overwrites = None
+        return self
+    
+    def __repr__(self):
+        """Returns the permission overwrite difference."""
+        repr_parts = ['<', self.__class__.__name__]
         
+        field_added = False
         
+        added_permission_overwrites = self.added_permission_overwrites
+        if (added_permission_overwrites is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' added_permission_overwrites=')
+            repr_parts.append(repr(added_permission_overwrites))
+        
+        removed_permission_overwrites = self.removed_permission_overwrites
+        if (removed_permission_overwrites is not None):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            
+            repr_parts.append(' removed_permission_overwrites=')
+            repr_parts.append(repr(removed_permission_overwrites))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    def __bool__(self):
+        """Returns whether the difference contains any changes."""
+        if (self.added_permission_overwrites is not None):
+            return True
+        
+        if (self.removed_permission_overwrites is not None):
+            return True
+        
+        return False
+    
+    
+    def add(self, permission_overwrite):
+        """
+        Adds an permission overwrite to self.
+        
+        Parameters
+        ----------
+        permission_overwrite : ``ApplicationCommandPermissionOverwrite``
+            The permission overwrite to add.
+        """
+        added_permission_overwrites = self.added_permission_overwrites
+        if (added_permission_overwrites is None):
+            added_permission_overwrites = []
+            self.added_permission_overwrites = added_permission_overwrites
+        
+        removed_permission_overwrites = self.removed_permission_overwrites
+        if (removed_permission_overwrites is not None):
+            try:
+                removed_permission_overwrites.remove(permission_overwrite)
+            except ValueError:
+                pass
+            else:
+                if not removed_permission_overwrites:
+                    self.removed_permission_overwrites = None
+        
+        added_permission_overwrites.append(permission_overwrite)
+    
+    
+    def remove(self, permission_overwrite):
+        """
+        Removes the permission overwrite from self.
+        
+        Parameters
+        ----------
+        permission_overwrite : ``ApplicationCommandPermissionOverwrite``
+            The permission overwrite to remove.
+        """
+        added_permission_overwrites = self.added_permission_overwrites
+        if (added_permission_overwrites is not None):
+            try:
+                added_permission_overwrites.remove(permission_overwrite)
+            except ValueError:
+                pass
+            else:
+                if not added_permission_overwrites:
+                    self.added_permission_overwrites = None
+        
+        removed_permission_overwrites = self.removed_permission_overwrites
+        if (removed_permission_overwrites is None):
+            removed_permission_overwrites = []
+            self.removed_permission_overwrites = removed_permission_overwrites
+        
+        removed_permission_overwrites.append(permission_overwrite)
+    
+    
+    def iter_added_permission_overwrites(self):
+        """
+        Iterates over the added permission overwrites of the permission overwrite difference.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        added_permission_overwrite : ``ApplicationCommandPermissionOverwrite``
+        """
+        added_permission_overwrites = self.added_permission_overwrites
+        if (added_permission_overwrites is not None):
+            yield from added_permission_overwrites
+    
+    
+    def iter_removed_permission_overwrites(self):
+        """
+        Iterates over the removed permission overwrites of the permission overwrite difference.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        removed_permission_overwrite : ``ApplicationCommandPermissionOverwrite``
+        """
+        removed_permission_overwrites = self.removed_permission_overwrites
+        if (removed_permission_overwrites is not None):
+            yield from removed_permission_overwrites
+    
+    
+    def copy(self):
+        """
+        Copies the permission overwrite difference.
+        
+        Returns
+        -------
+        new : ``PermissionOverwriteDifference``
+        """
+        added_permission_overwrites = self.added_permission_overwrites
+        if (added_permission_overwrites is not None):
+            added_permission_overwrites = added_permission_overwrites.copy()
+        
+        removed_permission_overwrites = self.removed_permission_overwrites
+        if (removed_permission_overwrites is not None):
+            removed_permission_overwrites = removed_permission_overwrites.copy()
+        
+        new = object.__new__(type(self))
+        new.added_permission_overwrites = added_permission_overwrites
+        new.removed_permission_overwrites = removed_permission_overwrites
+        return new
+    
+    
+    def revert_copy(self):
+        """
+        Revert copies the permission overwrite difference.
+        
+        Returns
+        -------
+        new : ``PermissionOverwriteDifference``
+        """
+        added_permission_overwrites = self.added_permission_overwrites
+        if (added_permission_overwrites is not None):
+            added_permission_overwrites = added_permission_overwrites.copy()
+        
+        removed_permission_overwrites = self.removed_permission_overwrites
+        if (removed_permission_overwrites is not None):
+            removed_permission_overwrites = removed_permission_overwrites.copy()
+        
+        new = object.__new__(type(self))
+        new.added_permission_overwrites = removed_permission_overwrites
+        new.removed_permission_overwrites = added_permission_overwrites
+        return new
+    
+    
+    def _subtract(self, other):
+        """
+        Subtracts other from self.
+        
+        Parameters
+        ----------
+        other : ``PermissionOverwriteDifference``
+            The other difference to subtract from self.
+        
+        Returns
+        -------
+        new : ``PermissionOverwriteDifference``
+        """
+        added_permission_overwrites, removed_permission_overwrites = _get_list_difference(
+            _merge_list_groups(self.added_permission_overwrites, other.removed_permission_overwrites),
+            _merge_list_groups(other.added_permission_overwrites, self.removed_permission_overwrites),
+        )
+        
+        new = object.__new__(type(self))
+        new.added_permission_overwrites = added_permission_overwrites
+        new.removed_permission_overwrites = removed_permission_overwrites
+        return new
+    
+    
+    def __sub__(self, other):
+        """Subtracts other from self."""
+        if other is None:
+            return self.copy()
+        
+        if type(self) is type(other):
+            return self._subtract(other)
+        
+        return NotImplemented
+    
+    
+    def __rsub__(self, other):
+        """subtracts other from self."""
+        if other is None:
+            return self.revert_copy()
+        
+        if type(self) is type(other):
+            return other._subtract(self)
+        
+        return NotImplemented
+
 
 class SlasherSnapshotType(BaseSnapshotType):
     """
@@ -261,7 +497,9 @@ class SlasherSnapshotType(BaseSnapshotType):
     added_form_submit_commands : `None, `set` of ``FormSubmitCommand``
         The added form submit commands.
     application_command_differences_by_guild_id : `dict` of (`int`, ``ApplicationCommandDifference``)
-        The added application commands.
+        The added & removed application commands by guild id.
+    permission_overwrite_difference_by_guild_id : `dict` of (`int`, ``PermissionOverwriteDifference``)
+        The added & removed application command permission overwrites by guild id.
     removed_component_commands : `None`, `set` of ``ComponentCommand``
         The removed component commands
     removed_form_submit_commands : `None, `set` of ``FormSubmitCommand``
@@ -269,13 +507,14 @@ class SlasherSnapshotType(BaseSnapshotType):
     """
     __slots__ = (
         'added_component_commands', 'added_form_submit_commands', 'application_command_differences_by_guild_id',
-        'removed_component_commands', 'removed_form_submit_commands',
+        'permission_overwrite_difference_by_guild_id', 'removed_component_commands', 'removed_form_submit_commands',
     )
     
     
     @copy_docs(BaseSnapshotType.__new__)
     def __new__(cls, client):
         application_command_differences_by_guild_id = {}
+        permission_overwrite_difference_by_guild_id = {}
         
         slasher = getattr(client, 'slasher', None)
         if (slasher is None) or (not isinstance(slasher, Slasher)):
@@ -306,7 +545,6 @@ class SlasherSnapshotType(BaseSnapshotType):
                 if application_command_difference:
                     application_command_differences_by_guild_id[guild_id] = application_command_difference
             
-            
             added_component_commands = slasher._component_commands
             if added_component_commands:
                 added_component_commands = added_component_commands.copy()
@@ -318,12 +556,25 @@ class SlasherSnapshotType(BaseSnapshotType):
                 added_form_submit_commands = added_form_submit_commands.copy()
             else:
                 added_form_submit_commands = None
+            
+            # permission_overwrite_difference_by_guild_id
+            guild_level_permission_overwrites = slasher._guild_level_permission_overwrites
+            if guild_level_permission_overwrites is not None:
+                for guild_id, permission_overwrites in guild_level_permission_overwrites.items():
+                    permission_overwrite_difference = PermissionOverwriteDifference()
+                    for permission_overwrite in permission_overwrites:
+                        permission_overwrite_difference.add(permission_overwrite)
+                    
+                    if permission_overwrite_difference:
+                        permission_overwrite_difference_by_guild_id[guild_id] = permission_overwrite_difference
+        
         
         self = BaseSnapshotType.__new__(cls, client)
         
         self.added_component_commands = added_component_commands
         self.added_form_submit_commands = added_form_submit_commands
         self.application_command_differences_by_guild_id = application_command_differences_by_guild_id
+        self.permission_overwrite_difference_by_guild_id = permission_overwrite_difference_by_guild_id
         self.removed_component_commands = None
         self.removed_form_submit_commands = None
         
@@ -343,6 +594,11 @@ class SlasherSnapshotType(BaseSnapshotType):
         if application_command_differences_by_guild_id:
             repr_parts.append(', application_command_differences_by_guild_id=')
             repr_parts.append(repr(application_command_differences_by_guild_id))
+        
+        permission_overwrite_difference_by_guild_id = self.permission_overwrite_difference_by_guild_id
+        if permission_overwrite_difference_by_guild_id:
+            repr_parts.append(', permission_overwrite_difference_by_guild_id=')
+            repr_parts.append(repr(permission_overwrite_difference_by_guild_id))
         
         added_component_commands = self.added_component_commands
         if (added_component_commands is not None):
@@ -388,6 +644,24 @@ class SlasherSnapshotType(BaseSnapshotType):
                 new_application_command_differences_by_guild_id[guild_id] = new_application_command_difference
         
         
+        self_permission_overwrite_difference_by_guild_id = self.permission_overwrite_difference_by_guild_id
+        other_permission_overwrite_difference_by_guild_id = other.permission_overwrite_difference_by_guild_id
+        
+        new_permission_overwrite_difference_by_guild_id = {}
+        
+        for guild_id in {
+            *self_permission_overwrite_difference_by_guild_id.keys(),
+            *other_permission_overwrite_difference_by_guild_id.keys(),
+        }:
+            new_application_command_difference = (
+                self_permission_overwrite_difference_by_guild_id.get(guild_id, None) -
+                other_permission_overwrite_difference_by_guild_id.get(guild_id, None)
+            )
+            
+            if new_application_command_difference:
+                new_permission_overwrite_difference_by_guild_id[guild_id] = new_application_command_difference
+        
+        
         added_component_commands, removed_component_commands = _get_set_difference(
             _merge_set_groups(self.added_component_commands, other.removed_component_commands),
             _merge_set_groups(other.added_component_commands, self.removed_component_commands),
@@ -403,6 +677,7 @@ class SlasherSnapshotType(BaseSnapshotType):
         new.added_component_commands = added_component_commands
         new.added_form_submit_commands = added_form_submit_commands
         new.application_command_differences_by_guild_id = new_application_command_differences_by_guild_id
+        new.permission_overwrite_difference_by_guild_id = new_permission_overwrite_difference_by_guild_id
         new.removed_component_commands = removed_component_commands
         new.removed_form_submit_commands = removed_form_submit_commands
         
@@ -433,6 +708,13 @@ class SlasherSnapshotType(BaseSnapshotType):
             
             for application_command in application_command_difference.iter_removed_application_commands():
                 slasher._add_application_command(application_command)
+        
+        for guild_id, permission_overwrite_difference in self.permission_overwrite_difference_by_guild_id.items():
+            for permission_overwrite in permission_overwrite_difference.iter_added_permission_overwrites():
+                slasher._remove_permission_overwrite_for_guild(guild_id, permission_overwrite)
+            
+            for permission_overwrite in permission_overwrite_difference.iter_removed_permission_overwrites():
+                slasher._add_permission_overwrites_for_guild(guild_id, permission_overwrite)
         
         
         added_component_commands = self.added_component_commands
@@ -466,6 +748,9 @@ class SlasherSnapshotType(BaseSnapshotType):
             return True
         
         if self.application_command_differences_by_guild_id:
+            return True
+        
+        if self.permission_overwrite_difference_by_guild_id:
             return True
         
         if (self.removed_component_commands is not None):

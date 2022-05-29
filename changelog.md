@@ -1,3 +1,14 @@
+## 1.2.17 *\[2022-06-??\]*
+
+#### Improvements
+
+##### ext.slash
+
+- Guild level permission overwrites are now snapshotted.
+
+#### Renames, Deprecation & Removals
+
+
 ## 1.2.16 *\[2022-05-29\]*
 
 #### Improvements

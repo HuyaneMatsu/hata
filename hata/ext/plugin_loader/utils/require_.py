@@ -2,7 +2,7 @@ __all__ = ('require', )
 
 from sys import _getframe as get_frame
 
-from ..exceptions import DoNotLoadExtension
+from ..exceptions import DoNotLoadPlugin
 
 
 def require(*args, **kwargs):
@@ -20,13 +20,13 @@ def require(*args, **kwargs):
     
     for variable_name in args:
         if variable_name not in module_globals:
-            raise DoNotLoadExtension(variable_name)
+            raise DoNotLoadPlugin(variable_name)
     
     for variable_name, expected_value in kwargs.items():
         try:
             variable_value = module_globals[variable_name]
         except KeyError:
-            raise DoNotLoadExtension(variable_name) from None
+            raise DoNotLoadPlugin(variable_name) from None
         
         if variable_value is expected_value:
             continue
@@ -34,4 +34,4 @@ def require(*args, **kwargs):
         if isinstance(expected_value, type) and isinstance(variable_value, expected_value):
             continue
         
-        raise DoNotLoadExtension(variable_name, variable_value, expected_value)
+        raise DoNotLoadPlugin(variable_name, variable_value, expected_value)

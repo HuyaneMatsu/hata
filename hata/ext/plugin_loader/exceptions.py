@@ -1,9 +1,9 @@
-__all__ = ('ExtensionError', )
+__all__ = ('PluginError', )
 
 
-class ExtensionError(Exception):
+class PluginError(Exception):
     """
-    An exception raised by the ``ExtensionLoader``, if loading, reloading or unloading an extension fails with any
+    An exception raised by the ``PluginLoader``, if loading, reloading or unloading an plugin fails with any
     reason.
     
     Attributes
@@ -14,7 +14,7 @@ class ExtensionError(Exception):
     
     def __init__(self, message):
         """
-        Creates a new extension error.
+        Creates a new plugin error.
         
         Parameters
         ----------
@@ -27,9 +27,9 @@ class ExtensionError(Exception):
     @property
     def message(self):
         """
-        Returns the extension error's message.
+        Returns the plugin error's message.
         
-        If the extension error contains more message,s connects them.
+        If the plugin error contains more message,s connects them.
         
         Returns
         -------
@@ -59,7 +59,7 @@ class ExtensionError(Exception):
     
     
     def __len__(self):
-        """Returns the amount of messages, what the extension error contains."""
+        """Returns the amount of messages, what the plugin error contains."""
         message = self._message
         if isinstance(message, str):
             return 1
@@ -75,7 +75,7 @@ class ExtensionError(Exception):
     __str__ = __repr__
 
 
-class DoNotLoadExtension(BaseException):
+class DoNotLoadPlugin(BaseException):
     """
-    Raised to stop an extension loaded without error.
+    Raised to stop an plugin loaded without error.
     """

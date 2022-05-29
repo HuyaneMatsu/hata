@@ -2,16 +2,16 @@ __all__ = ()
 
 from importlib.machinery import PathFinder, ExtensionFileLoader
 
-from ..constants import EXTENSIONS
-from ..extension_root import is_in_extension_root
+from ..constants import PLUGINS
+from ..plugin_root import is_in_plugin_root
 
 from .spec_finder_helpers import find_spec_in_paths
-from .module_spec_type import ExtensionModuleSpecType
+from .module_spec_type import PluginModuleSpecType
 
 
-class ExtensionFinder(PathFinder):
+class PluginFinder(PathFinder):
     """
-    Extension finder type. Subclass of ``PathFinder``
+    Plugin finder type. Subclass of ``PathFinder``
     """
     @classmethod
     def find_spec(cls, full_name, paths=None, target=None):
@@ -30,13 +30,13 @@ class ExtensionFinder(PathFinder):
             > Could not find a case where this value is actually used.
         """
         try:
-            extension = EXTENSIONS[full_name]
+            plugin = PLUGINS[full_name]
         except KeyError:
             pass
         else:
-            return extension._spec
+            return plugin._spec
         
-        if not is_in_extension_root(full_name):
+        if not is_in_plugin_root(full_name):
             return None
         
         spec = find_spec_in_paths(full_name, paths)
@@ -50,4 +50,4 @@ class ExtensionFinder(PathFinder):
         if isinstance(loader, ExtensionFileLoader):
             return spec
         
-        return ExtensionModuleSpecType(spec)
+        return PluginModuleSpecType(spec)

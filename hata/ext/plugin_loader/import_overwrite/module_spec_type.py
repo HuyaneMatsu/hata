@@ -4,17 +4,17 @@ from importlib.machinery import ModuleSpec
 
 from scarletio import export
 
-from .source_loader import ExtensionSourceLoader
+from .source_loader import PluginSourceLoader
 
 
 @export
-class ExtensionModuleSpecType(ModuleSpec):
+class PluginModuleSpecType(ModuleSpec):
     """
-    Extends the builtin spec with extension checking.
+    Extends the builtin spec with plugin checking.
     """
     def __init__(self, other):
         """
-        `ModuleSpec` subclass implementing rich context for extensions.
+        `ModuleSpec` subclass implementing rich context for plugins.
         
         Parameters
         ----------
@@ -23,7 +23,7 @@ class ExtensionModuleSpecType(ModuleSpec):
         """
         self.__dict__.update(other.__dict__)
         loader = other.loader
-        self.loader = ExtensionSourceLoader(loader.name, loader.path)
+        self.loader = PluginSourceLoader(loader.name, loader.path)
         self._initializing_internal = False
     
     
@@ -39,7 +39,7 @@ class ExtensionModuleSpecType(ModuleSpec):
         if loader is None:
             return False
         
-        if not isinstance(loader, ExtensionSourceLoader):
+        if not isinstance(loader, PluginSourceLoader):
             return False
         
         if loader._module is None:
@@ -60,7 +60,7 @@ class ExtensionModuleSpecType(ModuleSpec):
         if loader is None:
             return None
         
-        if not isinstance(loader, ExtensionSourceLoader):
+        if not isinstance(loader, PluginSourceLoader):
             return None
         
         return loader._module
@@ -72,13 +72,13 @@ class ExtensionModuleSpecType(ModuleSpec):
         
         Returns
         -------
-        module : `None`, ``ExtensionModuleProxyType``
+        module : `None`, ``PluginModuleProxyType``
         """
         loader = self.loader
         if loader is None:
             return None
         
-        if not isinstance(loader, ExtensionSourceLoader):
+        if not isinstance(loader, PluginSourceLoader):
             return None
         
         return loader._module_proxy

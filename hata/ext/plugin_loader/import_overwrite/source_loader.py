@@ -5,22 +5,22 @@ from importlib.machinery import SourceFileLoader
 
 from scarletio import include
 
-from .module_proxy_type import ExtensionModuleProxyType
+from .module_proxy_type import PluginModuleProxyType
 from .utils import create_module_from_spec
 
-import_extension = include('import_extension')
+import_plugin = include('import_plugin')
 
 
-class ExtensionSourceLoader(SourceFileLoader):
+class PluginSourceLoader(SourceFileLoader):
     """
-    `SourceFileLoader` subclass used for extension files.
+    `SourceFileLoader` subclass used for plugin files.
     
     Attributes
     ----------
     _module : `None`, ``ModuleType``
         The cached module if any.
-    _module_proxy : `None`, ``ExtensionModuleProxyType``
-        Module proxy proxying the created module through an extension.
+    _module_proxy : `None`, ``PluginModuleProxyType``
+        Module proxy proxying the created module through an plugin.
     name : `str`
         The name of the represented module.
     path : `str`
@@ -44,15 +44,15 @@ class ExtensionSourceLoader(SourceFileLoader):
     
     def create_module(self, spec):
         """
-        Creates the module of the extension source loader.
+        Creates the module of the plugin source loader.
         
         Returns
         -------
-        module : ``ExtensionModuleProxyType``
+        module : ``PluginModuleProxyType``
         """
         module_proxy = self._module_proxy
         if module_proxy is None:
-            module_proxy = ExtensionModuleProxyType(spec)
+            module_proxy = PluginModuleProxyType(spec)
             self._module_proxy = module_proxy
         
         module = self._module
@@ -71,12 +71,12 @@ class ExtensionSourceLoader(SourceFileLoader):
         
         Parameters
         ----------
-        module : ``ModuleType``, ``ExtensionModuleProxyType``
+        module : ``ModuleType``, ``PluginModuleProxyType``
             The module to execute.
             
-            > If called from importlib, `module` is passed as ``ExtensionModuleProxyType``.
+            > If called from importlib, `module` is passed as ``PluginModuleProxyType``.
         """
-        if isinstance(module, ExtensionModuleProxyType):
+        if isinstance(module, PluginModuleProxyType):
             module_proxy = self._module_proxy
             if (module_proxy is None):
                 raise RuntimeError(
@@ -88,6 +88,6 @@ class ExtensionSourceLoader(SourceFileLoader):
                     f'`module` must be `{module_proxy!r}, got {module!r}.'
                 )
             
-            import_extension(self.name)
+            import_plugin(self.name)
         else:
             SourceFileLoader.exec_module(self, self._module)

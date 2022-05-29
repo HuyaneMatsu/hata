@@ -12,6 +12,26 @@ import warnings
 from importlib.util import find_spec
 from importlib import import_module
 
+
+def __getattr__(attribute_name):
+    """Gets the extension from name if not yet imported."""
+    
+    spec = find_spec(f'{__name__}.{attribute_name}')
+    if (spec is not None):
+        try:
+            module = import_module(spec.name)
+        except ImportError:
+            raise
+        
+        except BaseException as err:
+            raise ImportError from err
+        
+        else:
+            return module
+    
+    raise AttributeError(attribute_name)
+
+
 from scarletio.ext import (
     add_library_extension_hook, register_library_extension
 )

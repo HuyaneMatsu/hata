@@ -94,8 +94,6 @@ setup(
     classifiers = [
         'Development Status :: 5 - Production/Stable',
         
-        'License :: DBAD License',
-        
         'Intended Audience :: Developers',
         
         'Operating System :: OS Independent',

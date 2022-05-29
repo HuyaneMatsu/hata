@@ -17,7 +17,7 @@ async def ready(client):
 # Registered variables to extension loader, show up in each loaded extension file.
 EXTENSION_LOADER.add_default_variables(Sakuya=Sakuya)
 # Adds the extensions file or the extensions files recursive in the directory
-EXTENSION_LOADER.add('modules')
+EXTENSION_LOADER.register('modules')
 # Loads all the added extension files.
 EXTENSION_LOADER.load_all()
 

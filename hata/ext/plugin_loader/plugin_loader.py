@@ -290,7 +290,7 @@ class PluginLoader(RichAttributeErrorBaseType):
     now = datetime.utcnow()
     
     PLUGIN_LOADER.add_default_variables(cake=cake, now=now)
-    PLUGIN_LOADER.load_plugin('plugin')
+    PLUGIN_LOADER.register_and_load('plugin')
     ```
     
     **plugin.py**
@@ -387,20 +387,20 @@ class PluginLoader(RichAttributeErrorBaseType):
     
     Adding Plugins
     -----------------
-    Plugins can be added with the `.add` method.
+    Plugins can be registered with the `.registered` method.
     
     ```py
-    PLUGIN_LOADER.add('cute_commands')
+    PLUGIN_LOADER.registered('cute_commands')
     ```
     
     Or more plugin can be added as well by passing an iterable:
     
     ```py
-    PLUGIN_LOADER.add(['cute_commands', 'nice_commands'])
+    PLUGIN_LOADER.registered(['cute_commands', 'nice_commands'])
     ```
     
-    If an plugin's file is not found, then `.add` will raise  `ModuleNotFoundError`. If the passed parameter is not
-    `str` or not `iterable` of `str`, `TypeError` is raised.
+    If an plugin's file is not found, then `.registered` will raise  `ModuleNotFoundError`. If the passed parameter
+    is not `str` or not `iterable` of `str`, `TypeError` is raised.
     
     Loading
     -------
@@ -419,10 +419,10 @@ class PluginLoader(RichAttributeErrorBaseType):
     Or plugin can be added and loaded at the same time as well:
     
     ```py
-    PLUGIN_LOADER.load_plugin('cute_commands')
+    PLUGIN_LOADER.register_and_load('cute_commands')
     ```
     
-    `.load_plugin` method supports all the keyword parameters as `.add`.
+    `.register_and_load` method supports all the keyword parameters as `.registered`.
     
     ##### Passing variables to plugins
     
@@ -438,16 +438,17 @@ class PluginLoader(RichAttributeErrorBaseType):
     Or pass variables to just specific plugins:
     
     ```py
-    PLUGIN_LOADER.add('cute_commands', cake=cake, now=now)
+    PLUGIN_LOADER.register('cute_commands', cake=cake, now=now)
     ```
     
     You can specify if the plugin should use just it's own variables and ignore the default ones too:
     
     ```py
-    PLUGIN_LOADER.add('cute_commands', extend_default_variables=False, cake=cake, now=now)
+    PLUGIN_LOADER.register('cute_commands', extend_default_variables=False, cake=cake, now=now)
     ```
     
-    Every variable added is stored in an optionally weak value dictionary, but you are able remove the added variables as well:
+    Every variable added is stored in an optionally weak value dictionary, but you are able remove the added variables
+    as well:
     
     ```py
     PLUGIN_LOADER.remove_default_variables('cake', 'now')
@@ -487,7 +488,7 @@ class PluginLoader(RichAttributeErrorBaseType):
     Or:
     
     ```py
-    PLUGIN_LOADER.add('cute_commands', exit_point='exit')
+    PLUGIN_LOADER.register('cute_commands', exit_point='exit')
     ```
     
     There are also methods for reloading: `.reload(name)` and `.reload_all()`
@@ -515,7 +516,7 @@ class PluginLoader(RichAttributeErrorBaseType):
     `KOKORO` internally.
     
     These methods are:
-    - ``.load_plugin``
+    - ``.register_and_load``
     - ``.load``
     - ``.load_all``
     - ``.unload``
@@ -692,10 +693,27 @@ class PluginLoader(RichAttributeErrorBaseType):
         """
         self._default_variables.clear()
     
+
     
-    def add(self, name, *args, **kwargs):
+    def add(self, name, *parameters, blocking=True, **keyword_parameters):
         """
-        Registers a plugin to the plugin loader.
+        Deprecated and will be removed in 2022 December. Please use ``.register`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self!r}.load_plugin` is deprecated and will be removed in 2022 December. '
+                f'Please use `.register` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return self.register_and_load(name, *parameters, blocking=blocking, **keyword_parameters)
+    
+    
+    def register(self, name, *positional_parameters, **keyword_parameters):
+        """
+        Registers a plugin.
         
         If the plugin already exists, returns that one.
         
@@ -703,9 +721,9 @@ class PluginLoader(RichAttributeErrorBaseType):
         ----------
         name : `str`, `iterable` of `str`
             The plugin's name to load.
-        *args : Parameters
+        *positional_parameters : Positional parameters
             Additional parameters to create the plugin with.
-        **kwargs : Keyword parameters
+        **keyword_parameters : Keyword parameters
             Additional parameters to create the plugin with.
         
         Other Parameters
@@ -740,16 +758,16 @@ class PluginLoader(RichAttributeErrorBaseType):
         """
         plugin_names_and_paths = set(_iter_plugin_names_and_paths(name, register_directories_as_roots=True))
         entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference, default_variables = \
-            validate_plugin_parameters(*args, **kwargs)
+            validate_plugin_parameters(*positional_parameters, **keyword_parameters)
         
         for plugin_name, plugin_path in plugin_names_and_paths:
-            self._add(
+            self._register(
                 plugin_name, plugin_path, entry_point, exit_point, extend_default_variables, locked,
                 take_snapshot_difference, default_variables
             )
     
     
-    def _add(self, plugin_name, plugin_path, entry_point, exit_point, extend_default_variables, locked,
+    def _register(self, plugin_name, plugin_path, entry_point, exit_point, extend_default_variables, locked,
             take_snapshot_difference, default_variables):
         """
         Adds an plugin to the plugin loader.
@@ -844,7 +862,23 @@ class PluginLoader(RichAttributeErrorBaseType):
     
     def load_plugin(self, name, *parameters, blocking=True, **keyword_parameters):
         """
-        Adds, then loads the plugin.
+        Deprecated and will be removed in 2022 December. Please use ``.register_and_load`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self!r}.load_plugin` is deprecated and will be removed in 2022 December. '
+                f'Please use `.register_and_load` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return self.register_and_load(name, *parameters, blocking=blocking, **keyword_parameters)
+    
+    
+    def register_and_load(self, name, *parameters, blocking=True, **keyword_parameters):
+        """
+        Registers then loads the plugin.
         
         Parameters
         ----------
@@ -949,7 +983,7 @@ class PluginLoader(RichAttributeErrorBaseType):
             validate_plugin_parameters(*parameters, **keyword_parameters)
     
         if (plugin is None):
-            plugin = self._add(
+            plugin = self._register(
                 plugin_name, plugin_path, entry_point, exit_point, extend_default_variables, locked,
                 take_snapshot_difference, default_variables
             )
@@ -976,6 +1010,10 @@ class PluginLoader(RichAttributeErrorBaseType):
         ----------
         name : `str`, `iterable` of `str`
             The plugin's name.
+        
+        blocking : `bool` = `True`, Optional (Keyword only)
+            Whether the operation should be blocking when called from a non-async thread.
+        
         deep : `bool` = `True`, Optional (Keyword only)
             Whether the plugin with all of it's parent and with their child should be reloaded.
         
@@ -987,9 +1025,6 @@ class PluginLoader(RichAttributeErrorBaseType):
             loading is done. However if called from a sync thread, will block till the loading is done.
             
             When finished returns the loaded plugin.
-        
-        blocking : `bool` = `True`, Optional (Keyword only)
-            Whether the operation should be blocking when called from a non-async thread.
         
         Raises
         ------
@@ -1051,11 +1086,11 @@ class PluginLoader(RichAttributeErrorBaseType):
         name : `str`, `iterable` of `str`
             The plugin's name.
         
-        deep : `bool` = `True`, Optional (Keyword only)
-            Whether the plugin with all of it's parent and with their child should be reloaded.
-        
         blocking : `bool` = `True`, Optional (Keyword only)
             Whether the operation should be blocking when called from a non-async thread.
+        
+        deep : `bool` = `True`, Optional (Keyword only)
+            Whether the plugin with all of it's parent and with their child should be reloaded.
         
         Returns
         -------
@@ -1125,12 +1160,12 @@ class PluginLoader(RichAttributeErrorBaseType):
         ----------
         name : `str`, `iterable` of `str`
             The plugin's name.
-
-        deep : `bool` = `True`, Optional (Keyword only)
-            Whether the plugin with all of it's parent and with their child should be reloaded.
         
         blocking : `bool` = `True`, Optional (Keyword only)
             Whether the operation should be blocking when called from a non-async thread.
+
+        deep : `bool` = `True`, Optional (Keyword only)
+            Whether the plugin with all of it's parent and with their child should be reloaded.
         
         Returns
         -------

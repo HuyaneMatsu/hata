@@ -16,7 +16,7 @@ if not Sakuya.solarlink.add_node('127.0.0.1', 2333, 'youshallnotpass', None):
 
 
 EXTENSION_LOADER.add_default_variables(Sakuya=Sakuya)
-EXTENSION_LOADER.add('modules')
+EXTENSION_LOADER.register('modules')
 EXTENSION_LOADER.load_all()
 
 

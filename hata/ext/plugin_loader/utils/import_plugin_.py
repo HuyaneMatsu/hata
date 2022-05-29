@@ -139,7 +139,7 @@ def import_plugin(plugin_name, *variable_names, **keyword_parameters):
     else:
         built_name = plugin_name
     
-    plugin = PLUGIN_LOADER.load_plugin(built_name, **keyword_parameters)
+    plugin = PLUGIN_LOADER.register_and_load(built_name, **keyword_parameters)
     
     current_plugin = PLUGINS.get(local_name, None)
     if (current_plugin is not None):

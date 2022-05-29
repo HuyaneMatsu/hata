@@ -1,1 +1,1 @@
-Hata extension loader.
+Hata plugin loader.

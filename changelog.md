@@ -1,15 +1,50 @@
 ## 1.2.17 *\[2022-06-??\]*
 
+### Summary
+
+Rename `extension_loader` to `plugin_loader` to make library extensions and extension modules more distinct.
+A change like this was requested for a while...
+
 #### Improvements
+
+- `hata.ext` directory now handles sub-file imports better.
 
 ##### ext.slash
 
 - Guild level permission overwrites are now snapshotted.
 
+##### ext.plugin_loader
+
+- Add `load_plugin`.
+- Add `register_plugin`.
+- Add `load_all_plugin`.
+- Add `register_and_load_plugin`.
+- Add `unload_plugin`.
+- Add `unload_all_plugin`.
+- Add `reload_plugin`.
+- Add `reload_all_plugin`.
+- Add `get_plugin`.
+- Add `get_plugin_like`.
+- Add `get_plugins_like`.
+
 #### Renames, Deprecation & Removals
 
+##### ext.plugin_loader
+
+- Rename `Extension` to `Plugin` + deprecate.
+- Rename `ExtensionLoader` to `PluginLoader` + deprecate.
+- Rename `import_extension` to `import_plugin` + deprecate.
+- Rename `ExtensionLoader.load_extension` to `.register_and_load` + deprecate.
+- Rename `ExtensionLoader.add` to `.register` + deprecate.
+- Rename `ExtensionLoader.get_extension` to `.get_plugin` + deprecate.
+
+~~and much more~~
 
 ## 1.2.16 *\[2022-05-29\]*
+
+### Summary
+
+- Rework slash extension command structure.
 
 #### Improvements
 

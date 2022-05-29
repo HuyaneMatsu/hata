@@ -1,3 +1,6 @@
+from .get_plugin_ import *
+from .get_plugin_like_ import *
+from .get_plugins_like_ import *
 from .import_plugin_ import *
 from .load_all_plugin_ import *
 from .load_plugin_ import *
@@ -9,7 +12,11 @@ from .require_ import *
 from .unload_all_plugin_ import *
 from .unload_plugin_ import *
 
+
 __all__ = (
+    *get_plugin_.__all__,
+    *get_plugin_like_.__all__,
+    *get_plugins_like_.__all__,
     *import_plugin_.__all__,
     *load_all_plugin_.__all__,
     *load_plugin_.__all__,

@@ -1715,7 +1715,7 @@ class PluginLoader(RichAttributeErrorBaseType):
     
     def get_plugin(self, name):
         """
-        Returns the plugin loader's plugin with the given name.
+        Returns the plugin with the given name. The plugin must be already registered.
         
         Parameters
         ----------

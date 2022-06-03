@@ -1,9 +1,11 @@
 __all__ = ('bind',)
 
-from scarletio import RichAttributeErrorBaseType, WeakKeyDictionary, copy_docs
+from collections import OrderedDict
+
+from scarletio import RichAttributeErrorBaseType, WeakItemDictionary, WeakKeyDictionary, copy_docs
 
 
-def bind(bind_to, bind_with, name):
+def bind(bind_to, bind_with, name, *, weak=False, weak_cache_size=0):
     """
     A cool hata features, that lets you bind object to existing one.
     
@@ -15,6 +17,11 @@ def bind(bind_to, bind_with, name):
         The type to bind with.
     name : `str`
         The name of the binding.
+    weak : `bool`, Optional (Keyword only) = `False`
+        Whether double weak binding should be implemented.
+    weak_cache_size : `int`, Optional (Keyword only) = `0`
+        Whether double weak binding should have binding cache. Can be useful when binding requires accessing outer
+        resources (like database).
     
     Raises
     ------
@@ -22,6 +29,8 @@ def bind(bind_to, bind_with, name):
         - If `bind_to` is not a type.
         - If `bind_to`-s do not support weakreferencing.
         - If `bind_to` has already an attribute named `name`.
+        - If `bind_with` is not weakreferable, but `weak` binding is created.
+        - If `weak_cache_size` is not `int`.
     
     Examples
     --------
@@ -130,6 +139,14 @@ def bind(bind_to, bind_with, name):
             f'`bind_to`-s must support weakreferencing, got {bind_to!r}.'
         )
     
+    
+    if weak:
+        binded_name_space = bind_with.__dict__
+        if ('__weakref__' in binded_name_space) or ('__slots__' not in binded_name_space):
+            raise TypeError(
+                f'`bind_with`-s must support weakreferencing for weak binding, got {bind_with!r}.'
+            )
+    
     if hasattr(bind_to, name):
         old_binder = getattr(bind_to, name)
         if not isinstance(old_binder, ObjectBinderBase):
@@ -140,10 +157,22 @@ def bind(bind_to, bind_with, name):
     else:
         old_binder = None
     
-    if (getattr(bind_with, '__get__', None) is not None):
-        new_binder = DescriptorObjectBinder(name, bind_with)
+    if not isinstance(weak_cache_size, int):
+        raise TypeError(
+            f'`weak_cache_size` can be `int`, got {weak_cache_size.__class__.__name__}; {weak_cache_size!r}.'
+        )
+    
+    is_descriptor = getattr(bind_with, '__get__', None) is not None
+    if weak:
+        if is_descriptor:
+            new_binder = DescriptorObjectWeakBinder(name, bind_with, weak_cache_size)
+        else:
+            new_binder = GenericObjectWeakBinder(name, bind_with, weak_cache_size)
     else:
-        new_binder = GenericObjectBinder(name, bind_with)
+        if is_descriptor:
+            new_binder = DescriptorObjectBinder(name, bind_with)
+        else:
+            new_binder = GenericObjectBinder(name, bind_with)
     
     if (
         (old_binder is not None) and
@@ -162,18 +191,25 @@ class ObjectBinderBase(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    cache : ``WeakKeyDictionary``
-        The binding relation mapping.
     name : `str`
-        The filed's name.
+        The field's name.
+    relations : ``WeakKeyDictionary``
+        The binding relation mapping.
     supports_clearing : `bool`
         Whether clearing the bound objects is supported.
     supports_state_transfer : `bool`
         Whether the bound objects support state transfer.
     type : `type`
         The binded class.
+    
+    Class Attributes
+    ----------------
+    RELATIONSHIP_CONTAINER_TYPE : `type` = ``WeakKeyDictionary``
+        The type which holds the relations.
     """
-    __slots__ = ('cache', 'name', 'supports_clearing', 'supports_state_transfer', 'type')
+    __slots__ = ('name', 'relations', 'supports_clearing', 'supports_state_transfer', 'type')
+    
+    RELATIONSHIP_CONTAINER_TYPE = WeakKeyDictionary
     
     def __new__(cls, name, type_):
         """
@@ -182,7 +218,7 @@ class ObjectBinderBase(RichAttributeErrorBaseType):
         Parameters
         ----------
         name : `str`
-            The filed's name.
+            The field's name.
         type_ : `type`
             The binded class.
         """
@@ -200,7 +236,7 @@ class ObjectBinderBase(RichAttributeErrorBaseType):
             supports_state_transfer = True
         
         self = object.__new__(cls)
-        self.cache = WeakKeyDictionary()
+        self.relations = cls.RELATIONSHIP_CONTAINER_TYPE()
         self.name = name
         self.type = type_
         
@@ -276,7 +312,7 @@ class ObjectBinderBase(RichAttributeErrorBaseType):
         repr_parts.append(', type=')
         repr_parts.append(repr(self.type))
         
-        length = len(self.cache)
+        length = len(self.relations)
         if length:
             repr_parts.append(', length=')
             repr_parts.append(repr(length))
@@ -309,15 +345,15 @@ class ObjectBinderBase(RichAttributeErrorBaseType):
         if not self.supports_clearing:
             return 0
         
-        cache = self.cache
+        relations = self.relations
         to_clear = []
         
-        for key, value in cache.items():
+        for key, value in relations.items():
             if not value:
                 to_clear.append(key)
         
         for key in to_clear:
-            del cache[key]
+            del relations[key]
         
         return len(to_clear)
     
@@ -350,12 +386,12 @@ class ObjectBinderBase(RichAttributeErrorBaseType):
             The bound object.
         """
         if self.supports_clearing:
-            for key, value in self.cache.items():
+            for key, value in self.relations.items():
                 if value:
                     yield key, value
         
         else:
-            yield from self.cache.items()
+            yield from self.relations.items()
     
     
     def get_states(self, type_):
@@ -391,13 +427,13 @@ class ObjectBinderBase(RichAttributeErrorBaseType):
         if self.supports_state_transfer:
             type_ = self.type
             set_state = type_.__setstate__
-            cache = self.cache
+            relations = self.relations
             
             for key, state in states:
                 value = object.__new__(type_)
                 set_state(value, state)
                 
-                cache[key] = value
+                relations[key] = value
 
 
 @copy_docs(ObjectBinderBase)
@@ -410,10 +446,10 @@ class GenericObjectBinder(ObjectBinderBase):
             return self
         
         try:
-            bind_object = self.cache[instance]
+            bind_object = self.relations[instance]
         except KeyError:
             bind_object = self.type(instance)
-            self.cache[instance] = bind_object
+            self.relations[instance] = bind_object
         
         return bind_object
 
@@ -424,10 +460,10 @@ class DescriptorObjectBinder(ObjectBinderBase):
     
     Attributes
     ----------
-    cache : ``WeakKeyDictionary``
+    relations : ``WeakKeyDictionary``
         The binding relation mapping.
     name : `str`
-        The filed's name.
+        The field's name.
     type : `type`
         The binded class.
     fdel : `None`, `Any`
@@ -436,6 +472,11 @@ class DescriptorObjectBinder(ObjectBinderBase):
         Getter function if applicable.
     fset : `None`, `Any`
         Setter function if applicable.
+    
+    Class Attributes
+    ----------------
+    RELATIONSHIP_CONTAINER_TYPE : `type` = ``WeakKeyDictionary``
+        The type which holds the relations.
     """
     __slots__ = ('fdel', 'fget', 'fset')
     
@@ -454,10 +495,10 @@ class DescriptorObjectBinder(ObjectBinderBase):
             return self
         
         try:
-            bind_object = self.cache[instance]
+            bind_object = self.relations[instance]
         except KeyError:
             bind_object = self.type(instance)
-            self.cache[instance] = bind_object
+            self.relations[instance] = bind_object
         
         return self.fget(bind_object, instance, type_)
     
@@ -469,10 +510,10 @@ class DescriptorObjectBinder(ObjectBinderBase):
             raise AttributeError(f'Read only attribute: {self.name!r}.')
         
         try:
-            bind_object = self.cache[instance]
+            bind_object = self.relations[instance]
         except KeyError:
             bind_object = self.type(instance)
-            self.cache[instance] = bind_object
+            self.relations[instance] = bind_object
         
         return fset(bind_object, instance, value)
     
@@ -484,9 +525,157 @@ class DescriptorObjectBinder(ObjectBinderBase):
             raise AttributeError(f'Cannot delete attribute: {self.name!r}.')
         
         try:
-            bind_object = self.cache[instance]
+            bind_object = self.relations[instance]
         except KeyError:
             bind_object = self.type(instance)
-            self.cache[instance] = bind_object
+            self.relations[instance] = bind_object
         
         return fdel(bind_object, instance)
+
+
+
+def _cache_bind(cache, cache_size, bind_object):
+    """
+    Caches the given bind object if applicable.
+    
+    Parameters
+    ----------
+    cache : `None`, `OrderedDict`
+        Cache if applicable.
+    cache_size : `int`
+        The maximal size of the cache.
+    bind_object : `Any`
+        The bind object to cache.
+    """
+    if (cache is not None):
+        if bind_object in cache:
+            cache.move_to_end(bind_object)
+        
+        else:
+            cache[bind_object] = bind_object
+            
+            if len(cache) >= cache_size:
+                del cache[next(iter(cache))]
+
+
+class GenericObjectWeakBinder(GenericObjectBinder):
+    """
+    Object binder.
+    
+    Attributes
+    ----------
+    name : `str`
+        The field's name.
+    relations : ``WeakKeyDictionary``
+        The binding relation mapping.
+    supports_clearing : `bool`
+        Whether clearing the bound objects is supported.
+    supports_state_transfer : `bool`
+        Whether the bound objects support state transfer.
+    type : `type`
+        The binded class.
+    
+    cache : `None`, ``OrderedDict``
+        Cache dictionary, to avoid repeated initializing.
+    cache_size : `int`
+        The maximal size of the cache.
+    
+    Class Attributes
+    ----------------
+    RELATIONSHIP_CONTAINER_TYPE : `type` = ``WeakItemDictionary``
+        The type which holds the relations.
+    """
+    __slots__ = ('cache', 'cache_size',)
+    
+    RELATIONSHIP_CONTAINER_TYPE = WeakItemDictionary
+    
+    def __new__(cls, name, type_, cache_size):
+        """
+        Creates a new object binder instance.
+        
+        Parameters
+        ----------
+        name : `str`
+            The field's name.
+        type_ : `type`
+            The binded class.
+        cache_size : `int`
+            The maximal size of the cache.
+        """
+        if cache_size > 0:
+            cache = OrderedDict()
+        else:
+            cache = None
+        
+        self = GenericObjectBinder.__new__(cls, name, type_)
+        
+        self.cache = cache
+        self.cache_size = cache_size
+        
+        return self
+    
+    
+    @copy_docs(GenericObjectBinder.__get__)
+    def __get__(self, instance, type_):
+        bind_object = GenericObjectBinder.__get__(self, instance, type_)
+        if (bind_object is not self):
+            _cache_bind(self.cache, self.cache_size, bind_object)
+        
+        return bind_object
+
+
+class DescriptorObjectWeakBinder(DescriptorObjectBinder):
+    """
+    Object binder for descriptors-likes.
+    
+    Attributes
+    ----------
+    relations : ``WeakKeyDictionary``
+        The binding relation mapping.
+    name : `str`
+        The field's name.
+    type : `type`
+        The binded class.
+    fdel : `None`, `Any`
+        Deleter function if applicable.
+    fget : `None`, `Any`
+        Getter function if applicable.
+    fset : `None`, `Any`
+        Setter function if applicable.
+    
+    cache : `None`, ``OrderedDict``
+        Cache dictionary, to avoid repeated initializing.
+    cache_size : `int`
+        The maximal size of the cache.
+    
+    Class Attributes
+    ----------------
+    RELATIONSHIP_CONTAINER_TYPE : `type` = ``WeakItemDictionary``
+        The type which holds the relations.
+    """
+    __slots__ = GenericObjectWeakBinder.__slots__
+    
+    RELATIONSHIP_CONTAINER_TYPE = GenericObjectWeakBinder.RELATIONSHIP_CONTAINER_TYPE
+    
+    @copy_docs(GenericObjectWeakBinder.__new__)
+    def __new__(cls, name, type_, cache_size):
+        if cache_size > 0:
+            cache = OrderedDict()
+        else:
+            cache = None
+        
+        self = DescriptorObjectBinder.__new__(cls, name, type_)
+        
+        self.cache = cache
+        self.cache_size = cache_size
+        
+        return self
+    
+    
+    @copy_docs(DescriptorObjectBinder.__get__)
+    def __get__(self, instance, type_):
+        bind_object = DescriptorObjectBinder.__get__(self, instance, type_)
+        if (bind_object is not self):
+            _cache_bind(self.cache, self.cache_size, bind_object)
+        
+        return bind_object

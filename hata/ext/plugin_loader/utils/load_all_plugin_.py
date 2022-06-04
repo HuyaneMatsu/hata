@@ -6,5 +6,5 @@ from ..plugin_loader import PLUGIN_LOADER
 
 
 @copy_docs(PLUGIN_LOADER.load)
-def load_all_plugin(name, blocking=True):
-    return PLUGIN_LOADER.load_all(name, blocking=blocking)
+def load_all_plugin(*, blocking=True):
+    return PLUGIN_LOADER.load_all(blocking=blocking)

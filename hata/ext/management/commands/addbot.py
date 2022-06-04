@@ -103,7 +103,7 @@ def command(parameters):
 def format_bot_init(bot_name, bot_directory_name, environmental_variable_prefix):
     return (
         f'from hata import Client\n'
-        f'from hata.ext.extension_loader import EXTENSION_LOADER\n'
+        f'from hata.ext.plugin_loader import add_default_plugin_variables, register_plugin\n'
         f'from hata.ext.management import get_client_application_id, get_client_id, get_client_secret, '
         f'get_client_token\n'
         f'\n'
@@ -119,8 +119,8 @@ def format_bot_init(bot_name, bot_directory_name, environmental_variable_prefix)
         f')\n'
         f'\n'
         f'\n'
-        f'EXTENSION_LOADER.add_default_variables({bot_name} = {bot_name})\n'
-        f'EXTENSION_LOADER.register(\'{bot_directory_name}.modules\')\n'
+        f'add_default_plugin_variables({bot_name} = {bot_name})\n'
+        f'register_plugin(\'{bot_directory_name}.modules\')\n'
         f''
     )
 

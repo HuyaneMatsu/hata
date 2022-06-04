@@ -3,7 +3,7 @@ __all__ = ('SlasherSnapshotType', )
 
 from scarletio import RichAttributeErrorBaseType, copy_docs
 
-from ..plugin_loader import BaseSnapshotType, EXTENSION_LOADER
+from ..plugin_loader import BaseSnapshotType, PLUGIN_LOADER
 from ..plugin_loader.snapshot.helpers import (
     _get_list_difference, _get_set_difference, _merge_list_groups, _merge_set_groups
 )
@@ -685,7 +685,7 @@ class SlasherSnapshotType(BaseSnapshotType):
         if client.running and client.application.id:
             slasher = getattr(client, 'slasher', None)
             if (slasher is not None):
-                EXTENSION_LOADER.add_done_callback_unique(slasher.sync)
+                PLUGIN_LOADER.add_done_callback_unique(slasher.sync)
         
         return new
     
@@ -771,6 +771,6 @@ def runtime_sync_hook_is_executing_extension(client):
     client : ``Client``
         The respective client of the ``Slasher``.
     """
-    return not EXTENSION_LOADER.is_processing_extension()
+    return not PLUGIN_LOADER.is_processing_extension()
 
 RUNTIME_SYNC_HOOKS.append(runtime_sync_hook_is_executing_extension)

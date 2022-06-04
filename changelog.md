@@ -28,6 +28,9 @@ A change like this was requested for a while...
 - Add `get_plugin`.
 - Add `get_plugin_like`.
 - Add `get_plugins_like`.
+- Add `add_default_plugin_variables`.
+- Add `clear_default_plugin_variables`.
+- Add `remove_default_plugin_variables`.
 
 #### Renames, Deprecation & Removals
 

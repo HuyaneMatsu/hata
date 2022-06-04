@@ -9,7 +9,7 @@ A change like this was requested for a while...
 
 - `hata.ext` directory now handles sub-file imports better.
 - Add `weak` parameter to `bind`.
-- Add `weak_cache_size` parameter to `weak_cache_size`.
+- Add `weak_cache_size` parameter to `bind`.
 
 ##### ext.slash
 

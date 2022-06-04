@@ -1,6 +1,6 @@
 from dotenv import dotenv_values
 from hata import Client, wait_for_interruption
-from hata.ext.plugin_loader import EXTENSION_LOADER
+from hata.ext.plugin_loader import add_default_plugin_variables, load_all_plugin, register_plugin
 
 
 config = dotenv_values('.env')
@@ -15,9 +15,9 @@ if not Sakuya.solarlink.add_node('127.0.0.1', 2333, 'youshallnotpass', None):
     raise RuntimeError('Connecting to node unsuccessful.')
 
 
-EXTENSION_LOADER.add_default_variables(Sakuya=Sakuya)
-EXTENSION_LOADER.register('modules')
-EXTENSION_LOADER.load_all()
+add_default_plugin_variables(Sakuya=Sakuya)
+register_plugin('modules')
+load_all_plugin()
 
 
 Sakuya.start()

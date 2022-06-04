@@ -119,7 +119,7 @@ def format_bot_init(bot_name, bot_directory_name, environmental_variable_prefix)
         f')\n'
         f'\n'
         f'\n'
-        f'EXTENSION_LOADER.add_default_variable({bot_name} = {bot_name})\n'
+        f'EXTENSION_LOADER.add_default_variables({bot_name} = {bot_name})\n'
         f'EXTENSION_LOADER.register(\'{bot_directory_name}.modules\')\n'
         f''
     )

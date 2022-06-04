@@ -701,7 +701,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         """
         warnings.warn(
             (
-                f'`{self!r}.load_plugin` is deprecated and will be removed in 2022 December. '
+                f'`{self.__class__.__name__}.load_plugin` is deprecated and will be removed in 2022 December. '
                 f'Please use `.register` instead.'
             ),
             FutureWarning,
@@ -866,7 +866,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         """
         warnings.warn(
             (
-                f'`{self!r}.load_plugin` is deprecated and will be removed in 2022 December. '
+                f'`{self.__class__.__name__}.load_plugin` is deprecated and will be removed in 2022 December. '
                 f'Please use `.register_and_load` instead.'
             ),
             FutureWarning,
@@ -1846,8 +1846,8 @@ class PluginLoader(RichAttributeErrorBaseType):
             else:
                 warnings.warn(
                     (
-                        f'`{self!r}.{attribute_name}` is deprecated and will be removed in 2022 December. Please use '
-                        f'`.{new_attribute_name}` instead,'
+                        f'`{self.__class__.__name__}.{attribute_name}` is deprecated and will be removed in 2022 '
+                        f'December. Please use `.{new_attribute_name}` instead,'
                     ),
                     FutureWarning,
                     stacklevel = 2

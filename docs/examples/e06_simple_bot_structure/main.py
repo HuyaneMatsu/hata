@@ -1,6 +1,6 @@
 from dotenv import dotenv_values
 from hata import Client, wait_for_interruption
-from hata.ext.plugin_loader import EXTENSION_LOADER
+from hata.ext.plugin_loader import add_default_plugin_variables, load_all_plugin, register_plugin
 
 config = dotenv_values('.env')
 
@@ -15,11 +15,11 @@ async def ready(client):
     print(f'{client:f} is connected!')
 
 # Registered variables to extension loader, show up in each loaded extension file.
-EXTENSION_LOADER.add_default_variables(Sakuya=Sakuya)
+add_default_plugin_variables(Sakuya=Sakuya)
 # Adds the extensions file or the extensions files recursive in the directory
-EXTENSION_LOADER.register('modules')
+register_plugin('modules')
 # Loads all the added extension files.
-EXTENSION_LOADER.load_all()
+load_all_plugin()
 
 
 Sakuya.start()

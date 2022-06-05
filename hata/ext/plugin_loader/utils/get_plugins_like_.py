@@ -2,7 +2,7 @@ __all__ = ('get_plugins_like',)
 
 from re import I as re_ignore_case, compile as re_compile, escape as re_escape
 
-from ..plugin_loader import PLUGIN_LOADER
+from ..constants import PLUGINS
 
 
 def _plugin_match_sort_key(item):
@@ -41,7 +41,7 @@ def get_plugins_like(name):
     
     to_sort = []
     
-    for plugin in PLUGIN_LOADER._plugins_by_name.values():
+    for plugin in PLUGINS.values():
         plugin_name = plugin.name
         parsed = pattern.search(plugin_name)
         if parsed is None:

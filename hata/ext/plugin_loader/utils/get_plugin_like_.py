@@ -2,7 +2,8 @@ __all__ = ('get_plugin_like',)
 
 from re import I as re_ignore_case, compile as re_compile, escape as re_escape
 
-from ..plugin_loader import PLUGIN_LOADER
+
+from ..constants import PLUGINS
 
 
 def get_plugin_like(name):
@@ -27,7 +28,7 @@ def get_plugin_like(name):
     accurate_plugin = None
     accurate_name_length = 33
     
-    for plugin in PLUGIN_LOADER._plugins_by_name.values():
+    for plugin in PLUGINS.values():
         plugin_name = plugin.name
         name_length = len(plugin_name)
         if name_length > accurate_name_length:

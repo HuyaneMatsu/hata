@@ -26,7 +26,7 @@ def get_plugin_like(name):
     pattern = re_compile(re_escape(name), re_ignore_case)
     
     accurate_plugin = None
-    accurate_name_length = 33
+    accurate_name_length = -1
     
     for plugin in PLUGINS.values():
         plugin_name = plugin.name
@@ -37,7 +37,7 @@ def get_plugin_like(name):
         if pattern.search(plugin_name) is None:
             continue
         
-        if name_length < accurate_name_length:
+        if (accurate_name_length == -1) or (name_length < accurate_name_length):
             accurate_plugin = plugin
             accurate_name_length = name_length
         

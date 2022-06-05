@@ -31,7 +31,7 @@ def get_plugin_like(name):
     for plugin in PLUGINS.values():
         plugin_name = plugin.name
         name_length = len(plugin_name)
-        if name_length > accurate_name_length:
+        if (accurate_name_length != -1) and (name_length > accurate_name_length):
             continue
         
         if pattern.search(plugin_name) is None:

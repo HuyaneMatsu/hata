@@ -2,6 +2,7 @@ __all__ = ()
 
 import sys, warnings
 from importlib.util import module_from_spec, spec_from_file_location
+from os.path import basename as get_file_name, splitext as split_file_name_and_extension
 from py_compile import compile as compile_module
 
 from scarletio import HybridValueDictionary, RichAttributeErrorBaseType, WeakSet, include
@@ -964,3 +965,14 @@ class Plugin(RichAttributeErrorBaseType):
         module : `None`, `ModuleType`
         """
         return self._spec.get_module()
+    
+    
+    def is_directory(self):
+        """
+        Returns whether teh plugin is a directory.
+        
+        Returns
+        -------
+        is_directory : `bool`
+        """
+        return split_file_name_and_extension(get_file_name(self._spec.origin))[0] == '__init__'

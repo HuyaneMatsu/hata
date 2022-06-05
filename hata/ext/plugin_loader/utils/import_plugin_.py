@@ -1,6 +1,6 @@
 __all__ = ('import_plugin',)
 
-from os.path import basename as get_file_name, splitext as split_file_name_and_plugin
+from os.path import basename as get_file_name, splitext as split_file_name_and_extension
 
 from scarletio import export, get_last_module_frame
 
@@ -110,7 +110,7 @@ def import_plugin(plugin_name, *variable_names, **keyword_parameters):
     
     local_name = spec.name
     
-    is_init_file = (split_file_name_and_plugin(get_file_name(spec.origin))[0] == '__init__')
+    is_init_file = (split_file_name_and_extension(get_file_name(spec.origin))[0] == '__init__')
     
     empty_count = 0
     for plugin_name_part in plugin_name_parts:
@@ -142,10 +142,10 @@ def import_plugin(plugin_name, *variable_names, **keyword_parameters):
     plugin = PLUGIN_LOADER.register_and_load(built_name, **keyword_parameters)
     
     current_plugin = PLUGINS.get(local_name, None)
-    if (current_plugin is not None):
-        plugin.add_child_plugin(current_plugin)
-        current_plugin.add_parent_plugin(plugin)
-    
+    if (current_plugin is not None) and not current_plugin.is_directory():
+        current_plugin.add_child_plugin(plugin)
+        plugin.add_parent_plugin(current_plugin)
+        
     variable_names_length = len(variable_names)
     module = plugin._spec.get_module_proxy()
     if variable_names_length == 0:

@@ -12,6 +12,7 @@ from ...discord.core import KOKORO
 
 from .constants import PLUGIN_STATE_LOADED, PLUGINS
 from .exceptions import PluginError
+from .import_overwrite.source_loader import __file__ as PLUGIN_LOADER_SOURCE_LOADER_FILE_PATH
 from .plugin import Plugin, __file__ as PLUGIN_LOADER_PLUGIN_FILE_PATH
 from .helpers import (
     PROTECTED_NAMES, _build_plugin_tree, _get_plugin_name_and_path, _get_path_plugin_name,
@@ -201,6 +202,11 @@ def _ignore_module_import_frames(file_name, name, line_number, line):
                 'await exit_point(module)',
                 'exit_point(module)',
             ):
+                should_show_frame = False
+    
+    elif file_name == PLUGIN_LOADER_SOURCE_LOADER_FILE_PATH:
+        if name == 'exec_module':
+            if line == 'SourceFileLoader.exec_module(self, self._module)':
                 should_show_frame = False
     
     return should_show_frame

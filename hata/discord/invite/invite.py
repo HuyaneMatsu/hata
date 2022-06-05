@@ -66,14 +66,17 @@ class Invite(DiscordEntity, immortal=True):
         `None`.
     inviter : ``ClientUserBase``
         The creator of the invite. If not included, then set as `ZEROUSER`.
+    
     max_age : `None`, `int`
         The time in seconds after the invite will expire. If not included, then set as `None`.
         
         If the invite was created with max age as `0`, then this value will be negative instead of the expected `0`.
+    
     max_uses : `None`, `int`
         How much times the invite can be used. If not included, then set as `None`.
         
         If the invite has no use limit, then this value is set as `0`.
+    
     nsfw_level : ``NsfwLevel``
         The respective guild's nsfw level if applicable.
     partial : `bool`
@@ -318,7 +321,7 @@ class Invite(DiscordEntity, immortal=True):
     
     def _update_attributes(self, data):
         """
-        Updates the invite with the given data. Only updates the attributes, which's respective value is included.
+        Updates the invite with the given data. Only updates the attributes, which are represented in the payload.
         
         Parameters
         ----------

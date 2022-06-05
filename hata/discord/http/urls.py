@@ -635,6 +635,22 @@ WEBHOOK_URL_PATTERN = re.compile(
 )
 
 
+def _build_invite_url(invite_code):
+    """
+    Builds an invite's url from the given core.
+    
+    Parameters
+    ----------
+    invite_code : `str`
+        An invite's code.
+    
+    Returns
+    -------
+    url : `str`
+    """
+    return f'http://discord.gg/{invite_code}'
+
+
 def invite_url(invite):
     """
     Returns the invite's url.
@@ -645,7 +661,22 @@ def invite_url(invite):
     -------
     url : `str`
     """
-    return f'http://discord.gg/{invite.code}'
+    return _build_invite_url(invite.code)
+
+
+def guild_vanity_invite_url(guild):
+    """
+    Returns the guild vanity invite's url.
+    
+    This function is a shared property of ``Guild``-s.
+    
+    Returns
+    -------
+    url : `None`, `str`
+    """
+    vanity_code = guild.vanity_core
+    if (vanity_code is not None):
+        return _build_invite_url(vanity_code)
 
 
 INVITE_URL_RP = re.compile('(?:https?://)?discord(?:\.gg|(?:app)?\.com/invite)/([a-zA-Z0-9-]+)')

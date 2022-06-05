@@ -3039,3 +3039,6 @@ class Guild(DiscordEntity, immortal=True):
         )
         
         return self.boost_count
+    
+    
+    vanity_url = property(module_urls.guild_vanity_invite_url)

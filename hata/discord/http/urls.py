@@ -674,7 +674,7 @@ def guild_vanity_invite_url(guild):
     -------
     url : `None`, `str`
     """
-    vanity_code = guild.vanity_core
+    vanity_code = guild.vanity_code
     if (vanity_code is not None):
         return _build_invite_url(vanity_code)
 

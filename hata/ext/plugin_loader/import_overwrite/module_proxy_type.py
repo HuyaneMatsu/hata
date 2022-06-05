@@ -106,4 +106,10 @@ class PluginModuleProxyType(ModuleType):
     
     
     def __dir__(self):
-        return sorted({*ModuleType.__dir__(self), *dir(self.__spec__.get_module())})
+        directory = {*ModuleType.__dir__(self)}
+        
+        module = self.__spec__.get_module()
+        if (module is not None):
+            directory.update(dir(module))
+        
+        return sorted(directory)

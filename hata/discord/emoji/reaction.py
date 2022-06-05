@@ -303,7 +303,7 @@ class reaction_mapping_line(set):
             A `list` of users, who reacted on the respective `Message` with the respective ``Emoji``.
         """
         ln_old = len(self)
-        set.update(self,users)
+        set.update(self, users)
         ln_new = len(self)
         self.unknown -= (ln_new - ln_old)
     
@@ -386,4 +386,4 @@ class reaction_mapping_line(set):
 
         self.unknown += (set.__len__(self) - len(clients))
         set.clear(self)
-        set.update(self,clients)
+        set.update(self, clients)

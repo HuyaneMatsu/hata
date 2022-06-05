@@ -103,3 +103,7 @@ class PluginModuleProxyType(ModuleType):
         repr_parts.append('>')
         
         return ''.join(repr_parts)
+    
+    
+    def __dir__(self):
+        return sorted({*ModuleType.__dir__(self), *dir(self.__spec__.get_module())})

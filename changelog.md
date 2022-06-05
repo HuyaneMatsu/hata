@@ -32,6 +32,7 @@ A change like this was requested for a while...
 - Add `add_default_plugin_variables`.
 - Add `clear_default_plugin_variables`.
 - Add `remove_default_plugin_variables`.
+- Add missing `PluginModuleProxyType.__dir__`.
 
 #### Renames, Deprecation & Removals
 

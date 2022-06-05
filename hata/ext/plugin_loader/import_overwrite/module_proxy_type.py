@@ -63,10 +63,15 @@ class PluginModuleProxyType(ModuleType):
         
         if module is None:
             raise RuntimeError(
-                f'Plugin, {self.__plugin__!r} is not yet initialized!'
+                f'Plugin, `{spec.name}` is not yet initialized!'
             )
         
-        attribute_value = getattr(module, attribute_name)
+        try:
+            attribute_value = getattr(module, attribute_name)
+        except AttributeError:
+            raise AttributeError(
+                f'{self!r} has no attribute `{attribute_name}`.'
+            ) from None
         
         frame = get_last_module_frame()
         if (frame is None):

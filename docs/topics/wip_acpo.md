@@ -1,6 +1,7 @@
-# Introduction / Command permissions
+# Introduction
 
-Command permissions are confusing, but what if you could test whether you set them correctly? Sounds scary? It is!
+Application command permissions are confusing, but what if you could test whether you set them correctly? Sounds scary?
+It is!
 
 Hata allows you to assert missmatch by dropping a warning (or more!) on startup.
 

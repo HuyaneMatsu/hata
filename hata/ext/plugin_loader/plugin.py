@@ -64,13 +64,15 @@ class Plugin(RichAttributeErrorBaseType):
         +-------------------------------+-------+
         | PLUGIN_STATE_UNSATISFIED      | 3     |
         +-------------------------------+-------+
+    _sub_module_plugins : `None`, ``WeakSet`` of ``Plugin``
+        Sub module plugins.
     _take_snapshot : `bool`
         Whether snapshot difference should be taken.
     """
     __slots__ = (
         '__weakref__', '_added_variable_names', '_child_plugins', '_default_variables', '_entry_point',
         '_exit_point', '_extend_default_variables', '_locked', '_parent_plugins', '_snapshot_difference',
-        '_snapshot_extractions', '_spec', '_state', '_take_snapshot'
+        '_snapshot_extractions', '_spec', '_state', '_sub_module_plugins', '_take_snapshot'
     )
     
     def __new__(cls, name, path, entry_point, exit_point, extend_default_variables, locked, take_snapshot_difference,
@@ -142,6 +144,7 @@ class Plugin(RichAttributeErrorBaseType):
         self._snapshot_extractions = None
         self._spec = spec
         self._state = PLUGIN_STATE_UNDEFINED
+        self._sub_module_plugins = None
         self._take_snapshot = take_snapshot_difference
         
         PLUGINS[name] = self
@@ -854,8 +857,8 @@ class Plugin(RichAttributeErrorBaseType):
         Clears the snapshot extractions of the plugin.
         """
         self._snapshot_extractions = None
-
-
+    
+    
     def add_parent_plugin(self, plugin):
         """
         Registers a parent plugin.
@@ -976,3 +979,87 @@ class Plugin(RichAttributeErrorBaseType):
         is_directory : `bool`
         """
         return split_file_name_and_extension(get_file_name(self._spec.origin))[0] == '__init__'
+
+
+    def add_sub_module_plugin(self, plugin):
+        """
+        Registers a sub module plugin.
+        
+        Parameters
+        ----------
+        plugin : ``Plugin``
+            The plugin to register.
+        """
+        sub_module_plugins = self._sub_module_plugins
+        if (sub_module_plugins is None):
+            sub_module_plugins = WeakSet()
+            self._sub_module_plugins = sub_module_plugins
+        
+        sub_module_plugins.add(plugin)
+    
+    
+    def iter_sub_module_plugins(self):
+        """
+        Iterates over the sub module plugins.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        sub_module_plugin : `None`
+        """
+        sub_module_plugins = self._sub_module_plugins
+        if (sub_module_plugins is not None):
+            yield from sub_module_plugins
+    
+    
+    def are_sub_module_plugins_present_in(self, plugins):
+        """
+        Returns whether all the sub module plugins are present in the given `plugins`.
+        
+        Parameters
+        ----------
+        plugins : `iterable` of ``Plugin``
+            Already present plugins to check satisfaction form.
+        
+        Returns
+        -------
+        are_sub_module_plugins_present_in : `bool`
+        """
+        sub_module_plugins = self._sub_module_plugins
+        if (sub_module_plugins is None):
+            return True
+        
+        if sub_module_plugins <= plugins:
+            return True
+        
+        return False
+    
+    
+    def clear_sub_module_plugins(self):
+        """
+        Clears the sub module plugins of the plugin.
+        """
+        sub_module_plugins = self._sub_module_plugins
+        if (sub_module_plugins is not None):
+            self._sub_module_plugins = None
+    
+    
+    def remove_sub_module_plugin(self, sub_module_plugin):
+        """
+        Removes the given plugin from the plugin's sub modules.
+        
+        Parameters
+        ----------
+        sub_module_plugin : ``Plugin``
+            The plugin to remove.
+        """
+        sub_module_plugins = self._sub_module_plugins
+        if (sub_module_plugins is not None):
+            try:
+                sub_module_plugins.remove(sub_module_plugin)
+            except KeyError:
+                pass
+            else:
+                if not sub_module_plugins:
+                    self._sub_module_plugins = sub_module_plugins

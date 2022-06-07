@@ -1,5 +1,6 @@
 __all__ = ()
 
+from itertools import chain
 from os import listdir as list_directory
 from os.path import (
     basename as base_name, exists, isabs as is_absolute_path_name, isdir as is_directory, isfile as is_file,
@@ -457,13 +458,13 @@ def _build_plugin_tree(plugins, deep):
         plugin = plugins_to_unwrap.pop()
         
         if deep:
-            for child_plugin in plugin.iter_child_plugins():
-                if child_plugin not in unwrapped_plugins:
-                    plugins_to_unwrap.append(child_plugin)
-            
-            for parent_plugin in plugin.iter_parent_plugins():
-                if parent_plugin not in unwrapped_plugins:
-                    plugins_to_unwrap.append(parent_plugin)
+            for iterated_plugin in chain(
+                plugin.iter_child_plugins(),
+                plugin.iter_parent_plugins(),
+                plugin.iter_sub_module_plugins()
+            ):
+                if iterated_plugin not in unwrapped_plugins:
+                    plugins_to_unwrap.append(iterated_plugin)
         
         unwrapped_plugins.add(plugin)
     

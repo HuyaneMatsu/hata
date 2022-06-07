@@ -142,9 +142,12 @@ def import_plugin(plugin_name, *variable_names, **keyword_parameters):
     plugin = PLUGIN_LOADER.register_and_load(built_name, **keyword_parameters)
     
     current_plugin = PLUGINS.get(local_name, None)
-    if (current_plugin is not None) and not current_plugin.is_directory():
-        current_plugin.add_child_plugin(plugin)
-        plugin.add_parent_plugin(current_plugin)
+    if (current_plugin is not None):
+        if current_plugin.is_directory():
+            current_plugin.add_sub_module_plugin(plugin)
+        else:
+            current_plugin.add_child_plugin(plugin)
+            plugin.add_parent_plugin(current_plugin)
         
     variable_names_length = len(variable_names)
     module = plugin._spec.get_module_proxy()

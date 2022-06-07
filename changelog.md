@@ -34,6 +34,11 @@ A change like this was requested for a while...
 - Add `remove_default_plugin_variables`.
 - Add missing `PluginModuleProxyType.__dir__`.
 - Add `Plugin.is_directory`.
+- Add `Plugin.add_sub_module_plugin`.
+- Add `Plugin.iter_sub_module_plugins`.
+- Add `Plugin.are_sub_module_plugins_present_in`.
+- Add `Plugin.clear_sub_module_plugins`.
+- Add `Plugin.remove_sub_module_plugin`.
 
 #### Renames, Deprecation & Removals
 

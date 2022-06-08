@@ -215,6 +215,8 @@ Error Codes
 +---------------------------------------------------------------+-----------+-----------+
 | max_forum_channel_tags                                        | 30048     | -         |
 +---------------------------------------------------------------+-----------+-----------+
+| bitrate_too_high_for_channel_type                             | 30052     | -         |
++---------------------------------------------------------------+-----------+-----------+
 | unauthorized                                                  | 40001     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | email_verification_required                                   | 40002     | -         |
@@ -574,6 +576,7 @@ rate_limit_widget_update = 30042
 rate_limit_edit_to_message_older_than_one_hour = 30046
 max_pinned_threads_in_forum_channel = 30047
 max_forum_channel_tags = 30048
+bitrate_too_high_for_channel_type = 30052
 
 unauthorized = 40001
 email_verification_required = 40002

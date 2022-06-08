@@ -64,14 +64,28 @@ async def ready(client):
 
 Added *default* variables will show up in all files. (There is option to turn this off / file)
 
-You can also define variables which are specific for a file. To do this, pass additional keyword variables when
+You can also define file specific variables. To do this, pass additional keyword variables when
 registering the plugin.
 
 ```py
 register_and_load_plugin('plugin', add_launch_event_handler=False)
 ```
 
-An important note, that these plugin-specific variables wont show up in sub-modules imported from that file.
+An important to note, that these plugin-specific variables wont show up in sub-modules imported from that file.
+
+### Linter confusion
+
+These variables might confuse linters. To help them out, you can annotate them.
+
+```py
+from hata import Client
+
+my_beloved_bot: Client
+```
+
+After this the linter will see that `my_beloved_bot` is indeed a `Client`, but "it might not be defined" still.
+
+Hata ignores these annotations, they are completely up to you.
 
 ## Setup & Teardown
 

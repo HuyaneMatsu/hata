@@ -12,6 +12,7 @@ A change like this was requested for a while...
 - Add `weak_cache_size` parameter to `bind`.
 - Add `Guild.vanity_url`.
 - Add `ChannelMetadataGuildVoice.nsfw`.
+- Add `parse_custom_emojis_ordered`.
 
 ##### ext.slash
 

@@ -1,6 +1,6 @@
 __all__ = (
     'create_partial_emoji_data', 'create_partial_emoji_from_data', 'create_unicode_emoji', 'parse_custom_emojis',
-    'parse_emoji', 'parse_reaction'
+    'parse_custom_emojis_ordered', 'parse_emoji', 'parse_reaction'
 )
 
 import warnings
@@ -107,6 +107,30 @@ def parse_emoji(text):
     return emoji
 
 
+def _iter_parse_custom_emojis(text):
+    """
+    Iterates over all the custom emojis in the text as they appear.
+    
+    This function is an iterable generator.
+    
+    Parameters
+    ----------
+    text : `str`
+        The text to parse.
+    
+    Yields
+    ------
+    emoji : ``Emoji``
+    """
+    for groups in EMOJI_RP.findall(text):
+        
+        animated, name, emoji_id = groups
+        animated = (animated is not None)
+        emoji_id = int(emoji_id)
+        
+        yield Emoji._create_partial(emoji_id, name, animated)
+        
+
 def parse_custom_emojis(text):
     """
     Parses out every custom emoji from the given text.
@@ -114,21 +138,38 @@ def parse_custom_emojis(text):
     Parameters
     ----------
     text : `str`
-        Text, what might contain custom emojis.
+        The text to parse.
     
     Returns
     -------
     emojis : `set` of ``Emoji``
     """
-    emojis = set()
-    for groups in EMOJI_RP.findall(text):
-        animated, name, emoji_id = groups
-        animated = (animated is not None)
-        emoji_id = int(emoji_id)
-        emoji = Emoji._create_partial(emoji_id, name, animated)
-        emojis.add(emoji)
+    return {*_iter_parse_custom_emojis(text)}
+
+
+def parse_custom_emojis_ordered(text):
+    """
+    Parses out every custom emoji from the given text. Returns them ordered based on their appearance in the text.
     
-    return emojis
+    Parameters
+    ----------
+    text : `str`
+        The text to parse.
+    
+    Returns
+    -------
+    emojis_ordered : `list` of ``Emoji``
+        Excludes duplicates.
+    """
+    emojis_ordered = []
+    emojis_unique = set()
+    
+    for emoji in _iter_parse_custom_emojis(text):
+        if emoji not in emojis_unique:
+            emojis_ordered.append(emoji)
+            emojis_unique.add(emoji)
+    
+    return emojis_ordered
 
 
 def parse_reaction(text):

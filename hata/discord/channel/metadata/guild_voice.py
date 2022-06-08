@@ -7,7 +7,7 @@ from ...permission.permission import (
     PERMISSION_MASK_CONNECT, PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE, PERMISSION_TEXT_AND_STAGE_DENY,
     PERMISSION_VOICE_DENY_CONNECTION
 )
-from ...preconverters import preconvert_preinstanced_type
+from ...preconverters import preconvert_bool, preconvert_preinstanced_type
 
 from .. import channel_types as CHANNEL_TYPES
 from ..preinstanced import VideoQualityMode
@@ -38,6 +38,8 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         The voice region of the channel.
     user_limit : `int`
         The maximal amount of users, who can join the voice channel, or `0` if unlimited.
+    nsfw : `bool`
+        Whether the channel is marked as non safe for work.
     video_quality_mode : ``VideoQualityMode``
         The video quality of the voice channel.
     
@@ -48,13 +50,16 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """
-    __slots__ = ('video_quality_mode',)
+    __slots__ = ('nsfw', 'video_quality_mode',)
     
     type = CHANNEL_TYPES.guild_voice
     
     @copy_docs(ChannelMetadataGuildVoiceBase._compare_attributes_to)
     def _compare_attributes_to(self, other):
         if not ChannelMetadataGuildVoiceBase._compare_attributes_to(self, other):
+            return False
+        
+        if self.nsfw != other.nsfw:
             return False
         
         if self.video_quality_mode is not other.video_quality_mode:
@@ -68,6 +73,7 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
     def _create_empty(cls):
         self = super(ChannelMetadataGuildVoice, cls)._create_empty()
         
+        self.nsfw = False
         self.video_quality_mode = VideoQualityMode.none
         
         return self
@@ -77,12 +83,19 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
     def _update_attributes(self, data):
         ChannelMetadataGuildVoiceBase._update_attributes(self, data)
         
+        self.nsfw = data.get('nsfw', False)
+        
         self.video_quality_mode = VideoQualityMode.get(data.get('video_quality_mode', 1))
     
     
     @copy_docs(ChannelMetadataGuildVoiceBase._difference_update_attributes)
     def _difference_update_attributes(self, data):
         old_attributes = ChannelMetadataGuildVoiceBase._difference_update_attributes(self, data)
+        
+        nsfw = data.get('nsfw', False)
+        if self.nsfw != nsfw:
+            old_attributes['nsfw'] = self.nsfw
+            self.nsfw = nsfw
         
         video_quality_mode = VideoQualityMode.get(data.get('video_quality_mode', 1))
         if self.video_quality_mode is not video_quality_mode:
@@ -96,6 +109,14 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
     @copy_docs(ChannelMetadataGuildVoiceBase._precreate)
     def _precreate(cls, keyword_parameters):
         self = super(ChannelMetadataGuildVoice, cls)._precreate(keyword_parameters)
+        
+        try:
+            nsfw = keyword_parameters.pop('nsfw')
+        except KeyError:
+            pass
+        else:
+            nsfw = preconvert_bool(nsfw, 'nsfw')
+            self.nsfw = nsfw
         
         try:
             video_quality_mode = keyword_parameters.pop('video_quality_mode')
@@ -116,6 +137,10 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
     @copy_docs(ChannelMetadataGuildVoiceBase._to_data)
     def _to_data(self):
         data = ChannelMetadataGuildVoiceBase._to_data(self)
+        
+        # nsfw
+        if self.nsfw:
+            data['nsfw'] = True
         
         video_quality_mode = self.video_quality_mode
         if (video_quality_mode is not VideoQualityMode.nonde):

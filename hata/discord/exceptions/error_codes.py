@@ -481,6 +481,7 @@ Error Codes
 +---------------------------------------------------------------+-----------+-----------+
 | auto_moderation_title_blocked                                 | 200001    | -         |
 +---------------------------------------------------------------+-----------+-----------+
+| webhook_can_create_thread_only_in_forum_channel
 """
 unknown_account = 10001
 unknown_application = 10002

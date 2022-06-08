@@ -4,7 +4,7 @@ from scarletio import copy_docs
 
 from ...permission import Permission
 from ...permission.permission import (
-    PERMISSION_MASK_CONNECT, PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE, PERMISSION_TEXT_AND_STAGE_DENY,
+    PERMISSION_MASK_CONNECT, PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE, PERMISSION_STAGE_DENY,
     PERMISSION_VOICE_DENY_CONNECTION
 )
 from ...preconverters import preconvert_bool, preconvert_preinstanced_type
@@ -156,7 +156,7 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
             return PERMISSION_NONE
         
         # voice channels don't have text permissions
-        result &= PERMISSION_TEXT_AND_STAGE_DENY
+        result &= PERMISSION_STAGE_DENY
         
         if not result & PERMISSION_MASK_CONNECT:
             result &= PERMISSION_VOICE_DENY_CONNECTION
@@ -171,7 +171,7 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
             return PERMISSION_NONE
         
         # voice channels don't have text permissions
-        result &= PERMISSION_TEXT_AND_STAGE_DENY
+        result &= PERMISSION_STAGE_DENY
         
         if not result & PERMISSION_MASK_CONNECT:
             result &= PERMISSION_VOICE_DENY_CONNECTION

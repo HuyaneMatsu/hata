@@ -396,7 +396,7 @@ PERMISSION_DENY_SEND_MESSAGES_ONLY = PERMISSION_ALL.update_by_keys(
     send_messages = False,
 )
 
-PERMISSION_TEXT_AND_STAGE_DENY = PERMISSION_TEXT_DENY.update_by_keys(
+PERMISSION_STAGE_DENY = Permission(~0).update_by_keys(
     request_to_speak = False,
 )
 

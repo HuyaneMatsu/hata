@@ -13,6 +13,16 @@ A change like this was requested for a while...
 - Add `Guild.vanity_url`.
 - Add `ChannelMetadataGuildVoice.nsfw`.
 - Add `parse_custom_emojis_ordered`.
+- Add `User.iter_activities`.
+- Add `ActivityChange.iter_added`.
+- Add `ActivityChange.iter_updated`.
+- Add `ActivityChange.iter_removed`.
+- Add `ActivityRich.twitch_preview_image_url`.
+- Add `ActivityRich.spotify_cover_id`.
+- Add `ActivityRich.youtube_video_id`.
+- Add `ActivityRich.youtube_preview_image_url`.
+- Add missing `infinity_vs16` emoji.
+- Add +1 builtin emoji.
 
 ##### ext.slash
 
@@ -43,6 +53,11 @@ A change like this was requested for a while...
 - Add `Plugin.remove_sub_module_plugin`.
 
 #### Renames, Deprecation & Removals
+
+- Rename `ActivityRich.album_cover_url` to `.spotify_album_cover_url`.
+- Deprecate `ActivityRich.album_cover_url`.
+- Rename `ActivityRich.duration` to `.spotify_track_duration`.
+- Deprecate `ActivityRich.duration`.
 
 ##### ext.plugin_loader
 

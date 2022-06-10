@@ -41,7 +41,7 @@ def create_partial_emoji_from_data(data):
             emoji = UNICODE_TO_EMOJI[emoji_name]
         except KeyError:
             warnings.warn(
-                f'Undefined emoji : {emoji_name.encode()!r}\nPlease open an issue with this message.',
+                f'\nUndefined emoji : {emoji_name.encode()!r}\nPlease open an issue with this message.',
                 RuntimeWarning,
             )
             emoji = Emoji._create_unicode('', emoji_name, ())

@@ -771,6 +771,6 @@ def runtime_sync_hook_is_executing_extension(client):
     client : ``Client``
         The respective client of the ``Slasher``.
     """
-    return not PLUGIN_LOADER.is_processing_extension()
+    return not PLUGIN_LOADER.is_processing_plugin()
 
 RUNTIME_SYNC_HOOKS.append(runtime_sync_hook_is_executing_extension)

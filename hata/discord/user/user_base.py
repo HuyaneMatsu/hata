@@ -400,6 +400,21 @@ class UserBase(DiscordEntity, immortal=True):
         return None
     
     
+    def iter_activities(self):
+        """
+        Iterates over the user's activities.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        activity : ``ActivityBase``
+        """
+        activities = self.activities
+        if (activities is not None):
+            yield from activities
+    
+    
     @property
     def status(self):
         """

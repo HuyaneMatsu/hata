@@ -1,5 +1,6 @@
 __all__ = ('ActivityRich',)
 
+import warnings
 from datetime import datetime
 
 from ..color import Color
@@ -721,11 +722,87 @@ class ActivityRich(ActivityBase):
         if not image_large.startswith('twitch:'):
             return None
         
-        return image_large[7:]
+        return image_large[len('twitch:'):]
+    
+    
+    @property
+    def twitch_preview_image_url(self):
+        """
+        Returns the activity's twitch preview image url.
+        
+        Only applicable for stream activities.
+        
+        Returns
+        -------
+        preview_image_url : `None`, `str`
+        """
+        twitch_name = self.twitch_name
+        if (twitch_name is not None):
+            return f'https://static-cdn.jtvnw.net/previews-ttv/live_user_{twitch_name}.png'
+    
+    
+    @property
+    def youtube_video_id(self):
+        """
+        If the user streams on youtube, returns it's stream's respective video identifier.
+        
+        Only applicable for stream activities.
+        
+        Returns
+        -------
+        video_id : `None`, `str`
+        """
+        if self.type != ACTIVITY_TYPES.stream:
+            return None
+        
+        assets = self.assets
+        if assets is None:
+            return None
+        
+        image_large = assets.image_large
+        if image_large is None:
+            return None
+        
+        if not image_large.startswith('youtube:'):
+            return None
+        
+        return image_large[len('youtube:'):]
+    
+    
+    @property
+    def youtube_preview_image_url(self):
+        """
+        Returns the activity's youtube preview image url.
+        
+        Only applicable for stream activities.
+        
+        Returns
+        -------
+        preview_image_url : `None`, `str`
+        """
+        youtube_video_id = self.youtube_video_id
+        if (youtube_video_id is not None):
+            return f'https://i.ytimg.com/vi/{youtube_video_id}/hqdefault_live.jpg'
     
     
     @property
     def duration(self):
+        """
+        Drops a deprecation warning and returns ``.spotify_track_duration``.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.duration` is deprecated and will be removed in 2022 December. '
+                f'Please use `.spotify_track_duration` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2
+        )
+        return self.spotify_track_duration
+    
+    
+    @property
+    def spotify_track_duration(self):
         """
         Returns the spotify activity's duration, or `None` if not applicable.
         
@@ -751,15 +828,15 @@ class ActivityRich(ActivityBase):
     
     
     @property
-    def album_cover_url(self):
+    def spotify_cover_id(self):
         """
-        Returns the spotify activity's currently playing track's album url if applicable.
+        If the user listens to spotify, returns it's spotify name.
         
         Only applicable for spotify activities.
         
         Returns
         -------
-        album_cover_url : `None`, `str`
+        name : `None`, `str`
         """
         if self.type != ACTIVITY_TYPES.spotify:
             return None
@@ -771,8 +848,43 @@ class ActivityRich(ActivityBase):
         image_large = assets.image_large
         if image_large is None:
             return None
-            
-        return f'https://i.scdn.co/image/{image_large}'
+        
+        if not image_large.startswith('spotify:'):
+            return None
+        
+        return image_large[len('spotify:'):]
+    
+    
+    @property
+    def spotify_album_cover_url(self):
+        """
+        Returns the spotify activity's currently playing track's album's cover url if applicable.
+        
+        Only applicable for spotify activities.
+        
+        Returns
+        -------
+        album_cover_url : `None`, `str`
+        """
+        spotify_cover_id = self.spotify_cover_id
+        if (spotify_cover_id is not None):
+            return 'https://i.scdn.co/image/{cover_id}'
+    
+    
+    @property
+    def album_cover_url(self):
+        """
+        Drops a deprecation warning and returns ``.spotify_album_cover_url``.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.album_cover_url` is deprecated and will be removed in 2022 December. '
+                f'Please use `.spotify_album_cover_url` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2
+        )
+        return self.spotify_album_cover_url
     
     
     @property

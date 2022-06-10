@@ -1,5 +1,6 @@
 __all__ = ('ActivityChange', 'ActivityUpdate',)
 
+
 class ActivityChange:
     """
     Represents a user's changed activities.
@@ -19,6 +20,8 @@ class ActivityChange:
         """
         Creates a new activity change with the given parameters.
         
+        Parameters
+        ----------
         added : `None`, `list` of ``ActivityBase``
             The added activities to the user.
         updated : `None`, `list` of ``ActivityUpdate``
@@ -66,9 +69,11 @@ class ActivityChange:
         
         return ''.join(repr_parts)
     
+    
     def __len__(self):
         """Helper for unpacking if needed."""
         return 3
+    
     
     def __iter__(self):
         """
@@ -79,6 +84,52 @@ class ActivityChange:
         yield self.added
         yield self.updated
         yield self.removed
+    
+    
+    def iter_added(self):
+        """
+        Iterates over the added activities.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        added : ``ActivityBase``
+        """
+        added = self.added
+        if (added is not None):
+            yield from added
+    
+    
+    def iter_updated(self):
+        """
+        Iterates over the activity updates.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        updated : ``ActivityUpdate``
+        """
+        updated = self.updated
+        if (updated is not None):
+            yield from updated
+    
+    
+    def iter_removed(self):
+        """
+        Iterates over the removed activities.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        removed : ``ActivityBase``
+        """
+        removed = self.removed
+        if (removed is not None):
+            yield from removed
+
 
 
 class ActivityUpdate:

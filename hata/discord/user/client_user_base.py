@@ -148,12 +148,13 @@ class ClientUserBase(UserBase):
             | timed_out_until   | `None`, `datetime`            |
             +-------------------+-------------------------------+
         """
-        user_id = int(data['user']['id'])
+        user_data = data['user']
+        user_id = int(user_data['id'])
         
         try:
             user = USERS[user_id]
         except KeyError:
-            user = cls(data, guild)
+            user = cls.from_data(user_data, data, guild.id)
             return user, {}
         
         try:
@@ -188,12 +189,13 @@ class ClientUserBase(UserBase):
         user : ``UserBase``
             The updated user.
         """
-        user_id = int(data['user']['id'])
+        user_data = data['user']
+        user_id = int(user_data['id'])
         
         try:
             user = USERS[user_id]
         except KeyError:
-            user = cls(data, guild)
+            user = cls.from_data(user_data, data, guild.id)
         else:
             try:
                 guild_profile = user.guild_profiles[guild.id]

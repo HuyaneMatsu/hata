@@ -1219,7 +1219,7 @@ class Guild(DiscordEntity, immortal=True):
         
         # deleting
         for channel_id in old_ids:
-            channels[channel_id]._delete()
+            channels[channel_id]._delete(None)
     
     
     def _sync_roles(self, data):

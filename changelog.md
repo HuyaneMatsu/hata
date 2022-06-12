@@ -1,4 +1,4 @@
-## 1.2.17 *\[2022-06-??\]*
+## 1.2.17 *\[2022-06-12\]*
 
 ### Summary
 
@@ -24,6 +24,8 @@ A change like this was requested for a while...
 - Add missing `infinity_vs16` emoji.
 - Add +1 builtin emoji.
 - `parse_custom_emojis` now accepts `None` as well.
+- `User._difference_update_profile` was not updated with deprecation.
+- `User._update_profile` was not updated with deprecation.
 
 ##### ext.slash
 
@@ -56,6 +58,7 @@ A change like this was requested for a while...
 ### Bug fixes
 
 - `parse_custom_emojis` could have return `emoji` with incorrect `animated` value.
+- `Guild._sync_channels` could raise `TypeError`.
 
 #### Renames, Deprecation & Removals
 

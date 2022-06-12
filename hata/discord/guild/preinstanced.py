@@ -71,7 +71,7 @@ class VoiceRegion(PreinstancedBase):
     value : `str`
         The unique identifier of the voice region.
     name : `str`
-        The default name of the voice region.
+        The name of the voice region.
     vip : `bool`
         Whether the voice region can be used only by guilds with `VIP_REGIONS` feature.
     

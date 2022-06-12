@@ -23,6 +23,7 @@ A change like this was requested for a while...
 - Add `ActivityRich.youtube_preview_image_url`.
 - Add missing `infinity_vs16` emoji.
 - Add +1 builtin emoji.
+- `parse_custom_emojis` now accepts `None` as well.
 
 ##### ext.slash
 
@@ -51,6 +52,10 @@ A change like this was requested for a while...
 - Add `Plugin.are_sub_module_plugins_present_in`.
 - Add `Plugin.clear_sub_module_plugins`.
 - Add `Plugin.remove_sub_module_plugin`.
+
+### Bug fixes
+
+- `parse_custom_emojis` could have return `emoji` with incorrect `animated` value.
 
 #### Renames, Deprecation & Removals
 

@@ -91,6 +91,11 @@ def parse_emoji(text):
     If the parsing yields a custom emoji what is not loaded, the function will return an `untrusted` partial emoji,
     what means it wont be stored at `EMOJIS`. If the parsing fails the function returns `None`.
     
+    Parameters
+    ----------
+    text : `str`
+        The text to parse emojis from.
+    
     Returns
     -------
     emoji : `None`, ``Emoji``
@@ -125,7 +130,7 @@ def _iter_parse_custom_emojis(text):
     for groups in EMOJI_RP.findall(text):
         
         animated, name, emoji_id = groups
-        animated = (animated is not None)
+        animated = (True if animated else False)
         emoji_id = int(emoji_id)
         
         yield Emoji._create_partial(emoji_id, name, animated)
@@ -144,6 +149,9 @@ def parse_custom_emojis(text):
     -------
     emojis : `set` of ``Emoji``
     """
+    if text is None:
+        return set()
+    
     return {*_iter_parse_custom_emojis(text)}
 
 
@@ -153,7 +161,7 @@ def parse_custom_emojis_ordered(text):
     
     Parameters
     ----------
-    text : `str`
+    text : `None`, `str`
         The text to parse.
     
     Returns
@@ -162,12 +170,13 @@ def parse_custom_emojis_ordered(text):
         Excludes duplicates.
     """
     emojis_ordered = []
-    emojis_unique = set()
-    
-    for emoji in _iter_parse_custom_emojis(text):
-        if emoji not in emojis_unique:
-            emojis_ordered.append(emoji)
-            emojis_unique.add(emoji)
+    if (text is not None):
+        emojis_unique = set()
+        
+        for emoji in _iter_parse_custom_emojis(text):
+            if emoji not in emojis_unique:
+                emojis_ordered.append(emoji)
+                emojis_unique.add(emoji)
     
     return emojis_ordered
 

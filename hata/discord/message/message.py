@@ -2243,7 +2243,7 @@ class Message(DiscordEntity, immortal=True):
     
     def __len__(self):
         """
-        Returns the length of the message, including of the non link typed embeds's.
+        Returns the length of the message, including of the non link typed embeds'.
         
         Returns
         -------
@@ -4146,7 +4146,7 @@ class Message(DiscordEntity, immortal=True):
     @property
     def role_mention_ids(self):
         """
-        The mentioned roles's identifier by the message if any.
+        The mentioned roles' identifier by the message if any.
         
         Defaults to `None`.
         

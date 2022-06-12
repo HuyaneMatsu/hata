@@ -37,6 +37,11 @@ class AnsiTextDecoration(PreinstancedBase):
     | underline             | 4         | underline             |
     +-----------------------+-----------+-----------------------+
     """
+    __slots__ = ()
+    
+    INSTANCES = {}
+    VALUE_TYPE = int
+    
     none = P(0, 'none')
     bold = P(1, 'bold')
     underline = P(4, 'underline')
@@ -68,7 +73,7 @@ class AnsiFormatColor(PreinstancedBase):
     """
     __slots__ = ('color', 'color_name')
     
-    VALUE_TYPE = 0
+    VALUE_TYPE = int
     
     @classmethod
     @copy_docs(PreinstancedBase._from_value)
@@ -76,13 +81,7 @@ class AnsiFormatColor(PreinstancedBase):
         raise NotImplementedError
     
     
-    @classmethod
-    @copy_docs(PreinstancedBase.from_data)
-    def from_data(cls, data):
-        raise NotImplementedError
-    
-    
-    def __init__(self, value, name, color):
+    def __init__(self, value, name, color, color_name):
         """
         Creates a new format color with the given parameters and stores it at the class's `.INSTANCES`.
         
@@ -98,6 +97,7 @@ class AnsiFormatColor(PreinstancedBase):
         self.name = name
         self.value = value
         self.color = color
+        self.color_name = color_name
         self.INSTANCES[value] = self
 
 
@@ -148,6 +148,10 @@ class AnsiBackgroundColor(AnsiFormatColor):
     | white                 | 47        | old lace              | 0xfdf6e3  | old lace          | Pale yellow-orange.           |
     +-----------------------+-----------+-----------------------+-----------+-------------------+-------------------------------+
     """
+    __slots__ = ()
+    
+    INSTANCES = {}
+    
     black = P(40, 'black', Color(0x002b36), 'daintree')
     red = P(41, 'red', Color(0xcb4b16), 'orange roughy')
     marble_blue_cyan = P(42, 'marble blue cyan', Color(0x586e75), 'cutty sark')

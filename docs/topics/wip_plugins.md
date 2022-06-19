@@ -9,7 +9,7 @@ Plugins can be plugged in and out, allowing your application to be more modular.
 The main aim of Hata's plugin loader is to preserve traditional code flow inside of plugins without introducing weird
 top level classes.
 
-When designing this system it was an important factor to not limit its support for a single client instance.
+Support for single client applications was a significant factor under consideration while designing this system.
 The concept is based on presetting variables before the module is executing, but more about this later.
 
 # Getting started
@@ -310,7 +310,7 @@ We will go from top to bottom to find out what is happening and how to solve it.
     # our code is frozen
     ```
     
-    To solve this, you can use the `import_plugin` function, where this wo'nt happen, because we never leave python
+    To solve this, you can use the `import_plugin` function, where this won't happen, because we never leave python
     lands.
     
     **/plugins/file_1.py**
@@ -364,7 +364,7 @@ We will go from top to bottom to find out what is happening and how to solve it.
 
 - **Welcome to HELL**
     
-    This is not a python issue but, and as weird as it might sound, an implementation one.
+    This is not a python issue but, as weird as it might sound, an implementation one.
     
     ```sh
     $ python3 main.py

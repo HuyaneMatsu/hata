@@ -1,3 +1,22 @@
+## 1.2.18 *\[2022-06-??\]*
+
+#### Bug fixes
+
+- `Client.sticker_guild_get_all` raised `TypeError`.
+- `Client.application_command_permission_edit` raised `NameError`.
+- `Client.achievement_create` could raise `NameError`.
+- `Client.thread_create` could raise `TypeError`˛
+- `Client.permission_overwrite_edit` raised `NameError`
+- `Client.channel_edit` could raise `NameError`.
+- `Client.guild_edit` could raise `NameError`.
+
+#### Renames, Deprecation & Removals
+
+- Rename `Client.guild_sync_roles` to `.guild_role_get_all`.
+- Deprecate `Client.guild_role_get_all`.
+- Rename `Client.guild_sync_channels` to `.guild_channel_get_all`.
+- Deprecate `Client.guild_channel_get_all`.
+
 ## 1.2.17 *\[2022-06-12\]*
 
 ### Summary

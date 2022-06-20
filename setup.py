@@ -29,6 +29,7 @@ setup(
         'hata.discord.channel',
         'hata.discord.channel.metadata',
         'hata.discord.client',
+        'hata.discord.endpoints',
         'hata.discord.embed',
         'hata.discord.emoji',
         'hata.discord.events',

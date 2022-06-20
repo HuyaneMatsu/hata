@@ -1,3 +1,5 @@
+from .endpoints import *
+
 from .client import *
 from .functionality_helpers import *
 from .ready_state import *
@@ -5,6 +7,8 @@ from .request_helpers import *
 from .utils import *
 
 __all__ = (
+    *endpoints.__all__,
+    
     *client.__all__,
     *functionality_helpers.__all__,
     *ready_state.__all__,

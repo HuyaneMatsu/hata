@@ -11,10 +11,11 @@ from ...env import API_VERSION
 
 from ..bases import maybe_snowflake, maybe_snowflake_pair, maybe_snowflake_token_pair
 from ..channel import Channel
-from ..core import CHANNELS, GUILDS, MESSAGES, SCHEDULED_EVENTS, STICKERS, STICKER_PACKS, USERS
+from ..core import APPLICATION_COMMANDS, CHANNELS, GUILDS, MESSAGES, SCHEDULED_EVENTS, STICKERS, STICKER_PACKS, USERS
 from ..embed import EmbedBase
 from ..emoji import Emoji, parse_reaction
 from ..guild import Guild, GuildDiscovery
+from ..interaction import ApplicationCommand
 from ..message import Attachment, Message, MessageReference, MessageRepr
 from ..oauth2 import Achievement
 from ..role import Role
@@ -979,8 +980,9 @@ def get_user_and_id(user):
 
 def get_user_id_nullable(user):
     """
-    Gets user identifier from the given user or of it's identifier. The user can be `None`. At that case
-    `user_id` will default to `0`.
+    Gets user identifier from the given user or of it's identifier.
+    
+    > The user can be `None`. At that case `user_id` will default to `0`.
     
     Parameters
     ----------
@@ -1778,3 +1780,110 @@ def get_scheduled_event_guild_id_and_id(scheduled_event):
         scheduled_event = SCHEDULED_EVENTS.get(scheduled_event_id, None)
     
     return scheduled_event, guild_id, scheduled_event_id
+
+
+def get_application_command_id(application_command):
+    """
+    Gets the application command's identifier.
+    
+    Parameters
+    ----------
+    application_command : ``ApplicationCommand``, `int`
+        The application command or it's identifier.
+    
+    Returns
+    -------
+    application_command_id : `int`
+        The application command's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `application_command`'s type is incorrect.
+    """
+    if isinstance(application_command, ApplicationCommand):
+        application_command_id = application_command.id
+    
+    else:
+        application_command_id = maybe_snowflake(application_command)
+        if application_command_id is None:
+            raise TypeError(
+                f'`application_command` can be `{ApplicationCommand.__name__}`, `int`, got '
+                f'{application_command.__class__.__name__}; {application_command!r}.'
+            )
+    
+    return application_command_id
+
+def get_application_command_and_id(application_command):
+    """
+    Gets the application command's identifier.
+    
+    Parameters
+    ----------
+    application_command : ``ApplicationCommand``, `int`
+        The application command or it's identifier.
+    
+    Returns
+    -------
+    application_command : `None`, ``ApplicationCommand``
+        The application command if exists.
+    application_command_id : `int`
+        The application command's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `application_command`'s type is incorrect.
+    """
+    if isinstance(application_command, ApplicationCommand):
+        application_command_id = application_command.id
+    
+    else:
+        application_command_id = maybe_snowflake(application_command)
+        if application_command_id is None:
+            raise TypeError(
+                f'`application_command` can be `{ApplicationCommand.__name__}`, `int`, got '
+                f'{application_command.__class__.__name__}; {application_command!r}.'
+            )
+        
+        application_command = APPLICATION_COMMANDS.get(application_command_id, None)
+    
+    return application_command, application_command_id
+
+
+def get_application_command_id_nullable(application_command):
+    """
+    Gets the application command's identifier.
+    
+    > The application command can be `None`. At that case `application_command_id` will default to `0`.
+    
+    Parameters
+    ----------
+    application_command : `None`, ``ApplicationCommand``, `int`
+        The application command or it's identifier.
+    
+    Returns
+    -------
+    application_command_id : `int`
+        The application command's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `application_command`'s type is incorrect.
+    """
+    if application_command is None:
+        application_command_id = 0
+    
+    elif isinstance(application_command, ApplicationCommand):
+        application_command_id = application_command.id
+    
+    else:
+        application_command_id = maybe_snowflake(application_command)
+        if application_command_id is None:
+            raise TypeError(
+                f'`application_command` can be `{ApplicationCommand.__name__}`, `int`, got '
+                f'{application_command.__class__.__name__}; {application_command!r}.'
+            )
+    
+    return application_command_id

@@ -19,6 +19,7 @@ Client = include('Client')
 
 DEFAULT_SORT_VALUE = 0
 
+
 class Sticker(DiscordEntity, immortal=True):
     """
     Represents a ``Message``'s sticker.

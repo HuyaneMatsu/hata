@@ -349,8 +349,8 @@ def _lookup_path(import_name_or_path, register_directories_as_roots):
                 yield from _iter_directory(import_name_or_path, path)
                 return
             
-            for python_plugin_name in PYTHON_FILE_POSTFIX_NAMES:
-                file_path = path + python_plugin_name
+            for python_file_postfix_name in PYTHON_FILE_POSTFIX_NAMES:
+                file_path = path + python_file_postfix_name
                 if exists(file_path) and is_file(file_path):
                     yield import_name_or_path, file_path
                     return
@@ -379,8 +379,8 @@ def _iter_directory(import_name, directory_path):
     plugin_path : `str`
         Path of the file.
     """
-    for python_plugin_name in PYTHON_FILE_POSTFIX_NAMES:
-        file_path = join_paths(directory_path, f'__init__{python_plugin_name}')
+    for python_file_postfix_name in PYTHON_FILE_POSTFIX_NAMES:
+        file_path = join_paths(directory_path, f'__init__{python_file_postfix_name}')
         if exists(file_path) and is_file(file_path):
             yield import_name, file_path
             return
@@ -392,12 +392,12 @@ def _iter_directory(import_name, directory_path):
         path = join_paths(directory_path, file_name)
         
         if is_file(path):
-            for python_plugin_name in PYTHON_FILE_POSTFIX_NAMES:
-                if file_name.endswith(python_plugin_name):
+            for python_file_postfix_name in PYTHON_FILE_POSTFIX_NAMES:
+                if file_name.endswith(python_file_postfix_name):
                     if import_name is None:
                         import_name_value = None
                     else:
-                        import_name_value = f'{import_name}.{file_name[:-len(python_plugin_name)]}'
+                        import_name_value = f'{import_name}.{file_name[:-len(python_file_postfix_name)]}'
                     yield import_name_value, path
                     break
             

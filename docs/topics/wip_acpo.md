@@ -23,7 +23,7 @@ Nitori = Client(
 To set expected command permissions we use the `set_permission` decorator. This allows to add `1` specific permission
 overwrite to the command. One is not much, but the limit is **1 hundred**, so there is to nothing to fear from!
 
-The usage is pretty intuitive. *(Or is it?)*. The decorator accepts 3 parameters:
+The usage is pretty intuitive. *(or is it?)*. The decorator accepts 3 parameters:
 
 | Name              | Type                                                                  | Description                                                   |
 |-------------------|-----------------------------------------------------------------------|---------------------------------------------------------------|
@@ -33,18 +33,18 @@ The usage is pretty intuitive. *(Or is it?)*. The decorator accepts 3 parameters
 
 The `target` parameter can be given in many ways to allow relaxing definitions:
 
-| Description                                                       | Example                   |
-|-------------------------------------------------------------------|---------------------------|
-| The entity itself.                                                | `Role.precreate(role_id)` |
-| A `tuple` of the entity's type and of it's identifier.            | `(Role, role_id)`         |
-| A `tuple` of the entity's type's name and of it's identifier.     | `('role', role_id)`       |
+| Description                                             | Example                   |
+|---------------------------------------------------------|---------------------------|
+| The entity itself.                                      | `Role.precreate(role_id)` |
+| A `tuple` of the entity type and its identifier.        | `(Role, role_id)`         |
+| A `tuple` of the entity type name and its identifier.   | `('role', role_id)`       |
 
-Since the `everyone role` and `all channel` permission overwrites are unique enough, it is allowed to pass id as `0` to
-mention them directly instead of writing their id out.
+Since the `everyone role` and `all channel` permission overwrites are unique, it is allowed to pass ID as `0` to
+mention them directly instead of writing their ID out.
 
 #### Setting command permissions / Usage
 
-Here is a short example of disabling the permission to everyone role, but enabling it to 1 specific one:
+Here is a short example of disabling the permissions for everyone role, and enabling it to 1 specific role:
 
 ```py3
 from datetime import datetime, timedelta
@@ -116,22 +116,20 @@ Nitori@set_permission(TEST_GUILD, ('channel', 0), False)
 Nitori@set_permission(TEST_GUILD, ('channel', BOT_CHANNEL_ID), True)
 ```
 
-> The matmul operator comes handy when trying to keep syntax familiar.
+> The matmul operator (the @) comes in handy when trying to keep syntax familiar.
 
 ## Enforcing permissions
 
 If you want to make sure that the permissions defined in code are respected, the
 `enforce_application_command_permissions` parameter will do that for you.
 
-Even tho bots cannot edit their own command permissions, it is still an option to not link up command(s), denying
+Even tho bots cannot edit their own command permissions, it's still an option to not link up command(s), thus denying
 unexpected usage.
 
-In other hand, just because bots cannot do something, it does not mean, it cannot be done! If the bot is
-**not owned by a team** the owner's oauth2 access can be requested and with it command permission syncing can be
-directly done.
+On the other hand, just because bots cannot do something, it does not mean it can't be done! If the bot is
+**not owned by a team** the owner's OAuth2 access can be requested and with it, we can directly sync command permissions.
 
-> This will only work on those guilds, where the owner has sufficient permissions to edit the commands from the client
-> as well. 
+> This will only work in guilds where the owner has sufficient permissions to edit the commands from the client as well. 
 
 ```py
 Nitori = Client(

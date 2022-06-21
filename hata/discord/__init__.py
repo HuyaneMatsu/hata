@@ -1,5 +1,6 @@
 ﻿from .activity import *
 from .application import *
+from .auto_moderation import *
 from .bases import *
 from .channel import *
 from .client import *
@@ -36,6 +37,7 @@ from .utils import *
 __all__ = (
     *activity.__all__,
     *application.__all__,
+    *auto_moderation.__all__,
     *bases.__all__,
     *channel.__all__,
     *client.__all__,

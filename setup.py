@@ -24,6 +24,7 @@ setup(
         'hata.discord',
         'hata.discord.activity',
         'hata.discord.application',
+        'hata.discord.auto_moderation',
         'hata.discord.bases',
         'hata.discord.bin',
         'hata.discord.channel',

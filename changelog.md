@@ -6,6 +6,8 @@
 - Add `ConnectionType`.
 - Change `Connection.type` from `str` to `ConnectionType`.
 - Mark guild voice channel type as messageable. (this was missing from the previous update.)
+- Update the identity payload.
+- Add `AutoModerationTriggerType`.
 
 ##### ext.plugin_loader
 

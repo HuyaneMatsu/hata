@@ -12,6 +12,7 @@ from .embed_base import (
 
 RICH_EMBED_FIELDS = frozenset((
     'author',
+    'auto_moderation_message',
     'fields',
     'footer',
     'image',

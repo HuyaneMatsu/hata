@@ -2,6 +2,8 @@
 
 #### Improvements
 
+- Add `auto_moderation_message` to rich embed fields.
+
 ##### ext.plugin_loader
 
 - Raise `ModuleNotFoundError` instead of `ImportError` if the module is just not found. So simple.

@@ -1,5 +1,11 @@
 ## 1.2.18 *\[2022-06-??\]*
 
+#### Improvements
+
+##### ext.plugin_loader
+
+- Raise `ModuleNotFoundError` instead of `ImportError` if the module is just not found. So simple.
+
 #### Bug fixes
 
 - `Client.sticker_guild_get_all` raised `TypeError`.

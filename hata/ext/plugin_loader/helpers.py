@@ -190,9 +190,8 @@ def _get_plugin_name_and_path(name):
     
     Raises
     ------
-    ImportError
+    ModuleNotFoundError
         - Could not resolve the given `name`.
-    ImportError
         - If `name` could not be detected as an plugin.
     TypeError
         - If `name` is not `str` nor an `iterable` of `str`.
@@ -206,7 +205,7 @@ def _get_plugin_name_and_path(name):
     try:
         plugin_pair = generator.send(None)
     except StopIteration:
-        raise ImportError(
+        raise ModuleNotFoundError(
             f'No plugins found with the given name: {name!r}.'
         ) from None
     
@@ -240,7 +239,7 @@ def _iter_plugin_names_and_paths(name, *, register_directories_as_roots=False):
     ------
     ImportError
         - Could not resolve the given `name`.
-    ImportError
+    ModuleNotFoundError
         - If `name` could not be detected as an plugin.
     TypeError
         - If `name` is not `str` nor an `iterable` of `str`.
@@ -327,7 +326,7 @@ def _lookup_path(import_name_or_path, register_directories_as_roots):
     
     Raise
     -----
-    ImportError
+    ModuleNotFoundError
         If `import_name_or_path` name could not be detected as en plugin.
     """
     if is_absolute_path_name(import_name_or_path):
@@ -355,7 +354,7 @@ def _lookup_path(import_name_or_path, register_directories_as_roots):
                     yield import_name_or_path, file_path
                     return
     
-    raise ImportError(
+    raise ModuleNotFoundError(
         f'The given `import_name_or_path` could not be detected as an plugin nor an absolute path, '
         f'got {import_name_or_path!r}.'
     )

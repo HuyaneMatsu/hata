@@ -747,7 +747,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         
         Raises
         ------
-        ImportError
+        ModuleNotFoundError
             If the given name do not refers to any loadable file.
         TypeError
             - If `entry_point` was not given as `None`, `str`, `callable`.
@@ -838,7 +838,10 @@ class PluginLoader(RichAttributeErrorBaseType):
         RuntimeError
             If a loaded plugin would be removed.
         """
-        plugin_names_and_paths = set(_iter_plugin_names_and_paths(name))
+        try:
+            plugin_names_and_paths = set(_iter_plugin_names_and_paths(name))
+        except ModuleNotFoundError:
+            return
         
         for plugin_name, plugin_path in plugin_names_and_paths:
             if (plugin_name is None):

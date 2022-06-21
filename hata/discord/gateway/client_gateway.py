@@ -546,11 +546,9 @@ class DiscordGateway:
             'd': {
                 'token': client.token,
                 'properties': {
-                    '$os': sys.platform,
-                    '$browser': 'hata',
-                    '$device': 'hata',
-                    '$referrer': '',
-                    '$referring_domain': '',
+                    'os': sys.platform,
+                    'browser': 'hata',
+                    'device': 'hata',
                 },
                 'compress': True,                       # Whether we support compression | Discord default: False
                 'large_threshold': LARGE_GUILD_LIMIT,   # between 50 and 250             | Discord default: 50

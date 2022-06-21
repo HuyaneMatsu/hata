@@ -3,6 +3,8 @@ __all__ = ('Connection', )
 from ..bases import DiscordEntity
 from ..integration import Integration
 
+from .preinstanced import ConnectionType
+
 
 class Connection(DiscordEntity):
     """
@@ -22,8 +24,8 @@ class Connection(DiscordEntity):
         Whether the connection is revoked.
     show_activity : `bool`
         Whether activity related to this connection will be shown in presence updates.
-    type : `str`
-        The service of the connection. (Like `'twitch'`, `'youtube'`.)
+    type : ``ConnectionType``
+        The service of the connection.
     verified : `bool`
         Whether the connection is verified.
     visibility : `int`
@@ -50,7 +52,7 @@ class Connection(DiscordEntity):
             Received connection data.
         """
         self.name = data['name']
-        self.type = data['type']
+        self.type = ConnectionType.get(data['type'])
         self.id = int(data['id'])
         self.revoked = data.get('revoked', False)
         self.verified = data.get('verified', False)

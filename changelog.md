@@ -3,6 +3,9 @@
 #### Improvements
 
 - Add `auto_moderation_message` to rich embed fields.
+- Add `ConnectionType`.
+- Change `Connection.type` from `str` to `ConnectionType`.
+- Mark guild voice channel type as messageable. (this was missing from the previous update.)
 
 ##### ext.plugin_loader
 

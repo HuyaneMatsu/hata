@@ -42,6 +42,7 @@ In addition also extra groups are defined:
 +=======================================+===============================+
 | GROUP_MESSAGEABLE                     | guild_text,                   |
 |                                       | private,                      |
+|                                       | guild_voice,                  |
 |                                       | private_group,                |
 |                                       | guild_announcements,          |
 |                                       | guild_thread_announcements,   |
@@ -141,6 +142,7 @@ guild_forum = 15
 GROUP_MESSAGEABLE = frozenset((
     guild_text,
     private,
+    guild_voice,
     private_group,
     guild_announcements,
     guild_thread_announcements,

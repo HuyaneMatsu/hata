@@ -12,6 +12,7 @@ from .flags import ThreadProfileFlag
 create_partial_role_from_id = include('create_partial_role_from_id')
 Client = include('Client')
 
+
 def thread_user_create(thread_channel, user, thread_user_data):
     """
     Resolves the given thread user data.

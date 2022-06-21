@@ -9,6 +9,7 @@
 - `Client.permission_overwrite_edit` raised `NameError`
 - `Client.channel_edit` could raise `NameError`.
 - `Client.guild_edit` could raise `NameError`.
+- `thread_user_create` could have raise `AttributeError`.
 
 #### Renames, Deprecation & Removals
 

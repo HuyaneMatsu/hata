@@ -63,6 +63,7 @@ def preconvert_snowflake_array(snowflake_array, name):
         The snowflakes to convert.
     name : `str`
         The name of the snowflake array.
+    
     Returns
     -------
     snowflake_array : `tuple` of `int`
@@ -291,7 +292,7 @@ def preconvert_iterable_of_str(value, name, iterable_lower_limit, iterable_upper
     ValueError
         - If the `value`'s length is less than the given `iterable_lower_limit` or is higher than the given than
             the given `iterable_upper_limit`.
-        - If `value` contains a string, which's length is less than `lower_limit` or is more than `upper_limit`.
+        - If `value` contains a string whats length is less than `lower_limit` or is more than `upper_limit`.
     """
     iterator = getattr(type(value), '__iter__', None)
     if iterator is None:

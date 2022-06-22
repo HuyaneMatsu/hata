@@ -97,7 +97,7 @@ class Filter(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `object`
+        data : `dict` of (`str`, `Any`) items
         """
         return {}
 

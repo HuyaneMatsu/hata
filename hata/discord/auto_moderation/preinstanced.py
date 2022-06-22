@@ -1,11 +1,15 @@
-__all__ = ('AutoModerationTriggerType',)
+__all__ = ('AutoModerationEventType', 'AutoModerationKeywordPresetType', 'AutoModerationTriggerType',)
+
+from scarletio import export
 
 from ..bases import Preinstance as P, PreinstancedBase
+
+from .trigger_metadata import KeywordPresetTriggerMetadata, KeywordTriggerMetadata
 
 
 class AutoModerationTriggerType(PreinstancedBase):
     """
-    Represents an auto moderation rule's trigger.
+    Represents an auto moderation rule's trigger type.
     
     Attributes
     ----------
@@ -15,6 +19,8 @@ class AutoModerationTriggerType(PreinstancedBase):
         The default name of the auto moderation trigger type.
     max_per_guild : `int`
         The maximal amount of rules of this type per guild.
+    metadata_type : `None`, ``AutoModerationRuleTriggerMetadata``
+        The trigger type's respective metadata type.
     
     Class Attributes
     ----------------
@@ -29,25 +35,24 @@ class AutoModerationTriggerType(PreinstancedBase):
     
     Every predefined auto moderation trigger type is also stored as a class attribute:
     
-    +-----------------------+-------------------+-----------+---------------+
-    | Class attribute name  | Name              | Value     | Max per guild |
-    +=======================+===================+===========+===============+
-    | none                  | none              | 0         | 0             |
-    +-----------------------+-------------------+-----------+---------------+
-    | keyword               | keyword           | 1         | 3             |
-    +-----------------------+-------------------+-----------+---------------+
-    | harmful_link          | harmful link      | 2         | 1             |
-    +-----------------------+-------------------+-----------+---------------+
-    | spam                  | spam              | 3         | 1             |
-    +-----------------------+-------------------+-----------+---------------+
-    | keyword_preset        | keyword preset    | 4         | 1             |
-    +-----------------------+-------------------+-----------+---------------+
+    +-----------------------+-------------------+-----------+---------------+-----------------------------------+
+    | Class attribute name  | Name              | Value     | Max per guild | Metadata type                     |
+    +=======================+===================+===========+===============+-----------------------------------+
+    | none                  | none              | 0         | 0             | `None`                            |
+    +-----------------------+-------------------+-----------+---------------+-----------------------------------+
+    | keyword               | keyword           | 1         | 3             | ``KeywordTriggerMetadata``        |
+    +-----------------------+-------------------+-----------+---------------+-----------------------------------+
+    | harmful_link          | harmful link      | 2         | 1             | `None`                            |
+    +-----------------------+-------------------+-----------+---------------+-----------------------------------+
+    | spam                  | spam              | 3         | 1             | `None`                            |
+    +-----------------------+-------------------+-----------+---------------+-----------------------------------+
+    | keyword_preset        | keyword preset    | 4         | 1             | ``KeywordPresetTriggerMetadata``  |
+    +-----------------------+-------------------+-----------+---------------+-----------------------------------+
     """
+    __slots__ = ('max_per_guild', 'metadata_type')
+    
     INSTANCES = {}
     VALUE_TYPE = int
-    
-    __slots__ = ('max_per_guild',)
-    
 
     @classmethod
     def _from_value(cls, value):
@@ -67,12 +72,13 @@ class AutoModerationTriggerType(PreinstancedBase):
         self = object.__new__(cls)
         self.name = cls.DEFAULT_NAME
         self.value = value
-        self.max_per_guild = value
+        self.max_per_guild = 1
+        self.metadata_type = None
         
         return self
     
     
-    def __init__(self, value, name, max_per_guild):
+    def __init__(self, value, name, max_per_guild, metadata_type):
         """
         Creates an ``AutoModerationTriggerType`` and stores it at the class's `.INSTANCES` class attribute as well.
         
@@ -84,16 +90,110 @@ class AutoModerationTriggerType(PreinstancedBase):
             The default name of the auto moderation trigger type.
         max_per_guild : `int`
             The native name of the auto moderation trigger type.
+        metadata_type : `None`, ``AutoModerationRuleTriggerMetadata``
+            The trigger type's respective metadata type.
         """
         self.value = value
         self.name = name
         self.max_per_guild = max_per_guild
+        self.metadata_type = metadata_type
         
         self.INSTANCES[value] = self
     
     # predefined
-    none = P(0, 'none', 0)
-    keyword = P(1, 'keyword', 3)
-    harmful_link = P(2, 'harmful link', 1)
-    spam = P(3, 'spam', 1)
-    keyword_preset = P(4, 'keyword preset', 1)
+    none = P(0, 'none', 0, None)
+    keyword = P(1, 'keyword', 3, KeywordTriggerMetadata)
+    harmful_link = P(2, 'harmful link', 1, None)
+    spam = P(3, 'spam', 1, None)
+    keyword_preset = P(4, 'keyword preset', 1, KeywordPresetTriggerMetadata)
+
+
+class AutoModerationEventType(PreinstancedBase):
+    """
+    Represents an auto moderation rule's event type.
+    
+    Attributes
+    ----------
+    value : `int`
+        The Discord side identifier value of the auto moderation event type.
+    name : `str`
+        The default name of the auto moderation event type.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`str`, ``AutoModerationEventType``) items
+        Stores the predefined auto moderation event types. This container is accessed when translating a Discord side
+        identifier of a auto moderation event type. The identifier value is used as a key to get it's wrapper side
+        representation.
+    VALUE_TYPE : `type` = `str`
+        The auto moderation event types' values' type.
+    DEFAULT_NAME : `str` = `'Undefined'`
+        The default name of the auto moderation event types.
+    
+    Every predefined auto moderation event type is also stored as a class attribute:
+    
+    +-----------------------+-------------------+-----------+
+    | Class attribute name  | Name              | Value     |
+    +=======================+===================+===========+
+    | none                  | none              | 0         |
+    +-----------------------+-------------------+-----------+
+    | message_send          | message send      | 1         |
+    +-----------------------+-------------------+-----------+
+    """
+    __slots__ = ()
+    
+    INSTANCES = {}
+    VALUE_TYPE = int
+    
+    # predefined
+    none = P(0, 'none')
+    message_send = P(1, 'message send')
+
+
+@export
+class AutoModerationKeywordPresetType(PreinstancedBase):
+    """
+    Represents an auto moderation keyword preset type.
+    
+    Attributes
+    ----------
+    value : `int`
+        The Discord side identifier value of the auto moderation keyword preset type.
+    name : `str`
+        The default name of the auto moderation keyword preset type.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`str`, ``AutoModerationKeywordPresetType``) items
+        Stores the predefined auto moderation keyword preset types. This container is accessed when translating a
+        Discord side identifier of a auto moderation keyword preset type. The identifier value is used as a key to
+        get it's wrapper side representation.
+    VALUE_TYPE : `type` = `str`
+        The auto moderation keyword preset types' values' type.
+    DEFAULT_NAME : `str` = `'Undefined'`
+        The default name of the auto moderation keyword preset types.
+    
+    Every predefined auto moderation keyword preset type is also stored as a class attribute:
+    
+    +-----------------------+-----------------------+-----------+-------------------------------------------+
+    | Class attribute name  | Name                  | Value     | Description                               |
+    +=======================+=======================+===========+===========================================+
+    | none                  | none                  | 0         | N/A                                       |
+    +-----------------------+-----------------------+-----------+-------------------------------------------+
+    | cursing               | cursing               | 1         | Swearing or cursing.                      |
+    +-----------------------+-----------------------+-----------+-------------------------------------------+
+    | sexually_suggestive   | sexually suggestive   | 2         | Sexually explicit behavior or activity.   |
+    +-----------------------+-----------------------+-----------+-------------------------------------------+
+    | slur                  | slur                  | 3         | Personal insult or hate speech.           |
+    +-----------------------+-----------------------+-----------+-------------------------------------------+
+    """
+    __slots__ = ()
+    
+    INSTANCES = {}
+    VALUE_TYPE = int
+    
+    # predefined
+    none = P(0, 'none')
+    cursing = P(1, 'cursing')
+    sexually_suggestive = P(2, 'sexually suggestive')
+    slur = P(3, 'slur')

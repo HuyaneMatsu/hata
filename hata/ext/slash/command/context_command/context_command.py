@@ -227,7 +227,9 @@ class ContextCommand(CommandBaseApplicationCommand):
         response_modifier = ResponseModifier(keyword_parameters)
         
         if keyword_parameters:
-            raise TypeError(f'Extra or unused parameters: {keyword_parameters!r}.')
+            raise TypeError(
+                f'Extra or unused parameters: {keyword_parameters!r}.'
+            )
         
         
         command, parameter_converters = get_context_command_parameter_converters(command)

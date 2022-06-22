@@ -502,7 +502,9 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
             target_type, target_id = _validate_application_command_target(target)
         
         if keyword_parameters:
-            raise TypeError(f'Extra or unused parameters: {keyword_parameters!r}.')
+            raise TypeError(
+                f'Extra or unused parameters: {keyword_parameters!r}.'
+            )
         
         new = object.__new__(type(self))
         new.allow = allow

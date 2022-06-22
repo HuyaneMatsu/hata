@@ -8,6 +8,15 @@
 - Mark guild voice channel type as messageable. (this was missing from the previous update.)
 - Update the identity payload.
 - Add `AutoModerationTriggerType`.
+- Add `auto_moderation_configuration` intent.
+- Add `auto_moderation_execution` intent.
+- Add `AutoModerationEventType`.
+- `RichAttributeErrorBaseType` now supports rich attribute errors.
+- Add `AutoModerationRuleTriggerMetadata`.
+- Add `KeywordTriggerMetadata`.
+- Add `KeywordPresetTriggerMetadata`.
+- Add `AutoModerationKeywordPresetType`.
+- Add `ScheduledEventEntityMetadata.__hash__`.
 
 ##### ext.plugin_loader
 

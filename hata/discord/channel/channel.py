@@ -1363,7 +1363,9 @@ class Channel(DiscordEntity, immortal=True):
         metadata = metadata_type._precreate(keyword_parameters)
         
         if keyword_parameters:
-            raise TypeError(f'Unused or unsettable attributes: {keyword_parameters!r}.')
+            raise TypeError(
+                f'Unused or unsettable attributes: {keyword_parameters!r}.'
+            )
         
         
         try:

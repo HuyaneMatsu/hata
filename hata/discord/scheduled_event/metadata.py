@@ -1,6 +1,6 @@
 __all__ = ('LocationEntityMetadata', 'ScheduledEventEntityMetadata', 'StageEntityMetadata')
 
-from scarletio import copy_docs
+from scarletio import RichAttributeErrorBaseType, copy_docs
 
 from ..user import ClientUserBase, create_partial_user_from_id
 
@@ -28,7 +28,7 @@ def try_get_scheduled_event_metadata_type_from_data(data):
     return metadata_type
 
 
-class ScheduledEventEntityMetadata:
+class ScheduledEventEntityMetadata(RichAttributeErrorBaseType):
     """
     Base class for ``ScheduledEvent``'s entity metadata.
     """
@@ -79,6 +79,11 @@ class ScheduledEventEntityMetadata:
             return NotImplemented
         
         return True
+    
+    
+    def __hash__(self):
+        """Returns the entity metadata's hash value."""
+        return 0
 
 
 class StageEntityMetadata(ScheduledEventEntityMetadata):
@@ -98,56 +103,55 @@ class StageEntityMetadata(ScheduledEventEntityMetadata):
         
         Parameters
         ----------
-        speaker : `None`, `int`, ``ClientUserBase``, `iterable` of (`int`, `ClientUserBase``)
+        speakers : `None`, `int`, ``ClientUserBase``, `iterable` of (`int`, `ClientUserBase``)
             Speakers of the stage channel.
         
         Raises
         ------
         TypeError
-            If `speakers` type is incorrect.
+            - If `speakers` type is incorrect.
+            - If a speaker's type is incorrect.
         """
-        speaker_ids = None
         if speakers is None:
-            pass
+            speaker_ids = None
+        
         elif isinstance(speakers, ClientUserBase):
-            user_id = ClientUserBase.id
-            speaker_ids = (user_id, )
+            speaker_ids = (ClientUserBase.id, )
+        
         elif isinstance(speakers, int):
-            if type(speakers) is int:
-                user_id = speakers
-            else:
-                user_id = int(speakers)
-            
-            speaker_ids = (user_id, )
+            speaker_ids = (speakers, )
         
         else:
             iterator = getattr(type(speakers), '__iter__', None)
             if iterator is None:
                 raise TypeError(
-                    f'`speakers` can be `None`, `int`, `{ClientUserBase.__name__}`, `tuple` of (`int`, '
+                    f'`speakers` can be `None`, `int`, `{ClientUserBase.__name__}`, `iterable` of (`int`, '
                     f'`{ClientUserBase.__name__}`), got {speakers.__class__.__name__}; {speakers!r}.'
                 )
             
-            speaker_ids = []
+            speaker_ids = None
             
             for speaker in iterator(speakers):
                 if isinstance(speaker, ClientUserBase):
-                    user_id = speaker.id
-                elif type(speaker) is int:
-                    user_id = speaker
+                    speaker_id = speaker.id
+                
                 elif isinstance(speaker, int):
-                    user_id = int(speaker)
+                    speaker_id = speaker
+                
                 else:
                     raise TypeError(
                         f'`speakers` can contain `int`, `{ClientUserBase.__name__}` elements, got '
                         f'{speaker.__class__.__name__}; {speaker!r}.'
                     )
                 
-                speaker_ids.append(user_id)
+                if speaker_ids is None:
+                    speaker_ids = set()
+                
+                speaker_ids.add(speaker_id)
             
-            if speaker_ids:
-                speaker_ids.sort()
-                speaker_ids = tuple(speaker_ids)
+            if (speaker_ids is not None):
+                speaker_ids = tuple(sorted(speaker_ids))
+            
             else:
                 speaker_ids = None
         
@@ -194,6 +198,35 @@ class StageEntityMetadata(ScheduledEventEntityMetadata):
         return True
     
     
+    @copy_docs(ScheduledEventEntityMetadata.__hash__)
+    def __hash__(self):
+        hash_value = 0
+        
+        speaker_ids = self.speaker_ids
+        if (speaker_ids is not None):
+            hash_value ^= len(speaker_ids)
+            
+            for speaker_id in speaker_ids:
+                hash_value ^= speaker_id
+        
+        return hash_value
+    
+    
+    @property
+    def iter_speaker_ids(self):
+        """
+        Iterates over the speakers' identifiers of the stage channel.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        speaker_id : `int`
+        """
+        speaker_ids = self.speaker_ids
+        if (speaker_ids is not None):
+            yield from speaker_ids
+    
     @property
     def speakers(self):
         """
@@ -208,6 +241,22 @@ class StageEntityMetadata(ScheduledEventEntityMetadata):
             return tuple(create_partial_user_from_id(speaker_id) for speaker_id in speaker_ids)
     
     
+    def iter_speakers(self):
+        """
+        Iterates over the speakers of the stage channel.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        speakers : ``ClientUserBase``
+        """
+        speaker_ids = self.speaker_ids
+        if (speaker_ids is not None):
+            
+            for speaker_id in speaker_ids:
+                yield create_partial_user_from_id(speaker_id)
+
 
 class LocationEntityMetadata(ScheduledEventEntityMetadata):
     """
@@ -278,3 +327,13 @@ class LocationEntityMetadata(ScheduledEventEntityMetadata):
             return False
         
         return True
+    
+    @copy_docs(ScheduledEventEntityMetadata.__hash__)
+    def __hash__(self):
+        hash_value = 0
+        
+        location = self.location
+        if (location is not None):
+            hash_value ^= hash(location)
+        
+        return hash_value

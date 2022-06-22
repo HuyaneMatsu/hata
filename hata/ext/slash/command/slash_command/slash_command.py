@@ -272,7 +272,9 @@ class SlashCommand(CommandBaseApplicationCommand):
         response_modifier = ResponseModifier(keyword_parameters)
         
         if keyword_parameters:
-            raise TypeError(f'Extra or unused parameters: {keyword_parameters!r}.')
+            raise TypeError(
+                f'Extra or unused parameters: {keyword_parameters!r}.'
+            )
         
         
         if command is None:

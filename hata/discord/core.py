@@ -31,6 +31,10 @@ Weak Caches
 
     Stores the created ``ApplicationCommand``.
 
+- `AUTO_MODERATION_RULES` : ``WeakValueDictionary``
+    
+    Stores the created ``AutoModerationRule``.
+
 - `CHANNELS` : ``WeakValueDictionary``
     
     Contains various ``Channel``.
@@ -154,6 +158,7 @@ CLIENTS = {}
 
 APPLICATIONS = WeakValueDictionary()
 APPLICATION_COMMANDS = WeakValueDictionary()
+AUTO_MODERATION_RULES = WeakValueDictionary()
 CHANNELS = WeakValueDictionary()
 DISCOVERY_CATEGORIES = WeakValueDictionary()
 EMBEDDED_ACTIVITY_STATES = WeakValueDictionary()

@@ -1471,7 +1471,7 @@ class eventlist(list):
         Returns
         -------
         element : `callable`
-            The created instance from the eventlist's `.type`.
+            The created instance from the event-list's `.type`.
         
         Raises
         ------
@@ -2431,7 +2431,7 @@ class asynclist(list):
     
     
     def __repr__(self):
-        """Returns the asynclist's representation."""
+        """Returns the async-list's representation."""
         repr_parts = [
             self.__class__.__name__,
             '(['

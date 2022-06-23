@@ -264,6 +264,44 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         | version                   | `int`                                             |
         +---------------------------+---------------------------------------------------+
     
+    auto_moderation_action_execution(client: ``Client``, event: ``AutoModerationActionExecutionEvent``)
+        Called when an auto moderation rule is executed.
+    
+    auto_moderation_rule_create(client: ``Client``, auto_moderation_rule: ``AutoModerationRule``)
+        Called when an auto moderation rule is created.
+    
+    auto_moderation_rule_delete(client : ``Client``, auto_moderation_rule: ``AutoModerationRule``)
+        Called when an auto moderation rule is deleted.
+    
+    auto_moderation_rule_edit(client: ``Client``, auto_moderation_rule: ``AutoModerationRule``, 
+            old_attributes: {`None`, `dict`})
+        Called when an auto moderation rule is updated.
+        
+        If the rule is not cached `old_attributes` will be `None` instead of the overwritten attributes in
+        `attribute-name` - `old-value` relation.
+        
+        Every item in `old_attributes` is optional and it's items can be any of the following:
+        
+        +-------------------------------+-----------------------------------------------------------+
+        | Keys                          | Values                                                    |
+        +===============================+===========================================================+
+        | actions                       | `None`, `tuple` of ``AutoModerationAction``               |
+        +-------------------------------+-----------------------------------------------------------+
+        | enabled                       | `bool`                                                    |
+        +-------------------------------+-----------------------------------------------------------+
+        | event_type                    | ``AutoModerationEventType``                               |
+        +-------------------------------+-----------------------------------------------------------+
+        | excluded_channel_ids          | `None`, `tuple` of `int`                                  |
+        +-------------------------------+-----------------------------------------------------------+
+        | excluded_role_ids             | `None`, `tuple` of `int`                                  |
+        +-------------------------------+-----------------------------------------------------------+
+        | name                          | `str`                                                     |
+        +-------------------------------+-----------------------------------------------------------+
+        | trigger_metadata              | ``AutoModerationRuleTriggerMetadata``                     |
+        +-------------------------------+-----------------------------------------------------------+
+        | trigger_type                  | ``AutoModerationTriggerType``                             |
+        +-------------------------------+-----------------------------------------------------------+
+    
     channel_create(client: ``Client``, channel: ``Channel``)
         Called when a channel is created.
         

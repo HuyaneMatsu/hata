@@ -413,7 +413,7 @@ class AutoModerationRule(DiscordEntity):
         actions : `None`, (`list`, `set`, `tuple`) of ``AutoModerationAction``
              Actions which will execute when the rule is triggered.
         
-        trigger_type : ``AutoModerationTriggerType``, `int` = `None`, Optional
+        trigger_type : ``AutoModerationTriggerType``, `int`, Optional
             Auto moderation trigger type.
             
             By passing `keyword_presets` parameter you can define the trigger type as 
@@ -618,7 +618,8 @@ class AutoModerationRule(DiscordEntity):
         action_array = data['actions']
         if action_array:
             actions = tuple(
-                AutoModerationAction(auto_moderation_action_data) for auto_moderation_action_data in action_array
+                AutoModerationAction.from_data(auto_moderation_action_data)
+                for auto_moderation_action_data in action_array
             )
         else:
             actions = None
@@ -714,7 +715,8 @@ class AutoModerationRule(DiscordEntity):
         action_array = data['actions']
         if action_array:
             actions = tuple(
-                AutoModerationAction(auto_moderation_action_data) for auto_moderation_action_data in action_array
+                AutoModerationAction.from_data(auto_moderation_action_data)
+                for auto_moderation_action_data in action_array
             )
         else:
             actions = None
@@ -1005,7 +1007,7 @@ class AutoModerationRule(DiscordEntity):
                 repr_parts.append(repr(action))
                 
                 index += 1
-                if index >= limit:
+                if index == limit:
                     break
                 
                 repr_parts.append(', ')
@@ -1042,7 +1044,7 @@ class AutoModerationRule(DiscordEntity):
                 repr_parts.append(repr(excluded_channel_id))
                 
                 index += 1
-                if index >= limit:
+                if index == limit:
                     break
                 
                 repr_parts.append(', ')
@@ -1063,7 +1065,7 @@ class AutoModerationRule(DiscordEntity):
                 repr_parts.append(repr(excluded_role_id))
                 
                 index += 1
-                if index >= limit:
+                if index == limit:
                     break
                 
                 repr_parts.append(', ')
@@ -1161,8 +1163,26 @@ class AutoModerationRule(DiscordEntity):
         excluded_roles : `None`, `int`, ``Role``, `iterable` of (`int`, ``Role``) = `None`, Optional (Keyword only)
             Excluded roles from the rule.
         
-        name : `str`
+        keyword_presets : `None`, `int`, ``AutoModerationKeywordPresetType``, \
+                `iterable` of (`int`, ``AutoModerationKeywordPresetType``), Optional (Keyword only)
+            Keyword preset defined by Discord which will be searched for in content.
+            
+            > Mutually exclusive with the `keywords` parameter.
+        
+        keywords : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
+            Substrings which will be searched for in content.
+            
+            > Mutually exclusive with the `keyword_presets` parameter.
+        
+        name : `str`, Optional (Keyword only)
             The rule's name.
+        
+        trigger_type : ``AutoModerationTriggerType``, `int`, Optional (Keyword only)
+            Auto moderation trigger type.
+            
+            By passing `keyword_presets` parameter you can define the trigger type as 
+            `AutoModerationTriggerType.keyword_preset`, or by passing the `keywords` you can define it as 
+            `AutoModerationTriggerType.keyword`.
         
         Returns
         -------

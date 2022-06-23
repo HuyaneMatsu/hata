@@ -686,7 +686,7 @@ class Emoji(DiscordEntity, immortal=True):
     @property
     def roles(self):
         """
-        Returns the roles for which's members the emoji's usage is restricted to.
+        Returns the roles of which members the emoji's usage is restricted to.
         
         Returns
         -------

@@ -270,6 +270,10 @@ add_event_handler('embedded_activity_update', 3, 'EMBEDDED_ACTIVITY_UPDATE',)
 add_event_handler('embedded_activity_user_add', 3, 'EMBEDDED_ACTIVITY_UPDATE',)
 add_event_handler('embedded_activity_user_delete', 3, 'EMBEDDED_ACTIVITY_UPDATE',)
 add_event_handler('application_command_count_update', 2, 'GUILD_APPLICATION_COMMAND_INDEX_UPDATE',)
+add_event_handler('application_command_count_update', 2, 'AUTO_MODERATION_RULE_CREATE',)
+add_event_handler('auto_moderation_rule_create', 3, 'AUTO_MODERATION_RULE_UPDATE',)
+add_event_handler('auto_moderation_rule_delete', 2, 'AUTO_MODERATION_RULE_DELETE',)
+add_event_handler('auto_moderation_action_execution', 2, 'AUTO_MODERATION_ACTION_EXECUTION',)
 
 
 class ParserSettingOption:
@@ -487,8 +491,16 @@ def register_client(client):
             enabled_parsers.add(parser_name)
     
     for parser_name in enabled_parsers:
-        parser_default = PARSER_SETTINGS[parser_name]
-        parser_default.client_count +=1
+        try:
+            parser_default = PARSER_SETTINGS[parser_name]
+        except KeyError:
+            warnings.warn(
+                f'No parser added for: {parser_name!r}.',
+                RuntimeWarning,
+            )
+            continue
+        
+        parser_default.client_count += 1
         parser_default._recalculate()
     
     for event_name in EVENT_HANDLER_NAME_TO_PARSER_NAMES.keys():
@@ -501,8 +513,12 @@ def register_client(client):
             if parser_name not in enabled_parsers:
                 continue
             
-            parser_default = PARSER_SETTINGS[parser_name]
-            parser_default.mention_count +=1
+            try:
+                parser_default = PARSER_SETTINGS[parser_name]
+            except KeyError:
+                continue
+            
+            parser_default.mention_count += 1
             parser_default._recalculate()
             
 
@@ -530,7 +546,11 @@ def unregister_client(client):
             enabled_parsers.add(parser_name)
     
     for parser_name in enabled_parsers:
-        parser_default = PARSER_SETTINGS[parser_name]
+        try:
+            parser_default = PARSER_SETTINGS[parser_name]
+        except KeyError:
+            continue
+        
         parser_default.client_count -= 1
         parser_default._recalculate()
     
@@ -544,7 +564,11 @@ def unregister_client(client):
             if parser_name not in enabled_parsers:
                 continue
             
-            parser_default = PARSER_SETTINGS[parser_name]
+            try:
+                parser_default = PARSER_SETTINGS[parser_name]
+            except KeyError:
+                continue
+            
             parser_default.mention_count -= 1
             parser_default._recalculate()
             continue

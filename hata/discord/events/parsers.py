@@ -6,10 +6,11 @@ from scarletio import Task, include
 
 from ...env import ALLOW_DEAD_EVENTS, CACHE_PRESENCE, CACHE_USER
 
+from ..auto_moderation import AutoModerationActionExecutionEvent, AutoModerationRule
 from ..channel import Channel
 from ..core import (
-    APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, CHANNELS, CLIENTS, GUILDS, KOKORO, MESSAGES, SCHEDULED_EVENTS,
-    STAGES, USERS
+    APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, AUTO_MODERATION_RULES, CHANNELS, CLIENTS, GUILDS, KOKORO,
+    MESSAGES, SCHEDULED_EVENTS, STAGES, USERS
 )
 from ..emoji import ReactionAddEvent, ReactionDeleteEvent, create_partial_emoji_from_data
 from ..guild import (
@@ -42,8 +43,8 @@ from .filters import (
 )
 from .guild_sync import check_channel, guild_sync
 from .intent import (
-    INTENT_MASK_DIRECT_MESSAGES, INTENT_MASK_DIRECT_REACTIONS, INTENT_MASK_GUILDS,
-    INTENT_MASK_GUILD_EMOJIS_AND_STICKERS, INTENT_MASK_GUILD_MESSAGES, INTENT_MASK_GUILD_PRESENCES,
+    INTENT_MASK_AUTO_MODERATION_CONFIGURATION, INTENT_MASK_DIRECT_MESSAGES, INTENT_MASK_DIRECT_REACTIONS,
+    INTENT_MASK_GUILDS, INTENT_MASK_GUILD_EMOJIS_AND_STICKERS, INTENT_MASK_GUILD_MESSAGES, INTENT_MASK_GUILD_PRESENCES,
     INTENT_MASK_GUILD_REACTIONS, INTENT_MASK_GUILD_USERS, INTENT_MASK_GUILD_VOICE_STATES, INTENT_SHIFT_GUILD_USERS
 )
 
@@ -4601,3 +4602,173 @@ add_parser(
     GUILD_APPLICATION_COMMAND_INDEX_UPDATE__OPT)
 del GUILD_APPLICATION_COMMAND_INDEX_UPDATE__CAL, \
     GUILD_APPLICATION_COMMAND_INDEX_UPDATE__OPT
+
+
+def AUTO_MODERATION_RULE_CREATE__CAL_SC(client, data):
+    auto_moderation_rule = AutoModerationRule.from_data(data)
+    Task(client.events.auto_moderation_rule_create(client, auto_moderation_rule), KOKORO)
+
+
+def AUTO_MODERATION_RULE_CREATE__CAL_MC(client, data):
+    auto_moderation_rule = AutoModerationRule.from_data(data)
+    
+    event_handler = client.events.auto_moderation_rule_create
+    if (event_handler is not DEFAULT_EVENT_HANDLER):
+        Task(event_handler(client, auto_moderation_rule), KOKORO)
+
+
+def AUTO_MODERATION_RULE_CREATE__OPT(client, data):
+    pass
+
+
+add_parser(
+    'AUTO_MODERATION_RULE_CREATE',
+    AUTO_MODERATION_RULE_CREATE__CAL_SC,
+    AUTO_MODERATION_RULE_CREATE__CAL_MC,
+    AUTO_MODERATION_RULE_CREATE__OPT,
+    AUTO_MODERATION_RULE_CREATE__OPT)
+del AUTO_MODERATION_RULE_CREATE__CAL_SC, \
+    AUTO_MODERATION_RULE_CREATE__CAL_MC, \
+    AUTO_MODERATION_RULE_CREATE__OPT
+
+
+def AUTO_MODERATION_RULE_UPDATE__CAL_SC(client, data):
+    auto_moderation_rule_id = int(data['id'])
+    try:
+        auto_moderation_rule = AUTO_MODERATION_RULES[auto_moderation_rule_id]
+    except KeyError:
+        auto_moderation_rule = AutoModerationRule.from_data(data)
+        old_attributes = None
+    
+    else:
+        old_attributes = auto_moderation_rule._difference_update_attributes(data)
+    
+    Task(client.events.auto_moderation_rule_update(client, auto_moderation_rule, old_attributes), KOKORO)
+
+
+def AUTO_MODERATION_RULE_UPDATE__CAL_MC(client, data):
+    guild_id = data.get('guild_id', None)
+    if (guild_id is None):
+        guild = None
+    
+    else:
+        guild = GUILDS.get(int(guild_id), None)
+    
+    if guild is None:
+        auto_moderation_rule_id = int(data['id'])
+        try:
+            auto_moderation_rule = AUTO_MODERATION_RULES[auto_moderation_rule_id]
+        except KeyError:
+            auto_moderation_rule = AutoModerationRule.from_data(data)
+            old_attributes = None
+        
+        else:
+            old_attributes = auto_moderation_rule._difference_update_attributes(data)
+            if not old_attributes:
+                return
+        
+        event_handler = client.events.auto_moderation_rule_update
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(event_handler(client, auto_moderation_rule, old_attributes), KOKORO)
+        
+    else:
+        clients = filter_clients(guild.clients, INTENT_MASK_AUTO_MODERATION_CONFIGURATION, client)
+        if clients.send(None) is not client:
+            clients.close()
+            return
+        
+        auto_moderation_rule_id = int(data['id'])
+        try:
+            auto_moderation_rule = AUTO_MODERATION_RULES[auto_moderation_rule_id]
+        except KeyError:
+            auto_moderation_rule = AutoModerationRule.from_data(data)
+            old_attributes = None
+        
+        else:
+            old_attributes = auto_moderation_rule._difference_update_attributes(data)
+            if not old_attributes:
+                clients.close()
+                return
+        
+        for client_ in clients:
+            event_handler = client_.events.auto_moderation_rule_update
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client_, auto_moderation_rule, old_attributes), KOKORO)
+
+
+def AUTO_MODERATION_RULE_UPDATE__OPT(client, data):
+    auto_moderation_rule_id = int(data['id'])
+    try:
+        auto_moderation_rule = AUTO_MODERATION_RULES[auto_moderation_rule_id]
+    except KeyError:
+        pass
+    
+    else:
+        auto_moderation_rule._update_attributes(data)
+
+
+add_parser(
+    'AUTO_MODERATION_RULE_UPDATE',
+    AUTO_MODERATION_RULE_UPDATE__CAL_SC,
+    AUTO_MODERATION_RULE_UPDATE__CAL_MC,
+    AUTO_MODERATION_RULE_UPDATE__OPT,
+    AUTO_MODERATION_RULE_UPDATE__OPT)
+del AUTO_MODERATION_RULE_UPDATE__CAL_SC, \
+    AUTO_MODERATION_RULE_UPDATE__CAL_MC, \
+    AUTO_MODERATION_RULE_UPDATE__OPT
+
+
+def AUTO_MODERATION_RULE_DELETE__CAL_SC(client, data):
+    auto_moderation_rule = AutoModerationRule.from_data(data)
+    Task(client.events.auto_moderation_rule_delete(client, auto_moderation_rule), KOKORO)
+
+
+def AUTO_MODERATION_RULE_DELETE__CAL_MC(client, data):
+    auto_moderation_rule = AutoModerationRule.from_data(data)
+    
+    event_handler = client.events.auto_moderation_rule_delete
+    if (event_handler is not DEFAULT_EVENT_HANDLER):
+        Task(event_handler(client, auto_moderation_rule), KOKORO)
+
+
+def AUTO_MODERATION_RULE_DELETE__OPT(client, data):
+    pass
+
+
+add_parser(
+    'AUTO_MODERATION_RULE_DELETE',
+    AUTO_MODERATION_RULE_DELETE__CAL_SC,
+    AUTO_MODERATION_RULE_DELETE__CAL_MC,
+    AUTO_MODERATION_RULE_DELETE__OPT,
+    AUTO_MODERATION_RULE_DELETE__OPT)
+del AUTO_MODERATION_RULE_DELETE__CAL_SC, \
+    AUTO_MODERATION_RULE_DELETE__CAL_MC, \
+    AUTO_MODERATION_RULE_DELETE__OPT
+
+
+def AUTO_MODERATION_ACTION_EXECUTION__CAL_SC(client, data):
+    auto_moderation_action_execution = AutoModerationActionExecutionEvent(data)
+    Task(client.events.auto_moderation_action_execution(client, auto_moderation_action_execution), KOKORO)
+
+
+def AUTO_MODERATION_ACTION_EXECUTION__CAL_MC(client, data):
+    auto_moderation_action_execution = AutoModerationActionExecutionEvent(data)
+    
+    event_handler = client.events.auto_moderation_action_execution
+    if (event_handler is not DEFAULT_EVENT_HANDLER):
+        Task(event_handler(client, auto_moderation_action_execution), KOKORO)
+
+
+def AUTO_MODERATION_ACTION_EXECUTION__OPT(client, data):
+    pass
+
+
+add_parser(
+    'AUTO_MODERATION_ACTION_EXECUTION',
+    AUTO_MODERATION_ACTION_EXECUTION__CAL_SC,
+    AUTO_MODERATION_ACTION_EXECUTION__CAL_MC,
+    AUTO_MODERATION_ACTION_EXECUTION__OPT,
+    AUTO_MODERATION_ACTION_EXECUTION__OPT)
+del AUTO_MODERATION_ACTION_EXECUTION__CAL_SC, \
+    AUTO_MODERATION_ACTION_EXECUTION__CAL_MC, \
+    AUTO_MODERATION_ACTION_EXECUTION__OPT

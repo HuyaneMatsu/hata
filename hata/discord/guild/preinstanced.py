@@ -421,7 +421,7 @@ class GuildFeature(PreinstancedBase):
     +-----------------------------------+-----------------------------------+-------------------------------------------+
     | verification_screen_enabled       | verification screen enabled       | MEMBER_VERIFICATION_GATE_ENABLED          |
     +-----------------------------------+-----------------------------------+-------------------------------------------+
-    | aut_moderation_enabled            | auto moderation enabled           | AUTO_MODERATION                           |
+    | auto_moderation_enabled           | auto moderation enabled           | AUTO_MODERATION                           |
     +-----------------------------------+-----------------------------------+-------------------------------------------+
     """
     INSTANCES = {}

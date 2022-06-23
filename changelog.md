@@ -17,6 +17,17 @@
 - Add `KeywordPresetTriggerMetadata`.
 - Add `AutoModerationKeywordPresetType`.
 - Add `ScheduledEventEntityMetadata.__hash__`.
+- Add `AutoModerationAction`.
+- Add `AutoModerationActionType`.
+- Add `AutoModerationActionMetadata`.
+- Add `SendAlertMessageActionMetadata`.
+- Add `TimeoutActionMetadata`.
+- Warn if a dispatch event parser is missing.
+- Add `AutoModerationActionExecutionEvent`.
+- Add `Client.events.auto_moderation_action_execution`.
+- Add `Client.events.auto_moderation_rule_create`.
+- Add `Client.events.auto_moderation_rule_delete`.
+- Add `Client.events.auto_moderation_rule_edit`.
 
 ##### ext.plugin_loader
 
@@ -32,6 +43,7 @@
 - `Client.channel_edit` could raise `NameError`.
 - `Client.guild_edit` could raise `NameError`.
 - `thread_user_create` could have raise `AttributeError`.
+- `ReactionAddEvent.__eq__` could have return incorrect value.
 
 #### Renames, Deprecation & Removals
 

@@ -31,7 +31,7 @@ class AutoModerationRuleTriggerMetadata(RichAttributeErrorBaseType):
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
-            Entity metadata structure.
+            Auto moderation rule trigger metadata payload.
         
         Returns
         -------
@@ -52,7 +52,7 @@ class AutoModerationRuleTriggerMetadata(RichAttributeErrorBaseType):
     
     
     def __eq__(self, other):
-        """Returns whether the two trigger metadatas equal."""
+        """Returns whether the two trigger metadatas are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -83,6 +83,61 @@ class KeywordTriggerMetadata(AutoModerationRuleTriggerMetadata):
     ----------
     keywords : `None`, `tuple` of `str`
         Substrings which will be searched for in content.
+    
+    Matching Strategies
+    -------------------
+    Use the `*` wildcard symbol at the beginning and end of a keyword to define how the keyword should be matched.
+    All keywords are not case sensitive.
+    
+    - `Prefix` - word must start with the keyword
+        +-----------+---------------------------------------+
+        | Keyword   | Matches                               |
+        +===========+=======================================+
+        | cat*      | catch, Catapult, CAttLE               |
+        +-----------+---------------------------------------+
+        | tra*      | train, trade, TRAditional             |
+        +-----------+---------------------------------------+
+        | the mat*  | the matrix                            |
+        +-----------+---------------------------------------+
+    
+    
+    - `Suffix` - word must end with the keyword
+    
+        +-----------+---------------------------------------+
+        | Keyword   | Matches                               |
+        +===========+=======================================+
+        | *cat      | wildcat, copyCat                      |
+        +-----------+---------------------------------------+
+        | *tra      | extra, ultra, orchesTRA               |
+        +-----------+---------------------------------------+
+        | *the mat  | breathe mat                           |
+        +-----------+---------------------------------------+
+    
+    
+    - `Anywhere` - keyword can appear anywhere in the content
+    
+        +-----------+---------------------------------------+
+        | Keyword     | Matches                             |
+        +===========+=======================================+
+        | *cat*       | location, eduCation                 |
+        +-----------+---------------------------------------+
+        | *tra*       | abstracted, outrage                 |
+        +-----------+---------------------------------------+
+        | *the mat*   | breathe matter                      |
+        +-----------+---------------------------------------+
+    
+    
+    - `Whole Word` - keyword is a full word or phrase and must be surrounded by whitespace at the beginning and end
+    
+        +-----------+---------------------------------------+
+        | Keyword   | Matches                               |
+        +===========+=======================================+
+        | cat       | cat                                   |
+        +-----------+---------------------------------------+
+        | train     | train                                 |
+        +-----------+---------------------------------------+
+        | the mat   | the mat                               |
+        +-----------+---------------------------------------+
     """
     __slots__ = ('keywords',)
     
@@ -135,7 +190,34 @@ class KeywordTriggerMetadata(AutoModerationRuleTriggerMetadata):
         self = object.__new__(cls)
         self.keywords = processed_keywords
         return self
-
+    
+    
+    @copy_docs(AutoModerationRuleTriggerMetadata.__repr__)
+    def __repr__(self):
+        repr_parts = ['<', self.__class__.__name__]
+        
+        # keywords
+        keywords = self.keywords
+        repr_parts.append(' keywords=[')
+        if (keywords is not None):
+            index = 0
+            limit = len(keywords)
+            while True:
+                keyword = keywords[index]
+                repr_parts.append(repr(keyword))
+                
+                index += 1
+                if index == limit:
+                    break
+                
+                repr_parts.append(', ')
+                continue
+        
+        repr_parts.append(']')
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
     
     @classmethod
     @copy_docs(AutoModerationRuleTriggerMetadata.from_data)
@@ -190,6 +272,19 @@ class KeywordTriggerMetadata(AutoModerationRuleTriggerMetadata):
         return hash_value
     
     
+    @copy_docs(AutoModerationRuleTriggerMetadata.copy)
+    def copy(self):
+        new = AutoModerationRuleTriggerMetadata.copy(self)
+        
+        # keywords
+        keywords = self.keywords
+        if (keywords is not None):
+            keywords = tuple(keyword for keyword in keywords)
+        new.keywords = keywords
+        
+        return new
+    
+    
     def iter_keywords(self):
         """
         Iterates over the keywords of the keyword trigger metadata.
@@ -203,19 +298,6 @@ class KeywordTriggerMetadata(AutoModerationRuleTriggerMetadata):
         keywords = self.keywords
         if (keywords is not None):
             yield from keywords
-    
-    
-    @copy_docs(AutoModerationRuleTriggerMetadata.copy)
-    def copy(self):
-        new = AutoModerationRuleTriggerMetadata.copy(self)
-        
-        # keywords
-        keywords = self.keywords
-        if (keywords is not None):
-            keywords = tuple(keyword for keyword in keywords)
-        new.keywords = keywords
-        
-        return new
 
 
 class KeywordPresetTriggerMetadata(AutoModerationRuleTriggerMetadata):
@@ -291,7 +373,35 @@ class KeywordPresetTriggerMetadata(AutoModerationRuleTriggerMetadata):
         self = object.__new__(cls)
         self.keyword_presets = processed_keyword_presets
         return self
-
+    
+    @copy_docs(AutoModerationRuleTriggerMetadata.__repr__)
+    def __repr__(self):
+        repr_parts = ['<', self.__class__.__name__]
+        
+        # keyword_presets
+        keyword_presets = self.keyword_presets
+        repr_parts.append(' keywords=[')
+        if (keyword_presets is not None):
+            index = 0
+            limit = len(keyword_presets)
+            while True:
+                keyword = keyword_presets[index]
+                repr_parts.append(repr(keyword.name))
+                repr_parts.append('~')
+                repr_parts.append(repr(keyword.value))
+                
+                index += 1
+                if index == limit:
+                    break
+                
+                repr_parts.append(', ')
+                continue
+        
+        repr_parts.append(']')
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
     
     @classmethod
     @copy_docs(AutoModerationRuleTriggerMetadata.from_data)

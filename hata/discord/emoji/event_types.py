@@ -91,10 +91,13 @@ class ReactionAddEvent(EventBase):
         self.user = user
         return self
     
+    
     @copy_docs(EventBase.__repr__)
     def __repr__(self):
-        return (f'<{self.__class__.__name__} message={self.message!r}, emoji={self.emoji!r}, '
-            f'user={self.user.full_name!r}>')
+        return (
+            f'<{self.__class__.__name__} message={self.message!r}, emoji={self.emoji!r}, '
+            f'user={self.user.full_name!r}>'
+        )
     
     
     @copy_docs(EventBase.__len__)
@@ -118,7 +121,7 @@ class ReactionAddEvent(EventBase):
         if self.message.id != other.message.id:
             return False
         
-        if self.emoji is not other.message:
+        if self.emoji is not other.emoji:
             return False
         
         if self.user is not other.user:
@@ -129,7 +132,7 @@ class ReactionAddEvent(EventBase):
     
     @copy_docs(EventBase.__hash__)
     def __hash__(self):
-        return self.message.id^self.emoji.id^self.user.id
+        return self.message.id ^ self.emoji.id ^ self.user.id
     
     
     def delete_reaction_with(self, client):

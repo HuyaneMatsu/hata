@@ -330,7 +330,7 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
         'direct_typings': INTENT_SHIFT_DIRECT_TYPINGS,
         'message_content': INTENT_SHIFT_MESSAGE_CONTENT,
         'guild_scheduled_events': INTENT_SHIFT_GUILD_SCHEDULED_EVENTS,
-        'auto_moderation_configuration': INTENT_SHIFT_AUTO_MODERATION_EXECUTION,
+        'auto_moderation_configuration': INTENT_SHIFT_AUTO_MODERATION_CONFIGURATION,
         'auto_moderation_execution': INTENT_SHIFT_AUTO_MODERATION_EXECUTION,
     }
     

@@ -333,7 +333,7 @@ A change like this was requested for a while...
 #### Bug Fixes
 
 - Fix an `AttributeError` in `get_channel_id`. (koish#5800)
-- Fix an `AttributeError` in `get_guild_id_and_channel_id`. (koish#5800)
+- Fix an `AttributeError` in `get_channel_guild_id_and_id`. (koish#5800)
 - Fix a `TypeError` in `Channel.is_guild_voice`. (koish#5800)
 - Fix a `TypeError` in `Channel.is_...` non-group methods.
 

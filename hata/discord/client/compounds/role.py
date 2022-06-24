@@ -15,7 +15,7 @@ from ...role import Role
 from ...utils import get_image_media_type, image_to_base64
 
 from ..functionality_helpers import role_move_key, role_reorder_valid_roles_sort_key
-from ..request_helpers import get_guild_and_id, get_guild_id, get_guild_id_and_role_id
+from ..request_helpers import get_guild_and_id, get_guild_id, get_role_guild_id_and_id
 
 
 class ClientCompoundRoleEndpoints(Compound):
@@ -82,7 +82,7 @@ class ClientCompoundRoleEndpoints(Compound):
             - If `permissions` was not given as `None`, ``Permission``, neither as other `int`.
             - If `icon` was passed as `bytes-like`, but it's format is not any of the expected formats.
         """
-        snowflake_pair = get_guild_id_and_role_id(role)
+        snowflake_pair = get_role_guild_id_and_id(role)
         if snowflake_pair is None:
             raise TypeError(
                 f'`role` can be `{Role.__name__}`, `tuple` (`int`, `int`), got '
@@ -207,7 +207,7 @@ class ClientCompoundRoleEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        snowflake_pair = get_guild_id_and_role_id(role)
+        snowflake_pair = get_role_guild_id_and_id(role)
         if snowflake_pair is None:
             raise TypeError(
                 f'`role` can be `{Role.__name__}`, `tuple` (`int`, `int`), got {role.__class__.__name__}; {role!r}.'

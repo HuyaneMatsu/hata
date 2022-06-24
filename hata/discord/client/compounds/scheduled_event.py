@@ -11,7 +11,7 @@ from ...scheduled_event import PrivacyLevel, ScheduledEvent, ScheduledEventEntit
 from ...user import ClientUserBase, User
 from ...utils import datetime_to_timestamp, log_time_converter
 from ..request_helpers import (
-    get_channel_id, get_guild_id, get_guild_id_and_scheduled_event_id, get_scheduled_event_guild_id_and_id
+    get_channel_id, get_guild_id, get_scheduled_event_guild_id_and_id, get_scheduled_event_and_guild_id_and_id
 )
 
 
@@ -245,7 +245,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
             - If `start` is not `datetime`.
             - If `end `is neither `None`, nor `datetime`.
         """
-        guild_id, scheduled_event_id = get_guild_id_and_scheduled_event_id(scheduled_event)
+        guild_id, scheduled_event_id = get_scheduled_event_guild_id_and_id(scheduled_event)
         
         data = {}
         
@@ -381,7 +381,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild_id, scheduled_event_id = get_guild_id_and_scheduled_event_id(scheduled_event)
+        guild_id, scheduled_event_id = get_scheduled_event_guild_id_and_id(scheduled_event)
         await self.http.scheduled_event_delete(guild_id, scheduled_event_id)
     
     
@@ -411,7 +411,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        scheduled_event, guild_id, scheduled_event_id = get_scheduled_event_guild_id_and_id(scheduled_event)
+        scheduled_event, guild_id, scheduled_event_id = get_scheduled_event_and_guild_id_and_id(scheduled_event)
         if (scheduled_event is None) or force_update:
             data = await self.http.scheduled_event_get(guild_id, scheduled_event_id, {'with_user_count', None})
         
@@ -492,7 +492,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
             - If `limit` was not given as `int`.
             - If `limit` is out of range [1:100].
         """
-        guild_id, scheduled_event_id = get_guild_id_and_scheduled_event_id(scheduled_event)
+        guild_id, scheduled_event_id = get_scheduled_event_guild_id_and_id(scheduled_event)
         
         if limit is None:
             limit = 100
@@ -559,7 +559,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild_id, scheduled_event_id = get_guild_id_and_scheduled_event_id(scheduled_event)
+        guild_id, scheduled_event_id = get_scheduled_event_guild_id_and_id(scheduled_event)
         
         query_parameters = {'after': 0}
         

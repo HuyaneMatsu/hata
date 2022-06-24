@@ -13,7 +13,7 @@ from ...oauth2 import Connection
 from ...user import PremiumType
 from ...utils import datetime_to_timestamp, get_image_media_type, image_to_base64
 
-from ..request_helpers import get_guild_id, get_guild_id_and_channel_id
+from ..request_helpers import get_guild_id, get_channel_guild_id_and_id
 
 
 class ClientCompoundClientEndpoints(Compound):
@@ -490,7 +490,7 @@ class ClientCompoundClientEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild_id, channel_id = get_guild_id_and_channel_id(channel, Channel.is_guild_stage)
+        guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_guild_stage)
         
         if request:
             timestamp = datetime_to_timestamp(datetime.utcnow())
@@ -528,7 +528,7 @@ class ClientCompoundClientEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild_id, channel_id = get_guild_id_and_channel_id(channel, Channel.is_guild_stage)
+        guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_guild_stage)
         
         data = {
             'suppress': True,

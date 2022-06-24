@@ -19,7 +19,7 @@ from ...user import ClientUserBase, create_partial_user_from_id, thread_user_cre
 from ..functionality_helpers import request_channel_thread_channels
 from ..request_helpers import (
     add_file_to_message_data, get_channel_and_id, get_channel_id, get_components_data, get_guild_id,
-    get_guild_id_and_channel_id, get_user_and_id, get_user_id, validate_content_and_embed,
+    get_channel_guild_id_and_id, get_user_and_id, get_user_id, validate_content_and_embed,
 )
 
 
@@ -718,13 +718,13 @@ class ClientCompoundThreadEndpoints(Compound):
     
     if API_VERSION >= 10:
         async def channel_thread_get_all_active(self, channel):
-            guild_id, channel_id = get_guild_id_and_channel_id(channel, Channel.is_in_group_can_contain_threads)
+            guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_can_contain_threads)
             thread_channels = await self.guild_thread_get_all_active(guild_id)
             return [thread_channel for thread_channel in thread_channels if thread_channel.parent_id == channel_id]
     
     else:
         async def channel_thread_get_all_active(self, channel):
-            guild_id, channel_id = get_guild_id_and_channel_id(channel, Channel.is_in_group_can_contain_threads)
+            guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_can_contain_threads)
             return await request_channel_thread_channels(
                 self,
                 guild_id,
@@ -786,7 +786,7 @@ class ClientCompoundThreadEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild_id, channel_id = get_guild_id_and_channel_id(channel, Channel.is_in_group_can_contain_threads)
+        guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_can_contain_threads)
         return await request_channel_thread_channels(
             self,
             guild_id,
@@ -817,7 +817,7 @@ class ClientCompoundThreadEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild_id, channel_id = get_guild_id_and_channel_id(channel, Channel.is_in_group_can_contain_threads)
+        guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_can_contain_threads)
         return await request_channel_thread_channels(
             self,
             guild_id,
@@ -848,7 +848,7 @@ class ClientCompoundThreadEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild_id, channel_id = get_guild_id_and_channel_id(channel, Channel.is_in_group_can_contain_threads)
+        guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_can_contain_threads)
         return await request_channel_thread_channels(
             self,
             guild_id,

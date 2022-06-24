@@ -14,7 +14,7 @@ from ...user import ClientUserBase, User
 from ...utils import datetime_to_timestamp
 
 from ..request_helpers import (
-    get_guild_and_id, get_guild_id, get_guild_id_and_channel_id, get_guild_id_and_role_id, get_user_and_id, get_user_id
+    get_guild_and_id, get_guild_id, get_channel_guild_id_and_id, get_role_guild_id_and_id, get_user_and_id, get_user_id
 )
 
 
@@ -223,7 +223,7 @@ class ClientCompoundUserEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        snowflake_pair = get_guild_id_and_role_id(role)
+        snowflake_pair = get_role_guild_id_and_id(role)
         if snowflake_pair is None:
             return
         guild_id, role_id = snowflake_pair
@@ -257,7 +257,7 @@ class ClientCompoundUserEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        snowflake_pair = get_guild_id_and_role_id(role)
+        snowflake_pair = get_role_guild_id_and_id(role)
         if snowflake_pair is None:
             return
         guild_id, role_id = snowflake_pair
@@ -289,7 +289,7 @@ class ClientCompoundUserEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild_id, channel_id = get_guild_id_and_channel_id(channel, Channel.is_in_group_guild_connectable)
+        guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_guild_connectable)
         if not guild_id:
             return
         
@@ -321,7 +321,7 @@ class ClientCompoundUserEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild_id, channel_id = get_guild_id_and_channel_id(channel, Channel.is_guild_stage)
+        guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_guild_stage)
         if not guild_id:
             return
         
@@ -358,7 +358,7 @@ class ClientCompoundUserEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild_id, channel_id = get_guild_id_and_channel_id(channel, Channel.is_guild_stage)
+        guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_guild_stage)
         if not guild_id:
             return
         

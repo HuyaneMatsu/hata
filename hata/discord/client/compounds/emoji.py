@@ -10,7 +10,7 @@ from ...emoji import Emoji
 from ...http import DiscordHTTPClient
 from ...role import Role
 from ...utils import image_to_base64
-from ..request_helpers import get_guild_and_id, get_guild_id, get_guild_id_and_emoji_id
+from ..request_helpers import get_guild_and_id, get_guild_id, get_emoji_guild_id_and_id
 
 _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
 
@@ -296,7 +296,7 @@ class ClientCompoundEmojiEndpoints(Compound):
         AssertionError
             If `emoji` was not given as ``Emoji``.
         """
-        guild_id, emoji_id = get_guild_id_and_emoji_id(emoji)
+        guild_id, emoji_id = get_emoji_guild_id_and_id(emoji)
         
         # Cannot delete partially loaded emoji.
         if guild_id is None:
@@ -337,7 +337,7 @@ class ClientCompoundEmojiEndpoints(Compound):
             - If `name` length is out of the expected range [1:32].
             - If `roles` was not given neither as `None`, `list`, `tuple`, `set`.
         """
-        guild_id, emoji_id = get_guild_id_and_emoji_id(emoji)
+        guild_id, emoji_id = get_emoji_guild_id_and_id(emoji)
         
         # Cannot edit partially loaded emojis.
         if not guild_id:

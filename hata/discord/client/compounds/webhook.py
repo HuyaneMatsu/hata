@@ -15,7 +15,7 @@ from ...webhook import Webhook, create_partial_webhook_from_id
 
 from ..request_helpers import (
     add_file_to_message_data, get_channel_id, get_components_data, get_guild_id, get_webhook_and_id,
-    get_webhook_and_id_token, get_webhook_id, get_webhook_id_token, validate_content_and_embed,
+    get_webhook_and_id_and_token, get_webhook_id, get_webhook_id_and_token, validate_content_and_embed,
 )
 
 
@@ -166,7 +166,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         -----
         If the webhook already loaded and if it's guild's webhooks are up to date, no request is done.
         """
-        webhook, webhook_id, webhook_token = get_webhook_and_id_token(webhook)
+        webhook, webhook_id, webhook_token = get_webhook_and_id_and_token(webhook)
         
         if (webhook is None):
             webhook = create_partial_webhook_from_id(webhook_id, webhook_token)
@@ -342,7 +342,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        webhook_id, webhook_token = get_webhook_id_token(webhook)
+        webhook_id, webhook_token = get_webhook_id_and_token(webhook)
         
         await self.http.webhook_delete_token(webhook_id, webhook_token)
     
@@ -489,7 +489,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         -----
         This endpoint cannot edit the webhook's channel, like ``.webhook_edit``.
         """
-        webhook, webhook_id, webhook_token = get_webhook_and_id_token(webhook)
+        webhook, webhook_id, webhook_token = get_webhook_and_id_and_token(webhook)
         
         data = {}
         
@@ -636,7 +636,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         - ``.webhook_message_delete`` : Delete a message created by a webhook.
         - ``.webhook_message_get`` : Get a message created by a webhook.
         """
-        webhook, webhook_id, webhook_token = get_webhook_and_id_token(webhook)
+        webhook, webhook_id, webhook_token = get_webhook_and_id_and_token(webhook)
         
         while True:
             if thread is None:
@@ -831,7 +831,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         
         Editing the message with empty string is broken.
         """
-        webhook_id, webhook_token = get_webhook_id_token(webhook)
+        webhook_id, webhook_token = get_webhook_id_and_token(webhook)
         
         # Detect message id
         # 1.: Message
@@ -931,7 +931,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         - ``.webhook_message_edit`` : Edit a message created by a webhook.
         - ``.webhook_message_get`` : Get a message created by a webhook.
         """
-        webhook_id, webhook_token = get_webhook_id_token(webhook)
+        webhook_id, webhook_token = get_webhook_id_and_token(webhook)
         
         # Detect message id
         # 1.: Message
@@ -1008,7 +1008,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         - ``.webhook_message_edit`` : Edit a message created by a webhook.
         - ``.webhook_message_delete`` : Delete a message created by a webhook.
         """
-        webhook_id, webhook_token = get_webhook_id_token(webhook)
+        webhook_id, webhook_token = get_webhook_id_and_token(webhook)
         
         message_id_value = maybe_snowflake(message_id)
         if message_id_value is None:

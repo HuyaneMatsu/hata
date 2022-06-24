@@ -9,7 +9,7 @@ from ...guild import DiscoveryCategory, Guild, GuildDiscovery
 from ...http import DiscordHTTPClient, rate_limit_groups
 
 from ..functionality_helpers import DiscoveryCategoryRequestCacher, DiscoveryTermRequestCacher
-from ..request_helpers import get_guild_discovery_and_id
+from ..request_helpers import get_guild_discovery_and_guild_id
 
 
 class ClientCompoundDiscoveryEndpoints(Compound):
@@ -214,7 +214,7 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         
         If `guild` was given as ``GuildDiscovery``, then it will be updated.
         """
-        guild_discovery, guild_id = get_guild_discovery_and_id(guild)
+        guild_discovery, guild_id = get_guild_discovery_and_guild_id(guild)
         
         category_type = category.__class__
         if category_type is DiscoveryCategory:
@@ -265,7 +265,7 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         
         If `guild` was given as ``GuildDiscovery``, then it will be updated.
         """
-        guild_discovery, guild_id = get_guild_discovery_and_id(guild)
+        guild_discovery, guild_id = get_guild_discovery_and_guild_id(guild)
         
         category_type = category.__class__
         if category_type is DiscoveryCategory:

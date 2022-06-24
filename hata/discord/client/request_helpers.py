@@ -9,9 +9,13 @@ from scarletio.web_common import Formdata
 
 from ...env import API_VERSION
 
+from ..auto_moderation import AutoModerationRule
 from ..bases import maybe_snowflake, maybe_snowflake_pair, maybe_snowflake_token_pair
 from ..channel import Channel
-from ..core import APPLICATION_COMMANDS, CHANNELS, GUILDS, MESSAGES, SCHEDULED_EVENTS, STICKERS, STICKER_PACKS, USERS
+from ..core import (
+    APPLICATION_COMMANDS, AUTO_MODERATION_RULES, CHANNELS, GUILDS, MESSAGES, SCHEDULED_EVENTS, STICKERS, STICKER_PACKS,
+    USERS
+)
 from ..embed import EmbedBase
 from ..emoji import Emoji, parse_reaction
 from ..guild import Guild, GuildDiscovery
@@ -751,26 +755,22 @@ def get_channel_id(channel, type_checker):
     TypeError
         If `channel`'s type is incorrect.
     """
-    while True:
-        if isinstance(channel, Channel):
-            if type_checker(channel) or channel.partial:
-                channel_id = channel.id
-                break
-        
-        else:
-            channel_id = maybe_snowflake(channel)
-            if (channel_id is not None):
-                break
-        
-        raise TypeError(
-            f'`channel` can be `{Channel.__name__}`, `int`,  passing the `{type_checker.__name__}` check, '
-            f'got {channel.__class__.__name__}; {channel!r}.'
-        )
+    if isinstance(channel, Channel):
+        if type_checker(channel) or channel.partial:
+            return channel.id
     
-    return channel_id
+    else:
+        channel_id = maybe_snowflake(channel)
+        if (channel_id is not None):
+            return channel_id
+        
+    raise TypeError(
+        f'`channel` can be `{Channel.__name__}`, `int`,  passing the `{type_checker.__name__}` check, '
+        f'got {channel.__class__.__name__}; {channel!r}.'
+    )
 
 
-def get_guild_id_and_channel_id(channel, type_checker):
+def get_channel_guild_id_and_id(channel, type_checker):
     """
     Gets the channel's and it's guild's identifier from the given channel or of it's identifier.
     
@@ -791,23 +791,19 @@ def get_guild_id_and_channel_id(channel, type_checker):
     TypeError
         If `channel`'s type is incorrect.
     """
-    while True:
-        if isinstance(channel, Channel):
-            if type_checker(channel) or channel.partial:
-                snowflake_pair = channel.guild_id, channel.id
-                break
-        
-        else:
-            snowflake_pair = maybe_snowflake_pair(channel)
-            if (snowflake_pair is not None):
-                break
-        
-        raise TypeError(
-            f'`channel` can be `{Channel.__name__}`, `int`,  passing the `{type_checker.__name__}` check, '
-            f'got {channel.__class__.__name__}; {channel!r}.'
-        )
+    if isinstance(channel, Channel):
+        if type_checker(channel) or channel.partial:
+            return channel.guild_id, channel.id
     
-    return snowflake_pair
+    else:
+        snowflake_pair = maybe_snowflake_pair(channel)
+        if (snowflake_pair is not None):
+            return snowflake_pair
+    
+    raise TypeError(
+        f'`channel` can be `{Channel.__name__}`, `int`,  passing the `{type_checker.__name__}` check, '
+        f'got {channel.__class__.__name__}; {channel!r}.'
+    )
 
 
 def get_channel_and_id(channel, type_checker):
@@ -922,16 +918,15 @@ def get_user_id(user):
         If `user`'s type is incorrect.
     """
     if isinstance(user, ClientUserBase):
-        user_id = user.id
+        return user.id
     
-    else:
-        user_id = maybe_snowflake(user)
-        if user_id is None:
-            raise TypeError(
-                f'`user` can be `{ClientUserBase.__name__}`, `int`, got {user.__class__.__name__}; {user!r}.'
-            )
+    user_id = maybe_snowflake(user)
+    if (user_id is not None):
+        return user_id
     
-    return user_id
+    raise TypeError(
+        f'`user` can be `{ClientUserBase.__name__}`, `int`, got {user.__class__.__name__}; {user!r}.'
+    )
 
 
 def get_user_and_id(user):
@@ -1000,19 +995,18 @@ def get_user_id_nullable(user):
         If `user`'s type is incorrect.
     """
     if user is None:
-        user_id = 0
+        return 0
     
-    elif isinstance(user, ClientUserBase):
-        user_id = user.id
+    if isinstance(user, ClientUserBase):
+        return user.id
     
-    else:
-        user_id = maybe_snowflake(user)
-        if user_id is None:
-            raise TypeError(
-                f'`user` can be `{ClientUserBase.__name__}`, `int`, got {user.__class__.__name__}; {user!r}.'
-            )
-    
-    return user_id
+    user_id = maybe_snowflake(user)
+    if (user_id is not None):
+        return user_id
+        
+    raise TypeError(
+        f'`user` can be `{ClientUserBase.__name__}`, `int`, got {user.__class__.__name__}; {user!r}.'
+    )
 
 
 def get_guild_id(guild):
@@ -1035,15 +1029,15 @@ def get_guild_id(guild):
         If `guild`'s type is incorrect.
     """
     if isinstance(guild, Guild):
-        guild_id = guild.id
-    else:
-        guild_id = maybe_snowflake(guild)
-        if guild_id is None:
-            raise TypeError(
-                f'`guild` can be `{Guild.__name__}`, `int`, got {guild.__class__.__name__}; {guild!r}.'
-            )
+        return guild.id
     
-    return guild_id
+    guild_id = maybe_snowflake(guild)
+    if (guild_id is not None):
+        return guild_id
+        
+    raise TypeError(
+        f'`guild` can be `{Guild.__name__}`, `int`, got {guild.__class__.__name__}; {guild!r}.'
+    )
 
 
 def get_guild_and_id(guild):
@@ -1081,7 +1075,7 @@ def get_guild_and_id(guild):
     return guild, guild_id
 
 
-def get_guild_discovery_and_id(guild):
+def get_guild_discovery_and_guild_id(guild):
     """
     Gets the guild discovery and it's identifier from the given guild or it's identifier.
     
@@ -1242,7 +1236,6 @@ def get_channel_id_and_message_id(message):
     return channel_id, message_id
 
 
-
 def get_message_and_channel_id_and_message_id(message):
     """
     Gets the message's channel's and it's own identifier.
@@ -1332,7 +1325,7 @@ def get_role_id(role):
     return role_id
 
 
-def get_guild_id_and_role_id(role):
+def get_role_guild_id_and_id(role):
     """
     Gets the role's and it's guild's identifier from the given role or of a `guild-id`, `role-id` pair.
     
@@ -1352,20 +1345,16 @@ def get_guild_id_and_role_id(role):
         If `role`'s type is incorrect.
     """
     if isinstance(role, Role):
-        guild = role.guild
-        if guild is None:
-            snowflake_pair = None
-        else:
-            snowflake_pair = guild.id, role.id
+        return role.guild_id, role.id
     
-    else:
-        snowflake_pair = maybe_snowflake_pair(role)
-        if snowflake_pair is None:
-            raise TypeError(
-                f'`role` can be `{Role.__name__}`, `tuple` (`int`, `int`), got {role.__class__.__name__}; {role!r}.'
-            )
+    snowflake_pair = maybe_snowflake_pair(role)
+    if snowflake_pair is not None:
+        return snowflake_pair
     
-    return snowflake_pair
+    raise TypeError(
+        f'`role` can be `{Role.__name__}`, `tuple` (`int`, `int`), got {role.__class__.__name__}; {role!r}.'
+    )
+    
 
 
 def get_webhook_id(webhook):
@@ -1443,7 +1432,7 @@ def get_webhook_and_id(webhook):
     return webhook, webhook_id
 
 
-def get_webhook_id_token(webhook):
+def get_webhook_id_and_token(webhook):
     """
     Gets the webhook's identifier and token from the given webhook or it's token, identifier pair.
     
@@ -1477,7 +1466,7 @@ def get_webhook_id_token(webhook):
     return snowflake_token_pair
 
 
-def get_webhook_and_id_token(webhook):
+def get_webhook_and_id_and_token(webhook):
     """
     Gets the webhook, it's identifier and token from the given webhook or it's token, identifier pair.
     
@@ -1595,7 +1584,7 @@ def get_emoji_from_reaction(emoji):
     return emoji
 
 
-def get_guild_id_and_emoji_id(emoji):
+def get_emoji_guild_id_and_id(emoji):
     """
     Gets the emoji's and it's guild's identifier from the given emoji.
     
@@ -1705,7 +1694,7 @@ def get_sticker_pack_and_id(sticker_pack):
     return sticker_pack, sticker_pack_id
 
 
-def get_guild_id_and_scheduled_event_id(scheduled_event):
+def get_scheduled_event_guild_id_and_id(scheduled_event):
     """
     Gets the scheduled event's and it's identifier from the given scheduled event or from a tuple of 2 identifiers.
     
@@ -1740,9 +1729,9 @@ def get_guild_id_and_scheduled_event_id(scheduled_event):
     return snowflake_pair
 
 
-def get_scheduled_event_guild_id_and_id(scheduled_event):
+def get_scheduled_event_and_guild_id_and_id(scheduled_event):
     """
-    Gets the scheduled event's identifier from the given guild or of it's identifier.
+    Gets the scheduled event, it's guild's identifier and it's identifier.
     
     Parameters
     ----------
@@ -1813,6 +1802,7 @@ def get_application_command_id(application_command):
             )
     
     return application_command_id
+
 
 def get_application_command_and_id(application_command):
     """
@@ -1887,3 +1877,82 @@ def get_application_command_id_nullable(application_command):
             )
     
     return application_command_id
+
+
+def get_auto_moderation_rule_guild_id_and_id(auto_moderation_rule):
+    """
+    Gets the auto moderation rule's guild's identifier and it's own identifier.
+    
+    Parameters
+    ----------
+    auto_moderation_rule : ``AutoModerationRule``, `tuple` (`int`, `int`)
+        The auto moderation rule, or it's identifier as a `guild-id`, `rule-id` pair..
+    
+    Returns
+    -------
+    guild_id : `int`
+        The auto moderation rule's guild's identifier.
+    auto_moderation_rule_id : `int`
+        The auto moderation rule's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `auto_moderation_rule`'s type is incorrect.
+    """
+    if isinstance(auto_moderation_rule, AutoModerationRule):
+        guild_id = auto_moderation_rule.guild_id
+        rule_id = auto_moderation_rule.id
+    
+    else:
+        snowflake_pair = maybe_snowflake_pair(auto_moderation_rule)
+        if snowflake_pair is None:
+            raise TypeError(
+                f'`auto_moderation_rule` can be `{AutoModerationRule.__name__}`, `tuple` of (`int`, `int`), got '
+                f'{auto_moderation_rule.__class__.__name__}; {auto_moderation_rule!r}.'
+            )
+        
+        guild_id, rule_id = snowflake_pair
+    
+    return guild_id, rule_id
+
+
+def get_auto_moderation_rule_and_guild_id_and_id(auto_moderation_rule):
+    """
+    Gets the auto moderation, Its guild's identifier and it's own identifier.
+    
+    Parameters
+    ----------
+    auto_moderation_rule : ``AutoModerationRule``, `tuple` (`int`, `int`)
+        The auto moderation rule, or it's identifier as a `guild-id`, `rule-id` pair..
+    
+    Returns
+    -------
+    auto_moderation_rule : `None`, ``AutoModerationRule``
+        The auto moderation rule.
+    guild_id : `int`
+        The auto moderation rule's guild's identifier.
+    auto_moderation_rule_id : `int`
+        The auto moderation rule's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `auto_moderation_rule`'s type is incorrect.
+    """
+    if isinstance(auto_moderation_rule, AutoModerationRule):
+        guild_id = auto_moderation_rule.guild_id
+        rule_id = auto_moderation_rule.id
+    
+    else:
+        snowflake_pair = maybe_snowflake_pair(auto_moderation_rule)
+        if snowflake_pair is None:
+            raise TypeError(
+                f'`auto_moderation_rule` can be `{AutoModerationRule.__name__}`, `tuple` of (`int`, `int`), got '
+                f'{auto_moderation_rule.__class__.__name__}; {auto_moderation_rule!r}.'
+            )
+        
+        guild_id, rule_id = snowflake_pair
+        auto_moderation_rule = AUTO_MODERATION_RULES.get(rule_id, None)
+    
+    return auto_moderation_rule, guild_id, rule_id

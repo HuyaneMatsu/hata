@@ -58,7 +58,7 @@ class WebhookEndpoints(Compound):
         """
         channel_id = get_channel_id(channel, Channel.is_in_group_guild_main_text)
         
-        if "True":
+        if __debug__:
             if not isinstance(name, str):
                 raise AssertionError(
                     f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
@@ -78,7 +78,7 @@ class WebhookEndpoints(Compound):
                     f'`avatar` can `None`, `bytes-like`, got {avatar.__name__}; {reprlib.repr(avatar)}.'
                 )
             
-            if "True":
+            if __debug__:
                 media_type = get_image_media_type(avatar)
                 if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
                     raise AssertionError(
@@ -385,7 +385,7 @@ class WebhookEndpoints(Compound):
         data = {}
         
         if (name is not ...):
-            if "True":
+            if __debug__:
                 if not isinstance(name, str):
                     raise AssertionError(
                         f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
@@ -409,7 +409,7 @@ class WebhookEndpoints(Compound):
                         f'{reprlib.repr(avatar)}.'
                     )
                 
-                if "True":
+                if __debug__:
                     media_type = get_image_media_type(avatar)
                     if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
                         raise AssertionError(
@@ -490,7 +490,7 @@ class WebhookEndpoints(Compound):
         data = {}
         
         if (name is not ...):
-            if "True":
+            if __debug__:
                 if not isinstance(name, str):
                     raise AssertionError(
                         f'`name` can be `None`, `str`, got {name.__class__.__name__}; {name!r}.'
@@ -514,7 +514,7 @@ class WebhookEndpoints(Compound):
                         f'{reprlib.repr(avatar)}.'
                     )
                 
-                if "True":
+                if __debug__:
                     media_type = get_image_media_type(avatar)
                     if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
                         raise AssertionError(
@@ -658,7 +658,7 @@ class WebhookEndpoints(Compound):
         
         components = get_components_data(components, False)
         
-        if "True":
+        if __debug__:
             if not isinstance(tts, bool):
                 raise AssertionError(
                     f'`tts` can be `bool`, got {tts.__class__.__name__}; {tts!r}.'
@@ -690,7 +690,7 @@ class WebhookEndpoints(Compound):
             message_data['tts'] = True
         
         if (avatar_url is not None):
-            if "True":
+            if __debug__:
                 if not isinstance(avatar_url, str):
                     raise AssertionError(
                         f'`avatar_url` can be `None`, `str`, got {avatar_url.__class__.__name__}; {avatar_url!r}.'
@@ -699,7 +699,7 @@ class WebhookEndpoints(Compound):
             message_data['avatar_url'] = avatar_url
         
         if (name is not None):
-            if "True":
+            if __debug__:
                 if not isinstance(name, str):
                     raise AssertionError(
                         f'`name` cane be given either as `None`, `str instance, got '
@@ -837,7 +837,7 @@ class WebhookEndpoints(Compound):
         # 5.: raise
         
         if isinstance(message, Message):
-            if "True":
+            if __debug__:
                 if message.author.id != webhook_id:
                     raise AssertionError(
                         f'The message was not sent by the webhook, got {message!r}.'
@@ -937,7 +937,7 @@ class WebhookEndpoints(Compound):
         # 5.: raise
         
         if isinstance(message, Message):
-            if "True":
+            if __debug__:
                 if message.author.id != webhook_id:
                     raise AssertionError(
                         f'The message was not sent by the webhook, got {message!r}.'

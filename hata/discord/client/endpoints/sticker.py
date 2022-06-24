@@ -251,7 +251,7 @@ class StickerEndpoints(Compound):
         """
         guild_id = get_guild_id(guild)
         
-        if "True":
+        if __debug__:
             if not isinstance(name, str):
                 raise AssertionError(
                     f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
@@ -263,7 +263,7 @@ class StickerEndpoints(Compound):
                     f'`name` length can be in range [2:32], got {name_length!r}; {name!r}.'
                 )
         
-        if "True":
+        if __debug__:
             if (description is not None):
                 if (not isinstance(description, str)):
                     raise AssertionError(
@@ -282,7 +282,7 @@ class StickerEndpoints(Compound):
         if isinstance(emoji_representation, str):
             tag = emoji_representation
         elif isinstance(emoji_representation, Emoji):
-            if "True":
+            if __debug__:
                 if emoji_representation.is_custom_emoji():
                     raise AssertionError(
                         f'Only unicode (builtin) emojis can be used as tags, got {emoji_representation!r}.'
@@ -295,7 +295,7 @@ class StickerEndpoints(Compound):
                 f'{emoji_representation.__class__.__name__}; {emoji_representation!r}.'
             )
         
-        if "True":
+        if __debug__:
             if not isinstance(image, (bytes, bytearray, memoryview)):
                 raise TypeError(
                     f'`image` can be `None`, `bytes-like`, got {image.__class__.__name__}; {reprlib.repr(image)}.'
@@ -362,7 +362,7 @@ class StickerEndpoints(Compound):
         """
         sticker = await self.sticker_get(sticker)
         
-        if "True":
+        if __debug__:
             if not sticker.guild_id:
                 raise AssertionError(
                     f'Non guild bound sticker cannot be edited, got {sticker!r}.'
@@ -371,7 +371,7 @@ class StickerEndpoints(Compound):
         if (name is ...):
             name = sticker.name
         else:
-            if "True":
+            if __debug__:
                 if not isinstance(name, str):
                     raise AssertionError(
                         f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
@@ -389,7 +389,7 @@ class StickerEndpoints(Compound):
             if isinstance(emoji_representation, str):
                 tag = emoji_representation
             elif isinstance(emoji_representation, Emoji):
-                if "True":
+                if __debug__:
                     if emoji_representation.is_custom_emoji():
                         raise AssertionError(
                             f'Only unicode (builtin) emojis can be used as tags, got {emoji_representation!r}.'
@@ -405,7 +405,7 @@ class StickerEndpoints(Compound):
         if (description is ...):
             description = sticker.description
         else:
-            if "True":
+            if __debug__:
                 if (description is not None):
                     if (not isinstance(description, str)):
                         raise AssertionError(
@@ -458,7 +458,7 @@ class StickerEndpoints(Compound):
         """
         sticker = await self.sticker_get(sticker)
         
-        if "True":
+        if __debug__:
             if not sticker.guild_id:
                 raise AssertionError(
                     f'Non guild bound sticker cannot be edited, got {sticker!r}.'

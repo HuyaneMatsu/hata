@@ -1,7 +1,7 @@
 __all__ = ()
 
 
-import reprlib
+import reprlib, warnings
 from datetime import datetime
 from time import time as time_now
 
@@ -32,7 +32,21 @@ class ClientEndpoints(Compound):
     def _set_attributes(self, data): ...
     
     
-    async def client_edit(
+    async def client_edit(self, **keyword_parameters):
+        """
+        ``Client.client_edit`` is deprecated and will be removed in 2022 December.
+        Please use ``.edit`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.client_edit` is deprecated and will be removed in '
+                f'2022 December. Please use `.edit` instead.'
+            ),
+            FutureWarning
+        )
+        return await self.edit(**keyword_parameters)
+    
+    async def edit(
         self, *, avatar=..., banner=..., banner_color=..., bio=..., name=..., # Generic
         password=..., new_password=..., email=..., # User account only
     ):
@@ -111,7 +125,7 @@ class ClientEndpoints(Compound):
                         f'{reprlib.repr(avatar)}.'
                     )
                 
-                if "True":
+                if __debug__:
                     media_type = get_image_media_type(avatar)
                     
                     if self.premium_type.value:
@@ -139,7 +153,7 @@ class ClientEndpoints(Compound):
                         f'{reprlib.repr(banner)}.'
                     )
                 
-                if "True":
+                if __debug__:
                     media_type = get_image_media_type(banner)
                     
                     if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
@@ -153,7 +167,7 @@ class ClientEndpoints(Compound):
         
         
         if (banner_color is not ...):
-            if "True":
+            if __debug__:
                 if (banner_color is not None) and (not isinstance(banner_color, int)):
                     raise AssertionError(
                         f'`banner_color` can be `None`, `{Color.__name__}`, `int`, got '
@@ -167,7 +181,7 @@ class ClientEndpoints(Compound):
             if bio is None:
                 bio = ''
             else:
-                if "True":
+                if __debug__:
                     if not isinstance(bio, str):
                         raise AssertionError(
                             f'`bio` can be `None`, `str`, got {bio.__class__.__name__}; {bio!r}.'
@@ -183,7 +197,7 @@ class ClientEndpoints(Compound):
         
         
         if (name is not ...):
-            if "True":
+            if __debug__:
                 if not isinstance(name, str):
                     raise AssertionError(
                         f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
@@ -199,7 +213,7 @@ class ClientEndpoints(Compound):
         
         
         if not self.is_bot:
-            if "True":
+            if __debug__:
                 if password is ...:
                     raise AssertionError(
                         f'`password` is must for non bots, got {password!r}.'
@@ -214,7 +228,7 @@ class ClientEndpoints(Compound):
             
             
             if (email is not ...):
-                if "True":
+                if __debug__:
                     if not isinstance(email, str):
                         raise AssertionError(
                             f'`email` can be `str`, got {email.__class__.__name__}; {email!r}.'
@@ -224,7 +238,7 @@ class ClientEndpoints(Compound):
             
             
             if (new_password is not ...):
-                if "True":
+                if __debug__:
                     if not isinstance(new_password, str):
                         raise AssertionError(
                             f'`new_password` can be `str`, got {new_password.__class__.__name__}; '
@@ -248,7 +262,22 @@ class ClientEndpoints(Compound):
                 self.token = token
     
     
-    async def client_guild_profile_edit(self, guild, *, nick=..., avatar=..., timed_out_until=..., reason=None):
+    async def client_guild_profile_edit(self, *positional_parameters, **keyword_parameters):
+        """
+        ``Client.client_guild_profile_edit`` is deprecated and will be removed in 2022 December.
+        Please use ``.guild_profile_edit`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.client_guild_profile_edit` is deprecated and will be removed in '
+                f'2022 December. Please use `.guild_profile_edit` instead.'
+            ),
+            FutureWarning
+        )
+        return await self.guild_profile_edit(*positional_parameters, **keyword_parameters)
+    
+    
+    async def guild_profile_edit(self, guild, *, nick=..., avatar=..., timed_out_until=..., reason=None):
         """
         Edits the client guild profile in the given guild. Nick and guild specific avatars can be edited on this way.
         
@@ -291,7 +320,7 @@ class ClientEndpoints(Compound):
             - If `timed_out_until` is neither `None` nor `datetime`.
         """
         # Security debug checks.
-        if "True":
+        if __debug__:
             if (nick is not None):
                 if not isinstance(nick, str):
                     raise AssertionError(
@@ -341,7 +370,7 @@ class ClientEndpoints(Compound):
                         f'{reprlib.repr(avatar)}.'
                     )
                 
-                if "True":
+                if __debug__:
                     media_type = get_image_media_type(avatar)
                     
                     if self.premium_type.value:
@@ -362,7 +391,7 @@ class ClientEndpoints(Compound):
             if timed_out_until is None:
                 timed_out_until_raw = None
             else:
-                if "True":
+                if __debug__:
                     if not isinstance(timed_out_until, datetime):
                         raise AssertionError(
                             f'`timed_out_until` can be `None`, `datetime`, got {timed_out_until.__class__.__name__}; '
@@ -378,6 +407,21 @@ class ClientEndpoints(Compound):
     
     
     async def client_connection_get_all(self):
+        """
+        ``Client.client_connection_get_all`` is deprecated and will be removed in 2022 December.
+        Please use ``.connection_get_all`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.client_connection_get_all` is deprecated and will be removed in '
+                f'2022 December. Please use `.connection_get_all` instead.'
+            ),
+            FutureWarning
+        )
+        return await self.connection_get_all()
+    
+    
+    async def connection_get_all(self):
         """
         Requests the client's connections.
         
@@ -402,7 +446,7 @@ class ClientEndpoints(Compound):
         return [Connection(connection_data) for connection_data in data]
     
     
-    async def edit_presence(self, **kwargs):
+    async def edit_presence(self, *, activity=..., status=..., afk=False):
         """
         Changes the client's presence (status and activity). If a parameter is not defined, it will not be changed.
         
@@ -430,34 +474,6 @@ class ClientEndpoints(Compound):
         Notes
         -----
         This method is an alternative version of ``.client_edit_presence`` till further decision.
-        """
-        return await self.client_edit_presence(**kwargs)
-    
-    
-    async def client_edit_presence(self, *, activity=..., status=..., afk=False):
-        """
-        Changes the client's presence (status and activity). If a parameter is not defined, it will not be changed.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        activity : ``ActivityBase``, Optional (Keyword only)
-            The new activity of the Client.
-        status : `str`, ``Status``, Optional (Keyword only)
-            The new status of the client.
-        afk : `bool` = `False`, Optional (Keyword only)
-            Whether the client is afk or not (?).
-        
-        Raises
-        ------
-        TypeError:
-            - If the status is not `str`, ``Status``.
-            - If activity is not ``ActivityBase``, except ``ActivityCustom``.
-        ValueError:
-            - If the status `str`, but not any of the predefined ones.
-        AssertionError
-            - If `afk` was not given as `bool`.
         """
         if status is ...:
             status = self._status
@@ -494,7 +510,7 @@ class ClientEndpoints(Compound):
         else:
             since = 0
         
-        if "True":
+        if __debug__:
             if not isinstance(afk, bool):
                 raise AssertionError(
                     f'`afk` can be `bool`, got {afk.__class__.__name__}; {afk!r}.'
@@ -511,6 +527,22 @@ class ClientEndpoints(Compound):
         }
         
         await self.gateway.send_as_json(data)
+    
+    
+    async def client_edit_presence(self, **keyword_parameters):
+        """
+        ``Client.client_edit_presence`` is deprecated and will be removed in 2022 December.
+        Please use ``.edit_presence`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.client_edit_presence` is deprecated and will be removed in 2022 December. '
+                f'Please use `.edit_presence` instead.'
+            ),
+            FutureWarning
+        )
+        
+        return await self.edit_presence(**keyword_parameters)
     
     
     async def guild_leave(self, guild):

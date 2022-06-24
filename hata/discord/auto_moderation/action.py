@@ -25,10 +25,10 @@ def _validate_action_type_with_metadata_options(action_type, channel, duration):
     
     Returns
     -------
-    action_type : ``AutoModerationActionType``
-        The final processed action type.
     action_metadata : `None`, ``AutoModerationActionMetadata``
         Action type specific metadata if applicable.
+    action_type : ``AutoModerationActionType``
+        The final processed action type.
     
     Raises
     ------
@@ -50,11 +50,11 @@ def _validate_action_type_with_metadata_options(action_type, channel, duration):
         )
     
     if (channel is not ...):
-        probable_action_type = AutoModerationActionType.keyword_preset
+        probable_action_type = AutoModerationActionType.send_alert_message
         metadata_parameter = channel
     
     elif (duration is not ...):
-        probable_action_type = AutoModerationActionType.keyword
+        probable_action_type = AutoModerationActionType.timeout
         metadata_parameter = duration
     
     else:
@@ -94,7 +94,7 @@ def _validate_action_type_with_metadata_options(action_type, channel, duration):
     else:
         action_metadata = action_metadata_type(metadata_parameter)
     
-    return action_type, action_metadata
+    return action_metadata, action_type
 
 
 class AutoModerationAction(RichAttributeErrorBaseType):
@@ -136,7 +136,7 @@ class AutoModerationAction(RichAttributeErrorBaseType):
             - Parameter mismatch.
         """
         # type & channel & duration
-        type_, metadata = _validate_action_type_with_metadata_options(action_type, channel, duration)
+        metadata, type_ = _validate_action_type_with_metadata_options(action_type, channel, duration)
         
         self = object.__new__(cls)
         self.type = type_
@@ -160,7 +160,7 @@ class AutoModerationAction(RichAttributeErrorBaseType):
             The created auto moderation rule.
         """
         # type_
-        type_ = AutoModerationAction.get(data['type'])
+        type_ = AutoModerationActionType.get(data['type'])
         
         metadata_type = type_.metadata_type
         if (metadata_type is None):

@@ -149,9 +149,8 @@ class SendAlertMessageActionMetadata(AutoModerationActionMetadata):
         return self
     
     
-    @classmethod
     @copy_docs(AutoModerationActionMetadata.to_data)
-    def to_data(self, data):
+    def to_data(self):
         data = {}
         
         data['channel_id'] = self.channel_id
@@ -268,9 +267,8 @@ class TimeoutActionMetadata(AutoModerationActionMetadata):
         return self
     
     
-    @classmethod
     @copy_docs(AutoModerationActionMetadata.to_data)
-    def to_data(self, data):
+    def to_data(self):
         data = {}
         
         data['duration_seconds'] = self.duration

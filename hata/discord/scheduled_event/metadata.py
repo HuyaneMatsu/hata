@@ -176,7 +176,7 @@ class StageEntityMetadata(ScheduledEventEntityMetadata):
     
     @classmethod
     @copy_docs(ScheduledEventEntityMetadata.to_data)
-    def to_data(self, data):
+    def to_data(self):
         data = {}
         
         speaker_ids = self.speaker_ids
@@ -312,7 +312,7 @@ class LocationEntityMetadata(ScheduledEventEntityMetadata):
     
     @classmethod
     @copy_docs(ScheduledEventEntityMetadata.to_data)
-    def to_data(self, data):
+    def to_data(self):
         return {
             'location': self.location,
         }

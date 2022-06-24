@@ -30,30 +30,37 @@ def _validate_actions(actions):
         - If `actions`'s type is incorrect.
         - If an action's type is incorrect.
     """
-    processed_actions = None
+    if actions is None:
+        processed_actions = None
     
-    if (actions is not None):
-        if not isinstance(actions, (list, set, tuple)):
+    elif isinstance(actions, AutoModerationAction):
+        processed_actions = (actions, )
+    
+    else:
+        iterator = getattr(type(actions), '__iter__', None)
+        if iterator is None:
             raise TypeError(
-                f'`actions` can be `None`, (`list`, `set`, `tuple`) of `{AutoModerationAction.__name__}`, '
+                f'`actions` can be `None`, `{AutoModerationAction.__name__}`, '
+                f'`iterable` of `{AutoModerationAction.__name__}`, '
                 f'got {actions.__class__.__name__}; {actions!r}.'
             )
+        
+        processed_actions = None
+        
+        for action in actions:
+            if not isinstance(action, AutoModerationAction):
+                raise TypeError(
+                    f'`actions` can can contain `{AutoModerationAction.__name__}` elements, '
+                    f'got {action.__class__.__name__}; {action!r}; actions={actions!r}.'
+                )
             
-            for action in actions:
-                if not isinstance(action, AutoModerationAction):
-                    raise TypeError(
-                        f'`actions` can can contain `{AutoModerationAction.__name__}` elements, '
-                        f'got {action.__class__.__name__}; {action!r}; actions={actions!r}.'
-                    )
-                
-                if processed_actions is None:
-                    processed_actions = []
-                
-                processed_actions.append(action)
+            if processed_actions is None:
+                processed_actions = set()
+            
+            processed_actions.add(action)
     
     if (processed_actions is not None):
-        processed_actions.sort()
-        processed_actions = tuple(processed_actions)
+        processed_actions = tuple(sorted(processed_actions))
     
     return processed_actions
 
@@ -281,10 +288,10 @@ def _validate_trigger_type_with_metadata_options(trigger_type, keyword_presets, 
     
     Returns
     -------
-    trigger_type : ``AutoModerationTriggerType``
-        The final processed trigger type.
     trigger_metadata : `None`, ``AutoModerationRuleTriggerMetadata``
         Trigger type specific metadata if applicable.
+    trigger_type : ``AutoModerationTriggerType``
+        The final processed trigger type.
     
     Raises
     ------
@@ -350,10 +357,10 @@ def _validate_trigger_type_with_metadata_options(trigger_type, keyword_presets, 
     else:
         trigger_metadata = trigger_metadata_type(metadata_parameter)
     
-    return trigger_type, trigger_metadata
+    return trigger_metadata, trigger_type
 
 
-class AutoModerationRule(DiscordEntity):
+class AutoModerationRule(DiscordEntity, immortal=True):
     """
     Auto moderation feature which allows guilds to set rules that trigger based on some criteria.
     
@@ -410,7 +417,7 @@ class AutoModerationRule(DiscordEntity):
         name : `str`
             The rule's name.
         
-        actions : `None`, (`list`, `set`, `tuple`) of ``AutoModerationAction``
+        actions : `None`, ``AutoModerationAction``, `iterable` of ``AutoModerationAction``
              Actions which will execute when the rule is triggered.
         
         trigger_type : ``AutoModerationTriggerType``, `int`, Optional
@@ -472,7 +479,7 @@ class AutoModerationRule(DiscordEntity):
         
         # trigger_type & keywords & keyword_presets
         trigger_metadata, trigger_type = _validate_trigger_type_with_metadata_options(
-            trigger_type, keywords, keyword_presets
+            trigger_type, keyword_presets, keywords
         )
         
         self = object.__new__(cls)
@@ -1146,7 +1153,7 @@ class AutoModerationRule(DiscordEntity):
         
         Parameters
         ----------
-        actions : `None`, (`list`, `set`, `tuple`) of ``AutoModerationAction``, Optional (Keyword only)
+        actions : `None`, ``AutoModerationAction``, `iterable` of ``AutoModerationAction``, Optional (Keyword only)
             Actions which will execute when the rule is triggered.
         
         enabled : `bool` = `True`, Optional (Keyword only)

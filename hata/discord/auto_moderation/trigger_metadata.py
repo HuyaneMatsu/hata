@@ -233,9 +233,8 @@ class KeywordTriggerMetadata(AutoModerationRuleTriggerMetadata):
         return self
     
     
-    @classmethod
     @copy_docs(AutoModerationRuleTriggerMetadata.to_data)
-    def to_data(self, data):
+    def to_data(self):
         data = {}
         
         keywords = self.keywords
@@ -419,9 +418,8 @@ class KeywordPresetTriggerMetadata(AutoModerationRuleTriggerMetadata):
         return self
     
     
-    @classmethod
     @copy_docs(AutoModerationRuleTriggerMetadata.to_data)
-    def to_data(self, data):
+    def to_data(self):
         data = {}
         
         keyword_presets = self.keyword_presets

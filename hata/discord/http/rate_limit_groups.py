@@ -865,40 +865,45 @@ Group Details
     - Method: `GET`
     - Required auth : `bot`
     - Limiter : `guild_id`
-    - Limit : `UN`
-    - Resets after : `UN`
+    - Limit : `5`
+    - Resets after : `10`
+    - Notes: Cannot yet determine whether the limit is per guild or global.
 
 - auto_moderation_rule_create
     - Endpoint : `/guilds/{guild_id}/auto-moderation/rules`
     - Method: `POST`
     - Required auth : `bot`
     - Limiter : `guild_id`
-    - Limit : `UN`
-    - Resets after : `UN`
+    - Limit : `5`
+    - Resets after : `30`
+    - Notes: Cannot yet determine whether the limit is per guild or global.
 
 - auto_moderation_rule_get
     - Endpoint : `/guilds/{guild_id}/auto-moderation/rules/{auto_moderation_rule_id}`
     - Method: `GET`
     - Required auth : `bot`
     - Limiter : `guild_id`
-    - Limit : `UN`
-    - Resets after : `UN`
+    - Limit : `5`
+    - Resets after : `10`
+    - Notes: Cannot yet determine whether the limit is per guild or global.
 
 - auto_moderation_rule_delete
     - Endpoint : `/guilds/{guild_id}/auto-moderation/rules/{auto_moderation_rule_id}`
     - Method: `DELETE`
     - Required auth : `bot`
     - Limiter : `guild_id`
-    - Limit : `UN`
-    - Resets after : `UN`
+    - Limit : `5`
+    - Resets after : `30`
+    - Notes: Cannot yet determine whether the limit is per guild or global.
 
 - auto_moderation_rule_edit
     - Endpoint : `/guilds/{guild_id}/auto-moderation/rules/{auto_moderation_rule_id}`
     - Method: `PATCH`
     - Required auth : `bot`
     - Limiter : `guild_id`
-    - Limit : `UN`
-    - Resets after : `UN`
+    - Limit : `10`
+    - Resets after : `30`
+    - Notes: Cannot yet determine whether the limit is per guild or global.
 
 - guild_ban_get_chunk
     - Endpoint : `/guilds/{guild_id}/bans`

@@ -972,7 +972,7 @@ class Plugin(RichAttributeErrorBaseType):
     
     def is_directory(self):
         """
-        Returns whether teh plugin is a directory.
+        Returns whether the plugin is a directory.
         
         Returns
         -------

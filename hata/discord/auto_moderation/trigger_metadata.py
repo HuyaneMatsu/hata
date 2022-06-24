@@ -6,6 +6,29 @@ from scarletio import RichAttributeErrorBaseType, copy_docs, include
 AutoModerationKeywordPresetType = include('AutoModerationKeywordPresetType')
 
 
+def try_get_auto_moderation_trigger_metadata_type_from_data(data):
+    """
+    Tries to detect what type of auto moderation trigger metadata the given data is.
+    
+    Parameters
+    ----------
+    data : `dict` of (`str`, `str`) items
+        Auto moderation trigger metadata data.
+    
+    Returns
+    -------
+    metadata_type : `None`, `type`
+    """
+    if 'keyword_filter' in data:
+        metadata_type = KeywordTriggerMetadata
+    elif 'presets' in data:
+        metadata_type = KeywordPresetTriggerMetadata
+    else:
+        metadata_type = None
+    
+    return metadata_type
+
+
 class AutoModerationRuleTriggerMetadata(RichAttributeErrorBaseType):
     """
     Base class for ``AutoModerationRule``'s trigger metadata.
@@ -405,7 +428,7 @@ class KeywordPresetTriggerMetadata(AutoModerationRuleTriggerMetadata):
     @classmethod
     @copy_docs(AutoModerationRuleTriggerMetadata.from_data)
     def from_data(cls, data):
-        keyword_preset_array = data.get('keyword_presets', None)
+        keyword_preset_array = data.get('presets', None)
         if (keyword_preset_array is None) or (not keyword_preset_array):
             keyword_presets = None
         else:
@@ -428,7 +451,7 @@ class KeywordPresetTriggerMetadata(AutoModerationRuleTriggerMetadata):
         else:
             keyword_preset_array = [keyword_preset.value for keyword_preset in keyword_presets]
         
-        data['preset_filter'] = keyword_preset_array
+        data['presets'] = keyword_preset_array
         
         return data
     

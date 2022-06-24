@@ -100,15 +100,17 @@ def convert_timestamp(name, data):
 
 def convert_snowflake_array(name, data):
     before = data.get('old_value', None)
-    if (before is None) or (not before):
-        before = None
-    else:
-        before = tuple(int(sub_value) for sub_value in before)
+    if (before is not None):
+        if before:
+            before = tuple(int(sub_value) for sub_value in before)
+        else:
+            before = None
     
     after = data.get('new_value', None)
-    if (after is None) or (not after):
-        after = None
-    else:
-        after = tuple(int(sub_value) for sub_value in after)
+    if (after is not None):
+        if after:
+            after = tuple(int(sub_value) for sub_value in after)
+        else:
+            after = None
     
     return AuditLogChange(name, before, after)

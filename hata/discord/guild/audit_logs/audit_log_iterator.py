@@ -21,24 +21,27 @@ class AuditLogIterator(AuditLog):
     _self_reference : `None` or ``WeakReferer`` to ``AuditLog``
         Weak reference to the audit log itself.
     application_commands : `dict` of (`int`, ``ApplicationCommand``) items
-        A dictionary what contains the mentioned application commands by the audi log entries. The keys are the `id`-s
-        of the application commands, meanwhile the values are teh application commands themselves.
+        A dictionary that contains the mentioned application commands by the audi log entries. The keys are the `id`-s
+        of the application commands, meanwhile the values are the application commands themselves.
+    auto_moderation_rules : `dict` of (`int`, ``ApplicationCommand``) items
+        A dictionary that contains the auto moderation rules mentioned inside of the audit log entries. The keys
+        are the `id`-s of the rules and the values are the rules themselves.
     entries : `list` of ``AuditLogEntry``
-        A list of audit log entries, what the audit log contains.
+        A list of audit log entries that the audit log contains.
     guild : ``Guild``
         The audit logs' respective guild.
     integrations : `dict` of (`int`, ``Integration``) items
-        A dictionary what contains the mentioned integrations by the audit log's entries. The keys are the `id`-s of
+        A dictionary that contains the mentioned integrations by the audit log's entries. The keys are the `id`-s of
         the integrations, meanwhile the values are the integrations themselves.
     scheduled_events : `dict` of (`int`, ``ScheduledEvent``) items
         A dictionary containing the scheduled events mentioned inside of the audit logs.
     threads : `dict` of (`int`, ``Channel``) items
         A dictionary containing the mentioned threads inside of the audit logs.
     users : `dict` of (`int`, ``ClientUserBase``) items
-        A dictionary, what contains the mentioned users by the audit log's entries. The keys are the `id`-s of the
+        A dictionary that contains the mentioned users by the audit log's entries. The keys are the `id`-s of the
         users, meanwhile the values are the users themselves.
     webhooks : `dict` of (`int`, ``Webhook``) items
-        A dictionary what contains the mentioned webhook by the audit log's entries. The keys are the `id`-s of the
+        A dictionary that contains the mentioned webhook by the audit log's entries. The keys are the `id`-s of the
         webhooks, meanwhile the values are the values themselves.
     
     _data : `dict` of (`str`, `Any`) items
@@ -62,7 +65,7 @@ class AuditLogIterator(AuditLog):
         client : ``Client``
             The client, who will execute the api requests.
         guild : ``Guild``, `int`
-            The guild, what's audit logs will be requested.
+            The guild what's audit logs will be requested.
         user : `None`, ``ClientUserBase``, `int` = `None`, Optional
             Whether the audit logs should be filtered only to those, which were created by the given user.
         event : `None`, ``AuditLogEvent``, `int` = `None`, Optional
@@ -175,6 +178,7 @@ class AuditLogIterator(AuditLog):
         """
         audit_log = object.__new__(AuditLog)
         audit_log.application_commands = self.application_commands
+        audit_log.auto_moderation_rules = self.auto_moderation_rules
         audit_log.entries = self.entries
         audit_log.guild = self.guild
         audit_log.integrations = self.integrations

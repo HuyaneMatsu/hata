@@ -1,14 +1,12 @@
 __all__ = ('AuditLogEvent', 'AuditLogTargetType')
 
-import warnings
-
-from scarletio import class_property, copy_docs, export
+from scarletio import copy_docs, export
 
 from ...bases import Preinstance as P, PreinstancedBase
 
 from .change_converters.all_ import MERGED_CONVERTERS
 from .change_converters.application_command import APPLICATION_COMMAND_CONVERTERS
-from .change_converters.auto_moderation import AUTO_MODERATION_CONVERTERS
+from .change_converters.auto_moderation_rule import AUTO_MODERATION_RULE_CONVERTERS
 from .change_converters.channel import CHANNEL_CONVERTERS
 from .change_converters.channel_permission_overwrite import CHANNEL_PERMISSION_OVERWRITE_CONVERTERS
 from .change_converters.emoji import EMOJI_CONVERTERS
@@ -22,7 +20,7 @@ from .change_converters.sticker import STICKER_CONVERTERS
 from .change_converters.user import USER_CONVERTERS
 from .change_converters.webhook import WEBHOOK_CONVERTERS
 from .target_converters import (
-    target_converter_application_command, target_converter_auto_moderation, target_converter_channel,
+    target_converter_application_command, target_converter_auto_moderation_rule, target_converter_channel,
     target_converter_emoji, target_converter_guild, target_converter_integration, target_converter_invite,
     target_converter_none, target_converter_role, target_converter_scheduled_event, target_converter_stage,
     target_converter_sticker, target_converter_thread, target_converter_user, target_converter_webhook
@@ -90,7 +88,7 @@ class AuditLogTargetType(PreinstancedBase):
     +-------------------------------+-------------------------------+-------+-------------------------------------------+
     | thread                        | thread                        | 14    | CHANNEL_CONVERTERS                        |
     +-------------------------------+-------------------------------+-------+-------------------------------------------+
-    | auto_moderation               | auto moderation               | 15    | AUTO_MODERATION_CONVERTERS                |
+    | auto_moderation_rule          | auto moderation rule          | 15    | AUTO_MODERATION_RULE_CONVERTERS           |
     +-------------------------------+-------------------------------+-------+-------------------------------------------+
     """
     INSTANCES = {}
@@ -105,10 +103,7 @@ class AuditLogTargetType(PreinstancedBase):
     guild = P(1, 'guild', target_converter_guild, GUILD_CONVERTERS)
     channel = P(2, 'channel', target_converter_channel, CHANNEL_CONVERTERS)
     channel_permission_overwrite = P(
-        3,
-        'channel permission overwrite',
-        target_converter_channel,
-        CHANNEL_PERMISSION_OVERWRITE_CONVERTERS,
+        3, 'channel permission overwrite', target_converter_channel, CHANNEL_PERMISSION_OVERWRITE_CONVERTERS,
     )
     user = P(4, 'user', target_converter_user, USER_CONVERTERS)
     role = P(5, 'role', target_converter_role, ROLE_CONVERTERS)
@@ -120,13 +115,12 @@ class AuditLogTargetType(PreinstancedBase):
     scheduled_event = P(11, 'scheduled event', target_converter_scheduled_event, SCHEDULED_EVENT_CONVERTERS)
     sticker = P(12, 'sticker', target_converter_sticker, STICKER_CONVERTERS)
     application_command = P(
-        13,
-        'application command',
-        target_converter_application_command,
-        APPLICATION_COMMAND_CONVERTERS,
+        13, 'application command', target_converter_application_command, APPLICATION_COMMAND_CONVERTERS,
     )
     thread = P(14, 'thread', target_converter_thread, CHANNEL_CONVERTERS)
-    auto_moderation = P(15, 'auto moderation', target_converter_auto_moderation ,AUTO_MODERATION_CONVERTERS)
+    auto_moderation_rule = P(
+        15, 'auto moderation rule', target_converter_auto_moderation_rule, AUTO_MODERATION_RULE_CONVERTERS
+    )
     
     
     @copy_docs(PreinstancedBase.__repr__)
@@ -299,13 +293,13 @@ class AuditLogEvent(PreinstancedBase):
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
     | application_command_permission_update | application command permission update | 121   | application_command           |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
-    | auto_moderation_rule_create           | auto moderation rule create           | 140   | auto_moderation               |
+    | auto_moderation_rule_create           | auto moderation rule create           | 140   | auto_moderation_rule          |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
-    | auto_moderation_rule_update           | auto moderation rule update           | 141   | auto_moderation               |
+    | auto_moderation_rule_update           | auto moderation rule update           | 141   | auto_moderation_rule          |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
-    | auto_moderation_rule_delete           | auto moderation rule delete           | 142   | auto_moderation               |
+    | auto_moderation_rule_delete           | auto moderation rule delete           | 142   | auto_moderation_rule          |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
-    | auto_moderation_block_message         | auto moderation block message         | 143   | auto_moderation               |
+    | auto_moderation_block_message         | auto moderation block message         | 143   | auto_moderation_rule          |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
     """
     INSTANCES = {}
@@ -394,10 +388,10 @@ class AuditLogEvent(PreinstancedBase):
         AuditLogTargetType.application_command,
     )
     
-    auto_moderation_rule_create = P(140, 'auto moderation rule create', AuditLogTargetType.auto_moderation)
-    auto_moderation_rule_update = P(141, 'auto moderation rule update', AuditLogTargetType.auto_moderation)
-    auto_moderation_rule_delete = P(142, 'auto moderation rule delete', AuditLogTargetType.auto_moderation)
-    auto_moderation_block_message = P(143, 'auto moderation block message', AuditLogTargetType.auto_moderation)
+    auto_moderation_rule_create = P(140, 'auto moderation rule create', AuditLogTargetType.auto_moderation_rule)
+    auto_moderation_rule_update = P(141, 'auto moderation rule update', AuditLogTargetType.auto_moderation_rule)
+    auto_moderation_rule_delete = P(142, 'auto moderation rule delete', AuditLogTargetType.auto_moderation_rule)
+    auto_moderation_block_message = P(143, 'auto moderation block message', AuditLogTargetType.auto_moderation_rule)
     
     
     def __init__(self, value, name, target_type):

@@ -2,6 +2,7 @@ __all__ = ('AuditLog', )
 
 from scarletio import RichAttributeErrorBaseType, WeakReferer
 
+from ...auto_moderation import AutoModerationRule
 from ...channel import Channel
 from ...integration import Integration
 from ...interaction import ApplicationCommand
@@ -22,29 +23,32 @@ class AuditLog(RichAttributeErrorBaseType):
     _self_reference : `None` or ``WeakReferer`` to ``AuditLog``
         Weak reference to the audit log itself.
     application_commands : `dict` of (`int`, ``ApplicationCommand``) items
-        A dictionary what contains the mentioned application commands by the audi log entries. The keys are the `id`-s
-        of the application commands, meanwhile the values are teh application commands themselves.
+        A dictionary that contains the mentioned application commands by the audi log entries. The keys are the `id`-s
+        of the application commands, meanwhile the values are the application commands themselves.
+    auto_moderation_rules : `dict` of (`int`, ``ApplicationCommand``) items
+        A dictionary that contains the auto moderation rules mentioned inside of the audit log entries. The keys
+        are the `id`-s of the rules and the values are the rules themselves.
     entries : `list` of ``AuditLogEntry``
-        A list of audit log entries, what the audit log contains.
+        A list of audit log entries that the audit log contains.
     guild : ``Guild``
         The audit logs' respective guild.
     integrations : `dict` of (`int`, ``Integration``) items
-        A dictionary what contains the mentioned integrations by the audit log's entries. The keys are the `id`-s of
+        A dictionary that contains the mentioned integrations by the audit log's entries. The keys are the `id`-s of
         the integrations, meanwhile the values are the integrations themselves.
     scheduled_events : `dict` of (`int`, ``ScheduledEvent``) items
         A dictionary containing the scheduled events mentioned inside of the audit logs.
     threads : `dict` of (`int`, ``Channel``) items
         A dictionary containing the mentioned threads inside of the audit logs.
     users : `dict` of (`int`, ``ClientUserBase``) items
-        A dictionary, what contains the mentioned users by the audit log's entries. The keys are the `id`-s of the
+        A dictionary that contains the mentioned users by the audit log's entries. The keys are the `id`-s of the
         users, meanwhile the values are the users themselves.
     webhooks : `dict` of (`int`, ``Webhook``) items
-        A dictionary what contains the mentioned webhook by the audit log's entries. The keys are the `id`-s of the
+        A dictionary that contains the mentioned webhook by the audit log's entries. The keys are the `id`-s of the
         webhooks, meanwhile the values are the values themselves.
     """
     __slots__ = (
-        '__weakref__', '_self_reference', 'application_commands', 'entries', 'guild', 'integrations',
-        'scheduled_events', 'threads', 'users', 'webhooks'
+        '__weakref__', '_self_reference', 'application_commands', 'auto_moderation_rules', 'entries', 'guild',
+        'integrations', 'scheduled_events', 'threads', 'users', 'webhooks'
     )
     
     def __new__(cls, data, guild):
@@ -61,6 +65,7 @@ class AuditLog(RichAttributeErrorBaseType):
         self = object.__new__(cls)
         self._self_reference = None
         self.application_commands = {}
+        self.auto_moderation_rules = {}
         self.entries = []
         self.guild = guild
         self.integrations = {}
@@ -116,6 +121,18 @@ class AuditLog(RichAttributeErrorBaseType):
             for application_command_data in application_command_datas:
                 application_command = ApplicationCommand.from_data(application_command_data)
                 application_commands[application_command.id] = application_command
+        
+        
+        try:
+            auto_moderation_rule_datas = data['auto_moderation_rules']
+        except KeyError:
+            pass
+        else:
+            auto_moderation_rules = self.auto_moderation_rules
+            
+            for auto_moderation_rule_data in auto_moderation_rule_datas:
+                auto_moderation_rule = AutoModerationRule.from_data(auto_moderation_rule_data)
+                auto_moderation_rules[auto_moderation_rule.id] = auto_moderation_rule
         
         
         try:
@@ -193,7 +210,7 @@ class AuditLog(RichAttributeErrorBaseType):
     
     
     def __len__(self):
-        """Returns the amount of entries, what the audit lgo contain."""
+        """Returns the amount of entries that the audit lgo contain."""
         return len(self.entries)
     
     

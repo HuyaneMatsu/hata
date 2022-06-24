@@ -1,7 +1,7 @@
 __all__ = ()
 
 from .application_command import APPLICATION_COMMAND_CONVERTERS
-from .auto_moderation import AUTO_MODERATION_CONVERTERS
+from .auto_moderation_rule import AUTO_MODERATION_RULE_CONVERTERS
 from .channel import CHANNEL_CONVERTERS
 from .channel_permission_overwrite import CHANNEL_PERMISSION_OVERWRITE_CONVERTERS
 from .emoji import EMOJI_CONVERTERS
@@ -56,7 +56,7 @@ def merge_converters(*converters_to_merge):
 MERGED_CONVERTERS = merge_converters(
     APPLICATION_COMMAND_CONVERTERS,
     CHANNEL_CONVERTERS,
-    AUTO_MODERATION_CONVERTERS,
+    AUTO_MODERATION_RULE_CONVERTERS,
     CHANNEL_PERMISSION_OVERWRITE_CONVERTERS,
     EMOJI_CONVERTERS,
     GUILD_CONVERTERS,

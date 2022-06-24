@@ -43,6 +43,8 @@
 - Add `RATE_LIMIT_GROUPS.auto_moderation_rule_create`.
 - Add `RATE_LIMIT_GROUPS.auto_moderation_rule_edit`.
 - Add `RATE_LIMIT_GROUPS.auto_moderation_rule_delete`.
+- Add `AuditLog.auto_moderation_rules`.
+- Add new audit log converters.
 
 ##### ext.plugin_loader
 
@@ -75,6 +77,7 @@
 - Rename `Client.client_connection_get_all` to `.connection_get_all`.
 - Deprecate `Client.client_edit_presence`.
 - Rename `.client.application_get` to `.application_get_own` around the board.
+- Rename `AuditLogTargetType.auto_moderation` to `AuditLogTargetType.auto_moderation_rule`.
 
 ## 1.2.17 *\[2022-06-12\]*
 

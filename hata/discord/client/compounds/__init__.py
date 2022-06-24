@@ -26,7 +26,7 @@ from .webhook import *
 __all__ = (
     *achievement.__all__,
     *application_command.__all__,
-    auto_moderation.__all__,
+    *auto_moderation.__all__,
     *channel.__all__,
     *client.__all__,
     *client_gayteway.__all__,

@@ -38,6 +38,19 @@ class ClientCompoundAutoModerationEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
+        auto_moderation_rule, guild_id, auto_moderation_rule_id = get_auto_moderation_rule_and_guild_id_and_id(
+            auto_moderation_rule
+        )
+        
+        auto_moderation_rule_data = await self.http.auto_moderation_rule_get(guild_id, auto_moderation_rule_id)
+        
+        if (auto_moderation_rule is None):
+            auto_moderation_rule = AutoModerationRule.from_data(auto_moderation_rule_data)
+        
+        else:
+            auto_moderation_rule._update_attributes(auto_moderation_rule_data)
+        
+        return auto_moderation_rule
     
     
     async def auto_moderation_rule_get_all(self, guild):
@@ -64,6 +77,14 @@ class ClientCompoundAutoModerationEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
+        guild_id = get_guild_id(guild)
+        
+        auto_moderation_rule_datas = await self.http.auto_moderation_rule_get_all(guild_id)
+        
+        return [
+            AutoModerationRule.from_data(auto_moderation_rule_data)
+            for auto_moderation_rule_data in auto_moderation_rule_datas
+        ]
     
     
     async def auto_moderation_rule_create(self, guild, auto_moderation_rule):
@@ -94,6 +115,20 @@ class ClientCompoundAutoModerationEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
+        guild_id = get_guild_id(guild)
+        
+        if not isinstance(auto_moderation_rule, AutoModerationRule):
+            raise TypeError(
+                f'`auto_moderation_rule` can be {AutoModerationRule.__name__}, '
+                f'got {auto_moderation_rule.__class__.__name__}; {auto_moderation_rule!r}.'
+            )
+        
+        data = auto_moderation_rule.to_data()
+        
+        auto_moderation_rule_data = await self.http.auto_moderation_rule_create(guild_id, data)
+        
+        return AutoModerationRule.from_data(auto_moderation_rule_data)
+    
     
     async def auto_moderation_rule_edit(self, old_auto_moderation_rule, new_auto_moderation_rule):
         """
@@ -122,6 +157,17 @@ class ClientCompoundAutoModerationEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
+        guild_id, auto_moderation_rule_id = get_auto_moderation_rule_guild_id_and_id(old_auto_moderation_rule)
+    
+        if not isinstance(new_auto_moderation_rule, AutoModerationRule):
+            raise TypeError(
+                f'`new_auto_moderation_rule` can be {AutoModerationRule.__name__}, '
+                f'got {new_auto_moderation_rule.__class__.__name__}; {new_auto_moderation_rule!r}.'
+            )
+        
+        data = new_auto_moderation_rule.to_data()
+        
+        await self.http.auto_moderation_rule_edit(guild_id, auto_moderation_rule_id, data)
     
     
     async def auto_moderation_rule_delete(self, auto_moderation_rule):
@@ -144,3 +190,5 @@ class ClientCompoundAutoModerationEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
+        guild_id, auto_moderation_rule_id = get_auto_moderation_rule_guild_id_and_id(auto_moderation_rule)
+        await self.http.auto_moderation_rule_delete(guild_id, auto_moderation_rule_id)

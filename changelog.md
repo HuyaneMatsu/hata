@@ -28,6 +28,21 @@
 - Add `Client.events.auto_moderation_rule_create`.
 - Add `Client.events.auto_moderation_rule_delete`.
 - Add `Client.events.auto_moderation_rule_edit`.
+- Add `Client.auto_moderation_rule_get`.
+- Add `Client.auto_moderation_rule_get_all`.
+- Add `Client.auto_moderation_rule_create`.
+- Add `Client.auto_moderation_rule_edit`.
+- Add `Client.auto_moderation_rule_delete`.
+- Add `DiscordHTTPClient.auto_moderation_rule_get`.
+- Add `DiscordHTTPClient.auto_moderation_rule_get_all`.
+- Add `DiscordHTTPClient.auto_moderation_rule_create`.
+- Add `DiscordHTTPClient.auto_moderation_rule_edit`.
+- Add `DiscordHTTPClient.auto_moderation_rule_delete`.
+- Add `RATE_LIMIT_GROUPS.auto_moderation_rule_get`.
+- Add `RATE_LIMIT_GROUPS.auto_moderation_rule_get_all`.
+- Add `RATE_LIMIT_GROUPS.auto_moderation_rule_create`.
+- Add `RATE_LIMIT_GROUPS.auto_moderation_rule_edit`.
+- Add `RATE_LIMIT_GROUPS.auto_moderation_rule_delete`.
 
 ##### ext.plugin_loader
 

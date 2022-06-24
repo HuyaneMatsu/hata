@@ -19,8 +19,10 @@ from ..request_helpers import get_guild_and_id, get_guild_id, get_sticker_and_id
 STICKER_PACK_CACHE = ForceUpdateCache()
 
 
-class StickerEndpoints(Compound):
+class ClientCompoundStickerEndpoints(Compound):
+    
     http : DiscordHTTPClient
+    
     
     async def sticker_get(self, sticker, *, force_update=False):
         """

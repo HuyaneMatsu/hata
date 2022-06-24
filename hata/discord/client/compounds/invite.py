@@ -14,8 +14,10 @@ from ...user import ClientUserBase
 from ..request_helpers import get_channel_id, get_guild_and_id, get_guild_id
 
 
-class InviteEndpoints(Compound):
+class ClientCompoundInviteEndpoints(Compound):
+    
     http : DiscordHTTPClient
+    
     
     async def vanity_invite_get(self, guild):
         """

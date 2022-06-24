@@ -9,8 +9,10 @@ from ...integration import Integration
 from ..request_helpers import get_guild_id
 
 
-class IntegrationEndpoints(Compound):
+class ClientCompoundIntegrationEndpoints(Compound):
+    
     http : DiscordHTTPClient
+    
     
     #TODO: decide if we should store integrations at Guild objects
     if API_VERSION > 7:

@@ -15,8 +15,10 @@ from ..request_helpers import get_guild_and_id, get_guild_id, get_guild_id_and_e
 _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
 
 
-class EmojiEndpoints(Compound):
+class ClientCompoundEmojiEndpoints(Compound):
+    
     http : DiscordHTTPClient
+    
     
     async def emoji_get(self, emoji, *deprecated_parameters, force_update=False):
         """

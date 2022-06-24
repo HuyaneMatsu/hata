@@ -5,6 +5,7 @@ import reprlib
 from scarletio import Compound
 
 from ...allowed_mentions import parse_allowed_mentions
+from ...application import Application
 from ...bases import maybe_snowflake
 from ...channel import Channel, create_partial_channel_from_id
 from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES_EXTENDED
@@ -18,8 +19,11 @@ from ..request_helpers import (
 )
 
 
-class WebhookEndpoints(Compound):
+class ClientCompoundWebhookEndpoints(Compound):
+    
+    application : Application
     http : DiscordHTTPClient
+    
     
     async def webhook_create(self, channel, name, *, avatar=None):
         """

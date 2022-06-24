@@ -26,10 +26,13 @@ from ..functionality_helpers import channel_move_sort_key
 from ..request_helpers import get_channel_and_id, get_channel_id, get_guild_and_id, get_user_id
 
 
-class ChannelEndpoints(Compound):
+class ClientCompoundChannelEndpoints(Compound):
+    
     http : DiscordHTTPClient
-    private_channels : dict
+    id : int
     is_bot : bool
+    private_channels : dict
+    
     
     async def channel_group_leave(self, channel):
         """

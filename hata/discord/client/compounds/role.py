@@ -18,12 +18,13 @@ from ..functionality_helpers import role_move_key, role_reorder_valid_roles_sort
 from ..request_helpers import get_guild_and_id, get_guild_id, get_guild_id_and_role_id
 
 
-class RoleEndpoints(Compound):
+class ClientCompoundRoleEndpoints(Compound):
+    
     http : DiscordHTTPClient
     
     @Theory
-    async def guild_sync(self, guild):
-        pass
+    async def guild_sync(self, guild): ...
+    
     
     async def role_edit(
         self, role, *, name=..., color=..., separated=..., mentionable=..., permissions=..., position=..., icon=...,

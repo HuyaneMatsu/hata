@@ -5,29 +5,26 @@ from json import JSONDecodeError
 from math import inf
 
 from scarletio import (
-    CancelledError, Compound, EventThread, Future, LOOP_TIME, Task, WaitTillAll, export, from_json, future_or_timeout,
+    CancelledError, CompoundMetaType, EventThread, Future, LOOP_TIME, Task, WaitTillAll, export, from_json,
     methodize, run_coroutine, sleep
 )
 
-from ...env import API_VERSION, CACHE_PRESENCE, CACHE_USER
+from ...env import API_VERSION, CACHE_USER
 from ...ext import get_and_validate_setup_functions, run_setup_functions
 
 from ..activity import ACTIVITY_UNKNOWN, ActivityBase, ActivityCustom
 from ..application import Application, Team
-from ..bases import maybe_snowflake, maybe_snowflake_pair
-from ..channel import CHANNEL_TYPES, Channel, get_channel_type_names
-from ..core import APPLICATIONS, APPLICATION_ID_TO_CLIENT, CLIENTS, GUILDS, KOKORO, USERS
+
+from ..core import APPLICATION_ID_TO_CLIENT, CLIENTS, GUILDS, KOKORO, USERS
 from ..events.core import register_client, unregister_client
 from ..events.event_handler_manager import EventHandlerManager
-from ..events.handling_helpers import (
-    WaitForHandler, ensure_shutdown_event_handlers, ensure_voice_client_shutdown_event_handlers
-)
+from ..events.handling_helpers import ensure_shutdown_event_handlers, ensure_voice_client_shutdown_event_handlers
 from ..events.intent import IntentFlag
 from ..exceptions import (
     DiscordException, DiscordGatewayException, INTENT_ERROR_CODES, InvalidToken, RESHARD_ERROR_CODES
 )
 from ..gateway.client_gateway import (
-    DiscordGateway, DiscordGatewaySharder, REQUEST_MEMBERS as GATEWAY_OPERATION_CODE_REQUEST_MEMBERS
+    DiscordGateway, DiscordGatewaySharder
 )
 from ..guild import Guild
 from ..http import DiscordHTTPClient, RateLimitProxy
@@ -41,21 +38,22 @@ from ..user import (
     ClientUserBase, ClientUserPBase, GuildProfile, PremiumType, RelationshipType, Status, User,
     UserBase, UserFlag, create_partial_user_from_id
 )
-from ..voice import VoiceClient
 
-from .endpoints import ENDPOINT_COMPONENTS
-from .functionality_helpers import (
-    MassUserChunker, SingleUserChunker, _check_is_client_duped, try_get_user_id_from_token
-)
+from .compounds import CLIENT_COMPOUNDS
+from .functionality_helpers import _check_is_client_duped, try_get_user_id_from_token
 from .ready_state import ReadyState
-from .request_helpers import get_guild_id
 
 
 AUTO_CLIENT_ID_LIMIT = 1 << 22
 
 
 @export
-class Client(ClientUserPBase, *ENDPOINT_COMPONENTS, build=True, metaclass=Compound.with_(ClientUserPBase)):
+class Client(
+    ClientUserPBase,
+    *CLIENT_COMPOUNDS,
+    build = True,
+    metaclass = CompoundMetaType.with_(ClientUserPBase),
+):
     """
     Discord client class used to interact with the Discord API.
     
@@ -877,56 +875,6 @@ class Client(ClientUserPBase, *ENDPOINT_COMPONENTS, build=True, metaclass=Compou
         self.ready_state = None
     
     
-    
-    async def application_get(self, application):
-        """
-        Requests a specific application by it's id.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        application : ``Application``, `int`
-            The application or it's identifier to request.
-        
-        Returns
-        -------
-        application : ``Application``
-        
-        Raises
-        ------
-        TypeError
-            If `application` was not given neither as ``Application`` nor as `int`.
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        
-        Notes
-        -----
-        This endpoint does not support bot accounts.
-        """
-        if isinstance(application, Application):
-            application_id = application.id
-        else:
-            application_id = maybe_snowflake(application)
-            if application_id is None:
-                raise TypeError(
-                    f'`application` can be `{Application.__name__}`, `int`, got '
-                    f'{application.__class__.__name__}; {application!r}.'
-                )
-            
-            application = APPLICATIONS.get(application_id, None)
-            
-        application_data = await self.http.application_get(application_id)
-        if application is None:
-            application = Application(application_data)
-        else:
-            application._update_attributes(application_data)
-        
-        return application
-    
-    
     # login
     async def client_login_static(self):
         """
@@ -963,9 +911,7 @@ class Client(ClientUserPBase, *ENDPOINT_COMPONENTS, build=True, metaclass=Compou
                 
                 raise
             
-            break
-        
-        return data
+            return data
     
     
     async def update_application_info(self):
@@ -988,7 +934,7 @@ class Client(ClientUserPBase, *ENDPOINT_COMPONENTS, build=True, metaclass=Compou
         This endpoint is available only for bot accounts.
         """
         if self.is_bot:
-            data = await self.http.client_application_get()
+            data = await self.http.application_get_own()
             application = self.application
             old_application_id = application.id
             application = application._create_update(data, False)
@@ -1453,118 +1399,6 @@ class Client(ClientUserPBase, *ENDPOINT_COMPONENTS, build=True, metaclass=Compou
                     ready_state = None
     
     
-    async def join_voice(self, channel):
-        """
-        Joins a voice client to the channel. If there is an already existing voice client at the respective guild,
-        moves it.
-        
-        If not every library is installed, raises `RuntimeError`, or if the voice client fails to connect raises
-        `TimeoutError`.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        channel : ``Channel``, `tuple` (`int`, `int`)
-            The channel to join to.
-        
-        Returns
-        -------
-        voice_client : ``VoiceClient``
-        
-        Raises
-        ------
-        RuntimeError
-            If not every library is installed to join voice.
-        TimeoutError
-            If voice client fails to connect the given channel.
-        TypeError
-            If `channel` was not given neither as ``Channel`` nor as `tuple` (`int`, `int`).
-        """
-        while True:
-            if isinstance(channel, Channel):
-                if channel.is_in_group_guild_connectable() or channel.partial:
-                    guild_id = channel.guild_id
-                    channel_id = channel.id
-                    break
-            
-            else:
-                snowflake_pair = maybe_snowflake_pair(channel)
-                if (snowflake_pair is not None):
-                    guild_id, channel_id = snowflake_pair
-                    break
-                
-            raise TypeError(
-                f'`channel` can be {get_channel_type_names(CHANNEL_TYPES.GROUP_GUILD_CONNECTABLE)}, '
-                f'`tuple` (`int`, `int`), got {channel.__class__.__name__}; {channel!r}.'
-            )
-        
-        
-        try:
-            voice_client = self.voice_clients[guild_id]
-        except KeyError:
-            voice_client = await VoiceClient(self, guild_id, channel_id)
-        else:
-            if voice_client.channel_id != channel_id:
-                gateway = self.gateway_for(guild_id)
-                await gateway.change_voice_state(guild_id, channel_id)
-        
-        return voice_client
-    
-    
-    async def wait_for(self, event_name, check, timeout=None):
-        """
-        O(n) event waiter with massive overhead compared to other optimized event waiters.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        event_name : `str`
-            The respective event's name.
-        check : `callable`
-            Check, what tells that the waiting is over.
-            
-            If the `check` returns `True` the received `args` are passed to the waiter future and returned by the
-            method. However if the check returns any non `bool` value, then that object is passed next to `args` and
-            returned as well.
-        
-        timeout : `None`, `float` = `None`, Optional
-            Timeout after `TimeoutError` is raised and the waiting is cancelled.
-        
-        Returns
-        -------
-        result : `Any`
-            Parameters passed to the `check` and the value returned by the `check` if it's type is not `bool`.
-        
-        Raised
-        ------
-        TimeoutError
-            Timeout occurred.
-        BaseException
-            Any exception raised by `check`.
-        """
-        wait_for_handler = self.events.get_handler(event_name, WaitForHandler)
-        if wait_for_handler is None:
-            wait_for_handler = WaitForHandler()
-            self.events(wait_for_handler, name=event_name)
-        
-        future = Future(KOKORO)
-        wait_for_handler.waiters[future] = check
-        
-        if (timeout is not None):
-            future_or_timeout(future, timeout)
-        
-        try:
-            return await future
-        finally:
-            waiters = wait_for_handler.waiters
-            del waiters[future]
-            
-            if not waiters:
-                self.events.remove(wait_for_handler, name=event_name)
-    
-    
     def _delay_ready(self, guild_datas, shard_id):
         """
         Delays the client's "ready" till it receives all of it guild's data. If caching is allowed (so by default),
@@ -1579,139 +1413,11 @@ class Client(ClientUserPBase, *ENDPOINT_COMPONENTS, build=True, metaclass=Compou
         """
         ready_state = self.ready_state
         if (ready_state is None):
-            self.ready_state = ready_state = ReadyState(self)
+            ready_state = ReadyState(self)
+            self.ready_state = ready_state
         
         ready_state.shard_ready(self, guild_datas, shard_id)
     
-    
-    async def _request_members(self, guild_id):
-        """
-        Requests the members of the given guild. Called when the client joins a guild and user caching is enabled
-        (so by default).
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        guild_id : ``int``
-            The guild, what's members will be requested.
-        """
-        event_handler = self.events.guild_user_chunk
-        
-        self._user_chunker_nonce = nonce = self._user_chunker_nonce + 1
-        nonce = nonce.__format__('0>16x')
-        
-        event_handler.waiters[nonce] = waiter = MassUserChunker()
-        
-        data = {
-            'op': GATEWAY_OPERATION_CODE_REQUEST_MEMBERS,
-            'd': {
-                'guild_id': guild_id,
-                'query': '',
-                'limit': 0,
-                'presences': CACHE_PRESENCE,
-                'nonce': nonce
-            },
-        }
-        
-        gateway = self.gateway_for(guild_id)
-        await gateway.send_as_json(data)
-        
-        try:
-            await waiter
-        except CancelledError:
-            try:
-                del event_handler.waiters[nonce]
-            except KeyError:
-                pass
-    
-    
-    async def request_members(self, guild, name, limit=1):
-        """
-        Requests the members of the given guild by their name.
-        
-        This method uses the client's gateway to request the users. If any of the parameters do not match their
-        expected value or if timeout occurs, returns an empty list instead of raising.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        guild : ``Guild``
-            The guild, what's members will be requested.
-        name : `str`
-            The received user's name or nick should start with this string.
-        limit : `int` = `1`, Optional
-            The amount of users to received. Limited to `100`.
-        
-        Returns
-        -------
-        users : `list` of ``ClientUserBase``
-        
-        Raises
-        ------
-        TypeError
-            - If `guild` was not given neither as ``Guild`` nor as `int`.
-        AssertionError
-            - If `limit` is not `int`.
-            - If `limit` is out of the expected range [1:100].
-            - If `name` is not `str`.
-            - If `name` length is out of the expected range [1:32].
-        """
-        guild_id = get_guild_id(guild)
-        
-        if __debug__:
-            if not isinstance(limit, int):
-                raise AssertionError(
-                    f'`limit` can be `int`, got {limit.__class__.__name__}; {limit!r}.'
-                )
-            
-            if limit < 1 or limit > 100:
-                raise AssertionError(
-                    f'`limit` is out of the expected range [1:100], got {limit!r}.'
-                )
-            
-            if not isinstance(name, str):
-                raise AssertionError(
-                    f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
-                )
-            
-            name_length = len(name)
-            if name_length < 1 or name_length > 32:
-                raise AssertionError(
-                    f'`name` length can be in range [1:32], got {name_length!r}; {name!r}.'
-                )
-        
-        event_handler = self.events.guild_user_chunk
-        
-        self._user_chunker_nonce = nonce = self._user_chunker_nonce + 1
-        nonce = nonce.__format__('0>16x')
-        
-        event_handler.waiters[nonce] = waiter = SingleUserChunker()
-        
-        data = {
-            'op': GATEWAY_OPERATION_CODE_REQUEST_MEMBERS,
-            'd': {
-                'guild_id': guild_id,
-                'query': name,
-                'limit': limit,
-                'presences': CACHE_PRESENCE,
-                'nonce': nonce,
-            },
-        }
-        
-        gateway = self.gateway_for(guild_id)
-        await gateway.send_as_json(data)
-        
-        try:
-            return await waiter
-        except CancelledError:
-            try:
-                del event_handler.waiters[nonce]
-            except KeyError:
-                pass
-            
-            return []
     
     
     async def disconnect(self):
@@ -1782,11 +1488,11 @@ class Client(ClientUserPBase, *ENDPOINT_COMPONENTS, build=True, metaclass=Compou
         voice_client : `None`, ``VoiceClient``
             The voice client if applicable.
         """
-        guild = message.guild
-        if guild is None:
+        guild_id = message.guild_id
+        if guild_id is None:
             voice_client = None
         else:
-            voice_client = self.voice_clients.get(guild.id, None)
+            voice_client = self.voice_clients.get(guild_id, None)
         return voice_client
     
     
@@ -2183,7 +1889,7 @@ class Client(ClientUserPBase, *ENDPOINT_COMPONENTS, build=True, metaclass=Compou
         relationships : `list` of ``Relationship`` objects
         """
         type_ = RelationshipType.friend
-        return [rs for rs in self.relationships.values() if rs.type is type_]
+        return [relationship for relationship in self.relationships.values() if relationship.type is type_]
     
     
     @property
@@ -2196,7 +1902,7 @@ class Client(ClientUserPBase, *ENDPOINT_COMPONENTS, build=True, metaclass=Compou
         relationships : `list` of ``Relationship`` objects
         """
         type_ = RelationshipType.blocked
-        return [rs for rs in self.relationships.values() if rs.type is type_]
+        return [relationship for relationship in self.relationships.values() if relationship.type is type_]
     
     
     @property
@@ -2209,7 +1915,7 @@ class Client(ClientUserPBase, *ENDPOINT_COMPONENTS, build=True, metaclass=Compou
         relationships : `list` of ``Relationship`` objects
         """
         type_ = RelationshipType.pending_incoming
-        return [rs for rs in self.relationships.values() if rs.type is type_]
+        return [relationship for relationship in self.relationships.values() if relationship.type is type_]
     
     
     @property
@@ -2222,7 +1928,7 @@ class Client(ClientUserPBase, *ENDPOINT_COMPONENTS, build=True, metaclass=Compou
         relationships : `list` of ``Relationship`` objects
         """
         type_ = RelationshipType.pending_outgoing
-        return [rs for rs in self.relationships.values() if rs.type is type_]
+        return [relationship for relationship in self.relationships.values() if relationship.type is type_]
     
     
     def gateway_for(self, guild_id):

@@ -32,8 +32,11 @@ from ..request_helpers import (
 MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS = MessageFlag().update_by_keys(embeds_suppressed=True)
 
 
-class MessageEndpoints(Compound):
+class ClientCompoundMessageEndpoints(Compound):
+    
     http : DiscordHTTPClient
+    id : int
+    
     
     async def message_get_chunk(self, channel, limit=100, *, after=None, around=None, before=None):
         """

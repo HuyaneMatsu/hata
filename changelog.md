@@ -44,6 +44,7 @@
 - `Client.guild_edit` could raise `NameError`.
 - `thread_user_create` could have raise `AttributeError`.
 - `ReactionAddEvent.__eq__` could have return incorrect value.
+- `Client.thread_create` raised `TypeError`.
 
 #### Renames, Deprecation & Removals
 
@@ -51,6 +52,14 @@
 - Deprecate `Client.guild_role_get_all`.
 - Rename `Client.guild_sync_channels` to `.guild_channel_get_all`.
 - Deprecate `Client.guild_channel_get_all`.
+- Deprecate `Client.client_edit`.
+- Rename `Client.client_edit` to `.edit`.
+- Deprecate `Client.client_guild_profile_edit`.
+- Rename `Client.client_guild_profile_edit` to `.guild_profile_edit`.
+- Deprecate `Client.client_connection_get_all`.
+- Rename `Client.client_connection_get_all` to `.connection_get_all`.
+- Deprecate `Client.client_edit_presence`.
+- Rename `.client.application_get` to `.application_get_own` around the board.
 
 ## 1.2.17 *\[2022-06-12\]*
 

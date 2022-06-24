@@ -2,20 +2,22 @@ __all__ = ()
 
 from scarletio import Compound, Theory
 
+from ...application import Application
 from ...bases import maybe_snowflake
+from ...core import APPLICATIONS
 from ...http import DiscordHTTPClient
 from ...user import ClientUserBase, HypesquadHouse, RelationshipType
 from ...utils import Relationship
 from ..request_helpers import get_user_and_id, get_user_id
 
 
-class LockedEndpoints(Compound):
+class ClientCompoundLockedEndpoints(Compound):
+    
     http : DiscordHTTPClient
     
     @Theory
     async def user_get(self, user, *, force_update=False): ...
     
-    # Relationship related
     
     async def relationship_delete(self, relationship):
         """
@@ -198,3 +200,52 @@ class LockedEndpoints(Compound):
         User account only.
         """
         await self.http.hypesquad_house_leave()
+
+
+    async def application_get(self, application):
+        """
+        Requests a specific application by it's id.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        application : ``Application``, `int`
+            The application or it's identifier to request.
+        
+        Returns
+        -------
+        application : ``Application``
+        
+        Raises
+        ------
+        TypeError
+            If `application` was not given neither as ``Application`` nor as `int`.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        
+        Notes
+        -----
+        This endpoint does not support bot accounts.
+        """
+        if isinstance(application, Application):
+            application_id = application.id
+        else:
+            application_id = maybe_snowflake(application)
+            if application_id is None:
+                raise TypeError(
+                    f'`application` can be `{Application.__name__}`, `int`, got '
+                    f'{application.__class__.__name__}; {application!r}.'
+                )
+            
+            application = APPLICATIONS.get(application_id, None)
+            
+        application_data = await self.http.application_get(application_id)
+        if application is None:
+            application = Application(application_data)
+        else:
+            application._update_attributes(application_data)
+        
+        return application

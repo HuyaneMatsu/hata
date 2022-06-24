@@ -20,7 +20,7 @@ from ..request_helpers import (
 )
 
 
-class ApplicationCommandEndpoints(Compound):
+class ClientCompoundApplicationCommandEndpoints(Compound):
     http : DiscordHTTPClient
     
     async def application_command_global_get(self, application_command):

@@ -15,8 +15,10 @@ from ..request_helpers import (
 )
 
 
-class ScheduledEventEndpoints(Compound):
+class ClientCompoundScheduledEventEndpoints(Compound):
+    
     http : DiscordHTTPClient
+    
     
     async def scheduled_event_create(
         self, guild, name, start, *, description=None, end=None, privacy_level=PrivacyLevel.guild_only,

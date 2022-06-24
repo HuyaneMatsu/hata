@@ -18,8 +18,10 @@ from ..request_helpers import (
 )
 
 
-class UserEndpoints(Compound):
+class ClientCompoundUserEndpoints(Compound):
+    
     http : DiscordHTTPClient
+    
     
     async def user_guild_profile_edit(
         self, guild, user, *, nick=..., deaf=..., mute=..., voice_channel=..., roles=..., timed_out_until=...,

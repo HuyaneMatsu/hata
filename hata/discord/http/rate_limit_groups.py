@@ -1455,7 +1455,7 @@ Group Details
     - Limit : `250`
     - Resets after : `6.0`
 
-- client_application_get
+- application_get_own
     - Endpoint : `/oauth2/applications/@me`
     - Method : `GET`
     - Required auth : `bot`
@@ -2030,7 +2030,7 @@ hypesquad_house_change = RateLimitGroup() # untested
 interaction_response_message_create = RateLimitGroup.unlimited()
 invite_delete = RateLimitGroup.unlimited()
 invite_get = RateLimitGroup()
-client_application_get = RateLimitGroup(optimistic=True)
+application_get_own = RateLimitGroup(optimistic=True)
 bulk_ack = RateLimitGroup(optimistic=True) # untested
 stage_get_all = RateLimitGroup.unlimited()
 stage_create = RateLimitGroup()

@@ -10,8 +10,10 @@ from ...stage import Stage
 from ..request_helpers import get_channel_id, get_stage_channel_id
 
 
-class StageEndpoints(Compound):
+class ClientCompoundStageEndpoints(Compound):
+    
     http : DiscordHTTPClient
+    
     
     async def stage_create(
         self, channel, topic, *, privacy_level=PrivacyLevel.guild_only, send_start_notification=False,

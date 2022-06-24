@@ -7,6 +7,7 @@ from scarletio.web_common.headers import AUTHORIZATION
 
 from ....env import API_VERSION
 
+from ...application import Application
 from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES_EXTENDED
 from ...localizations.helpers import serializable_localized_dictionary_builder
 from ...oauth2 import Achievement, OA2Access, UserOA2
@@ -14,9 +15,12 @@ from ...utils import get_image_media_type, image_to_base64
 from ..request_helpers import get_achievement_and_id, get_achievement_id, get_user_id
 
 
-class AchievementEndpoints(Compound):
+class ClientCompoundAchievementEndpoints(Compound):
+    
+    application : Application
     http : DiscordHTTPClient
-
+    
+    
     async def achievement_get_all(self):
         """
         Requests all the achievements of the client's application and returns them.

@@ -14,7 +14,8 @@ from ..request_helpers import get_channel_id
 from ..utils import Typer
 
 
-class MiscellaneousEndpoints(Compound):
+class ClientCompoundMiscellaneousEndpoints(Compound):
+    
     http : DiscordHTTPClient
     
 

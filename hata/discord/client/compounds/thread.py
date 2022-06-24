@@ -27,8 +27,10 @@ from ..request_helpers import (
 MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS = MessageFlag().update_by_keys(embeds_suppressed=True)
 
 
-class ThreadEndpoints(Compound):
+class ClientCompoundThreadEndpoints(Compound):
+    
     http : DiscordHTTPClient
+    id: int
     
     
     async def guild_thread_get_all_active(self, guild):
@@ -261,7 +263,7 @@ class ThreadEndpoints(Compound):
         else:
             guild_id = channel.guild_id
         
-        return Channel(channel_data, guild_id)
+        return Channel(channel_data, self, guild_id)
     
     
     async def forum_thread_create(

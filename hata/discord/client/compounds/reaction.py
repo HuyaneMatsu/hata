@@ -12,7 +12,9 @@ from ...utils import log_time_converter
 from ..request_helpers import get_channel_id_and_message_id, get_emoji_from_reaction, get_reaction, get_user_id
 
 
-class ReactionEndpoints(Compound):
+class ClientCompoundReactionEndpoints(Compound):
+    
+    id: int
     http : DiscordHTTPClient
     
     @Theory

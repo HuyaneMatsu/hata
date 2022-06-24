@@ -14,10 +14,13 @@ from ..request_helpers import get_guild_id, get_user_id_nullable
 from ..utils import UserGuildPermission
 
 
-class Oauth2Endpoints(Compound):
+class ClientCompoundOauth2Endpoints(Compound):
+    
     http : DiscordHTTPClient
-    secret: str
-
+    id : int
+    secret : str
+    
+    
     async def activate_authorization_code(self, redirect_url, code, scopes):
         """
         Activates a user's oauth2 code.

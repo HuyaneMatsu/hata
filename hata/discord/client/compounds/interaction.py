@@ -4,7 +4,9 @@ import warnings
 
 from scarletio import Compound
 
+
 from ...allowed_mentions import parse_allowed_mentions
+from ...application import Application
 from ...bases import maybe_snowflake
 from ...http import DiscordHTTPClient
 from ...interaction import (
@@ -22,8 +24,11 @@ MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY = MessageFlag().update_by_keys(invoking_us
 MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS = MessageFlag().update_by_keys(embeds_suppressed=True)
 
 
-class InteractionEndpoints(Compound):
+class ClientCompoundInteractionEndpoints(Compound):
+    
+    application : Application
     http : DiscordHTTPClient
+    
     
     async def interaction_application_command_acknowledge(
         self, interaction, wait=True, *, show_for_invoking_user_only=False

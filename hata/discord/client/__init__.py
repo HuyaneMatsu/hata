@@ -1,4 +1,4 @@
-from .endpoints import *
+from .compounds import *
 
 from .client import *
 from .functionality_helpers import *
@@ -7,7 +7,7 @@ from .request_helpers import *
 from .utils import *
 
 __all__ = (
-    *endpoints.__all__,
+    *compounds.__all__,
     
     *client.__all__,
     *functionality_helpers.__all__,

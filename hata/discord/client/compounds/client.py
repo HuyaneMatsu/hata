@@ -3,30 +3,25 @@ __all__ = ()
 
 import reprlib, warnings
 from datetime import datetime
-from time import time as time_now
 
 from scarletio import Compound, Theory
 
-from ...activity import ACTIVITY_UNKNOWN, ActivityBase, ActivityCustom
 from ...channel import Channel
 from ...color import Color
-from ...gateway.client_gateway import DiscordGateway, PRESENCE as GATEWAY_OPERATION_CODE_PRESENCE
 from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES, VALID_ICON_MEDIA_TYPES_EXTENDED
 from ...oauth2 import Connection
-from ...preconverters import preconvert_preinstanced_type
-from ...user import PremiumType, Status
+from ...user import PremiumType
 from ...utils import datetime_to_timestamp, get_image_media_type, image_to_base64
 
 from ..request_helpers import get_guild_id, get_guild_id_and_channel_id
 
 
-class ClientEndpoints(Compound):
-    http : DiscordHTTPClient
-    premium_type : PremiumType
-    is_bot : bool
-    guild_profiles : dict
-    gateway : DiscordGateway
+class ClientCompoundClientEndpoints(Compound):
     
+    guild_profiles : dict
+    http : DiscordHTTPClient
+    is_bot : bool
+    premium_type : PremiumType
     
     @Theory
     def _set_attributes(self, data): ...
@@ -45,6 +40,7 @@ class ClientEndpoints(Compound):
             FutureWarning
         )
         return await self.edit(**keyword_parameters)
+    
     
     async def edit(
         self, *, avatar=..., banner=..., banner_color=..., bio=..., name=..., # Generic
@@ -444,105 +440,6 @@ class ClientEndpoints(Compound):
         """
         data = await self.http.client_connection_get_all()
         return [Connection(connection_data) for connection_data in data]
-    
-    
-    async def edit_presence(self, *, activity=..., status=..., afk=False):
-        """
-        Changes the client's presence (status and activity). If a parameter is not defined, it will not be changed.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        activity : ``ActivityBase``, Optional (Keyword only)
-            The new activity of the Client.
-        status : `str`, ``Status``, Optional (Keyword only)
-            The new status of the client.
-        afk : `bool` = `False`, Optional (Keyword only)
-            Whether the client is afk or not (?).
-        
-        Raises
-        ------
-        TypeError:
-            - If the status is not `str`, ``Status``.
-            - If activity is not ``ActivityBase``, except ``ActivityCustom``.
-        ValueError:
-            - If the status `str`, but not any of the predefined ones.
-        AssertionError
-            - If `afk` was not given as `bool`.
-        
-        Notes
-        -----
-        This method is an alternative version of ``.client_edit_presence`` till further decision.
-        """
-        if status is ...:
-            status = self._status
-        else:
-            status = preconvert_preinstanced_type(status, 'status', Status)
-            self._status = status
-        
-        status = status.value
-        
-        if activity is ...:
-            activity = self._activity
-        elif activity is None:
-            self._activity = ACTIVITY_UNKNOWN
-        elif isinstance(activity, ActivityBase) and (not isinstance(activity, ActivityCustom)):
-            self._activity = activity
-        else:
-            raise TypeError(
-                f'`activity` can be `{ActivityBase.__name__}` (except `{ActivityCustom.__name__}`), got: '
-                f'{activity.__class__.__name__}; {activity!r}.'
-            )
-        
-        if activity is None:
-            pass
-        elif activity is ACTIVITY_UNKNOWN:
-            activity = None
-        else:
-            if self.is_bot:
-                activity = activity.bot_dict()
-            else:
-                activity = activity.user_dict()
-        
-        if status == 'idle':
-            since = int(time_now() * 1000.)
-        else:
-            since = 0
-        
-        if __debug__:
-            if not isinstance(afk, bool):
-                raise AssertionError(
-                    f'`afk` can be `bool`, got {afk.__class__.__name__}; {afk!r}.'
-                )
-        
-        data = {
-            'op': GATEWAY_OPERATION_CODE_PRESENCE,
-            'd': {
-                'game': activity,
-                'since': since,
-                'status': status,
-                'afk': afk,
-            },
-        }
-        
-        await self.gateway.send_as_json(data)
-    
-    
-    async def client_edit_presence(self, **keyword_parameters):
-        """
-        ``Client.client_edit_presence`` is deprecated and will be removed in 2022 December.
-        Please use ``.edit_presence`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.client_edit_presence` is deprecated and will be removed in 2022 December. '
-                f'Please use `.edit_presence` instead.'
-            ),
-            FutureWarning
-        )
-        
-        return await self.edit_presence(**keyword_parameters)
     
     
     async def guild_leave(self, guild):

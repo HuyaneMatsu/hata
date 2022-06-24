@@ -12,8 +12,10 @@ from ..functionality_helpers import DiscoveryCategoryRequestCacher, DiscoveryTer
 from ..request_helpers import get_guild_discovery_and_id
 
 
-class DiscoveryEndpoints(Compound):
+class ClientCompoundDiscoveryEndpoints(Compound):
+    
     http : DiscordHTTPClient
+    
     
     async def guild_discovery_get(self, guild):
         """

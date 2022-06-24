@@ -24,14 +24,15 @@ from ..request_helpers import get_guild_and_id, get_guild_id, get_role_id, get_u
 from ..utils import BanEntry
 
 
-class GuildEndpoints(Compound):
-    http : DiscordHTTPClient
-    is_bot : bool
+class ClientCompoundGuildEndpoints(Compound):
+    
     guild_profiles : dict
     guilds : set
+    http : DiscordHTTPClient
+    id : int
+    is_bot : bool
     premium_type : PremiumType
     
-    # Guild
     
     async def guild_preview_get(self, guild):
         """

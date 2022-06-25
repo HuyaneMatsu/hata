@@ -184,7 +184,7 @@ class AuditLogChange:
     +-------------------------------+-----------------------------------------------+
     | trigger_metadata              | `None`, ``AutoModerationRuleTriggerMetadata`` |
     +-------------------------------+-----------------------------------------------+
-    | trigger_type                  | `None`, ``AutoModerationTriggerType``         |
+    | trigger_type                  | `None`, ``AutoModerationRuleTriggerType``     |
     +-------------------------------+-----------------------------------------------+
     | type                          | `None`, `int`                                 |
     +-------------------------------+-----------------------------------------------+

@@ -1,5 +1,6 @@
 __all__ = ()
 
+from ...auto_moderation import AutoModerationRuleTriggerType
 from ...permission import PermissionOverwriteTargetType
 
 
@@ -34,11 +35,17 @@ def detail_converter_permission_overwrite_target_type(key, value):
     return 'target_type', PermissionOverwriteTargetType.get(value)
 
 
+def detail_converter_auto_moderation_rule_trigger_type(key, value):
+    return key, AutoModerationRuleTriggerType.get(value)
+
+
 def detail_converter_nothing(key, value):
     return key, value
 
 
 DETAIL_CONVERTERS = {
+    'auto_moderation_rule_name': detail_converter_nothing,
+    'auto_moderation_rule_trigger_type': detail_converter_auto_moderation_rule_trigger_type,
     'channel_id': detail_converter_channel_id,
     'count': detail_converter_amount,
     'delete_member_days': detail_converter_days,

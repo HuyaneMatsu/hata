@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ....auto_moderation import AutoModerationAction, AutoModerationEventType, AutoModerationTriggerType
+from ....auto_moderation import AutoModerationAction, AutoModerationEventType, AutoModerationRuleTriggerType
 from ....auto_moderation.trigger_metadata import try_get_auto_moderation_trigger_metadata_type_from_data
 
 from ..audit_log_change import AuditLogChange
@@ -59,7 +59,7 @@ def convert_auto_moderation_trigger_entity_metadata(name, data):
 
 
 def convert_auto_moderation_rule_trigger_type(name, data):
-    return _convert_preinstanced('trigger_type', data, AutoModerationTriggerType)
+    return _convert_preinstanced('trigger_type', data, AutoModerationRuleTriggerType)
 
 
 AUTO_MODERATION_RULE_CONVERTERS = {

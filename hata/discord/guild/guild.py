@@ -142,6 +142,35 @@ def _sticker_match_sort_key(item):
     return item[1]
 
 
+def _strip_emoji_name(name):
+    """
+    Strips the given emoji name from colon signs.
+    
+    Parameters
+    ----------
+    name : `str`
+        The name to strip.
+    
+    Returns
+    -------
+    name : `str`
+    """
+    if name.startswith(':'):
+        starts_at = 1
+    else:
+        starts_at = None
+    
+    if name.endswith(':'):
+        ends_at = -1
+    else:
+        ends_at = None
+    
+    if (starts_at is not None) or (ends_at is not None):
+        name = name[starts_at : ends_at]
+    
+    return name
+
+
 # discord does not send `widget_channel_id`, `widget_enabled`, `max_presences`, `max_users` correctly and that is sad.
 
 @export
@@ -319,7 +348,7 @@ class Guild(DiscordEntity, immortal=True):
         """
         Tries to find the guild from the already existing ones. If it can not find, creates a new one. If the found
         guild is partial (or freshly created), sets it's attributes from the given `data`. If the the guild is not
-        added to the client's guild profiles yet, adds it, and the client to the guilds's `.clients` as well.
+        added to the client's guild profiles yet, adds it, and the client to the guilds' `.clients` as well.
         
         Parameters
         ----------
@@ -811,7 +840,7 @@ class Guild(DiscordEntity, immortal=True):
             return self.name
         
         if code == 'c':
-            return self.created_at.__format__(DATETIME_FORMAT_CODE)
+            return format(self.created_at, DATETIME_FORMAT_CODE)
         
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
@@ -1512,6 +1541,8 @@ class Guild(DiscordEntity, immortal=True):
         -------
         emoji : ``Emoji``, `default`
         """
+        name = _strip_emoji_name(name)
+        
         emoji_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
         
         accurate_emoji = default
@@ -1551,6 +1582,8 @@ class Guild(DiscordEntity, immortal=True):
         -------
         emojis : `list` of ``Emoji``
         """
+        name = _strip_emoji_name(name)
+        
         emoji_name_pattern = re_compile('.*?'.join(re_escape(char) for char in name), re_ignore_case)
         
         to_sort = []

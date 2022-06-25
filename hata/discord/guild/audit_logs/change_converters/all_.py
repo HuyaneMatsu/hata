@@ -22,12 +22,12 @@ def merge_converters(*converters_to_merge):
     
     Parameters
     ----------
-    converters_to_merge : `dict` of (`str`, `FunctionType`)
+    converters_to_merge : `dict` of (`str`, `FunctionType`) items
         Audit log change converters.
     
     Returns
     -------
-    merged_converters : `dict` of (`str`, `FunctionType`)
+    merged_converters : `dict` of (`str`, `FunctionType`) items
     """
     multi_type_converters = set()
     merged_converters = {}

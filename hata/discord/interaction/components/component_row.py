@@ -215,6 +215,21 @@ class ComponentRow(ComponentBase):
         return hash_value
     
     
+    def __iter__(self):
+        """
+        Iterates over the direct sub-components of the row.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        component : ``ComponentBase``
+        """
+        components = self.components
+        if (components is not None):
+            yield from components
+    
+    
     @copy_docs(ComponentBase._iter_components)
     def _iter_components(self):
         yield self

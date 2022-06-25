@@ -45,6 +45,9 @@
 - Add `RATE_LIMIT_GROUPS.auto_moderation_rule_delete`.
 - Add `AuditLog.auto_moderation_rules`.
 - Add new audit log converters.
+- `Guild.get_emoji_like` now strips the colons down from emoji names.
+- `Guild.get_emojis_like` now strips the colons down from emoji names.
+- Add `ComponentRow.__iter__`.
 
 ##### ext.plugin_loader
 

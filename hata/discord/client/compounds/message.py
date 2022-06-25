@@ -10,7 +10,7 @@ from scarletio import Compound, Task, WaitTillAll, WaitTillFirst
 from ...allowed_mentions import parse_allowed_mentions
 from ...bases import maybe_snowflake, maybe_snowflake_pair
 from ...channel import Channel, MessageIterator, message_relative_index
-from ...core import CHANNELS, KOKORO
+from ...core import CHANNELS, KOKORO, MESSAGES
 from ...exceptions import DiscordException, ERROR_CODES
 from ...http import DiscordHTTPClient
 from ...message import Message, MessageFlag, MessageReference, MessageRepr
@@ -186,7 +186,7 @@ class ClientCompoundMessageEndpoints(Compound):
         return messages
     
     
-    async def message_get(self, channel, message_id):
+    async def message_get(self, message, *positional_parameters, force_update=False):
         """
         Requests a specific message by it's id at the given `channel`.
         
@@ -194,10 +194,10 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Parameters
         ----------
-        channel : ``Channel``, `int`
-            The channel from where we want to request the message.
-        message_id : `int`
-            The message's id.
+        message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
+            The message to get, or a `channel-id`, `message-id` tuple representing it.
+        force_update : `bool` = `False`, Optional (Keyword only)
+            Whether the scheduled event should be requested even if it supposed to be up to date.
         
         Returns
         -------
@@ -206,24 +206,75 @@ class ClientCompoundMessageEndpoints(Compound):
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``Channel`` nor `int`.
-            If `message_id` was not given as `int`.
+            - If `message`'s type is neither ``Message``, nor `tuple` (`int`, `int`).
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
-        
-        message_id_value = maybe_snowflake(message_id)
-        if message_id_value is None:
-            raise TypeError(
-                f'`message_id` can be `int`, got {message_id.__class__.__name__}; {message_id!r}.'
+        if positional_parameters:
+            warnings.warn(
+                f'`{self.__class__.__name__}.message_get` parameters are modified from `channel + message_id` to '
+                f'`Message` / `(channel_id, message_id`). The old usage is deprecated and will be removed in 2022 '
+                f'December.'
             )
+            
+            channel, message_id = message, *positional_parameters
+                
+            channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
+            
+            message_id_value = maybe_snowflake(message_id)
+            if message_id_value is None:
+                raise TypeError(
+                    f'`message_id` can be `int`, got {message_id.__class__.__name__}; {message_id!r}.'
+                )
+            
+            message_id = message_id_value
         
-        message_data = await self.http.message_get(channel_id, message_id_value)
+        else:
+            if isinstance(message, Message):
+                message_id = message.id
+                channel_id = message.channel_id
+            
+            elif isinstance(message, MessageRepr):
+                message_id = message.id
+                channel_id = message.channel_id
+                message = None
+                
+            elif isinstance(message, MessageReference):
+                message_id = message.message_id
+                channel_id = message.channel_id
+                message = None
+            
+            else:
+                snowflake_pair = maybe_snowflake_pair(message)
+                if (snowflake_pair is not None):
+                    channel_id, message_id = snowflake_pair
+                    message = None
+                
+                else:
+                    raise TypeError(
+                        f'`message` can be `{Message.__name__}`, `{MessageRepr.__name__}`, '
+                        f'`{MessageReference.__name__}`, `tuple` (`int`, `int`), '
+                        f'got {message.__class__.__name__}; {message!r}.'
+                    )
         
-        return Message(message_data)
+        message_data = await self.http.message_get(channel_id, message_id)
+        
+        if force_update:
+            if message is None:
+                message = MESSAGES.get(message_id, None)
+            
+            if (message is None):
+                message = Message(message_data)
+            
+            else:
+                message._set_attributes(message_data)
+        
+        else:
+            message = Message(message_data)
+        
+        return message
     
     
     async def message_create(

@@ -48,6 +48,8 @@
 - `Guild.get_emoji_like` now strips the colons down from emoji names.
 - `Guild.get_emojis_like` now strips the colons down from emoji names.
 - Add `ComponentRow.__iter__`.
+- Add `force_update` parameter to `Client.message_get`.
+- `Client.message_get` now accepts `Message` / `(channel_id, message_id)` parameters from the old `channel, message_id`.
 
 ##### ext.plugin_loader
 

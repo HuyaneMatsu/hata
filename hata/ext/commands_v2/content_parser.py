@@ -1753,7 +1753,7 @@ async def _message_converter_m_id(command_context, content_parser_parameter_deta
     client = command_context.client
     if channel.cached_permissions_for(client).can_read_message_history:
         try:
-            message = await client.message_get(channel, message_id)
+            message = await client.message_get((channel.id, message_id))
         except BaseException as err:
             if not (
                 isinstance(err, ConnectionError) or
@@ -1803,7 +1803,7 @@ async def _message_converter_cm_id(command_context, content_parser_parameter_det
         for client in message_channel.clients:
             if message_channel.cached_permissions_for(client).can_read_message_history:
                 try:
-                    message = await client.message_get(message_channel,  message_id)
+                    message = await client.message_get((message_channel.id,  message_id))
                 except BaseException as err:
                     if isinstance(err, ConnectionError):
                         return None
@@ -1836,7 +1836,7 @@ async def _message_converter_cm_id(command_context, content_parser_parameter_det
         client = command_context.client
         if channel.cached_permissions_for(client).can_read_message_history:
             try:
-                message = await client.message_get(message_channel, message_id)
+                message = await client.message_get((message_channel.id, message_id))
             except BaseException as err:
                 if not (
                     isinstance(err, ConnectionError) or

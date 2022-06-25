@@ -1829,7 +1829,7 @@ class Message(DiscordEntity, immortal=True):
             self.pinned = pinned
         
         flags = data.get('flags', 0)
-        flag_difference = self.flags^flags
+        flag_difference = self.flags ^ flags
         if flag_difference:
             self.flags = MessageFlag(flags)
             

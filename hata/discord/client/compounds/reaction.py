@@ -18,9 +18,9 @@ class ClientCompoundReactionEndpoints(Compound):
     http : DiscordHTTPClient
     
     @Theory
-    async def message_get(self, channel, message_id): ...
+    async def message_get(self, message, *positional_parameters, force_update=False): ...
     
-            
+    
     async def reaction_add(self, message, emoji):
         """
         Adds a reaction on the given message.
@@ -381,7 +381,7 @@ class ClientCompoundReactionEndpoints(Compound):
         channel_id, message_id = get_channel_id_and_message_id(message)
         message = MESSAGES.get(message_id, None)
         if (message is None):
-            message = await self.message_get(channel_id, message_id)
+            message = await self.message_get((channel_id, message_id))
         
         reactions = message.reactions
         if (reactions is not None) and reactions:

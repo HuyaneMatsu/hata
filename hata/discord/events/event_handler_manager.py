@@ -299,7 +299,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-------------------------------+-----------------------------------------------------------+
         | trigger_metadata              | ``AutoModerationRuleTriggerMetadata``                     |
         +-------------------------------+-----------------------------------------------------------+
-        | trigger_type                  | ``AutoModerationTriggerType``                             |
+        | trigger_type                  | ``AutoModerationRuleTriggerType``                         |
         +-------------------------------+-----------------------------------------------------------+
     
     channel_create(client: ``Client``, channel: ``Channel``)

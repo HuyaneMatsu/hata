@@ -8,7 +8,7 @@ from ..channel import create_partial_channel_from_id
 from ..user import create_partial_user_from_id
 
 from .action import AutoModerationAction
-from .preinstanced import AutoModerationTriggerType
+from .preinstanced import AutoModerationRuleTriggerType
 
 
 class AutoModerationActionExecutionEvent(EventBase):
@@ -45,7 +45,7 @@ class AutoModerationActionExecutionEvent(EventBase):
     rule_id : `int`
         The triggered rule's identifier.
     
-    rule_trigger_type : ``AutoModerationTriggerType``
+    rule_trigger_type : ``AutoModerationRuleTriggerType``
         The triggered rule's type.
     
     user_id : `int`
@@ -107,7 +107,7 @@ class AutoModerationActionExecutionEvent(EventBase):
         self.rule_id = int(data['rule_id'])
         
         # rule_trigger_type
-        self.rule_trigger_type = AutoModerationTriggerType.get(data['rule_trigger_type'])
+        self.rule_trigger_type = AutoModerationRuleTriggerType.get(data['rule_trigger_type'])
         
         # user_id
         self.user_id = int(data['user_id'])

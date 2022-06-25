@@ -7,7 +7,7 @@
 - Change `Connection.type` from `str` to `ConnectionType`.
 - Mark guild voice channel type as messageable. (this was missing from the previous update.)
 - Update the identity payload.
-- Add `AutoModerationTriggerType`.
+- Add `AutoModerationRuleTriggerType`.
 - Add `auto_moderation_configuration` intent.
 - Add `auto_moderation_execution` intent.
 - Add `AutoModerationEventType`.

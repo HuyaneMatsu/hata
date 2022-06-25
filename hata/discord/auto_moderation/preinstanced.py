@@ -1,6 +1,6 @@
 __all__ = (
     'AutoModerationActionType', 'AutoModerationEventType', 'AutoModerationKeywordPresetType',
-    'AutoModerationTriggerType'
+    'AutoModerationRuleTriggerType'
 )
 
 from scarletio import export
@@ -107,7 +107,7 @@ class AutoModerationActionType(PreinstancedBase):
     timeout = P(3, 'timeout', TimeoutActionMetadata)
 
 
-class AutoModerationTriggerType(PreinstancedBase):
+class AutoModerationRuleTriggerType(PreinstancedBase):
     """
     Represents an auto moderation rule's trigger type.
     
@@ -124,7 +124,7 @@ class AutoModerationTriggerType(PreinstancedBase):
     
     Class Attributes
     ----------------
-    INSTANCES : `dict` of (`str`, ``AutoModerationTriggerType``) items
+    INSTANCES : `dict` of (`str`, ``AutoModerationRuleTriggerType``) items
         Stores the predefined auto moderation trigger types. This container is accessed when translating a Discord side
         identifier of a auto moderation trigger type. The identifier value is used as a key to get it's wrapper side
         representation.
@@ -166,7 +166,7 @@ class AutoModerationTriggerType(PreinstancedBase):
         
         Returns
         -------
-        self : ``AutoModerationTriggerType``
+        self : ``AutoModerationRuleTriggerType``
             The created instance.
         """
         self = object.__new__(cls)
@@ -180,7 +180,7 @@ class AutoModerationTriggerType(PreinstancedBase):
     
     def __init__(self, value, name, max_per_guild, metadata_type):
         """
-        Creates an ``AutoModerationTriggerType`` and stores it at the class's `.INSTANCES` class attribute as well.
+        Creates an ``AutoModerationRuleTriggerType`` and stores it at the class's `.INSTANCES` class attribute as well.
         
         Parameters
         ----------

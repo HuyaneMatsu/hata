@@ -8,7 +8,7 @@ from ..role import Role, create_partial_role_from_id
 from ..user import ZEROUSER, create_partial_user_from_id
 
 from .action import AutoModerationAction
-from .preinstanced import AutoModerationEventType, AutoModerationTriggerType
+from .preinstanced import AutoModerationEventType, AutoModerationRuleTriggerType
 
 
 def _validate_actions(actions):
@@ -276,7 +276,7 @@ def _validate_trigger_type_with_metadata_options(trigger_type, keyword_presets, 
     
     Parameters
     ----------
-    trigger_type : `Ellipsis`, `int`, ``AutoModerationTriggerType``
+    trigger_type : `Ellipsis`, `int`, ``AutoModerationRuleTriggerType``
         Auto moderation trigger type.
     
     keyword_presets : `Ellipsis`, `None`, `int`, ``AutoModerationKeywordPresetType``, \
@@ -290,7 +290,7 @@ def _validate_trigger_type_with_metadata_options(trigger_type, keyword_presets, 
     -------
     trigger_metadata : `None`, ``AutoModerationRuleTriggerMetadata``
         Trigger type specific metadata if applicable.
-    trigger_type : ``AutoModerationTriggerType``
+    trigger_type : ``AutoModerationRuleTriggerType``
         The final processed trigger type.
     
     Raises
@@ -304,7 +304,7 @@ def _validate_trigger_type_with_metadata_options(trigger_type, keyword_presets, 
         - If a parameter's value is incorrect.
     """
     if (trigger_type is not ...):
-        trigger_type = preconvert_preinstanced_type(trigger_type, 'trigger_type', AutoModerationTriggerType)
+        trigger_type = preconvert_preinstanced_type(trigger_type, 'trigger_type', AutoModerationRuleTriggerType)
     
     if (keyword_presets is not ...) + (keywords is not ...) > 1:
         raise TypeError(
@@ -313,11 +313,11 @@ def _validate_trigger_type_with_metadata_options(trigger_type, keyword_presets, 
         )
     
     if (keyword_presets is not ...):
-        probable_trigger_type = AutoModerationTriggerType.keyword_preset
+        probable_trigger_type = AutoModerationRuleTriggerType.keyword_preset
         metadata_parameter = keyword_presets
     
     elif (keywords is not ...):
-        probable_trigger_type = AutoModerationTriggerType.keyword
+        probable_trigger_type = AutoModerationRuleTriggerType.keyword
         metadata_parameter = keywords
     
     else:
@@ -396,7 +396,7 @@ class AutoModerationRule(DiscordEntity, immortal=True):
     trigger_metadata : `None`, ``AutoModerationRuleTriggerMetadata``
         Trigger type specific metadata if applicable.
     
-    trigger_type : ``AutoModerationTriggerType``
+    trigger_type : ``AutoModerationRuleTriggerType``
         Characterizes the type of content which can trigger the rule.
     """
     __slots__ = (
@@ -420,12 +420,12 @@ class AutoModerationRule(DiscordEntity, immortal=True):
         actions : `None`, ``AutoModerationAction``, `iterable` of ``AutoModerationAction``
              Actions which will execute when the rule is triggered.
         
-        trigger_type : ``AutoModerationTriggerType``, `int`, Optional
+        trigger_type : ``AutoModerationRuleTriggerType``, `int`, Optional
             Auto moderation trigger type.
             
             By passing `keyword_presets` parameter you can define the trigger type as 
-            `AutoModerationTriggerType.keyword_preset`, or by passing the `keywords` you can define it as 
-            `AutoModerationTriggerType.keyword`.
+            `AutoModerationRuleTriggerType.keyword_preset`, or by passing the `keywords` you can define it as 
+            `AutoModerationRuleTriggerType.keyword`.
         
         enabled : `bool` = `True`, Optional (Keyword only)
             Whether the rule is enabled.
@@ -665,7 +665,7 @@ class AutoModerationRule(DiscordEntity, immortal=True):
         self.name = data['name']
         
         # trigger_metadata & trigger_type
-        trigger_type = AutoModerationTriggerType.get(data['trigger_type'])
+        trigger_type = AutoModerationRuleTriggerType.get(data['trigger_type'])
         trigger_metadata_type = trigger_type.metadata_type
         if (trigger_metadata_type is None):
             trigger_metadata = None
@@ -710,7 +710,7 @@ class AutoModerationRule(DiscordEntity, immortal=True):
             +-------------------------------+-----------------------------------------------------------+
             | trigger_metadata              | ``AutoModerationRuleTriggerMetadata``                     |
             +-------------------------------+-----------------------------------------------------------+
-            | trigger_type                  | ``AutoModerationTriggerType``                             |
+            | trigger_type                  | ``AutoModerationRuleTriggerType``                         |
             +-------------------------------+-----------------------------------------------------------+
         """
         old_attributes = {}
@@ -779,7 +779,7 @@ class AutoModerationRule(DiscordEntity, immortal=True):
             self.name = name
         
         # trigger_metadata & trigger_type
-        trigger_type = AutoModerationTriggerType.get(data['trigger_type'])
+        trigger_type = AutoModerationRuleTriggerType.get(data['trigger_type'])
         trigger_metadata_type = trigger_type.metadata_type
         if (trigger_metadata_type is None):
             trigger_metadata = None
@@ -1184,12 +1184,12 @@ class AutoModerationRule(DiscordEntity, immortal=True):
         name : `str`, Optional (Keyword only)
             The rule's name.
         
-        trigger_type : ``AutoModerationTriggerType``, `int`, Optional (Keyword only)
+        trigger_type : ``AutoModerationRuleTriggerType``, `int`, Optional (Keyword only)
             Auto moderation trigger type.
             
             By passing `keyword_presets` parameter you can define the trigger type as 
-            `AutoModerationTriggerType.keyword_preset`, or by passing the `keywords` you can define it as 
-            `AutoModerationTriggerType.keyword`.
+            `AutoModerationRuleTriggerType.keyword_preset`, or by passing the `keywords` you can define it as 
+            `AutoModerationRuleTriggerType.keyword`.
         
         Returns
         -------

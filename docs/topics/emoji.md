@@ -81,4 +81,5 @@ or custom emoji. On failure returns `None`.
 
 There is also a multi-emoji parsing function, called `parse_custom_emojis`, which only parses custom emojis.
 
-> Hata extensions may have their own emoji parsers.
+Or alternative multi-emoji parser is called `parse_custom_emojis_ordered` which returns the parsed emojis in order as
+they appear in the passed text.

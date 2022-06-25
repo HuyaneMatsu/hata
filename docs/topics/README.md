@@ -24,6 +24,8 @@ Hata has tutorials in guides.
     - [forms](forms.md): Building forms and receiving them.
     - [typing](typing_interactions.md): Typing interactions on the [pep 484](https://peps.python.org/pep-0484/) way.
 
+- [plugins](plugins.md): Organizing code parts into pluggable modules
+  
 - [commands_v2](commands_v2.md): Everything what you should know about command framework.
 
 - [top_gg](top_gg.md): [top.gg](https://top.gg/) bot listing extension.

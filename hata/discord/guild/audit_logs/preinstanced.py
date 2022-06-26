@@ -295,7 +295,7 @@ class AuditLogEvent(PreinstancedBase):
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
     | auto_moderation_rule_create           | auto moderation rule create           | 140   | auto_moderation_rule          |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
-    | auto_moderation_rule_update           | auto moderation rule update           | 141   | auto_moderation_rule          |
+    | auto_moderation_rule_edit           | auto moderation rule edit           | 141   | auto_moderation_rule          |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
     | auto_moderation_rule_delete           | auto moderation rule delete           | 142   | auto_moderation_rule          |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
@@ -389,7 +389,7 @@ class AuditLogEvent(PreinstancedBase):
     )
     
     auto_moderation_rule_create = P(140, 'auto moderation rule create', AuditLogTargetType.auto_moderation_rule)
-    auto_moderation_rule_update = P(141, 'auto moderation rule update', AuditLogTargetType.auto_moderation_rule)
+    auto_moderation_rule_edit = P(141, 'auto moderation rule edit', AuditLogTargetType.auto_moderation_rule)
     auto_moderation_rule_delete = P(142, 'auto moderation rule delete', AuditLogTargetType.auto_moderation_rule)
     auto_moderation_block_message = P(143, 'auto moderation block message', AuditLogTargetType.none)
     

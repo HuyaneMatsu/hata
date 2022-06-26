@@ -4643,7 +4643,7 @@ def AUTO_MODERATION_RULE_UPDATE__CAL_SC(client, data):
     else:
         old_attributes = auto_moderation_rule._difference_update_attributes(data)
     
-    Task(client.events.auto_moderation_rule_update(client, auto_moderation_rule, old_attributes), KOKORO)
+    Task(client.events.auto_moderation_rule_edit(client, auto_moderation_rule, old_attributes), KOKORO)
 
 
 def AUTO_MODERATION_RULE_UPDATE__CAL_MC(client, data):
@@ -4667,7 +4667,7 @@ def AUTO_MODERATION_RULE_UPDATE__CAL_MC(client, data):
             if not old_attributes:
                 return
         
-        event_handler = client.events.auto_moderation_rule_update
+        event_handler = client.events.auto_moderation_rule_edit
         if (event_handler is not DEFAULT_EVENT_HANDLER):
             Task(event_handler(client, auto_moderation_rule, old_attributes), KOKORO)
         
@@ -4691,7 +4691,7 @@ def AUTO_MODERATION_RULE_UPDATE__CAL_MC(client, data):
                 return
         
         for client_ in clients:
-            event_handler = client_.events.auto_moderation_rule_update
+            event_handler = client_.events.auto_moderation_rule_edit
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(event_handler(client_, auto_moderation_rule, old_attributes), KOKORO)
 

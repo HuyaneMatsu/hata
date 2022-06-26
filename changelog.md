@@ -911,7 +911,7 @@ This fixes a case when a precreated channel could mess up the channel's and othe
 - `PreinstancedBase`-s now raise rich attribute errors.
 - Add new embeddable activities (still experimental).
 - Add `AuditLogEvent.auto_moderation_rule_create`.
-- Add `AuditLogEvent.auto_moderation_rule_update`.
+- Add `AuditLogEvent.auto_moderation_rule_edit`.
 - Add `AuditLogEvent.auto_moderation_rule_delete`.
 - Add `AuditLogEvent.auto_moderation_block_message`.
 - Add `ERROR_CODES.activity_launch_no_access`.

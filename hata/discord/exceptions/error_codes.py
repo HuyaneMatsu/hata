@@ -327,6 +327,8 @@ Error Codes
 +---------------------------------------------------------------+-----------+-----------+
 | invalid_asset                                                 | 50046     | -         |
 +---------------------------------------------------------------+-----------+-----------+
+| invalid_payment_source                                        | 50048     | -         |
++---------------------------------------------------------------+-----------+-----------+
 | invalid_application_name                                      | 50050     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | invalid_gift_redemption_owned                                 | 50051     | -         |
@@ -635,6 +637,7 @@ invalid_oauth2_redirect_url = 50040
 invalid_API_version = 50041
 asset_size_too_large = 50045
 invalid_asset = 50046
+invalid_payment_source = 50048
 invalid_application_name = 50050
 invalid_gift_redemption_owned = 50051
 cannot_self_redeem_this_gift = 50054

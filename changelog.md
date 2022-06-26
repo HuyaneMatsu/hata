@@ -50,6 +50,8 @@
 - Add `ComponentRow.__iter__`.
 - Add `force_update` parameter to `Client.message_get`.
 - `Client.message_get` now accepts `Message` / `(channel_id, message_id)` parameters from the old `channel, message_id`.
+- Add `ERROR_CODES.invalid_payment_source`.
+- Add `Client.request_all_members_of`.
 
 ##### ext.plugin_loader
 
@@ -67,6 +69,7 @@
 - `thread_user_create` could have raise `AttributeError`.
 - `ReactionAddEvent.__eq__` could have return incorrect value.
 - `Client.thread_create` raised `TypeError`.
+- `Client._should_request_users` were not respected at `guild_create` events outside of startup.
 
 #### Renames, Deprecation & Removals
 

@@ -27,6 +27,86 @@ from ..functionality_helpers import MassUserChunker, SingleUserChunker
 from ..request_helpers import get_guild_id
 
 
+def _assert__edit_presence__afk(afk):
+    """
+    Asserts the `afk` parameter of ``Client.edit_presence`` method.
+    
+    Parameters
+    ----------
+    afk : `bool`
+        - If `afk` was not given as `bool`.
+    
+    Raises
+    ------
+    AssertionError
+        - If `limit` is not `int`.
+        - If `limit` is out of the expected range [1:100].
+    """
+    if not isinstance(afk, bool):
+        raise AssertionError(
+            f'`afk` can be `bool`, got {afk.__class__.__name__}; {afk!r}.'
+        )
+    
+    return True
+
+
+def _assert__request_members__limit(limit):
+    """
+    Asserts the `limit` parameter of ``Client.request_members`` method.
+    
+    Parameters
+    ----------
+    limit : `int`
+        The amount of users to be received. Limited to `100`.
+    
+    Raises
+    ------
+    AssertionError
+        - If `limit` is not `int`.
+        - If `limit` is out of the expected range [1:100].
+    """
+    if not isinstance(limit, int):
+        raise AssertionError(
+            f'`limit` can be `int`, got {limit.__class__.__name__}; {limit!r}.'
+        )
+    
+    if limit < 1 or limit > 100:
+        raise AssertionError(
+            f'`limit` is out of the expected range [1:100], got {limit!r}.'
+        )
+    
+    return True
+
+
+def _assert__request_members__name(name):
+    """
+    Asserts the `name` parameter of ``Client.request_members`` method.
+    
+    Parameters
+    ----------
+    name : `str`
+        The received user's name or nick should start with this string.
+    
+    Raises
+    ------
+    AssertionError
+            - If `name` is not `str`.
+            - If `name` length is out of the expected range [1:32].
+    """
+    if not isinstance(name, str):
+        raise AssertionError(
+            f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+        )
+    
+    name_length = len(name)
+    if name_length < 1 or name_length > 32:
+        raise AssertionError(
+            f'`name` length can be in range [1:32], got {name_length!r}; {name!r}.'
+        )
+    
+    return True
+
+
 class ClientCompoundClientGateway(Compound):
     
     events : EventHandlerManager
@@ -60,8 +140,6 @@ class ClientCompoundClientGateway(Compound):
             - If activity is not ``ActivityBase``, except ``ActivityCustom``.
         ValueError:
             - If the status `str`, but not any of the predefined ones.
-        AssertionError
-            - If `afk` was not given as `bool`.
         
         Notes
         -----
@@ -102,11 +180,8 @@ class ClientCompoundClientGateway(Compound):
         else:
             since = 0
         
-        if __debug__:
-            if not isinstance(afk, bool):
-                raise AssertionError(
-                    f'`afk` can be `bool`, got {afk.__class__.__name__}; {afk!r}.'
-                )
+        assert _assert__edit_presence__afk(afk)
+        
         
         data = {
             'op': GATEWAY_OPERATION_CODE_PRESENCE,
@@ -194,8 +269,34 @@ class ClientCompoundClientGateway(Compound):
                 await gateway.change_voice_state(guild_id, channel_id)
         
         return voice_client
-
-
+    
+    
+    async def request_all_members_of(self, guild):
+        """
+        Requests all members of the given guild.
+        
+        > This method uses the client's gateway to request the users. If any of the parameters do not match their
+        > expected value or if timeout occurs, returns instead of raising.
+        
+        If the ``Client`` is created with `should_request_users` parameter given as `False`, this parameter can be used
+        to request users of specific guilds.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild``, `int`
+            The guild, what's members will be requested.
+        
+        Raises
+        ------
+        TypeError
+            - If `guild` was not given neither as ``Guild`` or `int`.
+        """
+        guild_id = get_guild_id(guild)
+        await self._request_members(guild_id)
+    
+    
     async def _request_members(self, guild_id):
         """
         Requests the members of the given guild. Called when the client joins a guild and user caching is enabled
@@ -211,7 +312,7 @@ class ClientCompoundClientGateway(Compound):
         event_handler = self.events.guild_user_chunk
         
         self._user_chunker_nonce = nonce = self._user_chunker_nonce + 1
-        nonce = nonce.__format__('0>16x')
+        nonce = format(nonce, '0>16x')
         
         event_handler.waiters[nonce] = waiter = MassUserChunker()
         
@@ -242,19 +343,19 @@ class ClientCompoundClientGateway(Compound):
         """
         Requests the members of the given guild by their name.
         
-        This method uses the client's gateway to request the users. If any of the parameters do not match their
-        expected value or if timeout occurs, returns an empty list instead of raising.
+        > This method uses the client's gateway to request the users. If any of the parameters do not match their
+        > expected value or if timeout occurs, returns an empty list instead of raising.
         
         This method is a coroutine.
         
         Parameters
         ----------
-        guild : ``Guild``
+        guild : ``Guild``, `int`
             The guild, what's members will be requested.
         name : `str`
             The received user's name or nick should start with this string.
         limit : `int` = `1`, Optional
-            The amount of users to received. Limited to `100`.
+            The amount of users to be received. Limited to `100`.
         
         Returns
         -------
@@ -263,41 +364,17 @@ class ClientCompoundClientGateway(Compound):
         Raises
         ------
         TypeError
-            - If `guild` was not given neither as ``Guild`` nor as `int`.
-        AssertionError
-            - If `limit` is not `int`.
-            - If `limit` is out of the expected range [1:100].
-            - If `name` is not `str`.
-            - If `name` length is out of the expected range [1:32].
+            - If `guild` was not given neither as ``Guild`` or `int`.
         """
         guild_id = get_guild_id(guild)
         
-        if __debug__:
-            if not isinstance(limit, int):
-                raise AssertionError(
-                    f'`limit` can be `int`, got {limit.__class__.__name__}; {limit!r}.'
-                )
-            
-            if limit < 1 or limit > 100:
-                raise AssertionError(
-                    f'`limit` is out of the expected range [1:100], got {limit!r}.'
-                )
-            
-            if not isinstance(name, str):
-                raise AssertionError(
-                    f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
-                )
-            
-            name_length = len(name)
-            if name_length < 1 or name_length > 32:
-                raise AssertionError(
-                    f'`name` length can be in range [1:32], got {name_length!r}; {name!r}.'
-                )
+        assert _assert__request_members__limit(limit)
+        assert _assert__request_members__name(name)
         
         event_handler = self.events.guild_user_chunk
         
         self._user_chunker_nonce = nonce = self._user_chunker_nonce + 1
-        nonce = nonce.__format__('0>16x')
+        nonce = format(nonce, '0>16x')
         
         event_handler.waiters[nonce] = waiter = SingleUserChunker()
         
@@ -324,8 +401,8 @@ class ClientCompoundClientGateway(Compound):
                 pass
             
             return []
-
-
+    
+    
     async def wait_for(self, event_name, check, timeout=None):
         """
         O(n) event waiter with massive overhead compared to other optimized event waiters.

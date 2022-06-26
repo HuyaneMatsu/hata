@@ -119,6 +119,9 @@ class AutoModerationActionExecutionEvent(EventBase):
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__]
         
+        # Descriptive fields `.guild_id`, `.channel_id`, `.user_id`, `.rule_id`.
+        
+        # guild_id
         guild_id = self.guild_id
         if guild_id:
             repr_parts.append(' guild_id=')
@@ -129,6 +132,7 @@ class AutoModerationActionExecutionEvent(EventBase):
         else:
             field_added = False
         
+        # channel_id
         channel_id = self.channel_id
         if channel_id:
             if field_added:
@@ -142,11 +146,51 @@ class AutoModerationActionExecutionEvent(EventBase):
         if field_added:
             repr_parts.append(',')
         
+        # user_id
         repr_parts.append(' user_id=')
         repr_parts.append(repr(self.user_id))
         
+        # rule_id
         repr_parts.append(', rule_id=')
         repr_parts.append(repr(self.rule_id))
+        
+        # Extra fields: `.action`, `.alert_system_message_id`, `.content`, `.matched_content`, `.matched_keyword`
+        #    `rule_trigger_type`.
+        
+        # alert_system_message_id
+        alert_system_message_id = self.alert_system_message_id
+        if alert_system_message_id:
+            repr_parts.append(', alert_system_message_id=')
+            repr_parts.append(repr(alert_system_message_id))
+        
+        # action
+        repr_parts.append(', action=')
+        repr_parts.append(repr(self.action))
+        
+        # content
+        repr_parts.append(', content=')
+        repr_parts.append(repr(self.content))
+        
+        
+        # rule_trigger_type
+        rule_trigger_type = self.rule_trigger_type
+        repr_parts.append(', rule_trigger_type=')
+        repr_parts.append(repr(rule_trigger_type.name))
+        repr_parts.append('~')
+        repr_parts.append(repr(rule_trigger_type.value))
+        
+        # matched_content
+        matched_content = self.matched_content
+        if (matched_content is not None):
+            repr_parts.append(', matched_content=')
+            repr_parts.append(repr(matched_content))
+        
+        # matched_keyword
+        matched_keyword = self.matched_keyword
+        if (matched_keyword is not None):
+            repr_parts.append(', matched_keyword=')
+            repr_parts.append(repr(matched_keyword))
+
         
         repr_parts.append('>')
         return ''.join(repr_parts)

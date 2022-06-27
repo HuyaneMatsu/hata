@@ -35,7 +35,7 @@ class AutoModerationActionExecutionEvent(EventBase):
     
     guild_id : `int`
         The guild's identifier where the action was executed.
-        
+    
     matched_content : `None`, `str`
         The substring in the user submitted content that triggered the rule.
     

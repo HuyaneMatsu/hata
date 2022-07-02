@@ -279,7 +279,7 @@ class DiscordGateway:
         ConnectionClosed
             If the websocket connection closed.
         TimeoutError
-            If the gateways's `.kokoro` is not beating, meanwhile it should.
+            If the gateways' `.kokoro` is not beating, meanwhile it should.
         """
         websocket = self.websocket
         if websocket is None:
@@ -389,7 +389,7 @@ class DiscordGateway:
         Raises
         ------
         TimeoutError
-            If the gateways's `.kokoro` is not beating, meanwhile it should.
+            If the gateways' `.kokoro` is not beating, meanwhile it should.
         """
         kokoro = self.kokoro
         if kokoro is None:

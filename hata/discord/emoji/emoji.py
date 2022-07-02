@@ -135,7 +135,7 @@ class Emoji(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        emoji_id : `snowflake`
+        emoji_id : `int`
             The emoji's id.
         **kwargs : keyword parameters
             Additional predefined attributes for the emoji.

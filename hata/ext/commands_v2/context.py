@@ -8,7 +8,7 @@ from .responding import process_command_coroutine
 
 
 @export
-class CommandContext(object):
+class CommandContext:
     """
     Represents a command context within the command is invoked.
     

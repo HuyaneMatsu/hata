@@ -185,7 +185,9 @@ class AuditLog(RichAttributeErrorBaseType):
         
         entries = self.entries
         for entry_data in entry_datas:
-            entries.append(AuditLogEntry(entry_data, self))
+            entry = AuditLogEntry(entry_data, self)
+            if (entry is not None):
+                entries.append(entry)
         
         return True
     

@@ -113,7 +113,7 @@ class CommandBase(RichAttributeErrorBaseType):
         for repr_parts in self._cursed_repr_builder():
             repr_parts.append(', oh no')
         
-        return "".join(repr_parts)
+        return ''.join(repr_parts)
         ```
         """
         repr_parts = ['<', self.__class__.__name__]

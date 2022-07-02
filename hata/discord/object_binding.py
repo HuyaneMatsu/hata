@@ -38,7 +38,7 @@ def bind(bind_to, bind_with, name, *, weak=False, weak_cache_size=0):
     ```py
     from hata import ClientUserBase, bind
     
-    class Inventory(object):
+    class Inventory:
         def __init__(self, parent_self):
             self.user_id = parent_self.id
             self.inventory = []
@@ -60,7 +60,7 @@ def bind(bind_to, bind_with, name, *, weak=False, weak_cache_size=0):
     ```py
     from hata import ClientUserBase, bind
     
-    class ValueBinder(object):
+    class ValueBinder:
         def __init__(self, parent_self):
             self.value = 10
         
@@ -82,7 +82,7 @@ def bind(bind_to, bind_with, name, *, weak=False, weak_cache_size=0):
     ```py
     DEFAULT_VALUE = 10
     
-    class ValueBinder(object):
+    class ValueBinder:
         def __init__(self, parent_self):
             self.value = DEFAULT_VALUE
         
@@ -107,7 +107,7 @@ def bind(bind_to, bind_with, name, *, weak=False, weak_cache_size=0):
     
     > Also defining `__bool__` is not required, but recommended.
     ```py
-    class Inventory(object):
+    class Inventory:
         def __init__(self, parent_self):
             self.user_id = parent_self.id
             self.inventory = []

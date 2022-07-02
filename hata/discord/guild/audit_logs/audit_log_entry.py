@@ -38,7 +38,7 @@ class AuditLogEntry:
     """
     __slots__ = ('_parent_reference', 'changes', 'details', 'id', 'reason', 'target_id', 'type', 'user',)
     
-    def __init__(self, data, parent):
+    def __new__(cls, data, parent):
         """
         Creates an audit log entry, from entry data sent inside of an ``AuditLog``'s data and from the audit itself.
         
@@ -49,11 +49,21 @@ class AuditLogEntry:
         parent : ``AuditLog``
             The parent of the entry, what contains the respective guild, the included users, webhooks and the
             integrations, etc... to work with.
+        
+        Returns
+        -------
+        self : `None`, ``AuditLogEntry``
+            Returns `None` if Discord is derping like hell.
         """
+        raw_event_type = data.get('action_type', None)
+        if (raw_event_type is None):
+            return None
+        
+        self = object.__new__(cls)
         self._parent_reference = parent._get_self_reference()
         self.id = int(data['id'])
         
-        event_type = AuditLogEvent.get(int(data['action_type']))
+        event_type = AuditLogEvent.get(raw_event_type)
         self.type = event_type
         
         options = data.get('options', None)

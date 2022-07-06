@@ -1,3 +1,12 @@
+## 1.2.19
+
+#### Bug Fixes
+
+- `AutoModerationAction.__eq__` could return incorrect value.
+- `AutoModerationAction.copy_with` set attributes badly.
+- `AutoModerationAction.copy_with` could raise `AttributeError`.
+- `SendAlertMessageActionMetadata.__new__` could set `channel_id` as `None`.
+
 ## 1.2.18 *\[2022-06-27\]*
 
 #### Improvements

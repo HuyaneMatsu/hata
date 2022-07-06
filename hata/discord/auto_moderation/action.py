@@ -208,6 +208,9 @@ class AutoModerationAction(RichAttributeErrorBaseType):
         if self.type is not other.type:
             return False
         
+        if self.metadata != other.metadata:
+            return False
+        
         return True
     
     
@@ -307,10 +310,10 @@ class AutoModerationAction(RichAttributeErrorBaseType):
             if (metadata is not None):
                 metadata = metadata.copy()
             
-            type_ = self.trigger_type
+            type_ = self.type
             
         else:
-            type_, metadata = _validate_action_type_with_metadata_options(
+            metadata, type_ = _validate_action_type_with_metadata_options(
                 action_type, channel, duration
             )
             

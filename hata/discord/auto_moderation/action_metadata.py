@@ -19,8 +19,9 @@ class AutoModerationActionMetadata(RichAttributeErrorBaseType):
         """
         Creates a new action metadata instance.
         """
-        raise NotImplemented
-        
+        return object.__new__(cls)
+    
+    
     def __repr__(self):
         """Returns the action metadata's representation."""
         return f'<{self.__class__.__name__}>'
@@ -40,7 +41,7 @@ class AutoModerationActionMetadata(RichAttributeErrorBaseType):
         -------
         self : ``ScheduledEventEntityMetadata``
         """
-        raise NotImplemented
+        return object.__new__(cls)
     
     
     def to_data(self):
@@ -104,7 +105,7 @@ class SendAlertMessageActionMetadata(AutoModerationActionMetadata):
             - If `channel`'s type is incorrect.
         """
         if channel is None:
-            channel_id = None
+            channel_id = 0
         
         elif isinstance(channel, Channel):
             channel_id = channel.id

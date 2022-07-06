@@ -1,6 +1,6 @@
 import vampytest
 
-from .. import AutoModerationActionType
+from .. import AutoModerationActionType, AutoModerationActionMetadata
 
 
 def test__AutoModerationActionType__name():
@@ -11,3 +11,8 @@ def test__AutoModerationActionType__name():
 def test__AutoModerationActionType__value():
     for instance in AutoModerationActionType.INSTANCES.values():
         vampytest.assert_instance(instance.value, AutoModerationActionType.VALUE_TYPE)
+
+
+def test__AutoModerationActionType__metadata_type():
+    for instance in AutoModerationActionType.INSTANCES.values():
+        vampytest.assert_subtype(instance.metadata_type, AutoModerationActionMetadata, nullable=True)

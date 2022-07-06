@@ -98,10 +98,17 @@ class AutoModerationActionExecutionEvent(EventBase):
         self.guild_id = guild_id
         
         # matched_content
-        self.matched_content = data.get('matched_content', None)
+        matched_content = data.get('matched_content', None)
+        if (matched_content is not None) and not matched_content:
+            matched_content = None
+        
+        self.matched_content = matched_content
         
         # matched_keyword
-        self.matched_keyword = data.get('matched_keyword', None)
+        matched_keyword = data.get('matched_keyword', None)
+        if (matched_keyword is not None) and not matched_keyword:
+            matched_keyword = None
+        self.matched_keyword = matched_keyword
         
         # rule_id
         self.rule_id = int(data['rule_id'])

@@ -26,4 +26,6 @@ def create_partial_user_from_id(user_id):
     except KeyError:
         pass
     
-    return User._create_empty(user_id)
+    user = User._create_empty(user_id)
+    USERS[user_id] = user
+    return user

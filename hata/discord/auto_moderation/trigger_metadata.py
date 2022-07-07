@@ -441,13 +441,7 @@ class KeywordPresetTriggerMetadata(AutoModerationRuleTriggerMetadata):
     def to_data(self):
         data = {}
         
-        keyword_presets = self.keyword_presets
-        if (keyword_presets is None):
-            keyword_preset_array = []
-        else:
-            keyword_preset_array = [keyword_preset.value for keyword_preset in keyword_presets]
-        
-        data['presets'] = keyword_preset_array
+        data['presets'] = [*self.iter_keyword_presets()]
         
         return data
     

@@ -19,9 +19,9 @@ def test__KeywordTriggerMetadata__copy_0():
 def test__KeywordTriggerMetadata__copy_1():
     """
     Tests whether ``KeywordTriggerMetadata``'s `copy` method works as expected.
-    Case: no keywords.
+    Case: *n* keyword(s).
     """
-    metadata = KeywordTriggerMetadata(None)
+    metadata = KeywordTriggerMetadata('owo')
     
     copy = metadata.copy()
     

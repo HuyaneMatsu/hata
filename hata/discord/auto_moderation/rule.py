@@ -557,12 +557,7 @@ class AutoModerationRule(DiscordEntity, immortal=True):
         # Internal field
         
         # actions
-        actions = self.actions
-        if actions is None:
-            action_array = []
-        else:
-            action_array = [auto_moderation_action.to_data() for auto_moderation_action in actions]
-        data['actions'] = action_array
+        data['actions'] = [auto_moderation_action.to_data() for auto_moderation_action in self.iter_actions()]
         
         # creator_id
         # Internal field
@@ -574,20 +569,10 @@ class AutoModerationRule(DiscordEntity, immortal=True):
         data['event_type'] = self.event_type.value
         
         # excluded_channel_ids
-        excluded_channel_ids = self.excluded_channel_ids
-        if excluded_channel_ids is None:
-            excluded_channel_id_array = ()
-        else:
-            excluded_channel_id_array = excluded_channel_ids
-        data['exempt_channels'] = excluded_channel_id_array
+        data['exempt_channels'] = [*self.iter_excluded_channel_ids()]
         
         # excluded_role_ids
-        excluded_role_ids = self.excluded_role_ids
-        if excluded_role_ids is None:
-            excluded_role_id_array = ()
-        else:
-            excluded_role_id_array = excluded_role_ids
-        data['exempt_roles'] = excluded_role_id_array
+        data['exempt_roles'] = [*self.iter_excluded_role_ids()]
         
         # guild_id
         # Internal field

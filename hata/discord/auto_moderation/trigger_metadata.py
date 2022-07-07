@@ -39,7 +39,7 @@ class AutoModerationRuleTriggerMetadata(RichAttributeErrorBaseType):
         """
         Creates a new trigger metadata instance.
         """
-        raise NotImplemented
+        return object.__new__(cls)
         
     def __repr__(self):
         """Returns the trigger metadata's representation."""
@@ -60,7 +60,7 @@ class AutoModerationRuleTriggerMetadata(RichAttributeErrorBaseType):
         -------
         self : ``ScheduledEventEntityMetadata``
         """
-        raise NotImplemented
+        return object.__new__(cls)
     
     
     def to_data(self):
@@ -260,11 +260,7 @@ class KeywordTriggerMetadata(AutoModerationRuleTriggerMetadata):
     def to_data(self):
         data = {}
         
-        keywords = self.keywords
-        if (keywords is None):
-            keywords = ()
-        
-        data['keyword_filter'] = keywords
+        data['keyword_filter'] = [*self.iter_keywords()]
         
         return data
     

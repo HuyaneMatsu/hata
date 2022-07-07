@@ -8,6 +8,7 @@
 - `SendAlertMessageActionMetadata.__new__` could set `channel_id` as `None`.
 - `create_partial_user_from_id` did not cache the user as expected.
 - `AutoModerationRule.copy_with` could raise `TypeError` with false reason.
+- Always update loading messages.
 
 ## 1.2.18 *\[2022-06-27\]*
 

@@ -316,9 +316,13 @@ class Message(DiscordEntity, immortal=True):
             self = object.__new__(cls)
             self.id = message_id
             MESSAGES[self.id] = self
+        
         else:
             if not self.partial:
-                if not self.has_any_content_field():
+                if self.flags.loading:
+                    self._set_attributes()
+                
+                elif not self.has_any_content_field():
                     self._update_content_fields(data)
                 
                 return self
@@ -352,9 +356,13 @@ class Message(DiscordEntity, immortal=True):
             self = object.__new__(cls)
             self.id = message_id
             MESSAGES[self.id] = self
+        
         else:
             if not self.partial:
-                if not self.has_any_content_field():
+                if self.flags.loading:
+                    self._set_attributes()
+                
+                elif not self.has_any_content_field():
                     self._update_content_fields(data)
                 
                 return True, self
@@ -648,6 +656,10 @@ class Message(DiscordEntity, immortal=True):
         data : `dict` of (`str`, `Any`) items
             Message data.
         """
+        if self.flags.loading:
+            self._set_attributes(data)
+            return
+        
         fields = self._fields
         if (fields is None):
             update_interaction = True

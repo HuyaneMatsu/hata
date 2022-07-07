@@ -1267,7 +1267,7 @@ class AutoModerationRule(DiscordEntity, immortal=True):
             
         else:
             trigger_metadata, trigger_type = _validate_trigger_type_with_metadata_options(
-                trigger_type, keywords, keyword_presets
+                trigger_type, keyword_presets, keywords
             )
         
         if keyword_parameters:

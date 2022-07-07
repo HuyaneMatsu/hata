@@ -1,12 +1,10 @@
 import vampytest
 
-from ...channel import Channel
-from ...role import Role
-
 from .. import (
     AutoModerationRule, AutoModerationRuleTriggerType, AutoModerationAction, AutoModerationActionType,
-    AutoModerationEventType, KeywordPresetTriggerMetadata, AutoModerationKeywordPresetType, KeywordTriggerMetadata
+    AutoModerationEventType, KeywordTriggerMetadata
 )
+
 
 def get_rule_data():
     return {

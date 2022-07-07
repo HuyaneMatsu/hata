@@ -24,6 +24,114 @@ def get_rule_data():
     }
 
 
+EDITIONS = (
+    (
+        [
+            ('actions', [{'type': AutoModerationActionType.timeout.value, 'metadata': {'duration_seconds': 6},},],)
+        ], [
+            ('actions', (AutoModerationAction(duration=6),),)
+        ], [
+            ('actions', None,),
+        ]
+    ), (
+        [
+            ('actions', [],)
+        ], [
+            ('actions', None,),
+        ], [
+            ('actions', (AutoModerationAction(duration=6),),)
+        ]
+    ), (
+        [
+            ('enabled', True),
+        ], [
+            ('enabled', True),
+        ], [
+            ('enabled', False)
+        ],
+    ), (
+        [
+            ('event_type', AutoModerationEventType.none.value,),
+        ], [
+            ('event_type', AutoModerationEventType.none,),
+        ], [
+            ('event_type', AutoModerationEventType.message_send,),
+        ],
+    ), (
+        [
+            ('exempt_channels', ['12'],),
+        ], [
+            ('excluded_channel_ids', (12,),),
+        ], [
+            ('excluded_channel_ids', None,),
+        ]
+    ), (
+        [
+            ('exempt_channels', [],),
+        ], [
+            ('excluded_channel_ids', None,),
+        ], [
+            ('excluded_channel_ids', (12,),),
+        ]
+    ), (
+        [
+            ('exempt_roles', ['12'],),
+        ], [
+            ('excluded_role_ids', (12,),),
+        ], [
+            ('excluded_role_ids', None,),
+        ]
+    ), (
+        [
+            ('exempt_roles', [],),
+        ], [
+            ('excluded_role_ids', None,),
+        ], [
+            ('excluded_role_ids', (12,),),
+        ]
+    ), (
+        [
+            ('name', 'hell',),
+        ], [
+            ('name', 'hell',),
+        ], [
+            ('name', 'name',),
+        ]
+    ), (
+        [
+            ('trigger_type', AutoModerationRuleTriggerType.harmful_link.value,),
+            ('trigger_metadata', {},),
+        ], [
+            ('trigger_type', AutoModerationRuleTriggerType.harmful_link,),
+            ('trigger_metadata', None,),
+        ], [
+            ('trigger_type', AutoModerationRuleTriggerType.spam,),
+        ],
+    ), (
+        [
+            ('trigger_type', AutoModerationRuleTriggerType.keyword.value,),
+            ('trigger_metadata', {'keyword_filter': ['owo']},),
+        ], [
+            ('trigger_type', AutoModerationRuleTriggerType.keyword,),
+            ('trigger_metadata', KeywordTriggerMetadata(keywords='owo'),),
+        ], [
+            ('trigger_type', AutoModerationRuleTriggerType.harmful_link,),
+            ('trigger_metadata', None,),
+        ],
+    ), (
+        [
+            ('trigger_type', AutoModerationRuleTriggerType.keyword.value,),
+            ('trigger_metadata', {'keyword_filter': ['typhoon']},),
+        ], [
+            ('trigger_type', AutoModerationRuleTriggerType.keyword,),
+            ('trigger_metadata', KeywordTriggerMetadata(keywords='typhoon'),),
+        ], [
+            ('trigger_metadata', KeywordTriggerMetadata(keywords='owo'),),
+        ],
+    )
+)
+
+
 def test__AutoModerationRule__from_data_0():
     """
     Tests whether ``AutoModerationRule``'s `.from_data` method returns as expected.
@@ -128,6 +236,13 @@ def test__AutoModerationRule__from_data_8():
     rule = AutoModerationRule.from_data(data)
     
     vampytest.assert_eq(rule.creator_id, 0)
+
+
+def test__AutoModerationRule__from_data_9():
+    """
+    Tests whether ``AutoModerationRule``'s `.from_data` method sets everything else as `_update_attributes`.
+    """
+    test__AutoModerationRule__update_attributes()
 
 
 def test__AutoModerationRule__to_data_0():
@@ -321,3 +436,37 @@ def test__AutoModerationRule__to_data_15():
     output_data = rule.to_data()
     
     vampytest.assert_eq(output_data['trigger_type'], AutoModerationRuleTriggerType.keyword.value)
+
+
+def test__AutoModerationRule__update_attributes():
+    """
+    Tests whether ``AutoModerationRule``'s ``._update_attributes`` updates every attributes as expected.
+    """
+    data = get_rule_data()
+    rule = AutoModerationRule.from_data(data)
+    
+    for data_fields, object_fields, difference in EDITIONS:
+        data.update(data_fields)
+        
+        rule._update_attributes(data)
+        
+        for attribute_name, attribute_value in object_fields:
+            vampytest.assert_eq(getattr(rule, attribute_name), attribute_value)
+
+
+def test__AutoModerationRule__difference_update_attributes():
+    """
+    Tests whether ``AutoModerationRule``'s ``._difference_update_attributes`` updates every attributes as expected.
+    """
+    data = get_rule_data()
+    rule = AutoModerationRule.from_data(data)
+    
+    for data_fields, object_fields, difference in EDITIONS:
+        data.update(data_fields)
+        
+        old_attributes = rule._difference_update_attributes(data)
+        
+        for attribute_name, attribute_value in object_fields:
+            vampytest.assert_eq(getattr(rule, attribute_name), attribute_value)
+        
+        vampytest.assert_eq(old_attributes, dict(difference))

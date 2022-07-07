@@ -30,7 +30,6 @@ def test__AutoModerationAction__constructor__action_type_2():
     """
     Tests whether the auto moderation action's `action_type` parameter drops error when given an invalid type.
     """
-    
     with vampytest.assert_raises(TypeError):
         AutoModerationAction('owo')
 
@@ -82,7 +81,6 @@ def test__AutoModerationAction__constructor__channel_4():
     action = AutoModerationAction(channel=Channel.precreate(69))
     
     vampytest.assert_eq(action.metadata.channel_id, 69)
-
 
 
 def test__AutoModerationAction__constructor__duration_0():
@@ -143,7 +141,7 @@ def test__AutoModerationAction__constructor__metadata_type_match_0():
     """
     action = AutoModerationAction(AutoModerationActionType.send_alert_message, channel=0)
     
-    vampytest.assert_eq(action.type, AutoModerationActionType.send_alert_message)
+    vampytest.assert_is(action.type, AutoModerationActionType.send_alert_message)
 
 
 def test__AutoModerationAction__constructor__metadata_type_match_1():
@@ -153,13 +151,21 @@ def test__AutoModerationAction__constructor__metadata_type_match_1():
     """
     action = AutoModerationAction(AutoModerationActionType.timeout, duration=0)
     
-    vampytest.assert_eq(action.type, AutoModerationActionType.timeout)
+    vampytest.assert_is(action.type, AutoModerationActionType.timeout)
 
 
-def test__AutoModerationAction__constructor__metadata_type_contradiction():
+def test__AutoModerationAction__constructor__metadata_type_contradiction_0():
     """
     Tests whether the auto moderation action's type & different type specific keyword parameters are not accepted
     at the same time.
     """
     with vampytest.assert_raises(TypeError):
         AutoModerationAction(AutoModerationActionType.timeout, channel=0)
+
+
+def test__AutoModerationAction__constructor__metadata_type_contradiction_1():
+    """
+    Tests whether the auto moderation action's two type specific parameters are not accepted at the same.
+    """
+    with vampytest.assert_raises(TypeError):
+        AutoModerationAction(channel=0, duration=0)

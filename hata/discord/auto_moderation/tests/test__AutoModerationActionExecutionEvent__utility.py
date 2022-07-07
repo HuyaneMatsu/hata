@@ -2,7 +2,7 @@ import vampytest
 
 from ...channel import Channel
 from ...guild import Guild
-from ...user import User
+from ...user import ClientUserBase, User
 
 from .. import (
     AutoModerationActionExecutionEvent, AutoModerationActionType, AutoModerationRuleTriggerType
@@ -86,5 +86,5 @@ def test__AutoModerationActionExecutionEvent__user():
     event = AutoModerationActionExecutionEvent(data)
     user = User.precreate(69)
     
-    vampytest.assert_instance(event.user, User)
+    vampytest.assert_instance(event.user, ClientUserBase)
     vampytest.assert_is(event.user, user)

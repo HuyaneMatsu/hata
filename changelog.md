@@ -1,5 +1,10 @@
 ## 1.2.19
 
+#### Improvements
+
+- Add `ApplicationCommandOption.min_length`.
+- Add `ApplicationCommandOption.max_length`.
+
 #### Bug Fixes
 
 - `AutoModerationAction.__eq__` could return incorrect value.

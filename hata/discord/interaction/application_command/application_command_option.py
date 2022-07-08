@@ -10,10 +10,114 @@ from .application_command_option_choice import ApplicationCommandOptionChoice
 from .constants import (
     APPLICATION_COMMAND_CHOICES_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX,
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN, APPLICATION_COMMAND_NAME_LENGTH_MAX,
-    APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_OPTIONS_MAX
+    APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_OPTIONS_MAX, APPLICATION_COMMAND_OPTION_MAX_LENGTH_MAX,
+    APPLICATION_COMMAND_OPTION_MAX_LENGTH_MIN, APPLICATION_COMMAND_OPTION_MIN_LENGTH_MAX,
+    APPLICATION_COMMAND_OPTION_MIN_LENGTH_MIN
 )
 from .helpers import apply_translation_into
 from .preinstanced import ApplicationCommandOptionType
+
+
+def _validate_max_length(max_length, type_):
+    """
+    Validates the given ``ApplicationCommandOption`` option's `max_length` value.
+    
+    Parameters
+    ----------
+    max_length : `None`, `int`
+        The maximum input length allowed for this option.
+        
+        Only applicable for string options.
+    
+    type_ : ``ApplicationCommandOptionType``
+        Respective application command option type.
+    
+    Returns
+    -------
+    max_length : `int`
+    
+    Raises
+    ------
+    TypeError
+        - If `max_length`'s type is incorrect.
+    ValueError
+        - If `max_length` is not applicable for the given type.
+    """
+    if (max_length is None):
+        return 0
+    
+    if not isinstance(max_length, int):
+        raise TypeError(
+            f'`max_length` can be `None`, `int`, got {max_length.__class__.__name__}; {max_length!r}.'
+        )
+        
+    if max_length == 0:
+        return 0
+    
+    if type_ is not ApplicationCommandOptionType.string:
+        raise ValueError(
+            f'`max_length` is only meaningful if `type` is {ApplicationCommandOptionType.string!r}, got '
+            f'type_={type_!r}; {max_length!r}.'
+        )
+    
+    if max_length < APPLICATION_COMMAND_OPTION_MAX_LENGTH_MIN:
+        max_length = APPLICATION_COMMAND_OPTION_MAX_LENGTH_MIN
+    
+    elif max_length > APPLICATION_COMMAND_OPTION_MAX_LENGTH_MAX:
+        max_length = APPLICATION_COMMAND_OPTION_MAX_LENGTH_MAX
+
+    return max_length
+
+
+def _validate_min_length(min_length, type_):
+    """
+    Validates the given ``ApplicationCommandOption`` option's `min_length` value.
+    
+    Parameters
+    ----------
+    min_length : `None`, `int`
+        The minimum input length allowed for this option.
+        
+        Only applicable for string options.
+    
+    type_ : ``ApplicationCommandOptionType``
+        Respective application command option type.
+    
+    Returns
+    -------
+    min_length : `int`
+    
+    Raises
+    ------
+    TypeError
+        - If `min_length`'s type is incorrect.
+    ValueError
+        - If `min_length` is not applicable for the given type.
+    """
+    if (min_length is None):
+        return 0
+    
+    if not isinstance(min_length, int):
+        raise TypeError(
+            f'`min_length` can be `None`, `int`, got {min_length.__class__.__name__}; {min_length!r}.'
+        )
+        
+    if min_length == 0:
+        return 0
+    
+    if type_ is not ApplicationCommandOptionType.string:
+        raise ValueError(
+            f'`min_length` is only meaningful if `type` is {ApplicationCommandOptionType.string!r}, got '
+            f'type_={type_!r}; {min_length!r}.'
+        )
+    
+    if min_length < APPLICATION_COMMAND_OPTION_MIN_LENGTH_MIN:
+        min_length = APPLICATION_COMMAND_OPTION_MIN_LENGTH_MIN
+    
+    elif min_length > APPLICATION_COMMAND_OPTION_MIN_LENGTH_MAX:
+        min_length = APPLICATION_COMMAND_OPTION_MIN_LENGTH_MAX
+
+    return min_length
 
 
 class ApplicationCommandOption(RichAttributeErrorBaseType):
@@ -46,15 +150,25 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
     description_localizations : `None`, `dict` of (``Locale``, `str`) items
         Localized descriptions of the option.
     
+    max_length : `int`
+        The maximum input length allowed for this option.
+        
+        Only applicable for string options.
+    
     max_value : `None`, `int`, `float`
         The maximal value permitted for this option.
         
-        Only Applicable for integer as `int`, `as float options as `float`.
+        Only applicable for integer as `int`, and for float options as `float`.
+    
+    min_length : `int`
+        The minimum input length allowed for this option.
+        
+        Only applicable for string options.
     
     min_value : `None`, `int`, `float`
         The minimum value permitted for this option.
         
-        Only Applicable for integer as `int`, `as float options as `float`.
+        Only applicable for integer as `int`, and for float options as `float`.
     
     name : `str`
         The name of the application command option. It's length can be in range [1:32].
@@ -73,13 +187,16 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         The option's type.
     """
     __slots__ = (
-        'autocomplete', 'channel_types', 'choices', 'default', 'description', 'description_localizations', 'max_value',
-        'min_value', 'name', 'name_localizations', 'options', 'required', 'type'
+        'autocomplete', 'channel_types', 'choices', 'default', 'description', 'description_localizations',
+        'max_length', 'max_value', 'min_length', 'min_value', 'name', 'name_localizations', 'options', 'required',
+        'type'
     )
     
-    def __new__(cls, name, description, type_, *, autocomplete=False, channel_types=None, choices=None, default=False,
-            description_localizations=None, max_value=None, min_value=None, name_localizations=None, options=None,
-            required=False):
+    def __new__(
+        cls, name, description, type_, *, autocomplete=False, channel_types=None, choices=None, default=False,
+        description_localizations=None, max_length=None, max_value=None, min_length=None, min_value=None,
+        name_localizations=None, options=None, required=False
+    ):
         """
         Creates a new ``ApplicationCommandOption`` with the given parameters.
         
@@ -115,16 +232,26 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         description_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
                 (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`) = `None`, Optional (Keyword only)
             Localized descriptions of the option.
+            
+        max_length : `None`, `int` = `None`, Optional (Keyword only)
+            The maximum input length allowed for this option.
+            
+            Only applicable for string options.
         
         max_value : `None`, `int`, `float` = `None`, Optional (Keyword only)
             The maximal value permitted for this option.
             
-            Only Applicable for integer as `int`, as float options as `float`.
+            Only applicable for integer as `int`, and for float options as `float`.
         
+        min_length : `None`, `int` = `None`, Optional (Keyword only)
+            The minimum input length allowed for this option.
+            
+            Only applicable for string options.
+            
         min_value : `None`, `int`, `float` = `None`, Optional (Keyword only)
             The minimum value permitted for this option.
             
-            Only Applicable for integer as `int`, as float options as `float`.
+            Only applicable for integer as `int`, and for float options as `float`.
         
         name_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
                 (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`) = `None`, Optional (Keyword only)
@@ -139,15 +266,9 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         Raises
         ------
         TypeError
-            - If `type_` was not given neither as `int` nor ``ApplicationCommandOptionType``.
-            - If `choices` was given meanwhile `type_` is neither string nor integer option type.
+            - If a parameter's type is incorrect.
             - If `options` was given meanwhile `type_` is not a sub-command group option type.
             - If a choice's value's type not matched the expected type described `type_`.
-            - If `channel_types` is neither `None` nor `iterable` of `int`.
-            - If `max_value` is not the expected type defined by `type_`'s value.
-            - If `min_value` is not the expected type defined by `type_`'s value.
-            - If `name_localizations`'s or any of it's item's type is incorrect.
-            - If `description_localizations`'s or any of it's item's type is incorrect.
         ValueError
             - If `type_` was given as `int`, but it do not matches any of the precreated
                 ``ApplicationCommandOptionType``-s.
@@ -177,11 +298,10 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         """
         
         # autocomplete
-        if __debug__:
-            if not isinstance(autocomplete, bool):
-                raise AssertionError(
-                    f'`autocomplete` can be `bool`, got {autocomplete.__class__.__name__}; {autocomplete!r}.'
-                )
+        if not isinstance(autocomplete, bool):
+            raise TypeError(
+                f'`autocomplete` can be `bool`, got {autocomplete.__class__.__name__}; {autocomplete!r}.'
+            )
         
         # channel_types
         if (channel_types is None):
@@ -220,6 +340,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         # choices
         if choices is None:
             choices_processed = None
+        
         else:
             if __debug__:
                 if not isinstance(choices, (tuple, list)):
@@ -275,7 +396,13 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         # description_localizations
         description_localizations = localized_dictionary_builder(description_localizations, 'description_localizations')
         
+        # max_length
+        # requires `type`
+        
         # max_value
+        # requires `type`
+        
+        # min_length
         # requires `type`
         
         # min_value
@@ -342,7 +469,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
             if not options_processed:
                 options_processed = None
         
-
+        
         # required
         if __debug__:
             if not isinstance(required, bool):
@@ -354,6 +481,9 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         type_ = preconvert_preinstanced_type(type_, 'type_', ApplicationCommandOptionType)
         
         # Postprocessing
+        
+        # max_length
+        max_length = _validate_max_length(max_length, type_)
         
         # max_value
         if (max_value is not None):
@@ -377,6 +507,9 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
                     f'{ApplicationCommandOptionType.integer!r}, or {ApplicationCommandOptionType.float!r}, got '
                     f'type_={type_!r}; max_value={max_value!r}.'
                 )
+        
+        # min_length
+        min_length = _validate_min_length(min_length, type_)
         
         # min_value
         if (min_value is not None):
@@ -455,7 +588,9 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         self.default = default
         self.description = description
         self.description_localizations = description_localizations
+        self.max_length = max_length
         self.max_value = max_value
+        self.min_length = min_length
         self.min_value = min_value
         self.name = name
         self.name_localizations = name_localizations
@@ -637,8 +772,18 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         # description_localizations
         description_localizations = build_locale_dictionary(data.get('description_localizations', None))
         
+        # max_length
+        max_length = data.get('max_length', None)
+        if (max_length is None):
+            max_length = 0
+        
         # max_value
         max_value = data.get('max_value', None)
+        
+        # min_length
+        min_length = data.get('min_length', None)
+        if (min_length is None):
+            min_length = 0
         
         # min_value
         min_value = data.get('min_value', None)
@@ -671,7 +816,9 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         self.default = default
         self.description = description
         self.description_localizations = description_localizations
+        self.max_length = max_length
         self.max_value = max_value
+        self.min_length = min_length
         self.min_value = min_value
         self.name = name
         self.name_localizations = name_localizations
@@ -716,10 +863,24 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         # description_localizations
         data['description_localizations'] = destroy_locale_dictionary(self.description_localizations)
         
+        type_ = self.type
+        
+        # max_length
+        if (type_ is ApplicationCommandOptionType.string):
+            max_length = self.max_length
+            if (max_length == 0):
+                max_length = APPLICATION_COMMAND_OPTION_MAX_LENGTH_MAX
+            
+            data['max_length'] = max_length
+        
         # max_value
         max_value = self.max_value
         if (max_value is not None):
             data['max_value'] = max_value
+        
+        # min_length
+        if (type_ is ApplicationCommandOptionType.string):
+            data['min_length'] = self.min_length
         
         # min_value
         min_value = self.min_value
@@ -742,7 +903,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
             data['required'] = True
         
         # type
-        data['type'] = self.type.value
+        data['type'] = type_.value
         
         return data
     
@@ -770,7 +931,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         repr_parts.append(')')
         
         # Extra fields: `.autocomplete`, `.min_value`, `.max_value`, `.default`, `.required`, `.choices`, `.options`
-        #    `.name_localizations`, `.description_localizations`
+        #    `.name_localizations`, `.description_localizations`, `.min_length`, `.max_length`
         
         # autocomplete
         if self.autocomplete:
@@ -784,17 +945,32 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         if self.required:
             repr_parts.append(', required=True')
         
-        # min_value
-        min_value = self.min_value
-        if (min_value is not None):
-            repr_parts.append(', min_value=')
-            repr_parts.append(repr(min_value))
+        if type_ is ApplicationCommandOptionType.string:
+            # min_length
+            min_length = self.min_length
+            if (min_length != 0):
+                repr_parts.append(', min_length=')
+                repr_parts.append(repr(min_length))
+            
+            # max_length
+            max_length = self.max_length
+            if (max_length != 0):
+                repr_parts.append(', max_length=')
+                repr_parts.append(repr(max_length))
         
-        # max_value
-        max_value = self.max_value
-        if (max_value is not None):
-            repr_parts.append(', max_value=')
-            repr_parts.append(repr(max_value))
+        
+        if type_ is ApplicationCommandOptionType.integer or type_ is ApplicationCommandOptionType.float:
+            # min_value
+            min_value = self.min_value
+            if (min_value is not None):
+                repr_parts.append(', min_value=')
+                repr_parts.append(repr(min_value))
+            
+            # max_value
+            max_value = self.max_value
+            if (max_value is not None):
+                repr_parts.append(', max_value=')
+                repr_parts.append(repr(max_value))
         
         # channel_types
         channel_types = self.channel_types
@@ -910,8 +1086,14 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
             description_localizations = description_localizations.copy()
         new.description_localizations = description_localizations
         
+        # max_length
+        new.max_length = self.max_length
+        
         # max_value
         new.max_value = self.max_value
+        
+        # min_length
+        new.min_length = self.min_length
         
         # min_value
         new.min_value = self.min_value
@@ -969,12 +1151,20 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         if self.description_localizations != other.description_localizations:
             return False
         
-        # min_value
-        if self.min_value != other.min_value:
+        # max_length
+        if self.max_length != other.max_length:
             return False
         
         # max_value
         if self.max_value != other.max_value:
+            return False
+        
+        # min_length
+        if self.min_value != other.min_value:
+            return False
+        
+        # min_value
+        if self.min_value != other.min_value:
             return False
         
         # name

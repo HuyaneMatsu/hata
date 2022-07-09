@@ -57,7 +57,7 @@ def _validate_max_length(max_length, type_):
     if type_ is not ApplicationCommandOptionType.string:
         raise ValueError(
             f'`max_length` is only meaningful if `type` is {ApplicationCommandOptionType.string!r}, got '
-            f'type_={type_!r}; {max_length!r}.'
+            f'type_={type_!r}; max_length={max_length!r}.'
         )
     
     if max_length < APPLICATION_COMMAND_OPTION_MAX_LENGTH_MIN:
@@ -266,17 +266,17 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         Raises
         ------
         TypeError
-            - If a parameter's type is incorrect.
+            - If a parameter's type is unexpected..
             - If `options` was given meanwhile `type_` is not a sub-command group option type.
             - If a choice's value's type not matched the expected type described `type_`.
         ValueError
             - If `type_` was given as `int`, but it do not matches any of the precreated
                 ``ApplicationCommandOptionType``-s.
             - If `channel_types` contains an unknown channel type value.
-            - If `max_value` is given, but it is not applicable for the given `type_`.
-            - If `min_value` is given, but it is not applicable for the given `type_`.
+            - If `max_value` or `min_value` is given, but it is not applicable for the given `type_`.
             - If `name_localizations` has an item with incorrect structure.
             - If `description_localizations` has an item with incorrect structure.
+            - If `max_length` or `min_length` is given, but it is not applicable for the given `type_`.
         AssertionError
             - If `name` was not given as `str`.
             - If `name` length is out of range [1:32].

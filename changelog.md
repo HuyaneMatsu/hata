@@ -5,6 +5,11 @@
 - Add `ApplicationCommandOption.min_length`.
 - Add `ApplicationCommandOption.max_length`.
 
+##### ext.slash
+
+- Slash command parameters now support `min_length` support.
+- Slash command parameters now support `max_length` support.
+
 #### Bug Fixes
 
 - `AutoModerationAction.__eq__` could return incorrect value.

@@ -18,6 +18,9 @@ from ...discord.interaction import (
     ApplicationCommandOption, ApplicationCommandOptionChoice, ApplicationCommandOptionType, InteractionEvent,
     InteractionType
 )
+from ...discord.interaction.application_command.application_command_option import (
+    _validate_max_length, _validate_min_length
+)
 from ...discord.interaction.application_command.constants import (
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN,
     APPLICATION_COMMAND_OPTIONS_MAX
@@ -1044,8 +1047,12 @@ class SlashParameter(RichAttributeErrorBaseType):
         The accepted channel types.
     description : `None`, `str` = `None`, Optional
         Description for the annotation.
+    max_length : `None`, `int`
+        The maximum input length allowed for this option.
     max_value : `None`, `int`, `float`
         The maximal accepted value by the parameter.
+    min_length : `None`, `int`
+        The minimum input length allowed for this option.
     min_value : `None`, `int`, `float`
         The minimal accepted value by the parameter.
     name : `None`, `str` = `None`, Optional
@@ -1053,10 +1060,13 @@ class SlashParameter(RichAttributeErrorBaseType):
     type_or_choice : `None`, `str`, `type`, `list`, `dict`
         The annotation's value to use.
     """
-    __slots__ = ('autocomplete', 'channel_types', 'description', 'max_value', 'min_value', 'name', 'type_or_choice')
+    __slots__ = (
+        'autocomplete', 'channel_types', 'description', 'max_length', 'max_value', 'min_length', 'min_value', 'name',
+        'type_or_choice'
+    )
     
     def __new__(cls, type_or_choice=None, description=None, name=None, *, autocomplete=None, channel_types=None,
-            max_value=None, min_value=None):
+            max_length=None, max_value=None, min_length=None, min_value=None):
         """
         Creates a new ``Parameter``.
         
@@ -1072,8 +1082,12 @@ class SlashParameter(RichAttributeErrorBaseType):
             Auto complete function for the parameter.
         channel_types : `None`, `iterable` of `int` = `None`, Optional (Keyword only)
             The accepted channel types.
+        max_length : `None`, `int` = `None`, Optional (Keyword only)
+            The maximum input length allowed for this option.
         max_value : `None`, `int`, `float` = `None`, Optional (Keyword only)
             The maximal accepted value by the parameter.
+        min_length : `None`, `int` = `None`, Optional (Keyword only)
+            The minimum input length allowed for this option.
         min_value : `None`, `int`, `float` = `None`, Optional (Keyword only)
             The minimal accepted value by the parameter.
         """
@@ -1081,7 +1095,9 @@ class SlashParameter(RichAttributeErrorBaseType):
         self.autocomplete = autocomplete
         self.channel_types = channel_types
         self.description = description
+        self.max_length = max_length
         self.max_value = max_value
+        self.min_length = min_length
         self.min_value = min_value
         self.name = name
         self.type_or_choice = type_or_choice
@@ -1120,6 +1136,16 @@ class SlashParameter(RichAttributeErrorBaseType):
             repr_parts.append(' description=')
             repr_parts.append(repr(description))
         
+        # max_length
+        max_length = self.max_length
+        if (max_length is not None) and (max_length != 0):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            repr_parts.append(' max_length=')
+            repr_parts.append(repr(max_length))
+        
         max_value = self.max_value
         if (max_value is not None):
             if field_added:
@@ -1128,6 +1154,16 @@ class SlashParameter(RichAttributeErrorBaseType):
                 field_added = True
             repr_parts.append(' max_value=')
             repr_parts.append(repr(max_value))
+        
+        # min_length
+        min_length = self.min_length
+        if (min_length is not None) and (min_length != 0):
+            if field_added:
+                repr_parts.append(',')
+            else:
+                field_added = True
+            repr_parts.append(' min_length=')
+            repr_parts.append(repr(min_length))
         
         min_value = self.min_value
         if (min_value is not None):
@@ -1139,7 +1175,7 @@ class SlashParameter(RichAttributeErrorBaseType):
             repr_parts.append(repr(min_value))
         
         name = self.name
-        if (min_value is not None):
+        if (name is not None):
             if field_added:
                 repr_parts.append(',')
             else:
@@ -1148,7 +1184,7 @@ class SlashParameter(RichAttributeErrorBaseType):
             repr_parts.append(repr(name))
         
         type_or_choice = self.type_or_choice
-        if (min_value is not None):
+        if (type_or_choice is not None):
             if field_added:
                 repr_parts.append(',')
             else:
@@ -1799,6 +1835,10 @@ def parse_annotation_tuple(parameter, annotation_tuple):
         Autocomplete function.
     choice_enum_type : `None`, `type`
         Enum type of `choices` if applicable.
+    max_length : `int`
+        The maximum input length allowed for this option.
+    min_length : `int`
+        The minimum input length allowed for this option.
     
     Raises
     ------
@@ -1838,7 +1878,7 @@ def parse_annotation_tuple(parameter, annotation_tuple):
         name = None
     
     name = parse_annotation_name(name, parameter.name)
-    return choices, description, name, annotation_type, channel_types, None, None, None, choice_enum_type
+    return choices, description, name, annotation_type, channel_types, None, None, None, choice_enum_type, 0, 0
 
 
 def parse_annotation_slash_parameter(parameter, slash_parameter):
@@ -1872,25 +1912,18 @@ def parse_annotation_slash_parameter(parameter, slash_parameter):
         Autocomplete function.
     choice_enum_type : `None`, `type`
         Enum type of `choices` if applicable.
+    max_length : `int`
+        The maximum input length allowed for this option.
+    min_length : `int`
+        The minimum input length allowed for this option.
     
     Raises
     ------
     TypeError
-        - If `description`'s is not `None` nor `str`.
-        - If `parameter_type_or_choice` is `list`, but it's elements do not match the `tuple`
-            (`str`, `str`, `int`) pattern.
-        - If `parameter_type_or_choice` is `dict`, but it's items do not match the (`str`, `str`, `int`)
-            pattern.
+        - If a parameter's type is unexpected.
         - If `parameter_type_or_choice` is unexpected.
-        - If `name`'s is neither `None`, `str`.
-        - If `channel_types` is neither `None` nor `iterable` of `int`.
     ValueError
-        - If `description`'s length is out of the expected range [2:100].
-        - If `parameter_type_or_choice` is `str`, but not any of the expected ones.
-        - If `parameter_type_or_choice` is `type`, but not any of the expected ones.
-        - If `choice` amount is out of the expected range [1:25].
-        - If `type_or_choice` is a choice, and a `choice` name is duped.
-        - If `type_or_choice` is a choice, and a `choice` values are mixed types.
+        - If a parameter's value is unexpected.
         - If received `channel_types` from both `type_or_choice` and `channel_types` parameters.
     """
     type_or_choice = slash_parameter.type_or_choice
@@ -1904,6 +1937,9 @@ def parse_annotation_slash_parameter(parameter, slash_parameter):
     processed_channel_types = preprocess_channel_types(slash_parameter.channel_types)
     channel_types = postprocess_channel_types(processed_channel_types, parsed_channel_types)
     
+    max_length = _validate_max_length(slash_parameter.max_length, ANNOTATION_TYPE_TO_OPTION_TYPE[type_])
+    min_length = _validate_min_length(slash_parameter.min_length, ANNOTATION_TYPE_TO_OPTION_TYPE[type_])
+    
     type_, max_value = process_max_and_min_value(type_, slash_parameter.max_value, 'max_value')
     type_, min_value = process_max_and_min_value(type_, slash_parameter.min_value, 'min_value')
     
@@ -1915,7 +1951,7 @@ def parse_annotation_slash_parameter(parameter, slash_parameter):
     
     return (
         choices, description, name, type_, channel_types, max_value, min_value, slash_parameter.autocomplete,
-        choice_enum_type
+        choice_enum_type, max_length, min_length
     )
 
 
@@ -1980,6 +2016,10 @@ def parse_pep_593_typing(parameter, annotation_value):
         Autocomplete function.
     choice_enum_type : `None`, `type`
         Enum type of `choices` if applicable.
+    max_length : `int`
+        The maximum input length allowed for this option.
+    min_length : `int`
+        The minimum input length allowed for this option.
     
     Raises
     ------
@@ -2045,6 +2085,10 @@ def parse_annotation_fallback(parameter, annotation_value):
         Autocomplete function.
     choice_enum_type : `None`, `type`
         Enum type of `choices` if applicable.
+    max_length : `int`
+        The maximum input length allowed for this option.
+    min_length : `int`
+        The minimum input length allowed for this option.
     
     Raises
     ------
@@ -2070,7 +2114,7 @@ def parse_annotation_fallback(parameter, annotation_value):
             choices = None
             channel_types = None
     
-    return choices, None, parameter.name, annotation_type, channel_types, None, None, None, choice_enum_type
+    return choices, None, parameter.name, annotation_type, channel_types, None, None, None, choice_enum_type, 0, 0
 
 
 def parse_annotation_internal(annotation):
@@ -2137,6 +2181,10 @@ def parse_annotation(parameter):
         Autocomplete function.
     choice_enum_type : `None`, `type`
         Enum type of `choices` if applicable.
+    max_length : `int`
+        The maximum input length allowed for this option.
+    min_length : `int`
+        The minimum input length allowed for this option.
     
     Raises
     ------
@@ -2723,8 +2771,12 @@ class SlashCommandParameterConverter(ParameterConverter):
         Default value of the parameter.
     description : `None`, `str`
         The parameter's description.
+    max_length : `int`
+        The maximum input length allowed for this option.
     max_value : `None`, `int`, `float`
         The maximal accepted value by the converter.
+    min_length : `int`
+        The minimum input length allowed for this option.
     min_value : `None`, `int`, `float`
         The minimal accepted value by the converter.
     name : `str`
@@ -2736,11 +2788,13 @@ class SlashCommandParameterConverter(ParameterConverter):
     """
     __slots__ = (
         'auto_completer', 'channel_types', 'choice_enum_type', 'choices', 'converter', 'default', 'description',
-        'max_value', 'min_value', 'name', 'required', 'type'
+        'max_length', 'max_value', 'min_length', 'min_value', 'name', 'required', 'type'
     )
     
-    def __new__(cls, parameter_name, type_, converter, name, description, default, required, choice_enum_type, choices,
-            channel_types, max_value, min_value, autocomplete):
+    def __new__(
+        cls, parameter_name, type_, converter, name, description, default, required, choice_enum_type, choices,
+        channel_types, max_value, min_value, autocomplete, max_length, min_length
+    ):
         """
         Creates a new ``SlashCommandParameterConverter`` from the given parameters.
         
@@ -2772,6 +2826,10 @@ class SlashCommandParameterConverter(ParameterConverter):
             The minimal accepted value by the converter.
         autocomplete : `None`, ``SlashCommandParameterAutoCompleter``
             Auto completer if defined.
+        max_length : `int`
+            The maximum input length allowed for this option.
+        min_length : `int`
+            The minimum input length allowed for this option.
         """
         self = object.__new__(cls)
         
@@ -2788,6 +2846,8 @@ class SlashCommandParameterConverter(ParameterConverter):
         self.channel_types = channel_types
         self.max_value = max_value
         self.min_value = min_value
+        self.max_length = max_length
+        self.min_length = min_length
         
         if (autocomplete is not None):
             auto_completer = SlashCommandParameterAutoCompleter(
@@ -2884,6 +2944,16 @@ class SlashCommandParameterConverter(ParameterConverter):
             repr_parts.append(', max_value=')
             repr_parts.append(repr(max_value))
         
+        min_length = self.min_length
+        if (min_length != 0):
+            repr_parts.append(', min_length=')
+            repr_parts.append(repr(min_length))
+        
+        max_length = self.max_length
+        if (max_length != 0):
+            repr_parts.append(', max_length=')
+            repr_parts.append(repr(max_length))
+        
         repr_parts.append('>')
         
         return ''.join(repr_parts)
@@ -2914,6 +2984,8 @@ class SlashCommandParameterConverter(ParameterConverter):
             required = self.required,
             min_value = self.min_value,
             max_value = self.max_value,
+            min_length = self.min_length,
+            max_length = self.max_length,
         )
     
     
@@ -3032,7 +3104,7 @@ def create_parameter_converter(parameter, parameter_configurer):
     if parameter_configurer is None:
         (
             choices, description, name, annotation_type, channel_types, max_value, min_value, autocomplete,
-            choice_enum_type
+            choice_enum_type, max_length, min_length
         ) = parse_annotation(parameter)
     else:
         choice_enum_type = parameter_configurer._choice_enum_type
@@ -3044,6 +3116,8 @@ def create_parameter_converter(parameter, parameter_configurer):
         max_value = parameter_configurer._max_value
         min_value = parameter_configurer._min_value
         autocomplete = parameter_configurer._autocomplete
+        max_length = parameter_configurer._max_length
+        min_length = parameter_configurer._min_length
     
     if description is None:
         description = raw_name_to_display(name)
@@ -3063,7 +3137,7 @@ def create_parameter_converter(parameter, parameter_configurer):
     else:
         parameter_converter = SlashCommandParameterConverter(
             parameter.name, annotation_type, converter, name, description, default, required, choice_enum_type,
-            choices, channel_types, max_value, min_value, autocomplete
+            choices, channel_types, max_value, min_value, autocomplete, max_length, min_length
         )
     
     return parameter_converter

@@ -326,7 +326,7 @@ class DiscordGateway:
         Raises
         ------
         TimeoutError
-            If the gateways's `.kokoro` is not beating, meanwhile it should.
+            If the gateway's `.kokoro` is not beating, meanwhile it should.
         """
         # return True if we should reconnect
         message = from_json(message)

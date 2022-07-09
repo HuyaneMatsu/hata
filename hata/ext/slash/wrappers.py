@@ -8,12 +8,16 @@ from scarletio import RichAttributeErrorBaseType, copy_docs, include
 
 from ...discord.client import Client
 from ...discord.guild import Guild
-from ...discord.interaction import ApplicationCommandPermissionOverwrite
+from ...discord.interaction import ApplicationCommandPermissionOverwrite, ApplicationCommandOptionType
+from ...discord.interaction.application_command.application_command_option import (
+    _validate_max_length, _validate_min_length
+)
 from ...discord.preconverters import preconvert_snowflake
 
 from .converters import (
-    ANNOTATION_TYPE_TO_STR_ANNOTATION, parse_annotation_description, parse_annotation_name,
-    parse_annotation_type_and_choice, postprocess_channel_types, preprocess_channel_types, process_max_and_min_value
+    ANNOTATION_TYPE_TO_OPTION_TYPE, ANNOTATION_TYPE_TO_STR_ANNOTATION, parse_annotation_description,
+    parse_annotation_name,  parse_annotation_type_and_choice, postprocess_channel_types, preprocess_channel_types,
+    process_max_and_min_value
 )
 
 
@@ -297,8 +301,12 @@ class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
         Parameter's choices.
     _description : `None`, `str`
         Parameter's description.
+    _max_length : `int`
+        The maximum input length allowed for this option.
     _max_value : `None`, `int`, `float`
         The maximal accepted value by the parameter.
+    _min_length : `int`
+        The minimum input length allowed for this option.
     _min_value : `None`, `int`, `float`
         The minimal accepted value by the parameter.
     _name : `str`
@@ -309,12 +317,12 @@ class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
         The parameter's internal type identifier.
     """
     __slots__ = (
-        '_autocomplete', '_channel_types', '_choice_enum_type', '_choices', '_description', '_max_value', '_min_value',
-        '_name', '_parameter_name', '_type'
+        '_autocomplete', '_channel_types', '_choice_enum_type', '_choices', '_description', '_max_length',
+        '_max_value', '_min_length', '_min_value', '_name', '_parameter_name', '_type'
     )
     
     def __new__(cls, parameter_name, type_or_choice, description=None, name=None, *, autocomplete=None,
-            channel_types=None, max_value=None, min_value=None):
+            channel_types=None, max_length=None, max_value=None, min_length=None, min_value=None):
         """
         Creates a partial function to wrap a command.
         
@@ -332,8 +340,12 @@ class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
             Auto complete function for the parameter.
         channel_types : `None`, `iterable` of `int` = `None`, Optional (Keyword only)
             The accepted channel types.
+        max_length : `None`, `int` = `None`, Optional (Keyword only)
+            The maximum input length allowed for this option.
         max_value : `None`, `int`, `float` = `None`, Optional (Keyword only)
             The maximal accepted value by the parameter.
+        min_length : `None`, `int` = `None`, Optional (Keyword only)
+            The minimum input length allowed for this option.
         min_value : `None`, `int`, `float` = `None`, Optional (Keyword only)
             The minimal accepted value by the parameter.
         
@@ -375,6 +387,9 @@ class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
             type_or_choice, parameter_name
         )
         
+        max_length = _validate_max_length(max_length, ANNOTATION_TYPE_TO_OPTION_TYPE[type_])
+        min_length = _validate_min_length(min_length, ANNOTATION_TYPE_TO_OPTION_TYPE[type_])
+        
         type_, max_value = process_max_and_min_value(type_, max_value, 'max_value')
         type_, min_value = process_max_and_min_value(type_, min_value, 'min_value')
         
@@ -398,6 +413,8 @@ class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
         self._channel_types = channel_types
         self._max_value = max_value
         self._min_value = min_value
+        self._max_length = max_length
+        self._min_length = min_length
         
         return self
     
@@ -448,15 +465,30 @@ class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
             repr_parts.append(', channel_types=')
             repr_parts.append(repr(channel_types))
         
-        min_value = self._min_value
-        if (min_value is not None):
-            repr_parts.append(', min_value=')
-            repr_parts.append(repr(min_value))
+        if type_ is ApplicationCommandOptionType.string:
+            # min_length
+            min_length = self._min_length
+            if (min_length != 0):
+                repr_parts.append(', min_length=')
+                repr_parts.append(repr(min_length))
+            
+            # max_length
+            max_length = self._max_length
+            if (max_length != 0):
+                repr_parts.append(', max_length=')
+                repr_parts.append(repr(max_length))
         
-        max_value = self._max_value
-        if (max_value is not None):
-            repr_parts.append(', max_value=')
-            repr_parts.append(repr(max_value))
+        
+        if type_ is ApplicationCommandOptionType.integer or type_ is ApplicationCommandOptionType.float:
+            min_value = self._min_value
+            if (min_value is not None):
+                repr_parts.append(', min_value=')
+                repr_parts.append(repr(min_value))
+            
+            max_value = self._max_value
+            if (max_value is not None):
+                repr_parts.append(', max_value=')
+                repr_parts.append(repr(max_value))
         
         repr_parts.append('>')
         return ''.join(repr_parts)

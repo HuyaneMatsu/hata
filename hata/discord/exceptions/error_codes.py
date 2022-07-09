@@ -251,6 +251,8 @@ Error Codes
 +---------------------------------------------------------------+-----------+-----------+
 | application_name_used                                         | 40041     | -         |
 +---------------------------------------------------------------+-----------+-----------+
+| interaction_failed_to_send                                    | 40043     | -         |
++---------------------------------------------------------------+-----------+-----------+
 | interaction_already_acknowledged                              | 40060     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | tag_name_not_unique                                           | 40061     | -         |
@@ -598,6 +600,7 @@ message_crossposted = 40033
 user_identity_verification_processing = 40035
 user_identity_verification_succeeded = 40036
 application_name_used = 40041
+interaction_failed_to_send = 40043
 interaction_already_acknowledged = 40060
 tag_name_not_unique = 40061
 

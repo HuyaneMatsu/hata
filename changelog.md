@@ -4,6 +4,9 @@
 
 - Add `ApplicationCommandOption.min_length`.
 - Add `ApplicationCommandOption.max_length`.
+- Add `reason` parameter to `Client.auto_moderation_rule_create`.
+- Add `reason` parameter to `Client.auto_moderation_rule_edit`.
+- Add `reason` parameter to `Client.auto_moderation_rule_delete`.
 
 ##### ext.slash
 

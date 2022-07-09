@@ -2037,25 +2037,28 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/guilds/{guild_id}/auto-moderation/rules',
         )
     
-    async def auto_moderation_rule_create(self, guild_id, data):
+    async def auto_moderation_rule_create(self, guild_id, data, reason):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.auto_moderation_rule_get, guild_id),
             METHOD_POST,
             f'{API_ENDPOINT}/guilds/{guild_id}/auto-moderation/rules',
             data,
+            reason = reason,
         )
     
-    async def auto_moderation_rule_edit(self, guild_id, auto_moderation_rule_id, data):
+    async def auto_moderation_rule_edit(self, guild_id, auto_moderation_rule_id, data, reason):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.auto_moderation_rule_edit, guild_id),
             METHOD_PATCH,
             f'{API_ENDPOINT}/guilds/{guild_id}/auto-moderation/rules/{auto_moderation_rule_id}',
             data,
+            reason = reason,
         )
 
-    async def auto_moderation_rule_delete(self, guild_id, auto_moderation_rule_id):
+    async def auto_moderation_rule_delete(self, guild_id, auto_moderation_rule_id, reason):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.auto_moderation_rule_delete, guild_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/guilds/{guild_id}/auto-moderation/rules/{auto_moderation_rule_id}',
+            reason = reason,
         )

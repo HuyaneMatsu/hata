@@ -87,7 +87,7 @@ class ClientCompoundAutoModerationEndpoints(Compound):
         ]
     
     
-    async def auto_moderation_rule_create(self, guild, auto_moderation_rule):
+    async def auto_moderation_rule_create(self, guild, auto_moderation_rule, *, reason=None):
         """
         Creates an auto moderation rule at the given guild.
         
@@ -99,6 +99,8 @@ class ClientCompoundAutoModerationEndpoints(Compound):
             The guild or it's identifier.
         auto_moderation_rule : ``AutoModerationRule``
             The auto moderation rule to create one like.
+        reason : `None`, `str` = `None`, Optional (Keyword only)
+            Shows up at the respective guild's audit logs.
         
         Returns
         -------
@@ -125,12 +127,12 @@ class ClientCompoundAutoModerationEndpoints(Compound):
         
         data = auto_moderation_rule.to_data()
         
-        auto_moderation_rule_data = await self.http.auto_moderation_rule_create(guild_id, data)
+        auto_moderation_rule_data = await self.http.auto_moderation_rule_create(guild_id, data, reason)
         
         return AutoModerationRule.from_data(auto_moderation_rule_data)
     
     
-    async def auto_moderation_rule_edit(self, old_auto_moderation_rule, new_auto_moderation_rule):
+    async def auto_moderation_rule_edit(self, old_auto_moderation_rule, new_auto_moderation_rule, *, reason=None):
         """
         Edits the specified auto moderation rule
         
@@ -142,6 +144,8 @@ class ClientCompoundAutoModerationEndpoints(Compound):
             The auto moderation rule to edit, or a `guild-id`, `rule-id` pair representing it.
         new_auto_moderation_rule : ``AutoModerationRule``
             The auto moderation rule to edit the current to.
+        reason : `None`, `str` = `None`, Optional (Keyword only)
+            Shows up at the respective guild's audit logs.
         
         Returns
         -------
@@ -167,10 +171,10 @@ class ClientCompoundAutoModerationEndpoints(Compound):
         
         data = new_auto_moderation_rule.to_data()
         
-        await self.http.auto_moderation_rule_edit(guild_id, auto_moderation_rule_id, data)
+        await self.http.auto_moderation_rule_edit(guild_id, auto_moderation_rule_id, data, reason)
     
     
-    async def auto_moderation_rule_delete(self, auto_moderation_rule):
+    async def auto_moderation_rule_delete(self, auto_moderation_rule, *, reason=None):
         """
         Deletes the specified auto moderation rule.
         
@@ -180,6 +184,8 @@ class ClientCompoundAutoModerationEndpoints(Compound):
         ----------
         auto_moderation_rule : ``AutoModerationRule``, `tuple` (`int`, `int`)
             The auto moderation rule to delete, or a `guild-id`, `rule-id` pair representing it.
+        reason : `None`, `str` = `None`, Optional (Keyword only)
+            Shows up at the respective guild's audit logs.
         
         Raises
         ------
@@ -191,4 +197,4 @@ class ClientCompoundAutoModerationEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         guild_id, auto_moderation_rule_id = get_auto_moderation_rule_guild_id_and_id(auto_moderation_rule)
-        await self.http.auto_moderation_rule_delete(guild_id, auto_moderation_rule_id)
+        await self.http.auto_moderation_rule_delete(guild_id, auto_moderation_rule_id, reason)

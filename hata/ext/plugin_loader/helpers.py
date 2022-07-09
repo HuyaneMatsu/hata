@@ -385,7 +385,7 @@ def _iter_directory(import_name, directory_path):
             return
     
     for file_name in list_directory(directory_path):
-        if file_name.startswith('.') or (file_name == '__pycache__'):
+        if file_name.startswith('.') or (file_name == '__pycache__') or ('tests' in file_name):
             continue
         
         path = join_paths(directory_path, file_name)

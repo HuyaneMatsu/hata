@@ -15,11 +15,26 @@
 - Add `KeywordPresetTriggerMetadata.iter_keyword_presets`.
 - Add `excluded_keywords` to `AutoModerationRule.__new__`.
 - Add `excluded_keywords` to `AutoModerationRule.copy_with`.
+- Add `ERROR_CODES.application_not_yet_available`.
+- Add `ERROR_CODES.interaction_failed_to_send`.
+- Add `ERROR_CODES.webhook_can_create_thread_only_in_forum_channel`.
+- Add `ERROR_CODES.billing_non_refundable_payment_source`.
+- Add `ERROR_CODES.quarantined`.
+- Add `quarantined` `UserFlag`.
+- Add `AuditLogEvent.auto_moderation_alert_message`.
+- Add `AuditLogEvent.auto_moderation_user_timeout`.
+- Add `AuditLogEvent.creator_monetization_request_created`.
+- Add `AuditLogEvent.creator_monetization_terms_accepted`.
+- Add `AuditLogEvent.role_prompt_create`.
+- Add `AuditLogEvent.role_prompt_edit`.
+- Add `AuditLogEvent.role_prompt_delete`.
+- Add `AuditLogEvent.guild_home_feature_item`.
+- Add `AuditLogEvent.guild_home_remove_item`.
 
 ##### ext.slash
 
-- Slash command parameters now support `min_length` support.
-- Slash command parameters now support `max_length` support.
+- Slash command parameters now support `min_length`.
+- Slash command parameters now support `max_length`.
 
 #### Bug Fixes
 

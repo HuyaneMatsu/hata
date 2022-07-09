@@ -141,6 +141,8 @@ Error Codes
 +---------------------------------------------------------------+-----------+-----------+
 | under_minimum_age                                             | 20024     | -         |
 +---------------------------------------------------------------+-----------+-----------+
+| quarantined                                                   | 20026     | -         |
++---------------------------------------------------------------+-----------+-----------+
 | rate_limit_channel_write                                      | 20028     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | rate_limit_server_send                                        | 20029     | -         |
@@ -285,7 +287,7 @@ Error Codes
 +---------------------------------------------------------------+-----------+-----------+
 | invalid_token                                                 | 50014     | -         |
 +---------------------------------------------------------------+-----------+-----------+
-| note_too_long                                                 | 50015     | -         |
+| invalid_note                                                  | 50015     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | bulk_delete_amount_out_of_range                               | 50016     | -         |
 +---------------------------------------------------------------+-----------+-----------+
@@ -441,6 +443,10 @@ Error Codes
 +---------------------------------------------------------------+-----------+-----------+
 | authentication_required                                       | 100029    | -         |
 +---------------------------------------------------------------+-----------+-----------+
+| billing_non_refundable_payment_source                         | 100060    | -         |
++---------------------------------------------------------------+-----------+-----------+
+| application_not_yet_available                                 | 110001    | -         |
++---------------------------------------------------------------+-----------+-----------+
 | listing_already_joined                                        | 120000    | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | listing_too_many_member                                       | 120001    | -         |
@@ -485,7 +491,10 @@ Error Codes
 +---------------------------------------------------------------+-----------+-----------+
 | auto_moderation_title_blocked                                 | 200001    | -         |
 +---------------------------------------------------------------+-----------+-----------+
-| webhook_can_create_thread_only_in_forum_channel
+| webhook_can_create_thread_only_in_forum_channel               | 220003    | -         |
++---------------------------------------------------------------+-----------+-----------+
+| harmful_link_message_blocked                                  | 240000    | -         |
++---------------------------------------------------------------+-----------+-----------+
 """
 unknown_account = 10001
 unknown_application = 10002
@@ -543,6 +552,7 @@ rate_limit_slowmode = 20016
 team_ownership_required = 20018
 rate_limit_announcement_message_edit = 20022
 under_minimum_age = 20024
+quarantined = 20026
 rate_limit_channel_write = 20028
 rate_limit_server_send = 20029
 name_contains_disallowed_word = 20031
@@ -618,7 +628,7 @@ oauth2_application_limit_reached = 50011
 invalid_oauth2_state = 50012
 missing_permissions = 50013
 invalid_token = 50014
-note_too_long = 50015
+invalid_note = 50015
 bulk_delete_amount_out_of_range = 50016
 invalid_MFA_level = 50017
 invalid_password = 50018
@@ -701,6 +711,9 @@ invalid_gift_redemption_subscription_incompatible = 100023
 invalid_gift_redemption_invoice_open = 100024
 negative_invoice_amount = 100027
 authentication_required = 100029
+billing_non_refundable_payment_source = 100060
+
+application_not_yet_available = 110001
 
 listing_already_joined = 120000
 listing_too_many_member = 120001
@@ -732,9 +745,13 @@ terms_of_service_required = 190002
 auto_moderation_message_blocked = 200000
 auto_moderation_title_blocked = 200001
 
+webhook_can_create_thread_only_in_forum_channel = 220003
+
+harmful_link_message_blocked = 240000
+
 
 def __getattr__(attribute_name):
-    if 'attribute_name' == 'sticker_animation_duration_exceeds_5_second':
+    if attribute_name == 'sticker_animation_duration_exceeds_5_second':
         warnings.warn(
             (
                 f'`ERROR_CODES.sticker_animation_duration_exceeds_5_second` is deprecated and will be removed in'
@@ -745,5 +762,17 @@ def __getattr__(attribute_name):
         )
     
         return sticker_animation_duration_exceeds_five_second
-        
+    
+    elif attribute_name == 'note_too_long':
+        warnings.warn(
+            (
+                f'`ERROR_CODES.note_too_long` is deprecated and will be removed in'
+                f'2022 Dec. Please use `.invalid_note` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return invalid_note
+
+    
     raise AttributeError(attribute_name)

@@ -295,11 +295,29 @@ class AuditLogEvent(PreinstancedBase):
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
     | auto_moderation_rule_create           | auto moderation rule create           | 140   | auto_moderation_rule          |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
-    | auto_moderation_rule_edit           | auto moderation rule edit           | 141   | auto_moderation_rule          |
+    | auto_moderation_rule_edit             | auto moderation rule edit             | 141   | auto_moderation_rule          |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
     | auto_moderation_rule_delete           | auto moderation rule delete           | 142   | auto_moderation_rule          |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
     | auto_moderation_block_message         | auto moderation block message         | 143   | none                          |
+    +---------------------------------------+---------------------------------------+-------+-------------------------------+
+    | auto_moderation_alert_message         | auto moderation alert message         | 144   | none                          |
+    +---------------------------------------+---------------------------------------+-------+-------------------------------+
+    | auto_moderation_user_timeout          | auto moderation user timeout          | 145   | none                          |
+    +---------------------------------------+---------------------------------------+-------+-------------------------------+
+    | creator_monetization_request_created  | creator_monetization_request_created  | 150   | none                          |
+    +---------------------------------------+---------------------------------------+-------+-------------------------------+
+    | creator_monetization_terms_accepted   | creator_monetization_terms_accepted   | 151   | none                          |
+    +---------------------------------------+---------------------------------------+-------+-------------------------------+
+    | role_prompt_create                    | role_prompt_create                    | 160   | none                          |
+    +---------------------------------------+---------------------------------------+-------+-------------------------------+
+    | role_prompt_edit                      | role_prompt_edit                      | 161   | none                          |
+    +---------------------------------------+---------------------------------------+-------+-------------------------------+
+    | role_prompt_delete                    | role_prompt_delete                    | 162   | none                          |
+    +---------------------------------------+---------------------------------------+-------+-------------------------------+
+    | guild_home_feature_item               | guild_home_feature_item               | 171   | none                          |
+    +---------------------------------------+---------------------------------------+-------+-------------------------------+
+    | guild_home_remove_item                | guild_home_remove_item                | 172   | none                          |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
     """
     INSTANCES = {}
@@ -392,6 +410,18 @@ class AuditLogEvent(PreinstancedBase):
     auto_moderation_rule_edit = P(141, 'auto moderation rule edit', AuditLogTargetType.auto_moderation_rule)
     auto_moderation_rule_delete = P(142, 'auto moderation rule delete', AuditLogTargetType.auto_moderation_rule)
     auto_moderation_block_message = P(143, 'auto moderation block message', AuditLogTargetType.none)
+    auto_moderation_alert_message = P(143, 'auto moderation alert message', AuditLogTargetType.none)
+    auto_moderation_user_timeout = P(143, 'auto moderation user timeout', AuditLogTargetType.none)
+    
+    creator_monetization_request_created = P(150, 'creator monetization request created', AuditLogTargetType.none)
+    creator_monetization_terms_accepted = P(151, 'creator monetization terms accepted', AuditLogTargetType.none)
+    
+    role_prompt_create =  P(160,'role prompt create', AuditLogTargetType.none)
+    role_prompt_edit =  P(161, 'role prompt edit', AuditLogTargetType.none)
+    role_prompt_delete = P(162, 'role prompt delete', AuditLogTargetType.none)
+    
+    guild_home_feature_item = P(171, 'guild_home_feature_item', AuditLogTargetType.none)
+    guild_home_remove_item = P(172, 'guild_home_remove_item', AuditLogTargetType.none)
     
     
     def __init__(self, value, name, target_type):

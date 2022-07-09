@@ -54,6 +54,8 @@ class UserFlag(FlagBase):
     +-------------------------------+-------------------+
     | spammer                       | 20                |
     +-------------------------------+-------------------+
+    | quarantined                   | 44                |
+    +-------------------------------+-------------------+
     """
     __keys__ = {
         'staff': 0,
@@ -77,6 +79,7 @@ class UserFlag(FlagBase):
         'certified_moderator': 18,
         'bot_http_interactions': 19,
         'spammer': 20,
+        'quarantined': 44,
     }
 
 

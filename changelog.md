@@ -25,7 +25,8 @@
 - `AutoModerationRule.copy_with` could raise `TypeError` with false reason.
 - Always update loading messages.
 - `UserBase.to_data` raised `TypeError`.
-    
+- `ZEROUSER` was not put in cache, which could cause false result in tests.
+
 ## 1.2.18 *\[2022-06-27\]*
 
 #### Improvements

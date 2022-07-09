@@ -152,7 +152,7 @@ def convert_welcome(self):
 
     return join_messages[int(self.created_at.timestamp()) % len(join_messages)].format(self.author.name)
 
-def convert_new_guild_subscription(self):
+def convert_guild_boost(self):
     guild = self.channel.guild
     if guild is None:
         guild_name = 'None'
@@ -160,7 +160,7 @@ def convert_new_guild_subscription(self):
         guild_name = guild.name
     return f'{self.author.name} boosted {guild_name} with Nitro!'
 
-def convert_new_guild_subscription_tier_1(self):
+def convert_guild_boost_tier_1(self):
     guild = self.channel.guild
     if guild is None:
         guild_name = 'None'
@@ -169,7 +169,7 @@ def convert_new_guild_subscription_tier_1(self):
         
     return f'{self.author.name} boosted {guild_name} with Nitro! {guild_name} has achieved level 1!'
 
-def convert_new_guild_subscription_tier_2(self):
+def convert_guild_boost_tier_2(self):
     guild = self.channel.guild
     if guild is None:
         guild_name = 'None'
@@ -178,7 +178,7 @@ def convert_new_guild_subscription_tier_2(self):
     
     return f'{self.author.name} boosted {guild_name} with Nitro! {guild_name} has achieved level 2!'
 
-def convert_new_guild_subscription_tier_3(self):
+def convert_guild_boost_tier_3(self):
     guild = self.channel.guild
     if guild is None:
         guild_name = 'None'
@@ -308,13 +308,13 @@ class MessageType(PreinstancedBase):
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
     | welcome                                   | welcome                                   | convert_welcome                                   | 7     |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub                             | new guild sub                             | convert_new_guild_subscription                    | 8     |
+    | guild_boost                               | guild boost                               | convert_guild_boost                               | 8     |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub_t1                          | new guild sub t1                          | convert_new_guild_subscription_tier_1             | 9     |
+    | guild_boost_tier_1                        | guild boost tier 1                        | convert_guild_boost_tier_1                        | 9     |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub_t2                          | new guild sub t2                          | convert_new_guild_subscription_tier_2             | 10    |
+    | guild_boost_tier_2                        | guild boost tier 2                        | convert_guild_boost_tier_2                        | 10    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | new_guild_sub_t3                          | new guild sub t3                          | convert_new_guild_subscription_tier_3             | 11    |
+    | guild_boost_tier_3                        | guild boost tier 3                        | convert_guild_boost_tier_3                        | 11    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
     | new_follower_channel                      | new follower channel                      | convert_new_follower_channel                      | 12    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
@@ -407,10 +407,10 @@ class MessageType(PreinstancedBase):
     channel_icon_change = P(5, 'channel icon change', convert_channel_icon_change)
     new_pin = P(6, 'new pin', convert_new_pin)
     welcome = P(7, 'welcome', convert_welcome)
-    new_guild_subscription = P(8, 'new guild subscription', convert_new_guild_subscription)
-    new_guild_subscription_tier_1 = P(9, 'new guild subscription tier 1', convert_new_guild_subscription_tier_1)
-    new_guild_subscription_tier_2 = P(10, 'new guild subscription tier 2', convert_new_guild_subscription_tier_2)
-    new_guild_subscription_tier_3 = P(11, 'new guild subscription tier 3', convert_new_guild_subscription_tier_3)
+    guild_boost = P(8, 'guild boost', convert_guild_boost)
+    guild_boost_tier_1 = P(9, 'guild boost tier 1', convert_guild_boost_tier_1)
+    guild_boost_tier_2 = P(10, 'guild boost tier 2', convert_guild_boost_tier_2)
+    guild_boost_tier_3 = P(11, 'guild boost tier 3', convert_guild_boost_tier_3)
     new_follower_channel = P(12, 'new follower channel', convert_new_follower_channel)
     stream = P(13, 'stream', convert_stream)
     discovery_disqualified = P(14, 'discovery disqualified', convert_discovery_disqualified)
@@ -485,6 +485,52 @@ class MessageType(PreinstancedBase):
             FutureWarning,
             stacklevel = 2,
         )
+        
+        return self.converter
+
+    @class_property
+    def new_guild_subscription(cls):
+        warnings.warn(
+            (
+                f'`{cls.__name__}.new_guild_subscription` is deprecated and will be removed in 2022 Dec.'
+                f'Please use `.guild_boost` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 3,
+        )
+
+    @class_property
+    def new_guild_subscription_tier_1(cls):
+        warnings.warn(
+            (
+                f'`{cls.__name__}.new_guild_subscription_tier_1` is deprecated and will be removed in 2022 Dec.'
+                f'Please use `.guild_boost_tier_1` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 3,
+        )
+
+    @class_property
+    def new_guild_subscription_tier_2(cls):
+        warnings.warn(
+            (
+                f'`{cls.__name__}.new_guild_subscription_tier_2` is deprecated and will be removed in 2022 Dec.'
+                f'Please use `.guild_boost_tier_2` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 3,
+        )
+    
+    @class_property
+    def new_guild_subscription_tier_3(cls):
+        warnings.warn(
+            (
+                f'`{cls.__name__}.new_guild_subscription_tier_3` is deprecated and will be removed in 2022 Dec.'
+                f'Please use `.guild_boost_tier_3` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 3,
+        )
 
 
 del convert_add_user
@@ -494,10 +540,10 @@ del convert_channel_name_change
 del convert_channel_icon_change
 del convert_new_pin
 del convert_welcome
-del convert_new_guild_subscription
-del convert_new_guild_subscription_tier_1
-del convert_new_guild_subscription_tier_2
-del convert_new_guild_subscription_tier_3
+del convert_guild_boost
+del convert_guild_boost_tier_1
+del convert_guild_boost_tier_2
+del convert_guild_boost_tier_3
 del convert_new_follower_channel
 del convert_stream
 del convert_discovery_disqualified

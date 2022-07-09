@@ -28,6 +28,16 @@
 - `UserBase.to_data` raised `TypeError`.
 - `ZEROUSER` was not put in cache, which could cause false result in tests.
 
+#### Renames, Deprecation & Removals
+- Rename `MessageType.new_guild_subscription` to `.guild_boost`.
+- Deprecate `MessageType.new_guild_subscription`.
+- Rename `MessageType.new_guild_subscription_tier_1` to `.guild_boost_tier_1`.
+- Deprecate `MessageType.new_guild_subscription_tier_1`.
+- Rename `MessageType.new_guild_subscription_tier_2` to `.guild_boost_tier_2`.
+- Deprecate `MessageType.new_guild_subscription_tier_2`.
+- Rename `MessageType.new_guild_subscription_tier_3` to `.guild_boost_tier_3`.
+- Deprecate `MessageType.new_guild_subscription_tier_3`.
+
 ## 1.2.18 *\[2022-06-27\]*
 
 #### Improvements

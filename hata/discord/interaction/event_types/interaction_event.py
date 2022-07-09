@@ -76,6 +76,8 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         Can be used by extensions and is used by the the ``Client``-s to ensure correct flow order.
     application_id : `int`
         The interaction's application's identifier.
+    application_permissions : ``Permission``
+        The permissions granted to the application in the guild.
     channel_id : `int`
         The channel's identifier from where the interaction was called.
     guild_id : `int`
@@ -118,8 +120,8 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
     ˙˙InteractionEvent˙˙ instances are weakreferable.
     """
     __slots__ = (
-        '_async_task', '_cached_users', '_response_flag', 'application_id', 'channel_id', 'guild_id', 'guild_locale',
-        'interaction', 'locale', 'message', 'token', 'type', 'user', 'user_permissions'
+        '_async_task', '_cached_users', '_response_flag', 'application_id', 'application_permissions', 'channel_id',
+        'guild_id', 'guild_locale', 'interaction', 'locale', 'message', 'token', 'type', 'user', 'user_permissions'
     )
     
     _USER_GUILD_CACHE = {}
@@ -138,6 +140,13 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         
         # application_id
         application_id = int(data['application_id'])
+        
+        # application_permissions
+        application_permissions = data.get('app_permissions', None)
+        if (application_permissions is None):
+            application_permissions = Permission()
+        else:
+            application_permissions = Permission(application_permissions)
         
         # channel_id
         channel_id = int(data['channel_id'])
@@ -207,6 +216,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         self._response_flag = RESPONSE_FLAG_NONE
         self.id = id_
         self.application_id = application_id
+        self.application_permissions = application_permissions
         self.type = type_
         self.channel_id = channel_id
         self.guild_id = guild_id
@@ -399,6 +409,9 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         if guild_id:
             repr_parts.append(', guild_id=')
             repr_parts.append(repr(guild_id))
+            
+            repr_parts.append(', application_permissions=')
+            repr_parts.append(format(self.application_permissions, 'd'))
         
         
         repr_parts.append(', channel_id=')

@@ -9,6 +9,7 @@
 - Add `reason` parameter to `Client.auto_moderation_rule_delete`.
 - Add `MessageInteraction.joined_name`.
 - Add `MessageInteraction.sub_command_name_stack` (better naming required).
+- Add `InteractionEvent.application_permissions`.
 
 ##### ext.slash
 

@@ -864,46 +864,41 @@ Group Details
     - Endpoint : `/guilds/{guild_id}/auto-moderation/rules`
     - Method: `GET`
     - Required auth : `bot`
-    - Limiter : `guild_id`
+    - Limiter : `GLOBAL`
     - Limit : `5`
     - Resets after : `10`
-    - Notes: Cannot yet determine whether the limit is per guild or global.
 
 - auto_moderation_rule_create
     - Endpoint : `/guilds/{guild_id}/auto-moderation/rules`
     - Method: `POST`
     - Required auth : `bot`
-    - Limiter : `guild_id`
+    - Limiter : `GLOBAL`
     - Limit : `5`
     - Resets after : `30`
-    - Notes: Cannot yet determine whether the limit is per guild or global.
 
 - auto_moderation_rule_get
     - Endpoint : `/guilds/{guild_id}/auto-moderation/rules/{auto_moderation_rule_id}`
     - Method: `GET`
     - Required auth : `bot`
-    - Limiter : `guild_id`
+    - Limiter : `GLOBAL`
     - Limit : `5`
     - Resets after : `10`
-    - Notes: Cannot yet determine whether the limit is per guild or global.
 
 - auto_moderation_rule_delete
     - Endpoint : `/guilds/{guild_id}/auto-moderation/rules/{auto_moderation_rule_id}`
     - Method: `DELETE`
     - Required auth : `bot`
-    - Limiter : `guild_id`
+    - Limiter : `GLOBAL`
     - Limit : `5`
     - Resets after : `30`
-    - Notes: Cannot yet determine whether the limit is per guild or global.
 
 - auto_moderation_rule_edit
     - Endpoint : `/guilds/{guild_id}/auto-moderation/rules/{auto_moderation_rule_id}`
     - Method: `PATCH`
     - Required auth : `bot`
-    - Limiter : `guild_id`
+    - Limiter : `GLOBAL`
     - Limit : `10`
     - Resets after : `30`
-    - Notes: Cannot yet determine whether the limit is per guild or global.
 
 - guild_ban_get_chunk
     - Endpoint : `/guilds/{guild_id}/bans`
@@ -2004,11 +1999,11 @@ guild_get = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 guild_edit = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 guild_ack = RateLimitGroup() # untested
 audit_log_get_chunk = RateLimitGroup(LIMITER_GUILD, optimistic=True)
-auto_moderation_rule_get_all = RateLimitGroup(LIMITER_GUILD, optimistic=True)
-auto_moderation_rule_create = RateLimitGroup(LIMITER_GUILD, optimistic=True)
-auto_moderation_rule_get = RateLimitGroup(LIMITER_GUILD, optimistic=True)
-auto_moderation_rule_delete = RateLimitGroup(LIMITER_GUILD, optimistic=True)
-auto_moderation_rule_edit = RateLimitGroup(LIMITER_GUILD, optimistic=True)
+auto_moderation_rule_get_all = RateLimitGroup()
+auto_moderation_rule_create = RateLimitGroup()
+auto_moderation_rule_get = RateLimitGroup()
+auto_moderation_rule_delete = RateLimitGroup()
+auto_moderation_rule_edit = RateLimitGroup()
 guild_ban_get_chunk = RateLimitGroup(LIMITER_GUILD)
 guild_ban_delete = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 guild_ban_get = RateLimitGroup(LIMITER_GUILD, optimistic=True)

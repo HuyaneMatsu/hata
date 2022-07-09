@@ -7,6 +7,8 @@
 - Add `reason` parameter to `Client.auto_moderation_rule_create`.
 - Add `reason` parameter to `Client.auto_moderation_rule_edit`.
 - Add `reason` parameter to `Client.auto_moderation_rule_delete`.
+- Add `MessageInteraction.joined_name`.
+- Add `MessageInteraction.sub_command_name_stack` (better naming required).
 
 ##### ext.slash
 
@@ -22,7 +24,8 @@
 - `create_partial_user_from_id` did not cache the user as expected.
 - `AutoModerationRule.copy_with` could raise `TypeError` with false reason.
 - Always update loading messages.
-
+- `UserBase.to_data` raised `TypeError`.
+    
 ## 1.2.18 *\[2022-06-27\]*
 
 #### Improvements

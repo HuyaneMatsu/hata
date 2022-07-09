@@ -1,4 +1,4 @@
-__all__ = ('User', 'ZEROUSER')
+__all__ = ('User',)
 
 import warnings
 
@@ -610,6 +610,3 @@ class User(USER_BASE_CLASS):
         -------
         user : ``ClientUserBase``
         """)
-
-
-ZEROUSER = User._create_empty(0)

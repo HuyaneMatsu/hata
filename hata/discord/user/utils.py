@@ -1,4 +1,4 @@
-__all__ = ('create_partial_user_from_id', )
+__all__ = ('ZEROUSER', 'create_partial_user_from_id', )
 
 from scarletio import export
 
@@ -29,3 +29,6 @@ def create_partial_user_from_id(user_id):
     user = User._create_empty(user_id)
     USERS[user_id] = user
     return user
+
+
+ZEROUSER = create_partial_user_from_id(0)

@@ -837,7 +837,7 @@ class UserBase(DiscordEntity, immortal=True):
         -------
         data : `dict` of (`str`, `str`) items
         """
-        data = []
+        data = {}
         
         # id
         data['id'] = str(self.id)

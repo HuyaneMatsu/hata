@@ -8,12 +8,13 @@ def test__KeywordPresetTriggerMetadata__to_data_0():
     Tests whether ``KeywordPresetTriggerMetadata``'s `to_data` method works as expected.
     Defining no keyword(s).
     """
-    metadata = KeywordPresetTriggerMetadata(keyword_presets=None)
+    metadata = KeywordPresetTriggerMetadata(None)
     
     vampytest.assert_eq(
         metadata.to_data(),
         {
             'presets': [],
+            'allow_list': [],
         },
     )
 
@@ -23,12 +24,13 @@ def test__KeywordPresetTriggerMetadata__to_data_1():
     Tests whether ``KeywordPresetTriggerMetadata``'s `to_data` method works as expected.
     Defining keyword(s).
     """
-    metadata = KeywordPresetTriggerMetadata(AutoModerationKeywordPresetType.slur)
+    metadata = KeywordPresetTriggerMetadata(AutoModerationKeywordPresetType.slur, 'owo')
     
     vampytest.assert_eq(
         metadata.to_data(),
         {
             'presets': [AutoModerationKeywordPresetType.slur.value],
+            'allow_list': ['owo']
         },
     )
 
@@ -36,22 +38,23 @@ def test__KeywordPresetTriggerMetadata__to_data_1():
 def test__KeywordPresetTriggerMetadata__from_data_0():
     """
     Tests whether ``KeywordPresetTriggerMetadata``'s `from_data` method works as expected.
-    Case: `None`.
+    None value cases.
     """
     metadata = KeywordPresetTriggerMetadata.from_data({
         'presets': None,
+        'allow_list': None,
     })
     
     vampytest.assert_eq(
         metadata,
-        KeywordPresetTriggerMetadata(keyword_presets=None),
+        KeywordPresetTriggerMetadata(None),
     )
 
 
 def test__KeywordPresetTriggerMetadata__from_data_1():
     """
     Tests whether ``KeywordPresetTriggerMetadata``'s `from_data` method works as expected.
-    Case: *missing*.
+    Missing data case.
     """
     metadata = KeywordPresetTriggerMetadata.from_data({})
     
@@ -64,10 +67,11 @@ def test__KeywordPresetTriggerMetadata__from_data_1():
 def test__KeywordPresetTriggerMetadata__from_data_2():
     """
     Tests whether ``KeywordPresetTriggerMetadata``'s `from_data` method works as expected.
-    Case: `[]`.
+    Empty data case.
     """
     metadata = KeywordPresetTriggerMetadata.from_data({
         'presets': [],
+        'allow_list': [],
     })
     
     vampytest.assert_eq(
@@ -79,13 +83,14 @@ def test__KeywordPresetTriggerMetadata__from_data_2():
 def test__KeywordPresetTriggerMetadata__from_data_3():
     """
     Tests whether ``KeywordPresetTriggerMetadata``'s `from_data` method works as expected.
-    Case: `['owo']`.
+    Stuffed data case.
     """
     metadata = KeywordPresetTriggerMetadata.from_data({
         'presets': [AutoModerationKeywordPresetType.slur.value],
+        'allow_list': ['owo'],
     })
     
     vampytest.assert_eq(
         metadata,
-        KeywordPresetTriggerMetadata(keyword_presets=AutoModerationKeywordPresetType.slur),
+        KeywordPresetTriggerMetadata(AutoModerationKeywordPresetType.slur, 'owo'),
     )

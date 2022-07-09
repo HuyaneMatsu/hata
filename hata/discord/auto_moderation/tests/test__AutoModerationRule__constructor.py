@@ -596,3 +596,32 @@ def test__AutoModerationRule__constructor__name_1():
     """
     with vampytest.assert_raises(TypeError):
         AutoModerationRule(None, None, AutoModerationRuleTriggerType.spam)
+
+
+def test__AutoModerationRule__constructor__excluded_keywords_0():
+    """
+    Tests whether ``AutoModerationRule`` wont accept `excluded_keywords` alone.
+    """
+    with vampytest.assert_raises(TypeError):
+        AutoModerationRule('name', None, excluded_keywords=None)
+
+
+def test__AutoModerationRule__constructor__excluded_keywords_1():
+    """
+    Tests whether ``AutoModerationRule`` wont accept `excluded_keywords` with `keywords`.
+    """
+    with vampytest.assert_raises(TypeError):
+        AutoModerationRule('name', None, excluded_keywords=None, keywords=None)
+
+
+def test__AutoModerationRule__constructor__excluded_keywords_2():
+    """
+    Tests whether ``AutoModerationRule`` wont accept `excluded_keywords` with `keyword_presets` correctly.
+    """
+    rule = AutoModerationRule(
+            'name', None, excluded_keywords='owo', keyword_presets=AutoModerationKeywordPresetType.cursing
+        )
+    
+    trigger_metadata = KeywordPresetTriggerMetadata(AutoModerationKeywordPresetType.cursing, 'owo')
+    
+    vampytest.assert_eq(rule.trigger_metadata, trigger_metadata)

@@ -23,14 +23,24 @@ def test__KeywordPresetTriggerMetadata__eq_1():
     )
 
 
-def test__KeywordPresetTriggerMetadata__not_eq_0():
+def test__KeywordPresetTriggerMetadata__eq_2():
+    """
+    Tests whether ``KeywordPresetTriggerMetadata``'s `__eq__` method works as expected.
+    """
+    vampytest.assert_eq(
+        KeywordPresetTriggerMetadata(None, 'owo'),
+        KeywordPresetTriggerMetadata(None, 'owo'),
+    )
+
+
+def test__KeywordPresetTriggerMetadata__eq_3():
     """
     Tests whether ``KeywordPresetTriggerMetadata``'s `__eq__` method works as expected when passing
     objects with different values.
     """
     vampytest.assert_not_eq(
-        KeywordPresetTriggerMetadata(None),
-        KeywordPresetTriggerMetadata(AutoModerationKeywordPresetType.slur),
+        KeywordPresetTriggerMetadata(None, 'owo'),
+        KeywordPresetTriggerMetadata(None, ['owo', 'awa']),
     )
 
 

@@ -10,6 +10,11 @@
 - Add `MessageInteraction.joined_name`.
 - Add `MessageInteraction.sub_command_name_stack` (better naming required).
 - Add `InteractionEvent.application_permissions`.
+- Add `KeywordPresetTriggerMetadata.excluded_keywords`.
+- Add `excluded_keywords` parameter to `KeywordPresetTriggerMetadata.__new__`.
+- Add `KeywordPresetTriggerMetadata.iter_keyword_presets`.
+- Add `excluded_keywords` to `AutoModerationRule.__new__`.
+- Add `excluded_keywords` to `AutoModerationRule.copy_with`.
 
 ##### ext.slash
 

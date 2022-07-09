@@ -324,12 +324,14 @@ class KeywordPresetTriggerMetadata(AutoModerationRuleTriggerMetadata):
     
     Attributes
     ----------
-    keyword_presets : `None`, `tuple` of `str`
+    excluded_keywords : `None`, `tuple` of `str`
+        Excluded keywords from under the rule.
+    keyword_presets : `None`, `tuple` of `AutoModerationKeywordPresetType`
         Substrings which will be searched for in content.
     """
-    __slots__ = ('keyword_presets',)
+    __slots__ = ('excluded_keywords', 'keyword_presets',)
     
-    def __new__(cls, keyword_presets):
+    def __new__(cls, keyword_presets, excluded_keywords=None):
         """
         Creates a new keyword preset trigger metadata for ``AutoModerationRule``-s.
         
@@ -339,12 +341,47 @@ class KeywordPresetTriggerMetadata(AutoModerationRuleTriggerMetadata):
                 `iterable` of (`int`, ``AutoModerationKeywordPresetType``)
             Keyword preset defined by Discord which will be searched for in content.
         
+        excluded_keywords : `None`, `str`, `iterable` of `str` = `None`, Optional (Keyword only)
+            Excluded keywords from the preset.
+        
         Raises
         ------
         TypeError
-            - If `keyword_presets` type is incorrect.
-            - If a keyword preset's type is incorrect.
+            - If a parameter's type is incorrect.
         """
+        # excluded_keywords
+        if excluded_keywords is None:
+            processed_excluded_keywords = None
+        
+        elif isinstance(excluded_keywords, str):
+            processed_excluded_keywords = (excluded_keywords, )
+        
+        else:
+            iterator = getattr(type(excluded_keywords), '__iter__', None)
+            if iterator is None:
+                raise TypeError(
+                    f'`excluded_keywords` can be `None`, `str`, `iterable` of `str`, '
+                    f'got {excluded_keywords.__class__.__name__}; {excluded_keywords!r}.'
+                )
+            
+            processed_excluded_keywords = None
+            
+            for excluded_keyword in iterator(excluded_keywords):
+                if not isinstance(excluded_keyword, str):
+                    raise TypeError(
+                        f'`excluded_keywords` can contain `str` elements, got {excluded_keyword.__class__.__name__}; {excluded_keyword!r}; '
+                        f'excluded_keywords={excluded_keywords!r}'
+                    )
+                
+                if processed_excluded_keywords is None:
+                    processed_excluded_keywords = set()
+                
+                processed_excluded_keywords.add(excluded_keyword)
+            
+            if (processed_excluded_keywords is not None):
+                processed_excluded_keywords = tuple(sorted(processed_excluded_keywords))
+        
+        # keyword_presets
         if keyword_presets is None:
             processed_keyword_presets = None
         
@@ -388,9 +425,14 @@ class KeywordPresetTriggerMetadata(AutoModerationRuleTriggerMetadata):
             if (processed_keyword_presets is not None):
                 processed_keyword_presets = tuple(sorted(processed_keyword_presets))
         
+        
+        
+        
         self = object.__new__(cls)
+        self.excluded_keywords = processed_excluded_keywords
         self.keyword_presets = processed_keyword_presets
         return self
+    
     
     @copy_docs(AutoModerationRuleTriggerMetadata.__repr__)
     def __repr__(self):
@@ -417,6 +459,25 @@ class KeywordPresetTriggerMetadata(AutoModerationRuleTriggerMetadata):
         
         repr_parts.append(']')
         
+        # excluded_keywords
+        excluded_keywords = self.excluded_keywords
+        repr_parts.append(' excluded_keywords=[')
+        if (excluded_keywords is not None):
+            index = 0
+            limit = len(excluded_keywords)
+            while True:
+                excluded_keyword = excluded_keywords[index]
+                repr_parts.append(repr(excluded_keyword))
+                
+                index += 1
+                if index == limit:
+                    break
+                
+                repr_parts.append(', ')
+                continue
+        
+        repr_parts.append(']')
+        
         repr_parts.append('>')
         return ''.join(repr_parts)
     
@@ -424,6 +485,14 @@ class KeywordPresetTriggerMetadata(AutoModerationRuleTriggerMetadata):
     @classmethod
     @copy_docs(AutoModerationRuleTriggerMetadata.from_data)
     def from_data(cls, data):
+        # excluded_keywords
+        excluded_keyword_array = data.get('allow_list', None)
+        if (excluded_keyword_array is None) or (not excluded_keyword_array):
+            excluded_keywords = None
+        else:
+            excluded_keywords = tuple(sorted(excluded_keyword_array))
+        
+        # keyword_preset_array
         keyword_preset_array = data.get('presets', None)
         if (keyword_preset_array is None) or (not keyword_preset_array):
             keyword_presets = None
@@ -433,6 +502,7 @@ class KeywordPresetTriggerMetadata(AutoModerationRuleTriggerMetadata):
             ))
         
         self = object.__new__(cls)
+        self.excluded_keywords = excluded_keywords
         self.keyword_presets = keyword_presets
         return self
     
@@ -441,6 +511,10 @@ class KeywordPresetTriggerMetadata(AutoModerationRuleTriggerMetadata):
     def to_data(self):
         data = {}
         
+        # excluded_keywords
+        data['allow_list'] = [*self.iter_excluded_keywords()]
+        
+        # keyword_presets
         data['presets'] = [*self.iter_keyword_presets()]
         
         return data
@@ -451,6 +525,11 @@ class KeywordPresetTriggerMetadata(AutoModerationRuleTriggerMetadata):
         if type(self) is not type(other):
             return NotImplemented
         
+        # excluded_keywords
+        if self.excluded_keywords != other.excluded_keywords:
+            return False
+        
+        # keyword_presets
         if self.keyword_presets != other.keyword_presets:
             return False
         
@@ -461,6 +540,15 @@ class KeywordPresetTriggerMetadata(AutoModerationRuleTriggerMetadata):
     def __hash__(self):
         hash_value = 0
         
+        # excluded_keywords
+        excluded_keywords = self.excluded_keywords
+        if (excluded_keywords is not None):
+            hash_value ^= len(excluded_keywords)
+            
+            for excluded_keyword in excluded_keywords:
+                hash_value ^= hash(excluded_keyword)
+        
+        # keyword_presets
         keyword_presets = self.keyword_presets
         if (keyword_presets is not None):
             hash_value ^= len(keyword_presets)
@@ -472,6 +560,7 @@ class KeywordPresetTriggerMetadata(AutoModerationRuleTriggerMetadata):
                 
                 hash_value ^= keyword_preset.value << shift
         
+        
         return hash_value
     
     
@@ -479,13 +568,34 @@ class KeywordPresetTriggerMetadata(AutoModerationRuleTriggerMetadata):
     def copy(self):
         new = AutoModerationRuleTriggerMetadata.copy(self)
         
-        # keywords
+        # excluded_keywords
         keyword_presets = self.keyword_presets
         if (keyword_presets is not None):
             keyword_presets = tuple(keyword_preset for keyword_preset in keyword_presets)
         new.keyword_presets = keyword_presets
         
+        # keyword_presets
+        excluded_keywords = self.excluded_keywords
+        if (excluded_keywords is not None):
+            excluded_keywords = tuple(excluded_keyword for excluded_keyword in excluded_keywords)
+        new.excluded_keywords = excluded_keywords
+        
         return new
+    
+
+    def iter_excluded_keywords(self):
+        """
+        Iterates over the excluded keyword of the keyword trigger metadata.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        excluded_keyword : `str`
+        """
+        excluded_keywords = self.excluded_keywords
+        if (excluded_keywords is not None):
+            yield from excluded_keywords
     
     
     def iter_keyword_presets(self):

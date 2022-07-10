@@ -320,7 +320,7 @@ class Message(DiscordEntity, immortal=True):
         else:
             if not self.partial:
                 if self.flags.loading:
-                    self._set_attributes()
+                    self._set_attributes(data)
                 
                 elif not self.has_any_content_field():
                     self._update_content_fields(data)
@@ -360,7 +360,7 @@ class Message(DiscordEntity, immortal=True):
         else:
             if not self.partial:
                 if self.flags.loading:
-                    self._set_attributes()
+                    self._set_attributes(data)
                 
                 elif not self.has_any_content_field():
                     self._update_content_fields(data)

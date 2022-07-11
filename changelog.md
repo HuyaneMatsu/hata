@@ -1,3 +1,10 @@
+## 1.2.20 *\[2022-07-??\]*
+
+#### Improvements
+
+- Add `GuildFeature.embedded_activities_experiment`.
+- Add `GuildFeature.home_test`.
+
 ## 1.2.19 *\[2022-07-10\]*
 
 #### Improvements

@@ -1233,6 +1233,7 @@ from hata.ext.slash import P
     required_permissions = Permission().update_by_keys(manage_nicknames=True),
 )
 async def set_nick(
+    client,
     event,
     user: ('user', 'Who\'s?'),
     nick: P(str, 'Their new nick', min_length=1, max_length=32) = None,

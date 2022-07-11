@@ -1217,8 +1217,32 @@ async def character_popularity(
     return MOST_POPULAR_TOUHOU_CHARACTERS[position-1]
 ```
 
-
 ![](assets/slash_0025.gif)
+
+# Specifying input value length
+
+It is possible to also define the minimal and maximal accepted length of string parameters. To do so use the
+`min_length` and the `max_length` parameters.
+
+```py
+from hata import Permission
+from hata.ext.slash import P
+
+@Nitori.interactions(
+    guild = TEST_GUILD,
+    required_permissions = Permission().update_by_keys(manage_nicknames=True),
+)
+async def set_nick(
+    event,
+    user: ('user', 'Who\'s?'),
+    nick: P(str, 'Their new nick', min_length=1, max_length=32) = None,
+):
+    """Edit's the selected user's nick."""
+    yield
+    await client.user_guild_profile_edit(event.guild, user, nick=nick)
+    yield f'{user:f}\'s nick has been updated'
+```
+
 
 # Context commands
 

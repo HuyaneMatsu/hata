@@ -358,10 +358,13 @@ class GuildFeature(PreinstancedBase):
     +-----------------------------------+-----------------------------------+-------------------------------------------+
     | discoverable_enabled_before       | discoverable enabled before       | ENABLED_DISCOVERABLE_BEFORE               |
     +-----------------------------------+-----------------------------------+-------------------------------------------+
-    | embedded_activities_experiment    | embedded activities experiment    |
+    | embedded_activities_experiment    | embedded activities experiment    | EXPOSED_TO_ACTIVITIES_WTP_EXPERIMENT      |
+    +-----------------------------------+-----------------------------------+-------------------------------------------+
     | featurable                        | featurable                        | FEATURABLE                                |
     +-----------------------------------+-----------------------------------+-------------------------------------------+
     | has_directory_entry               | has directory entry               | HAS_DIRECTORY_ENTRY                       |
+    +-----------------------------------+-----------------------------------+-------------------------------------------+
+    | home_test                         | home test                         | GUILD_HOME_TEST                           |
     +-----------------------------------+-----------------------------------+-------------------------------------------+
     | hub                               | hub                               | HUB                                       |
     +-----------------------------------+-----------------------------------+-------------------------------------------+
@@ -464,9 +467,11 @@ class GuildFeature(PreinstancedBase):
     community = P('COMMUNITY', 'community')
     discoverable = P('DISCOVERABLE', 'discoverable')
     discoverable_disabled = P('DISCOVERABLE_DISABLED', 'discoverable disabled')
+    embedded_activities_experiment = P('EXPOSED_TO_ACTIVITIES_WTP_EXPERIMENT', 'embedded activities experiment')
     discoverable_enabled_before = P('ENABLED_DISCOVERABLE_BEFORE', 'discoverable enabled before')
     featurable = P('FEATURABLE', 'featurable')
     has_directory_entry = P('HAS_DIRECTORY_ENTRY', 'has directory_entry')
+    home_test = P('GUILD_HOME_TEST', 'home test')
     hub = P('HUB', 'hub')
     internal_employee_only = P('INTERNAL_EMPLOYEE_ONLY', 'internal employee only')
     invite_splash = P('INVITE_SPLASH', 'invite splash')

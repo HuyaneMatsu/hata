@@ -33,64 +33,10 @@ PACKAGE = __import__(PACKAGE_NAME)
 
 MAIN = __import__(f'{PACKAGE_NAME}.main').main
 
-COMMAND_NAME_TO_COMMAND = MAIN.COMMAND_NAME_TO_COMMAND
+execute_command_from_system_parameters = MAIN.execute_command_from_system_parameters
 find_commands = MAIN.find_commands
 
 find_commands()
 
-SYSTEM_DEFAULT_PARAMETER = 'i'
-
-def command_not_found():
-    from scarletio import get_short_executable
-    
-    output_parts = ['No command is added for: ']
-    
-    system_parameter = sys.argv
-    
-    length = len(system_parameter)
-    if length > 2:
-        index = 1
-        
-        while True:
-            output_parts.append(repr(system_parameter[index]))
-            index += 1
-            if index == length:
-                break
-            
-            output_parts.append(', ')
-            continue
-    else:
-        output_parts.append('-')
-    
-    output_parts.append('\n')
-    output_parts.append('Try using "$ ')
-    output_parts.append(get_short_executable())
-    output_parts.append(' ')
-    output_parts.append(PACKAGE_NAME)
-    output_parts.append(' help" for more information\n.')
-    
-    output = ''.join(output_parts)
-    
-    sys.stderr.write(output)
-
-
-def __main__():
-    system_parameters = sys.argv
-    if len(system_parameters) < 2:
-        system_parameter = SYSTEM_DEFAULT_PARAMETER
-    else:
-        system_parameter = system_parameters[1].lower()
-    
-    try:
-        command = COMMAND_NAME_TO_COMMAND[system_parameter]
-    except KeyError:
-        command_function = command_not_found
-    
-    else:
-        command_function = command.get_command_function()
-    
-    return command_function()
-
-
 if __name__ == '__main__':
-    __main__()
+    execute_command_from_system_parameters()

@@ -1,3 +1,5 @@
+__all__ = ()
+
 import sys
 from platform import platform as get_platform
 
@@ -5,8 +7,14 @@ from scarletio import __package__ as SCARLETIO_NAME, __version__ as SCARLETIO_VE
 
 from .... import __package__ as PACKAGE_NAME, __version__ as PACKAGE_VERSION
 
+from ... import register
 
-def __main__():
+
+@register(
+    alters = 'v'
+)
+def version():
+    """Prints out hata\'s version."""
     output_parts = []
     
     output_parts.append(PACKAGE_NAME[0].upper())
@@ -43,6 +51,4 @@ def __main__():
     
     output_parts.append('\n')
     
-    output = ''.join(output_parts)
-    
-    sys.stdout.write(output)
+    return ''.join(output_parts)

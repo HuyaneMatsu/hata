@@ -84,6 +84,8 @@ setup(
         'hata.ext.top_gg',
         'hata.main',
         'hata.main.commands',
+        'hata.main.core',
+        'hata.main.core.command',
         'hata.main.commands.default',
         'hata.utils',
     ],

@@ -1,13 +1,23 @@
+__all__ = ()
+
 from scarletio.tools.asynchronous_interactive_console import (
-    collect_package_local_variables, create_banner, create_exit_message, run_asynchronous_interactive_console
+    AWAIT_NOTE, collect_package_local_variables, create_banner, create_exit_message,
+    run_asynchronous_interactive_console
 )
 
 from .... import __package__ as PACKAGE_NAME
 
+from ... import register
+
 
 PACKAGE = __import__(PACKAGE_NAME)
 
-def __main__():
+
+@register(
+    alters = 'i',
+    description =  f'Runs asynchronous python interpreter through scarletio.\n{AWAIT_NOTE}',
+)
+def interpreter():
     run_asynchronous_interactive_console(
         collect_package_local_variables(PACKAGE),
         banner = create_banner(PACKAGE),

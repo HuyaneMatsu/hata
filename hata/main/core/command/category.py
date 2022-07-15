@@ -109,16 +109,26 @@ class CommandCategory(RichAttributeErrorBaseType):
         Yields
         ------
         name : `str`
+        
+        Returns
+        -------
+        parent_name : `str`, `None`
         """
+        parent_name = None
+        
         parent_reference = self._parent_reference
         if (parent_reference is not None):
             parent = parent_reference()
             if (parent is not None):
-                yield from parent._trace_back_name()
+                parent_name = yield from parent._trace_back_name()
+                
         
         name = self.name
         if (name is not None):
             yield name
+        
+        if (name is None):
+            return parent_name
     
     
     def invoke(self, parameters, index):
@@ -177,3 +187,47 @@ class CommandCategory(RichAttributeErrorBaseType):
             
             else:
                 return command_category.invoke(parameters, index + 1)
+    
+    
+    def get_usage(self):
+        """
+        Returns the usage of the command category.
+        
+        Returns
+        -------
+        usage : `str`
+        """
+        return ''.join(self.render_usage_into([]))
+    
+    
+    def render_usage_into(self, into):
+        """
+        Renders the command category's usage into the given list.
+        
+        Parameters
+        ----------
+        into : `list` of `str`
+            The list to render the usage into.
+        
+        Returns
+        -------
+        into : `list` of `str`
+        """
+        rendered = False
+        
+        command_function = self._command_function
+        if (command_function is not None):
+            into = command_function.render_usage_into(into)
+            rendered = True
+            
+        command_categories = self._command_categories
+        if (command_categories is not None):
+            for command_category in command_categories.values():
+                if rendered:
+                    into.append('\n\n')
+                else:
+                    rendered = True
+                
+                into = command_category.render_usage_into(into)
+        
+        return into

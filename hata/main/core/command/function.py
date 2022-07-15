@@ -1,9 +1,16 @@
 __all__ = ()
 
-from scarletio import RichAttributeErrorBaseType
+from scarletio import RichAttributeErrorBaseType, get_short_executable
+
+from .... import __package__ as PACKAGE_NAME
 
 from .parameter import get_command_parameters_for
+from .parameter_renderer import (
+    ParameterRenderer, get_render_generic_line_length, get_render_modifier_line_length, merge_lengths,
+    render_box_end_into, render_box_line_adjustment_into, render_box_start_into
+)
 from .parameter_result import ParameterResult
+from .render_constants import BOX_LEFT, BOX_RIGHT, BOX_TITLE_MODIFIER, BOX_TITLE_PARAMETER
 from .result import (
     COMMAND_RESULT_CODE_CALL, COMMAND_RESULT_CODE_PARAMETER_UNEXPECTED, COMMAND_RESULT_CODE_PARAMETER_UNSATISFIED,
     CommandResult
@@ -20,7 +27,7 @@ class CommandFunction(RichAttributeErrorBaseType):
         The function to call.
     _parent_reference : `None`, ``WeakReferer``
         Weakreference to the command function's parent.
-    _parameter : `list` of ``CommandParameter``
+    _parameters : `list` of ``CommandParameter``
         Parameter parsers to call the command with.
     description : `None`, `str`
         The command's description.
@@ -28,7 +35,7 @@ class CommandFunction(RichAttributeErrorBaseType):
         The command's name.
     """
     __slots__ = (
-        '_function', '_parent_reference', '_parameter', 'description', 'name',
+        '_function', '_parent_reference', '_parameters', 'description', 'name',
     )
     
     def __new__(cls, parent, function, name, description):
@@ -50,7 +57,7 @@ class CommandFunction(RichAttributeErrorBaseType):
         
         self = object.__new__(cls)
         self._function = function
-        self._parameter = parameters
+        self._parameters = parameters
         self._parent_reference = parent._self_reference
         self.description = description
         self.name = name
@@ -66,12 +73,24 @@ class CommandFunction(RichAttributeErrorBaseType):
         Yields
         ------
         name : `str`
+        
+        Returns
+        -------
+        parent_name : `None`
         """
+        parent_name = None
+        
         parent_reference = self._parent_reference
         if (parent_reference is not None):
             parent = parent_reference()
             if (parent is not None):
-                yield from parent._trace_back_name()
+                parent_name = yield from parent._trace_back_name()
+        
+        name = self.name
+        if (parent_name is None) or (parent_name != name):
+            yield name
+        
+        return None
     
     
     def invoke(self, parameters, index):
@@ -93,7 +112,7 @@ class CommandFunction(RichAttributeErrorBaseType):
         keyword_parameters = {}
         
         command_result = parse_parameters_into(
-            parameters, index, self._parameter, positional_parameters, keyword_parameters
+            parameters, index, self._parameters, positional_parameters, keyword_parameters
         )
         if (command_result is not None):
             return command_result
@@ -105,7 +124,110 @@ class CommandFunction(RichAttributeErrorBaseType):
             positional_parameters,
             keyword_parameters,
         )
-
+    
+    
+    def get_usage(self):
+        """
+        Returns the usage of the command function.
+        
+        Returns
+        -------
+        usage : `str`
+        """
+        return ''.join(self.render_usage_into([]))
+    
+    
+    def render_usage_into(self, into):
+        """
+        Renders the command function's usage into the given list.
+        
+        Parameters
+        ----------
+        into : `list` of `str`
+            The list to render the usage into.
+        
+        Returns
+        -------
+        into : `list` of `str`
+        """
+        into.append('Usage: ')
+        into.append(get_short_executable())
+        into.append(' -m ')
+        into.append(PACKAGE_NAME)
+        
+        for name in self._trace_back_name():
+            into.append(' ')
+            into.append(name)
+        
+        into.append('\n')
+        
+        parameters_generic = []
+        parameters_modifier = []
+        
+        for command_parameter in self._parameters:
+            parameter_renderer = ParameterRenderer(command_parameter)
+            if command_parameter.is_modifier():
+                parameters_modifier.append(parameter_renderer)
+                continue
+            
+            parameters_generic.append(parameter_renderer)
+            continue
+        
+        
+        if parameters_generic:
+            parameters_generic_iterator = iter(parameters_generic)
+            lengths = next(parameters_generic_iterator).get_generic_lengths()
+            
+            for parameter_renderer in parameters_generic_iterator:
+                lengths = merge_lengths(lengths, parameter_renderer.get_generic_lengths())
+            
+            line_length = get_render_generic_line_length(lengths)
+            
+            # Render line 1
+            into.append('\n')
+            into = render_box_start_into(into, line_length, BOX_TITLE_PARAMETER)
+            
+            # Render line n
+            for parameter in parameters_generic:
+                into.append(BOX_LEFT)
+                into = parameter.render_generic_into_with_lengths(into, lengths)
+                into = render_box_line_adjustment_into(into, line_length, BOX_TITLE_PARAMETER)
+                into.append(BOX_RIGHT)
+                into.append('\n')
+            
+            # Render line -1
+            into = render_box_end_into(into, line_length, BOX_TITLE_PARAMETER)
+        
+        if parameters_modifier:
+            parameters_optional_iterator = iter(parameters_modifier)
+            lengths = next(parameters_optional_iterator).get_modifier_lengths()
+            
+            for parameter_renderer in parameters_optional_iterator:
+                lengths = merge_lengths(lengths, parameter_renderer.get_modifier_lengths())
+            
+            line_length = get_render_modifier_line_length(lengths)
+            
+            # Render line 1
+            into.append('\n')
+            into = render_box_start_into(into, line_length, BOX_TITLE_MODIFIER)
+            
+            # Render line n
+            for parameter in parameters_generic:
+                into.append(BOX_LEFT)
+                into = parameter.render_modifier_into_with_lengths(into, lengths)
+                into = render_box_line_adjustment_into(into, line_length, BOX_TITLE_MODIFIER)
+                into.append(BOX_RIGHT)
+                into.append('\n')
+            
+            # Render line -1
+            into = render_box_end_into(into, line_length, BOX_TITLE_MODIFIER)
+        
+        description = self.description
+        if (description is not None):
+            into.append('\n')
+            into.append(description)
+        
+        return into
 
 
 def parse_parameters_into(parameter_values, start_index, command_parameters, positional_parameters, keyword_parameters):

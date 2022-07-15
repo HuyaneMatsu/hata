@@ -30,8 +30,8 @@ def show_command(command_name):
     else:
         output_parts.append('Help for: "')
         output_parts.append(command.name)
-        output_parts.append('"\n')
-        output_parts.append(command.get_usage())
+        output_parts.append('"\n\n')
+        command.render_usage_into(output_parts)
         output_parts.append('\n')
     
     return ''.join(output_parts)

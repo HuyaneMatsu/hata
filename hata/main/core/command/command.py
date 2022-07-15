@@ -58,7 +58,7 @@ class Command(RichAttributeErrorBaseType):
         self._self_reference = None
         
         self._self_reference = WeakReferer(self)
-        self._command_category = CommandCategory(self, '')
+        self._command_category = CommandCategory(self, None)
         
         REGISTERED_COMMANDS.add(self)
         REGISTERED_COMMANDS_BY_NAME[name] = self
@@ -138,18 +138,38 @@ class Command(RichAttributeErrorBaseType):
         Yields
         ------
         name : `str`
+        
+        Returns
+        -------
+        name : `str`
         """
-        yield self.name
+        name = self.name
+        yield name
+        return name
     
     
     def get_usage(self):
         """
-        Returns teh usage of the command.
-        
-        TODO
+        Returns the usage of the command.
         
         Returns
         -------
         usage : `str`
         """
-        return ''
+        return ''.join(self.render_usage_into([]))
+    
+    
+    def render_usage_into(self, into):
+        """
+        Renders the command's usage into the given list.
+        
+        Parameters
+        ----------
+        into : `list` of `str`
+            The list to render the commands into.
+        
+        Returns
+        -------
+        into : `list` of `str`
+        """
+        return self._command_category.render_usage_into(into)

@@ -245,6 +245,20 @@ class CommandParameter(RichAttributeErrorBaseType):
         is_modifier : `bool`
         """
         return self.expected_type_identifier == TYPE_IDENTIFIER_BOOL
+    
+    
+    def is_required(self):
+        """
+        Returns whether the parameter is required.
+        """
+        parameter = self.parameter
+        if parameter.has_default:
+            return False
+        
+        if parameter.is_args() or parameter.is_kwargs():
+            return False
+        
+        return True
 
 
 def get_command_parameters_for(function):

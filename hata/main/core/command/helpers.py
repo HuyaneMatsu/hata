@@ -102,13 +102,12 @@ def normalize_command_description(description):
         del lines[0]
         continue
     
-    
+    # Add postprocessing modifications / line if required
     documentation_parts = []
     index = 0
     line_count = len(lines)
     
     while True:
-        documentation_parts.append('> ')
         documentation_parts.append(lines[index])
         
         index += 1

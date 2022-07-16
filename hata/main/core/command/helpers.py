@@ -1,4 +1,4 @@
-__all__ = ('normalize_command_name',)
+__all__ = ('command_sort_key', 'normalize_command_name',)
 
 
 def normalize_command_name(command_name):
@@ -196,3 +196,23 @@ def normalize_alters(alters, name):
     
     
     return normalized_alters
+
+
+def command_sort_key(command):
+    """
+    Sort key used to sort commands by name.
+    
+    Parameters
+    ----------
+    command : ``Command``, ``CommandCategory``, ``CommandFunction``
+        Command to get it's sort key of.
+    
+    Returns
+    -------
+    sort_key : `str`
+    """
+    name = command.name
+    if name is None:
+        name = ''
+    
+    return name

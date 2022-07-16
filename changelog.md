@@ -4,6 +4,8 @@
 
 - Add `GuildFeature.embedded_activities_experiment`.
 - Add `GuildFeature.home_test`.
+- Add `ERROR_CODES.upload_file_not_found`.
+- Add `ERROR_CODES.failed_to_resize_asset_below_max_size`.
 
 ## 1.2.19 *\[2022-07-10\]*
 

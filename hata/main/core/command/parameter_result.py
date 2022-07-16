@@ -297,7 +297,7 @@ class ParameterResult(RichAttributeErrorBaseType):
                 return True
             
             if parameter.has_default:
-                positional_parameters[parameter.name] = parameter.default
+                keyword_parameters[parameter.name] = parameter.default
                 return True
             
             return False

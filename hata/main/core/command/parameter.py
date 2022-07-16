@@ -29,12 +29,12 @@ TYPE_NAME_TO_IDENTIFIER = {
     TYPE_NAME_STR: TYPE_IDENTIFIER_STR,
     TYPE_NAME_INT: TYPE_IDENTIFIER_INT,
     TYPE_NAME_FLOAT: TYPE_IDENTIFIER_FLOAT,
-    TYPE_NAME_BOOL: TYPE_IDENTIFIER_BOOL
+    TYPE_NAME_BOOL: TYPE_IDENTIFIER_BOOL,
 }
 
 
 # revert the relation
-TYPE_IDENTIFIER_TO_NAME = {identifier: name for identifier, name in TYPE_NAME_TO_IDENTIFIER.items()}
+TYPE_IDENTIFIER_TO_NAME = {identifier: name for name, identifier in TYPE_NAME_TO_IDENTIFIER.items()}
 
 
 def parameter_value_converter_str(value):

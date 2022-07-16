@@ -1,13 +1,16 @@
 __all__ = ('CommandResult',)
 
-import sys
-from scarletio import RichAttributeErrorBaseType, get_short_executable
+from math import floor, log10
+
+from scarletio import RichAttributeErrorBaseType, get_short_executable, render_exception_into
 
 from .... import __package__ as PACKAGE_NAME
 
 from ..constants import REGISTERED_COMMANDS
 
+from .helpers import command_sort_key
 from .parameter import TYPE_IDENTIFIER_TO_NAME
+from .rendering_helpers import render_error_box_into_multi_line, render_error_box_into_single_line
 
 
 class CommandResult(RichAttributeErrorBaseType):
@@ -82,11 +85,14 @@ def command_result_processor_conversion_failed(command_line_parameter, received_
     """
     message_parts = []
     
-    message_parts.append('Parameter: ')
-    message_parts.append(repr(command_line_parameter.name))
-    message_parts.append(' received value of incorrect type.\nGot: ')
-    message_parts.append(received_value)
-    message_parts.append('\nExpected type: ')
+    message_parts = render_error_box_into_single_line(
+        message_parts,
+        f'Parameter {command_line_parameter.display_name!r} received value of incorrect type.',
+    )
+    
+    message_parts.append('\nReceived value: ')
+    message_parts.append(repr(received_value))
+    message_parts.append('\n\nExpected type: ')
     
     type_name = TYPE_IDENTIFIER_TO_NAME[command_line_parameter.expected_type_identifier]
     message_parts.append(type_name)
@@ -110,9 +116,10 @@ def command_result_processor_parameter_required(command_line_parameter):
     """
     message_parts = []
     
-    message_parts.append('Parameter: ')
-    message_parts.append(repr(command_line_parameter.name))
-    message_parts.append(' is required.\n')
+    message_parts = render_error_box_into_single_line(
+        message_parts,
+        f'Parameter {command_line_parameter.display_name!r} is required.',
+    )
     
     return ''.join(message_parts)
 
@@ -132,9 +139,10 @@ def command_result_processor_parameter_unexpected(parameter_value):
     """
     message_parts = []
     
-    message_parts.append('Unexpected parameter: ')
-    message_parts.append(repr(parameter_value))
-    message_parts.append('.\n')
+    message_parts = render_error_box_into_single_line(
+        message_parts,
+        f'Unexpected parameter {parameter_value!r}.',
+    )
     
     return ''.join(message_parts)
 
@@ -154,24 +162,27 @@ def command_result_processor_parameter_extra(parameter_values):
     """
     message_parts = []
     
-    message_parts.append('Extra parameters: ')
+    message_parts = render_error_box_into_single_line(
+        message_parts,
+        f'Extra parameter(s).',
+    )
     
     index = 0
     limit = len(parameter_values)
+    index_adjust = floor(log10(limit)) + 1
     
     while True:
         parameter_value = parameter_values[index]
         index += 1
         
+        message_parts.append(str(index).rjust(index_adjust))
         message_parts.append(repr(parameter_value))
         
         if index == limit:
             break
         
-        message_parts.append(', ')
+        message_parts.append('\n')
         continue
-    
-    message_parts.append('.\n')
     
     return ''.join(message_parts)
 
@@ -191,9 +202,10 @@ def command_result_processor_parameter_unsatisfied(command_line_parameter):
     """
     message_parts = []
     
-    message_parts.append('Keyword parameter without value defined: ')
-    message_parts.append(repr(command_line_parameter.name))
-    message_parts.append('.\n')
+    message_parts = render_error_box_into_single_line(
+        message_parts,
+        f'Parameter {command_line_parameter.display_name!r} is unsatisfied.',
+    )
     
     return ''.join(message_parts)
 
@@ -213,9 +225,10 @@ def command_result_processor_command_uninitialized(command_line_command):
     """
     message_parts = []
     
-    message_parts.append('Command: ')
-    message_parts.append(repr(command_line_command.name))
-    message_parts.append(' is not initialized correctly.\n')
+    message_parts = render_error_box_into_single_line(
+        message_parts,
+        f'Command {command_line_command.name!r} is not initialized correctly.',
+    )
     
     return ''.join(message_parts)
     
@@ -233,13 +246,17 @@ def command_result_processor_category_empty(command_category):
     -------
     message : `str`
     """
-    command_full_name = ''.join(command_category._trace_back_name())
+    command_full_name = ' '.join(command_category._trace_back_name())
     
     message_parts = []
     
-    message_parts.append('Command category: ')
-    message_parts.append(repr(command_full_name))
-    message_parts.append(' has no direct command, neither sub commands registered.\n')
+    message_parts = render_error_box_into_multi_line(
+        message_parts,
+        [
+            f'Command {command_full_name!r} cannot be invoked.',
+            f'There are no available sub-commands either.',
+        ],
+    )
     
     return ''.join(message_parts)
 
@@ -258,24 +275,34 @@ def command_result_processor_category_requires_parameter(command_category):
     -------
     message : `str`
     """
-    command_full_name = ''.join(command_category._trace_back_name())
-
+    command_full_name = ' '.join(command_category._trace_back_name())
+    sub_command_full_names = {
+        command_function.get_full_name() for command_function in command_category.iter_command_functions()
+    }
+    
+    sub_command_full_names.discard(command_full_name)
+    
+    if not sub_command_full_names:
+        return command_result_processor_category_empty(command_category)
+    
     message_parts = []
     
-    message_parts.append('Command category: ')
-    message_parts.append(repr(command_full_name))
-    message_parts.append(
-        ' has no direct command defined, only sub commands.\n'
-        'Please define a sub command by name to call.\n'
-        'Available sub-commands:\n'
+    message_parts = render_error_box_into_multi_line(
+        message_parts,
+        [
+            f'Command {command_full_name!r} cannot be invoked.',
+            f'Please define a sub command by name to call.',
+        ],
     )
     
-    command_categories = command_category._command_categories
-    if (command_categories is not None):
-        for command_category_name in sorted(command_categories.keys()):
-            message_parts.append('- ')
-            message_parts.append(command_category_name)
-            message_parts.append('\n')
+    message_parts.append(
+        '\nAvailable sub-commands:\n'
+    )
+    
+    for sub_command_full_name in sub_command_full_names:
+        message_parts.append('- ')
+        message_parts.append(sub_command_full_name)
+        message_parts.append('\n')
     
     return ''.join(message_parts)
 
@@ -298,13 +325,11 @@ def command_result_processor_category_unknown_sub_command(command_category, comm
     command_full_name = ' '.join(command_category._trace_back_name())
 
     message_parts = []
-    
-    message_parts.append('Command category: ')
-    message_parts.append(repr(command_full_name))
-    message_parts.append(' has no sub command named: ')
-    message_parts.append(repr(command_name))
+    message_parts = render_error_box_into_single_line(
+        message_parts, f'Command category: {command_full_name!r} has no sub command: {command_name!r}.'
+    )
     message_parts.append(
-        '.\n'
+        '\n'
         'Available sub-commands:\n'
     )
     
@@ -326,7 +351,38 @@ def command_result_processor_command_required():
     -------
     message : `str`
     """
-    return 'Command name required'
+    return ''.join(render_error_box_into_single_line([], 'Command name required.'))
+
+
+
+def _ignore_command_call_frame(file_name, name, line_number, line):
+    """
+    Ignores the frame where the command was called.
+    
+    Parameters
+    ----------
+    file_name : `str`
+        The frame's respective file's name.
+    name : `str`
+        The frame's respective function's name.
+    line_number : `int`
+        The line's index where the exception occurred.
+    line : `str`
+        The frame's respective stripped line.
+    
+    Returns
+    -------
+    should_show_frame : `bool`
+        Whether the frame should be shown.
+    """
+    should_show_frame = True
+    
+    if file_name == __file__:
+        if name == 'command_result_processor_call':
+            if line == 'result = function(*positional_parameters, **keyword_parameters)':
+                should_show_frame = False
+    
+    return should_show_frame
 
 
 def command_result_processor_call(function, positional_parameters, keyword_parameters):
@@ -344,8 +400,16 @@ def command_result_processor_call(function, positional_parameters, keyword_param
     -------
     message : `str`
     """
-    return function(*positional_parameters, **keyword_parameters)
-
+    try:
+        result = function(*positional_parameters, **keyword_parameters)
+    except BaseException as err:
+        result = ''.join(render_exception_into(err, [], filter=_ignore_command_call_frame))
+    
+    else:
+        if (result is not None) and (not isinstance(result, str)):
+            result = str(result)
+    
+    return result
 
 
 def command_result_processor_command_not_found(command_name):
@@ -363,14 +427,14 @@ def command_result_processor_command_not_found(command_name):
     """
     message_parts = []
     
-    message_parts.append('There is no command for name: ')
-    message_parts.append(repr(command_name))
+    message_parts = render_error_box_into_single_line(message_parts, f'No command for name: {command_name!r}.')
+    
     message_parts.append(
-        '.\n'
+        '\n'
         'The available commands are the following:\n'
     )
     
-    for command in REGISTERED_COMMANDS:
+    for command in sorted(REGISTERED_COMMANDS, key=command_sort_key):
         message_parts.append('- ')
         message_parts.append(command.name)
         message_parts.append('\n')
@@ -379,7 +443,7 @@ def command_result_processor_command_not_found(command_name):
     message_parts.append(get_short_executable())
     message_parts.append(' -m ')
     message_parts.append(PACKAGE_NAME)
-    message_parts.append(' help" for more information\n.')
+    message_parts.append(' help COMMAND-NAME" for more information.\n')
     
     return ''.join(message_parts)
 

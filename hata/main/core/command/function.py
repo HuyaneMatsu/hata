@@ -1,19 +1,22 @@
-__all__ = ()
+__all__ = ('CommandFunction',)
 
-from scarletio import RichAttributeErrorBaseType, get_short_executable
-
-from .... import __package__ as PACKAGE_NAME
+from scarletio import RichAttributeErrorBaseType
 
 from .parameter import get_command_parameters_for
 from .parameter_renderer import (
-    ParameterRenderer, get_render_generic_line_length, get_render_modifier_line_length, merge_lengths,
-    render_box_end_into, render_box_line_adjustment_into, render_box_start_into
+    ParameterRenderer, get_lengths, get_render_generic_line_length, get_render_modifier_line_length
 )
 from .parameter_result import ParameterResult
-from .render_constants import BOX_LEFT, BOX_RIGHT, BOX_TITLE_MODIFIER, BOX_TITLE_PARAMETER
+from .render_constants import (
+    BOX_LEFT, BOX_RIGHT, BOX_TITLE_MODIFIER, BOX_TITLE_PARAMETER, BOX_TITLE_SUB_COMMANDS, NOTE_SIGN_DESCRIPTION
+)
+from .rendering_helpers import (
+    render_box_end_into, render_box_line_adjustment_into, render_box_start_into, render_sub_command_box_into,
+    render_usage_line_into
+)
 from .result import (
-    COMMAND_RESULT_CODE_CALL, COMMAND_RESULT_CODE_PARAMETER_UNEXPECTED, COMMAND_RESULT_CODE_PARAMETER_UNSATISFIED,
-    CommandResult
+    COMMAND_RESULT_CODE_CALL, COMMAND_RESULT_CODE_PARAMETER_REQUIRED, COMMAND_RESULT_CODE_PARAMETER_UNEXPECTED,
+    COMMAND_RESULT_CODE_PARAMETER_UNSATISFIED, CommandResult
 )
 
 
@@ -64,6 +67,45 @@ class CommandFunction(RichAttributeErrorBaseType):
         return self
     
     
+    def __repr__(self):
+        """Returns the command function's representation."""
+        repr_parts = ['<', self.__class__.__name__]
+        
+        repr_parts.append(' name=')
+        repr_parts.append(repr(self.name))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    def get_parent(self):
+        """
+        Returns the parent category of the command.
+        
+        Returns
+        -------
+        parent : `None`, ``CommandCategory``
+        """
+        parent_reference = self._parent_reference
+        if (parent_reference is not None):
+            return parent_reference()
+    
+    
+    def iter_direct_sub_command_names(self):
+        """
+        gets the direct sub-command names of the command function.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        sub_command_name : `str`
+        """
+        parent = self.get_parent()
+        if (parent is not None):
+            yield from parent.iter_sub_category_names()
+    
+    
     def _trace_back_name(self):
         """
         Traces back to the source name of the command.
@@ -80,11 +122,9 @@ class CommandFunction(RichAttributeErrorBaseType):
         """
         parent_name = None
         
-        parent_reference = self._parent_reference
-        if (parent_reference is not None):
-            parent = parent_reference()
-            if (parent is not None):
-                parent_name = yield from parent._trace_back_name()
+        parent = self.get_parent()
+        if (parent is not None):
+            parent_name = yield from parent._trace_back_name()
         
         name = self.name
         if (parent_name is None) or (parent_name != name):
@@ -150,84 +190,159 @@ class CommandFunction(RichAttributeErrorBaseType):
         -------
         into : `list` of `str`
         """
-        into.append('Usage: ')
-        into.append(get_short_executable())
-        into.append(' -m ')
-        into.append(PACKAGE_NAME)
         
-        for name in self._trace_back_name():
-            into.append(' ')
-            into.append(name)
+        # Display description
         
-        into.append('\n')
+        description = self.description
+        if (description is not None):
+            into.append(description)
+            into.append('\n\n')
+        
+        into = render_usage_line_into(into, self._trace_back_name())
+        
+        parameter_renderers = [ParameterRenderer(command_parameter) for command_parameter in self._parameters]
+        
+        modifier_field_added = False
+        should_add_rest_field = False
+        
+        for parameter_renderer in parameter_renderers:
+            if parameter_renderer.is_positional():
+                into.append(' ')
+                into.append(parameter_renderer.get_name().upper())
+                continue
+            
+            if parameter_renderer.is_args():
+                into.append(' [')
+                into.append(parameter_renderer.get_name().upper())
+                into.append('...]')
+                continue
+            
+            if parameter_renderer.is_modifier():
+                if modifier_field_added:
+                    continue
+                
+                into.append(' [OPTIONS]')
+                modifier_field_added = True
+                continue
+            
+            should_add_rest_field = True
+        
+        if should_add_rest_field:
+            into.append(' ...')
         
         parameters_generic = []
         parameters_modifier = []
         
-        for command_parameter in self._parameters:
-            parameter_renderer = ParameterRenderer(command_parameter)
-            if command_parameter.is_modifier():
+        for parameter_renderer in parameter_renderers:
+            if parameter_renderer.is_modifier():
                 parameters_modifier.append(parameter_renderer)
-                continue
-            
-            parameters_generic.append(parameter_renderer)
-            continue
+            else:
+                parameters_generic.append(parameter_renderer)
+        
+        sub_command_names = [*self.iter_direct_sub_command_names()]
+        
+        generic_lengths = get_lengths(parameters_generic, ParameterRenderer.get_generic_lengths)
+        generic_line_length = get_render_generic_line_length(generic_lengths)
+        modifier_lengths = get_lengths(parameters_modifier, ParameterRenderer.get_modifier_lengths)
+        modifier_line_length = get_render_modifier_line_length(modifier_lengths)
+        sub_command_line_length = max((len(sub_command_name) for sub_command_name in sub_command_names), default=0)
         
         
-        if parameters_generic:
-            parameters_generic_iterator = iter(parameters_generic)
-            lengths = next(parameters_generic_iterator).get_generic_lengths()
-            
-            for parameter_renderer in parameters_generic_iterator:
-                lengths = merge_lengths(lengths, parameter_renderer.get_generic_lengths())
-            
-            line_length = get_render_generic_line_length(lengths)
+        line_length = 0
+        if generic_line_length:
+            line_length = max(line_length, generic_line_length, len(BOX_TITLE_PARAMETER))
+        if modifier_line_length:
+            line_length = max(line_length, modifier_line_length, len(BOX_TITLE_MODIFIER))
+        if sub_command_line_length:
+            line_length = max(line_length, sub_command_line_length, len(BOX_TITLE_SUB_COMMANDS))
+        
+        field_added = False
+        
+        if generic_line_length:
+            if not field_added:
+                into.append('\n\n')
+                field_added = True
             
             # Render line 1
-            into.append('\n')
+            
             into = render_box_start_into(into, line_length, BOX_TITLE_PARAMETER)
             
             # Render line n
             for parameter in parameters_generic:
                 into.append(BOX_LEFT)
-                into = parameter.render_generic_into_with_lengths(into, lengths)
-                into = render_box_line_adjustment_into(into, line_length, BOX_TITLE_PARAMETER)
+                into = parameter.render_generic_into_with_lengths(into, generic_lengths)
+                into = render_box_line_adjustment_into(into, generic_line_length, line_length)
                 into.append(BOX_RIGHT)
                 into.append('\n')
             
             # Render line -1
-            into = render_box_end_into(into, line_length, BOX_TITLE_PARAMETER)
+            into = render_box_end_into(into, line_length)
         
-        if parameters_modifier:
-            parameters_optional_iterator = iter(parameters_modifier)
-            lengths = next(parameters_optional_iterator).get_modifier_lengths()
-            
-            for parameter_renderer in parameters_optional_iterator:
-                lengths = merge_lengths(lengths, parameter_renderer.get_modifier_lengths())
-            
-            line_length = get_render_modifier_line_length(lengths)
+        
+        if modifier_line_length:
+            if not field_added:
+                into.append('\n\n')
+                field_added = True
             
             # Render line 1
-            into.append('\n')
             into = render_box_start_into(into, line_length, BOX_TITLE_MODIFIER)
             
             # Render line n
-            for parameter in parameters_generic:
+            for parameter in parameters_modifier:
                 into.append(BOX_LEFT)
-                into = parameter.render_modifier_into_with_lengths(into, lengths)
-                into = render_box_line_adjustment_into(into, line_length, BOX_TITLE_MODIFIER)
+                into = parameter.render_modifier_into_with_lengths(into, modifier_lengths)
+                into = render_box_line_adjustment_into(into, modifier_line_length, line_length)
                 into.append(BOX_RIGHT)
                 into.append('\n')
             
             # Render line -1
-            into = render_box_end_into(into, line_length, BOX_TITLE_MODIFIER)
+            into = render_box_end_into(into, line_length)
         
-        description = self.description
-        if (description is not None):
-            into.append('\n')
-            into.append(description)
+        
+        if sub_command_line_length:
+            if not field_added:
+                into.append('\n\n')
+                field_added = True
+            
+            into = render_sub_command_box_into(into, sub_command_names, line_length)
+        
+        
+        # Collect signs
+        note_signs = None
+        
+        for parameter_renderer in parameter_renderers:
+            note_sign = parameter_renderer.get_note_sign()
+            if (note_sign is not None):
+                if note_signs is None:
+                    note_signs = set()
+                
+                note_signs.add(note_sign)
+        
+        # Display note signs
+        if (note_signs is not None):
+            if not field_added:
+                into.append('\n')
+                field_added = True
+            
+            note_sign_adjustment = max(len(note_sign) for note_sign in note_signs) + 1
+            for note_sign in sorted(note_signs):
+                into.append('\n')
+                into.append(note_sign)
+                into.append(' ' * (note_sign_adjustment - len(note_sign)))
+                into.append(NOTE_SIGN_DESCRIPTION[note_sign])
         
         return into
+    
+    
+    def get_full_name(self):
+        """
+        Returns the command function's full name.
+        
+        Returns
+        -------
+        full_name : `str`
+        """
+        return ' '.join(self._trace_back_name())
 
 
 def parse_parameters_into(parameter_values, start_index, command_parameters, positional_parameters, keyword_parameters):
@@ -299,7 +414,7 @@ def parse_parameters_into(parameter_values, start_index, command_parameters, pos
             if len(parameter_values) == 0:
                 return CommandResult(
                     COMMAND_RESULT_CODE_PARAMETER_UNSATISFIED,
-                    parameter_value,
+                    parameter_result.command_parameter,
                 )
         
             command_result = parameter_result.feed_as(parameter_values.pop(), parameter_name)
@@ -326,7 +441,7 @@ def parse_parameters_into(parameter_values, start_index, command_parameters, pos
     for parameter_result in parameter_results:
         if not parameter_result.put_into(positional_parameters, keyword_parameters):
             return CommandResult(
-                COMMAND_RESULT_CODE_PARAMETER_UNSATISFIED,
+                COMMAND_RESULT_CODE_PARAMETER_REQUIRED,
                 parameter_result.command_parameter,
             )
     

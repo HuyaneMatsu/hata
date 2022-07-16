@@ -21,15 +21,12 @@ class Command(RichAttributeErrorBaseType):
         Reference to itself.
     alters : `None`, `set` of `str`
         Alternative names for the command.
-    description : `None`, `str`
-        Command description.
     name : `str`
         The command's name.
     """
-    __slots__ = ('__weakref__', '_command_category', '_self_reference', 'alters', 'description', 'name')
+    __slots__ = ('__weakref__', '_command_category', '_self_reference', 'alters', 'name')
     
-    
-    def __new__(cls, name, description, alters):
+    def __new__(cls, name, alters):
         """
         Creates a new command line command.
         
@@ -37,8 +34,6 @@ class Command(RichAttributeErrorBaseType):
         ----------
         name : `str`
             The command's name.
-        description : `str`
-            The command's description message.
         alters : `None`, `str`, `iterable` of `str`
             Alternative names for the command.
         
@@ -54,7 +49,6 @@ class Command(RichAttributeErrorBaseType):
         self._command_category = None
         self.alters = alters
         self.name = name
-        self.description = None
         self._self_reference = None
         
         self._self_reference = WeakReferer(self)
@@ -68,6 +62,22 @@ class Command(RichAttributeErrorBaseType):
                 REGISTERED_COMMANDS_BY_NAME.setdefault(alter, self)
         
         return self
+    
+    
+    def __repr__(self):
+        """Returns the command's representation."""
+        repr_parts = ['<', self.__class__.__name__]
+        
+        repr_parts.append(' name=')
+        repr_parts.append(repr(self.name))
+        
+        command_category = self._command_category
+        if (command_category is not None):
+            repr_parts.append(', command_category=')
+            repr_parts.append(repr(command_category))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
     
     
     def register_command_category(self, name):
@@ -148,28 +158,85 @@ class Command(RichAttributeErrorBaseType):
         return name
     
     
-    def get_usage(self):
+    def walk_usage(self):
         """
-        Returns the usage of the command.
+        Walks over the usage of the command.
+        
+        This method is an iterable generator.
+        
+        Yields
+        -------
+        usage : `str`
+        """
+        for into in self.walk_usage_into([]):
+            yield ''.join(into)
+            into.clear()
+    
+    
+    def get_direct_usage(self, *sub_command_stack):
+        """
+        Returns the direct usage of the command for the given sub-command stack.
+        
+        Parameters
+        ----------
+        *sub_command_stack : `str`
+            Sub command stack to get the direct usage for.
         
         Returns
         -------
         usage : `str`
         """
-        return ''.join(self.render_usage_into([]))
+        return ''.join(self.render_direct_usage_into([], *sub_command_stack))
     
     
-    def render_usage_into(self, into):
+    def render_direct_usage_into(self, into, *sub_command_stack):
         """
-        Renders the command's usage into the given list.
+        Renders the direct usage of the command for the given sub-command stack.
+        
+        Parameters
+        ----------
+        into : `list` of `str`
+            The list to render the usage into.
+        *sub_command_stack : `str`
+            Sub command stack to get the direct usage for.
+        
+        Returns
+        -------
+        into : `list` of `str`
+        """
+        return self._command_category.render_direct_usage_into(into, *sub_command_stack)
+    
+    
+    def walk_usage_into(self, into):
+        """
+        Walks over the usage of the command and renders it to the given list.
+        
+        This method is an iterable generator.
         
         Parameters
         ----------
         into : `list` of `str`
             The list to render the commands into.
         
+        Yields
+        -------
+        into : `list` of `str`
+        
         Returns
         -------
         into : `list` of `str`
         """
-        return self._command_category.render_usage_into(into)
+        return (yield from self._command_category.walk_usage_into(into))
+    
+    
+    def iter_command_functions(self):
+        """
+        Iterates over the command functions of the command category.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        command_function : ``CommandFunction``
+        """
+        yield from self._command_category.iter_command_functions()

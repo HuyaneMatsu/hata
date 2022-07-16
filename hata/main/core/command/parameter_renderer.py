@@ -3,8 +3,8 @@ __all__ = ()
 from scarletio import RichAttributeErrorBaseType
 
 from .render_constants import (
-    BOX_BOTTOM, BOX_LEFT_BOT, BOX_LEFT_TOP, BOX_RIGHT_BOT, BOX_RIGHT_TOP, BOX_TOP, PARAMETER_COLUMN_SEPARATOR,
-    PARAMETER_DEFAULT_PREFIX, PARAMETER_MODIFIER_SEPARATOR, PARAMETER_NOTE_SIGN_OPTIONAL,
+    PARAMETER_COLUMN_SEPARATOR, PARAMETER_DEFAULT_PREFIX, PARAMETER_MODIFIER_SEPARATOR, PARAMETER_NOTE_ADJUSTMENT,
+    PARAMETER_NOTE_SIGN_MULTIPLE_KEYWORD, PARAMETER_NOTE_SIGN_MULTIPLE_POSITIONAL, PARAMETER_NOTE_SIGN_REQUIRED,
     PARAMETER_TYPE_IDENTIFIER_TO_REPRESENTATION
 )
 
@@ -54,9 +54,10 @@ class ParameterRenderer(RichAttributeErrorBaseType):
         
         if command_parameter.is_modifier():
             name_length += 2
-        
-        elif not command_parameter.parameter.is_positional():
-            name_length += 1
+        else:
+            parameter = command_parameter.parameter
+            if parameter.is_keyword_only():
+                name_length += 1
         
         return name_length
     
@@ -70,7 +71,6 @@ class ParameterRenderer(RichAttributeErrorBaseType):
         reverted_name_length : `int`
         """
         return self.get_name_length() + 3
-    
     
     
     def get_name(self):
@@ -87,8 +87,10 @@ class ParameterRenderer(RichAttributeErrorBaseType):
         
         if command_parameter.is_modifier():
             name = f'--{name}'
-        elif not command_parameter.parameter.is_positional():
-            name = f'-{name}'
+        else:
+            parameter = command_parameter.parameter
+            if parameter.is_keyword_only():
+                name = f'-{name}'
         
         return name
     
@@ -158,12 +160,16 @@ class ParameterRenderer(RichAttributeErrorBaseType):
         parameter = command_parameter.parameter
         
         if parameter.has_default:
+            default = parameter.default
             if command_parameter.is_modifier():
                 default_representation = command_parameter.display_name
-                if not parameter.default:
+                if not default:
                     default_representation = f'no-{default_representation}'
             else:
-                default_representation = repr(parameter.default)
+                if default is ...:
+                    default_representation = None
+                else:
+                    default_representation = repr(default)
         else:
             default_representation = None
         
@@ -183,6 +189,50 @@ class ParameterRenderer(RichAttributeErrorBaseType):
         return self.command_parameter.is_required()
     
     
+    def is_positional(self):
+        """
+        Returns whether the parameter is positional.
+        
+        Returns
+        -------
+        is_positional : `bool`
+        """
+        return self.command_parameter.parameter.is_positional()
+    
+    
+    def is_args(self):
+        """
+        Returns whether self represents an `*args` parameter.
+        
+        Returns
+        -------
+        is_args : `bool`
+        """
+        return self.command_parameter.parameter.is_args()
+    
+    
+    def is_kwargs(self):
+        """
+        Returns whether self represents an `**kwargs` parameter.
+        
+        Returns
+        -------
+        is_kwargs : `bool`
+        """
+        return self.command_parameter.parameter.is_kwargs()
+    
+    
+    def is_modifier(self):
+        """
+        Returns whether the command parameter is a modifier one.
+        
+        Returns
+        -------
+        is_modifier : `bool`
+        """
+        return self.command_parameter.is_modifier()
+    
+    
     def get_note_sign(self):
         """
         Returns the note sign's length.
@@ -192,7 +242,13 @@ class ParameterRenderer(RichAttributeErrorBaseType):
         note_sign : `None`, `str`
         """
         if self.is_required():
-            return PARAMETER_NOTE_SIGN_OPTIONAL
+            return PARAMETER_NOTE_SIGN_REQUIRED
+        
+        if self.is_args():
+            return PARAMETER_NOTE_SIGN_MULTIPLE_POSITIONAL
+        
+        if self.is_kwargs():
+            return PARAMETER_NOTE_SIGN_MULTIPLE_KEYWORD
         
         return None
         
@@ -240,7 +296,7 @@ class ParameterRenderer(RichAttributeErrorBaseType):
         """
         return (
             self.get_name_length(),
-            self.get_name_reverted_length(),
+            self.get_reverted_name_length(),
             self.get_default_length(),
         )
     
@@ -265,8 +321,7 @@ class ParameterRenderer(RichAttributeErrorBaseType):
         note_length, name_length, type_name_length, default_length = lengths
         
         if note_length:
-            into = _render_part_into(into, self.get_note_sign(), note_length)
-            into.append(PARAMETER_COLUMN_SEPARATOR)
+            into = _render_part_into(into, self.get_note_sign(), PARAMETER_NOTE_ADJUSTMENT)
         
         into = _render_part_into(into, self.get_name(), name_length)
         into.append(PARAMETER_COLUMN_SEPARATOR)
@@ -304,7 +359,7 @@ class ParameterRenderer(RichAttributeErrorBaseType):
         
         into = _render_part_into(into, self.get_name(), name_length)
         into.append(PARAMETER_MODIFIER_SEPARATOR)
-        into = _render_part_into(into, self.reverted_name_length(), reverted_name_length)
+        into = _render_part_into(into, self.get_reverted_name(), reverted_name_length)
         
         if default_length:
             into.append(PARAMETER_COLUMN_SEPARATOR)
@@ -325,7 +380,7 @@ def get_render_generic_line_length(lengths):
     
     Parameters
     ----------
-    lengths : `tuple` of `int`
+    lengths : `None`, `tuple` of `int`
         Lengths representing each column's width.
     
     Returns
@@ -333,13 +388,15 @@ def get_render_generic_line_length(lengths):
     length : `int`
         The cumulate of the line.
     """
+    if (lengths is None):
+        return 0
+    
     length = 0
     
     note_length, name_length, type_name_length, default_length = lengths
     
     if note_length:
-        length += note_length
-        length += len(PARAMETER_COLUMN_SEPARATOR)
+        length += PARAMETER_NOTE_ADJUSTMENT
     
     length += name_length
     length += len(PARAMETER_COLUMN_SEPARATOR)
@@ -361,7 +418,7 @@ def get_render_modifier_line_length(lengths):
         
     Parameters
     ----------
-    lengths : `tuple` of `int`
+    lengths : `None`, `tuple` of `int`
         Lengths representing each column's width.
     
     Returns
@@ -369,6 +426,9 @@ def get_render_modifier_line_length(lengths):
     length : `int`
         The cumulate of the line.
     """
+    if (lengths is None):
+        return 0
+    
     length = 0
     
     name_length, reverted_name_length, default_length = lengths
@@ -433,79 +493,29 @@ def _render_part_into(into, part, length):
     return into
 
 
-def render_box_start_into(into, line_length, title):
+def get_lengths(parameter_renderers, getter):
     """
-    Renders box start into the given list.
+    Gets the lengths of the elements of the given list.
     
     Parameters
     ----------
-    into : `list` of `str`
-        The list of strings to render to.
-    line_length : `int`
-        The expected length of the line.
-    title : `str`
-        Title of the box.
+    parameter_renderers : `None`, `list` of ``ParameterRenderer``
+        Parameters to get their length of.
+    getter : `FunctionType`
+        Getter to get lengths of the the parameter renderers.
     
     Returns
     -------
-    into : `list` of `str`
+    lengths : `None`, `tuple` of `str`
+        Returns `None` if the `parameter_renderers` is empty.
     """
-    into.append(BOX_LEFT_TOP)
-    into.append(title)
+    if (parameter_renderers is None) or (not parameter_renderers):
+        return None
     
-    line_adjust = line_length - len(title)
-    if line_adjust > 0:
-        into.append(BOX_TOP * line_adjust)
+    iterator = iter(parameter_renderers)
     
-    into.append(BOX_RIGHT_TOP)
-    into.append('\n')
+    lengths = getter(next(iterator))
+    for parameter_renderer in iterator:
+        lengths = merge_lengths(lengths, getter(parameter_renderer))
     
-    return into
-
-def render_box_line_adjustment_into(into, line_length, title):
-    """
-    Renders box line adjustment into the given list.
-    
-    Parameters
-    ----------
-    into : `list` of `str`
-        The list of strings to render to.
-    line_length : `int`
-        The expected length of the line.
-    title : `str`
-        Title of the box used for additional adjustments.
-    
-    Returns
-    -------
-    into : `list` of `str`
-    """
-    line_adjust = len(title) - line_length
-    if line_adjust > 0:
-        into.append(' ' * line_adjust)
-    
-    return into
-
-
-def render_box_end_into(into, line_length, title):
-    """
-    Renders box end into the given list.
-    
-    Parameters
-    ----------
-    into : `list` of `str`
-        The list of strings to render to.
-    line_length : `int`
-        The expected length of the line.
-    title : `str`
-        Title of the box used for additional adjustments.
-    
-    Returns
-    -------
-    into : `list` of `str`
-    """
-    into.append(BOX_LEFT_BOT)
-    into.append(BOX_BOTTOM * max(line_length, len(title)))
-    into.append(BOX_RIGHT_BOT)
-    into.append('\n')
-    
-    return into
+    return lengths

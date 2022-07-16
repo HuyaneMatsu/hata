@@ -46,7 +46,7 @@ def list_commands():
     for index, command in enumerate(sorted(REGISTERED_COMMANDS, key=command_sort_key), 1):
         command_name = command.name
         output_parts.append(str(index).rjust(index_adjust))
-        output_parts.append('.: ')
+        output_parts.append('. ')
         output_parts.append(command_name)
         output_parts.append('\n')
     

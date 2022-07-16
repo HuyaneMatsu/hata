@@ -399,9 +399,16 @@ def command_result_processor_call(function, positional_parameters, keyword_param
     Returns
     -------
     message : `str`
+    
+    Raises
+    ------
+    SystemExit
     """
     try:
         result = function(*positional_parameters, **keyword_parameters)
+    except SystemExit:
+        raise
+    
     except BaseException as err:
         result = ''.join(render_exception_into(err, [], filter=_ignore_command_call_frame))
     

@@ -77,7 +77,7 @@ def help_(command_name: str = None, *sub_command_names):
 @register(
     into = help_
 )
-def all_():
+def list_all():
     """Shows the help for all the available commands with their sub-commands included."""
     output_parts = []
     field_added = False

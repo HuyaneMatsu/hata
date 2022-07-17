@@ -55,11 +55,22 @@ class Command(RichAttributeErrorBaseType):
         self._command_category = CommandCategory(self, None)
         
         REGISTERED_COMMANDS.add(self)
-        REGISTERED_COMMANDS_BY_NAME[name] = self
         
+        names = [self.name]
+        alters = self.alters
         if (alters is not None):
-            for alter in alters:
-                REGISTERED_COMMANDS_BY_NAME.setdefault(alter, self)
+            names.extend(alters)
+        
+        for name_ in names:
+            
+            try:
+                already_registered_command = REGISTERED_COMMANDS_BY_NAME[name_]
+            except KeyError:
+                pass
+            else:
+                already_registered_command._unregister_name(name)
+            
+            REGISTERED_COMMANDS_BY_NAME[name] = self
         
         return self
     
@@ -240,3 +251,56 @@ class Command(RichAttributeErrorBaseType):
         command_function : ``CommandFunction``
         """
         yield from self._command_category.iter_command_functions()
+    
+    
+    def _unregister_name(self, name):
+        """
+        Unregisters the command for the given name.
+        
+        Parameters
+        ----------
+        name : `str`
+            The name to unregister.
+        """
+        if self.name == name:
+            self._unregister()
+        else:
+            self._unregister_alter(name)
+    
+    
+    def _unregister(self):
+        """
+        Unregisters the command. Fully.
+        """
+        REGISTERED_COMMANDS.discard(self)
+        
+        names = [self.name]
+        alters = self.alters
+        if (alters is not None):
+            names.extend(alters)
+        
+        for name in names:
+            if REGISTERED_COMMANDS_BY_NAME.get(name) is self:
+                del REGISTERED_COMMANDS_BY_NAME[name]
+    
+    
+    def _unregister_alter(self, name):
+        """
+        Removes an alternative name of the command.
+        
+        Parameters
+        ----------
+        name : `str`
+            The alternative name to unregister.
+        """
+        if REGISTERED_COMMANDS_BY_NAME.get(name) is self:
+            del REGISTERED_COMMANDS_BY_NAME[name]
+        
+        alters = self.alters
+        try:
+            alters.remove(name)
+        except KeyError:
+            pass
+        else:
+            if not alters:
+                self.alters = None

@@ -18,7 +18,7 @@ Extra features are planned in future updates
 - Fix `AttributeError` in `SlashCommand._add_autocomplete_function`. (Al_Loiz [ICU]#5392)
 - Fix `AttributeError` in `ClientUserBase._from_client`.
 - Fix `DeprecationWarning` in `EventHandlerManager.clear`.
-- `User` alter ego was created of clients when the client was not yet finalized by startup yet at `Client._delete`.
+- `User` alter ego was created of clients when the client was not yet finalized by startup at `Client._delete`.
 - Fix `AttributeError` at `ChannelMetadataPrivateGroup._precreate`.
 - Fix `TypeError` at `ChannelMetadataPrivateGroup._delete` when checking alter ego-s in private group channels.
 

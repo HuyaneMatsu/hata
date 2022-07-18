@@ -8,7 +8,7 @@ from .. import Client
 
 def test__Client__delete_0():
     """
-    Issue: `User` alter ego was created of clients with auto set id when calling `Client._delete()`.
+    Issue: `User` alter ego was created of clients when the client was not yet finalized by startup at `Client._delete`.
     """
     client = Client('token_20220718')
     try:

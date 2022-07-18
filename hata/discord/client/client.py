@@ -825,42 +825,44 @@ class Client(
         if CLIENTS.get(client_id, None) is self:
             del CLIENTS[client_id]
         
+        
         application_id = self.application.id
         if APPLICATION_ID_TO_CLIENT.get(application_id, None) is self:
             del APPLICATION_ID_TO_CLIENT[application_id]
         
-        alter_ego = User._from_client(self)
-        USERS[client_id] = alter_ego
-        
-        guild_profiles = self.guild_profiles
-        for guild_id in guild_profiles.keys():
-            try:
-                guild = GUILDS[guild_id]
-            except KeyError:
-                continue
+        if USERS.get(client_id, None) is self:
+            alter_ego = User._from_client(self)
+            USERS[client_id] = alter_ego
             
-            guild.users[client_id] = alter_ego
-        
-        for client in CLIENTS.values():
-            if (client is not self) and client.running:
-                for relationship in client.relationships:
-                    if relationship.user is alter_ego:
-                        relationship.user = alter_ego
-        
-        thread_profiles = self.thread_profiles
-        if (thread_profiles is not None):
-            for channel in thread_profiles.keys():
-                thread_users = channel.thread_users
-                if (thread_users is not None):
-                    thread_users[client_id] = alter_ego
-        
-        self.relationships.clear()
-        for channel in self.group_channels.values():
-            users = channel.users
-            for index in range(users):
-                if users[index].id == client_id:
-                    users[index] = alter_ego
+            guild_profiles = self.guild_profiles
+            for guild_id in guild_profiles.keys():
+                try:
+                    guild = GUILDS[guild_id]
+                except KeyError:
                     continue
+                
+                guild.users[client_id] = alter_ego
+            
+            for client in CLIENTS.values():
+                if (client is not self) and client.running:
+                    for relationship in client.relationships:
+                        if relationship.user is alter_ego:
+                            relationship.user = alter_ego
+            
+            thread_profiles = self.thread_profiles
+            if (thread_profiles is not None):
+                for channel in thread_profiles.keys():
+                    thread_users = channel.thread_users
+                    if (thread_users is not None):
+                        thread_users[client_id] = alter_ego
+            
+            self.relationships.clear()
+            for channel in self.group_channels.values():
+                users = channel.users
+                for index in range(len(users)):
+                    if users[index].id == client_id:
+                        users[index] = alter_ego
+                        continue
         
         self.private_channels.clear()
         self.group_channels.clear()

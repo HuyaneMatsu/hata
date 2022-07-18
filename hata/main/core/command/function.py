@@ -160,7 +160,7 @@ class CommandFunction(RichAttributeErrorBaseType):
         
         return CommandResult(
             COMMAND_RESULT_CODE_CALL,
-            self._function,
+            self,
             positional_parameters,
             keyword_parameters,
         )

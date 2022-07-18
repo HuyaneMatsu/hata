@@ -1,4 +1,10 @@
-## 1.2.20 *\[2022-07-??\]*
+## 1.3.0 *\[2022-07-18\]*
+
+### Summary
+
+CPI interface reworked. Register commands with the `@register` decorator.
+
+Extra features are planned in future updates
 
 #### Improvements
 
@@ -6,6 +12,15 @@
 - Add `GuildFeature.home_test`.
 - Add `ERROR_CODES.upload_file_not_found`.
 - Add `ERROR_CODES.failed_to_resize_asset_below_max_size`.
+
+#### Bug Fixes
+
+- Fix `AttributeError` in `SlashCommand._add_autocomplete_function`. (Al_Loiz [ICU]#5392)
+- Fix `AttributeError` in `ClientUserBase._from_client`.
+- Fix `DeprecationWarning` in `EventHandlerManager.clear`.
+- `User` alter ego was created of clients when the client was not yet finalized by startup yet at `Client._delete`.
+- Fix `AttributeError` at `ChannelMetadataPrivateGroup._precreate`.
+- Fix `TypeError` at `ChannelMetadataPrivateGroup._delete` when checking alter ego-s in private group channels.
 
 ## 1.2.19 *\[2022-07-10\]*
 

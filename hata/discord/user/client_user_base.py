@@ -264,7 +264,10 @@ class ClientUserBase(UserBase):
         self.guild_profiles = client.guild_profiles.copy()
         self.is_bot = client.is_bot
         self.flags = client.flags
-        self.thread_profiles = client.thread_profiles.copy()
+        thread_profiles = client.thread_profiles
+        if (thread_profiles is not None):
+            thread_profiles = thread_profiles.copy()
+        self.thread_profiles = thread_profiles
         
         self.avatar_hash = client.avatar_hash
         self.avatar_type = client.avatar_type

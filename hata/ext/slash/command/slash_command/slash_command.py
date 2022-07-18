@@ -821,7 +821,7 @@ class SlashCommand(CommandBaseApplicationCommand):
             - If `function` is not an asynchronous.
         """
         if isinstance(function, SlashCommandParameterAutoCompleter):
-            function = function._command
+            function = function._command_function
         
         command_function = self._command
         if command_function is None:

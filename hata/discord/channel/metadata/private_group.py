@@ -3,7 +3,7 @@ __all__ = ('ChannelMetadataPrivateGroup',)
 
 from scarletio import copy_docs
 
-from ...bases import ICON_TYPE_NONE, IconSlot
+from ...bases import ICON_TYPE_NONE, IconSlot, Slotted
 from ...http import urls as module_urls
 from ...permission.permission import PERMISSION_GROUP, PERMISSION_GROUP_OWNER, PERMISSION_NONE
 from ...preconverters import preconvert_snowflake, preconvert_str
@@ -13,7 +13,7 @@ from .. import channel_types as CHANNEL_TYPES
 from .private_base import ChannelMetadataPrivateBase
 
 
-class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase):
+class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted):
     """
     Channel metadata for private channels.
     

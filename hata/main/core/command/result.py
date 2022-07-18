@@ -385,12 +385,12 @@ def _ignore_command_call_frame(file_name, name, line_number, line):
     return should_show_frame
 
 
-def command_result_processor_call(function, positional_parameters, keyword_parameters):
+def command_result_processor_call(command_function, positional_parameters, keyword_parameters):
     """
     Parameters
     ----------
-    function : `callable`
-        Function to call.
+    command_function : ``CommandFunction``
+        Command function to call it's function of.
     positional_parameters : `list` of `Any`
         Positional parameters to call the respective function with.
     keyword_parameters : `dict` of (`str`, `Any`) items
@@ -405,12 +405,22 @@ def command_result_processor_call(function, positional_parameters, keyword_param
     SystemExit
     """
     try:
-        result = function(*positional_parameters, **keyword_parameters)
-    except SystemExit:
+        result = command_function._function(*positional_parameters, **keyword_parameters)
+    except (KeyboardInterrupt, SystemExit):
         raise
     
     except BaseException as err:
-        result = ''.join(render_exception_into(err, [], filter=_ignore_command_call_frame))
+        result = ''.join(
+            render_exception_into(
+                err,
+                [
+                    'Exception occurred while invoking "',
+                    command_function.get_full_name(),
+                    '".\n'
+                ],
+                filter = _ignore_command_call_frame,
+            ),
+        )
     
     else:
         if (result is not None) and (not isinstance(result, str)):

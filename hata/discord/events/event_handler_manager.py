@@ -1219,7 +1219,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         """
         delete = type(self).__delattr__
         for name in EVENT_HANDLER_NAME_TO_PARSER_NAMES:
-            delete(self, name)
+            if name != 'guild_join_reject':
+                delete(self, name)
         
         for event_handler_name, event_handler, instance_event_handler in DEFAULT_EVENT_HANDLERS:
             if instance_event_handler:

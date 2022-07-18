@@ -7,11 +7,24 @@ got here by randomly browsing the files?
 
 > Stay still, keep reading
 
-First you need to add your directory here with at least an `__init__.py` file in it.
+First you need to add your python file (like `my_file.py`), or a directory here with at least an `__init__.py` file
+in it (like `my_directory/__init__.py`).
+
+##### my\_file.py
+
+```py3
+__all__ = ()
+
+from .. import register
+
+@register
+def vani():
+    return 'Vani.'
+```
 
 ##### your\_directory/\_\_init\_\_.py
 
-In this file, you mention all commands you implemented, like:
+When using a directory, you can define the commands in the `__init__.py` file.
 
 ```py3
 __all__ = ()
@@ -21,6 +34,17 @@ from ... import register
 @register
 def vani():
     return 'Vani.'
+```
+
+When splitting commands logically to different files, dont forget to import them.
+The entry point is always the `__init__py` file. If it is missing, the whole directory is ignored.
+
+```py3
+__all__ = ()
+
+from .file_1 import *
+from .file_2 import *
+...
 ```
 
 ### Definition

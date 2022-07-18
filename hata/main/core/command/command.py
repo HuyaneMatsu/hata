@@ -68,9 +68,9 @@ class Command(RichAttributeErrorBaseType):
             except KeyError:
                 pass
             else:
-                already_registered_command._unregister_name(name)
+                already_registered_command._unregister_name(name_)
             
-            REGISTERED_COMMANDS_BY_NAME[name] = self
+            REGISTERED_COMMANDS_BY_NAME[name_] = self
         
         return self
     

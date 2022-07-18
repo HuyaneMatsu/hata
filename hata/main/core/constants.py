@@ -13,6 +13,8 @@ COMMAND_DIRECTORY = join_paths(get_directory_name(get_directory_name(__file__)),
 
 COMMAND_IMPORT_ROUTE = (PACKAGE_NAME, 'main', 'commands')
 
+PYTHON_FILE_POSTFIX_NAMES = frozenset(('.py', '.pyd', '.pyc', '.so'))
+
 SYSTEM_DEFAULT_PARAMETER = 'i'
 
 

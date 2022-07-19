@@ -29,7 +29,7 @@ def test__Client__delete_1():
         # mark the client as finalised by setting it into `USERS`
         USERS[client.id] = client
         
-        # Link the client to a group channel to keep it in memory.
+        # Link the client to a group channel to keep the user in memory.
         channel = Channel.precreate(335788657879547922, channel_type=CHANNEL_TYPES.private_group)
         channel.users.append(client)
         client.group_channels[channel.id] = channel
@@ -51,7 +51,7 @@ def test__Client__delete_2():
         # mark the client as finalised by setting it into `USERS`
         USERS[client.id] = client
         
-        # Link the client to a group channel to keep it in memory.
+        # Link the client to a group channel to keep the user in memory.
         channel = Channel.precreate(335788657879547921, channel_type=CHANNEL_TYPES.private_group)
         channel.users.append(client)
         client.group_channels[channel.id] = channel

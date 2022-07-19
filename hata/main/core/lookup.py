@@ -10,6 +10,7 @@ from .constants import (
     COMMAND_DIRECTORY, COMMAND_IMPORT_ROUTE, PYTHON_FILE_POSTFIX_NAMES, REGISTERED_COMMANDS,
     REGISTERED_COMMANDS_BY_NAME
 )
+from .external import get_external_command_routes
 
 
 def _ignore_import_frame(file_name, name, line_number, line):
@@ -42,13 +43,47 @@ def _ignore_import_frame(file_name, name, line_number, line):
     return should_show_frame
 
 
-def find_commands():
+def _import_route(import_route):
     """
-    Looks up the local commands.
-    """
-    REGISTERED_COMMANDS.clear()
-    REGISTERED_COMMANDS_BY_NAME.clear()
+    Imports the given route.
     
+    Parameters
+    ----------
+    import_route : `str`
+        The import route to import.
+    
+    Returns
+    -------
+    success : `bool`
+    """
+    try:
+        __import__(import_route)
+    except (KeyboardInterrupt, SystemExit):
+        raise
+    
+    except BaseException as err:
+        sys.stderr.write(
+            ''.join(
+                render_exception_into(
+                    err,
+                    [
+                        'Exception occurred while importing "',
+                        import_route,
+                        '".\n'
+                    ],
+                    filter = _ignore_import_frame,
+                ),
+            )
+        )
+        return False
+    
+    return True
+
+
+def _find_internal_commands():
+    """
+    Finds the commands in the commands directory.
+    """
     for file_name in list_directory(COMMAND_DIRECTORY):
         path = join_paths(COMMAND_DIRECTORY, file_name)
         
@@ -71,23 +106,24 @@ def find_commands():
             continue
         
         import_route = '.'.join([*COMMAND_IMPORT_ROUTE, import_name])
-        
-        try:
-            __import__(import_route)
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        
-        except BaseException as err:
-            sys.stderr.write(
-                ''.join(
-                    render_exception_into(
-                        err,
-                        [
-                            'Exception occurred while importing "',
-                            import_route,
-                            '".\n'
-                        ],
-                        filter = _ignore_import_frame,
-                    ),
-                )
-            )
+        _import_route(import_route)
+
+
+def _find_external_commands():
+    """
+    Will try find external commands in registered external import routes.
+    """
+    external_import_routes = get_external_command_routes()
+    for import_route in external_import_routes:
+        _import_route(import_route)
+
+
+def find_commands():
+    """
+    Looks up the local commands.
+    """
+    REGISTERED_COMMANDS.clear()
+    REGISTERED_COMMANDS_BY_NAME.clear()
+    
+    _find_internal_commands()
+    _find_external_commands()

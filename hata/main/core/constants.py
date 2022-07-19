@@ -10,6 +10,7 @@ COMMANDS = set()
 COMMAND_NAME_TO_COMMAND = {}
 
 COMMAND_DIRECTORY = join_paths(get_directory_name(get_directory_name(__file__)), 'commands')
+EXTERNAL_IMPORT_ROUTES_FILE = join_paths(get_directory_name(get_directory_name(__file__)), '.external')
 
 COMMAND_IMPORT_ROUTE = (PACKAGE_NAME, 'main', 'commands')
 

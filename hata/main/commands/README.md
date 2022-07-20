@@ -47,7 +47,7 @@ from .file_2 import *
 ...
 ```
 
-> More about command directories at [External command directories](#External command directories).
+> More about command directories at [External command directories](#external-command-directories).
 
 ### Definition
 

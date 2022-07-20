@@ -2,10 +2,9 @@ __all__ = ()
 
 from math import floor, log10
 
-from scarletio import get_short_executable
-
 from .... import __package__ as PACKAGE_NAME
 from ... import REGISTERED_COMMANDS, REGISTERED_COMMANDS_BY_NAME, command_sort_key, normalize_command_name, register
+from ...core.helpers import render_main_call_into
 
 
 PACKAGE = __import__(PACKAGE_NAME)
@@ -24,9 +23,7 @@ def show_command(command_name, sub_command_names):
         output_parts.append(repr(command_name))
         output_parts.append('\n\n')
         output_parts.append('Try using "$ ')
-        output_parts.append(get_short_executable())
-        output_parts.append(' -m ')
-        output_parts.append(PACKAGE_NAME)
+        render_main_call_into(output_parts)
         output_parts.append(' help" to list all available commands.\n')
     
     else:
@@ -52,9 +49,7 @@ def list_commands():
     
     output_parts.append('\n')
     output_parts.append('Use "$ ')
-    output_parts.append(get_short_executable())
-    output_parts.append(' -m ')
-    output_parts.append(PACKAGE_NAME)
+    render_main_call_into(output_parts)
     output_parts.append(' help ')
     output_parts.append('COMMAND-NAME')
     output_parts.append('" for more information.\n')

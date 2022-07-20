@@ -2,9 +2,9 @@ __all__ = ('CommandResult',)
 
 from math import floor, log10
 
-from scarletio import RichAttributeErrorBaseType, get_short_executable, render_exception_into
+from scarletio import RichAttributeErrorBaseType, render_exception_into
 
-from .... import __package__ as PACKAGE_NAME
+from ..helpers import render_main_call_into
 
 from ..constants import REGISTERED_COMMANDS
 
@@ -457,9 +457,7 @@ def command_result_processor_command_not_found(command_name):
         message_parts.append('\n')
     
     message_parts.append('\nTry using "$ ')
-    message_parts.append(get_short_executable())
-    message_parts.append(' -m ')
-    message_parts.append(PACKAGE_NAME)
+    render_main_call_into(message_parts)
     message_parts.append(' help COMMAND-NAME" for more information.\n')
     
     return ''.join(message_parts)

@@ -1,8 +1,6 @@
 __all__ = ()
 
-from scarletio import get_short_executable
-
-from .... import __package__ as PACKAGE_NAME
+from ..helpers import render_main_call_into
 
 from .render_constants import (
     BOX_BOTTOM, BOX_LEFT, BOX_LEFT_BOT, BOX_LEFT_TOP, BOX_RIGHT, BOX_RIGHT_BOT, BOX_RIGHT_TOP, BOX_TITLE_ERROR,
@@ -26,9 +24,7 @@ def render_usage_line_into(into, name_trace_iterator):
     into : `list` of `str`
     """
     into.append('Usage: ')
-    into.append(get_short_executable())
-    into.append(' -m ')
-    into.append(PACKAGE_NAME)
+    render_main_call_into(into)
     
     if (name_trace_iterator is not None):
         for name in name_trace_iterator:

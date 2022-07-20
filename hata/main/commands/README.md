@@ -47,6 +47,8 @@ from .file_2 import *
 ...
 ```
 
+> More about command directories at [External command directories](#External command directories).
+
 ### Definition
 
 Command description might be defined as a docstring, or passed as a keyword parameter.
@@ -134,3 +136,24 @@ main = register(None, name='main')
 def sub():
     return 'i am sub'
 ```
+
+### External command directories
+
+When building a package you might not want to setup your files into hata. Instead magically ask hata to import them.
+The `add_external_command_route` function does just this. It registers an external import route to be imported
+at command lookup.
+
+```py3
+from hata.main import add_external_command_route
+
+add_external_command_route('my_package')
+```
+
+Since you register *import routes* and not *paths* you want to use `.` to link in sub-modules.
+
+```py3
+add_external_command_route('my_package.sub_module')
+```
+
+> Note, that `hata.main` is not imported into `hata` module. So when you cannot use relative imports and want to import
+> from there, specifying `.main` is necessary.

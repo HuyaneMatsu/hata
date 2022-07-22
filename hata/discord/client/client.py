@@ -1241,7 +1241,7 @@ class Client(
             if __debug__:
                 task.__silence__()
         
-        # Check it twice, because meanwhile logging on, connect calls are not limited
+        # Check it twice, because meanwhile logging in, connect calls are not limited
         if self.running:
             raise RuntimeError(f'{self!r} is already running!')
         
@@ -1359,6 +1359,8 @@ class Client(
                         'Thanks!\n'
                     ),
                 )
+            
+            await ensure_shutdown_event_handlers(self)
         
         finally:
             try:

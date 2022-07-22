@@ -197,7 +197,7 @@ async def handle_voice_client_shutdown(client):
     await WaitTillAll(tasks, KOKORO)
     
     tasks = []
-    for node in client.soalrlink.nodes:
+    for node in client.solarlink.nodes:
         task = Task(node.close(), KOKORO)
         tasks.append(task)
     

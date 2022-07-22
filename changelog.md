@@ -1,3 +1,13 @@
+## 1.3.1 *\[2022-07-??\]*
+
+#### Improvements
+
+- The shutdown event handlers will be ensured when a client connection receives a fatal exception.
+
+#### Bug Fies
+
+- Fix `AttributeError` in `handle_voice_client_shutdown` (typo).
+
 ## 1.3.0 *\[2022-07-19\]*
 
 ### Summary
@@ -359,7 +369,7 @@ A change like this was requested for a while...
 - Allow pep 593 annotations. (WizzyGeek#2356)
 - Allow enums as choices. (WizzyGeek#2356)
 
-##### ext.solar_link
+##### ext.solarlink
 
 - `SolarPlayerBase.channel` will not return `None` anymore.
 
@@ -456,7 +466,7 @@ A change like this was requested for a while...
 
 ### Summary
 
-- Add `hata.ext.solar_link`.
+- Add `hata.ext.solarlink`.
 
 #### Improvements
 

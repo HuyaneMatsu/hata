@@ -2,9 +2,12 @@ __all__ = ('call_command', 'execute_command_from_system_parameters',)
 
 import sys
 
+from ... import KOKORO
+
 from .command import CommandResult, normalize_command_name
 from .command.result import COMMAND_RESULT_CODE_COMMAND_NOT_FOUND, COMMAND_RESULT_CODE_COMMAND_REQUIRED
 from .constants import REGISTERED_COMMANDS_BY_NAME, SYSTEM_DEFAULT_PARAMETER
+from .lookup import maybe_find_commands
 
 
 def call_command(parameters, index, output_stream):
@@ -20,6 +23,8 @@ def call_command(parameters, index, output_stream):
     output_stream : `stream-like`
         Output stream.
     """
+    maybe_find_commands()
+    
     if index >= len(parameters):
         command_result = CommandResult(
             COMMAND_RESULT_CODE_COMMAND_REQUIRED,
@@ -45,6 +50,7 @@ def call_command(parameters, index, output_stream):
         
         if not output.endswith('\n'):
             output_stream.write('\n')
+    
 
 
 def execute_command_from_system_parameters():
@@ -55,4 +61,8 @@ def execute_command_from_system_parameters():
     if len(system_parameters) < 2:
         system_parameters = [*system_parameters, SYSTEM_DEFAULT_PARAMETER]
     
-    return call_command(system_parameters, 1, sys.stdout)
+    call_command(system_parameters, 1, sys.stdout)
+    
+    # Stop the event loop if we are doing nothing.
+    if KOKORO.running and not KOKORO.get_tasks():
+        KOKORO.stop()

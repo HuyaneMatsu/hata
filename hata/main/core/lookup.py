@@ -1,4 +1,4 @@
-__all__ = ('find_commands',)
+__all__ = ('maybe_find_commands',)
 
 import sys
 from os import listdir as list_directory
@@ -6,10 +6,7 @@ from os.path import isdir as is_directory, isfile as is_file, join as join_paths
 
 from scarletio import render_exception_into
 
-from .constants import (
-    COMMAND_DIRECTORY, COMMAND_IMPORT_ROUTE, PYTHON_FILE_POSTFIX_NAMES, REGISTERED_COMMANDS,
-    REGISTERED_COMMANDS_BY_NAME
-)
+from .constants import COMMAND_DIRECTORY, COMMAND_IMPORT_ROUTE, PYTHON_FILE_POSTFIX_NAMES
 from .external import get_external_command_routes
 
 
@@ -36,7 +33,7 @@ def _ignore_import_frame(file_name, name, line_number, line):
     should_show_frame = True
     
     if file_name == __file__:
-        if name == 'find_commands':
+        if name == '_import_route':
             if line == '__import__(import_route)':
                 should_show_frame = False
     
@@ -118,12 +115,23 @@ def _find_external_commands():
         _import_route(import_route)
 
 
-def find_commands():
+_FIND_COMMANDS_INVOKED = False
+
+def maybe_find_commands():
+    """
+    Looks up the local commands if not yet looked up.
+    """
+    global _FIND_COMMANDS_INVOKED
+    if not _FIND_COMMANDS_INVOKED:
+        try:
+            _find_commands()
+        finally:
+            _FIND_COMMANDS_INVOKED = True
+
+
+def _find_commands():
     """
     Looks up the local commands.
     """
-    REGISTERED_COMMANDS.clear()
-    REGISTERED_COMMANDS_BY_NAME.clear()
-    
     _find_internal_commands()
     _find_external_commands()

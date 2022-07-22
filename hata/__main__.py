@@ -34,7 +34,7 @@ PACKAGE = __import__(PACKAGE_NAME)
 MAIN = __import__(f'{PACKAGE_NAME}.main').main
 
 __main__ = MAIN.execute_command_from_system_parameters
-MAIN.find_commands()
+MAIN.maybe_find_commands()
 
 
 if __name__ == '__main__':

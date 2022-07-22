@@ -10,7 +10,7 @@ from .... import CLIENTS, DATETIME_FORMAT_CODE, KOKORO, stop_clients, run_consol
 from ... import register
 
 
-def log(message):
+def _log(message):
     """
     Logs the given message.
     
@@ -172,7 +172,7 @@ def _log_clients_start_begin(clients):
         message = f'Starting {total_count - client_count} / {total_count} clients ({client_count} already running)'
     else:
         message = f'Starting {total_count} bots'
-    log(message)
+    _log(message)
 
 
 def _log_clients_start_finish(clients, duration):
@@ -193,7 +193,7 @@ def _log_clients_start_finish(clients, duration):
         message = f'All clients connected. Took {duration:.02f} seconds.'
     else:
         message = f'{connected_count} / {client_count} clients connected. Took {duration:.02f} seconds.'
-    log(message)
+    _log(message)
 
 
 def _log_client_authorization(client, authorized):
@@ -211,7 +211,7 @@ def _log_client_authorization(client, authorized):
         message = f'Client authorized: {client.full_name} {client.id}'
     else:
         message = f'Client authorization failed: {client.id}'
-    log(message)
+    _log(message)
 
 
 def _log_client_connection(client, launched):
@@ -226,12 +226,14 @@ def _log_client_connection(client, launched):
         Whether the client launched.
     """
     message = f'Client {"connected" if launched else "connection failed"}: {client.full_name} {client.id}'
-    log(message)
+    _log(message)
 
 
 async def _client_start(client, connection_waiter, do_log):
     """
     Starts the given client.
+    
+    This function is a coroutine.
     
     Parameters
     ----------
@@ -262,6 +264,8 @@ async def _client_start(client, connection_waiter, do_log):
 async def _connect_clients(do_log):
     """
     Connects the clients logging their status.
+    
+    This function is a coroutine.
     
     Parameters
     ----------

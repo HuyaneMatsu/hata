@@ -35,24 +35,24 @@ def _assert__guild_ban_add__delete_message_days(delete_message_days):
     return True
 
 
-def _assert__guild_ban_add__delete_message_seconds(delete_message_seconds):
+def _assert__guild_ban_add__delete_message_duration(delete_message_duration):
     """
-    Asserts the `delete_message_seconds` parameter of ``Client.guild_ban_add`` method.
+    Asserts the `delete_message_duration` parameter of ``Client.guild_ban_add`` method.
     
     Parameters
     ----------
-    delete_message_seconds : `int`
+    delete_message_duration : `int`
         How much seconds back the user's messages should be deleted. Can be in range [0:604800].
     
     Raises
     ------
     AssertionError
-        - If `delete_message_seconds` was not given as `int`.
+        - If `delete_message_duration` was not given as `int`.
     """
-    if not isinstance(delete_message_seconds, int):
+    if not isinstance(delete_message_duration, int):
         raise AssertionError(
-            f'`delete_message_seconds` can be `int`, '
-            f'got {delete_message_seconds.__class__.__name__}; {delete_message_seconds!r}.'
+            f'`delete_message_duration` can be `int`, '
+            f'got {delete_message_duration.__class__.__name__}; {delete_message_duration!r}.'
         )
     
     return True
@@ -85,7 +85,7 @@ class ClientCompoundGuildBanEndpoints(Compound):
     http : DiscordHTTPClient
     
     
-    async def guild_ban_add(self, guild, user, *, delete_message_days=0, delete_message_seconds=0, reason=None):
+    async def guild_ban_add(self, guild, user, *, delete_message_days=0, delete_message_duration=0, reason=None):
         """
         Bans the given user from the guild.
         
@@ -102,9 +102,9 @@ class ClientCompoundGuildBanEndpoints(Compound):
         delete_message_days : `int` = `0`, Optional (Keyword only)
             How much days back the user's messages should be deleted. Can be in range [0:7].
             
-            Deprecated. Please use `delete_message_seconds` instead.
+            Deprecated. Please use `delete_message_duration` instead.
         
-        delete_message_seconds : `int` = `0`, Optional (Keyword only)
+        delete_message_duration : `int` = `0`, Optional (Keyword only)
             How much seconds back the user's messages should be deleted. Can be in range [0:604800].
         
         reason : `None`, `str` = `None`, Optional (Keyword only)
@@ -124,27 +124,27 @@ class ClientCompoundGuildBanEndpoints(Compound):
         user_id = get_user_id(user)
         
         assert _assert__guild_ban_add__delete_message_days(delete_message_days)
-        assert _assert__guild_ban_add__delete_message_seconds(delete_message_seconds)
+        assert _assert__guild_ban_add__delete_message_duration(delete_message_duration)
         
         
         if delete_message_days:
             warnings.warn(
                 (
                     f'`delete_message_days` parameter of `{self.__class__.__name__}.guild_ban_add` is deprecated and '
-                    f'will be removed in 2022 December. Please use `delete_message_seconds` instead.'
+                    f'will be removed in 2022 December. Please use `delete_message_duration` instead.'
                 ),
                 FutureWarning,
             )
             
-            delete_message_seconds = delete_message_days * 24 * 60 * 60
+            delete_message_duration = delete_message_days * 24 * 60 * 60
         
         data = {}
         
         # Silently limit the values. 
-        if delete_message_seconds > 0:
-            if delete_message_seconds > 604800:
-                delete_message_seconds = 604800
-            data['delete_message_seconds'] = delete_message_seconds
+        if delete_message_duration > 0:
+            if delete_message_duration > 604800:
+                delete_message_duration = 604800
+            data['delete_message_seconds'] = delete_message_duration
         
         
         await self.http.guild_ban_add(guild_id, user_id, data, reason)

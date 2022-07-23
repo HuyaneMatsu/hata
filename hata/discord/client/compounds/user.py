@@ -20,9 +20,9 @@ from ..request_helpers import (
 )
 
 
-MONTH = timedelta(days=28)
-MONTH_SECONDS_FLOAT = MONTH.total_seconds()
-MONTH_SECONDS_INT = floor(MONTH_SECONDS_FLOAT)
+TIMEOUT_MAX_DURATION = timedelta(days=28)
+TIMEOUT_MAX_DURATION_SECONDS_FLOAT = TIMEOUT_MAX_DURATION.total_seconds()
+TIMEOUT_MAX_DURATION_SECONDS_INT = floor(TIMEOUT_MAX_DURATION_SECONDS_FLOAT)
 ZERO_TIMEDELTA = timedelta(seconds=0)
 
 
@@ -199,7 +199,7 @@ class ClientCompoundUserEndpoints(Compound):
         timeout_duration: `None`, `int`, `float`, `timedelta`, `datetime`, Optional (Keyword only)
             The timeout duration of the user in seconds.
             
-            Pass it as `None` or as `0` duration to remove it.
+            Pass it as `None` or as a non-positive duration to remove it.
             
             The max allowed value equals to 28 days.
             
@@ -326,8 +326,8 @@ class ClientCompoundUserEndpoints(Compound):
                 if timeout_duration <= 0:
                     timeout_ends_at = None
                 
-                elif timeout_duration >= MONTH_SECONDS_INT:
-                    timeout_ends_at = datetime.utcnow() + MONTH
+                elif timeout_duration >= TIMEOUT_MAX_DURATION_SECONDS_INT:
+                    timeout_ends_at = datetime.utcnow() + TIMEOUT_MAX_DURATION
                 
                 else:
                     timeout_ends_at = datetime.utcnow() + timedelta(seconds=timeout_duration)
@@ -336,8 +336,8 @@ class ClientCompoundUserEndpoints(Compound):
                 if timeout_duration <= 0.0:
                     timeout_ends_at = None
                 
-                elif timeout_duration >= MONTH_SECONDS_FLOAT:
-                    timeout_ends_at = datetime.utcnow() + MONTH
+                elif timeout_duration >= TIMEOUT_MAX_DURATION_SECONDS_FLOAT:
+                    timeout_ends_at = datetime.utcnow() + TIMEOUT_MAX_DURATION
                 
                 else:
                     timeout_ends_at = datetime.utcnow() + timedelta(seconds=timeout_duration)
@@ -346,8 +346,8 @@ class ClientCompoundUserEndpoints(Compound):
                 if timeout_duration <= ZERO_TIMEDELTA:
                     timeout_ends_at = None
                 
-                elif timeout_duration >= MONTH:
-                    timeout_ends_at = datetime.utcnow() + MONTH
+                elif timeout_duration >= TIMEOUT_MAX_DURATION:
+                    timeout_ends_at = datetime.utcnow() + TIMEOUT_MAX_DURATION
                 
                 else:
                     timeout_ends_at = datetime.utcnow() + timeout_duration

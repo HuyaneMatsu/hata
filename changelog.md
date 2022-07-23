@@ -5,7 +5,7 @@
 - The shutdown event handlers will be ensured when a client connection receives a fatal exception.
 - Add `run` command.
 - Add `ApplicationFlag.application_command_badge`.
-- Add `delete_message_duration` parameter to `Client.guild_ban_add`.
+- Add `delete_message_duration` parameter to `Client.guild_ban_add` replacing the old `delete_message_days`.
 - Add `AutoModerationRuleTriggerType.mention_spam`.
 - Add `MentionSpamTriggerMetadata`.
 - Add `AutoModerationRule` parameter to `AutoModerationRule.__new__`.
@@ -13,6 +13,7 @@
 - Separate down the `guild ban` endpoints from the `guild` ones.
 - Add `delete_message_duration` audit log detail converter and update the `delete_message_days` one.
 - `Client.user_guild_profile_edit` now accepts `roles` as any iterable.
+- Add `timeout_duration` parameter to `Client.user_guild_profile_edit` replacing the old `timed_out_until`.
 
 #### Bug Fies
 
@@ -21,6 +22,7 @@
 #### Renames, Deprecation & Removals
 
 - Deprecate `delete_message_days` parameter of `Client.guild_ban_add`. Use `delete_message_duration` instead.
+- Deprecate `timed_out_until` parameter of `Client.user_guild_profile_edit`. Use `timeout_duration` instead.
 
 ## 1.3.0 *\[2022-07-19\]*
 

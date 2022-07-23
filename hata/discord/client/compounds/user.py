@@ -1,6 +1,8 @@
 __all__ = ()
 
-from datetime import datetime
+import warnings
+from datetime import datetime, timedelta
+from math import floor
 
 from scarletio import Compound
 
@@ -17,6 +19,11 @@ from ..request_helpers import (
     get_guild_and_id, get_guild_id, get_channel_guild_id_and_id, get_role_guild_id_and_id, get_user_and_id, get_user_id
 )
 
+
+MONTH = timedelta(days=28)
+MONTH_SECONDS_FLOAT = MONTH.total_seconds()
+MONTH_SECONDS_INT = floor(MONTH_SECONDS_FLOAT)
+ZERO_TIMEDELTA = timedelta(seconds=0)
 
 
 def _assert__user_guild_profile_edit__nick(nick):
@@ -156,8 +163,8 @@ class ClientCompoundUserEndpoints(Compound):
     id : int
     
     async def user_guild_profile_edit(
-        self, guild, user, *, nick=..., deaf=..., mute=..., voice_channel=..., roles=..., timed_out_until=...,
-        reason=None
+        self, guild, user, *, nick=..., deaf=..., mute=..., voice_channel=..., roles=..., timeout_duration=...,
+        timed_out_until=..., reason=None
     ):
         """
         Edits the user's guild profile at the given guild.
@@ -189,8 +196,17 @@ class ClientCompoundUserEndpoints(Compound):
         roles : `None`, `iterable` of (``Role``, `int`), Optional (Keyword only)
             The new roles of the user. Give it as `None` to remove all of the user's roles.
         
+        timeout_duration: `None`, `int`, `float`, `timedelta`, `datetime`, Optional (Keyword only)
+            The timeout duration of the user in seconds.
+            
+            Pass it as `None` or as `0` duration to remove it.
+            
+            The max allowed value equals to 28 days.
+            
         timed_out_until : `None`, `datetime`, Optional (Keyword only)
-            Till when the client is timed out. Pass it as `None` to remove it.
+            Till when the user is timed out. Pass it as `None` to remove it.
+            
+            > Deprecated and will be removed in 2022 december. Please use `timeout_duration` instead.
         
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Will show up at the guild's audit logs.
@@ -292,16 +308,64 @@ class ClientCompoundUserEndpoints(Compound):
         
         
         if (timed_out_until is not ...):
-            if timed_out_until is None:
+            warnings.warn(
+                (
+                    f'`timed_out_until` parameter of `{self.__class__.__name__}.user_guild_profile_edit` is deprecated'
+                    f'and will be removed in 2022 December. Please use `timeout_duration` instead.'
+                ),
+                FutureWarning,
+            )
+            timeout_duration = timed_out_until
+        
+        
+        if (timeout_duration is not ...):
+            if timeout_duration is None:
+                timeout_ends_at = None
+            
+            elif isinstance(timeout_duration, int):
+                if timeout_duration <= 0:
+                    timeout_ends_at = None
+                
+                elif timeout_duration >= MONTH_SECONDS_INT:
+                    timeout_ends_at = datetime.utcnow() + MONTH
+                
+                else:
+                    timeout_ends_at = datetime.utcnow() + timedelta(seconds=timeout_duration)
+            
+            elif isinstance(timeout_duration, float):
+                if timeout_duration <= 0.0:
+                    timeout_ends_at = None
+                
+                elif timeout_duration >= MONTH_SECONDS_FLOAT:
+                    timeout_ends_at = datetime.utcnow() + MONTH
+                
+                else:
+                    timeout_ends_at = datetime.utcnow() + timedelta(seconds=timeout_duration)
+            
+            elif isinstance(timeout_duration, timedelta):
+                if timeout_duration <= ZERO_TIMEDELTA:
+                    timeout_ends_at = None
+                
+                elif timeout_duration >= MONTH:
+                    timeout_ends_at = datetime.utcnow() + MONTH
+                
+                else:
+                    timeout_ends_at = datetime.utcnow() + timeout_duration
+            
+            elif isinstance(timeout_duration, datetime):
+                timeout_ends_at = timeout_duration
+            
+            else:
+                raise TypeError(
+                    f'`timeout_duration` can be `None`, `int`, `float`, `timedelta`, `datetime`, got '
+                    f'{timeout_duration.__class__.__name__}; {timeout_duration!r}.'
+                )
+            
+            
+            if (timeout_ends_at is None):
                 timed_out_until_raw = None
             else:
-                assert isinstance(timed_out_until, datetime), (
-                    f'`timed_out_until` can be `None`, `datetime`, got '
-                    f'{timed_out_until.__class__.__name__}.'
-                )
-                
                 timed_out_until_raw = datetime_to_timestamp(timed_out_until)
-            
             data['communication_disabled_until'] = timed_out_until_raw
         
         await self.http.user_guild_profile_edit(guild_id, user_id, data, reason)

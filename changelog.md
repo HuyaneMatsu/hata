@@ -14,10 +14,12 @@
 - Add `delete_message_duration` audit log detail converter and update the `delete_message_days` one.
 - `Client.user_guild_profile_edit` now accepts `roles` as any iterable.
 - Add `timeout_duration` parameter to `Client.user_guild_profile_edit` replacing the old `timed_out_until`.
+- Add missing `unix_time_to_datetime` import.
 
 #### Bug Fies
 
 - Fix `AttributeError` in `handle_voice_client_shutdown` (typo).
+- `unix_time_to_datetime` returned bad value.
 
 #### Renames, Deprecation & Removals
 

@@ -7,7 +7,7 @@
     'is_invite_code', 'is_mention', 'is_role_mention', 'is_url', 'is_user_mention', 'mention_channel_by_id',
     'mention_role_by_id', 'mention_user_by_id', 'mention_user_nick_by_id', 'now_as_id', 'parse_message_reference',
     'parse_rdelta', 'parse_tdelta', 'random_id', 'sanitize_content', 'sanitize_mentions', 'seconds_to_id_difference',
-    'seconds_to_elapsed_time', 'timedelta_to_id_difference', 'unix_time_to_id'
+    'seconds_to_elapsed_time', 'timedelta_to_id_difference', 'unix_time_to_datetime', 'unix_time_to_id'
 )
 
 import reprlib, sys
@@ -270,7 +270,7 @@ def unix_time_to_datetime(unix_time):
     date_time : `datetime`
     """
     try:
-        return datetime.utcfromtimestamp(unix_time / 1000.0)
+        return datetime.utcfromtimestamp(unix_time)
     except ValueError:
         # Can happen if max or min year is passed.
         if unix_time >= UNIX_TIME_MAX:
@@ -320,7 +320,7 @@ set_docs(datetime_to_unix_time,
     
     Returns
     -------
-    unit_time : `int`
+    unix_time : `int`
     """
 )
 
@@ -1730,7 +1730,7 @@ def format_loop_time(loop_time, style=None):
 
 def format_unix_time(unix_time, style=None):
     """
-    Formats unix time to Discord'stimestamp  markdown format.
+    Formats unix time to Discord's timestamp  markdown format.
     
     For formatting details please check out ``TIMESTAMP_STYLES``, which contains the usable styles.
     

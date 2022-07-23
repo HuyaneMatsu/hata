@@ -3,6 +3,8 @@
 #### Improvements
 
 - The shutdown event handlers will be ensured when a client connection receives a fatal exception.
+- Add `run` command.
+- Add `ApplicationFlag.application_command_badge`.
 
 #### Bug Fies
 

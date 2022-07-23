@@ -2,6 +2,7 @@ __all__ = ('FlagBase', 'SKUFlag',)
 
 from ..bases import FlagBase
 
+
 class ApplicationFlag(FlagBase):
     """
     Represents an application's flags.
@@ -37,6 +38,8 @@ class ApplicationFlag(FlagBase):
     +-----------------------------------+-------------------+
     | embedded_first_party              | 20                |
     +-----------------------------------+-------------------+
+    | application_command_badge         | 23                |
+    +-----------------------------------+-------------------+
     """
     __keys__ = {
         'embedded_released': 1,
@@ -52,6 +55,7 @@ class ApplicationFlag(FlagBase):
         'gateway_message_content': 18,
         'gateway_message_content_limited': 19,
         'embedded_first_party': 20,
+        'application_command_badge': 23,
     }
 
 

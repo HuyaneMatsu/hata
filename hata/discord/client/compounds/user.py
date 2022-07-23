@@ -18,10 +18,142 @@ from ..request_helpers import (
 )
 
 
+
+def _assert__user_guild_profile_edit__nick(nick):
+    """
+    Asserts the `nick` parameter of ``Client.user_guild_profile_edit`` method.
+    
+    Parameters
+    ----------
+    nick : `Ellipsis`, `None`, `int`
+        The new nick of the user.
+    
+    Raises
+    ------
+    AssertionError
+        - If `nick` was not given neither as `None`, `str`.
+        - If `nick` length is out of the expected range [0:32].
+    """
+    if nick is ...:
+        pass
+    
+    elif nick is None:
+        pass
+    
+    elif isinstance(nick, str):
+        nick_length = len(nick)
+        if nick_length > 32:
+            raise AssertionError(
+                f'`nick` length can be in range [0:32], got {nick_length}; {nick!r}.'
+            )
+    
+    else:
+        raise AssertionError(
+            f'`nick` can be `None`, `str`, got {nick.__class__.__name__}; {nick!r}.'
+        )
+    
+    return True
+
+
+def _assert__user_guild_profile_edit__deaf(deaf):
+    """
+    Asserts the `deaf` parameter of ``Client.user_guild_profile_edit`` method.
+    
+    Parameters
+    ----------
+    deaf : `Ellipsis`, `bool`
+        Whether the user should be deafen at the voice channels.
+    
+    Raises
+    ------
+    AssertionError
+        - If `deaf` was not given as `bool`.
+    """
+    if (deaf is not ...) and (not isinstance(deaf, bool)):
+        raise TypeError(
+            f'`deaf` can be `bool`, got {deaf.__class__.__name__}; {deaf!r}'
+        )
+    
+    return True
+
+
+def _assert__user_guild_profile_edit__mute(mute):
+    """
+    Asserts the `mute` parameter of ``Client.user_guild_profile_edit`` method.
+    
+    Parameters
+    ----------
+    mute : `Ellipsis`, `bool`
+        Whether the user should be muted at the voice channels.
+    
+    Raises
+    ------
+    AssertionError
+        - If `mute` was not given as `bool`.
+    """
+    if (mute is not ...) and (not isinstance(mute, bool)):
+        raise TypeError(
+            f'`mute` can be `bool`, got {mute.__class__.__name__}; {mute!r}'
+        )
+    
+    return True
+
+
+def _assert__guild_user_search__query(query):
+    """
+    Asserts the `query` parameter of ``Client.guild_user_search`` method.
+    
+    Parameters
+    ----------
+    query : `str`
+        The query string with what the user's name or nick should start.
+    
+    Raises
+    ------
+    AssertionError
+        - If `query` was not given as `str`.
+        - If `query`'s length is out of the expected range [1:32].
+    """
+    if not isinstance(query, str):
+        raise TypeError(
+            f'`query` can be `str`, got {query.__class__.__name__}; {query!r}'
+        )
+    
+    query_length = len(query)
+    if query_length < 1 or query_length > 32:
+        raise AssertionError(
+            f'`query` length can be in range [1:32], got {query_length!r}; {query!r}.'
+        )
+    
+    return True
+
+
+def _assert__guild_user_search__limit(limit):
+    """
+    Asserts the `limit` parameter of ``Client.guild_user_search`` method.
+    
+    Parameters
+    ----------
+    limit : `int`
+        The maximal amount of users to return. Can be in range [1:1000].
+    
+    Raises
+    ------
+    AssertionError
+        - If `limit` was not given as `int`.
+    """
+    if not isinstance(limit, int):
+        raise TypeError(
+            f'`limit` can be `int`, got {limit.__class__.__name__}; {limit!r}'
+        )
+    
+    return True
+
+
 class ClientCompoundUserEndpoints(Compound):
     
     http : DiscordHTTPClient
-    
+    id : int
     
     async def user_guild_profile_edit(
         self, guild, user, *, nick=..., deaf=..., mute=..., voice_channel=..., roles=..., timed_out_until=...,
@@ -36,62 +168,51 @@ class ClientCompoundUserEndpoints(Compound):
         ----------
         guild : ``Guild``, `int`
             Where the user will be edited.
+        
         user : ``ClientUserBase``, `int`
-            The user to edit
+            The user to edit, or their identifier.
+        
         nick : `None`, `str`, Optional (Keyword only)
             The new nick of the user. You can remove the current one by passing it as `None`, an empty string.
+        
         deaf : `bool`, Optional (Keyword only)
             Whether the user should be deafen at the voice channels.
+        
         mute : `bool`, Optional (Keyword only)
             Whether the user should be muted at the voice channels.
+        
         voice_channel : `None`, ``Channel``, `int` , Optional (Keyword only)
             Moves the user to the given voice channel. Only applicable if the user is already at a voice channel.
             
-            Pass it as `None` to kick the user from it's voice channel.
-        roles : `None`, (`tuple`, `set`, `list`) of (``Role``, `int`), Optional (Keyword only)
+            Pass it as `None` to disconnect the user from it's voice channel.
+        
+        roles : `None`, `iterable` of (``Role``, `int`), Optional (Keyword only)
             The new roles of the user. Give it as `None` to remove all of the user's roles.
+        
         timed_out_until : `None`, `datetime`, Optional (Keyword only)
             Till when the client is timed out. Pass it as `None` to remove it.
+        
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Will show up at the guild's audit logs.
         
         Raises
         ------
         TypeError
-            - If `guild` was not given neither as ``Guild`` neither as `int`.
-            - If `user` was not given neither as ``ClientUserBase``, neither as `int`.
-            - If `voice_channel` was not given neither as `None`, ``Channel``, neither as `int`.
-            - If `roles` contains neither ``Role``, `int` element.
+            - If a parameter's type is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `nick` was not given neither as `None`, `str`.
-            - If `nick` length is out of the expected range [0:32].
-            - If `deaf` was not given as `bool`.
-            - If `mute` was not given as `bool`.
-            - If `roles` is not `None`, `set`, `tuple`, `list`.
-            - If `timed_out_until` is neither `None` nor `datetime`.
         """
         guild, guild_id = get_guild_and_id(guild)
         user, user_id = get_user_and_id(user)
         
+        assert _assert__user_guild_profile_edit__nick(nick)
+        assert _assert__user_guild_profile_edit__deaf(deaf)
+        assert _assert__user_guild_profile_edit__mute(mute)
+        
         data = {}
         if (nick is not ...):
-            if __debug__:
-                if (nick is not None):
-                    if not isinstance(nick, str):
-                        raise AssertionError(
-                            f'`nick` can be `None`, `str`, got {nick.__class__.__name__}; {nick!r}.'
-                        )
-                    
-                    nick_length = len(nick)
-                    if nick_length > 32:
-                        raise AssertionError(
-                            f'`nick` length can be in range [0:32], got {nick_length}; {nick!r}.'
-                        )
-            
             if (nick is not None) and (not nick):
                 nick = None
             
@@ -115,23 +236,11 @@ class ClientCompoundUserEndpoints(Compound):
                     data['nick'] = nick
                     
         if (deaf is not ...):
-            if __debug__:
-                if not isinstance(deaf, bool):
-                    raise AssertionError(
-                        f'`deaf` can be `bool`, got {deaf.__class__.__name__}; {deaf!r}.'
-                    )
-            
             data['deaf'] = deaf
-            
+        
         if (mute is not ...):
-            if __debug__:
-                if not isinstance(mute, bool):
-                    raise AssertionError(
-                        f'`mute` can be `bool`, got {mute.__class__.__name__}; {mute!r}.'
-                    )
-            
             data['mute'] = mute
-            
+        
         if (voice_channel is not ...):
             while True:
                 if voice_channel is None:
@@ -155,24 +264,25 @@ class ClientCompoundUserEndpoints(Compound):
             
             data['channel_id'] = voice_channel_id
         
+        
         if (roles is not ...):
             role_ids = set()
             if (roles is not None):
-                if __debug__:
-                    if not isinstance(roles, (list, set, tuple)):
-                        raise AssertionError(
-                            f'`roles` can be `None`, `list`, `set`, `tuple`, got '
-                            f'{roles.__class__.__name__}; {roles!r}.'
-                        )
+                iterator = getattr(roles, '__iter__', None)
+                if iterator is None:
+                    raise TypeError(
+                        f'`roles` can be `None`, `iterable`, got {roles.__class__.__name__}; {roles!r}.'
+                    )
                 
                 for role in roles:
+                    
                     if isinstance(role, Role):
                         role_id = role.id
                     else:
                         role_id = maybe_snowflake(role)
                         if role_id is None:
                             raise TypeError(
-                                f'`roles` contains not `{Role.__name__}`, `int` element, got '
+                                f'`roles` can contain `{Role.__name__}`, `int` elements, got '
                                 f'{role.__class__.__name__}; {role!r}; roles={roles!r}.'
                             )
                     
@@ -180,16 +290,15 @@ class ClientCompoundUserEndpoints(Compound):
             
             data['roles'] = role_ids
         
+        
         if (timed_out_until is not ...):
             if timed_out_until is None:
                 timed_out_until_raw = None
             else:
-                if __debug__:
-                    if not isinstance(timed_out_until, datetime):
-                        raise AssertionError(
-                            f'`timed_out_until` can be `None`, `datetime`, got '
-                            f'{timed_out_until.__class__.__name__}.'
-                        )
+                assert isinstance(timed_out_until, datetime), (
+                    f'`timed_out_until` can be `None`, `datetime`, got '
+                    f'{timed_out_until.__class__.__name__}.'
+                )
                 
                 timed_out_until_raw = datetime_to_timestamp(timed_out_until)
             
@@ -506,10 +615,14 @@ class ClientCompoundUserEndpoints(Compound):
         ----------
         guild : ``Guild``
             The guild, where the user is.
+        
         query : `name`
             The query string with what the user's name or nick should start.
+        
         limit : `int` = `1`, Optional
-            The maximal amount of users to return. Can be in range [1:1000], defaults to `1`.
+            The maximal amount of users to return. Can be in range [1:1000].
+            
+            When passed as non-positive value, will default to the maximal allowed amount.
         
         Returns
         -------
@@ -524,35 +637,17 @@ class ClientCompoundUserEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            - If `query` was not given as `str`.
-            - If `query`'s length is out of the expected range [1:32].
             - If `limit` was not given as `str`.
             - If `limit` is out fo expected range [1:1000].
         """
         guild, guild_id = get_guild_and_id(guild)
         
-        if __debug__:
-            if not isinstance(query, str):
-                raise AssertionError(
-                    f'`query` can be `str`, got {query.__class__.__name__}; {query!r}.'
-                )
-            
-            query_length = len(query)
-            if query_length < 1 or query_length > 1000:
-                raise AssertionError(
-                    f'`query` length can be in range [1:1000], got {query_length!r}; {query!r}.'
-                )
-            
-            if not isinstance(limit, int):
-                raise AssertionError(
-                f'`limit` can be `int`, got {limit.__class__.__name__}; {limit!r}.'
-                )
-            
-            if limit < 0 or limit > 1000:
-                raise AssertionError(
-                    f'`limit` can be in range [1:1000], got {limit!r}.'
-                )
-                
+        assert _assert__guild_user_search__query(query)
+        assert _assert__guild_user_search__limit(limit)
+        
+        if limit <= 0 or limit > 1000:
+            limit = 1000
+        
         data = {'query': query}
         
         if limit != 1:
@@ -564,4 +659,3 @@ class ClientCompoundUserEndpoints(Compound):
             guild = create_partial_guild_from_id(guild_id)
         
         return [User._create_and_update(user_data, guild) for user_data in data]
-    

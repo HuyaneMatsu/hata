@@ -12,6 +12,7 @@
 - Add `AutoModerationRule` parameter to `AutoModerationRule.copy_with`.
 - Separate down the `guild ban` endpoints from the `guild` ones.
 - Add `delete_message_seconds` audit log detail converter and update the `delete_message_days` one.
+- `Client.user_guild_profile_edit` now accepts `roles` as any iterable.
 
 #### Bug Fies
 

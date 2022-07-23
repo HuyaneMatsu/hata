@@ -269,7 +269,9 @@ def _validate_name(name):
     return preconvert_str(name, 'name', 1, 2048)
 
 
-def _validate_trigger_type_with_metadata_options(trigger_type, excluded_keywords, keyword_presets, keywords):
+def _validate_trigger_type_with_metadata_options(
+    trigger_type, excluded_keywords, keyword_presets, keywords, mention_limit
+):
     """
     Validates the given `trigger_type` with the `keyword_presets`, `keywords` options. If any option is given, the
     `trigger_type` will default towards it. On any mismatch exception is raised.
@@ -288,6 +290,9 @@ def _validate_trigger_type_with_metadata_options(trigger_type, excluded_keywords
 
     keywords : `Ellipsis`, `None`, `str`, `iterable` of `str`
         Substrings which will be searched for in content.
+    
+    mention_limit : `Ellipsis`, `None`, `int`
+        The amount of mentions in a message after the rule is triggered.
     
     Returns
     -------
@@ -309,7 +314,7 @@ def _validate_trigger_type_with_metadata_options(trigger_type, excluded_keywords
     if (trigger_type is not ...):
         trigger_type = preconvert_preinstanced_type(trigger_type, 'trigger_type', AutoModerationRuleTriggerType)
     
-    if (keyword_presets is not ...) + (keywords is not ...) > 1:
+    if (keyword_presets is not ...) + (keywords is not ...) + (mention_limit is not ...)> 1:
         raise TypeError(
             f'`keyword_presets` and `keywords` parameters are mutually exclusive, got '
             f'keyword_presets={keyword_presets!r}; keywords={keywords!r}.'
@@ -332,9 +337,14 @@ def _validate_trigger_type_with_metadata_options(trigger_type, excluded_keywords
         probable_trigger_type = AutoModerationRuleTriggerType.keyword
         metadata_parameters = (keywords, )
     
+    elif (mention_limit is not ...):
+        probable_trigger_type = AutoModerationRuleTriggerType.mention_spam
+        metadata_parameters = (mention_limit, )
+        
     else:
         probable_trigger_type = None
         metadata_parameters = ()
+    
     
     if (trigger_type is ...):
         if (probable_trigger_type is None):
@@ -351,10 +361,14 @@ def _validate_trigger_type_with_metadata_options(trigger_type, excluded_keywords
                 if (keyword_presets is not ...):
                     received_parameter_name = 'keyword_presets'
                     received_parameter_value = keyword_presets
-                    
-                else:
+                
+                elif (keywords is not ...):
                     received_parameter_name = 'keywords'
                     received_parameter_value = keywords
+                
+                else:
+                    received_parameter_name = 'mention_limit'
+                    received_parameter_value = mention_limit
                 
                 raise TypeError(
                     f'Both `trigger_type` and `{received_parameter_name}` parameters refer to a different '
@@ -419,7 +433,7 @@ class AutoModerationRule(DiscordEntity, immortal=True):
     
     def __new__(
         cls, name, actions, trigger_type=..., *, enabled=True, event_type=None, excluded_channels=None,
-        excluded_keywords=..., excluded_roles=None, keyword_presets=..., keywords=...
+        excluded_keywords=..., excluded_roles=None, keyword_presets=..., keywords=..., mention_limit=...
     ):
         """
         Creates a new auto moderation rule with the given parameters.
@@ -454,6 +468,8 @@ class AutoModerationRule(DiscordEntity, immortal=True):
         
         excluded_keywords : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
             Excluded keywords from preset filter.
+            
+            > Only meaningful with the `keyword_presets` parameter.
         
         excluded_roles : `None`, `int`, ``Role``, `iterable` of (`int`, ``Role``) = `None`, Optional (Keyword only)
             Excluded roles from the rule.
@@ -462,12 +478,17 @@ class AutoModerationRule(DiscordEntity, immortal=True):
                 `iterable` of (`int`, ``AutoModerationKeywordPresetType``), Optional (Keyword only)
             Keyword preset defined by Discord which will be searched for in content.
             
-            > Mutually exclusive with the `keywords` parameter.
+            > Mutually exclusive with the `keywords` and `mention_limit` parameters.
         
         keywords : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
             Substrings which will be searched for in content.
             
-            > Mutually exclusive with the `keyword_presets` parameter.
+            > Mutually exclusive with the `keyword_presets` and `mention_limit` parameters.
+        
+        mention_limit : `None`, `int`, Optional (Keyword only)
+            The amount of mentions in a message after the rule is triggered.
+            
+            > Mutually exclusive with the `keyword_presets` and `keywords` parameters.
         
         Raises
         ------
@@ -496,7 +517,7 @@ class AutoModerationRule(DiscordEntity, immortal=True):
         
         # trigger_type & keywords & keyword_presets
         trigger_metadata, trigger_type = _validate_trigger_type_with_metadata_options(
-            trigger_type, excluded_keywords, keyword_presets, keywords
+            trigger_type, excluded_keywords, keyword_presets, keywords, mention_limit
         )
         
         self = object.__new__(cls)
@@ -1171,6 +1192,8 @@ class AutoModerationRule(DiscordEntity, immortal=True):
         
         excluded_keywords : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
             Excluded keywords from preset filter.
+            
+            > Only meaningful with the `keyword_presets` parameter.
         
         excluded_roles : `None`, `int`, ``Role``, `iterable` of (`int`, ``Role``) = `None`, Optional (Keyword only)
             Excluded roles from the rule.
@@ -1179,12 +1202,17 @@ class AutoModerationRule(DiscordEntity, immortal=True):
                 `iterable` of (`int`, ``AutoModerationKeywordPresetType``), Optional (Keyword only)
             Keyword preset defined by Discord which will be searched for in content.
             
-            > Mutually exclusive with the `keywords` parameter.
+            > Mutually exclusive with the `keywords` and `mention_limit` parameters.
         
         keywords : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
             Substrings which will be searched for in content.
             
-            > Mutually exclusive with the `keyword_presets` parameter.
+            > Mutually exclusive with the `keyword_presets` and `mention_limit` parameters.
+        
+        mention_limit : `None`, `int`, Optional (Keyword only)
+            The amount of mentions in a message after the rule is triggered.
+            
+            > Mutually exclusive with the `keyword_presets` and `keywords` parameters.
         
         name : `str`, Optional (Keyword only)
             The rule's name.
@@ -1278,8 +1306,9 @@ class AutoModerationRule(DiscordEntity, immortal=True):
         excluded_keywords = keyword_parameters.pop('excluded_keywords', ...)
         keyword_presets = keyword_parameters.pop('keyword_presets', ...)
         keywords = keyword_parameters.pop('keywords', ...)
+        mention_limit = keyword_parameters.pop('mention_limit', ...)
         
-        if (trigger_type is ...) and (keyword_presets is ...) and (keywords is ...):
+        if (trigger_type is ...) and (keyword_presets is ...) and (keywords is ...) and (mention_limit is ...):
             trigger_metadata = self.trigger_metadata
             if (trigger_metadata is not None):
                 trigger_metadata = trigger_metadata.copy()
@@ -1288,7 +1317,7 @@ class AutoModerationRule(DiscordEntity, immortal=True):
             
         else:
             trigger_metadata, trigger_type = _validate_trigger_type_with_metadata_options(
-                trigger_type, excluded_keywords, keyword_presets, keywords
+                trigger_type, excluded_keywords, keyword_presets, keywords, mention_limit
             )
         
         if keyword_parameters:

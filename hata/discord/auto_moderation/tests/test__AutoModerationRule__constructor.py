@@ -5,7 +5,8 @@ from ...role import Role
 
 from .. import (
     AutoModerationRule, AutoModerationRuleTriggerType, AutoModerationAction, AutoModerationActionType,
-    AutoModerationEventType, KeywordPresetTriggerMetadata, AutoModerationKeywordPresetType, KeywordTriggerMetadata
+    AutoModerationEventType, KeywordPresetTriggerMetadata, AutoModerationKeywordPresetType, KeywordTriggerMetadata,
+    MentionSpamTriggerMetadata
 )
 
 
@@ -619,9 +620,54 @@ def test__AutoModerationRule__constructor__excluded_keywords_2():
     Tests whether ``AutoModerationRule`` wont accept `excluded_keywords` with `keyword_presets` correctly.
     """
     rule = AutoModerationRule(
-            'name', None, excluded_keywords='owo', keyword_presets=AutoModerationKeywordPresetType.cursing
-        )
+        'name', None, excluded_keywords='owo', keyword_presets=AutoModerationKeywordPresetType.cursing
+    )
     
     trigger_metadata = KeywordPresetTriggerMetadata(AutoModerationKeywordPresetType.cursing, 'owo')
     
     vampytest.assert_eq(rule.trigger_metadata, trigger_metadata)
+
+
+def test__AutoModerationRule__constructor__mention_limit_0():
+    """
+    Tests whether ``AutoModerationRule``'s `.trigger_type` is set as expected when passing the `mention_limit`
+    parameter.
+    """
+    rule = AutoModerationRule('name', None, mention_limit=None)
+
+    vampytest.assert_is(rule.trigger_type, AutoModerationRuleTriggerType.mention_spam)
+
+
+def test__AutoModerationRule__constructor__mention_limit_1():
+    """
+    Tests whether ``AutoModerationRule``'s `.trigger_metadata` is set as expected when passing the
+    `mention_limit` parameter.
+    """
+    rule = AutoModerationRule('name', None, mention_limit=None)
+
+    vampytest.assert_instance(rule.trigger_metadata, MentionSpamTriggerMetadata)
+
+
+def test__AutoModerationRule__constructor__mention_limit_2():
+    """
+    Tests whether ``AutoModerationRule``'s `.trigger_metadata`'s `.mention_limit` is set as expected.
+    """
+    rule = AutoModerationRule('name', None, mention_limit=20)
+
+    vampytest.assert_eq(rule.trigger_metadata.mention_limit, 20)
+
+
+def test__AutoModerationRule__constructor__mention_limit_3():
+    """
+    Tests whether ``AutoModerationRule`` wont accept `mention_limit` with other trigger metadata parameters.
+    """
+    with vampytest.assert_raises(TypeError):
+        return AutoModerationRule('name', None, mention_limit=None, keywords=None)
+
+
+def test__AutoModerationRule__constructor__mention_limit_4():
+    """
+    Tests whether ``AutoModerationRule``'s `.trigger_metadata`'s `.mention_limit` is type checked as expected
+    """
+    with vampytest.assert_raises(TypeError):
+        return AutoModerationRule('name', None, mention_limit=12.6)

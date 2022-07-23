@@ -7,6 +7,7 @@ from .client_gayteway import *
 from .discovery import *
 from .emoji import *
 from .guild import *
+from .guild_ban import *
 from .interaction import *
 from .integration import *
 from .invite import *
@@ -33,6 +34,7 @@ __all__ = (
     *discovery.__all__,
     *emoji.__all__,
     *guild.__all__,
+    *guild_ban.__all__,
     *interaction.__all__,
     *integration.__all__,
     *invite.__all__,
@@ -60,6 +62,7 @@ from .client_gayteway import ClientCompoundClientGateway
 from .discovery import ClientCompoundDiscoveryEndpoints
 from .emoji import ClientCompoundEmojiEndpoints
 from .guild import ClientCompoundGuildEndpoints
+from .guild_ban import ClientCompoundGuildBanEndpoints
 from .interaction import ClientCompoundInteractionEndpoints
 from .integration import ClientCompoundIntegrationEndpoints
 from .invite import ClientCompoundInviteEndpoints
@@ -87,6 +90,7 @@ CLIENT_COMPOUNDS = (
     ClientCompoundDiscoveryEndpoints,
     ClientCompoundEmojiEndpoints,
     ClientCompoundGuildEndpoints,
+    ClientCompoundGuildBanEndpoints,
     ClientCompoundInteractionEndpoints,
     ClientCompoundIntegrationEndpoints,
     ClientCompoundInviteEndpoints,

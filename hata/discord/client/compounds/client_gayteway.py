@@ -34,13 +34,12 @@ def _assert__edit_presence__afk(afk):
     Parameters
     ----------
     afk : `bool`
-        - If `afk` was not given as `bool`.
+        Whether the client is afk or not (?).
     
     Raises
     ------
     AssertionError
-        - If `limit` is not `int`.
-        - If `limit` is out of the expected range [1:100].
+        - If `afk` is not `bool`.
     """
     if not isinstance(afk, bool):
         raise AssertionError(

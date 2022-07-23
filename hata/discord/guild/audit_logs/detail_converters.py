@@ -12,8 +12,12 @@ def detail_converter_amount(key, value):
     return 'amount', int(value)
 
 
-def detail_converter_days(key, value):
-    return 'days', int(value)
+def detail_converter_delete_message_days_as_seconds(key, value):
+    return 'delete_message_seconds', int(value) * 24 * 60 * 60
+
+
+def detail_converter_delete_message_seconds(key, value):
+    return 'delete_message_seconds', int(value)
 
 
 def detail_converter_users_removed(key, value):
@@ -48,7 +52,8 @@ DETAIL_CONVERTERS = {
     'auto_moderation_rule_trigger_type': detail_converter_auto_moderation_rule_trigger_type,
     'channel_id': detail_converter_channel_id,
     'count': detail_converter_amount,
-    'delete_member_days': detail_converter_days,
+    'delete_message_days': detail_converter_delete_message_days_as_seconds,
+    'delete_message_seconds': detail_converter_delete_message_seconds,
     'id': detail_converter_permission_overwrite_target_id,
     'members_removed': detail_converter_users_removed,
     'message_id': detail_converter_message,

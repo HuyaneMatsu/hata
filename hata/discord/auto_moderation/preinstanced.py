@@ -8,7 +8,7 @@ from scarletio import export
 from ..bases import Preinstance as P, PreinstancedBase
 
 from .action_metadata import SendAlertMessageActionMetadata, TimeoutActionMetadata
-from .trigger_metadata import KeywordPresetTriggerMetadata, KeywordTriggerMetadata
+from .trigger_metadata import KeywordPresetTriggerMetadata, KeywordTriggerMetadata, MentionSpamTriggerMetadata
 
 
 
@@ -148,6 +148,8 @@ class AutoModerationRuleTriggerType(PreinstancedBase):
     +-----------------------+-------------------+-----------+---------------+-----------------------------------+
     | keyword_preset        | keyword preset    | 4         | 1             | ``KeywordPresetTriggerMetadata``  |
     +-----------------------+-------------------+-----------+---------------+-----------------------------------+
+    | mention_spam          | mention spam      | 5         | 1             | ``MentionSpamTriggerMetadata``    |
+    +-----------------------+-------------------+-----------+---------------+-----------------------------------+
     """
     __slots__ = ('max_per_guild', 'metadata_type')
     
@@ -206,6 +208,7 @@ class AutoModerationRuleTriggerType(PreinstancedBase):
     harmful_link = P(2, 'harmful link', 1, None)
     spam = P(3, 'spam', 1, None)
     keyword_preset = P(4, 'keyword preset', 1, KeywordPresetTriggerMetadata)
+    mention_spam = P(5, 'mention spam', 1, MentionSpamTriggerMetadata)
 
 
 class AutoModerationEventType(PreinstancedBase):

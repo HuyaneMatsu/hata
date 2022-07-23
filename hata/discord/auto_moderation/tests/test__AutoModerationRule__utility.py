@@ -94,6 +94,19 @@ def test__AutoModerationRule__copy_with_1():
         )
     )
 
+def test__AutoModerationRule__copy_with_2():
+    """
+    Tests whether the auto moderation rule's `copy_with` method drops mismatch error on passing multiple trigger
+    metadata parameters.
+    """
+    rule = AutoModerationRule('name', None, AutoModerationRuleTriggerType.spam)
+    
+    with vampytest.assert_raises(TypeError):
+        return rule.copy_with(
+            mention_limit = None,
+            keywords = None,
+        )
+
 
 def test__AutoModerationRule__partial():
     """

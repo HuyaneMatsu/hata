@@ -5,10 +5,21 @@
 - The shutdown event handlers will be ensured when a client connection receives a fatal exception.
 - Add `run` command.
 - Add `ApplicationFlag.application_command_badge`.
+- Add `delete_message_seconds` parameter to `Client.guild_ban_add`.
+- Add `AutoModerationRuleTriggerType.mention_spam`.
+- Add `MentionSpamTriggerMetadata`.
+- Add `AutoModerationRule` parameter to `AutoModerationRule.__new__`.
+- Add `AutoModerationRule` parameter to `AutoModerationRule.copy_with`.
+- Separate down the `guild ban` endpoints from the `guild` ones.
+- Add `delete_message_seconds` audit log detail converter and update the `delete_message_days` one.
 
 #### Bug Fies
 
 - Fix `AttributeError` in `handle_voice_client_shutdown` (typo).
+
+#### Renames, Deprecation & Removals
+
+- Deprecate `delete_message_days` parameter of `Client.guild_ban_add`. Use `delete_message_seconds` instead.
 
 ## 1.3.0 *\[2022-07-19\]*
 
@@ -85,6 +96,7 @@ Extra features are planned in future updates
 - `ZEROUSER` was not put in cache, which could cause false result in tests.
 
 #### Renames, Deprecation & Removals
+
 - Rename `MessageType.new_guild_subscription` to `.guild_boost`.
 - Deprecate `MessageType.new_guild_subscription`.
 - Rename `MessageType.new_guild_subscription_tier_1` to `.guild_boost_tier_1`.

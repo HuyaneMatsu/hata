@@ -202,7 +202,7 @@ FORMAT_STRING_POSTFIX_RP = re.compile('(![sraSRA])\}')
 
 class WordNode:
     """
-    A words's character node when building regex.
+    A words' character node when building regex.
     
     Attributes
     ----------
@@ -1590,7 +1590,7 @@ def _try_match_string(context):
         return False
     
     content = matched.group(0)
-    prefix, encapsuletor = matched.groups()
+    prefix, encapsulator = matched.groups()
     
     if prefix is None:
         token_type = TOKEN_TYPE_STRING_UNICODE
@@ -1606,8 +1606,8 @@ def _try_match_string(context):
     end = matched.end()
     context.set_line_character_index(end)
     
-    if len(encapsuletor) == 3:
-        if encapsuletor == '\'\'\'':
+    if len(encapsulator) == 3:
+        if encapsulator == '\'\'\'':
             end_finder = STRING_MULTI_LINE_END_SINGLE_RP
         else:
             end_finder = STRING_MULTI_LINE_END_DOUBLE_RP
@@ -1655,7 +1655,7 @@ def _try_match_string(context):
         if len(line) == end:
             set_end_later = -100
         else:
-            if encapsuletor == '\'':
+            if encapsulator == '\'':
                 end_finder = STRING_END_SINGLE_RP
             else:
                 end_finder = STRING_END_DOUBLE_RP
@@ -1675,7 +1675,7 @@ def _try_match_string(context):
             else:
                 context.add_token(token_type, content)
     
-    context.add_token(token_type, encapsuletor)
+    context.add_token(token_type, encapsulator)
     
     if set_end_later != -100:
         context.set_line_character_index(set_end_later)
@@ -1839,7 +1839,7 @@ PYTHON_PARSERS = (
     _try_match_punctuation,
     _try_match_operator,
     _try_match_anything,
-      )
+)
 
 def _try_match_till_format_string_expression(context):
     """

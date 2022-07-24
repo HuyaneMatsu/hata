@@ -80,7 +80,7 @@ async def process_command_coroutine_generator(command_context, coroutine_generat
     ----------
     command_context : ``CommandContext``
         The respective command context.
-    coroutine_generator : `CoroutineGenerator`
+    coroutine_generator : `CoroutineGeneratorType`
         A coroutine generator with will send command response.
     
     Returns

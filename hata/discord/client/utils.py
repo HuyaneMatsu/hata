@@ -79,7 +79,7 @@ def wait_for_interruption():
         # should not happen
         exception = None
     
-    sys.stdout.write('wait_for_interruption interrupted\n')
+    sys.stdout.write('\ninterrupted ...\n')
     
     WaitTillAll([Task(client.disconnect(), KOKORO) for client in CLIENTS.values()], KOKORO).sync_wrap().wait()
     KOKORO.stop()

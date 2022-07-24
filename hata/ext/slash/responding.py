@@ -261,7 +261,7 @@ async def process_command_coroutine_generator(
         The respective event to respond on.
     response_modifier : `None`, ``ResponseModifier``
         Modifies values returned and yielded to command coroutine processor.
-    coroutine_generator : `CoroutineGenerator`
+    coroutine_generator : `CoroutineGeneratorType`
         A coroutine generator with will send command response.
     
     Returns

@@ -224,7 +224,7 @@ class TextTable:
     
     def __new__(cls, lines, start, end):
         """
-        Creates a new table from the given lines's start:end range.
+        Creates a new table from the given lines' start:end range.
         
         Parameters
         ----------

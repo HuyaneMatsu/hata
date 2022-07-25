@@ -135,11 +135,15 @@ ATTRIBUTE_ACCESS_OPERATOR = '.'
 KEYWORD_ELLIPSIS = '...'
 ESCAPE = '\\'
 
-BUILTIN_CONSTANTS = {'Ellipsis', 'False', 'None', 'NotImplemented', 'True', KEYWORD_ELLIPSIS}
+BUILTIN_CONSTANTS = {
+    'Ellipsis', 'False', 'None', 'NotImplemented', 'True', KEYWORD_ELLIPSIS
+}
 
-KEYWORDS = {'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except',
-    'finally', 'for', 'from', 'global', 'if', 'import', 'lambda', 'nonlocal', 'pass', 'raise', 'return', 'try',
-    'while', 'with', 'yield'}
+KEYWORDS = {
+    'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except', 'finally',
+    'for', 'from', 'global', 'if', 'import', 'lambda', 'nonlocal', 'pass', 'raise', 'return', 'try', 'while', 'with',
+    'yield'
+}
 
 BUILTIN_VARIABLES = {'__import__', 'abs', 'all', 'any', 'bin', 'bool', 'bytearray', 'bytes', 'chr', 'classmethod',
     'compile', 'complex', 'delattr', 'dict', 'dir', 'divmod', 'enumerate', 'eval', 'filter', 'float', 'format',
@@ -148,41 +152,53 @@ BUILTIN_VARIABLES = {'__import__', 'abs', 'all', 'any', 'bin', 'bool', 'bytearra
     'print', 'property', 'range', 'repr', 'reversed', 'round', 'set', 'setattr', 'slice', 'sorted', 'staticmethod',
     'str', 'sum', 'super', 'tuple', 'type', 'vars', 'zip', }
 
-BUILTIN_EXCEPTIONS = {'ArithmeticError', 'AssertionError', 'AttributeError', 'BaseException', 'BufferError',
-    'BytesWarning', 'DeprecationWarning', 'EOFError', 'EnvironmentError', 'Exception', 'FloatingPointError',
-    'FutureWarning', 'GeneratorExit', 'IOError', 'ImportError', 'ImportWarning', 'IndentationError', 'IndexError',
-    'KeyError', 'KeyboardInterrupt', 'LookupError', 'MemoryError', 'NameError', 'NotImplementedError', 'OSError',
-    'OverflowError', 'PendingDeprecationWarning', 'ReferenceError', 'ResourceWarning', 'RuntimeError', 'RuntimeWarning',
-    'StopIteration', 'SyntaxError', 'SyntaxWarning', 'SystemError', 'SystemExit', 'TabError', 'TypeError',
-    'UnboundLocalError', 'UnicodeDecodeError', 'UnicodeEncodeError', 'UnicodeError', 'UnicodeTranslateError',
-    'UnicodeWarning', 'UserWarning', 'ValueError', 'VMSError', 'Warning', 'WindowsError', 'ZeroDivisionError',
-    'BlockingIOError', 'ChildProcessError', 'ConnectionError', 'BrokenPipeError', 'ConnectionAbortedError',
-    'ConnectionRefusedError', 'ConnectionResetError', 'FileExistsError', 'FileNotFoundError', 'InterruptedError',
-    'IsADirectoryError', 'NotADirectoryError', 'PermissionError', 'ProcessLookupError', 'TimeoutError',
-    'StopAsyncIteration', 'ModuleNotFoundError', 'RecursionError', }
+BUILTIN_EXCEPTIONS = {
+    'ArithmeticError', 'AssertionError', 'AttributeError', 'BaseException', 'BufferError', 'BytesWarning',
+    'DeprecationWarning', 'EOFError', 'EnvironmentError', 'Exception', 'FloatingPointError', 'FutureWarning',
+    'GeneratorExit', 'IOError', 'ImportError', 'ImportWarning', 'IndentationError', 'IndexError', 'KeyError',
+    'KeyboardInterrupt', 'LookupError', 'MemoryError', 'NameError', 'NotImplementedError', 'OSError', 'OverflowError',
+    'PendingDeprecationWarning', 'ReferenceError', 'ResourceWarning', 'RuntimeError', 'RuntimeWarning', 'StopIteration',
+    'SyntaxError', 'SyntaxWarning', 'SystemError', 'SystemExit', 'TabError', 'TypeError', 'UnboundLocalError',
+    'UnicodeDecodeError', 'UnicodeEncodeError', 'UnicodeError', 'UnicodeTranslateError', 'UnicodeWarning',
+    'UserWarning', 'ValueError', 'VMSError', 'Warning', 'WindowsError', 'ZeroDivisionError', 'BlockingIOError',
+    'ChildProcessError', 'ConnectionError', 'BrokenPipeError', 'ConnectionAbortedError', 'ConnectionRefusedError',
+    'ConnectionResetError', 'FileExistsError', 'FileNotFoundError', 'InterruptedError', 'IsADirectoryError',
+    'NotADirectoryError', 'PermissionError', 'ProcessLookupError', 'TimeoutError', 'StopAsyncIteration',
+    'ModuleNotFoundError', 'RecursionError'
+}
 
-MAGIC_FUNCTIONS = {'__abs__', '__add__', '__aenter__', '__aexit__', '__aiter__', '__and__', '__anext__', '__await__',
-    '__bool__', '__bytes__', '__call__', '__complex__', '__contains__', '__del__', '__delattr__', '__delete__',
-    '__delitem__', '__dir__', '__divmod__', '__enter__', '__eq__', '__exit__', '__float__', '__floordiv__',
-    '__format__', '__ge__', '__get__', '__getattr__', '__getattribute__', '__getitem__', '__gt__', '__hash__',
-    '__iadd__', '__iand__', '__ifloordiv__', '__ilshift__', '__imatmul__', '__imod__', '__imul__', '__index__',
-    '__init__', '__instancecheck__', '__int__', '__invert__', '__ior__', '__ipow__', '__irshift__', '__isub__',
-    '__iter__', '__itruediv__', '__ixor__', '__le__', '__len__', '__length_hint__', '__lshift__', '__lt__',
-    '__matmul__', '__missing__', '__mod__', '__mul__', '__ne__', '__neg__', '__new__', '__next__', '__or__', '__pos__',
-    '__pow__', '__prepare__', '__radd__', '__rand__', '__rdivmod__', '__repr__', '__reversed__', '__rfloordiv__',
-    '__rlshift__', '__rmatmul__', '__rmod__', '__rmul__', '__ror__', '__round__', '__rpow__', '__rrshift__',
-    '__rshift__', '__rsub__', '__rtruediv__', '__rxor__', '__set__', '__setattr__', '__setitem__', '__str__',
-    '__sub__', '__subclasscheck__', '__truediv__', '__xor__', }
+MAGIC_FUNCTIONS = {
+    '__abs__', '__add__', '__aenter__', '__aexit__', '__aiter__', '__and__', '__anext__', '__await__', '__bool__',
+    '__bytes__', '__call__', '__complex__', '__contains__', '__del__', '__delattr__', '__delete__', '__delitem__',
+    '__dir__', '__divmod__', '__enter__', '__eq__', '__exit__', '__float__', '__floordiv__', '__format__', '__ge__',
+    '__get__', '__getattr__', '__getattribute__', '__getitem__', '__gt__', '__hash__', '__iadd__', '__iand__',
+    '__ifloordiv__', '__ilshift__', '__imatmul__', '__imod__', '__imul__', '__index__', '__init__', '__instancecheck__',
+    '__int__', '__invert__', '__ior__', '__ipow__', '__irshift__', '__isub__', '__iter__', '__itruediv__', '__ixor__',
+    '__le__', '__len__', '__length_hint__', '__lshift__', '__lt__', '__matmul__', '__missing__', '__mod__', '__mul__',
+    '__ne__', '__neg__', '__new__', '__next__', '__or__', '__pos__', '__pow__', '__prepare__', '__radd__', '__rand__',
+    '__rdivmod__', '__repr__', '__reversed__', '__rfloordiv__', '__rlshift__', '__rmatmul__', '__rmod__', '__rmul__',
+    '__ror__', '__round__', '__rpow__', '__rrshift__', '__rshift__', '__rsub__', '__rtruediv__', '__rxor__', '__set__',
+    '__setattr__', '__setitem__', '__str__', '__sub__', '__subclasscheck__', '__truediv__', '__xor__'
+}
 
-MAGIC_VARIABLES = {'__annotations__', '__bases__', '__class__', '__closure__', '__code__', '__defaults__', '__dict__',
-    '__doc__', '__file__', '__func__', '__globals__', '__kwdefaults__', '__module__', '__mro__', '__name__',
-    '__objclass__', '__qualname__', '__self__', '__slots__', '__weakref__'}
+MAGIC_VARIABLES = {
+    '__annotations__', '__bases__', '__class__', '__closure__', '__code__', '__defaults__', '__dict__', '__doc__',
+    '__file__', '__func__', '__globals__', '__kwdefaults__', '__module__', '__mro__', '__name__', '__objclass__',
+    '__qualname__', '__self__', '__slots__', '__weakref__'
+}
 
-PUNCTUATIONS = {'(', ')', ',', ':', ';', '[', ']', '{', '}'}
-OPERATOR_WORDS = {'and', 'in', 'is', 'not', 'or'}
+PUNCTUATIONS = {
+    '(', ')', ',', ':', ';', '[', ']', '{', '}'
+}
 
-OPERATORS = {'!=', '%', '%=', '&', '&=', '*', '**', '**=', '*=', '+', '+=', '-', '-=', '->', '.', '...', '/', '//',
-    '//=', '/=', '<', '<<', '<<=', '<=', '=', '==', '>', '>=', '>>', '>>=', '@', '@=', '\\', '^', '^=', '|', '|='}
+OPERATOR_WORDS = {
+    'and', 'in', 'is', 'not', 'or'
+}
+
+OPERATORS = {
+    '!=', '%', '%=', '&', '&=', '*', '**', '**=', '*=', '+', '+=', '-', '-=', '->', '.', '...', '/', '//', '//=', '/=',
+    '<', '<<', '<<=', '<=', '=', '==', '>', '>=', '>>', '>>=', '@', '@=', '\\', '^', '^=', '|', '|='
+}
 
 STRING_STARTER_RP = re.compile('(r[fb]?|[fb]r?|b|f)?(\'{3}|\"{3}|\'|\")')
 STRING_END_SINGLE_RP = re.compile('(.*?[^\\\\])\'|\'')
@@ -235,6 +251,7 @@ class WordNode:
         self.parent = parent
         return self
     
+    
     def __repr__(self):
         """Returns the word node's representation."""
         result = ['<', self.__class__.__name__, ' of ', repr(self.character)]
@@ -249,6 +266,7 @@ class WordNode:
         result.append('>')
         
         return ''.join(result)
+    
     
     def add_node(self, characters, character_index):
         """
@@ -283,6 +301,7 @@ class WordNode:
         
         if (not is_final):
             node.add_node(characters, character_index)
+    
     
     def _match_index(self, string, index):
         """
@@ -380,6 +399,7 @@ def create_word_pattern(words):
     
     return word_node
 
+
 PUNCTUATION_WP = create_word_pattern(PUNCTUATIONS)
 OPERATOR_WP = create_word_pattern(OPERATORS)
 
@@ -423,6 +443,7 @@ class TokenTypeNode:
         
         return self
     
+    
     def __repr__(self):
         """Returns the token type node's representation."""
         result = ['<', self.__class__.__name__, ' id=', repr(self.id)]
@@ -440,6 +461,7 @@ class TokenTypeNode:
         
         return ''.join(result)
     
+    
     def add_node(self, node):
         """
         Adds a sub node.
@@ -455,6 +477,7 @@ class TokenTypeNode:
             self.nodes = nodes = {}
         
         nodes[node.id] = node
+    
     
     def _set_html_class(self, html_class):
         """
@@ -475,6 +498,7 @@ class TokenTypeNode:
             for node in nodes.values():
                 if not node.is_class_direct:
                     node._set_html_class(html_class)
+    
     
     def set_html_class(self, html_class):
         """
@@ -514,6 +538,7 @@ def build_type_token_nodes(dictionary):
         if (value is not None):
             build_type_token_child(node, value)
 
+
 def build_type_token_child(parent, dictionary):
     """
     Builds token node type structure extending the given parent.
@@ -530,6 +555,7 @@ def build_type_token_child(parent, dictionary):
         parent.add_node(node)
         if (value is not None):
             build_type_token_child(node, value)
+
 
 def set_highlight_html_class(token_type_identifier, html_class):
     """
@@ -770,6 +796,7 @@ class HighlightContextBase:
         """
         return object.__new__(cls)
     
+    
     def get_line_index(self):
         """
         Returns the line's index where the context is at.
@@ -781,7 +808,8 @@ class HighlightContextBase:
         line_index : `int`
         """
         return 0
-
+    
+    
     def get_line(self):
         """
         Returns the actual line of the context.
@@ -793,7 +821,8 @@ class HighlightContextBase:
         line : `str`
         """
         return ''
-        
+    
+    
     def get_line_character_index(self):
         """
         Returns the character index of the context's actual line.
@@ -805,7 +834,8 @@ class HighlightContextBase:
         line_character_index : `int`
         """
         return 0
-
+    
+    
     def set_line_character_index(self, line_character_index):
         """
         Sets the actual line's character index.
@@ -821,6 +851,7 @@ class HighlightContextBase:
         """
         pass
     
+    
     def add_token(self, token_type, token_value):
         """
         Adds a token to the context.
@@ -834,7 +865,8 @@ class HighlightContextBase:
         """
         token = Token(token_type, token_value)
         self.tokens.append(token)
-
+    
+    
     def add_tokens(self, tokens):
         """
         Adds tokens to the context.
@@ -845,6 +877,7 @@ class HighlightContextBase:
             The tokens to add.
         """
         self.tokens.extend(tokens)
+    
     
     def get_last_related_token(self):
         """
@@ -875,6 +908,7 @@ class HighlightContextBase:
         
         return token
     
+    
     def match(self):
         """
         Matches the content of the context.
@@ -882,6 +916,7 @@ class HighlightContextBase:
         > Subclasses should overwrite it.
         """
         pass
+    
     
     def generate_highlighted(self):
         """
@@ -898,6 +933,7 @@ class HighlightContextBase:
         """
         return
         yield
+    
     
     def _add_linebreak_token(self):
         """
@@ -974,6 +1010,7 @@ class HighlightContext(HighlightContextBase):
         
         return self
     
+    
     def get_line_index(self):
         """
         Returns the line's index where the context is at.
@@ -983,6 +1020,7 @@ class HighlightContext(HighlightContextBase):
         line_index : `int`
         """
         return self.line_index
+    
     
     def get_line(self):
         """
@@ -1001,6 +1039,7 @@ class HighlightContext(HighlightContextBase):
         
         return line
     
+    
     def get_line_character_index(self):
         """
         Returns the character index of the context's actual line.
@@ -1010,6 +1049,7 @@ class HighlightContext(HighlightContextBase):
         line_character_index : `int`
         """
         return self.line_character_index
+    
     
     def set_line_character_index(self, line_character_index):
         """
@@ -1040,6 +1080,7 @@ class HighlightContext(HighlightContextBase):
             
             if line_character_index != -2:
                 self._add_linebreak_token()
+    
     
     def match(self):
         """
@@ -1089,6 +1130,7 @@ class HighlightContext(HighlightContextBase):
             last_type = token_type
             token_index -= 1
             continue
+    
     
     def generate_highlighted(self):
         """
@@ -1166,6 +1208,7 @@ class FormatStringContext(HighlightContextBase):
         
         return self
     
+    
     def get_line(self):
         """
         Returns the actual line of the context.
@@ -1176,6 +1219,7 @@ class FormatStringContext(HighlightContextBase):
         """
         return self.line
     
+    
     def get_line_character_index(self):
         """
         Returns the character index of the context's actual line.
@@ -1185,6 +1229,7 @@ class FormatStringContext(HighlightContextBase):
         line_character_index : `int`
         """
         return self.line_character_index
+    
     
     def set_line_character_index(self, line_character_index):
         """
@@ -1205,6 +1250,7 @@ class FormatStringContext(HighlightContextBase):
             self.line_character_index = 0
             self.done = True
     
+    
     def add_token(self, token_type, token_value):
         """
         Adds a token to the context.
@@ -1224,6 +1270,7 @@ class FormatStringContext(HighlightContextBase):
         if token_type == TOKEN_TYPE_STRING_UNICODE_FORMAT:
             if self.is_in_code:
                 token_type = TOKEN_TYPE_STRING_UNICODE_FORMAT_CODE
+        
         elif token_type == TOKEN_TYPE_SPECIAL_PUNCTUATION and (token_value is not None):
             brace_level = self.brace_level
             if token_value == '{':
@@ -1253,6 +1300,7 @@ class FormatStringContext(HighlightContextBase):
                     token_type = TOKEN_TYPE_STRING_UNICODE_FORMAT_MARK
         
         HighlightContextBase.add_token(self, token_type, token_value)
+    
     
     def match(self):
         """
@@ -1308,6 +1356,7 @@ def _try_match_complex(context):
     end = matched.end()
     context.set_line_character_index(end)
     return True
+
 
 def _try_match_float(context):
     """
@@ -1398,6 +1447,7 @@ def _try_match_integer_decimal(context):
     context.set_line_character_index(end)
     return True
 
+
 def _try_match_integer_octal(context):
     """
     Tries to match an octal integer as the context's next token.
@@ -1427,6 +1477,7 @@ def _try_match_integer_octal(context):
     context.set_line_character_index(end)
     return True
 
+
 def _try_match_integer_binary(context):
     """
     Tries to match a binary integer as the context's next token.
@@ -1455,6 +1506,7 @@ def _try_match_integer_binary(context):
     end = matched.end()
     context.set_line_character_index(end)
     return True
+
 
 def _try_match_identifier(context):
     """
@@ -1507,6 +1559,7 @@ def _try_match_identifier(context):
     context.set_line_character_index(end)
     return True
 
+
 def _try_match_punctuation(context):
     """
     Tries to match a punctuation as the context's next token.
@@ -1533,6 +1586,7 @@ def _try_match_punctuation(context):
     end = index + len(matched)
     context.set_line_character_index(end)
     return True
+
 
 def _try_match_operator(context):
     """
@@ -1567,6 +1621,7 @@ def _try_match_operator(context):
     end = index + len(matched)
     context.set_line_character_index(end)
     return True
+
 
 def _try_match_string(context):
     """
@@ -1682,6 +1737,7 @@ def _try_match_string(context):
     
     return True
 
+
 def _try_match_space(context):
     """
     Tries to match some space as the context's next token.
@@ -1710,6 +1766,7 @@ def _try_match_space(context):
     end = matched.end()
     context.set_line_character_index(end)
     return True
+
 
 def _try_match_comment(context):
     """
@@ -1745,6 +1802,7 @@ def _try_match_comment(context):
     
     return True
 
+
 def _try_match_anything(context):
     """
     Matches anything as the context's next token.
@@ -1765,6 +1823,7 @@ def _try_match_anything(context):
     context.add_token(TOKEN_TYPE_NON_SPACE_UNIDENTIFIED, content)
     context.set_line_character_index(index + 1)
     return True
+
 
 def _try_match_empty_line(context):
     """
@@ -1789,6 +1848,7 @@ def _try_match_empty_line(context):
     context.add_token(TOKEN_TYPE_LINEBREAK, None)
     context.set_line_character_index(-1)
     return True
+
 
 def _try_match_console_prefix(context):
     """
@@ -1840,6 +1900,7 @@ PYTHON_PARSERS = (
     _try_match_operator,
     _try_match_anything,
 )
+
 
 def _try_match_till_format_string_expression(context):
     """
@@ -1911,6 +1972,7 @@ def _try_match_till_format_string_expression(context):
     
     return True
 
+
 def _try_match_linebreak(context):
     """
     Tries to match a linebreak.
@@ -1935,6 +1997,7 @@ def _try_match_linebreak(context):
     context.set_line_character_index(index + 1)
     
     return True
+
 
 def _try_match_format_string_postfix(context):
     """
@@ -1970,7 +2033,8 @@ def _try_match_format_string_postfix(context):
     context.add_token(TOKEN_TYPE_SPECIAL_PUNCTUATION, '}')
     context.set_line_character_index(end)
     return True
-    
+
+
 PYTHON_PARSERS_FORMAT_STRING = (
     _try_match_empty_line,
     _try_match_linebreak,

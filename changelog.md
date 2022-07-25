@@ -15,6 +15,9 @@
 - `Client.user_guild_profile_edit` now accepts `roles` as any iterable.
 - Add `timeout_duration` parameter to `Client.user_guild_profile_edit` replacing the old `timed_out_until`.
 - Add missing `unix_time_to_datetime` import.
+- Add `ApplicationCommand.mention_sub_command`.
+- Add `ApplicationCommand.mention_with`.
+- Add sub-command mention option for `ApplicationCommand.__format__`.
 
 #### Bug Fies
 

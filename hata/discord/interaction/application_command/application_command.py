@@ -1109,6 +1109,48 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         return False
     
     
+    def mention_sub_command(self, *sub_command_names):
+        """
+        Returns the application command's mention extended with the given sub-command names..
+        
+        Parameters
+        ----------
+        *sub_command_names : `str`
+            The sub commands' names to mention.
+        
+        Returns
+        -------
+        mention : `str`
+        """
+        mention_parts = ['</', self.name]
+        
+        for sub_command_name in sub_command_names:
+            mention_parts.append(' ')
+            mention_parts.append(sub_command_name)
+        
+        mention_parts.append(':')
+        mention_parts.append(str(self.id))
+        mention_parts.append('>')
+        
+        return ''.join(mention_parts)
+    
+    
+    def mention_with(self, with_):
+        """
+        Returns the application command's mention with the added string.
+        
+        Parameters
+        ----------
+        with_ : `str`
+            Additional string to mention the command with. It should be sub commands' name.
+        
+        Returns
+        -------
+        mention : `str`
+        """
+        return f'</{self.name} {with_}:{self.id}>'
+    
+    
     @property
     def mention(self):
         """
@@ -1181,6 +1223,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         >>> # 'm' stands for mention.
         >>> f'{application_command:m}'
         '</cake-lover:0>'
+        >>> # To mention a sub command, use @sub-command's name.
+        >>> f'{application_command:m@eat}'
+        '</cake-lover eat:0>'
         >>> # 'c' stands for created at.
         >>> f'{application_command:c}'
         '2021-01-03 20:17:36'
@@ -1192,8 +1237,11 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         if not code:
             return self.name
         
-        if code == 'm':
+        if code == 'm' or code == 'm@':
             return self.mention
+        
+        if code.startswith('m@'):
+            return self.mention_with(code[2:])
         
         if code == 'd':
             return self.display_name

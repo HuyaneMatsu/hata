@@ -13,7 +13,83 @@ from ...oauth2 import Connection
 from ...user import PremiumType
 from ...utils import datetime_to_timestamp, get_image_media_type, image_to_base64
 
-from ..request_helpers import get_guild_id, get_channel_guild_id_and_id
+from ..request_helpers import get_guild_and_id, get_guild_id, get_channel_guild_id_and_id, validate_timeout_duration
+
+
+
+def _assert__guild_profile_edit__nick(nick):
+    """
+    Asserts the `nick` parameter of ``Client.guild_profile_edit`` method.
+    
+    Parameters
+    ----------
+    nick : `Ellipsis`, `None`, `int`
+        The new nick of the user.
+    
+    Raises
+    ------
+    AssertionError
+        - If `nick` was not given neither as `None`, `str`.
+        - If `nick` length is out of the expected range [0:32].
+    """
+    if nick is ...:
+        pass
+    
+    elif nick is None:
+        pass
+    
+    elif isinstance(nick, str):
+        nick_length = len(nick)
+        if nick_length > 32:
+            raise AssertionError(
+                f'`nick` length can be in range [0:32], got {nick_length}; {nick!r}.'
+            )
+    
+    else:
+        raise AssertionError(
+            f'`nick` can be `None`, `str`, got {nick.__class__.__name__}; {nick!r}.'
+        )
+    
+    return True
+
+
+def _assert__guild_profile_edit__avatar(avatar, client):
+    """
+    Asserts the `avatar` parameter of ``Client.guild_profile_edit`` method.
+    
+    Parameters
+    ----------
+    avatar : `Ellipsis`, `None`, `bytes-like`
+        The client's new guild specific avatar.
+    client : ``Client``
+        The client to query additional client-specific limitations.
+    
+    Raises
+    ------
+    AssertionError
+        - If `avatar`'s type is incorrect.
+        - If `avatar`'s format is incorrect.
+    """
+    if (avatar is not ...) and (avatar is not None):
+        if not AssertionError(avatar, (bytes, bytearray, memoryview)):
+            raise TypeError(
+                f'`avatar` can be `None`, `bytes-like`, got {avatar.__class__.__name__}; '
+                f'{reprlib.repr(avatar)}.'
+            )
+        
+        media_type = get_image_media_type(avatar)
+        
+        if client.premium_type.value:
+            valid_icon_media_types = VALID_ICON_MEDIA_TYPES_EXTENDED
+        else:
+            valid_icon_media_types = VALID_ICON_MEDIA_TYPES
+        
+        if media_type not in valid_icon_media_types:
+            raise AssertionError(
+                f'Invalid `avatar` type for the client: {media_type}, got {reprlib.repr(avatar)}.'
+            )
+    
+    return True
 
 
 class ClientCompoundClientEndpoints(Compound):
@@ -108,6 +184,8 @@ class ClientCompoundClientEndpoints(Compound):
         
         The `password`, `new_password` and the `email` parameters are only for user accounts.
         """
+        assert _assert__guild_profile_edit__avatar(avatar, self)
+        
         data = {}
         
         
@@ -115,25 +193,6 @@ class ClientCompoundClientEndpoints(Compound):
             if avatar is None:
                 avatar_data = None
             else:
-                if not isinstance(avatar, (bytes, bytearray, memoryview)):
-                    raise TypeError(
-                        f'`avatar` can be `None`, `bytes-like`, got {avatar.__class__.__name__}; '
-                        f'{reprlib.repr(avatar)}.'
-                    )
-                
-                if __debug__:
-                    media_type = get_image_media_type(avatar)
-                    
-                    if self.premium_type.value:
-                        valid_icon_media_types = VALID_ICON_MEDIA_TYPES_EXTENDED
-                    else:
-                        valid_icon_media_types = VALID_ICON_MEDIA_TYPES
-                    
-                    if media_type not in valid_icon_media_types:
-                        raise AssertionError(
-                            f'Invalid `avatar` type for the client: {media_type}; got {reprlib.repr(avatar)}.'
-                        )
-                
                 avatar_data = image_to_base64(avatar)
             
             data['avatar'] = avatar_data
@@ -273,7 +332,9 @@ class ClientCompoundClientEndpoints(Compound):
         return await self.guild_profile_edit(*positional_parameters, **keyword_parameters)
     
     
-    async def guild_profile_edit(self, guild, *, nick=..., avatar=..., timed_out_until=..., reason=None):
+    async def guild_profile_edit(
+        self, guild, *, nick=..., avatar=..., timeout_duration = ..., timed_out_until=..., reason=None
+    ):
         """
         Edits the client guild profile in the given guild. Nick and guild specific avatars can be edited on this way.
         
@@ -286,16 +347,27 @@ class ClientCompoundClientEndpoints(Compound):
         guild : `None`, `int`, ``Guild``
             The guild where the client's nickname will be changed. If `guild` is given as `None`, then the function
             returns instantly.
+        
         nick : `None`, `str`, Optional (Keyword only)
             The client's new nickname. Pass it as `None` to remove it. Empty strings are interpreted as `None`.
+        
         avatar : `None`, `bytes-like`, Optional (Keyword only)
             The client's new guild specific avatar.
             
             Can be a `'jpg'`, `'png'`, `'webp'` image's raw data. If the client is premium account, then it can be
             `'gif'` as well. By passing `None` you can remove the client's current avatar.
         
+        timeout_duration: `None`, `int`, `float`, `timedelta`, `datetime`, Optional (Keyword only)
+            The timeout duration of the user in seconds.
+            
+            Pass it as `None` or as a non-positive duration to remove it.
+            
+            The max allowed value equals to 28 days.
+        
         timed_out_until : `None`, `datetime`, Optional (Keyword only)
             Till when the client is timed out. Pass it as `None` to remove it.
+            
+            > Deprecated and will be removed in 2022 december. Please use `timeout_duration` instead.
         
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Will show up at the respective guild's audit logs.
@@ -303,100 +375,71 @@ class ClientCompoundClientEndpoints(Compound):
         Raises
         ------
         TypeError
-            - `guild` was not given neither as ``Guild``, `int`.
-            - If `avatar` is neither `None` nor `bytes-like`.
+            - If a parameter's type is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If the nick's length is out of range [1:32].
-            - If the nick was not given neither as `None`, `str`.
-            - If `avatar`'s type is incorrect.
-            - If `timed_out_until` is neither `None` nor `datetime`.
         """
-        # Security debug checks.
-        if __debug__:
-            if (nick is not None):
-                if not isinstance(nick, str):
-                    raise AssertionError(
-                        f'`nick` can be `None`, `str`, got {nick.__class__.__name__}; {nick!r}.'
-                    )
-                
-                nick_length = len(nick)
-                if nick_length > 32:
-                    raise AssertionError(
-                        f'`nick` length can be in range [1:32], got {nick_length}; {nick!r}.'
-                    )
-                
-                # Translate empty nick to `None`
-                if nick_length == 0:
-                    nick = None
-        else:
-            # Non debug mode: Translate empty nick to `None`
-            if (nick is not None) and (not nick):
-                nick = None
+        guild, guild_id = get_guild_and_id(guild)
         
-        
-        # Check whether we should edit the nick.
-        if guild is None:
-            # `guild` can be `None` if `guild` parameter was given as `int`.
-            should_edit_nick = True
-        else:
-            try:
-                guild_profile = self.guild_profiles[guild.id]
-            except KeyError:
-                # we aren't at the guild probably ->  will raise the request for us, if really
-                should_edit_nick = True
-            else:
-                should_edit_nick = (guild_profile.nick != nick)
+        assert _assert__guild_profile_edit__nick(nick)
+        assert _assert__guild_profile_edit__avatar(avatar, self)
         
         data = {}
         
-        if should_edit_nick:
-            data['nick'] = nick
+        if (nick is not ...):
+            # Non debug mode: Translate empty nick to `None`
+            if (nick is not None) and (not nick):
+                nick = None
+            
+            # Check whether we should edit the nick.
+            if guild is None:
+                # `guild` can be `None` if `guild` parameter was given as `int`.
+                should_edit_nick = True
+            else:
+                try:
+                    guild_profile = self.guild_profiles[guild.id]
+                except KeyError:
+                    # we aren't at the guild probably ->  will raise the request for us, if really
+                    should_edit_nick = True
+                else:
+                    should_edit_nick = (guild_profile.nick != nick)
+        
+        
+            if should_edit_nick:
+                data['nick'] = nick
+        
         
         if (avatar is not ...):
             if avatar is None:
                 avatar_data = None
             else:
-                if not isinstance(avatar, (bytes, bytearray, memoryview)):
-                    raise TypeError(
-                        f'`avatar` can be `None`, `bytes-like`, got {avatar.__class__.__name__}; '
-                        f'{reprlib.repr(avatar)}.'
-                    )
-                
-                if __debug__:
-                    media_type = get_image_media_type(avatar)
-                    
-                    if self.premium_type.value:
-                        valid_icon_media_types = VALID_ICON_MEDIA_TYPES_EXTENDED
-                    else:
-                        valid_icon_media_types = VALID_ICON_MEDIA_TYPES
-                    
-                    if media_type not in valid_icon_media_types:
-                        raise AssertionError(
-                            f'Invalid `avatar` type for the client: {media_type}, got {reprlib.repr(avatar)}.'
-                        )
-                
                 avatar_data = image_to_base64(avatar)
             
             data['avatar'] = avatar_data
         
+        
         if (timed_out_until is not ...):
-            if timed_out_until is None:
+            warnings.warn(
+                (
+                    f'`timed_out_until` parameter of `{self.__class__.__name__}.guild_profile_edit` is deprecated'
+                    f'and will be removed in 2022 December. Please use `timeout_duration` instead.'
+                ),
+                FutureWarning,
+            )
+            timeout_duration = timed_out_until
+        
+        
+        if (timeout_duration is not ...):
+            timeout_ends_at = validate_timeout_duration(timeout_duration)
+            
+            if (timeout_ends_at is None):
                 timed_out_until_raw = None
             else:
-                if __debug__:
-                    if not isinstance(timed_out_until, datetime):
-                        raise AssertionError(
-                            f'`timed_out_until` can be `None`, `datetime`, got {timed_out_until.__class__.__name__}; '
-                            f'{timed_out_until!r}.'
-                        )
-                
-                timed_out_until_raw = datetime_to_timestamp(timed_out_until)
-            
+                timed_out_until_raw = datetime_to_timestamp(timeout_ends_at)
             data['communication_disabled_until'] = timed_out_until_raw
+        
         
         if data:
             await self.http.client_guild_profile_edit(guild_id, data, reason)

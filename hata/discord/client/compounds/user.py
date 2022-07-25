@@ -1,8 +1,6 @@
 __all__ = ()
 
 import warnings
-from datetime import datetime, timedelta
-from math import floor
 
 from scarletio import Compound
 
@@ -16,14 +14,9 @@ from ...user import ClientUserBase, User
 from ...utils import datetime_to_timestamp
 
 from ..request_helpers import (
-    get_guild_and_id, get_guild_id, get_channel_guild_id_and_id, get_role_guild_id_and_id, get_user_and_id, get_user_id
+    get_guild_and_id, get_guild_id, get_channel_guild_id_and_id, get_role_guild_id_and_id, get_user_and_id, get_user_id,
+    validate_timeout_duration
 )
-
-
-TIMEOUT_MAX_DURATION = timedelta(days=28)
-TIMEOUT_MAX_DURATION_SECONDS_FLOAT = TIMEOUT_MAX_DURATION.total_seconds()
-TIMEOUT_MAX_DURATION_SECONDS_INT = floor(TIMEOUT_MAX_DURATION_SECONDS_FLOAT)
-ZERO_TIMEDELTA = timedelta(seconds=0)
 
 
 def _assert__user_guild_profile_edit__nick(nick):
@@ -319,53 +312,12 @@ class ClientCompoundUserEndpoints(Compound):
         
         
         if (timeout_duration is not ...):
-            if timeout_duration is None:
-                timeout_ends_at = None
-            
-            elif isinstance(timeout_duration, int):
-                if timeout_duration <= 0:
-                    timeout_ends_at = None
-                
-                elif timeout_duration >= TIMEOUT_MAX_DURATION_SECONDS_INT:
-                    timeout_ends_at = datetime.utcnow() + TIMEOUT_MAX_DURATION
-                
-                else:
-                    timeout_ends_at = datetime.utcnow() + timedelta(seconds=timeout_duration)
-            
-            elif isinstance(timeout_duration, float):
-                if timeout_duration <= 0.0:
-                    timeout_ends_at = None
-                
-                elif timeout_duration >= TIMEOUT_MAX_DURATION_SECONDS_FLOAT:
-                    timeout_ends_at = datetime.utcnow() + TIMEOUT_MAX_DURATION
-                
-                else:
-                    timeout_ends_at = datetime.utcnow() + timedelta(seconds=timeout_duration)
-            
-            elif isinstance(timeout_duration, timedelta):
-                if timeout_duration <= ZERO_TIMEDELTA:
-                    timeout_ends_at = None
-                
-                elif timeout_duration >= TIMEOUT_MAX_DURATION:
-                    timeout_ends_at = datetime.utcnow() + TIMEOUT_MAX_DURATION
-                
-                else:
-                    timeout_ends_at = datetime.utcnow() + timeout_duration
-            
-            elif isinstance(timeout_duration, datetime):
-                timeout_ends_at = timeout_duration
-            
-            else:
-                raise TypeError(
-                    f'`timeout_duration` can be `None`, `int`, `float`, `timedelta`, `datetime`, got '
-                    f'{timeout_duration.__class__.__name__}; {timeout_duration!r}.'
-                )
-            
+            timeout_ends_at = validate_timeout_duration(timeout_duration)
             
             if (timeout_ends_at is None):
                 timed_out_until_raw = None
             else:
-                timed_out_until_raw = datetime_to_timestamp(timed_out_until)
+                timed_out_until_raw = datetime_to_timestamp(timeout_ends_at)
             data['communication_disabled_until'] = timed_out_until_raw
         
         await self.http.user_guild_profile_edit(guild_id, user_id, data, reason)

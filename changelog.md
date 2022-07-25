@@ -1,4 +1,4 @@
-## 1.3.1 *\[2022-07-??\]*
+## 1.3.1 *\[2022-07-25\]*
 
 #### Improvements
 
@@ -18,16 +18,19 @@
 - Add `ApplicationCommand.mention_sub_command`.
 - Add `ApplicationCommand.mention_with`.
 - Add sub-command mention option for `ApplicationCommand.__format__`.
+- Add `timeout_duration` parameter to `Client.guild_profile_edit` replacing the old `timed_out_until`.
 
-#### Bug Fies
+#### Bug Fixes
 
 - Fix `AttributeError` in `handle_voice_client_shutdown` (typo).
 - `unix_time_to_datetime` returned bad value.
+- `Client.guild_profile_edit` now accepts `guild` as `int` as expected.
 
 #### Renames, Deprecation & Removals
 
 - Deprecate `delete_message_days` parameter of `Client.guild_ban_add`. Use `delete_message_duration` instead.
 - Deprecate `timed_out_until` parameter of `Client.user_guild_profile_edit`. Use `timeout_duration` instead.
+- Deprecate `timed_out_until` parameter of `Client.guild_profile_edit`. Use `timeout_duration` instead.
 
 ## 1.3.0 *\[2022-07-19\]*
 

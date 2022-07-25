@@ -391,7 +391,7 @@ class ClientWrapper:
     
     def events(self, func=None, name=None, overwrite=False):
         """
-        Adds the given `func` as event handler to the contained clients's with the given parameters.
+        Adds the given `func` as event handler to the contained clients' with the given parameters.
         
         If `func` parameter is not given, returns an ``._events_wrapper``, what allows using this method
         as a decorator with passing additional keyword parameters at the same time.
@@ -469,7 +469,7 @@ class ClientWrapper:
         
         def __call__(self, func):
             """
-            Adds the given `func` as event handler to the parent's clients's with the stored up parameters.
+            Adds the given `func` as event handler to the parent's clients' with the stored up parameters.
             
             Parameters
             ----------

@@ -1,8 +1,10 @@
 __all__ = ()
 
 import reprlib
+from datetime import datetime, timedelta
 from collections import deque
 from os.path import split as split_path
+from math import floor
 
 from scarletio import include, to_json
 from scarletio.web_common import Formdata
@@ -732,6 +734,79 @@ def validate_content_and_embed(content, embed, is_edit):
             content = str(content)
     
     return content, embed
+
+
+TIMEOUT_MAX_DURATION = timedelta(days=28)
+TIMEOUT_MAX_DURATION_SECONDS_FLOAT = TIMEOUT_MAX_DURATION.total_seconds()
+TIMEOUT_MAX_DURATION_SECONDS_INT = floor(TIMEOUT_MAX_DURATION_SECONDS_FLOAT)
+ZERO_TIMEDELTA = timedelta(seconds=0)
+
+
+def validate_timeout_duration(timeout_duration):
+    """
+    Validates the given `timeout_duration` and returns the processed value which equals to the timeout's end.
+    
+    Parameters
+    ----------
+    timeout_duration: `None`, `int`, `float`, `timedelta`, `datetime`, Optional (Keyword only)
+        The timeout duration of the user in seconds.
+        
+        Pass it as `None` or as a non-positive duration to remove it.
+        
+        The max allowed value equals to 28 days.
+    
+    Returns
+    -------
+    timeout_ends_at : `None`, `datetime`
+    
+    Raises
+    ------
+    TypeError
+        - If `timeout_duration`'s type is incorrect.
+    """
+    if timeout_duration is None:
+        timeout_ends_at = None
+    
+    elif isinstance(timeout_duration, int):
+        if timeout_duration <= 0:
+            timeout_ends_at = None
+        
+        elif timeout_duration >= TIMEOUT_MAX_DURATION_SECONDS_INT:
+            timeout_ends_at = datetime.utcnow() + TIMEOUT_MAX_DURATION
+        
+        else:
+            timeout_ends_at = datetime.utcnow() + timedelta(seconds=timeout_duration)
+    
+    elif isinstance(timeout_duration, float):
+        if timeout_duration <= 0.0:
+            timeout_ends_at = None
+        
+        elif timeout_duration >= TIMEOUT_MAX_DURATION_SECONDS_FLOAT:
+            timeout_ends_at = datetime.utcnow() + TIMEOUT_MAX_DURATION
+        
+        else:
+            timeout_ends_at = datetime.utcnow() + timedelta(seconds=timeout_duration)
+    
+    elif isinstance(timeout_duration, timedelta):
+        if timeout_duration <= ZERO_TIMEDELTA:
+            timeout_ends_at = None
+        
+        elif timeout_duration >= TIMEOUT_MAX_DURATION:
+            timeout_ends_at = datetime.utcnow() + TIMEOUT_MAX_DURATION
+        
+        else:
+            timeout_ends_at = datetime.utcnow() + timeout_duration
+    
+    elif isinstance(timeout_duration, datetime):
+        timeout_ends_at = timeout_duration
+    
+    else:
+        raise TypeError(
+            f'`timeout_duration` can be `None`, `int`, `float`, `timedelta`, `datetime`, got '
+            f'{timeout_duration.__class__.__name__}; {timeout_duration!r}.'
+        )
+
+    return timeout_ends_at
 
 
 def get_channel_id(channel, type_checker):

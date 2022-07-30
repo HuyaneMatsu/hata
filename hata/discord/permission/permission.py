@@ -46,6 +46,7 @@ PERMISSION_SHIFT_USE_EXTERNAL_STICKERS = 37
 PERMISSION_SHIFT_SEND_MESSAGES_IN_THREADS = 38
 PERMISSION_SHIFT_USE_EMBEDDED_ACTIVITIES = 39
 PERMISSION_SHIFT_MODERATE_USERS = 40
+PERMISSION_SHIFT_VIEW_CREATOR_MONETIZATION_ANALYTICS = 41
 
 
 PERMISSION_MASK_CREATE_INSTANT_INVITE = 1 << PERMISSION_SHIFT_CREATE_INSTANT_INVITE
@@ -89,7 +90,7 @@ PERMISSION_MASK_USE_EXTERNAL_STICKERS = 1 << PERMISSION_SHIFT_USE_EXTERNAL_STICK
 PERMISSION_MASK_SEND_MESSAGES_IN_THREADS = 1 << PERMISSION_SHIFT_SEND_MESSAGES_IN_THREADS
 PERMISSION_MASK_USE_EMBEDDED_ACTIVITIES = 1 << PERMISSION_SHIFT_USE_EMBEDDED_ACTIVITIES
 PERMISSION_MASK_MODERATE_USERS = 1 << PERMISSION_SHIFT_MODERATE_USERS
-
+PERMISSION_MASK_VIEW_CREATOR_MONETIZATION_ANALYTICS = 1 << PERMISSION_SHIFT_VIEW_CREATOR_MONETIZATION_ANALYTICS
 
 class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable_keyword='deny'):
     """
@@ -97,89 +98,92 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
     
     The implemented permissions are the following:
     
-    +-------------------------------+-------------------+
-    | Respective name               | Bitwise position  |
-    +===============================+===================+
-    | create_instant_invite         |  0                |
-    +-------------------------------+-------------------+
-    | kick_users                    |  1                |
-    +-------------------------------+-------------------+
-    | ban_users                     |  2                |
-    +-------------------------------+-------------------+
-    | administrator                 |  3                |
-    +-------------------------------+-------------------+
-    | manage_channel                |  4                |
-    +-------------------------------+-------------------+
-    | manage_guild                  |  5                |
-    +-------------------------------+-------------------+
-    | add_reactions                 |  6                |
-    +-------------------------------+-------------------+
-    | view_audit_logs               |  7                |
-    +-------------------------------+-------------------+
-    | priority_speaker              |  8                |
-    +-------------------------------+-------------------+
-    | stream                        |  9                |
-    +-------------------------------+-------------------+
-    | view_channel                  | 10                |
-    +-------------------------------+-------------------+
-    | send_messages                 | 11                |
-    +-------------------------------+-------------------+
-    | send_tts_messages             | 12                |
-    +-------------------------------+-------------------+
-    | manage_messages               | 13                |
-    +-------------------------------+-------------------+
-    | embed_links                   | 14                |
-    +-------------------------------+-------------------+
-    | attach_files                  | 15                |
-    +-------------------------------+-------------------+
-    | read_message_history          | 16                |
-    +-------------------------------+-------------------+
-    | mention_everyone              | 17                |
-    +-------------------------------+-------------------+
-    | use_external_emojis           | 18                |
-    +-------------------------------+-------------------+
-    | connect                       | 20                |
-    +-------------------------------+-------------------+
-    | speak                         | 21                |
-    +-------------------------------+-------------------+
-    | mute_users                    | 22                |
-    +-------------------------------+-------------------+
-    | deafen_users                  | 23                |
-    +-------------------------------+-------------------+
-    | move_users                    | 24                |
-    +-------------------------------+-------------------+
-    | use_voice_activation          | 25                |
-    +-------------------------------+-------------------+
-    | change_nickname               | 26                |
-    +-------------------------------+-------------------+
-    | manage_nicknames              | 27                |
-    +-------------------------------+-------------------+
-    | manage_roles                  | 28                |
-    +-------------------------------+-------------------+
-    | manage_webhooks               | 29                |
-    +-------------------------------+-------------------+
-    | manage_emojis_and_stickers    | 30                |
-    +-------------------------------+-------------------+
-    | use_application_commands      | 31                |
-    +-------------------------------+-------------------+
-    | request_to_speak              | 32                |
-    +-------------------------------+-------------------+
-    | manage_events                 | 33                |
-    +-------------------------------+-------------------+
-    | manage_threads                | 34                |
-    +-------------------------------+-------------------+
-    | create_public_threads         | 35                |
-    +-------------------------------+-------------------+
-    | create_private_threads        | 36                |
-    +-------------------------------+-------------------+
-    | use_external_stickers         | 37                |
-    +-------------------------------+-------------------+
-    | send_messages_in_threads      | 38                |
-    +-------------------------------+-------------------+
-    | use_embedded_activities       | 39                |
-    +-------------------------------+-------------------+
-    | moderate_users                | 40                |
-    +-------------------------------+-------------------+
+    +---------------------------------------+-------------------+
+    | Respective name                       | Bitwise position  |
+    +=======================================+===================+
+    | create_instant_invite                 |  0                |
+    +---------------------------------------+-------------------+
+    | kick_users                            |  1                |
+    +---------------------------------------+-------------------+
+    | ban_users                             |  2                |
+    +---------------------------------------+-------------------+
+    | administrator                         |  3                |
+    +---------------------------------------+-------------------+
+    | manage_channel                        |  4                |
+    +---------------------------------------+-------------------+
+    | manage_guild                          |  5                |
+    +---------------------------------------+-------------------+
+    | add_reactions                         |  6                |
+    +---------------------------------------+-------------------+
+    | view_audit_logs                       |  7                |
+    +---------------------------------------+-------------------+
+    | priority_speaker                      |  8                |
+    +---------------------------------------+-------------------+
+    | stream                                |  9                |
+    +---------------------------------------+-------------------+
+    | view_channel                          | 10                |
+    +---------------------------------------+-------------------+
+    | send_messages                         | 11                |
+    +---------------------------------------+-------------------+
+    | send_tts_messages                     | 12                |
+    +---------------------------------------+-------------------+
+    | manage_messages                       | 13                |
+    +---------------------------------------+-------------------+
+    | embed_links                           | 14                |
+    +---------------------------------------+-------------------+
+    | attach_files                          | 15                |
+    +---------------------------------------+-------------------+
+    | read_message_history                  | 16                |
+    +---------------------------------------+-------------------+
+    | mention_everyone                      | 17                |
+    +---------------------------------------+-------------------+
+    | use_external_emojis                   | 18                |
+    +---------------------------------------+-------------------+
+    | connect                               | 20                |
+    +---------------------------------------+-------------------+
+    | speak                                 | 21                |
+    +---------------------------------------+-------------------+
+    | mute_users                            | 22                |
+    +---------------------------------------+-------------------+
+    | deafen_users                          | 23                |
+    +---------------------------------------+-------------------+
+    | move_users                            | 24                |
+    +---------------------------------------+-------------------+
+    | use_voice_activation                  | 25                |
+    +---------------------------------------+-------------------+
+    | change_nickname                       | 26                |
+    +---------------------------------------+-------------------+
+    | manage_nicknames                      | 27                |
+    +---------------------------------------+-------------------+
+    | manage_roles                          | 28                |
+    +---------------------------------------+-------------------+
+    | manage_webhooks                       | 29                |
+    +---------------------------------------+-------------------+
+    | manage_emojis_and_stickers            | 30                |
+    +---------------------------------------+-------------------+
+    | use_application_commands              | 31                |
+    +---------------------------------------+-------------------+
+    | request_to_speak                      | 32                |
+    +---------------------------------------+-------------------+
+    | manage_events                         | 33                |
+    +---------------------------------------+-------------------+
+    | manage_threads                        | 34                |
+    +---------------------------------------+-------------------+
+    | create_public_threads                 | 35                |
+    +---------------------------------------+-------------------+
+    | create_private_threads                | 36                |
+    +---------------------------------------+-------------------+
+    | use_external_stickers                 | 37                |
+    +---------------------------------------+-------------------+
+    | send_messages_in_threads              | 38                |
+    +---------------------------------------+-------------------+
+    | use_embedded_activities               | 39                |
+    --------+-------------------------------+-------------------+
+    | moderate_users                        | 40                |
+    +---------------------------------------+-------------------+
+    | view_creator_monetization_analytics   | 41                |
+    +---------------------------------------+-------------------+
+    
     
     Each permission can be accessed as property with `can_` + it's respective name, meanwhile a new edited permission
     can be created with the `allow_...` and with the `deny_...` methods.
@@ -226,6 +230,7 @@ class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable
         'send_messages_in_threads': PERMISSION_SHIFT_SEND_MESSAGES_IN_THREADS,
         'use_embedded_activities': PERMISSION_SHIFT_USE_EMBEDDED_ACTIVITIES,
         'moderate_users': PERMISSION_SHIFT_MODERATE_USERS,
+        'view_creator_monetization_analytics': PERMISSION_SHIFT_VIEW_CREATOR_MONETIZATION_ANALYTICS,
     }
     
     
@@ -284,6 +289,7 @@ PERMISSION_ALL = Permission().update_by_keys(
     send_messages_in_threads = True,
     use_embedded_activities = True,
     moderate_users = True,
+    view_creator_monetization_analytics = True,
 )
 
 PERMISSION_NONE = Permission()
@@ -328,6 +334,7 @@ PERMISSION_PRIVATE = Permission().update_by_keys(
     send_messages_in_threads = False,
     use_embedded_activities = False,
     moderate_users = False,
+    view_creator_monetization_analytics = False,
 )
 
 PERMISSION_PRIVATE_BOT = PERMISSION_PRIVATE.update_by_keys(
@@ -384,6 +391,7 @@ PERMISSION_TEXT_ALL = Permission().update_by_keys(
     send_messages_in_threads = True,
     use_embedded_activities = False,
     moderate_users = False,
+    view_creator_monetization_analytics = False,
 )
 
 PERMISSION_TEXT_DENY = Permission(~PERMISSION_TEXT_ALL)
@@ -442,6 +450,7 @@ PERMISSION_VOICE_ALL = Permission().update_by_keys(
     send_messages_in_threads = False,
     use_embedded_activities = True,
     moderate_users = False,
+    view_creator_monetization_analytics = False
 )
 
 PERMISSION_VOICE_DENY = Permission(~PERMISSION_VOICE_ALL)
@@ -500,6 +509,7 @@ PERMISSION_STAGE_MODERATOR = Permission().update_by_keys(
     use_external_stickers = False,
     send_messages_in_threads = False,
     moderate_users = False,
+    view_creator_monetization_analytics = False
 )
 
 PERMISSION_CAN_SEND_MESSAGES_ALL = Permission().update_by_keys(

@@ -1,12 +1,13 @@
 __all__ = ()
 
+from scarletio import iter_highlight_code_lines
 from scarletio.web_common import quote
 
 from .graver import (
     DO_NOT_ADD_SPACE_AFTER, GRAMMAR_CHARS, GRAVE_TYPE_GLOBAL_REFERENCE, GRAVE_TYPE_LINK, GRAVE_URL_MATCHER,
     GravedAttributeDescription, GravedBlockQuote, GravedCodeBlock, GravedDescription, GravedListing, GravedTable
 )
-from .highlight import HighlightContext, PYTHON_IDENTIFIERS
+from .highlight import PATCHOULI_FORMATTER_CONTEXT, PYTHON_IDENTIFIERS
 
 from html import escape as html_escape
 
@@ -307,6 +308,7 @@ def attribute_description_serializer(description, object_, path, linker):
     yield content
     yield '</p>'
 
+
 def code_block_serializer(code_block, object_, path, linker):
     """
     Serializes the given description.
@@ -343,9 +345,7 @@ def code_block_serializer(code_block, object_, path, linker):
                 break
             yield '<br>'
     else:
-        context = HighlightContext(lines)
-        context.match()
-        yield from context.generate_highlighted()
+        yield from iter_highlight_code_lines(lines, PATCHOULI_FORMATTER_CONTEXT)
     
     yield '</pre></div>'
 

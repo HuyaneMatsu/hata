@@ -282,7 +282,7 @@ class ContentFilterLevel(PreinstancedBase):
         identifier of a content filter level. The identifier value is used as a key to get it's wrapper side
         representation.
     VALUE_TYPE : `type` = `int`
-        The verification filer levels' values' type.
+        The verification filter levels' values' type.
     DEFAULT_NAME : `str` = `'Undefined'`
         The default name of the content filter levels.
     

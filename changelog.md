@@ -1,3 +1,16 @@
+## 1.3.2 *\[2022-08-??\]*
+
+#### Improvements
+
+- Add `EntitlementType.premium_purchase`.
+- Add `EntitlementType.application_subscription`.
+- `EntitlementType`'s `.name` style updated.
+- `SKUType`'s `.name` style updated.
+- `SKUAccessType`'s `.name` style updated.
+- `SKUGenre`'s `.name` style updated.
+- `SKUFeatureType`'s `.name` style updated.
+- Add `view_creator_monetization_analytics` `Permission` flag.
+
 ## 1.3.1 *\[2022-07-25\]*
 
 #### Improvements

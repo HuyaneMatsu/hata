@@ -6,7 +6,7 @@ from math import inf
 
 from scarletio import (
     CancelledError, CompoundMetaType, EventThread, Future, LOOP_TIME, Task, WaitTillAll, export, from_json,
-    methodize, run_coroutine, sleep
+    methodize, run_coroutine, sleep, write_exception_async
 )
 
 from ...env import API_VERSION, CACHE_USER
@@ -1208,7 +1208,7 @@ class Client(
                 '.connect\n',
             ]
             
-            await KOKORO.render_exception_async(err, before, after)
+            await write_exception_async(err, before, after, loop=KOKORO)
             return False
         
         # Some Discord implementations send string response for some weird reason.
@@ -1272,13 +1272,14 @@ class Client(
                     # and it was not the wrapper causing them, so it is time to say STOP.
                     # I also know `GeneratorExit` will show up as RuntimeError, but it is already a RuntimeError.
                     try:
-                        await KOKORO.render_exception_async(
+                        await write_exception_async(
                             err,
                             [
                                 'Ignoring unexpected outer Task or coroutine cancellation at ',
                                 repr(self),
                                 '._connect:\n',
                             ],
+                            loop = KOKORO,
                         )
                     except (GeneratorExit, CancelledError) as err:
                         sys.stderr.write(
@@ -1317,13 +1318,14 @@ class Client(
                                 break
                         except (GeneratorExit, CancelledError) as err:
                             try:
-                                await KOKORO.render_exception_async(
+                                write_exception_async(
                                     err,
                                     [
                                         'Ignoring unexpected outer Task or coroutine cancellation at ',
                                         repr(self),
                                         '._connect:\n',
                                     ],
+                                    loop = KOKORO,
                                 )
                             except (GeneratorExit, CancelledError) as err:
                                 sys.stderr.write(
@@ -1346,7 +1348,7 @@ class Client(
                     f'{err!r}\n'
                 )
             else:
-                await KOKORO.render_exception_async(
+                write_exception_async(
                     err,
                     [
                         'Unexpected exception occurred at ',
@@ -1358,6 +1360,7 @@ class Client(
                         'with every detail how to reproduce it.\n'
                         'Thanks!\n'
                     ),
+                    loop = KOKORO,
                 )
             
             await ensure_shutdown_event_handlers(self)

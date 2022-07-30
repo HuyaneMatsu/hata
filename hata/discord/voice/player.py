@@ -3,7 +3,7 @@ __all__ = ()
 from audioop import mul as audio_mul
 from time import perf_counter
 
-from scarletio import CancelledError, Event, Task, sleep
+from scarletio import CancelledError, Event, Task, sleep, write_exception_async
 
 from ..core import KOKORO
 
@@ -156,11 +156,15 @@ class AudioPlayer:
             if isinstance(err, CancelledError):
                 return
             
-            await KOKORO.render_exception_async(err, before=[
-                'Exception occurred at \n',
-                repr(self),
-                '\n',
-            ])
+            await write_exception_async(
+                err,
+                [
+                    'Exception occurred at \n',
+                    repr(self),
+                    '\n',
+                ],
+                loop = KOKORO
+            )
             
         else:
             if voice_client.player is self:

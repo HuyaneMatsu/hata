@@ -405,7 +405,7 @@ class SimpleSection:
     title : `None`, `str`
         The title of the section.
     path : ``QualPath``
-        Path to use instead of the objects's.
+        Path to use instead of the objects'.
     """
     __slots__ = ('content', 'object', 'title', 'path')
     
@@ -422,7 +422,7 @@ class SimpleSection:
         object_ : ``TypeUnit``
             The owner type-unit.
         path : `None`, ``QualPath``
-            Path to use instead of the objects's.
+            Path to use instead of the objects'.
         """
         self.title = title
         self.content = content
@@ -1234,7 +1234,7 @@ class ParameterSection:
     object : ``UnitBase``
         The owner unit.
     path : ``QualPath``
-        Path to use instead of the objects's.
+        Path to use instead of the objects'.
     """
     __slots__ = ('parameter_sub_sections', 'object', 'path')
     
@@ -1249,7 +1249,7 @@ class ParameterSection:
         object_ : ``TypeUnit``
             The owner type-unit.
         path : `None`, ``QualPath``
-            Path to use instead of the objects's.
+            Path to use instead of the objects'.
         """
         self.parameter_sub_sections = []
         self.object = object_

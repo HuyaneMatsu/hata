@@ -1,7 +1,8 @@
 __all__ = ('SolarNode', )
 
 from scarletio import (
-    Future, RichAttributeErrorBaseType, Task, from_json, future_or_timeout, repeat_timeout, sleep, to_json
+    Future, RichAttributeErrorBaseType, Task, from_json, future_or_timeout, repeat_timeout, sleep, to_json,
+    write_exception_async
 )
 from scarletio.web_common import ConnectionClosed, InvalidHandshake, WebSocketProtocolError
 
@@ -345,13 +346,14 @@ class SolarNode(RichAttributeErrorBaseType):
                         sleep_amount = 1.0
                     
                     if not reconnect_attempts:
-                        await KOKORO.render_exception_async(
+                        await write_exception_async(
                             err,
                             [
                                 'Failed to connect to lavalink node ',
                                 repr(self),
                                 '.run:\n',
                             ],
+                            loop = KOKORO,
                         )
                         
                         if (waiter is not None):

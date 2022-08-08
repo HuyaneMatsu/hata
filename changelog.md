@@ -11,6 +11,10 @@
 - `SKUFeatureType`'s `.name` style updated.
 - Add `view_creator_monetization_analytics` `Permission` flag.
 
+#### Bug Fixes
+
+- `Channel.thread_users.fset` was set as a `CoroutineFunction` instead of a normal one.
+
 ## 1.3.1 *\[2022-07-25\]*
 
 #### Improvements

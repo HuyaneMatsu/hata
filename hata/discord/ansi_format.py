@@ -241,7 +241,7 @@ def create_ansi_format_code(text_decoration=None, background_color=None, foregro
     -------
     format_code : `str`
     """
-    format_code_parst = ['\u001b']
+    format_code_parst = ['\u001b[']
     
     field_added = False
     

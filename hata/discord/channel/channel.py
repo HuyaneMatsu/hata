@@ -1122,7 +1122,7 @@ class Channel(DiscordEntity, immortal=True):
     
     
     @thread_users.setter
-    async def thread_users(self, thread_users):
+    def thread_users(self, thread_users):
         self.metadata.thread_users = thread_users
     
     

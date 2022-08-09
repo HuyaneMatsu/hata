@@ -272,11 +272,19 @@ def unix_time_to_datetime(unix_time):
     try:
         return datetime.utcfromtimestamp(unix_time)
     except ValueError:
-        # Can happen if max or min year is passed.
-        if unix_time >= UNIX_TIME_MAX:
-            return DATETIME_MAX
-        else:
-            return DATETIME_MIN
+        # Normal oses
+        pass
+    
+    except OSError as err:
+        # Bad oses
+        if err.errno != 22:
+            raise
+    
+    # Can happen if max or min year is passed.
+    if unix_time >= UNIX_TIME_MAX:
+        return DATETIME_MAX
+    else:
+        return DATETIME_MIN
 
 
 def datetime_to_id(date_time):

@@ -1,7 +1,5 @@
 __all__ = ('DiscordException',)
 
-import warnings
-
 from scarletio.web_common.headers import DATE, RETRY_AFTER
 
 from ...env import RICH_DISCORD_EXCEPTION
@@ -13,6 +11,7 @@ if RICH_DISCORD_EXCEPTION:
     from .payload_renderer import reconstruct_payload
 else:
     reconstruct_payload = None
+
 
 class DiscordException(Exception):
     """
@@ -58,18 +57,32 @@ class DiscordException(Exception):
     ----------
     debug_options : `None`, `tuple` of `str`
         Debug options of the http client.
+    
     received_data : `Any`
         Deserialized `json` response data if applicable.
+    
     response : ``ClientResponse``
         The http client response, what caused the error.
+    
     sent_data : `ANy`
         Sent data.
-    _messages : `None`, `list` of `str`
-        Initially the `._messages` attribute is `None`, but when the `.messages` property is used for the first time,
-        the messages will be parsed out from the response and from it's data.
+    
     _code : `None`, `int`
-        Initially the `._code` attribute is set to `None`, but first time when the `.code` property is accessed, it is
-        parsed out. If the response data does not contains `code`, then this attribute is set to `0`.
+        Cache of the `.code` property.
+        
+        If the response data does not contains `code`, then this attribute is set to `0`.
+    
+    _debug_info : `None`, `str`
+        cache of the `.debug_info` property.
+    
+    _errors : `None`, `list` of `str`
+        Cache of the `errors` property.
+    
+    _request_info : `None`, `str`
+        Cache of the `.request_info` property.
+    
+    _message : `None`,  `str`
+        Cache of the `.message` property.
     """
     def __init__(self, response, received_data, sent_data, debug_options):
         """
@@ -91,60 +104,152 @@ class DiscordException(Exception):
         self.received_data = received_data
         self.sent_data = sent_data
         self.debug_options = debug_options
-        self._messages = None
         self._code = None
+        self._debug_info = None
+        self._errors = None
+        self._request_info = None
+        self._message = None
     
     
     @property
-    def messages(self):
+    def message(self):
         """
-        Returns a list of the errors. The 0th element of the list is always a header line, what contains the
-        exception's name, the response's reason and it's status. If set, then also the Discord's internal error code
-        and it's message as well.
-        
-        Every other element at the list is optional. Those are extra errors included in the response's data.
+        Returns the error message of the discord exception.
         
         Returns
         -------
-        messages : `list` of `str`
+        message : `str`
         """
-        messages = self._messages
-        if messages is None:
-            messages = self._create_messages()
-            if RICH_DISCORD_EXCEPTION:
-                debug_options_message = self._create_debug_options_message()
-                if (debug_options_message is not None):
-                    messages.append(debug_options_message)
-                
-                reconstructed_payload = reconstruct_payload(self.sent_data)
-                if (reconstructed_payload is not None):
-                    messages.append(reconstructed_payload)
+        message = self._message
+        if message is None:
+            message = self._create_message()
+            self._message = message
         
-        return messages
+        return message
     
     
-    def _create_messages(self):
+    def _create_message(self):
         """
-        Generates the exception's messages from the causer response's headers. If the response's data contains `code`
-        or / and `message` as well, then it will complement the exception message's header line with those too.
-        
-        If the response's data contains additional errors too, then those will be parsed out, and added to the list.
-        
-        Saves the result to the `._messages` attribute and saves it as well.
+        Creates the error message of the discord exception.
         
         Returns
         -------
-        messages : `list` of `str`
+        message : `str`
+        """
+        message_parts = []
+        
+        message_parts.append(self.__class__.__name__)
+        message_parts.append(' ')
+        response = self.response
+        message_parts.append(response.reason)
+        message_parts.append(' (')
+        message_parts.append(repr(response.status))
+        message_parts.append(')')
+        
+        code = self.code
+        if code:
+            message_parts.append(f', code=')
+            message_parts.append(repr(code))
+        
+        received_data = self.received_data
+        if isinstance(received_data, dict):
+            message_base = received_data.get('message', '')
+        else:
+            message_base = ''
+        
+        if message_base:
+            message_parts.append(': ')
+            message_parts.append(message_base)
+        
+        
+        if response.status == 429:
+            try:
+                retry_after = response.headers[RETRY_AFTER]
+            except KeyError:
+                pass
+            else:
+                message_parts.append(', ')
+                message_parts.append(str(RETRY_AFTER))
+                message_parts.append(': ')
+                message_parts.append(repr(retry_after))
+        
+        return ''.join(message_parts)
+    
+    
+    @property
+    def request_info(self):
+        """
+        Returns additional request information about the exception.
+        
+        Returns
+        -------
+        request_info : `str`
+        """
+        request_info = self._request_info
+        if request_info is None:
+            request_info = self._create_request_info()
+            self._request_info = request_info
+        
+        return request_info
+    
+    
+    def _create_request_info(self):
+        """
+        Creates additional request information about the exception.
+        
+        Returns
+        -------
+        request_info : `str`
+        """
+        response = self.response
+        message_parts = []
+        
+        message_parts.append(format(parse_date_header_to_datetime(response.headers[DATE]), DATETIME_FORMAT_CODE))
+        message_parts.append('; ')
+        message_parts.append(response.method)
+        message_parts.append(' ')
+        message_parts.append(str(response.url))
+        
+        return ''.join(message_parts)
+    
+    
+    @property
+    def errors(self):
+        """
+        Returns the errors shipped with the exception.
+        
+        Might return an empty list.
+        
+        Returns
+        -------
+        errors : `list` of `str`
+        """
+        errors = self._errors
+        if errors is None:
+            errors = self._create_errors()
+            self._errors = errors
+        
+        return errors
+    
+    
+    def _create_errors(self):
+        """
+        Creates the errors shipped with the exception.
+        
+        Might return an empty list.
+        
+        Returns
+        -------
+        errors : `list` of `str`
         """
         messages = []
         
         message_parts = []
-        data = self.received_data
-        if type(data) is dict:
-            message_base = data.get('message', '')
-            error_datas = data.get('errors', None)
+        received_data = self.received_data
+        if isinstance(received_data, dict):
+            error_datas = received_data.get('errors', None)
             if (error_datas is not None) and error_datas:
-                stack = [[(None, error_datas,)]]
+                stack = [[(None, error_datas)]]
                 while True:
                     line = stack[-1]
                     if not line:
@@ -168,7 +273,7 @@ class DiscordException(Exception):
                     
                     key, value = line[-1]
                     
-                    if type(value) is dict:
+                    if isinstance(value, dict):
                         if (key is not None):
                             if key.isdigit():
                                 # this should not be first ever
@@ -180,7 +285,7 @@ class DiscordException(Exception):
                         try:
                             error_datas = value['_errors']
                         except KeyError:
-                            stack.append(list(value.items()))
+                            stack.append([*value.items()])
                             continue
                         
                         for error_data in error_datas:
@@ -202,7 +307,7 @@ class DiscordException(Exception):
                             if error_data_length:
                                 error_extra = ' '.join(
                                     f'{key}={value!r}' for key, value in error_data.items()
-                                        if key not in ('code', 'message')
+                                    if key not in ('code', 'message')
                                 )
                                 
                                 if (error_message is None):
@@ -262,52 +367,93 @@ class DiscordException(Exception):
                         continue
                     
                     del message_parts[-1]
-                    
-        else:
-            message_base = ''
         
-        response = self.response
-        message_parts.append(parse_date_header_to_datetime(response.headers[DATE]).__format__(DATETIME_FORMAT_CODE))
-        message_parts.append('; ')
-        message_parts.append(response.method)
-        message_parts.append(' ')
-        message_parts.append(str(response.url))
-        messages.append(''.join(message_parts))
-        
-        message_parts.clear()
-        
-        message_parts.append(f'{self.__class__.__name__} {response.reason} ({response.status})')
-        
-        code = self.code
-        if code:
-            message_parts.append(f', code=')
-            message_parts.append(repr(code))
-
-        if message_base:
-            message_parts.append(': ')
-            message_parts.append(message_base)
-        elif messages:
-            message_parts.append(':')
-        
-        messages.append(''.join(message_parts))
         messages.reverse()
-        
-        if self.response.status == 429:
-            try:
-                retry_after = self.response.headers[RETRY_AFTER]
-            except KeyError:
-                pass
-            else:
-                messages.append(f'{RETRY_AFTER}: {retry_after}')
-        
-        self._messages = messages
         return messages
     
-    def __repr__(self):
-        """Returns the representation of the object."""
-        return '\n'.join(self.messages)
     
-    __str__ = __repr__
+    @property
+    def debug_info(self):
+        """
+        Returns debug info.
+        
+        Only displayed within `.messages` when rich discord exceptions are enabled.
+        
+        Returns
+        -------
+        debug_info : `str`
+        """
+        
+        debug_info = self._debug_info
+        if debug_info is None:
+            debug_info = self._create_debug_info()
+            self._debug_info = debug_info
+        
+        return debug_info
+    
+    
+    def _create_debug_info(self):
+        """
+        Creates debug info.
+        
+        Returns
+        -------
+        debug_info : `str`
+        """
+        debug_options = self.debug_options
+        if (debug_options is None):
+            return ''
+        
+        debug_info_parts = ['debug options: ']
+        
+        index = 0
+        limit = len(debug_options)
+        while True:
+            debug_option = debug_options[index]
+            index += 1
+            
+            debug_info_parts.append(debug_option)
+            
+            if index == limit:
+                break
+            
+            debug_info_parts.append(', ')
+            continue
+        
+        return ''.join(debug_info_parts)
+    
+    
+    @property
+    def messages(self):
+        """
+        Returns a list of the errors. The 0th element of the list is always a header line, what contains the
+        exception's name, the response's reason and it's status. If set, then also the Discord's internal error code
+        and it's message as well.
+        
+        Every other element at the list is optional. Those are extra errors included in the response's data.
+        
+        Returns
+        -------
+        messages : `list` of `str`
+        """
+        messages = []
+        
+        messages.append(self.message)
+        messages.append(self.request_info)
+        
+        messages.extend(self.errors)
+        
+        if RICH_DISCORD_EXCEPTION:
+            debug_info = self.debug_info
+            if debug_info:
+                messages.append(debug_info)
+            
+            reconstructed_payload = reconstruct_payload(self.sent_data)
+            if (reconstructed_payload is not None):
+                messages.append(reconstructed_payload)
+        
+        return messages
+    
     
     @property
     def code(self):
@@ -322,6 +468,7 @@ class DiscordException(Exception):
         code = self._code
         if code is None:
             code = self._get_code()
+            self._code = code
         
         return code
     
@@ -341,7 +488,6 @@ class DiscordException(Exception):
         else:
             code = 0
         
-        self._code = code
         return code
     
     
@@ -357,32 +503,34 @@ class DiscordException(Exception):
         return self.response.status
     
     
-    def _create_debug_options_message(self):
+    def __repr__(self):
+        """Returns the representation of the object."""
+        return '\n'.join(self.messages)
+    
+    
+    __str__ = __repr__
+    
+    def __format__(self, code):
         """
-        Creates debug options message part.
+        Formats the discord exception in a format string.
+        
+        The only provided option is no code, which returns a short-ish representation.
+        
+        Parameters
+        ----------
+        code : `str`
+            The option on based the result will be formatted.
         
         Returns
         -------
-        debug_options_message : `None`, `str`
+        exception : `str`
+        
+        Raises
+        ------
+        ValueError
+            Unknown format code.
         """
-        debug_options = self.debug_options
-        if (debug_options is None):
-            return None
+        if not code:
+            return f'<{self.message}>'
         
-        debug_options_message_parts = ['debug options: ']
-        
-        index = 0
-        limit = len(debug_options)
-        while True:
-            debug_option = debug_options[index]
-            index += 1
-            
-            debug_options_message_parts.append(debug_option)
-            
-            if index == limit:
-                break
-            
-            debug_options_message_parts.append(', ')
-            continue
-        
-        return ''.join(debug_options_message_parts)
+        raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')

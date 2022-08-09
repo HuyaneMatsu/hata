@@ -10,6 +10,11 @@
 - `SKUGenre`'s `.name` style updated.
 - `SKUFeatureType`'s `.name` style updated.
 - Add `view_creator_monetization_analytics` `Permission` flag.
+- Add `DiscordException.__format__`.
+- Add `DiscordException.errors`.
+- Add `DiscordException.debug_info`.
+- Add `DiscordException.request_info`.
+- Add `DiscordException.message`.
 
 #### Bug Fixes
 

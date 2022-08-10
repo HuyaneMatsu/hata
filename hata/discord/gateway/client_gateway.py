@@ -96,12 +96,12 @@ class DiscordGateway:
         The websocket client of the gateway.
     """
     __slots__ = (
-        '_buffer', '_decompressor', 'client', 'kokoro', 'rate_limit_handler', 'sequence', 'session_id', 'shard_id',
-        'websocket',
+        '_buffer', '_decompressor', 'client', 'kokoro', 'rate_limit_handler', 'resume_gateway_url', 'sequence',
+        'session_id', 'shard_id', 'websocket',
     )
 
     
-    def __init__(self, client, shard_id=0):
+    def __new__(cls, client, shard_id=0):
         """
         Creates a gateway with it's default attributes.
         
@@ -112,16 +112,20 @@ class DiscordGateway:
         shard_id : `int` = `0`, Optional
             The shard id of the gateway. Defaults to `0`, if the owner client does not use sharding.
         """
-        self.client = client
-        self.shard_id = shard_id
-        self.websocket = None
+        self = object.__new__(cls)
+        
         self._buffer = bytearray()
         self._decompressor = None
-        self.sequence = None
-        self.session_id = None
-        
+        self.client = client
         self.kokoro = None
         self.rate_limit_handler = GatewayRateLimiter()
+        self.resume_gateway_url = None
+        self.sequence = None
+        self.session_id = None
+        self.shard_id = shard_id
+        self.websocket = None
+        
+        return self
     
     
     async def start(self):
@@ -191,8 +195,10 @@ class DiscordGateway:
                     future_or_timeout(task, TIMEOUT_GATEWAY_CONNECT)
                     await task
             
-            except (OSError, TimeoutError, ConnectionError, ConnectionClosed, WebSocketProtocolError, InvalidHandshake,
-                    ValueError) as err:
+            except (
+                OSError, TimeoutError, ConnectionError, ConnectionClosed, WebSocketProtocolError, InvalidHandshake,
+                ValueError
+            ) as err:
                 if not client.running:
                     return
                 
@@ -243,7 +249,16 @@ class DiscordGateway:
                 self.websocket = None
             
             self._decompressor = zlib.decompressobj()
-            gateway_url = await self.client.client_gateway_url()
+            
+            if resume:
+                gateway_url = self.resume_gateway_url
+            else:
+                gateway_url = None
+            
+            if gateway_url is None:
+                gateway_url = await self.client.client_gateway_url()
+            
+            
             self.websocket = await self.client.http.connect_websocket(gateway_url)
             self.kokoro.start_beating()
             
@@ -257,11 +272,11 @@ class DiscordGateway:
                 await self.websocket.ensure_open()
             except ConnectionClosed:
                 # websocket got closed so let's just do a regular IDENTIFY connect.
-                self.session_id = None
-                self.sequence = None
+                self.clear_session()
                 continue
             
             return
+    
     
     async def _poll_event(self):
         """
@@ -362,6 +377,7 @@ class DiscordGateway:
         
         if event == 'READY':
             self.session_id = data['session_id']
+            self.resume_gateway_url = data.get('resume_gateway_url', None)
         
         # elif event == 'RESUMED':
             # pass
@@ -425,8 +441,7 @@ class DiscordGateway:
                 await self.close()
                 return True
             
-            self.session_id = None
-            self.sequence = None
+            self.clear_session()
             
             await self._identify()
             return False
@@ -521,7 +536,7 @@ class DiscordGateway:
         """Returns the representation of the gateway."""
         return f'<{self.__class__.__name__} client={self.client.full_name!r}, shard_id={self.shard_id}>'
     
-    #special operations
+    # Special operations
     
     async def _identify(self):
         """
@@ -569,7 +584,8 @@ class DiscordGateway:
             data['d']['shard'] = [self.shard_id, shard_count]
         
         await self.send_as_json(data)
-        
+    
+    
     async def _resume(self):
         """
         Sends a `RESUME` packet to Discord.
@@ -586,7 +602,8 @@ class DiscordGateway:
         }
         
         await self.send_as_json(data)
-
+    
+    
     async def change_voice_state(self, guild_id, channel_id, self_mute=False, self_deaf=False):
         """
         Sends a `VOICE_STATE` packet to Discord.
@@ -622,6 +639,7 @@ class DiscordGateway:
         
         await self.send_as_json(data)
     
+    
     async def _beat(self):
         """
         Sends a `VOICE_STATE` packet to Discord.
@@ -634,7 +652,15 @@ class DiscordGateway:
         }
         
         await self.send_as_json(data)
-
+    
+    
+    def clear_session(self):
+        """
+        Clears current session data, disabling the option of resuming the connection.
+        """
+        self.session_id = None
+        self.sequence = None
+        self.resume_gateway_url = None
 
 
 class DiscordGatewaySharder:
@@ -702,6 +728,7 @@ class DiscordGatewaySharder:
         
         for task in tasks:
             task.cancel()
+    
     
     async def run(self):
         """
@@ -783,6 +810,7 @@ class DiscordGatewaySharder:
         
         result.result()
     
+    
     @property
     def latency(self):
         """
@@ -807,6 +835,7 @@ class DiscordGatewaySharder:
         
         return Kokoro.DEFAULT_LATENCY
     
+    
     async def terminate(self):
         """
         Terminates the gateway sharder's gateways.
@@ -820,6 +849,7 @@ class DiscordGatewaySharder:
         
         await WaitTillAll(tasks, KOKORO)
     
+    
     async def close(self):
         """
         Cancels the gateway sharder's gateways.
@@ -832,6 +862,7 @@ class DiscordGatewaySharder:
             tasks.append(task)
         
         await WaitTillAll(tasks, KOKORO)
+    
     
     async def send_as_json(self, data):
         """
@@ -858,6 +889,7 @@ class DiscordGatewaySharder:
         for task in done:
             task.result()
     
+    
     @staticmethod
     async def _send_json(gateway, data):
         """
@@ -878,6 +910,7 @@ class DiscordGatewaySharder:
             await websocket.send(data)
         except ConnectionClosed:
             pass
+    
     
     def __repr__(self):
         """Returns the representation of the gateway sharder."""

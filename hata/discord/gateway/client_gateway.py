@@ -86,6 +86,8 @@ class DiscordGateway:
         the gateway.
     rate_limit_handler : ``GatewayRateLimiter``
         The rate limit handler of the gateway.
+    resume_gateway_url : `None`, `str`
+        The new gateway url to which we should connect on resuming.
     sequence : `None`, `int`
         Last sequence number received.
     session_id : `None`, `str`
@@ -99,7 +101,6 @@ class DiscordGateway:
         '_buffer', '_decompressor', 'client', 'kokoro', 'rate_limit_handler', 'resume_gateway_url', 'sequence',
         'session_id', 'shard_id', 'websocket',
     )
-
     
     def __new__(cls, client, shard_id=0):
         """
@@ -676,7 +677,7 @@ class DiscordGatewaySharder:
     """
     __slots__ = ('client', 'gateways',)
     
-    def __init__(self, client):
+    def __new__(cls, client):
         """
         Creates a sharder gateway with it's default attributes.
         
@@ -685,14 +686,20 @@ class DiscordGatewaySharder:
         client : ``Client``
             The owner client of the gateway.
         """
-        self.client = client
         
         gateways = []
         for shard_id in range(client.shard_count):
-            gateway = DiscordGateway(client,shard_id)
+            gateway = DiscordGateway(client, shard_id)
             gateways.append(gateway)
         
+        
+        self = object.__new__(cls)
+        
+        self.client = client
         self.gateways = gateways
+        
+        return self
+    
     
     def reshard(self):
         """
@@ -712,7 +719,8 @@ class DiscordGatewaySharder:
         elif new_shard_count < old_shard_count:
             for _ in range(new_shard_count, old_shard_count):
                 gateways.pop()
-        
+    
+    
     async def start(self):
         """
         Starts the gateways of the sharder gateway.

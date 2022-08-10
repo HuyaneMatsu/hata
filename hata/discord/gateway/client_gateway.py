@@ -8,7 +8,7 @@ from scarletio import (
 )
 from scarletio.web_common import ConnectionClosed, InvalidHandshake, WebSocketProtocolError
 
-from ...env import CACHE_PRESENCE
+from ...env import API_VERSION, CACHE_PRESENCE
 
 from ..activity import ACTIVITY_UNKNOWN
 from ..core import KOKORO
@@ -259,6 +259,7 @@ class DiscordGateway:
             if gateway_url is None:
                 gateway_url = await self.client.client_gateway_url()
             
+            gateway_url = f'{gateway_url}?encoding=json&v={API_VERSION}&compress=zlib-stream'
             
             self.websocket = await self.client.http.connect_websocket(gateway_url)
             self.kokoro.start_beating()

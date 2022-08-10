@@ -9,7 +9,7 @@ from scarletio import (
     methodize, run_coroutine, sleep, write_exception_async
 )
 
-from ...env import API_VERSION, CACHE_USER
+from ...env import CACHE_USER
 from ...ext import get_and_validate_setup_functions, run_setup_functions
 
 from ..activity import ACTIVITY_UNKNOWN, ActivityBase, ActivityCustom
@@ -1064,7 +1064,7 @@ class Client(
             return self._gateway_url
         
         data = await self.client_gateway()
-        self._gateway_url = gateway_url = f'{data["url"]}?encoding=json&v={API_VERSION}&compress=zlib-stream'
+        self._gateway_url = gateway_url = data['url']
         self._gateway_time = LOOP_TIME()
         
         return gateway_url
@@ -1093,7 +1093,7 @@ class Client(
             If any exception was received from the Discord API.
         """
         data = await self.client_gateway()
-        self._gateway_url = f'{data["url"]}?encoding=json&v={API_VERSION}&compress=zlib-stream'
+        self._gateway_url = data['url']
         self._gateway_time = LOOP_TIME()
         
         old_shard_count = self.shard_count

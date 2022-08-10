@@ -630,6 +630,7 @@ class Client(
         self.events = EventHandlerManager(self)
         self.group_channels = {}
         self.guilds = set()
+        self.http = DiscordHTTPClient(is_bot, token, debug_options=processed_http_debug_options)
         self.intents = intents
         self.locale = DEFAULT_LOCALE
         self.mfa = False
@@ -645,7 +646,6 @@ class Client(
         self.voice_clients = {}
         
         # These might require other attributes to be set
-        self.http = DiscordHTTPClient(self, debug_options=processed_http_debug_options)
         self.gateway = (DiscordGatewaySharder if shard_count else DiscordGateway)(self)
         
         # Setup additional user related attributes
@@ -660,7 +660,7 @@ class Client(
         
         # Setup extensions
         run_setup_functions(self, setup_functions, kwargs)
-
+        
         # Register client
         CLIENTS[client_id] = self
         

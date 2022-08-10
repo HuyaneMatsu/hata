@@ -414,7 +414,7 @@ class DiscordGateway:
         
         if operation == HELLO:
             if (data is not None):
-                interval = data['heartbeat_interval']/1000.0
+                interval = data['heartbeat_interval'] / 1000.0
                 # send a heartbeat immediately
                 kokoro.interval = interval
             
@@ -437,7 +437,7 @@ class DiscordGateway:
             return True
         
         if operation == INVALIDATE_SESSION:
-            if (data is not None) and data:
+            if (data is not None) and isinstance(data, bool) and data:
                 await sleep(5.0, KOKORO)
                 await self.close()
                 return True

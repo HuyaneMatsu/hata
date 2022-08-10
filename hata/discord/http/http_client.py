@@ -118,14 +118,16 @@ class DiscordHTTPClient(HTTPClient):
     
     CONNECTOR_REFERENCE_COUNTS = WeakKeyDictionary()
     
-    def __init__(self, client, *, proxy_url=None, proxy_auth=None, debug_options=None):
+    def __init__(self, bot, token, *, proxy_url=None, proxy_auth=None, debug_options=None):
         """
         Creates a new Discord http client.
         
         Parameters
         ----------
-        client : ``Client``
-            The owner client of the session.
+        bot : `bool`
+            Whether the respective client is a bot.
+        token : `str`
+            The client's token.
         proxy_auth :  `None`, `str` = `None`, Optional (Keyword only)
             Proxy authorization for the session's requests.
         proxy_url : `None`, `str` = `None`, Optional (Keyword only)
@@ -133,23 +135,21 @@ class DiscordHTTPClient(HTTPClient):
         debug_options: `None`, `set` of `str` = `None`, Optional (Keyword only)
             Http debug options, like `'canary'` (I don't know more either).
         """
-        loop = client.loop
-        
         try:
-            connector_ref_counter = self.CONNECTOR_REFERENCE_COUNTS[loop]
+            connector_ref_counter = self.CONNECTOR_REFERENCE_COUNTS[KOKORO]
         except KeyError:
-            connector = TCPConnector(loop)
+            connector = TCPConnector(KOKORO)
             connector_ref_counter = _ConnectorRefCounter(connector)
-            self.CONNECTOR_REFERENCE_COUNTS[loop] = connector_ref_counter
+            self.CONNECTOR_REFERENCE_COUNTS[KOKORO] = connector_ref_counter
         else:
             connector_ref_counter.count += 1
             connector = connector_ref_counter.connector
         
-        HTTPClient.__init__(self, loop, proxy_url, proxy_auth, connector = connector)
+        HTTPClient.__init__(self, KOKORO, proxy_url, proxy_auth, connector = connector)
         
         headers = IgnoreCaseMultiValueDictionary()
         headers[USER_AGENT] = LIBRARY_USER_AGENT
-        headers[AUTHORIZATION] = f'Bot {client.token}' if client.is_bot else client.token
+        headers[AUTHORIZATION] = f'Bot {token}' if bot else token
         
         if API_VERSION in (6, 7):
             headers[RATE_LIMIT_PRECISION] = 'millisecond'

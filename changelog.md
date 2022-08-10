@@ -15,6 +15,7 @@
 - Add `DiscordException.debug_info`.
 - Add `DiscordException.request_info`.
 - Add `DiscordException.message`.
+- `DiscordHTTPClient` constructor now only requires `bot` and `token` parameters (from `client`).
 
 #### Bug Fixes
 

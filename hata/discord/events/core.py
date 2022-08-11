@@ -280,7 +280,7 @@ class ParserSettingOption:
     """
     Contains details about a dispatch event parser
     
-    Parameters
+    Attributes
     ----------
     intent_shift : `int`
         The event's intent's respective shift.
@@ -317,6 +317,7 @@ class ParserSettingOption:
             self.name = name
             self.intent_shift = intent_shift
             yield self
+    
     
     def __repr__(self):
         """Returns the parser description's representation."""
@@ -365,8 +366,8 @@ class ParserSetting:
         
         Parameters
         ----------
-        name : `tuple` of `str`
-            The parser's name also known as the dispatch event's.
+        names : `tuple` of `str`
+            The parsers' names also known as the dispatch events'.
         parser_cal_sc : `function`
             Single client parser what calculates the differences between the previous and the current state and calls
             the client's event.
@@ -390,6 +391,7 @@ class ParserSetting:
         self.client_count = 0
         
         return self
+    
     
     def add_mention(self, client):
         """
@@ -419,6 +421,7 @@ class ParserSetting:
         self.mention_count += 1
         self._recalculate()
     
+    
     def remove_mention(self, client):
         """
         If the client is registered to the parser defaults, removes it's mention from the respective parser defaults
@@ -447,6 +450,7 @@ class ParserSetting:
         
         self.mention_count -= 1
         self._recalculate()
+    
     
     def _recalculate(self):
         """

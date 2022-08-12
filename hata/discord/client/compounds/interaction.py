@@ -765,7 +765,8 @@ class ClientCompoundInteractionEndpoints(Compound):
         show_for_invoking_user_only : `bool` = `False`, Optional (Keyword only)
             Whether the sent message should only be shown to the invoking user. Defaults to `False`.
             
-            If given as `True` only the message's content, embeds and components will be processed by Discord.
+            Invoking user only messages can have attachments too. These attachments are purged by Discord after a set
+            amount of time (2 weeks), so do not rely on reusing their url.
         
         suppress_embeds : `bool` = `False`, Optional (Keyword only)
             Whether the message's embeds should be suppressed initially.

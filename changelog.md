@@ -21,6 +21,7 @@
 
 - `Channel.thread_users.fset` was set as a `CoroutineFunction` instead of a normal one.
 - `unix_time` could go out of range on windows.
+- Fix `type` in `Client.achievement_edit` which could cause falsely triggering `AssertionError`.
 
 ## 1.3.1 *\[2022-07-25\]*
 

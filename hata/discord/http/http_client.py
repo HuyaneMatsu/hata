@@ -1446,7 +1446,7 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.user_achievement_get_all, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET,
             f'{API_ENDPOINT}/users/@me/applications/{application_id}/achievements',
-            headers=headers,
+            headers = headers,
         )
     
     async def user_achievement_update(self, user_id, application_id, achievement_id, data):

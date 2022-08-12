@@ -275,7 +275,7 @@ class ClientCompoundAchievementEndpoints(Compound):
         
         if (secure is not ...):
             if __debug__:
-                if not isinstance(secret, bool):
+                if not isinstance(secure, bool):
                     raise AssertionError(
                         f'`secure` can be `bool`, got {secure.__class__.__name__}; {secure!r}.'
                     )

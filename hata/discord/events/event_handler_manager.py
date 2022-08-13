@@ -692,11 +692,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     message_create(client: ``Client``, message: ``Message``):
         Called when a message is sent to any of the client's text channels.
     
-    message_delete(client: ``Client``, message: {``Message``, ``MessageRepr``}):
+    message_delete(client: ``Client``, message: ``Message``):
         Called when a loaded message is deleted.
-        
-        > If `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and an uncached message is deleted,
-        > then `message` is given as ``MessageRepr``.
     
     message_edit(client: ``Client``, message: ``Message``, old_attributes: {`None`, `dict`}):
         Called when a loaded message is edited. The passed `old_attributes` parameter contains the message's overwritten
@@ -734,36 +731,25 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         not going to contain `edited`, only `pinned`, `flags`. If the embeds are (un)suppressed of the message, then
         `old_attributes` might contain also `embeds`.
         
-        > If `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and an uncached message is updated,
-        > then `old_attributes` is given as `None`.
+        > If the message is partial (usually when it is not cached), `old_attributes` is passed as `None`.
     
     reaction_add(client: ``Client``, event: ``ReactionAddEvent``):
         Called when a user reacts on a message with the given emoji.
-        
-        > If `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and the reaction is added on an
-        > uncached message, then `message` is given as ``MessageRepr``.
     
-    reaction_clear(client: ``Client``, message: {``Message``, ``MessageRepr``}, \
-            reactions: {`None`, ``reaction_mapping``}):
+    reaction_clear(client: ``Client``, message: ``Message``, reactions: {`None`, ``reaction_mapping``}):
         Called when the reactions of a message are cleared. The passed `old_reactions` parameter are the old reactions
         of the message.
         
-        > If `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and the reactions are removed from
-        > and uncached message, then `message` is given as ``MessageRepr`` and `old_reactions` as `None`.
+        > If the message is partial (usually when it is not cached), `reactions` is passed as `None`.
     
     reaction_delete(client: ``Client``, event: ``ReactionDeleteEvent``):
         Called when a user removes it's reaction from a message.
-        
-        > If `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and the reaction is removed from
-        > and uncached message, then `message` is given as ``MessageRepr``.
     
-    reaction_delete_emoji(client: ``Client``, message: {``Message``, ``MessageRepr``}, \
-            users: {`None`, ``reaction_mapping_line``}):
+    reaction_delete_emoji(client: ``Client``, message: ``Message``, users: {`None`, ``reaction_mapping_line``}):
         Called when all the reactions of a specified emoji are removed from a message. The passed `users` parameter
         are the old reactor users of the given emoji.
         
-        > If `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, and the reactions are removed from
-        > and uncached message, then `message` is given as ``MessageRepr`` and `users` as `None`.
+        > If the message is partial (usually when it is not cached), `users` is passed as `None`.
     
     ready(client: ``Client``):
         Called when the client finishes logging in. The event might be called more times, because the clients might

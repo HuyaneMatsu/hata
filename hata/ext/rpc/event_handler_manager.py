@@ -57,7 +57,7 @@ class RPCEventHandlerManager:
     message_create(rpc_client: ``RPCClient``, message: ``Message``)
         Called when a message is created in a subscribed text channel.
     
-    message_delete(rpc_client: ``RPCClient``, message: {``Message``, ``MessageRepr``})
+    message_delete(rpc_client: ``RPCClient``, message: ``Message``)
         Called when a message is deleted in a subscribed text channel.
     
     message_edit(rpc_client: ``RPCClient``, message: ``Message``, old_attributes : {`dict`, `None`})

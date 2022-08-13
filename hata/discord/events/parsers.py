@@ -4,7 +4,7 @@ from datetime import datetime
 
 from scarletio import Task, include
 
-from ...env import ALLOW_DEAD_EVENTS, CACHE_PRESENCE, CACHE_USER
+from ...env import CACHE_PRESENCE, CACHE_USER
 
 from ..auto_moderation import AutoModerationActionExecutionEvent, AutoModerationRule
 from ..channel import Channel
@@ -26,7 +26,7 @@ from ..guild.embedded_activity_state import (
 from ..integration import Integration
 from ..interaction import ApplicationCommand, ApplicationCommandPermission, InteractionEvent
 from ..invite import Invite
-from ..message import EMBED_UPDATE_NONE, Message, MessageRepr
+from ..message import EMBED_UPDATE_NONE, Message
 from ..role import Role
 from ..scheduled_event import ScheduledEvent, ScheduledEventSubscribeEvent, ScheduledEventUnsubscribeEvent
 from ..stage import Stage
@@ -185,97 +185,26 @@ add_parser(
 del MESSAGE_CREATE__CAL, \
     MESSAGE_CREATE__OPT
 
-if ALLOW_DEAD_EVENTS:
-    def MESSAGE_DELETE__CAL_SC(client, data):
-        channel_id = int(data['channel_id'])
-        message_id = int(data['id'])
-        
-        try:
-            channel = CHANNELS[channel_id]
-        except KeyError:
-            message = None
-        else:
-            message = channel._pop_message(message_id)
-        
-        if message is None:
-            guild_id = data.get('guild_id', None)
-            if guild_id is None:
-                guild_id = 0
-            else:
-                guild_id = int(guild_id)
-            
-            message = MessageRepr(message_id, channel_id, guild_id)
-        
-        Task(client.events.message_delete(client, message), KOKORO)
-    
-    
-    def MESSAGE_DELETE__CAL_MC(client, data):
-        channel_id = int(data['channel_id'])
-        message_id = int(data['id'])
-        
-        channel = CHANNELS.get('channel_id', None)
-        
-        if channel is None:
-            clients = None
-            message = None
-        else:
-            clients = filter_clients(
-                channel.clients,
-                INTENT_MASK_GUILD_MESSAGES if channel.is_in_group_guild() else INTENT_MASK_DIRECT_MESSAGES,
-                client,
-            )
-            
-            if clients.send(None) is not client:
-                clients.close()
-                return
-            
-            message = channel._pop_message(message_id)
-        
-        if message is None:
-            guild_id = data.get('guild_id', None)
-            if guild_id is None:
-                guild_id = 0
-            else:
-                guild_id = int(guild_id)
-            
-            message = MessageRepr(message_id, channel_id, guild_id)
-        
-        if clients is None:
-            event_handler = client.events.message_delete
-            if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, message), KOKORO)
-        else:
-            for client_ in clients:
-                event_handler = client_.events.message_delete
-                if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client_, message), KOKORO)
 
-else:
-    def MESSAGE_DELETE__CAL_SC(client, data):
-        channel_id = int(data['channel_id'])
-        try:
-            channel = CHANNELS[channel_id]
-        except KeyError:
-            # Can happen that 1 client gets message or guild delete payload earlier, than the other message delete one,
-            # so do not sync guild at this case.
-            return
-        
-        message_id = int(data['id'])
-        message = channel._pop_message(message_id)
-        if message is None:
-            return
-        
-        Task(client.events.message_delete(client, message), KOKORO)
+def MESSAGE_DELETE__CAL_SC(client, data):
+    message = Message._create_from_partial_data(data)
+    channel = message.channel
+    if (channel is not None):
+        channel._pop_message(message.id)
     
-    def MESSAGE_DELETE__CAL_MC(client, data):
-        channel_id = int(data['channel_id'])
-        try:
-            channel = CHANNELS[channel_id]
-        except KeyError:
-            # Can happen that 1 client gets message or guild delete payload earlier, than the other message delete one,
-            # so do not sync guild at this case.
-            return
-        
+    Task(client.events.message_delete(client, message), KOKORO)
+
+
+def MESSAGE_DELETE__CAL_MC(client, data):
+    channel_id = int(data['channel_id'])
+    message_id = int(data['id'])
+    
+    channel = CHANNELS.get('channel_id', None)
+    
+    if channel is None:
+        clients = None
+        message = None
+    else:
         clients = filter_clients(
             channel.clients,
             INTENT_MASK_GUILD_MESSAGES if channel.is_in_group_guild() else INTENT_MASK_DIRECT_MESSAGES,
@@ -286,17 +215,26 @@ else:
             clients.close()
             return
         
-        message_id = int(data['id'])
         message = channel._pop_message(message_id)
-        if message is None:
-            clients.close()
-            return
+    
+    if message is None:
+        guild_id = data.get('guild_id', None)
+        if guild_id is None:
+            guild_id = 0
+        else:
+            guild_id = int(guild_id)
         
+        message = Message._create_from_partial_fields(message_id, channel_id, guild_id)
+    
+    if clients is None:
+        event_handler = client.events.message_delete
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(event_handler(client, message), KOKORO)
+    else:
         for client_ in clients:
             event_handler = client_.events.message_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(event_handler(client_, message), KOKORO)
-
 
 def MESSAGE_DELETE__OPT_SC(client, data):
     channel_id = int(data['channel_id'])
@@ -341,118 +279,79 @@ del MESSAGE_DELETE__CAL_SC, \
     MESSAGE_DELETE__OPT_SC, \
     MESSAGE_DELETE__OPT_MC
 
-if ALLOW_DEAD_EVENTS:
-    def MESSAGE_DELETE_BULK__CAL_SC(client, data):
-        channel_id = int(data['channel_id'])
-        
-        try:
-            channel = CHANNELS[channel_id]
-        except KeyError:
-            missed = [int(message_id) for message_id in data['ids']]
-            messages = []
-        else:
-            messages, missed = channel._pop_multiple([int(message_id) for message_id in data['ids']])
-        
-        if missed:
-            guild_id = data.get('guild_id', None)
-            if guild_id is None:
-                guild_id = 0
-            else:
-                guild_id = int(guild_id)
-            
-            for message_id in missed:
-                message = MessageRepr(message_id, channel_id, guild_id)
-                messages.append(message)
-        
-        event_handler = client.events.message_delete
-        for message in messages:
-            Task(event_handler(client, message), KOKORO)
-    
-    
-    def MESSAGE_DELETE_BULK__CAL_MC(client, data):
-        channel_id = int(data['channel_id'])
-        
-        try:
-            channel = CHANNELS[channel_id]
-        except KeyError:
-            clients = None
-            
-            messages = []
-            missed = [int(message_id) for message_id in data['ids']]
-        
-        else:
-            clients = filter_clients(channel.clients, INTENT_MASK_GUILD_MESSAGES, client)
-            if clients.send(None) is not client:
-                clients.close()
-                return
-            
-            messages, missed = channel._pop_multiple([int(message_id) for message_id in data['ids']])
-        
-        
-        if missed:
-            guild_id = data.get('guild_id', None)
-            if (guild_id is None):
-                guild_id = 0
-            else:
-                guild_id = int(guild_id)
-            
-            for message_id in missed:
-                message = MessageRepr(message_id, channel_id, guild_id)
-                messages.append(message)
-        
-        
-        if clients is None:
-            event_handler = client.events.message_delete
-            if (event_handler is not DEFAULT_EVENT_HANDLER):
-                for message in messages:
-                    Task(event_handler(client, message), KOKORO)
-        
-        else:
-            for client_ in clients:
-                event_handler = client_.events.message_delete
-                if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    for message in messages:
-                        Task(event_handler(client_, message), KOKORO)
 
-else:
-    def MESSAGE_DELETE_BULK__CAL_SC(client, data):
-        channel_id = int(data['channel_id'])
-        try:
-            channel = CHANNELS[channel_id]
-        except KeyError:
-            # Can happen that 1 client gets message or guild delete payload earlier, than the other message delete one,
-            # so do not sync guild at this case.
-            return
-        
-        message_ids = [int(message_id) for message_id in data['ids']]
-        messages, missed = channel._pop_multiple(message_ids)
-        
-        event_handler = client.events.message_delete
-        for message in messages:
-            Task(event_handler(client, message), KOKORO)
+def MESSAGE_DELETE_BULK__CAL_SC(client, data):
+    channel_id = int(data['channel_id'])
     
-    def MESSAGE_DELETE_BULK__CAL_MC(client, data):
-        channel_id = int(data['channel_id'])
-        try:
-            channel = CHANNELS[channel_id]
-        except KeyError:
-            # Can happen that 1 client gets message or guild delete payload earlier, than the other message delete one,
-            # so do not sync guild at this case.
-            return
+    try:
+        channel = CHANNELS[channel_id]
+    except KeyError:
+        missed = [int(message_id) for message_id in data['ids']]
+        messages = []
+    else:
+        messages, missed = channel._pop_multiple([int(message_id) for message_id in data['ids']])
+    
+    if missed:
+        guild_id = data.get('guild_id', None)
+        if guild_id is None:
+            guild_id = 0
+        else:
+            guild_id = int(guild_id)
         
+        for message_id in missed:
+            message = Message._create_from_partial_fields(message_id, channel_id, guild_id)
+            messages.append(message)
+    
+    event_handler = client.events.message_delete
+    for message in messages:
+        Task(event_handler(client, message), KOKORO)
+
+
+def MESSAGE_DELETE_BULK__CAL_MC(client, data):
+    channel_id = int(data['channel_id'])
+    
+    try:
+        channel = CHANNELS[channel_id]
+    except KeyError:
+        clients = None
+        
+        messages = []
+        missed = [int(message_id) for message_id in data['ids']]
+    
+    else:
         clients = filter_clients(channel.clients, INTENT_MASK_GUILD_MESSAGES, client)
         if clients.send(None) is not client:
             clients.close()
             return
         
-        message_ids = [int(message_id) for message_id in data['ids']]
-        messages, missed = channel._pop_multiple(message_ids)
+        messages, missed = channel._pop_multiple([int(message_id) for message_id in data['ids']])
+    
+    
+    if missed:
+        guild_id = data.get('guild_id', None)
+        if (guild_id is None):
+            guild_id = 0
+        else:
+            guild_id = int(guild_id)
         
+        for message_id in missed:
+            message = Message._create_from_partial_fields(message_id, channel_id, guild_id)
+            messages.append(message)
+    
+    
+    if clients is None:
+        event_handler = client.events.message_delete
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            for message in messages:
+                Task(event_handler(client, message), KOKORO)
+    
+    else:
         for client_ in clients:
             event_handler = client_.events.message_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 for message in messages:
                     Task(event_handler(client_, message), KOKORO)
+
 
 def MESSAGE_DELETE_BULK__OPT_SC(client, data):
     channel_id = int(data['channel_id'])
@@ -464,6 +363,7 @@ def MESSAGE_DELETE_BULK__OPT_SC(client, data):
     
     message_ids = [int(message_id) for message_id in data['ids']]
     channel._pop_multiple(message_ids)
+
 
 def MESSAGE_DELETE_BULK__OPT_MC(client, data):
     channel_id = int(data['channel_id'])
@@ -479,6 +379,7 @@ def MESSAGE_DELETE_BULK__OPT_MC(client, data):
     message_ids = [int(message_id) for message_id in data['ids']]
     channel._pop_multiple(message_ids)
 
+
 add_parser(
     'MESSAGE_DELETE_BULK',
     MESSAGE_DELETE_BULK__CAL_SC,
@@ -491,133 +392,78 @@ del MESSAGE_DELETE_BULK__CAL_SC, \
     MESSAGE_DELETE_BULK__OPT_MC
 
 
-if ALLOW_DEAD_EVENTS:
-    def MESSAGE_UPDATE__CAL_SC(client, data):
-        message_id = int(data['id'])
-        message = MESSAGES.get(message_id, None)
-        if message is None:
-            if 'edited_timestamp' not in data:
-                return
-            
-            # Dead event handling
-            message = Message(data)
-            Task(client.events.message_edit(client, message, None), KOKORO)
+def MESSAGE_UPDATE__CAL_SC(client, data):
+    message_id = int(data['id'])
+    message = MESSAGES.get(message_id, None)
+    if message is None:
+        if 'edited_timestamp' not in data:
             return
         
-        
-        if 'edited_timestamp' in data:
-            old_attributes = message._difference_update_attributes(data)
-            if not old_attributes:
-                return
-            
-            Task(client.events.message_edit(client, message, old_attributes), KOKORO)
-        else:
-            change_state = message._update_embed(data)
-            if change_state == EMBED_UPDATE_NONE:
-                return
-            
-            Task(client.events.embed_update(client, message, change_state), KOKORO)
+        # Dead event handling
+        message = Message(data)
+        Task(client.events.message_edit(client, message, None), KOKORO)
+        return
     
-    def MESSAGE_UPDATE__CAL_MC(client, data):
-        message_id = int(data['id'])
-        message = MESSAGES.get(message_id, None)
-        if message is None:
-            if 'edited_timestamp' not in data:
-                return
-            
-            message = Message(data)
-            message_cached_before = False
-        else:
-            message_cached_before = True
-        
-        channel = message.channel
-        if channel is None:
-            # If channel is nto there, we do not need to dispatch it for all the clients, because we just can't.
-            event_handler = client.events.message_edit
-            if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, message, None), KOKORO)
-        
-        clients = filter_content_intent_client(channel.clients, data, client)
-        
-        if clients.send(None) is not client:
-            clients.close()
+    
+    if 'edited_timestamp' in data:
+        old_attributes = message._difference_update_attributes(data)
+        if not old_attributes:
             return
         
+        Task(client.events.message_edit(client, message, old_attributes), KOKORO)
+    else:
+        change_state = message._update_embed(data)
+        if change_state == EMBED_UPDATE_NONE:
+            return
         
-        if 'edited_timestamp' in data:
-            if message_cached_before:
-                old_attributes = message._difference_update_attributes(data)
-                if not old_attributes:
-                    clients.close()
-                    return
-            else:
-                old_attributes = None
-            
-            for client_ in clients:
-                event_handler = client_.events.message_edit
-                if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client_, message, old_attributes), KOKORO)
-        else:
-            if message_cached_before:
-                result = message._update_embed(data)
-                if not result:
-                    clients.close()
-                    return
-                
-                for client_ in clients:
-                    event_handler = client_.events.embed_update
-                    if (event_handler is not DEFAULT_EVENT_HANDLER):
-                        Task(event_handler(client_, message, result), KOKORO)
+        Task(client.events.embed_update(client, message, change_state), KOKORO)
 
-else:
-    def MESSAGE_UPDATE__CAL_SC(client, data):
-        message_id = int(data['id'])
-        message = MESSAGES.get(message_id, None)
-        if message is None:
+def MESSAGE_UPDATE__CAL_MC(client, data):
+    message_id = int(data['id'])
+    message = MESSAGES.get(message_id, None)
+    if message is None:
+        if 'edited_timestamp' not in data:
             return
         
-        if 'edited_timestamp' in data:
-            old_attributes = message._difference_update_attributes(data)
-            if not old_attributes:
-                return
-            
-            Task(client.events.message_edit(client, message, old_attributes), KOKORO)
-        else:
-            change_state = message._update_embed(data)
-            if change_state == EMBED_UPDATE_NONE:
-                return
-            
-            Task(client.events.embed_update(client, message, change_state), KOKORO)
+        message = Message(data)
+        message_cached_before = False
+    else:
+        message_cached_before = True
     
-    def MESSAGE_UPDATE__CAL_MC(client, data):
-        message_id = int(data['id'])
-        message = MESSAGES.get(message_id, None)
-        if message is None:
-            return
-        
-        channel = message.channel
-        clients = filter_content_intent_client(channel.clients, data, client)
-        
-        if clients.send(None) is not client:
-            clients.close()
-            return
-        
-        if 'edited_timestamp' in data:
+    channel = message.channel
+    if channel is None:
+        # If channel is nto there, we do not need to dispatch it for all the clients, because we just can't.
+        event_handler = client.events.message_edit
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(event_handler(client, message, None), KOKORO)
+    
+    clients = filter_content_intent_client(channel.clients, data, client)
+    
+    if clients.send(None) is not client:
+        clients.close()
+        return
+    
+    
+    if 'edited_timestamp' in data:
+        if message_cached_before:
             old_attributes = message._difference_update_attributes(data)
             if not old_attributes:
                 clients.close()
                 return
-            
-            for client_ in clients:
-                event_handler = client_.events.message_edit
-                if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client_, message, old_attributes), KOKORO)
         else:
+            old_attributes = None
+        
+        for client_ in clients:
+            event_handler = client_.events.message_edit
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client_, message, old_attributes), KOKORO)
+    else:
+        if message_cached_before:
             result = message._update_embed(data)
             if not result:
                 clients.close()
                 return
-                
+            
             for client_ in clients:
                 event_handler = client_.events.embed_update
                 if (event_handler is not DEFAULT_EVENT_HANDLER):
@@ -663,120 +509,52 @@ del MESSAGE_UPDATE__CAL_SC, \
     MESSAGE_UPDATE__OPT_MC
 
 
+def MESSAGE_REACTION_ADD__CAL_SC(client, data):
+    message = Message._create_from_partial_data(data)
+    
+    user = create_partial_user_from_id(int(data['user_id']))
+    emoji = create_partial_emoji_from_data(data['emoji'])
+    
+    message._add_reaction(emoji, user)
+    
+    event = ReactionAddEvent(message, emoji, user)
+    Task(client.events.reaction_add(client, event), KOKORO)
 
-if ALLOW_DEAD_EVENTS:
-    def MESSAGE_REACTION_ADD__CAL_SC(client, data):
-        message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id, None)
-        
-        user_id = int(data['user_id'])
-        user = create_partial_user_from_id(user_id)
-        emoji = create_partial_emoji_from_data(data['emoji'])
-        
-        if message is None:
-            channel_id = int(data['channel_id'])
-            
-            guild_id = data.get('guild_id', None)
-            if (guild_id is None):
-                guild_id = 0
-            else:
-                guild_id = int(guild_id)
-            
-            message = MessageRepr(message_id, channel_id, guild_id)
-        else:
-            message._add_reaction(emoji, user)
-        
-        event = ReactionAddEvent(message, emoji, user)
-        Task(client.events.reaction_add(client, event), KOKORO)
+
+def MESSAGE_REACTION_ADD__CAL_MC(client, data):
+    message = Message._create_from_partial_data(data)
     
+    channel = message.channel
     
-    def MESSAGE_REACTION_ADD__CAL_MC(client, data):
-        message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id, None)
-        if message is None:
-            channel_id = int(data['channel_id'])
-        else:
-            channel_id = message.channel_id
-        
-        channel = CHANNELS.get(channel_id, None)
-        
-        if channel is None:
-            clients = None
-        else:
-            clients = filter_clients(
-                channel.clients,
-                INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
-                client,
-            )
-            if clients.send(None) is not client:
-                clients.close()
-                return
-        
-        user_id = int(data['user_id'])
-        user = create_partial_user_from_id(user_id)
-        emoji = create_partial_emoji_from_data(data['emoji'])
-        
-        if message is None:
-            guild_id = data.get('guild_id', None)
-            if (guild_id is None):
-                guild_id = 0
-            else:
-                guild_id = int(guild_id)
-            
-            message = MessageRepr(message_id, channel_id, guild_id)
-        else:
-            message._add_reaction(emoji, user)
-        
-        event = ReactionAddEvent(message, emoji, user)
-        if clients is None:
-            event_handler = client.events.reaction_add
-            if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, event), KOKORO)
-        else:
-            for client_ in clients:
-                event_handler = client_.events.reaction_add
-                if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client_, event), KOKORO)
-else:
-    def MESSAGE_REACTION_ADD__CAL_SC(client, data):
-        message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id, None)
-        if message is None:
-            return
-        
-        user_id = int(data['user_id'])
-        user = create_partial_user_from_id(user_id)
-        emoji = create_partial_emoji_from_data(data['emoji'])
-        message._add_reaction(emoji, user)
-        
-        event = ReactionAddEvent(message, emoji, user)
-        Task(client.events.reaction_add(client, event), KOKORO)
-    
-    def MESSAGE_REACTION_ADD__CAL_MC(client, data):
-        message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id, None)
-        if message is None:
-            return
-        
-        channel = message.channel
-        clients = filter_clients(channel.clients,
+    if channel is None:
+        clients = None
+    else:
+        clients = filter_clients(
+            channel.clients,
             INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
             client,
         )
         if clients.send(None) is not client:
             clients.close()
             return
-        
-        user_id = int(data['user_id'])
-        user = create_partial_user_from_id(user_id)
-        emoji = create_partial_emoji_from_data(data['emoji'])
-        message._add_reaction(emoji, user)
-        
-        event = ReactionAddEvent(message, emoji, user)
+    
+    user_id = int(data['user_id'])
+    user = create_partial_user_from_id(user_id)
+    emoji = create_partial_emoji_from_data(data['emoji'])
+    
+    message._add_reaction(emoji, user)
+    
+    event = ReactionAddEvent(message, emoji, user)
+    if clients is None:
+        event_handler = client.events.reaction_add
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(event_handler(client, event), KOKORO)
+    else:
         for client_ in clients:
             event_handler = client_.events.reaction_add
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(event_handler(client_, event), KOKORO)
+
 
 def MESSAGE_REACTION_ADD__OPT_SC(client, data):
     message_id = int(data['message_id'])
@@ -819,108 +597,33 @@ del MESSAGE_REACTION_ADD__CAL_SC, \
     MESSAGE_REACTION_ADD__OPT_SC, \
     MESSAGE_REACTION_ADD__OPT_MC
 
-if ALLOW_DEAD_EVENTS:
-    def MESSAGE_REACTION_REMOVE_ALL__CAL_SC(client, data):
-        message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id, None)
-        if message is None:
-            channel_id = int(data['channel_id'])
-            
-            guild_id = data.get('guild_id', None)
-            if (guild_id is None):
-                guild_id = 0
-            else:
-                guild_id = int(guild_id)
-            
-            message = MessageRepr(message_id, channel_id, guild_id)
-            reactions = None
-        
-        else:
-            old_reactions = message.old_reactions
-            if (old_reactions is None) or (not old_reactions):
-                return
-            
-            # Copy the reaction instead of creating a new container to message.
-            reactions = old_reactions.copy()
-            old_reactions.clear()
-        
-        Task(client.events.reaction_clear(client, message, reactions), KOKORO)
-    
-    
-    def MESSAGE_REACTION_REMOVE_ALL__CAL_MC(client, data):
-        message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id, None)
-        if message is None:
-            channel_id = int(data['channel_id'])
-        else:
-            channel_id = message.channel_id
-        
-        channel = CHANNELS.get(channel_id, None)
-        
-        if channel is None:
-            clients = None
-        else:
-            clients = filter_clients(
-                channel.clients,
-                INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
-                client,
-            )
-            if clients.send(None) is not client:
-                clients.close()
-                return
-        
-        if message is None:
-            guild_id = data.get('guild_id', None)
-            if guild_id is None:
-                guild_id = 0
-            else:
-                guild_id = int(guild_id)
-            
-            message = MessageRepr(message_id, channel_id, guild_id)
-            reactions = None
-        
-        else:
-            old_reactions = message.reactions
-            if (old_reactions is None) or (not old_reactions):
-                clients.close()
-                return
-            
-            reactions = old_reactions.copy()
-            old_reactions.clear()
-        
-        if clients is None:
-            event_handler = client.events.reaction_clear
-            if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, message, reactions), KOKORO)
-        else:
-            for client_ in clients:
-                event_handler = client_.events.reaction_clear
-                if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client_, message, reactions), KOKORO)
 
-else:
-    def MESSAGE_REACTION_REMOVE_ALL__CAL_SC(client, data):
-        message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id, None)
-        if message is None:
-            return
-        
-        old_reactions = message.reactions
+def MESSAGE_REACTION_REMOVE_ALL__CAL_SC(client, data):
+    message = Message._create_from_partial_data(data)
+    
+    if message.partial:
+        reactions = None
+    
+    else:
+        old_reactions = message.old_reactions
         if (old_reactions is None) or (not old_reactions):
             return
         
+        # Copy the reaction instead of creating a new container to message.
         reactions = old_reactions.copy()
         old_reactions.clear()
-        
-        Task(client.events.reaction_clear(client, message, reactions), KOKORO)
     
-    def MESSAGE_REACTION_REMOVE_ALL__CAL_MC(client, data):
-        message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id, None)
-        if message is None:
-            return
-        
-        channel = message.channel
+    Task(client.events.reaction_clear(client, message, reactions), KOKORO)
+
+
+def MESSAGE_REACTION_REMOVE_ALL__CAL_MC(client, data):
+    message = Message._create_from_partial_data(data)
+    
+    channel = message.channel
+    if channel is None:
+        clients = None
+    
+    else:
         clients = filter_clients(
             channel.clients,
             INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
@@ -929,7 +632,11 @@ else:
         if clients.send(None) is not client:
             clients.close()
             return
-        
+    
+    if message.partial:
+        reactions = None
+    
+    else:
         old_reactions = message.reactions
         if (old_reactions is None) or (not old_reactions):
             clients.close()
@@ -937,11 +644,17 @@ else:
         
         reactions = old_reactions.copy()
         old_reactions.clear()
-        
+    
+    if clients is None:
+        event_handler = client.events.reaction_clear
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(event_handler(client, message, reactions), KOKORO)
+    else:
         for client_ in clients:
             event_handler = client_.events.reaction_clear
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(event_handler(client_, message, reactions), KOKORO)
+
 
 def MESSAGE_REACTION_REMOVE_ALL__OPT_SC(client, data):
     message_id = int(data['message_id'])
@@ -984,105 +697,26 @@ del MESSAGE_REACTION_REMOVE_ALL__CAL_SC, \
     MESSAGE_REACTION_REMOVE_ALL__OPT_MC
 
 
+def MESSAGE_REACTION_REMOVE__CAL_SC(client, data):
+    message = Message._create_from_partial_data(data)
+    
+    user = create_partial_user_from_id(int(data['user_id']))
+    emoji = create_partial_emoji_from_data(data['emoji'])
+    
+    message._remove_reaction(emoji, user)
+    
+    event = ReactionDeleteEvent(message, emoji, user)
+    Task(client.events.reaction_delete(client, event), KOKORO)
 
-if ALLOW_DEAD_EVENTS:
-    def MESSAGE_REACTION_REMOVE__CAL_SC(client, data):
-        message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id, None)
-        
-        user_id = int(data['user_id'])
-        user = create_partial_user_from_id(user_id)
-        emoji = create_partial_emoji_from_data(data['emoji'])
-        
-        if message is None:
-            channel_id = int(data['channel_id'])
-            
-            guild_id = data.get('guild_id', None)
-            if guild_id is None:
-                guild_id = 0
-            else:
-                guild_id = int(guild_id)
-            
-            message = MessageRepr(message_id, channel_id, guild_id)
-        else:
-            message._remove_reaction(emoji, user)
-        
-        event = ReactionDeleteEvent(message, emoji, user)
-        Task(client.events.reaction_delete(client, event), KOKORO)
+
+def MESSAGE_REACTION_REMOVE__CAL_MC(client, data):
+    message = Message._create_from_partial_data(data)
     
+    channel = message.channel
+    if channel is None:
+        clients = None
     
-    def MESSAGE_REACTION_REMOVE__CAL_MC(client, data):
-        message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id, None)
-        if message is None:
-            channel_id = int(data['channel_id'])
-        else:
-            channel_id = message.channel_id
-        
-        channel = CHANNELS.get(channel_id, None)
-        
-        if channel is None:
-            clients = None
-        else:
-            clients = filter_clients(
-                channel.clients,
-                INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
-                client,
-            )
-            if clients.send(None) is not client:
-                clients.close()
-                return
-        
-        user_id = int(data['user_id'])
-        user = create_partial_user_from_id(user_id)
-        emoji = create_partial_emoji_from_data(data['emoji'])
-        
-        if message is None:
-            guild_id = data.get('guild_id', None)
-            if guild_id is None:
-                guild_id = 0
-            else:
-                guild_id = int(guild_id)
-            
-            message = MessageRepr(message_id, channel_id, guild_id)
-        else:
-            message._remove_reaction(emoji, user)
-        
-        event = ReactionDeleteEvent(message, emoji, user)
-        
-        if clients is None:
-            event_handler = client.events.reaction_delete
-            if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, event), KOKORO)
-        else:
-            for client_ in clients:
-                event_handler = client_.events.reaction_delete
-                if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client_, event), KOKORO)
-    
-else:
-    def MESSAGE_REACTION_REMOVE__CAL_SC(client, data):
-        message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id, None)
-        if message is None:
-            return
-        
-        user_id = int(data['user_id'])
-        user = create_partial_user_from_id(user_id)
-        emoji = create_partial_emoji_from_data(data['emoji'])
-        message._remove_reaction(emoji, user)
-        
-        event = ReactionDeleteEvent(message, emoji, user)
-        Task(client.events.reaction_delete(client, event), KOKORO)
-    
-    
-    def MESSAGE_REACTION_REMOVE__CAL_MC(client, data):
-        message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id, None)
-        if message is None:
-            return
-        
-        channel = message.channel
+    else:
         clients = filter_clients(
             channel.clients,
             INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
@@ -1091,17 +725,25 @@ else:
         if clients.send(None) is not client:
             clients.close()
             return
-        
-        user_id = int(data['user_id'])
-        user = create_partial_user_from_id(user_id)
-        emoji = create_partial_emoji_from_data(data['emoji'])
-        message._remove_reaction(emoji, user)
-        
-        event = ReactionDeleteEvent(message, emoji, user)
+    
+    user_id = int(data['user_id'])
+    user = create_partial_user_from_id(user_id)
+    emoji = create_partial_emoji_from_data(data['emoji'])
+    
+    message._remove_reaction(emoji, user)
+    
+    event = ReactionDeleteEvent(message, emoji, user)
+    
+    if clients is None:
+        event_handler = client.events.reaction_delete
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(event_handler(client, event), KOKORO)
+    else:
         for client_ in clients:
             event_handler = client_.events.reaction_delete
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(event_handler(client_, event), KOKORO)
+
 
 def MESSAGE_REACTION_REMOVE__OPT_SC(client, data):
     message_id = int(data['message_id'])
@@ -1144,104 +786,31 @@ del MESSAGE_REACTION_REMOVE__CAL_SC, \
     MESSAGE_REACTION_REMOVE__OPT_SC, \
     MESSAGE_REACTION_REMOVE__OPT_MC
 
-if ALLOW_DEAD_EVENTS:
-    def MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC(client, data):
-        message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id, None)
-        
-        emoji = create_partial_emoji_from_data(data['emoji'])
-        
-        if message is None:
-            channel_id = int(data['channel_id'])
-            
-            guild_id = data.get('guild_id', None)
-            if (guild_id is None):
-                guild_id = 0
-            else:
-                guild_id = int(guild_id)
-            
-            message = MessageRepr(message_id, channel_id, guild_id)
-            users = None
-        else:
-            users = message._remove_reaction_emoji(emoji)
-            if users is None:
-                return
-        
-        Task(client.events.reaction_delete_emoji(client, message, emoji, users), KOKORO)
-    
-    
-    def MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC(client, data):
-        message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id, None)
-        if message is None:
-            channel_id = int(data['channel_id'])
-        else:
-            channel_id = message.channel_id
-        
-        channel = CHANNELS.get(channel_id, None)
-        
-        if (channel is None):
-            clients = None
-        else:
-            clients = filter_clients(
-                channel.clients,
-                INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
-                client,
-            )
-            if clients.send(None) is not client:
-                clients.close()
-                return
-        
-        emoji = create_partial_emoji_from_data(data['emoji'])
-        
-        if message is None:
-            guild_id = data.get('guild_id')
-            if (guild_id is None):
-                guild_id = 0
-            else:
-                guild_id = int(guild_id)
-            
-            message = MessageRepr(message_id, channel_id, guild_id)
-            users = None
-        else:
-            users = message._remove_reaction_emoji(emoji)
-            if (users is None):
-                if (clients is not None):
-                    clients.close()
-                    return
-        
-        if clients is None:
-            event_handler = client.events.reaction_delete_emoji
-            if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client, message, emoji, users), KOKORO)
-        else:
-            for client_ in clients:
-                event_handler = client_.events.reaction_delete_emoji
-                if (event_handler is not DEFAULT_EVENT_HANDLER):
-                    Task(event_handler(client_, message, emoji, users), KOKORO)
 
-else:
-    def MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC(client, data):
-        message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id, None)
-        if message is None:
-            return
-        
-        emoji = create_partial_emoji_from_data(data['emoji'])
+def MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC(client, data):
+    message = Message._create_from_partial_data(data)
+    
+    emoji = create_partial_emoji_from_data(data['emoji'])
+    
+    if message.partial:
+        users = None
+    
+    else:
         users = message._remove_reaction_emoji(emoji)
         if users is None:
             return
-        
-        Task(client.events.reaction_delete_emoji(client, message, emoji, users), KOKORO)
     
+    Task(client.events.reaction_delete_emoji(client, message, emoji, users), KOKORO)
+
+
+def MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC(client, data):
+    message = Message._create_from_partial_data(data)
     
-    def MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC(client, data):
-        message_id = int(data['message_id'])
-        message = MESSAGES.get(message_id, None)
-        if message is None:
-            return
-        
-        channel = message.channel
+    channel = message.channel
+    if (channel is None):
+        clients = None
+    
+    else:
         clients = filter_clients(
             channel.clients,
             INTENT_MASK_GUILD_REACTIONS if channel.is_in_group_guild() else INTENT_MASK_DIRECT_REACTIONS,
@@ -1250,17 +819,29 @@ else:
         if clients.send(None) is not client:
             clients.close()
             return
-        
-        emoji = create_partial_emoji_from_data(data['emoji'])
+    
+    emoji = create_partial_emoji_from_data(data['emoji'])
+    
+    if message.partial:
+        users = None
+    
+    else:
         users = message._remove_reaction_emoji(emoji)
-        if users is None:
-            clients.close()
-            return
-        
+        if (users is None):
+            if (clients is not None):
+                clients.close()
+                return
+    
+    if clients is None:
+        event_handler = client.events.reaction_delete_emoji
+        if (event_handler is not DEFAULT_EVENT_HANDLER):
+            Task(event_handler(client, message, emoji, users), KOKORO)
+    else:
         for client_ in clients:
             event_handler = client_.events.reaction_delete_emoji
             if (event_handler is not DEFAULT_EVENT_HANDLER):
                 Task(event_handler(client_, message, emoji, users), KOKORO)
+
 
 def MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC(client, data):
     message_id = int(data['message_id'])

@@ -2,9 +2,9 @@ __all__ = ()
 
 from scarletio import Task
 
-from ...discord.core import CHANNELS, KOKORO, MESSAGES
+from ...discord.core import KOKORO, MESSAGES
 from ...discord.guild import create_partial_guild_from_data
-from ...discord.message import Message, MessageRepr
+from ...discord.message import Message
 from ...discord.user import User
 
 from .constants import (
@@ -116,18 +116,11 @@ def handle_dispatch_message_edit(rpc_client, data):
 
 def handle_dispatch_message_delete(rpc_client, data):
     message_id = int(data['id'])
-    try:
-        message = MESSAGES[message_id]
-    except KeyError:
-        message = MessageRepr(message_id, 0, 0)
-    else:
-        channel_id = message.channel_id
-        try:
-            channel = CHANNELS[channel_id]
-        except KeyError:
-            pass
-        else:
-            channel._pop_message(message_id)
+    
+    message = Message._create_from_partial_fields(message_id, 0, 0)
+    channel = message.channel
+    if (channel is not None):
+        channel._pop_message(message_id)
     
     Task(rpc_client.events.message_delete(rpc_client, message), KOKORO)
 

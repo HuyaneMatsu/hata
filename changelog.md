@@ -5,12 +5,15 @@
 - Add `Message._create_from_partial_data`.
 - `Message.cross_reference` now can be set only as a `Message` instance (or `None`).
 - Add `Message._create_from_partial_fields`.
+- Dead message events are dispatched as well.
 
 #### Renames, Deprecation & Removals
 
 - Rename `.is_bot` to `bot` to make it more intuitive.
-- Deprecate `.is_bot` everywhere
+- Deprecate `.is_bot` everywhere.
 - Deprecate `MessageReference`.
+- Deprecate `MessageRepr`.
+- Remove `ALLOW_DEAD_EVENTS`.
 
 ## 1.3.3 *\[2022-08-13\]*
 

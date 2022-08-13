@@ -13,7 +13,7 @@ from ...interaction import (
     INTERACTION_RESPONSE_TYPES, InteractionEvent, InteractionForm, InteractionResponseContext, InteractionType
 )
 
-from ...message import Message, MessageFlag, MessageRepr
+from ...message import Message, MessageFlag
 from ...message.utils import try_resolve_interaction_message
 
 from ..functionality_helpers import application_command_autocomplete_choice_parser
@@ -899,7 +899,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         interaction : ``InteractionEvent``
             Interaction with what the followup message was sent with.
         
-        message : ``Message``, ``MessageRepr``, `int`
+        message : ``Message``, `int`
             The interaction followup's message to edit.
         
         content : `None`, `str`, ``EmbedBase``, `Any`, Optional
@@ -937,7 +937,7 @@ class ClientCompoundInteractionEndpoints(Compound):
             - If `allowed_mentions` contains an element of invalid type.
             - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase``-s.
             - If `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
-            - If `message` was not given neither as ``Message``, ``MessageRepr``  or `int`.
+            - If `message` was not given neither as ``Message``, `int`.
         ValueError
             If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
         ConnectionError
@@ -975,21 +975,15 @@ class ClientCompoundInteractionEndpoints(Compound):
         # Detect message id
         # 1.: Message
         # 2.: int (str)
-        # 3.: MessageRepr
         # 5.: raise
         
         if isinstance(message, Message):
             message_id = message.id
         else:
             message_id = maybe_snowflake(message)
-            if (message_id is not None):
-                pass
-            elif isinstance(message, MessageRepr):
-                # Cannot check author id, skip
-                message_id = message.id
-            else:
+            if (message_id is None):
                 raise TypeError(
-                    f'`message` can be `{Message.__name__}`, `{MessageRepr.__name__}`, `int`, got '
+                    f'`message` can be `{Message.__name__}`, `int`, got '
                     f'{message.__class__.__name__}, {message!r}.'
                 )
         
@@ -1036,13 +1030,13 @@ class ClientCompoundInteractionEndpoints(Compound):
         ----------
         interaction : ``InteractionEvent``
             Interaction with what the followup message was sent with.
-        message : ``Message``, ``MessageRepr``, `int`
+        message : ``Message``, `int`
             The interaction followup's message to edit.
         
         Raises
         ------
         TypeError
-            If `message` was not given neither as ``Message``, ``MessageRepr``  or `int`.
+            If `message` was not given neither as ``Message``, `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -1068,26 +1062,20 @@ class ClientCompoundInteractionEndpoints(Compound):
         # Detect message id
         # 1.: Message
         # 2.: int (str)
-        # 3.: MessageRepr
         # 5.: raise
         
         if isinstance(message, Message):
             message_id = message.id
         else:
             message_id = maybe_snowflake(message)
-            if (message_id is not None):
-                pass
-            elif isinstance(message, MessageRepr):
-                # Cannot check author id, skip
-                message_id = message.id
-            else:
+            if (message_id is None):
                 raise TypeError(
-                    f'`message` can be `{Message.__name__}`, `{MessageRepr.__name__}`, `int`, got '
-                    f'{message.__class__.__name__}; {message!r}.'
+                    f'`message` can be `{Message.__name__}`, `int`, got {message.__class__.__name__}; {message!r}.'
                 )
         
-        await self.http.interaction_followup_message_delete(application_id, interaction.id, interaction.token,
-            message_id)
+        await self.http.interaction_followup_message_delete(
+            application_id, interaction.id, interaction.token, message_id
+        )
     
     
     async def interaction_followup_message_get(self, interaction, message_id):

@@ -1,16 +1,6 @@
 ﻿"""
 Before loading hata, it checks for related environmental variables, which are:
 
-HATA_ALLOW_DEAD_EVENTS : `bool` = `False`
-    Whether events of non cached entities should be handled. Affects the following events right now:
-    
-    - `Client.events.message_edit`
-    - `Client.events.message_delete`
-    - `Client.events.reaction_add`
-    - `Client.events.reaction_clear`
-    - `Client.events.reaction_delete`
-    - `Client.events.reaction_delete_emoji`
-
 HATA_ALLOW_DEBUG_MESSAGES : `bool` = `False`
     Whether debug messages should be show (experimental).
 
@@ -71,7 +61,7 @@ else:
 
 
 __all__ = (
-    'ALLOW_DEAD_EVENTS', 'API_VERSION', 'CACHE_PRESENCE', 'CACHE_USER', 'CUSTOM_API_ENDPOINT', 'CUSTOM_CDN_ENDPOINT',
+    'API_VERSION', 'CACHE_PRESENCE', 'CACHE_USER', 'CUSTOM_API_ENDPOINT', 'CUSTOM_CDN_ENDPOINT',
     'CUSTOM_DISCORD_ENDPOINT', 'CUSTOM_STATUS_ENDPOINT', 'DOCS_ENABLED', 'LIBRARY_URL', 'MESSAGE_CACHE_SIZE',
     'RICH_DISCORD_EXCEPTION'
 )
@@ -205,7 +195,6 @@ if not DOCS_ENABLED:
 if (not CACHE_USER):
     CACHE_PRESENCE = False
 
-ALLOW_DEAD_EVENTS = get_bool_env('HATA_ALLOW_DEAD_EVENTS', False)
 ALLOW_DEBUG_MESSAGES = get_bool_env('HATA_ALLOW_DEBUG_MESSAGES', False)
 
 CUSTOM_API_ENDPOINT = get_str_env('HATA_API_ENDPOINT')

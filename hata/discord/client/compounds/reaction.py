@@ -29,7 +29,7 @@ class ClientCompoundReactionEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
+        message : ``Message``, `tuple` (`int`, `int`)
             The message on which the reaction will be put on.
         emoji : ``Emoji``, `str`
             The emoji to react with.
@@ -37,8 +37,7 @@ class ClientCompoundReactionEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` nor as
-                `tuple` (`int`, `int`) instance.
+            - If `message` was not given neither as ``Message``, `tuple` (`int`, `int`).
             - If `emoji`'s type is incorrect.
         ConnectionError
             No internet connection.
@@ -59,7 +58,7 @@ class ClientCompoundReactionEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
+        message : ``Message``, `tuple` (`int`, `int`)
             The message from which the reaction will be removed.
         emoji : ``Emoji``, `str`
             The emoji to remove.
@@ -69,8 +68,7 @@ class ClientCompoundReactionEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` neither as `tuple`
-                (`int`, `int`) instance.
+            - If `message` was not given neither as ``Message``, `tuple` (`int`, `int`).
             - If `user` was not given neither as ``ClientUserBase`` nor `int`.
             - If `emoji` was not given as ``Emoji``, `str`.
         ConnectionError
@@ -96,7 +94,7 @@ class ClientCompoundReactionEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
+        message : ``Message``, `tuple` (`int`, `int`)
             The message from which the reactions will be removed.
         emoji : ``Emoji``, `str`
             The reaction to remove.
@@ -104,8 +102,7 @@ class ClientCompoundReactionEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` neither as `tuple`
-                (`int`, `int`) instance.
+            - If `message` was not given neither as ``Message``, `tuple` (`int`, `int`).
             - If `emoji`'s type is incorrect.
         ConnectionError
             No internet connection.
@@ -126,7 +123,7 @@ class ClientCompoundReactionEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
+        message : ``Message``, `tuple` (`int`, `int`)
             The message from which the reaction will be removed.
         emoji : ``Emoji``, `str`
             The emoji to remove.
@@ -134,8 +131,7 @@ class ClientCompoundReactionEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` neither as `tuple`
-                (`int`, `int`) instance.
+            - If `message` was not given neither as ``Message``, `tuple` (`int`, `int`).
             - If `emoji`'s type is incorrect.
         ConnectionError
             No internet connection.
@@ -155,14 +151,13 @@ class ClientCompoundReactionEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
+        message : ``Message``, `tuple` (`int`, `int`)
             The message from which the reactions will be cleared.
         
         Raises
         ------
         TypeError
-            If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` neither as `tuple`
-            (`int`, `int`) instance.
+            If `message` was not given neither as ``Message``, `tuple` (`int`, `int`) instance.
         ConnectionError
             No internet connection.
         DiscordException
@@ -184,7 +179,7 @@ class ClientCompoundReactionEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
+        message : ``Message``, `tuple` (`int`, `int`)
             The message, what's reactions will be requested.
         emoji : ``Emoji``, `str`
             The emoji, what's reactors will be requested.
@@ -200,8 +195,7 @@ class ClientCompoundReactionEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` neither as `tuple`
-                (`int`, `int`) instance.
+            - If `message` was not given neither as ``Message``, `tuple` (`int`, `int`).
             - If `after` was passed with an unexpected type.
             - If `emoji`'s type is incorrect.
         ValueError
@@ -287,7 +281,7 @@ class ClientCompoundReactionEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
+        message : ``Message``, `tuple` (`int`, `int`)
             The message, what's reactions will be requested.
         emoji : ``Emoji``, `str`
             The emoji, what's reactors will be requested.
@@ -299,8 +293,7 @@ class ClientCompoundReactionEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` neither as `tuple`
-                (`int`, `int`) instance.
+            - If `message` was not given neither as ``Message``, `tuple` (`int`, `int`).
             - If `emoji`'s type is incorrect.
         ValueError
             The given `emoji` is not a valid reaction.
@@ -361,7 +354,7 @@ class ClientCompoundReactionEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
+        message : ``Message``, `tuple` (`int`, `int`)
             The message, what's reactions will be requested.
         
         Returns
@@ -371,8 +364,7 @@ class ClientCompoundReactionEndpoints(Compound):
         Raises
         ------
         TypeError
-            If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` neither as `tuple`
-            (`int`, `int`) instance.
+            If `message` was not given neither as ``Message``, `tuple` (`int`, `int`).
         ConnectionError
             No internet connection.
         DiscordException

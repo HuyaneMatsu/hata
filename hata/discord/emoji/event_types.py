@@ -49,11 +49,8 @@ class ReactionAddEvent(EventBase):
     
     Attributes
     ----------
-    message : ``Message``, ``MessageRepr``
+    message : ``Message``
         The message on what the reaction is added.
-        
-        If `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, then message might be given as
-        ``MessageRepr``, if the respective event was received on an uncached message.
     emoji : ``Emoji``
         The emoji used as reaction.
     user : ``ClientUserBase``
@@ -78,7 +75,7 @@ class ReactionAddEvent(EventBase):
         
         Parameters
         ----------
-        message : ``Message``, ``MessageRepr``
+        message : ``Message``
             The respective message.
         emoji : ``Emoji``
             The emoji used.
@@ -177,11 +174,8 @@ class ReactionDeleteEvent(ReactionAddEvent):
     
     Attributes
     ----------
-    message : ``Message``, ``MessageRepr``
+    message : ``Message``
         The message from what the reaction was removed.
-        
-        If `HATA_ALLOW_DEAD_EVENTS` environmental variable is given as `True`, then message might be given as
-        ``MessageRepr``, if the respective event was received on an uncached message.
     emoji : ``Emoji``
         The removed emoji.
     user : ``ClientUserBase``

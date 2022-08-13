@@ -1781,23 +1781,6 @@ def str_team(team, index=None, **kwargs):
     
     return result
 
-def str_message_repr(message, index=None, **kwargs):
-    result = PrettyBlock()
-    if index is None:
-        start = ''
-    else:
-        start = f'{index}.: '
-    
-    result.append(f'{start}MessageRepr {message.id}:')
-    channel = message.channel
-    result.append(f'- channel {channel.id} ({channel.__class__.__name__}, {channel.type})', 1)
-    
-    guild = channel.guild
-    if (guild is not None):
-        result.append(f'- guild {guild.id}', 1)
-    
-    return result
-
 def str_user_guild_permission(user_guild_permission, index=None, **kwargs):
     result = PrettyBlock()
     if index is None:
@@ -1874,7 +1857,6 @@ PRETTY_PRINTERS['IntegrationApplication'] = str_integration_application
 PRETTY_PRINTERS['IntegrationAccount'] = str_integration_account
 PRETTY_PRINTERS['Application'] = str_application
 PRETTY_PRINTERS['Team'] = str_team
-PRETTY_PRINTERS['MessageRepr'] = str_message_repr
 PRETTY_PRINTERS['IntegrationDetail'] = str_integration_detail
 PRETTY_PRINTERS['tuple'] = str_list
 PRETTY_PRINTERS['UserGuildPermission'] = str_user_guild_permission

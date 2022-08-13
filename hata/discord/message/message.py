@@ -390,9 +390,9 @@ class Message(DiscordEntity, immortal=True):
         self : ``Message``
         """
         try:
-            message_id = data['id']
-        except KeyError:
             message_id = data['message_id']
+        except KeyError:
+            message_id = data['id']
         message_id = int(message_id)
         
         try:

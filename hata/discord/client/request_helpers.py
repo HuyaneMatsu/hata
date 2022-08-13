@@ -22,7 +22,7 @@ from ..embed import EmbedBase
 from ..emoji import Emoji, parse_reaction
 from ..guild import Guild, GuildDiscovery
 from ..interaction import ApplicationCommand
-from ..message import Attachment, Message, MessageRepr
+from ..message import Attachment, Message
 from ..oauth2 import Achievement
 from ..role import Role
 from ..scheduled_event import ScheduledEvent
@@ -128,7 +128,7 @@ def validate_message_to_delete(message):
     
     Parameters
     ----------
-    message : ``Message``, ``MessageRepr``, `tuple` (`int`, `int`)
+    message : ``Message``, `tuple` (`int`, `int`)
         The message to validate for deletion.
     
     Returns
@@ -143,25 +143,20 @@ def validate_message_to_delete(message):
     Raises
     ------
     TypeError
-        If message was not given neither as ``Message``, ``MessageRepr``, neither as
-        `tuple` (`int`, `int`).
+        If message was not given neither as ``Message``, `tuple` (`int`, `int`).
     """
     if isinstance(message, Message):
         channel_id = message.channel_id
         message_id = message.id
     else:
-        if isinstance(message, MessageRepr):
-            channel_id = message.channel_id
-            message_id = message.id
-        else:
-            snowflake_pair = maybe_snowflake_pair(message)
-            if snowflake_pair is None:
-                raise TypeError(
-                    f'`message` can be `{Message.__name__}`, `{MessageRepr.__name__}`, '
-                    f'`tuple` of (`int`, `int`), got {message.__class__.__name__}; {message!r}.'
-                )
-            
-            channel_id, message_id = snowflake_pair
+        snowflake_pair = maybe_snowflake_pair(message)
+        if snowflake_pair is None:
+            raise TypeError(
+                f'`message` can be `{Message.__name__}`, '
+                f'`tuple` of (`int`, `int`), got {message.__class__.__name__}; {message!r}.'
+            )
+        
+        channel_id, message_id = snowflake_pair
         
         message = MESSAGES.get(message, None)
     
@@ -1261,7 +1256,7 @@ def get_channel_id_and_message_id(message):
     
     Parameters
     ----------
-    message : ``Message``, ``MessageRepr``, `tuple` (`int`, `int`)
+    message : ``Message``, `tuple` (`int`, `int`)
         The message or it' representation.
     
     Returns
@@ -1277,14 +1272,10 @@ def get_channel_id_and_message_id(message):
         If `message`'s type is incorrect.
     """
     # 1.: Message
-    # 2.: MessageRepr
     # 4.: None -> raise
     # 5.: `tuple` (`int`, `int`)
     # 6.: raise
     if isinstance(message, Message):
-        channel_id = message.channel_id
-        message_id = message.id
-    elif isinstance(message, MessageRepr):
         channel_id = message.channel_id
         message_id = message.id
     elif message is None:
@@ -1295,7 +1286,7 @@ def get_channel_id_and_message_id(message):
         snowflake_pair = maybe_snowflake_pair(message)
         if snowflake_pair is None:
             raise TypeError(
-                f'`message` can be `{Message.__name__}`, `{MessageRepr.__name__}`, '
+                f'`message` can be `{Message.__name__}`, '
                 f'`tuple` of (`int`, `int`), got {message.__class__.__name__}; {message!r}.'
             )
         
@@ -1310,7 +1301,7 @@ def get_message_and_channel_id_and_message_id(message):
     
     Parameters
     ----------
-    message : ``Message``, ``MessageRepr``, `tuple` (`int`, `int`)
+    message : ``Message``, `tuple` (`int`, `int`)
         The message or it' representation.
     
     Returns
@@ -1328,17 +1319,12 @@ def get_message_and_channel_id_and_message_id(message):
         If `message`'s type is incorrect.
     """
     # 1.: Message
-    # 2.: MessageRepr
     # 4.: None -> raise
     # 5.: `tuple` (`int`, `int`)
     # 6.: raise
     if isinstance(message, Message):
         channel_id = message.channel_id
         message_id = message.id
-    elif isinstance(message, MessageRepr):
-        channel_id = message.channel_id
-        message_id = message.id
-        message = MESSAGES.get(message_id, None)
     elif message is None:
         raise TypeError(
             '`message` was given as `None`. Make sure to call message create methods with non-empty content(s).'
@@ -1347,7 +1333,7 @@ def get_message_and_channel_id_and_message_id(message):
         snowflake_pair = maybe_snowflake_pair(message)
         if snowflake_pair is None:
             raise TypeError(
-                f'`message` can be `{Message.__name__}`, `{MessageRepr.__name__}`, '
+                f'`message` can be `{Message.__name__}`, '
                 f'`tuple` of (`int`, `int`), got {message.__class__.__name__}; {message!r}.'
             )
         

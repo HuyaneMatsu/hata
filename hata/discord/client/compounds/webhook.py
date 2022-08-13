@@ -9,7 +9,7 @@ from ...application import Application
 from ...bases import maybe_snowflake
 from ...channel import Channel, create_partial_channel_from_id
 from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES_EXTENDED
-from ...message import Message, MessageRepr
+from ...message import Message
 from ...utils import get_image_media_type, image_to_base64
 from ...webhook import Webhook, create_partial_webhook_from_id
 
@@ -766,7 +766,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         webhook : ``Webhook``, `tuple` (`int`, `str`)
             The webhook who created the message.
         
-        message : ``Message``, ``MessageRepr``, `int`
+        message : ``Message``, `int`
             The webhook's message to edit.
         
         content : `None`, `str`, ``EmbedBase``, `Any`, Optional
@@ -804,7 +804,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             - `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
             - `message` was given as `None`. Make sure to use ``Client.webhook_message_create`` with `wait=True` and by
                 giving any content to it as well.
-            - `message` was not given neither as ``Message``, ``MessageRepr``  or `int`.
+            - `message` was not given neither as ``Message``, `int`.
             - If `components` type is incorrect.
         ValueError
             - If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
@@ -836,7 +836,6 @@ class ClientCompoundWebhookEndpoints(Compound):
         # Detect message id
         # 1.: Message
         # 2.: int (str)
-        # 3.: MessageRepr
         # 4.: None -> raise
         # 5.: raise
         
@@ -853,10 +852,6 @@ class ClientCompoundWebhookEndpoints(Compound):
             if (message_id is not None):
                 pass
             
-            elif isinstance(message, MessageRepr):
-                # Cannot check author id, skip
-                message_id = message.id
-            
             elif message is None:
                 raise TypeError(
                     f'`message` was given as `None`. Make sure to use '
@@ -866,7 +861,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             
             else:
                 raise TypeError(
-                    f'`message` can be `{Message.__name__}`, `{MessageRepr.__name__}`, int`, got '
+                    f'`message` can be `{Message.__name__}`, int`, got '
                     f'{message.__class__.__name__}; {message!r}.'
                 )
         
@@ -909,13 +904,13 @@ class ClientCompoundWebhookEndpoints(Compound):
         ----------
         webhook : ``Webhook``, `tuple` (`int`, `str`)
             The webhook who created the message.
-        message : ``Message``, ``MessageRepr``, `int`
+        message : ``Message``, `int`
             The webhook's message to delete.
         
         Raises
         ------
         TypeError
-            - If `message` was not given neither as ``Message``, ``MessageRepr`` neither as `int`.
+            - If `message` was not given neither as ``Message``, `int`.
             - If `webhook` was not given neither as ``Webhook`` neither as a `tuple` (`int`, `str`).
         ConnectionError
             No internet connection.
@@ -936,7 +931,6 @@ class ClientCompoundWebhookEndpoints(Compound):
         # Detect message id
         # 1.: Message
         # 2.: int
-        # 3.: MessageRepr
         # 4.: None -> raise
         # 5.: raise
         
@@ -954,10 +948,6 @@ class ClientCompoundWebhookEndpoints(Compound):
             if (message_id is not None):
                 pass
             
-            elif isinstance(message, MessageRepr):
-                # Cannot check author id, skip
-                message_id = message.id
-            
             elif message is None:
                 raise TypeError(
                     f'`message` was given as `None`. Make sure to use '
@@ -967,7 +957,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             
             else:
                 raise TypeError(
-                    f'`message` can be `{Message.__name__}`, `{MessageRepr.__name__}`, int`, got '
+                    f'`message` can be `{Message.__name__}`, `int`, got '
                     f'{message.__class__.__name__}; {message!r}.'
                 )
         

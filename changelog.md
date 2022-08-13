@@ -16,12 +16,13 @@
 - Add `DiscordException.request_info`.
 - Add `DiscordException.message`.
 - `DiscordHTTPClient` constructor now only requires `bot` and `token` parameters (from `client`).
+- Add and use `resume_gateway_url`.
 
 #### Bug Fixes
 
 - `Channel.thread_users.fset` was set as a `CoroutineFunction` instead of a normal one.
 - `unix_time` could go out of range on windows.
-- Fix `type` in `Client.achievement_edit` which could cause falsely triggering `AssertionError`.
+- Fix a `typo` in `Client.achievement_edit` which could cause falsely triggering `AssertionError`.
 
 ## 1.3.1 *\[2022-07-25\]*
 

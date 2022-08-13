@@ -1761,7 +1761,7 @@ class CheckUserAccount(CheckSingleBase):
     
     @copy_docs(CheckBase.__call__)
     async def __call__(self, context):
-        if not context.message.author.is_bot:
+        if not context.message.author.bot:
             return True
         
         return False
@@ -1810,7 +1810,7 @@ class CheckBotAccount(CheckSingleBase):
     @copy_docs(CheckBase.__call__)
     async def __call__(self, context):
         user = context.message.author
-        if user.is_bot and isinstance(user, ClientUserBase):
+        if user.bot and isinstance(user, ClientUserBase):
             return True
         
         return False
@@ -1825,7 +1825,7 @@ class CheckIsUserAccountOrIsClient(CheckIsClient, CheckUserAccount, CheckSingleB
     @copy_docs(CheckBase.__call__)
     async def __call__(self, context):
         user = context.message.author
-        if not user.is_bot:
+        if not user.bot:
             return True
         
         if isinstance(user, Client):

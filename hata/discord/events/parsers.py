@@ -69,7 +69,7 @@ def READY(client, data):
     
     # if the client is bot, we get only partial guilds,
     # and those disappear so there is not reason to create them
-    if not client.is_bot:
+    if not client.bot:
         for guild_data in guild_datas:
             guild = Guild(guild_data, client)
             ready_state.feed_guild(client, guild)

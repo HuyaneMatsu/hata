@@ -37,18 +37,18 @@ class ClientUserBase(UserBase):
         The user's banner's hash in `uint128`.
     banner_type : ``IconType``
         The user's banner's type.
+    bot : `bool`
+        Whether the user is a bot or a user account.
     guild_profiles : `dict` of (`int`, ``GuildProfile``) items
         A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
         have a respective guild profile accordingly.
-    is_bot : `bool`
-        Whether the user is a bot or a user account.
     flags : ``UserFlag``
         The user's user flags.
     thread_profiles : `None`, `dict` (``Channel``, ``ThreadProfile``) items
         A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
         Defaults to `None`.
     """
-    __slots__ = ('guild_profiles', 'is_bot', 'flags', 'thread_profiles')
+    __slots__ = ('bot', 'guild_profiles', 'flags', 'thread_profiles')
     
     @copy_docs(UserBase._update_attributes)
     def _update_attributes(self, data):
@@ -262,7 +262,7 @@ class ClientUserBase(UserBase):
         self.name = client.name
         
         self.guild_profiles = client.guild_profiles.copy()
-        self.is_bot = client.is_bot
+        self.bot = client.bot
         self.flags = client.flags
         thread_profiles = client.thread_profiles
         if (thread_profiles is not None):
@@ -282,7 +282,7 @@ class ClientUserBase(UserBase):
     def _set_default_attributes(self):
         UserBase._set_default_attributes(self)
         
-        self.is_bot = False
+        self.bot = False
         self.flags = UserFlag()
         
         self.guild_profiles = {}
@@ -618,11 +618,11 @@ class ClientUserPBase(ClientUserBase):
         The user's banner's hash in `uint128`.
     banner_type : ``IconType``
         The user's banner's type.
+    bot : `bool`
+        Whether the user is a bot or a user account.
     guild_profiles : `dict` of (`int`, ``GuildProfile``) items
         A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
         have a respective guild profile accordingly.
-    is_bot : `bool`
-        Whether the user is a bot or a user account.
     flags : ``UserFlag``
         The user's user flags.
     thread_profiles : `None`, `dict` (``Channel``, ``ThreadProfile``) items

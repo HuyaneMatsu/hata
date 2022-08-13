@@ -166,7 +166,7 @@ def default_precheck(client, message):
     -------
     should_process : `bool`
     """
-    if message.author.is_bot:
+    if message.author.bot:
         return False
     
     if not message.channel.cached_permissions_for(client) & PERMISSION_CAN_SEND_MESSAGES_ALL:

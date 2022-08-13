@@ -51,7 +51,7 @@ class User(USER_BASE_CLASS):
     guild_profiles : `dict` of (`int`, ``GuildProfile``) items
         A dictionary, which contains the user's guild profiles. If a user is member of a guild, then it should
         have a respective guild profile accordingly.
-    is_bot : `bool`
+    bot : `bool`
         Whether the user is a bot or a user account.
     flags : ``UserFlag``
         The user's user flags.
@@ -114,7 +114,7 @@ class User(USER_BASE_CLASS):
                 
                 USERS[user_id] = self
             
-            self.is_bot = user_data.get('bot', False)
+            self.bot = user_data.get('bot', False)
             self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
@@ -159,7 +159,7 @@ class User(USER_BASE_CLASS):
                 
                 USERS[user_id] = self
             
-            self.is_bot = user_data.get('bot', False)
+            self.bot = user_data.get('bot', False)
             self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
@@ -204,7 +204,7 @@ class User(USER_BASE_CLASS):
                 
                 USERS[user_id] = self
             
-            self.is_bot = user_data.get('bot', False)
+            self.bot = user_data.get('bot', False)
             self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
@@ -252,7 +252,7 @@ class User(USER_BASE_CLASS):
                 
                 USERS[user_id] = self
             
-            self.is_bot = user_data.get('bot', False)
+            self.bot = user_data.get('bot', False)
             self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and guild_id:
@@ -288,7 +288,7 @@ class User(USER_BASE_CLASS):
                 
                 USERS[user_id] = self
             
-            self.is_bot = user_data.get('bot', False)
+            self.bot = user_data.get('bot', False)
             self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and guild_id:
@@ -324,7 +324,7 @@ class User(USER_BASE_CLASS):
                 
                 USERS[user_id] = self
             
-            self.is_bot = user_data.get('bot', False)
+            self.bot = user_data.get('bot', False)
             self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and guild_id:
@@ -374,6 +374,7 @@ class User(USER_BASE_CLASS):
         ----------------
         name : `str`, Optional (Keyword only)
             The user's ``.name``.
+        
         discriminator : `int`, `str`, Optional (Keyword only)
             The user's ``.discriminator``. Is accepted as `str` as well and will be converted to `int`.
         
@@ -409,6 +410,9 @@ class User(USER_BASE_CLASS):
             The user's banner hash.
             
             > Mutually exclusive with `banner`.
+        
+        bot : `bool`, Optional (Keyword only)
+            Whether teh user is a bot account.
         
         flags : ``UserFlag``, `int`, Optional (Keyword only)
             The user's ``.flags``. If not passed as ``UserFlag``, then will be converted to it.
@@ -449,12 +453,12 @@ class User(USER_BASE_CLASS):
             cls.banner.preconvert(kwargs, processable)
             
             try:
-                is_bot = kwargs.pop('is_bot')
+                bot = kwargs.pop('bot')
             except KeyError:
                 pass
             else:
-                is_bot = preconvert_bool(is_bot, 'is_bot')
-                processable.append(('is_bot', is_bot))
+                bot = preconvert_bool(bot, 'bot')
+                processable.append(('bot', bot))
             
             try:
                 flags = kwargs.pop('flags')
@@ -513,7 +517,7 @@ class User(USER_BASE_CLASS):
                 
                 USERS[user_id] = self
             
-            self.is_bot = user_data.get('bot', False)
+            self.bot = user_data.get('bot', False)
             self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
@@ -549,7 +553,7 @@ class User(USER_BASE_CLASS):
                 
                 USERS[user_id] = self
             
-            self.is_bot = user_data.get('bot', False)
+            self.bot = user_data.get('bot', False)
             self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
@@ -586,7 +590,7 @@ class User(USER_BASE_CLASS):
                 
                 USERS[user_id] = self
             
-            self.is_bot = user_data.get('bot', False)
+            self.bot = user_data.get('bot', False)
             self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):

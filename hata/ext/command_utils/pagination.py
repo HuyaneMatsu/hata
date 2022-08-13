@@ -265,7 +265,7 @@ class Pagination(PaginationBase):
     
     @copy_docs(PaginationBase.__call__)
     async def __call__(self, client, event):
-        if event.user.is_bot:
+        if event.user.bot:
             return
         
         if (event.emoji not in self.EMOJIS):

@@ -1472,7 +1472,7 @@ def str_user(user, index=None, head_line=True, **kwargs):
     else:
         result.append(f'- name : {user:f}', 1)
         result.append(f'- id : {user.id}', 1)
-        if user.is_bot:
+        if user.bot:
             result.append(f'- BOT', 1)
         result.append(f'- avatar: {user.avatar_url}', 1)
         flags = user.flags

@@ -1,3 +1,10 @@
+## 1.3.4 *\[2022-08-??\]*
+
+#### Renames, Deprecation & Removals
+
+- Rename `.is_bot` to `bot` to make it more intuitive.
+- Deprecate `.is_bot` everywhere
+
 ## 1.3.3 *\[2022-08-13\]*
 
 - Require the newest scarletio version*

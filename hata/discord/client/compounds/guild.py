@@ -29,7 +29,7 @@ class ClientCompoundGuildEndpoints(Compound):
     guilds : set
     http : DiscordHTTPClient
     id : int
-    is_bot : bool
+    bot : bool
     premium_type : PremiumType
     
     
@@ -648,7 +648,7 @@ class ClientCompoundGuildEndpoints(Compound):
             - If `boost_progress_bar_enabled` was not given as `bool`.
         """
         if __debug__:
-            if self.is_bot:
+            if self.bot:
                 guild_create_limit = 10
             elif self.flags.staff:
                 guild_create_limit = 200

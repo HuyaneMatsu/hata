@@ -551,7 +551,7 @@ class DiscordGateway:
         if activity is ACTIVITY_UNKNOWN:
             activity = None
         else:
-            if client.is_bot:
+            if client.bot:
                 activity = activity.bot_dict()
             else:
                 activity = activity.user_dict()

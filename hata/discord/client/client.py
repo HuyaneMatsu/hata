@@ -87,7 +87,7 @@ class Client(
         A dictionary, which contains the client's guild profiles. If a client is member of a guild, then it should
         have a respective guild profile accordingly.
     
-    is_bot : `bool`
+    bot : `bool`
         Whether the client is a bot or a user account.
     
     flags : ``UserFlag``
@@ -251,11 +251,12 @@ class Client(
         activity = ACTIVITY_UNKNOWN,
         additional_owners = None,
         application_id = None,
+        bot = True,
         client_id = None,
         extensions = None,
         http_debug_options = None,
         intents = -1,
-        is_bot = True,
+        is_bot = ...,
         secret = None,
         shard_count = 0,
         should_request_users = True,
@@ -280,6 +281,9 @@ class Client(
         application_id : `None`, `int`, `str` = `None`, Optional (Keyword only)
             The client's application id. If passed as `str`, will be converted to `int`. Defaults to `None`.
         
+        bot : `bool` = `True` Optional (Keyword only)
+            Whether the client is a bot user or a user account.
+        
         client_id : `None`, `int`, `str` = `None`, Optional (Keyword only)
             The client's `.id`. If passed as `str` will be converted to `int`. Defaults to `None`.
             
@@ -296,9 +300,6 @@ class Client(
         intents : ``IntentFlag`` = `-1`, Optional (Keyword only)
              By default the client will launch up using all the intent flags. Negative values will be interpreted as
              using all the intents, meanwhile if passed as positive, non existing intent flags are removed.
-        
-        is_bot : `bool` = `True` Optional (Keyword only)
-            Whether the client is a bot user or a user account.
         
         secret: `None`, `str` = `None`, Optional (Keyword only)
             Client secret used when interacting with oauth2 endpoints.
@@ -443,6 +444,22 @@ class Client(
         
         application = Application._create_empty(application_id)
         
+
+        # bot
+        
+        if is_bot is not ...:
+            warnings.warn(
+                (
+                    f'`{cls.__name__}.__new__`\'s `is_bot` parameter is deprecated and will be removed in 2023 August. '
+                    'Please use `bot` parameter instead. sus'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            bot = is_bot
+        
+        bot = preconvert_bool(bot, 'bot')
+        
         # client_id
         if client_id is None:
             client_id = try_get_user_id_from_token(token)
@@ -494,9 +511,6 @@ class Client(
         
         # intents
         intents = preconvert_flag(intents, 'intents', IntentFlag)
-        
-        # is_bot
-        is_bot = preconvert_bool(is_bot, 'is_bot')
         
         # secret
         if (secret is None) or type(secret is str):
@@ -612,7 +626,7 @@ class Client(
         self = object.__new__(cls)
         
         ClientUserPBase._set_default_attributes(self)
-        self.is_bot = is_bot
+        self.bot = bot
         self.id = client_id
         
         self._activity = activity
@@ -630,7 +644,7 @@ class Client(
         self.events = EventHandlerManager(self)
         self.group_channels = {}
         self.guilds = set()
-        self.http = DiscordHTTPClient(is_bot, token, debug_options=processed_http_debug_options)
+        self.http = DiscordHTTPClient(bot, token, debug_options=processed_http_debug_options)
         self.intents = intents
         self.locale = DEFAULT_LOCALE
         self.mfa = False
@@ -935,7 +949,7 @@ class Client(
         
         This endpoint is available only for bot accounts.
         """
-        if self.is_bot:
+        if self.bot:
             data = await self.http.application_get_own()
             application = self.application
             old_application_id = application.id
@@ -982,7 +996,7 @@ class Client(
         
         try:
             while True:
-                if self.is_bot:
+                if self.bot:
                     coroutine = self.http.client_gateway_bot()
                 else:
                     coroutine = self.http.client_gateway_hooman()
@@ -1236,7 +1250,7 @@ class Client(
         await self.client_gateway_reshard()
         await self.gateway.start()
         
-        if self.is_bot:
+        if self.bot:
             task = Task(self.update_application_info(), KOKORO)
             if __debug__:
                 task.__silence__()
@@ -1450,7 +1464,7 @@ class Client(
         await ensure_voice_client_shutdown_event_handlers(self)
         
         # Log off if user account
-        if (not self.is_bot):
+        if (not self.bot):
             await self.http.client_logout()
         
         

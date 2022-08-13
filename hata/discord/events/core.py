@@ -487,7 +487,7 @@ def register_client(client):
     
     enabled_parsers = set()
     
-    if client.is_bot:
+    if client.bot:
         for parser_name in client.intents.iterate_parser_names():
             enabled_parsers.add(parser_name)
     else:
@@ -542,7 +542,7 @@ def unregister_client(client):
     
     enabled_parsers = set()
     
-    if client.is_bot:
+    if client.bot:
         for parser_name in client.intents.iterate_parser_names():
             enabled_parsers.add(parser_name)
     else:

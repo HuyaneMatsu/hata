@@ -72,7 +72,7 @@ class ChannelMetadataPrivate(ChannelMetadataPrivateBase):
     @copy_docs(ChannelMetadataPrivateBase._get_permissions_for)
     def _get_permissions_for(self, channel_entity, user):
         if user in self.users:
-            if user.is_bot:
+            if user.bot:
                 return PERMISSION_PRIVATE_BOT
             else:
                 return PERMISSION_PRIVATE

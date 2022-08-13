@@ -179,13 +179,13 @@ class UserOA2(UserBase):
     
     
     @property
-    def is_bot(self):
+    def bot(self):
         """
         Returns whether the oauth2 user represents a bot account.
         
         Returns
         -------
-        is_bot : `bool` = `False`
+        bot : `bool` = `False`
         """
         return False
     

@@ -42,13 +42,13 @@ class WebhookBase(UserBase):
     __slots__ = ('channel_id', 'type',)
     
     @property
-    def is_bot(self):
+    def bot(self):
         """
         Webhooks are always bots.
         
         Returns
         -------
-        is_bot : `bool`
+        bot : `bool`
         """
         return True
     

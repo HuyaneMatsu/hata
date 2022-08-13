@@ -110,7 +110,7 @@ class ClientCompoundClientGateway(Compound):
     
     events : EventHandlerManager
     gateway : DiscordGateway
-    is_bot : bool
+    bot : bool
     voice_clients : dict
     
     @Theory
@@ -169,7 +169,7 @@ class ClientCompoundClientGateway(Compound):
         elif activity is ACTIVITY_UNKNOWN:
             activity = None
         else:
-            if self.is_bot:
+            if self.bot:
                 activity = activity.bot_dict()
             else:
                 activity = activity.user_dict()

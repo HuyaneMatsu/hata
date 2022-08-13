@@ -85,7 +85,7 @@ async def ready(client):
 
 @Nue.events
 async def message_create(client, message):
-    if message.author.is_bot:
+    if message.author.bot:
         return
     
     if message.content == 'ping':

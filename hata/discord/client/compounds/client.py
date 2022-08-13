@@ -96,7 +96,7 @@ class ClientCompoundClientEndpoints(Compound):
     
     guild_profiles : dict
     http : DiscordHTTPClient
-    is_bot : bool
+    bot : bool
     premium_type : PremiumType
     
     @Theory
@@ -267,7 +267,7 @@ class ClientCompoundClientEndpoints(Compound):
             data['username'] = name
         
         
-        if not self.is_bot:
+        if not self.bot:
             if __debug__:
                 if password is ...:
                     raise AssertionError(
@@ -307,7 +307,7 @@ class ClientCompoundClientEndpoints(Compound):
         self._set_attributes(data)
         
         
-        if not self.is_bot:
+        if not self.bot:
             self.email = data['email']
             try:
                 token = data['token']

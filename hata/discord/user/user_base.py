@@ -1,5 +1,6 @@
 __all__ = ('UserBase', )
 
+import warnings
 from re import I as re_ignore_case, escape as re_escape, search as re_search
 
 from scarletio import export, include
@@ -167,7 +168,7 @@ class UserBase(DiscordEntity, immortal=True):
         +---------------+-----------------------+
         | banner        | ``Icon``              |
         +---------------+-----------------------+
-        | banner_color  | `None`, ``Color``   |
+        | banner_color  | `None`, ``Color``     |
         +---------------+-----------------------+
         | discriminator | `int`                 |
         +---------------+-----------------------+
@@ -470,9 +471,29 @@ class UserBase(DiscordEntity, immortal=True):
         """
         Returns whether the user is a bot or a user account.
         
+        This property is deprecated and will be removed in 2023 August.
+        
         Returns
         -------
-        is_bot : `bool`
+        bot : `bool`
+        """
+        warnings.warn(
+            f'{self.__class__.__name__} is deprecated and will be removed in 2023 August. Please use `.bot` instead.',
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return self.bot
+    
+    
+    @property
+    def bot(self):
+        """
+        Returns whether the user is a bot or a user account.
+        
+        Returns
+        -------
+        bot : `bool`
         """
         return False
     
@@ -861,7 +882,7 @@ class UserBase(DiscordEntity, immortal=True):
         data['accent_color'] = banner_color
         
         # bot
-        if self.is_bot:
+        if self.bot:
             data['bot'] = True
         
         # flags

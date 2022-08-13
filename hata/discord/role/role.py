@@ -716,9 +716,9 @@ class Role(DiscordEntity, immortal=True):
         elif manager_type is ROLE_MANAGER_TYPE_BOT:
             manager = create_partial_user_from_id(self.manager_id)
             
-            # `create_partial_user_from_id` sets newly created users' `.is_bot` attribute as `False`.
-            if not manager.is_bot :
-                manager.is_bot = True
+            # `create_partial_user_from_id` sets newly created users' `.bot` attribute as `False`.
+            if not manager.bot :
+                manager.bot = True
         
         elif manager_type is ROLE_MANAGER_TYPE_INTEGRATION:
             manager = create_partial_integration_from_id(self.manager_id, role=self)

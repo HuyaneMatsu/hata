@@ -30,7 +30,7 @@ class ClientCompoundChannelEndpoints(Compound):
     
     http : DiscordHTTPClient
     id : int
-    is_bot : bool
+    bot : bool
     private_channels : dict
     
     
@@ -321,7 +321,7 @@ class ClientCompoundChannelEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         channels = []
-        if (not self.is_bot):
+        if (not self.bot):
             data = await self.http.channel_private_get_all()
             for channel_data in data:
                 channel = Channel(channel_data, self, 0)

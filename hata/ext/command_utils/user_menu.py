@@ -621,7 +621,7 @@ class UserMenuRunner(PaginationBase):
     
     @copy_docs(PaginationBase.__call__)
     async def __call__(self, client, event):
-        if event.user.is_bot:
+        if event.user.bot:
             return
         
         emojis = self._factory.emojis
@@ -749,7 +749,7 @@ class UserMenuRunner(PaginationBase):
 
 class UserPagination:
     """
-    Base factorizable instance to execute pagination.
+    Base factorisable instance to execute pagination.
     
     Attributes
     ----------

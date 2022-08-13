@@ -491,7 +491,7 @@ To change the command processor's precheck, use the `.command_processor.precheck
 ```py3
 @NekoBot.command_processor.precheck
 def filter_only_bots(client, message):
-    return (not message.author.is_bot)
+    return (not message.author.bot)
 ```
 
 >  Pre-checks cannot be async. `client` and `message` parameters are always passed to them.

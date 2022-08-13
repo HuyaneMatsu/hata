@@ -107,7 +107,7 @@ interrupt.
 
 We got some tutorials on `github:https://github.com/HuyaneMatsu/hata/tree/master/docs` as well, please check them too!
 """
-__version__ = '1.3.1'
+__version__ = '1.3.2'
 
 from .utils.module_deprecation import get_deprecation_function
 

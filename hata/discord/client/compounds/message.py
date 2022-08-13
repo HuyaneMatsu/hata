@@ -13,7 +13,7 @@ from ...channel import Channel, MessageIterator, message_relative_index
 from ...core import CHANNELS, KOKORO, MESSAGES
 from ...exceptions import DiscordException, ERROR_CODES
 from ...http import DiscordHTTPClient
-from ...message import Message, MessageFlag, MessageReference, MessageRepr
+from ...message import Message, MessageFlag, MessageRepr
 from ...message.utils import process_message_chunk
 from ...permission.permission import PERMISSION_MASK_MANAGE_MESSAGES, PERMISSION_MASK_READ_MESSAGE_HISTORY
 from ...sticker import Sticker
@@ -194,7 +194,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
+        message : ``Message``, ``MessageRepr``, `tuple` (`int`, `int`)
             The message to get, or a `channel-id`, `message-id` tuple representing it.
         force_update : `bool` = `False`, Optional (Keyword only)
             Whether the scheduled event should be requested even if it supposed to be up to date.
@@ -240,11 +240,6 @@ class ClientCompoundMessageEndpoints(Compound):
                 message_id = message.id
                 channel_id = message.channel_id
                 message = None
-                
-            elif isinstance(message, MessageReference):
-                message_id = message.message_id
-                channel_id = message.channel_id
-                message = None
             
             else:
                 snowflake_pair = maybe_snowflake_pair(message)
@@ -254,14 +249,13 @@ class ClientCompoundMessageEndpoints(Compound):
                 
                 else:
                     raise TypeError(
-                        f'`message` can be `{Message.__name__}`, `{MessageRepr.__name__}`, '
-                        f'`{MessageReference.__name__}`, `tuple` (`int`, `int`), '
+                        f'`message` can be `{Message.__name__}`, `{MessageRepr.__name__}`, `tuple` (`int`, `int`), '
                         f'got {message.__class__.__name__}; {message!r}.'
                     )
         
         message_data = await self.http.message_get(channel_id, message_id)
         
-        if force_update:
+        if message.partial or force_update:
             if message is None:
                 message = MESSAGES.get(message_id, None)
             
@@ -288,8 +282,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Parameters
         ----------
-        channel : ``Channel``, `int`, ``Message``, ``MessageRepr``, ``MessageReference``,
-                `tuple` (`int`, `int`)
+        channel : ``Channel``, `int`, ``Message``, ``MessageRepr``, `tuple` (`int`, `int`)
             The text channel where the message will be sent, or the message on what you want to reply.
         
         content : `None`, `str`, ``EmbedBase``, `Any` = `None`, Optional
@@ -340,7 +333,7 @@ class ClientCompoundMessageEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase``-s.
+            - If `embed` was not given neither as ``EmbedBase``, (`list`, `tuple`) of ``EmbedBase``-s.
             - If `allowed_mentions` contains an element of invalid type.
             - `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
             - If invalid file type would be sent.
@@ -357,7 +350,7 @@ class ClientCompoundMessageEndpoints(Compound):
             If any exception was received from the Discord API.
         AssertionError
             - If `tts` was not given as `bool`.
-            - If `nonce` was not given neither as `None` nor as `str`.
+            - If `nonce` was not given neither as `None`, `str`.
             - If `reply_fail_fallback` was not given as `bool`.
             - If `embed` contains a non ``EmbedBase`` element.
             - If `suppress_embeds` is not `bool`.
@@ -373,7 +366,6 @@ class ClientCompoundMessageEndpoints(Compound):
         # 2.: Message -> channel + reply
         # 3.: int (str) -> channel
         # 4.: MessageRepr -> channel + reply
-        # 5.: MessageReference -> channel + reply
         # 6.: `tuple` (`int`, `int`) -> channel + reply
         # 7.: raise
         
@@ -403,12 +395,6 @@ class ClientCompoundMessageEndpoints(Compound):
                     channel = CHANNELS.get(channel_id, None)
                     break
                 
-                elif isinstance(channel, MessageReference):
-                    message_id = channel.message_id
-                    channel_id = channel.channel_id
-                    channel = CHANNELS.get(channel_id, None)
-                    break
-                
                 else:
                     snowflake_pair = maybe_snowflake_pair(channel)
                     if snowflake_pair is not None:
@@ -418,7 +404,7 @@ class ClientCompoundMessageEndpoints(Compound):
             
             raise TypeError(
                 f'`channel` can be a messageable channel, `{Message.__name__}`, '
-                f'`{MessageRepr.__name__}`, `{MessageReference.__name__}`, `int`, `tuple` (`int`, `int`), '
+                f'`{MessageRepr.__name__}`, `int`, `tuple` (`int`, `int`), '
                 f'got {channel.__class__.__name__}; {channel!r}.'
             )
             
@@ -551,7 +537,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
+        message : ``Message``, ``MessageRepr``, `tuple` (`int`, `int`)
             The message to edit.
         content : `None`, `str`, ``EmbedBase``, `Any`, Optional
             The new content of the message.
@@ -590,7 +576,7 @@ class ClientCompoundMessageEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase``-s.
+            - If `embed` was not given neither as ``EmbedBase``, (`list`, `tuple`) of ``EmbedBase``-s.
             - If `allowed_mentions` contains an element of invalid type.
             - `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
             - If `message`'s type is incorrect.
@@ -686,7 +672,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, ``MessageReference``, ``MessageRepr``, `tuple` (`int`, `int`)
+        message : ``Message``,``MessageRepr``, `tuple` (`int`, `int`)
             The message to delete.
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
@@ -694,7 +680,7 @@ class ClientCompoundMessageEndpoints(Compound):
         Raises
         ------
         TypeError
-            If message was not given neither as ``Message``, ``MessageReference``, ``MessageRepr``, neither as
+            If message was not given neither as ``Message``, ``MessageRepr``, neither as
             `tuple` (`int`, `int`).
         ConnectionError
             No internet connection.
@@ -738,7 +724,7 @@ class ClientCompoundMessageEndpoints(Compound):
         Parameters
         ----------
         messages : (`list`, `set`, `tuple`) of \
-                (``Message``, ``MessageReference``, ``MessageRepr``, `tuple` (`int`, `int`))
+                (``Message``, ``MessageRepr``, `tuple` (`int`, `int`))
             The messages to delete.
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
@@ -746,14 +732,13 @@ class ClientCompoundMessageEndpoints(Compound):
         Raises
         ------
         TypeError
-            If a message was not given neither as ``Message``, ``MessageReference``, ``MessageRepr``, neither as
-            `tuple` (`int`, `int`).
+            If a message was not given neither as ``Message``, ``MessageRepr``, neither as `tuple` (`int`, `int`).
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If `messages` was not given neither as `list`, `set` nor as `tuple`.
+            If `messages` was not given neither as `list`, `set`, `tuple`.
         
         Notes
         -----
@@ -1605,7 +1590,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
+        message : ``Message``, ``MessageRepr``, `tuple` (`int`, `int`)
             The message, what's embeds will be (un)suppressed.
         suppress_embeds : `bool` = `True`, Optional
             Whether the message's embeds would be suppressed or unsuppressed.
@@ -1613,8 +1598,7 @@ class ClientCompoundMessageEndpoints(Compound):
         Raises
         ------
         TypeError
-            If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` neither as `tuple`
-            (`int`, `int`) instance.
+            If `message` was not given neither as ``Message``, ``MessageRepr`, neither as `tuple` (`int`, `int`).
         ConnectionError
             No internet connection.
         DiscordException
@@ -1651,14 +1635,13 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
+        message : ``Message``, ``MessageRepr``, `tuple` (`int`, `int`)
             The message to crosspost.
         
         Raises
         ------
         TypeError
-            If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` nor as
-            `tuple` (`int`, `int`) instance.
+            If `message` was not given neither as ``Message``, ``MessageRepr`, `tuple` (`int`, `int`).
         ConnectionError
             No internet connection.
         DiscordException
@@ -1677,14 +1660,13 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
+        message : ``Message``, ``MessageRepr``, `tuple` (`int`, `int`)
             The message to pin.
         
         Raises
         ------
         TypeError
-            If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` nor as
-            `tuple` (`int`, `int`) instance.
+            If `message` was not given neither as ``Message``, ``MessageRepr`, `tuple` (`int`, `int`).
         ConnectionError
             No internet connection.
         DiscordException
@@ -1703,14 +1685,13 @@ class ClientCompoundMessageEndpoints(Compound):
         
         Parameters
         ----------
-        message : ``Message``, ``MessageRepr``, ``MessageReference``, `tuple` (`int`, `int`)
+        message : ``Message``, ``MessageRepr``, `tuple` (`int`, `int`)
             The message to unpin.
         
         Raises
         ------
         TypeError
-            If `message` was not given neither as ``Message``, ``MessageRepr`, ``MessageReference`` nor as
-            `tuple` (`int`, `int`) instance.
+            If `message` was not given neither as ``Message``, ``MessageRepr`, `tuple` (`int`, `int`).
         ConnectionError
             No internet connection.
         DiscordException

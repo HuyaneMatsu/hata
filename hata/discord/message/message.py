@@ -31,7 +31,6 @@ from .flags import MessageFlag
 from .message_activity import MessageActivity
 from .message_application import MessageApplication
 from .message_interaction import MessageInteraction
-from .message_reference import MessageReference
 from .preinstanced import GENERIC_MESSAGE_TYPES, MESSAGE_DEFAULT_CONVERTER, MessageType
 from .utils import try_resolve_interaction_message
 
@@ -310,6 +309,7 @@ class Message(DiscordEntity, immortal=True):
             Message data.
         """
         message_id = int(data['id'])
+        
         try:
             self = MESSAGES[message_id]
         except KeyError:
@@ -350,6 +350,7 @@ class Message(DiscordEntity, immortal=True):
             Whether the message was found in the cache.
         """
         message_id = int(data['id'])
+        
         try:
             self = MESSAGES[message_id]
         except KeyError:
@@ -370,6 +371,99 @@ class Message(DiscordEntity, immortal=True):
         self._fields = None
         self._set_attributes(data)
         return False, self
+    
+    
+    @classmethod
+    def _create_from_partial_data(cls, data):
+        """
+        Creates a message from message reference data.
+        
+        If the message is loaded already, returns that instead.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Message reference data.
+        
+        Returns
+        -------
+        self : ``Message``
+        """
+        try:
+            message_id = data['id']
+        except KeyError:
+            message_id = data['message_id']
+        message_id = int(message_id)
+        
+        try:
+            self = MESSAGES[message_id]
+        except KeyError:
+            self = object.__new__(cls)
+            self.id = message_id
+            MESSAGES[self.id] = self
+        else:
+            if not self.partial:
+                return self
+        
+        # `._fields`
+        self._fields = None
+        
+        # `.author`
+        self.author = ZEROUSER
+        
+        # `.channel_id`
+        channel_id = data.get('channel_id', None)
+        if channel_id is None:
+            channel_id = 0
+        else:
+            channel_id = int(channel_id)
+        self.channel_id = channel_id
+        
+        # `.guild_id`
+        guild_id = data.get('guild_id', None)
+        if guild_id is None:
+            guild_id = 0
+        else:
+            guild_id = int(guild_id)
+        self.guild_id = guild_id
+        
+        return self
+    
+    
+    @classmethod
+    def _create_from_partial_fields(cls, message_id, channel_id, guild_id):
+        """
+        Creates a new message from the given fields describing it.
+        
+        Parameters
+        ----------
+        message_id : `int`
+            The unique identifier number of the represented message.
+        channel_id : `int`
+            The respective message's channel's identifier.
+        guild_id : `int`
+            The respective message's guild's identifier.
+        
+        Returns
+        -------
+        self : ``Message``
+        """
+        try:
+            self = MESSAGES[message_id]
+        except KeyError:
+            self = object.__new__(cls)
+            self.id = message_id
+            MESSAGES[self.id] = self
+        else:
+            if not self.partial:
+                return self
+        
+        self._fields = None
+        self.author = ZEROUSER
+        self.channel_id = channel_id
+        self.guild_id = guild_id
+        
+        return self
     
     
     def _set_attributes(self, data):
@@ -457,12 +551,12 @@ class Message(DiscordEntity, immortal=True):
             if referenced_message_data is None:
                 referenced_message = None
             else:
-                referenced_message = MessageReference(referenced_message_data)
+                referenced_message = self._create_from_partial_data(referenced_message_data)
         else:
             # Discord do not sends `guild_id` for nested message instances.
             referenced_message_data['guild_id'] = data.get('guild_id', None)
             
-            referenced_message = Message(referenced_message_data)
+            referenced_message = type(self)(referenced_message_data)
         
         if (referenced_message is not None):
             _set_message_field(self, MESSAGE_FIELD_KEY_REFERENCED_MESSAGE, referenced_message)
@@ -742,7 +836,7 @@ class Message(DiscordEntity, immortal=True):
             
             If called as a classmethod defaults to `None`.
         
-        referenced_message : `None`, ``Message`` ``MessageReference``, Optional (Keyword only)
+        referenced_message : `None`, ``Message``, Optional (Keyword only)
             The ``.referenced_message`` attribute of the message.
             
             If called as a classmethod defaults to `None`.
@@ -1019,9 +1113,9 @@ class Message(DiscordEntity, immortal=True):
             else:
                 referenced_message = base.referenced_message
         else:
-            if (referenced_message is not None) and (type(referenced_message) not in (Message, MessageReference)):
+            if (referenced_message is not None) and not isinstance(referenced_message, Message):
                 raise TypeError(
-                    f'`referenced_message` can be `None`, `{Message.__name__}`, `{MessageReference.__call__}`, got '
+                    f'`referenced_message` can be `None`, `{Message.__name__}`, got '
                     f'{referenced_message.__class__.__name__}; {referenced_message!r}.'
                 )
         
@@ -2468,7 +2562,7 @@ class Message(DiscordEntity, immortal=True):
                 , Optional (Keyword only)
             The `.cross_mentions` attribute of the message. If passed as an empty list, then will be set `None` instead.
         
-        referenced_message : `None`, ``Message`` ``MessageReference``, Optional (Keyword only)
+        referenced_message : `None`, ``Message``, Optional (Keyword only)
             The ``.referenced_message`` attribute of the message.
         
         deleted : `bool`, Optional (Keyword only)
@@ -2567,7 +2661,7 @@ class Message(DiscordEntity, immortal=True):
             for variable_field_key, variable_type, variable_name in (
                 (MESSAGE_FIELD_KEY_ACTIVITY, MessageActivity, 'activity'),
                 (MESSAGE_FIELD_KEY_APPLICATION, MessageApplication, 'application'),
-                (MESSAGE_FIELD_KEY_REFERENCED_MESSAGE, (Message, MessageReference), 'referenced_message'),
+                (MESSAGE_FIELD_KEY_REFERENCED_MESSAGE, Message, 'referenced_message'),
                 (MESSAGE_FIELD_KEY_EDITED_AT, datetime, 'edited_at'),
                 (MESSAGE_FIELD_KEY_INTERACTION, MessageInteraction, 'interaction'),
                 (MESSAGE_FIELD_KEY_REACTIONS, reaction_mapping, 'reactions'),
@@ -2899,17 +2993,7 @@ class Message(DiscordEntity, immortal=True):
         # referenced_message
         referenced_message = self.referenced_message
         if (referenced_message is not None):
-            # Can be either Message or MessageReference instance
-            if isinstance(referenced_message, MessageReference):
-                message_reference_data = referenced_message.to_data()
-            elif isinstance(referenced_message, Message):
-                message_reference_data = referenced_message.to_message_reference_data()
-            else:
-                # Bug ?
-                message_reference_data = None
-            
-            if (message_reference_data is not None):
-                data['message_reference'] = message_reference_data
+            data['message_reference'] = referenced_message.to_message_reference_data()
         
         # referenced_message # 2
         if recursive and self.type in (MessageType.inline_reply, MessageType.thread_started):
@@ -3521,7 +3605,7 @@ class Message(DiscordEntity, immortal=True):
     @property
     def referenced_message(self):
         """
-        The referenced message. Set as ``Message`` if the message is cached, else as ``MessageReference``.
+        The referenced message. Set as ``Message``. The message can be partial.
         
         Set when the message is a reply, a crosspost or when is a pin message.
         
@@ -3529,7 +3613,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        referenced_message : `None`, ``Message``, ``MessageReference``
+        referenced_message : `None`, ``Message``
         """
         return _get_message_field(
             self,
@@ -3941,6 +4025,10 @@ class Message(DiscordEntity, immortal=True):
         -------
         partial : `bool`
         """
+        
+        if self.author is ZEROUSER:
+            return True
+        
         return _has_message_field(
             self,
             MESSAGE_FIELD_KEY_PARTIAL,

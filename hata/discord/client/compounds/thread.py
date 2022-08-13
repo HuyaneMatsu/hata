@@ -11,7 +11,7 @@ from ...channel.constants import AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
 from ...channel.utils import _maybe_add_channel_slowmode_field_to_data
 from ...core import CHANNELS
 from ...http import DiscordHTTPClient
-from ...message import Message, MessageFlag, MessageReference, MessageRepr
+from ...message import Message, MessageFlag, MessageRepr
 from ...preconverters import preconvert_int_options
 from ...sticker import Sticker
 from ...user import ClientUserBase, create_partial_user_from_id, thread_user_create
@@ -99,8 +99,7 @@ class ClientCompoundThreadEndpoints(Compound):
         
         Parameters
         ----------
-        message_or_channel : ``Channel``, ``Message``, ``MessageRepr``, ``MessageReference``, `int`, \
-                `tuple` (`int`, `int`)
+        message_or_channel : ``Channel``, ``Message``, ``MessageRepr``, `int`, `tuple` (`int`, `int`)
             The channel or message to create thread from.
             
             > If given as a channel instance, will create a private thread, else a public one.
@@ -145,7 +144,6 @@ class ClientCompoundThreadEndpoints(Compound):
         # Message check order
         # 1.: Message
         # 2.: MessageRepr
-        # 3.: MessageReference
         # 4.: None -> raise
         # 5.: `tuple` (`int`, `int`)
         # 6.: raise
@@ -178,17 +176,12 @@ class ClientCompoundThreadEndpoints(Compound):
                 channel_id = message_or_channel.channel_id
                 channel = CHANNELS.get(channel_id, None)
             
-            elif isinstance(message_or_channel, MessageReference):
-                message_id = message_or_channel.message_id
-                channel_id = message_or_channel.channel_id
-                channel = CHANNELS.get(channel_id, None)
-            
             else:
                 snowflake_pair = maybe_snowflake_pair(message_or_channel)
                 if snowflake_pair is None:
                     raise TypeError(
                         f'`message_or_channel` can be `{Channel.__name__}`, `{Message.__name__}`, '
-                        f'`{MessageRepr.__name__}`, `{MessageReference.__name__}`, `int`, `tuple` (`int`, `int`)'
+                        f'`{MessageRepr.__name__}`, `int`, `tuple` (`int`, `int`)'
                         f', got {message_or_channel.__class__.__name__}; {message_or_channel!r}.'
                     )
                 

@@ -250,7 +250,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
         message_data = await self.http.message_get(channel_id, message_id)
         
-        if message.partial or force_update:
+        if (message is None) or message.partial or force_update:
             if message is None:
                 message = MESSAGES.get(message_id, None)
             

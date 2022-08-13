@@ -1,5 +1,9 @@
 ## 1.3.3 *\[2022-08-13\]*
 
+- Require the newest scarletio version*
+
+## 1.3.2 *\[2022-08-13\]*
+
 #### Improvements
 
 - Add `EntitlementType.premium_purchase`.

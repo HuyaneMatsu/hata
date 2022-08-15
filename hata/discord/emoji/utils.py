@@ -1,6 +1,6 @@
 __all__ = (
-    'create_partial_emoji_data', 'create_partial_emoji_from_data', 'create_unicode_emoji', 'parse_custom_emojis',
-    'parse_custom_emojis_ordered', 'parse_emoji', 'parse_reaction'
+    'create_partial_emoji_data', 'create_partial_emoji_from_data', 'create_unicode_emoji', 'parse_all_emojis',
+    'parse_all_emojis_ordered', 'parse_custom_emojis', 'parse_custom_emojis_ordered', 'parse_emoji', 'parse_reaction'
 )
 
 import warnings
@@ -10,6 +10,7 @@ from scarletio import export
 from ..utils import EMOJI_RP, REACTION_RP
 
 from .emoji import Emoji, UNICODE_TO_EMOJI
+from .all_emoji_pattern import EMOJI_ALL_RP
 
 
 @export
@@ -134,7 +135,36 @@ def _iter_parse_custom_emojis(text):
         emoji_id = int(emoji_id)
         
         yield Emoji._create_partial(emoji_id, name, animated)
+
+
+def _iter_parse_all_emojis(text):
+    """
+    Iterates over all emojis in the text as they appear.
+    
+    This function is an iterable generator.
+    
+    Parameters
+    ----------
+    text : `str`
+        The text to parse.
+    
+    Yields
+    ------
+    emoji : ``Emoji``
+    """
+    for groups in EMOJI_ALL_RP.findall(text):
         
+        unicode, animated, name, emoji_id = groups
+        if unicode:
+            yield UNICODE_TO_EMOJI[unicode]
+            continue
+        
+        animated = (True if animated else False)
+        emoji_id = int(emoji_id)
+        
+        yield Emoji._create_partial(emoji_id, name, animated)
+        continue
+
 
 def parse_custom_emojis(text):
     """
@@ -155,6 +185,55 @@ def parse_custom_emojis(text):
     return {*_iter_parse_custom_emojis(text)}
 
 
+def parse_all_emojis(text):
+    """
+    Parses out every emoji from the given text.
+    
+    Parameters
+    ----------
+    text : `str`
+        The text to parse.
+    
+    Returns
+    -------
+    emojis : `set` of ``Emoji``
+    """
+    if text is None:
+        return set()
+    return {*_iter_parse_all_emojis(text)}
+    
+
+
+def _parse_emojis_ordered(text, parser):
+    """
+    Parses emojis of teh given `text` with the given `parser`.
+    Returns them ordered based on their appearance in the text.
+    
+    
+    Parameters
+    ----------
+    text : `None`, `str`
+        The text to parse.
+    parser : `GeneratorFunction`
+        The parser to use.
+    
+    Returns
+    -------
+    emojis_ordered : `list` of ``Emoji``
+        Excludes duplicates.
+    """
+    emojis_ordered = []
+    if (text is not None):
+        emojis_unique = set()
+        
+        for emoji in parser(text):
+            if emoji not in emojis_unique:
+                emojis_ordered.append(emoji)
+                emojis_unique.add(emoji)
+    
+    return emojis_ordered
+
+
 def parse_custom_emojis_ordered(text):
     """
     Parses out every custom emoji from the given text. Returns them ordered based on their appearance in the text.
@@ -169,16 +248,24 @@ def parse_custom_emojis_ordered(text):
     emojis_ordered : `list` of ``Emoji``
         Excludes duplicates.
     """
-    emojis_ordered = []
-    if (text is not None):
-        emojis_unique = set()
-        
-        for emoji in _iter_parse_custom_emojis(text):
-            if emoji not in emojis_unique:
-                emojis_ordered.append(emoji)
-                emojis_unique.add(emoji)
+    return _parse_emojis_ordered(text, _iter_parse_custom_emojis)
+
+
+def parse_all_emojis_ordered(text):
+    """
+    Parses out every emoji from the given text. Returns them ordered based on their appearance in the text.
     
-    return emojis_ordered
+    Parameters
+    ----------
+    text : `None`, `str`
+        The text to parse.
+    
+    Returns
+    -------
+    emojis_ordered : `list` of ``Emoji``
+        Excludes duplicates.
+    """
+    return _parse_emojis_ordered(text, _iter_parse_all_emojis)
 
 
 def parse_reaction(text):

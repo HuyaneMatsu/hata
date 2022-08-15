@@ -1,3 +1,4 @@
+from .all_emoji_pattern import *
 from .builtins import *
 from .emoji import *
 from .event_types import *
@@ -5,6 +6,7 @@ from .reaction import *
 from .utils import *
 
 __all__ = (
+    *all_emoji_pattern.__all__,
     *builtins.__all__,
     *emoji.__all__,
     *event_types.__all__,

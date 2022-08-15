@@ -6,6 +6,9 @@
 - `Message.cross_reference` now can be set only as a `Message` instance (or `None`).
 - Add `Message._create_from_partial_fields`.
 - Dead message events are dispatched as well.
+- Add `EMOJI_ALL_RP`.
+- Add `parse_all_emojis`.
+- Add `parse_all_emojis_ordered`.
 
 #### Renames, Deprecation & Removals
 

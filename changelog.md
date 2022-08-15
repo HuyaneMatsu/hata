@@ -9,6 +9,7 @@
 - Add `EMOJI_ALL_RP`.
 - Add `parse_all_emojis`.
 - Add `parse_all_emojis_ordered`.
+- Add `DiscordEntity.id.fset`, so linter wont cry anymore about unsettable fields.
 
 #### Bug fixes
 

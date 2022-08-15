@@ -192,6 +192,22 @@ class DiscordEntity(RichAttributeErrorBaseType, metaclass=DiscordEntityMeta):
         """
         return 0
     
+    
+    @id.setter
+    def id(self, id_):
+        """
+        Sets the discord entity's unique identifier number
+        
+        Parameters
+        -------
+        id : `int`
+            The id to set.
+        """
+        raise NotImplementedError(
+            f'`{self.__class__.__name__}.id` is unsettable; got {id_.__class__.__name__}; {id_!r}.'
+        )
+    
+    
     __slots__ = ()
     
     @property

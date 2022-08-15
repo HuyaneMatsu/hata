@@ -10,6 +10,12 @@
 - Add `parse_all_emojis`.
 - Add `parse_all_emojis_ordered`.
 
+#### Bug fixes
+
+##### ext.slash
+- Expression parser allowed XOR, OR, AND, LSHIFT, RSHIFT operation between floats.
+- Expression parser had broken pointer-range detection logic.
+
 #### Renames, Deprecation & Removals
 
 - Rename `.is_bot` to `bot` to make it more intuitive.

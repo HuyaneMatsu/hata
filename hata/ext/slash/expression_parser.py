@@ -765,6 +765,42 @@ def check_2_sided_integer_limit(token_1, token_2, token_3):
             )
 
 
+def check_2_sided_int_only_operation(token_1, token_2, token_3):
+    """
+    Checks whether both values are integers.
+    
+    Parameters
+    ----------
+    token_1 : ``Token``
+        The first value to check.
+    token_2 :  ``Token``
+        The operation's token.
+    token_3 : ``Token``
+        The second value to check.
+    
+    Raises
+    ------
+    EvaluationError
+        Operation over integer bit limit is disallowed.
+    """
+    token_1_value = token_1.value
+    token_3_value = token_3.value
+    
+    token_1_value_is_int = isinstance(token_1_value, int)
+    token_3_value_is_int = isinstance(token_3_value, int)
+    if token_1_value_is_int + token_3_value_is_int != 2:
+        operation = bytes(token_2.array[token_2.start:token_2.end]).decode()
+        raise EvaluationError(
+            token_2.array,
+            [
+                HighlightGroup(token_1.start, token_1.end, not token_1_value_is_int),
+                HighlightGroup(token_2.start, token_2.end, True),
+                HighlightGroup(token_3.start, token_3.end, not token_3_value_is_int),
+            ],
+            f'Operation only allowed between integers: {token_1_value} {operation} {token_3_value}.'
+        )
+
+
 def evaluate_prefix_operation_negate(token_1, token_2):
     """
     Evaluate negation on the given value.
@@ -1116,6 +1152,7 @@ def evaluate_2_sided_binary_left_shift(token_1, token_2, token_3):
         - Left shift limit hit.
         - Operation over integer bit limit is disallowed.
     """
+    check_2_sided_int_only_operation(token_1, token_2, token_3)
     check_2_sided_integer_limit(token_1, token_2, token_3)
     
     value_1 = token_1.value
@@ -1128,7 +1165,8 @@ def evaluate_2_sided_binary_left_shift(token_1, token_2, token_3):
                 HighlightGroup(token_2.start, token_2.end, True),
                 HighlightGroup(token_3.start, token_3.end, False),
             ],
-            f'Left shift over {LIMIT_LEFT_SHIFT_MAX} disallowed: {value_1} << {value_2}.')
+            f'Left shift over {LIMIT_LEFT_SHIFT_MAX} disallowed: {value_1} << {value_2}.'
+        )
     
     value = token_1.value << token_3.value
     return merge_2_tokens(token_1, token_3, value)
@@ -1158,6 +1196,7 @@ def evaluate_2_sided_binary_right_shift(token_1, token_2, token_3):
         - Left shift limit hit.
         - Operation over integer bit limit is disallowed.
     """
+    check_2_sided_int_only_operation(token_1, token_2, token_3)
     check_2_sided_integer_limit(token_1, token_2, token_3)
     
     value_1 = token_1.value
@@ -1196,6 +1235,7 @@ def evaluate_2_sided_binary_and(token_1, token_2, token_3):
         - The created token.
         - Operation over integer bit limit is disallowed.
     """
+    check_2_sided_int_only_operation(token_1, token_2, token_3)
     check_2_sided_integer_limit(token_1, token_2, token_3)
     
     value = token_1.value & token_3.value
@@ -1221,6 +1261,7 @@ def evaluate_2_sided_binary_xor(token_1, token_2, token_3):
         - The created token.
         - Operation over integer bit limit is disallowed.
     """
+    check_2_sided_int_only_operation(token_1, token_2, token_3)
     check_2_sided_integer_limit(token_1, token_2, token_3)
     
     value = token_1.value ^ token_3.value
@@ -1246,6 +1287,7 @@ def evaluate_2_sided_binary_or(token_1, token_2, token_3):
         - The created token.
         - Operation over integer bit limit is disallowed.
     """
+    check_2_sided_int_only_operation(token_1, token_2, token_3)
     check_2_sided_integer_limit(token_1, token_2, token_3)
     
     value = token_1.value | token_3.value
@@ -2084,12 +2126,14 @@ class HighlightGroup:
     ----------
     end : `int`
         The end of the highlight
+    primary : `bool`
+        Whether the target is primary.
     start : `int`
         The start of the highlight
-    is_primary : `bool`
-        Whether the target is primary.
     """
-    def __init__(self, start, end, is_primary):
+    __slots__ = ('end', 'primary', 'start')
+    
+    def __new__(cls, start, end, primary):
         """
         Creates a new highlight group.
         
@@ -2099,12 +2143,15 @@ class HighlightGroup:
             The end of the highlight
         start : `int`
             The start of the highlight
-        is_primary : `bool`
+        primary : `bool`
             Whether the target is primary.
         """
+        self = object.__new__(cls)
         self.end = end
         self.start = start
-        self.is_primary = is_primary
+        self.primary = primary
+        return self
+    
     
     def __repr__(self):
         """Returns the highlight group's representation."""
@@ -2112,7 +2159,7 @@ class HighlightGroup:
             '<', self.__class__.__name__,
             ' start=', repr(self.start),
             ', end=', repr(self.end),
-            ', is_primary=', repr(self.is_primary),
+            ', primary=', repr(self.primary),
         ]
         
         return ''.join(repr_parts)
@@ -2147,7 +2194,7 @@ def get_highlight_group_range(highlight_groups):
         if highest_value == -1:
             highest_value = end
         else:
-            if end < highest_value:
+            if end > highest_value:
                 highest_value = end
     
     if lowest_value == -1:
@@ -2209,7 +2256,7 @@ def render_highlight_groups_within_range_into(highlight_groups, start_at, end_at
             space_count += space_at_start
             space_at_start = 0
         
-        if highlight_group.is_primary:
+        if highlight_group.primary:
             pointer = HIGHLIGHT_POINTER_PRIMARY
         else:
             pointer = HIGHLIGHT_POINTER_SECONDARY

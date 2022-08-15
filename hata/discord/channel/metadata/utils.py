@@ -45,6 +45,6 @@ def get_channel_metadata_type(channel_type_value):
     
     Returns
     -------
-    channel_metadata_type : ``ChannelMetadataBase``
+    channel_metadata_type : `type<ChannelMetadataBase>`
     """
     return CHANNEL_METADATA_TYPES.get(channel_type_value, ChannelMetadataBase)

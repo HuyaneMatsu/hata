@@ -12,6 +12,9 @@
 
 #### Bug fixes
 
+- `Channel.get_users_like` raised.
+- `Channel.permissions_for_roles` raised.
+
 ##### ext.slash
 - Expression parser allowed XOR, OR, AND, LSHIFT, RSHIFT operation between floats.
 - Expression parser had broken pointer-range detection logic.

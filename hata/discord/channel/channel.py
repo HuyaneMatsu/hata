@@ -205,7 +205,7 @@ class Channel(DiscordEntity, immortal=True):
             return self.display_name
         
         if code == 'c':
-            return self.created_at.__format__(DATETIME_FORMAT_CODE)
+            return format(self.created_at, DATETIME_FORMAT_CODE)
         
         raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
     
@@ -309,7 +309,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         users : `list` of ``ClientUserBase``
         """
-        return self.metadata._get_users_like(self, name, default)
+        return self.metadata._get_users_like(self, name)
     
     
     @property
@@ -447,7 +447,7 @@ class Channel(DiscordEntity, immortal=True):
         permissions : ``Permission``
             The calculated permissions.
         """
-        return self.metadata._get_permissions_for_roles(self, user)
+        return self.metadata._get_permissions_for_roles(self, roles)
     
     
     @property
@@ -1498,7 +1498,7 @@ class Channel(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        message_data : `dict` of (`str`, `Any`) items
             Message data received from Discord.
         
         Returns

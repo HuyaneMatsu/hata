@@ -7,6 +7,9 @@ from scarletio import call
 from ..core import UNICODE_TO_EMOJI
 from ..utils import EMOJI_RP
 
+# We import builtins, so this file is loaded after that. Bad loading order can happen when running tests.
+from . import builtins
+
 
 def trie_node_sort_key(node):
     """

@@ -315,7 +315,7 @@ class Message(DiscordEntity, immortal=True):
         except KeyError:
             self = object.__new__(cls)
             self.id = message_id
-            MESSAGES[self.id] = self
+            MESSAGES[message_id] = self
         
         else:
             if not self.partial:
@@ -356,7 +356,7 @@ class Message(DiscordEntity, immortal=True):
         except KeyError:
             self = object.__new__(cls)
             self.id = message_id
-            MESSAGES[self.id] = self
+            MESSAGES[message_id] = self
         
         else:
             if not self.partial:
@@ -389,18 +389,35 @@ class Message(DiscordEntity, immortal=True):
         -------
         self : ``Message``
         """
-        try:
-            message_id = data['message_id']
-        except KeyError:
-            message_id = data['id']
-        message_id = int(message_id)
+        while True:
+            try:
+                message_id = data['message_id']
+            except KeyError:
+                pass
+            else:
+                message_id = int(message_id)
+                break
+            
+            try:
+                message_id = data['id']
+            except KeyError:
+                pass
+            else:
+                message_id = int(message_id)
+                break
+            
+            message_id = 0
+            break
+        
         
         try:
             self = MESSAGES[message_id]
         except KeyError:
             self = object.__new__(cls)
             self.id = message_id
-            MESSAGES[self.id] = self
+            
+            if message_id:
+                MESSAGES[message_id] = self
         else:
             if not self.partial:
                 return self

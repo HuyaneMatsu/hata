@@ -4,11 +4,11 @@ from re import compile as re_compile, escape as re_escape, U as re_unicode
 
 from scarletio import call
 
-from ..core import UNICODE_TO_EMOJI
+from .unicodes import UNICODES
 from ..utils import EMOJI_RP
 
 # We import builtins, so this file is loaded after that. Bad loading order can happen when running tests.
-from . import builtins
+from . import unicodes
 
 
 def trie_node_sort_key(node):
@@ -210,15 +210,28 @@ def build_all_emoji_pattern():
     pattern : `re.Pattern`
     """
     global EMOJI_ALL_RP
-    pattern_core = TrieNode(None)
-    
-    for unicode in UNICODE_TO_EMOJI.keys():
-        pattern_core.extend_with_raw_string(unicode)
     
     into = []
     into.append('(?:(')
+    
+    pattern_core = TrieNode(None)
+    for unicode in UNICODES:
+        pattern_core.extend_with_raw_string(unicode.value)
     pattern_core.build_into(into)
-    into.append(')|')
+    pattern_core = None
+    
+    into.append(')|(?<!\\\\)\:(')
+    
+    pattern_core = TrieNode(None)
+    for unicode in UNICODES:
+        pattern_core.extend_with_raw_string(unicode.name)
+        for alias in unicode.iter_aliases():
+            pattern_core.extend_with_raw_string(alias)
+    
+    pattern_core.build_into(into)
+    pattern_core = None
+    
+    into.append(')\:|')
     into.append(EMOJI_RP.pattern)
     into.append(')')
     

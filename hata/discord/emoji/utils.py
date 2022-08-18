@@ -7,10 +7,15 @@ import warnings
 
 from scarletio import export
 
+from ..core import BUILTIN_EMOJIS, UNICODE_TO_EMOJI
 from ..utils import EMOJI_RP, REACTION_RP
 
-from .emoji import Emoji, UNICODE_TO_EMOJI
-from .all_emoji_pattern import EMOJI_ALL_RP
+from .emoji import Emoji
+from .emoji_all_pattern import EMOJI_ALL_RP
+from .unicode_type import Unicode, VARIATION_SELECTOR_16_POSTFIX
+
+
+VARIATION_SELECTOR_16_POSTFIX_WITH_COLON = VARIATION_SELECTOR_16_POSTFIX + ':'
 
 
 @export
@@ -45,7 +50,7 @@ def create_partial_emoji_from_data(data):
                 f'\nUndefined emoji : {emoji_name.encode()!r}\nPlease open an issue with this message.',
                 RuntimeWarning,
             )
-            emoji = Emoji._create_unicode('', emoji_name, ())
+            emoji = Emoji._create_unicode(Unicode('', emoji_name, False, None, None))
     
     else:
         # name can change
@@ -89,8 +94,7 @@ def parse_emoji(text):
     """
     Tries to parse out an ``Emoji`` from the inputted text. This emoji can be custom and unicode emoji as well.
     
-    If the parsing yields a custom emoji what is not loaded, the function will return an `untrusted` partial emoji,
-    what means it wont be stored at `EMOJIS`. If the parsing fails the function returns `None`.
+    If the parsing fails the function returns `None`.
     
     Parameters
     ----------
@@ -102,15 +106,24 @@ def parse_emoji(text):
     emoji : `None`, ``Emoji``
     """
     parsed = EMOJI_RP.fullmatch(text)
-    if parsed is None:
-        emoji = UNICODE_TO_EMOJI.get(text, None)
-    else:
+    if (parsed is not None):
         animated, name, emoji_id = parsed.groups()
         animated = (animated is not None)
         emoji_id = int(emoji_id)
-        emoji = Emoji._create_partial(emoji_id, name, animated)
+        return Emoji._create_partial(emoji_id, name, animated)
+        
+    try:
+        return UNICODE_TO_EMOJI[text]
+    except KeyError:
+        pass
     
-    return emoji
+    if text.startswith(':') and text.endswith(':') and not text.endswith(VARIATION_SELECTOR_16_POSTFIX_WITH_COLON):
+        try:
+            return BUILTIN_EMOJIS[text[1:-1]]
+        except KeyError:
+            pass
+    
+    return None
 
 
 def _iter_parse_custom_emojis(text):
@@ -154,15 +167,20 @@ def _iter_parse_all_emojis(text):
     """
     for groups in EMOJI_ALL_RP.findall(text):
         
-        unicode, animated, name, emoji_id = groups
-        if unicode:
-            yield UNICODE_TO_EMOJI[unicode]
+        unicode_value, unicode_name, custom_animated, custom_name, custom_emoji_id = groups
+        if unicode_value:
+            yield UNICODE_TO_EMOJI[unicode_value]
             continue
         
-        animated = (True if animated else False)
-        emoji_id = int(emoji_id)
+        if unicode_name:
+            yield BUILTIN_EMOJIS[unicode_name]
+            continue
         
-        yield Emoji._create_partial(emoji_id, name, animated)
+        yield Emoji._create_partial(
+            int(custom_emoji_id),
+            custom_name,
+            (True if custom_animated else False),
+        )
         continue
 
 
@@ -316,6 +334,6 @@ def create_unicode_emoji(unicode):
             f'Undefined emoji : {unicode.encode()!r}\nPlease open an issue with this message.',
             RuntimeWarning,
         )
-        unicode_emoji = Emoji._create_unicode('', unicode, ())
+        unicode_emoji = Emoji._create_unicode(Unicode('', unicode, False, None, None))
     
     return unicode_emoji

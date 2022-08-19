@@ -55,19 +55,24 @@ class Achievement(DiscordEntity):
         
         self._update_attributes(data)
     
+    
     def __repr__(self):
         """Returns the achievement's representation."""
         return f'<{self.__class__.__name__} id={self.id}, name={self.name!r}>'
     
     
-    def __format__(self,code):
+    def __format__(self, code):
+        """Formats the achievement with the given format code."""
         if not code:
             return self.name
         
-        if code=='c':
-            return self.created_at.__format__(DATETIME_FORMAT_CODE)
+        if code == 'c':
+            return format(self.created_at, DATETIME_FORMAT_CODE)
         
-        raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
+        raise ValueError(
+            f'Unknown format code {code!r} for {self.__class__.__name__!r}; {self!r}. '
+            f'Available format codes: {""!r}, {"c"!r}.'
+        )
     
     
     def _difference_update_attributes(self, data):

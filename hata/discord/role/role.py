@@ -649,9 +649,13 @@ class Role(DiscordEntity, immortal=True):
             return self.mention
         
         if code == 'c':
-            return self.created_at.__format__(DATETIME_FORMAT_CODE)
+            return format(self.created_at, DATETIME_FORMAT_CODE)
         
-        raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
+        raise ValueError(
+            f'Unknown format code {code!r} for {self.__class__.__name__!r}; {self!r}. '
+            f'Available format codes: {""!r}, {"c"!r}, {"m"!r}.'
+        )
+    
     
     @property
     def users(self):

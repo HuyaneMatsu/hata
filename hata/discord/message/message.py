@@ -1687,17 +1687,20 @@ class Message(DiscordEntity, immortal=True):
             return self.__repr__()
         
         if code == 'c':
-            return self.created_at.__format__(DATETIME_FORMAT_CODE)
+            return format(self.created_at, DATETIME_FORMAT_CODE)
         
         if code == 'e':
             edited_at = self.edited_at
             if edited_at is None:
                 edited_at = 'never'
             else:
-                edited_at = edited_at.__format__(DATETIME_FORMAT_CODE)
+                edited_at = format(edited_at, DATETIME_FORMAT_CODE)
             return edited_at
         
-        raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
+        raise ValueError(
+            f'Unknown format code {code!r} for {self.__class__.__name__!r}; {self!r}. '
+            f'Available format codes: {""!r}, {"c"!r}, {"e"!r}.'
+        )
     
     
     def _difference_update_attributes(self, data):

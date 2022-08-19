@@ -533,4 +533,7 @@ class DiscordException(Exception):
         if not code:
             return f'<{self.message}>'
         
-        raise ValueError(f'Unknown format code {code!r} for object of type {self.__class__.__name__!r}')
+        raise ValueError(
+            f'Unknown format code {code!r} for {self.__class__.__name__!r}; {self!r}. '
+            f'Available format codes: {""!r}.'
+        )

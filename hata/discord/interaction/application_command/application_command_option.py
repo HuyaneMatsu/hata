@@ -2,7 +2,7 @@ __all__ = ('ApplicationCommandOption',)
 
 from scarletio import RichAttributeErrorBaseType
 
-from ...localizations.helpers import localized_dictionary_builder
+from ...localizations.helpers import get_localized_length, localized_dictionary_builder
 from ...localizations.utils import build_locale_dictionary, destroy_locale_dictionary
 from ...preconverters import preconvert_preinstanced_type
 
@@ -1200,23 +1200,11 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
             for choice in choices:
                 length += len(choice)
         
-        # description
-        length += len(self.description)
+        # description & description_localizations
+        length += get_localized_length(self.description, self.description_localizations)
         
-        # description_localizations
-        description_localizations = self.description_localizations
-        if (description_localizations is not None):
-            for value in description_localizations.values():
-                length += len(value)
-        
-        # name
-        length += len(self.name)
-        
-        # name_localizations
-        name_localizations = self.name_localizations
-        if (name_localizations is not None):
-            for value in name_localizations.values():
-                length += len(value)
+        # name & name_localizations
+        length += get_localized_length(self.name, self.name_localizations)
         
         # options
         options = self.options

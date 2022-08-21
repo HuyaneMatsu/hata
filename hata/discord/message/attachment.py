@@ -11,29 +11,43 @@ class Attachment(DiscordEntity):
     ----------
     id : `int`
         The unique identifier number of the attachment.
+    
     content_type : `None`, `str`
         The attachment's media type.
+    
     description : `None`, `str`
         Description for the file.
+        
+        > Max 1024 characters.
+    
     height : `int`
-        The height of the attachment if applicable. Defaults to `0`.
+        The height of the attachment if applicable.
+        
+        > Defaults to `0`.
+    
     name : `str`
         The name of the attachment.
+    
     proxy_url : `str`
         Proxied url of the attachment.
+    
     size : `int`
         The attachment's size in bytes.
+    
     temporary : `bool`
         Whether the attachment is temporary and is removed after a set period of time.
         
         Temporary attachments are guaranteed to be available as long as their message itself exists.
         
-        Defaults to `False`.
+        > Defaults to `False`.
     
     url : `str`
         The attachment's url.
+    
     width : `int`
-        The attachment's width if applicable. Defaults to `0`.
+        The attachment's width if applicable.
+        
+        > Defaults to `0`.
     """
     __slots__ = ('content_type', 'description', 'height', 'name', 'proxy_url', 'size', 'temporary', 'url', 'width')
     

@@ -10,11 +10,18 @@
 - Add `parse_all_emojis`.
 - Add `parse_all_emojis_ordered`.
 - Add `DiscordEntity.id.fset`, so linter wont cry anymore about unsettable fields.
+- Add `ConnectionType.riot_games`.
+- `ApplicationCommand.description_localizations` is now applied towards the it's length correctly.
+- `ApplicationCommand.name_localizations` is now applied towards the it's length correctly.
+- `ApplicationCommandOption.description_localizations` is now applied towards the it's length correctly.
+- `ApplicationCommandOption.name_localizations` is now applied towards the it's length correctly.
+- `ApplicationCommandOptionChoice.name_localizations` is now applied towards the it's length correctly.
 
 #### Bug fixes
 
 - `Channel.get_users_like` raised.
 - `Channel.permissions_for_roles` raised.
+- `ApplicationCommand.__len__` raised `TypeError` when `.description` was `None`.
 
 ##### ext.slash
 - Expression parser allowed XOR, OR, AND, LSHIFT, RSHIFT operation between floats.

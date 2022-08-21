@@ -4,7 +4,7 @@ import warnings
 
 from ...bases import DiscordEntity
 from ...core import APPLICATION_COMMANDS, GUILDS
-from ...localizations.helpers import localized_dictionary_builder
+from ...localizations.helpers import get_localized_length, localized_dictionary_builder
 from ...localizations.utils import build_locale_dictionary, destroy_locale_dictionary
 from ...permission import Permission
 from ...preconverters import preconvert_preinstanced_type
@@ -115,8 +115,10 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         'name', 'name_localizations', 'options', 'required_permissions', 'target_type', 'version'
     )
     
-    def __new__(cls, name, description=None, *, allow_by_default=None, allow_in_dm=None, description_localizations=None,
-            name_localizations=None, options=None, required_permissions=None, target_type=None):
+    def __new__(
+        cls, name, description=None, *, allow_by_default=None, allow_in_dm=None, description_localizations=None,
+        name_localizations=None, options=None, required_permissions=None, target_type=None
+    ):
         """
         Creates a new ``ApplicationCommand`` with the given parameters.
         
@@ -251,7 +253,8 @@ class ApplicationCommand(DiscordEntity, immortal=True):
                 if not isinstance(options, (tuple, list)):
                     raise AssertionError(
                         f'`options` can be `None`, (`list`, `tuple`) of `{ApplicationCommandOption.__name__}`, '
-                        f'got {options.__class__.__name__}; {options!r}.')
+                        f'got {options.__class__.__name__}; {options!r}.'
+                    )
             
             # Copy it
             options_processed = list(options)
@@ -1267,23 +1270,11 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         """Returns the application command's length."""
         length = 0
         
-        # description
-        length += len(self.description)
+        # description & description_localizations
+        length += get_localized_length(self.description, self.description_localizations)
         
-        # description_localizations
-        description_localizations = self.description_localizations
-        if (description_localizations is not None):
-            for value in description_localizations.values():
-                length += len(value)
-        
-        # name
-        length += len(self.name)
-        
-        # name_localizations
-        name_localizations = self.name_localizations
-        if (name_localizations is not None):
-            for value in name_localizations.values():
-                length += len(value)
+        # name & name_localizations
+        length += get_localized_length(self.name, self.name_localizations)
         
         # options
         options = self.options

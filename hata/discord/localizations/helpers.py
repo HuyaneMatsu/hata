@@ -67,7 +67,7 @@ def localized_dictionary_item_validator(item, parameter_name):
     
     Parameters
     ---------
-    key : `tuple` ((``Locale``, `str`), `str`)
+    item : `tuple` ((``Locale``, `str`), `str`)
         An item representing a `locale` - `str` pair.
     parameter_name : `str`
         The parameter's name to raise exception with.
@@ -237,3 +237,32 @@ def _dictionary_builder(dictionary, parameter_name, item_validator):
         )
     
     return validated_dictionary
+
+
+def get_localized_length(value, value_localizations):
+    """
+    Gets the length of the given value and of it's localized values.
+    
+    If a value has localizations, we only count the longest towards the overall length.
+    
+    Parameters
+    ----------
+    value : `None, `str`
+        The default value.
+    value_localizations : `None`, `dict` of (``Locale``, `str`) items
+        Localizations of the value.
+    
+    Returns
+    -------
+    length : `int`
+    """
+    if value is None:
+        length = 0
+    else:
+        length = len(value)
+    
+    if (value_localizations is not None):
+        for value in value_localizations.values():
+            length = max(len(value), length)
+    
+    return length

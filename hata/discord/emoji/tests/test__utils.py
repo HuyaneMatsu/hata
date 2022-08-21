@@ -2,15 +2,19 @@ import vampytest
 
 from ...core import BUILTIN_EMOJIS, UNICODE_TO_EMOJI
 
-from .. import Emoji, parse_all_emojis, parse_all_emojis_ordered
+from .. import Emoji, parse_all_emojis, parse_all_emojis_ordered, parse_emoji
+from ..unicodes import UNICODES
 
-
-def test__parse_all_emojis__unicode_all():
+def test__parse_all_emojis__unicode_all_0():
     """
-    Tests whether `parse_all_emojis` can parse all the unicode emojis correctly.
+    Tests whether `parse_all_emojis` can parse all the builtin emojis correctly.
+    
+    Case: unicode
     """
-    for emoji in UNICODE_TO_EMOJI.values():
-        parsed_emojis = parse_all_emojis(emoji.as_emoji)
+    for unicode in UNICODES:
+        emoji = UNICODE_TO_EMOJI[unicode.value]
+        
+        parsed_emojis = parse_all_emojis(unicode.value)
         
         vampytest.assert_eq({emoji}, parsed_emojis)
 
@@ -36,7 +40,7 @@ def test__parse_all_emojis__unicode_multiple():
 
 def test__parse_all_emojis__mixed():
     """
-    Tests whether `parse_all_emojis` parsers multiple & multy-kind emojis correctly.
+    Tests whether `parse_all_emojis` parses multiple & multy-kind emojis correctly.
     """
     emojis = {
         BUILTIN_EMOJIS['heart'],
@@ -47,6 +51,80 @@ def test__parse_all_emojis__mixed():
     text = ' '.join([emoji.as_emoji for emoji in emojis] * 2)
     parsed_emojis = parse_all_emojis(text)
     vampytest.assert_eq(emojis, parsed_emojis)
+
+
+def test__parse_all_emojis__coloned_builtin_name_0():
+    """
+    Tests whether `parse_all_emojis` parses builtin emojis with coloned name.
+    
+    Case: 1
+    """
+    emoji_1 = BUILTIN_EMOJIS['heart']
+    text = f':{emoji_1.name}:'
+    
+    parsed_emojis = parse_all_emojis(text)
+    vampytest.assert_eq({emoji_1}, parsed_emojis)
+
+
+
+def test__parse_all_emojis__coloned_builtin_name_1():
+    """
+    Tests whether `parse_all_emojis` parses builtin emojis with coloned name.
+    
+    Case: 2
+    """
+    emoji_1 = BUILTIN_EMOJIS['heart']
+    emoji_2 = BUILTIN_EMOJIS['leg']
+    
+    text = f':{emoji_1.name}::{emoji_2.name}:'
+    
+    parsed_emojis = parse_all_emojis(text)
+    vampytest.assert_eq({emoji_1, emoji_2}, parsed_emojis)
+
+
+def test__parse_all_emojis__coloned_builtin_name_2():
+    """
+    Tests whether `parse_all_emojis` parses builtin emojis with coloned name.
+    
+    Case: 2, but first is escaped.
+    """
+    emoji_1 = BUILTIN_EMOJIS['heart']
+    emoji_2 = BUILTIN_EMOJIS['leg']
+    
+    text = f'\:{emoji_1.name}::{emoji_2.name}:'
+    
+    parsed_emojis = parse_all_emojis(text)
+    vampytest.assert_eq({emoji_2}, parsed_emojis)
+
+
+def test__parse_all_emojis__coloned_builtin_name_3():
+    """
+    Tests whether `parse_all_emojis` parses builtin emojis with coloned name.
+    
+    Case: 2, but first is escaped at the end.
+    """
+    emoji_1 = BUILTIN_EMOJIS['heart']
+    emoji_2 = BUILTIN_EMOJIS['leg']
+    
+    text = f':{emoji_1.name}\::{emoji_2.name}:'
+    
+    parsed_emojis = parse_all_emojis(text)
+    vampytest.assert_eq({emoji_2}, parsed_emojis)
+
+
+def test__parse_all_emojis__coloned_builtin_name_4():
+    """
+    Tests whether `parse_all_emojis` parses builtin emojis with coloned name.
+    
+    Case: 2, but second is escaped.
+    """
+    emoji_1 = BUILTIN_EMOJIS['heart']
+    emoji_2 = BUILTIN_EMOJIS['leg']
+    
+    text = f':{emoji_1.name}:\:{emoji_2.name}:'
+    
+    parsed_emojis = parse_all_emojis(text)
+    vampytest.assert_eq({emoji_1}, parsed_emojis)
 
 
 def test__parse_all_emojis_ordered():
@@ -63,3 +141,14 @@ def test__parse_all_emojis_ordered():
     
     parsed_emojis = parse_all_emojis_ordered(text)
     vampytest.assert_eq(emojis, parsed_emojis)
+
+
+def test__parse_emoji__coloned_builtin_name():
+    """
+    Tests whether `parse_all_emojis` parses builtin emojis with coloned name.
+    """
+    emoji = BUILTIN_EMOJIS['heart']
+    text = f':{emoji.name}:'
+
+    parsed_emoji = parse_emoji(text)
+    vampytest.assert_is(emoji, parsed_emoji)

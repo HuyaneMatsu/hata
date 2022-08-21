@@ -28204,7 +28204,7 @@ UNICODES = (
 )
 
 for unicode in UNICODES:
-    Emoji._create_unicode(unicode)
+    Emoji._create_unicode(unicode, True)
 
 unicode = None
 del unicode

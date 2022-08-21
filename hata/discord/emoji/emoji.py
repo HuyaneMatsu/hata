@@ -626,7 +626,7 @@ class Emoji(DiscordEntity, immortal=True):
     
     
     @classmethod
-    def _create_unicode(cls, unicode):
+    def _create_unicode(cls, unicode, register_by_name):
         """
         Creates a new unicode emoji with the given identifier.
         
@@ -634,6 +634,8 @@ class Emoji(DiscordEntity, immortal=True):
         ----------
         unicode : ``Unicode``
             The emoji's unicode value.
+        register_by_name : `bool`
+            Whether the emoji should be registered by name.
         
         Returns
         -------
@@ -657,10 +659,12 @@ class Emoji(DiscordEntity, immortal=True):
         
         EMOJIS[emoji_id] = self
         UNICODE_TO_EMOJI[unicode.value] = self
-        BUILTIN_EMOJIS[unicode.get_system_name()] = self
         
-        for alternative_name in unicode.iter_alternative_names():
-            BUILTIN_EMOJIS[alternative_name] = self
+        if register_by_name:
+            BUILTIN_EMOJIS[unicode.get_system_name()] = self
+            
+            for alternative_name in unicode.iter_alternative_names():
+                BUILTIN_EMOJIS[alternative_name] = self
         
         return self
     

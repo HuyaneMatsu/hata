@@ -50,7 +50,7 @@ def create_partial_emoji_from_data(data):
                 f'\nUndefined emoji : {emoji_name.encode()!r}\nPlease open an issue with this message.',
                 RuntimeWarning,
             )
-            emoji = Emoji._create_unicode(Unicode('', emoji_name, False, None, None))
+            emoji = Emoji._create_unicode(Unicode('', emoji_name, False, None, None), False)
     
     else:
         # name can change
@@ -334,6 +334,6 @@ def create_unicode_emoji(unicode):
             f'Undefined emoji : {unicode.encode()!r}\nPlease open an issue with this message.',
             RuntimeWarning,
         )
-        unicode_emoji = Emoji._create_unicode(Unicode('', unicode, False, None, None))
+        unicode_emoji = Emoji._create_unicode(Unicode('', unicode, False, None, None), False)
     
     return unicode_emoji

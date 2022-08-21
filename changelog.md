@@ -16,6 +16,7 @@
 - `ApplicationCommandOption.description_localizations` is now applied towards the it's length correctly.
 - `ApplicationCommandOption.name_localizations` is now applied towards the it's length correctly.
 - `ApplicationCommandOptionChoice.name_localizations` is now applied towards the it's length correctly.
+- `Client.application_command_permission_edit` now accepts any iterable as ``permission_overwrites``.
 
 #### Bug fixes
 

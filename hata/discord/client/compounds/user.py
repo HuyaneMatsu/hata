@@ -277,8 +277,7 @@ class ClientCompoundUserEndpoints(Compound):
         if (roles is not ...):
             role_ids = set()
             if (roles is not None):
-                iterator = getattr(roles, '__iter__', None)
-                if iterator is None:
+                if getattr(roles, '__iter__', None) is None:
                     raise TypeError(
                         f'`roles` can be `None`, `iterable`, got {roles.__class__.__name__}; {roles!r}.'
                     )

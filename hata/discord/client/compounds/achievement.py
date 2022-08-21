@@ -15,6 +15,204 @@ from ...utils import get_image_media_type, image_to_base64
 from ..request_helpers import get_achievement_and_id, get_achievement_id, get_user_id
 
 
+def _assert__achievement_create__name(name):
+    """
+    Asserts the `name` parameter of ``Client.achievement_create`` methods.
+    
+    Parameters
+    ----------
+    name : `str`
+        The achievement's name.
+    
+    Raises
+    ------
+    AssertionError
+        - If `name` was not given as `str`.
+    """
+    if not isinstance(name, str):
+        raise AssertionError(
+            f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+        )
+    
+    return True
+
+
+def _assert__achievement_create__description(description):
+    """
+    Asserts the `description` parameter of ``Client.achievement_create`` methods.
+    
+    Parameters
+    ----------
+    description : `str`
+        The achievement's description.
+    
+    Raises
+    ------
+    AssertionError
+        - If `description` was not given as `str`.
+    """
+    if not isinstance(description, str):
+        raise AssertionError(
+            f'`description` can be `str`, got {description.__class__.__name__}; {description!r}.'
+        )
+    
+    return True
+
+
+def _assert__achievement_create__secret(secret):
+    """
+    Asserts the `secret` parameter of ``Client.achievement_create`` methods.
+    
+    Parameters
+    ----------
+    secret : `bool`
+        The achievement's secret.
+    
+    Raises
+    ------
+    AssertionError
+        - If `secret` was not given as `bool`.
+    """
+    if not isinstance(secret, bool):
+        raise AssertionError(
+            f'`secret` can be `bool`, got {secret.__class__.__name__}; {secret!r}.'
+        )
+    
+    return True
+
+
+def _assert__achievement_create__secure(secure):
+    """
+    Asserts the `secure` parameter of ``Client.achievement_create`` methods.
+    
+    Parameters
+    ----------
+    secure : `bool`
+        The achievement's secure.
+    
+    Raises
+    ------
+    AssertionError
+        - If `secure` was not given as `bool`.
+    """
+    if not isinstance(secure, bool):
+        raise AssertionError(
+            f'`secure` can be `bool`, got {secure.__class__.__name__}; {secure!r}.'
+        )
+    
+    return True
+
+
+def _assert__achievement_edit__name(name):
+    """
+    Asserts the `name` parameter of ``Client.achievement_edit`` methods.
+    
+    Parameters
+    ----------
+    name : `str`
+        The achievement's name.
+    
+    Raises
+    ------
+    AssertionError
+        - If `name` was not given as `str`.
+    """
+    if (name is not ...) and (not isinstance(name, str)):
+        raise AssertionError(
+            f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+        )
+    
+    return True
+
+
+def _assert__achievement_edit__description(description):
+    """
+    Asserts the `description` parameter of ``Client.achievement_edit`` methods.
+    
+    Parameters
+    ----------
+    description : `str`
+        The achievement's description.
+    
+    Raises
+    ------
+    AssertionError
+        - If `description` was not given as `str`.
+    """
+    if (description is not ...) and (not isinstance(description, str)):
+        raise AssertionError(
+            f'`description` can be `str`, got {description.__class__.__name__}; {description!r}.'
+        )
+    
+    return True
+
+
+def _assert__achievement_edit__secret(secret):
+    """
+    Asserts the `secret` parameter of ``Client.achievement_edit`` methods.
+    
+    Parameters
+    ----------
+    secret : `bool`
+        The achievement's secret.
+    
+    Raises
+    ------
+    AssertionError
+        - If `secret` was not given as `bool`.
+    """
+    if (secret is not ...) and (not isinstance(secret, bool)):
+        raise AssertionError(
+            f'`secret` can be `bool`, got {secret.__class__.__name__}; {secret!r}.'
+        )
+    
+    return True
+
+
+def _assert__achievement_edit__secure(secure):
+    """
+    Asserts the `secure` parameter of ``Client.achievement_edit`` methods.
+    
+    Parameters
+    ----------
+    secure : `bool`
+        The achievement's secure.
+    
+    Raises
+    ------
+    AssertionError
+        - If `secure` was not given as `bool`.
+    """
+    if (secure is not ...) and (not isinstance(secure, bool)):
+        raise AssertionError(
+            f'`secure` can be `bool`, got {secure.__class__.__name__}; {secure!r}.'
+        )
+    
+    return True
+
+
+def _assert__user_achievement_update__percent_complete(percent_complete):
+    """
+    Asserts the `percent_complete` parameter of ``Client.user_achievement_update`` methods.
+    
+    Parameters
+    ----------
+    percent_complete : `int`
+        The achievement's percent_complete.
+    
+    Raises
+    ------
+    AssertionError
+        - If `percent_complete` was not given as `int`.
+    """
+    if not isinstance(percent_complete, int):
+        raise AssertionError(
+            f'`percent_complete` can be `int`, got {percent_complete.__class__.__name__}; {percent_complete!r}.'
+        )
+    
+    return True
+
+
 class ClientCompoundAchievementEndpoints(Compound):
     
     application : Application
@@ -111,53 +309,32 @@ class ClientCompoundAchievementEndpoints(Compound):
         Raises
         ------
         TypeError
-            If `icon` was not passed as `bytes-like`.
+            - If `icon` was not passed as `bytes-like`.
+        ValueError
+            - If `icon`'s format is not any of the expected ones.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If the `icon`'s format is not any of the expected ones.
-            - If `name` was not given as `str`.
-            - If `description` was not given as `str`.
-            - If `secret` was not given as `bool`.
-            - If `secure` was not given as `bool`.
         """
-        if __debug__:
-            if not isinstance(name, str):
-                raise AssertionError(
-                    f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
-                )
-            
-            if not isinstance(description, str):
-                raise AssertionError(
-                    f'`description` can be `str`, got {description.__class__.__name__}; {description!r}.'
-                )
+        assert _assert__achievement_create__name(name)
+        assert _assert__achievement_create__description(description)
+        assert _assert__achievement_create__secret(secret)
+        assert _assert__achievement_create__secure(secure)
         
         if not isinstance(icon, (bytes, bytearray, memoryview)):
             raise TypeError(
                 f'`icon` can be `bytes-like`, got {icon.__class__.__name__}; {reprlib.repr(icon)}.'
             )
         
-        if __debug__:
-            media_type = get_image_media_type(icon)
-            if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
-                raise AssertionError(
-                    f'Invalid `icon` type for achievement: {media_type}; got {reprlib.repr(icon)}.'
-                )
+        media_type = get_image_media_type(icon)
+        if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
+            raise ValueError(
+                f'Invalid `icon` type for achievement: {media_type}; got {reprlib.repr(icon)}.'
+            )
         
         icon_data = image_to_base64(icon)
         
-        if __debug__:
-            if not isinstance(secret, bool):
-                raise AssertionError(
-                    f'`secret` can be `bool`, got {secret.__class__.__name__}; {secret!r}.'
-                )
-            
-            if not isinstance(secure, bool):
-                raise AssertionError(
-                    f'`secure` can be `bool`, got {secure.__class__.__name__}; {secure!r}.'
-                )
         
         description_localizations = serializable_localized_dictionary_builder(
             description_localizations, 'description_localizations'
@@ -232,71 +409,45 @@ class ClientCompoundAchievementEndpoints(Compound):
         TypeError
             - If ``icon`` was not passed as `bytes-like`.
             - If `achievement` was not given neither as ``Achievement``, neither as `int`.
+        ValueError
+            - If `icon`'s format is not any of the expected ones.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `name` was not given as `str`.
-            - If `description` was not given as `str`.
-            - If `secret` was not given as `bool`.
-            - If `secure` was not given as `str`.
-            - If `icon`'s format is not any of the expected ones.
         """
         achievement, achievement_id = get_achievement_and_id(achievement)
+        
+        assert _assert__achievement_edit__name(name)
+        assert _assert__achievement_edit__description(description)
+        assert _assert__achievement_edit__secret(secret)
+        assert _assert__achievement_edit__secure(secure)
         
         data = {}
         
 
         if (icon is not ...):
-            icon_type = icon.__class__
             if not isinstance(icon, (bytes, bytearray, memoryview)):
                 raise TypeError(
-                    f'`icon` can be `bytes-like`, got {icon_type.__name__}; {reprlib.repr(icon_type)}.'
+                    f'`icon` can be `bytes-like`, got {icon.__class__.__name__}; {reprlib.repr(icon)}.'
                 )
             
-            if __debug__:
-                media_type = get_image_media_type(icon)
-                if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
-                    raise ValueError(
-                        f'Invalid `icon` type for achievement: {media_type}; got {reprlib.repr(icon_type)!r}.'
-                    )
+            media_type = get_image_media_type(icon)
+            if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
+                raise ValueError(
+                    f'Invalid `icon` type for achievement: {media_type}; got {reprlib.repr(icon)!r}.'
+                )
             
             data['icon'] = image_to_base64(icon)
         
+        
         if (secret is not ...):
-            if __debug__:
-                if not isinstance(secret, bool):
-                    raise AssertionError(
-                        f'`secret` can be `bool`, got {secret.__class__.__name__}; {secret!r}.'
-                    )
-            
             data['secret'] = secret
         
         if (secure is not ...):
-            if __debug__:
-                if not isinstance(secure, bool):
-                    raise AssertionError(
-                        f'`secure` can be `bool`, got {secure.__class__.__name__}; {secure!r}.'
-                    )
-            
             data['secure'] = secure
         
-        
-        if __debug__:
-            if (name is not ...):
-                if not isinstance(name, str):
-                    raise AssertionError(
-                        f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
-                    )
-        
-        if __debug__:
-            if (description is not ...):
-                if not isinstance(description, str):
-                    raise AssertionError(
-                        f'`description` can be `str`, got {description.__class__.__name__}; {description!r}.'
-                    )
-        
+       
         if API_VERSION >= 10:
             if (description is not ...):
                 data['description'] = description
@@ -470,11 +621,15 @@ class ClientCompoundAchievementEndpoints(Compound):
         ----------
         user : ``ClientUserBase``, `int`
             The user, who's achievement will be updated.
+        
         achievement : ``Achievement``, `int`
             The achievement, what's state will be updated
+        
         percent_complete : `int`
             The completion percentage of the achievement.
-        
+            
+            > Can be in range [0:100]. If outside is adjusted to the respective limit.
+            
         Raises
         ------
         TypeError
@@ -484,9 +639,6 @@ class ClientCompoundAchievementEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `percent_complete` was not given as `int`.
-            - If `percent_complete` is out of range [0:100].
         
         Notes
         -----
@@ -501,16 +653,12 @@ class ClientCompoundAchievementEndpoints(Compound):
         
         achievement_id = get_achievement_id(achievement)
         
-        if __debug__:
-            if not isinstance(percent_complete, int):
-                raise AssertionError(
-                    f'`percent_complete` can be `int`, got {percent_complete.__class__.__name__}; {percent_complete!r}.'
-                )
-            
-            if percent_complete < 0 or percent_complete > 100:
-                raise AssertionError(
-                    f'`percent_complete` is out of range [0:100], got {percent_complete!r}.'
-                )
+        assert _assert__user_achievement_update__percent_complete(percent_complete)
+        
+        if percent_complete < 0:
+            percent_complete = 0
+        elif percent_complete > 100:
+            percent_complete = 100
         
         data = {'percent_complete': percent_complete}
         await self.http.user_achievement_update(user_id, self.application.id, achievement_id, data)

@@ -5,6 +5,7 @@ import warnings
 from scarletio import Compound, IgnoreCaseMultiValueDictionary
 from scarletio.web_common.headers import AUTHORIZATION
 
+from ...application import Application
 from ...http import DiscordHTTPClient
 from ...interaction import (
     ApplicationCommand, ApplicationCommandPermission, ApplicationCommandPermissionOverwrite,
@@ -20,7 +21,102 @@ from ..request_helpers import (
 )
 
 
+def _assert__application_id(application_id):
+    """
+    Asserts the the client's has `.application` synced by asserting whether it's value is not `0`.
+    
+    Parameters
+    ----------
+    application_id : `int`
+        The client's application id.
+    
+    Raises
+    ------
+    AssertionError
+        - If the client's application is not yet synced.
+    """
+    if application_id == 0:
+        raise AssertionError(
+            'The client\'s application is not yet synced.'
+        )
+    
+    return True
+
+
+def _assert__application_command(application_command):
+    """
+    Asserts whether the given ``application_command`` is indeed ``ApplicationCommand`` instance.
+    
+    Parameters
+    ----------
+    application_command : ``ApplicationCommand``
+        The application command to checkout.
+    
+    Raises
+    ------
+    AssertionError
+        - If `application_command` was not given as ``ApplicationCommand``.
+    """
+    if not isinstance(application_command, ApplicationCommand):
+        raise AssertionError(
+            f'`application_command` can be `{ApplicationCommand.__name__}`, got '
+            f'{application_command.__class__.__name__}; {application_command!r}.'
+        )
+    
+    return True
+
+
+def _assert__new_application_command(new_application_command):
+    """
+    Asserts whether the given ``new_application_command`` is indeed ``ApplicationCommand`` instance.
+    
+    Parameters
+    ----------
+    new_application_command : ``ApplicationCommand``
+        The application command to checkout.
+    
+    Raises
+    ------
+    AssertionError
+        - If `new_application_command` was not given as ``ApplicationCommand``.
+    """
+    if not isinstance(new_application_command, ApplicationCommand):
+        raise AssertionError(
+            f'`new_application_command` can be `{ApplicationCommand.__name__}`, got '
+            f'{new_application_command.__class__.__name__}; {new_application_command!r}.'
+        )
+    
+    return True
+
+
+def _assert__application_command_permission_edit__access_scope(access):
+    """
+    Asserts whether ``Client.application_command_permission_edit``'s `access` parameter has the required scopes.
+    
+    This function is only called when `access` is either ``OA2Access`` or ``UserOA2`` instance.
+    
+    Parameters
+    ----------
+    access : ``OA2Access``, ``UserOA2``
+        A user's access token.
+    
+    Raises
+    ------
+    AssertionError
+        - If the `access` lacks `applications.commands.permissions.update` scope.
+    """
+    if 'applications.commands.permissions.update' not in access.scopes:
+        raise AssertionError(
+            f'The given `access` not grants `\'applications.commands.permissions.update\'` scope, '
+            f'what is required, got {access!r}.'
+        )
+    
+    return True
+
+
 class ClientCompoundApplicationCommandEndpoints(Compound):
+    
+    application: Application
     http : DiscordHTTPClient
     
     async def application_command_global_get(self, application_command):
@@ -45,15 +141,9 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If the client's application is not yet synced.
         """
         application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError(
-                    'The client\'s application is not yet synced.'
-                )
+        assert _assert__application_id(application_id)
         
         application_command, application_command_id = get_application_command_and_id(application_command)
         
@@ -88,15 +178,9 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If the client's application is not yet synced.
         """
         application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError(
-                    'The client\'s application is not yet synced.'
-                )
+        assert _assert__application_id(application_id)
         
         data = await self.http.application_command_global_get_all(
             application_id,
@@ -132,27 +216,14 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If the client's application is not yet synced.
-            - If `application_command` was not given as ``ApplicationCommand``.
         
         Notes
         -----
         The command will be available in all guilds after 1 hour.
         """
         application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError(
-                    'The client\'s application is not yet synced.'
-                )
-        
-        if __debug__:
-            if not isinstance(application_command, ApplicationCommand):
-                raise AssertionError(
-                    f'`application_command` can be `{ApplicationCommand.__name__}`, got '
-                    f'{application_command.__class__.__name__}; {application_command!r}.'
-                )
+        assert _assert__application_id(application_id)
+        assert _assert__application_command(application_command)
         
         data = application_command.to_data()
         data = await self.http.application_command_global_create(application_id, data)
@@ -185,9 +256,6 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If the client's application is not yet synced.
-            - If `new_application_command` was not given as ``ApplicationCommand``.
         
         Notes
         -----
@@ -196,18 +264,9 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         old_application_command, application_command_id = get_application_command_and_id(old_application_command)
         
         application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError(
-                    'The client\'s application is not yet synced.'
-                )
+        assert _assert__application_id(application_id)
         
-        if __debug__:
-            if not isinstance(new_application_command, ApplicationCommand):
-                raise AssertionError(
-                    f'`new_application_command` can be `{ApplicationCommand.__name__}`, got '
-                    f'{new_application_command.__class__.__name__}; {new_application_command!r}.'
-                )
+        assert _assert__new_application_command(new_application_command)
         
         data = new_application_command.to_data()
         
@@ -236,15 +295,9 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If the client's application is not yet synced.
         """
         application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError(
-                    'The client\'s application is not yet synced.'
-                )
+        assert _assert__application_id(application_id)
         
         application_command_id = get_application_command_id(application_command)
         
@@ -273,67 +326,62 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         
         Raises
         ------
+        TypeError
+            - If `application_commands` is not iterable.
+            - If an element of `application_commands` is not ``ApplicationCommand`` instance.
         ValueError
-            If more than `100` ``ApplicationCommand`` is given.
+            - If more than `100` ``ApplicationCommand`` is given.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If the client's application is not yet synced.
-            - If an application command was not given as ``ApplicationCommand``.
-            - If `application_commands` is not iterable.
         
         Notes
         -----
         The commands will be available in all guilds after 1 hour.
         """
         application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError('The client\'s application is not yet synced.')
+        assert _assert__application_id(application_id)
+        
+        
+        if getattr(application_commands, '__iter__', None) is None:
+            raise TypeError(
+                f'`application_commands` can be an `iterable`, got '
+                f'{application_commands.__class__.__name__}; {application_commands!r}.'
+            )
         
         application_command_datas = []
         
-        if __debug__:
-            if getattr(type(application_commands), '__iter__', None) is None:
-                raise AssertionError(
-                    f'`application_commands` can be an `iterable`, got '
-                    f'{application_commands.__class__.__name__}; {application_commands!r}.'
-                )
-        
-        application_command_count = 0
         for application_command in application_commands:
-            if __debug__:
-                if not isinstance(application_command, ApplicationCommand):
-                    raise AssertionError(
-                        f'`application_commands` contains a not `{ApplicationCommand.__name__}` element, got: '
-                        f'{application_command.__class__.__name__}; {application_command!r}; '
-                        f'application_commands={application_commands!r}.'
-                    )
-            
-            if application_command_count == APPLICATION_COMMAND_LIMIT_GLOBAL:
-                raise ValueError(
-                    f'Maximum {APPLICATION_COMMAND_LIMIT_GLOBAL} application command can be given, got '
-                    f'{application_command_count!r}; {application_commands!r}.'
+            if not isinstance(application_command, ApplicationCommand):
+                raise TypeError(
+                    f'`application_commands` contains a not `{ApplicationCommand.__name__}` element, got: '
+                    f'{application_command.__class__.__name__}; {application_command!r}; '
+                    f'application_commands={application_commands!r}.'
                 )
             
-            application_command_count += 1
             application_command_datas.append(application_command.to_data())
         
-        if application_command_datas:
-            application_command_datas = await self.http.application_command_global_update_multiple(
-                application_id, application_command_datas
-            )
-            
-            application_command_datas = [
-                ApplicationCommand.from_data(application_command_data)
-                for application_command_data in application_command_datas
-            ]
-        else:
-            application_command_datas = []
         
-        return application_command_datas
+        application_command_count = len(application_command_datas)
+        # If we have no application commands to edit return~
+        if application_command_count == 0:
+            return []
+        
+        if application_command_count >= APPLICATION_COMMAND_LIMIT_GLOBAL:
+            raise ValueError(
+                f'Maximum {APPLICATION_COMMAND_LIMIT_GLOBAL} application command can be given, got '
+                f'{application_command_count!r}; {application_commands!r}.'
+            )
+        
+        application_command_datas = await self.http.application_command_global_update_multiple(
+            application_id, application_command_datas
+        )
+        
+        return [
+            ApplicationCommand.from_data(application_command_data)
+            for application_command_data in application_command_datas
+        ]
     
     
     async def application_command_guild_get(self, guild, application_command):
@@ -359,15 +407,9 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If the client's application is not yet synced.
         """
         application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError(
-                    'The client\'s application is not yet synced.'
-                )
+        assert _assert__application_id(application_id)
         
         guild_id = get_guild_id(guild)
         
@@ -412,15 +454,9 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If the client's application is not yet synced.
         """
         application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError(
-                    'The client\'s application is not yet synced.'
-                )
+        assert _assert__application_id(application_id)
         
         guild_id = get_guild_id(guild)
         
@@ -463,25 +499,12 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If the client's application is not yet synced.
-            - If `application_command` was not given as ``ApplicationCommand``.
         """
         application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError(
-                    'The client\'s application is not yet synced.'
-                )
+        assert _assert__application_id(application_id)
+        assert _assert__application_command(application_command)
         
         guild_id = get_guild_id(guild)
-        
-        if __debug__:
-            if not isinstance(application_command, ApplicationCommand):
-                raise AssertionError(
-                    f'`application_command` can be `{ApplicationCommand.__name__}`, got '
-                    f'{application_command.__class__.__name__}; {application_command!r}.'
-                )
         
         data = application_command.to_data()
         data = await self.http.application_command_guild_create(application_id, guild_id, data)
@@ -512,28 +535,15 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If the client's application is not yet synced.
-            - If `new_application_command` was not given as ``ApplicationCommand``.
         """
         old_application_command, application_command_id = get_application_command_and_id(old_application_command)
         
         application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError(
-                    'The client\'s application is not yet synced.'
-                )
+        assert _assert__application_id(application_id)
+        
+        assert _assert__new_application_command(new_application_command)
         
         guild_id = get_guild_id(guild)
-        
-        if __debug__:
-            if not isinstance(new_application_command, ApplicationCommand):
-                raise AssertionError(
-                    f'`new_application_command` can be `{ApplicationCommand.__name__}`, got '
-                    f'{new_application_command.__class__.__name__}; {new_application_command!r}.'
-                )
-        
         data = new_application_command.to_data()
         
         # Handle https://github.com/discord/discord-api-docs/issues/2525
@@ -563,15 +573,9 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If the client's application is not yet synced.
         """
         application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError(
-                    'The client\'s application is not yet synced.'
-                )
+        assert _assert__application_id(application_id)
         
         guild_id = get_guild_id(guild)
         
@@ -603,68 +607,62 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         Raises
         ------
         TypeError
-            If `guild` was not given neither as``Guild`` nor `int`.
+            - If `guild` was not given neither as``Guild`` nor `int`.
+            - If `application_commands` is not iterable.
+            - If an element of `application_commands` is not ``ApplicationCommand`` instance.
         ValueError
-            If more than `100` ``ApplicationCommand`` is given.
+            - If more than `100` ``ApplicationCommand`` is given.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If the client's application is not yet synced.
-            - If an application command was not given as ``ApplicationCommand``.
-            - If `application_commands` is not iterable.
         """
         application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError(
-                    'The client\'s application is not yet synced.'
-                )
+        assert _assert__application_id(application_id)
         
         guild_id = get_guild_id(guild)
         
+        
+        iterator = getattr(type(application_commands), '__iter__', None)
+        if iterator is None:
+            raise TypeError(
+                f'`application_commands` can be an `iterable`, got '
+                f'{application_commands.__class__.__name__}; {application_commands!r}.'
+            )
+        
+        
         application_command_datas = []
         
-        if __debug__:
-            if getattr(type(application_commands), '__iter__', None) is None:
-                raise AssertionError(
-                    f'`application_commands` can be an `iterable`, got '
-                    f'{application_commands.__class__.__name__}; {application_commands!r}.'
-                )
-        
-        application_command_count = 0
-        for application_command in application_commands:
-            if __debug__:
-                if not isinstance(application_command, ApplicationCommand):
-                    raise AssertionError(
-                        f'`application_commands` can contain `{ApplicationCommand.__name__}` elements, got: '
-                        f'{application_command.__class__.__name__}; {application_command!r}; '
-                        f'application_commands={application_commands!r}.'
-                    )
-            
-            if application_command_count == APPLICATION_COMMAND_LIMIT_GUILD:
-                raise ValueError(
-                    f'Maximum {APPLICATION_COMMAND_LIMIT_GUILD} application command can be given, got '
-                    f'{application_command_count!r}; {application_commands!r}.'
+        for application_command in iterator(application_commands):
+            if not isinstance(application_command, ApplicationCommand):
+                raise TypeError(
+                    f'`application_commands` contains a not `{ApplicationCommand.__name__}` element, got: '
+                    f'{application_command.__class__.__name__}; {application_command!r}; '
+                    f'application_commands={application_commands!r}.'
                 )
             
-            application_command_count += 1
             application_command_datas.append(application_command.to_data())
         
-        if application_command_datas:
-            application_command_datas = await self.http.application_command_guild_update_multiple(
-                application_id, guild_id, application_command_datas
-            )
-            
-            application_command_datas = [
-                ApplicationCommand.from_data(application_command_data)
-                for application_command_data in application_command_datas
-            ]
-        else:
-            application_command_datas = []
         
-        return application_command_datas
+        application_command_count = len(application_command_datas)
+        # If we have no application commands to edit return~
+        if application_command_count == 0:
+            return []
+        
+        if application_command_count >= APPLICATION_COMMAND_LIMIT_GUILD:
+            raise ValueError(
+                f'Maximum {APPLICATION_COMMAND_LIMIT_GUILD} application command can be given, got '
+                f'{application_command_count!r}; {application_commands!r}.'
+            )
+        
+        application_command_datas = await self.http.application_command_guild_update_multiple(
+            application_id, guild_id, application_command_datas
+        )
+        
+        return [
+            ApplicationCommand.from_data(application_command_data)
+            for application_command_data in application_command_datas
+        ]
     
     
     async def application_command_permission_get(self, guild, application_command):
@@ -693,9 +691,6 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If the client's application is not yet synced.
-            - If an application command was not given neither as ``ApplicationCommand``, `int`.
         
         Notes
         -----
@@ -706,11 +701,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         ```
         """
         application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError(
-                    'The client\'s application is not yet synced.'
-                )
+        assert _assert__application_id(application_id)
         
         guild_id = get_guild_id(guild)
         
@@ -744,8 +735,12 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         
         Parameters
         ----------
+        access : ``OA2Access``, ``UserOA2``, `str`
+            A user's access token to use.
+        
         guild : ``Guild``, `int`
             The respective guild.
+        
         application_command : `None`, ``ApplicationCommand``, `int`
             The respective application command.
             
@@ -764,17 +759,15 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         Raises
         ------
         TypeError
-            If `guild` was not given neither as``Guild`` nor `int`.
+            - If `guild` was not given neither as``Guild`` nor `int`.
+            - If `permission_overwrites` was not given as `None`, `tuple`, `list`, `set`.
+            - If `permission_overwrites` contains a non ``ApplicationCommandPermissionOverwrite`` element.
+        ValueError
+            - If `permission_overwrites` contains more than 100 elements.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If the client's application is not yet synced.
-            - If an application command was not given neither as ``ApplicationCommand``, `int`.
-            - If `permission_overwrites` was not given as `None`, `tuple`, `list`, `set`.
-            - If `permission_overwrites` contains a non ``ApplicationCommandPermissionOverwrite`` element.
-            - If `permission_overwrites` contains more than 10 elements.
         """
         if (permission_overwrites is ...):
             warnings.warn(
@@ -783,7 +776,8 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
                     f'`access`, `guild`, `application_command`, `permission_overwrites`.\n'
                     f'Oauth2 access with `applications.commands.permissions.update` scope is required to edit '
                     f'application command permission overwrites. (Bots are blocked down from the endpoint.)\n'
-                    f'Returning without further code execution...'
+                    f'Returning without further code execution...\n'
+                    f'This warning will be removed in 2022 December.'
                 ),
                 RuntimeWarning,
                 stacklevel = 2,
@@ -792,21 +786,11 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         
         # application_id
         application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError(
-                    'The client\'s application is not yet synced.'
-                )
+        assert _assert__application_id(application_id)
         
         # access_token
         if isinstance(access, (OA2Access, UserOA2)):
-            if __debug__:
-                if 'applications.commands.permissions.update' not in access.scopes:
-                    raise AssertionError(
-                        f'The given `access` not grants `\'applications.commands.permissions.update\'` scope, '
-                        f'what is required, got {access!r}.'
-                    )
-            
+            assert _assert__application_command_permission_edit__access_scope(access)
             access_token = access.access_token
         
         elif isinstance(access, str):
@@ -827,21 +811,19 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         
         permission_overwrite_datas = []
         if (permission_overwrites is not None):
-            if __debug__:
-                if not isinstance(permission_overwrites, (list, set, tuple)):
-                    raise AssertionError(
-                        f'`permission_overwrites` can be `None`, `list`, `tuple` or '
-                        f'`set`, got {permission_overwrites.__class__.__name__}; {permission_overwrites!r}.'
-                    )
+            if getattr(permission_overwrites, '__iter__', None) is None:
+                raise TypeError(
+                    f'`permission_overwrites` can be `None`, `list`, `tuple` or '
+                    f'`set`, got {permission_overwrites.__class__.__name__}; {permission_overwrites!r}.'
+                )
             
             for permission_overwrite in permission_overwrites:
-                if __debug__:
-                    if not isinstance(permission_overwrite, ApplicationCommandPermissionOverwrite):
-                        raise AssertionError(
-                            f'`permission_overwrites` can contain `{ApplicationCommandPermissionOverwrite.__name__}` '
-                            f'elements, got {permission_overwrite.__class__.__name__}; {permission_overwrite!r}; '
-                            f'permission_overwrites={permission_overwrites!r}.'
-                        )
+                if not isinstance(permission_overwrite, ApplicationCommandPermissionOverwrite):
+                    raise TypeError(
+                        f'`permission_overwrites` can contain `{ApplicationCommandPermissionOverwrite.__name__}` '
+                        f'elements, got {permission_overwrite.__class__.__name__}; {permission_overwrite!r}; '
+                        f'permission_overwrites={permission_overwrites!r}.'
+                    )
                 
                 # We update channel permission overwrites with id of 0
                 if permission_overwrite.target_type is ApplicationCommandPermissionOverwriteTargetType.channel:
@@ -851,15 +833,15 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
                     permission_overwrite = permission_overwrite.copy_with(target = ('role', guild_id))
                 
                 permission_overwrite_datas.append(permission_overwrite.to_data())
-            
-            if __debug__:
-                permission_overwrite_datas_length = len(permission_overwrite_datas)
-                if permission_overwrite_datas_length > APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX:
-                    raise AssertionError(
-                        f'`permission_overwrites` can contain up to `{APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX}` '
-                        f'permission_overwrites, got {permission_overwrite_datas_length!r}; '
-                        f'{permission_overwrites!r}.'
-                    )
+        
+        
+        permission_overwrite_datas_length = len(permission_overwrite_datas)
+        if permission_overwrite_datas_length > APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX:
+            raise ValueError(
+                f'`permission_overwrites` can contain up to `{APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX}` '
+                f'permission_overwrites, got {permission_overwrite_datas_length!r}; '
+                f'{permission_overwrites!r}.'
+            )
         
         data = {'permissions': permission_overwrite_datas}
         
@@ -897,15 +879,9 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If the client's application is not yet synced.
         """
         application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError(
-                    'The client\'s application is not yet synced.'
-                )
+        assert _assert__application_id(application_id)
         
         guild_id = get_guild_id(guild)
         

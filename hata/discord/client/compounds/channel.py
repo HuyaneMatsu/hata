@@ -26,6 +26,181 @@ from ..functionality_helpers import channel_move_sort_key
 from ..request_helpers import get_channel_and_id, get_channel_id, get_guild_and_id, get_user_id
 
 
+def _assert__channel_group_edit__name(name):
+    """
+    Asserts the the `name` parameter of ``Client.channel_group_edit`.
+    
+    Parameters
+    ----------
+    name : `Ellipsis`, `None`, `str`
+        The new name of the channel.
+    
+    Raises
+    ------
+    AssertionError
+        - If `name` was not given neither as `None`, `str`.
+        - If `name`'s length is out of range `[1:100]`.
+    """
+    if (name is not ...) and (name is not None):
+        if not isinstance(name, str):
+            raise AssertionError(
+                f'`name` can be `None`, `str`, got {name.__class__.__name__}; {name!r}.'
+            )
+            
+        name_length = len(name)
+        if name_length > 100:
+            raise AssertionError(
+                f'`name` length can be in range [0:100], got {name_length}; {name!r}.'
+            )
+    
+    return True
+
+
+def _assert__channel_group_create__users(users):
+    """
+    Asserts the `users` parameter of ``Client.channel_group_create`.
+    
+    Parameters
+    ----------
+    users : `tuple` of ``ClientUserBase``, `int`
+        The users to create the channel with.
+    
+    Raises
+    ------
+    AssertionError
+        - If the total amount of users is less than `2`.
+    """
+    if len(users) < 2:
+        raise AssertionError(
+            f'group channel can be created at least with at least `2` users,  got '
+            f'{len(users)}; {users!r}.'
+        )
+    
+    return True
+
+
+def _assert__channel_edit__name(name):
+    """
+    Asserts the the `name` parameter of ``Client.channel_edit`.
+    
+    Parameters
+    ----------
+    name : `Ellipsis`, `str`
+        The new name of the channel.
+    
+    Raises
+    ------
+    AssertionError
+        - If `name` was not given neither as `None`, `str`.
+        - If `name`'s length is out of range `[1:100]`.
+    """
+    if (name is not ...) and (name is not None):
+        if not isinstance(name, str):
+            raise AssertionError(
+                f'`name` can be `None`, `str`, got {name.__class__.__name__}; {name!r}.'
+            )
+            
+        name_length = len(name)
+        if (name_length < 1) or (name_length > 100):
+            raise AssertionError(
+                f'`name` length can be in range [1:100], got {name_length}; {name!r}.'
+            )
+    
+    return True
+
+
+def _assert__channel_edit__type(type_, channel, channel_type):
+    """
+    Asserts the the `type_` parameter of ``Client.channel_edit`.
+    
+    Parameters
+    ----------
+    type_ : `Ellipsis`, `int`
+        The `channel`'s new type value.
+    channel : `None`, ``Channel``
+        The respective channel.
+    channel_type : `int`
+        The respective channel's type.
+    
+    Raises
+    ------
+    AssertionError
+        - If `type_` is not `int` instance.
+        - If cannot interchange to `type_`.
+    """
+    if (type_ is not ...):
+        if (channel is not None):
+            _assert_channel_type(
+                channel_type,
+                channel,
+                (CHANNEL_TYPES.guild_text, CHANNEL_TYPES.guild_announcements),
+                'type_',
+                type_,
+            )
+        
+        if not isinstance(type_, int):
+            raise AssertionError(
+                f'`type_` can be `int`, got {type_.__class__.__name__}.; {type_!r}'
+            )
+        
+        if type_ not in (CHANNEL_TYPES.guild_text, CHANNEL_TYPES.guild_announcements):
+            raise AssertionError(
+                f'`type_` can be interchanged to `{CHANNEL_TYPES.guild_text!r}` '
+                f'(`{get_channel_type_name(CHANNEL_TYPES.guild_text)}`) ,'
+                f'`{CHANNEL_TYPES.guild_announcements!r}` '
+                f'(`{get_channel_type_name(CHANNEL_TYPES.guild_announcements)}`)'
+                f', got {type_!r} (`{get_channel_type_name(type_)}`).'
+            )
+    
+    return True
+
+
+def _assert__permission_overwrite__type(permission_overwrite):
+    """
+    Asserts the `permission_overwrite` parameter of ``Client.permission_overwrite_edit`` and of
+    ``Client.permission_overwrite_create``.
+    
+    Parameters
+    ----------
+    permission_overwrite : ``PermissionOverwrite``
+        The permission overwrite to edit.
+    
+    Raises
+    ------
+    AssertionError
+        - If `permission_overwrite` was not given as ``PermissionOverwrite``.
+    """
+    if not isinstance(permission_overwrite, PermissionOverwrite):
+        raise AssertionError(
+            f'`permission_overwrite` can be `{PermissionOverwrite.__name__}`, got '
+            f'{permission_overwrite.__class__.__name__}; {permission_overwrite!r}.'
+        )
+    
+    return True
+
+
+def _assert__permission_overwrite_edit__allow(allow):
+    if (allow is not ...):
+        if not isinstance(allow, int):
+            raise AssertionError(
+                f'`allow` can be `None`, `{Permission.__name__}`, `int`, got '
+                f'{allow.__class__.__name__}; {allow!r}.'
+            )
+    
+    return True
+
+
+def _assert__permission_overwrite_edit__deny(deny):
+    if (deny is not ...):
+        if not isinstance(deny, int):
+            raise AssertionError(
+                f'`deny` can be `None`, `{Permission.__name__}`, `int`, got '
+                f'{deny.__class__.__name__}; {deny!r}.'
+            )
+    
+    return True
+
+
 class ClientCompoundChannelEndpoints(Compound):
     
     http : DiscordHTTPClient
@@ -155,55 +330,37 @@ class ClientCompoundChannelEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `name` was not given neither as `None`, `str`.
-            - If `name`'s length is out of range `[1:100]`.
         Notes
         -----
         No request is done if no optional parameter is provided.
         """
         channel_id = get_channel_id(channel, Channel.is_private_group)
         
+        assert _assert__channel_group_edit__name(name)
+        
         data = {}
         
+        
         if (name is not ...):
-            if __debug__:
-                if (name is not None):
-                    if not isinstance(name, str):
-                        raise AssertionError(
-                            f'`name` can be `None`, `str`, got {name.__class__.__name__}; {name!r}.'
-                        )
-                    
-                    name_length = len(name)
-                    if (name_length < 1) or (name_length > 100):
-                        raise AssertionError(
-                            f'`name` length can be in range [1:100], got {name_length}; {name!r}.'
-                        )
-                    
-                    # Translate empty nick to `None`
-                    if name_length == 0:
-                        name = None
-            else:
-                # Non debug mode: Translate empty nick to `None`
-                if (name is not None) and (not name):
-                    name = None
+            if (name is not None) and (not name):
+                name = None
             
             data['name'] = name
         
         if (icon is not ...):
             if icon is None:
                 icon_data = None
+            
             else:
-                icon_type = icon.__class__
-                if not issubclass(icon_type, (bytes, bytearray, memoryview)):
+                if not isinstance(icon, (bytes, bytearray, memoryview)):
                     raise TypeError(
-                        f'`icon` can be `None`, `bytes-like`, got {icon_type.__name__}; {reprlib.repr(icon_type)}.'
+                        f'`icon` can be `None`, `bytes-like`, got {icon.__class__.__name__}; {reprlib.repr(icon)}.'
                     )
             
                 media_type = get_image_media_type(icon)
                 if media_type not in VALID_ICON_MEDIA_TYPES:
                     raise ValueError(
-                        f'Invalid `icon` type: {media_type}; got {reprlib.repr(icon_type)}.'
+                        f'Invalid `icon` type: {media_type}; got {reprlib.repr(icon)}.'
                     )
                 
                 icon_data = image_to_base64(icon)
@@ -222,7 +379,7 @@ class ClientCompoundChannelEndpoints(Compound):
         
         Parameters
         ----------
-        *users : ``ClientUserBase``, `int`s
+        *users : ``ClientUserBase``, `int`
             The users to create the channel with.
         
         Returns
@@ -238,27 +395,19 @@ class ClientCompoundChannelEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If the total amount of users is less than `2`.
         
         Notes
         -----
         This endpoint does not support bot accounts.
         """
+        assert _assert__channel_group_create__users(users)
+        
         user_ids = set()
         for user in users:
             user_id = get_user_id(user)
             user_ids.add(user_id)
         
         user_ids.add(self.id)
-        
-        if __debug__:
-            user_ids_length = len(user_ids)
-            if user_ids_length < 2:
-                raise AssertionError(
-                    f'group channel can be created at least with at least `2` users,  got '
-                    f'{user_ids_length}; {users!r}.'
-                )
         
         data = {'recipients': user_ids}
         data = await self.http.channel_group_create(self.id, data)
@@ -606,8 +755,6 @@ class ClientCompoundChannelEndpoints(Compound):
             - If the given `channel` is not ``Channel``, `int`.
             - If `region` was not given neither as `None`, `str` nor ``VoiceRegion``.
             - If `video_quality_mode` was not given neither as ``VideoQualityMode` nor as `int`.
-        AssertionError
-            - If a parameter's type or value is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
@@ -615,56 +762,21 @@ class ClientCompoundChannelEndpoints(Compound):
         """
         channel, channel_id = get_channel_and_id(channel, Channel.is_in_group_guild)
         
+        assert _assert__channel_edit__name(name)
+        
         channel_data = {}
         
         if (name is not ...):
-            if __debug__:
-                if not isinstance(name, str):
-                    raise AssertionError(
-                        f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
-                    )
-                
-                name_length = len(name)
-                
-                if name_length < 1 or name_length > 100:
-                    raise AssertionError(
-                        f'`name` length can be in range [1:100], got {name_length}; {name!r}.'
-                    )
-            
             channel_data['name'] = name
         
-
         if channel is None:
             channel_type = -1
         else:
             channel_type = channel.type
         
+        assert _assert__channel_edit__type(type_, channel, channel_type)
         
         if (type_ is not ...):
-            if __debug__:
-                if (channel is not None):
-                    _assert_channel_type(
-                        channel_type,
-                        channel,
-                        (CHANNEL_TYPES.guild_text, CHANNEL_TYPES.guild_announcements),
-                        'type_',
-                        type_,
-                    )
-                
-                if not isinstance(type_, int):
-                    raise AssertionError(
-                        f'`type_` can be `int`, got {type_.__class__.__name__}.; {type_!r}'
-                    )
-                
-                if type_ not in (CHANNEL_TYPES.guild_text, CHANNEL_TYPES.guild_announcements):
-                    raise AssertionError(
-                        f'`type_` can be interchanged to `{CHANNEL_TYPES.guild_text!r}` '
-                        f'(`{get_channel_type_name(CHANNEL_TYPES.guild_text)}`) ,'
-                        f'`{CHANNEL_TYPES.guild_announcements!r}` '
-                        f'(`{get_channel_type_name(CHANNEL_TYPES.guild_announcements)}`)'
-                        f', got {type_!r} (`{get_channel_type_name(type_)}`).'
-                    )
-            
             channel_data['type'] = type_
         
         
@@ -741,28 +853,6 @@ class ClientCompoundChannelEndpoints(Compound):
             - If `type_` was not passed as `int`, ``Channel``.
             - If `parent` was not given as `None`, ``Channel``, `int`.
             - If `region` was not given either as `None`, `str` nor ``VoiceRegion``.
-        AssertionError
-            - If `type_` was given as `int`, and is less than `0`.
-            - If `type_` was given as `int` and exceeds the defined channel type limit.
-            - If `name` was not given as `str`.
-            - If `name`'s length is out of range `[1:100]`.
-            - If `permission_overwrites` was not given as `None`, neither as `list` of `dict`-s.
-            - If `topic` was not given as `str`.
-            - If `topic`'s length is over `1024`.
-            - If `topic` was given, but the respective channel type is not ``Channel``.
-            - If `nsfw` was given meanwhile the respective channel type is not ``Channel``.
-            - If `nsfw` was not given as `bool`.
-            - If `slowmode` was given, but the respective channel type is not ``Channel``.
-            - If `slowmode` was not given as `int`.
-            - If `slowmode` was given, but it's value is less than `0` or greater than `21600`.
-            - If `bitrate` was given, but the respective channel type is not ``Channel``.
-            - If `bitrate` was not given as `int`.
-            - If `bitrate`'s value is out of the expected range.
-            - If `user_limit` was given, but the respective channel type is not ``Channel``.
-            - If `user_limit` was not given as `int`.
-            - If `user_limit` was given, but is out of the expected [0:99] range.
-            - If `parent` was given, but the respective channel type cannot be put under other categories.
-            - If `region` was given, but the respective channel type is not ``Channel``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -835,8 +925,6 @@ class ClientCompoundChannelEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `source_channel` is not announcement channel.
         """
         source_channel, source_channel_id = get_channel_and_id(source_channel, Channel.is_guild_announcements)
         if source_channel is None:
@@ -887,32 +975,15 @@ class ClientCompoundChannelEndpoints(Compound):
         """
         channel_id = get_channel_id(channel, Channel.is_in_group_guild_movable)
         
-        if __debug__:
-            if not isinstance(permission_overwrite, PermissionOverwrite):
-                raise AssertionError(
-                    f'`permission_overwrite` can be `{PermissionOverwrite.__name__}`, got '
-                    f'{permission_overwrite.__class__.__name__}; {permission_overwrite!r}.'
-                )
+        assert _assert__permission_overwrite__type(permission_overwrite)
+        assert _assert__permission_overwrite_edit__allow(allow)
+        assert _assert__permission_overwrite_edit__deny(deny)
         
         if allow is ...:
             allow = permission_overwrite.allow
-        else:
-            if __debug__:
-                if not isinstance(allow, int):
-                    raise AssertionError(
-                        f'`allow` can be `None`, `{Permission.__name__}`, `int`, got '
-                        f'{allow.__class__.__name__}; {allow!r}.'
-                    )
         
         if deny is ...:
             deny = permission_overwrite.deny
-        else:
-            if __debug__:
-                if not isinstance(deny, int):
-                    raise AssertionError(
-                        f'`deny` can be `None`, `{Permission.__name__}`, `int`, got '
-                        f'{deny.__class__.__name__}; {deny!r}.'
-                    )
         
         data = {
             'allow': allow,
@@ -951,12 +1022,7 @@ class ClientCompoundChannelEndpoints(Compound):
         """
         channel_id = get_channel_id(channel, Channel.is_in_group_guild_movable)
         
-        if __debug__:
-            if not isinstance(permission_overwrite, PermissionOverwrite):
-                raise AssertionError(
-                    f'`permission_overwrite` can be `{PermissionOverwrite.__name__}`, got '
-                    f'{permission_overwrite.__class__.__name__}; {permission_overwrite!r}.'
-                )
+        assert _assert__permission_overwrite__type(permission_overwrite)
         
         await self.http.permission_overwrite_delete(channel_id, permission_overwrite.target_id, reason)
     

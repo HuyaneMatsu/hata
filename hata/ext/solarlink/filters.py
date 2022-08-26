@@ -656,6 +656,8 @@ class Equalizer(Filter):
         *band_gain_pairs : `tuple` (`int`, `float`)
             band-gain pairs.
         
+        Raises
+        ------
         TypeError
             If `band_gain_pairs` contains a non-tuple element.
         ValueError

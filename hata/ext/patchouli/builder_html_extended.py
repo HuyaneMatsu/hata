@@ -1022,8 +1022,7 @@ class ParameterSubSection:
     
     def __init__(self, header, description):
         self.description = description
-        
-        header_contents = header.content
+        header_contents = header.content.copy()
         
         parameter_name_part = header_contents[0]
         if isinstance(parameter_name_part, str):
@@ -1269,7 +1268,6 @@ class ParameterSection:
             Contained section parts.
         """
         header = None
-        
         for section_content in section_content:
             # section content can be either ``GraveDescription``, `list` of it.
             
@@ -1844,7 +1842,7 @@ class ModuleSerializer:
         prefixed_title = anchor_escape(title)
         
         return Structure(title, prefixed_title, children)
-        
+
 UNIT_CONVERSION_TABLE = {
     PropertyUnit: FunctionOrPropertySerializer,
     FunctionUnit: FunctionOrPropertySerializer,

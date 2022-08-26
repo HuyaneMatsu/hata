@@ -554,7 +554,7 @@ class TextDescription:
     
     def __new__(cls, lines, start, end):
         """
-        Creates a new description from the given lines's start:end range.
+        Creates a new description from the given lines' start:end range.
         
         Parameters
         ----------
@@ -589,6 +589,7 @@ class TextDescription:
         graved : ``GravedDescription``
         """
         return GravedDescription(self, path)
+
 
 def detect_indent(lines, index, limit):
     """
@@ -705,6 +706,7 @@ def detect_code_block(lines, index, limit):
         
         return source_index
 
+
 class TextCodeBlock:
     """
     Represents a code-block part in a docstring.
@@ -720,7 +722,7 @@ class TextCodeBlock:
     
     def __new__(cls, lines, start, end):
         """
-        Creates a new code block from the given lines's start:end range.
+        Creates a new code block from the given lines' start:end range.
         
         Parameters
         ----------
@@ -811,7 +813,7 @@ class TextCodeBlock:
         return self
     
     def __repr__(self):
-        """Returns the code blocks's representation."""
+        """Returns the code blocks' representation."""
         result = ['<', self.__class__.__name__]
         
         language = self._language
@@ -1357,7 +1359,7 @@ class TextBlockQuote:
     
     def __new__(cls, lines, start, end):
         """
-        Creates a new block quote from the given lines's start:end range.
+        Creates a new block quote from the given lines' start:end range.
         
         Parameters
         ----------
@@ -1559,10 +1561,7 @@ def get_attribute_docs_from(sections):
                     attr_body = None
             
             result[attr_name] = DocString._create_attribute_docstring_part(
-                attr_name,
-                attr_separator,
-                attr_head,
-                attr_body,
+                attr_name, attr_separator, attr_head, attr_body,
             )
             continue
         
@@ -1581,6 +1580,7 @@ def get_attribute_docs_from(sections):
             result[name] = DocString._create_attribute_docstring_extra(extra)
     
     return result
+
 
 class DocString:
     """

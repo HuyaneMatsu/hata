@@ -2,11 +2,12 @@
 
 #### Improvements
 
-- Add `NsfwLevel.nsfw`
+- Add `NsfwLevel.nsfw`.
+- `Message.guild` now works for invoking user only messages as well. (Gilgamesh#8939)
 
 #### Bug Fixes
 
-- `Guild.nsfw` returned the opposite value.
+- `Guild.nsfw` returned the opposite value. (Gilgamesh#8939)
 
 ## 1.3.5 *\[2022-08-27\]*
 

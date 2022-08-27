@@ -2296,6 +2296,14 @@ class Message(DiscordEntity, immortal=True):
         guild_id = self.guild_id
         if guild_id:
             return GUILDS.get(guild_id, None)
+        
+        if self.flags.invoking_user_only:
+            try:
+                channel = CHANNELS[self.channel_id]
+            except KeyError:
+                pass
+            else:
+                return channel.guild
     
     
     @property

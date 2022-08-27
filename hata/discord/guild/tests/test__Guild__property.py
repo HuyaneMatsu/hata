@@ -22,6 +22,6 @@ def test__ConnectionType__nsfw_1():
     Case: NsfwLevel.explicit
     """
     nsfw_level = NsfwLevel.explicit
-    guild = Guild.precreate(202208270000, nsfw_level=nsfw_level)
+    guild = Guild.precreate(202208270001, nsfw_level=nsfw_level)
     
     vampytest.assert_eq(guild.nsfw, nsfw_level.nsfw)

@@ -57,7 +57,7 @@ class IntegrationType(PreinstancedBase):
     
     Class Attributes
     ----------------
-    INSTANCES : `dict` of (`int`, ``IntegrationType``) items
+    INSTANCES : `dict` of (`str`, ``IntegrationType``) items
         Stores the predefined ``IntegrationType``-s. These can be accessed with their `value` as key.
     VALUE_TYPE : `type` = `int`
         The integration type' values' type.
@@ -71,9 +71,9 @@ class IntegrationType(PreinstancedBase):
     +=======================+===============+===============+
     | none                  | none          | `''`          |
     +-----------------------+---------------+---------------+
-    | discord               | discord       | `'discord'`   |
+    | discord               | Discord       | `'discord'`   |
     +-----------------------+---------------+---------------+
-    | youtube               | youtube       | `'youtube'`   |
+    | youtube               | Youtube       | `'youtube'`   |
     +-----------------------+---------------+---------------+
     """
     INSTANCES = {}
@@ -105,5 +105,5 @@ class IntegrationType(PreinstancedBase):
     
     # predefined
     none = P('', 'none')
-    discord = P('discord', 'discord')
-    youtube = P('youtube', 'youtube')
+    discord = P('discord', 'Discord')
+    youtube = P('youtube', 'Youtube')

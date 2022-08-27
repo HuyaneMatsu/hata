@@ -109,7 +109,7 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
-        #'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: Implementation :: CPython',
         'Programming Language :: Python :: Implementation :: PyPy',
         
@@ -126,7 +126,7 @@ setup(
     },
     python_requires = '>=3.6',
     install_requires = [
-        'scarletio>=1.0.34',
+        'scarletio>=1.0.35',
         'chardet>=2.0',
     ],
     extras_require = {

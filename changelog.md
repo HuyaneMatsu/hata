@@ -1,3 +1,10 @@
+## 1.3.5 *\[2022-08-27\]*
+
+#### Bug Fixes
+
+##### ext.patchouli
+- Fix an `IndexError`.
+
 ## 1.3.4 *\[2022-08-24\]*
 
 #### Improvements
@@ -18,7 +25,7 @@
 - `ApplicationCommandOptionChoice.name_localizations` is now applied towards the it's length correctly.
 - `Client.application_command_permission_edit` now accepts any iterable as ``permission_overwrites``.
 
-#### Bug fixes
+#### Bug Fixes
 
 - `Channel.get_users_like` raised.
 - `Channel.permissions_for_roles` raised.

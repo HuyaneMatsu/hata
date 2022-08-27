@@ -2967,11 +2967,14 @@ class Guild(DiscordEntity, immortal=True):
     
     @property
     def nsfw(self):
-        nsfw_level = self.nsfw_level
-        if (nsfw_level is NsfwLevel.none) or (nsfw_level is NsfwLevel.safe):
-            return True
+        """
+        Returns whether the guild is nsfw.
         
-        return False
+        Returns
+        -------
+        nsfw : `bool`
+        """
+        return self.nsfw_level.nsfw
     
     
     @property

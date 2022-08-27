@@ -526,28 +526,78 @@ class NsfwLevel(PreinstancedBase):
     
     Every predefined nsfw level can be accessed as class attribute as well:
     
-    +-----------------------+-------------------+-------+
-    | Class attribute name  | Name              | Value |
-    +=======================+===================+=======+
-    | none                  | none              | 0     |
-    +-----------------------+-------------------+-------+
-    | explicit              | explicit          | 1     |
-    +-----------------------+-------------------+-------+
-    | safe                  | safe              | 2     |
-    +-----------------------+-------------------+-------+
-    | age_restricted        | age_restricted    | 3     |
-    +-----------------------+-------------------+-------+
+    +-----------------------+-------------------+-------+-------+
+    | Class attribute name  | Name              | Value | nsfw  |
+    +=======================+===================+=======+=======+
+    | none                  | none              | 0     | False |
+    +-----------------------+-------------------+-------+-------+
+    | explicit              | explicit          | 1     | True  |
+    +-----------------------+-------------------+-------+-------+
+    | safe                  | safe              | 2     | False |
+    +-----------------------+-------------------+-------+-------+
+    | age_restricted        | age_restricted    | 3     | True  |
+    +-----------------------+-------------------+-------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
     DEFAULT_NAME = 'UNDEFINED'
     
-    __slots__ = ()
+    __slots__ = ('nsfw', )
     
-    none = P(0, 'none')
-    explicit = P(1, 'explicit')
-    safe = P(2, 'safe')
-    age_restricted = P(2, 'age_restricted')
+    def __init__(self, value, name, nsfw):
+        """
+        Creates a new nsfw level instance.
+        
+        Parameters
+        ----------
+        value : ``.VALUE_TYPE``
+            The value of the nsfw level.
+        name : `str`
+            The nsfw level name.
+        nsfw : `bool`
+            Whether the nsfw level refers to being actually nsfw.
+        """
+        self.value = value
+        self.name = name
+        self.nsfw = nsfw
+        
+        self.INSTANCES[value] = self
+    
+    
+    @classmethod
+    def _from_value(cls, value):
+        """
+        Creates a new nsfw level from the given value
+        
+        Parameters
+        ----------
+        value : `int`
+            The nsfw level's identifier value.
+        
+        Returns
+        -------
+        self : ``NsfwLevel``
+            The created nsfw level.
+        """
+        self = object.__new__(cls)
+        
+        self.value = value
+        self.name = ''
+        self.nsfw = True
+        self.INSTANCES[value] = self
+        
+        return self
+    
+    
+    def __repr__(self):
+        """Returns the nsfw level's representation."""
+        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r}, nsfw={self.nsfw!r})'
+    
+    
+    none = P(0, 'none', False)
+    explicit = P(1, 'explicit', True)
+    safe = P(2, 'safe', False)
+    age_restricted = P(2, 'age_restricted', True)
 
 
 class MessageNotificationLevel(PreinstancedBase):

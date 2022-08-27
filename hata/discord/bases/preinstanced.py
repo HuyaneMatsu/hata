@@ -101,7 +101,7 @@ class PreinstancedBase(RichAttributeErrorBaseType, metaclass=PreinstancedMeta):
         The default name to use as the preinstanced objects'.
     """
     INSTANCES = NotImplemented
-    VALUE_TYPE = None.__class__
+    VALUE_TYPE = type(None)
     DEFAULT_NAME = 'Undefined'
     
     __slots__ = ('name', 'value',)

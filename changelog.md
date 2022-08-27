@@ -1,3 +1,13 @@
+## 1.3.6 *\[2022-08-??\]*
+
+#### Improvements
+
+- Add `NsfwLevel.nsfw`
+
+#### Bug Fixes
+
+- `Guild.nsfw` returned the opposite value.
+
 ## 1.3.5 *\[2022-08-27\]*
 
 #### Bug Fixes

@@ -4,9 +4,13 @@ from ..bases import DiscordEntity
 from ..core import INTEGRATIONS
 from ..user import User, ZEROUSER
 
-from .integration_account import INTEGRATION_TYPE_DISCORD, IntegrationAccount
+from .integration_account import IntegrationAccount
 from .integration_application import IntegrationApplication
 from .integration_detail import IntegrationDetail
+from .preinstanced import IntegrationType
+
+
+INTEGRATION_TYPE_DISCORD = IntegrationType.discord
 
 
 class Integration(DiscordEntity, immortal=True):
@@ -28,8 +32,8 @@ class Integration(DiscordEntity, immortal=True):
         Additional integration information for non `'discord'` integrations.
     name : `str`
         The name of the integration.
-    type : `str`
-        The type of the integration (`'twitch'`, `'youtube'`, `'discord'`, ).
+    type : ``IntegrationType``
+        The type of the integration.
     user : `ClientUserBase`
         User for who the integration is. Defaults to `ZEROUSER`
     """
@@ -61,9 +65,9 @@ class Integration(DiscordEntity, immortal=True):
             update = False
         
         self.name = data['name']
-        self.type = integration_type = data['type']
+        self.type = integration_type = IntegrationType.get(data['type'])
         
-        if integration_type == INTEGRATION_TYPE_DISCORD:
+        if integration_type is INTEGRATION_TYPE_DISCORD:
             detail = None
         else:
             detail = IntegrationDetail(data)
@@ -90,7 +94,7 @@ class Integration(DiscordEntity, immortal=True):
             if (application is not None):
                 self.application = application
         
-        # Create account last, because it might create a ``User`` object, but ``.application`` might have include it
+        # Create account last, because it might create a ``User`` object, but ``.application`` might have included it
         # already.
         self.account = IntegrationAccount(data['account'], integration_type)
         
@@ -114,7 +118,7 @@ class Integration(DiscordEntity, immortal=True):
         repr_parts = ['<', self.__class__.__name__, ' id=', str(self.id)]
         
         type_ = self.type
-        if type_:
+        if type_ is not IntegrationType.none:
             repr_parts.append(', type=')
             repr_parts.append(repr(type_))
         

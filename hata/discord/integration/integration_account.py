@@ -2,8 +2,11 @@ __all__ = ('IntegrationAccount', )
 
 from ..user import User
 
+from .preinstanced import IntegrationType
 
-INTEGRATION_TYPE_DISCORD = 'discord'
+
+INTEGRATION_TYPE_DISCORD = IntegrationType.discord
+
 
 class IntegrationAccount:
     """
@@ -14,7 +17,7 @@ class IntegrationAccount:
     id : `str`
         The respective account's id.
     name : `str`
-        The respective account's name
+        The respective account's name.
     """
     __slots__ = ('id', 'name', )
     
@@ -28,6 +31,8 @@ class IntegrationAccount:
         ----------
         data : `dict` of (`str`, `Any`) items
             Integration account data.
+        integration_type : ``IntegrationType``
+            The parent integration's type.
         
         Returns
         -------
@@ -35,12 +40,12 @@ class IntegrationAccount:
         """
         name = data['name']
         id_ = data['id']
-        if integration_type == INTEGRATION_TYPE_DISCORD:
-            self = User.precreate(id_, name=name, is_bot=True)
-        else:
-            self = object.__new__(cls)
-            self.name = name
-            self.id = id_
+        if integration_type is INTEGRATION_TYPE_DISCORD:
+            return User.precreate(id_, name=name, bot=True)
+        
+        self = object.__new__(cls)
+        self.name = name
+        self.id = id_
         
         return self
     

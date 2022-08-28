@@ -2,6 +2,7 @@ __all__ = ('Integration', )
 
 from ..bases import DiscordEntity
 from ..core import INTEGRATIONS
+from ..oauth2.helpers import parse_oauth2_scope_array
 from ..user import User, ZEROUSER
 
 from .integration_account import IntegrationAccount
@@ -17,7 +18,7 @@ class Integration(DiscordEntity, immortal=True):
     """
     Represents a Discord Integration.
     
-    Parameters
+    Attributes
     ----------
     id : `int`
         The unique identifier number of the integration.
@@ -32,12 +33,14 @@ class Integration(DiscordEntity, immortal=True):
         Additional integration information for non `'discord'` integrations.
     name : `str`
         The name of the integration.
+    scopes : `None`, `tuple` of ``Oauth2Scope``
+        The scopes the application was authorized with.
     type : ``IntegrationType``
         The type of the integration.
     user : `ClientUserBase`
         User for who the integration is. Defaults to `ZEROUSER`
     """
-    __slots__ = ('account', 'application', 'enabled', 'detail', 'name', 'type', 'user',)
+    __slots__ = ('account', 'application', 'detail', 'enabled', 'name', 'scopes', 'type', 'user')
     
     def __new__(cls, data):
         """
@@ -94,6 +97,8 @@ class Integration(DiscordEntity, immortal=True):
             if (application is not None):
                 self.application = application
         
+        self.scopes = parse_oauth2_scope_array(data.get('scopes', None))
+        
         # Create account last, because it might create a ``User`` object, but ``.application`` might have included it
         # already.
         self.account = IntegrationAccount(data['account'], integration_type)
@@ -136,6 +141,7 @@ class Integration(DiscordEntity, immortal=True):
         if (application is not None):
             repr_parts.append(', application')
             repr_parts.append(repr(application))
+        
         
         repr_parts.append('>')
         

@@ -5,7 +5,7 @@ from time import time as time_now
 
 from scarletio import RichAttributeErrorBaseType
 
-from .helpers import parse_joined_oath2_scopes
+from .helpers import parse_joined_oauth2_scopes
 from .preinstanced import Oauth2Scope
 
 
@@ -58,7 +58,7 @@ class Oauth2Access(RichAttributeErrorBaseType):
         self.access_token = data['access_token']
         self.refresh_token = data.get('refresh_token', '')
         self.expires_after = data['expires_in'] # default is 604800 (s) (1 week)
-        self.scopes = parse_joined_oath2_scopes(data['scopes'])
+        self.scopes = parse_joined_oauth2_scopes(data['scopes'])
         
         self.created_at = datetime.utcnow() # important for renewing
     
@@ -79,7 +79,7 @@ class Oauth2Access(RichAttributeErrorBaseType):
         self.access_token = data['access_token']
         self.refresh_token = data.get('refresh_token', '')
         self.expires_after = data['expires_in']
-        self.scopes = parse_joined_oath2_scopes(data['scopes'])
+        self.scopes = parse_joined_oauth2_scopes(data['scopes'])
     
     
     @property

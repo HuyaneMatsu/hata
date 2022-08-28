@@ -61,6 +61,7 @@ class IntegrationDetail:
         
         self.subscriber_count = data.get('subscriber_count', 0)
     
+    
     @property
     def role(self):
         """

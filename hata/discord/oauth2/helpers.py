@@ -31,7 +31,7 @@ def parse_oauth2_redirect_url(url):
     return result.groups()
 
 
-def parse_joined_oath2_scopes(joined_scopes):
+def parse_joined_oauth2_scopes(joined_scopes):
     """
     Parses the joined oauth2 scopes.
     
@@ -53,9 +53,31 @@ def parse_joined_oath2_scopes(joined_scopes):
     return tuple(Oauth2Scope.get(scope) for scope in split_scopes)
 
 
-def join_oath2_scopes(scopes):
+def parse_oauth2_scope_array(scope_array):
     """
-    Joins the given oath2 scopes together.
+    Parsers the given oauth2 scope array.
+    
+    Parameters
+    ----------
+    scope_array : `None`, `list` of `str`
+        Scope array.
+    
+    
+    Returns
+    -------
+    scopes : `None`, `tuple` of ``Oauth2Scope``
+    """
+    if (scope_array is None) or (not scope_array):
+        return None
+    
+    scope_array.sort()
+    
+    return tuple(Oauth2Scope.get(scope) for scope in scope_array)
+
+
+def join_oauth2_scopes(scopes):
+    """
+    Joins the given oauth2 scopes together.
     
     Parameters
     ----------

@@ -91,12 +91,12 @@ class Oauth2Application(DiscordEntity):
     @classmethod
     def from_data(cls, data):
         """
-        Creates a new oath2 application instance from the given json data.
+        Creates a new oauth2 application instance from the given json data.
         
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
-            Application oath2 data.
+            Application oauth2 data.
         
         Returns
         -------

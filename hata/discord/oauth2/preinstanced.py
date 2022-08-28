@@ -94,7 +94,7 @@ class Oauth2Scope(PreinstancedBase):
     name : `str`
         The name of the oauth2 scope
     value : `str`
-        The identifier value the oath2 scope.
+        The identifier value the oauth2 scope.
     
     Class Attributes
     ----------------
@@ -105,7 +105,7 @@ class Oauth2Scope(PreinstancedBase):
     DEFAULT_NAME : `str` = `'UNDEFINED'`
         The default name of the connection types.
     
-    Every predefined oath2 scope can be accessed as class attribute as well:
+    Every predefined oauth2 scope can be accessed as class attribute as well:
     
     +-------------------------------------------+-----------------------+-------------------------------------------+
     | Class attribute name                      | name                  | value                                     |

@@ -1,7 +1,5 @@
 __all__ = ('IntegrationApplication',)
 
-import warnings
-
 from ..bases import DiscordEntity, IconSlot
 from ..http import urls as module_urls
 from ..user import User, ZEROUSER
@@ -51,20 +49,3 @@ class IntegrationApplication(DiscordEntity):
             bot = User.from_data(bot_data)
         
         self.bot = bot
-    
-    
-    @property
-    def summary(self):
-        """
-        `.summary` is deprecated and will be removed in 2022 Jun. Please use `.description` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.summary` is deprecated and will be removed in 2022 Jun. '
-                f'Please use `.description` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return ''

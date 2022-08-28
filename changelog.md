@@ -8,6 +8,7 @@
 - Add `OA2Access.has_scope`.
 - `OA2Access.scopes` are now `None | tuple<Oauth2Scope>` from `set<str>`.
 - Add `Oauth2Scope`.
+- Add `Integration.scopes`.
 
 #### Bug Fixes
 

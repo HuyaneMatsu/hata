@@ -8,7 +8,7 @@ from ...bases import maybe_snowflake
 from ...guild import create_partial_guild_from_data
 from ...http import DiscordHTTPClient
 from ...oauth2 import Connection, Oauth2Access, Oauth2Scope, Oauth2User
-from ...oauth2.helpers import build_joined_scopes, join_oath2_scopes
+from ...oauth2.helpers import build_joined_scopes, join_oauth2_scopes
 from ...role import Role
 
 from ..request_helpers import get_guild_id, get_user_id_nullable
@@ -272,14 +272,14 @@ class ClientCompoundOauth2Endpoints(Compound):
                 'grant_type': 'refresh_token',
                 'refresh_token': access.refresh_token,
                 'redirect_uri': redirect_url,
-                'scope': join_oath2_scopes(access.scopes)
+                'scope': join_oauth2_scopes(access.scopes)
             }
         else:
             data = {
                 'client_id': self.id,
                 'client_secret': self.secret,
                 'grant_type': 'client_credentials',
-                'scope': join_oath2_scopes(access.scopes),
+                'scope': join_oauth2_scopes(access.scopes),
             }
         
         data = await self.http.oauth2_token(data, IgnoreCaseMultiValueDictionary())

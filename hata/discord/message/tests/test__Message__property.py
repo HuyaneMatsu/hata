@@ -6,7 +6,7 @@ from ...guild import create_partial_guild_from_id
 from .. import Message, MessageFlag
 
 
-def test__Message__guild_0():
+def test__Message__guild__0():
     """
     Tests whether invoking user message's `.guild` can be looked up.
     """

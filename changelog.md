@@ -5,11 +5,19 @@
 - Add `NsfwLevel.nsfw`.
 - `Message.guild` now works for invoking user only messages as well. (Gilgamesh#8939)
 - Add `IntegrationType`.
+- Add `OA2Access.has_scope`.
+- `OA2Access.scopes` are now `None | tuple<Oauth2Scope>` from `set<str>`.
+- Add `Oauth2Scope`.
 
 #### Bug Fixes
 
 - `Guild.nsfw` returned the opposite value. (Gilgamesh#8939)
 - `IntegrationAccount.__new__` could raise `TypeError`. (since 1.3.4)
+
+#### Renames, Deprecation & Removals
+
+- Rename `OA2Access` to `Oauth2Access`. Deprecate `OA2Access`.
+- Rename `UserOA2` to `Oauth2User`. Deprecate `UserOA2`.
 
 ## 1.3.5 *\[2022-08-27\]*
 

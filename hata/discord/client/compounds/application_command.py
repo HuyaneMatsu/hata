@@ -14,7 +14,7 @@ from ...interaction import (
 from ...interaction.application_command.constants import (
     APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
 )
-from ...oauth2 import OA2Access, UserOA2
+from ...oauth2 import Oauth2Access, Oauth2Scope, Oauth2User
 
 from ..request_helpers import (
     get_application_command_and_id, get_application_command_id, get_application_command_id_nullable, get_guild_id
@@ -93,11 +93,11 @@ def _assert__application_command_permission_edit__access_scope(access):
     """
     Asserts whether ``Client.application_command_permission_edit``'s `access` parameter has the required scopes.
     
-    This function is only called when `access` is either ``OA2Access`` or ``UserOA2`` instance.
+    This function is only called when `access` is either ``Oauth2Access`` or ``Oauth2User`` instance.
     
     Parameters
     ----------
-    access : ``OA2Access``, ``UserOA2``
+    access : ``Oauth2Access``, ``Oauth2User``
         A user's access token.
     
     Raises
@@ -105,7 +105,7 @@ def _assert__application_command_permission_edit__access_scope(access):
     AssertionError
         - If the `access` lacks `applications.commands.permissions.update` scope.
     """
-    if 'applications.commands.permissions.update' not in access.scopes:
+    if not access.has_scope(Oauth2Scope.applications_commands_permissions_update):
         raise AssertionError(
             f'The given `access` not grants `\'applications.commands.permissions.update\'` scope, '
             f'what is required, got {access!r}.'
@@ -735,7 +735,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         
         Parameters
         ----------
-        access : ``OA2Access``, ``UserOA2``, `str`
+        access : ``Oauth2Access``, ``Oauth2User``, `str`
             A user's access token to use.
         
         guild : ``Guild``, `int`
@@ -789,7 +789,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         assert _assert__application_id(application_id)
         
         # access_token
-        if isinstance(access, (OA2Access, UserOA2)):
+        if isinstance(access, (Oauth2Access, Oauth2User)):
             assert _assert__application_command_permission_edit__access_scope(access)
             access_token = access.access_token
         
@@ -798,7 +798,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         
         else:
             raise TypeError(
-                f'`access` can be `{OA2Access.__name__}`, `{UserOA2.__name__}` `str`'
+                f'`access` can be `{Oauth2Access.__name__}`, `{Oauth2User.__name__}` `str`'
                 f', got {access.__class__.__name__}; {access!r}.'
             )
         

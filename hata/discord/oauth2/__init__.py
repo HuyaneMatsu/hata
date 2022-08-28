@@ -13,3 +13,7 @@ __all__ = (
     *oauth2_user.__all__,
     *preinstanced.__all__,
 )
+
+from ...utils.module_deprecation import deprecated_import
+deprecated_import(Oauth2User, 'UserOA2')
+deprecated_import(Oauth2Access, 'OA2Access')

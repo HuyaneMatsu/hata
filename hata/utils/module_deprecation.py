@@ -13,7 +13,7 @@ def deprecated_import(obj=None, obj_name=None):
     
     Parameters
     ----------
-    obj : `Any`
+    obj : `Any` = `None`, Optional
         The object to export.
     obj_name : `str` = `None`, Optional
         The name of the object. If not given, is detected from `obj` itself.

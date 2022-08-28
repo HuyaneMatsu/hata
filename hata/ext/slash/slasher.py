@@ -912,7 +912,7 @@ class Slasher(EventHandlerBase):
     _guild_level_permission_overwrites : `None`, `dict` of `set` of ``ApplicationCommandPermissionOverwrite``
         Guild level permission overwrites to apply.
     
-    _owners_access : `None`, ``OA2Access`
+    _owners_access : `None`, ``Oauth2Access`
         Oauth2 access of the client's owner.
     
     _owners_access_get_impossible : `bool`
@@ -3575,7 +3575,7 @@ class Slasher(EventHandlerBase):
         
         Returns
         -------
-        owners_access : `None`, ``OA2Access``
+        owners_access : `None`, ``Oauth2Access``
         """
         owners_access = self._owners_access
         if (owners_access is None):
@@ -3623,7 +3623,7 @@ class Slasher(EventHandlerBase):
         
         Returns
         -------
-        owners_access : `None`, ``OA2Access``
+        owners_access : `None`, ``Oauth2Access``
         """
         try:
            owners_access = await client.owners_access('applications.commands.permissions.update')

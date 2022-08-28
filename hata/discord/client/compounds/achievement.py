@@ -10,7 +10,7 @@ from ....env import API_VERSION
 from ...application import Application
 from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES_EXTENDED
 from ...localizations.helpers import serializable_localized_dictionary_builder
-from ...oauth2 import Achievement, OA2Access, UserOA2
+from ...oauth2 import Achievement, Oauth2Access, Oauth2User
 from ...utils import get_image_media_type, image_to_base64
 from ..request_helpers import get_achievement_and_id, get_achievement_id, get_user_id
 
@@ -569,7 +569,7 @@ class ClientCompoundAchievementEndpoints(Compound):
         
         Parameters
         ----------
-        access : ``OA2Access``, ``UserOA2``, `str`.
+        access : ``Oauth2Access``, ``Oauth2User``, `str`.
             The access of the user, who's achievements will be requested.
         
         Returns
@@ -579,7 +579,7 @@ class ClientCompoundAchievementEndpoints(Compound):
         Raises
         ------
         TypeError
-            If `access` was not given neither as ``OA2Access``, ``UserOA2``  or `str`.
+            If `access` was not given neither as ``Oauth2Access``, ``Oauth2User``  or `str`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -592,13 +592,13 @@ class ClientCompoundAchievementEndpoints(Compound):
         
         Always drops `DiscordException UNAUTHORIZED (401): 401: Unauthorized`.
         """
-        if isinstance(access, (OA2Access, UserOA2)):
+        if isinstance(access, (Oauth2Access, Oauth2User)):
             access_token = access.access_token
         elif isinstance(access, str):
             access_token = access
         else:
             raise TypeError(
-                f'`access` can be `{OA2Access.__name__}`, `{UserOA2.__name__}`, `str`, got '
+                f'`access` can be `{Oauth2Access.__name__}`, `{Oauth2User.__name__}`, `str`, got '
                 f'{access.__class__.__name__}; {access!r}.'
             )
         

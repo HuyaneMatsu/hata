@@ -1,4 +1,4 @@
-__all__ = ('UserOA2',)
+__all__ = ('Oauth2User',)
 
 from scarletio import copy_docs
 
@@ -6,14 +6,13 @@ from ..localizations.utils import get_locale
 from ..user import PremiumType, UserBase, UserFlag
 
 
-class UserOA2(UserBase):
+class Oauth2User(UserBase):
     """
-    Represents a Discord user with extra personal information. If a ``UserOA2`` is  created it will NOT overwrite the
+    Represents a Discord user with extra personal information. If a ``Oauth2User`` is  created it will NOT overwrite the
     already existing user with the same ID, if exists.
     
     Attributes
     ----------
-
     id : `int`
         The user's unique identifier number.
     name : str
@@ -30,7 +29,7 @@ class UserOA2(UserBase):
         The user's banner's hash in `uint128`.
     banner_type : ``IconType``
         The user's banner's type.
-    access : ``OA2Access``
+    access : ``Oauth2Access``
         Source oauth2 access.
     email : `None`, `str`
         The user's email. Defaults to empty string.
@@ -49,13 +48,13 @@ class UserOA2(UserBase):
     
     def __init__(self, data, access):
         """
-        Creates a new ``UserOA2`` instance.
+        Creates a new ``Oauth2User`` instance.
         
         Parameters
         ----------
         data : `dict` of (`str`, `Any`) items
             User data.
-        access : ``OA2Access``
+        access : ``Oauth2Access``
             Source oauth2 access.
         """
         self.access = access
@@ -190,7 +189,7 @@ class UserOA2(UserBase):
         return False
     
     
-    # Reflect OA2Access
+    # Reflect Oauth2Access
     @property
     def access_token(self):
         """
@@ -249,3 +248,24 @@ class UserOA2(UserBase):
             Requested access data.
         """
         self.access._renew(data)
+    
+    
+    def has_scope(self, scope):
+        """
+        Returns whether the oauth2 user's access has the given scope.
+        
+        Parameters
+        ----------
+        scope : ``Oauth2Scope``, `str`
+            The scope to check out.
+        
+        Returns
+        -------
+        has_scope : `bool`
+        
+        Raises
+        ------
+        TypeError
+            - If `scope` is neither `str`, ``Oauth2Scope``.
+        """
+        return self.access.has_scope(scope)

@@ -1,15 +1,15 @@
-__all__ = ('OA2Access', )
+__all__ = ('Oauth2Access', )
 
-import warnings
 from datetime import datetime, timedelta
 from time import time as time_now
 
 from scarletio import RichAttributeErrorBaseType
 
-from .helpers import OAUTH2_SCOPES
+from .helpers import parse_joined_oath2_scopes
+from .preinstanced import Oauth2Scope
 
 
-class OA2Access(RichAttributeErrorBaseType):
+class Oauth2Access(RichAttributeErrorBaseType):
     """
     Represents a Discord oauth2 access object, what is returned by ``Client.activate_authorization_code`` if
     activating the authorization code went successfully.
@@ -18,33 +18,33 @@ class OA2Access(RichAttributeErrorBaseType):
     ----------
     access_token : `str`
         Token used for `Bearer` authorizations, when requesting OAuth2 data about the respective user.
+    
     created_at : `datetime`
         The time when the access was last created or renewed.
+    
     expires_after : `int`
         The time in seconds after this access expires.
+    
     redirect_url : `str`
         The redirect url with what the user granted the authorization code for the oauth2 scopes for the application.
         
         Can be empty string if application's owner's access was requested.
+    
     refresh_token : `str`
         The token used to renew the access token.
         
         Can be empty string if application's owner's access was requested.
-    scopes : `set` of `str`
-        A set of the scopes, what the user granted with the access token.
     
-    Class Attributes
-    ----------------
-    TOKEN_TYPE : `str` = `'Bearer'`
-        The access token's type.
+    scopes : `None`, `tuple` of ``Oauth2Scope``
+        A sequence of the scopes, which the user granted with the access token.
+        
+        Defaults to `None` if empty.
     """
-    TOKEN_TYPE = 'Bearer'
-    
     __slots__ = ('access_token', 'created_at', 'expires_after', 'redirect_url', 'refresh_token', 'scopes',)
     
     def __init__(self, data, redirect_url):
         """
-        Creates an ``OA2Access``.
+        Creates an ``Oauth2Access``.
         
         Parameters
         ----------
@@ -58,10 +58,7 @@ class OA2Access(RichAttributeErrorBaseType):
         self.access_token = data['access_token']
         self.refresh_token = data.get('refresh_token', '')
         self.expires_after = data['expires_in'] # default is 604800 (s) (1 week)
-        self.scopes = scopes = set()
-        for scope in data['scope'].split():
-            scope = OAUTH2_SCOPES.get(scope, scope)
-            scopes.add(scope)
+        self.scopes = parse_joined_oath2_scopes(data['scopes'])
         
         self.created_at = datetime.utcnow() # important for renewing
     
@@ -82,29 +79,7 @@ class OA2Access(RichAttributeErrorBaseType):
         self.access_token = data['access_token']
         self.refresh_token = data.get('refresh_token', '')
         self.expires_after = data['expires_in']
-        scopes = self.scopes
-        scopes.clear()
-        for scope in data['scope'].split():
-            try:
-                scopes.add(OAUTH2_SCOPES[scope])
-            except KeyError:
-                pass
-    
-    
-    @property
-    def expires_in(self):
-        """
-        `.expires_in` is deprecated and will be removed in 2022 Jul. Please use ``.expires
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.expires_in` is deprecated, and '
-                f'will be removed in 2022 Jul. Please use `.expires_after` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.expires_after
+        self.scopes = parse_joined_oath2_scopes(data['scopes'])
     
     
     @property
@@ -137,3 +112,39 @@ class OA2Access(RichAttributeErrorBaseType):
         repr_parts.append('>')
         
         return ''.join(repr_parts)
+    
+    
+    def has_scope(self, scope):
+        """
+        Returns whether the access has the given scope.
+        
+        Parameters
+        ----------
+        scope : ``Oauth2Scope``, `str`
+            The scope to check out.
+        
+        Returns
+        -------
+        has_scope : `bool`
+        
+        Raises
+        ------
+        TypeError
+            - If `scope` is neither `str`, ``Oauth2Scope``.
+        """
+        if isinstance(scope, Oauth2Scope):
+            pass
+        
+        elif isinstance(scope, str):
+            scope = Oauth2Scope.get(scope)
+        
+        else:
+            raise TypeError(
+                f'`scope` can be `str`, `{Oauth2Scope.__name__}`, got {scope.__class__.__name__}; {scope!r}.'
+            )
+        
+        scopes = self.scopes
+        if scopes is None:
+            return False
+        
+        return (scope in scopes)

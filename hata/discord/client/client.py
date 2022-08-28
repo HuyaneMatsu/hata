@@ -227,7 +227,7 @@ class Client(
     - ``User`` : The default type of Discord users.
     - ``Webhook`` : Discord webhook entity.
     - ``WebhookRepr`` : Discord webhook's user representation.
-    - ``UserOA2`` : A user class with extended oauth2 attributes.
+    - ``Oauth2User`` : A user class with extended oauth2 attributes.
     
     Notes
     -----

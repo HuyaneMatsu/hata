@@ -7,7 +7,8 @@ from scarletio.web_common.headers import AUTHORIZATION
 from ...bases import maybe_snowflake
 from ...guild import create_partial_guild_from_data
 from ...http import DiscordHTTPClient
-from ...oauth2 import Connection, OA2Access, UserOA2
+from ...oauth2 import Connection, Oauth2Access, Oauth2Scope, Oauth2User
+from ...oauth2.helpers import build_joined_scopes, join_oath2_scopes
 from ...role import Role
 
 from ..request_helpers import get_guild_id, get_user_id_nullable
@@ -38,7 +39,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         
         Returns
         -------
-        access : ``OA2Access``, `None`
+        access : ``Oauth2Access``, `None`
             If the code, the redirect url or the scopes are invalid, the methods returns `None`.
         
         Raises
@@ -52,8 +53,6 @@ class ClientCompoundOauth2Endpoints(Compound):
         AssertionError
             - If `redirect_url` was not given as `str`.
             - If `code` was not given as `str`.
-            - If `scopes` is empty.
-            - If `scopes` contains empty string.
         
         See Also
         --------
@@ -70,38 +69,7 @@ class ClientCompoundOauth2Endpoints(Compound):
                     f'`code` can be `str`, got {code.__class__.__name__}; {code!r}.'
                 )
         
-        if isinstance(scopes, str):
-            if __debug__:
-                if not scopes:
-                    raise AssertionError(
-                        f'`scopes` cannot be empty, got {scopes!r}.'
-                    )
-        
-        elif isinstance(scopes, list):
-            if __debug__:
-                if not scopes:
-                    raise AssertionError(
-                        f'`scopes` cannot be empty, got {scopes!r}.'
-                    )
-                
-                for index, scope in enumerate(scopes):
-                    if not isinstance(scope, str):
-                        raise AssertionError(
-                            f'`scopes` element `{index}` is not `str`, got '
-                            f'{scope.__class__.__name__}; {scope!r}; scopes={scopes!r}.'
-                        )
-                    
-                    if not scope:
-                        raise AssertionError(
-                            f'`scopes` element `{index}` is an empty string; got {scopes!r}.'
-                        )
-            
-            scopes = ' '.join(scopes)
-        
-        else:
-            raise TypeError(
-                f'`scopes` can be `str`, `list` of `str`, got {scopes.__class__.__name__}; {scopes!r}.'
-            )
+        joined_scopes = build_joined_scopes(scopes)
         
         data = {
             'client_id': self.id,
@@ -109,14 +77,14 @@ class ClientCompoundOauth2Endpoints(Compound):
             'grant_type': 'authorization_code',
             'code': code,
             'redirect_uri': redirect_url,
-            'scope': scopes,
+            'scope': joined_scopes,
         }
         
         data = await self.http.oauth2_token(data, IgnoreCaseMultiValueDictionary())
         if len(data) == 1:
             return
         
-        return OA2Access(data, redirect_url)
+        return Oauth2Access(data, redirect_url)
     
     
     async def owners_access(self, scopes):
@@ -133,7 +101,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         
         Returns
         -------
-        access : ``OA2Access``
+        access : ``Oauth2Access``
             The oauth2 access of the client's application's owner.
         
         Raises
@@ -154,48 +122,17 @@ class ClientCompoundOauth2Endpoints(Compound):
         -----
         Does not work if the client's application is owned by a team.
         """
-        if isinstance(scopes, str):
-            if __debug__:
-                if not scopes:
-                    raise AssertionError(
-                        f'`scopes` cannot be empty, got {scopes!r}.'
-                    )
-        
-        elif isinstance(scopes, list):
-            if __debug__:
-                if not scopes:
-                    raise AssertionError(
-                        f'`scopes` cannot be empty, got {scopes!r}.'
-                    )
-                
-                for index, scope in enumerate(scopes):
-                    if not isinstance(scope, str):
-                        raise AssertionError(
-                            f'`scopes` element `{index}` is not `str`, got '
-                            f'{scope.__class__.__name__}; {scope!r}; scopes={scopes!r}.'
-                        )
-                    
-                    if not scope:
-                        raise AssertionError(
-                            f'`scopes` element `{index}` is an empty string; got {scopes!r}.'
-                        )
-            
-            scopes = ' '.join(scopes)
-        
-        else:
-            raise TypeError(
-                f'`scopes` can be `str`, `list` of `str`, got {scopes.__class__.__name__}; {scopes!r}.'
-            )
+        joined_scopes = build_joined_scopes(scopes)
         
         data = {
             'grant_type': 'client_credentials',
-            'scope': scopes,
+            'scope': joined_scopes,
         }
         
         headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = BasicAuth(str(self.id), self.secret).encode()
         data = await self.http.oauth2_token(data, headers)
-        return OA2Access(data, '')
+        return Oauth2Access(data, '')
     
     
     async def user_info_get(self, access):
@@ -208,18 +145,18 @@ class ClientCompoundOauth2Endpoints(Compound):
         
         Parameters
         ----------
-        access : ``OA2Access``, ``UserOA2``, `str`
+        access : ``Oauth2Access``, ``Oauth2User``, `str`
             Oauth2 access to the respective user or it's access token.
         
         Returns
         -------
-        oauth2_user : ``UserOA2``
+        oauth2_user : ``Oauth2User``
             The requested user object.
         
         Raises
         ------
         TypeError
-            If `access` was not given neither as ``OA2Access``, ``UserOA2``  or `str`.
+            If `access` was not given neither as ``Oauth2Access``, ``Oauth2User``  or `str`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -229,20 +166,20 @@ class ClientCompoundOauth2Endpoints(Compound):
         -----
         Needs `'email'` or / and `'identify'` scopes granted for more data
         """
-        if isinstance(access, (OA2Access, UserOA2)):
+        if isinstance(access, (Oauth2Access, Oauth2User)):
             access_token = access.access_token
         elif isinstance(access, str):
             access_token = access
         else:
             raise TypeError(
-                f'`access` can be `{OA2Access.__name__}`, `{UserOA2.__name__}`, `str`, got '
+                f'`access` can be `{Oauth2Access.__name__}`, `{Oauth2User.__name__}`, `str`, got '
                 f'{access.__class__.__name__}; {access!r}.'
             )
         
         headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
         data = await self.http.user_info_get(headers)
-        return UserOA2(data, access)
+        return Oauth2User(data, access)
         
     
     async def user_connection_get_all(self, access):
@@ -254,7 +191,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         
         Parameters
         ----------
-        access : ``OA2Access``, ``UserOA2``, `str`
+        access : ``Oauth2Access``, ``Oauth2User``, `str`
             Oauth2 access to the respective user or it's access token.
         
         Returns
@@ -265,7 +202,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         Raises
         ------
         TypeError
-            If `access` was not given neither as ``OA2Access``, ``UserOA2``  or `str`.
+            If `access` was not given neither as ``Oauth2Access``, ``Oauth2User``  or `str`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -273,9 +210,9 @@ class ClientCompoundOauth2Endpoints(Compound):
         AssertionError
             If the given `access` not grants `'connections'` scope.
         """
-        if isinstance(access, (OA2Access, UserOA2)):
+        if isinstance(access, (Oauth2Access, Oauth2User)):
             if __debug__:
-                if 'connections' not in access.scopes:
+                if not access.has_scope(Oauth2Scope.connections):
                     raise AssertionError(
                         f'The given `access` not grants `\'connections\'` scope, what is required, '
                         f'got {access!r}.'
@@ -286,7 +223,7 @@ class ClientCompoundOauth2Endpoints(Compound):
             access_token = access
         else:
             raise TypeError(
-                f'`access` can be `{OA2Access.__name__}`, `{UserOA2.__name__}`, `str`'
+                f'`access` can be `{Oauth2Access.__name__}`, `{Oauth2User.__name__}`, `str`'
                 f', got {access.__class__.__name__}; {access!r}.'
             )
         
@@ -298,13 +235,13 @@ class ClientCompoundOauth2Endpoints(Compound):
     
     async def renew_access_token(self, access):
         """
-        Renews the access token of an ``OA2Access``.
+        Renews the access token of an ``Oauth2Access``.
         
         This method is a coroutine.
         
         Parameters
         ----------
-        access : ``OA2Access``, ``UserOA2``
+        access : ``Oauth2Access``, ``Oauth2User``
             Oauth2 access to the respective user.
         
         Raises
@@ -314,16 +251,16 @@ class ClientCompoundOauth2Endpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         AssertionError
-            If `access` was not given neither as ``OA2Access``, ``UserOA2``.
+            If `access` was not given neither as ``Oauth2Access``, ``Oauth2User``.
         
         Notes
         -----
         By default access tokens expire after one week.
         """
         if __debug__:
-            if not isinstance(access, (OA2Access, UserOA2)):
+            if not isinstance(access, (Oauth2Access, Oauth2User)):
                 raise AssertionError(
-                    f'`access` can be `{OA2Access.__name__}`, `{UserOA2.__name__}`'
+                    f'`access` can be `{Oauth2Access.__name__}`, `{Oauth2User.__name__}`'
                     f', got {access.__class__.__name__}; {access!r}.'
                 )
         
@@ -335,14 +272,14 @@ class ClientCompoundOauth2Endpoints(Compound):
                 'grant_type': 'refresh_token',
                 'refresh_token': access.refresh_token,
                 'redirect_uri': redirect_url,
-                'scope': ' '.join(access.scopes)
+                'scope': join_oath2_scopes(access.scopes)
             }
         else:
             data = {
                 'client_id': self.id,
                 'client_secret': self.secret,
                 'grant_type': 'client_credentials',
-                'scope': ' '.join(access.scopes),
+                'scope': join_oath2_scopes(access.scopes),
             }
         
         data = await self.http.oauth2_token(data, IgnoreCaseMultiValueDictionary())
@@ -361,13 +298,13 @@ class ClientCompoundOauth2Endpoints(Compound):
         guild : ``Guild``, `int`
             The guild, where the user is going to be added.
         
-        access: ``OA2Access``, ``UserOA2``, `str`
+        access: ``Oauth2Access``, ``Oauth2User``, `str`
             The access of the user, who will be added.
         
         user : `None`, ```ClientUserBase`` = `None`, `int`, Optional
             Defines which user will be added to the guild. The `access` must refer to this specified user.
             
-            This field is optional if access is passed as an ``UserOA2`` object.
+            This field is optional if access is passed as an ``Oauth2User`` object.
         
         nick : `None`, `str` = `None`, Optional (Keyword only)
             The nickname, which with the user will be added.
@@ -385,8 +322,8 @@ class ClientCompoundOauth2Endpoints(Compound):
         ------
         TypeError:
             - If `user` was not given neither as `None`, ``ClientUserBase``, `int`.
-            - If `user` was passed as `None` and `access` was passed as ``OA2Access``, `str`.
-            - If `access` was not given as ``OA2Access``, ``UserOA2``, nether as `str`.
+            - If `user` was passed as `None` and `access` was passed as ``Oauth2Access``, `str`.
+            - If `access` was not given as ``Oauth2Access``, ``Oauth2User``, nether as `str`.
             - If the given `access` not grants `'guilds.join'` scope.
             - If `guild` was not given neither as ``Guild``, not `int`.
             - If `roles` contain not ``Role``, nor `int`.
@@ -405,20 +342,20 @@ class ClientCompoundOauth2Endpoints(Compound):
         user_id = get_user_id_nullable(user)
         
         
-        if isinstance(access, OA2Access):
+        if isinstance(access, Oauth2Access):
             access_token = access.access_token
             
             if __debug__:
-                if 'guilds.join' not in access.scopes:
+                if not access.has_scope(Oauth2Scope.guilds_join):
                     raise AssertionError(
                         f'The given `access` not grants `\'guilds.join\'` scope, what is required, '
                         f'got {access!r}.'
                     )
         
-        elif isinstance(access, UserOA2):
+        elif isinstance(access, Oauth2User):
             access_token = access.access_token
             if __debug__:
-                if 'guilds.join' not in access.scopes:
+                if not access.has_scope(Oauth2Scope.guilds_join):
                     raise AssertionError(
                         f'The given `access` not grants `\'guilds.join\'` scope, what is required, '
                         f'got access={access!r}, scopes={access.scopes!r}.'
@@ -437,7 +374,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         
         else:
             raise TypeError(
-                f'`access` can be `{OA2Access.__name__}`, `{UserOA2.__name__}`, `str`, got '
+                f'`access` can be `{Oauth2Access.__name__}`, `{Oauth2User.__name__}`, `str`, got '
                 f'{access.__class__.__name__}; {access!r}.'
             )
         
@@ -525,14 +462,14 @@ class ClientCompoundOauth2Endpoints(Compound):
     
     async def user_guild_get_all(self, access):
         """
-        Requests a user's guilds with it's ``OA2Access``. The user must provide the `'guilds'` oauth2  scope for this
+        Requests a user's guilds with it's ``Oauth2Access``. The user must provide the `'guilds'` oauth2  scope for this
         request to succeed.
         
         This method is a coroutine.
         
         Parameters
         ----------
-        access: ``OA2Access``, ``UserOA2``, `str`
+        access: ``Oauth2Access``, ``Oauth2User``, `str`
             The access of the user, who's guilds will be requested.
         
         Returns
@@ -543,7 +480,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         Raises
         ------
         TypeError
-            If `access` was not given neither as ``OA2Access``, ``UserOA2``  or `str`.
+            If `access` was not given neither as ``Oauth2Access``, ``Oauth2User``  or `str`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -551,9 +488,9 @@ class ClientCompoundOauth2Endpoints(Compound):
         AssertionError
             If the given `access` not grants `'guilds'` scope.
         """
-        if isinstance(access, (OA2Access, UserOA2)):
+        if isinstance(access, (Oauth2Access, Oauth2User)):
             if __debug__:
-                if 'guilds' not in access.scopes:
+                if not access.has_scope(Oauth2Scope.guilds):
                     raise AssertionError(
                         f'The given `access` not grants `\'guilds\'` scope, what is required, '
                         f'got {access!r}.'
@@ -566,7 +503,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         
         else:
             raise TypeError(
-                f'`access` can be `{OA2Access.__name__}`, `{UserOA2.__name__}` `str`'
+                f'`access` can be `{Oauth2Access.__name__}`, `{Oauth2User.__name__}` `str`'
                 f', got {access.__class__.__name__}; {access!r}.'
             )
         

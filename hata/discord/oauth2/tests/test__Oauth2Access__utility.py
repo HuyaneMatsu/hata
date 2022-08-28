@@ -7,7 +7,7 @@ def _get_access_data():
     return {
         'access_token': 'a',
         'refresh_token': 'b',
-        'expires_after': 1,
+        'expires_in': 1,
         'scopes': 'bot identify email',
     }
 
@@ -64,10 +64,11 @@ def test__Oauth2Access__has_scope_3():
     Case : data | Oauth2Scope
     """
     data = _get_access_data()
-    data['scopes'] = 'bot'
+    
+    scope = Oauth2Scope.bot
+    data['scopes'] = scope.value
     
     access = Oauth2Access(data, '')
-    scope = Oauth2Scope.bot
     
     vampytest.assert_eq(access.has_scope(scope), True)
 
@@ -79,10 +80,11 @@ def test__Oauth2Access__has_scope_4():
     Case : data | string
     """
     data = _get_access_data()
-    data['scopes'] = 'bot'
+    
+    scope = Oauth2Scope.bot
+    data['scopes'] = scope.value
     
     access = Oauth2Access(data, '')
-    scope = Oauth2Scope.bot
     
     vampytest.assert_eq(access.has_scope(scope.value), True)
 
@@ -94,7 +96,9 @@ def test__Oauth2Access__has_scope_5():
     Case : data | float
     """
     data = _get_access_data()
-    data['scopes'] = 'bot'
+    
+    scope = Oauth2Scope.bot
+    data['scopes'] = scope.value
     
     access = Oauth2Access(data, '')
     
@@ -114,4 +118,4 @@ def test__Oauth2Access__has_scope_6():
     access = Oauth2Access(data, '')
     scope = Oauth2Scope.bot
     
-    vampytest.assert_eq(access.has_scope(scope), True)
+    vampytest.assert_eq(access.has_scope(scope), False)

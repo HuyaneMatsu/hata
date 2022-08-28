@@ -21,13 +21,12 @@ def _get_discord_integration_data():
             'description': 'Shrimp fry.',
             'type': 1,
             'primary_sku_id': '202208280003',
-            'bot':
-                {
-                    'id': '202208280001',
-                    'username': 'Koishi',
-                    'discriminator': '0001',
-                    'bot': True
-                }
+            'bot': {
+                'id': '202208280001',
+                'username': 'Koishi',
+                'discriminator': '0001',
+                'bot': True
+            },
         },
         'enabled': True,
         'scopes': ['applications.commands', 'bot'],

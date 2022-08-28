@@ -2,7 +2,7 @@ __all__ = ('IntegrationDetail', )
 
 from ..core import ROLES
 from ..role import create_partial_role_from_id
-from ..utils import DISCORD_EPOCH_START, timestamp_to_datetime
+from ..utils import timestamp_to_datetime
 
 from .preinstanced import IntegrationExpireBehavior
 
@@ -18,16 +18,20 @@ class IntegrationDetail:
     expire_grace_period : `int`
         The grace period in days for expiring subscribers. Can be `1`, `3`, `7`, `14`, `30`. If the integration is
         partial, or is not applicable for it, then is set as `-1`.
+    revoked : `bool`
+        Whether the integration is removed. Defaults to `False`.
     role_id : `int`
         The role's identifier what the integration uses for subscribers.
     subscriber_count : `int`
         How many subscribers the integration has. Defaults to `0`.
-    synced_at : `datetime`
+    synced_at : `None`, `datetime`
         When the integration was last synced.
     syncing : `bool`
         Whether the integration syncing.
     """
-    __slots__ = ('expire_behavior', 'expire_grace_period', 'role_id', 'subscriber_count', 'synced_at', 'syncing', )
+    __slots__ = (
+        'expire_behavior', 'expire_grace_period', 'revoked', 'role_id', 'subscriber_count', 'synced_at', 'syncing'
+    )
     
     def __init__(self, data):
         """
@@ -38,7 +42,11 @@ class IntegrationDetail:
         data : `dict` of (`str`, `Any`) items
             Received integration data.
         """
-        self.syncing = data.get('syncing', False)
+        self.expire_behavior = IntegrationExpireBehavior.get(data.get('expire_behavior', 0))
+        
+        self.expire_grace_period = data.get('expire_grace_period', -1)
+        
+        self.revoked = data.get('revoked', False)
         
         role_id = data.get('role_id', None)
         if role_id is None:
@@ -47,19 +55,15 @@ class IntegrationDetail:
             role_id = int(role_id)
         self.role_id = role_id
         
-        self.expire_behavior = IntegrationExpireBehavior.get(data.get('expire_behavior', 0))
+        self.subscriber_count = data.get('subscriber_count', 0)
         
-        self.expire_grace_period = data.get('expire_grace_period', -1)
-        
-        try:
-            synced_at = data['synced_at']
-        except KeyError:
-            synced_at = DISCORD_EPOCH_START
-        else:
+        synced_at = data.get('synced_at', None)
+        if (synced_at is not None):
             synced_at = timestamp_to_datetime(synced_at)
+        
         self.synced_at = synced_at
         
-        self.subscriber_count = data.get('subscriber_count', 0)
+        self.syncing = data.get('syncing', False)
     
     
     @property
@@ -92,13 +96,15 @@ class IntegrationDetail:
             The created integration detail.
         """
         self = object.__new__(cls)
-        self.syncing = False
-        self.role_id = role.id
         self.expire_behavior = IntegrationExpireBehavior.remove_role
         self.expire_grace_period = -1
-        self.synced_at = DISCORD_EPOCH_START
+        self.revoked = False
+        self.role_id = role.id
         self.subscriber_count = 0
+        self.synced_at = None
+        self.syncing = False
         return self
+    
     
     def __repr__(self):
         """Returns the integration detail's representation."""

@@ -9,6 +9,7 @@
 - `OA2Access.scopes` are now `None | tuple<Oauth2Scope>` from `set<str>`.
 - Add `Oauth2Scope`.
 - Add `Integration.scopes`.
+- `IntegrationDetail.synced_at` now defaults to `None`.
 
 #### Bug Fixes
 

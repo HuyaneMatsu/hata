@@ -8,7 +8,7 @@ def _get_access_data():
         'access_token': 'a',
         'refresh_token': 'b',
         'expires_in': 1,
-        'scopes': 'bot identify email',
+        'scope': 'bot identify email',
     }
 
 
@@ -19,7 +19,7 @@ def test__Oauth2Access__has_scope_0():
     Case : no data | Oauth2Scope
     """
     data = _get_access_data()
-    data['scopes'] = ''
+    data['scope'] = ''
     
     access = Oauth2Access(data, '')
     scope = Oauth2Scope.bot
@@ -34,7 +34,7 @@ def test__Oauth2Access__has_scope_1():
     Case : no data | string
     """
     data = _get_access_data()
-    data['scopes'] = ''
+    data['scope'] = ''
     
     access = Oauth2Access(data, '')
     scope = Oauth2Scope.bot
@@ -49,7 +49,7 @@ def test__Oauth2Access__has_scope_2():
     Case : no data | float
     """
     data = _get_access_data()
-    data['scopes'] = ''
+    data['scope'] = ''
     
     access = Oauth2Access(data, '')
     
@@ -66,7 +66,7 @@ def test__Oauth2Access__has_scope_3():
     data = _get_access_data()
     
     scope = Oauth2Scope.bot
-    data['scopes'] = scope.value
+    data['scope'] = scope.value
     
     access = Oauth2Access(data, '')
     
@@ -82,7 +82,7 @@ def test__Oauth2Access__has_scope_4():
     data = _get_access_data()
     
     scope = Oauth2Scope.bot
-    data['scopes'] = scope.value
+    data['scope'] = scope.value
     
     access = Oauth2Access(data, '')
     
@@ -98,7 +98,7 @@ def test__Oauth2Access__has_scope_5():
     data = _get_access_data()
     
     scope = Oauth2Scope.bot
-    data['scopes'] = scope.value
+    data['scope'] = scope.value
     
     access = Oauth2Access(data, '')
     
@@ -113,7 +113,7 @@ def test__Oauth2Access__has_scope_6():
     Case : data | Oauth2Scope | missing
     """
     data = _get_access_data()
-    data['scopes'] = 'email'
+    data['scope'] = 'email'
     
     access = Oauth2Access(data, '')
     scope = Oauth2Scope.bot

@@ -8,7 +8,7 @@ def _get_access_data():
         'access_token': 'a',
         'refresh_token': 'b',
         'expires_in': 1,
-        'scopes': 'bot identify email',
+        'scope': 'bot identify email',
     }
 
 
@@ -27,7 +27,7 @@ def test__Oauth2User__has_scope():
     data = _get_access_data()
     
     scope = Oauth2Scope.bot
-    data['scopes'] = scope.value
+    data['scope'] = scope.value
     
     user = Oauth2User(_get_user_data(), Oauth2Access(data, ''))
     

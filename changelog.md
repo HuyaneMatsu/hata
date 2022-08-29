@@ -10,6 +10,7 @@
 - Add `Oauth2Scope`.
 - Add `Integration.scopes`.
 - `IntegrationDetail.synced_at` now defaults to `None`.
+- `DiscordException` mentioned the response status twice at a few cases.
 
 #### Bug Fixes
 

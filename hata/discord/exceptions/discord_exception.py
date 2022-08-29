@@ -1,5 +1,7 @@
 __all__ = ('DiscordException',)
 
+import re
+
 from scarletio.web_common.headers import DATE, RETRY_AFTER
 
 from ...env import RICH_DISCORD_EXCEPTION
@@ -11,6 +13,8 @@ if RICH_DISCORD_EXCEPTION:
     from .payload_renderer import reconstruct_payload
 else:
     reconstruct_payload = None
+
+EXCEPTION_RESPONSE_RP = re.compile('\d+\: (.*)')
 
 
 class DiscordException(Exception):
@@ -158,6 +162,11 @@ class DiscordException(Exception):
             message_base = ''
         
         if message_base:
+            # At some cases we might get message like `400: text` At this case want to cut the status part.
+            matched = EXCEPTION_RESPONSE_RP.fullmatch(message_base)
+            if (matched is not None):
+                message_base = matched.group(1)
+            
             message_parts.append(': ')
             message_parts.append(message_base)
         

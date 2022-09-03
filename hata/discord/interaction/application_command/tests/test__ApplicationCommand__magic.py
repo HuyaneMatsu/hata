@@ -197,3 +197,79 @@ def test__ApplicationCommand__repr():
     )
     
     vampytest.assert_instance(repr(application_command), str)
+
+
+def test__ApplicationCommand__eq():
+    """
+    Tests whether ``ApplicationCommand.__eq__`` works as intended.
+    """
+    old_name = 'owo'
+    new_name = 'uwu'
+    old_description = 'description'
+    new_description = 'mars'
+    old_allow_in_dm = True
+    new_allow_in_dm = False
+    old_description_localizations = {
+        Locale.thai: 'ayy',
+        Locale.czech: 'yay',
+    }
+    new_description_localizations = {
+        Locale.dutch: 'aya',
+        Locale.greek: 'yya',
+    }
+    old_name_localizations = {
+        Locale.thai: 'nay',
+        Locale.czech: 'lay',
+    }
+    new_name_localizations = {
+        Locale.dutch: 'aya',
+        Locale.greek: 'yya',
+    }
+    old_nsfw = True
+    new_nsfw = False
+    old_options = [
+        ApplicationCommandOption(
+            'option',
+            'optional',
+            ApplicationCommandOptionType.string,
+
+        )
+    ]
+    new_options = [
+        ApplicationCommandOption(
+            'hello',
+            'hell',
+            ApplicationCommandOptionType.float,
+
+        )
+    ]
+    
+    old_fields = {
+        'name': old_name,
+        'description': old_description,
+        'allow_in_dm': old_allow_in_dm,
+        'description_localizations': old_description_localizations,
+        'name_localizations': old_name_localizations,
+        'nsfw': old_nsfw,
+        'options': old_options
+    }
+    
+    vampytest.assert_eq(
+        ApplicationCommand(**old_fields),
+        ApplicationCommand(**old_fields),
+    )
+    
+    for field_name, field_value in (
+        ('name', new_name),
+        ('description', new_description),
+        ('allow_in_dm', new_allow_in_dm),
+        ('description_localizations', new_description_localizations),
+        ('name_localizations', new_name_localizations),
+        ('nsfw', new_nsfw),
+        ('options', new_options),
+    ):
+        vampytest.assert_eq(
+            ApplicationCommand(**old_fields),
+            ApplicationCommand(**{**old_fields, field_name: field_value}),
+            reverse = True
+        )

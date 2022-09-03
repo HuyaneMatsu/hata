@@ -1129,58 +1129,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     
     def __ne__(self, other):
         """Returns whether the two application commands are different."""
-        if type(self) is not type(other):
-            return NotImplemented
-        
-        self_id = self.id
-        other_id = other.id
-        if self_id and other_id:
-            if self_id == other_id:
-                return False
-            
-            return True
-        
-        # allow_by_default
-        if self.allow_by_default != other.allow_by_default:
-            return True
-        
-        # allow_in_dm
-        if self.allow_in_dm != other.allow_in_dm:
-            return True
-        
-        # description
-        if self.description != other.description:
-            return True
-        
-        # description_localizations
-        if self.description_localizations != other.description_localizations:
-            return True
-        
-        # name
-        if self.name != other.name:
-            return True
-        
-        # name_localizations
-        if self.name_localizations != other.name_localizations:
-            return True
-        
-        # nsfw
-        if self.nsfw != other.nsfw:
-            return True
-        
-        # required_permissions
-        if self.required_permissions != other.required_permissions:
-            return True
-        
-        # options
-        if self.options != other.options:
-            return True
-        
-        # target_type
-        if (self.target_type is not other.target_type):
-            return True
-        
-        return False
+        return not self.__eq__(other)
     
     
     def mention_sub_command(self, *sub_command_names):

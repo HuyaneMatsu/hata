@@ -255,6 +255,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +---------------------------+---------------------------------------------------+
         | name_localizations        | `None`, `dict` of (``Locale``, `str`) items       |
         +---------------------------+---------------------------------------------------+
+        | nsfw                      | `bool`                                            |
+        +---------------------------+---------------------------------------------------+
         | options                   | `None`, `list` of ``ApplicationCommandOption``    |
         +---------------------------+---------------------------------------------------+
         | required_permissions      | ``Permission``                                    |

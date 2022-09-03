@@ -1,3 +1,9 @@
+## 1.3.7 *\[2022-08-??\]*
+
+#### Improvements
+
+- Add `ApplicationCommand.nsfw`.
+
 ## 1.3.6 *\[2022-08-30\]*
 
 #### Improvements

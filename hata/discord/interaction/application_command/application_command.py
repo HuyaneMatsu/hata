@@ -52,6 +52,30 @@ def _debug_application_command_description(description):
             )
 
 
+def _assert__application_command__nsfw(nsfw):
+    """
+    Asserts the `nsfw` parameter of ``ApplicationCommand.__new__`` method.
+    
+    Also might be used in other related ones.
+    
+    Parameters
+    ----------
+    nsfw : `None`, `bool`
+        Whether the application command is only allowed in nsfw channels.
+    
+    Raises
+    ------
+    AssertionError
+        - If `nsfw` is neither `bool`, `None`.
+    """
+    if (nsfw is not None) and (not isinstance(nsfw, bool)):
+        raise AssertionError(
+            f'`nsfw` can be `None`, `bool`, got {nsfw.__class__.__name__}; {nsfw!r}.'
+        )
+    
+    return True
+
+
 class ApplicationCommand(DiscordEntity, immortal=True):
     """
     Represents a Discord slash command.
@@ -93,6 +117,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     name_localizations : `None`, `dict` of (``Locale``, `str`) items
         Localized names of the application command.
     
+    nsfw : `bool`
+        Whether the application command is only allowed in nsfw channels.
+    
     options : `None`, `list` of ``ApplicationCommandOption``
         The parameters of the command. It's length can be in range [0:25]. If would be set as empty list, instead is
         set as `None`.
@@ -112,12 +139,12 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     """
     __slots__ = (
         'allow_by_default', 'allow_in_dm', 'application_id', 'description', 'description_localizations', 'guild_id',
-        'name', 'name_localizations', 'options', 'required_permissions', 'target_type', 'version'
+        'name', 'name_localizations', 'nsfw', 'options', 'required_permissions', 'target_type', 'version'
     )
     
     def __new__(
         cls, name, description=None, *, allow_by_default=None, allow_in_dm=None, description_localizations=None,
-        name_localizations=None, options=None, required_permissions=None, target_type=None
+        name_localizations=None, nsfw=None, options=None, required_permissions=None, target_type=None
     ):
         """
         Creates a new ``ApplicationCommand`` with the given parameters.
@@ -149,6 +176,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         name_localizations : `None`, `dict` of ((`str`, ``Locale``), `str`) items,
                 (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`) = `None`, Optional (Keyword only)
             Localized names of the application command.
+        
+        nsfw : `None`, `bool` = `None`, Optional (Keyword only)
+            Whether the application command is allowed in nsfw channels.
         
         options : `None`, (`list`, `tuple`) of ``ApplicationCommandOption`` = `None`, Optional (Keyword only)
             The parameters of the command. It's length can be in range [0:25].
@@ -245,6 +275,11 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         # name_localizations
         name_localizations = localized_dictionary_builder(name_localizations, 'name_localizations')
         
+        # nsfw
+        assert _assert__application_command__nsfw(nsfw)
+        if (nsfw is None):
+            nsfw = False
+        
         # options
         if options is None:
             options_processed = None
@@ -316,6 +351,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         self.application_id = 0
         self.name = name
         self.name_localizations = name_localizations
+        self.nsfw = nsfw
         self.description = description
         self.description_localizations = description_localizations
         self.guild_id = 0
@@ -403,6 +439,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         self.guild_id = 0
         self.name = ''
         self.name_localizations = None
+        self.nsfw = False
         self.options = None
         self.required_permissions = Permission()
         self.target_type = ApplicationCommandTargetType.none
@@ -507,6 +544,14 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         else:
             self.name_localizations = build_locale_dictionary(name_localizations)
         
+        # nsfw
+        try:
+            nsfw = data['nsfw']
+        except KeyError:
+            pass
+        else:
+            self.nsfw = nsfw
+        
         # options
         try:
             option_datas = data['options']
@@ -583,6 +628,8 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             | name                      | `str`                                             |
             +---------------------------+---------------------------------------------------+
             | name_localizations        | `None`, `dict` of (``Locale``, `str`) items       |
+            +---------------------------+---------------------------------------------------+
+            | nsfw                      | `bool`                                            |
             +---------------------------+---------------------------------------------------+
             | options                   | `None`, `list` of ``ApplicationCommandOption``    |
             +---------------------------+---------------------------------------------------+
@@ -664,6 +711,16 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             if self.name_localizations != name_localizations:
                 old_attributes['name_localizations'] = self.name_localizations
                 self.name_localizations = name_localizations
+        
+        # nsfw
+        try:
+            nsfw = data['nsfw']
+        except KeyError:
+            pass
+        else:
+            if self.nsfw != nsfw:
+                old_attributes['nsfw'] = self.nsfw
+                self.nsfw = nsfw
         
         # options
         try:
@@ -763,6 +820,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         # name_localizations
         data['name_localizations'] = destroy_locale_dictionary(self.name_localizations)
         
+        # nsfw
+        data['nsfw'] = self.nsfw
+        
         # options
         options = self.options
         if (options is None):
@@ -826,7 +886,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             repr_parts.append(')')
         
         # Extra fields: `.description`, `.options`, `.allow_by_default`, `.allow_in_dm`, `.required_permissions`,
-        #    `.name_localizations`, `.description_localizations`
+        #    `.nsfw`, `.name_localizations`, `.description_localizations`
         
         # description
         description = self.description
@@ -846,6 +906,9 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         if required_permissions:
             repr_parts.append(', required_permissions=')
             repr_parts.append(required_permissions.__format__('d'))
+        
+        if self.nsfw:
+            repr_parts.append(', nsfw=True')
         
         # options
         options = self.options
@@ -967,27 +1030,26 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         # description
         new.description = self.description
         
-
         # description_localizations
         description_localizations = self.description_localizations
         if (description_localizations is not None):
             description_localizations = description_localizations.copy()
         new.description_localizations = description_localizations
         
-        
         # guild_id
         new.guild_id = self.guild_id
         
-        
         # name
         new.name = self.name
-        
 
         # name_localizations
         name_localizations = self.name_localizations
         if (name_localizations is not None):
             name_localizations = name_localizations.copy()
         new.name_localizations = name_localizations
+        
+        # nsfw
+        new.nsfw = self.nsfw
         
         # options
         options = self.options
@@ -1045,6 +1107,10 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         if self.name_localizations != other.name_localizations:
             return False
         
+        # nsfw
+        if self.nsfw != other.nsfw:
+            return False
+        
         # required_permissions
         if self.required_permissions != other.required_permissions:
             return False
@@ -1095,6 +1161,10 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         # name_localizations
         if self.name_localizations != other.name_localizations:
+            return True
+        
+        # nsfw
+        if self.nsfw != other.nsfw:
             return True
         
         # required_permissions

@@ -662,7 +662,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             pass
         else:
             if self.allow_in_dm != allow_in_dm:
-                old_attributes['allow_in_dm'] = allow_in_dm
+                old_attributes['allow_in_dm'] = self.allow_in_dm
                 self.allow_in_dm = allow_in_dm
         
         # application_id

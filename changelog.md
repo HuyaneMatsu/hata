@@ -8,6 +8,7 @@
 
 - `ApplicationCommandOption.__eq__` could return incorrect value depending on constructor used and on `.max_length`'s
     value.
+- `Application._difference_update_attributes` set a field in the difference wrongly.
 
 ## 1.3.6 *\[2022-08-30\]*
 

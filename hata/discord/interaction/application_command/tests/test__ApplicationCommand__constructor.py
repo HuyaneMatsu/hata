@@ -54,6 +54,11 @@ def test__ApplicationCommand__new__0():
     vampytest.assert_eq(application_command.options, options)
     vampytest.assert_eq(application_command.required_permissions, required_permissions)
     vampytest.assert_eq(application_command.target_type, target_type)
+    
+    vampytest.assert_instance(application_command.id, int)
+    vampytest.assert_instance(application_command.application_id, int)
+    vampytest.assert_instance(application_command.guild_id, int)
+    vampytest.assert_instance(application_command.version, int)
 
 
 def test__ApplicationCommand__new__1():
@@ -75,3 +80,8 @@ def test__ApplicationCommand__new__1():
     vampytest.assert_instance(application_command.options, list, nullable=True)
     vampytest.assert_instance(application_command.required_permissions, Permission)
     vampytest.assert_instance(application_command.target_type, ApplicationCommandTargetType)
+    
+    vampytest.assert_instance(application_command.id, int)
+    vampytest.assert_instance(application_command.application_id, int)
+    vampytest.assert_instance(application_command.guild_id, int)
+    vampytest.assert_instance(application_command.version, int)

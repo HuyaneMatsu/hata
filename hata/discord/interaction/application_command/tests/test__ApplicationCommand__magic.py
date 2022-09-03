@@ -164,3 +164,36 @@ def test__ApplicationCommand__len__5():
     )
     
     vampytest.assert_eq(len(application_command), expected_length,)
+
+
+
+def test__ApplicationCommand__repr():
+    """
+    Tests whether ``ApplicationCommand.__repr__`` works as intended.
+    """
+    application_command = ApplicationCommand(
+        'owo',
+        'description',
+        allow_in_dm = True,
+        description_localizations = {
+            Locale.thai: 'ayy',
+            Locale.czech: 'yay',
+        },
+        name_localizations = {
+            Locale.thai: 'nay',
+            Locale.czech: 'lay',
+        },
+        nsfw = True,
+        options = [
+            ApplicationCommandOption(
+                'option',
+                'optional',
+                ApplicationCommandOptionType.string,
+
+            )
+        ],
+        required_permissions = Permission().update_by_keys(administrator=True),
+        target_type = ApplicationCommandTargetType.chat,
+    )
+    
+    vampytest.assert_instance(repr(application_command), str)

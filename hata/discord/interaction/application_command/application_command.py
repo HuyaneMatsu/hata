@@ -834,7 +834,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         # required_permissions
         required_permissions = self.required_permissions
         if required_permissions:
-            raw_required_permissions = required_permissions
+            raw_required_permissions = format(required_permissions, 'd')
         else:
             raw_required_permissions = None
         data['default_member_permissions'] = raw_required_permissions
@@ -844,6 +844,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         # version
         # Receive only
+        
         return data
     
     

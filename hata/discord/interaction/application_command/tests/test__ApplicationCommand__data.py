@@ -122,9 +122,9 @@ def test__ApplicationCommand__update_attributes():
     new_target_type = ApplicationCommandTargetType.message
     
     
-    application_command_id = 202209030002
-    application_id = 202209030003
-    guild_id = 202209030004
+    application_command_id = 202209030005
+    application_id = 202209030006
+    guild_id = 202209030007
     version = 2
 
     application_command = ApplicationCommand.from_data({
@@ -216,9 +216,9 @@ def test__ApplicationCommand__difference_update_attributes():
     new_target_type = ApplicationCommandTargetType.message
     
     
-    application_command_id = 202209030002
-    application_id = 202209030003
-    guild_id = 202209030004
+    application_command_id = 202209030008
+    application_id = 202209030009
+    guild_id = 202209030010
     version = 2
 
     application_command = ApplicationCommand.from_data({
@@ -278,3 +278,63 @@ def test__ApplicationCommand__difference_update_attributes():
     vampytest.assert_eq(old_attributes['options'], old_options)
     vampytest.assert_eq(old_attributes['required_permissions'], old_required_permissions)
     vampytest.assert_eq(old_attributes['target_type'], old_target_type)
+
+
+def test_ApplicationCommand__to_data__0():
+    """
+    Tests whether ``ApplicationCommand.to_data`` works as intended when all the fields are given.
+    """
+    name = 'owo'
+    description = 'description'
+    allow_in_dm = True
+    description_localizations = {
+        Locale.thai: 'ayy',
+        Locale.czech: 'yay',
+    }
+    name_localizations = {
+        Locale.thai: 'nay',
+        Locale.czech: 'lay',
+    }
+    nsfw = True
+    options = [
+        ApplicationCommandOption(
+            'option',
+            'optional',
+            ApplicationCommandOptionType.string,
+
+        )
+    ]
+    required_permissions = Permission().update_by_keys(administrator=True)
+    target_type = ApplicationCommandTargetType.chat
+    
+    application_command_id = 202209030011
+    application_id = 202209030012
+    guild_id = 202209030013
+    version = 2
+    
+    data = {
+        'dm_permission': allow_in_dm,
+        'description': description,
+        'description_localizations': destroy_locale_dictionary(description_localizations),
+        'name': name,
+        'name_localizations': destroy_locale_dictionary(name_localizations),
+        'nsfw': nsfw,
+        'options': [option.to_data() for option in options],
+        'default_member_permissions': format(required_permissions, 'd'),
+        'type': target_type.value,
+    }
+    
+    extra_fields = {
+        'id': str(application_command_id),
+        'application_id': str(application_id),
+        'guild_id': str(guild_id),
+        'version': version,
+    }
+    
+    application_command = ApplicationCommand.from_data({**data, **extra_fields})
+    new_data = application_command.to_data()
+    
+    # `default_permission` is deprecated, pop it
+    new_data.pop('default_permission')
+    
+    vampytest.assert_eq(data, new_data)

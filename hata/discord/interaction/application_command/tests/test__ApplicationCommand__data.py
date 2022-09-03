@@ -63,7 +63,7 @@ def test_ApplicationCommand__from_data__0():
     vampytest.assert_eq(application_command.nsfw, nsfw)
     vampytest.assert_eq(application_command.options, options)
     vampytest.assert_eq(application_command.required_permissions, required_permissions)
-    vampytest.assert_eq(application_command.target_type, target_type)
+    vampytest.assert_is(application_command.target_type, target_type)
     
     # Also test the extra fields whether they are set.
     vampytest.assert_eq(application_command.id, application_command_id)
@@ -163,7 +163,7 @@ def test__ApplicationCommand__update_attributes():
     vampytest.assert_eq(application_command.nsfw, new_nsfw)
     vampytest.assert_eq(application_command.options, new_options)
     vampytest.assert_eq(application_command.required_permissions, new_required_permissions)
-    vampytest.assert_eq(application_command.target_type, new_target_type)
+    vampytest.assert_is(application_command.target_type, new_target_type)
 
 
 def test__ApplicationCommand__difference_update_attributes():
@@ -277,7 +277,7 @@ def test__ApplicationCommand__difference_update_attributes():
     vampytest.assert_eq(old_attributes['nsfw'], old_nsfw)
     vampytest.assert_eq(old_attributes['options'], old_options)
     vampytest.assert_eq(old_attributes['required_permissions'], old_required_permissions)
-    vampytest.assert_eq(old_attributes['target_type'], old_target_type)
+    vampytest.assert_is(old_attributes['target_type'], old_target_type)
 
 
 def test_ApplicationCommand__to_data__0():

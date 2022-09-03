@@ -63,7 +63,7 @@ def _validate_max_length(max_length, type_):
     if max_length < APPLICATION_COMMAND_OPTION_MAX_LENGTH_MIN:
         max_length = APPLICATION_COMMAND_OPTION_MAX_LENGTH_MIN
     
-    elif max_length > APPLICATION_COMMAND_OPTION_MAX_LENGTH_MAX:
+    elif max_length >= APPLICATION_COMMAND_OPTION_MAX_LENGTH_MAX:
         max_length = 0
 
     return max_length

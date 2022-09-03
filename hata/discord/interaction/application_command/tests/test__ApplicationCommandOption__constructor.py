@@ -1,18 +1,35 @@
 import vampytest
 
 from .. import ApplicationCommandOption, ApplicationCommandOptionType
+from ..constants import APPLICATION_COMMAND_OPTION_MIN_LENGTH_MAX
 
 
-def test__ApplicationCommandOption__constructor__max_length_0():
+def test__ApplicationCommandOption__constructor__0():
     """
-    Tests whether ``ApplicationCommandOption`` sets `max_length` correctly.
+    Tests whether ``ApplicationCommandOption`` sets fields correctly.
     """
+    name = 'owo'
+    description = 'not owo'
+    type_ = ApplicationCommandOptionType.string
     max_length = 30
-    option = ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.string, max_length=max_length)
+    min_length = 10
+    
+    option = ApplicationCommandOption(
+        name,
+        description,
+        type_,
+        max_length = max_length,
+        min_length = min_length
+    )
+    
+    vampytest.assert_eq(option.name, name)
+    vampytest.assert_eq(option.description, description)
+    vampytest.assert_is(option.type, type_)
     vampytest.assert_eq(option.max_length, max_length)
+    vampytest.assert_eq(option.min_length, min_length)
 
 
-def test__ApplicationCommandOption__constructor__max_length_1():
+def test__ApplicationCommandOption__constructor__max_length__0():
     """
     Tests whether ``ApplicationCommandOption`` sets `max_length` correctly if not given.
     """
@@ -20,7 +37,7 @@ def test__ApplicationCommandOption__constructor__max_length_1():
     vampytest.assert_eq(option.max_length, 0)
 
 
-def test__ApplicationCommandOption__constructor__max_length_2():
+def test__ApplicationCommandOption__constructor__max_length__1():
     """
     Tests whether ``ApplicationCommandOption`` raises when `max_length` is given incorrectly.
     """
@@ -28,7 +45,7 @@ def test__ApplicationCommandOption__constructor__max_length_2():
         ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.string, max_length='owo')
 
 
-def test__ApplicationCommandOption__constructor__max_length_3():
+def test__ApplicationCommandOption__constructor__max_length__2():
     """
     Tests whether ``ApplicationCommandOption`` raises when `max_length` is given, but type is incorrect.
     """
@@ -36,16 +53,21 @@ def test__ApplicationCommandOption__constructor__max_length_3():
         ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.integer, max_length=30)
 
 
-def test__ApplicationCommandOption__constructor__min_length_0():
+def test__ApplicationCommandOption__constructor__max_length__3():
     """
-    Tests whether ``ApplicationCommandOption`` sets `min_length` correctly.
+    Tests whether ``ApplicationCommandOption`` sets `.max_length` correctly if given as the limit.
     """
-    min_length = 30
-    option = ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.string, min_length=min_length)
-    vampytest.assert_eq(option.min_length, min_length)
+    option = ApplicationCommandOption(
+        'owo',
+        'owo',
+        ApplicationCommandOptionType.string,
+        max_length = APPLICATION_COMMAND_OPTION_MIN_LENGTH_MAX,
+    )
+    
+    vampytest.assert_eq(option.max_length, 0)
 
 
-def test__ApplicationCommandOption__constructor__min_length_1():
+def test__ApplicationCommandOption__constructor__min_length__0():
     """
     Tests whether ``ApplicationCommandOption`` sets `min_length` correctly if not given.
     """
@@ -53,7 +75,7 @@ def test__ApplicationCommandOption__constructor__min_length_1():
     vampytest.assert_eq(option.min_length, 0)
 
 
-def test__ApplicationCommandOption__constructor__min_length_2():
+def test__ApplicationCommandOption__constructor__min_length__1():
     """
     Tests whether ``ApplicationCommandOption`` raises when `min_length` is given incorrectly.
     """
@@ -61,7 +83,7 @@ def test__ApplicationCommandOption__constructor__min_length_2():
         ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.string, min_length='owo')
 
 
-def test__ApplicationCommandOption__constructor__min_length_3():
+def test__ApplicationCommandOption__constructor__min_length__2():
     """
     Tests whether ``ApplicationCommandOption`` raises when `min_length` is given, but type is incorrect.
     """

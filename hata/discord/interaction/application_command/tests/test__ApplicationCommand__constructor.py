@@ -53,7 +53,7 @@ def test__ApplicationCommand__new__0():
     vampytest.assert_eq(application_command.nsfw, nsfw)
     vampytest.assert_eq(application_command.options, options)
     vampytest.assert_eq(application_command.required_permissions, required_permissions)
-    vampytest.assert_eq(application_command.target_type, target_type)
+    vampytest.assert_is(application_command.target_type, target_type)
     
     # Also test the extra fields whether they are set.
     vampytest.assert_instance(application_command.id, int)

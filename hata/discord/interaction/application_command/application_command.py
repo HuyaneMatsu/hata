@@ -1129,7 +1129,11 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     
     def __ne__(self, other):
         """Returns whether the two application commands are different."""
-        return not self.__eq__(other)
+        equals = self.__eq__(other)
+        if (equals is not NotImplemented):
+            equals = not equals
+        
+        return equals
     
     
     def mention_sub_command(self, *sub_command_names):

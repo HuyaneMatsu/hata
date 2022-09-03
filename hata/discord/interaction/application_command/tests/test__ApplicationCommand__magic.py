@@ -1,20 +1,63 @@
 import vampytest
 
 from ....localizations import Locale
+from ....permission import Permission
 
-from .. import ApplicationCommand, ApplicationCommandTargetType
+from .. import ApplicationCommand, ApplicationCommandOption, ApplicationCommandOptionType, ApplicationCommandTargetType
 
 
-def test__ApplicationCommand__len_0():
+def test__ApplicationCommand__len__0():
     """
-    Tests whether ``ApplicationCommand.__len__`` will not raise `TypeError` if `.description` is `None`.
+    Tests whether ``ApplicationCommand.__len__`` works as intended if the minimal amount of fields are given at
+    creation.
+    
+    We directly set `target_type`, so `description` can default to `None` instead of `str`
     """
-    application_command = ApplicationCommand('owo', None)
+    application_command = ApplicationCommand(
+        'owo',
+        None,
+        target_type = ApplicationCommandTargetType.user,
+    )
     
     return len(application_command)
 
 
-def test__ApplicationCommand__len_1():
+def test__ApplicationCommand__len__1():
+    """
+    Tests whether ``ApplicationCommand.__len__`` works as intended if the maximal amount of fields are given at
+    creation.
+    """
+    application_command = ApplicationCommand(
+        'owo',
+        'description',
+        allow_by_default = True,
+        allow_in_dm = True,
+        description_localizations = {
+            Locale.thai: 'ayy',
+            Locale.czech: 'yay',
+        },
+        name_localizations = {
+            Locale.thai: 'nay',
+            Locale.czech: 'lay',
+        },
+        nsfw = True,
+        options = [
+            ApplicationCommandOption(
+                'option',
+                'optional',
+                ApplicationCommandOptionType.string,
+
+            )
+        ],
+        required_permissions = Permission().update_by_keys(administrator=True),
+        target_type = ApplicationCommandTargetType.chat,
+    )
+    
+    return len(application_command)
+
+
+
+def test__ApplicationCommand__len__2():
     """
     Tests whether ``ApplicationCommand.__len__`` only counts the longest description's length and not all's together.
     
@@ -42,7 +85,7 @@ def test__ApplicationCommand__len_1():
     vampytest.assert_eq(len(application_command), expected_length,)
 
 
-def test__ApplicationCommand__len_2():
+def test__ApplicationCommand__len__3():
     """
     Tests whether ``ApplicationCommand.__len__`` only counts the longest description's length and not all's together.
     
@@ -70,7 +113,7 @@ def test__ApplicationCommand__len_2():
     vampytest.assert_eq(len(application_command), expected_length,)
 
 
-def test__ApplicationCommand__len_3():
+def test__ApplicationCommand__len__4():
     """
     Tests whether ``ApplicationCommand.__len__`` only counts the longest name's length and not all's together.
     
@@ -97,7 +140,7 @@ def test__ApplicationCommand__len_3():
     vampytest.assert_eq(len(application_command), expected_length,)
 
 
-def test__ApplicationCommand__len_4():
+def test__ApplicationCommand__len__5():
     """
     Tests whether ``ApplicationCommand.__len__`` only counts the longest name's length and not all's together.
     

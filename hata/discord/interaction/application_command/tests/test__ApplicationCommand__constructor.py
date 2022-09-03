@@ -55,6 +55,7 @@ def test__ApplicationCommand__new__0():
     vampytest.assert_eq(application_command.required_permissions, required_permissions)
     vampytest.assert_eq(application_command.target_type, target_type)
     
+    # Also test the extra fields whether they are set.
     vampytest.assert_instance(application_command.id, int)
     vampytest.assert_instance(application_command.application_id, int)
     vampytest.assert_instance(application_command.guild_id, int)
@@ -81,7 +82,33 @@ def test__ApplicationCommand__new__1():
     vampytest.assert_instance(application_command.required_permissions, Permission)
     vampytest.assert_instance(application_command.target_type, ApplicationCommandTargetType)
     
+    # Also test the extra fields whether they are set.
     vampytest.assert_instance(application_command.id, int)
     vampytest.assert_instance(application_command.application_id, int)
+    vampytest.assert_instance(application_command.guild_id, int)
+    vampytest.assert_instance(application_command.version, int)
+
+
+def test__ApplicationCommand__create_empty():
+    """
+    Tests whether ``ApplicationCommand._create_empty`` works as intended.
+    """
+    application_command_id = 202209030000
+    application_id = 202209030001
+    
+    application_command = ApplicationCommand._create_empty(application_command_id, application_id)
+    
+    vampytest.assert_instance(application_command.name, str)
+    vampytest.assert_instance(application_command.description, str, nullable=True)
+    vampytest.assert_instance(application_command.allow_in_dm, bool)
+    vampytest.assert_instance(application_command.description_localizations, dict, nullable=True)
+    vampytest.assert_instance(application_command.name_localizations, dict, nullable=True)
+    vampytest.assert_instance(application_command.nsfw, bool)
+    vampytest.assert_instance(application_command.options, list, nullable=True)
+    vampytest.assert_instance(application_command.required_permissions, Permission)
+    vampytest.assert_instance(application_command.target_type, ApplicationCommandTargetType)
+    
+    vampytest.assert_eq(application_command.id, application_command_id)
+    vampytest.assert_eq(application_command.application_id, application_id)
     vampytest.assert_instance(application_command.guild_id, int)
     vampytest.assert_instance(application_command.version, int)

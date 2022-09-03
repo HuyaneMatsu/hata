@@ -56,3 +56,9 @@ def test__ApplicationCommand__copy():
     vampytest.assert_eq(application_command.options, copy.options)
     vampytest.assert_eq(application_command.required_permissions, copy.required_permissions)
     vampytest.assert_eq(application_command.target_type, copy.target_type)
+
+    # Also test the extra fields whether they are set.
+    vampytest.assert_instance(application_command.id, int)
+    vampytest.assert_instance(application_command.application_id, int)
+    vampytest.assert_instance(application_command.guild_id, int)
+    vampytest.assert_instance(application_command.version, int)

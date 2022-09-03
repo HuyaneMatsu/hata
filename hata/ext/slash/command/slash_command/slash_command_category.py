@@ -52,14 +52,14 @@ class SlashCommandCategory(RichAttributeErrorBaseType):
         The parent slash command of the category if any.
     description : `str`
         The slash command's description.
-    is_default : `bool`
+    default : `bool`
         Whether the command is the default command in it's category.
     name : `str`
         The name of the slash sub-category.
     """
     __slots__ = (
         '__weakref__', '_auto_completers', '_deepness', '_exception_handlers', '_self_reference', '_sub_commands',
-        '_parent_reference', 'description', 'is_default', 'name'
+        '_parent_reference', 'description', 'default', 'name'
     )
     
     def __new__(cls, slasher_application_command, deepness):
@@ -79,7 +79,7 @@ class SlashCommandCategory(RichAttributeErrorBaseType):
         self.description = slasher_application_command.description
         self._sub_commands = {}
         self._parent_reference = None
-        self.is_default = slasher_application_command.is_default
+        self.default = slasher_application_command.default
         self._auto_completers = None
         self._deepness = deepness
         self._exception_handlers = None
@@ -184,7 +184,7 @@ class SlashCommandCategory(RichAttributeErrorBaseType):
             self.description,
             ApplicationCommandOptionType.sub_command_group,
             options = options,
-            default = self.is_default,
+            default = self.default,
         )
     
     
@@ -222,11 +222,11 @@ class SlashCommandCategory(RichAttributeErrorBaseType):
         # _parent_reference
         new._parent_reference = None
         
+        # default
+        new.default = self.default
+        
         # description
         new.description = self.description
-        
-        # is_default
-        new.is_default = self.is_default
         
         # name
         new.name = self.name
@@ -275,12 +275,12 @@ class SlashCommandCategory(RichAttributeErrorBaseType):
         # _parent_reference
         # Internal field
         
+        # default
+        hash_value ^= self.default << 12
+        
         # description
         description = self.description
         hash_value ^= hash(description)
-        
-        # is_default
-        hash_value ^= self.is_default << 12
         
         # name
         name = self.name
@@ -409,11 +409,11 @@ class SlashCommandCategory(RichAttributeErrorBaseType):
         
         as_sub_command = command.as_sub_command(self._deepness + 1)
         
-        if command.is_default:
+        if command.default:
             for sub_command in sub_commands.values():
-                if sub_command.is_default:
+                if sub_command.default:
                     raise RuntimeError(
-                        f'{self!r} already ha  default command.'
+                        f'{self!r} already has default command.'
                     )
         
         as_sub_command._parent_reference = self._get_self_reference()
@@ -469,12 +469,12 @@ class SlashCommandCategory(RichAttributeErrorBaseType):
         # _parent_reference
         # Internal Field
         
-        # description
-        if self.description != other.description:
+        # default
+        if self.default != other.default:
             return False
         
-        # is_default
-        if self.is_default != other.is_default:
+        # description
+        if self.description != other.description:
             return False
         
         # name

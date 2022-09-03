@@ -50,7 +50,7 @@ class SlashCommandFunction(RichAttributeErrorBaseType):
     description : `str`
         The slash command's description.
     
-    is_default : `bool`
+    default : `bool`
         Whether the command is the default command in it's category.
     
     name : `str`
@@ -61,10 +61,10 @@ class SlashCommandFunction(RichAttributeErrorBaseType):
     """
     __slots__ = (
         '__weakref__', '_auto_completers', '_command_function', '_exception_handlers', '_parameter_converters',
-        '_parent_reference', '_self_reference', 'description', 'is_default', 'name', 'response_modifier'
+        '_parent_reference', '_self_reference', 'description', 'default', 'name', 'response_modifier'
     )
     
-    def __new__(cls, command_function, parameter_converters, name, description, response_modifier, is_default):
+    def __new__(cls, command_function, parameter_converters, name, description, response_modifier, default):
         """
         Creates a new ``SlashCommandFunction`` with the given parameters.
         
@@ -80,7 +80,7 @@ class SlashCommandFunction(RichAttributeErrorBaseType):
             The slash command's description.
         response_modifier : `None`, ``ResponseModifier``
             Modifies values returned and yielded to command coroutine processor.
-        is_default : `bool`
+        default : `bool`
             Whether the command is the default command in it's category.
         """
         self = object.__new__(cls)
@@ -90,7 +90,7 @@ class SlashCommandFunction(RichAttributeErrorBaseType):
         self.response_modifier = response_modifier
         self.description = description
         self.name = name
-        self.is_default = is_default
+        self.default = default
         self._exception_handlers = None
         self._parent_reference = None
         self._self_reference = None
@@ -243,8 +243,8 @@ class SlashCommandFunction(RichAttributeErrorBaseType):
             ', description=', repr(self.description),
         ]
         
-        if self.is_default:
-            repr_parts.append(', is_default=True')
+        if self.default:
+            repr_parts.append(', default=True')
         
         response_modifier = self.response_modifier
         if (response_modifier is not None):
@@ -279,7 +279,7 @@ class SlashCommandFunction(RichAttributeErrorBaseType):
             self.description,
             ApplicationCommandOptionType.sub_command,
             options = options,
-            default = self.is_default,
+            default = self.default,
         )
     
     
@@ -317,11 +317,11 @@ class SlashCommandFunction(RichAttributeErrorBaseType):
         # _self_reference
         new._self_reference = None
         
+        # default
+        new.default = self.default
+        
         # description
         new.description = self.description
-        
-        # is_default
-        new.is_default = self.is_default
         
         # name
         new.name = self.name
@@ -358,12 +358,12 @@ class SlashCommandFunction(RichAttributeErrorBaseType):
         # _self_reference
         # Internal field
         
-        # description
-        if self.description != other.description:
+        # default
+        if self.default != other.default:
             return False
         
-        # is_default
-        if self.is_default != other.is_default:
+        # description
+        if self.description != other.description:
             return False
         
         # name
@@ -418,13 +418,14 @@ class SlashCommandFunction(RichAttributeErrorBaseType):
         # _self_reference
         # Internal field
         
+        # default
+        hash_value ^= self.default << 8
+        
         description = self.description
         hash_value ^= hash(description)
         
-        # is_default
-        hash_value ^= self.is_default << 8
-        
         # name
+        name = self.name
         if name != description:
             hash_value ^= hash(name)
         

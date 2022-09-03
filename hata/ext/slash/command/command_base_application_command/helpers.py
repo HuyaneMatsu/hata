@@ -1,6 +1,7 @@
 __all__ = ()
 
 from .....discord.guild import Guild
+from .....discord.interaction.application_command.application_command import _assert__application_command__nsfw
 from .....discord.interaction.application_command.constants import (
     APPLICATION_COMMAND_NAME_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN
 )
@@ -258,6 +259,33 @@ def _validate_name(name):
             )
     
     return name
+
+
+def _validate_nsfw(nsfw):
+    """
+    Validates the given `nsfw` value.
+    
+    Parameters
+    ----------
+    nsfw : `None`, `bool`
+        The `nsfw` value to validate.
+    
+    Returns
+    -------
+    nsfw : `None`, `bool`
+        The validated `nsfw` value.
+    
+    Raises
+    ------
+    TypeError
+        If `nsfw` was not given as `None`, `bool`.
+    """
+    try:
+        nsfw = _assert__application_command__nsfw(nsfw)
+    except AssertionError as err:
+        raise TypeError(*err.args) from err
+    
+    return nsfw
 
 
 def _validate_required_permissions(required_permissions):

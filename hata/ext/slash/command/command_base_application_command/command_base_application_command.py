@@ -57,13 +57,16 @@ class CommandBaseApplicationCommand(CommandBase):
     allow_by_default : `None`, `bool`
         Whether the command is enabled by default for everyone who has `use_application_commands` permission.
 
+    global_ : `bool`
+        Whether the command is a global command.
+        
+        Global commands have their``.guild_ids`` set as `None`.
+    
     guild_ids : `None`, `set` of `int`
         The ``Guild``'s id to which the command is bound to.
     
-    is_global : `bool`
-        Whether the command is a global command.
-        
-        Guild commands have ``.guild_ids`` set as `None`.
+    nsfw : `None`, `bool`
+        Whether the application command is only allowed in nsfw channels.
     
     required_permissions : `None`, ``Permission``
         The required permissions to use the application command inside of a guild.
@@ -72,25 +75,16 @@ class CommandBaseApplicationCommand(CommandBase):
     ----------------
     COMMAND_COMMAND_NAME : `str`
         The command's name defining parameter's name.
+    
     COMMAND_PARAMETER_NAMES : `tuple` of `str`
         All parameters names accepted by ``.__new__``
+    
     COMMAND_NAME_NAME : `str`
         The command's "command" defining parameter's name.
-    
-    description : `None` = `None`
-        The command's description.
-        
-        Subclasses might overwrite it.
-    
-    target : ``ApplicationCommandTargetType`` = `ApplicationCommandTargetType.none`
-        The command's target type.
-        
-        Subclasses might overwrite it.
     """
     __slots__ = (
         '_permission_overwrites', '_registered_application_command_ids', '_schema', '_unloading_behaviour',
-        'allow_by_default', 'allow_in_dm', 'guild_ids', 'is_default', 'is_global',
-        'required_permissions',
+        'allow_by_default', 'allow_in_dm', 'default', 'global_', 'guild_ids', 'nsfw', 'required_permissions'
     )
     
     COMMAND_PARAMETER_NAMES = (
@@ -98,11 +92,46 @@ class CommandBaseApplicationCommand(CommandBase):
         'delete_on_unload',
         'guild',
         'is_global',
+        'nsfw',
         'required_permissions',
     )
     
-    description = None
-    target = ApplicationCommandTargetType.none
+    @property
+    def target(self):
+        """
+        Returns command's target type.
+        
+        This property is a placeholder for subclasses which actually implement it.
+        
+        Returns
+        -------
+        target ``ApplicationCommandTargetType``
+        """
+        return ApplicationCommandTargetType.none
+    
+    @target.setter
+    def target(self, value):
+        pass
+    
+    
+    @property
+    def description(self):
+        """
+        Returns the command's description.
+        
+        This property is a placeholder for subclasses which actually implement it.
+        
+        Returns
+        -------
+        description `None`, `str`
+        """
+        return None
+    
+    
+    @description.setter
+    def description(self, value):
+        return
+    
     
     @copy_docs(CommandBase.copy)
     def copy(self):
@@ -138,8 +167,11 @@ class CommandBaseApplicationCommand(CommandBase):
             guild_ids = guild_ids.copy()
         new.guild_ids = guild_ids
         
-        # is_global
-        new.is_global = self.is_global
+        # global_
+        new.global_ = self.global_
+        
+        # nsfw
+        new.nsfw = self.nsfw
         
         # required_permissions
         new.required_permissions = self.required_permissions
@@ -184,6 +216,11 @@ class CommandBaseApplicationCommand(CommandBase):
             for guild_id in guild_ids:
                 hash_value ^= guild_id
         
+        # nsfw
+        nsfw = self.nsfw
+        if (nsfw is not None):
+            hash_value ^ nsfw << 22
+        
         # required_permissions
         required_permissions = self.required_permissions
         if (required_permissions is not None):
@@ -220,8 +257,12 @@ class CommandBaseApplicationCommand(CommandBase):
         if self.guild_ids != other.guild_ids:
             return False
         
-        # is_global
-        if self.is_global != other.is_global:
+        # global
+        if self.global_ != other.global_:
+            return False
+        
+        # nsfw
+        if self.nsfw != other.nsfw:
             return False
         
         # required_permissions
@@ -238,7 +279,7 @@ class CommandBaseApplicationCommand(CommandBase):
             repr_parts.append(', type=')
             guild_ids = self.guild_ids
             if guild_ids is None:
-                if self.is_global:
+                if self.global_:
                     type_name = 'global'
                 else:
                     type_name = 'non-global'
@@ -258,6 +299,11 @@ class CommandBaseApplicationCommand(CommandBase):
             if (allow_in_dm is not None):
                 repr_parts.append(', allow_in_dm=')
                 repr_parts.append(repr(allow_in_dm))
+            
+            nsfw = self.nsfw
+            if (nsfw is not None):
+                repr_parts.append(', nsfw=')
+                repr_parts.append(repr(nsfw))
             
             required_permissions = self.required_permissions
             if (required_permissions is not None):
@@ -590,7 +636,7 @@ class CommandBaseApplicationCommand(CommandBase):
         ------
         sync_id : `int`
         """
-        if self.is_global:
+        if self.global_:
             yield SYNC_ID_GLOBAL
             return
         
@@ -647,6 +693,7 @@ class CommandBaseApplicationCommand(CommandBase):
             allow_by_default = self.allow_by_default,
             allow_in_dm = self.allow_in_dm,
             options = self._get_schema_options(),
+            nsfw = self.nsfw,
             required_permissions = self.required_permissions,
             target_type = self.target,
         )

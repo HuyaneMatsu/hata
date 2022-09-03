@@ -13,7 +13,7 @@ from ...responding import process_command_coroutine
 from ..command_base_application_command import CommandBaseApplicationCommand
 from ..command_base_application_command.helpers import (
     _validate_allow_by_default, _validate_allow_in_dm, _validate_delete_on_unload, _validate_guild,
-    _validate_is_global, _validate_name, _validate_required_permissions
+    _validate_is_global, _validate_name, _validate_nsfw, _validate_required_permissions
 )
 from ..helpers import validate_application_target_type
 from ...response_modifier import ResponseModifier
@@ -65,14 +65,17 @@ class ContextCommand(CommandBaseApplicationCommand):
     
     allow_by_default : `None`, `bool`
         Whether the command is enabled by default for everyone who has `use_application_commands` permission.
-
+    
+    global_ : `bool`
+        Whether the command is a global command.
+        
+        Global commands have their ``.guild_ids`` set as `None`.
+    
     guild_ids : `None`, `set` of `int`
         The ``Guild``'s id to which the command is bound to.
     
-    is_global : `bool`
-        Whether the command is a global command.
-        
-        Guild commands have ``.guild_ids`` set as `None`.
+    nsfw : `None`, `bool`
+        Whether the application command is only allowed in nsfw channels.
     
     required_permissions : `None`, ``Permission``
         The required permissions to use the application command inside of a guild.
@@ -97,9 +100,6 @@ class ContextCommand(CommandBaseApplicationCommand):
         All parameters names accepted by ``.__new__``
     COMMAND_NAME_NAME : `str`
         The command's "command" defining parameter's name.
-    
-    description : `None` = `None`
-        The command's description.
     """
     __slots__ = ('_command_function', '_parameter_converters', 'response_modifier', 'target',)
     
@@ -111,7 +111,8 @@ class ContextCommand(CommandBaseApplicationCommand):
     
     def __new__(
         cls, func, name=None, is_global=None, guild=None, is_default=None, delete_on_unload=None,
-        allow_by_default=None, allow_in_dm=None, required_permissions=None, target=None, **keyword_parameters,
+        allow_by_default=None, allow_in_dm=None, required_permissions=None, target=None, nsfw=None,
+        **keyword_parameters,
     ):
         """
         Creates a new ``SlashCommand`` with the given parameters.
@@ -151,6 +152,9 @@ class ContextCommand(CommandBaseApplicationCommand):
         
         target : `None`, `int`, `str`, ``ApplicationCommandTargetType`` = `None`, Optional
             The target type of the command.
+        
+        nsfw : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
+            Whether the application command is only allowed in nsfw channels.
         
         **keyword_parameters : Keyword parameters
             Additional keyword parameters.
@@ -202,6 +206,7 @@ class ContextCommand(CommandBaseApplicationCommand):
             'allow_by_default', allow_by_default, route_to, _validate_allow_by_default
         )
         allow_in_dm, route_to = _check_maybe_route('allow_in_dm', allow_in_dm, route_to, _validate_allow_in_dm)
+        nsfw, route_to = _check_maybe_route('nsfw', nsfw, route_to, _validate_nsfw)
         required_permissions, route_to = _check_maybe_route(
             'required_permissions', required_permissions, route_to, _validate_required_permissions
         )
@@ -215,6 +220,7 @@ class ContextCommand(CommandBaseApplicationCommand):
             unloading_behaviour = route_value(unloading_behaviour, route_to)
             allow_by_default = route_value(allow_by_default, route_to)
             allow_in_dm = route_value(allow_in_dm, route_to)
+            nsfw = route_value(nsfw, route_to)
             required_permissions = route_value(required_permissions, route_to)
             target = route_value(target, route_to)
         
@@ -240,10 +246,10 @@ class ContextCommand(CommandBaseApplicationCommand):
             
             for (
                 name, is_global, guild_ids, unloading_behaviour, allow_by_default,
-                required_permissions, allow_in_dm
+                nsfw, required_permissions, allow_in_dm
             ) in zip(
                 name, is_global, guild_ids, unloading_behaviour, allow_by_default,
-                required_permissions, allow_in_dm
+                nsfw, required_permissions, allow_in_dm
             ):
                 
                 if is_global and (guild_ids is not None):
@@ -254,13 +260,14 @@ class ContextCommand(CommandBaseApplicationCommand):
                 
                 self = object.__new__(cls)
                 self.guild_ids = guild_ids
-                self.is_global = is_global
+                self.global_ = is_global
                 self.name = name
                 self._schema = None
                 self._registered_application_command_ids = None
                 self._unloading_behaviour = unloading_behaviour
                 self.allow_by_default = allow_by_default
                 self.allow_in_dm = allow_in_dm
+                self.nsfw = nsfw
                 self.required_permissions = required_permissions
                 self._permission_overwrites = None
                 self.target = target
@@ -287,13 +294,14 @@ class ContextCommand(CommandBaseApplicationCommand):
             
             self = object.__new__(cls)
             self.guild_ids = guild_ids
-            self.is_global = is_global
+            self.global_ = is_global
             self.name = name
             self._schema = None
             self._registered_application_command_ids = None
             self._unloading_behaviour = unloading_behaviour
             self.allow_by_default = allow_by_default
             self.allow_in_dm = allow_in_dm
+            self.nsfw = nsfw
             self.required_permissions = required_permissions
             self._permission_overwrites = None
             self.target = target

@@ -21,7 +21,7 @@ from ..command_base_application_command.constants import (
 )
 from ..command_base_application_command.helpers import (
     _reset_application_command_schema, _validate_allow_by_default, _validate_allow_in_dm, _validate_delete_on_unload,
-    _validate_guild, _validate_is_global, _validate_name, _validate_required_permissions
+    _validate_guild, _validate_is_global, _validate_name, _validate_nsfw, _validate_required_permissions
 )
 
 
@@ -85,13 +85,16 @@ class SlashCommand(CommandBaseApplicationCommand):
     allow_in_dm : `None`, `bool`
         Whether the command can be used in private channels (dm).
     
+    global_ : `bool`
+        Whether the command is a global command.
+        
+        Global commands have their ``.guild_ids`` set as `None`.
+    
     guild_ids : `None`, `set` of `int`
         The ``Guild``'s id to which the command is bound to.
     
-    is_global : `bool`
-        Whether the command is a global command.
-        
-        Guild commands have ``.guild_ids`` set as `None`.
+    nsfw : `None,` bool`
+        Whether the application command is only allowed in nsfw channels.
     
     required_permissions : `None`, ``Permission``
         The required permissions to use the application command inside of a guild.
@@ -112,11 +115,12 @@ class SlashCommand(CommandBaseApplicationCommand):
         
         Mutually exclusive with the ``._command`` parameter.
     
+    default : `bool`
+        Whether the command is the default command in it's category.
+    
     description : `str`
         Application command description. It's length can be in range [2:100].
     
-    is_default : `bool`
-        Whether the command is the default command in it's category.
     
     Class Attributes
     ----------------
@@ -127,15 +131,12 @@ class SlashCommand(CommandBaseApplicationCommand):
     COMMAND_NAME_NAME : `str`
         The command's "command" defining parameter's name.
     
-    target : ``ApplicationCommandTargetType`` = `ApplicationCommandTargetType.chat`
-        The command's target type.
-    
     Notes
     -----
     ``SlashCommand``-s are weakreferable.
     """
     __slots__ = (
-        '__weakref__', '_auto_completers', '_command', '_self_reference', '_sub_commands',  'description'
+        '__weakref__', '_auto_completers', '_command', '_self_reference', '_sub_commands', 'description'
     )
     
     SLASH_COMMAND_PARAMETER_NAMES = (
@@ -144,12 +145,14 @@ class SlashCommand(CommandBaseApplicationCommand):
         'is_default',
     )
     
-    target = ApplicationCommandTargetType.chat
+    @CommandBaseApplicationCommand.target.getter
+    def target(self):
+        return ApplicationCommandTargetType.chat
     
     
     def __new__(
         cls, func, name=None, description=None, is_global=None, guild=None, is_default=None, delete_on_unload=None,
-        allow_by_default=None, allow_in_dm=None, required_permissions=None, **keyword_parameters,
+        allow_by_default=None, allow_in_dm=None, required_permissions=None, nsfw = None, **keyword_parameters,
     ):
         """
         Creates a new ``SlashCommand`` with the given parameters.
@@ -189,6 +192,9 @@ class SlashCommand(CommandBaseApplicationCommand):
         required_permissions : `None`, `int`, ``Permission``, `tuple` of (`None`, `int`, ``Permission``,
                 `Ellipsis`) = `None`, Optional
             The required permissions to use the application command inside of a guild.
+        
+        nsfw : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
+            Whether the application command is only allowed in nsfw channels.
         
         **keyword_parameters : Keyword parameters
             Additional keyword parameters.
@@ -235,6 +241,7 @@ class SlashCommand(CommandBaseApplicationCommand):
             'allow_by_default', allow_by_default, route_to, _validate_allow_by_default
         )
         allow_in_dm, route_to = _check_maybe_route('allow_in_dm', allow_in_dm, route_to, _validate_allow_in_dm)
+        nsfw, route_to = _check_maybe_route('nsfw', nsfw, route_to, _validate_nsfw)
         required_permissions, route_to = _check_maybe_route(
             'required_permissions', required_permissions, route_to, _validate_required_permissions
         )
@@ -250,6 +257,7 @@ class SlashCommand(CommandBaseApplicationCommand):
             unloading_behaviour = route_value(unloading_behaviour, route_to)
             allow_by_default = route_value(allow_by_default, route_to)
             allow_in_dm = route_value(allow_in_dm, route_to)
+            nsfw = route_value(nsfw, route_to)
             required_permissions = route_value(required_permissions, route_to)
             
             description = [
@@ -289,10 +297,10 @@ class SlashCommand(CommandBaseApplicationCommand):
             
             for (
                 name, description, is_global, guild_ids, is_default, unloading_behaviour, allow_by_default,
-                required_permissions, allow_in_dm
+                nsfw, required_permissions, allow_in_dm
             ) in zip(
                 name, description, is_global, guild_ids, is_default, unloading_behaviour, allow_by_default,
-                required_permissions, allow_in_dm
+                nsfw, required_permissions, allow_in_dm
             ):
                 
                 if is_global and (guild_ids is not None):
@@ -315,14 +323,15 @@ class SlashCommand(CommandBaseApplicationCommand):
                 self._sub_commands = sub_commands
                 self.description = description
                 self.guild_ids = guild_ids
-                self.is_global = is_global
+                self.global_ = is_global
                 self.name = name
                 self._schema = None
                 self._registered_application_command_ids = None
-                self.is_default = is_default
+                self.default = is_default
                 self._unloading_behaviour = unloading_behaviour
                 self.allow_by_default = allow_by_default
                 self.allow_in_dm = allow_in_dm
+                self.nsfw = nsfw
                 self.required_permissions = required_permissions
                 self._permission_overwrites = None
                 self._auto_completers = None
@@ -361,14 +370,15 @@ class SlashCommand(CommandBaseApplicationCommand):
             self._sub_commands = sub_commands
             self.description = description
             self.guild_ids = guild_ids
-            self.is_global = is_global
+            self.global_ = is_global
             self.name = name
             self._schema = None
             self._registered_application_command_ids = None
-            self.is_default = is_default
+            self.default = is_default
             self._unloading_behaviour = unloading_behaviour
             self.allow_by_default = allow_by_default
             self.allow_in_dm = allow_in_dm
+            self.nsfw = nsfw
             self.required_permissions = required_permissions
             self._permission_overwrites = None
             self._auto_completers = None
@@ -460,12 +470,11 @@ class SlashCommand(CommandBaseApplicationCommand):
             sub_commands = {category_name: category.copy() for category_name, category in sub_commands.items()}
         new._sub_commands = sub_commands
         
+        # default
+        new.default = self.default
+        
         # description
         new.description = self.description
-        
-        # is_default
-        new.is_default = self.is_default
-        
         
         # ---- POST LINKING ----
         
@@ -502,14 +511,14 @@ class SlashCommand(CommandBaseApplicationCommand):
             for sub_command in sub_commands:
                 hash_value ^= hash(sub_command)
         
+        # default
+        hash_value ^= self.default << 30
+        
         # description
         description = self.description
         if (description is not None):
             hash_value ^= hash(description)
         
-        # is_default
-        if self.is_default:
-            hash_value ^= 1 << 30
         
         return hash_value
     
@@ -534,12 +543,8 @@ class SlashCommand(CommandBaseApplicationCommand):
         if self._sub_commands != other._sub_commands:
             return False
         
-        # description
-        if self.description != other.description:
-            return False
-        
-        # is_default
-        if self.is_default != other.is_default:
+        # default
+        if self.default != other.default:
             return False
         
         # description
@@ -745,9 +750,9 @@ class SlashCommand(CommandBaseApplicationCommand):
                 f'({APPLICATION_COMMAND_OPTIONS_MAX}).'
             )
         
-        if command.is_default:
+        if command.default:
             for sub_command in sub_commands.values():
-                if sub_command.is_default:
+                if sub_command.default:
                     raise RuntimeError(
                         f'{self!r} already has a default command.'
                     )

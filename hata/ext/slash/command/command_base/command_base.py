@@ -218,7 +218,7 @@ class CommandBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        new : ``CommandBase``
+        new : `type<self>`
         """
         new = object.__new__(type(self))
         

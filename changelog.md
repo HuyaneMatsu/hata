@@ -4,11 +4,20 @@
 
 - Add `ApplicationCommand.nsfw`.
 
+##### ext.slash
+- Add `nsfw` parameter to `Client.interactions`.
+
 #### Bug fixes
 
 - `ApplicationCommandOption.__eq__` could return incorrect value depending on constructor used and on `.max_length`'s
     value.
 - `Application._difference_update_attributes` set a field in the difference wrongly.
+
+
+#### Renames, Deprecation & Removals
+
+##### ext.slash
+- Rename `.is_default` and `.is_global` attributes to `.default` and `.global_`. (only attributes)
 
 ## 1.3.6 *\[2022-08-30\]*
 

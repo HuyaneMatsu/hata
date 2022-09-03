@@ -30,7 +30,6 @@ def test__ApplicationCommand__len__1():
     application_command = ApplicationCommand(
         'owo',
         'description',
-        allow_by_default = True,
         allow_in_dm = True,
         description_localizations = {
             Locale.thai: 'ayy',

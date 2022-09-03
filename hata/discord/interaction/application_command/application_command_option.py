@@ -64,7 +64,7 @@ def _validate_max_length(max_length, type_):
         max_length = APPLICATION_COMMAND_OPTION_MAX_LENGTH_MIN
     
     elif max_length > APPLICATION_COMMAND_OPTION_MAX_LENGTH_MAX:
-        max_length = APPLICATION_COMMAND_OPTION_MAX_LENGTH_MAX
+        max_length = 0
 
     return max_length
 
@@ -774,7 +774,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         
         # max_length
         max_length = data.get('max_length', None)
-        if (max_length is None):
+        if (max_length is None) or (max_length == APPLICATION_COMMAND_OPTION_MAX_LENGTH_MAX):
             max_length = 0
         
         # max_value

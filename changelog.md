@@ -4,6 +4,11 @@
 
 - Add `ApplicationCommand.nsfw`.
 
+#### Bug fixes
+
+- `ApplicationCommandOption.__eq__` could return incorrect value depending on constructor used and on `.max_length`'s
+    value.
+
 ## 1.3.6 *\[2022-08-30\]*
 
 #### Improvements

@@ -2,16 +2,22 @@ import vampytest
 
 from ....localizations import Locale
 
-from .. import ApplicationCommandOption, ApplicationCommandOptionType
+from .. import ApplicationCommandOption, ApplicationCommandOptionChoice, ApplicationCommandOptionType
 
 
-def test__ApplicationCommandOption__repr_0():
+def test__ApplicationCommandOption__repr__0():
     """
     Tests whether ``ApplicationCommandOption``'s `__repr__` method works correctly.
     This test tests string sub-fields.
     """
-    option = ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.string, min_length=30, max_length=60)
-    vampytest.assert_instance(repr(option), str)
+    application_command_option = ApplicationCommandOption(
+        'owo',
+        'owo',
+        ApplicationCommandOptionType.string,
+        min_length = 30,
+        max_length = 60,
+    )
+    vampytest.assert_instance(repr(application_command_option), str)
 
 
 def test__ApplicationCommandOption__eq():
@@ -36,7 +42,7 @@ def test__ApplicationCommandOption__eq():
 
 
 
-def test__ApplicationCommandOption__len_0():
+def test__ApplicationCommandOption__len__0():
     """
     Tests whether ``ApplicationCommandOption.__len__`` only counts the longest description's length and not all's
     together.
@@ -49,7 +55,7 @@ def test__ApplicationCommandOption__len_0():
     description_2 = 'hoi'
     description_3 = 'halo'
     
-    application_command = ApplicationCommandOption(
+    application_command_option = ApplicationCommandOption(
         name,
         description_1,
         ApplicationCommandOptionType.string,
@@ -63,10 +69,10 @@ def test__ApplicationCommandOption__len_0():
         len(description) for description in (description_1, description_2, description_3)
     )
     
-    vampytest.assert_eq(len(application_command), expected_length,)
+    vampytest.assert_eq(len(application_command_option), expected_length,)
 
 
-def test__ApplicationCommandOption__len_1():
+def test__ApplicationCommandOption__len__1():
     """
     Tests whether ``ApplicationCommandOption.__len__`` only counts the longest description's length and not all's
     together.
@@ -79,7 +85,7 @@ def test__ApplicationCommandOption__len_1():
     description_2 = 'hoi'
     description_3 = 'halo'
     
-    application_command = ApplicationCommandOption(
+    application_command_option = ApplicationCommandOption(
         name,
         description_3,
         ApplicationCommandOptionType.string,
@@ -93,10 +99,10 @@ def test__ApplicationCommandOption__len_1():
         len(description) for description in (description_1, description_2, description_3)
     )
     
-    vampytest.assert_eq(len(application_command), expected_length,)
+    vampytest.assert_eq(len(application_command_option), expected_length)
 
 
-def test__ApplicationCommandOption__len_2():
+def test__ApplicationCommandOption__len__2():
     """
     Tests whether ``ApplicationCommandOption.__len__`` only counts the longest name's length and not all's together.
     
@@ -108,7 +114,7 @@ def test__ApplicationCommandOption__len_2():
     
     description = 'owo'
     
-    application_command = ApplicationCommandOption(
+    application_command_option = ApplicationCommandOption(
         name_1,
         description,
         ApplicationCommandOptionType.string,
@@ -122,10 +128,10 @@ def test__ApplicationCommandOption__len_2():
         len(name) for name in (name_1, name_2, name_3)
     )
     
-    vampytest.assert_eq(len(application_command), expected_length,)
+    vampytest.assert_eq(len(application_command_option), expected_length)
 
 
-def test__ApplicationCommandOption__len_3():
+def test__ApplicationCommandOption__len__3():
     """
     Tests whether ``ApplicationCommandOption.__len__`` only counts the longest name's length and not all's together.
     
@@ -137,7 +143,7 @@ def test__ApplicationCommandOption__len_3():
     
     description = 'owo'
     
-    application_command = ApplicationCommandOption(
+    application_command_option = ApplicationCommandOption(
         name_3,
         description,
         ApplicationCommandOptionType.string,
@@ -151,4 +157,34 @@ def test__ApplicationCommandOption__len_3():
         len(name) for name in (name_1, name_2, name_3)
     )
     
-    vampytest.assert_eq(len(application_command), expected_length,)
+    vampytest.assert_eq(len(application_command_option), expected_length)
+
+
+def test__ApplicationCommandOption__hash__0():
+    """
+    Tests whether ``ApplicationCommandOption.__hash__`` works as intended.
+    """
+    application_command_option = ApplicationCommandOption(
+        'vanilla',
+        'chocola',
+        ApplicationCommandOptionType.string,
+        choices = [
+            ApplicationCommandOptionChoice(
+                'exploring',
+                'is-fun',
+                name_localizations = {
+                    Locale.thai: 'stay-safe',
+                }
+            )
+        ],
+        default = True,
+        description_localizations = {
+            Locale.thai: 'choco',
+        },
+        name_localizations = {
+            Locale.thai: 'vani',
+        },
+        required = True
+    )
+    
+    vampytest.assert_instance(hash(application_command_option), int)

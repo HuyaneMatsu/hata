@@ -5,7 +5,7 @@ import warnings
 from ...bases import DiscordEntity
 from ...core import APPLICATION_COMMANDS, GUILDS
 from ...localizations.helpers import get_localized_length, localized_dictionary_builder
-from ...localizations.utils import build_locale_dictionary, destroy_locale_dictionary
+from ...localizations.utils import build_locale_dictionary, destroy_locale_dictionary, hash_locale_dictionary
 from ...permission import Permission
 from ...preconverters import preconvert_preinstanced_type
 from ...utils import DATETIME_FORMAT_CODE, id_to_datetime, is_valid_application_command_name
@@ -20,9 +20,9 @@ from .preinstanced import APPLICATION_COMMAND_CONTEXT_TARGET_TYPES, ApplicationC
 
 
 
-def _debug_application_command_description(description):
+def _assert__application_command__description(description):
     """
-    Runs debug only checks on application command description.
+    Asserts `description` parameter of ApplicationCommand.__new__`` method.
     
     Parameters
     ----------
@@ -32,14 +32,13 @@ def _debug_application_command_description(description):
     Raises
     ------
     AssertionError
-        Any checks failed.
+        - If `description` is neither `str`, `None`.
+        - If `description`'s length is out of the expected range.
     """
-    if (description is not None):
-        if not isinstance(description, str):
-            raise AssertionError(
-                f'`description` can be `None`, `str`, got {description.__class__.__name__}; {description!r}.'
-            )
-        
+    if (description is None):
+        pass
+    
+    elif isinstance(description, str):
         description_length = len(description)
         if (
             description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or
@@ -50,13 +49,18 @@ def _debug_application_command_description(description):
                 f'[{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], '
                 f'got {description_length!r}; {description!r}.'
             )
+    
+    else:
+        raise AssertionError(
+            f'`description` can be `None`, `str`, got {description.__class__.__name__}; {description!r}.'
+        )
+    
+    return True
 
 
 def _assert__application_command__nsfw(nsfw):
     """
     Asserts the `nsfw` parameter of ``ApplicationCommand.__new__`` method.
-    
-    Also might be used in other related ones.
     
     Parameters
     ----------
@@ -71,6 +75,91 @@ def _assert__application_command__nsfw(nsfw):
     if (nsfw is not None) and (not isinstance(nsfw, bool)):
         raise AssertionError(
             f'`nsfw` can be `None`, `bool`, got {nsfw.__class__.__name__}; {nsfw!r}.'
+        )
+    
+    return True
+
+
+def _assert__application_command__allow_by_default(allow_by_default):
+    """
+    Asserts the `allow_by_default` parameter of ``ApplicationCommand.__new__`` method.
+    
+    Parameters
+    ----------
+    allow_by_default : `None`, `bool`
+        Whether the application command is only allowed by default. This feature is deprecated.
+    
+    Raises
+    ------
+    AssertionError
+        - If `allow_by_default` is neither `bool`, `None`.
+    """
+    if (allow_by_default is not None) and (not isinstance(allow_by_default, bool)):
+        raise AssertionError(
+            f'`allow_by_default` can be `None`, `bool`, got '
+            f'{allow_by_default.__class__.__name__}; {allow_by_default!r}.'
+        )
+    
+    return True
+
+
+def _assert__application_command__allow_in_dm(allow_in_dm):
+    """
+    Asserts the `allow_in_dm` parameter of ``ApplicationCommand.__new__`` method.
+    
+    Parameters
+    ----------
+    allow_in_dm : `None`, `bool`
+        Whether the application command is only allowed in direct channels.
+    
+    Raises
+    ------
+    AssertionError
+        - If `allow_in_dm` is neither `bool`, `None`.
+    """
+    if (allow_in_dm is not None) and (not isinstance(allow_in_dm, bool)):
+        raise AssertionError(
+            f'`allow_in_dm` can be `None`, `bool`, got {allow_in_dm.__class__.__name__}; {allow_in_dm!r}.'
+        )
+    
+    return True
+
+
+def _assert__application_command__name(name):
+    """
+    Asserts the `name` parameter of ``ApplicationCommand.__new__` method.
+    
+    Parameters
+    ----------
+    name : `str`
+        The name of the command. 
+    
+    Raises
+    ------
+    AssertionError
+        - If `name` is not `str`.
+        - If `name`'s length is out of the expected range.
+        - If `name` contains a not allowed character.
+    """
+    if not isinstance(name, str):
+        raise AssertionError(
+            f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+        )
+    
+    name_length = len(name)
+    if (
+        name_length < APPLICATION_COMMAND_NAME_LENGTH_MIN or
+        name_length > APPLICATION_COMMAND_NAME_LENGTH_MAX
+    ):
+        raise AssertionError(
+            f'`name` length can be in range '
+            f'[{APPLICATION_COMMAND_NAME_LENGTH_MIN}:{APPLICATION_COMMAND_NAME_LENGTH_MAX}], got '
+            f'{name_length!r}; {name!r}.'
+        )
+    
+    if not is_valid_application_command_name(name):
+        raise AssertionError(
+            f'`name` contains unexpected character(s), got {name!r}.'
         )
     
     return True
@@ -180,7 +269,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         nsfw : `None`, `bool` = `None`, Optional (Keyword only)
             Whether the application command is allowed in nsfw channels.
         
-        options : `None`, (`list`, `tuple`) of ``ApplicationCommandOption`` = `None`, Optional (Keyword only)
+        options : `None`, `iterable` of ``ApplicationCommandOption`` = `None`, Optional (Keyword only)
             The parameters of the command. It's length can be in range [0:25].
         
         required_permissions : `None`, ``Permission``, `int` = `None`, Optional (Keyword only)
@@ -197,80 +286,40 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             - If `target_type` is neither `int`, nor ``ApplicationCommandTargetType``.
             - If `name_localizations`'s or any of it's item's type is incorrect.
             - If `description_localizations`'s or any of it's item's type is incorrect.
+            - If `options` is not `None`, `iterable`.
+            - If an `option` is not `ApplicationCommandOption`.
         ValueError
             - If `name_localizations` has an item with incorrect structure.
             - If `description_localizations` has an item with incorrect structure.
-        AssertionError
-            - If `name` was not given as `str`.
-            - If `name` length is out of range [1:32].
-            - If `name` contains unexpected character.
-            - If `description` was not given as `None` nor `str`.
-            - If `description` length is out of range [1:100].
-            - If `options` was not given neither as `None` nor as (`list`, `tuple`) of ``ApplicationCommandOption``
-                instances.
-            - If `options`'s length is out of range [0:25].
-            - If `allow_by_default` was not given as `bool`.
-            - If `allow_in_dm` is not `bool`.
         """
         # id
         # Internal attribute
         
         # allow_by_default
+        assert _assert__application_command__allow_by_default(allow_by_default)
+        
         if (allow_by_default is None):
             allow_by_default = True
-        
         else:
             warnings.warn(
                 f'`allow_by_default` is deprecated, please use `required_permissions` and `allow_in_dm` instead.',
                 FutureWarning,
                 stacklevel = 1,
             )
-            if __debug__:
-                if not isinstance(allow_by_default, bool):
-                    raise AssertionError(
-                        f'`allow_by_default` can be `bool`, got {allow_by_default.__class__.__name__}; '
-                        f'{allow_by_default!r}.'
-                    )
         
-        
+        # allow_in_dm
+        assert _assert__application_command__allow_in_dm(allow_in_dm)
         if (allow_in_dm is None):
             allow_in_dm = True
-        else:
-            if __debug__:
-                if not isinstance(allow_in_dm, bool):
-                    raise AssertionError(
-                        f'`allow_in_dm` can be `bool`, got {allow_in_dm.__class__.__name__}; {allow_in_dm!r}.'
-                    )
         
         # description
-        if __debug__:
-            _debug_application_command_description(description)
+        assert _assert__application_command__description(description)
         
         # description_localizations
         description_localizations = localized_dictionary_builder(description_localizations, 'description_localizations')
         
         # name
-        if __debug__:
-            if not isinstance(name, str):
-                raise AssertionError(
-                    f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
-                )
-            
-            name_length = len(name)
-            if (
-                name_length < APPLICATION_COMMAND_NAME_LENGTH_MIN or
-                name_length > APPLICATION_COMMAND_NAME_LENGTH_MAX
-            ):
-                raise AssertionError(
-                    f'`name` length can be in range '
-                    f'[{APPLICATION_COMMAND_NAME_LENGTH_MIN}:{APPLICATION_COMMAND_NAME_LENGTH_MAX}], got '
-                    f'{name_length!r}; {name!r}.'
-                )
-            
-            if not is_valid_application_command_name(name):
-                raise AssertionError(
-                    f'`name` contains an unexpected character, got {name!r}.'
-                )
+        assert _assert__application_command__name(name)
         
         # name_localizations
         name_localizations = localized_dictionary_builder(name_localizations, 'name_localizations')
@@ -281,39 +330,36 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             nsfw = False
         
         # options
-        if options is None:
-            options_processed = None
-        else:
-            if __debug__:
-                if not isinstance(options, (tuple, list)):
-                    raise AssertionError(
-                        f'`options` can be `None`, (`list`, `tuple`) of `{ApplicationCommandOption.__name__}`, '
-                        f'got {options.__class__.__name__}; {options!r}.'
+        options_processed = None
+        
+        if (options is not None):
+            if getattr(options, '__iter__', None) is None:
+                raise TypeError(
+                    f'`options` can be `None`, `iterable` of `{ApplicationCommandOption.__name__}`, '
+                    f'got {options.__class__.__name__}; {options!r}.'
+                )
+            
+            for option in options:
+                if not isinstance(option, ApplicationCommandOption):
+                    raise TypeError(
+                        f'`options` contains a non `{ApplicationCommandOption.__name__}` element, got '
+                        f'{option.__class__.__name__}; {option!r}; options={options!r}.'
                     )
+                
+                if (options_processed is None):
+                    options_processed = []
+                
+                options_processed.append(option)
             
-            # Copy it
-            options_processed = list(options)
-            if options_processed:
-                if __debug__:
-                    if len(options_processed) > APPLICATION_COMMAND_OPTIONS_MAX:
-                        raise AssertionError(
-                            f'`options` length can be in range '
-                            f'[0:{APPLICATION_COMMAND_OPTIONS_MAX}], got {len(options_processed)!r}; {options!r}'
-                        )
-                    
-                    for index, option in enumerate(options_processed):
-                        if not isinstance(option, ApplicationCommandOption):
-                            raise AssertionError(
-                                f'`options[{index!r}]` is not `{ApplicationCommandOption.__name__}`, got '
-                                f'{option.__class__.__name__}; {option!r}; options={options!r}.'
-                            )
-            
-            else:
-                options_processed = None
+            if (options_processed is not None) and (len(options_processed) > APPLICATION_COMMAND_OPTIONS_MAX):
+                # Deleting the excess should be fine.
+                del options_processed[APPLICATION_COMMAND_OPTIONS_MAX:]
+        
         
         # required_permissions
         if (required_permissions is None):
             required_permissions = Permission()
+        
         elif isinstance(required_permissions, int):
             required_permissions = Permission(required_permissions)
         
@@ -341,8 +387,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             # For non context commands description is required.
             if (description is None):
                 description = name
-                if __debug__:
-                    _debug_application_command_description(description)
+                assert _assert__application_command__description(description)
         
         
         self = object.__new__(cls)
@@ -380,36 +425,31 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         Raises
         ------
-        AssertionError
+        RuntimeError
             - If the entity is not partial.
+        TypeError
             - If `option` is not ``ApplicationCommandOption``.
-            - If the ``ApplicationCommand`` has already `25` options.
         """
-        if __debug__:
-            if not self.partial:
-                raise AssertionError(
-                    f'{self.__class__.__name__}.add_option` can be only called on partial '
-                    f'`{self.__class__.__name__}`-s, but was called on {self!r}.'
-                )
-            
-            if not isinstance(option, ApplicationCommandOption):
-                raise AssertionError(
-                    f'`option` can be `{ApplicationCommandOption.__name__}`, got '
-                    f'{option.__class__.__name__}; {option!r}.'
-                )
+        if not self.partial:
+            raise RuntimeError(
+                f'{self.__class__.__name__}.add_option` can be only called on partial '
+                f'`{self.__class__.__name__}`-s, but was called on {self!r}.'
+            )
+        
+        if not isinstance(option, ApplicationCommandOption):
+            raise TypeError(
+                f'`option` can be `{ApplicationCommandOption.__name__}`, got '
+                f'{option.__class__.__name__}; {option!r}.'
+            )
         
         options = self.options
         if options is None:
-            self.options = options = []
-        else:
-            if __debug__:
-                if len(options) >= APPLICATION_COMMAND_OPTIONS_MAX:
-                    raise AssertionError(
-                        f'`option` cannot be added if the `{ApplicationCommandOption.__name__}` has '
-                        f'already `{APPLICATION_COMMAND_OPTIONS_MAX}` options.'
-                    )
+            options = []
+            self.options = options
         
-        options.append(option)
+        if len(options) < APPLICATION_COMMAND_OPTIONS_MAX:
+            options.append(option)
+        
         return self
     
     
@@ -971,7 +1011,79 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         if id_:
             return id_
         
-        raise TypeError(f'Cannot hash partial {self.__class__.__name__} object.')
+        return self._get_hash_partial()
+    
+    
+    def _get_hash_partial(self):
+        """
+        Hashes the fields of the application command.
+        
+        Called by ``.__hash__` when the application command is partial.
+        
+        Returns
+        -------
+        hash_value : `int`
+        """
+        hash_value = 0
+        
+        # id
+        # non-partial field
+        
+        # allow_by_default
+        hash_value ^= self.allow_by_default
+        
+        # allow_in_dm
+        hash_value ^= self.allow_in_dm << 1
+        
+        # application_id
+        # non-partial field
+        
+        # description
+        # Do not hash `.description` if same as `.name`
+        description = self.description
+        if (description is not None) and (description != self.name):
+            hash_value ^= hash(description)
+        
+        # description_localizations
+        # Do nto hash `.description_localizations` if same as `.name_localizations`
+        description_localizations = self.description_localizations
+        if (description_localizations is not None) and (description_localizations != self.name_localizations):
+            hash_value ^= hash_locale_dictionary(description_localizations)
+        
+        # guild_id
+        # non-partial field
+        
+        # name
+        hash_value ^= hash(self.name)
+        
+        # name_localizations
+        name_localizations = self.name_localizations
+        if (name_localizations is not None):
+            hash_value ^= hash_locale_dictionary(name_localizations)
+        
+        # nsfw
+        hash_value ^= self.nsfw << 2
+        
+        # options
+        options = self.options
+        if (options is not None):
+            hash_value ^= len(options) << 3
+            
+            for option in options:
+                hash_value ^= hash(option)
+        
+        # required_permissions
+        required_permissions = self.required_permissions
+        if required_permissions:
+            hash_value ^= hash(required_permissions << 7)
+        
+        # target_type
+        hash_value ^= self.target_type.value << 11
+        
+        # version
+        hash_value ^= self.version << 15
+        
+        return hash_value
     
     
     @classmethod
@@ -983,7 +1095,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         ----------
         data : `dict` of (`str`, `Any`) items
             Application command data returned by it's ``.to_data`` method.
-        application_command_id : `int`
+        application_command_id : `in-t`
             The unique identifier number of the newly created application command.
         application_id : `int`
             The new application identifier number of the newly created application command.
@@ -1075,6 +1187,32 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         if type(self) is not type(other):
             return NotImplemented
         
+        return self._is_equal_same_type(other)
+    
+    
+    def __ne__(self, other):
+        """Returns whether the two application commands are different."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return not self._is_equal_same_type(other)
+    
+    
+    def _is_equal_same_type(self, other):
+        """
+        Returns whether the two types are equal.
+        
+        Helper method for ``.__eq__``
+        
+        Parameters
+        ----------
+        other : `type<self>`
+            The other instance. Must be from the same type.
+        
+        Returns
+        -------
+        is_equal : `bool`
+        """
         # If both entity is not partial, leave instantly by comparing id.
         self_id = self.id
         other_id = other.id
@@ -1125,15 +1263,6 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             return False
         
         return True
-    
-    
-    def __ne__(self, other):
-        """Returns whether the two application commands are different."""
-        result = self.__eq__(other)
-        if (result is not NotImplemented):
-            result = not result
-        
-        return result
     
     
     def mention_sub_command(self, *sub_command_names):
@@ -1285,7 +1414,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             return edited_at
         
         raise ValueError(
-            f'Unknown format code {code!r} for {self.__class__.__name__!r}; {self!r}. '
+            f'Unknown format code {code!r} for {self.__class__.__name__}; {self!r}. '
             f'Available format codes: {""!r}, {"c"!r}, {"d"!r}, {"e"!r}, {"m"!r}, {"m@..."!r}.'
         )
     
@@ -1359,15 +1488,14 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         Raises
         ------
-        AssertionError
-            If the application command is not partial.
+        RuntimeError
+            - If the application command is not partial.
         """
-        if __debug__:
-            if not self.partial:
-                raise AssertionError(
-                    f'{self.__class__.__name__}.add_option` can be only called on partial '
-                    f'`{self.__class__.__name__}`-s, but was called on {self!r}.'
-                )
+        if not self.partial:
+            raise RuntimeError(
+                f'{self.__class__.__name__}.add_option` can be only called on partial '
+                f'`{self.__class__.__name__}`-s, but was called on {self!r}.'
+            )
         
         if translation_table is None:
             return

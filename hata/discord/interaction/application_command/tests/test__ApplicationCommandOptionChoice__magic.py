@@ -5,7 +5,7 @@ from ....localizations import Locale
 from .. import ApplicationCommandOptionChoice
 
 
-def test__ApplicationCommandOptionChoice__len_0():
+def test__ApplicationCommandOptionChoice__len__0():
     """
     Tests whether ``ApplicationCommandOptionChoice.__len__`` only counts the longest name's length and not all's together.
     
@@ -15,7 +15,7 @@ def test__ApplicationCommandOptionChoice__len_0():
     name_2 = 'hoi'
     name_3 = 'halo'
     
-    application_command = ApplicationCommandOptionChoice(
+    application_command_option_choice = ApplicationCommandOptionChoice(
         name_1,
         12.6,
         name_localizations = {
@@ -28,10 +28,10 @@ def test__ApplicationCommandOptionChoice__len_0():
         len(name) for name in (name_1, name_2, name_3)
     )
     
-    vampytest.assert_eq(len(application_command), expected_length,)
+    vampytest.assert_eq(len(application_command_option_choice), expected_length)
 
 
-def test__ApplicationCommandOptionChoice__len_1():
+def test__ApplicationCommandOptionChoice__len__1():
     """
     Tests whether ``ApplicationCommandOptionChoice.__len__`` only counts the longest name's length and not all's together.
     
@@ -41,7 +41,7 @@ def test__ApplicationCommandOptionChoice__len_1():
     name_2 = 'hoi'
     name_3 = 'halo'
     
-    application_command = ApplicationCommandOptionChoice(
+    application_command_option_choice = ApplicationCommandOptionChoice(
         name_3,
         12.6,
         name_localizations = {
@@ -54,4 +54,19 @@ def test__ApplicationCommandOptionChoice__len_1():
         len(name) for name in (name_1, name_2, name_3)
     )
     
-    vampytest.assert_eq(len(application_command), expected_length,)
+    vampytest.assert_eq(len(application_command_option_choice), expected_length)
+
+
+def test__ApplicationCommandOptionChoice__hash__1():
+    """
+    Tests whether ``ApplicationCommandOptionChoice.__hash__`` works as intended.
+    """
+    application_command_option_choice = ApplicationCommandOptionChoice(
+        'hello',
+        'hell',
+        name_localizations = {
+            Locale.thai: 'everybody',
+        },
+    )
+    
+    vampytest.assert_instance(hash(application_command_option_choice), int)

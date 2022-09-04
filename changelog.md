@@ -1,3 +1,14 @@
+## 1.3.8 *\[2022-08-??\]*
+
+#### Improvements
+
+- Partial `ApplicationCommand`-s are now hashable.
+- `ApplicationCommand.__new__` now accepts `options` as any iterable (from list | tuple).
+- `ApplicationCommandOption.__new__` now accepts `choices` as any iterable (from list | tuple).
+- Add `ApplicationCommandOption.__hash__`.
+- `ApplicationCommandOption.__new__` now accepts `options` as any iterable (from list | tuple).
+- Add `ApplicationCommandOptionChoice.__hash__`.
+
 ## 1.3.7 *\[2022-08-04\]*
 
 #### Improvements

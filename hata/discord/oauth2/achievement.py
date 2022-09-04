@@ -70,7 +70,7 @@ class Achievement(DiscordEntity):
             return format(self.created_at, DATETIME_FORMAT_CODE)
         
         raise ValueError(
-            f'Unknown format code {code!r} for {self.__class__.__name__!r}; {self!r}. '
+            f'Unknown format code {code!r} for {self.__class__.__name__}; {self!r}. '
             f'Available format codes: {""!r}, {"c"!r}.'
         )
     

@@ -3,7 +3,7 @@ __all__ = ('ApplicationCommandOption',)
 from scarletio import RichAttributeErrorBaseType
 
 from ...localizations.helpers import get_localized_length, localized_dictionary_builder
-from ...localizations.utils import build_locale_dictionary, destroy_locale_dictionary
+from ...localizations.utils import build_locale_dictionary, destroy_locale_dictionary, hash_locale_dictionary
 from ...preconverters import preconvert_preinstanced_type
 
 from .application_command_option_choice import ApplicationCommandOptionChoice
@@ -120,6 +120,201 @@ def _validate_min_length(min_length, type_):
     return min_length
 
 
+def _assert__application_command_option__autocomplete(autocomplete):
+    """
+    Asserts the `autocomplete` parameter of ``ApplicationCommandOption.__new__`` method.
+    
+    Parameters
+    ----------
+    autocomplete : `bool`
+        Whether the application command option is autocompleted.
+    
+    Raises
+    ------
+    AssertionError
+        - If `autocomplete` is not `bool`.
+    """
+    if not isinstance(autocomplete, bool):
+        raise AssertionError(
+            f'`autocomplete` can be `bool`, got {autocomplete.__class__.__name__}; {autocomplete!r}.'
+        )
+    
+    return True
+
+
+def _assert__application_command_option__default(default):
+    """
+    Asserts the `default` parameter of ``ApplicationCommandOption.__new__`` method.
+    
+    Parameters
+    ----------
+    default : `bool`
+        Whether the application command option is the default one in it's group.
+    
+    Raises
+    ------
+    AssertionError
+        - If `default` is not `bool`.
+    """
+    if not isinstance(default, bool):
+        raise AssertionError(
+            f'`default` can be `bool`, got {default.__class__.__name__}; {default!r}.'
+        )
+    
+    return True
+
+
+def _assert__application_command_option__description(description):
+    """
+    Asserts the `description` parameter of ``ApplicationCommandOption.__new__`` method.
+    
+    Parameters
+    ----------
+    description : `str`
+        The application command option's description.
+    
+    Raises
+    ------
+    AssertionError
+        - If `description` is not `str`.
+        - if `description`'s length is out of the expected range.
+    """
+    if not isinstance(description, str):
+        raise AssertionError(
+            f'`description` can be `str`, got {description.__class__.__name__}; {description!r}.'
+        )
+    
+    description_length = len(description)
+    if (
+        description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or
+        description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX
+    ):
+        raise AssertionError(
+            f'`description` length can be in range '
+            f'[{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], '
+            f'got {description_length!r}; {description!r}.'
+        )
+
+    return True
+
+
+def _assert__application_command_option__name(name):
+    """
+    Asserts the `name` parameter of ``ApplicationCommandOption.__new__`` method.
+    
+    Parameters
+    ----------
+    name : `str`
+        The application command option's name.
+    
+    Raises
+    ------
+    AssertionError
+        - If `name` is not `str`.
+        - if `name`'s length is out of the expected range.
+    """
+    if not isinstance(name, str):
+        raise AssertionError(
+            f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
+        )
+    
+    name_length = len(name)
+    if (
+        name_length < APPLICATION_COMMAND_NAME_LENGTH_MIN or
+        name_length > APPLICATION_COMMAND_NAME_LENGTH_MAX
+    ):
+        raise AssertionError(
+            f'`name` length can be in range '
+            f'[{APPLICATION_COMMAND_NAME_LENGTH_MIN}:{APPLICATION_COMMAND_NAME_LENGTH_MAX}], got '
+            f'{name_length!r}; {name!r}.'
+        )
+    
+    return True
+
+
+def _assert__application_command_option__required(required):
+    """
+    Asserts the `required` parameter of ``ApplicationCommandOption.__new__`` method.
+    
+    Parameters
+    ----------
+    required : `bool`
+        Whether the application command option is required.
+    
+    Raises
+    ------
+    AssertionError
+        - If `required` is not `bool`.
+    """
+    if not isinstance(required, bool):
+        raise AssertionError(
+            f'`required` can be `bool`, got {required.__class__.__name__}; {required!r}.'
+        )
+    
+    return True
+
+
+def _assert__application_command_option__autocomplete__applicability(autocomplete, choices, type_):
+    """
+    Asserts whether the `autocomplete` parameter of the of ``ApplicationCommandOption.__new__`` method
+    is applicable for the given `choices` and `type_` combinations.
+    
+    Parameters
+    ----------
+    autocomplete : `bool`
+        Whether the option supports auto completion.
+    choices : `None`, `list` of ``ApplicationCommandOptionChoice``
+        The choices of the command for string or integer types.
+    type_ : ``ApplicationCommandOptionType``
+        The application command option's type.
+
+    Raises
+    ------
+    AssertionError
+        - If both `autocomplete` and `choices` are defined.
+        - If `autocomplete` is defined, but the parameters' type is not string.
+    """
+    if autocomplete:
+        if (choices is not None):
+            raise AssertionError(
+                f'`autocomplete` and `choices` parameters are mutually exclusive, got '
+                f'autocomplete={autocomplete!r}; choices={choices!r}.'
+            )
+        
+        if (type_ is not ApplicationCommandOptionType.string):
+            raise AssertionError(
+                f'`autocomplete` is only available for string option type, got type={type_!r}.'
+            )
+    
+    return True
+
+
+def _assert__application_command_option__channel_types__applicability(channel_types, type_):
+    """
+    Asserts whether the `autocomplete` parameter of the of ``ApplicationCommandOption.__new__`` method
+    is applicable for the given `choices` and `type_` combinations.
+    
+    Parameters
+    ----------
+    channel_types : `None`, `tuple` of `int`
+        The accepted channel types by the option.
+    type_ : ``ApplicationCommandOptionType``
+        The application command option's type.
+
+    Raises
+    ------
+    AssertionError
+        - If `channel_types` is given, but `type_` is not `ApplicationCommandOptionType.channel`.
+    """
+    if (channel_types is not None) and (type_ is not ApplicationCommandOptionType.channel):
+        raise AssertionError(
+            f'`channel_types` is only meaningful if `type_` is `{ApplicationCommandOptionType.__name__}.channel`, got '
+            f'type_={type_!r}; channel_types={channel_types!r}.'
+        )
+
+    return True
+
+
 class ApplicationCommandOption(RichAttributeErrorBaseType):
     """
     An option of an ``ApplicationCommand``.
@@ -221,7 +416,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
             
             Only applicable if ``.type`` is set to `ApplicationCommandOptionType.channel`.
         
-        choices : `None`, (`list`, `tuple`) of ``ApplicationCommandOptionChoice`` = `None`, Optional (Keyword only)
+        choices : `None`, `iterable` of ``ApplicationCommandOptionChoice`` = `None`, Optional (Keyword only)
             The choices of the command for string or integer types. It's length can be in range [0:25].
             
             Mutually exclusive with the `autocomplete` parameter.
@@ -257,7 +452,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
                 (`list`, `set`, `tuple`) of `tuple` ((`str`, ``Locale``), `str`) = `None`, Optional (Keyword only)
             Localized names of the option.
         
-        options : `None`, (`list`, `tuple`) of ``ApplicationCommandOption`` = `None`, Optional (Keyword only)
+        options : `None`, `iterable` of ``ApplicationCommandOption`` = `None`, Optional (Keyword only)
             The parameters of the command. It's length can be in range [0:25]. Only applicable for sub command groups.
         
         required : `bool` = `False`, Optional (Keyword only)
@@ -266,7 +461,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         Raises
         ------
         TypeError
-            - If a parameter's type is unexpected..
+            - If a parameter's type is unexpected.
             - If `options` was given meanwhile `type_` is not a sub-command group option type.
             - If a choice's value's type not matched the expected type described `type_`.
         ValueError
@@ -277,46 +472,23 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
             - If `name_localizations` has an item with incorrect structure.
             - If `description_localizations` has an item with incorrect structure.
             - If `max_length` or `min_length` is given, but it is not applicable for the given `type_`.
-        AssertionError
-            - If `name` was not given as `str`.
-            - If `name` length is out of range [1:32].
-            - If `description` was not given as `str`.
-            - If `description` length is out of range [1:100].
-            - If `options` was not given neither as `None` nor as (`list`, `tuple`) of ``ApplicationCommandOption``
-                instances.
-            - If `options`'s length is out of range [0:25].
-            - If `default` was not given as `bool`.
-            - If `required` was not given as `bool`.
-            - If `choices` was not given neither as `None` nor as (`list`, `tuple`) of
-                ``ApplicationCommandOptionChoice``s.
-            - If `choices`'s length is out of range [0:25].
-            - If an option is a sub command group option.
-            - If `channel_types` is given, but `type_` is not `ApplicationCommandOptionType.channel`.
-            - If `autocomplete` is not `bool`.
-            - If both `autocomplete` and `choices` are defined.
-            - If `autocomplete` is defined, but the parameters' type is not string.
         """
-        
         # autocomplete
-        if not isinstance(autocomplete, bool):
-            raise TypeError(
-                f'`autocomplete` can be `bool`, got {autocomplete.__class__.__name__}; {autocomplete!r}.'
-            )
+        assert _assert__application_command_option__autocomplete(autocomplete)
         
         # channel_types
-        if (channel_types is None):
-            channel_types_processed = None
-        else:
+        channel_types_processed = None
+        
+        if (channel_types is not None):
             channel_types_processed = None
             
-            iterator = getattr(type(channel_types), '__iter__', None)
-            if (iterator is None):
+            if getattr(type(channel_types), '__iter__', None) is None:
                 raise TypeError(
                     f'`channel_types` can be `None`, `iterable`, got '
                     f'{channel_types.__class__.__anme__}; {channel_types!r}.'
                 )
             
-            for channel_type in iterator(channel_types):
+            for channel_type in channel_types:
                 if type(channel_type) is int:
                     pass
                 elif isinstance(channel_type, int):
@@ -331,67 +503,41 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
                     channel_types_processed = set()
                 
                 channel_types_processed.add(channel_type)
+            
+            channel_types_processed = tuple(sorted(channel_types_processed))
         
-            if channel_types_processed:
-                channel_types_processed = tuple(sorted(channel_types_processed))
-            else:
-                channel_types_processed = None
         
         # choices
-        if choices is None:
-            choices_processed = None
+        choices_processed = None
         
-        else:
-            if __debug__:
-                if not isinstance(choices, (tuple, list)):
-                    raise AssertionError(
-                        f'`choices` can be `None`, (`list`, `tuple`) of '
-                        f'`{ApplicationCommandOptionChoice.__name__}`, got {choices.__class__.__name__}; {choices!r}.'
-                    )
+        if (choices is not None):
+            if (getattr(choices, '__iter__', None) is None):
+                raise TypeError(
+                    f'`choices` can be `iterable of `{ApplicationCommandOptionChoice.__name__}`, '
+                    f'got {choices.__class__.__name__}; {choices!r}.'
+                )
             
-            choices_processed = list(choices)
-            
-            if __debug__:
-                if len(choices_processed) > APPLICATION_COMMAND_CHOICES_MAX:
-                    raise AssertionError(
-                        f'`choices` length can be in range '
-                        f'[0:{APPLICATION_COMMAND_CHOICES_MAX}], got {len(choices_processed)!r}; {choices!r}'
+            for choice in choices:
+                if not isinstance(choice, ApplicationCommandOptionChoice):
+                    raise TypeError(
+                        f'`choices` can contain `{ApplicationCommandOptionChoice.__name__}` elements, got '
+                        f'{choice.__class__.__name__}; {choice!r}; choices={choices!r}.'
                     )
                 
-                for index, choice in enumerate(choices_processed):
-                    if not isinstance(choice, ApplicationCommandOptionChoice):
-                        raise AssertionError(
-                            f'`choices[{index}]` is not `{ApplicationCommandOptionChoice.__name__}`, got '
-                            f'{choice.__class__.__name__}; {choice!r}; choices={choices!r}.'
-                        )
+                if choices_processed is None:
+                    choices_processed = []
+                
+                choices_processed.append(choice)
             
-            if not choices_processed:
-                choices_processed = None
+            if (choices_processed is not None) and (len(choices_processed) > APPLICATION_COMMAND_CHOICES_MAX):
+                del choices_processed[APPLICATION_COMMAND_CHOICES_MAX:]
+        
         
         # default
-        if __debug__:
-            if not isinstance(default, bool):
-                raise AssertionError(
-                    f'`default` can be `bool`, got {default.__class__.__name__}; {default!r}.'
-                )
+        assert _assert__application_command_option__default(default)
         
         # description
-        if __debug__:
-            if not isinstance(description, str):
-                raise AssertionError(
-                    f'`description` can be `str`, got {description.__class__.__name__}; {description!r}.'
-                )
-            
-            description_length = len(description)
-            if (
-                description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN or
-                description_length > APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX
-            ):
-                raise AssertionError(
-                    f'`description` length can be in range '
-                    f'[{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], '
-                    f'got {description_length!r}; {description!r}.'
-                )
+        assert _assert__application_command_option__description(description)
         
         # description_localizations
         description_localizations = localized_dictionary_builder(description_localizations, 'description_localizations')
@@ -408,74 +554,41 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         # min_value
         # requires `type`
         
-        
         # name
-        if __debug__:
-            if not isinstance(name, str):
-                raise AssertionError(
-                    f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
-                )
-            
-            name_length = len(name)
-            if (
-                name_length < APPLICATION_COMMAND_NAME_LENGTH_MIN or
-                name_length > APPLICATION_COMMAND_NAME_LENGTH_MAX
-            ):
-                raise AssertionError(
-                    f'`name` length can be in range '
-                    f'[{APPLICATION_COMMAND_NAME_LENGTH_MIN}:{APPLICATION_COMMAND_NAME_LENGTH_MAX}], got '
-                    f'{name_length!r}; {name!r}.'
-                )
+        assert _assert__application_command_option__name(name)
         
         # name_localizations
         name_localizations = localized_dictionary_builder(name_localizations, 'name_localizations')
         
         # options
-
-        if options is None:
-            options_processed = None
-        else:
-            if __debug__:
-                if not isinstance(options, (tuple, list)):
-                    raise AssertionError(
-                        f'`options` can be `None`, (`list`, `tuple`) of `{ApplicationCommandOption.__name__}`, got '
-                        f'{options.__class__.__name__}; {options!r}.'
-                    )
+        options_processed = None
+        
+        if (options is not None):
+            if getattr(options, '__iter__', None) is None:
+                raise TypeError(
+                    f'`options` can be `None`, `iterable` of `{ApplicationCommandOption.__name__}`, '
+                    f'got {options.__class__.__name__}; {options!r}.'
+                )
             
-            # Copy it
-            options_processed = list(options)
-            
-            if __debug__:
-                if len(options_processed) > APPLICATION_COMMAND_OPTIONS_MAX:
-                    raise AssertionError(
-                        f'`options` length can be in range '
-                        f'[0:{APPLICATION_COMMAND_OPTIONS_MAX}], got {len(options_processed)!r}; {options!r}.'
+            for option in options:
+                if not isinstance(option, ApplicationCommandOption):
+                    raise TypeError(
+                        f'`options` contains a non `{ApplicationCommandOption.__name__}` element, got '
+                        f'{option.__class__.__name__}; {option!r}; options={options!r}.'
                     )
                 
-                for index, option in enumerate(options_processed):
-                    if not isinstance(option, ApplicationCommandOption):
-                        raise AssertionError(
-                            f'`options[{index}]` is not `{ApplicationCommandOption.__name__}`, got '
-                            f'{option.__class__.__name__}; {options!r}; options={options}.'
-                        )
-                    
-                    if option.type is ApplicationCommandOptionType.sub_command_group:
-                        raise AssertionError(
-                            f'`options[{index!r}]` element\'s type is cub-command group option, but'
-                            f'sub-command groups cannot be added under sub-command groups; got '
-                            f'{option!r}; options={options!r}.'
-                        )
+                if (options_processed is None):
+                    options_processed = []
+                
+                options_processed.append(option)
             
-            if not options_processed:
-                options_processed = None
+            if (options_processed is not None) and (len(options_processed) > APPLICATION_COMMAND_OPTIONS_MAX):
+                # Deleting the excess should be fine.
+                del options_processed[APPLICATION_COMMAND_OPTIONS_MAX:]
         
         
         # required
-        if __debug__:
-            if not isinstance(required, bool):
-                raise AssertionError(
-                    f'`required` can be `bool`, got {required.__class__.__name__}; {required!r}.'
-                )
+        assert _assert__application_command_option__required(required)
         
         # type
         type_ = preconvert_preinstanced_type(type_, 'type_', ApplicationCommandOptionType)
@@ -535,18 +648,8 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
                 )
         
         # postprocessing | autocomplete
-        if __debug__:
-            if autocomplete:
-                if (choices_processed is not None):
-                    raise AssertionError(
-                        f'`autocomplete` and `choices` parameters are mutually exclusive, got '
-                        f'autocomplete={autocomplete!r}; choices={choices_processed!r}.'
-                    )
-                
-                if (type_ is not ApplicationCommandOptionType.string):
-                    raise AssertionError(
-                        f'`autocomplete` is only available for string option type, got type={type_!r}.'
-                    )
+        assert _assert__application_command_option__autocomplete__applicability(autocomplete, choices_processed, type_)
+
         
         # postprocessing | choices
         if (choices_processed is not None):
@@ -571,13 +674,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
                     )
         
         # postprocessing | channel_types
-        if __debug__:
-            if (channel_types_processed is not None) and (type_ is not ApplicationCommandOptionType.channel):
-                raise AssertionError(
-                    f'`channel_types` is only meaningful if `type_` is '
-                    f'`{ApplicationCommandOptionType.__name__}.channel`, got '
-                    f'type_={type_!r}; channel_types={channel_types_processed!r}.'
-                )
+        assert _assert__application_command_option__channel_types__applicability(channel_types_processed, type_)
         
         
         self = object.__new__(cls)
@@ -617,10 +714,8 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         Raises
         ------
         TypeError
-            If the source application command's type is not a sub-command group type.
-        AssertionError
+            - If the source application command's type is not a sub-command group type.
             - If `option` is not ``ApplicationCommandOption``.
-            - If the ``ApplicationCommandOption`` has already `25` options.
             - If `option` is a sub command group option.
         """
         if self.type is not ApplicationCommandOptionType.sub_command_group:
@@ -629,31 +724,26 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
                 f'got option={option!r}, self={self!r}.'
             )
         
-        if __debug__:
-            if not isinstance(option, ApplicationCommandOption):
-                raise AssertionError(
-                    f'`option` can be `{ApplicationCommandOption.__name__}`, got '
-                    f'{option.__class__.__name__}; {option!r}.'
-                )
-        
-            if option.type is ApplicationCommandOptionType.sub_command_group:
-                raise AssertionError(
-                    f'`option`\'s type is sub-command group option, but sub-command groups cannot be '
-                    f'added under sub-command groups; got {option!r}; self={self!r}.'
-                )
+        if not isinstance(option, ApplicationCommandOption):
+            raise TypeError(
+                f'`option` can be `{ApplicationCommandOption.__name__}`, got '
+                f'{option.__class__.__name__}; {option!r}.'
+            )
+    
+        if option.type is ApplicationCommandOptionType.sub_command_group:
+            raise TypeError(
+                f'`option`\'s type is sub-command group option, but sub-command groups cannot be '
+                f'added under sub-command groups; got {option!r}; self={self!r}.'
+            )
         
         options = self.options
         if options is None:
-            self.options = options = []
-        else:
-            if __debug__:
-                if len(options) >= APPLICATION_COMMAND_OPTIONS_MAX:
-                    raise AssertionError(
-                        f'`option` cannot be added if the `{ApplicationCommandOption.__name__}` has '
-                        f'already `{APPLICATION_COMMAND_OPTIONS_MAX}` options, got {option!r}.'
-                    )
+            options = []
+            self.options = options
         
-        options.append(option)
+        if len(options) < APPLICATION_COMMAND_OPTIONS_MAX:
+            options.append(option)
+        
         return self
     
     
@@ -676,12 +766,11 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
             - If the source application command's type is not a string, int nor float group type.
             - If the `choice`'s value's type is not the expected one by the command option's type.
             - If `choice`'s type is neither ``ApplicationCommandOptionChoice`` nor a `tuple` representing it's `.name`
-                nad `.value`.
-        AssertionError
-            If the application command option has already `25` choices.
+                and `.value`.
         """
         if isinstance(choice, ApplicationCommandOptionChoice):
             pass
+        
         elif isinstance(choice, tuple):
             if len(choice) != 2:
                 raise TypeError(
@@ -718,16 +807,12 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         
         choices = self.choices
         if choices is None:
-            self.choices = choices = []
-        else:
-            if __debug__:
-                if len(choices) >= APPLICATION_COMMAND_CHOICES_MAX:
-                    raise AssertionError(
-                        f'`choice` cannot be added if the {ApplicationCommandOption.__name__} has '
-                        f'already `{APPLICATION_COMMAND_CHOICES_MAX}` choices.'
-                    )
+            choices = []
+            self.choices = choices
         
-        choices.append(choice)
+        if len(choices) < APPLICATION_COMMAND_CHOICES_MAX:
+            choices.append(choice)
+        
         return self
     
     
@@ -1213,6 +1298,78 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
                 length += len(option)
         
         return length
+    
+    
+    def __hash__(self):
+        """Returns the hash value of the application command option."""
+        hash_value = 0
+        
+        # autocomplete
+        hash_value ^= self.autocomplete
+        
+        # channel_types
+        channel_types = self.channel_types
+        if (channel_types is not None):
+            hash_value ^= hash(channel_types)
+        
+        # choices
+        choices = self.choices
+        if (choices is not None):
+            hash_value ^= len(choices) << 1
+            
+            for choice in choices:
+                hash_value ^= hash(choice)
+        
+        # default
+        hash_value ^= self.default << 5
+        
+        # description
+        # Do not hash `.description` if equals to `.name`.
+        description = self.description
+        if (description != self.name):
+            hash_value ^= hash(description)
+        
+        # description_localizations
+        # Do not hash `.description_localizations` if equals to `.name_localizations`.
+        description_localizations = self.description_localizations
+        if (description_localizations is not None) and (description_localizations != self.name_localizations):
+            hash_value ^= hash_locale_dictionary(description_localizations)
+        
+        # max_length
+        hash_value ^= self.max_length << 9
+        
+        # max_value
+        hash_value ^= hash(self.max_value)
+        
+        # min_length
+        hash_value ^= self.min_length << 13
+        
+        # min_value
+        hash_value ^= hash(self.min_value)
+        
+        # name
+        hash_value ^= hash(self.name)
+        
+        # name_localizations
+        name_localizations = self.name_localizations
+        if (name_localizations is not None):
+            hash_value ^= hash_locale_dictionary(name_localizations)
+        
+        # options
+        options = self.options
+        if (options is not None):
+            hash_value ^= len(options) << 1
+            
+            for option in options:
+                hash_value ^= hash(option)
+        
+        # required
+        hash_value ^= self.required << 17
+        
+        # type
+        hash_value ^= self.type.value << 18
+        
+        return hash_value
     
     
     def apply_translation(self, translation_table, replace=False):

@@ -59,3 +59,24 @@ def destroy_locale_dictionary(dictionary):
     """
     if dictionary is not None:
         return {key.value: value for key, value in dictionary.items()}
+
+
+def hash_locale_dictionary(dictionary):
+    """
+    Hashes a locale dictionary where they keys are all ``Locale``-s.
+    
+    Parameters
+    ----------
+    dictionary : `dict` of (`str`, `Any`) items
+        The dictionary to process.
+    
+    Returns
+    -------
+    hash_value : `int`
+    """
+    hash_value = 0
+    
+    for key, value in dictionary.items():
+        hash_value ^= hash(key.value) & hash(value)
+    
+    return hash_value

@@ -5,13 +5,70 @@ from enum import Enum
 from scarletio import RichAttributeErrorBaseType
 
 from ...localizations.helpers import get_localized_length, localized_dictionary_builder
-from ...localizations.utils import build_locale_dictionary, destroy_locale_dictionary
+from ...localizations.utils import build_locale_dictionary, destroy_locale_dictionary, hash_locale_dictionary
 
 from .constants import (
     APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX, APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN,
     APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MAX, APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN
 )
 from .helpers import apply_translation_into
+
+
+def _assert__application_command_option_choice__name__length(name):
+    """
+    Asserts the `name` parameter's length of ``ApplicationCommandOptionChoice.__new__`` method.
+    
+    Parameters
+    ----------
+    name : `str`
+        The application command option choice's name.
+    
+    Raises
+    ------
+    AssertionError
+        - if `name`'s length is out of the expected range.
+    """
+    name_length = len(name)
+    if (
+        name_length < APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN or
+        name_length > APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX
+    ):
+        raise AssertionError(
+            f'`name` length can be in range '
+            f'[{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN}:{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX}], '
+            f'got {name_length!r}; {name!r}.'
+        )
+    
+    return True
+
+
+def _assert__application_command_option_choice__value__length(value):
+    """
+    Asserts the `value` parameter's length of ``ApplicationCommandOptionChoice.__new__`` method.
+    
+    Parameters
+    ----------
+    value : `int`, `float`, `str`
+        The application command option choice's value.
+    
+    Raises
+    ------
+    AssertionError
+        - if `value`'s length is out of the expected range.
+    """
+    if isinstance(value, str):
+        value_length = len(value)
+        if (
+            value_length < APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN or
+            value_length > APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MAX
+        ):
+            raise AssertionError(
+                f'`value` length` can be in range '
+                f'[{APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN}:{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX}]'
+                f'got {value_length!r}; {value!r}.'
+            )
+    
+    return True
 
 
 class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
@@ -37,6 +94,7 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         ----------
         name : `str`, `Enum`
             The choice's name. It's length can be in range [1:100].
+        
         value : `None`, `str`, `int`, `float`, `Enum` = `None`, Optional
             The choice's value.
             
@@ -86,18 +144,7 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
                 f'`name` can be `str`, `{Enum.__name__}`, got {name.__class__.__name__}; {name!r}.'
             )
         
-        
-        if __debug__:
-            name_length = len(choice_name)
-            if (
-                name_length < APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN or
-                name_length > APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX
-            ):
-                raise AssertionError(
-                    f'`name` length can be in range '
-                    f'[{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MIN}:{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX}], '
-                    f'got {name_length!r}; {choice_name!r}.'
-                )
+        assert _assert__application_command_option_choice__name__length(choice_name)
         
         # name_localizations
         name_localizations = localized_dictionary_builder(name_localizations, 'name_localizations')
@@ -124,17 +171,7 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
                 f'got {value.__class__.__name__}; {value!r}.'
             )
         
-        if isinstance(choice_value, str):
-            value_length = len(value)
-            if (
-                value_length < APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN or
-                value_length > APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MAX
-            ):
-                raise AssertionError(
-                    f'`value` length` can be in range '
-                    f'[{APPLICATION_COMMAND_CHOICE_VALUE_LENGTH_MIN}:{APPLICATION_COMMAND_CHOICE_NAME_LENGTH_MAX}]'
-                    f'got {value_length!r}; {value!r}.'
-                )
+        assert _assert__application_command_option_choice__value__length(choice_value)
         
         self = object.__new__(cls)
         self.name = choice_name
@@ -266,7 +303,7 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
     
     
     def __len__(self):
-        """Returns the application command choice's length."""
+        """Returns the application command option choice's length."""
         length = 0
         
         # name & name_localizations
@@ -278,6 +315,26 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
             length += len(value)
         
         return length
+    
+    def __hash__(self):
+        """Returns the application command option choice's representation."""
+        hash_value = 0
+        
+        # name
+        hash_value ^= hash(self.name)
+        
+        # name_localizations
+        name_localizations = self.name_localizations
+        if (name_localizations is not None):
+            hash_value ^= hash_locale_dictionary(name_localizations)
+        
+        # value
+        # Do not hash `.value` of equals to `.name`
+        value = self.value
+        if (not isinstance(value, str)) or (value != self.name):
+            hash_value ^= hash(value)
+        
+        return hash_value
     
     
     def apply_translation(self, translation_table, replace=False):

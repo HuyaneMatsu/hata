@@ -2497,7 +2497,7 @@ class Slasher(EventHandlerBase):
             Whether the command was updated successfully.
         """
         try:
-            application_command = await client.application_command_guild_edit(
+            await client.application_command_guild_edit(
                 guild_id,
                 application_command,
                 command.get_schema(),

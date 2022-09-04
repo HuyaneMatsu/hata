@@ -1,4 +1,4 @@
-## 1.3.7 *\[2022-08-??\]*
+## 1.3.7 *\[2022-08-04\]*
 
 #### Improvements
 
@@ -13,6 +13,8 @@
     value.
 - `Application._difference_update_attributes` set a field in the difference wrongly.
 
+#### ext.slash
+- Fix an `AttributeError` after editing an application command.
 
 #### Renames, Deprecation & Removals
 

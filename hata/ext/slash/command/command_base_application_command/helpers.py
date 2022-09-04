@@ -281,7 +281,7 @@ def _validate_nsfw(nsfw):
         If `nsfw` was not given as `None`, `bool`.
     """
     try:
-        nsfw = _assert__application_command__nsfw(nsfw)
+        _assert__application_command__nsfw(nsfw)
     except AssertionError as err:
         raise TypeError(*err.args) from err
     

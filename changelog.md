@@ -8,6 +8,7 @@
 - Add `ApplicationCommandOption.__hash__`.
 - `ApplicationCommandOption.__new__` now accepts `options` as any iterable (from list | tuple).
 - Add `ApplicationCommandOptionChoice.__hash__`.
+- Fix some linting errors in `UserBase` subclasses.
 
 ## 1.3.7 *\[2022-08-04\]*
 

@@ -224,7 +224,7 @@ def parse_all_emojis(text):
 
 def _parse_emojis_ordered(text, parser):
     """
-    Parses emojis of teh given `text` with the given `parser`.
+    Parses emojis of the given `text` with the given `parser`.
     Returns them ordered based on their appearance in the text.
     
     

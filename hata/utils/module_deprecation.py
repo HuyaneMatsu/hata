@@ -2,6 +2,7 @@ __all__ = ()
 
 import sys
 import warnings
+from types import ModuleType
 
 
 DEPRECATIONS = []
@@ -24,10 +25,17 @@ def deprecated_import(obj=None, obj_name=None):
         Object if defined, else a wrapper.
     """
     if obj_name is None:
-        try:
+        if isinstance(obj, ModuleType):
             obj_name = obj.__name__
-        except AttributeError:
-            obj_name = obj.__class__.__name__
+            dot_index = obj_name.rfind('.')
+            if dot_index != -1:
+                obj_name = obj_name[dot_index + 1:]
+        
+        else:
+            try:
+                obj_name = obj.__name__
+            except AttributeError:
+                obj_name = obj.__class__.__name__
     
     spec_name = sys._getframe().f_back.f_globals['__spec__'].name
     

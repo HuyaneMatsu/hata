@@ -7,11 +7,11 @@ class ActivityChange:
     
     Attributes
     ----------
-    added : `None`, `list` of ``ActivityBase``
+    added : `None`, `list` of ``Activity``
         The added activities to the respective user. Defaults to `None`.
     updated : `None`, `list` of ``ActivityUpdate``
         The updated activities of the respective user. Defaults to `None`.
-    removed: `None`, `list` of ``ActivityBase``
+    removed: `None`, `list` of ``Activity``
         The removed activities from the respective user. Defaults to `None`.
     """
     __slots__ = ('added', 'updated', 'removed',)
@@ -22,11 +22,11 @@ class ActivityChange:
         
         Parameters
         ----------
-        added : `None`, `list` of ``ActivityBase``
+        added : `None`, `list` of ``Activity``
             The added activities to the user.
         updated : `None`, `list` of ``ActivityUpdate``
             The updated activities of the user.
-        removed: `None`, `list` of ``ActivityBase``
+        removed: `None`, `list` of ``Activity``
             The removed activities from the user.
         """
         self.added = added
@@ -94,7 +94,7 @@ class ActivityChange:
         
         Yields
         ------
-        added : ``ActivityBase``
+        added : ``Activity``
         """
         added = self.added
         if (added is not None):
@@ -124,7 +124,7 @@ class ActivityChange:
         
         Yields
         ------
-        removed : ``ActivityBase``
+        removed : ``Activity``
         """
         removed = self.removed
         if (removed is not None):
@@ -138,7 +138,7 @@ class ActivityUpdate:
     
     Attributes
     ----------
-    activity : ``ActivityBase``
+    activity : ``Activity``
         The updated activity.
     old_attributes : `dict` of (`str`, `Any`) items
         The changed attributes of the activity in `attribute-name` - `old-value` relation. Can contain any of the
@@ -182,7 +182,7 @@ class ActivityUpdate:
         """
         Creates a new activity change instance with the given parameters.
         
-        activity : ``ActivityBase``
+        activity : ``Activity``
             The updated activity.
         old_attributes : `dict` of (`str`, `Any`) items
             The changed attributes of the activity.

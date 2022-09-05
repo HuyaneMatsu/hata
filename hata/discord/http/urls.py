@@ -686,7 +686,7 @@ def activity_asset_image_large_url(activity):
     """
     Returns the activity's large asset image's url. If the activity has no large asset image, then returns `None`.
     
-    This function is a shared property of ``ActivityRich``-s.
+    This function is a shared property of ``Activity``-s.
     
     Returns
     -------
@@ -711,7 +711,7 @@ def activity_asset_image_large_url_as(activity, ext=None, size=None):
     """
     Returns the activity's large asset image's url. If the activity has no large asset image, then returns `None`.
     
-    This function is a shared method of ``ActivityRich``-s.
+    This function is a shared method of ``Activity``-s.
     
     Parameters
     ----------
@@ -758,7 +758,7 @@ def activity_asset_image_small_url(activity):
     """
     Returns the activity's small asset image's url. If the activity has no small asset image, then returns `None`.
     
-    This function is a shared property of ``ActivityRich``-s.
+    This function is a shared property of ``Activity``-s.
     
     Returns
     -------
@@ -783,7 +783,7 @@ def activity_asset_image_small_url_as(activity, ext=None, size=None):
     """
     Returns the activity's small asset image's url. If the activity has no small asset image, then returns `None`.
     
-    This function is a shared method of ``ActivityRich``-s.
+    This function is a shared method of ``Activity``-s.
     
     Parameters
     ----------

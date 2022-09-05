@@ -3,7 +3,7 @@ __all__ = ('EmbeddedActivityState',)
 
 from scarletio import RichAttributeErrorBaseType
 
-from ..activity import ActivityRich
+from ..activity import Activity
 from ..channel import create_partial_channel_from_id
 from ..core import EMBEDDED_ACTIVITY_STATES, GUILDS
 from ..user import create_partial_user_from_id
@@ -200,7 +200,7 @@ class EmbeddedActivityState(RichAttributeErrorBaseType):
     """
     Attributes
     ----------
-    activity : ``ActivityRich``
+    activity : ``Activity``
         The embedded activity.
     channel_id : `int`
         The respective channel's identifier.
@@ -257,7 +257,7 @@ class EmbeddedActivityState(RichAttributeErrorBaseType):
             self = object.__new__(cls)
             self.channel_id = channel_id
             self.guild_id = guild_id
-            self.activity = ActivityRich.from_data(activity_data)
+            self.activity = Activity.from_data(activity_data)
             self.user_ids = set(int(user_id) for user_id in data['users'])
             
             EMBEDDED_ACTIVITY_STATES[key] = self

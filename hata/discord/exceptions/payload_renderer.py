@@ -182,7 +182,7 @@ def reconstruct_string_into(value, into, indent, is_file):
     indent : `int`
         The amount of indents to add.
     is_file : `bool`
-        Whether the value is a file and should nto be shown.
+        Whether the value is a file and should not be shown.
     """
     length = len(value)
     

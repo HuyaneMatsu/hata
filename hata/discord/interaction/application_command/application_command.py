@@ -1045,7 +1045,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
             hash_value ^= hash(description)
         
         # description_localizations
-        # Do nto hash `.description_localizations` if same as `.name_localizations`
+        # Do not hash `.description_localizations` if same as `.name_localizations`
         description_localizations = self.description_localizations
         if (description_localizations is not None) and (description_localizations != self.name_localizations):
             hash_value ^= hash_locale_dictionary(description_localizations)

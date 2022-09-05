@@ -12,7 +12,7 @@ from scarletio import (
 from ...env import CACHE_USER
 from ...ext import get_and_validate_setup_functions, run_setup_functions
 
-from ..activity import ACTIVITY_UNKNOWN, ActivityBase, ActivityCustom
+from ..activity import ACTIVITY_UNKNOWN, Activity, ActivityType
 from ..application import Application, Team
 
 from ..core import APPLICATION_ID_TO_CLIENT, CLIENTS, GUILDS, KOKORO, USERS
@@ -97,7 +97,7 @@ class Client(
         A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
         Defaults to `None`.
     
-    activities : `None`, `list` of ``ActivityBase``
+    activities : `None`, `list` of ``Activity``
         A list of the client's activities. Defaults to `None`.
     
     status : `Status`
@@ -106,7 +106,7 @@ class Client(
     statuses : `dict` of (`str`, `str`) items
         The client's statuses for each platform.
     
-    _activity : ``ActivityBase``
+    _activity : ``Activity``
         The client's preferred activity.
     
     _additional_owner_ids : `None`, `set` of `int`
@@ -271,7 +271,7 @@ class Client(
         token : `str`
             A valid Discord token, what the client can use to interact with the Discord API.
         
-        activity : ``ActivityBase`` = `ACTIVITY_UNKNOWN`, Optional (Keyword only)
+        activity : ``Activity`` = `ACTIVITY_UNKNOWN`, Optional (Keyword only)
             The client's preferred activity.
          
         additional_owners : `None`, `int`, ``ClientUserBase``, `iterable` of (`int`, ``ClientUserBase``) = `None` \
@@ -393,9 +393,9 @@ class Client(
         # ---- Optional Client Parameters ----
         
         # activity
-        if (not isinstance(activity, ActivityBase)) or (type(activity) is ActivityCustom):
+        if (not isinstance(activity, Activity)) or (activity.type is ActivityType.custom):
             raise TypeError(
-                f'`activity` can be `{ActivityBase.__name__}` (except `{ActivityCustom.__name__}`), got '
+                f'`activity` can be `{Activity.__name__}` (except `{ActivityType.custom.name}`), got '
                 f'{activity.__class__.__name__}; {activity!r}.')
         
         # additional owners

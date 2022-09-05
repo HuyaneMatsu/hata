@@ -403,6 +403,10 @@ class UserBase(DiscordEntity, immortal=True):
         """
         return None
     
+    @activities.setter
+    def activities(self, value):
+        pass
+    
     
     def iter_activities(self):
         """
@@ -412,7 +416,7 @@ class UserBase(DiscordEntity, immortal=True):
         
         Yields
         ------
-        activity : ``ActivityBase``
+        activity : ``Activity``
         """
         activities = self.activities
         if (activities is not None):
@@ -430,6 +434,10 @@ class UserBase(DiscordEntity, immortal=True):
         """
         return Status.offline
     
+    @status.setter
+    def status(self, value):
+        pass
+    
     
     @property
     def statuses(self):
@@ -441,6 +449,10 @@ class UserBase(DiscordEntity, immortal=True):
         statuses : `dict` of (`str`, `str`) items
         """
         return {}
+    
+    @statuses.setter
+    def statuses(self, value):
+        pass
     
     
     @property
@@ -455,6 +467,10 @@ class UserBase(DiscordEntity, immortal=True):
         """
         return {}
     
+    @guild_profiles.setter
+    def guild_profiles(self, value):
+        pass
+    
     
     @property
     def thread_profiles(self):
@@ -467,6 +483,10 @@ class UserBase(DiscordEntity, immortal=True):
         thread_profiles : `None`, `dict` (``Channel``, ``ThreadProfile``) items
         """
         return None
+    
+    @thread_profiles.setter
+    def thread_profiles(self, value):
+        pass
     
     
     @property
@@ -500,6 +520,10 @@ class UserBase(DiscordEntity, immortal=True):
         """
         return False
     
+    @bot.setter
+    def bot(self, value):
+        pass
+    
     
     @property
     def flags(self):
@@ -511,6 +535,10 @@ class UserBase(DiscordEntity, immortal=True):
         flags : ``UserFlag``
         """
         return UserFlag()
+    
+    @flags.setter
+    def flags(self, value):
+        pass
     
     
     @property
@@ -533,7 +561,7 @@ class UserBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        activity : ``ActivityRich``, `None`
+        activity : ``Activity``, `None`
         """
         return None
     
@@ -545,7 +573,7 @@ class UserBase(DiscordEntity, immortal=True):
         
         Returns
         -------
-        activity : ``ActivityCustom``, `None`
+        activity : ``Activity``, `None`
         """
         return None
     

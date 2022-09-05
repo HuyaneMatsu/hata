@@ -432,7 +432,7 @@ def MESSAGE_UPDATE__CAL_MC(client, data):
     
     channel = message.channel
     if channel is None:
-        # If channel is nto there, we do not need to dispatch it for all the clients, because we just can't.
+        # If channel is not there, we do not need to dispatch it for all the clients, because we just can't.
         event_handler = client.events.message_edit
         if (event_handler is not DEFAULT_EVENT_HANDLER):
             Task(event_handler(client, message, None), KOKORO)

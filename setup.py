@@ -23,6 +23,8 @@ setup(
         'hata.backend',
         'hata.discord',
         'hata.discord.activity',
+        'hata.discord.activity.fields',
+        'hata.discord.activity.metadata',
         'hata.discord.application',
         'hata.discord.auto_moderation',
         'hata.discord.bases',

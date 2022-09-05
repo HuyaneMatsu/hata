@@ -368,7 +368,7 @@ def create_event_from_class(constructor, klass, parameter_names, name_name, even
     name_name : `None`, `str`
         The event's name's name.
     event_name : `str`
-        The event's name. If event is nto found, then defaults to `name_name`'s found value if any.
+        The event's name. If event is not found, then defaults to `name_name`'s found value if any.
     
     Returns
     -------

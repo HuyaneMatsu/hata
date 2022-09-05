@@ -8,7 +8,7 @@ from scarletio import CancelledError, Compound, Future, Theory, future_or_timeou
 
 from ....env import CACHE_PRESENCE
 
-from ...activity import ACTIVITY_UNKNOWN, ActivityBase, ActivityCustom
+from ...activity import ACTIVITY_UNKNOWN, Activity, ActivityType
 from ...bases import maybe_snowflake_pair
 from ...channel import CHANNEL_TYPES, get_channel_type_names
 from ...channel import Channel
@@ -125,7 +125,7 @@ class ClientCompoundClientGateway(Compound):
         
         Parameters
         ----------
-        activity : ``ActivityBase``, Optional (Keyword only)
+        activity : ``Activity``, Optional (Keyword only)
             The new activity of the Client.
         status : `str`, ``Status``, Optional (Keyword only)
             The new status of the client.
@@ -136,7 +136,7 @@ class ClientCompoundClientGateway(Compound):
         ------
         TypeError:
             - If the status is not `str`, ``Status``.
-            - If activity is not ``ActivityBase``, except ``ActivityCustom``.
+            - If activity is not ``Activity`` or has type ``ActivityType.custom``.
         ValueError:
             - If the status `str`, but not any of the predefined ones.
         
@@ -156,11 +156,11 @@ class ClientCompoundClientGateway(Compound):
             activity = self._activity
         elif activity is None:
             self._activity = ACTIVITY_UNKNOWN
-        elif isinstance(activity, ActivityBase) and (not isinstance(activity, ActivityCustom)):
+        elif isinstance(activity, Activity) and (activity.type is not ActivityType.custom):
             self._activity = activity
         else:
             raise TypeError(
-                f'`activity` can be `{ActivityBase.__name__}` (except `{ActivityCustom.__name__}`), got: '
+                f'`activity` can be `{Activity.__name__}` (except `{ActivityType.custom.name}`), got: '
                 f'{activity.__class__.__name__}; {activity!r}.'
             )
         

@@ -9,7 +9,7 @@ from scarletio import (
     Future, RichAttributeErrorBaseType, Task, from_json, future_or_timeout, run_coroutine, sleep, to_json
 )
 
-from ...discord.activity import ActivityRich
+from ...discord.activity import Activity
 from ...discord.channel import Channel
 from ...discord.client.request_helpers import get_channel_id, get_guild_id, get_user_id
 from ...discord.core import KOKORO
@@ -2277,12 +2277,12 @@ class RPCClient(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        activity : ``ActivityRich``
+        activity : ``Activity``
             The activity to set.
         
         Returns
         -------
-        activity : ``ActivityRich``
+        activity : ``Activity``
             The set activity.
         
         Raises
@@ -2306,7 +2306,7 @@ class RPCClient(RichAttributeErrorBaseType):
         }
         
         data = await self._send_request(data)
-        return ActivityRich.from_data(data)
+        return Activity.from_data(data)
     
     
     async def activity_join_accept(self, user):

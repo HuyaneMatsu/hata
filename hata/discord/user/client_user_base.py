@@ -4,7 +4,7 @@ from re import I as re_ignore_case, escape as re_escape, compile as re_compile
 
 from scarletio import copy_docs
 
-from ..activity import ActivityCustom, ActivityRich, create_activity_from_data
+from ..activity import Activity, ActivityType
 from ..color import Color
 from ..core import GUILDS, USERS
 
@@ -13,6 +13,9 @@ from .flags import UserFlag
 from .guild_profile import GuildProfile
 from .preinstanced import Status
 from .user_base import UserBase, _try_get_guild_and_id, _try_get_guild_id
+
+
+ACTIVITY_TYPE_CUSTOM = ActivityType.custom
 
 
 class ClientUserBase(UserBase):
@@ -287,6 +290,7 @@ class ClientUserBase(UserBase):
         
         self.guild_profiles = {}
         self.thread_profiles = None
+    
     
     # if CACHE_PRESENCE is False, this should be never called from this class
     def _difference_update_presence(self, data):
@@ -628,7 +632,7 @@ class ClientUserPBase(ClientUserBase):
     thread_profiles : `None`, `dict` (``Channel``, ``ThreadProfile``) items
         A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
         Defaults to `None`.
-    activities : `None`, `list` of ``ActivityBase``
+    activities : `None`, `list` of ``Activity``
         A list of the client's activities. Defaults to `None`
     status : `Status`
         The user's display status.
@@ -686,7 +690,7 @@ class ClientUserPBase(ClientUserBase):
         if activity_datas:
             if old_activities is None:
                 for activity_data in activity_datas:
-                    activity = create_activity_from_data(activity_data)
+                    activity = Activity.from_data(activity_data)
                     
                     if new_activities is None:
                         new_activities = []
@@ -728,7 +732,7 @@ class ClientUserPBase(ClientUserBase):
                         new_activities.append(activity)
                         break
                     else:
-                        activity = create_activity_from_data(activity_data)
+                        activity = Activity.from_data(activity_data)
                         
                         if new_activities is None:
                             new_activities = []
@@ -774,7 +778,7 @@ class ClientUserPBase(ClientUserBase):
         
         activity_datas = data['activities']
         if activity_datas:
-            new_activities = [create_activity_from_data(activity_data) for activity_data in activity_datas]
+            new_activities = [Activity.from_data(activity_data) for activity_data in activity_datas]
         else:
             new_activities = None
         
@@ -789,7 +793,7 @@ class ClientUserPBase(ClientUserBase):
             activity = None
         else:
             for activity in activities:
-                if isinstance(activity, ActivityRich):
+                if activity.type is not ACTIVITY_TYPE_CUSTOM:
                     break
             else:
                 activity = None
@@ -805,7 +809,7 @@ class ClientUserPBase(ClientUserBase):
             activity = None
         else:
             for activity in activities:
-                if isinstance(activity, ActivityCustom):
+                if activity.type is ACTIVITY_TYPE_CUSTOM:
                     break
             else:
                 activity = None
@@ -823,4 +827,3 @@ class ClientUserPBase(ClientUserBase):
                 if l_status == status:
                     return platform
         return ''
-

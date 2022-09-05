@@ -60,7 +60,7 @@ class User(USER_BASE_CLASS):
     thread_profiles : `None`, `dict` (``Channel``, ``ThreadProfile``) items
         A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
         Defaults to `None`.
-    activities : `None`, `list` of ``ActivityBase``
+    activities : `None`, `list` of ``Activity``
         A list of the client's activities. Defaults to `None`
         
         > Only available if presence caching is enabled.
@@ -84,8 +84,8 @@ class User(USER_BASE_CLASS):
             
             warnings.warn(
                 (
-                    f'{cls.__name__}.__new__ is deprecated and will re-purposed in 2022 Jun. '
-                    f'Please use {cls.__name__}.from_data instead.'
+                    f'`{cls.__name__}.__new__` is deprecated and will re-purposed in 2022 Jun. '
+                    f'Please use `{cls.__name__}.from_data` instead.'
                 ),
                 FutureWarning,
                 stacklevel = 2,
@@ -412,7 +412,7 @@ class User(USER_BASE_CLASS):
             > Mutually exclusive with `banner`.
         
         bot : `bool`, Optional (Keyword only)
-            Whether teh user is a bot account.
+            Whether the user is a bot account.
         
         flags : ``UserFlag``, `int`, Optional (Keyword only)
             The user's ``.flags``. If not passed as ``UserFlag``, then will be converted to it.

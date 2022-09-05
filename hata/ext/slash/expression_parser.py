@@ -555,7 +555,7 @@ def check_factorial_validity(token, value):
     ------
     EvaluationError
         - Factorial is only allowed for integral values.
-        - Factorial nto defined for negative values.
+        - Factorial not defined for negative values.
         - Operation over factorial limit is disallowed.
     """
     if (not isinstance(value, int)) and (not value.is_integer()):

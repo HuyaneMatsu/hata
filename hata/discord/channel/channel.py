@@ -1044,7 +1044,7 @@ class Channel(DiscordEntity, immortal=True):
         """
         Returns when the thread was archived.
         
-        Returns `None` if the the channel is nto a thread one or if it is not archived.
+        Returns `None` if the the channel is not a thread one or if it is not archived.
         
         Returns
         -------

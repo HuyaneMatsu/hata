@@ -1,24 +1,40 @@
-from scarletio import export
+from .fields import *
+from .metadata import *
 
-from .activity_base import *
-from .activity_custom import *
-from .activity_rich import *
-from .activity_types import *
-from .activity_unknown import *
+from .activity import *
+from .constants import *
 from .flags import *
-from .utils import *
-
-from . import activity_types as ACTIVITY_TYPES
-
-export(ACTIVITY_TYPES, 'ACTIVITY_TYPES')
+from .preinstanced import *
 
 __all__ = (
-    'ACTIVITY_TYPES',
-    *activity_base.__all__,
-    *activity_custom.__all__,
-    *activity_rich.__all__,
-    *activity_types.__all__,
-    *activity_unknown.__all__,
+    *fields.__all__,
+    *metadata.__all__,
+        
+    *activity.__all__,
+    *constants.__all__,
     *flags.__all__,
-    *utils.__all__,
+    *preinstanced.__all__,
 )
+
+# Construct deprecations
+
+from scarletio import modulize
+
+from ...utils.module_deprecation import deprecated_import
+
+
+@deprecated_import
+@modulize
+class ACTIVITY_TYPES:
+    """
+    Deprecated. Please use ``ActivityType`` instead.
+    """
+    game = 0
+    stream = 1
+    spotify = 2
+    watching = 3
+    custom = 4
+    competing = 5
+
+
+deprecated_import(Activity, 'ActivityRich')

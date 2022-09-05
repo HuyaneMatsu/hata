@@ -2070,7 +2070,7 @@ def parse_annotation_fallback(parameter, annotation_value):
     description : `None`, `str`
         Parameter's description.
         
-        > Returned as `None` for internal parameters or if `description` could nto be detected.
+        > Returned as `None` for internal parameters or if `description` could not be detected.
     name : `str`
         The parameter's name.
     type_ : `int`
@@ -2166,7 +2166,7 @@ def parse_annotation(parameter):
     description : `None`, `str`
         Parameter's description.
         
-        > Returned as `None` for internal parameters or if `description` could nto be detected.
+        > Returned as `None` for internal parameters or if `description` could not be detected.
     name : `str`
         The parameter's name.
     type_ : `int`

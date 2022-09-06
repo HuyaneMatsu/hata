@@ -12,7 +12,7 @@ def _get_access_data():
     }
 
 
-def test__Oauth2Access__has_scope_0():
+def test__Oauth2Access__has_scope__0():
     """
     Tests whether `Oauth2Access.has_scope` works as intended.
     
@@ -27,7 +27,7 @@ def test__Oauth2Access__has_scope_0():
     vampytest.assert_eq(access.has_scope(scope), False)
 
 
-def test__Oauth2Access__has_scope_1():
+def test__Oauth2Access__has_scope__1():
     """
     Tests whether `Oauth2Access.has_scope` works as intended.
     
@@ -42,7 +42,7 @@ def test__Oauth2Access__has_scope_1():
     vampytest.assert_eq(access.has_scope(scope.value), False)
 
 
-def test__Oauth2Access__has_scope_2():
+def test__Oauth2Access__has_scope__2():
     """
     Tests whether `Oauth2Access.has_scope` works as intended.
     
@@ -57,7 +57,7 @@ def test__Oauth2Access__has_scope_2():
         access.has_scope(12.6)
 
 
-def test__Oauth2Access__has_scope_3():
+def test__Oauth2Access__has_scope__3():
     """
     Tests whether `Oauth2Access.has_scope` works as intended.
     
@@ -73,7 +73,7 @@ def test__Oauth2Access__has_scope_3():
     vampytest.assert_eq(access.has_scope(scope), True)
 
 
-def test__Oauth2Access__has_scope_4():
+def test__Oauth2Access__has_scope__4():
     """
     Tests whether `Oauth2Access.has_scope` works as intended.
     
@@ -89,7 +89,7 @@ def test__Oauth2Access__has_scope_4():
     vampytest.assert_eq(access.has_scope(scope.value), True)
 
 
-def test__Oauth2Access__has_scope_5():
+def test__Oauth2Access__has_scope__5():
     """
     Tests whether `Oauth2Access.has_scope` works as intended.
     
@@ -106,7 +106,7 @@ def test__Oauth2Access__has_scope_5():
         access.has_scope(12.6)
 
 
-def test__Oauth2Access__has_scope_6():
+def test__Oauth2Access__has_scope__6():
     """
     Tests whether `Oauth2Access.has_scope` works as intended.
     

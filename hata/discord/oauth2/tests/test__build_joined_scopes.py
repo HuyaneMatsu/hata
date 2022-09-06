@@ -3,7 +3,7 @@ import vampytest
 from ..helpers import Oauth2Scope, build_joined_scopes
 
 
-def test__build_joined_scopes_0():
+def test__build_joined_scopes__0():
     """
     Tests whether ``build_joined_scopes`` works as intended.
     
@@ -20,7 +20,7 @@ def test__build_joined_scopes_0():
         vampytest.assert_eq(output, expected_output)
 
 
-def test__build_joined_scopes_1():
+def test__build_joined_scopes__1():
     """
     Tests whether ``build_joined_scopes`` works as intended.
     

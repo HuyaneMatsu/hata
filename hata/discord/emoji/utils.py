@@ -62,6 +62,7 @@ def create_partial_emoji_from_data(data):
     return emoji
 
 
+@export
 def create_partial_emoji_data(emoji):
     """
     Creates partial emoji data form the given emoji.

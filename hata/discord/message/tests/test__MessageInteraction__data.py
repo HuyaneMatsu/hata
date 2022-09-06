@@ -6,7 +6,7 @@ from ...user import ZEROUSER, User
 from .. import MessageInteraction
 
 
-def test__MessageInteraction__from_data_0():
+def test__MessageInteraction__from_data__0():
     """
     Tests whether ``MessageInteraction``'s `from_data` method works as expected.
     This test tests default case.
@@ -27,7 +27,7 @@ def test__MessageInteraction__from_data_0():
     vampytest.assert_eq(message_interaction.sub_command_name_stack, None)
 
 
-def test__MessageInteraction__from_data_1():
+def test__MessageInteraction__from_data__1():
     """
     Tests whether ``MessageInteraction``'s `from_data` method works as expected.
     This test tests missing fields.
@@ -43,7 +43,7 @@ def test__MessageInteraction__from_data_1():
     vampytest.assert_eq(message_interaction.name, '')
 
 
-def test__MessageInteraction__from_data_2():
+def test__MessageInteraction__from_data__2():
     """
     Tests whether ``MessageInteraction``'s `from_data` method works as expected.
     This test tests stuffed fields.

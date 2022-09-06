@@ -8,6 +8,7 @@ from ...utils import DATETIME_FORMAT_CODE, DISCORD_EPOCH_START, datetime_to_mill
 from .base import ActivityMetadataBase
 
 
+create_partial_emoji_data = include('create_partial_emoji_data')
 create_partial_emoji_from_data = include('create_partial_emoji_from_data')
 
 
@@ -123,16 +124,7 @@ class CustomActivityMetadata(ActivityMetadataBase):
         
         emoji = self.emoji
         if (emoji is not None):
-            emoji_data = {}
-            if emoji.is_custom_emoji():
-                emoji_data['name'] = emoji.name
-                emoji_data['id'] = emoji.id
-                if emoji.animated:
-                    emoji_data['animated'] = True
-            else:
-                emoji_data['name'] = emoji.unicode
-            
-            data['emoji'] = emoji_data
+            data['emoji'] = create_partial_emoji_data(emoji)
         
         state = self.state
         if (state is not None):

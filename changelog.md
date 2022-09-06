@@ -14,6 +14,7 @@
 - Add `ActivityMetadataBase`.
 - Add `CustomActivityMetadata`.
 - Add `RichActivityMetadata`.
+- Add `ActivityType`.
 
 #### Bug fixes
 

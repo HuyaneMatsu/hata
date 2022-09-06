@@ -12,7 +12,7 @@
 
 import reprlib, sys
 from base64 import b64encode
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone as TimeZone
 from email._parseaddr import _parsedate_tz as parse_date_timezone
 from functools import partial as partial_func
 from math import floor
@@ -287,6 +287,22 @@ def unix_time_to_datetime(unix_time):
         return DATETIME_MIN
 
 
+def millisecond_unix_time_to_datetime(millisecond_unix_time):
+    """
+    Converts the given millisecond unix time to datetime.
+    
+    Parameters
+    ----------
+    millisecond_unix_time : `int`, `float`
+        The unix time to convert to datetime.
+    
+    Returns
+    -------
+    date_time : `datetime`
+    """
+    return unix_time_to_datetime(millisecond_unix_time * 0.001)
+
+
 def datetime_to_id(date_time):
     """
     Converts the given time to it's respective discord identifier number.
@@ -303,21 +319,7 @@ def datetime_to_id(date_time):
     return (floor(date_time.timestamp() * 1000.) - DISCORD_EPOCH) << 22
 
 
-if IS_UNIX:
-    def datetime_to_unix_time(date_time):
-        return floor(date_time.timestamp())
-else:
-    def datetime_to_unix_time(date_time):
-        try:
-            return floor(date_time.timestamp())
-        except OSError:
-            if date_time <= DATETIME_MIN:
-                return UNIX_TIME_MIN
-            else:
-                return UNIX_TIME_MAX
-
-
-set_docs(datetime_to_unix_time,
+def datetime_to_unix_time(date_time):
     """
     Converts the given time to it's unix time value.
     
@@ -330,7 +332,76 @@ set_docs(datetime_to_unix_time,
     -------
     unix_time : `int`
     """
-)
+    return floor(_datetime_to_unix_time(date_time))
+
+
+def datetime_to_millisecond_unix_time(date_time):
+    """
+    Converts the given time to it's unix time value.
+    
+    Parameters
+    ----------
+    date_time : `datetime`
+        The datetime to convert to unix time.
+    
+    Returns
+    -------
+    millisecond_unix_time : `int`
+    """
+    return floor(_datetime_to_unix_time(date_time) * 1000.0)
+
+
+def _datetime_to_unix_time(date_time):
+    """
+    Converts the given time to it's unix time value.
+    
+    Helper function used by ``datetime_to_unix_time`` and ``datetime_to_millisecond_unix_time``.
+    
+    Parameters
+    ----------
+    date_time : `datetime`
+        The datetime to convert to unix time.
+    
+    Returns
+    -------
+    unix_time : `int`, `float`
+    """
+    # Python stdlib: "You Guys always act like you're better than me"
+    # Literally any library:
+    # ╣╣╣╣╣╣╣╣╣╬╬╬╣╣╬╬╬╬╬╬╬╬╬╬╬╬╬╬╬╬╬╬╬╬╬╬╬╬╬╬╬╬╬╬╬╬╬╬╬╬ÜÜ▓██████████████████████▌╣▓▓╢
+    # ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▀▀""▀▀████████████▀▀██████▌▓╫▌█
+    # ▓▓▓▓▓▌UÜ⌠Ü╠ÜM""""""░░░░░░║⌠Ü╞Ü║]▓▓▓▓▓▓╢╣╖╖╖╖╖╖╖╖      ▐████████╫▓▓▓▓║██████▌▓╡╣▐
+    # ▓▓▓▓▓▓▌▌╢╣▌╣       jÑ]░░]║╫▓▓╢Φ▓▓▓▓▓▓▓║╢╬╟╬╣╣╟╟╢M      ▀▀██████▓M▀▌▓╞██████▌▌╗╬▐
+    # ▓▓▓▓▓▓MÑ╣╢▌▓M      ░Ñ░]╬╬║╣╣k▓Φ▓▓▓▓╢▓▓▄╣╟╬╬╟╟╬╬╟  -▄▄▓▓▓███████▓½╬╫▓╞██████▌╝▓▀╢
+    # ▓▓▓▓▓▓ù▌╣╬M╣Mⁿ╔æφB▌µdd░░ⁿ║╣K▓▓Φ▓▓▓╣╣███▓▄╟╬╟╟╬╬╟M█████████▌████▓▓▓▄▄▓███████████
+    # ▓▓▓▓▓▓]▌▓╫ß╣╦µ▓█████▌╗╗╗]║╣K▓╣Φ▓▓▓▓╢█████M╬╟╟╬╬╟M██████████▓█▓▓▓█▓▓▓╬╬▀█████████
+    # ▓▓▓▓▓▓j▌ß╬▓█▀▀"█████▀Φ╬╢█║╢╣▌╣Φ▓▓▓▓╫╣▀█╠▄▄▄▄▓▓▓▓▀╢▓██████▓▌ ▀████▓▌╬╟╬╟╫████████
+    # ▓▓▓▓▓▓M▌▌╟#`    "Γ",  ╙╢▓║╣╣▌╢Φ▓▓▓▓▌▀█▀▀½▓█▀▀"   ▐▌"▀▀▀█▀     ▀█▌▓╬╬╬╬╬▓████████
+    # ▓▓▓▓▓▓▓╣╣╝       ███▌  `▀╣╣╣╣╣╣▓▓╬█▄ ` ▄█▄       ████#▀        ▓▓▓╬╬╬╟M]j░░j░░░▐
+    # ▓▓▓▓▓▓▓▓▓▌╓███   "░░└  ██▌▓▓▓▓╣▓▀M╝┘ ▄▓╢▀▀H     ▀██╬▀   ▄▄,    ▐▓▌╬╬╬╟╣╫╫╣╫j╫╫╫▐
+    # ╝╝ªªºººº╫╢╢▌╢▌   '^ ^  ▓▌▓M╝╬╩┘    ╓▀▀  ▀         ``╓╗████▌∩  ╓▓R╬╢╟╬ß╣╣╣╣╬Ü╢╣╣▐
+    # ]]]]]]]]]]╟╫█▌         ║█M]]]]     .╓▄m▐∩           ▓█▓▓▌╣╬╣╣╬╟╬╬╬╫╬╬╬╢╢╣╣╣Ü╣╣╣▐
+    # ]]]]]]]]]Ñ╢╫█▌         ▐█]]]]Ñ      ▐▓▌║▓▄▄         ████▌╟╬╬╬╬╣╢╢╣╢╬╬░░╙╜╜╟Ñ╗╗╗▐
+    # ]]]]]]]]]]D╚╝╜          ║░]]]]Mⁿ`= #▓▓LΦ█▓▓       ▄▄███╢╣╣╣╣╬╬╬╬╬╬╬╬╬HN╦░⌂░^░░░▐
+    # ]]]]]]]]]]U╗æ╣╣▓▓▓▓▓╢╣╣▓▓╣╣╫æ╦╬D╦d╬]]] ]▀▀        ▓▓███╟╬╬╬╬╬╬╬╬╬╬╬╟┼]]]]]]]]]]▐
+    # ]]]]]]]Ñ╣╣╣╣╫╢╣╢╣╣╣╢╣╣╣╣╣╣╣╢╣╢╢╣╣╣▓╫╦Uª╬         ║▓▓▓▓▓╢╣╣╣╣╣╣╣╣╣╣╣╣M]]]]]]]]]]▐
+    # ]]]]]]]║╣╣╣╬╣╬╬╬╢╫╣╣╢╢╣╣╣╣╣╢╣╢╣╣╢╣╣╣╣╣╣▓╫╦D╬╬j╬╬╬jj]▀▀╧╢╫╣╢Ñ╣╝#º╝╝╝╝╝½]]]]]]]]]▐
+    # ]]]]]]]║╣╣╣╬╫╢╬╬╣╣╣╣ß╣╣╣╣╣╢╣╣╣╬╢╣╬╢╣║╣╣╣╣╣╣╢╣╦░░]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]▐
+    # ┴┴┴┴┴╜╜╜▀▀▀▀╜╜╨▀╜▀▀▀╜╜▀▀▀▀╜╜╜▀▀▀╜╜╜▀▀╜╜╜▀▀▀▀▀▀▀▀╜╜┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴┴╜╙
+    if date_time.tzinfo is None:
+        date_time = date_time.replace(tzinfo = TimeZone.utc)
+    
+    try:
+        return date_time.timestamp()
+    except OSError as err:
+        # Bad oses
+        if err.errno != 22:
+            raise
+    
+    if date_time <= DATETIME_MIN:
+        return UNIX_TIME_MIN
+    else:
+        return UNIX_TIME_MAX
 
 
 UNIX_TIME_MIN = 0
@@ -1520,7 +1591,7 @@ def parse_date_header_to_datetime(date_data):
     if tz is None:
         date = datetime( * date_tuple[:6])
     else:
-        date = datetime( * date_tuple[:6], tzinfo=timezone(timedelta(seconds=tz)))
+        date = datetime( * date_tuple[:6], tzinfo=TimeZone(timedelta(seconds=tz)))
     return date
 
 

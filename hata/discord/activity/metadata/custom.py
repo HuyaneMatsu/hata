@@ -3,7 +3,7 @@ __all__ = ('CustomActivityMetadata',)
 
 from scarletio import copy_docs, include
 
-from ...utils import DATETIME_FORMAT_CODE, DISCORD_EPOCH_START, datetime_to_unix_time, unix_time_to_datetime
+from ...utils import DATETIME_FORMAT_CODE, DISCORD_EPOCH_START, datetime_to_millisecond_unix_time, millisecond_unix_time_to_datetime
 
 from .base import ActivityMetadataBase
 
@@ -140,7 +140,7 @@ class CustomActivityMetadata(ActivityMetadataBase):
         
         created_at = self.created_at
         if created_at != DISCORD_EPOCH_START:
-            data['created_at'] = datetime_to_unix_time(created_at)
+            data['created_at'] = datetime_to_millisecond_unix_time(created_at)
         
         return data
     
@@ -158,7 +158,7 @@ class CustomActivityMetadata(ActivityMetadataBase):
         
         created_at = data.get('created_at', None)
         if (created_at is not None):
-            created_at = unix_time_to_datetime(created_at)
+            created_at = millisecond_unix_time_to_datetime(created_at)
         self.created_at = created_at
     
     
@@ -185,7 +185,7 @@ class CustomActivityMetadata(ActivityMetadataBase):
         if created_at is None:
             created_at = DISCORD_EPOCH_START
         else:
-            created_at = unix_time_to_datetime(created_at)
+            created_at = millisecond_unix_time_to_datetime(created_at)
         if self.created_at != created_at:
             old_attributes['created_at'] = self.created_at
             self.created_at = created_at

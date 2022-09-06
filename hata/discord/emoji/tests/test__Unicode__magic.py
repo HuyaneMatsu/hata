@@ -9,7 +9,7 @@ def test__Unicode__constructor_0():
     """
     name = 'owo'
     value_raw = b'56'
-    value =  '56'
+    value = '56'
     variation_selector_16 = False
     emoticons = ('anya',)
     aliases = ('got', 'banned')

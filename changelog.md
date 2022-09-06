@@ -9,6 +9,23 @@
 - `ApplicationCommandOption.__new__` now accepts `options` as any iterable (from list | tuple).
 - Add `ApplicationCommandOptionChoice.__hash__`.
 - Fix some linting errors in `UserBase` subclasses.
+- `datetime_to_unix_time` now ignores what stdlib thinks.
+- Add `Activity`.
+- Add `ActivityMetadataBase`.
+- Add `CustomActivityMetadata`.
+- Add `RichActivityMetadata`.
+
+#### Bug fixes
+
+- `Activity` timestamps are now correctly converted.
+
+#### Renames, Deprecation & Removals
+
+- Deprecate `ACTIVITY_TYPES`, use `ActivityType` instead.
+- Deprecate `ActivityRich`, use `Activity` instead.
+- Remove `ActivityBase`.
+- Deprecate `ActivityCustom`, use `Activity` instead.
+- Remove `ActivityUnknown`.
 
 ## 1.3.7 *\[2022-08-04\]*
 

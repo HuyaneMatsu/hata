@@ -5,7 +5,7 @@ from datetime import datetime
 from scarletio import copy_docs
 
 from ...preconverters import preconvert_flag, preconvert_snowflake, preconvert_str
-from ...utils import DISCORD_EPOCH_START, datetime_to_unix_time, is_url, unix_time_to_datetime
+from ...utils import DISCORD_EPOCH_START, datetime_to_millisecond_unix_time, is_url, millisecond_unix_time_to_datetime
 
 from ..fields import ActivityAssets, ActivityParty, ActivitySecrets, ActivityTimestamps
 from ..flags import ActivityFlag
@@ -458,7 +458,7 @@ class RichActivityMetadata(ActivityMetadataBase):
         # created_at | receive only?
         created_at = self.created_at
         if created_at != DISCORD_EPOCH_START:
-            data['created_at'] = datetime_to_unix_time(created_at)
+            data['created_at'] = datetime_to_millisecond_unix_time(created_at)
         
         # flags | spotify only
         flags = self.flags
@@ -499,7 +499,7 @@ class RichActivityMetadata(ActivityMetadataBase):
         # created_at
         created_at = data.get('created_at', None)
         if (created_at is not None):
-            created_at = unix_time_to_datetime(created_at)
+            created_at = millisecond_unix_time_to_datetime(created_at)
         self.created_at = created_at
         
         # details
@@ -580,7 +580,7 @@ class RichActivityMetadata(ActivityMetadataBase):
         # created_at
         created_at = data.get('created_at', None)
         if created_at is not None:
-            created_at = unix_time_to_datetime(created_at)
+            created_at = millisecond_unix_time_to_datetime(created_at)
         
         if self.created_at != created_at:
             old_attributes['created_at'] = self.created_at

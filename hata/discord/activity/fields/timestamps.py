@@ -4,7 +4,7 @@ from datetime import datetime
 
 from scarletio import copy_docs
 
-from ...utils import DATETIME_FORMAT_CODE, datetime_to_unix_time, unix_time_to_datetime
+from ...utils import DATETIME_FORMAT_CODE, datetime_to_millisecond_unix_time, millisecond_unix_time_to_datetime
 
 from .base import ActivityFieldBase
 
@@ -27,6 +27,8 @@ def _assert__activity_timestamp__start(start):
         raise AssertionError(
             f'`start` can be `None`, `datetime`, got {start.__class__.__name__}; {start!r}.'
         )
+    
+    return True
 
 
 def _assert__activity_timestamp__end(end):
@@ -47,6 +49,8 @@ def _assert__activity_timestamp__end(end):
         raise AssertionError(
             f'`end` can be `None`, `datetime`, got {end.__class__.__name__}; {end!r}.'
         )
+    
+    return True
 
 
 class ActivityTimestamps(ActivityFieldBase):
@@ -87,11 +91,11 @@ class ActivityTimestamps(ActivityFieldBase):
     def from_data(cls, timestamps_data):
         start = timestamps_data.get('start', None)
         if (start is not None):
-            start = unix_time_to_datetime(start)
+            start = millisecond_unix_time_to_datetime(start)
         
         end = timestamps_data.get('end', None)
         if (end is not None):
-            end = unix_time_to_datetime(end)
+            end = millisecond_unix_time_to_datetime(end)
         
         self = object.__new__(cls)
         self.start = start
@@ -105,11 +109,11 @@ class ActivityTimestamps(ActivityFieldBase):
         
         start = self.start
         if (start is not None):
-            timestamps_data['start'] = datetime_to_unix_time(start)
+            timestamps_data['start'] = datetime_to_millisecond_unix_time(start)
         
         end = self.end
         if (end is not None):
-            timestamps_data['end'] = datetime_to_unix_time(end)
+            timestamps_data['end'] = datetime_to_millisecond_unix_time(end)
         
         return timestamps_data
     

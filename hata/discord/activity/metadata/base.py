@@ -194,8 +194,6 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------+
         | Keys              | Values                            |
         +===================+===================================+
-        | application_id    | `int`                             |
-        +-------------------+-----------------------------------+
         | assets            | `None`, ``ActivityAssets``        |
         +-------------------+-----------------------------------+
         | created_at        | `None`, `datetime`                |

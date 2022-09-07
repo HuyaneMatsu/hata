@@ -199,7 +199,7 @@ class RichActivityMetadata(ActivityMetadataBase):
             if (url is not None):
                 url = preconvert_str(url, 'url', 0, 2048)
                 if url:
-                    assert not is_url(url), f'`url` was not given as a valid url, got {url!r}.'
+                    assert is_url(url), f'`url` was not given as a valid url, got {url!r}.'
                 else:
                     url = None
         
@@ -303,6 +303,7 @@ class RichActivityMetadata(ActivityMetadataBase):
         
         return hash_value
     
+    
     @copy_docs(ActivityMetadataBase._is_equal_same_type)
     def _is_equal_same_type(self, other):
         # application_id
@@ -368,6 +369,14 @@ class RichActivityMetadata(ActivityMetadataBase):
     @copy_docs(ActivityMetadataBase.from_data)
     def from_data(cls, data):
         self = object.__new__(cls)
+        
+        # application_id
+        application_id = data.get('application_id', None)
+        if (application_id is None):
+            application_id = 0
+        else:
+            application_id = int(application_id)
+        self.application_id = application_id
         
         # id
         try:
@@ -448,22 +457,22 @@ class RichActivityMetadata(ActivityMetadataBase):
         -------
         data : `dict` of (`str`, `Any`) items
         """
-        data = self.user_dict()
+        data = self.to_data_user()
         
         # application_id | receive only?
         application_id = self.application_id
         if application_id:
-            data['application_id'] = application_id
+            data['application_id'] = str(application_id)
         
         # created_at | receive only?
         created_at = self.created_at
-        if created_at != DISCORD_EPOCH_START:
+        if (created_at is not None):
             data['created_at'] = datetime_to_millisecond_unix_time(created_at)
         
         # flags | spotify only
         flags = self.flags
         if flags:
-            data['flags'] = flags
+            data['flags'] = int(flags)
         
         # session_id | spotify only
         session_id = self.session_id
@@ -481,12 +490,7 @@ class RichActivityMetadata(ActivityMetadataBase):
     @copy_docs(ActivityMetadataBase._update_attributes)
     def _update_attributes(self, data):
         # application_id
-        application_id = data.get('application_id', None)
-        if (application_id is None):
-            application_id = 0
-        else:
-            application_id = int(application_id)
-        self.application_id = application_id
+        # never changes
         
         # assets
         assets_data = data.get('assets', None)

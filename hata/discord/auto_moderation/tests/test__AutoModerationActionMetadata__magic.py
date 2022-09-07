@@ -3,7 +3,7 @@ import vampytest
 from .. import AutoModerationActionMetadata
 
 
-def test__AutoModerationActionMetadata__eq_0():
+def test__AutoModerationActionMetadata__eq__0():
     """
     Tests whether ``AutoModerationActionMetadata``'s `__eq__` method works as expected.
     """
@@ -13,7 +13,7 @@ def test__AutoModerationActionMetadata__eq_0():
     )
 
 
-def test__AutoModerationActionMetadata__eq_1():
+def test__AutoModerationActionMetadata__eq__1():
     """
     Tests whether ``AutoModerationActionMetadata``'s `__eq__` method refuses incorrect types.
     """

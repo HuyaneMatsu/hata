@@ -4,7 +4,7 @@ from ...user import ClientUserBase
 from .. import IntegrationAccount, IntegrationType
 
 
-def test__IntegrationAccount__new_0():
+def test__IntegrationAccount__new__0():
     """
     Tests whether Discord integration account users are created correctly.
     """

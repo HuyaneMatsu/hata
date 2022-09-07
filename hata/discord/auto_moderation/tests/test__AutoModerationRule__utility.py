@@ -4,10 +4,7 @@ from ...channel import Channel
 from ...role import Role
 from ...user import User, ZEROUSER
 
-from .. import (
-    AutoModerationRule, AutoModerationRuleTriggerType, AutoModerationAction, AutoModerationEventType,
-    AutoModerationKeywordPresetType,
-)
+from .. import AutoModerationRule, AutoModerationRuleTriggerType, AutoModerationAction, AutoModerationEventType
 
 
 def get_rule_data():
@@ -46,7 +43,7 @@ def test__AutoModerationRule__copy():
     vampytest.assert_not_is(rule, copy)
 
 
-def test__AutoModerationRule__copy_with_0():
+def test__AutoModerationRule__copy_with__0():
     """
     Tests whether the auto moderation rule's `copy_with` method works.
     """
@@ -66,7 +63,7 @@ def test__AutoModerationRule__copy_with_0():
     vampytest.assert_not_is(rule, copy)
 
 
-def test__AutoModerationRule__copy_with_1():
+def test__AutoModerationRule__copy_with__1():
     """
     Tests whether the auto moderation rule's `copy_with` method works.
     """

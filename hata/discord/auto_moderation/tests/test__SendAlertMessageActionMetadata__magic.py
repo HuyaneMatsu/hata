@@ -3,7 +3,7 @@ import vampytest
 from .. import SendAlertMessageActionMetadata
 
 
-def test__SendAlertMessageActionMetadata__eq_0():
+def test__SendAlertMessageActionMetadata__eq__0():
     """
     Tests whether ``SendAlertMessageActionMetadata``'s `__eq__` method works as expected.
     """
@@ -18,7 +18,7 @@ def test__SendAlertMessageActionMetadata__eq_0():
     )
 
 
-def test__SendAlertMessageActionMetadata__eq_1():
+def test__SendAlertMessageActionMetadata__eq__1():
     """
     Tests whether ``SendAlertMessageActionMetadata``'s `__eq__` method refuses incorrect types.
     """

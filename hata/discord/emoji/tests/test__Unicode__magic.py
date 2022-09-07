@@ -3,7 +3,7 @@ import vampytest
 from ..unicode_type import Unicode
 
 
-def test__Unicode__constructor_0():
+def test__Unicode__new__0():
     """
     Tests whether ``Unicode``'s `__repr__` works as intended.
     """

@@ -3,7 +3,7 @@ import vampytest
 from .. import KeywordPresetTriggerMetadata, AutoModerationKeywordPresetType
 
 
-def test__KeywordPresetTriggerMetadata__eq_0():
+def test__KeywordPresetTriggerMetadata__eq__0():
     """
     Tests whether ``KeywordPresetTriggerMetadata``'s `__eq__` method works as expected.
     """
@@ -13,7 +13,7 @@ def test__KeywordPresetTriggerMetadata__eq_0():
     )
 
 
-def test__KeywordPresetTriggerMetadata__eq_1():
+def test__KeywordPresetTriggerMetadata__eq__1():
     """
     Tests whether ``KeywordPresetTriggerMetadata``'s `__eq__` method refuses incorrect types.
     """
@@ -23,7 +23,7 @@ def test__KeywordPresetTriggerMetadata__eq_1():
     )
 
 
-def test__KeywordPresetTriggerMetadata__eq_2():
+def test__KeywordPresetTriggerMetadata__eq__2():
     """
     Tests whether ``KeywordPresetTriggerMetadata``'s `__eq__` method works as expected.
     """

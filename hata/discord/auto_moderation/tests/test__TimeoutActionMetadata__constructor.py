@@ -5,7 +5,7 @@ from ...channel import Channel
 from .. import TimeoutActionMetadata
 
 
-def test__TimeoutActionMetadata__constructor_0():
+def test__TimeoutActionMetadata__new__0():
     """
     Tests whether ``TimeoutActionMetadata``'s constructor returns as expected.
     """
@@ -14,7 +14,7 @@ def test__TimeoutActionMetadata__constructor_0():
     vampytest.assert_instance(metadata, TimeoutActionMetadata)
 
 
-def test__TimeoutActionMetadata__constructor_1():
+def test__TimeoutActionMetadata__new__1():
     """
     Tests whether ``TimeoutActionMetadata``'s constructor works as expected.
     Passing parameter as `None`
@@ -24,7 +24,7 @@ def test__TimeoutActionMetadata__constructor_1():
     vampytest.assert_eq(metadata.duration, 0)
 
 
-def test__TimeoutActionMetadata__constructor_2():
+def test__TimeoutActionMetadata__new__2():
     """
     Tests whether ``TimeoutActionMetadata``'s constructor works as expected.
     Passing parameter as `int`
@@ -34,7 +34,7 @@ def test__TimeoutActionMetadata__constructor_2():
     vampytest.assert_eq(metadata.duration, 69)
 
 
-def test__TimeoutActionMetadata__constructor_3():
+def test__TimeoutActionMetadata__new__3():
     """
     Tests whether ``TimeoutActionMetadata``'s constructor works as expected.
     Passing parameter as ``float``

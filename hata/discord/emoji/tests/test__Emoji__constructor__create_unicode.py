@@ -6,7 +6,7 @@ from .. import Emoji
 from ..unicode_type import Unicode
 
 
-def test__Emoji__create_unicode_0():
+def test__Emoji__create_unicode__0():
     """
     Tests whether ``Emoji._create_unicode`` registers the emoji by name when `register_by_name` parameter is 
     passed as `True`.
@@ -24,7 +24,7 @@ def test__Emoji__create_unicode_0():
         vampytest.assert_is(BUILTIN_EMOJIS[alternative_name], emoji)
 
 
-def test__Emoji__create_unicode_1():
+def test__Emoji__create_unicode__1():
     """
     Tests whether ``Emoji._create_unicode`` will not register the emoji by name when `register_by_name` parameter is
     passed as `False`.

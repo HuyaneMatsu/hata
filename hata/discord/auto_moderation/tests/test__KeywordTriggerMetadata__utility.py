@@ -3,9 +3,10 @@ import vampytest
 from .. import KeywordTriggerMetadata
 
 
-def test__KeywordTriggerMetadata__copy_0():
+def test__KeywordTriggerMetadata__copy__0():
     """
-    Tests whether ``KeywordTriggerMetadata``'s `copy` method works as expected.
+    Tests whether ``KeywordTriggerMetadata.copy`` method works as expected.
+    
     Case: no keywords.
     """
     metadata = KeywordTriggerMetadata(None)
@@ -16,9 +17,10 @@ def test__KeywordTriggerMetadata__copy_0():
     vampytest.assert_is_not(metadata, copy)
 
 
-def test__KeywordTriggerMetadata__copy_1():
+def test__KeywordTriggerMetadata__copy__1():
     """
-    Tests whether ``KeywordTriggerMetadata``'s `copy` method works as expected.
+    Tests whether ``KeywordTriggerMetadata.copy`` method works as expected.
+    
     Case: *n* keyword(s).
     """
     metadata = KeywordTriggerMetadata('owo')
@@ -29,9 +31,10 @@ def test__KeywordTriggerMetadata__copy_1():
     vampytest.assert_is_not(metadata, copy)
 
 
-def test__KeywordTriggerMetadata__iter_keywords_0():
+def test__KeywordTriggerMetadata__iter_keywords__0():
     """
-    Tests whether ``KeywordTriggerMetadata``'s `iter_keywords` method works as expected.
+    Tests whether ``KeywordTriggerMetadata.iter_keywords`` method works as expected.
+    
     Case: no keywords.
     """
     metadata = KeywordTriggerMetadata(None)
@@ -39,9 +42,10 @@ def test__KeywordTriggerMetadata__iter_keywords_0():
     vampytest.assert_eq([*metadata.iter_keywords()], [])
 
 
-def test__KeywordTriggerMetadata__iter_keywords_1():
+def test__KeywordTriggerMetadata__iter_keywords__1():
     """
-    Tests whether ``KeywordTriggerMetadata``'s `iter_keywords` method works as expected.
+    Tests whether ``KeywordTriggerMetadata.iter_keywords`` method works as expected.
+    
     Case: *n* keyword(s).
     """
     metadata = KeywordTriggerMetadata('owo')

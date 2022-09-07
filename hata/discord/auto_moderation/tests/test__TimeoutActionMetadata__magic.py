@@ -3,7 +3,7 @@ import vampytest
 from .. import TimeoutActionMetadata
 
 
-def test__TimeoutActionMetadata__eq_0():
+def test__TimeoutActionMetadata__eq__0():
     """
     Tests whether ``TimeoutActionMetadata``'s `__eq__` method works as expected.
     """
@@ -18,7 +18,7 @@ def test__TimeoutActionMetadata__eq_0():
     )
 
 
-def test__TimeoutActionMetadata__eq_1():
+def test__TimeoutActionMetadata__eq__1():
     """
     Tests whether ``TimeoutActionMetadata``'s `__eq__` method refuses incorrect types.
     """

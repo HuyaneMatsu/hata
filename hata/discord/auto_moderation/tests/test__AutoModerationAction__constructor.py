@@ -6,7 +6,7 @@ from .. import AutoModerationAction, AutoModerationActionType, SendAlertMessageA
 
 
 
-def test__AutoModerationAction__constructor__action_type_0():
+def test__AutoModerationAction__new__action_type__0():
     """
     Tests whether the auto moderation action's `action_type` parameter works as expected when passing as
     ``AutoModerationActionType`` instance.
@@ -16,7 +16,7 @@ def test__AutoModerationAction__constructor__action_type_0():
     vampytest.assert_is(action.type, AutoModerationActionType.block_message)
 
 
-def test__AutoModerationAction__constructor__action_type_1():
+def test__AutoModerationAction__new__action_type__1():
     """
     Tests whether the auto moderation action's `action_type` parameter works as expected when passing as
     `int` instance.
@@ -26,7 +26,7 @@ def test__AutoModerationAction__constructor__action_type_1():
     vampytest.assert_is(action.type, AutoModerationActionType.block_message)
 
 
-def test__AutoModerationAction__constructor__action_type_2():
+def test__AutoModerationAction__new__action_type__2():
     """
     Tests whether the auto moderation action's `action_type` parameter drops error when given an invalid type.
     """
@@ -34,7 +34,7 @@ def test__AutoModerationAction__constructor__action_type_2():
         AutoModerationAction('owo')
 
 
-def test__AutoModerationAction__constructor__channel_0():
+def test__AutoModerationAction__new__channel__0():
     """
     Tests whether the auto moderation action's `channel` parameter works as intended.
     Checking metadata type.
@@ -45,7 +45,7 @@ def test__AutoModerationAction__constructor__channel_0():
     vampytest.assert_instance(action.metadata, SendAlertMessageActionMetadata)
 
 
-def test__AutoModerationAction__constructor__channel_1():
+def test__AutoModerationAction__new__channel__1():
     """
     Tests whether the auto moderation action's `channel` parameter works as intended.
     Checking metadata value and passing `0`.
@@ -54,7 +54,7 @@ def test__AutoModerationAction__constructor__channel_1():
     vampytest.assert_eq(action.metadata.channel_id, 0)
 
 
-def test__AutoModerationAction__constructor__channel_2():
+def test__AutoModerationAction__new__channel__2():
     """
     Tests whether the auto moderation action's `channel` parameter works as intended.
     Checking metadata value and passing `None`.
@@ -63,7 +63,7 @@ def test__AutoModerationAction__constructor__channel_2():
     vampytest.assert_eq(action.metadata.channel_id, 0)
 
 
-def test__AutoModerationAction__constructor__channel_3():
+def test__AutoModerationAction__new__channel__3():
     """
     Tests whether the auto moderation action's `channel` parameter works as intended.
     Checking metadata value and passing `int`.
@@ -73,7 +73,7 @@ def test__AutoModerationAction__constructor__channel_3():
     vampytest.assert_eq(action.metadata.channel_id, 69)
 
 
-def test__AutoModerationAction__constructor__channel_4():
+def test__AutoModerationAction__new__channel__4():
     """
     Tests whether the auto moderation action's `channel` parameter works as intended.
     Checking metadata value and passing ``Channel``.
@@ -83,7 +83,7 @@ def test__AutoModerationAction__constructor__channel_4():
     vampytest.assert_eq(action.metadata.channel_id, 69)
 
 
-def test__AutoModerationAction__constructor__duration_0():
+def test__AutoModerationAction__new__duration__0():
     """
     Tests whether the auto moderation action's `duration` parameter works as intended.
     Checking metadata type.
@@ -94,7 +94,7 @@ def test__AutoModerationAction__constructor__duration_0():
     vampytest.assert_instance(action.metadata, TimeoutActionMetadata)
 
 
-def test__AutoModerationAction__constructor__duration_1():
+def test__AutoModerationAction__new__duration__1():
     """
     Tests whether the auto moderation action's `duration` parameter works as intended.
     Checking metadata value and passing `0`.
@@ -104,7 +104,7 @@ def test__AutoModerationAction__constructor__duration_1():
     vampytest.assert_eq(action.metadata.duration, 0)
 
 
-def test__AutoModerationAction__constructor__duration_2():
+def test__AutoModerationAction__new__duration__2():
     """
     Tests whether the auto moderation action's `duration` parameter works as intended.
     Checking metadata value and passing `None`.
@@ -114,7 +114,7 @@ def test__AutoModerationAction__constructor__duration_2():
     vampytest.assert_eq(action.metadata.duration, 0)
 
 
-def test__AutoModerationAction__constructor__duration_3():
+def test__AutoModerationAction__new__duration__3():
     """
     Tests whether the auto moderation action's `duration` parameter works as intended.
     Checking metadata value and passing `int`.
@@ -124,7 +124,7 @@ def test__AutoModerationAction__constructor__duration_3():
     vampytest.assert_eq(action.metadata.duration, 69)
 
 
-def test__AutoModerationAction__constructor__duration_4():
+def test__AutoModerationAction__new__duration__4():
     """
     Tests whether the auto moderation action's `duration` parameter works as intended.
     Checking metadata value and passing `float`.
@@ -134,7 +134,7 @@ def test__AutoModerationAction__constructor__duration_4():
     vampytest.assert_eq(action.metadata.duration, 69)
 
 
-def test__AutoModerationAction__constructor__metadata_type_match_0():
+def test__AutoModerationAction__new__metadata_type_match__0():
     """
     Tests whether the auto moderation action's type & type specific keyword parameters are accepted at the same time.
     Case: `send_alert_message`.
@@ -144,7 +144,7 @@ def test__AutoModerationAction__constructor__metadata_type_match_0():
     vampytest.assert_is(action.type, AutoModerationActionType.send_alert_message)
 
 
-def test__AutoModerationAction__constructor__metadata_type_match_1():
+def test__AutoModerationAction__new__metadata_type_match__1():
     """
     Tests whether the auto moderation action's type & type specific keyword parameters are accepted at the same time.
     Case: `timeout`.
@@ -154,7 +154,7 @@ def test__AutoModerationAction__constructor__metadata_type_match_1():
     vampytest.assert_is(action.type, AutoModerationActionType.timeout)
 
 
-def test__AutoModerationAction__constructor__metadata_type_contradiction_0():
+def test__AutoModerationAction__new__metadata_type_contradiction__0():
     """
     Tests whether the auto moderation action's type & different type specific keyword parameters are not accepted
     at the same time.
@@ -163,7 +163,7 @@ def test__AutoModerationAction__constructor__metadata_type_contradiction_0():
         AutoModerationAction(AutoModerationActionType.timeout, channel=0)
 
 
-def test__AutoModerationAction__constructor__metadata_type_contradiction_1():
+def test__AutoModerationAction__new__metadata_type_contradiction__1():
     """
     Tests whether the auto moderation action's two type specific parameters are not accepted at the same.
     """

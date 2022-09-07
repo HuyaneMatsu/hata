@@ -3,7 +3,7 @@ import vampytest
 from .. import AutoModerationAction, AutoModerationActionType
 
 
-def test__AutoModerationAction__eq_0():
+def test__AutoModerationAction__eq__0():
     """
     Tests whether the auto moderation action's `__eq__` method works.
     """
@@ -38,7 +38,7 @@ def test__AutoModerationAction__eq_0():
     )
 
 
-def test__AutoModerationAction__eq_1():
+def test__AutoModerationAction__eq__1():
     """
     Tests whether the auto moderation action's `__eq__` method refuses incorrect types.
     """

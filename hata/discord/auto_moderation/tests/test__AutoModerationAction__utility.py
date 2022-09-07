@@ -3,7 +3,7 @@ import vampytest
 from .. import AutoModerationAction, AutoModerationActionType
 
 
-def test__AutoModerationAction__copy_0():
+def test__AutoModerationAction__copy__0():
     """
     Tests whether the auto moderation action's `copy` method works.
     """
@@ -15,7 +15,7 @@ def test__AutoModerationAction__copy_0():
     vampytest.assert_not_is(action, copy)
 
 
-def test__AutoModerationAction__copy_1():
+def test__AutoModerationAction__copy__1():
     """
     Tests whether the auto moderation action's `copy` method deep copies.
     """
@@ -28,7 +28,7 @@ def test__AutoModerationAction__copy_1():
 
 
 
-def test__AutoModerationAction__copy_with_0():
+def test__AutoModerationAction__copy_with__0():
     """
     Tests whether the auto moderation action's `copy_with` method works.
     """
@@ -40,7 +40,7 @@ def test__AutoModerationAction__copy_with_0():
     vampytest.assert_not_is(action, copy)
 
 
-def test__AutoModerationAction__copy_with_1():
+def test__AutoModerationAction__copy_with__1():
     """
     Tests whether the auto moderation action's `copy_with` method deep copies.
     """
@@ -52,7 +52,7 @@ def test__AutoModerationAction__copy_with_1():
     vampytest.assert_not_is(action.metadata, copy.metadata)
 
 
-def test__AutoModerationAction__copy_with_2():
+def test__AutoModerationAction__copy_with__2():
     """
     Tests whether the auto moderation action's `copy_with` method copies with different parameters. Same type.
     """
@@ -65,7 +65,7 @@ def test__AutoModerationAction__copy_with_2():
     vampytest.assert_eq(copy.metadata.channel_id, 68)
 
 
-def test__AutoModerationAction__copy_with_3():
+def test__AutoModerationAction__copy_with__3():
     """
     Tests whether the auto moderation action's `copy_with` method copies with different parameters. Different type.
     """

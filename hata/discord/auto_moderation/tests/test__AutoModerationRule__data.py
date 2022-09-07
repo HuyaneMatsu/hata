@@ -130,7 +130,7 @@ EDITIONS = (
 )
 
 
-def test__AutoModerationRule__from_data_0():
+def test__AutoModerationRule__from_data__0():
     """
     Tests whether ``AutoModerationRule``'s `.from_data` method returns as expected.
     """
@@ -141,7 +141,7 @@ def test__AutoModerationRule__from_data_0():
     vampytest.assert_instance(rule, AutoModerationRule)
 
 
-def test__AutoModerationRule__from_data_1():
+def test__AutoModerationRule__from_data__1():
     """
     Tests whether ``AutoModerationRule``'s `.from_data` method caches.
     """
@@ -153,7 +153,7 @@ def test__AutoModerationRule__from_data_1():
     vampytest.assert_is(rule_1, rule_2)
 
 
-def test__AutoModerationRule__from_data_2():
+def test__AutoModerationRule__from_data__2():
     """
     Tests whether ``AutoModerationRule``'s `.from_data` method sets `.id` as expected.
     """
@@ -164,7 +164,7 @@ def test__AutoModerationRule__from_data_2():
     vampytest.assert_eq(rule.id, 23)
 
 
-def test__AutoModerationRule__from_data_3():
+def test__AutoModerationRule__from_data__3():
     """
     Tests whether ``AutoModerationRule``'s `.from_data` method sets `.guild_id` as expected.
     Case: `69`.
@@ -176,7 +176,7 @@ def test__AutoModerationRule__from_data_3():
     vampytest.assert_eq(rule.guild_id, 69)
 
 
-def test__AutoModerationRule__from_data_4():
+def test__AutoModerationRule__from_data__4():
     """
     Tests whether ``AutoModerationRule``'s `.from_data` method sets `.guild_id` as expected.
     Case: `None`.
@@ -188,7 +188,7 @@ def test__AutoModerationRule__from_data_4():
     vampytest.assert_eq(rule.guild_id, 0)
 
 
-def test__AutoModerationRule__from_data_5():
+def test__AutoModerationRule__from_data__5():
     """
     Tests whether ``AutoModerationRule``'s `.from_data` method sets `.guild_id` as expected.
     Case: *missing*.
@@ -200,7 +200,7 @@ def test__AutoModerationRule__from_data_5():
     vampytest.assert_eq(rule.guild_id, 0)
 
 
-def test__AutoModerationRule__from_data_6():
+def test__AutoModerationRule__from_data__6():
     """
     Tests whether ``AutoModerationRule``'s `.from_data` method sets `.creator_id` as expected.
     Case: `69`.
@@ -212,7 +212,7 @@ def test__AutoModerationRule__from_data_6():
     vampytest.assert_eq(rule.creator_id, 69)
 
 
-def test__AutoModerationRule__from_data_7():
+def test__AutoModerationRule__from_data__7():
     """
     Tests whether ``AutoModerationRule``'s `.from_data` method sets `.creator_id` as expected.
     Case: `None`.
@@ -224,7 +224,7 @@ def test__AutoModerationRule__from_data_7():
     vampytest.assert_eq(rule.creator_id, 0)
 
 
-def test__AutoModerationRule__from_data_8():
+def test__AutoModerationRule__from_data__8():
     """
     Tests whether ``AutoModerationRule``'s `.from_data` method sets `.creator_id` as expected.
     Case: *missing*.
@@ -236,14 +236,14 @@ def test__AutoModerationRule__from_data_8():
     vampytest.assert_eq(rule.creator_id, 0)
 
 
-def test__AutoModerationRule__from_data_9():
+def test__AutoModerationRule__from_data__9():
     """
     Tests whether ``AutoModerationRule``'s `.from_data` method sets everything else as `_update_attributes`.
     """
     test__AutoModerationRule__update_attributes()
 
 
-def test__AutoModerationRule__to_data_0():
+def test__AutoModerationRule__to_data__0():
     """
     Tests whether ``AutoModerationRule``'s `.to_data` works as intended.
     """
@@ -252,7 +252,7 @@ def test__AutoModerationRule__to_data_0():
     return rule.to_data()
 
 
-def test__AutoModerationRule__to_data_1():
+def test__AutoModerationRule__to_data__1():
     """
     Tests whether ``AutoModerationRule``'s `.to_data` skips `id` field.
     """
@@ -262,7 +262,7 @@ def test__AutoModerationRule__to_data_1():
     vampytest.assert_not_in('id', output_data)
 
 
-def test__AutoModerationRule__to_data_2():
+def test__AutoModerationRule__to_data__2():
     """
     Tests whether ``AutoModerationRule``'s `.to_data` adds `actions` field as expected.
     """
@@ -273,7 +273,7 @@ def test__AutoModerationRule__to_data_2():
     vampytest.assert_eq(output_data['actions'], [])
 
 
-def test__AutoModerationRule__to_data_3():
+def test__AutoModerationRule__to_data__3():
     """
     Tests whether ``AutoModerationRule``'s `.to_data` adds `actions` field as expected.
     """
@@ -294,7 +294,7 @@ def test__AutoModerationRule__to_data_3():
     )
 
 
-def test__AutoModerationRule__to_data_4():
+def test__AutoModerationRule__to_data__4():
     """
     Tests whether ``AutoModerationRule``'s `.to_data` skips `creator_id` field.
     """
@@ -304,7 +304,7 @@ def test__AutoModerationRule__to_data_4():
     vampytest.assert_not_in('creator_id', output_data)
 
 
-def test__AutoModerationRule__to_data_5():
+def test__AutoModerationRule__to_data__5():
     """
     Tests whether ``AutoModerationRule``'s `.to_data` adds `enabled` field.
     """
@@ -316,7 +316,7 @@ def test__AutoModerationRule__to_data_5():
     vampytest.assert_instance(output_data['enabled'], bool)
 
 
-def test__AutoModerationRule__to_data_6():
+def test__AutoModerationRule__to_data__6():
     """
     Tests whether ``AutoModerationRule``'s `.to_data` adds `enabled` field as expected.
     """
@@ -327,7 +327,7 @@ def test__AutoModerationRule__to_data_6():
     vampytest.assert_eq(output_data['enabled'], True)
 
 
-def test__AutoModerationRule__to_data_7():
+def test__AutoModerationRule__to_data__7():
     """
     Tests whether ``AutoModerationRule``'s `.to_data` adds `event_type` field.
     """
@@ -339,7 +339,7 @@ def test__AutoModerationRule__to_data_7():
     vampytest.assert_instance(output_data['event_type'], int)
     
     
-def test__AutoModerationRule__to_data_8():
+def test__AutoModerationRule__to_data__8():
     """
     Tests whether ``AutoModerationRule``'s `.to_data` adds `excluded_channel_ids` field as expected.
     Case: *None*
@@ -351,7 +351,7 @@ def test__AutoModerationRule__to_data_8():
     vampytest.assert_eq(output_data['exempt_channels'], [])
 
 
-def test__AutoModerationRule__to_data_9():
+def test__AutoModerationRule__to_data__9():
     """
     Tests whether ``AutoModerationRule``'s `.to_data` adds `excluded_channel_ids` field as expected.
     Case: `[1]`
@@ -363,7 +363,7 @@ def test__AutoModerationRule__to_data_9():
     vampytest.assert_eq(output_data['exempt_channels'], [1])
 
 
-def test__AutoModerationRule__to_data_10():
+def test__AutoModerationRule__to_data__10():
     """
     Tests whether ``AutoModerationRule``'s `.to_data` adds `excluded_role_ids` field as expected.
     Case: *none*.
@@ -375,7 +375,7 @@ def test__AutoModerationRule__to_data_10():
     vampytest.assert_eq(output_data['exempt_roles'], [])
 
 
-def test__AutoModerationRule__to_data_11():
+def test__AutoModerationRule__to_data__11():
     """
     Tests whether ``AutoModerationRule``'s `.to_data` adds `excluded_role_ids` field as expected.
     Case: `[1]`.
@@ -387,7 +387,7 @@ def test__AutoModerationRule__to_data_11():
     vampytest.assert_eq(output_data['exempt_roles'], [1])
 
 
-def test__AutoModerationRule__to_data_12():
+def test__AutoModerationRule__to_data__12():
     """
     Tests whether ``AutoModerationRule``'s `.to_data` adds `name` field as expected.
     Case: `'name'`.
@@ -400,7 +400,7 @@ def test__AutoModerationRule__to_data_12():
 
 
 
-def test__AutoModerationRule__to_data_13():
+def test__AutoModerationRule__to_data__13():
     """
     Tests whether ``AutoModerationRule``'s `.to_data` adds `trigger_metadata` field as expected.
     Case: *none*.
@@ -412,7 +412,7 @@ def test__AutoModerationRule__to_data_13():
     vampytest.assert_eq(output_data['trigger_metadata'], {})
 
 
-def test__AutoModerationRule__to_data_14():
+def test__AutoModerationRule__to_data__14():
     """
     Tests whether ``AutoModerationRule``'s `.to_data` adds `trigger_metadata` field as expected.
     Case: `keywords='owo'`.
@@ -424,7 +424,7 @@ def test__AutoModerationRule__to_data_14():
     vampytest.assert_eq(output_data['trigger_metadata'], {'keyword_filter': ['owo']})
 
 
-def test__AutoModerationRule__to_data_15():
+def test__AutoModerationRule__to_data__15():
     """
     Tests whether ``AutoModerationRule``'s `.to_data` adds `trigger_type` field as expected.
     Case: `keywords='owo'`.

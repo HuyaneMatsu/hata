@@ -3,7 +3,7 @@ import vampytest
 from .. import CHANNEL_TYPES, Channel
 
 
-def test__Channel__thread_users_0():
+def test__Channel__thread_users__0():
     """
     Tests whether `channel.thread_users` works as intended.
     

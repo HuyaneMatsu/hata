@@ -18,7 +18,7 @@ def get_base_payload():
     }
 
 
-class test__AutoModerationActionExecutionEvent__constructor():
+class test__AutoModerationActionExecutionEvent__new():
     """
     Asserts whether `AutoModerationActionExecutionEvent` returns an instance of the correct type. 
     """
@@ -28,7 +28,7 @@ class test__AutoModerationActionExecutionEvent__constructor():
     vampytest.assert_instance(event, AutoModerationActionExecutionEvent)
 
 
-class test__AutoModerationActionExecutionEvent__constructor__action():
+class test__AutoModerationActionExecutionEvent__new__action():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct `.action` attribute.
     """
@@ -38,7 +38,7 @@ class test__AutoModerationActionExecutionEvent__constructor__action():
     vampytest.assert_eq(event.action, AutoModerationAction(AutoModerationActionType.block_message.value))
     
     
-class test__AutoModerationActionExecutionEvent__constructor__alert_system_message_id_0():
+class test__AutoModerationActionExecutionEvent__new__alert_system_message_id__0():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.alert_system_message_id` attribute.
@@ -51,7 +51,7 @@ class test__AutoModerationActionExecutionEvent__constructor__alert_system_messag
     vampytest.assert_eq(event.alert_system_message_id, 0)
 
 
-class test__AutoModerationActionExecutionEvent__constructor__alert_system_message_id_1():
+class test__AutoModerationActionExecutionEvent__new__alert_system_message_id__1():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.alert_system_message_id` attribute.
@@ -64,7 +64,7 @@ class test__AutoModerationActionExecutionEvent__constructor__alert_system_messag
     vampytest.assert_eq(event.alert_system_message_id, 69)
 
 
-class test__AutoModerationActionExecutionEvent__constructor__alert_system_message_id_2():
+class test__AutoModerationActionExecutionEvent__new__alert_system_message_id__2():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.alert_system_message_id` attribute.
@@ -77,7 +77,7 @@ class test__AutoModerationActionExecutionEvent__constructor__alert_system_messag
     vampytest.assert_eq(event.alert_system_message_id, 0)
 
 
-class test__AutoModerationActionExecutionEvent__constructor__alert_system_message_id_3():
+class test__AutoModerationActionExecutionEvent__new__alert_system_message_id__3():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.alert_system_message_id` attribute.
@@ -91,7 +91,7 @@ class test__AutoModerationActionExecutionEvent__constructor__alert_system_messag
     vampytest.assert_eq(event.alert_system_message_id, 0)
 
     
-class test__AutoModerationActionExecutionEvent__constructor__channel_id_0():
+class test__AutoModerationActionExecutionEvent__new__channel_id__0():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.channel_id` attribute.
@@ -104,7 +104,7 @@ class test__AutoModerationActionExecutionEvent__constructor__channel_id_0():
     vampytest.assert_eq(event.channel_id, 0)
 
 
-class test__AutoModerationActionExecutionEvent__constructor__channel_id_1():
+class test__AutoModerationActionExecutionEvent__new__channel_id__1():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.channel_id` attribute.
@@ -117,7 +117,7 @@ class test__AutoModerationActionExecutionEvent__constructor__channel_id_1():
     vampytest.assert_eq(event.channel_id, 69)
 
 
-class test__AutoModerationActionExecutionEvent__constructor__channel_id_2():
+class test__AutoModerationActionExecutionEvent__new__channel_id__2():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.channel_id` attribute.
@@ -130,7 +130,7 @@ class test__AutoModerationActionExecutionEvent__constructor__channel_id_2():
     vampytest.assert_eq(event.channel_id, 0)
 
 
-class test__AutoModerationActionExecutionEvent__constructor__channel_id_3():
+class test__AutoModerationActionExecutionEvent__new__channel_id__3():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.channel_id` attribute.
@@ -144,7 +144,7 @@ class test__AutoModerationActionExecutionEvent__constructor__channel_id_3():
     vampytest.assert_eq(event.channel_id, 0)
 
 
-class test__AutoModerationActionExecutionEvent__constructor__guild_id_0():
+class test__AutoModerationActionExecutionEvent__new__guild_id__0():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.guild_id` attribute.
@@ -157,7 +157,7 @@ class test__AutoModerationActionExecutionEvent__constructor__guild_id_0():
     vampytest.assert_eq(event.guild_id, 0)
 
 
-class test__AutoModerationActionExecutionEvent__constructor__guild_id_1():
+class test__AutoModerationActionExecutionEvent__new__guild_id__1():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.guild_id` attribute.
@@ -170,7 +170,7 @@ class test__AutoModerationActionExecutionEvent__constructor__guild_id_1():
     vampytest.assert_eq(event.guild_id, 69)
 
 
-class test__AutoModerationActionExecutionEvent__constructor__guild_id_2():
+class test__AutoModerationActionExecutionEvent__new__guild_id__2():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.guild_id` attribute.
@@ -183,7 +183,7 @@ class test__AutoModerationActionExecutionEvent__constructor__guild_id_2():
     vampytest.assert_eq(event.guild_id, 0)
 
 
-class test__AutoModerationActionExecutionEvent__constructor__guild_id_3():
+class test__AutoModerationActionExecutionEvent__new__guild_id__3():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.guild_id` attribute.
@@ -197,7 +197,7 @@ class test__AutoModerationActionExecutionEvent__constructor__guild_id_3():
     vampytest.assert_eq(event.guild_id, 0)
 
 
-class test__AutoModerationActionExecutionEvent__constructor__matched_content_0():
+class test__AutoModerationActionExecutionEvent__new__matched_content__0():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.matched_content` attribute.
@@ -209,7 +209,7 @@ class test__AutoModerationActionExecutionEvent__constructor__matched_content_0()
     vampytest.assert_eq(event.matched_content, None)
 
 
-class test__AutoModerationActionExecutionEvent__constructor__matched_content_1():
+class test__AutoModerationActionExecutionEvent__new__matched_content__1():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.matched_content` attribute.
@@ -222,7 +222,7 @@ class test__AutoModerationActionExecutionEvent__constructor__matched_content_1()
     vampytest.assert_is(event.matched_content, None)
 
 
-class test__AutoModerationActionExecutionEvent__constructor__matched_content_2():
+class test__AutoModerationActionExecutionEvent__new__matched_content__2():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.matched_content` attribute.
@@ -235,7 +235,7 @@ class test__AutoModerationActionExecutionEvent__constructor__matched_content_2()
     vampytest.assert_eq(event.matched_content, 'owo')
 
 
-class test__AutoModerationActionExecutionEvent__constructor__matched_content_3():
+class test__AutoModerationActionExecutionEvent__new__matched_content__3():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.matched_content` attribute.
@@ -250,7 +250,7 @@ class test__AutoModerationActionExecutionEvent__constructor__matched_content_3()
     vampytest.assert_is(event.matched_content, None)
 
 
-class test__AutoModerationActionExecutionEvent__constructor__matched_keyword_0():
+class test__AutoModerationActionExecutionEvent__new__matched_keyword__0():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.matched_keyword` attribute.
@@ -262,7 +262,7 @@ class test__AutoModerationActionExecutionEvent__constructor__matched_keyword_0()
     vampytest.assert_eq(event.matched_keyword, None)
 
 
-class test__AutoModerationActionExecutionEvent__constructor__matched_keyword_1():
+class test__AutoModerationActionExecutionEvent__new__matched_keyword__1():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.matched_keyword` attribute.
@@ -275,7 +275,7 @@ class test__AutoModerationActionExecutionEvent__constructor__matched_keyword_1()
     vampytest.assert_is(event.matched_keyword, None)
 
 
-class test__AutoModerationActionExecutionEvent__constructor__matched_keyword_2():
+class test__AutoModerationActionExecutionEvent__new__matched_keyword__2():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.matched_keyword` attribute.
@@ -288,7 +288,7 @@ class test__AutoModerationActionExecutionEvent__constructor__matched_keyword_2()
     vampytest.assert_eq(event.matched_keyword, 'owo')
 
 
-class test__AutoModerationActionExecutionEvent__constructor__matched_keyword_3():
+class test__AutoModerationActionExecutionEvent__new__matched_keyword__3():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.matched_keyword` attribute.
@@ -302,7 +302,7 @@ class test__AutoModerationActionExecutionEvent__constructor__matched_keyword_3()
 
 
 
-class test__AutoModerationActionExecutionEvent__constructor__rule_id_0():
+class test__AutoModerationActionExecutionEvent__new__rule_id__0():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.rule_id` attribute.
@@ -315,7 +315,7 @@ class test__AutoModerationActionExecutionEvent__constructor__rule_id_0():
     vampytest.assert_eq(event.rule_id, 0)
 
 
-class test__AutoModerationActionExecutionEvent__constructor__rule_id_1():
+class test__AutoModerationActionExecutionEvent__new__rule_id__1():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.rule_id` attribute.
@@ -328,7 +328,7 @@ class test__AutoModerationActionExecutionEvent__constructor__rule_id_1():
     vampytest.assert_eq(event.rule_id, 69)
 
 
-class test__AutoModerationActionExecutionEvent__constructor__rule_trigger_type():
+class test__AutoModerationActionExecutionEvent__new__rule_trigger_type():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.rule_trigger_type` attribute.
@@ -339,7 +339,7 @@ class test__AutoModerationActionExecutionEvent__constructor__rule_trigger_type()
     vampytest.assert_is(event.rule_trigger_type, AutoModerationRuleTriggerType.keyword)
 
 
-class test__AutoModerationActionExecutionEvent__constructor__user_id_0():
+class test__AutoModerationActionExecutionEvent__new__user_id__0():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.user_id` attribute.
@@ -352,7 +352,7 @@ class test__AutoModerationActionExecutionEvent__constructor__user_id_0():
     vampytest.assert_eq(event.user_id, 0)
 
 
-class test__AutoModerationActionExecutionEvent__constructor__user_id_1():
+class test__AutoModerationActionExecutionEvent__new__user_id__1():
     """
     Asserts whether `AutoModerationActionExecutionEvent` creates an instance with correct
     `.user_id` attribute.

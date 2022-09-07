@@ -3,7 +3,7 @@ import vampytest
 from .. import MentionSpamTriggerMetadata
 
 
-def test__MentionSpamTriggerMetadata__to_data_0():
+def test__MentionSpamTriggerMetadata__to_data__0():
     """
     Tests whether ``MentionSpamTriggerMetadata``'s `to_data` method works as expected.
     Defining no keyword(s).
@@ -13,7 +13,7 @@ def test__MentionSpamTriggerMetadata__to_data_0():
     vampytest.assert_instance(metadata.to_data()['mention_total_limit'], int)
 
 
-def test__MentionSpamTriggerMetadata__to_data_1():
+def test__MentionSpamTriggerMetadata__to_data__1():
     """
     Tests whether ``MentionSpamTriggerMetadata``'s `to_data` method works as expected.
     Defining keyword(s).
@@ -28,7 +28,7 @@ def test__MentionSpamTriggerMetadata__to_data_1():
     )
 
 
-def test__MentionSpamTriggerMetadata__from_data_0():
+def test__MentionSpamTriggerMetadata__from_data__0():
     """
     Tests whether ``MentionSpamTriggerMetadata``'s `from_data` method works as expected.
     Case: `None`.
@@ -43,7 +43,7 @@ def test__MentionSpamTriggerMetadata__from_data_0():
     )
 
 
-def test__MentionSpamTriggerMetadata__from_data_1():
+def test__MentionSpamTriggerMetadata__from_data__1():
     """
     Tests whether ``MentionSpamTriggerMetadata``'s `from_data` method works as expected.
     Case: *missing*.
@@ -56,7 +56,7 @@ def test__MentionSpamTriggerMetadata__from_data_1():
     )
 
 
-def test__MentionSpamTriggerMetadata__from_data_2():
+def test__MentionSpamTriggerMetadata__from_data__2():
     """
     Tests whether ``MentionSpamTriggerMetadata``'s `from_data` method works as expected.
     Case: `None`.
@@ -71,7 +71,7 @@ def test__MentionSpamTriggerMetadata__from_data_2():
     )
 
 
-def test__MentionSpamTriggerMetadata__from_data_3():
+def test__MentionSpamTriggerMetadata__from_data__3():
     """
     Tests whether ``MentionSpamTriggerMetadata``'s `from_data` method works as expected.
     Case: `20`.

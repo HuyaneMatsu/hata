@@ -15,7 +15,7 @@ def test__Unicode__get_system_name():
     vampytest.assert_in(name, system_name)
 
 
-def test__Unicode__iter_emoticons_0():
+def test__Unicode__iter_emoticons__0():
     """
     Tests whether ``Unicode``'s `.iter_emoticons` works as intended.
     
@@ -26,7 +26,7 @@ def test__Unicode__iter_emoticons_0():
     vampytest.assert_eq({*unicode.iter_emoticons()}, set())
 
 
-def test__Unicode__iter_emoticons_1():
+def test__Unicode__iter_emoticons__1():
     """
     Tests whether ``Unicode``'s `.iter_emoticons` works as intended.
     
@@ -38,7 +38,7 @@ def test__Unicode__iter_emoticons_1():
     vampytest.assert_eq({*unicode.iter_emoticons()}, {*emoticons})
 
 
-def test__Unicode__iter_aliases_0():
+def test__Unicode__iter_aliases__0():
     """
     Tests whether ``Unicode``'s `.iter_aliases` works as intended.
     
@@ -49,7 +49,7 @@ def test__Unicode__iter_aliases_0():
     vampytest.assert_eq({*unicode.iter_aliases()}, set())
 
 
-def test__Unicode__iter_aliases_1():
+def test__Unicode__iter_aliases__1():
     """
     Tests whether ``Unicode``'s `.iter_aliases` works as intended.
     
@@ -61,7 +61,7 @@ def test__Unicode__iter_aliases_1():
     vampytest.assert_eq({*unicode.iter_aliases()}, {*aliases})
 
 
-def test__Unicode__iter_alternative_names_0():
+def test__Unicode__iter_alternative_names__0():
     """
     Tests whether ``Unicode``'s `.iter_alternative_names` works as intended.
     
@@ -72,7 +72,7 @@ def test__Unicode__iter_alternative_names_0():
     vampytest.assert_eq({*unicode.iter_alternative_names()}, set())
 
 
-def test__Unicode__iter_alternative_names_1():
+def test__Unicode__iter_alternative_names__1():
     """
     Tests whether ``Unicode``'s `.iter_alternative_names` works as intended.
     

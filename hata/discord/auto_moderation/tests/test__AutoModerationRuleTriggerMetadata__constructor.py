@@ -3,9 +3,9 @@ import vampytest
 from .. import AutoModerationRuleTriggerMetadata
 
 
-def test__AutoModerationRuleTriggerMetadata__constructor_0():
+def test__AutoModerationRuleTriggerMetadata__new():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadata``'s constructor returns as expected.
+    Tests whether ``AutoModerationRuleTriggerMetadata.__new__`` returns as expected.
     """
     metadata = AutoModerationRuleTriggerMetadata()
     

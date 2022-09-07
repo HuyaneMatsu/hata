@@ -2,8 +2,6 @@ from datetime import datetime as DateTime
 
 import vampytest
 
-from ....utils import datetime_to_millisecond_unix_time
-
 from ... import ActivityAssets, ActivityFlag, ActivityParty, ActivitySecrets, ActivityTimestamps
 
 from .. import RichActivityMetadata

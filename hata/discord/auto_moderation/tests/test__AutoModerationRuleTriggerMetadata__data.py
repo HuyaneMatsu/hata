@@ -3,7 +3,7 @@ import vampytest
 from .. import AutoModerationRuleTriggerMetadata
 
 
-def test__AutoModerationRuleTriggerMetadata__to_data_0():
+def test__AutoModerationRuleTriggerMetadata__to_data():
     """
     Tests whether ``AutoModerationRuleTriggerMetadata``'s `to_data` method works as expected.
     """
@@ -15,7 +15,7 @@ def test__AutoModerationRuleTriggerMetadata__to_data_0():
     )
 
 
-def test__AutoModerationRuleTriggerMetadata__from_data_0():
+def test__AutoModerationRuleTriggerMetadata__from_data():
     """
     Tests whether ``AutoModerationRuleTriggerMetadata``'s `from_data` method works as expected.
     """

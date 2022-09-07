@@ -5,7 +5,7 @@ from datetime import datetime
 from scarletio import copy_docs
 
 from ...preconverters import preconvert_flag, preconvert_snowflake, preconvert_str
-from ...utils import DISCORD_EPOCH_START, datetime_to_millisecond_unix_time, is_url, millisecond_unix_time_to_datetime
+from ...utils import datetime_to_millisecond_unix_time, is_url, millisecond_unix_time_to_datetime
 
 from ..fields import ActivityAssets, ActivityParty, ActivitySecrets, ActivityTimestamps
 from ..flags import ActivityFlag

@@ -3,9 +3,9 @@ import vampytest
 from .. import AutoModerationActionMetadata
 
 
-def test__AutoModerationActionMetadata__constructor_0():
+def test__AutoModerationActionMetadata__new():
     """
-    Tests whether ``AutoModerationActionMetadata``'s constructor returns as expected.
+    Tests whether ``AutoModerationActionMetadata.__new__`` returns as expected.
     """
     metadata = AutoModerationActionMetadata()
     

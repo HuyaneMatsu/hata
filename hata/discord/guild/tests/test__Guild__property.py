@@ -3,7 +3,7 @@ import vampytest
 from .. import Guild, NsfwLevel
 
 
-def test__ConnectionType__nsfw_0():
+def test__ConnectionType__nsfw__0():
     """
     Tests whether `Guild.nsfw` returns the correct value.
     
@@ -15,7 +15,7 @@ def test__ConnectionType__nsfw_0():
     vampytest.assert_eq(guild.nsfw, nsfw_level.nsfw)
 
 
-def test__ConnectionType__nsfw_1():
+def test__ConnectionType__nsfw__1():
     """
     Tests whether `Guild.nsfw` returns the correct value.
     

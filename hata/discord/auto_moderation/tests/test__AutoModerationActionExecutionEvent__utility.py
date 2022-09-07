@@ -22,7 +22,7 @@ def get_base_payload():
     }
 
 
-def test__AutoModerationActionExecutionEvent__channel_0():
+def test__AutoModerationActionExecutionEvent__channel__0():
     """
     Tests whether ``AutoModerationActionExecutionEvent``'s `channel` property works as intended.
     Case: None
@@ -35,7 +35,7 @@ def test__AutoModerationActionExecutionEvent__channel_0():
 
 
 
-def test__AutoModerationActionExecutionEvent__channel_1():
+def test__AutoModerationActionExecutionEvent__channel__1():
     """
     Tests whether ``AutoModerationActionExecutionEvent``'s `channel` property works as intended.
     Case: Channel.precreate(69)
@@ -49,7 +49,7 @@ def test__AutoModerationActionExecutionEvent__channel_1():
     vampytest.assert_is(event.channel, channel)
 
 
-def test__AutoModerationActionExecutionEvent__guild_0():
+def test__AutoModerationActionExecutionEvent__guild__0():
     """
     Tests whether ``AutoModerationActionExecutionEvent``'s `guild` property works as intended.
     Case: None
@@ -61,7 +61,7 @@ def test__AutoModerationActionExecutionEvent__guild_0():
     vampytest.assert_is(event.guild, None)
 
 
-def test__AutoModerationActionExecutionEvent__guild_1():
+def test__AutoModerationActionExecutionEvent__guild__1():
     """
     Tests whether ``AutoModerationActionExecutionEvent``'s `guild` property works as intended.
     Case: Guild.precreate(69)

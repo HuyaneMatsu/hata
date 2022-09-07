@@ -5,7 +5,7 @@ from ...core import BUILTIN_EMOJIS, UNICODE_TO_EMOJI
 from .. import Emoji, parse_all_emojis, parse_all_emojis_ordered, parse_emoji
 from ..unicodes import UNICODES
 
-def test__parse_all_emojis__unicode_all_0():
+def test__parse_all_emojis__unicode_all__0():
     """
     Tests whether `parse_all_emojis` can parse all the builtin emojis correctly.
     
@@ -53,7 +53,7 @@ def test__parse_all_emojis__mixed():
     vampytest.assert_eq(emojis, parsed_emojis)
 
 
-def test__parse_all_emojis__coloned_builtin_name_0():
+def test__parse_all_emojis__coloned_builtin_name__0():
     """
     Tests whether `parse_all_emojis` parses builtin emojis with coloned name.
     
@@ -67,7 +67,7 @@ def test__parse_all_emojis__coloned_builtin_name_0():
 
 
 
-def test__parse_all_emojis__coloned_builtin_name_1():
+def test__parse_all_emojis__coloned_builtin_name__1():
     """
     Tests whether `parse_all_emojis` parses builtin emojis with coloned name.
     
@@ -82,7 +82,7 @@ def test__parse_all_emojis__coloned_builtin_name_1():
     vampytest.assert_eq({emoji_1, emoji_2}, parsed_emojis)
 
 
-def test__parse_all_emojis__coloned_builtin_name_2():
+def test__parse_all_emojis__coloned_builtin_name__2():
     """
     Tests whether `parse_all_emojis` parses builtin emojis with coloned name.
     
@@ -97,7 +97,7 @@ def test__parse_all_emojis__coloned_builtin_name_2():
     vampytest.assert_eq({emoji_2}, parsed_emojis)
 
 
-def test__parse_all_emojis__coloned_builtin_name_3():
+def test__parse_all_emojis__coloned_builtin_name__3():
     """
     Tests whether `parse_all_emojis` parses builtin emojis with coloned name.
     
@@ -112,7 +112,7 @@ def test__parse_all_emojis__coloned_builtin_name_3():
     vampytest.assert_eq({emoji_2}, parsed_emojis)
 
 
-def test__parse_all_emojis__coloned_builtin_name_4():
+def test__parse_all_emojis__coloned_builtin_name__4():
     """
     Tests whether `parse_all_emojis` parses builtin emojis with coloned name.
     

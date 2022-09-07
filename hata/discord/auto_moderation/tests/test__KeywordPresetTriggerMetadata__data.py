@@ -3,7 +3,7 @@ import vampytest
 from .. import KeywordPresetTriggerMetadata, AutoModerationKeywordPresetType
 
 
-def test__KeywordPresetTriggerMetadata__to_data_0():
+def test__KeywordPresetTriggerMetadata__to_data__0():
     """
     Tests whether ``KeywordPresetTriggerMetadata``'s `to_data` method works as expected.
     Defining no keyword(s).
@@ -19,7 +19,7 @@ def test__KeywordPresetTriggerMetadata__to_data_0():
     )
 
 
-def test__KeywordPresetTriggerMetadata__to_data_1():
+def test__KeywordPresetTriggerMetadata__to_data__1():
     """
     Tests whether ``KeywordPresetTriggerMetadata``'s `to_data` method works as expected.
     Defining keyword(s).
@@ -35,7 +35,7 @@ def test__KeywordPresetTriggerMetadata__to_data_1():
     )
 
 
-def test__KeywordPresetTriggerMetadata__from_data_0():
+def test__KeywordPresetTriggerMetadata__from_data__0():
     """
     Tests whether ``KeywordPresetTriggerMetadata``'s `from_data` method works as expected.
     None value cases.
@@ -51,7 +51,7 @@ def test__KeywordPresetTriggerMetadata__from_data_0():
     )
 
 
-def test__KeywordPresetTriggerMetadata__from_data_1():
+def test__KeywordPresetTriggerMetadata__from_data__1():
     """
     Tests whether ``KeywordPresetTriggerMetadata``'s `from_data` method works as expected.
     Missing data case.
@@ -64,7 +64,7 @@ def test__KeywordPresetTriggerMetadata__from_data_1():
     )
 
 
-def test__KeywordPresetTriggerMetadata__from_data_2():
+def test__KeywordPresetTriggerMetadata__from_data__2():
     """
     Tests whether ``KeywordPresetTriggerMetadata``'s `from_data` method works as expected.
     Empty data case.
@@ -80,7 +80,7 @@ def test__KeywordPresetTriggerMetadata__from_data_2():
     )
 
 
-def test__KeywordPresetTriggerMetadata__from_data_3():
+def test__KeywordPresetTriggerMetadata__from_data__3():
     """
     Tests whether ``KeywordPresetTriggerMetadata``'s `from_data` method works as expected.
     Stuffed data case.

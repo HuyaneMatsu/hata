@@ -3,7 +3,7 @@ import vampytest
 from .. import AutoModerationActionMetadata
 
 
-def test__AutoModerationActionMetadata__to_data_0():
+def test__AutoModerationActionMetadata__to_data__0():
     """
     Tests whether ``AutoModerationActionMetadata``'s `to_data` method works as expected.
     """
@@ -15,7 +15,7 @@ def test__AutoModerationActionMetadata__to_data_0():
     )
 
 
-def test__AutoModerationActionMetadata__from_data_0():
+def test__AutoModerationActionMetadata__from_data__0():
     """
     Tests whether ``AutoModerationActionMetadata``'s `from_data` method works as expected.
     """

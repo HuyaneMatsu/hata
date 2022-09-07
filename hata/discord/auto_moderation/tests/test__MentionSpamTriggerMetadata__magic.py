@@ -3,7 +3,7 @@ import vampytest
 from .. import MentionSpamTriggerMetadata
 
 
-def test__MentionSpamTriggerMetadata__eq_0():
+def test__MentionSpamTriggerMetadata__eq__0():
     """
     Tests whether ``MentionSpamTriggerMetadata``'s `__eq__` method works as expected.
     """
@@ -13,7 +13,7 @@ def test__MentionSpamTriggerMetadata__eq_0():
     )
 
 
-def test__MentionSpamTriggerMetadata__eq_1():
+def test__MentionSpamTriggerMetadata__eq__1():
     """
     Tests whether ``MentionSpamTriggerMetadata``'s `__eq__` method refuses incorrect types.
     """
@@ -23,7 +23,7 @@ def test__MentionSpamTriggerMetadata__eq_1():
     )
 
 
-def test__MentionSpamTriggerMetadata__not_eq_0():
+def test__MentionSpamTriggerMetadata__not_eq__0():
     """
     Tests whether ``MentionSpamTriggerMetadata``'s `__eq__` method works as expected when passing
     objects with different values.

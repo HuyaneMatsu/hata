@@ -141,7 +141,7 @@ class Activity(RichAttributeErrorBaseType):
         
         # metadata
         repr_parts.append(', metadata=')
-        repr_parts.append(repr(self.repr_parts))
+        repr_parts.append(repr(self.metadata))
         
         repr_parts.append('>')
         return ''.join(repr_parts)
@@ -173,6 +173,7 @@ class Activity(RichAttributeErrorBaseType):
         self.metadata = metadata
         self.type = type_
         return self
+    
     
     def to_data(self):
         """
@@ -352,6 +353,30 @@ class Activity(RichAttributeErrorBaseType):
     # Field proxies
     
     @property
+    def application_id(self):
+        """
+        Returns the activity's application id.
+        
+        Returns
+        -------
+        application_id : `int`
+        """
+        return self.metadata.application_id
+    
+    
+    @property
+    def assets(self):
+        """
+        Returns the activity's assets.
+        
+        Returns
+        -------
+        assets : `None`, ``ActivityAssets``
+        """
+        return self.metadata.assets
+        
+    
+    @property
     def created_at(self):
         """
         Returns when the activity was created.
@@ -368,6 +393,18 @@ class Activity(RichAttributeErrorBaseType):
     
     
     @property
+    def details(self):
+        """
+        Returns the activity's details.
+        
+        Returns
+        -------
+        assets : `None`, `str`
+        """
+        return self.metadata.details
+    
+    
+    @property
     def emoji(self):
         """
         Returns the emoji of the activity. If it has no emoji, then set as `None`.
@@ -377,6 +414,18 @@ class Activity(RichAttributeErrorBaseType):
         emoji : `None`, ``Emoji``
         """
         return self.metadata.emoji
+    
+    
+    @property
+    def flags(self):
+        """
+        Returns the activity's flags.
+        
+        Returns
+        -------
+        assets : ``ActivityFlag``
+        """
+        return self.metadata.flags
     
     
     @property
@@ -404,6 +453,42 @@ class Activity(RichAttributeErrorBaseType):
     
     
     @property
+    def party(self):
+        """
+        Returns the activity's party.
+        
+        Returns
+        -------
+        party : `None`, ``ActivityParty``
+        """
+        return self.metadata.party
+    
+    
+    @property
+    def secrets(self):
+        """
+        Returns the activity's secrets.
+        
+        Returns
+        -------
+        secrets : `None`, ``ActivitySecrets``
+        """
+        return self.metadata.secrets
+    
+    
+    @property
+    def session_id(self):
+        """
+        Returns the activity's session identifier.
+        
+        Returns
+        -------
+        session_id : `None`, `str`
+        """
+        return self.metadata.session_id
+    
+    
+    @property
     def state(self):
         """
         Returns the activity's state.
@@ -416,9 +501,44 @@ class Activity(RichAttributeErrorBaseType):
         """
         return self.metadata.state
     
+    
+    @property
+    def sync_id(self):
+        """
+        Returns the activity's sync identifier.
+        
+        Returns
+        -------
+        sync_id : `None`, `str`
+        """
+        return self.metadata.sync_id
+    
+    
+    @property
+    def timestamps(self):
+        """
+        Returns the activity's timestamps.
+        
+        Returns
+        -------
+        timestamps : `None`, ``ActivityTimestamps``
+        """
+        return self.metadata.timestamps
+    
+    
+    @property
+    def url(self):
+        """
+        Returns the activity's url.
+        
+        Returns
+        -------
+        url : `None`, `str`
+        """
+        return self.metadata.url
+    
     # Properties
     
-
     @property
     def color(self):
         """

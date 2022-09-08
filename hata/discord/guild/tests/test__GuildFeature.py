@@ -1,19 +1,19 @@
 import vampytest
 
-from .. import ActivityType
+from .. import GuildFeature
 
 
-def test__ActivityType__name():
+def test__GuildFeature__name():
     """
-    Tests whether ``ActivityType`` instance names are all strings.
+    Tests whether ``GuildFeature`` instance names are all strings.
     """
-    for instance in ActivityType.INSTANCES.values():
+    for instance in GuildFeature.INSTANCES.values():
         vampytest.assert_instance(instance.name, str)
 
 
-def test__ActivityType__value():
+def test__GuildFeature__value():
     """
-    Tests whether ``ActivityType`` instance values are all the expected value type.
+    Tests whether ``GuildFeature`` instance values are all the expected value type.
     """
-    for instance in ActivityType.INSTANCES.values():
-        vampytest.assert_instance(instance.value, ActivityType.VALUE_TYPE)
+    for instance in GuildFeature.INSTANCES.values():
+        vampytest.assert_instance(instance.value, GuildFeature.VALUE_TYPE)

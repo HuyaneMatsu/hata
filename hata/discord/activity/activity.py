@@ -232,6 +232,7 @@ class Activity(RichAttributeErrorBaseType):
                 f'Please use `.to_data` instead.'
             ),
             FutureWarning,
+            stacklevel = 2,
         )
         
         return self.to_data()
@@ -247,6 +248,7 @@ class Activity(RichAttributeErrorBaseType):
                 f'Please use `.to_data_user` instead.'
             ),
             FutureWarning,
+            stacklevel = 2,
         )
         
         return self.to_data_user()
@@ -262,6 +264,7 @@ class Activity(RichAttributeErrorBaseType):
                 f'Please use `.to_data_full` instead.'
             ),
             FutureWarning,
+            stacklevel = 2,
         )
         
         return self.to_data_full()
@@ -697,7 +700,7 @@ class Activity(RichAttributeErrorBaseType):
                 f'Please use `.spotify_track_duration` instead.'
             ),
             FutureWarning,
-            stacklevel = 2
+            stacklevel = 2,
         )
         return self.spotify_track_duration
     
@@ -783,7 +786,7 @@ class Activity(RichAttributeErrorBaseType):
                 f'Please use `.spotify_album_cover_url` instead.'
             ),
             FutureWarning,
-            stacklevel = 2
+            stacklevel = 2,
         )
         return self.spotify_album_cover_url
     
@@ -799,7 +802,7 @@ class Activity(RichAttributeErrorBaseType):
                 f'Please use `.spotify_track_id` instead.'
             ),
             FutureWarning,
-            stacklevel = 2
+            stacklevel = 2,
         )
         return self.spotify_track_id
     
@@ -832,7 +835,7 @@ class Activity(RichAttributeErrorBaseType):
                 f'Please use `.spotify_track_url` instead.'
             ),
             FutureWarning,
-            stacklevel = 2
+            stacklevel = 2,
         )
         return self.spotify_track_url
     

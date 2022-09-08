@@ -372,6 +372,8 @@ class GuildFeature(PreinstancedBase):
     +-----------------------------------+-----------------------------------+-------------------------------------------+
     | invite_splash                     | invite splash                     | INVITE_SPLASH                             |
     +-----------------------------------+-----------------------------------+-------------------------------------------+
+    | invites_disabled                  | invites disabled                  | INVITES_DISABLED                          |
+    +-----------------------------------+-----------------------------------+-------------------------------------------+
     | linked_to_hub                     | linked to hub                     | LINKED_TO_HUB                             |
     +-----------------------------------+-----------------------------------+-------------------------------------------+
     | member_list_disabled              | member list disabled              | MEMBER_LIST_DISABLED                      |
@@ -475,6 +477,7 @@ class GuildFeature(PreinstancedBase):
     hub = P('HUB', 'hub')
     internal_employee_only = P('INTERNAL_EMPLOYEE_ONLY', 'internal employee only')
     invite_splash = P('INVITE_SPLASH', 'invite splash')
+    invites_disabled = P('INVITES_DISABLED', 'invites disabled')
     linked_to_hub = P('LINKED_TO_HUB', 'linked to hub')
     member_list_disabled = P('MEMBER_LIST_DISABLED', 'member list disabled')
     monetization_enabled = P('MONETIZATION_ENABLED', 'monetization enabled')

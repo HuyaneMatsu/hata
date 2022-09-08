@@ -15,6 +15,14 @@
 - Add `CustomActivityMetadata`.
 - Add `RichActivityMetadata`.
 - Add `ActivityType`.
+- Add `GuildFeature.invites_disabled`.
+- Add `ERROR_CODES.cannot_send_message_to_forum_channel`.
+- Add `ERROR_CODES.no_tags_available_for_non_moderators`.
+- Add `ERROR_CODES.tag_required`.
+- Add `ChannelFlag.ChannelFlag`.
+- Add `ChannelFlag.active_channels_removed`.
+- Add `ChannelFlag.require_tag`.
+- Add `ChannelFlag.spam`.
 
 #### Bug fixes
 

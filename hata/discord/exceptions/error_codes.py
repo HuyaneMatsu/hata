@@ -255,9 +255,15 @@ Error Codes
 +---------------------------------------------------------------+-----------+-----------+
 | interaction_failed_to_send                                    | 40043     | -         |
 +---------------------------------------------------------------+-----------+-----------+
+| cannot_send_message_to_forum_channel                          | 40058     | -         |
++---------------------------------------------------------------+-----------+-----------+
 | interaction_already_acknowledged                              | 40060     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | tag_name_not_unique                                           | 40061     | -         |
++---------------------------------------------------------------+-----------+-----------+
+| no_tags_available_for_non_moderators                          | 40066     | -         |
++---------------------------------------------------------------+-----------+-----------+
+| tag_required                                                  | 40067     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | missing_access                                                | 50001     | -         |
 +---------------------------------------------------------------+-----------+-----------+
@@ -615,8 +621,11 @@ user_identity_verification_processing = 40035
 user_identity_verification_succeeded = 40036
 application_name_used = 40041
 interaction_failed_to_send = 40043
+cannot_send_message_to_forum_channel = 40058
 interaction_already_acknowledged = 40060
 tag_name_not_unique = 40061
+no_tags_available_for_non_moderators = 40066
+tag_required = 40067
 
 missing_access = 50001
 invalid_account_type = 50002

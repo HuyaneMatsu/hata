@@ -27,6 +27,10 @@
 - Remove `ActivityBase`.
 - Deprecate `ActivityCustom`, use `Activity` instead.
 - Remove `ActivityUnknown`.
+- Rename `ActivityRich.track_id` to `.spotify_track_id`.
+- Deprecate `ActivityRich.track_id`.
+- Rename `ActivityRich.track_url` to `.spotify_track_url`.
+- Deprecate `ActivityRich.track_url`.
 
 ## 1.3.7 *\[2022-08-04\]*
 

@@ -6,10 +6,13 @@ from scarletio import RichAttributeErrorBaseType
 
 from ..color import Color
 from ..http import urls as module_urls
-from ..utils import DISCORD_EPOCH_START
 from ..preconverters import preconvert_preinstanced_type
+from ..utils import DISCORD_EPOCH_START
 
-from .constants import ACTIVITY_CUSTOM_ID_DEFAULT, ACTIVITY_CUSTOM_IDS
+from .constants import (
+    ACTIVITY_COLOR_GAME, ACTIVITY_COLOR_NONE, ACTIVITY_COLOR_SPOTIFY, ACTIVITY_COLOR_STREAM, ACTIVITY_CUSTOM_IDS,
+    ACTIVITY_CUSTOM_ID_DEFAULT
+)
 from .preinstanced import ActivityType
 
 
@@ -537,7 +540,7 @@ class Activity(RichAttributeErrorBaseType):
         """
         return self.metadata.url
     
-    # Properties
+    # utility
     
     @property
     def color(self):
@@ -549,22 +552,30 @@ class Activity(RichAttributeErrorBaseType):
         color : ``Color``
         """
         type_ = self.type
-        if type_ is ActivityType.game:
-            return Color(0x7289da)
+        if (type_ is ActivityType.game):
+            color = ACTIVITY_COLOR_GAME
+            
+        elif (type_ is ActivityType.custom):
+            color = ACTIVITY_COLOR_NONE
         
-        if type_ is ActivityType.stream:
-            if self.url is None:
-                return Color(0x7289da)
+        elif (type_ is ActivityType.stream):
+            if (self.url is None):
+                color = ACTIVITY_COLOR_GAME
             else:
-                return Color(0x593695)
+                color = ACTIVITY_COLOR_STREAM
         
-        if type_ is ActivityType.spotify:
-            return Color(0x1db954)
+        elif (type_ is ActivityType.spotify):
+            color = ACTIVITY_COLOR_SPOTIFY
         
-        if type_ is ActivityType.watching:
-            return Color(0x7289da)
+        elif  (type_ is ActivityType.unknown):
+            color = ACTIVITY_COLOR_NONE
         
-        return Color()
+        else:
+            # Place holder for new activity types.
+            # Right now covers: watching & competing
+            color = ACTIVITY_COLOR_GAME
+        
+        return color
     
     
     @property
@@ -780,6 +791,22 @@ class Activity(RichAttributeErrorBaseType):
     @property
     def track_id(self):
         """
+        Drops a deprecation warning and returns ``.spotify_album_cover_url``.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.track_id` is deprecated and will be removed in 2023 January. '
+                f'Please use `.spotify_track_id` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2
+        )
+        return self.spotify_track_id
+    
+    
+    @property
+    def spotify_track_id(self):
+        """
         Returns the song's identifier.
         
         Only applicable for spotify activities.
@@ -797,6 +824,22 @@ class Activity(RichAttributeErrorBaseType):
     @property
     def track_url(self):
         """
+        Drops a deprecation warning and returns ``.spotify_track_url``.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.track_url` is deprecated and will be removed in 2023 January. '
+                f'Please use `.spotify_track_url` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2
+        )
+        return self.spotify_track_url
+    
+    
+    @property
+    def spotify_track_url(self):
+        """
         Returns url to the spotify activity's song.
         
         Only applicable for spotify activities.
@@ -805,10 +848,10 @@ class Activity(RichAttributeErrorBaseType):
         -------
         url : `None`, `str`
         """
-        if self.type is not ActivityType.spotify:
-            return None
-        
-        return f'https://open.spotify.com/track/{self.sync_id}'
+        spotify_track_id = self.spotify_track_id
+        if (spotify_track_id is not None):
+            return f'https://open.spotify.com/track/{spotify_track_id}'
+    
     
     image_large_url = property(module_urls.activity_asset_image_large_url)
     image_large_url_as = module_urls.activity_asset_image_large_url_as

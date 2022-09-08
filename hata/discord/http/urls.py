@@ -704,6 +704,9 @@ def activity_asset_image_large_url(activity):
     if image_large is None:
         return None
     
+    if not image_large.isdigit():
+        return None
+    
     return f'{CDN_ENDPOINT}/app-assets/{application_id}/{image_large}.png'
 
 
@@ -740,7 +743,10 @@ def activity_asset_image_large_url_as(activity, ext=None, size=None):
     image_large = assets.image_large
     if image_large is None:
         return None
-
+    
+    if not image_large.isdigit():
+        return None
+    
     if size is None:
         end = ''
     elif size in VALID_ICON_SIZES:
@@ -748,9 +754,11 @@ def activity_asset_image_large_url_as(activity, ext=None, size=None):
     else:
         raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
 
-    if ext not in VALID_ICON_FORMATS:
+    if ext is None:
+        ext = 'png'
+    elif ext not in VALID_ICON_FORMATS:
         raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
-
+    
     return f'{CDN_ENDPOINT}/app-assets/{application_id}/{image_large}.{ext}{end}'
 
 
@@ -774,6 +782,9 @@ def activity_asset_image_small_url(activity):
     
     image_small = assets.image_small
     if image_small is None:
+        return None
+    
+    if not image_small.isdigit():
         return None
     
     return f'{CDN_ENDPOINT}/app-assets/{application_id}/{image_small}.png'
@@ -813,6 +824,9 @@ def activity_asset_image_small_url_as(activity, ext=None, size=None):
     if image_small is None:
         return None
     
+    if not image_small.isdigit():
+        return None
+    
     if size is None:
         end = ''
     elif size in VALID_ICON_SIZES:
@@ -820,7 +834,9 @@ def activity_asset_image_small_url_as(activity, ext=None, size=None):
     else:
         raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
     
-    if ext not in VALID_ICON_FORMATS:
+    if ext is None:
+        ext = 'png'
+    elif ext not in VALID_ICON_FORMATS:
         raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
     
     return f'{CDN_ENDPOINT}/app-assets/{application_id}/{image_small}.{ext}{end}'

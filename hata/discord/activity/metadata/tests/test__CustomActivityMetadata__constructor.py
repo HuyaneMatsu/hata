@@ -1,27 +1,27 @@
 import vampytest
 
-from .. import CustomActivityMetadata
+from .. import ActivityMetadataCustom
 
 
-def test__CustomActivityMetadata__new__1():
+def test__ActivityMetadataCustom__new__1():
     """
-    Tests whether ``CustomActivityMetadata.__new__`` works as intended.
+    Tests whether ``ActivityMetadataCustom.__new__`` works as intended.
     """
-    activity_metadata = CustomActivityMetadata({})
+    activity_metadata = ActivityMetadataCustom({})
     
-    vampytest.assert_instance(activity_metadata, CustomActivityMetadata)
+    vampytest.assert_instance(activity_metadata, ActivityMetadataCustom)
 
 
-def test__CustomActivityMetadata__new():
+def test__ActivityMetadataCustom__new():
     """
-    Tests whether ``CustomActivityMetadata.__new__`` works as intended.
+    Tests whether ``ActivityMetadataCustom.__new__`` works as intended.
     
     Case: should not remove empty `name` field.
     """
     keyword_parameters = {'name': ''}
     keyword_parameters_copy = keyword_parameters.copy()
     
-    activity_metadata = CustomActivityMetadata(keyword_parameters)
+    activity_metadata = ActivityMetadataCustom(keyword_parameters)
     
-    vampytest.assert_instance(activity_metadata, CustomActivityMetadata)
+    vampytest.assert_instance(activity_metadata, ActivityMetadataCustom)
     vampytest.assert_eq(keyword_parameters, keyword_parameters_copy)

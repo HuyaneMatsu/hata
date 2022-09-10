@@ -1,4 +1,4 @@
-__all__ = ('RichActivityMetadata',)
+__all__ = ('ActivityMetadataRich',)
 
 from datetime import datetime
 
@@ -13,7 +13,7 @@ from ..flags import ActivityFlag
 from .base import ActivityMetadataBase
 
 
-class RichActivityMetadata(ActivityMetadataBase):
+class ActivityMetadataRich(ActivityMetadataBase):
     """
     Represents a Discord rich activity.
     

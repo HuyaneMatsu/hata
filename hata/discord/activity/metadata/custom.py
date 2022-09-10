@@ -1,4 +1,4 @@
-__all__ = ('CustomActivityMetadata',)
+__all__ = ('ActivityMetadataCustom',)
 
 
 from scarletio import copy_docs, include
@@ -12,7 +12,7 @@ create_partial_emoji_data = include('create_partial_emoji_data')
 create_partial_emoji_from_data = include('create_partial_emoji_from_data')
 
 
-class CustomActivityMetadata(ActivityMetadataBase):
+class ActivityMetadataCustom(ActivityMetadataBase):
     """
     Represents a Discord custom activity.
     

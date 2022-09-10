@@ -30,6 +30,8 @@ class ConnectionType(PreinstancedBase):
     +=======================+=======================+===================+
     | battlenet             | Battle.net            | battlenet         |
     +-----------------------+-----------------------+-------------------+
+    | ebay                  | eBay                  | ebay              |
+    +-----------------------+-----------------------+-------------------+
     | epic_games            | Epic Games            | epicgames         |
     +-----------------------+-----------------------+-------------------+
     | facebook              | Facebook              | facebook          |
@@ -37,6 +39,8 @@ class ConnectionType(PreinstancedBase):
     | github                | GitHub                | github            |
     +-----------------------+-----------------------+-------------------+
     | league_of_legends     | League of Legends     | leagueoflegends   |
+    +-----------------------+-----------------------+-------------------+
+    | paypal                | PayPal                | paypal            |
     +-----------------------+-----------------------+-------------------+
     | playstation           | PlayStation Network   | playstation       |
     +-----------------------+-----------------------+-------------------+
@@ -68,10 +72,12 @@ class ConnectionType(PreinstancedBase):
     __slots__ = ()
     
     battlenet = P('battlenet', 'Battle.net')
+    ebay = P('ebay', 'eBay')
     epic_games = P('epicgames', 'Epic Games')
     facebook = P('facebook', 'Facebook')
     github = P('github', 'GitHub')
     league_of_legends = P('leagueoflegends', 'League of Legends')
+    paypal = P('paypal', 'PayPal')
     playstation = P('playstation', 'PlayStation Network')
     reddit = P('reddit', 'Reddit')
     riot_games = P('riotgames', 'Riot Games')

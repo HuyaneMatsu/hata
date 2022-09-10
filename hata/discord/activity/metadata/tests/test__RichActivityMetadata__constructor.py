@@ -4,19 +4,19 @@ import vampytest
 
 from ... import ActivityAssets, ActivityFlag, ActivityParty, ActivitySecrets, ActivityTimestamps
 
-from .. import RichActivityMetadata
+from .. import ActivityMetadataRich
 
 
-def test__RichActivityMetadata__new__0():
+def test__ActivityMetadataRich__new__0():
     """
-    Tests whether ``RichActivityMetadata.__new__`` works as intended.
+    Tests whether ``ActivityMetadataRich.__new__`` works as intended.
     
     Case: no fields given.
     """
     keyword_parameters = {}
-    activity_metadata = RichActivityMetadata(keyword_parameters)
+    activity_metadata = ActivityMetadataRich(keyword_parameters)
     
-    vampytest.assert_instance(activity_metadata, RichActivityMetadata)
+    vampytest.assert_instance(activity_metadata, ActivityMetadataRich)
     vampytest.assert_eq(keyword_parameters, {})
 
     vampytest.assert_instance(activity_metadata.application_id, int)
@@ -35,9 +35,9 @@ def test__RichActivityMetadata__new__0():
     vampytest.assert_instance(activity_metadata.url, str, nullable=True)
 
 
-def test__RichActivityMetadata__new__1():
+def test__ActivityMetadataRich__new__1():
     """
-    Tests whether ``RichActivityMetadata.__new__`` works as intended.
+    Tests whether ``ActivityMetadataRich.__new__`` works as intended.
     
     Case: all fields given.
     """
@@ -72,9 +72,9 @@ def test__RichActivityMetadata__new__1():
         'timestamps': timestamps,
         'url': url,
     }
-    activity_metadata = RichActivityMetadata(keyword_parameters)
+    activity_metadata = ActivityMetadataRich(keyword_parameters)
     
-    vampytest.assert_instance(activity_metadata, RichActivityMetadata)
+    vampytest.assert_instance(activity_metadata, ActivityMetadataRich)
     vampytest.assert_eq(keyword_parameters, {})
     
     vampytest.assert_eq(activity_metadata.application_id, application_id)

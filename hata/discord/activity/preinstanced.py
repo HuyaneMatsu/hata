@@ -2,7 +2,7 @@ __all__ = ('ActivityType',)
 
 from ..bases import Preinstance as P, PreinstancedBase
 
-from .metadata import ActivityMetadataBase, CustomActivityMetadata, RichActivityMetadata
+from .metadata import ActivityMetadataBase, ActivityMetadataCustom, ActivityMetadataRich
 
 
 class ActivityType(PreinstancedBase):
@@ -37,17 +37,17 @@ class ActivityType(PreinstancedBase):
     +=======================+=======================+===========+=======================================+
     | unknown               | unknown               | -1        | ``ActivityMetadataBase``              |
     +-----------------------+-----------------------+-----------+---------------------------------------+
-    | game                  | game                  | 0         | ``RichActivityMetadata``              |
+    | game                  | game                  | 0         | ``ActivityMetadataRich``              |
     +-----------------------+-----------------------+-----------+---------------------------------------+
-    | stream                | block stream          | 1         | ``RichActivityMetadata``              |
+    | stream                | block stream          | 1         | ``ActivityMetadataRich``              |
     +-----------------------+-----------------------+-----------+---------------------------------------+
-    | spotify               | spotify               | 2         | ``RichActivityMetadata``              |
+    | spotify               | spotify               | 2         | ``ActivityMetadataRich``              |
     +-----------------------+-----------------------+-----------+---------------------------------------+
-    | watching              | watching              | 3         | ``RichActivityMetadata``              |
+    | watching              | watching              | 3         | ``ActivityMetadataRich``              |
     +-----------------------+-----------------------+-----------+---------------------------------------+
-    | custom                | custom                | 4         | ``CustomActivityMetadata``            |
+    | custom                | custom                | 4         | ``ActivityMetadataCustom``            |
     +-----------------------+-----------------------+-----------+---------------------------------------+
-    | competing             | competing             | 5         | ``RichActivityMetadata``              |
+    | competing             | competing             | 5         | ``ActivityMetadataRich``              |
     +-----------------------+-----------------------+-----------+---------------------------------------+
     """
     __slots__ = ('metadata_type',)
@@ -73,7 +73,7 @@ class ActivityType(PreinstancedBase):
         self = object.__new__(cls)
         self.name = cls.DEFAULT_NAME
         self.value = value
-        self.metadata_type = RichActivityMetadata
+        self.metadata_type = ActivityMetadataRich
         
         return self
     
@@ -99,9 +99,9 @@ class ActivityType(PreinstancedBase):
     
     # predefined
     unknown = P(-1, 'unknown', ActivityMetadataBase)
-    game = P(0, 'game', RichActivityMetadata)
-    stream = P(1, 'stream message', RichActivityMetadata)
-    spotify = P(2, 'spotify', RichActivityMetadata)
-    watching = P(3, 'watching', RichActivityMetadata)
-    custom = P(4, 'custom', CustomActivityMetadata)
-    competing = P(5, 'competing', RichActivityMetadata)
+    game = P(0, 'game', ActivityMetadataRich)
+    stream = P(1, 'stream message', ActivityMetadataRich)
+    spotify = P(2, 'spotify', ActivityMetadataRich)
+    watching = P(3, 'watching', ActivityMetadataRich)
+    custom = P(4, 'custom', ActivityMetadataCustom)
+    competing = P(5, 'competing', ActivityMetadataRich)

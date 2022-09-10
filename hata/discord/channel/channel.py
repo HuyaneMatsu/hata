@@ -530,6 +530,8 @@ class Channel(DiscordEntity, immortal=True):
             +-------------------------------+-----------------------------------------------------------+
             | auto_archive_after            | `int`                                                     |
             +-------------------------------+-----------------------------------------------------------+
+            | available_tags                | `None`, `tuple` of ``ForumTag``                           |
+            +-------------------------------+-----------------------------------------------------------+
             | bitrate                       | `int`                                                     |
             +-------------------------------+-----------------------------------------------------------+
             | default_auto_archive_after    | `int`                                                     |
@@ -1046,7 +1048,7 @@ class Channel(DiscordEntity, immortal=True):
         """
         Returns whether the thread is archived.
         
-        If the channel is not a thread on,e returns `False`.
+        If the channel is not a thread, then returns `False`.
         
         Returns
         -------
@@ -1082,6 +1084,20 @@ class Channel(DiscordEntity, immortal=True):
         auto_archive_after : `None`, `datetime`
         """
         return self.metadata.auto_archive_after
+    
+    
+    @property
+    def available_tags(self):
+        """
+        Returns the available tags to assign to the child-thread channels.
+        
+        If the channel is not a forum channel, then returns `None`.
+        
+        Returns
+        -------
+        available_tags : `None`, `tuple` of ``ForumTag``
+        """
+        return self.metadata.available_tags
     
     
     @property

@@ -1,4 +1,4 @@
-## 1.3.8 *\[2022-08-??\]*
+## 1.3.8 *\[2022-09-??\]*
 
 #### Improvements
 
@@ -19,7 +19,7 @@
 - Add `ERROR_CODES.cannot_send_message_to_forum_channel`.
 - Add `ERROR_CODES.no_tags_available_for_non_moderators`.
 - Add `ERROR_CODES.tag_required`.
-- Add `ChannelFlag.ChannelFlag`.
+- Add `ChannelFlag.guild_feed_removed`.
 - Add `ChannelFlag.active_channels_removed`.
 - Add `ChannelFlag.require_tag`.
 - Add `ChannelFlag.spam`.
@@ -30,6 +30,12 @@
 - Add `MessageType.interaction_premium_upsell`.
 - Add `MessageType`.
 - Add `MessageTypeFlag`.
+- Add `ConnectionType.paypal`.
+- Add `ConnectionType.ebay`.
+- Add `available_tags` audit log change converter.
+- Add `Channel.available_tags`.
+- Add `ChannelMetadataForum.available_tags`.
+- Add `ChannelMetadataForum.flags`.
 
 #### Bug fixes
 
@@ -55,7 +61,7 @@
 - Rename `Channel.is_in_group_can_create_invite_to` to `.is_in_group_invitable` with deprecation notice.
 - Rename `Channel.is_in_group_guild_movable` to `.is_in_group_guild_sortable` with deprecation notice.
 
-## 1.3.7 *\[2022-08-04\]*
+## 1.3.7 *\[2022-09-04\]*
 
 #### Improvements
 

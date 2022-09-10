@@ -4,12 +4,12 @@ import vampytest
 
 from ... import ActivityAssets, ActivityFlag, ActivityParty, ActivitySecrets, ActivityTimestamps
 
-from .. import RichActivityMetadata
+from .. import ActivityMetadataRich
 
 
-def test__RichActivityMetadata__repr():
+def test__ActivityMetadataRich__repr():
     """
-    Tests whether ``RichActivityMetadata.__repr__`` works as intended.
+    Tests whether ``ActivityMetadataRich.__repr__`` works as intended.
     """
     application_id = 202209070013
     assets = ActivityAssets(image_large='senya')
@@ -26,7 +26,7 @@ def test__RichActivityMetadata__repr():
     timestamps = ActivityTimestamps(end=DateTime(2014, 9, 12), start=DateTime(2014, 9, 10))
     url = 'https://www.astil.dev/'
     
-    activity_metadata = RichActivityMetadata({
+    activity_metadata = ActivityMetadataRich({
         'application_id': application_id,
         'assets': assets,
         'created_at': created_at,
@@ -46,9 +46,9 @@ def test__RichActivityMetadata__repr():
     vampytest.assert_instance(repr(activity_metadata), str)
 
 
-def test__RichActivityMetadata__hash():
+def test__ActivityMetadataRich__hash():
     """
-    Tests whether ``RichActivityMetadata.__hash__`` works as intended.
+    Tests whether ``ActivityMetadataRich.__hash__`` works as intended.
     """
     application_id = 202209070015
     assets = ActivityAssets(image_large='senya')
@@ -65,7 +65,7 @@ def test__RichActivityMetadata__hash():
     timestamps = ActivityTimestamps(end=DateTime(2014, 9, 12), start=DateTime(2014, 9, 10))
     url = 'https://www.astil.dev/'
     
-    activity_metadata = RichActivityMetadata({
+    activity_metadata = ActivityMetadataRich({
         'application_id': application_id,
         'assets': assets,
         'created_at': created_at,
@@ -85,9 +85,9 @@ def test__RichActivityMetadata__hash():
     vampytest.assert_instance(hash(activity_metadata), int)
 
 
-def test__RichActivityMetadata__eq():
+def test__ActivityMetadataRich__eq():
     """
-    Tests whether ``RichActivityMetadata.__eq__`` works as intended.
+    Tests whether ``ActivityMetadataRich.__eq__`` works as intended.
     """
     application_id = 202209070017
     assets = ActivityAssets(image_large='senya')
@@ -120,7 +120,7 @@ def test__RichActivityMetadata__eq():
         'timestamps': timestamps,
         'url': url,
     }
-    activity_metadata = RichActivityMetadata(keyword_parameters.copy())
+    activity_metadata = ActivityMetadataRich(keyword_parameters.copy())
     
     vampytest.assert_eq(activity_metadata, activity_metadata)
     vampytest.assert_ne(activity_metadata, object())
@@ -141,5 +141,5 @@ def test__RichActivityMetadata__eq():
         ('timestamps', None),
         ('url', None),
     ):
-        temporary_activity_metadata = RichActivityMetadata({**keyword_parameters, field_name: field_value})
+        temporary_activity_metadata = ActivityMetadataRich({**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(temporary_activity_metadata, activity_metadata)

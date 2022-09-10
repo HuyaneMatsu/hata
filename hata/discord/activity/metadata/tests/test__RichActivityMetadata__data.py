@@ -6,18 +6,18 @@ from ....utils import datetime_to_millisecond_unix_time
 
 from ... import ActivityAssets, ActivityFlag, ActivityParty, ActivitySecrets, ActivityTimestamps
 
-from .. import RichActivityMetadata
+from .. import ActivityMetadataRich
 
 
-def test__RichActivityMetadata__from_data__0():
+def test__ActivityMetadataRich__from_data__0():
     """
-    Tests whether ``RichActivityMetadata.from_data`` works as intended.
+    Tests whether ``ActivityMetadataRich.from_data`` works as intended.
     
     Case: No fields given.
     """
-    activity_metadata = RichActivityMetadata.from_data({})
+    activity_metadata = ActivityMetadataRich.from_data({})
     
-    vampytest.assert_instance(activity_metadata, RichActivityMetadata)
+    vampytest.assert_instance(activity_metadata, ActivityMetadataRich)
     vampytest.assert_instance(activity_metadata.application_id, int)
     vampytest.assert_instance(activity_metadata.assets, ActivityAssets, nullable=True)
     vampytest.assert_instance(activity_metadata.created_at, DateTime, nullable=True)
@@ -34,9 +34,9 @@ def test__RichActivityMetadata__from_data__0():
     vampytest.assert_instance(activity_metadata.url, str, nullable=True)
 
 
-def test__RichActivityMetadata__from_data__1():
+def test__ActivityMetadataRich__from_data__1():
     """
-    Tests whether ``RichActivityMetadata.from_data`` works as intended.
+    Tests whether ``ActivityMetadataRich.from_data`` works as intended.
     
     Case: All fields given.
     """
@@ -55,7 +55,7 @@ def test__RichActivityMetadata__from_data__1():
     timestamps = ActivityTimestamps(end=DateTime(2014, 9, 12), start=DateTime(2014, 9, 10))
     url = 'https://www.astil.dev/'
     
-    activity_metadata = RichActivityMetadata.from_data({
+    activity_metadata = ActivityMetadataRich.from_data({
         'application_id': str(application_id),
         'assets': assets.to_data(),
         'created_at': datetime_to_millisecond_unix_time(created_at),
@@ -72,7 +72,7 @@ def test__RichActivityMetadata__from_data__1():
         'url': url,
     })
     
-    vampytest.assert_instance(activity_metadata, RichActivityMetadata)
+    vampytest.assert_instance(activity_metadata, ActivityMetadataRich)
     
     vampytest.assert_eq(activity_metadata.application_id, application_id)
     vampytest.assert_eq(activity_metadata.assets, assets)
@@ -90,9 +90,9 @@ def test__RichActivityMetadata__from_data__1():
     vampytest.assert_eq(activity_metadata.url, url)
 
 
-def test__RichActivityMetadata__to_data():
+def test__ActivityMetadataRich__to_data():
     """
-    Tests whether ``RichActivityMetadata.to_data`` works as intended.
+    Tests whether ``ActivityMetadataRich.to_data`` works as intended.
     """
     application_id = 202209070004
     assets = ActivityAssets(image_large='senya')
@@ -109,7 +109,7 @@ def test__RichActivityMetadata__to_data():
     timestamps = ActivityTimestamps(end=DateTime(2014, 9, 12), start=DateTime(2014, 9, 10))
     url = 'https://www.astil.dev/'
     
-    data = RichActivityMetadata({
+    data = ActivityMetadataRich({
         'application_id': application_id,
         'assets': assets,
         'created_at': created_at,
@@ -146,9 +146,9 @@ def test__RichActivityMetadata__to_data():
     vampytest.assert_not_in('timestamps', data)
 
 
-def test__RichActivityMetadata__to_data_user():
+def test__ActivityMetadataRich__to_data_user():
     """
-    Tests whether ``RichActivityMetadata.to_data_user`` works as intended.
+    Tests whether ``ActivityMetadataRich.to_data_user`` works as intended.
     """
     application_id = 202209070006
     assets = ActivityAssets(image_large='senya')
@@ -165,7 +165,7 @@ def test__RichActivityMetadata__to_data_user():
     timestamps = ActivityTimestamps(end=DateTime(2014, 9, 12), start=DateTime(2014, 9, 10))
     url = 'https://www.astil.dev/'
     
-    data = RichActivityMetadata({
+    data = ActivityMetadataRich({
         'application_id': application_id,
         'assets': assets,
         'created_at': created_at,
@@ -208,9 +208,9 @@ def test__RichActivityMetadata__to_data_user():
     vampytest.assert_not_in('sync_id', data)
 
 
-def test__RichActivityMetadata__to_data_full():
+def test__ActivityMetadataRich__to_data_full():
     """
-    Tests whether ``RichActivityMetadata.to_data_full`` works as intended.
+    Tests whether ``ActivityMetadataRich.to_data_full`` works as intended.
     """
     application_id = 202209070008
     assets = ActivityAssets(image_large='senya')
@@ -227,7 +227,7 @@ def test__RichActivityMetadata__to_data_full():
     timestamps = ActivityTimestamps(end=DateTime(2014, 9, 12), start=DateTime(2014, 9, 10))
     url = 'https://www.astil.dev/'
     
-    data = RichActivityMetadata({
+    data = ActivityMetadataRich({
         'application_id': application_id,
         'assets': assets,
         'created_at': created_at,
@@ -275,9 +275,9 @@ def test__RichActivityMetadata__to_data_full():
     vampytest.assert_not_in('id', data)
 
 
-def test__RichActivityMetadata__update_attributes():
+def test__ActivityMetadataRich__update_attributes():
     """
-    Tests whether ``RichActivityMetadata._update_attributes`` works as intended.
+    Tests whether ``ActivityMetadataRich._update_attributes`` works as intended.
     """
     application_id = 202209070010
     old_assets = ActivityAssets(image_large='senya')
@@ -306,7 +306,7 @@ def test__RichActivityMetadata__update_attributes():
     old_url = 'https://www.astil.dev/'
     new_url = 'https://www.astil.dev/project/hata/'
 
-    activity_metadata = RichActivityMetadata({
+    activity_metadata = ActivityMetadataRich({
         'application_id': application_id,
         'assets': old_assets,
         'created_at': old_created_at,
@@ -352,9 +352,9 @@ def test__RichActivityMetadata__update_attributes():
     vampytest.assert_eq(activity_metadata.url, new_url)
 
 
-def test__RichActivityMetadata__difference_update_attributes():
+def test__ActivityMetadataRich__difference_update_attributes():
     """
-    Tests whether ``RichActivityMetadata._difference_update_attributes`` works as intended.
+    Tests whether ``ActivityMetadataRich._difference_update_attributes`` works as intended.
     """
     application_id = 202209070012
     old_assets = ActivityAssets(image_large='senya')
@@ -383,7 +383,7 @@ def test__RichActivityMetadata__difference_update_attributes():
     old_url = 'https://www.astil.dev/'
     new_url = 'https://www.astil.dev/project/hata/'
 
-    activity_metadata = RichActivityMetadata({
+    activity_metadata = ActivityMetadataRich({
         'application_id': application_id,
         'assets': old_assets,
         'created_at': old_created_at,

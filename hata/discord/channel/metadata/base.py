@@ -20,6 +20,7 @@ CHANNEL_DEFAULT_ATTRIBUTES = {
     'archived': False,
     'archived_at': None,
     'auto_archive_after': AUTO_ARCHIVE_DEFAULT,
+    'available_tags': None,
     'bitrate': 0,
     'default_auto_archive_after': AUTO_ARCHIVE_DEFAULT,
     'flags': ChannelFlag(0),
@@ -165,6 +166,8 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
             | archived_at                   | `None`, `datetime`                                        |
             +-------------------------------+-----------------------------------------------------------+
             | auto_archive_after            | `int`                                                     |
+            +-------------------------------+-----------------------------------------------------------+
+            | available_tags                | `None`, `tuple` of ``ForumTag``                           |
             +-------------------------------+-----------------------------------------------------------+
             | bitrate                       | `int`                                                     |
             +-------------------------------+-----------------------------------------------------------+

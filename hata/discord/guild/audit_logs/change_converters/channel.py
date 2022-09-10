@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ....channel import ChannelFlag, VideoQualityMode
+from ....channel import ChannelFlag, ForumTag, VideoQualityMode
 from ....permission import PermissionOverwrite
 
 from ...preinstanced import VoiceRegion
@@ -31,7 +31,7 @@ def convert_channel_flags(name, data):
     if (after is not None):
         after = ChannelFlag(after)
     
-    return AuditLogChange(name, before, after)
+    return AuditLogChange('flags', before, after)
 
 
 def convert_int__auto_archive_after(name, data):
@@ -44,6 +44,24 @@ def convert_int__auto_archive_after(name, data):
         after *= 60
     
     return AuditLogChange('auto_archive_after', before, after)
+
+
+def convert_forum_tags(name, data):
+    before = data.get('old_value', None)
+    if (before is not None):
+        if before:
+            before = tuple(sorted(ForumTag.from_data(tag_data) for tag_data in before))
+        else:
+            before = None
+    
+    after = data.get('new_value', None)
+    if (after is not None):
+        if after:
+            after = tuple(sorted(ForumTag.from_data(tag_data) for tag_data in after))
+        else:
+            after = None
+    
+    return AuditLogChange('available_tags', before, after)
 
 
 def convert_int__default_auto_archive_after(name, data):
@@ -75,7 +93,7 @@ def convert_overwrites(name, data):
 
 
 def convert_video_quality_mode(name, data):
-    return _convert_preinstanced(name, data, VideoQualityMode)
+    return _convert_preinstanced('video_quality_mode', data, VideoQualityMode)
 
 
 def convert_voice_region(name, data):
@@ -85,6 +103,7 @@ def convert_voice_region(name, data):
 CHANNEL_CONVERTERS = {
     'archived': convert_nothing,
     'auto_archive_duration': convert_int__auto_archive_after,
+    'available_tags': convert_forum_tags,
     'bitrate': convert_nothing,
     'default_auto_archive_duration': convert_int__default_auto_archive_after,
     'flags': convert_channel_flags,

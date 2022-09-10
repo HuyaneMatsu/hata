@@ -9,6 +9,7 @@ from ...preconverters import preconvert_flag, preconvert_int, preconvert_int_opt
 
 from ..constants import AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
 from ..flags import ChannelFlag
+from ..forum_tag import ForumTag
 
 from .guild_main_base import ChannelMetadataGuildMainBase
 
@@ -29,6 +30,8 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         The channel's permission overwrites.
     position : `int`
         The channel's position.
+    available_tags : `None`, `tuple` of ``ForumTag``
+        The available tags to assign to the child-thread channels.
     default_auto_archive_after : `int`
         The default duration (in seconds) for newly created threads to automatically archive the themselves. Defaults
         to `3600`. Can be one of: `3600`, `86400`, `259200`, `604800`.
@@ -45,11 +48,15 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """
-    __slots__ = ('default_auto_archive_after', 'flags', 'slowmode', 'topic',)
+    __slots__ = ('available_tags', 'default_auto_archive_after', 'flags', 'slowmode', 'topic',)
     
     @copy_docs(ChannelMetadataGuildMainBase._is_equal_same_type)
     def _is_equal_same_type(self, other):
         if not ChannelMetadataGuildMainBase._is_equal_same_type(self, other):
+            return False
+        
+        # available_tags
+        if self.available_tags != other.available_tags:
             return False
         
         # default_auto_archive_after
@@ -81,6 +88,7 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
     def _create_empty(cls):
         self = super(ChannelMetadataGuildForum, cls)._create_empty()
         
+        self.available_tags = None
         self.default_auto_archive_after = AUTO_ARCHIVE_DEFAULT
         self.flags = ChannelFlag()
         self.slowmode = 0
@@ -92,6 +100,14 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
     @copy_docs(ChannelMetadataGuildMainBase._update_attributes)
     def _update_attributes(self, data):
         ChannelMetadataGuildMainBase._update_attributes(self, data)
+        
+        # available_tags
+        available_tag_data_array = data.get('available_tags', None)
+        if (available_tag_data_array is None) or (not available_tag_data_array):
+            available_tags = None
+        else:
+            available_tags = tuple(sorted(ForumTag.from_data(tag_data) for tag_data in available_tag_data_array))
+        self.available_tags = available_tags
         
         # default_auto_archive_after
         default_auto_archive_after = data.get('default_auto_archive_duration', None)
@@ -117,6 +133,16 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
     @copy_docs(ChannelMetadataGuildMainBase._difference_update_attributes)
     def _difference_update_attributes(self, data):
         old_attributes = ChannelMetadataGuildMainBase._difference_update_attributes(self, data)
+        
+        # available_tags
+        available_tag_data_array = data.get('available_tags', None)
+        if (available_tag_data_array is None) or (not available_tag_data_array):
+            available_tags = None
+        else:
+            available_tags = tuple(sorted(ForumTag.from_data(tag_data) for tag_data in available_tag_data_array))
+        if (self.available_tags != available_tags):
+            old_attributes['available_tags'] = self.available_tags
+            self.available_tags = available_tags
         
         # default_auto_archive_after
         default_auto_archive_after = data.get('default_auto_archive_duration', None)
@@ -180,6 +206,34 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
     def _precreate(cls, keyword_parameters):
         self = super(ChannelMetadataGuildForum, cls)._precreate(keyword_parameters)
         
+        # available_tags
+        try:
+            raw_available_tags = keyword_parameters.pop('available_tags')
+        except KeyError:
+            pass
+        else:
+            if (raw_available_tags is not None):
+                if (getattr(raw_available_tags, '__iter__', None) is None):
+                    raise TypeError(
+                        f'`available_tags` can be `None`, `iterable` of `{ForumTag.__name__}`, got '
+                        f'{raw_available_tags.__class__.__name__}; {raw_available_tags!r}.'
+                    )
+                
+                available_tags = set()
+                
+                for raw_tag in raw_available_tags:
+                    if not isinstance(raw_tag, ForumTag):
+                        raise TypeError(
+                            f'`available_tags` can contain `{ForumTag.__name__}` elements, got '
+                            f'{raw_tag.__class__.__name__}; {raw_tag!r}; available_tags = {raw_available_tags!r}.'
+                        )
+                    
+                    available_tags.add(raw_tag)
+                
+                if available_tags:
+                    self.available_tags = tuple(sorted(available_tags))
+        
+        
         # default_auto_archive_after
         try:
             default_auto_archive_after = keyword_parameters.pop('default_auto_archive_duration')
@@ -229,6 +283,14 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
     @copy_docs(ChannelMetadataGuildMainBase._to_data)
     def _to_data(self):
         data = ChannelMetadataGuildMainBase._to_data(self)
+        
+        # available_tags
+        available_tags = self.available_tags
+        if (available_tags is None):
+            available_tag_array = []
+        else:
+            available_tag_array = [tag.to_data() for tag in available_tags]
+        data['available_tags'] = available_tag_array
         
         # default_auto_archive_duration
         data['default_auto_archive_duration'] = self.default_auto_archive_after // 60

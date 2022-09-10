@@ -1,28 +1,28 @@
 import vampytest
 
-from .. import CustomActivityMetadata
+from .. import ActivityMetadataCustom
 
 
-def test__CustomActivityMetadata__new__0():
+def test__ActivityMetadataCustom__new__0():
     """
-    Tests whether ``CustomActivityMetadata.__new__`` works as intended.
+    Tests whether ``ActivityMetadataCustom.__new__`` works as intended.
     """
-    activity_metadata = CustomActivityMetadata({})
+    activity_metadata = ActivityMetadataCustom({})
     
-    vampytest.assert_instance(activity_metadata, CustomActivityMetadata)
+    vampytest.assert_instance(activity_metadata, ActivityMetadataCustom)
     
     vampytest.assert_is(activity_metadata.created_at, None)
     vampytest.assert_is(activity_metadata.emoji, None)
     vampytest.assert_is(activity_metadata.state, None)
     
 
-def test__CustomActivityMetadata__new__1():
+def test__ActivityMetadataCustom__new__1():
     """
-    Tests whether ``CustomActivityMetadata.__new__`` wont touch the`keyword_parameters` parameter.
+    Tests whether ``ActivityMetadataCustom.__new__`` wont touch the`keyword_parameters` parameter.
     """
     keyword_parameters = {'name': ''}
     keyword_parameters_copy = keyword_parameters.copy()
     
-    CustomActivityMetadata(keyword_parameters)
+    ActivityMetadataCustom(keyword_parameters)
     
     vampytest.assert_eq(keyword_parameters, keyword_parameters_copy)

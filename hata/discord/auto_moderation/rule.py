@@ -1,7 +1,7 @@
 __all__ = ('AutoModerationRule',)
 
 from ..bases import DiscordEntity
-from ..channel import Channel, create_partial_channel_from_id
+from ..channel import Channel, ChannelType, create_partial_channel_from_id
 from ..core import AUTO_MODERATION_RULES
 from ..preconverters import preconvert_preinstanced_type, preconvert_str
 from ..role import Role, create_partial_role_from_id
@@ -1419,7 +1419,7 @@ class AutoModerationRule(DiscordEntity, immortal=True):
         else:
             guild_id = self.guild_id
             excluded_channels = tuple(
-                create_partial_channel_from_id(excluded_channel_id, -1, guild_id)
+                create_partial_channel_from_id(excluded_channel_id, ChannelType.unknown, guild_id)
                 for excluded_channel_id in excluded_channel_ids
             )
         
@@ -1441,7 +1441,7 @@ class AutoModerationRule(DiscordEntity, immortal=True):
             guild_id = self.guild_id
             
             for excluded_channel_id in excluded_channel_ids:
-                yield create_partial_channel_from_id(excluded_channel_id, -1, guild_id)
+                yield create_partial_channel_from_id(excluded_channel_id, ChannelType.unknown, guild_id)
     
     
     def iter_excluded_role_ids(self):

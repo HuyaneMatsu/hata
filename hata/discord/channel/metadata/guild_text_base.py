@@ -45,9 +45,9 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
     """
     __slots__ = ('default_auto_archive_after', 'nsfw', 'slowmode', 'topic')
     
-    @copy_docs(ChannelMetadataGuildMainBase._compare_attributes_to)
-    def _compare_attributes_to(self, other):
-        if not ChannelMetadataGuildMainBase._compare_attributes_to(self, other):
+    @copy_docs(ChannelMetadataGuildMainBase._is_equal_same_type)
+    def _is_equal_same_type(self, other):
+        if not ChannelMetadataGuildMainBase._is_equal_same_type(self, other):
             return False
         
         if self.default_auto_archive_after != other.default_auto_archive_after:

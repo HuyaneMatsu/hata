@@ -4,7 +4,7 @@ from scarletio import copy_docs
 
 from ..bases import EventBase
 from ..core import GUILDS
-from ..channel import create_partial_channel_from_id
+from ..channel import ChannelType, create_partial_channel_from_id
 from ..user import create_partial_user_from_id
 
 from .action import AutoModerationAction
@@ -268,7 +268,7 @@ class AutoModerationActionExecutionEvent(EventBase):
         """
         channel_id = self.channel_id
         if channel_id:
-            return create_partial_channel_from_id(channel_id, -1, self.guild_id)
+            return create_partial_channel_from_id(channel_id, ChannelType.unknown, self.guild_id)
     
     
     @property

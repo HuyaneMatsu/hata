@@ -9,7 +9,9 @@ from ..utils import timestamp_to_datetime
 from .utils import create_partial_user_from_id
 
 
+ChannelType = include('ChannelType')
 create_partial_role_from_id = include('create_partial_role_from_id')
+
 
 class VoiceState:
     """
@@ -148,7 +150,7 @@ class VoiceState:
         -------
         channel : ``Channel``
         """
-        return create_partial_channel_from_id(self.channel_id, -1, self.guild_id)
+        return create_partial_channel_from_id(self.channel_id, ChannelType.unknown, self.guild_id)
     
     
     @property

@@ -552,9 +552,9 @@ class DiscordGateway:
             activity = None
         else:
             if client.bot:
-                activity = activity.bot_dict()
+                activity = activity.to_data()
             else:
-                activity = activity.user_dict()
+                activity = activity.to_data_user()
         
         status = client._status.value
         

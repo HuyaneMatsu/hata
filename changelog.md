@@ -23,10 +23,18 @@
 - Add `ChannelFlag.active_channels_removed`.
 - Add `ChannelFlag.require_tag`.
 - Add `ChannelFlag.spam`.
+- Add `ForumTag`.
+- `create_partial_emoji_from_data` now prioritizes `emoji_` prefix fields.
+- Add `ChannelMetadataGuildForum.flags`.
+- Add `put_partial_emoji_data_into`.
+- Add `MessageType.interaction_premium_upsell`.
+- Add `MessageType`.
+- Add `MessageTypeFlag`.
 
 #### Bug fixes
 
 - `Activity` timestamps are now correctly converted.
+- `eventlist.__init__` failed on `pypy3.8`.
 
 #### Renames, Deprecation & Removals
 
@@ -39,6 +47,13 @@
 - Deprecate `ActivityRich.track_id`.
 - Rename `ActivityRich.track_url` to `.spotify_track_url`.
 - Deprecate `ActivityRich.track_url`.
+- Deprecate `with_count` parameter of `Client.invite_get`. (From now on, it will always default to `True`.)
+- Rename `Channel.is_in_group_messageable` to `.is_in_group_textual` with deprecation notice.
+- Rename `Channel.is_in_group_guild_messageable` to `.is_in_group_guild_textual` with deprecation notice.
+- Rename `Channel.is_in_group_guild_main_text` to `.is_in_group_guild_system` with deprecation notice.
+- Rename `Channel.is_in_group_can_contain_threads` to `.is_in_group_threadable` with deprecation notice.
+- Rename `Channel.is_in_group_can_create_invite_to` to `.is_in_group_invitable` with deprecation notice.
+- Rename `Channel.is_in_group_guild_movable` to `.is_in_group_guild_sortable` with deprecation notice.
 
 ## 1.3.7 *\[2022-08-04\]*
 

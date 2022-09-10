@@ -4,10 +4,7 @@ from functools import partial as partial_func
 
 from scarletio import CallableAnalyzer, DOCS_ENABLED, docs_property
 
-from ....discord.channel.deprecation import (
-    ChannelBase, ChannelCategory, ChannelDirectory, ChannelGroup, ChannelGuildBase, ChannelPrivate, ChannelStore,
-    ChannelText, ChannelTextBase, ChannelThread, ChannelVoice
-)
+from ....discord.channel import Channel
 from ....discord.embed import Embed, EmbedBase
 from ....discord.emoji.emoji import Emoji
 from ....discord.guild import Guild
@@ -40,17 +37,7 @@ PARAMETER_NAME_REST = 'rest'
 PARAMETER_TYPE_TO_NAME = {
     UserBase: 'user',
     User: 'user',
-    ChannelBase: 'channel',
-    ChannelGuildBase: 'guild-channel',
-    ChannelTextBase: 'any-text-channel',
-    ChannelText: 'text-channel',
-    ChannelPrivate: 'private-channel',
-    ChannelVoice: 'voice-channel',
-    ChannelGroup: 'group-channel',
-    ChannelCategory: 'category-channel',
-    ChannelStore: 'store-channel',
-    ChannelDirectory: 'directory-channel',
-    ChannelThread: 'thread-channel',
+    Channel: 'channel',
     Invite: 'invite',
     Role: 'role',
     Guild: 'guild',

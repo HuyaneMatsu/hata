@@ -4,7 +4,7 @@ import reprlib
 
 from scarletio import BaseMethodDescriptor, RichAttributeErrorBaseType
 
-from ..channel import CHANNEL_TYPES, Channel, create_partial_channel_from_id
+from ..channel import Channel, ChannelType, create_partial_channel_from_id
 from ..emoji import Emoji, create_partial_emoji_from_data
 from ..preconverters import preconvert_snowflake
 
@@ -195,7 +195,7 @@ class WelcomeChannel(RichAttributeErrorBaseType):
                 pass
             else:
                 if isinstance(channel, Channel):
-                    if channel.is_in_group_guild_main_text() or channel.partial:
+                    if channel.is_in_group_guild_system() or channel.partial:
                         channel_id = channel.id
                     else:
                         raise ValueError(
@@ -280,7 +280,7 @@ class WelcomeChannel(RichAttributeErrorBaseType):
         -------
         channel : ``Channel``
         """
-        return create_partial_channel_from_id(self.channel_id, CHANNEL_TYPES.guild_text, 0)
+        return create_partial_channel_from_id(self.channel_id, ChannelType.guild_text, 0)
     
     
     def __repr__(self):

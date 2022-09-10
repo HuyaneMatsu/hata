@@ -4,7 +4,6 @@ from scarletio import copy_docs
 
 from ...preconverters import preconvert_flag
 
-from .. import channel_types as CHANNEL_TYPES
 from ..flags import ChannelFlag
 
 from .guild_thread_base import ChannelMetadataGuildThreadBase
@@ -47,19 +46,15 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
     
     Class Attributes
     ----------------
-    type : `int` = `CHANNEL_TYPES.guild_thread_public`
-        The channel's type.
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """
     __slots__ = ('flags',)
     
-    type = CHANNEL_TYPES.guild_thread_public
 
-
-    @copy_docs(ChannelMetadataGuildThreadBase._compare_attributes_to)
-    def _compare_attributes_to(self, other):
-        if not ChannelMetadataGuildThreadBase._compare_attributes_to(self, other):
+    @copy_docs(ChannelMetadataGuildThreadBase._is_equal_same_type)
+    def _is_equal_same_type(self, other):
+        if not ChannelMetadataGuildThreadBase._is_equal_same_type(self, other):
             return False
         
         if self.flags != other.flags:

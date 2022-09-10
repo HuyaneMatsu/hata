@@ -10,8 +10,6 @@ from ...permission.permission import (
 )
 from ...preconverters import preconvert_str
 
-from .. import channel_types as CHANNEL_TYPES
-
 from .guild_main_base import ChannelMetadataGuildMainBase
 from .guild_voice_base import ChannelMetadataGuildVoiceBase
 
@@ -43,19 +41,14 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
     
     Class Attributes
     ----------------
-    type : `int` = `CHANNEL_TYPES.guild_stage`
-        The channel's type.
     order_group: `int` = `2`
         The channel's order group used when sorting channels.
     """
     __slots__ = ('topic',)
-    
-    type = CHANNEL_TYPES.guild_stage
-    
 
-    @copy_docs(ChannelMetadataGuildVoiceBase._compare_attributes_to)
-    def _compare_attributes_to(self, other):
-        if not ChannelMetadataGuildVoiceBase._compare_attributes_to(self, other):
+    @copy_docs(ChannelMetadataGuildVoiceBase._is_equal_same_type)
+    def _is_equal_same_type(self, other):
+        if not ChannelMetadataGuildVoiceBase._is_equal_same_type(self, other):
             return False
         
         if self.topic != other.topic:

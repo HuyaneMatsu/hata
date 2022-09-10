@@ -2,8 +2,6 @@ __all__ = ('ChannelMetadataGuildCategory',)
 
 from scarletio import copy_docs
 
-from .. import channel_types as CHANNEL_TYPES
-
 from .guild_main_base import ChannelMetadataGuildMainBase
 
 
@@ -26,14 +24,11 @@ class ChannelMetadataGuildCategory(ChannelMetadataGuildMainBase):
     
     Class Attributes
     ----------------
-    type : `int` = `CHANNEL_TYPES.guild_category`
-        The channel's type.
     order_group: `int` = `4`
         The channel's order group used when sorting channels.
     """
     __slots__ = ()
     
-    type = CHANNEL_TYPES.guild_category
     order_group = 4
     
     @copy_docs(ChannelMetadataGuildMainBase._get_display_name)

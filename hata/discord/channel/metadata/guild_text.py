@@ -8,7 +8,6 @@ from ...permission.permission import (
     PERMISSION_NONE, PERMISSION_TEXT_DENY, PERMISSION_VOICE_DENY
 )
 
-from .. import channel_types as CHANNEL_TYPES
 
 from .guild_text_base import ChannelMetadataGuildTextBase
 
@@ -42,15 +41,12 @@ class ChannelMetadataGuildText(ChannelMetadataGuildTextBase):
     
     Class Attributes
     ----------------
-    type : `int` = `CHANNEL_TYPES.guild_text`
-        The channel's type.
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """
     __slots__ = ()
     
-    type = CHANNEL_TYPES.guild_text
-    
+
     @copy_docs(ChannelMetadataGuildTextBase._get_permissions_for)
     def _get_permissions_for(self, channel_entity, user):
         result = self._get_base_permissions_for(channel_entity, user)

@@ -1052,7 +1052,7 @@ class RPCClient(RichAttributeErrorBaseType):
         if (channel is None):
             channel_id = None
         else:
-            channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
+            channel_id = get_channel_id(channel, Channel.is_in_group_textual)
             channel_id = str(channel_id)
         
         data = {
@@ -1800,7 +1800,7 @@ class RPCClient(RichAttributeErrorBaseType):
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
+        channel_id = get_channel_id(channel, Channel.is_in_group_textual)
         
         await self._subscribe(
             DISPATCH_EVENT_MESSAGE_CREATE,
@@ -1828,7 +1828,7 @@ class RPCClient(RichAttributeErrorBaseType):
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
+        channel_id = get_channel_id(channel, Channel.is_in_group_textual)
 
         await self._unsubscribe(
             DISPATCH_EVENT_MESSAGE_CREATE,
@@ -1856,7 +1856,7 @@ class RPCClient(RichAttributeErrorBaseType):
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
+        channel_id = get_channel_id(channel, Channel.is_in_group_textual)
         
         await self._subscribe(
             DISPATCH_EVENT_MESSAGE_EDIT,
@@ -1884,7 +1884,7 @@ class RPCClient(RichAttributeErrorBaseType):
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
+        channel_id = get_channel_id(channel, Channel.is_in_group_textual)
 
         await self._unsubscribe(
             DISPATCH_EVENT_MESSAGE_EDIT,
@@ -1912,7 +1912,7 @@ class RPCClient(RichAttributeErrorBaseType):
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
+        channel_id = get_channel_id(channel, Channel.is_in_group_textual)
         
         await self._subscribe(
             DISPATCH_EVENT_MESSAGE_DELETE,
@@ -1940,7 +1940,7 @@ class RPCClient(RichAttributeErrorBaseType):
         DiscordRPCError
             Any exception dropped back by the discord client.
         """
-        channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
+        channel_id = get_channel_id(channel, Channel.is_in_group_textual)
 
         await self._unsubscribe(
             DISPATCH_EVENT_MESSAGE_DELETE,

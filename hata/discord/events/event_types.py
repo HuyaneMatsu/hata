@@ -5,7 +5,7 @@ from scarletio import copy_docs, set_docs
 from ...env import CACHE_PRESENCE
 
 from ..bases import EventBase
-from ..channel import create_partial_channel_from_id
+from ..channel import ChannelType, create_partial_channel_from_id
 from ..core import GUILDS
 from ..interaction import ApplicationCommandTargetType
 from ..user import User
@@ -442,7 +442,7 @@ class WebhookUpdateEvent(EventBase):
         -------
         channel : ``Channel``
         """
-        return create_partial_channel_from_id(self.channel_id, -1, self.guild_id)
+        return create_partial_channel_from_id(self.channel_id, ChannelType.unknown, self.guild_id)
     
     
     @property

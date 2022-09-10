@@ -88,7 +88,7 @@ class ClientCompoundMessageEndpoints(Compound):
             given channel.
         - ``.message_iterator`` : An iterator over a channel's message history.
         """
-        channel, channel_id = get_channel_and_id(channel, Channel.is_in_group_messageable)
+        channel, channel_id = get_channel_and_id(channel, Channel.is_in_group_textual)
         
         if __debug__:
             if not isinstance(limit, int):
@@ -153,7 +153,7 @@ class ClientCompoundMessageEndpoints(Compound):
             - If `limit` was not given as `int`.
             - If `limit` is out of range [1:100].
         """
-        channel, channel_id = get_channel_and_id(channel, Channel.is_in_group_messageable)
+        channel, channel_id = get_channel_and_id(channel, Channel.is_in_group_textual)
         
         if __debug__:
             if not isinstance(limit, int):
@@ -221,7 +221,7 @@ class ClientCompoundMessageEndpoints(Compound):
             
             channel, message_id = message, *positional_parameters
                 
-            channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
+            channel_id = get_channel_id(channel, Channel.is_in_group_textual)
             
             message_id_value = maybe_snowflake(message_id)
             if message_id_value is None:
@@ -365,7 +365,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
         while True:
             if isinstance(channel, Channel):
-                if channel.is_in_group_messageable() or channel.partial:
+                if channel.is_in_group_textual() or channel.partial:
                     message_id = None
                     channel_id = channel.id
                     break
@@ -865,7 +865,7 @@ class ClientCompoundMessageEndpoints(Compound):
         This method uses up 4 different rate limit groups parallelly to maximize the request and the deletion speed.
         """
         if __debug__:
-            if not (isinstance(channel, Channel) and (channel.is_in_group_messageable() or channel.partial)):
+            if not (isinstance(channel, Channel) and (channel.is_in_group_textual() or channel.partial)):
                 raise AssertionError(
                     f'`channel` can be a messageable channel, got {channel.__class__.__name__}; {channel!r}.'
                 )
@@ -1213,7 +1213,7 @@ class ClientCompoundMessageEndpoints(Compound):
         parallelize the them between more clients as well.
         """
         if __debug__:
-            if not (isinstance(channel, Channel) and (channel.is_in_group_messageable() or channel.partial)):
+            if not (isinstance(channel, Channel) and (channel.is_in_group_textual() or channel.partial)):
                 raise AssertionError(
                     f'`channel` can be a messageable channel, got {channel.__class__.__name__}; {channel!r}.'
                 )
@@ -1713,7 +1713,7 @@ class ClientCompoundMessageEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
+        channel_id = get_channel_id(channel, Channel.is_in_group_textual)
         
         data = await self.http.channel_pin_get_all(channel_id)
         
@@ -1830,7 +1830,7 @@ class ClientCompoundMessageEndpoints(Compound):
                     f'`index` is out from the expected [0:] range, got {index!r}.'
                 )
         
-        channel, channel_id = get_channel_and_id(channel, Channel.is_in_group_messageable)
+        channel, channel_id = get_channel_and_id(channel, Channel.is_in_group_textual)
         if channel is None:
             messages = await self.message_get_chunk_from_zero(channel_id, min(index + 1, 100))
             
@@ -1912,7 +1912,7 @@ class ClientCompoundMessageEndpoints(Compound):
                     f'`end` is out from the expected [0:] range, got {end!r}.'
                 )
         
-        channel, channel_id = get_channel_and_id(channel, Channel.is_in_group_messageable)
+        channel, channel_id = get_channel_and_id(channel, Channel.is_in_group_textual)
         if channel is None:
             messages = await self.message_get_chunk_from_zero(channel_id, min(end + 1, 100))
             

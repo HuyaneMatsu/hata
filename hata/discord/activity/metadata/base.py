@@ -206,6 +206,8 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------+
         | name              | `str`                             |
         +-------------------+-----------------------------------+
+        | metadata          | ``ActivityMetadataBase``          |
+        +-------------------+-----------------------------------+
         | party             | `None`, ``ActivityParty``         |
         +-------------------+-----------------------------------+
         | secrets           | `None`, ``ActivitySecrets``       |

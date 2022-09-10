@@ -6,8 +6,6 @@ from ...permission import Permission
 from ...permission.permission import PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE, PERMISSION_TEXT_AND_VOICE_DENY
 from ...preconverters import preconvert_bool
 
-from .. import channel_types as CHANNEL_TYPES
-
 from .guild_main_base import ChannelMetadataGuildMainBase
 
 
@@ -32,18 +30,14 @@ class ChannelMetadataGuildStore(ChannelMetadataGuildMainBase):
     
     Class Attributes
     ----------------
-    type : `int` = `CHANNEL_TYPES.guild_store`
-        The channel's type.
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """
     __slots__ = ('nsfw',)
     
-    type = CHANNEL_TYPES.guild_store
-    
-    @copy_docs(ChannelMetadataGuildMainBase._compare_attributes_to)
-    def _compare_attributes_to(self, other):
-        if not ChannelMetadataGuildMainBase._compare_attributes_to(self, other):
+    @copy_docs(ChannelMetadataGuildMainBase._is_equal_same_type)
+    def _is_equal_same_type(self, other):
+        if not ChannelMetadataGuildMainBase._is_equal_same_type(self, other):
             return False
         
         if self.nsfw != other.nsfw:

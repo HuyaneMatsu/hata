@@ -2,238 +2,345 @@ __all__ = ()
 
 import warnings
 
-from scarletio import copy_docs, include
+from scarletio import modulize
 
 from ...utils.module_deprecation import deprecated_import
 
-from . import channel_types as CHANNEL_TYPES
+from .channel_type import ChannelType
 
 
-Channel = include('Channel')
-
-class DeprecatedChannelMetType(type):
+@deprecated_import
+def get_channel_type_name(channel_type):
     """
-    Meta type for the old deprecated channels warning about deprecation when instance or subtype checking.
+    Returns the channel type's name.
+    
+    Parameters
+    ----------
+    channel_type : `int`, ``ChannelType``
+        The channel type to get it's name.
+    
+    Returns
+    -------
+    channel_name : `str`
     """
-    def __instancecheck__(cls, instance):
-        warnings.warn(
-            f'`{cls.__name__}` is deprecated and will be removed in 2022. Please use `{Channel.__name__}` instead.',
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return isinstance(instance, Channel) and instance.type in cls.allowed_types
+    warnings.warn(
+        '`get_channel_type_name` is deprecated and will be removed in 2023 January.',
+        FutureWarning,
+        stacklevel = 2,
+    )
     
-    def __subclasscheck__(cls, klass):
-        warnings.warn(
-            f'`{cls.__name__}` is deprecated and will be removed in 2022. Please use `{Channel.__name__}` instead.',
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return issubclass(klass, Channel) or (klass is cls)
+    if isinstance(channel_type, int):
+        return ChannelType.get(channel_type).name
+    
+    if isinstance(channel_type, ChannelType):
+        return channel_type.name
+    
+    return ''
 
 
 @deprecated_import
-class ChannelBase(metaclass=DeprecatedChannelMetType):
+def get_channel_type_names(channel_types):
     """
-    Deprecated and will be removed in 2022 August. Please use the ``Channel`` type instead.
+    Returns multiple channel type's names connected by comma.
+    
+    Parameters
+    ----------
+    channel_types : `iterable` of (`int`, ``ChannelType``)
+        The channel types to get the their name.
+    
+    Returns
+    -------
+    channel_names : `str`
     """
-    allowed_types = frozenset((
-        CHANNEL_TYPES.guild_text,
-        CHANNEL_TYPES.private,
-        CHANNEL_TYPES.guild_voice,
-        CHANNEL_TYPES.private_group,
-        CHANNEL_TYPES.guild_category,
-        CHANNEL_TYPES.guild_announcements,
-        CHANNEL_TYPES.guild_store,
-        CHANNEL_TYPES.thread,
-        CHANNEL_TYPES.guild_thread_announcements,
-        CHANNEL_TYPES.guild_thread_public,
-        CHANNEL_TYPES.guild_thread_private,
-        CHANNEL_TYPES.guild_stage,
-        CHANNEL_TYPES.guild_directory,
-        CHANNEL_TYPES.guild_forum,
+    warnings.warn(
+        '`get_channel_type_names` is deprecated and will be removed in 2023 January.',
+        FutureWarning,
+        stacklevel = 2,
+    )
+    
+    return ', '.join(sorted(get_channel_type_name(channel_type) for channel_type in channel_types))
+
+
+@deprecated_import
+@modulize
+class CHANNEL_TYPES:
+    """
+    Deprecated and will be removed in 2023 January.
+    
+    Contains channel type identifiers.
+    
+    +---------------------------------------+-------+
+    | Name                                  | Value |
+    +=======================================+=======+
+    | guild_text                            | 0     |
+    +---------------------------------------+-------+
+    | private                               | 1     |
+    +---------------------------------------+-------+
+    | guild_voice                           | 2     |
+    +---------------------------------------+-------+
+    | private_group                         | 3     |
+    +---------------------------------------+-------+
+    | guild_category                        | 4     |
+    +---------------------------------------+-------+
+    | guild_announcements                   | 5     |
+    +---------------------------------------+-------+
+    | guild_store                           | 6     |
+    +---------------------------------------+-------+
+    | thread                                | 9     |
+    +---------------------------------------+-------+
+    | guild_thread_announcements            | 10    |
+    +---------------------------------------+-------+
+    | guild_thread_public                   | 11    |
+    +---------------------------------------+-------+
+    | guild_thread_private                  | 12    |
+    +---------------------------------------+-------+
+    | guild_stage                           | 13    |
+    +---------------------------------------+-------+
+    | guild_directory                       | 14    |
+    +---------------------------------------+-------+
+    | guild_forum                           | 15    |
+    +---------------------------------------+-------+
+    
+    In addition also extra groups are defined:
+    
+    +---------------------------------------+-------------------------------+
+    | Name                                  | Elements                      |
+    +=======================================+===============================+
+    | GROUP_MESSAGEABLE                     | guild_text,                   |
+    |                                       | private,                      |
+    |                                       | guild_voice,                  |
+    |                                       | private_group,                |
+    |                                       | guild_announcements,          |
+    |                                       | guild_thread_announcements,   |
+    |                                       | guild_thread_public,          |
+    |                                       | guild_thread_private          |
+    +---------------------------------------+-------------------------------+
+    | GROUP_GUILD_MESSAGEABLE               | guild_text,                   |
+    |                                       | guild_voice,                  |
+    |                                       | guild_announcements,          |
+    |                                       | guild_thread_announcements,   |
+    |                                       | guild_thread_public,          |
+    |                                       | guild_thread_private          |
+    +---------------------------------------+-------------------------------+
+    | GROUP_GUILD_MAIN_TEXT                 | guild_text,                   |
+    |                                       | guild_announcements           |
+    +---------------------------------------+-------------------------------+
+    | GROUP_CONNECTABLE                     | private,                      |
+    |                                       | guild_voice,                  |
+    |                                       | private_group,                |
+    |                                       | guild_stage                   |
+    +---------------------------------------+-------------------------------+
+    | GROUP_GUILD_CONNECTABLE               | guild_voice,                  |
+    |                                       | guild_stage                   |
+    +---------------------------------------+-------------------------------+
+    | GROUP_PRIVATE                         | private,                      |
+    |                                       | private_group                 |
+    +---------------------------------------+-------------------------------+
+    | GROUP_GUILD                           | guild_text,                   |
+    |                                       | guild_voice,                  |
+    |                                       | guild_category,               |
+    |                                       | guild_announcements,          |
+    |                                       | guild_store,                  |
+    |                                       | guild_thread_announcements,   |
+    |                                       | guild_thread_public,          |
+    |                                       | guild_thread_private,         |
+    |                                       | guild_stage,                  |
+    |                                       | guild_directory,              |
+    |                                       | guild_forum                   |
+    +---------------------------------------+-------------------------------+
+    | GROUP_THREAD                          | guild_thread_announcements,   |
+    |                                       | guild_thread_public,          |
+    |                                       | guild_thread_private          |
+    +---------------------------------------+-------------------------------+
+    | GROUP_CAN_CONTAIN_THREADS             | guild_text,                   |
+    |                                       | guild_announcements,          |
+    |                                       | guild_forum                   |
+    +---------------------------------------+-------------------------------+
+    | GROUP_IN_PRODUCTION                   | guild_text,                   |
+    |                                       | private,                      |
+    |                                       | guild_voice,                  |
+    |                                       | private_group,                |
+    |                                       | guild_category,               |
+    |                                       | guild_announcements,          |
+    |                                       | guild_thread_announcements,   |
+    |                                       | guild_thread_public,          |
+    |                                       | guild_thread_private,         |
+    |                                       | guild_stage,                  |
+    |                                       | guild_directory,              |
+    |                                       | guild_forum                   |
+    +---------------------------------------+-------------------------------+
+    | GROUP_CAN_CREATE_INVITE_TO            | guild_text,                   |
+    |                                       | guild_voice,                  |
+    |                                       | private_group,                |
+    |                                       | guild_announcements,          |
+    |                                       | guild_store,                  |
+    |                                       | guild_stage,                  |
+    |                                       | guild_directory               |
+    +---------------------------------------+-------------------------------+
+    | GROUP_GUILD_MOVABLE                   | guild_text,                   |
+    |                                       | guild_voice,                  |
+    |                                       | guild_category,               |
+    |                                       | guild_announcements,          |
+    |                                       | guild_store,                  |
+    |                                       | guild_stage,                  |
+    |                                       | guild_directory,              |
+    |                                       | guild_forum                   |
+    +---------------------------------------+-------------------------------+
+    """
+    guild_text = 0
+    private = 1
+    guild_voice = 2
+    private_group = 3
+    guild_category = 4
+    guild_announcements = 5
+    guild_store = 6
+    # 7? Not in use
+    # 8? Not in use
+    thread = 9 # Not in use
+    guild_thread_announcements = 10
+    guild_thread_public = 11
+    guild_thread_private = 12
+    guild_stage = 13
+    guild_directory = 14
+    guild_forum = 15
+    
+    
+    GROUP_MESSAGEABLE = frozenset((
+        guild_text,
+        private,
+        guild_voice,
+        private_group,
+        guild_announcements,
+        guild_thread_announcements,
+        guild_thread_public,
+        guild_thread_private,
     ))
     
-    type = 0
     
-    @classmethod
-    def precreate(cls, channel_id, **kwargs):
-        channel_type = next(iter(cls.allowed_types))
+    GROUP_GUILD_MESSAGEABLE = frozenset((
+        guild_text,
+        guild_voice,
+        guild_announcements,
+        guild_thread_announcements,
+        guild_thread_public,
+        guild_thread_private,
+    ))
+    
+    
+    GROUP_GUILD_MAIN_TEXT = frozenset((
+        guild_text,
+        guild_announcements,
+    ))
+    
+    
+    GROUP_CONNECTABLE = frozenset((
+        private,
+        guild_voice,
+        private_group,
+        guild_stage,
+    ))
+    
+    
+    GROUP_GUILD_CONNECTABLE = frozenset((
+        guild_voice,
+        guild_stage,
+    ))
+    
+    
+    GROUP_PRIVATE = frozenset((
+        private,
+        private_group,
+    ))
+    
+    
+    GROUP_GUILD = frozenset((
+        guild_text,
+        guild_voice,
+        guild_category,
+        guild_announcements,
+        guild_store,
+        guild_thread_announcements,
+        guild_thread_public,
+        guild_thread_private,
+        guild_stage,
+        guild_directory,
+        guild_forum,
+    ))
+    
+    
+    GROUP_THREAD = frozenset((
+        guild_thread_announcements,
+        guild_thread_public,
+        guild_thread_private,
+    ))
+    
+    
+    GROUP_CAN_CONTAIN_THREADS = frozenset((
+        guild_text,
+        guild_announcements,
+        guild_forum,
+    ))
+    
+    
+    GROUP_IN_PRODUCTION = frozenset((
+        guild_text,
+        private,
+        guild_voice,
+        private_group,
+        guild_category,
+        guild_announcements,
+        guild_thread_announcements,
+        guild_thread_public,
+        guild_thread_private,
+        guild_stage,
+        guild_directory,
+        guild_forum,
+    ))
+    
+    
+    GROUP_CAN_CREATE_INVITE_TO = frozenset((
+        guild_text,
+        guild_voice,
+        private_group,
+        guild_announcements,
+        guild_store,
+        guild_stage,
+        guild_directory,
         
-        warnings.warn(
-            (
-                f'`{cls.__name__}.precreate(...)` is deprecated and will be removed in 2022 August. Please use: '
-                f'`{Channel.__name__}.precreate(channel_id, channel_type={channel_type}, ...)` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return Channel.precreate(channel_id, channel_type=channel_type, **kwargs)
-
-
-@deprecated_import
-@copy_docs(ChannelBase)
-class ChannelTextBase(ChannelBase):
-    allowed_types = frozenset((
-        CHANNEL_TYPES.guild_text,
-        CHANNEL_TYPES.private,
-        CHANNEL_TYPES.private_group,
-        CHANNEL_TYPES.guild_announcements,
-        CHANNEL_TYPES.thread,
-        CHANNEL_TYPES.guild_thread_announcements,
-        CHANNEL_TYPES.guild_thread_public,
-        CHANNEL_TYPES.guild_thread_private,
     ))
-
-
-@deprecated_import
-@copy_docs(ChannelBase)
-class ChannelGuildBase(ChannelBase):
-    allowed_types = frozenset((
-        CHANNEL_TYPES.guild_text,
-        CHANNEL_TYPES.guild_voice,
-        CHANNEL_TYPES.guild_category,
-        CHANNEL_TYPES.guild_announcements,
-        CHANNEL_TYPES.guild_store,
-        CHANNEL_TYPES.guild_thread_announcements,
-        CHANNEL_TYPES.guild_thread_public,
-        CHANNEL_TYPES.guild_thread_private,
-        CHANNEL_TYPES.guild_stage,
-        CHANNEL_TYPES.guild_directory,
-        CHANNEL_TYPES.guild_forum,
-    ))
-
-
-@deprecated_import
-@copy_docs(ChannelBase)
-class ChannelGuildMainBase(ChannelGuildBase):
-    allowed_types = frozenset((
-        CHANNEL_TYPES.guild_text,
-        CHANNEL_TYPES.guild_voice,
-        CHANNEL_TYPES.guild_category,
-        CHANNEL_TYPES.guild_announcements,
-        CHANNEL_TYPES.guild_store,
-        CHANNEL_TYPES.guild_stage,
-        CHANNEL_TYPES.guild_directory,
-        CHANNEL_TYPES.guild_forum,
-    ))
-
-
-@deprecated_import
-@copy_docs(ChannelBase)
-class ChannelCategory(ChannelGuildMainBase):
-    type = CHANNEL_TYPES.guild_category
     
-    allowed_types = frozenset((
-        CHANNEL_TYPES.guild_category,
+    GROUP_GUILD_MOVABLE = frozenset((
+        guild_text,
+        guild_voice,
+        guild_category,
+        guild_announcements,
+        guild_store,
+        guild_stage,
+        guild_directory,
+        guild_forum,
     ))
-
-
-@deprecated_import
-@copy_docs(ChannelBase)
-class ChannelDirectory(ChannelGuildMainBase):
-    type = CHANNEL_TYPES.guild_directory
     
-    allowed_types = frozenset((
-        CHANNEL_TYPES.guild_directory,
-    ))
-
-
-@deprecated_import
-@copy_docs(ChannelBase)
-class ChannelForum(ChannelGuildMainBase):
-    type = CHANNEL_TYPES.guild_forum
     
-    allowed_types = frozenset((
-        CHANNEL_TYPES.guild_forum,
-    ))
-
-
-@deprecated_import
-@copy_docs(ChannelBase)
-class ChannelStore(ChannelGuildMainBase):
-    allowed_types = frozenset((
-        CHANNEL_TYPES.guild_store,
-    ))
-
-
-@deprecated_import
-@copy_docs(ChannelBase)
-class ChannelText(ChannelGuildMainBase, ChannelTextBase):
-    type = CHANNEL_TYPES.guild_text
+    CHANNEL_TYPE_NAMES = {
+        guild_text: 'guild text',
+        private: 'guild private',
+        guild_voice: 'guild voice',
+        private_group: 'private group',
+        guild_category: 'guild category',
+        guild_announcements: 'guild announcements',
+        guild_store: 'guild store',
+        thread: 'thread',
+        guild_thread_announcements: 'guild thread announcements',
+        guild_thread_public: 'guild thread public',
+        guild_thread_private: 'guild thread private',
+        guild_stage: 'guild stage',
+        guild_directory: 'guild directory',
+        guild_forum: 'guild forum',
+    }
     
-    allowed_types = frozenset((
-        CHANNEL_TYPES.guild_text,
-        CHANNEL_TYPES.guild_announcements,
-    ))
-
-
-@deprecated_import
-@copy_docs(ChannelBase)
-class ChannelGuildUndefined(ChannelGuildMainBase):
-    allowed_types = frozenset((
-        7,
-        8,
-    ))
-
-
-@deprecated_import
-@copy_docs(ChannelBase)
-class ChannelVoiceBase(ChannelGuildMainBase):
-    allowed_types = frozenset((
-        CHANNEL_TYPES.guild_voice,
-        CHANNEL_TYPES.guild_stage,
-    ))
-
-
-@deprecated_import
-@copy_docs(ChannelBase)
-class ChannelVoice(ChannelVoiceBase):
-    type = CHANNEL_TYPES.guild_voice
     
-    allowed_types = frozenset((
-        CHANNEL_TYPES.guild_voice,
-    ))
-
-
-@deprecated_import
-@copy_docs(ChannelBase)
-class ChannelStage(ChannelVoiceBase):
-    type = CHANNEL_TYPES.guild_stage
+    DEFAULT_CHANNEL_TYPE_NAME = 'unknown'
     
-    allowed_types = frozenset((
-        CHANNEL_TYPES.guild_stage,
-    ))
-
-
-@deprecated_import
-@copy_docs(ChannelBase)
-class ChannelPrivate(ChannelTextBase, ChannelBase):
-    type = CHANNEL_TYPES.private
     
-    allowed_types = frozenset((
-        CHANNEL_TYPES.private,
-    ))
-
-
-@deprecated_import
-@copy_docs(ChannelBase)
-class ChannelGroup(ChannelTextBase, ChannelBase):
-    type = CHANNEL_TYPES.private_group
-    
-    allowed_types = frozenset((
-        CHANNEL_TYPES.private_group,
-    ))
-
-
-@deprecated_import
-@copy_docs(ChannelBase)
-class ChannelThread(ChannelGuildBase, ChannelTextBase):
-    allowed_types = frozenset((
-        CHANNEL_TYPES.guild_thread_announcements,
-        CHANNEL_TYPES.guild_thread_public,
-        CHANNEL_TYPES.guild_thread_private,
-    ))
+    get_channel_type_name = get_channel_type_name
+    get_channel_type_names = get_channel_type_names

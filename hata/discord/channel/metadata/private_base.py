@@ -40,8 +40,8 @@ class ChannelMetadataPrivateBase(ChannelMetadataBase):
         return self
     
     
-    @copy_docs(ChannelMetadataBase._compare_attributes_to)
-    def _compare_attributes_to(self, other):
+    @copy_docs(ChannelMetadataBase._is_equal_same_type)
+    def _is_equal_same_type(self, other):
         if self.users != other.users:
             return False
         

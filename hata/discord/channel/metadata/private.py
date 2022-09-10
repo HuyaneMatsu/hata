@@ -5,8 +5,6 @@ from scarletio import copy_docs
 
 from ...permission.permission import PERMISSION_NONE, PERMISSION_PRIVATE, PERMISSION_PRIVATE_BOT
 
-from .. import channel_types as CHANNEL_TYPES
-
 from .private_base import ChannelMetadataPrivateBase
 
 
@@ -21,14 +19,10 @@ class ChannelMetadataPrivate(ChannelMetadataPrivateBase):
     
     Class Attributes
     ----------------
-    type : `int` = `CHANNEL_TYPES.private`
-        The channel's type.
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """
     __slots__ = ()
-    
-    type = CHANNEL_TYPES.private
     
     @copy_docs(ChannelMetadataPrivateBase._created)
     def _created(self, channel_entity, client):

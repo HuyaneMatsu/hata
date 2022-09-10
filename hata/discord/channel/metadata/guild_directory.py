@@ -5,7 +5,6 @@ from scarletio import copy_docs
 from ...permission import Permission
 from ...permission.permission import PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE, PERMISSION_THREAD_AND_VOICE_DENY
 
-from .. import channel_types as CHANNEL_TYPES
 
 from .guild_main_base import ChannelMetadataGuildMainBase
 
@@ -29,14 +28,10 @@ class ChannelMetadataGuildDirectory(ChannelMetadataGuildMainBase):
     
     Class Attributes
     ----------------
-    type : `int` = `CHANNEL_TYPES.guild_directory`
-        The channel's type.
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """
     __slots__ = ()
-    
-    type = CHANNEL_TYPES.guild_directory
     
     @copy_docs(ChannelMetadataGuildMainBase._get_display_name)
     def _get_display_name(self):

@@ -52,8 +52,8 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         self._permission_cache = None
     
     
-    @copy_docs(ChannelMetadataBase._compare_attributes_to)
-    def _compare_attributes_to(self, other):
+    @copy_docs(ChannelMetadataBase._is_equal_same_type)
+    def _is_equal_same_type(self, other):
         if self.parent_id != other.parent_id:
             return False
         

@@ -14,7 +14,7 @@ from scarletio import WeakValueDictionary, export, include
 from ...env import CACHE_PRESENCE, CACHE_USER
 
 from ..bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
-from ..channel import CHANNEL_TYPES, Channel
+from ..channel import Channel
 from ..core import GUILDS
 from ..emoji import Emoji
 from ..http import urls as module_urls
@@ -81,17 +81,6 @@ else:
 MAX_PRESENCES_DEFAULT = 0
 MAX_USERS_DEFAULT = 250000
 MAX_VIDEO_CHANNEL_USERS_DEFAULT = 25
-
-
-CHANNEL_TYPE_GUILD_TEXT = CHANNEL_TYPES.guild_text
-CHANNEL_TYPE_GUILD_VOICE = CHANNEL_TYPES.guild_voice
-CHANNEL_TYPE_GUILD_CATEGORY = CHANNEL_TYPES.guild_category
-CHANNEL_TYPE_GUILD_ANNOUNCEMENTS = CHANNEL_TYPES.guild_announcements
-CHANNEL_TYPE_GUILD_STORE = CHANNEL_TYPES.guild_store
-CHANNEL_TYPE_GUILD_STAGE = CHANNEL_TYPES.guild_stage
-CHANNEL_TYPE_GUILD_FORUM = CHANNEL_TYPES.guild_forum
-CHANNEL_TYPE_GROUP_GUILD_MAIN_TEXT = CHANNEL_TYPES.GROUP_GUILD_MAIN_TEXT
-CHANNEL_TYPE_GROUP_GUILD_CONNECTABLE = CHANNEL_TYPES.GROUP_GUILD_CONNECTABLE
 
 
 def _user_date_sort_key(item):
@@ -1010,7 +999,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``Channel``
         """
-        return [channel for channel in self.channels.values() if channel.type == CHANNEL_TYPE_GUILD_TEXT]
+        return [channel for channel in self.channels.values() if channel.is_guild_text()]
     
     
     @property
@@ -1022,7 +1011,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``Channel``
         """
-        return [channel for channel in self.channels.values() if channel.type == CHANNEL_TYPE_GUILD_VOICE]
+        return [channel for channel in self.channels.values() if channel.is_guild_voice()]
     
     
     @property
@@ -1034,7 +1023,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``Channel``
         """
-        return [channel for channel in self.channels.values() if channel.type == CHANNEL_TYPE_GUILD_CATEGORY]
+        return [channel for channel in self.channels.values() if channel.is_guild_category()]
     
     
     @property
@@ -1046,7 +1035,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``Channel``
         """
-        return [channel for channel in self.channels.values() if channel.type == CHANNEL_TYPE_GUILD_ANNOUNCEMENTS]
+        return [channel for channel in self.channels.values() if channel.is_guild_announcements()]
     
     
     @property
@@ -1058,7 +1047,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``Channel``
         """
-        return [channel for channel in self.channels.values() if channel.type == CHANNEL_TYPE_GUILD_STORE]
+        return [channel for channel in self.channels.values() if channel.is_guild_store()]
     
     
     @property
@@ -1082,7 +1071,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``Channel``
         """
-        return [channel for channel in self.channels.values() if channel.type == CHANNEL_TYPE_GUILD_STAGE]
+        return [channel for channel in self.channels.values() if channel.is_guild_stage()]
     
     
     @property
@@ -1094,7 +1083,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``Channel``
         """
-        return [channel for channel in self.channels.values() if channel.type == CHANNEL_TYPE_GUILD_FORUM]
+        return [channel for channel in self.channels.values() if channel.is_guild_forum()]
     
     
     @property
@@ -1106,7 +1095,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``Channel``
         """
-        return [channel for channel in self.channels.values() if channel.type in CHANNEL_TYPE_GROUP_GUILD_MAIN_TEXT]
+        return [channel for channel in self.channels.values() if channel.is_in_group_guild_textual()]
     
     
     @property
@@ -1118,7 +1107,7 @@ class Guild(DiscordEntity, immortal=True):
         -------
         channels : `list` of ``Channel``
         """
-        return [channel for channel in self.channels.values() if channel.type in CHANNEL_TYPE_GROUP_GUILD_CONNECTABLE]
+        return [channel for channel in self.channels.values() if channel.is_in_group_guild_connectable()]
     
     
     @property
@@ -2947,7 +2936,7 @@ class Guild(DiscordEntity, immortal=True):
         channels = []
         for channel in sorted(channel for channel in self.channels.values() if channel.parent is None):
             channels.append(channel)
-            if channel.type == CHANNEL_TYPE_GUILD_CATEGORY:
+            if channel.is_guild_category():
                 channels.extend(channel.list_channels)
         
         return channels

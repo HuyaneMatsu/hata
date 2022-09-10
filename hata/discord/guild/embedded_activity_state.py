@@ -4,7 +4,7 @@ __all__ = ('EmbeddedActivityState',)
 from scarletio import RichAttributeErrorBaseType
 
 from ..activity import Activity
-from ..channel import create_partial_channel_from_id
+from ..channel import ChannelType, create_partial_channel_from_id
 from ..core import EMBEDDED_ACTIVITY_STATES, GUILDS
 from ..user import create_partial_user_from_id
 
@@ -118,6 +118,8 @@ def difference_handle_embedded_activity_update_event(data):
             | flags             | ``ActivityFlag``                  |
             +-------------------+-----------------------------------+
             | name              | `str`                             |
+            +-------------------+-----------------------------------+
+            | metadata          | ``ActivityMetadataBase``          |
             +-------------------+-----------------------------------+
             | party             | `None`, ``ActivityParty``         |
             +-------------------+-----------------------------------+
@@ -320,7 +322,7 @@ class EmbeddedActivityState(RichAttributeErrorBaseType):
         -------
         channel : ``Channel``
         """
-        return create_partial_channel_from_id(self.channel_id, -1, self.guild_id)
+        return create_partial_channel_from_id(self.channel_id, ChannelType.unknown, self.guild_id)
     
     
     @property

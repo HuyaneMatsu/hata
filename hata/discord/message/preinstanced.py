@@ -344,6 +344,8 @@ class MessageType(PreinstancedBase):
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
     | role_subscription_purchase                | role subscription purchase                | MESSAGE_DEFAULT_CONVERTER                         | 25    |
     +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
+    | interaction_premium_upsell                | interaction premium upsell                | MESSAGE_DEFAULT_CONVERTER                         | 26    |
+    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -373,7 +375,7 @@ class MessageType(PreinstancedBase):
         return self
     
     
-    def __init__(self, value, name, convert):
+    def __init__(self, value, name, converter):
         """
         Creates an ``MessageType`` and stores it at the class's `.INSTANCES` class attribute as well.
         
@@ -383,12 +385,12 @@ class MessageType(PreinstancedBase):
             The Discord side identifier value of the message type.
         name : `str`
             The default name of the message type.
-        convert : `function`
+        converter : `function`
             The converter function of the message type.
         """
         self.value = value
         self.name = name
-        self.converter = convert
+        self.converter = converter
         
         self.INSTANCES[value] = self
     
@@ -429,6 +431,7 @@ class MessageType(PreinstancedBase):
     context_command = P(23, 'context command', MESSAGE_DEFAULT_CONVERTER)
     auto_moderation_action = P(24, 'auto moderation action', MESSAGE_DEFAULT_CONVERTER)
     role_subscription_purchase = P (25, 'role subscription purchase', MESSAGE_DEFAULT_CONVERTER)
+    interaction_premium_upsell = P(26, 'interaction premium upsell', MESSAGE_DEFAULT_CONVERTER)
     
     
     @class_property

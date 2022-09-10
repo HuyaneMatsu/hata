@@ -280,15 +280,16 @@ class Activity(RichAttributeErrorBaseType):
             Data received from Discord.
         """
         type_ = ActivityType.get(data.get('type', 0))
-        self.type = type_
-        
         metadata_type = type_.metadata_type
+        
         metadata = self.metadata
         
-        if type(metadata) is metadata_type:
+        if metadata_type is type(metadata):
             metadata._update_attributes(data)
         else:
             self.metadata = metadata_type.from_data(data)
+        
+        self.type = type_
     
     
     def _difference_update_attributes(self, data):
@@ -322,6 +323,8 @@ class Activity(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------+
         | name              | `str`                             |
         +-------------------+-----------------------------------+
+        | metadata          | ``ActivityMetadataBase``          |
+        +-------------------+-----------------------------------+
         | party             | `None`, ``ActivityParty``         |
         +-------------------+-----------------------------------+
         | secrets           | `None`, ``ActivitySecrets``       |
@@ -341,15 +344,20 @@ class Activity(RichAttributeErrorBaseType):
         """
         type_ = ActivityType.get(data.get('type', 0))
         metadata_type = type_.metadata_type
-        metadata = self.metadata
-        if type(metadata) is metadata_type:
-            old_attributes = metadata._difference_update_attributes(data)
-        else:
-            # If we edit the metadata type, we should just ignore the changes. This should be checked beforehand.
-            self.metadata = metadata_type.from_data(data)
-            old_attributes = {}
         
-        if type_ is not self.type:
+        metadata = self.metadata
+        
+        if metadata_type is type(metadata):
+            old_attributes = metadata._difference_update_attributes(data)
+        
+        else:
+            old_attributes = {
+                'metadata': metadata
+            }
+            
+            self.metadata = metadata_type.from_data(data)
+        
+        if (type_ is not self.type):
             old_attributes['type'] = self.type
             self.type = type_
         

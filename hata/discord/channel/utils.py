@@ -2,7 +2,7 @@ __all__ = (
     'cr_pg_channel_object', 'create_partial_channel_from_data', 'create_partial_channel_from_id'
 )
 
-import reprlib, warnings
+import reprlib
 from datetime import datetime
 
 from scarletio import export, include
@@ -10,14 +10,12 @@ from scarletio import export, include
 from ..bases import maybe_snowflake
 from ..core import CHANNELS
 from ..permission import PermissionOverwrite
+from ..preconverters import preconvert_preinstanced_type
 from ..utils import datetime_to_timestamp
 
-from . import channel_types as CHANNEL_TYPES
-from .channel_types import get_channel_type_name, get_channel_type_names
 from .constants import AUTO_ARCHIVE_OPTIONS
-from .deprecation import ChannelBase
 from .preinstanced import VideoQualityMode
-
+from .channel_type import ChannelType
 
 Channel = include('Channel')
 Guild = include('Guild')
@@ -64,8 +62,8 @@ def create_partial_channel_from_id(channel_id, channel_type, guild_id):
     ----------
     channel_id : `int`
         The channel's identifier.
-    channel_type : `int`
-        The channel's type identifier.
+    channel_type : ``ChannelType``
+        The channel's type.
     guild_id : `int`
         A guild's identifier of the created channel.
     """
@@ -81,57 +79,84 @@ def create_partial_channel_from_id(channel_id, channel_type, guild_id):
 
 
 HAS_PERMISSION_OVERWRITES = (
-    CHANNEL_TYPES.guild_text,
-    CHANNEL_TYPES.guild_voice,
-    CHANNEL_TYPES.guild_category,
-    CHANNEL_TYPES.guild_announcements,
-    CHANNEL_TYPES.guild_store,
-    CHANNEL_TYPES.guild_stage,
-    CHANNEL_TYPES.guild_directory,
-    CHANNEL_TYPES.guild_forum,
+    ChannelType.guild_text,
+    ChannelType.guild_voice,
+    ChannelType.guild_category,
+    ChannelType.guild_announcements,
+    ChannelType.guild_store,
+    ChannelType.guild_stage,
+    ChannelType.guild_directory,
+    ChannelType.guild_forum,
 )
 
 HAS_TOPIC = (
-    CHANNEL_TYPES.guild_text,
-    CHANNEL_TYPES.guild_announcements,
-    CHANNEL_TYPES.guild_stage,
-    CHANNEL_TYPES.guild_forum,
+    ChannelType.guild_text,
+    ChannelType.guild_announcements,
+    ChannelType.guild_stage,
+    ChannelType.guild_forum,
 )
 
 HAS_NSFW = (
-    *CHANNEL_TYPES.GROUP_GUILD_MAIN_TEXT,
-    CHANNEL_TYPES.guild_voice,
+    ChannelType.guild_text,
+    ChannelType.guild_announcements,
+    ChannelType.guild_voice,
 )
 
 HAS_SLOWMODE = (
-    *CHANNEL_TYPES.GROUP_MESSAGEABLE,
-    CHANNEL_TYPES.guild_forum,
-    *CHANNEL_TYPES.GROUP_THREAD,
+    *(
+        channel_type for channel_type in ChannelType.INSTANCES.values()
+        if channel_type.flags.guild and channel_type.flags.textual
+    ),
+    ChannelType.guild_forum,
 )
 
-HAS_BITRATE = CHANNEL_TYPES.GROUP_GUILD_CONNECTABLE
+HAS_BITRATE = tuple(
+    channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type.flags.guild and channel_type.flags.connectable
+)
 
-HAS_USER_LIMIT = CHANNEL_TYPES.GROUP_GUILD_CONNECTABLE
+HAS_USER_LIMIT = tuple(
+    channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type.flags.guild and channel_type.flags.connectable
+)
 
-HAS_REGION = CHANNEL_TYPES.GROUP_GUILD_CONNECTABLE
+HAS_REGION = tuple(
+    channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type.flags.guild and channel_type.flags.connectable
+)
 
 HAS_VIDEO_QUALITY_MODE = (
-    CHANNEL_TYPES.guild_voice,
+    ChannelType.guild_voice,
 )
 
-HAS_ARCHIVED = CHANNEL_TYPES.GROUP_THREAD
+HAS_ARCHIVED = tuple(
+    channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type.flags.thread
+)
 
-HAS_ARCHIVED_AT = CHANNEL_TYPES.GROUP_THREAD
+HAS_ARCHIVED_AT = tuple(
+    channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type.flags.thread
+)
 
-HAS_AUTO_ARCHIVE_AFTER = CHANNEL_TYPES.GROUP_THREAD
+HAS_AUTO_ARCHIVE_AFTER = tuple(
+    channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type.flags.thread
+)
 
-HAS_DEFAULT_AUTO_ARCHIVE_AFTER = CHANNEL_TYPES.GROUP_CAN_CONTAIN_THREADS
+HAS_DEFAULT_AUTO_ARCHIVE_AFTER = tuple(
+    channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type.flags.threadable
+)
 
-HAS_OPEN = CHANNEL_TYPES.GROUP_THREAD
+HAS_OPEN = tuple(
+    channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type.flags.thread
+)
 
-CAN_HAVE_PARENT_ID = (
-    CHANNEL_TYPES.guild_category,
-    *CHANNEL_TYPES.GROUP_CAN_CONTAIN_THREADS,
+CAN_HAVE_PARENT_ID = tuple(
+    channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type.flags.guild and (channel_type is not ChannelType.guild_category)
 )
 
 
@@ -147,7 +172,7 @@ def cr_pg_channel_object(
     ----------
     name : `str`
         The name of the channel. Can be between `1` and `100` characters.
-    channel_type : `int`
+    channel_type : `int`, ``ChannelType``
         The channel's type.
     permission_overwrites : `None`, `list` of ``cr_p_permission_overwrite_object`` returns, Optional (Keyword only)
         A list of permission overwrites of the channel. The list should contain json serializable permission
@@ -180,8 +205,6 @@ def cr_pg_channel_object(
         one of: `3600`, `86400`, `259200`, `604800`.
     parent : `None`, ``Channel``, `int`, Optional (Keyword only)
         The channel's parent. If the parent is under a guild, leave it empty.
-    category : `None`, ``Channel``, `int`, Optional (Keyword only)
-        Deprecated, please use `parent` parameter instead.
     guild : `None`, ``Guild`` = `None`, Optional (Keyword only)
         Reference guild used for validation purposes. Defaults to `None`.
     
@@ -192,7 +215,7 @@ def cr_pg_channel_object(
     Raises
     ------
     TypeError
-        - If `channel_type` was not passed as `int`
+        - If `channel_type` was not passed as `int`, ``ChannelType``.
         - If `parent` was not given as `None`, ``Channel``, `int`.
         - If `region` was not given either as `None`, `str` nor ``VoiceRegion``.
         - If `video_quality_mode` was not given neither as `None`, `VideoQualityMode`` nor as `int`.
@@ -206,28 +229,9 @@ def cr_pg_channel_object(
                 f'{guild.__class__.__name__}; {guild!r}.'
             )
     
-    if isinstance(channel_type, int):
-        if __debug__:
-            if channel_type not in CHANNEL_TYPES.GROUP_IN_PRODUCTION:
-                raise AssertionError(
-                    f'`channel_type` is not in any of the in-production channel types: '
-                    f'{CHANNEL_TYPES.GROUP_IN_PRODUCTION}, got {channel_type!r}.'
-                )
-    else:
-        if isinstance(channel_type, ChannelBase):
-            warnings.warn(
-                (
-                    f'`cr_pg_channel_object`\'s `channel_type` parameter cannot be `{ChannelBase.__name__}` '
-                    f'subclass, got {channel_type.__class__.__name__}; {channel_type!r}.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            channel_type = channel_type.type
+    channel_type = preconvert_preinstanced_type(channel_type, 'channel_type', ChannelType)
     
-    
-    if channel_type not in CHANNEL_TYPES.GROUP_GUILD:
+    if not channel_type.flags.guild:
         raise TypeError(
             f'`channel_type` not refers to a guild channel type. Got {channel_type!r}.'
         )
@@ -247,7 +251,7 @@ def cr_pg_channel_object(
     
     channel_data = {
         'name': name,
-        'type': channel_type,
+        'type': channel_type.value,
     }
     
     if channel_type in HAS_PERMISSION_OVERWRITES:
@@ -363,9 +367,7 @@ def cr_pg_channel_object(
         if __debug__:
             if channel_type != CAN_HAVE_PARENT_ID:
                 raise AssertionError(
-                    f'`parent_id` is only applicable for '
-                    f'{get_channel_type_names(HAS_OPEN)} channels'
-                    f', got {get_channel_type_name(channel_type)}; {channel_type!r}.'
+                    f'`parent_id` is only applicable for the given channel type, got {channel_type!r}.'
                 )
         
         channel_data['parent_id'] = parent_id
@@ -380,11 +382,11 @@ def _assert_channel_type(channel_type, channel, accepted_types, field_name, fiel
     
     Parameters
     ----------
-    channel_type : `int`
+    channel_type : ``ChannelType``
         The channel's type.
     channel : `None`, ``Channel``
         The received channel type if any.
-    accepted_types : `iterable` of `int`
+    accepted_types : `tuple` of ``ChannelType``
         The accepted channel types.
     field_name : `str`
         The field's name to assert.
@@ -410,11 +412,11 @@ def _raise_channel_type_assertion_with_message(channel_type, channel, accepted_t
     
     Parameters
     ----------
-    channel_type : `int`
+    channel_type : ``ChannelType``
         The channel's type.
     channel : `None`, ``Channel``
         The received channel type if any.
-    accepted_types : `iterable` of `int`
+    accepted_types : `tuple` of ``ChannelType``
         The accepted channel types.
     field_name : `str`
         The field's name to assert.
@@ -430,9 +432,10 @@ def _raise_channel_type_assertion_with_message(channel_type, channel, accepted_t
     assertion_message_parts.append('`')
     assertion_message_parts.append(field_name)
     assertion_message_parts.append('` is only valid for ')
-    assertion_message_parts.append(get_channel_type_names(accepted_types))
+    
+    assertion_message_parts.append(', '.join(channel_type.name for channel_type in accepted_types))
     assertion_message_parts.append(', got ')
-    assertion_message_parts.append(get_channel_type_name(channel_type))
+    assertion_message_parts.append(channel_type.name)
     
     if channel is not None:
         assertion_message_parts.append('; channel=')
@@ -456,7 +459,7 @@ def _maybe_add_channel_bitrate_field_to_data(channel_type, channel, channel_data
     
     Parameters
     ----------
-    channel_type : `int`
+    channel_type : ``ChannelType``
         The respective channel's type.
     channel_data : `dict` of (`str`, `Any`) items
         Channel data to add the field to.
@@ -476,17 +479,6 @@ def _maybe_add_channel_bitrate_field_to_data(channel_type, channel, channel_data
                 raise AssertionError(
                     f'`bitrate` can be `int`, got {bitrate.__class__.__name__}; {bitrate!r}.'
                 )
-            
-            # Get max bitrate
-            if guild is None:
-                bitrate_limit = 384000
-            else:
-                bitrate_limit = guild.bitrate_limit
-            
-            if bitrate < 8000 or bitrate > bitrate_limit:
-                raise AssertionError(
-                    f'`bitrate` is out of the expected [8000:{bitrate_limit}] range, got {bitrate!r}.'
-                )
         
         channel_data['bitrate'] = bitrate
 
@@ -497,7 +489,7 @@ def _maybe_add_channel_topic_field_to_data(channel_type, channel, channel_data, 
     
     Parameters
     ----------
-    channel_type : `int`
+    channel_type : ``ChannelType``
         The respective channel's type.
     channel_data : `dict` of (`str`, `Any`) items
         Channel data to add the field to.
@@ -518,10 +510,7 @@ def _maybe_add_channel_topic_field_to_data(channel_type, channel, channel_data, 
                     f'`topic` can be `str`, got {topic.__class__.__name__}; {topic!r}.'
                 )
             
-            if channel_type in (
-                CHANNEL_TYPES.guild_text,
-                CHANNEL_TYPES.guild_announcements,
-            ):
+            if channel_type.flags.guild_system:
                 topic_length_limit = 1024
             else:
                 topic_length_limit = 120
@@ -541,7 +530,7 @@ def _maybe_add_channel_nsfw_field_to_data(channel_type, channel, channel_data, n
     
     Parameters
     ----------
-    channel_type : `int`
+    channel_type : ``ChannelType``
         The respective channel's type.
     channel_data : `dict` of (`str`, `Any`) items
         Channel data to add the field to.
@@ -571,7 +560,7 @@ def _maybe_add_channel_slowmode_field_to_data(channel_type, channel, channel_dat
     
     Parameters
     ----------
-    channel_type : `int`
+    channel_type : ``ChannelType``
         The respective channel's type.
     channel_data : `dict` of (`str`, `Any`) items
         Channel data to add the field to.
@@ -606,7 +595,7 @@ def _maybe_add_channel_user_limit_field_to_data(channel_type, channel, channel_d
     
     Parameters
     ----------
-    channel_type : `int`
+    channel_type : ``ChannelType``
         The respective channel's type.
     channel_data : `dict` of (`str`, `Any`) items
         Channel data to add the field to.
@@ -643,7 +632,7 @@ def _maybe_add_channel_region_field_to_data(channel_type, channel, channel_data,
     
     Parameters
     ----------
-    channel_type : `int`
+    channel_type : ``ChannelType``
         The respective channel's type.
     channel_data : `dict` of (`str`, `Any`) items
         Channel data to add the field to.
@@ -673,7 +662,7 @@ def _maybe_add_channel_region_field_to_data(channel_type, channel, channel_data,
         else:
             raise TypeError(
                 f'`region` can be `None`, `str`, `{VoiceRegion.__name__}`, got '
-                f'{region.__class__.__name__}; {region!r}.'
+                f'{type(region).__name__}; {region!r}.'
             )
         
         channel_data['rtc_region'] = region_value
@@ -685,7 +674,7 @@ def _maybe_add_channel_video_quality_mode_field_to_data(channel_type, channel, c
     
     Parameters
     ----------
-    channel_type : `int`
+    channel_type : ``ChannelType``
         The respective channel's type.
     channel_data : `dict` of (`str`, `Any`) items
         Channel data to add the field to.
@@ -728,7 +717,7 @@ def _maybe_add_channel_default_auto_archive_after_field_to_data(
     
     Parameters
     ----------
-    channel_type : `int`
+    channel_type : ``ChannelType``
         The respective channel's type.
     channel_data : `dict` of (`str`, `Any`) items
         Channel data to add the field to.

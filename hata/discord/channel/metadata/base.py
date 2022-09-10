@@ -53,7 +53,6 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     """
     __slots__ = ()
     
-    type = -1
     order_group = 0
     
     def __new__(cls, data):
@@ -82,10 +81,10 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         if type(self) is not type(other):
             return NotImplemented
         
-        return self._compare_attributes_to(other)
+        return self._is_equal_same_type(other)
     
     
-    def _compare_attributes_to(self, other):
+    def _is_equal_same_type(self, other):
         """
         Compares the channel metadata's attributes to the other one's.
         
@@ -197,7 +196,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
             +-------------------------------+-----------------------------------------------------------+
             | topic                         | `None`, `str`                                             |
             +-------------------------------+-----------------------------------------------------------+
-            | type                          | `int`                                                     |
+            | type                          | ``ChannelType``                                           |
             +-------------------------------+-----------------------------------------------------------+
             | user_limit                    | `int`                                                     |
             +-------------------------------+-----------------------------------------------------------+

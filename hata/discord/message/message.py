@@ -36,9 +36,10 @@ from .utils import try_resolve_interaction_message
 
 
 Channel = include('Channel')
-create_component = include('create_component')
-InteractionType = include('InteractionType')
+ChannelType = include('ChannelType')
 ComponentBase = include('ComponentBase')
+InteractionType = include('InteractionType')
+create_component = include('create_component')
 create_partial_channel_from_id = include('create_partial_channel_from_id')
 
 
@@ -2281,7 +2282,7 @@ class Message(DiscordEntity, immortal=True):
         -------
         guild : ``Channel``
         """
-        return create_partial_channel_from_id(self.channel_id, -1, self.guild_id)
+        return create_partial_channel_from_id(self.channel_id, ChannelType.unknown, self.guild_id)
     
     
     @property

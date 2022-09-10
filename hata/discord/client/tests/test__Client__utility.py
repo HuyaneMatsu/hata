@@ -1,6 +1,6 @@
 import vampytest
 
-from ...channel import CHANNEL_TYPES, Channel
+from ...channel import Channel, ChannelType
 from ...core import USERS
 
 from .. import Client
@@ -30,7 +30,7 @@ def test__Client__delete_1():
         USERS[client.id] = client
         
         # Link the client to a group channel to keep the user in memory.
-        channel = Channel.precreate(335788657879547922, channel_type=CHANNEL_TYPES.private_group)
+        channel = Channel.precreate(335788657879547922, channel_type = ChannelType.private_group)
         channel.users.append(client)
         client.group_channels[channel.id] = channel
         
@@ -52,7 +52,7 @@ def test__Client__delete_2():
         USERS[client.id] = client
         
         # Link the client to a group channel to keep the user in memory.
-        channel = Channel.precreate(335788657879547921, channel_type=CHANNEL_TYPES.private_group)
+        channel = Channel.precreate(335788657879547921, channel_type = ChannelType.private_group)
         channel.users.append(client)
         client.group_channels[channel.id] = channel
         

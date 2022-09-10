@@ -7,7 +7,7 @@ from scarletio import Compound
 from ...allowed_mentions import parse_allowed_mentions
 from ...application import Application
 from ...bases import maybe_snowflake
-from ...channel import Channel, create_partial_channel_from_id
+from ...channel import Channel, ChannelType, create_partial_channel_from_id
 from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES_EXTENDED
 from ...message import Message
 from ...utils import get_image_media_type, image_to_base64
@@ -60,7 +60,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             - If `name` range is out of the expected range [1:80].
             - If `avatar`'s type is not any of the expected ones: `'jpg'`, `'png'`, `'webp'`, `'gif'`.
         """
-        channel_id = get_channel_id(channel, Channel.is_in_group_guild_main_text)
+        channel_id = get_channel_id(channel, Channel.is_in_group_guild_system)
         
         if __debug__:
             if not isinstance(name, str):
@@ -225,7 +225,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         -----
         No request is done, if the passed channel is partial, or if the channel's guild's webhooks are up to date.
         """
-        channel_id = get_channel_id(channel, Channel.is_in_group_guild_main_text)
+        channel_id = get_channel_id(channel, Channel.is_in_group_guild_system)
         
         data = await self.http.webhook_get_all_channel(channel_id)
         return [Webhook(webhook_data) for webhook_data in data]
@@ -427,7 +427,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         if (channel is not ...):
             while True:
                 if isinstance(channel, Channel):
-                    if channel.is_in_group_guild_main_text() or channel.partial:
+                    if channel.is_in_group_guild_system() or channel.partial:
                         channel_id = channel.id
                         break
                 
@@ -749,7 +749,7 @@ class ClientCompoundWebhookEndpoints(Compound):
                     break
             
             channel_id = int(message_data['channel_id'])
-            channel = create_partial_channel_from_id(channel_id, 0, 0)
+            channel = create_partial_channel_from_id(channel_id, ChannelType.guild_text, 0)
             break
         
         return channel._create_new_message(message_data)

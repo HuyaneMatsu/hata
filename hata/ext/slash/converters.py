@@ -5,12 +5,7 @@ from enum import Enum
 
 from scarletio import CallableAnalyzer, RichAttributeErrorBaseType, copy_docs, include, un_map_pack
 
-from ...discord.channel import CHANNEL_TYPES
-from ...discord.channel.deprecation import (
-    ChannelBase, ChannelCategory, ChannelDirectory, ChannelGroup, ChannelGuildBase, ChannelGuildMainBase,
-    ChannelPrivate, ChannelStage, ChannelStore, ChannelText, ChannelTextBase, ChannelThread, ChannelVoice,
-    ChannelVoiceBase
-)
+from ...discord.channel import Channel, ChannelType
 from ...discord.client import Client
 from ...discord.core import CHANNELS, ROLES
 from ...discord.exceptions import DiscordException, ERROR_CODES
@@ -555,28 +550,55 @@ ANNOTATION_NAMES_VALUE = frozenset((
     'value',
 ))
 
-CHANNEL_TYPES_GUILD = tuple(CHANNEL_TYPES.GROUP_GUILD)
-CHANNEL_TYPES_GUILD_CATEGORY = (CHANNEL_TYPES.guild_category, )
-CHANNEL_TYPES_GUILD_DIRECTORY = (CHANNEL_TYPES.guild_directory, )
-CHANNEL_TYPES_GUILD_STORE = (CHANNEL_TYPES.guild_store, )
-CHANNEL_TYPES_GUILD_TEXT_LIKE = tuple(CHANNEL_TYPES.GROUP_GUILD_MAIN_TEXT)
-CHANNEL_TYPES_GUILD_TEXT = (CHANNEL_TYPES.guild_text, )
-CHANNEL_TYPES_GUILD_ANNOUNCEMENTS = (CHANNEL_TYPES.guild_announcements, )
-CHANNEL_TYPES_GUILD_CONNECTABLE = tuple(CHANNEL_TYPES.GROUP_GUILD_CONNECTABLE)
-CHANNEL_TYPES_GUILD_VOICE = (CHANNEL_TYPES.guild_voice, )
-CHANNEL_TYPES_GUILD_STAGE = (CHANNEL_TYPES.guild_stage, )
-CHANNEL_TYPES_PRIVATE_ALL = tuple(CHANNEL_TYPES.GROUP_PRIVATE)
-CHANNEL_TYPES_PRIVATE = (CHANNEL_TYPES.private, )
-CHANNEL_TYPES_PRIVATE_GROUP = (CHANNEL_TYPES.private_group, )
-CHANNEL_TYPES_THREAD_ALL = tuple(CHANNEL_TYPES.GROUP_THREAD)
-CHANNEL_TYPES_THREAD_ANNOUNCEMENTS = (CHANNEL_TYPES.guild_thread_announcements, )
-CHANNEL_TYPES_THREAD_PUBLIC = (CHANNEL_TYPES.guild_thread_public, )
-CHANNEL_TYPES_THREAD_PRIVATE = (CHANNEL_TYPES.guild_thread_private, )
-CHANNEL_TYPES_MESSAGEABLE = tuple(CHANNEL_TYPES.GROUP_MESSAGEABLE)
-CHANNEL_TYPES_GUILD_MESSAGEABLE = tuple(CHANNEL_TYPES.GROUP_GUILD_MESSAGEABLE)
-CHANNEL_TYPES_CONNECTABLE = tuple(CHANNEL_TYPES.GROUP_CONNECTABLE)
-CHANNEL_TYPES_CAN_CONTAIN_THREADS = tuple(CHANNEL_TYPES.GROUP_CAN_CONTAIN_THREADS)
-CHANNEL_TYPES_GUILD_FORUM = (CHANNEL_TYPES.guild_forum, )
+CHANNEL_TYPES_GUILD = tuple(
+    channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type.flags.guild
+)
+CHANNEL_TYPES_GUILD_CATEGORY = (ChannelType.guild_category, )
+CHANNEL_TYPES_GUILD_DIRECTORY = (ChannelType.guild_directory, )
+CHANNEL_TYPES_GUILD_STORE = (ChannelType.guild_store, )
+CHANNEL_TYPES_GUILD_SYSTEM = tuple(
+    channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type.flags.guild_system
+)
+CHANNEL_TYPES_GUILD_TEXT = (ChannelType.guild_text, )
+CHANNEL_TYPES_GUILD_ANNOUNCEMENTS = (ChannelType.guild_announcements, )
+CHANNEL_TYPES_GUILD_CONNECTABLE = tuple(
+    channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type.flags.guild and channel_type.flags.connectable
+)
+CHANNEL_TYPES_GUILD_VOICE = (ChannelType.guild_voice, )
+CHANNEL_TYPES_GUILD_STAGE = (ChannelType.guild_stage, )
+CHANNEL_TYPES_PRIVATE_ALL = tuple(
+    channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type.flags.private
+)
+CHANNEL_TYPES_PRIVATE = (ChannelType.private, )
+CHANNEL_TYPES_PRIVATE_GROUP = (ChannelType.private_group, )
+CHANNEL_TYPES_THREAD_ALL = tuple(
+    channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type.flags.thread
+)
+CHANNEL_TYPES_THREAD_ANNOUNCEMENTS = (ChannelType.guild_thread_announcements, )
+CHANNEL_TYPES_THREAD_PUBLIC = (ChannelType.guild_thread_public, )
+CHANNEL_TYPES_THREAD_PRIVATE = (ChannelType.guild_thread_private, )
+CHANNEL_TYPES_TEXTUAL = tuple(
+    channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type.flags.textual
+)
+CHANNEL_TYPES_GUILD_TEXTUAL = tuple(
+    channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type.flags.guild and channel_type.flags.textual
+)
+CHANNEL_TYPES_CONNECTABLE = tuple(
+    channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type.flags.connectable
+)
+CHANNEL_TYPES_THREADABLE = tuple(
+    channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type.flags.threadable
+)
+CHANNEL_TYPES_GUILD_FORUM = (ChannelType.guild_forum, )
 
 
 STR_ANNOTATION_TO_ANNOTATION_TYPE = {
@@ -599,20 +621,20 @@ STR_ANNOTATION_TO_ANNOTATION_TYPE = {
     
     # Channel type specific
     # - by channel name
-    'channelguildbase': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD),
-    'channelguildmainbase': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD),
-    'channelcategory': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_CATEGORY),
-    'channeldirectory': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_DIRECTORY),
-    'channelstore': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_STORE),
-    'channeltext': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_TEXT_LIKE),
-    'channelvoicebase': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_CONNECTABLE),
-    'channelvoice': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_VOICE),
-    'channelstage': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_STAGE),
-    'channelprivate': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_PRIVATE),
-    'channelgroup': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_PRIVATE_GROUP),
-    'channelthread': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_THREAD_ALL),
-    'channeltextbase': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_MESSAGEABLE),
-    'channelforum':(ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_FORUM),
+    f'{"channel"}{"guild"}{"base"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD),
+    f'{"channel"}{"guild"}{"main"}{"base"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD),
+    f'{"channel"}{"category"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_CATEGORY),
+    f'{"channel"}{"directory"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_DIRECTORY),
+    f'{"channel"}{"store"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_STORE),
+    f'{"channel"}{"text"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_SYSTEM),
+    f'{"channel"}{"voice"}{"base"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_CONNECTABLE),
+    f'{"channel"}{"voice"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_VOICE),
+    f'{"channel"}{"stage"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_STAGE),
+    f'{"channel"}{"private"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_PRIVATE),
+    f'{"channel"}{"group"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_PRIVATE_GROUP),
+    f'{"channel"}{"thread"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_THREAD_ALL),
+    f'{"channel"}{"text"}{"base"}': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_TEXTUAL),
+    f'{"channel"}{"forum"}':(ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_FORUM),
     # - by generic name
     'channel_guild_text': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_TEXT),
     'channel_private': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_PRIVATE),
@@ -626,15 +648,15 @@ STR_ANNOTATION_TO_ANNOTATION_TYPE = {
     'channel_guild_thread_private': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_THREAD_PRIVATE),
     'channel_guild_stage': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_STAGE),
     'channel_guild_directory': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_DIRECTORY),
-    'channel_group_messageable': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_MESSAGEABLE),
-    'channel_group_guild_messageable': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_MESSAGEABLE),
-    'channel_group_guild_main_text': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_TEXT_LIKE),
+    'channel_group_messageable': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_TEXTUAL),
+    'channel_group_guild_messageable': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_TEXTUAL),
+    'channel_group_guild_main_text': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_SYSTEM),
     'channel_group_connectable': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_CONNECTABLE),
     'channel_group_private': (ANNOTATION_TYPE_CHANNEL, ),
     'channel_group_guild_connectable': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_CONNECTABLE),
     'channel_group_guild': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD),
     'channel_group_thread': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_THREAD_ALL),
-    'channel_group_can_contain_threads': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_CAN_CONTAIN_THREADS),
+    'channel_group_can_contain_threads': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_THREADABLE),
     'channel_guild_forum': (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_FORUM),
     # - id + by generic name
     'channel_id_guild_text': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_TEXT),
@@ -649,15 +671,15 @@ STR_ANNOTATION_TO_ANNOTATION_TYPE = {
     'channel_id_guild_thread_private': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_THREAD_PRIVATE),
     'channel_id_guild_stage': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_STAGE),
     'channel_id_guild_directory': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_DIRECTORY),
-    'channel_id_group_messageable': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_MESSAGEABLE),
-    'channel_id_group_guild_messageable': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_MESSAGEABLE),
-    'channel_id_group_guild_main_text': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_TEXT_LIKE),
+    'channel_id_group_messageable': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_TEXTUAL),
+    'channel_id_group_guild_messageable': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_TEXTUAL),
+    'channel_id_group_guild_main_text': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_SYSTEM),
     'channel_id_group_connectable': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_CONNECTABLE),
     'channel_id_group_private': (ANNOTATION_TYPE_CHANNEL_ID, ),
     'channel_id_group_guild_connectable': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_CONNECTABLE),
     'channel_id_group_guild': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD),
     'channel_id_group_thread': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_THREAD_ALL),
-    'channel_id_group_can_contain_threads': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_CAN_CONTAIN_THREADS),
+    'channel_id_group_can_contain_threads': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_THREADABLE),
     'channel_id_guild_forum': (ANNOTATION_TYPE_CHANNEL_ID, CHANNEL_TYPES_GUILD_FORUM),
     
     # Internal
@@ -711,24 +733,9 @@ TYPE_ANNOTATION_TO_ANNOTATION_TYPE = {
     UserBase: (ANNOTATION_TYPE_USER, None),
     User: (ANNOTATION_TYPE_USER, None),
     Role: (ANNOTATION_TYPE_ROLE, None),
-    ChannelBase: (ANNOTATION_TYPE_CHANNEL, None),
+    Channel: (ANNOTATION_TYPE_CHANNEL, None),
     float: (ANNOTATION_TYPE_FLOAT, None),
     Attachment: (ANNOTATION_TYPE_ATTACHMENT, None),
-    
-    # Channel type specific
-    ChannelGuildBase: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD),
-    ChannelGuildMainBase: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD),
-    ChannelCategory: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_CATEGORY),
-    ChannelDirectory: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_DIRECTORY),
-    ChannelStore: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_STORE),
-    ChannelText: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_TEXT_LIKE),
-    ChannelVoiceBase: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_CONNECTABLE),
-    ChannelVoice: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_VOICE),
-    ChannelStage: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_STAGE),
-    ChannelPrivate: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_PRIVATE),
-    ChannelGroup: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_PRIVATE_GROUP),
-    ChannelThread: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_THREAD_ALL),
-    ChannelTextBase: (ANNOTATION_TYPE_CHANNEL, CHANNEL_TYPES_GUILD_MESSAGEABLE),
     
     # Internal
     Client: (ANNOTATION_TYPE_SELF_CLIENT, None),
@@ -1043,7 +1050,7 @@ class SlashParameter(RichAttributeErrorBaseType):
     ----------
     autocomplete : `None`, `CoroutineFunction`
         Auto complete function for the parameter.
-    channel_types : `None`, `iterable` of `int`
+    channel_types : `None`, `iterable` of (`int`, ``ChannelType``)
         The accepted channel types.
     description : `None`, `str` = `None`, Optional
         Description for the annotation.
@@ -1080,7 +1087,7 @@ class SlashParameter(RichAttributeErrorBaseType):
             Name to use instead of the parameter's.
         autocomplete : `None`, `CoroutineFunction` = `None`, Optional (Keyword only)
             Auto complete function for the parameter.
-        channel_types : `None`, `iterable` of `int` = `None`, Optional (Keyword only)
+        channel_types : `None`, `iterable` of (`int`, ``ChannelType``) = `None`, Optional (Keyword only)
             The accepted channel types.
         max_length : `None`, `int` = `None`, Optional (Keyword only)
             The maximum input length allowed for this option.
@@ -1202,12 +1209,12 @@ def preprocess_channel_types(channel_types):
     
     Parameters
     ----------
-    channel_types : `None`, `iterable` of `int`
+    channel_types : `None`, `iterable` of (`int`, ``ChannelType``)
         Channel types to limit a slash command parameter to.
     
     Returns
     -------
-    processed_channel_types : `None`, `tuple` of `int`
+    processed_channel_types : `None`, `tuple` of ``ChannelType``
     
     Raises
     ------
@@ -1221,21 +1228,24 @@ def preprocess_channel_types(channel_types):
     else:
         processed_channel_types = None
         
-        iterator = getattr(type(channel_types), '__iter__', None)
-        if (iterator is None):
+        if (getattr(type(channel_types), '__iter__', None) is None):
             raise TypeError(
                 f'`channel_types` can be `None`, `iterable`, got '
                 f'{channel_types.__class__.__anme__}; {channel_types!r}.'
             )
         
-        for channel_type in iterator(channel_types):
-            if type(channel_type) is int:
+        for channel_type in channel_types:
+            if isinstance(channel_type, ChannelType):
                 pass
+            
             elif isinstance(channel_type, int):
-                channel_type = int(channel_type)
+                channel_type = ChannelType.get(channel_type)
+            
+                pass
+            
             else:
                 raise TypeError(
-                    f'`channel_types` can contain `int` elements, got '
+                    f'`channel_types` can contain `int`, `{ChannelType.__name__}` elements, got '
                     f'{channel_type.__class__.__name__}; {channel_type!r}; channel_types={channel_types!r}.'
                 )
             
@@ -1259,14 +1269,14 @@ def postprocess_channel_types(processed_channel_types, parsed_channel_types):
     
     Parameters
     ----------
-    processed_channel_types : `None`, `tuple` of `int`
+    processed_channel_types : `None`, `tuple` of ``ChannelType``
         Channel types detected from `channel_types` field.
-    parsed_channel_types : `None`, `tuple` of `int`
+    parsed_channel_types : `None`, `tuple` of ``ChannelType``
         Channel types processed from the `type_or_choice` field.
     
     Returns
     -------
-    channel_types : `None`, `tuple` of `int`
+    channel_types : `None`, `tuple` of ``ChannelType``
         The selected channel types.
     
     Raises
@@ -1579,7 +1589,7 @@ def parse_annotation_type_and_choice(annotation_value, parameter_name):
         Choices if applicable.
     choice_enum_type : `None`, `type`
         Enum type of `choices` if applicable.
-    channel_types : `None`, `tuple` of `int`
+    channel_types : `None`, `tuple` of ``ChannelType``
         The accepted channel types.
     
     TypeError
@@ -1825,7 +1835,7 @@ def parse_annotation_tuple(parameter, annotation_tuple):
         The parameter's name.
     type_ : `int`
         The parameter's internal type identifier.
-    channel_types : `None`, `tuple` of `int`
+    channel_types : `None`, `tuple` of ``ChannelType``
         The accepted channel types.
     max_value : `None`, `int`, `float`
         The maximal accepted value.
@@ -1902,7 +1912,7 @@ def parse_annotation_slash_parameter(parameter, slash_parameter):
         The parameter's name.
     type_ : `int`
         The parameter's internal type identifier.
-    channel_types : `None`, `tuple` of `int`
+    channel_types : `None`, `tuple` of ``ChannelType``
         The accepted channel types.
     max_value : `None`, `int`, `float`
         The maximal accepted value.
@@ -1993,8 +2003,8 @@ def parse_pep_593_typing(parameter, annotation_value):
     ----------
     parameter : ``Parameter``
         The respective parameter's representation.
-    parameter_name : `str`
-        The parameter's name.
+    annotation_value : `object`
+        The parameter's annotation's value.
     
     Returns
     -------
@@ -2006,7 +2016,7 @@ def parse_pep_593_typing(parameter, annotation_value):
         The parameter's name.
     type_ : `int`
         The parameter's internal type identifier.
-    channel_types : `None`, `tuple` of `int`
+    channel_types : `None`, `tuple` of ``ChannelType``
         The accepted channel types.
     max_value : `None`, `int`, `float`
         The maximal accepted value.
@@ -2075,7 +2085,7 @@ def parse_annotation_fallback(parameter, annotation_value):
         The parameter's name.
     type_ : `int`
         The parameter's internal type identifier.
-    channel_types : `None`, `tuple` of `int`
+    channel_types : `None`, `tuple` of ``ChannelType``
         The accepted channel types.
     max_value : `None`, `int`, `float`
         The maximal accepted value.
@@ -2171,7 +2181,7 @@ def parse_annotation(parameter):
         The parameter's name.
     type_ : `int`
         The parameter's internal type identifier.
-    channel_types : `None`, `tuple` of `int`
+    channel_types : `None`, `tuple` of ``ChannelType``
         The accepted channel types.
     max_value : `None`, `int`, `float`
         The maximal accepted value.
@@ -2759,7 +2769,7 @@ class SlashCommandParameterConverter(ParameterConverter):
         The parameter's name.
     auto_completer : `None`, ``SlashCommandParameterAutoCompleter``
         Auto completer if registered.
-    channel_types : `None`, `tuple` of `int`
+    channel_types : `None`, `tuple` of ``ChannelType``
         The accepted channel types.
     choice_enum_type : `None`, `type`
         Enum type of `choices` if applicable.
@@ -2818,7 +2828,7 @@ class SlashCommandParameterConverter(ParameterConverter):
             Enum type of `choices` if applicable.
         choices : `None`, `dict` of ((`int`, `float`, `str`, `Enum`), `str`) items
             The choices to choose from if applicable. The keys are choice vales meanwhile the values are choice names.
-        channel_types : `None`, `tuple` of `int`
+        channel_types : `None`, `tuple` of ``ChannelType``
             The accepted channel types.
         max_value : `None`, `int`, `float`
             The maximal accepted value by the converter.
@@ -3006,6 +3016,7 @@ class SlashCommandParameterConverter(ParameterConverter):
         
         return True
     
+    
     def is_auto_completed(self):
         """
         Returns whether the parameter is already auto completed.
@@ -3018,6 +3029,7 @@ class SlashCommandParameterConverter(ParameterConverter):
             return False
         
         return True
+    
     
     def register_auto_completer(self, auto_completer):
         """

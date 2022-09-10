@@ -1,7 +1,5 @@
 __all__ = ('ChannelMetadataGuildThreadAnnouncements',)
 
-from .. import channel_types as CHANNEL_TYPES
-
 from .guild_thread_base import ChannelMetadataGuildThreadBase
 
 
@@ -40,11 +38,7 @@ class ChannelMetadataGuildThreadAnnouncements(ChannelMetadataGuildThreadBase):
     
     Class Attributes
     ----------------
-    type : `int` = `CHANNEL_TYPES.guild_thread_announcements`
-        The channel's type.
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """
     __slots__ = ()
-    
-    type = CHANNEL_TYPES.guild_thread_announcements

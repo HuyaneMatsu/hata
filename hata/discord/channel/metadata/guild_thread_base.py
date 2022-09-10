@@ -93,9 +93,9 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
             guild.threads[channel_entity.id] = channel_entity
     
     
-    @copy_docs(ChannelMetadataGuildBase._compare_attributes_to)
-    def _compare_attributes_to(self, other):
-        if not ChannelMetadataGuildBase._compare_attributes_to(self, other):
+    @copy_docs(ChannelMetadataGuildBase._is_equal_same_type)
+    def _is_equal_same_type(self, other):
+        if not ChannelMetadataGuildBase._is_equal_same_type(self, other):
             return False
         
         if self._created_at != other._created_at:

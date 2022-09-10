@@ -11,7 +11,7 @@ from scarletio import (
 from scarletio.web_common import ConnectionClosed, InvalidHandshake, WebSocketProtocolError
 
 from ..bases import maybe_snowflake
-from ..channel import Channel, create_partial_channel_from_id
+from ..channel import Channel, ChannelType, create_partial_channel_from_id
 from ..core import GUILDS, KOKORO
 from ..exceptions import VOICE_CLIENT_DISCONNECT_CLOSE_CODE, VOICE_CLIENT_RECONNECT_CLOSE_CODE
 from ..gateway.voice_client_gateway import DiscordGatewayVoice, SecretBox
@@ -1343,7 +1343,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         -------
         channel : ``Channel``
         """
-        return create_partial_channel_from_id(self.channel_id, -1, self.guild_id)
+        return create_partial_channel_from_id(self.channel_id, ChannelType.unknown, self.guild_id)
     
     
     @property

@@ -4,9 +4,7 @@ import reprlib, warnings
 
 from scarletio import Compound
 
-from ...channel import (
-    CHANNEL_TYPES, Channel, cr_pg_channel_object, create_partial_channel_from_id, get_channel_type_name
-)
+from ...channel import Channel, ChannelType, cr_pg_channel_object, create_partial_channel_from_id
 from ...channel.utils import (
     _assert_channel_type, _maybe_add_channel_bitrate_field_to_data,
     _maybe_add_channel_default_auto_archive_after_field_to_data, _maybe_add_channel_nsfw_field_to_data,
@@ -17,6 +15,7 @@ from ...channel.utils import (
 from ...guild import Guild, create_partial_guild_from_id
 from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES
 from ...permission import Permission, PermissionOverwrite, PermissionOverwriteTargetType
+from ...preconverters import preconvert_preinstanced_type
 from ...role import Role
 from ...user import ClientUserBase
 from ...utils import get_image_media_type, image_to_base64
@@ -115,11 +114,11 @@ def _assert__channel_edit__type(type_, channel, channel_type):
     
     Parameters
     ----------
-    type_ : `Ellipsis`, `int`
+    type_ : ``ChannelType``
         The `channel`'s new type value.
     channel : `None`, ``Channel``
         The respective channel.
-    channel_type : `int`
+    channel_type : ``ChannelType``
         The respective channel's type.
     
     Raises
@@ -128,29 +127,20 @@ def _assert__channel_edit__type(type_, channel, channel_type):
         - If `type_` is not `int` instance.
         - If cannot interchange to `type_`.
     """
-    if (type_ is not ...):
-        if (channel is not None):
-            _assert_channel_type(
-                channel_type,
-                channel,
-                (CHANNEL_TYPES.guild_text, CHANNEL_TYPES.guild_announcements),
-                'type_',
-                type_,
-            )
-        
-        if not isinstance(type_, int):
-            raise AssertionError(
-                f'`type_` can be `int`, got {type_.__class__.__name__}.; {type_!r}'
-            )
-        
-        if type_ not in (CHANNEL_TYPES.guild_text, CHANNEL_TYPES.guild_announcements):
-            raise AssertionError(
-                f'`type_` can be interchanged to `{CHANNEL_TYPES.guild_text!r}` '
-                f'(`{get_channel_type_name(CHANNEL_TYPES.guild_text)}`) ,'
-                f'`{CHANNEL_TYPES.guild_announcements!r}` '
-                f'(`{get_channel_type_name(CHANNEL_TYPES.guild_announcements)}`)'
-                f', got {type_!r} (`{get_channel_type_name(type_)}`).'
-            )
+    if (channel is not None):
+        _assert_channel_type(
+            channel_type,
+            channel,
+            (ChannelType.guild_text, ChannelType.guild_announcements),
+            'type_',
+            type_,
+        )
+    
+    if (type_ is not ChannelType.guild_text) or (type_ is not ChannelType.guild_announcements):
+        raise AssertionError(
+            f'`type_` can be interchanged to `{ChannelType.guild_text!r}`, `{ChannelType.guild_announcements!r}`'
+            f', got {type_!r}.'
+        )
     
     return True
 
@@ -520,7 +510,7 @@ class ClientCompoundChannelEndpoints(Compound):
         This method also fixes the messy channel positions of Discord to an intuitive one.
         """
         # Check channel type
-        if (not channel.is_in_group_guild_movable()) and (not channel.partial):
+        if (not channel.is_in_group_guild_sortable()) and (not channel.partial):
             raise TypeError(
                 f'`channel` can be any movable guild channel, got {channel.__class__.__name__}; {channel!r}.'
             )
@@ -737,7 +727,7 @@ class ClientCompoundChannelEndpoints(Compound):
         topic : `str`, Optional (Keyword only)
             The new topic of the `channel`.
         
-        type_ : `int`, Optional (Keyword only)
+        type_ : ``ChannelType``, `int`, Optional (Keyword only)
             The `channel`'s new type value.
         
         user_limit : `int`, Optional (Keyword only)
@@ -770,15 +760,16 @@ class ClientCompoundChannelEndpoints(Compound):
             channel_data['name'] = name
         
         if channel is None:
-            channel_type = -1
+            channel_type = ChannelType.unknown
         else:
-            channel_type = channel.type
+            channel_type = channel.type_
         
-        assert _assert__channel_edit__type(type_, channel, channel_type)
+        if (type_ is not ...):
+            type_ = preconvert_preinstanced_type(type_, 'type_', ChannelType)
+            assert _assert__channel_edit__type(type_, channel, channel_type)
         
         if (type_ is not ...):
             channel_data['type'] = type_
-        
         
         _maybe_add_channel_topic_field_to_data(channel_type, channel, channel_data, topic)
         _maybe_add_channel_nsfw_field_to_data(channel_type, channel, channel_data, nsfw)
@@ -795,7 +786,7 @@ class ClientCompoundChannelEndpoints(Compound):
         await self.http.channel_edit(channel_id, channel_data, reason)
     
     
-    async def channel_create(self, guild, name, type_=CHANNEL_TYPES.guild_text, *, reason=None, **kwargs):
+    async def channel_create(self, guild, name, type_=ChannelType.guild_text, *, reason=None, **kwargs):
         """
         Creates a new channel at the given `guild`. If the channel is successfully created returns it.
         
@@ -807,8 +798,8 @@ class ClientCompoundChannelEndpoints(Compound):
             The guild where the channel will be created.
         name : `str`
             The created channel's name.
-        type_ : `int`, Optional
-            The type of the created channel. Defaults to ``Channel``.
+        type_ : ``ChannelType``, `int` = ``ChannelType.guild_text``, Optional
+            The type of the created channel.
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the `guild`'s audit logs.
         **kwargs : Keyword parameters
@@ -850,7 +841,7 @@ class ClientCompoundChannelEndpoints(Compound):
         ------
         TypeError
             - If `guild` was not given as ``Guild``, `int`.
-            - If `type_` was not passed as `int`, ``Channel``.
+            - If `type_` was not passed as `int`, ``ChannelType``.
             - If `parent` was not given as `None`, ``Channel``, `int`.
             - If `region` was not given either as `None`, `str` nor ``VoiceRegion``.
         ConnectionError
@@ -907,7 +898,7 @@ class ClientCompoundChannelEndpoints(Compound):
         Parameters
         ----------
         source_channel : ``Channel``, `int`
-            The channel what will be followed. Must be an announcements (type 5) channel.
+            The channel what will be followed. Must be an announcements channel.
         target_channel : ``Channel``, `int`instance
             The target channel where the webhook messages will be sent. Can be any guild text channel type.
         
@@ -928,9 +919,9 @@ class ClientCompoundChannelEndpoints(Compound):
         """
         source_channel, source_channel_id = get_channel_and_id(source_channel, Channel.is_guild_announcements)
         if source_channel is None:
-            source_channel = create_partial_channel_from_id(source_channel_id, 5, 0)
+            source_channel = create_partial_channel_from_id(source_channel_id, ChannelType.guild_announcements, 0)
         
-        target_channel_id = get_channel_id(target_channel, Channel.is_in_group_guild_main_text)
+        target_channel_id = get_channel_id(target_channel, Channel.is_in_group_guild_system)
         
         data = {
             'webhook_channel_id': target_channel_id,
@@ -973,7 +964,7 @@ class ClientCompoundChannelEndpoints(Compound):
             - If `allow` was not given neither as `None`, ``Permission`` not other `int`.
             - If `deny` was not given neither as `None`, ``Permission`` not other `int`.
         """
-        channel_id = get_channel_id(channel, Channel.is_in_group_guild_movable)
+        channel_id = get_channel_id(channel, Channel.is_in_group_guild_sortable)
         
         assert _assert__permission_overwrite__type(permission_overwrite)
         assert _assert__permission_overwrite_edit__allow(allow)
@@ -1020,7 +1011,7 @@ class ClientCompoundChannelEndpoints(Compound):
         AssertionError
             If `permission_overwrite` was not given as ``PermissionOverwrite``.
         """
-        channel_id = get_channel_id(channel, Channel.is_in_group_guild_movable)
+        channel_id = get_channel_id(channel, Channel.is_in_group_guild_sortable)
         
         assert _assert__permission_overwrite__type(permission_overwrite)
         
@@ -1064,7 +1055,7 @@ class ClientCompoundChannelEndpoints(Compound):
             - If `allow` was not given neither as ``Permission`` nor as other `int`.
             - If `deny ` was not given neither as ``Permission`` not as other `int`.
         """
-        channel_id = get_channel_id(channel, Channel.is_in_group_guild_movable)
+        channel_id = get_channel_id(channel, Channel.is_in_group_guild_sortable)
         
         if isinstance(target, Role):
             permission_overwrite_target_type = PermissionOverwriteTargetType.role

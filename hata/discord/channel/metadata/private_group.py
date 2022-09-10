@@ -8,8 +8,6 @@ from ...http import urls as module_urls
 from ...permission.permission import PERMISSION_GROUP, PERMISSION_GROUP_OWNER, PERMISSION_NONE
 from ...preconverters import preconvert_snowflake, preconvert_str
 
-from .. import channel_types as CHANNEL_TYPES
-
 from .private_base import ChannelMetadataPrivateBase
 
 
@@ -29,18 +27,10 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
         The channel's display name. Can be empty string if the channel has no name.
     owner_id : `int`
         The group channel's owner's id.
-    
-    Class Attributes
-    ----------------
-    type : `int` = `CHANNEL_TYPES.private_group`
-        The channel's type.
     """
     __slots__ = ('name', 'owner_id')
     
     icon = IconSlot('icon', 'icon', module_urls.channel_group_icon_url, module_urls.channel_group_icon_url_as)
-    
-    type = CHANNEL_TYPES.private_group
-    
     
     @copy_docs(ChannelMetadataPrivateBase._created)
     def _created(self, channel_entity, client):
@@ -57,9 +47,9 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
                 pass
     
     
-    @copy_docs(ChannelMetadataPrivateBase._compare_attributes_to)
-    def _compare_attributes_to(self, other):
-        if not ChannelMetadataPrivateBase._compare_attributes_to(self, other):
+    @copy_docs(ChannelMetadataPrivateBase._is_equal_same_type)
+    def _is_equal_same_type(self, other):
+        if not ChannelMetadataPrivateBase._is_equal_same_type(self, other):
             return False
         
         if self.name != other.name:

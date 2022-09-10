@@ -30,6 +30,7 @@ setup(
         'hata.discord.bases',
         'hata.discord.bin',
         'hata.discord.channel',
+        'hata.discord.channel.channel_type',
         'hata.discord.channel.metadata',
         'hata.discord.client',
         'hata.discord.client.compounds',

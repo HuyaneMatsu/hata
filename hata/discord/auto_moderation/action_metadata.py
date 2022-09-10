@@ -4,7 +4,7 @@ from math import ceil
 
 from scarletio import RichAttributeErrorBaseType, copy_docs
 
-from ..channel import Channel, create_partial_channel_from_id
+from ..channel import Channel, ChannelType, create_partial_channel_from_id
 
 from .constants import AUTO_MODERATION_ACTION_TIMEOUT_MAX
 
@@ -39,7 +39,7 @@ class AutoModerationActionMetadata(RichAttributeErrorBaseType):
         
         Returns
         -------
-        self : ``ScheduledEventEntityMetadata``
+        self : `instance<cls>`
         """
         return object.__new__(cls)
     
@@ -74,7 +74,7 @@ class AutoModerationActionMetadata(RichAttributeErrorBaseType):
         
         Returns
         -------
-        new : ``AutoModerationActionMetadata``
+        new : `instance<cls>`
         """
         return object.__new__(type(self))
 
@@ -191,7 +191,7 @@ class SendAlertMessageActionMetadata(AutoModerationActionMetadata):
         """
         channel_id = self.channel_id
         if channel_id:
-            return create_partial_channel_from_id(channel_id, -1, 0)
+            return create_partial_channel_from_id(channel_id, ChannelType.unknown, 0)
 
 
 class TimeoutActionMetadata(AutoModerationActionMetadata):

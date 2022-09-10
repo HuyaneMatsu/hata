@@ -6,13 +6,13 @@ from ....env import API_VERSION
 
 from ...allowed_mentions import parse_allowed_mentions
 from ...bases import maybe_snowflake, maybe_snowflake_pair
-from ...channel import CHANNEL_TYPES, Channel, create_partial_channel_from_id
+from ...channel import Channel, ChannelType, create_partial_channel_from_id
 from ...channel.constants import AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
 from ...channel.utils import _maybe_add_channel_slowmode_field_to_data
 from ...core import CHANNELS
 from ...http import DiscordHTTPClient
 from ...message import Message, MessageFlag
-from ...preconverters import preconvert_int_options
+from ...preconverters import preconvert_preinstanced_type
 from ...sticker import Sticker
 from ...user import ClientUserBase, create_partial_user_from_id, thread_user_create
 
@@ -88,7 +88,7 @@ class ClientCompoundThreadEndpoints(Compound):
     
     
     async def thread_create(
-        self, message_or_channel, name, *, auto_archive_after=None, type_=None, invitable=True, slowmode = None
+        self, message_or_channel, name, *, auto_archive_after = None, type_ = None, invitable = True, slowmode = None
     ):
         """
         Creates a new thread derived from the given message or channel.
@@ -111,7 +111,7 @@ class ClientCompoundThreadEndpoints(Compound):
             The duration in seconds after the thread auto archives. Can be any of `3600`, `86400`, `259200`, `604800`.
         
         type_ : `None`, `int` = `None`, Optional (Keyword only)
-            The thread channel's type to create. Can be either `10`,`11`,`12`.
+            The thread channel's type to create.
         
         invitable : `bool` = `True`, Optional (Keyword only)
             Whether non-moderators can invite other non-moderators to the threads. Only applicable for private threads.
@@ -150,7 +150,7 @@ class ClientCompoundThreadEndpoints(Compound):
         # Message cannot be detected by id, only cached ones, so ignore that case.
         
         if isinstance(message_or_channel, Channel):
-            if message_or_channel.type not in CHANNEL_TYPES.GROUP_CAN_CONTAIN_THREADS:
+            if not message_or_channel.is_threadable():
                 raise TypeError(
                     f'{message_or_channel!r} do not supports thread creation.'
                 )
@@ -214,9 +214,15 @@ class ClientCompoundThreadEndpoints(Compound):
                     )
         
         if type_ is None:
-            type_ = CHANNEL_TYPES.guild_thread_public
+            type_ = ChannelType.guild_thread_public
+        
         else:
-            type_ = preconvert_int_options(type_, 'type_', CHANNEL_TYPES.GROUP_THREAD)
+            type_ = preconvert_preinstanced_type(type_, 'type_', ChannelType)
+            
+            if not message_or_channel.flags.thread:
+                raise TypeError(
+                    f'{type_!r} is not a thread type.'
+                )
         
         if __debug__:
             if not isinstance(invitable, bool):
@@ -233,7 +239,7 @@ class ClientCompoundThreadEndpoints(Compound):
         _maybe_add_channel_slowmode_field_to_data(type_, None, data, slowmode)
         
         
-        if (type_ == CHANNEL_TYPES.guild_thread_private) and (not invitable):
+        if (type_ is ChannelType.guild_thread_private) and (not invitable):
             data['invitable'] = invitable
         
         
@@ -478,7 +484,7 @@ class ClientCompoundThreadEndpoints(Compound):
             'message': message_data,
         }
         
-        _maybe_add_channel_slowmode_field_to_data(CHANNEL_TYPES.guild_thread_public, None, data, slowmode)
+        _maybe_add_channel_slowmode_field_to_data(ChannelType.guild_thread_public, None, data, slowmode)
         
         channel_data = await self.http.thread_create(channel_id, data)
         
@@ -587,7 +593,7 @@ class ClientCompoundThreadEndpoints(Compound):
             user = create_partial_user_from_id(user_id)
         
         if channel is None:
-            channel = create_partial_channel_from_id(channel_id, 12, 0)
+            channel = create_partial_channel_from_id(channel_id, ChannelType.guild_thread_public, 0)
         
         thread_user_create(channel, user, thread_user_data)
         
@@ -690,7 +696,7 @@ class ClientCompoundThreadEndpoints(Compound):
         thread_user_datas = await self.http.thread_user_get_all(channel_id)
         
         if thread_channel is None:
-            thread_channel = create_partial_channel_from_id(channel_id, 12, 0)
+            thread_channel = create_partial_channel_from_id(channel_id, ChannelType.guild_thread_public, 0)
         
         users = []
         for thread_user_data in thread_user_datas:
@@ -705,13 +711,13 @@ class ClientCompoundThreadEndpoints(Compound):
     
     if API_VERSION >= 10:
         async def channel_thread_get_all_active(self, channel):
-            guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_can_contain_threads)
+            guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_threadable)
             thread_channels = await self.guild_thread_get_all_active(guild_id)
             return [thread_channel for thread_channel in thread_channels if thread_channel.parent_id == channel_id]
     
     else:
         async def channel_thread_get_all_active(self, channel):
-            guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_can_contain_threads)
+            guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_threadable)
             return await request_channel_thread_channels(
                 self,
                 guild_id,
@@ -773,7 +779,7 @@ class ClientCompoundThreadEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_can_contain_threads)
+        guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_threadable)
         return await request_channel_thread_channels(
             self,
             guild_id,
@@ -804,7 +810,7 @@ class ClientCompoundThreadEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_can_contain_threads)
+        guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_threadable)
         return await request_channel_thread_channels(
             self,
             guild_id,
@@ -835,7 +841,7 @@ class ClientCompoundThreadEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_can_contain_threads)
+        guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_threadable)
         return await request_channel_thread_channels(
             self,
             guild_id,

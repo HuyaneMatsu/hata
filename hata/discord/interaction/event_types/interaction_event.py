@@ -3,7 +3,7 @@ __all__ = ('InteractionEvent',)
 from scarletio import Future, export, future_or_timeout, include, shield
 
 from ...bases import DiscordEntity, EventBase
-from ...channel import create_partial_channel_from_id
+from ...channel import ChannelType, create_partial_channel_from_id
 from ...core import (
     APPLICATION_ID_TO_CLIENT, GUILDS, INTERACTION_EVENT_MESSAGE_WAITERS, INTERACTION_EVENT_RESPONSE_WAITERS, KOKORO
 )
@@ -551,7 +551,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal=True):
         -------
         channel : ``Channel``, `None`
         """
-        return create_partial_channel_from_id(self.channel_id, -1, self.guild_id)
+        return create_partial_channel_from_id(self.channel_id, ChannelType.unknown, self.guild_id)
     
     
     @property

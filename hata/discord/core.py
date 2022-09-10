@@ -60,6 +60,10 @@ Weak Caches
     
     When requesting an eula, querying from the cache is always preferred over requesting it.
 
+- `FORUM_TAGS` : ``WeakValueDictionary``
+    
+    Stores the created ``ForumTag`` instances.
+
 - `GUILDS` : ``WeakValueDictionary``
 
     Contains the created ``Guild``.
@@ -164,6 +168,7 @@ DISCOVERY_CATEGORIES = WeakValueDictionary()
 EMBEDDED_ACTIVITY_STATES = WeakValueDictionary()
 EMOJIS = WeakValueDictionary()
 EULAS = WeakValueDictionary()
+FORUM_TAGS = WeakValueDictionary()
 GUILDS = WeakValueDictionary()
 INTEGRATIONS = WeakValueDictionary()
 INVITES = WeakValueDictionary()

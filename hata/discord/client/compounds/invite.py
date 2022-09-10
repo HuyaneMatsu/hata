@@ -1,10 +1,12 @@
 __all__ = ()
 
+import warnings
+
 from scarletio import Compound
 
 from ...application import Application
 from ...bases import maybe_snowflake
-from ...channel import CHANNEL_TYPES, Channel, get_channel_type_names
+from ...channel import Channel, ChannelType
 from ...exceptions import DiscordException, ERROR_CODES
 from ...guild import Guild, create_partial_guild_from_id
 from ...http import DiscordHTTPClient
@@ -12,6 +14,116 @@ from ...invite import Invite, InviteTargetType
 from ...permission.permission import PERMISSION_MASK_CREATE_INSTANT_INVITE
 from ...user import ClientUserBase
 from ..request_helpers import get_channel_id, get_guild_and_id, get_guild_id
+
+
+def _assert__vanity_invite_edit__vanity_code(vanity_code):
+    """
+    Asserts the `vanity_code` parameter of ``Client.vanity_invite_edit`` method.
+    
+    Parameters
+    ----------
+    vanity_code : `str`
+        The new code of the guild's vanity invite.
+    
+    Raises
+    ------
+    AssertionError
+        - If `vanity_code` is not `str`.
+    """
+    if not isinstance(vanity_code, str):
+        raise AssertionError(
+            f'`vanity_code` can be `str`, got {vanity_code.__class__.__name__}; {vanity_code!r}.'
+        )
+    
+    return True
+
+
+def _assert__invite_create__max_age(max_age):
+    """
+    Asserts the `max_age` parameter of ``Client.invite_create`` method.
+    
+    Parameters
+    ----------
+    max_age : `int`
+        After how much time (in seconds) will the invite expire.
+    
+    Raises
+    ------
+    AssertionError
+        - If `max_age` is not `int`.
+    """
+    if not isinstance(max_age, int):
+        raise AssertionError(
+            f'`max_age` can be `int`, got {max_age.__class__.__name__}; {max_age!r}.'
+        )
+    
+    return True
+
+
+def _assert__invite_create__max_uses(max_uses):
+    """
+    Asserts the `max_uses` parameter of ``Client.invite_create`` method.
+    
+    Parameters
+    ----------
+    max_uses : `int`
+        How much times can the invite be used.
+    
+    Raises
+    ------
+    AssertionError
+        - If `max_uses` is not `int`.
+    """
+    if not isinstance(max_uses, int):
+        raise AssertionError(
+            f'`max_uses` can be `int`, got {max_uses.__class__.__name__}; {max_uses!r}.'
+        )
+    
+    return True
+
+
+def _assert__invite_create__unique(unique):
+    """
+    Asserts the `unique` parameter of ``Client.invite_create`` method.
+    
+    Parameters
+    ----------
+    unique : `bool`
+        Whether the created invite should be unique.
+    
+    Raises
+    ------
+    AssertionError
+        - If `unique` is not `bool`.
+    """
+    if not isinstance(unique, bool):
+        raise AssertionError(
+            f'`unique` can be `bool`, got {unique.__class__.__name__}; {unique!r}.'
+        )
+    
+    return True
+
+
+def _assert__invite_create__temporary(temporary):
+    """
+    Asserts the `temporary` parameter of ``Client.invite_create`` method.
+    
+    Parameters
+    ----------
+    temporary : `bool`
+        Whether the invite should give only temporary membership.
+    
+    Raises
+    ------
+    AssertionError
+        - If `temporary` is not `bool`.
+    """
+    if not isinstance(temporary, bool):
+        raise AssertionError(
+            f'`temporary` can be `bool`, got {temporary.__class__.__name__}; {temporary!r}.'
+        )
+    
+    return True
 
 
 class ClientCompoundInviteEndpoints(Compound):
@@ -90,11 +202,7 @@ class ClientCompoundInviteEndpoints(Compound):
         """
         guild_id = get_guild_id(guild)
         
-        if __debug__:
-            if not isinstance(vanity_code, str):
-                raise AssertionError(
-                    f'`vanity_code` can be `str`, got {vanity_code.__class__.__name__}; {vanity_code!r}.'
-                )
+        assert _assert__vanity_invite_edit__vanity_code(vanity_code)
         
         await self.http.vanity_invite_edit(guild_id, {'code': vanity_code}, reason)
     
@@ -138,7 +246,7 @@ class ClientCompoundInviteEndpoints(Compound):
         """
         while True:
             if isinstance(channel, Channel):
-                if channel.is_in_group_can_create_invite_to() or channel.partial:
+                if channel.is_in_group_invitable() or channel.partial:
                     channel_id = channel.id
                     break
             
@@ -148,30 +256,14 @@ class ClientCompoundInviteEndpoints(Compound):
                     break
             
             raise TypeError(
-                f'`channel` can be {get_channel_type_names(CHANNEL_TYPES.GROUP_CAN_CREATE_INVITE_TO)} channel, `int`'
+                f'`channel` can be an invitable channel, `int`'
                 f', got {channel.__class__.__name__}; {channel!r}.'
             )
         
-        if __debug__:
-            if not isinstance(max_age, int):
-                raise AssertionError(
-                    f'`max_age` can be `int`, got {max_age.__class__.__name__}; {max_age!r}.'
-                )
-            
-            if not isinstance(max_uses, int):
-                raise AssertionError(
-                    f'`max_uses` can be `int`, got {max_uses.__class__.__name__}; {max_uses!r}.'
-                )
-            
-            if not isinstance(unique, bool):
-                raise AssertionError(
-                    f'`unique` can be `bool`, got {unique.__class__.__name__}; {unique!r}.'
-                )
-            
-            if not isinstance(temporary, bool):
-                raise AssertionError(
-                    f'`temporary` can be `bool`, got {temporary.__class__.__name__}; {temporary!r}.'
-                )
+        assert _assert__invite_create__max_age(max_age)
+        assert _assert__invite_create__max_uses(max_uses)
+        assert _assert__invite_create__unique(unique)
+        assert _assert__invite_create__temporary(temporary)
         
         data = {
             'max_age': max_age,
@@ -228,25 +320,19 @@ class ClientCompoundInviteEndpoints(Compound):
         Raises
         ------
         TypeError
-            If `user` was not given neither as ``ClientUserBase`` neither as `int`.
+            - If `user` was not given neither as ``ClientUserBase`` neither as `int`.
+            - If `guild` is not ``Guild``.
         ValueError
-            If the user is not streaming at the guild.
+            - If the user is not streaming at the guild.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `guild` was not given as ``Guild``.
-            - If `max_age` was not given as `int`.
-            - If `max_uses` was not given as `int`.
-            - If `unique` was not given as `bool`.
-            - If `temporary` was not given as `bool`.
         """
-        if __debug__:
-            if not isinstance(guild, Guild):
-                raise AssertionError(
-                    f'`guild` can be `{Guild.__name__}`, got {guild.__class__.__name__}; {guild!r}.'
-                )
+        if not isinstance(guild, Guild):
+            raise TypeError(
+                f'`guild` can be `{Guild.__name__}`, got {guild.__class__.__name__}; {guild!r}.'
+            )
         
         if isinstance(user, ClientUserBase):
             user_id = user.id
@@ -269,26 +355,10 @@ class ClientCompoundInviteEndpoints(Compound):
                 f'The user must stream at a voice channel of the guild. Got user={user!r}; guild={guild!r}.'
             )
         
-        if __debug__:
-            if not isinstance(max_age, int):
-                raise AssertionError(
-                    f'`max_age` can be `int`, got {max_age.__class__.__name__}; {max_age!r}.'
-                )
-            
-            if not isinstance(max_uses, int):
-                raise AssertionError(
-                    f'`max_uses` can be `int`, got {max_uses.__class__.__name__}; {max_uses!r}.'
-                )
-            
-            if not isinstance(unique, bool):
-                raise AssertionError(
-                    f'`unique` can be `bool`, got {unique.__class__.__name__}; {unique!r}.'
-                )
-            
-            if not isinstance(temporary, bool):
-                raise AssertionError(
-                    f'`temporary` can be `bool`, got {temporary.__class__.__name__}; {temporary!r}.'
-                )
+        assert _assert__invite_create__max_age(max_age)
+        assert _assert__invite_create__max_uses(max_uses)
+        assert _assert__invite_create__unique(unique)
+        assert _assert__invite_create__temporary(temporary)
         
         data = {
             'max_age': max_age,
@@ -323,12 +393,20 @@ class ClientCompoundInviteEndpoints(Compound):
             The embedded application to open in the voice channel.
             
             > The application must have `EMBEDDED_APPLICATION` flag.
+        
         max_age : `int` = `0`, Optional (Keyword only)
-            After how much time (in seconds) will the invite expire. Defaults is never.
+            After how much time (in seconds) will the invite expire.
+            
+            > If given as `0` (so by default) then the created invite will never expire.
+        
         max_uses : `int` = `0`, Optional (Keyword only)
-            How much times can the invite be used. Defaults to unlimited.
+            How much times can the invite be used.
+            
+            > If given as `0` (so by default) then the created invite will have no use limit.
+        
         unique : `bool` = `True`, Optional (Keyword only)
             Whether the created invite should be unique.
+        
         temporary : `bool` = `False`, Optional (Keyword only)
             Whether the invite should give only temporary membership.
         
@@ -345,12 +423,6 @@ class ClientCompoundInviteEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `guild` was not given as ``Guild``.
-            - If `max_age` was not given as `int`.
-            - If `max_uses` was not given as `int`.
-            - If `unique` was not given as `bool`.
-            - If `temporary` was not given as `bool`.
         """
         channel_id = get_channel_id(channel, Channel.is_guild_voice)
         
@@ -364,26 +436,10 @@ class ClientCompoundInviteEndpoints(Compound):
                     f'{application.__class__.__name__}; {application!r}.'
                 )
         
-        if __debug__:
-            if not isinstance(max_age, int):
-                raise AssertionError(
-                    f'`max_age` can be `int`, got {max_age.__class__.__name__}; {max_age!r}.'
-                )
-            
-            if not isinstance(max_uses, int):
-                raise AssertionError(
-                    f'`max_uses` can be `int`, got {max_uses.__class__.__name__}; {max_uses!r}.'
-                )
-            
-            if not isinstance(unique, bool):
-                raise AssertionError(
-                    f'`unique` can be `bool`, got {unique.__class__.__name__}; {unique!r}.'
-                )
-            
-            if not isinstance(temporary, bool):
-                raise AssertionError(
-                    f'`temporary` can be `bool`, got {temporary.__class__.__name__}; {temporary!r}.'
-                )
+        assert _assert__invite_create__max_age(max_age)
+        assert _assert__invite_create__max_uses(max_uses)
+        assert _assert__invite_create__unique(unique)
+        assert _assert__invite_create__temporary(temporary)
         
         data = {
             'max_age': max_age,
@@ -428,24 +484,19 @@ class ClientCompoundInviteEndpoints(Compound):
         
         Raises
         ------
+        TypeError
+            - if `guild` is not ``Guild`˛
         ValueError
             If the guild has no channel to create invite to.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `guild` was not given as ``Guild``.
-            - If `max_age` was not given as `int`.
-            - If `max_uses` was not given as `int`.
-            - If `unique` was not given as `bool`.
-            - If `temporary` was not given as `bool`.
         """
-        if __debug__:
-            if not isinstance(guild, Guild):
-                raise AssertionError(
-                    f'`guild` can be `{Guild.__name__}`, got {guild.__class__.__name__}; {guild!r}.'
-                )
+        if not isinstance(guild, Guild):
+            raise TypeError(
+                f'`guild` can be `{Guild.__name__}`, got {guild.__class__.__name__}; {guild!r}.'
+            )
         
         while True:
             if not guild.channels:
@@ -462,9 +513,9 @@ class ClientCompoundInviteEndpoints(Compound):
             if channel is not None:
                 break
             
-            for channel_type in (CHANNEL_TYPES.guild_text, CHANNEL_TYPES.guild_voice):
+            for channel_type in (ChannelType.guild_text, ChannelType.guild_voice):
                 for channel in guild.channels.values():
-                    if channel.type == CHANNEL_TYPES.guild_category:
+                    if channel.type == ChannelType.guild_category:
                         for channel in channel.channels:
                             if channel.type == channel_type:
                                 break
@@ -495,7 +546,7 @@ class ClientCompoundInviteEndpoints(Compound):
             raise
     
     
-    async def invite_get(self, invite, *, with_count=True):
+    async def invite_get(self, invite, *, with_count=...):
         """
         Requests a partial invite with the given code.
         
@@ -505,8 +556,13 @@ class ClientCompoundInviteEndpoints(Compound):
         ----------
         invite : ``Invite``, `str`
             The invites code.
-        with_count : `bool` = `True`, Optional (Keyword only)
+        
+        with_count : `bool`, Optional (Keyword only)
             Whether the invite should contain the respective guild's user and online user count.
+            
+            Defaults to `True`.
+            
+            Deprecated and will be removed in 2023 January.
         
         Returns
         -------
@@ -522,27 +578,32 @@ class ClientCompoundInviteEndpoints(Compound):
             If any exception was received from the Discord API.
         AssertionError
             If `invite_code` was not given as `str`.
-            If `with_count`was not given as `bool`.
         """
         if isinstance(invite, Invite):
             invite_code = invite.code
+        
         elif isinstance(invite, str):
             invite_code = invite
             invite = None
+        
         else:
             raise TypeError(
                 f'`invite`` can be `{Invite.__name__}`, `str`, got {invite.__class__.__name__}; '
                 f'{invite!r}.'
             )
         
-        if __debug__:
-            if not isinstance(with_count, bool):
-                raise AssertionError(
-                    f'`with_count` can be `bool`, got {with_count.__class__.__name__}; '
-                    f'{with_count!r}.'
-                )
+        if (with_count is not ...):
+            warnings.warn(
+                (
+                    f'`with_count` parameter of `{self.__class__.__name__}` is deprecated and will be removed in '
+                    f'2023 January. The parameter is always defaulting to `True`.',
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
         
-        invite_data = await self.http.invite_get(invite_code, {'with_counts': with_count})
+        
+        invite_data = await self.http.invite_get(invite_code, {'with_counts': True})
         
         if invite is None:
             invite = Invite(invite_data, False)
@@ -613,7 +674,7 @@ class ClientCompoundInviteEndpoints(Compound):
         """
         while True:
             if isinstance(channel, Channel):
-                if channel.is_in_group_can_create_invite_to() or channel.partial:
+                if channel.is_in_group_invitable() or channel.partial:
                     channel_id = channel.id
                     break
             
@@ -623,8 +684,7 @@ class ClientCompoundInviteEndpoints(Compound):
                     break
             
             raise TypeError(
-                f'`channel` can be {get_channel_type_names(CHANNEL_TYPES.GROUP_CAN_CREATE_INVITE_TO)} channel, `int`'
-                f', got {channel.__class__.__name__}; {channel!r}.'
+                f'`channel` can be an invitable ``Channel``, `int`, got {channel.__class__.__name__}; {channel!r}.'
             )
         
         invite_datas = await self.http.invite_get_all_channel(channel_id)
@@ -655,9 +715,11 @@ class ClientCompoundInviteEndpoints(Compound):
         """
         if isinstance(invite, Invite):
             invite_code = invite.code
+        
         elif isinstance(invite, str):
             invite_code = invite
             invite = None
+        
         else:
             raise TypeError(
                 f'`invite`` can be `{Invite.__name__}`, `str`, got {invite.__class__.__name__}; {invite!r}.'

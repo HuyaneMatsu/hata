@@ -5,10 +5,10 @@ from scarletio import copy_docs
 
 from ...permission import Permission
 from ...permission.permission import PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE, PERMISSION_THREAD_AND_VOICE_DENY
-from ...preconverters import preconvert_int, preconvert_int_options, preconvert_str
+from ...preconverters import preconvert_flag, preconvert_int, preconvert_int_options, preconvert_str
 
-from .. import channel_types as CHANNEL_TYPES
 from ..constants import AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
+from ..flags import ChannelFlag
 
 from .guild_main_base import ChannelMetadataGuildMainBase
 
@@ -32,6 +32,8 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
     default_auto_archive_after : `int`
         The default duration (in seconds) for newly created threads to automatically archive the themselves. Defaults
         to `3600`. Can be one of: `3600`, `86400`, `259200`, `604800`.
+    flags : ``ChannelFlag``
+        The channel's flags.
     slowmode : `int`
         The amount of time in seconds what a user needs to wait between it's each message. Bots and user accounts with
         `manage_messages`, `manage_channel` permissions are unaffected.
@@ -40,26 +42,29 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
     
     Class Attributes
     ----------------
-    type : `int` = `CHANNEL_TYPES.guild_forum`
-        The channel's type.
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """
-    __slots__ = ('default_auto_archive_after', 'slowmode', 'topic',)
+    __slots__ = ('default_auto_archive_after', 'flags', 'slowmode', 'topic',)
     
-    type = CHANNEL_TYPES.guild_forum
-    
-    @copy_docs(ChannelMetadataGuildMainBase._compare_attributes_to)
-    def _compare_attributes_to(self, other):
-        if not ChannelMetadataGuildMainBase._compare_attributes_to(self, other):
+    @copy_docs(ChannelMetadataGuildMainBase._is_equal_same_type)
+    def _is_equal_same_type(self, other):
+        if not ChannelMetadataGuildMainBase._is_equal_same_type(self, other):
             return False
         
+        # default_auto_archive_after
         if self.default_auto_archive_after != other.default_auto_archive_after:
             return False
         
+        # flags
+        if self.flags != other.flags:
+            return False
+        
+        # slowmode
         if self.slowmode != other.slowmode:
             return False
         
+        # topic
         if self.topic != other.topic:
             return False
         
@@ -77,6 +82,7 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         self = super(ChannelMetadataGuildForum, cls)._create_empty()
         
         self.default_auto_archive_after = AUTO_ARCHIVE_DEFAULT
+        self.flags = ChannelFlag()
         self.slowmode = 0
         self.topic = None
         
@@ -87,6 +93,7 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
     def _update_attributes(self, data):
         ChannelMetadataGuildMainBase._update_attributes(self, data)
         
+        # default_auto_archive_after
         default_auto_archive_after = data.get('default_auto_archive_duration', None)
         if default_auto_archive_after is None:
             default_auto_archive_after = AUTO_ARCHIVE_DEFAULT
@@ -94,11 +101,16 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
             default_auto_archive_after *= 60
         self.default_auto_archive_after = default_auto_archive_after
         
+        # flags
+        self.flags = ChannelFlag(data.get('flags', 0))
+        
+        # slowmode
         slowmode = data.get('rate_limit_per_user', None)
         if slowmode is None:
             slowmode = 0
         self.slowmode = slowmode
         
+        # topic
         self.topic = data.get('topic', None)
     
     
@@ -106,7 +118,7 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
     def _difference_update_attributes(self, data):
         old_attributes = ChannelMetadataGuildMainBase._difference_update_attributes(self, data)
         
-        
+        # default_auto_archive_after
         default_auto_archive_after = data.get('default_auto_archive_duration', None)
         if default_auto_archive_after is None:
             default_auto_archive_after = AUTO_ARCHIVE_DEFAULT
@@ -116,8 +128,14 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
             old_attributes['default_auto_archive_after'] = self.default_auto_archive_after
             self.default_auto_archive_after = default_auto_archive_after
         
+        # flags
+        flags = data.get('flags', 0)
+        if (self.flags != flags):
+            flags = ChannelFlag(flags)
+            old_attributes['flags'] = self.flags
+            self.flags = flags
         
-        
+        # slowmode
         slowmode = data.get('rate_limit_per_user', None)
         if slowmode is None:
             slowmode = 0
@@ -125,12 +143,11 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
             old_attributes['slowmode'] = self.slowmode
             self.slowmode = slowmode
         
-        
+        # topic
         topic = data.get('topic', None)
         if self.topic != topic:
             old_attributes['topic'] = self.topic
             self.topic = topic
-        
         
         return old_attributes
     
@@ -163,6 +180,7 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
     def _precreate(cls, keyword_parameters):
         self = super(ChannelMetadataGuildForum, cls)._precreate(keyword_parameters)
         
+        # default_auto_archive_after
         try:
             default_auto_archive_after = keyword_parameters.pop('default_auto_archive_duration')
         except KeyError:
@@ -176,7 +194,16 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
             
             self.default_auto_archive_after = default_auto_archive_after
         
+        # flags
+        try:
+            flags = keyword_parameters.pop('flags')
+        except KeyError:
+            pass
+        else:
+            flags = preconvert_flag(flags, 'flags', ChannelFlag)
+            self.flags = flags
         
+        # slowmode
         try:
             slowmode = keyword_parameters.pop('slowmode')
         except KeyError:
@@ -185,7 +212,7 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
             slowmode = preconvert_int(slowmode, 'slowmode', 0, 21600)
             self.slowmode = slowmode
         
-        
+        # topic
         try:
             topic = keyword_parameters.pop('topic')
         except KeyError:
@@ -196,7 +223,6 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
                 if topic:
                     self.topic = topic
         
-        
         return self
     
     
@@ -206,6 +232,9 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         
         # default_auto_archive_duration
         data['default_auto_archive_duration'] = self.default_auto_archive_after // 60
+        
+        # flags
+        data['flags'] = self.flags
         
         # slowmode
         slowmode = self.slowmode

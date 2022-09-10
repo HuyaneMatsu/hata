@@ -45,9 +45,9 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
     order_group = 2
     
 
-    @copy_docs(ChannelMetadataGuildMainBase._compare_attributes_to)
-    def _compare_attributes_to(self, other):
-        if not ChannelMetadataGuildMainBase._compare_attributes_to(self, other):
+    @copy_docs(ChannelMetadataGuildMainBase._is_equal_same_type)
+    def _is_equal_same_type(self, other):
+        if not ChannelMetadataGuildMainBase._is_equal_same_type(self, other):
             return False
         
         if self.bitrate != other.bitrate:

@@ -9,6 +9,7 @@ from ..user import UserBase
 from .preinstanced import WebhookType
 
 
+ChannelType = include('ChannelType')
 create_partial_channel_from_id = include('create_partial_channel_from_id')
 
 
@@ -84,7 +85,7 @@ class WebhookBase(UserBase):
         -------
         channel : ``Channel``
         """
-        return create_partial_channel_from_id(self.channel_id, -1, 0)
+        return create_partial_channel_from_id(self.channel_id, ChannelType.unknown, 0)
     
     
     @property
@@ -128,5 +129,5 @@ class WebhookBase(UserBase):
     def _set_default_attributes(self):
         UserBase._set_default_attributes(self)
         
-        self.channel = None
+        self.channel_id = 0
         self.type = WebhookType.none

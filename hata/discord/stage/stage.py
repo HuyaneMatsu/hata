@@ -5,7 +5,7 @@ import reprlib
 from scarletio import export, include
 
 from ..bases import DiscordEntity
-from ..channel import create_partial_channel_from_id
+from ..channel import ChannelType, create_partial_channel_from_id
 from ..core import STAGES
 from ..scheduled_event import PrivacyLevel
 
@@ -59,7 +59,7 @@ class Stage(DiscordEntity):
             self = object.__new__(cls)
             guild = create_partial_guild_from_id(int(data['guild_id']))
             
-            self.channel = create_partial_channel_from_id(int(data['channel_id']), 13, guild.id)
+            self.channel = create_partial_channel_from_id(int(data['channel_id']), ChannelType.guild_stage, guild.id)
             self.guild = guild
             self.id = stage_id
             

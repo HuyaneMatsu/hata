@@ -8,10 +8,6 @@ from scarletio import CallableAnalyzer, RichAttributeErrorBaseType, cached_prope
 
 from ...discord.bases import FlagBase
 from ...discord.channel import Channel
-from ...discord.channel.deprecation import (
-    ChannelBase, ChannelCategory, ChannelDirectory, ChannelGroup, ChannelGuildBase, ChannelPrivate, ChannelStage,
-    ChannelStore, ChannelText, ChannelTextBase, ChannelThread, ChannelVoice, ChannelVoiceBase
-)
 from ...discord.client import Client
 from ...discord.color import Color, parse_color
 from ...discord.core import CHANNELS, CLIENTS, EMOJIS, GUILDS, MESSAGES, ROLES, USERS
@@ -1483,34 +1479,26 @@ CONVERTER_CHANNEL = ConverterSetting(
     all_flags = ConverterFlag.channel_all,
     alternative_type_name = 'channel',
     default_type = Channel,
-    alternative_types = [
-        ChannelBase,
-        ChannelGuildBase,
-        ChannelTextBase,
-        ChannelVoiceBase,
-        ChannelText,
-        ChannelPrivate,
-        ChannelVoice,
-        ChannelGroup,
-        ChannelCategory,
-        ChannelStore,
-        ChannelThread,
-        ChannelStage,
-        ChannelDirectory,
-    ],
+    alternative_types = None,
     requires_part = True,
     alternative_checked_types = {
-        'group_messageable': Channel.is_in_group_messageable,
-        'group_guild_messageable': Channel.is_in_group_guild_messageable,
-        'group_guild_main_text': Channel.is_in_group_guild_main_text,
+        'group_messageable': Channel.is_in_group_textual,
+        'group_textual': Channel.is_in_group_textual,
+        'group_guild_messageable': Channel.is_in_group_guild_textual,
+        'group_guild_textual': Channel.is_in_group_guild_textual,
+        'group_guild_main_text': Channel.is_in_group_guild_system,
+        'group_guild_system': Channel.is_in_group_guild_system,
         'group_connectable': Channel.is_in_group_connectable,
         'group_guild_connectable': Channel.is_in_group_guild_connectable,
         'group_private': Channel.is_in_group_private,
         'group_guild': Channel.is_in_group_guild,
         'group_thread': Channel.is_in_group_thread,
-        'group_can_contain_threads': Channel.is_in_group_can_contain_threads,
-        'group_can_create_invite_to': Channel.is_in_group_can_create_invite_to,
-        'group_guild_movable': Channel.is_in_group_guild_movable,
+        'group_can_contain_threads': Channel.is_in_group_threadable,
+        'group_can_threadable': Channel.is_in_group_threadable,
+        'group_can_create_invite_to': Channel.is_in_group_invitable,
+        'group_can_create_invitable': Channel.is_in_group_invitable,
+        'group_guild_movable': Channel.is_in_group_guild_sortable,
+        'group_guild_sortable': Channel.is_in_group_guild_sortable,
         'guild_text': Channel.is_guild_text,
         'private': Channel.is_private,
         'guild_voice': Channel.is_guild_voice,

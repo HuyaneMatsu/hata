@@ -4,8 +4,6 @@ from scarletio import copy_docs
 
 from ...preconverters import preconvert_bool
 
-from .. import channel_types as CHANNEL_TYPES
-
 from .guild_thread_base import ChannelMetadataGuildThreadBase
 
 
@@ -46,18 +44,14 @@ class ChannelMetadataGuildThreadPrivate(ChannelMetadataGuildThreadBase):
     
     Class Attributes
     ----------------
-    type : `int` = `CHANNEL_TYPES.guild_thread_private`
-        The channel's type.
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """
     __slots__ = ('invitable',)
     
-    type = CHANNEL_TYPES.guild_thread_private
-    
-    @copy_docs(ChannelMetadataGuildThreadBase._compare_attributes_to)
-    def _compare_attributes_to(self, other):
-        if not ChannelMetadataGuildThreadBase._compare_attributes_to(self, other):
+    @copy_docs(ChannelMetadataGuildThreadBase._is_equal_same_type)
+    def _is_equal_same_type(self, other):
+        if not ChannelMetadataGuildThreadBase._is_equal_same_type(self, other):
             return False
         
         if self.invitable != other.invitable:

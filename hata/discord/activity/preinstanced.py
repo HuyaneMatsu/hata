@@ -35,6 +35,8 @@ class ActivityType(PreinstancedBase):
     +-----------------------+-----------------------+-----------+---------------------------------------+
     | Class attribute name  | Name                  | Value     | Metadata type                         |
     +=======================+=======================+===========+=======================================+
+    | unknown               | unknown               | -1        | ``ActivityMetadataBase``              |
+    +-----------------------+-----------------------+-----------+---------------------------------------+
     | game                  | game                  | 0         | ``RichActivityMetadata``              |
     +-----------------------+-----------------------+-----------+---------------------------------------+
     | stream                | block stream          | 1         | ``RichActivityMetadata``              |
@@ -46,8 +48,6 @@ class ActivityType(PreinstancedBase):
     | custom                | custom                | 4         | ``CustomActivityMetadata``            |
     +-----------------------+-----------------------+-----------+---------------------------------------+
     | competing             | competing             | 5         | ``RichActivityMetadata``              |
-    +-----------------------+-----------------------+-----------+---------------------------------------+
-    | unknown               | unknown               | 127       | ``ActivityMetadataBase``              |
     +-----------------------+-----------------------+-----------+---------------------------------------+
     """
     __slots__ = ('metadata_type',)
@@ -98,10 +98,10 @@ class ActivityType(PreinstancedBase):
         self.INSTANCES[value] = self
     
     # predefined
+    unknown = P(-1, 'unknown', ActivityMetadataBase)
     game = P(0, 'game', RichActivityMetadata)
     stream = P(1, 'stream message', RichActivityMetadata)
     spotify = P(2, 'spotify', RichActivityMetadata)
     watching = P(3, 'watching', RichActivityMetadata)
     custom = P(4, 'custom', CustomActivityMetadata)
     competing = P(5, 'competing', RichActivityMetadata)
-    unknown = P(127, 'unknown', ActivityMetadataBase)

@@ -67,9 +67,9 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
                 pass
     
     
-    @copy_docs(ChannelMetadataGuildBase._compare_attributes_to)
-    def _compare_attributes_to(self, other):
-        if not ChannelMetadataGuildBase._compare_attributes_to(self, other):
+    @copy_docs(ChannelMetadataGuildBase._is_equal_same_type)
+    def _is_equal_same_type(self, other):
+        if not ChannelMetadataGuildBase._is_equal_same_type(self, other):
             return False
         
         if self.permission_overwrites != other.permission_overwrites:

@@ -1,5 +1,6 @@
 __all__ = ('Channel',)
 
+import warnings
 from collections import deque
 from re import I as re_ignore_case, escape as re_escape, search as re_search
 
@@ -13,15 +14,22 @@ from ..core import MESSAGES
 from ..message import Message
 from ..permission import Permission
 from ..permission.permission import PERMISSION_STAGE_MODERATOR
-from ..preconverters import preconvert_int, preconvert_snowflake
+from ..preconverters import preconvert_preinstanced_type, preconvert_snowflake
 from ..user import ZEROUSER, create_partial_user_from_id
 from ..utils import DATETIME_FORMAT_CODE
 
-from . import channel_types as CHANNEL_TYPES
+from .channel_type import ChannelType
+from .channel_type.flags import (
+    CHANNEL_TYPE_MASK_CONNECTABLE, CHANNEL_TYPE_MASK_GUILD, CHANNEL_TYPE_MASK_GUILD_SORTABLE,
+    CHANNEL_TYPE_MASK_GUILD_SYSTEM, CHANNEL_TYPE_MASK_INVITABLE, CHANNEL_TYPE_MASK_PRIVATE, CHANNEL_TYPE_MASK_TEXTUAL,
+    CHANNEL_TYPE_MASK_THREAD, CHANNEL_TYPE_MASK_THREADABLE
+)
 from .message_history import MessageHistory, MessageHistoryCollector, message_relative_index
 from .metadata import ChannelMetadataBase, ChannelMetadataGuildMainBase
-from .metadata.utils import get_channel_metadata_type
-from .utils import get_channel_type_name
+
+
+CHANNEL_TYPE_MASK_GUILD_TEXTUAL = CHANNEL_TYPE_MASK_GUILD | CHANNEL_TYPE_MASK_TEXTUAL
+CHANNEL_TYPE_MASK_GUILD_CONNECTABLE = CHANNEL_TYPE_MASK_GUILD | CHANNEL_TYPE_MASK_CONNECTABLE
 
 
 @export
@@ -39,8 +47,10 @@ class Channel(DiscordEntity, immortal=True):
         The channel's guild's identifier. Defaults to `0`.
     metadata : ``ChannelMetadataBase``
         The channel's metadata storing it's type specific information.
+    type : ``ChannelType``
+        The channel's type.
     """
-    __slots__ = ('_message_history', 'guild_id', 'metadata')
+    __slots__ = ('_message_history', 'guild_id', 'metadata', 'type')
     
     def __new__(cls, data, client, guild_id):
         """
@@ -66,13 +76,15 @@ class Channel(DiscordEntity, immortal=True):
         try:
             self = CHANNELS[channel_id]
         except KeyError:
-            metadata = get_channel_metadata_type(data['type'])(data)
+            channel_type = ChannelType.get(data['type'])
+            metadata = channel_type.metadata_type(data)
             
             self = object.__new__(cls)
             self._message_history = None
             self.id = channel_id
             self.guild_id = guild_id
             self.metadata = metadata
+            self.type = channel_type
             
             metadata._created(self, client)
             CHANNELS[channel_id] = self
@@ -82,16 +94,19 @@ class Channel(DiscordEntity, immortal=True):
                 self.guild_id = guild_id
                 self._message_history = None
                 
-                metadata = get_channel_metadata_type(data['type'])(data)
+                type_ = ChannelType.get(data['type'])
+                metadata = type_.metadata_type(data)
                 self.metadata = metadata
+                self.type = type_
                 metadata._created(self, client)
                 
             else:
         
-                channel_type = data['type']
-                if self.type != channel_type:
-                    metadata = get_channel_metadata_type(channel_type)(data)
+                type_ = ChannelType.get(data['type'])
+                if self.type is not type_:
+                    metadata = type_.metadata_type(data)
                     self.metadata = metadata
+                    self.type = type_
                     metadata._created(self, client)
         
         return self
@@ -112,7 +127,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         self : ``Channel``
         """
-        self = cls._create_empty(channel_id, CHANNEL_TYPES.private, 0)
+        self = cls._create_empty(channel_id, ChannelType.private, 0)
         CHANNELS[channel_id] = self
         return self
     
@@ -146,11 +161,11 @@ class Channel(DiscordEntity, immortal=True):
         repr_parts.append(', name=')
         repr_parts.append(repr(metadata._get_processed_name()))
         
-        channel_type = metadata.type
+        type_ = self.type
         repr_parts.append(' type=')
-        repr_parts.append(repr(get_channel_type_name(channel_type)))
+        repr_parts.append(type_.name)
         repr_parts.append('~')
-        repr_parts.append(repr(channel_type))
+        repr_parts.append(repr(type_.value))
         
         repr_parts.append('>')
         return ''.join(repr_parts)
@@ -476,12 +491,17 @@ class Channel(DiscordEntity, immortal=True):
         data : `dict` of (`str`, `Any`) items
             Channel data received from Discord.
         """
-        channel_type = data['type']
+        type_ = ChannelType.get(data['type'])
+        metadata_type = type_.metadata_type
+        
         metadata = self.metadata
-        if metadata.type == channel_type:
+        
+        if metadata_type is type(metadata):
             metadata._update_attributes(data)
         else:
-            self.metadata = get_channel_metadata_type(channel_type)(data)
+            self.metadata = metadata_type(data)
+        
+        self.type = type_
     
     
     def _difference_update_attributes(self, data):
@@ -542,28 +562,31 @@ class Channel(DiscordEntity, immortal=True):
             +-------------------------------+-----------------------------------------------------------+
             | topic                         | `None`, `str`                                             |
             +-------------------------------+-----------------------------------------------------------+
-            | type                          | `int`                                                     |
+            | type                          | ``ChannelType``                                           |
             +-------------------------------+-----------------------------------------------------------+
             | user_limit                    | `int`                                                     |
             +-------------------------------+-----------------------------------------------------------+
             | video_quality_mode            | ``VideoQualityMode``                                      |
             +-------------------------------+-----------------------------------------------------------+
         """
-        new_channel_type = data['type']
+        type_ = ChannelType.get(data['type'])
+        metadata_type = type_.metadata_type
         
         metadata = self.metadata
-        old_channel_type = metadata.type
         
-        if new_channel_type == old_channel_type:
+        if metadata_type is type(metadata):
             old_attributes = metadata._difference_update_attributes(data)
             
         else:
             old_attributes = {
-                'type': old_channel_type,
                 'metadata': metadata,
             }
             
-            self.metadata = get_channel_metadata_type(new_channel_type)(data)
+            self.metadata = metadata_type(data)
+        
+        if (type_ is not self.type):
+            old_attributes['type'] = self.type
+            self.type = type_
         
         return old_attributes
     
@@ -601,11 +624,15 @@ class Channel(DiscordEntity, immortal=True):
         -------
         channel : ``Channel``
         """
+        type_ = ChannelType.get(data.get('type', -1))
+        metadata = type_.metadata._from_partial_data(data)
+        
         self = object.__new__(cls)
         self._message_history = None
         self.id = channel_id
         self.guild_id = guild_id
-        self.metadata = get_channel_metadata_type(data.get('type', -1))._from_partial_data(data)
+        self.metadata = metadata
+        self.type = type_
         
         CHANNELS.setdefault(channel_id, self)
         
@@ -621,8 +648,8 @@ class Channel(DiscordEntity, immortal=True):
         ----------
         channel_id : `int`
             The channel's identifier.
-        channel_type : `int`
-            The channel's type identifier.
+        channel_type : ``ChannelType``
+            The channel's type.
         guild_id : `int`
             A partial guild's identifier for the created channel.
         
@@ -635,7 +662,8 @@ class Channel(DiscordEntity, immortal=True):
         self._message_history = None
         self.id = channel_id
         self.guild_id = guild_id
-        self.metadata = get_channel_metadata_type(channel_type)._create_empty()
+        self.metadata = channel_type.metadata_type._create_empty()
+        self.type = channel_type
         return self
     
     
@@ -677,18 +705,6 @@ class Channel(DiscordEntity, immortal=True):
         created_at : `datetime`
         """
         return self._metadata._get_created_at(self)
-    
-    
-    @property
-    def type(self):
-        """
-        Returns the channel's type.
-        
-        Returns
-        -------
-        type : `int`
-        """
-        return self.metadata.type
     
     
     @property
@@ -1280,9 +1296,9 @@ class Channel(DiscordEntity, immortal=True):
         ----------
         channel_id : `int`, `str`
             The channel's id.
-        channel_type : `None`, `int`, Optional = `None`
+        channel_type : `None`, `int`, ``ChanelType`` = `None`, Optional (Keyword only)
             The channel's type.
-        **keyword_parameters : keyword parameters
+        **keyword_parameters : Keyword parameters
             Additional predefined attributes for the channel.
         
         Other Parameters
@@ -1358,12 +1374,11 @@ class Channel(DiscordEntity, immortal=True):
         channel_id = preconvert_snowflake(channel_id, 'channel_id')
         
         if channel_type is None:
-            metadata_type = ChannelMetadataBase
+            channel_type = ChannelType.unknown
         else:
-            channel_type = preconvert_int(channel_type, 'channel_type', 0, 256)
-            metadata_type = get_channel_metadata_type(channel_type)
+            channel_type = preconvert_preinstanced_type(channel_type, 'channel_type', ChannelType)
         
-        metadata = metadata_type._precreate(keyword_parameters)
+        metadata = channel_type.metadata_type._precreate(keyword_parameters)
         
         if keyword_parameters:
             raise TypeError(
@@ -1374,7 +1389,7 @@ class Channel(DiscordEntity, immortal=True):
         try:
             self = CHANNELS[channel_id]
         except KeyError:
-            self = cls._create_empty(channel_id, -1, 0)
+            self = cls._create_empty(channel_id, channel_type, 0)
             CHANNELS[channel_id] = self
         else:
             if not self.partial:
@@ -1863,27 +1878,72 @@ class Channel(DiscordEntity, immortal=True):
     
     def is_in_group_messageable(self):
         """
+        Deprecated and will be removed in 2023 January. Please use ``.is_in_group_textual`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.is_in_group_messageable` is deprecated and will be removed in '
+                f'2023 January. Please use `.is_in_group_textual` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return self.is_in_group_textual()
+    
+    
+    def is_in_group_textual(self):
+        """
         Returns whether the channel is messageable.
         
         Returns
         -------
-        is_in_group_messageable : `bool`
+        is_in_group_textual : `int`
         """
-        return self.metadata.type in CHANNEL_TYPES.GROUP_MESSAGEABLE
+        return self.type.flags & CHANNEL_TYPE_MASK_TEXTUAL
     
     
     def is_in_group_guild_messageable(self):
+        """
+        Deprecated and will be removed in 2023 January. Please use ``.is_in_group_guild_textual`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.is_in_group_guild_messageable` is deprecated and will be removed in '
+                f'2023 January. Please use `.is_in_group_guild_textual` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return self.is_in_group_guild_textual()
+    
+    
+    def is_in_group_guild_textual(self):
         """
         Returns whether the channel is a guild and messageable one.
         
         Returns
         -------
-        is_in_group_guild_messageable : `bool`
+        is_in_group_guild_textual : `int`
         """
-        return self.metadata.type in CHANNEL_TYPES.GROUP_GUILD_MESSAGEABLE
+        return self.type.flags & CHANNEL_TYPE_MASK_GUILD_TEXTUAL == CHANNEL_TYPE_MASK_GUILD_TEXTUAL
     
     
     def is_in_group_guild_main_text(self):
+        """
+        Deprecated and will be removed in 2023 January. Please use ``.is_in_group_guild_system`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.is_in_group_guild_main_text` is deprecated and will be removed in '
+                f'2023 January. Please use `.is_in_group_guild_system` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return self.is_in_group_guild_system()
+    
+    
+    def is_in_group_guild_system(self):
         """
         Returns whether the channel a guild text like channel.
         
@@ -1891,9 +1951,9 @@ class Channel(DiscordEntity, immortal=True):
         
         Returns
         -------
-        is_in_group_guild_main_text : `bool`
+        is_in_group_guild_system : `int`
         """
-        return self.metadata.type in CHANNEL_TYPES.GROUP_GUILD_MAIN_TEXT
+        return self.type.flags & CHANNEL_TYPE_MASK_GUILD_SYSTEM
     
     
     def is_in_group_connectable(self):
@@ -1905,9 +1965,9 @@ class Channel(DiscordEntity, immortal=True):
         
         Returns
         -------
-        is_in_group_connectable : `bool`
+        is_in_group_connectable : `int`
         """
-        return self.metadata.type in CHANNEL_TYPES.GROUP_CONNECTABLE
+        return self.type.flags & CHANNEL_TYPE_MASK_CONNECTABLE
     
     
     def is_in_group_guild_connectable(self):
@@ -1916,9 +1976,9 @@ class Channel(DiscordEntity, immortal=True):
         
         Returns
         -------
-        is_in_group_guild_connectable : `bool`
+        is_in_group_guild_connectable : `int`
         """
-        return self.metadata.type in CHANNEL_TYPES.GROUP_GUILD_CONNECTABLE
+        return self.type.flags & CHANNEL_TYPE_MASK_GUILD_CONNECTABLE == CHANNEL_TYPE_MASK_GUILD_CONNECTABLE
     
     
     def is_in_group_private(self):
@@ -1927,9 +1987,9 @@ class Channel(DiscordEntity, immortal=True):
         
         Returns
         -------
-        is_in_group_private : `bool`
+        is_in_group_private : `int`
         """
-        return self.metadata.type in CHANNEL_TYPES.GROUP_PRIVATE
+        return self.type.flags & CHANNEL_TYPE_MASK_PRIVATE
     
     
     def is_in_group_guild(self):
@@ -1938,9 +1998,9 @@ class Channel(DiscordEntity, immortal=True):
         
         Returns
         -------
-        is_in_group_guild : `bool`
+        is_in_group_guild : `int`
         """
-        return self.metadata.type in CHANNEL_TYPES.GROUP_GUILD
+        return self.type.flags & CHANNEL_TYPE_MASK_GUILD
     
     
     def is_in_group_thread(self):
@@ -1949,42 +2009,87 @@ class Channel(DiscordEntity, immortal=True):
         
         Returns
         -------
-        is_in_group_thread : `bool`
+        is_in_group_thread : `int`
         """
-        return self.metadata.type in CHANNEL_TYPES.GROUP_THREAD
+        return self.type.flags & CHANNEL_TYPE_MASK_THREAD
     
     
     def is_in_group_can_contain_threads(self):
+        """
+        Deprecated and will be removed in 2023 January. Please use ``.is_in_group_threadable`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.is_in_group_can_contain_threads` is deprecated and will be removed in '
+                f'2023 January. Please use `.is_in_group_threadable` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return self.is_in_group_threadable()
+    
+    
+    def is_in_group_threadable(self):
         """
         Returns whether the channel can have threads.
         
         Returns
         -------
-        is_in_group_can_contain_threads : `bool`
+        is_in_group_threadable : `int`
         """
-        return self.metadata.type in CHANNEL_TYPES.GROUP_CAN_CONTAIN_THREADS
+        return self.type.flags & CHANNEL_TYPE_MASK_THREADABLE
     
     
     def is_in_group_can_create_invite_to(self):
+        """
+        Deprecated and will be removed in 2023 January. Please use ``.is_in_group_invitable`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.is_in_group_can_create_invite_to` is deprecated and will be removed in '
+                f'2023 January. Please use `.is_in_group_invitable` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return self.is_in_group_invitable()
+    
+    
+    def is_in_group_invitable(self):
         """
         Returns whether the channel have invites created to.
         
         Returns
         -------
-        is_in_group_can_create_invite_to : `bool`
+        is_in_group_invitable : `bool`
         """
-        return self.metadata.type in CHANNEL_TYPES.GROUP_CAN_CREATE_INVITE_TO
+        return self.type.flags & CHANNEL_TYPE_MASK_INVITABLE
     
     
     def is_in_group_guild_movable(self):
+        """
+        Deprecated and will be removed in 2023 January. Please use ``.is_in_group_guild_sortable`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.is_in_group_guild_movable` is deprecated and will be removed in '
+                f'2023 January. Please use `.is_in_group_guild_sortable` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return self.is_in_group_guild_sortable()
+    
+    
+    def is_in_group_guild_sortable(self):
         """
         Returns whether the channel is a movable guild channel.
         
         Returns
         -------
-        is_in_group_guild_movable : `bool`
+        is_in_group_guild_sortable : `int`
         """
-        return self.metadata.type in CHANNEL_TYPES.GROUP_GUILD_MOVABLE
+        return self.type.flags & CHANNEL_TYPE_MASK_GUILD_SORTABLE
     
     
     def is_guild_text(self):
@@ -1995,9 +2100,9 @@ class Channel(DiscordEntity, immortal=True):
         
         Returns
         -------
-        is_guild_text : `bool`
+        is_guild_text : `int`
         """
-        return self.metadata.type == CHANNEL_TYPES.guild_text
+        return self.type is ChannelType.guild_text
     
     
     def is_private(self):
@@ -2006,9 +2111,9 @@ class Channel(DiscordEntity, immortal=True):
         
         Returns
         -------
-        is_private : `bool`
+        is_private : `int`
         """
-        return self.metadata.type == CHANNEL_TYPES.private
+        return self.type is ChannelType.private
         
         
     def is_guild_voice(self):
@@ -2019,9 +2124,9 @@ class Channel(DiscordEntity, immortal=True):
         
         Returns
         -------
-        is_guild_voice : `bool`
+        is_guild_voice : `int`
         """
-        return self.metadata.type == CHANNEL_TYPES.guild_voice
+        return self.type is ChannelType.guild_voice
     
     
     def is_private_group(self):
@@ -2030,9 +2135,9 @@ class Channel(DiscordEntity, immortal=True):
         
         Returns
         -------
-        is_private_group : `bool`
+        is_private_group : `int`
         """
-        return self.metadata.type == CHANNEL_TYPES.private_group
+        return self.type is ChannelType.private_group
     
     
     def is_guild_category(self):
@@ -2041,9 +2146,9 @@ class Channel(DiscordEntity, immortal=True):
         
         Returns
         -------
-        is_guild_category : `bool`
+        is_guild_category : `int`
         """
-        return self.metadata.type == CHANNEL_TYPES.guild_category
+        return self.type is ChannelType.guild_category
     
     
     def is_guild_announcements(self):
@@ -2052,9 +2157,9 @@ class Channel(DiscordEntity, immortal=True):
         
         Returns
         -------
-        is_guild_announcements : `bool`
+        is_guild_announcements : `int`
         """
-        return self.metadata.type == CHANNEL_TYPES.guild_announcements
+        return self.type is ChannelType.guild_announcements
     
     
     def is_guild_store(self):
@@ -2065,9 +2170,9 @@ class Channel(DiscordEntity, immortal=True):
         
         Returns
         -------
-        is_guild_store : `bool`
+        is_guild_store : `int`
         """
-        return self.metadata.type == CHANNEL_TYPES.guild_store
+        return self.type is ChannelType.guild_store
     
     
     def is_thread(self):
@@ -2080,7 +2185,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         is_thread : `bool`
         """
-        return self.metadata.type == CHANNEL_TYPES.thread
+        return self.type is ChannelType.thread
     
     
     def is_guild_thread_announcements(self):
@@ -2091,7 +2196,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         is_guild_thread_announcements : `bool`
         """
-        return self.metadata.type == CHANNEL_TYPES.guild_thread_announcements
+        return self.type is ChannelType.guild_thread_announcements
     
     
     def is_guild_thread_public(self):
@@ -2102,7 +2207,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         is_guild_thread_public : `bool`
         """
-        return self.metadata.type == CHANNEL_TYPES.guild_thread_public
+        return self.type is ChannelType.guild_thread_public
     
     
     def is_guild_thread_private(self):
@@ -2113,7 +2218,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         is_guild_thread_private : `bool`
         """
-        return self.metadata.type == CHANNEL_TYPES.guild_thread_private
+        return self.type is ChannelType.guild_thread_private
     
     
     def is_guild_stage(self):
@@ -2124,7 +2229,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         is_guild_stage : `bool`
         """
-        return self.metadata.type == CHANNEL_TYPES.guild_stage
+        return self.type is ChannelType.guild_stage
     
     
     def is_guild_directory(self):
@@ -2135,7 +2240,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         is_guild_directory : `bool`
         """
-        return self.metadata.type == CHANNEL_TYPES.guild_directory
+        return self.type is ChannelType.guild_directory
     
     
     def is_guild_forum(self):
@@ -2146,4 +2251,4 @@ class Channel(DiscordEntity, immortal=True):
         -------
         is_guild_forum : `bool`
         """
-        return self.metadata.type == CHANNEL_TYPES.guild_forum
+        return self.type is ChannelType.guild_forum

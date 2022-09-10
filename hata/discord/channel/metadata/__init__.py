@@ -18,7 +18,6 @@ from .guild_voice_base import *
 from .private import *
 from .private_base import *
 from .private_group import *
-from .utils import *
 
 
 __all__ = (
@@ -42,5 +41,4 @@ __all__ = (
     *private.__all__,
     *private_base.__all__,
     *private_group.__all__,
-    *utils.__all__,
 )

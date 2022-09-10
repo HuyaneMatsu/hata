@@ -1200,7 +1200,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     
     def _is_equal_same_type(self, other):
         """
-        Returns whether the two types are equal.
+        Returns whether the two instances are equal.
         
         Helper method for ``.__eq__``
         

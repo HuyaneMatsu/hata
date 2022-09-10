@@ -1255,7 +1255,7 @@ class ClientCompoundGuildEndpoints(Compound):
                     break
                 
                 elif isinstance(system_channel, Channel):
-                    if system_channel.is_in_group_guild_main_text() or system_channel.partial:
+                    if system_channel.is_in_group_guild_system() or system_channel.partial:
                         system_channel_id = system_channel.id
                         break
                 
@@ -1286,7 +1286,7 @@ class ClientCompoundGuildEndpoints(Compound):
                     break
                 
                 elif isinstance(rules_channel, Channel):
-                    if rules_channel.is_in_group_guild_main_text() or rules_channel.partial:
+                    if rules_channel.is_in_group_guild_system() or rules_channel.partial:
                         rules_channel_id = rules_channel.id
                         break
                 
@@ -1317,7 +1317,7 @@ class ClientCompoundGuildEndpoints(Compound):
                     break
                 
                 elif isinstance(public_updates_channel, Channel):
-                    if public_updates_channel.is_in_group_guild_main_text() or public_updates_channel.partial:
+                    if public_updates_channel.is_in_group_guild_system() or public_updates_channel.partial:
                         public_updates_channel_id = public_updates_channel.id
                         break
                     

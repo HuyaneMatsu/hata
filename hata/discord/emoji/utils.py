@@ -1,6 +1,7 @@
 __all__ = (
     'create_partial_emoji_data', 'create_partial_emoji_from_data', 'create_unicode_emoji', 'parse_all_emojis',
-    'parse_all_emojis_ordered', 'parse_custom_emojis', 'parse_custom_emojis_ordered', 'parse_emoji', 'parse_reaction'
+    'parse_all_emojis_ordered', 'parse_custom_emojis', 'parse_custom_emojis_ordered', 'parse_emoji', 'parse_reaction',
+    'put_partial_emoji_data_into'
 )
 
 import warnings
@@ -30,17 +31,20 @@ def create_partial_emoji_from_data(data):
     
     Returns
     -------
-    emoji : ``Emoji``
+    emoji : `None`, ``Emoji``
     """
     try:
-        emoji_name = data['name']
-    except KeyError:
         emoji_name = data['emoji_name']
-        emoji_id = data.get('emoji_id', None)
-        emoji_animated = data.get('emoji_animated', False)
-    else:
+    except KeyError:
+        emoji_name = data['name']
         emoji_id = data.get('id', None)
         emoji_animated = data.get('animated', False)
+    else:
+        emoji_id = data.get('emoji_id', None)
+        emoji_animated = data.get('emoji_animated', False)
+    
+    if emoji_name is None:
+        return None
     
     if emoji_id is None:
         try:
@@ -89,6 +93,40 @@ def create_partial_emoji_data(emoji):
         emoji_data['name'] = unicode
     
     return emoji_data
+
+
+def put_partial_emoji_data_into(data, emoji):
+    """
+    Familiar to ``create_partial_emoji_data``, but instead of creating a standalone emoji data, uses the `emoji_`
+    prefix field form to add it to an already defined dictionary.
+    
+    Parameters
+    ----------
+    data : `dict` of (`str`, `Any`) items
+        The data to put the emoji fields into.
+    emoji : `None`, ``Emoji``
+        The emoji to serialize.
+    
+    Returns
+    -------
+    data : `dict` of (`str`, `Any`) items
+    """
+    if (emoji is None):
+        # Require at least the `emoji_name` field.
+        data['emoji_name'] = None
+    
+    else:
+        unicode = emoji.unicode
+        if unicode is None:
+            data['emoji_id'] = emoji.id
+            data['emoji_name'] = emoji.name
+            
+            if emoji.animated:
+                data['emoji_animated'] = True
+        else:
+            data['emoji_name'] = unicode
+        
+    return data
 
 
 def parse_emoji(text):

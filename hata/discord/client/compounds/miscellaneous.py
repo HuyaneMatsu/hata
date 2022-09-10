@@ -149,7 +149,7 @@ class ClientCompoundMiscellaneousEndpoints(Compound):
         -----
         The client will be shown up as typing for 8 seconds, or till it sends a message at the respective channel.
         """
-        channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
+        channel_id = get_channel_id(channel, Channel.is_in_group_textual)
         
         await self.http.typing(channel_id)
     
@@ -183,6 +183,6 @@ class ClientCompoundMiscellaneousEndpoints(Compound):
             await client.message_create(channel, 'Ayaya')
         ```
         """
-        channel_id = get_channel_id(channel, Channel.is_in_group_messageable)
+        channel_id = get_channel_id(channel, Channel.is_in_group_textual)
         
         return Typer(self, channel_id, timeout)

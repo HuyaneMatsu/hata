@@ -10,7 +10,6 @@ from ....env import CACHE_PRESENCE
 
 from ...activity import ACTIVITY_UNKNOWN, Activity, ActivityType
 from ...bases import maybe_snowflake_pair
-from ...channel import CHANNEL_TYPES, get_channel_type_names
 from ...channel import Channel
 from ...core import KOKORO
 from ...events.event_handler_manager import EventHandlerManager
@@ -170,9 +169,9 @@ class ClientCompoundClientGateway(Compound):
             activity = None
         else:
             if self.bot:
-                activity = activity.bot_dict()
+                activity = activity.to_data()
             else:
-                activity = activity.user_dict()
+                activity = activity.to_data_user()
         
         if status == 'idle':
             since = int(time_now() * 1000.)
@@ -253,8 +252,8 @@ class ClientCompoundClientGateway(Compound):
                     break
                 
             raise TypeError(
-                f'`channel` can be {get_channel_type_names(CHANNEL_TYPES.GROUP_GUILD_CONNECTABLE)}, '
-                f'`tuple` (`int`, `int`), got {channel.__class__.__name__}; {channel!r}.'
+                f'`channel` can be a connectable channel, `tuple` (`int`, `int`)'
+                f', got {channel.__class__.__name__}; {channel!r}.'
             )
         
         

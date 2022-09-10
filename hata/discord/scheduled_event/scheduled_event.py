@@ -1,7 +1,7 @@
 __all__ = ('ScheduledEvent', )
 
 from ..bases import DiscordEntity, IconSlot
-from ..channel import CHANNEL_TYPES, create_partial_channel_from_id
+from ..channel import ChannelType, create_partial_channel_from_id
 from ..core import GUILDS, SCHEDULED_EVENTS
 from ..http import urls as module_urls
 from ..user import User, ZEROUSER
@@ -405,9 +405,9 @@ class ScheduledEvent(DiscordEntity):
             if entity_type is ScheduledEventEntityType.none:
                 entity = None
             elif entity_type is ScheduledEventEntityType.stage:
-                entity = create_partial_channel_from_id(entity_id, CHANNEL_TYPES.guild_stage, self.guild_id)
+                entity = create_partial_channel_from_id(entity_id, ChannelType.guild_stage, self.guild_id)
             elif entity_type is ScheduledEventEntityType.voice:
-                entity = create_partial_channel_from_id(entity_id, CHANNEL_TYPES.guild_voice, self.guild_id)
+                entity = create_partial_channel_from_id(entity_id, ChannelType.guild_voice, self.guild_id)
             else:
                 entity = None
         else:
@@ -427,7 +427,7 @@ class ScheduledEvent(DiscordEntity):
         """
         channel_id = self.channel_id
         if channel_id:
-            return create_partial_channel_from_id(channel_id, -1, self.guild_id)
+            return create_partial_channel_from_id(channel_id, ChannelType.unknown, self.guild_id)
     
     
     @property

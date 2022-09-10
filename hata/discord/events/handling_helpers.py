@@ -1458,6 +1458,9 @@ class eventlist(list):
     if NEEDS_DUMMY_INIT:
         def __init__(self, *args, **kwargs):
             pass
+    else:
+        __init__ = object.__init__
+    
     
     def from_class(self, klass):
         """

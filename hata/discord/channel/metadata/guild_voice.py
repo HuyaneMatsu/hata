@@ -9,7 +9,6 @@ from ...permission.permission import (
 )
 from ...preconverters import preconvert_bool, preconvert_preinstanced_type
 
-from .. import channel_types as CHANNEL_TYPES
 from ..preinstanced import VideoQualityMode
 
 from .guild_main_base import ChannelMetadataGuildMainBase
@@ -45,18 +44,14 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
     
     Class Attributes
     ----------------
-    type : `int` = `CHANNEL_TYPES.guild_voice`
-        The channel's type.
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """
     __slots__ = ('nsfw', 'video_quality_mode',)
     
-    type = CHANNEL_TYPES.guild_voice
-    
-    @copy_docs(ChannelMetadataGuildVoiceBase._compare_attributes_to)
-    def _compare_attributes_to(self, other):
-        if not ChannelMetadataGuildVoiceBase._compare_attributes_to(self, other):
+    @copy_docs(ChannelMetadataGuildVoiceBase._is_equal_same_type)
+    def _is_equal_same_type(self, other):
+        if not ChannelMetadataGuildVoiceBase._is_equal_same_type(self, other):
             return False
         
         if self.nsfw != other.nsfw:

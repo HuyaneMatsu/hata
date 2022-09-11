@@ -3,6 +3,7 @@ __all__ = ('ChannelMetadataGuildForum',)
 
 from scarletio import copy_docs
 
+from ...emoji import Emoji, create_emoji_from_exclusive_data, put_exclusive_emoji_data_into
 from ...permission import Permission
 from ...permission.permission import PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE, PERMISSION_THREAD_AND_VOICE_DENY
 from ...preconverters import preconvert_flag, preconvert_int, preconvert_int_options, preconvert_str
@@ -32,14 +33,15 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         The channel's position.
     available_tags : `None`, `tuple` of ``ForumTag``
         The available tags to assign to the child-thread channels.
-    default_auto_archive_after : `int`
+    default_thread_auto_archive_after : `int`
         The default duration (in seconds) for newly created threads to automatically archive the themselves. Defaults
         to `3600`. Can be one of: `3600`, `86400`, `259200`, `604800`.
+    default_thread_slowmode : `int`
+        The default slowmode applied to the channel's threads.
+    default_thread_reaction : `None`, ``Emoji``
+        The emoji to show in the add reaction button on a thread of the forum channel.
     flags : ``ChannelFlag``
         The channel's flags.
-    slowmode : `int`
-        The amount of time in seconds what a user needs to wait between it's each message. Bots and user accounts with
-        `manage_messages`, `manage_channel` permissions are unaffected.
     topic : `None`, `str`
         The channel's topic.
     
@@ -48,7 +50,10 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """
-    __slots__ = ('available_tags', 'default_auto_archive_after', 'flags', 'slowmode', 'topic',)
+    __slots__ = (
+        'available_tags', 'default_thread_auto_archive_after', 'default_thread_slowmode', 'default_thread_reaction',
+        'flags', 'topic',
+    )
     
     @copy_docs(ChannelMetadataGuildMainBase._is_equal_same_type)
     def _is_equal_same_type(self, other):
@@ -59,16 +64,20 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         if self.available_tags != other.available_tags:
             return False
         
-        # default_auto_archive_after
-        if self.default_auto_archive_after != other.default_auto_archive_after:
+        # default_thread_auto_archive_after
+        if self.default_thread_auto_archive_after != other.default_thread_auto_archive_after:
+            return False
+        
+        # default_thread_slowmode
+        if self.default_thread_slowmode != other.default_thread_slowmode:
+            return False
+        
+        # default_thread_reaction
+        if self.default_thread_reaction != other.default_thread_reaction:
             return False
         
         # flags
         if self.flags != other.flags:
-            return False
-        
-        # slowmode
-        if self.slowmode != other.slowmode:
             return False
         
         # topic
@@ -89,9 +98,10 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         self = super(ChannelMetadataGuildForum, cls)._create_empty()
         
         self.available_tags = None
-        self.default_auto_archive_after = AUTO_ARCHIVE_DEFAULT
+        self.default_thread_auto_archive_after = AUTO_ARCHIVE_DEFAULT
+        self.default_thread_slowmode = 0
+        self.default_thread_reaction = None
         self.flags = ChannelFlag()
-        self.slowmode = 0
         self.topic = None
         
         return self
@@ -109,22 +119,30 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
             available_tags = tuple(sorted(ForumTag.from_data(tag_data) for tag_data in available_tag_data_array))
         self.available_tags = available_tags
         
-        # default_auto_archive_after
-        default_auto_archive_after = data.get('default_auto_archive_duration', None)
-        if default_auto_archive_after is None:
-            default_auto_archive_after = AUTO_ARCHIVE_DEFAULT
+        # default_thread_auto_archive_after
+        default_thread_auto_archive_after = data.get('default_auto_archive_duration', None)
+        if default_thread_auto_archive_after is None:
+            default_thread_auto_archive_after = AUTO_ARCHIVE_DEFAULT
         else:
-            default_auto_archive_after *= 60
-        self.default_auto_archive_after = default_auto_archive_after
+            default_thread_auto_archive_after *= 60
+        self.default_thread_auto_archive_after = default_thread_auto_archive_after
+        
+        # default_thread_slowmode
+        default_thread_slowmode = data.get('default_thread_rate_limit_per_user', None)
+        if default_thread_slowmode is None:
+            default_thread_slowmode = 0
+        self.default_thread_slowmode = default_thread_slowmode
+        
+        # default_thread_reaction
+        default_thread_reaction_data = data.get('default_reaction_emoji', None)
+        if (default_thread_reaction_data is None):
+            default_thread_reaction = None
+        else:
+            default_thread_reaction = create_emoji_from_exclusive_data(default_thread_reaction_data)
+        self.default_thread_reaction = default_thread_reaction
         
         # flags
         self.flags = ChannelFlag(data.get('flags', 0))
-        
-        # slowmode
-        slowmode = data.get('rate_limit_per_user', None)
-        if slowmode is None:
-            slowmode = 0
-        self.slowmode = slowmode
         
         # topic
         self.topic = data.get('topic', None)
@@ -144,15 +162,33 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
             old_attributes['available_tags'] = self.available_tags
             self.available_tags = available_tags
         
-        # default_auto_archive_after
-        default_auto_archive_after = data.get('default_auto_archive_duration', None)
-        if default_auto_archive_after is None:
-            default_auto_archive_after = AUTO_ARCHIVE_DEFAULT
+        # default_thread_auto_archive_after
+        default_thread_auto_archive_after = data.get('default_auto_archive_duration', None)
+        if default_thread_auto_archive_after is None:
+            default_thread_auto_archive_after = AUTO_ARCHIVE_DEFAULT
         else:
-            default_auto_archive_after *= 60
-        if self.default_auto_archive_after != default_auto_archive_after:
-            old_attributes['default_auto_archive_after'] = self.default_auto_archive_after
-            self.default_auto_archive_after = default_auto_archive_after
+            default_thread_auto_archive_after *= 60
+        if self.default_thread_auto_archive_after != default_thread_auto_archive_after:
+            old_attributes['default_thread_auto_archive_after'] = self.default_thread_auto_archive_after
+            self.default_thread_auto_archive_after = default_thread_auto_archive_after
+        
+        # default_thread_slowmode
+        default_thread_slowmode = data.get('default_thread_rate_limit_per_user', None)
+        if default_thread_slowmode is None:
+            default_thread_slowmode = 0
+        if self.default_thread_slowmode != default_thread_slowmode:
+            old_attributes['default_thread_slowmode'] = self.default_thread_slowmode
+            self.default_thread_slowmode = default_thread_slowmode
+        
+        # default_thread_reaction
+        default_thread_reaction_data = data.get('default_reaction_emoji', None)
+        if (default_thread_reaction_data is None):
+            default_thread_reaction = None
+        else:
+            default_thread_reaction = create_emoji_from_exclusive_data(default_thread_reaction_data)
+        if self.default_thread_reaction != default_thread_reaction:
+            old_attributes['default_thread_reaction'] = self.default_thread_reaction
+            self.default_thread_reaction = default_thread_reaction
         
         # flags
         flags = data.get('flags', 0)
@@ -160,14 +196,6 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
             flags = ChannelFlag(flags)
             old_attributes['flags'] = self.flags
             self.flags = flags
-        
-        # slowmode
-        slowmode = data.get('rate_limit_per_user', None)
-        if slowmode is None:
-            slowmode = 0
-        if self.slowmode != slowmode:
-            old_attributes['slowmode'] = self.slowmode
-            self.slowmode = slowmode
         
         # topic
         topic = data.get('topic', None)
@@ -219,7 +247,7 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
                         f'{raw_available_tags.__class__.__name__}; {raw_available_tags!r}.'
                     )
                 
-                available_tags = set()
+                available_tags = None
                 
                 for raw_tag in raw_available_tags:
                     if not isinstance(raw_tag, ForumTag):
@@ -228,25 +256,52 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
                             f'{raw_tag.__class__.__name__}; {raw_tag!r}; available_tags = {raw_available_tags!r}.'
                         )
                     
+                    if (available_tags is None):
+                        available_tags = set()
+                    
                     available_tags.add(raw_tag)
                 
-                if available_tags:
+                if (available_tags is not None):
                     self.available_tags = tuple(sorted(available_tags))
         
         
-        # default_auto_archive_after
+        # default_thread_auto_archive_after
         try:
-            default_auto_archive_after = keyword_parameters.pop('default_auto_archive_duration')
+            default_thread_auto_archive_after = keyword_parameters.pop('default_auto_archive_duration')
         except KeyError:
             pass
         else:
-            default_auto_archive_after = preconvert_int_options(
-                default_auto_archive_after,
-                'default_auto_archive_after',
+            default_thread_auto_archive_after = preconvert_int_options(
+                default_thread_auto_archive_after,
+                'default_thread_auto_archive_after',
                 AUTO_ARCHIVE_OPTIONS,
             )
             
-            self.default_auto_archive_after = default_auto_archive_after
+            self.default_thread_auto_archive_after = default_thread_auto_archive_after
+        
+        # default_thread_slowmode
+        try:
+            default_thread_slowmode = keyword_parameters.pop('default_thread_slowmode')
+        except KeyError:
+            pass
+        else:
+            default_thread_slowmode = preconvert_int(default_thread_slowmode, 'default_thread_slowmode', 0, 21600)
+            self.default_thread_slowmode = default_thread_slowmode
+        
+        # default_thread_reaction
+        try:
+            default_thread_reaction = keyword_parameters.pop('default_thread_reaction')
+        except KeyError:
+            pass
+        else:
+            if (default_thread_reaction is not None) and (not isinstance(default_thread_reaction, Emoji)):
+                raise TypeError(
+                    f'`default_thread_reaction` can be `None`, `{Emoji.__name__}`, '
+                    f'got {default_thread_reaction.__class__.__name__}; {default_thread_reaction!r}.'
+                )
+            
+            self.default_thread_reaction = default_thread_reaction
+        
         
         # flags
         try:
@@ -256,15 +311,6 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         else:
             flags = preconvert_flag(flags, 'flags', ChannelFlag)
             self.flags = flags
-        
-        # slowmode
-        try:
-            slowmode = keyword_parameters.pop('slowmode')
-        except KeyError:
-            pass
-        else:
-            slowmode = preconvert_int(slowmode, 'slowmode', 0, 21600)
-            self.slowmode = slowmode
         
         # topic
         try:
@@ -293,15 +339,23 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         data['available_tags'] = available_tag_array
         
         # default_auto_archive_duration
-        data['default_auto_archive_duration'] = self.default_auto_archive_after // 60
+        data['default_auto_archive_duration'] = self.default_thread_auto_archive_after // 60
+        
+        # default_thread_slowmode
+        default_thread_slowmode = self.default_thread_slowmode
+        if default_thread_slowmode:
+            data['default_thread_rate_limit_per_user'] = default_thread_slowmode
+        
+        # default_thread_reaction
+        default_thread_reaction = self.default_thread_reaction
+        if (default_thread_reaction is None):
+            default_thread_reaction_data = None
+        else:
+            default_thread_reaction_data = put_exclusive_emoji_data_into(default_thread_reaction, {})
+        data['default_thread_reaction'] = default_thread_reaction_data
         
         # flags
         data['flags'] = self.flags
-        
-        # slowmode
-        slowmode = self.slowmode
-        if slowmode:
-            data['rate_limit_per_user'] = slowmode
         
         # topic
         data['topic'] = self.topic

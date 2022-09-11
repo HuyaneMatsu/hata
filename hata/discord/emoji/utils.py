@@ -1,6 +1,7 @@
 __all__ = (
-    'create_partial_emoji_data', 'create_partial_emoji_from_data', 'create_unicode_emoji', 'parse_all_emojis',
-    'parse_all_emojis_ordered', 'parse_custom_emojis', 'parse_custom_emojis_ordered', 'parse_emoji', 'parse_reaction',
+    'create_partial_emoji_data', 'create_partial_emoji_from_data', 'create_emoji_from_exclusive_data',
+    'create_unicode_emoji', 'parse_all_emojis', 'parse_all_emojis_ordered', 'parse_custom_emojis',
+    'parse_custom_emojis_ordered', 'parse_emoji', 'parse_reaction', 'put_exclusive_emoji_data_into',
     'put_partial_emoji_data_into'
 )
 
@@ -95,17 +96,17 @@ def create_partial_emoji_data(emoji):
     return emoji_data
 
 
-def put_partial_emoji_data_into(data, emoji):
+def put_partial_emoji_data_into(emoji, data):
     """
     Familiar to ``create_partial_emoji_data``, but instead of creating a standalone emoji data, uses the `emoji_`
     prefix field form to add it to an already defined dictionary.
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
-        The data to put the emoji fields into.
     emoji : `None`, ``Emoji``
         The emoji to serialize.
+    data : `dict` of (`str`, `Any`) items
+        The data to put the emoji fields into.
     
     Returns
     -------
@@ -118,7 +119,7 @@ def put_partial_emoji_data_into(data, emoji):
     else:
         unicode = emoji.unicode
         if unicode is None:
-            data['emoji_id'] = emoji.id
+            data['emoji_id'] = str(emoji.id)
             data['emoji_name'] = emoji.name
             
             if emoji.animated:
@@ -126,6 +127,73 @@ def put_partial_emoji_data_into(data, emoji):
         else:
             data['emoji_name'] = unicode
         
+    return data
+
+
+def create_emoji_from_exclusive_data(data):
+    """
+    Creates partial emoji from the given exclusive emoji data.
+    
+    Exclusive means, that we expect exactly `1` emoji field to be set.
+    
+    Parameters
+    ----------
+    data : `dict` of (`str`, `Any`) items
+        Partial emoji data.
+    
+    Returns
+    -------
+    emoji : `None`, ``Emoji``
+    """
+    emoji_name = data.get('emoji_name', None)
+    emoji_id = data.get('emoji_id', None)
+    
+    if (emoji_name is not None):
+        try:
+            emoji = UNICODE_TO_EMOJI[emoji_name]
+        except KeyError:
+            warnings.warn(
+                f'\nUndefined emoji : {emoji_name.encode()!r}\nPlease open an issue with this message.',
+                RuntimeWarning,
+            )
+            emoji = Emoji._create_unicode(Unicode('', emoji_name, False, None, None), False)
+    
+    elif (emoji_id is not None):
+        emoji = Emoji._create_partial(int(emoji_id), '', False)
+    
+    else:
+        emoji = None
+    
+    return emoji
+
+
+def put_exclusive_emoji_data_into(emoji, data):
+    """
+    The reversed function of ``create_emoji_from_exclusive_data``.
+    
+    Parameters
+    ----------
+    emoji : `None`, ``Emoji``
+        The emoji to serialize.
+    data : `dict` of (`str`, `Any`) items
+        The data to put the emoji fields into.
+    
+    Returns
+    -------
+    data : `dict` of (`str`, `Any`) items
+    """
+    if (emoji is None):
+        # Require at least the `emoji_name` field.
+        data['emoji_name'] = None
+    
+    else:
+        unicode = emoji.unicode
+        if unicode is None:
+            data['emoji_id'] = str(emoji.id)
+        
+        else:
+            data['emoji_name'] = unicode
+    
     return data
 
 

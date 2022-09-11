@@ -7,7 +7,11 @@ from ...preinstanced import VoiceRegion
 
 from ..audit_log_change import AuditLogChange
 
-from .shared import _convert_preinstanced, convert_nothing, convert_snowflake
+from .shared import _convert_preinstanced, convert_nothing, convert_snowflake, convert_snowflake_array
+
+
+def convert_snowflake_array__applied_tag_ids(name, data):
+    return convert_snowflake_array('applied_tag_ids', data)
 
 
 def convert_bool__open(name, data):
@@ -64,7 +68,7 @@ def convert_forum_tags(name, data):
     return AuditLogChange('available_tags', before, after)
 
 
-def convert_int__default_auto_archive_after(name, data):
+def convert_int__default_thread_auto_archive_after(name, data):
     before = data.get('old_value', None)
     if (before is not None):
         before *= 60
@@ -73,11 +77,15 @@ def convert_int__default_auto_archive_after(name, data):
     if (after is not None):
         after *= 60
     
-    return AuditLogChange('default_auto_archive_after', before, after)
+    return AuditLogChange('default_thread_auto_archive_after', before, after)
 
 
 def convert_int__slowmode(name, data):
     return convert_nothing('slowmode', data)
+
+
+def convert_int__default_thread_slowmode(name, data):
+    return convert_nothing('default_thread_slowmode', data)
 
 
 def convert_overwrites(name, data):
@@ -101,11 +109,13 @@ def convert_voice_region(name, data):
 
 
 CHANNEL_CONVERTERS = {
+    'applied_tags': convert_snowflake_array__applied_tag_ids,
     'archived': convert_nothing,
     'auto_archive_duration': convert_int__auto_archive_after,
     'available_tags': convert_forum_tags,
     'bitrate': convert_nothing,
-    'default_auto_archive_duration': convert_int__default_auto_archive_after,
+    'default_auto_archive_duration': convert_int__default_thread_auto_archive_after,
+    'default_thread_rate_limit_per_user': convert_int__default_thread_slowmode,
     'flags': convert_channel_flags,
     'invitable': convert_nothing,
     'locked': convert_bool__open,

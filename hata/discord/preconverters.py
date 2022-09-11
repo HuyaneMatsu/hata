@@ -59,69 +59,71 @@ def preconvert_snowflake_array(snowflake_array, name):
     
     Parameters
     ----------
-    snowflake : `None` or (`tuple`, `list`, `set`) of (`str`, `int`)
+    snowflake : `None` or `iterable` of (`str`, `int`)
         The snowflakes to convert.
     name : `str`
         The name of the snowflake array.
     
     Returns
     -------
-    snowflake_array : `tuple` of `int`
+    snowflake_array : `None`, `tuple` of `int`
         The returned value is always sorted.
     
     Raises
     ------
     TypeError
-        - If `snowflake_array` is neither `None`, `list`, `tuple` nor `set`.
+        - If `snowflake_array` is neither `None`, `iterable`
         - If `snowflake_array` contains a non `int` nor `str`.
     ValueError
         - If `snowflake_array`contains a `str`, what cannot be converted to `int`.
         - If a converted `snowflake` is negative or it's bit length is over 64.
     """
-    if (snowflake_array is not None):
-        if not isinstance(snowflake_array, (list, tuple, set)):
+    if (snowflake_array is None):
+        return None
+    
+    snowflake_array_processed = None
+    
+    if getattr(preconvert_snowflake_array, '__iter__', None) is None:
+        raise TypeError(
+            f'`{name}` can be `list`, `tuple`, `set`, got '
+            f'{snowflake_array.__class__.__name__}; {snowflake_array!r}.'
+        )
+    
+    for snowflake in snowflake_array:
+        snowflake_type = type(snowflake)
+        if snowflake_type is int:
+            pass
+        if issubclass(snowflake_type, int):
+            snowflake = int(snowflake)
+        # JSON uint64 is str
+        elif issubclass(snowflake_type, str):
+            if 6 < len(snowflake) < 21 and snowflake.isdigit():
+                snowflake = int(snowflake)
+            else:
+                raise ValueError(
+                    f'`{name}`\'s can contain `int`, `str` elements, got `str`, but not a valid snowflake '
+                    f'(7-20 length, digit only), got {snowflake!r}; snowflake_array={snowflake_array!r}.'
+                )
+        else:
             raise TypeError(
-                f'`{name}` can be `list`, `tuple`, `set`, got '
-                f'{snowflake_array.__class__.__name__}; {snowflake_array!r}.'
+                f'`{name}`\'s can contain `int`, `str` elements, got '
+                f'{snowflake_type.__name__}; {snowflake!r}; snowflake_array={snowflake_array!r}.'
             )
         
-        snowflake_array_processed = []
+        if snowflake < 0 or snowflake > ((1 << 64) - 1):
+            raise ValueError(
+                f'`{name}`\'s elements can be only uint64, got '
+                f'{snowflake!r}; snowflake_array={snowflake_array!r}.'
+            )
         
-        for snowflake in snowflake_array:
-            snowflake_type = type(snowflake)
-            if snowflake_type is int:
-                pass
-            if issubclass(snowflake_type, int):
-                snowflake = int(snowflake)
-            # JSON uint64 is str
-            elif issubclass(snowflake_type, str):
-                if 6 < len(snowflake) < 21 and snowflake.isdigit():
-                    snowflake = int(snowflake)
-                else:
-                    raise ValueError(
-                        f'`{name}`\'s can contain `int`, `str` elements, got `str`, but not a valid snowflake '
-                        f'(7-20 length, digit only), got {snowflake!r}; snowflake_array={snowflake_array!r}.'
-                    )
-            else:
-                raise TypeError(
-                    f'`{name}`\'s can contain `int`, `str` elements, got '
-                    f'{snowflake_type.__name__}; {snowflake!r}; snowflake_array={snowflake_array!r}.'
-                )
-            
-            if snowflake < 0 or snowflake > ((1 << 64) - 1):
-                raise ValueError(
-                    f'`{name}`\'s elements can be only uint64, got '
-                    f'{snowflake!r}; snowflake_array={snowflake_array!r}.'
-                )
-            
-            snowflake_array_processed.append(snowflake)
+        if snowflake_array_processed is None:
+            snowflake_array_processed = set()
         
-        if snowflake_array_processed:
-            snowflake_array_processed.sort()
-            snowflake_array = tuple(snowflake_array_processed)
-        else:
-            snowflake_array = None
+        snowflake_array_processed.add(snowflake)
     
+    if (snowflake_array_processed is not None):
+        snowflake_array = tuple(sorted(snowflake_array_processed))
+
     return snowflake_array
 
 

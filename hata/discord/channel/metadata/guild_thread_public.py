@@ -2,7 +2,7 @@ __all__ = ('ChannelMetadataGuildThreadPublic',)
 
 from scarletio import copy_docs
 
-from ...preconverters import preconvert_flag
+from ...preconverters import preconvert_flag, preconvert_snowflake_array
 
 from ..flags import ChannelFlag
 
@@ -41,6 +41,8 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
         The channel's Discord side type.
     owner_id : `int`
         The channel's creator's identifier. Defaults to `0`.
+    applied_tag_ids : `None`, `tuple` of `int`
+         The tags' identifier which have been applied to the thread. Applicable for threads of a forum.
     flags : ``ChannelFlag``
         The channel's flags.
     
@@ -49,14 +51,19 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """
-    __slots__ = ('flags',)
+    __slots__ = ('applied_tag_ids', 'flags',)
     
-
+    
     @copy_docs(ChannelMetadataGuildThreadBase._is_equal_same_type)
     def _is_equal_same_type(self, other):
         if not ChannelMetadataGuildThreadBase._is_equal_same_type(self, other):
             return False
         
+        # applied_tag_ids
+        if self.applied_tag_ids != other.applied_tag_ids:
+            return False
+        
+        # flags
         if self.flags != other.flags:
             return False
         
@@ -68,6 +75,10 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
     def _create_empty(cls):
         self = super(ChannelMetadataGuildThreadPublic, cls)._create_empty()
         
+        # applied_tag_ids
+        self.applied_tag_ids = None
+        
+        # flags
         self.flags = ChannelFlag()
         
         return self
@@ -77,6 +88,15 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
     def _update_attributes(self, data):
         ChannelMetadataGuildThreadBase._update_attributes(self, data)
         
+        # applied_tag_ids
+        applied_tag_id_array = data.get('applied_tags', None)
+        if (applied_tag_id_array is None) or (not applied_tag_id_array):
+            applied_tag_ids = None
+        else:
+            applied_tag_ids = tuple(sorted(int(tag_id) for tag_id in applied_tag_id_array))
+        self.applied_tag_ids = applied_tag_ids
+        
+        # flags
         self.flags = ChannelFlag(data.get('flags', 0))
     
     
@@ -84,6 +104,17 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
     def _difference_update_attributes(self, data):
         old_attributes = ChannelMetadataGuildThreadBase._difference_update_attributes(self, data)
         
+        # applied_tag_ids
+        applied_tag_id_array = data.get('applied_tags', None)
+        if (applied_tag_id_array is None) or (not applied_tag_id_array):
+            applied_tag_ids = None
+        else:
+            applied_tag_ids = tuple(sorted(int(tag_id) for tag_id in applied_tag_id_array))
+        if (self.applied_tag_ids != applied_tag_ids):
+            old_attributes['applied_tag_ids'] = self.applied_tag_ids
+            self.applied_tag_ids = applied_tag_ids
+        
+        # flags
         flags = data.get('flags', 0)
         if (self.flags != flags):
             flags = ChannelFlag(flags)
@@ -98,6 +129,16 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
     def _precreate(cls, keyword_parameters):
         self = super(ChannelMetadataGuildThreadPublic, cls)._precreate(keyword_parameters)
         
+        # applied_tag_ids
+        try:
+            applied_tag_ids = keyword_parameters.pop('applied_tag_ids')
+        except KeyError:
+            pass
+        else:
+            applied_tag_ids = preconvert_snowflake_array(applied_tag_ids, 'applied_tag_ids')
+            self.applied_tag_ids = applied_tag_ids
+        
+        # flags
         try:
             flags = keyword_parameters.pop('flags')
         except KeyError:
@@ -113,6 +154,15 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
     def _to_data(self):
         data = ChannelMetadataGuildThreadBase._to_data(self)
         
+        # applied_tag_ids
+        applied_tag_ids = self.applied_tag_ids
+        if applied_tag_ids is None:
+            applied_tag_id_array = []
+        else:
+            applied_tag_id_array = [str(tag_id) for tag_id in applied_tag_ids]
+        data['applied_tag_ids'] = applied_tag_id_array
+        
+        # flags
         data['flags'] = self.flags
         
         return data

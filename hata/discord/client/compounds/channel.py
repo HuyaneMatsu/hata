@@ -7,7 +7,7 @@ from scarletio import Compound
 from ...channel import Channel, ChannelType, cr_pg_channel_object, create_partial_channel_from_id
 from ...channel.utils import (
     _assert_channel_type, _maybe_add_channel_bitrate_field_to_data,
-    _maybe_add_channel_default_auto_archive_after_field_to_data, _maybe_add_channel_nsfw_field_to_data,
+    _maybe_add_channel_default_thread_auto_archive_after_field_to_data, _maybe_add_channel_nsfw_field_to_data,
     _maybe_add_channel_region_field_to_data, _maybe_add_channel_slowmode_field_to_data,
     _maybe_add_channel_topic_field_to_data, _maybe_add_channel_user_limit_field_to_data,
     _maybe_add_channel_video_quality_mode_field_to_data
@@ -690,7 +690,7 @@ class ClientCompoundChannelEndpoints(Compound):
     
     async def channel_edit(
         self, channel, *, name=..., topic=..., nsfw=..., slowmode=..., user_limit=..., bitrate=..., region=...,
-        video_quality_mode=..., type_=..., default_auto_archive_after=..., reason=None
+        video_quality_mode=..., type_=..., default_thread_auto_archive_after=..., reason=None
     ):
         """
         Edits the given guild channel. Different channel types accept different parameters, so make sure to not pass
@@ -706,7 +706,7 @@ class ClientCompoundChannelEndpoints(Compound):
         bitrate : `int`, Optional (Keyword only)
             The new bitrate of the `channel`.
         
-        default_auto_archive_after : `None`, `int`, Optional (Keyword only)
+        default_thread_auto_archive_after : `None`, `int`, Optional (Keyword only)
             The default duration (in seconds) for newly created threads to automatically archive the themselves. Can be
             one of: `3600`, `86400`, `259200`, `604800`.
         
@@ -778,8 +778,8 @@ class ClientCompoundChannelEndpoints(Compound):
         _maybe_add_channel_user_limit_field_to_data(channel_type, channel, channel_data, user_limit)
         _maybe_add_channel_region_field_to_data(channel_type, channel, channel_data, region)
         _maybe_add_channel_video_quality_mode_field_to_data(channel_type, channel, channel_data, video_quality_mode)
-        _maybe_add_channel_default_auto_archive_after_field_to_data(
-            channel_type, channel, channel_data, default_auto_archive_after,
+        _maybe_add_channel_default_thread_auto_archive_after_field_to_data(
+            channel_type, channel, channel_data, default_thread_auto_archive_after,
         )
         
         
@@ -828,7 +828,7 @@ class ClientCompoundChannelEndpoints(Compound):
             The channel's voice region.
         video_quality_mode : `None`, ``VideoQualityMode``, `int`, Optional (Keyword only)
             The channel's video quality mode.
-        default_auto_archive_after : `None`, `int`
+        default_thread_auto_archive_after : `None`, `int`
             The default duration (in seconds) for newly created threads to automatically archive the themselves. Can be
             one of: `3600`, `86400`, `259200`, `604800`.
         

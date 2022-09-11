@@ -31,6 +31,8 @@ class ChannelMetadataGuildText(ChannelMetadataGuildTextBase):
     default_auto_archive_after : `int`
         The default duration (in seconds) for newly created threads to automatically archive the themselves. Defaults
         to `3600`. Can be one of: `3600`, `86400`, `259200`, `604800`.
+    default_thread_slowmode : `int`
+        Applied as `thread.slowmode` when one is created.
     nsfw : `bool`
         Whether the channel is marked as non safe for work.
     topic : `None`, `str`

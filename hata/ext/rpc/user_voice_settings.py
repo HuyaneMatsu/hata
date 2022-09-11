@@ -9,10 +9,13 @@ class UserVoiceSettings:
     ----------
     mute : `None`, `bool`
         Whether the user is muted.
+    
     audio_balance : `None`, ``AudioBalance``
         Audio balance.
+    
     user_id : `None`, `int`
         The user's identifier.
+    
     volume : `None`, `float`
         The user's volume.
         
@@ -24,6 +27,7 @@ class UserVoiceSettings:
         """Returns the user voice setting's representation."""
         repr_parts = ['<', self.__class__.__name__, ' user_id=', repr(self.user_id), '>']
         return ''.join(repr_parts)
+    
     
     @classmethod
     def from_data(cls, data):
@@ -136,7 +140,7 @@ class AudioBalance:
     
     def to_data(self):
         """
-        Converts the audio balance to json serializible object.
+        Converts the audio balance to json serializable object.
         
         Returns
         -------
@@ -158,7 +162,7 @@ class AudioBalance:
     @classmethod
     def from_data(cls, data):
         """
-        Creates a new ``AudioBalance`` frm the given data.
+        Creates a new ``AudioBalance`` from the given data.
         
         Parameters
         ----------

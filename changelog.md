@@ -36,6 +36,25 @@
 - Add `Channel.available_tags`.
 - Add `ChannelMetadataForum.available_tags`.
 - Add `ChannelMetadataForum.flags`.
+- Add `ChannelMetadataGuildThreadPublic.applied_tag_ids`.
+- Add `Channel.applied_tag_ids`.
+- Add `Channel.applied_tags`.
+- Add `create_forum_tag_from_id`.
+- Add `applied_tag_ids` audit log change converter.
+- Add `ChannelMetadataGuildTextBase.default_thread_slowmode`.
+- Add `Channel.default_thread_slowmode`.
+- Add `Channel.default_thread_auto_archive_after`.
+- Add `default_thread_slowmode` audit log change converter.
+- Add `create_emoji_from_exclusive_data`.
+- Add `create_emoji_from_exclusive_data`.
+- `preconvert_snowflake_array` now accepts any iterable (from set | list | tuple).
+- Add `put_exclusive_emoji_data_into`.
+- Add `ChannelMetadataForum.default_thread_reaction`.
+- Add `Channel.default_thread_reaction`.
+- Add `default_thread_slowmode` parameter to `Channel.precreate`.
+- Add `default_thread_reaction` parameter to `Channel.precreate`.
+- Add `available_tags` parameter to `Channel.precreate`.
+- Add `applied_tag_ids` parameter to `Channel.precreate`.
 
 #### Bug fixes
 
@@ -60,6 +79,8 @@
 - Rename `Channel.is_in_group_can_contain_threads` to `.is_in_group_threadable` with deprecation notice.
 - Rename `Channel.is_in_group_can_create_invite_to` to `.is_in_group_invitable` with deprecation notice.
 - Rename `Channel.is_in_group_guild_movable` to `.is_in_group_guild_sortable` with deprecation notice.
+- Rename `.default_auto_archive_after` to `.default_thread_auto_archive_after`
+- Rename `ChannelMetadataGuildForum.slowmode` to `.default_thread_slowmode`.
 
 ## 1.3.7 *\[2022-09-04\]*
 

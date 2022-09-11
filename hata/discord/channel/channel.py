@@ -24,6 +24,7 @@ from .channel_type.flags import (
     CHANNEL_TYPE_MASK_GUILD_SYSTEM, CHANNEL_TYPE_MASK_INVITABLE, CHANNEL_TYPE_MASK_PRIVATE, CHANNEL_TYPE_MASK_TEXTUAL,
     CHANNEL_TYPE_MASK_THREAD, CHANNEL_TYPE_MASK_THREADABLE
 )
+from .forum_tag import create_forum_tag_from_id
 from .message_history import MessageHistory, MessageHistoryCollector, message_relative_index
 from .metadata import ChannelMetadataBase, ChannelMetadataGuildMainBase
 
@@ -521,55 +522,59 @@ class Channel(DiscordEntity, immortal=True):
             
             Might contain the following items:
             
-            +-------------------------------+-----------------------------------------------------------+
-            | Keys                          | Values                                                    |
-            +===============================+===========================================================+
-            | archived                      | `bool`                                                    |
-            +-------------------------------+-----------------------------------------------------------+
-            | archived_at                   | `None`, `datetime`                                        |
-            +-------------------------------+-----------------------------------------------------------+
-            | auto_archive_after            | `int`                                                     |
-            +-------------------------------+-----------------------------------------------------------+
-            | available_tags                | `None`, `tuple` of ``ForumTag``                           |
-            +-------------------------------+-----------------------------------------------------------+
-            | bitrate                       | `int`                                                     |
-            +-------------------------------+-----------------------------------------------------------+
-            | default_auto_archive_after    | `int`                                                     |
-            +-------------------------------+-----------------------------------------------------------+
-            | flags                         | ``ChannelFlag``                                           |
-            +-------------------------------+-----------------------------------------------------------+
-            | icon                          | ``Icon``                                                  |
-            +-------------------------------+-----------------------------------------------------------+
-            | invitable                     | `bool`                                                    |
-            +-------------------------------+-----------------------------------------------------------+
-            | metadata                      | ``ChannelMetadataBase``                                   |
-            +-------------------------------+-----------------------------------------------------------+
-            | name                          | `str`                                                     |
-            +-------------------------------+-----------------------------------------------------------+
-            | nsfw                          | `bool`                                                    |
-            +-------------------------------+-----------------------------------------------------------+
-            | open                          | `bool`                                                    |
-            +-------------------------------+-----------------------------------------------------------+
-            | owner_id                      | `int`                                                     |
-            +-------------------------------+-----------------------------------------------------------+
-            | parent_id                     | `int`                                                     |
-            +-------------------------------+-----------------------------------------------------------+
-            | permission_overwrites         | `None`, `dict` of (`int`, ``PermissionOverwrite``) items  |
-            +-------------------------------+-----------------------------------------------------------+
-            | position                      | `int`                                                     |
-            +-------------------------------+-----------------------------------------------------------+
-            | region                        | `None`, ``VoiceRegion``                                   |
-            +-------------------------------+-----------------------------------------------------------+
-            | slowmode                      | `int`                                                     |
-            +-------------------------------+-----------------------------------------------------------+
-            | topic                         | `None`, `str`                                             |
-            +-------------------------------+-----------------------------------------------------------+
-            | type                          | ``ChannelType``                                           |
-            +-------------------------------+-----------------------------------------------------------+
-            | user_limit                    | `int`                                                     |
-            +-------------------------------+-----------------------------------------------------------+
-            | video_quality_mode            | ``VideoQualityMode``                                      |
-            +-------------------------------+-----------------------------------------------------------+
+            +---------------------------------------+-----------------------------------------------------------+
+            | Keys                                  | Values                                                    |
+            +=======================================+===========================================================+
+            | applied_tag_ids                       | `None`, `tuple` of `int`                                  |
+            +---------------------------------------+-----------------------------------------------------------+
+            | archived                              | `bool`                                                    |
+            +---------------------------------------+-----------------------------------------------------------+
+            | archived_at                           | `None`, `datetime`                                        |
+            +---------------------------------------+-----------------------------------------------------------+
+            | auto_archive_after                    | `int`                                                     |
+            +---------------------------------------+-----------------------------------------------------------+
+            | available_tags                        | `None`, `tuple` of ``ForumTag``                           |
+            +---------------------------------------+-----------------------------------------------------------+
+            | bitrate                               | `int`                                                     |
+            +---------------------------------------+-----------------------------------------------------------+
+            | default_thread_auto_archive_after     | `int`                                                     |
+            +---------------------------------------+-----------------------------------------------------------+
+            | default_thread_slowmode               | `int`                                                     |
+            +---------------------------------------+-----------------------------------------------------------+
+            | flags                                 | ``ChannelFlag``                                           |
+            +---------------------------------------+-----------------------------------------------------------+
+            | icon                                  | ``Icon``                                                  |
+            +---------------------------------------+-----------------------------------------------------------+
+            | invitable                             | `bool`                                                    |
+            +---------------------------------------+-----------------------------------------------------------+
+            | metadata                              | ``ChannelMetadataBase``                                   |
+            +---------------------------------------+-----------------------------------------------------------+
+            | name                                  | `str`                                                     |
+            +---------------------------------------+-----------------------------------------------------------+
+            | nsfw                                  | `bool`                                                    |
+            +---------------------------------------+-----------------------------------------------------------+
+            | open                                  | `bool`                                                    |
+            +---------------------------------------+-----------------------------------------------------------+
+            | owner_id                              | `int`                                                     |
+            +---------------------------------------+-----------------------------------------------------------+
+            | parent_id                             | `int`                                                     |
+            +---------------------------------------+-----------------------------------------------------------+
+            | permission_overwrites                 | `None`, `dict` of (`int`, ``PermissionOverwrite``) items  |
+            +---------------------------------------+-----------------------------------------------------------+
+            | position                              | `int`                                                     |
+            +---------------------------------------+-----------------------------------------------------------+
+            | region                                | `None`, ``VoiceRegion``                                   |
+            +---------------------------------------+-----------------------------------------------------------+
+            | slowmode                              | `int`                                                     |
+            +---------------------------------------+-----------------------------------------------------------+
+            | topic                                 | `None`, `str`                                             |
+            +---------------------------------------+-----------------------------------------------------------+
+            | type                                  | ``ChannelType``                                           |
+            +---------------------------------------+-----------------------------------------------------------+
+            | user_limit                            | `int`                                                     |
+            +---------------------------------------+-----------------------------------------------------------+
+            | video_quality_mode                    | ``VideoQualityMode``                                      |
+            +---------------------------------------+-----------------------------------------------------------+
         """
         type_ = ChannelType.get(data['type'])
         metadata_type = type_.metadata_type
@@ -962,6 +967,18 @@ class Channel(DiscordEntity, immortal=True):
     
     
     @property
+    def default_thread_slowmode(self):
+        """
+        Returns the default slowmode applied to the threads of the channel.
+        
+        Returns
+        -------
+        default_thread_slowmode : `int`
+        """
+        return self.metadata.default_thread_slowmode
+    
+    
+    @property
     def topic(self):
         """
         Returns the channel's topic.
@@ -1044,6 +1061,34 @@ class Channel(DiscordEntity, immortal=True):
     
     
     @property
+    def applied_tag_ids(self):
+        """
+        Returns the tags' identifier which have been applied to the thread. Applicable for threads of a forum.
+        
+        Returns
+        -------
+        applied_tag_ids : `None`, `tuple` of `int`
+        """
+        return self.metadata.applied_tag_ids
+    
+    
+    @property
+    def applied_tags(self):
+        """
+        Returns the applied tags to the thread.
+        
+        Returns
+        -------
+        applied_tags : `None`, `tuple` of ``ForumTag``
+        """
+        applied_tag_ids = self.applied_tag_ids
+        if (applied_tag_ids is None):
+            return None
+        
+        return tuple(create_forum_tag_from_id(forum_tag_id) for forum_tag_id in applied_tag_ids)
+    
+    
+    @property
     def archived(self):
         """
         Returns whether the thread is archived.
@@ -1084,6 +1129,18 @@ class Channel(DiscordEntity, immortal=True):
         auto_archive_after : `None`, `datetime`
         """
         return self.metadata.auto_archive_after
+    
+    
+    @property
+    def default_thread_auto_archive_after(self):
+        """
+        Returns the default duration in seconds to automatically archive the channel's thread after recent activity.
+        
+        Returns
+        -------
+        default_thread_auto_archive_after : `int`
+        """
+        return self.metadata.default_thread_auto_archive_after
     
     
     @property
@@ -1140,6 +1197,18 @@ class Channel(DiscordEntity, immortal=True):
         flags : ``ChannelFlag``
         """
         return self.metadata.flags
+    
+    
+    @property
+    def default_thread_reaction(self):
+        """
+        Returns the emoji to show in the add reaction button on a thread of the forum channel.
+        
+        Returns
+        -------
+        default_thread_reaction : ``Emoji``
+        """
+        return self.metadata.default_thread_reaction
     
     
     @property
@@ -1319,8 +1388,14 @@ class Channel(DiscordEntity, immortal=True):
         
         Other Parameters
         ----------------
+        applied_tag_ids : `None`, `tuple` of `int`, Optional (Keyword only)
+             The tags' identifier which have been applied to the thread. Applicable for threads of a forum.
+        
         auto_archive_after: `int`, Optional (Keyword only)
             The channel's ``.auto_archive_after``.
+        
+        available_tags : `None`, `tuple` of ``ForumTag``, Optional (Keyword only)
+            The available tags to assign to the child-thread channels.
         
         created_at : `None`, `datetime`, Optional (Keyword only)
             When the channel was created.
@@ -1328,8 +1403,14 @@ class Channel(DiscordEntity, immortal=True):
         bitrate : `int`, Optional (Keyword only)
             The channel's ``.bitrate``.
         
-        default_auto_archive_after : `int`, Optional (Keyword only)
-            The channel's ``.default_auto_archive_after``.
+        default_thread_auto_archive_after : `int`, Optional (Keyword only)
+            The channel's ``.default_thread_auto_archive_after``.
+        
+        default_thread_slowmode : `int`, Optional (Keyword only)
+            The default slowmode applied to the channel's threads.
+        
+        default_thread_reaction : `None`, ``Emoji``, Optional (Keyword only)
+            The emoji to show in the add reaction button on a thread of the forum channel.
         
         flags : `int`, ``ChannelFlag``, Optional (Keyword only)
             The channel's ``.flags``.
@@ -1748,6 +1829,7 @@ class Channel(DiscordEntity, immortal=True):
         self.messages = new_messages
         self._cancel_message_collection()
         self.message_history_reached_end = False
+    
     
     def _pop_message(self, delete_id):
         """

@@ -1,10 +1,10 @@
-__all__ = ('ForumTag',)
+__all__ = ('create_forum_tag_from_id', 'ForumTag',)
 
 from scarletio import copy_docs
 
 from ..bases import DiscordEntity
 from ..core import FORUM_TAGS
-from ..emoji import Emoji, create_partial_emoji_from_data, put_partial_emoji_data_into
+from ..emoji import Emoji, create_emoji_from_exclusive_data, put_exclusive_emoji_data_into
 from ..preconverters import preconvert_snowflake
 
 from .constants import FORUM_TAG_NAME_LENGTH_MAX, FORUM_TAG_NAME_LENGTH_MIN
@@ -449,7 +449,7 @@ class ForumTag(DiscordEntity, immortal=True):
         # Internal field
         
         # emoji
-        self.emoji = create_partial_emoji_from_data(data)
+        self.emoji = create_emoji_from_exclusive_data(data)
         
         # name
         self.name = data['name']
@@ -491,7 +491,7 @@ class ForumTag(DiscordEntity, immortal=True):
         # Internal field
         
         # emoji
-        emoji = create_partial_emoji_from_data(data)
+        emoji = create_emoji_from_exclusive_data(data)
         if (emoji is not self.emoji):
             old_attributes['emoji'] = self.emoji
             self.emoji = emoji
@@ -522,7 +522,7 @@ class ForumTag(DiscordEntity, immortal=True):
         data = {}
         
         # emoji
-        put_partial_emoji_data_into(data, self.emoji)
+        put_exclusive_emoji_data_into(self.emoji, data)
         
         # name
         data['name'] = self.name
@@ -546,3 +546,25 @@ class ForumTag(DiscordEntity, immortal=True):
             return True
         
         return False
+
+
+def create_forum_tag_from_id(forum_tag_id):
+    """
+    Creates a forum tag from the given identifier.
+    
+    Parameters
+    ----------
+    forum_tag_id : `int`
+        The forum tag's identifier.
+    
+    Returns
+    -------
+    forum_tag : ``ForumTag``
+    """
+    try:
+        forum_tag = FORUM_TAGS[forum_tag_id]
+    except KeyError:
+        forum_tag = ForumTag._create_empty(forum_tag_id)
+        FORUM_TAGS[forum_tag_id] = forum_tag
+    
+    return forum_tag

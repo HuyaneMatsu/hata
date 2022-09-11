@@ -23,7 +23,7 @@ def test__ForumTag__from_data__0():
         'moderated': moderated,
     }
     
-    put_partial_emoji_data_into(data, emoji)
+    put_partial_emoji_data_into(emoji, data)
     
     forum_tag = ForumTag.from_data(data)
     
@@ -76,7 +76,7 @@ def test__ForumTag__update_attributes():
         'moderated': new_moderated,
     }
     
-    put_partial_emoji_data_into(data, new_emoji)
+    put_partial_emoji_data_into(new_emoji, data)
     
     forum_tag._update_attributes(data)
 
@@ -103,7 +103,7 @@ def test__ForumTag__difference_update_attributes():
         'moderated': new_moderated,
     }
     
-    put_partial_emoji_data_into(data, new_emoji)
+    put_partial_emoji_data_into(new_emoji, data)
     
     old_attributes = forum_tag._difference_update_attributes(data)
 

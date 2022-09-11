@@ -2,10 +2,7 @@ import vampytest
 
 from ...core import BUILTIN_EMOJIS, UNICODE_TO_EMOJI
 
-from .. import (
-    Emoji, create_partial_emoji_from_data, parse_all_emojis, parse_all_emojis_ordered, parse_emoji,
-    put_partial_emoji_data_into
-)
+from .. import Emoji, parse_all_emojis, parse_all_emojis_ordered
 from ..unicodes import UNICODES
 
 
@@ -145,62 +142,3 @@ def test__parse_all_emojis_ordered():
     
     parsed_emojis = parse_all_emojis_ordered(text)
     vampytest.assert_eq(emojis, parsed_emojis)
-
-
-def test__parse_emoji__coloned_builtin_name():
-    """
-    Tests whether `parse_all_emojis` parses builtin emojis with coloned name.
-    """
-    emoji = BUILTIN_EMOJIS['heart']
-    text = f':{emoji.name}:'
-
-    parsed_emoji = parse_emoji(text)
-    vampytest.assert_is(emoji, parsed_emoji)
-
-
-def test__put_partial_emoji_data_into__0():
-    """
-    Tests whether ``put_partial_emoji_data_into`` allows `None`.
-    """
-    data = {}
-    
-    put_partial_emoji_data_into(data, None)
-    
-    vampytest.assert_eq(data, {'emoji_name': None})
-
-
-def test__put_partial_emoji_data_into__1():
-    """
-    Tests whether ``put_partial_emoji_data_into`` works as intended for a unicode emoji.
-    """
-    data = {}
-    emoji = BUILTIN_EMOJIS['heart']
-    
-    put_partial_emoji_data_into(data, emoji)
-    
-    vampytest.assert_in('emoji_name', data)
-
-
-def test__put_partial_emoji_data_into__2():
-    """
-    Tests whether ``put_partial_emoji_data_into`` works as intended for a unicode emoji.
-    """
-    data = {}
-    emoji = Emoji.precreate(202209090000, name='Eliminator')
-    
-    put_partial_emoji_data_into(data, emoji)
-    
-    vampytest.assert_in('emoji_name', data)
-    vampytest.assert_in('emoji_id', data)
-
-
-def test__create_partial_emoji_from_data():
-    """
-    Tests whether ``create_partial_emoji_from_data`` prefers the `emoji_` prefix format over the one with prefix one.
-    """
-    emoji_1 = BUILTIN_EMOJIS['x']
-    emoji_2 = BUILTIN_EMOJIS['heart']
-    
-    emoji = create_partial_emoji_from_data({'name': emoji_1.unicode, 'emoji_name': emoji_2.unicode})
-    
-    vampytest.assert_is(emoji, emoji_2)

@@ -163,7 +163,7 @@ CAN_HAVE_PARENT_ID = tuple(
 def cr_pg_channel_object(
     name, channel_type, *, permission_overwrites=..., topic=..., nsfw=..., slowmode=..., bitrate=..., user_limit=...,
     region=..., video_quality_mode=..., archived=..., archived_at=..., auto_archive_after=..., open_=...,
-    default_auto_archive_after=..., parent=..., guild=None,
+    default_thread_auto_archive_after=..., parent=..., available_tags=..., guild=None,
 ):
     """
     Creates a json serializable object representing a ``Channel``.
@@ -200,11 +200,13 @@ def cr_pg_channel_object(
         `259200`, `604800`.
     open_ : `None`, `bool`, Optional (Keyword only)
         Whether the thread channel is open.
-    default_auto_archive_after : `None`, `int`, Optional (Keyword only)
+    default_thread_auto_archive_after : `None`, `int`, Optional (Keyword only)
         The default duration (in seconds) for newly created threads to automatically archive the themselves. Can be
         one of: `3600`, `86400`, `259200`, `604800`.
     parent : `None`, ``Channel``, `int`, Optional (Keyword only)
         The channel's parent. If the parent is under a guild, leave it empty.
+    available_tags : `None`, `tuple` of ``ForumTag``, Optional (Keyword only)
+        The available tags to assign to the child-thread channels.
     guild : `None`, ``Guild`` = `None`, Optional (Keyword only)
         Reference guild used for validation purposes. Defaults to `None`.
     
@@ -215,19 +217,13 @@ def cr_pg_channel_object(
     Raises
     ------
     TypeError
-        - If `channel_type` was not passed as `int`, ``ChannelType``.
-        - If `parent` was not given as `None`, ``Channel``, `int`.
-        - If `region` was not given either as `None`, `str` nor ``VoiceRegion``.
-        - If `video_quality_mode` was not given neither as `None`, `VideoQualityMode`` nor as `int`.
-    AssertionError
-        - If any parameter's type or value is incorrect.
+        - If a parameter's type is incorrect.
     """
-    if __debug__:
-        if (guild is not None) and (not isinstance(guild, Guild)):
-            raise AssertionError(
-                '`guild` is given, but not as `None` nor `Guild`, got '
-                f'{guild.__class__.__name__}; {guild!r}.'
-            )
+    if (guild is not None) and (not isinstance(guild, Guild)):
+        raise TypeError(
+            '`guild` is given, but not as `None` nor `Guild`, got '
+            f'{guild.__class__.__name__}; {guild!r}.'
+        )
     
     channel_type = preconvert_preinstanced_type(channel_type, 'channel_type', ChannelType)
     
@@ -332,8 +328,8 @@ def cr_pg_channel_object(
         channel_data['auto_archive_duration'] = auto_archive_after // 60
     
     
-    _maybe_add_channel_default_auto_archive_after_field_to_data(
-        channel_type, None, channel_data, default_auto_archive_after
+    _maybe_add_channel_default_thread_auto_archive_after_field_to_data(
+        channel_type, None, channel_data, default_thread_auto_archive_after
     )
     
     
@@ -404,6 +400,7 @@ def _assert_channel_type(channel_type, channel, accepted_types, field_name, fiel
         return
     
     _raise_channel_type_assertion_with_message(channel_type, channel, accepted_types, field_name, field_value)
+    return True
 
 
 def _raise_channel_type_assertion_with_message(channel_type, channel, accepted_types, field_name, field_value):
@@ -709,11 +706,11 @@ def _maybe_add_channel_video_quality_mode_field_to_data(channel_type, channel, c
         channel_data['video_quality_mode'] = video_quality_mode_value
 
 
-def _maybe_add_channel_default_auto_archive_after_field_to_data(
-    channel_type, channel, channel_data, default_auto_archive_after
+def _maybe_add_channel_default_thread_auto_archive_after_field_to_data(
+    channel_type, channel, channel_data, default_thread_auto_archive_after
 ):
     """
-    Adds the given `default_auto_archive_after` field to `channel_data` if the value is not ellipsis.
+    Adds the given `default_thread_auto_archive_after` field to `channel_data` if the value is not ellipsis.
     
     Parameters
     ----------
@@ -721,37 +718,37 @@ def _maybe_add_channel_default_auto_archive_after_field_to_data(
         The respective channel's type.
     channel_data : `dict` of (`str`, `Any`) items
         Channel data to add the field to.
-    default_auto_archive_after : `Ellipsis`, `int`
-        `channel.default_auto_archive_after` field.
+    default_thread_auto_archive_after : `Ellipsis`, `int`
+        `channel.default_thread_auto_archive_after` field.
     
     Raises
     ------
     AssertionError
-        - If `default_auto_archive_after`'s type or value is incorrect.
+        - If `default_thread_auto_archive_after`'s type or value is incorrect.
     """
-    if (default_auto_archive_after is not ...):
+    if (default_thread_auto_archive_after is not ...):
         if __debug__:
             _assert_channel_type(
                 channel_type,
                 channel,
                 HAS_DEFAULT_AUTO_ARCHIVE_AFTER,
-                'default_auto_archive_after',
-                default_auto_archive_after,
+                'default_thread_auto_archive_after',
+                default_thread_auto_archive_after,
             )
             
-            if not isinstance(default_auto_archive_after, int):
+            if not isinstance(default_thread_auto_archive_after, int):
                 raise AssertionError(
-                    f'`default_auto_archive_after` can be `None`, `datetime`, got '
-                    f'{default_auto_archive_after.__class__.__name__}; {default_auto_archive_after!r}.'
+                    f'`default_thread_auto_archive_after` can be `None`, `datetime`, got '
+                    f'{default_thread_auto_archive_after.__class__.__name__}; {default_thread_auto_archive_after!r}.'
                 )
             
-            if default_auto_archive_after not in AUTO_ARCHIVE_OPTIONS:
+            if default_thread_auto_archive_after not in AUTO_ARCHIVE_OPTIONS:
                 raise AssertionError(
-                    f'`default_auto_archive_after` can be any of: {AUTO_ARCHIVE_OPTIONS}, got '
-                    f'{default_auto_archive_after}.'
+                    f'`default_thread_auto_archive_after` can be any of: {AUTO_ARCHIVE_OPTIONS}, got '
+                    f'{default_thread_auto_archive_after}.'
                 )
         
-        channel_data['default_auto_archive_duration'] = default_auto_archive_after // 60
+        channel_data['default_auto_archive_duration'] = default_thread_auto_archive_after // 60
 
 
 @export

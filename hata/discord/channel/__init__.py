@@ -1,4 +1,5 @@
 from .channel_type import *
+from .fields import *
 from .metadata import *
 
 from .channel import *
@@ -13,6 +14,7 @@ from .utils import *
 
 __all__ = (
     *channel_type.__all__,
+    *fields.__all__,
     *metadata.__all__,
     
     *channel.__all__,

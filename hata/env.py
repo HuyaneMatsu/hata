@@ -7,7 +7,7 @@ HATA_ALLOW_DEBUG_MESSAGES : `bool` = `False`
 HATA_API_ENDPOINT : `None`, `str` = `None`
     The api endpoint to use instead of the Discord's default.
 
-HATA_API_VERSION : `int` = `9`
+HATA_API_VERSION : `int` = `10`
     The Discord api version used by hata. The accepted values are `6`, `7`, `8`, `9` and `10`.
     
     If given as any other value, a warning message will show up. Tho, if given `6` a deprecation warning will be still

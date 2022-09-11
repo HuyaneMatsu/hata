@@ -24,7 +24,7 @@ def test__put_exclusive_emoji_data_into__1():
     
     Case: Custom emoji.
     """
-    emoji = Emoji.precreate(202209110001)
+    emoji = Emoji.precreate(202209110002)
     
     data = put_exclusive_emoji_data_into(emoji, {})
     

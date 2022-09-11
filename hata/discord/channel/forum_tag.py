@@ -511,15 +511,27 @@ class ForumTag(DiscordEntity, immortal=True):
         return old_attributes
     
     
-    def to_data(self):
+    def to_data(self, *, include_identifiers=False):
         """
         Converts the forum tag to a json serializable object.
+        
+        Parameters
+        ----------
+        include_identifiers : `bool` = `False`
+            Whether we want to include identifiers as well.
+        
         
         Returns
         -------
         data : `dict` of (`str`, `Any`) items
         """
         data = {}
+        
+        # id
+        if include_identifiers:
+            id_ = self.id
+            if id_:
+                data['id'] = str(id_)
         
         # emoji
         put_exclusive_emoji_data_into(self.emoji, data)

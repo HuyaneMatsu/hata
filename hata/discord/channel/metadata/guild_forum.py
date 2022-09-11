@@ -3,14 +3,19 @@ __all__ = ('ChannelMetadataGuildForum',)
 
 from scarletio import copy_docs
 
-from ...emoji import Emoji, create_emoji_from_exclusive_data, put_exclusive_emoji_data_into
+from ...emoji import Emoji, put_exclusive_emoji_data_into
 from ...permission import Permission
 from ...permission.permission import PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE, PERMISSION_THREAD_AND_VOICE_DENY
 from ...preconverters import preconvert_flag, preconvert_int, preconvert_int_options, preconvert_str
 
 from ..constants import AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
+from ..fields.available_tags import parse_available_tags, validate_available_tags
+from ..fields.default_thread_auto_archive_after import parse_default_thread_auto_archive_after
+from ..fields.default_thread_reaction import parse_default_thread_reaction
+from ..fields.default_thread_slowmode import parse_default_thread_slowmode
+from ..fields.flags import parse_flags
+from ..fields.topic import parse_topic
 from ..flags import ChannelFlag
-from ..forum_tag import ForumTag
 
 from .guild_main_base import ChannelMetadataGuildMainBase
 
@@ -112,40 +117,22 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         ChannelMetadataGuildMainBase._update_attributes(self, data)
         
         # available_tags
-        available_tag_data_array = data.get('available_tags', None)
-        if (available_tag_data_array is None) or (not available_tag_data_array):
-            available_tags = None
-        else:
-            available_tags = tuple(sorted(ForumTag.from_data(tag_data) for tag_data in available_tag_data_array))
-        self.available_tags = available_tags
+        self.available_tags = parse_available_tags(data)
         
         # default_thread_auto_archive_after
-        default_thread_auto_archive_after = data.get('default_auto_archive_duration', None)
-        if default_thread_auto_archive_after is None:
-            default_thread_auto_archive_after = AUTO_ARCHIVE_DEFAULT
-        else:
-            default_thread_auto_archive_after *= 60
-        self.default_thread_auto_archive_after = default_thread_auto_archive_after
+        self.default_thread_auto_archive_after = parse_default_thread_auto_archive_after(data)
         
         # default_thread_reaction
-        default_thread_reaction_data = data.get('default_reaction_emoji', None)
-        if (default_thread_reaction_data is None):
-            default_thread_reaction = None
-        else:
-            default_thread_reaction = create_emoji_from_exclusive_data(default_thread_reaction_data)
-        self.default_thread_reaction = default_thread_reaction
+        self.default_thread_reaction = parse_default_thread_reaction(data)
         
         # default_thread_slowmode
-        default_thread_slowmode = data.get('default_thread_rate_limit_per_user', None)
-        if default_thread_slowmode is None:
-            default_thread_slowmode = 0
-        self.default_thread_slowmode = default_thread_slowmode
+        self.default_thread_slowmode = parse_default_thread_slowmode(data)
         
         # flags
-        self.flags = ChannelFlag(data.get('flags', 0))
+        self.flags = parse_flags(data)
         
         # topic
-        self.topic = data.get('topic', None)
+        self.topic = parse_topic(data)
     
     
     @copy_docs(ChannelMetadataGuildMainBase._difference_update_attributes)
@@ -153,52 +140,37 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         old_attributes = ChannelMetadataGuildMainBase._difference_update_attributes(self, data)
         
         # available_tags
-        available_tag_data_array = data.get('available_tags', None)
-        if (available_tag_data_array is None) or (not available_tag_data_array):
-            available_tags = None
-        else:
-            available_tags = tuple(sorted(ForumTag.from_data(tag_data) for tag_data in available_tag_data_array))
+        available_tags = parse_available_tags(data)
         if (self.available_tags != available_tags):
             old_attributes['available_tags'] = self.available_tags
             self.available_tags = available_tags
         
         # default_thread_auto_archive_after
-        default_thread_auto_archive_after = data.get('default_auto_archive_duration', None)
-        if default_thread_auto_archive_after is None:
-            default_thread_auto_archive_after = AUTO_ARCHIVE_DEFAULT
-        else:
-            default_thread_auto_archive_after *= 60
+        default_thread_auto_archive_after = parse_default_thread_auto_archive_after(data)
         if self.default_thread_auto_archive_after != default_thread_auto_archive_after:
             old_attributes['default_thread_auto_archive_after'] = self.default_thread_auto_archive_after
             self.default_thread_auto_archive_after = default_thread_auto_archive_after
         
         # default_thread_reaction
-        default_thread_reaction_data = data.get('default_reaction_emoji', None)
-        if (default_thread_reaction_data is None):
-            default_thread_reaction = None
-        else:
-            default_thread_reaction = create_emoji_from_exclusive_data(default_thread_reaction_data)
+        default_thread_reaction = parse_default_thread_reaction(data)
         if self.default_thread_reaction != default_thread_reaction:
             old_attributes['default_thread_reaction'] = self.default_thread_reaction
             self.default_thread_reaction = default_thread_reaction
         
         # default_thread_slowmode
-        default_thread_slowmode = data.get('default_thread_rate_limit_per_user', None)
-        if default_thread_slowmode is None:
-            default_thread_slowmode = 0
+        default_thread_slowmode = parse_default_thread_slowmode(data)
         if self.default_thread_slowmode != default_thread_slowmode:
             old_attributes['default_thread_slowmode'] = self.default_thread_slowmode
             self.default_thread_slowmode = default_thread_slowmode
         
         # flags
-        flags = data.get('flags', 0)
+        flags = parse_flags(data)
         if (self.flags != flags):
-            flags = ChannelFlag(flags)
             old_attributes['flags'] = self.flags
             self.flags = flags
         
         # topic
-        topic = data.get('topic', None)
+        topic = parse_topic(data)
         if self.topic != topic:
             old_attributes['topic'] = self.topic
             self.topic = topic
@@ -236,33 +208,12 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         
         # available_tags
         try:
-            raw_available_tags = keyword_parameters.pop('available_tags')
+            available_tags = keyword_parameters.pop('available_tags')
         except KeyError:
             pass
         else:
-            if (raw_available_tags is not None):
-                if (getattr(raw_available_tags, '__iter__', None) is None):
-                    raise TypeError(
-                        f'`available_tags` can be `None`, `iterable` of `{ForumTag.__name__}`, got '
-                        f'{raw_available_tags.__class__.__name__}; {raw_available_tags!r}.'
-                    )
-                
-                available_tags = None
-                
-                for raw_tag in raw_available_tags:
-                    if not isinstance(raw_tag, ForumTag):
-                        raise TypeError(
-                            f'`available_tags` can contain `{ForumTag.__name__}` elements, got '
-                            f'{raw_tag.__class__.__name__}; {raw_tag!r}; available_tags = {raw_available_tags!r}.'
-                        )
-                    
-                    if (available_tags is None):
-                        available_tags = set()
-                    
-                    available_tags.add(raw_tag)
-                
-                if (available_tags is not None):
-                    self.available_tags = tuple(sorted(available_tags))
+            available_tags = validate_available_tags(available_tags)
+            self.available_tags = available_tags
         
         
         # default_thread_auto_archive_after

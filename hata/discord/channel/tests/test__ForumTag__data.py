@@ -120,9 +120,11 @@ def test__ForumTag__difference_update_attributes():
     vampytest.assert_eq(old_attributes['moderated'], old_moderated)
 
 
-def test__ForumTag__to_data():
+def test__ForumTag__to_data__0():
     """
-    Tests whether 
+    Tests whether ``ForumTag.to_data`` works as intended.
+    
+    Case: default.
     """
     emoji = BUILTIN_EMOJIS['heart']
     name = 'EMOTiON'
@@ -141,3 +143,18 @@ def test__ForumTag__to_data():
     
     vampytest.assert_is(create_partial_emoji_from_data(data), emoji)
     
+
+def test__ForumTag__to_data__2():
+    """
+    Tests whether ``ForumTag.to_data`` works as intended.
+    
+    Case: include identifiers
+    """
+    forum_tag_id = 202209110003
+    
+    forum_tag = ForumTag.precreate(forum_tag_id)
+    
+    data = forum_tag.to_data(include_identifiers = True)
+    
+    vampytest.assert_in('id', data)
+    vampytest.assert_eq(data['id'], str(forum_tag_id))

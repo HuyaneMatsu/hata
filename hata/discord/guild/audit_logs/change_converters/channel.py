@@ -1,6 +1,7 @@
 __all__ = ()
 
 from ....channel import ChannelFlag, ForumTag, VideoQualityMode
+from ....emoji import create_emoji_from_exclusive_data
 from ....permission import PermissionOverwrite
 
 from ...preinstanced import VoiceRegion
@@ -108,6 +109,18 @@ def convert_voice_region(name, data):
     return _convert_preinstanced('region', data, VoiceRegion)
 
 
+def convert_default_thread_reaction(name, data):
+    before = data.get('old_value', None)
+    if (before is not None):
+        before = create_emoji_from_exclusive_data(before)
+    
+    after = data.get('new_value', None)
+    if (after is not None):
+        after = create_emoji_from_exclusive_data(after)
+    
+    return AuditLogChange('default_thread_reaction', before, after) 
+
+
 CHANNEL_CONVERTERS = {
     'applied_tags': convert_snowflake_array__applied_tag_ids,
     'archived': convert_nothing,
@@ -115,6 +128,7 @@ CHANNEL_CONVERTERS = {
     'available_tags': convert_forum_tags,
     'bitrate': convert_nothing,
     'default_auto_archive_duration': convert_int__default_thread_auto_archive_after,
+    'default_reaction_emoji': convert_default_thread_reaction,
     'default_thread_rate_limit_per_user': convert_int__default_thread_slowmode,
     'flags': convert_channel_flags,
     'invitable': convert_nothing,

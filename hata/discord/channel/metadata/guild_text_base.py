@@ -239,8 +239,9 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
         
         # default_thread_slowmode
         default_thread_slowmode = self.default_thread_slowmode
-        if default_thread_slowmode:
-            data['default_thread_rate_limit_per_user'] = default_thread_slowmode
+        if default_thread_slowmode == 0:
+            default_thread_slowmode = None
+        data['default_thread_rate_limit_per_user'] = default_thread_slowmode
         
         # nsfw
         if self.nsfw:
@@ -248,8 +249,9 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
         
         # slowmode
         slowmode = self.slowmode
-        if slowmode:
-            data['rate_limit_per_user'] = slowmode
+        if slowmode == 0:
+            slowmode = None
+        data['rate_limit_per_user'] = slowmode
         
         # topic
         data['topic'] = self.topic

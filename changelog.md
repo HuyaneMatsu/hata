@@ -55,6 +55,7 @@
 - Add `default_thread_reaction` parameter to `Channel.precreate`.
 - Add `available_tags` parameter to `Channel.precreate`.
 - Add `applied_tag_ids` parameter to `Channel.precreate`.
+- Add `default_thread_reaction` audit log change converter.
 
 #### Bug fixes
 

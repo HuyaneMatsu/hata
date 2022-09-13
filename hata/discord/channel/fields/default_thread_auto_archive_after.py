@@ -1,6 +1,8 @@
 __all__ = ()
 
-from ..constants import AUTO_ARCHIVE_DEFAULT
+from ...preconverters import preconvert_int_options
+
+from ..constants import AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
 
 
 def parse_default_thread_auto_archive_after(data):
@@ -23,3 +25,30 @@ def parse_default_thread_auto_archive_after(data):
         default_thread_auto_archive_after *= 60
 
     return default_thread_auto_archive_after
+
+
+def validate_default_thread_auto_archive_after(default_thread_auto_archive_after):
+    """
+    Validates the given `default_thread_auto_archive_after` field.
+    
+    Parameters
+    ----------
+    default_thread_auto_archive_after : `int`
+        The duration to validate.
+    
+    Returns
+    -------
+    default_thread_auto_archive_after : `int`
+    
+    Raises
+    ------
+    TypeError
+        - If `default_thread_auto_archive_after` is not `int` instance.
+    ValueError
+        - If `default_thread_auto_archive_after` is not any of the expected values.
+    """
+    return preconvert_int_options(
+        default_thread_auto_archive_after,
+        'default_thread_auto_archive_after',
+        AUTO_ARCHIVE_OPTIONS,
+    )

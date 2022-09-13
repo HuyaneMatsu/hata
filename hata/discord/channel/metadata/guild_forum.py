@@ -3,15 +3,17 @@ __all__ = ('ChannelMetadataGuildForum',)
 
 from scarletio import copy_docs
 
-from ...emoji import Emoji, put_exclusive_emoji_data_into
+from ...emoji import put_exclusive_emoji_data_into
 from ...permission import Permission
 from ...permission.permission import PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE, PERMISSION_THREAD_AND_VOICE_DENY
-from ...preconverters import preconvert_flag, preconvert_int, preconvert_int_options, preconvert_str
+from ...preconverters import preconvert_flag, preconvert_int, preconvert_str
 
-from ..constants import AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
+from ..constants import AUTO_ARCHIVE_DEFAULT
 from ..fields.available_tags import parse_available_tags, validate_available_tags
-from ..fields.default_thread_auto_archive_after import parse_default_thread_auto_archive_after
-from ..fields.default_thread_reaction import parse_default_thread_reaction
+from ..fields.default_thread_auto_archive_after import (
+    parse_default_thread_auto_archive_after, validate_default_thread_auto_archive_after
+)
+from ..fields.default_thread_reaction import parse_default_thread_reaction, validate_default_thread_reaction
 from ..fields.default_thread_slowmode import parse_default_thread_slowmode
 from ..fields.flags import parse_flags
 from ..fields.topic import parse_topic
@@ -212,9 +214,7 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         except KeyError:
             pass
         else:
-            available_tags = validate_available_tags(available_tags)
-            self.available_tags = available_tags
-        
+            self.available_tags = validate_available_tags(available_tags)
         
         # default_thread_auto_archive_after
         try:
@@ -222,13 +222,9 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         except KeyError:
             pass
         else:
-            default_thread_auto_archive_after = preconvert_int_options(
-                default_thread_auto_archive_after,
-                'default_thread_auto_archive_after',
-                AUTO_ARCHIVE_OPTIONS,
+            self.default_thread_auto_archive_after = validate_default_thread_auto_archive_after(
+                default_thread_auto_archive_after
             )
-            
-            self.default_thread_auto_archive_after = default_thread_auto_archive_after
         
         # default_thread_reaction
         try:
@@ -236,13 +232,7 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         except KeyError:
             pass
         else:
-            if (default_thread_reaction is not None) and (not isinstance(default_thread_reaction, Emoji)):
-                raise TypeError(
-                    f'`default_thread_reaction` can be `None`, `{Emoji.__name__}`, '
-                    f'got {default_thread_reaction.__class__.__name__}; {default_thread_reaction!r}.'
-                )
-            
-            self.default_thread_reaction = default_thread_reaction
+            self.default_thread_reaction = validate_default_thread_reaction(default_thread_reaction)
         
         # default_thread_slowmode
         try:

@@ -20,6 +20,29 @@ from .unicode_type import Unicode, VARIATION_SELECTOR_16_POSTFIX
 VARIATION_SELECTOR_16_POSTFIX_WITH_COLON = VARIATION_SELECTOR_16_POSTFIX + ':'
 
 
+def _create_new_unicode(unicode_string):
+    """
+    Creates a new emoji from the given `unicode_string`.
+    
+    Parameters
+    ----------
+    unicode_string : `str`
+        Unicode string to create emoji from.
+    
+    Returns
+    -------
+    emoji : ``Emoji``
+    """
+    unicode_bytes = unicode_string.encode()
+    
+    warnings.warn(
+        f'\nUndefined emoji : {unicode_bytes!r}\nPlease open an issue with this message.',
+        RuntimeWarning,
+    )
+    
+    return Emoji._create_unicode(Unicode('', unicode_bytes, False, None, None), False)
+
+
 @export
 def create_partial_emoji_from_data(data):
     """
@@ -51,11 +74,7 @@ def create_partial_emoji_from_data(data):
         try:
             emoji = UNICODE_TO_EMOJI[emoji_name]
         except KeyError:
-            warnings.warn(
-                f'\nUndefined emoji : {emoji_name.encode()!r}\nPlease open an issue with this message.',
-                RuntimeWarning,
-            )
-            emoji = Emoji._create_unicode(Unicode('', emoji_name, False, None, None), False)
+            emoji = _create_new_unicode(emoji_name)
     
     else:
         # name can change
@@ -152,11 +171,7 @@ def create_emoji_from_exclusive_data(data):
         try:
             emoji = UNICODE_TO_EMOJI[emoji_name]
         except KeyError:
-            warnings.warn(
-                f'\nUndefined emoji : {emoji_name.encode()!r}\nPlease open an issue with this message.',
-                RuntimeWarning,
-            )
-            emoji = Emoji._create_unicode(Unicode('', emoji_name, False, None, None), False)
+            emoji = _create_new_unicode(emoji_name)
     
     elif (emoji_id is not None):
         emoji = Emoji._create_partial(int(emoji_id), '', False)

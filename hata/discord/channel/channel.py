@@ -4,7 +4,7 @@ import warnings
 from collections import deque
 from re import I as re_ignore_case, escape as re_escape, search as re_search
 
-from scarletio import LOOP_TIME, export
+from scarletio import LOOP_TIME, copy_docs, export
 
 from ...env import MESSAGE_CACHE_SIZE
 
@@ -66,6 +66,10 @@ class Channel(DiscordEntity, immortal=True):
             The client, who received the channel's data, if any.
         guild_id : `int`
             The guild's identifier of the channel.
+        
+        Returns
+        -------
+        self : ``Channel``
         
         Raises
         -------
@@ -341,24 +345,6 @@ class Channel(DiscordEntity, immortal=True):
         users : `list` of ``ClientUserBase``
         """
         return self.metadata._get_users(self)
-    
-    
-    @property
-    def owner(self):
-        """
-        Returns the group channel's owner.
-        
-        Returns
-        -------
-        owner : ``ClientUserBase``
-            Defaults to `ZEROUSER`.
-        """
-        owner_id = self.owner_id
-        if owner_id:
-            owner = create_partial_user_from_id(owner_id)
-        else:
-            owner = ZEROUSER
-        return owner
     
     
     def iter_users(self):
@@ -881,21 +867,158 @@ class Channel(DiscordEntity, immortal=True):
         
         return self.id < other.id
     
+    # Fields
     
     @property
+    @copy_docs(ChannelMetadataBase.applied_tag_ids)
+    def applied_tag_ids(self):
+        return self.metadata.applied_tag_ids
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.archived)
+    def archived(self):
+        return self.metadata.archived
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.archived_at)
+    def archived_at(self):
+        return self.metadata.archived_at
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.auto_archive_after)
+    def auto_archive_after(self):
+        return self.metadata.auto_archive_after
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.available_tags)
+    def available_tags(self):
+        return self.metadata.available_tags
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.bitrate)
+    def bitrate(self):
+        return self.metadata.bitrate
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.default_thread_auto_archive_after)
+    def default_thread_auto_archive_after(self):
+        return self.metadata.default_thread_auto_archive_after
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.default_thread_reaction)
+    def default_thread_reaction(self):
+        return self.metadata.default_thread_reaction
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.default_thread_slowmode)
+    def default_thread_slowmode(self):
+        return self.metadata.default_thread_slowmode
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.flags)
+    def flags(self):
+        return self.metadata.flags
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.icon)
+    def icon(self):
+        return self.metadata.icon
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.invitable)
+    def invitable(self):
+        return self.metadata.invitable
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.nsfw)
+    def nsfw(self):
+        return self.metadata.nsfw
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.open)
+    def open(self):
+        return self.metadata.open
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.owner_id)
+    def owner_id(self):
+        return self.metadata.owner_id
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.parent_id)
     def parent_id(self):
-        """
-        Returns the channel's parent's identifier.
-        
-        If the channel has no parent, or if not applicable for the specific channel type returns `0`.
-        
-        Returns
-        -------
-        parent_id : `int`
-        """
         return self.metadata.parent_id
     
-        
+    
+    @property
+    @copy_docs(ChannelMetadataBase.permission_overwrites)
+    def permission_overwrites(self):
+        return self.metadata.permission_overwrites
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.position)
+    def position(self):
+        return self.metadata.position
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.region)
+    def region(self):
+        return self.metadata.region
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.slowmode)
+    def slowmode(self):
+        return self.metadata.slowmode
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.topic)
+    def topic(self):
+        return self.metadata.topic
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.thread_users)
+    def thread_users(self):
+        return self.metadata.thread_users
+    
+    
+    @thread_users.setter
+    def thread_users(self, thread_users):
+        self.metadata.thread_users = thread_users
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.user_limit)
+    def user_limit(self):
+        return self.metadata.user_limit
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.video_quality_mode)
+    def video_quality_mode(self):
+        return self.metadata.video_quality_mode
+    
+    # Utility
+    
     @property
     def parent(self):
         """
@@ -910,168 +1033,6 @@ class Channel(DiscordEntity, immortal=True):
         parent_id = self.metadata.parent_id
         if parent_id:
             return CHANNELS.get(parent_id, None)
-    
-    
-    @property
-    def permission_overwrites(self):
-        """
-        Returns the channel's permission overwrites.
-        
-        If the channel has no permission overwrites returns `None`.
-        
-        Returns
-        -------
-        permission_overwrites : `None`, `dict` of (`int`, ``PermissionOverwrite``) items
-        """
-        return self.metadata.permission_overwrites
-    
-    
-    @property
-    def position(self):
-        """
-        Returns the channel's position.
-        
-        If the channel has no position, returns `0`.
-        
-        Returns
-        -------
-        position : `int`
-        """
-        return self.metadata.position
-    
-    
-    @property
-    def nsfw(self):
-        """
-        Returns whether the channel is not safe for work.
-        
-        Defaults to `False`.
-        
-        Returns
-        -------
-        nsfw : `bool`
-        """
-        return self.metadata.nsfw
-    
-    
-    @property
-    def slowmode(self):
-        """
-        Returns the slowmode of the channel.
-        
-        If the channel has no slowmode, returns `0`.
-        
-        Returns
-        -------
-        slowmode : `int`
-        """
-        return self.metadata.slowmode
-    
-    
-    @property
-    def default_thread_slowmode(self):
-        """
-        Returns the default slowmode applied to the threads of the channel.
-        
-        Returns
-        -------
-        default_thread_slowmode : `int`
-        """
-        return self.metadata.default_thread_slowmode
-    
-    
-    @property
-    def topic(self):
-        """
-        Returns the channel's topic.
-        
-        If the channel has no topic, returns `None`.
-        
-        Returns
-        -------
-        topic : `None`, `str`
-        """
-        return self.metadata.topic
-    
-    
-    @property
-    def bitrate(self):
-        """
-        Returns the bitrate (in bits) of the voice channel.
-        
-        If the channel has no bitrate, returns `0`.
-        
-        Returns
-        -------
-        bitrate : `int`
-        """
-        return self.metadata.bitrate
-    
-    
-    @property
-    def region(self):
-        """
-        Returns the voice region of the channel.
-        
-        If the channel has no voice region, returns `None`.
-        
-        Returns
-        -------
-        region : `None`, ``VoiceRegion``
-        """
-        return self.metadata.region
-    
-    
-    @property
-    def user_limit(self):
-        """
-        Returns the maximal amount of users, who can join the voice channel
-        
-        If the channel has not user limit, returns `0`.
-        
-        Returns
-        -------
-        user_limit : `int`
-        """
-        return self.metadata.user_limit
-    
-    
-    @property
-    def video_quality_mode(self):
-        """
-        Returns the video quality of the voice channel.
-        
-        If the channel has no video quality mode, returns `VideoQualityMode.none`.
-        
-        Returns
-        -------
-        video_quality_mode : ``VideoQualityMode``
-        """
-        return self.metadata.video_quality_mode
-        
-    
-    @property
-    def icon(self):
-        """
-        Returns the channel's icon.
-        
-        Returns
-        -------
-        icon : ``Icon``
-        """
-        return self.metadata.icon
-    
-    
-    @property
-    def applied_tag_ids(self):
-        """
-        Returns the tags' identifier which have been applied to the thread. Applicable for threads of a forum.
-        
-        Returns
-        -------
-        applied_tag_ids : `None`, `tuple` of `int`
-        """
-        return self.metadata.applied_tag_ids
     
     
     @property
@@ -1091,145 +1052,21 @@ class Channel(DiscordEntity, immortal=True):
     
     
     @property
-    def archived(self):
+    def owner(self):
         """
-        Returns whether the thread is archived.
-        
-        If the channel is not a thread, then returns `False`.
+        Returns the group channel's owner.
         
         Returns
         -------
-        archived : `bool`
+        owner : ``ClientUserBase``
+            Defaults to `ZEROUSER`.
         """
-        return self.metadata.archived
-    
-    
-    @property
-    def archived_at(self):
-        """
-        Returns when the thread was archived.
-        
-        Returns `None` if the the channel is not a thread one or if it is not archived.
-        
-        Returns
-        -------
-        archived_at : `None`, `datetime`
-        """
-        return self.metadata.archived_at
-    
-    
-    @property
-    def auto_archive_after(self):
-        """
-        Returns the duration in seconds to automatically archive the thread after recent activity. Can be one of:
-        `3600`, `86400`, `259200`, `604800`.
-        
-        Returns `3600` if the channel is not a thread one.
-        
-        Returns
-        -------
-        auto_archive_after : `None`, `datetime`
-        """
-        return self.metadata.auto_archive_after
-    
-    
-    @property
-    def default_thread_auto_archive_after(self):
-        """
-        Returns the default duration in seconds to automatically archive the channel's thread after recent activity.
-        
-        Returns
-        -------
-        default_thread_auto_archive_after : `int`
-        """
-        return self.metadata.default_thread_auto_archive_after
-    
-    
-    @property
-    def available_tags(self):
-        """
-        Returns the available tags to assign to the child-thread channels.
-        
-        If the channel is not a forum channel, then returns `None`.
-        
-        Returns
-        -------
-        available_tags : `None`, `tuple` of ``ForumTag``
-        """
-        return self.metadata.available_tags
-    
-    
-    @property
-    def invitable(self):
-        """
-        Whether non-moderators can invite other non-moderators to the threads. Only applicable for private threads.
-        
-        Returns `True` by default.
-        
-        Returns
-        -------
-        invitable : `bool`
-        """
-        return self.metadata.invitable
-    
-    
-    @property
-    def open(self):
-        """
-        Returns whether the thread channel is open.
-        
-        If the channel is not a thread one, will return `True`.
-        
-        Returns
-        -------
-        open : `bool`
-        """
-        return self.metadata.open
-    
-    
-    @property
-    def flags(self):
-        """
-        Returns the channel's flags.
-        
-        Returns empty channel flags by default.
-        
-        Returns
-        -------
-        flags : ``ChannelFlag``
-        """
-        return self.metadata.flags
-    
-    
-    @property
-    def default_thread_reaction(self):
-        """
-        Returns the emoji to show in the add reaction button on a thread of the forum channel.
-        
-        Returns
-        -------
-        default_thread_reaction : ``Emoji``
-        """
-        return self.metadata.default_thread_reaction
-    
-    
-    @property
-    def thread_users(self):
-        """
-        Returns the users inside of the thread if any.
-        
-        If the channel has no users, or if it is not a thread channel, will return `None`.
-        
-        Returns
-        -------
-        thread_users : `None`, `dict` of (`int`, ``ClientUserBase``) items
-        """
-        return self.metadata.thread_users
-    
-    
-    @thread_users.setter
-    def thread_users(self, thread_users):
-        self.metadata.thread_users = thread_users
+        owner_id = self.owner_id
+        if owner_id:
+            owner = create_partial_user_from_id(owner_id)
+        else:
+            owner = ZEROUSER
+        return owner
     
     
     @property
@@ -1288,7 +1125,6 @@ class Channel(DiscordEntity, immortal=True):
         return users
     
     
-
     @property
     def audience(self):
         """

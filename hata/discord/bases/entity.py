@@ -2,6 +2,7 @@ __all__ = ('DiscordEntity', 'Slotted', )
 
 from scarletio import RichAttributeErrorBaseType, include
 
+from .place_holder import PlaceHolder
 
 id_to_datetime = include('id_to_datetime')
 
@@ -181,8 +182,8 @@ class DiscordEntity(RichAttributeErrorBaseType, metaclass=DiscordEntityMeta):
     -----
     Inherit it with passing `immortal = True` to make the subclass weakreferable.
     """
-    @property
-    def id(self):
+    id = PlaceHolder(
+        0,
         """
         Returns the discord entity's unique identifier number
         
@@ -190,23 +191,7 @@ class DiscordEntity(RichAttributeErrorBaseType, metaclass=DiscordEntityMeta):
         -------
         id : `int`
         """
-        return 0
-    
-    
-    @id.setter
-    def id(self, id_):
-        """
-        Sets the discord entity's unique identifier number
-        
-        Parameters
-        -------
-        id : `int`
-            The id to set.
-        """
-        raise NotImplementedError(
-            f'`{self.__class__.__name__}.id` is unsettable; got {id_.__class__.__name__}; {id_!r}.'
-        )
-    
+    )
     
     __slots__ = ()
     

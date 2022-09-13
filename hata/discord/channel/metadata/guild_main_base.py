@@ -35,8 +35,6 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
     
     Class Attributes
     ----------------
-    type : `int` = `-1`
-        The channel's type.
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """

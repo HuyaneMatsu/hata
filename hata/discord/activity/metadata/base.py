@@ -2,26 +2,9 @@ __all__ = ('ActivityMetadataBase',)
 
 from scarletio import RichAttributeErrorBaseType
 
+from ...bases import PlaceHolder
+
 from ..flags import ActivityFlag
-
-
-ACTIVITY_DEFAULT_ATTRIBUTES = {
-    'application_id': 0,
-    'assets': None,
-    'created_at': None,
-    'details': None,
-    'flags': ActivityFlag(),
-    'emoji': None,
-    'id': 0,
-    'name': 'Unknown',
-    'party': None,
-    'secrets': None,
-    'session_id': None,
-    'state': None,
-    'sync_id': None,
-    'timestamps': None,
-    'url': None,
-}
 
 
 class ActivityMetadataBase(RichAttributeErrorBaseType):
@@ -80,16 +63,6 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
             return NotImplemented
         
         return self._is_equal_same_type(other)
-    
-    
-    def __getattr__(self, attribute_name):
-        """Returns the activity metadata's attribute if found."""
-        try:
-            return ACTIVITY_DEFAULT_ATTRIBUTES[attribute_name]
-        except KeyError:
-            pass
-        
-        return RichAttributeErrorBaseType.__getattr__(self, attribute_name)
     
     
     def _is_equal_same_type(self, other):
@@ -224,3 +197,186 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         +-------------------+-----------------------------------+
         """
         return {}
+    
+    
+    application_id = PlaceHolder(
+        0,
+        """
+        Returns the activity's application id.
+        
+        Returns
+        -------
+        application_id : `int`
+        """
+    )
+    
+    
+    assets = PlaceHolder(
+        None,
+        """
+        Returns the activity's assets.
+        
+        Returns
+        -------
+        assets : `None`, ``ActivityAssets``
+        """
+    )
+    
+    
+    created_at = PlaceHolder(
+        None,
+        """
+        Returns when the activity was created.
+        
+        Returns
+        -------
+        created_at : `datetime`
+        """
+    )
+    
+    
+    details = PlaceHolder(
+        None,
+        """
+        Returns the activity's details.
+        
+        Returns
+        -------
+        assets : `None`, `str`
+        """
+    )
+
+    
+    
+    emoji = PlaceHolder(
+        None,
+        """
+        Returns the emoji of the activity. If it has no emoji, then set as `None`.
+        
+        Returns
+        -------
+        emoji : `None`, ``Emoji``
+        """
+    )
+    
+    
+    flags = PlaceHolder(
+        ActivityFlag(),
+        """
+        Returns the activity's flags.
+        
+        Returns
+        -------
+        assets : ``ActivityFlag``
+        """
+    )
+    
+    
+    id = PlaceHolder(
+        0,
+        """
+        Returns the activity's id.
+        
+        Returns
+        -------
+        id : `int`
+        """
+    )
+    
+    
+    name = PlaceHolder(
+        '',
+        """
+        Returns the activity's name.
+        
+        Returns
+        -------
+        name : `str`
+        """
+    )
+    
+    
+    party = PlaceHolder(
+        None,
+        """
+        Returns the activity's party.
+        
+        Returns
+        -------
+        party : `None`, ``ActivityParty``
+        """
+    )
+    
+    
+    secrets = PlaceHolder(
+        None,
+        """
+        Returns the activity's secrets.
+        
+        Returns
+        -------
+        secrets : `None`, ``ActivitySecrets``
+        """
+    )
+    
+    
+    session_id = PlaceHolder(
+        None,
+        """
+        Returns the activity's session identifier.
+        
+        Returns
+        -------
+        session_id : `None`, `str`
+        """
+    )
+
+    
+    state = PlaceHolder(
+        None,
+        """
+        Returns the activity's state.
+        
+        > If the activity has ``.emoji`` it appears next to it.
+        
+        Returns
+        -------
+        state : `None`, `str`
+        """
+    )
+    
+    
+    sync_id = PlaceHolder(
+        None,
+        """
+        Returns the activity's sync identifier.
+        
+        Returns
+        -------
+        sync_id : `None`, `str`
+        """
+    )
+    
+    
+    timestamps = PlaceHolder(
+        None,
+        """
+        Returns the activity's timestamps.
+        
+        Returns
+        -------
+        timestamps : `None`, ``ActivityTimestamps``
+        """
+    )
+    
+    
+    url = PlaceHolder(
+        None,
+        """
+        Returns the activity's url.
+        
+        Returns
+        -------
+        url : `None`, `str`
+        """
+    )

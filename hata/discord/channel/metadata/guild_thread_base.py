@@ -47,8 +47,6 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
     
     Class Attributes
     ----------------
-    type : `int` = `-1`
-        The channel's type.
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """
@@ -155,7 +153,6 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
         return created_at
     
     
-    @property
     @copy_docs(ChannelMetadataGuildBase._get_users)
     def _get_users(self, channel_entity):
         thread_users = self.thread_users
@@ -168,7 +165,7 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
     
     
     @copy_docs(ChannelMetadataGuildBase._iter_users)
-    def _iter_users(self):
+    def _iter_users(self, channel_entity):
         thread_users = self.thread_users
         if (thread_users is not None):
             yield from thread_users.values()

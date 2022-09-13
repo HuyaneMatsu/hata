@@ -44,7 +44,7 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
     
     Class Attributes
     ----------------
-    order_group: `int` = `0`
+    order_group: `int` = `2`
         The channel's order group used when sorting channels.
     """
     __slots__ = ('nsfw', 'video_quality_mode',)

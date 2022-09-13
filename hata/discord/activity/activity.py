@@ -2,7 +2,7 @@ __all__ = ('ACTIVITY_UNKNOWN', 'Activity')
 
 import warnings
 
-from scarletio import RichAttributeErrorBaseType
+from scarletio import RichAttributeErrorBaseType, copy_docs
 
 from ..color import Color
 from ..http import urls as module_urls
@@ -14,6 +14,7 @@ from .constants import (
     ACTIVITY_CUSTOM_ID_DEFAULT
 )
 from .preinstanced import ActivityType
+from .metadata import ActivityMetadataBase
 
 
 class Activity(RichAttributeErrorBaseType):
@@ -367,38 +368,20 @@ class Activity(RichAttributeErrorBaseType):
     # Field proxies
     
     @property
+    @copy_docs(ActivityMetadataBase.application_id)
     def application_id(self):
-        """
-        Returns the activity's application id.
-        
-        Returns
-        -------
-        application_id : `int`
-        """
         return self.metadata.application_id
     
     
     @property
+    @copy_docs(ActivityMetadataBase.assets)
     def assets(self):
-        """
-        Returns the activity's assets.
-        
-        Returns
-        -------
-        assets : `None`, ``ActivityAssets``
-        """
         return self.metadata.assets
         
     
     @property
+    @copy_docs(ActivityMetadataBase.created_at)
     def created_at(self):
-        """
-        Returns when the activity was created.
-        
-        Returns
-        -------
-        created_at : `datetime`
-        """
         created_at = self.metadata.created_at
         if (created_at is None):
             created_at = DISCORD_EPOCH_START
@@ -407,148 +390,74 @@ class Activity(RichAttributeErrorBaseType):
     
     
     @property
+    @copy_docs(ActivityMetadataBase.details)
     def details(self):
-        """
-        Returns the activity's details.
-        
-        Returns
-        -------
-        assets : `None`, `str`
-        """
         return self.metadata.details
     
     
     @property
+    @copy_docs(ActivityMetadataBase.emoji)
     def emoji(self):
-        """
-        Returns the emoji of the activity. If it has no emoji, then set as `None`.
-        
-        Returns
-        -------
-        emoji : `None`, ``Emoji``
-        """
         return self.metadata.emoji
     
     
     @property
+    @copy_docs(ActivityMetadataBase.flags)
     def flags(self):
-        """
-        Returns the activity's flags.
-        
-        Returns
-        -------
-        assets : ``ActivityFlag``
-        """
         return self.metadata.flags
     
     
     @property
+    @copy_docs(ActivityMetadataBase.id)
     def id(self):
-        """
-        Returns the activity's id.
-        
-        Returns
-        -------
-        id : `int`
-        """
         return self.metadata.id
     
     
     @property
+    @copy_docs(ActivityMetadataBase.name)
     def name(self):
-        """
-        Returns the activity's name.
-        
-        Returns
-        -------
-        name : `str`
-        """
         return self.metadata.name
     
     
     @property
+    @copy_docs(ActivityMetadataBase.party)
     def party(self):
-        """
-        Returns the activity's party.
-        
-        Returns
-        -------
-        party : `None`, ``ActivityParty``
-        """
         return self.metadata.party
     
     
     @property
+    @copy_docs(ActivityMetadataBase.secrets)
     def secrets(self):
-        """
-        Returns the activity's secrets.
-        
-        Returns
-        -------
-        secrets : `None`, ``ActivitySecrets``
-        """
         return self.metadata.secrets
     
     
     @property
+    @copy_docs(ActivityMetadataBase.session_id)
     def session_id(self):
-        """
-        Returns the activity's session identifier.
-        
-        Returns
-        -------
-        session_id : `None`, `str`
-        """
         return self.metadata.session_id
     
     
     @property
+    @copy_docs(ActivityMetadataBase.state)
     def state(self):
-        """
-        Returns the activity's state.
-        
-        > If the activity has ``.emoji`` it appears next to it.
-        
-        Returns
-        -------
-        state : `None`, `str`
-        """
         return self.metadata.state
     
     
     @property
+    @copy_docs(ActivityMetadataBase.sync_id)
     def sync_id(self):
-        """
-        Returns the activity's sync identifier.
-        
-        Returns
-        -------
-        sync_id : `None`, `str`
-        """
         return self.metadata.sync_id
     
     
     @property
+    @copy_docs(ActivityMetadataBase.timestamps)
     def timestamps(self):
-        """
-        Returns the activity's timestamps.
-        
-        Returns
-        -------
-        timestamps : `None`, ``ActivityTimestamps``
-        """
         return self.metadata.timestamps
     
     
     @property
+    @copy_docs(ActivityMetadataBase.url)
     def url(self):
-        """
-        Returns the activity's url.
-        
-        Returns
-        -------
-        url : `None`, `str`
-        """
         return self.metadata.url
     
     # utility

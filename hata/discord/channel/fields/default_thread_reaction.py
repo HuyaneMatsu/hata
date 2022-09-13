@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ...emoji import create_emoji_from_exclusive_data
+from ...emoji import Emoji, create_emoji_from_exclusive_data
 
 
 def parse_default_thread_reaction(data):
@@ -24,3 +24,29 @@ def parse_default_thread_reaction(data):
     
     return default_thread_reaction
     
+
+def validate_default_thread_reaction(default_thread_reaction):
+    """
+    Validates the given `default_thread_reaction` field.
+    
+    Parameters
+    ----------
+    default_thread_reaction : `None`, ``Emoji``
+        The emoji to validate.
+    
+    Returns
+    -------
+    default_thread_reaction : `None`, ``Emoji``
+    
+    Raises
+    ------
+    TypeError
+        - If `default_thread_reaction` is not `None`, ``Emoji``
+    """
+    if (default_thread_reaction is not None) and (not isinstance(default_thread_reaction, Emoji)):
+        raise TypeError(
+            f'`default_thread_reaction` can be `None`, `{Emoji.__name__}`, '
+            f'got {default_thread_reaction.__class__.__name__}; {default_thread_reaction!r}.'
+        )
+    
+    return default_thread_reaction

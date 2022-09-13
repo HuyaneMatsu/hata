@@ -18,8 +18,6 @@ class ChannelMetadataPrivateBase(ChannelMetadataBase):
     
     Class Attributes
     ----------------
-    type : `int` = `-1`
-        The channel's type.
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """
@@ -53,6 +51,11 @@ class ChannelMetadataPrivateBase(ChannelMetadataBase):
         return self.users
     
     
+    @copy_docs(ChannelMetadataBase._iter_users)
+    def _iter_users(self):
+        yield from self.users
+    
+    
     @copy_docs(ChannelMetadataBase.name)
     def name(self):
         users = self.users
@@ -75,7 +78,7 @@ class ChannelMetadataPrivateBase(ChannelMetadataBase):
     
     @copy_docs(ChannelMetadataBase._to_data)
     def _to_data(self):
-        data = ChannelMetadataBase.to_data(self)
+        data = ChannelMetadataBase._to_data(self)
         
         # users
         data['recipients'] = [user.to_data() for user in self.users]

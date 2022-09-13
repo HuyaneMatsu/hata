@@ -4,7 +4,7 @@ from re import I as re_ignore_case, compile as re_compile, escape as re_escape
 
 from scarletio import RichAttributeErrorBaseType, include
 
-from ...bases import Icon, IconType
+from ...bases import Icon, IconType, PlaceHolder
 from ...permission import Permission
 from ...permission.permission import PERMISSION_NONE
 from ...utils import id_to_datetime
@@ -16,33 +16,6 @@ from ..preinstanced import VideoQualityMode
 
 Client = include('Client')
 
-CHANNEL_DEFAULT_ATTRIBUTES = {
-    'applied_tag_ids': None,
-    'archived': False,
-    'archived_at': None,
-    'auto_archive_after': AUTO_ARCHIVE_DEFAULT,
-    'available_tags': None,
-    'bitrate': 0,
-    'default_thread_auto_archive_after': AUTO_ARCHIVE_DEFAULT,
-    'default_thread_slowmode': None,
-    'default_thread_reaction': None,
-    'flags': ChannelFlag(0),
-    'icon': Icon(IconType.none, 0),
-    'invitable': True,
-    'nsfw': False,
-    'open': False,
-    'owner_id': 0,
-    'parent_id': 0,
-    'permission_overwrites': None,
-    'position': 0,
-    'region': None,
-    'slowmode': 0,
-    'thread_users': None,
-    'topic': None,
-    'user_limit': 0,
-    'video_quality_mode': VideoQualityMode.none,
-}
-
 
 class ChannelMetadataBase(RichAttributeErrorBaseType):
     """
@@ -50,8 +23,6 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     
     Class Attributes
     ----------------
-    type : `int` = `-1`
-        The channel's type.
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """
@@ -77,7 +48,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the channel metadata's representation."""
-        return f'<{self.__class__.__name__} type={self.type}>'
+        return f'<{self.__class__.__name__}>'
     
     
     def __eq__(self, other):
@@ -94,7 +65,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        other : ``ChannelMetadataBase``
+        other : `instance<type<self>>`
             The other channel metadata to compare self to.
             
             > Must have the same type as self.
@@ -234,7 +205,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        self : ``ChannelMetadataBase``
+        self : `instance<cls>`
         """
         return cls._create_empty()
     
@@ -246,7 +217,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        self : ``ChannelMetadataBase``
+        self : `instance<cls>`
         """
         return object.__new__(cls)
     
@@ -287,7 +258,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         """
         Iterates over the users who can see the channel.
         
-        This method is a generator.
+        This method is an iterable generator.
         
         Parameters
         ----------
@@ -298,7 +269,8 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         ------
         user : ``ClientUserBase``
         """
-        yield from self.users
+        return
+        yield
     
     
     def _get_clients(self, channel_entity):
@@ -468,18 +440,6 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         return result
     
     
-    @property
-    def name(self):
-        """
-        Returns the channel's name.
-        
-        Returns
-        -------
-        name : `str`
-        """
-        return 'channel'
-    
-    
     def _get_processed_name(self):
         """
         Returns the channel's name.
@@ -565,21 +525,6 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         return PERMISSION_NONE
     
     
-    def __dir__(self):
-        """Returns the attributes of the channel."""
-        return sorted(set(object.__dir__(self))|set(CHANNEL_DEFAULT_ATTRIBUTES.keys()))
-    
-    
-    def __getattr__(self, attribute_name):
-        """Returns the channel metadata's attribute if found."""
-        try:
-            return CHANNEL_DEFAULT_ATTRIBUTES[attribute_name]
-        except KeyError:
-            pass
-        
-        return RichAttributeErrorBaseType.__getattr__(self, attribute_name)
-    
-    
     @classmethod
     def _precreate(cls, keyword_parameters):
         """
@@ -593,7 +538,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        self : ``ChannelMetadataBase``
+        self : `instance<cls>`
         
         Raises
         ------
@@ -623,3 +568,344 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         This method is only applicable for channel types with permission cache.
         """
         pass
+    
+    
+    # Slot place holders
+    
+    applied_tag_ids = PlaceHolder(
+        None,
+        """
+        Returns the tags' identifier which have been applied to the thread. Applicable for threads of a forum.
+        
+        Returns
+        -------
+        applied_tag_ids : `None`, `tuple` of `int`
+        """
+    )
+    
+    
+    archived = PlaceHolder(
+        False,
+        """
+        Returns whether the thread is archived.
+        
+        If the channel is not a thread, then returns `False`.
+        
+        Returns
+        -------
+        archived : `bool`
+        """
+    )
+    
+    
+    archived_at = PlaceHolder(
+        None,
+        """
+        Returns when the thread was archived.
+        
+        Returns `None` if the the channel is not a thread one or if it is not archived.
+        
+        Returns
+        -------
+        archived_at : `None`, `datetime`
+        """
+    )
+    
+    
+    auto_archive_after = PlaceHolder(
+        None,
+        """
+        Returns the duration in seconds to automatically archive the thread after recent activity. Can be one of:
+        `3600`, `86400`, `259200`, `604800`.
+        
+        Returns `3600` if the channel is not a thread one.
+        
+        Returns
+        -------
+        auto_archive_after : `None`, `datetime`
+        """
+    )
+    
+    
+    available_tags = PlaceHolder(
+        None,
+        """
+        Returns the available tags to assign to the child-thread channels.
+        
+        If the channel is not a forum channel, then returns `None`.
+        
+        Returns
+        -------
+        available_tags : `None`, `tuple` of ``ForumTag``
+        """
+    )
+    
+    
+    bitrate = PlaceHolder(
+        None,
+        """
+        Returns the bitrate (in bits) of the voice channel.
+        
+        If the channel has no bitrate, returns `0`.
+        
+        Returns
+        -------
+        bitrate : `int`
+        """
+    )
+    
+    
+    default_thread_auto_archive_after = PlaceHolder(
+        AUTO_ARCHIVE_DEFAULT,
+        """
+        Returns the default duration in seconds to automatically archive the channel's thread after recent activity.
+        
+        Returns
+        -------
+        default_thread_auto_archive_after : `int`
+        """
+    )
+    
+    
+    default_thread_reaction = PlaceHolder(
+        None,
+        """
+        Returns the emoji to show in the add reaction button on a thread of the forum channel.
+        
+        Returns
+        -------
+        default_thread_reaction : ``Emoji``
+        """
+    )
+    
+    
+    default_thread_slowmode = PlaceHolder(
+        None,
+        """
+        Returns the default slowmode applied to the threads of the channel.
+        
+        Returns
+        -------
+        default_thread_slowmode : `int`
+        """
+    )
+    
+    
+    flags = PlaceHolder(
+        ChannelFlag(0),
+        """
+        Returns the channel's flags.
+        
+        Returns empty channel flags by default.
+        
+        Returns
+        -------
+        flags : ``ChannelFlag``
+        """
+    )
+    
+    
+    icon = PlaceHolder(
+        Icon(IconType.none, 0),
+        """
+        Returns the channel's icon.
+        
+        Returns
+        -------
+        icon : ``Icon``
+        """
+    )
+    
+    
+    invitable = PlaceHolder(
+        True,
+        """
+        Whether non-moderators can invite other non-moderators to the threads. Only applicable for private threads.
+        
+        Returns `True` by default.
+        
+        Returns
+        -------
+        invitable : `bool`
+        """
+    )
+    
+
+    name = PlaceHolder(
+        'channel',
+        """
+        Returns the channel's name.
+        
+        Returns
+        -------
+        name : `str`
+        """
+    )
+    
+    
+    nsfw = PlaceHolder(
+        False,
+        """
+        Returns whether the channel is not safe for work.
+        
+        Defaults to `False`.
+        
+        Returns
+        -------
+        nsfw : `bool`
+        """
+    )
+    
+    
+    open = PlaceHolder(
+        False,
+        """
+        Returns whether the thread channel is open.
+        
+        If the channel is not a thread one, will return `True`.
+        
+        Returns
+        -------
+        open : `bool`
+        """
+    )
+    
+    
+    owner_id = PlaceHolder(
+        0,
+        """
+        Returns the channel's owner's identifier.
+        
+        If the channel has no owner, then returns `0`.
+        
+        Returns
+        -------
+        owner_id : `int`
+        """
+    )
+    
+    
+    parent_id = PlaceHolder(
+        0,
+        """
+        Returns the channel's parent's identifier.
+        
+        If the channel has no parent, or if not applicable for the specific channel type returns `0`.
+        
+        Returns
+        -------
+        parent_id : `int`
+        """
+    )
+    
+    
+    permission_overwrites = PlaceHolder(
+        None,
+        """
+        Returns the channel's permission overwrites.
+        
+        If the channel has no permission overwrites returns `None`.
+        
+        Returns
+        -------
+        permission_overwrites : `None`, `dict` of (`int`, ``PermissionOverwrite``) items
+        """
+    )
+    
+    
+    position = PlaceHolder(
+        0,
+        """
+        Returns the channel's position.
+        
+        If the channel has no position, returns `0`.
+        
+        Returns
+        -------
+        position : `int`
+        """
+    )
+    
+    
+    region = PlaceHolder(
+        None,
+        """
+        Returns the voice region of the channel.
+        
+        If the channel has no voice region, returns `None`.
+        
+        Returns
+        -------
+        region : `None`, ``VoiceRegion``
+        """
+    )
+    
+    
+    slowmode = PlaceHolder(
+        0,
+        """
+        Returns the slowmode of the channel.
+        
+        If the channel has no slowmode, returns `0`.
+        
+        Returns
+        -------
+        slowmode : `int`
+        """
+    )
+    
+    
+    thread_users = PlaceHolder(
+        None,
+        """
+        Returns the users inside of the thread if any.
+        
+        If the channel has no users, or if it is not a thread channel, will return `None`.
+        
+        Returns
+        -------
+        thread_users : `None`, `dict` of (`int`, ``ClientUserBase``) items
+        """
+    )
+    
+    
+    topic = PlaceHolder(
+        None,
+        """
+        Returns the channel's topic.
+        
+        If the channel has no topic, returns `None`.
+        
+        Returns
+        -------
+        topic : `None`, `str`
+        """
+    )
+    
+    
+    user_limit = PlaceHolder(
+        0,
+        """
+        Returns the maximal amount of users, who can join the voice channel
+        
+        If the channel has not user limit, returns `0`.
+        
+        Returns
+        -------
+        user_limit : `int`
+        """
+    )
+    
+    
+    video_quality_mode = PlaceHolder(
+        VideoQualityMode.none,
+        """
+        Returns the video quality of the voice channel.
+        
+        If the channel has no video quality mode, returns `VideoQualityMode.none`.
+        
+        Returns
+        -------
+        video_quality_mode : ``VideoQualityMode``
+        """
+    )

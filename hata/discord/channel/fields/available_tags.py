@@ -32,7 +32,7 @@ def validate_available_tags(available_tags):
     Parameters
     ----------
     available_tags : `None`, `iterable` of ``ForumTag``
-        The tags to parse.
+        The tags to validate.
     
     Returns
     -------

@@ -56,11 +56,13 @@
 - Add `available_tags` parameter to `Channel.precreate`.
 - Add `applied_tag_ids` parameter to `Channel.precreate`.
 - Add `default_thread_reaction` audit log change converter.
+- Add `dotted_line_face` unicode emoji.
 
 #### Bug fixes
 
 - `Activity` timestamps are now correctly converted.
 - `eventlist.__init__` failed on `pypy3.8`.
+- `create_partial_emoji_from_data` handled new unicode emoji cases incorrectly. (from 1.3.4) (Gilgamesh#8939)
 
 #### Renames, Deprecation & Removals
 

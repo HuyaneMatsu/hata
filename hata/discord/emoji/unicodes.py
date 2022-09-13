@@ -28201,6 +28201,13 @@ UNICODES = (
         None,
         None,
     ),
+    Unicode(
+        'dotted_line_face',
+        b'\xf0\x9f\xab\xa5',
+        False,
+        None,
+        None,
+    ),
 )
 
 for unicode in UNICODES:

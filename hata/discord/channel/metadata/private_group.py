@@ -27,6 +27,11 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
         The channel's display name. Can be empty string if the channel has no name.
     owner_id : `int`
         The group channel's owner's id.
+    
+    Class Attributes
+    ----------------
+    order_group: `int` = `0`
+        The channel's order group used when sorting channels.
     """
     __slots__ = ('name', 'owner_id')
     
@@ -187,7 +192,7 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
     
     @copy_docs(ChannelMetadataPrivateBase._to_data)
     def _to_data(self):
-        data = ChannelMetadataPrivateBase.to_data(self)
+        data = ChannelMetadataPrivateBase._to_data(self)
         
         # name
         name = self.name

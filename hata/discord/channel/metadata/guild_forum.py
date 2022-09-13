@@ -6,7 +6,6 @@ from scarletio import copy_docs
 from ...emoji import put_exclusive_emoji_data_into
 from ...permission import Permission
 from ...permission.permission import PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE, PERMISSION_THREAD_AND_VOICE_DENY
-from ...preconverters import preconvert_flag, preconvert_int, preconvert_str
 
 from ..constants import AUTO_ARCHIVE_DEFAULT
 from ..fields.available_tags import parse_available_tags, validate_available_tags
@@ -14,9 +13,9 @@ from ..fields.default_thread_auto_archive_after import (
     parse_default_thread_auto_archive_after, validate_default_thread_auto_archive_after
 )
 from ..fields.default_thread_reaction import parse_default_thread_reaction, validate_default_thread_reaction
-from ..fields.default_thread_slowmode import parse_default_thread_slowmode
-from ..fields.flags import parse_flags
-from ..fields.topic import parse_topic
+from ..fields.default_thread_slowmode import parse_default_thread_slowmode, validate_default_thread_slowmode
+from ..fields.flags import parse_flags, validate_flags
+from ..fields.topic import parse_topic, validate_topic
 from ..flags import ChannelFlag
 
 from .guild_main_base import ChannelMetadataGuildMainBase
@@ -240,8 +239,7 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         except KeyError:
             pass
         else:
-            default_thread_slowmode = preconvert_int(default_thread_slowmode, 'default_thread_slowmode', 0, 21600)
-            self.default_thread_slowmode = default_thread_slowmode
+            self.default_thread_slowmode = validate_default_thread_slowmode(default_thread_slowmode)
         
         # flags
         try:
@@ -249,8 +247,7 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         except KeyError:
             pass
         else:
-            flags = preconvert_flag(flags, 'flags', ChannelFlag)
-            self.flags = flags
+            self.flags = validate_flags(flags)
         
         # topic
         try:
@@ -258,10 +255,7 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         except KeyError:
             pass
         else:
-            if (topic is not None):
-                topic = preconvert_str(topic, 'topic', 0, 1024)
-                if topic:
-                    self.topic = topic
+            self.topic = validate_topic(topic)
         
         return self
     

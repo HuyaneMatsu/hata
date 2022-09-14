@@ -2,7 +2,7 @@ __all__ = ('ChannelMetadataGuildThreadPrivate',)
 
 from scarletio import copy_docs
 
-from ...preconverters import preconvert_bool
+from ..fields.invitable import parse_invitable, put_invitable_into, validate_invitable
 
 from .guild_thread_base import ChannelMetadataGuildThreadBase
 
@@ -54,6 +54,7 @@ class ChannelMetadataGuildThreadPrivate(ChannelMetadataGuildThreadBase):
         if not ChannelMetadataGuildThreadBase._is_equal_same_type(self, other):
             return False
         
+        # invitable
         if self.invitable != other.invitable:
             return False
         
@@ -74,14 +75,16 @@ class ChannelMetadataGuildThreadPrivate(ChannelMetadataGuildThreadBase):
     def _update_attributes(self, data):
         ChannelMetadataGuildThreadBase._update_attributes(self, data)
         
-        self.invitable = data.get('invitable', True)
+        # invitable
+        self.invitable = parse_invitable(data)
     
     
     @copy_docs(ChannelMetadataGuildThreadBase._difference_update_attributes)
     def _difference_update_attributes(self, data):
         old_attributes = ChannelMetadataGuildThreadBase._difference_update_attributes(self, data)
         
-        invitable = data.get('invitable', True)
+        # invitable
+        invitable = parse_invitable(data)
         if (self.invitable != invitable):
             old_attributes['invitable'] = self.invitable
             self.invitable = invitable
@@ -94,13 +97,13 @@ class ChannelMetadataGuildThreadPrivate(ChannelMetadataGuildThreadBase):
     def _precreate(cls, keyword_parameters):
         self = super(ChannelMetadataGuildThreadPrivate, cls)._precreate(keyword_parameters)
         
+        # invitable
         try:
             invitable = keyword_parameters.pop('invitable')
         except KeyError:
             pass
         else:
-            invitable = preconvert_bool(invitable, 'invitable')
-            self.invitable = invitable
+            self.invitable = validate_invitable(invitable)
         
         return self
     
@@ -109,6 +112,7 @@ class ChannelMetadataGuildThreadPrivate(ChannelMetadataGuildThreadBase):
     def _to_data(self):
         data = ChannelMetadataGuildThreadBase._to_data(self)
         
-        data['thread_metadata']['invitable'] = self.invitable
+        # invitable
+        put_invitable_into(self.invitable, data, True)
         
         return data

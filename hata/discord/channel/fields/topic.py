@@ -32,7 +32,7 @@ def validate_topic(topic):
     Parameters
     ----------
     topic : `None`, `str`
-        Slowmode applied for created threads in the channel.
+        The channel's topic.
     
     Returns
     -------
@@ -43,11 +43,36 @@ def validate_topic(topic):
     TypeError
         - If `topic` is not `None`, `str`.
     ValueError
-        - If `topic` is out of the expected range.
+        - If `topic`'s length is out of the expected range.
     """
     if (topic is not None):
-        topic = preconvert_str(topic, 'topic', 0, 1024)
+        topic = preconvert_str(topic, 'topic', TOPIC_LENGTH_MIN, TOPIC_LENGTH_MAX)
         if not topic:
             topic = None
     
     return topic
+
+
+def put_topic_into(topic, data, defaults):
+    """
+    Puts the `topic`'s data into the given `data` json serializable object.
+    
+    Parameters
+    ----------
+    topic : `None`, `str`
+        The channel's topic.
+    data : `dict` of (`str`, `Any`) items
+        Json serializable dictionary.
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict` of (`str`, `Any`) items
+    """
+    if topic is None:
+        topic = ''
+    
+    data['topic'] = topic
+    
+    return data

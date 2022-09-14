@@ -40,3 +40,30 @@ def validate_flags(flags):
         - If `flags` is not `int`.
     """
     return preconvert_flag(flags, 'flags', ChannelFlag)
+
+
+def put_flags_into(flags, data, defaults):
+    """
+    Puts the `flags`'s data into the given `data` json serializable object.
+    
+    Parameters
+    ----------
+    flags : ``ChannelFlag``
+        The channel's flags.
+    data : `dict` of (`str`, `Any`) items
+        Json serializable dictionary.
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict` of (`str`, `Any`) items
+    """
+    if flags:
+        data['flags'] = int(flags)
+    
+    else:
+        if defaults:
+            data['flags'] = 0
+    
+    return data

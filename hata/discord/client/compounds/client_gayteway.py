@@ -168,10 +168,7 @@ class ClientCompoundClientGateway(Compound):
         elif activity is ACTIVITY_UNKNOWN:
             activity = None
         else:
-            if self.bot:
-                activity = activity.to_data()
-            else:
-                activity = activity.to_data_user()
+            activity = activity.to_data(user = not self.bot)
         
         if status == 'idle':
             since = int(time_now() * 1000.)

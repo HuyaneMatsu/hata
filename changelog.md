@@ -57,12 +57,19 @@
 - Add `applied_tag_ids` parameter to `Channel.precreate`.
 - Add `default_thread_reaction` audit log change converter.
 - Add `dotted_line_face` unicode emoji.
+- Add `permission_overwrites` parameter to `Channel.precreate`.
+- Add `position` parameter to `Channel.precreate`.
+- Add `parent_id` parameter to `Channel.precreate`.
+- Add `created_at` parameter to `Channel.precreate`.
+- Add `archived` parameter to `Channel.precreate`.
+- Add `archived_at` parameter to `Channel.precreate`.
 
 #### Bug fixes
 
 - `Activity` timestamps are now correctly converted.
 - `eventlist.__init__` failed on `pypy3.8`.
 - `create_partial_emoji_from_data` handled new unicode emoji cases incorrectly. (from 1.3.4) (Gilgamesh#8939)
+- Some thread fields were wrongly deserialized.
 
 #### Renames, Deprecation & Removals
 
@@ -84,6 +91,9 @@
 - Rename `Channel.is_in_group_guild_movable` to `.is_in_group_guild_sortable` with deprecation notice.
 - Rename `.default_auto_archive_after` to `.default_thread_auto_archive_after`
 - Rename `ChannelMetadataGuildForum.slowmode` to `.default_thread_slowmode`.
+- Deprecate `Activity.bot_dict`, use `.to_data()` instead.
+- Deprecate `Activity.user_dict`, use `.to_data(user = True)` instead.
+- Deprecate `Activity.full_dict`, use `.to_data(include_internal = True)` instead.
 
 ## 1.3.7 *\[2022-09-04\]*
 

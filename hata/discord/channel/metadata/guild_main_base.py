@@ -1,19 +1,20 @@
 __all__ = ('ChannelMetadataGuildMainBase',)
 
-from scarletio import copy_docs, include
+from scarletio import copy_docs
 
 from ...core import GUILDS
 from ...permission import Permission
 from ...permission.permission import (
     PERMISSION_ALL, PERMISSION_MASK_ADMINISTRATOR, PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE
 )
-from ...permission.utils import PERMISSION_ALLOW_KEY, PERMISSION_DENY_KEY
 from ...user import ClientUserBase
 
+from ..fields.permission_overwrites import (
+    parse_permission_overwrites, put_permission_overwrites_into, validate_permission_overwrites
+)
+from ..fields.position import parse_position, put_position_into, validate_position
+
 from .guild_base import ChannelMetadataGuildBase
-
-
-parse_permission_overwrites = include('parse_permission_overwrites')
 
 
 class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
@@ -83,25 +84,30 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
     def _update_attributes(self, data):
         ChannelMetadataGuildBase._update_attributes(self, data)
         
+        # permission_overwrites
         self.permission_overwrites = parse_permission_overwrites(data)
         
-        self.position = data.get('position', 0)
+        # position
+        self.position = parse_position(data)
     
     
     @copy_docs(ChannelMetadataGuildBase._difference_update_attributes)
     def _difference_update_attributes(self, data):
         old_attributes = ChannelMetadataGuildBase._difference_update_attributes(self, data)
-    
+        
+        # permission_overwrites
         permission_overwrites = parse_permission_overwrites(data)
         if self.permission_overwrites != permission_overwrites:
             old_attributes['permission_overwrites'] = self.permission_overwrites
             self.permission_overwrites = permission_overwrites
         
         
-        position = data.get('position', 0)
+        # position
+        position = parse_position(data)
         if self.position != position:
             old_attributes['position'] = self.position
             self.position = position
+        
         
         return old_attributes
     
@@ -110,20 +116,15 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
     def _to_data(self):
         data = ChannelMetadataGuildBase._to_data(self)
         
-        data['position'] = self.position
+        # position
+        put_position_into(self.position, data, True)
         
-        data['permission_overwrites'] = [
-            {
-                'id': str(permission_overwrite.target_id),
-                'type': permission_overwrite.target_type.value,
-                PERMISSION_ALLOW_KEY: str(permission_overwrite.allow),
-                PERMISSION_DENY_KEY: str(permission_overwrite.deny)
-            }
-            for permission_overwrite in self.permission_overwrites.values()
-        ]
+        # permission_overwrites
+        put_permission_overwrites_into(self.permission_overwrites, True)
         
         return data
-
+    
+    
     @classmethod
     @copy_docs(ChannelMetadataGuildBase._create_empty)
     def _create_empty(cls):
@@ -133,8 +134,32 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
         self.position = 0
         
         return self
-
-
+    
+    
+    @classmethod
+    @copy_docs(ChannelMetadataGuildBase._precreate)
+    def _precreate(cls, keyword_parameters):
+        self = super(ChannelMetadataGuildBase, cls)._precreate(keyword_parameters)
+        
+        # permission_overwrites
+        try:
+            permission_overwrites = keyword_parameters.pop('permission_overwrites')
+        except KeyError:
+            pass
+        else:
+            self.permission_overwrites = validate_permission_overwrites(permission_overwrites)
+        
+        # position
+        try:
+            position = keyword_parameters.pop('position')
+        except KeyError:
+            pass
+        else:
+            self.position = validate_position(position)
+        
+        return self
+    
+    
     def _get_base_permissions_for(self, channel_entity, user):
         """
         Base permission calculator method. Subclasses call this first, then apply their channel type related changes.

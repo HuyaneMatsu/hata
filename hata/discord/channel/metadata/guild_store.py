@@ -4,7 +4,8 @@ from scarletio import copy_docs
 
 from ...permission import Permission
 from ...permission.permission import PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE, PERMISSION_TEXT_AND_VOICE_DENY
-from ...preconverters import preconvert_bool
+
+from ..fields.nsfw import parse_nsfw, put_nsfw_into, validate_nsfw
 
 from .guild_main_base import ChannelMetadataGuildMainBase
 
@@ -40,6 +41,7 @@ class ChannelMetadataGuildStore(ChannelMetadataGuildMainBase):
         if not ChannelMetadataGuildMainBase._is_equal_same_type(self, other):
             return False
         
+        # nsfw
         if self.nsfw != other.nsfw:
             return False
         
@@ -65,14 +67,16 @@ class ChannelMetadataGuildStore(ChannelMetadataGuildMainBase):
     def _update_attributes(self, data):
         ChannelMetadataGuildMainBase._update_attributes(self, data)
         
-        self.nsfw = data.get('nsfw', False)
+        # nsfw
+        self.nsfw = parse_nsfw(data)
     
     
     @copy_docs(ChannelMetadataGuildMainBase._difference_update_attributes)
     def _difference_update_attributes(self, data):
         old_attributes = ChannelMetadataGuildMainBase._difference_update_attributes(self, data)
         
-        nsfw = data.get('nsfw', False)
+        # nsfw
+        nsfw = parse_nsfw(data)
         if self.nsfw != nsfw:
             old_attributes['nsfw'] = self.nsfw
             self.nsfw = nsfw
@@ -86,7 +90,7 @@ class ChannelMetadataGuildStore(ChannelMetadataGuildMainBase):
         if not result & PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
-        # forum channels do not have thread and voice related permissions
+        # store channels do not have text and voice related permissions
         result &= PERMISSION_TEXT_AND_VOICE_DENY
         
         return Permission(result)
@@ -98,7 +102,7 @@ class ChannelMetadataGuildStore(ChannelMetadataGuildMainBase):
         if not result & PERMISSION_MASK_VIEW_CHANNEL:
             return PERMISSION_NONE
         
-        # forum channels do not have thread and voice related permissions
+        # store channels do not have text and voice related permissions
         result &= PERMISSION_TEXT_AND_VOICE_DENY
         return Permission(result)
     
@@ -108,13 +112,13 @@ class ChannelMetadataGuildStore(ChannelMetadataGuildMainBase):
     def _precreate(cls, keyword_parameters):
         self = super(ChannelMetadataGuildStore, cls)._precreate(keyword_parameters)
         
+        # nsfw
         try:
             nsfw = keyword_parameters.pop('nsfw')
         except KeyError:
             pass
         else:
-            nsfw = preconvert_bool(nsfw, 'nsfw')
-            self.nsfw = nsfw
+            self.nsfw = validate_nsfw(nsfw)
         
         return self
     
@@ -123,7 +127,6 @@ class ChannelMetadataGuildStore(ChannelMetadataGuildMainBase):
     def _to_data(self):
         data = ChannelMetadataGuildMainBase._to_data(self)
         
-        if self.nsfw:
-            data['nsfw'] = True
+        put_nsfw_into(self.nsfw, data, True)
         
         return data

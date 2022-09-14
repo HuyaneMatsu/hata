@@ -3,19 +3,23 @@ __all__ = ('ChannelMetadataGuildForum',)
 
 from scarletio import copy_docs
 
-from ...emoji import put_exclusive_emoji_data_into
 from ...permission import Permission
 from ...permission.permission import PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE, PERMISSION_THREAD_AND_VOICE_DENY
 
 from ..constants import AUTO_ARCHIVE_DEFAULT
-from ..fields.available_tags import parse_available_tags, validate_available_tags
+from ..fields.available_tags import parse_available_tags, put_available_tags_into, validate_available_tags
 from ..fields.default_thread_auto_archive_after import (
-    parse_default_thread_auto_archive_after, validate_default_thread_auto_archive_after
+    parse_default_thread_auto_archive_after, put_default_thread_auto_archive_after_into,
+    validate_default_thread_auto_archive_after
 )
-from ..fields.default_thread_reaction import parse_default_thread_reaction, validate_default_thread_reaction
-from ..fields.default_thread_slowmode import parse_default_thread_slowmode, validate_default_thread_slowmode
-from ..fields.flags import parse_flags, validate_flags
-from ..fields.topic import parse_topic, validate_topic
+from ..fields.default_thread_reaction import (
+    parse_default_thread_reaction, put_default_thread_reaction_into, validate_default_thread_reaction
+)
+from ..fields.default_thread_slowmode import (
+    parse_default_thread_slowmode, put_default_thread_slowmode_into, validate_default_thread_slowmode
+)
+from ..fields.flags import parse_flags, validate_flags, put_flags_into
+from ..fields.topic import parse_topic, validate_topic, put_topic_into
 from ..flags import ChannelFlag
 
 from .guild_main_base import ChannelMetadataGuildMainBase
@@ -265,34 +269,21 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         data = ChannelMetadataGuildMainBase._to_data(self)
         
         # available_tags
-        available_tags = self.available_tags
-        if (available_tags is None):
-            available_tag_array = []
-        else:
-            available_tag_array = [tag.to_data() for tag in available_tags]
-        data['available_tags'] = available_tag_array
+        put_available_tags_into(self.available_tags, data, True)
         
         # default_auto_archive_duration
-        data['default_auto_archive_duration'] = self.default_thread_auto_archive_after // 60
+        put_default_thread_auto_archive_after_into(self.default_thread_auto_archive_after, data, True)
         
         # default_thread_reaction
-        default_thread_reaction = self.default_thread_reaction
-        if (default_thread_reaction is None):
-            default_thread_reaction_data = None
-        else:
-            default_thread_reaction_data = put_exclusive_emoji_data_into(default_thread_reaction, {})
-        data['default_reaction_emoji'] = default_thread_reaction_data
+        put_default_thread_reaction_into(self.default_thread_reaction, data, True)
         
         # default_thread_slowmode
-        default_thread_slowmode = self.default_thread_slowmode
-        if default_thread_slowmode == 0:
-            default_thread_slowmode = None
-        data['default_thread_rate_limit_per_user'] = default_thread_slowmode
+        put_default_thread_slowmode_into(self.default_thread_slowmode, data, True)
         
         # flags
-        data['flags'] = self.flags
+        put_flags_into(self.flags, data, True)
         
         # topic
-        data['topic'] = self.topic
+        put_topic_into(self.topic, data, True)
         
         return data

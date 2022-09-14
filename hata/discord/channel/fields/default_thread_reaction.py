@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ...emoji import Emoji, create_emoji_from_exclusive_data
+from ...emoji import Emoji, create_emoji_from_exclusive_data, put_exclusive_emoji_data_into
 
 
 def parse_default_thread_reaction(data):
@@ -50,3 +50,29 @@ def validate_default_thread_reaction(default_thread_reaction):
         )
     
     return default_thread_reaction
+
+
+def put_default_thread_reaction_into(default_thread_reaction, data, defaults):
+    """
+    Puts the `default_thread_reaction`'s data into the given `data` json serializable object.
+    
+    Parameters
+    ----------
+    default_thread_reaction : `None`, ``Emoji``
+        The emoji to show in the add reaction button on a thread of the forum channel.
+    data : `dict` of (`str`, `Any`) items
+        Json serializable dictionary.
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict` of (`str`, `Any`) items
+    """
+    if (default_thread_reaction is None):
+        if defaults:
+            data['default_reaction_emoji'] = None
+    else:
+        data['default_reaction_emoji'] = put_exclusive_emoji_data_into(default_thread_reaction, {})
+    
+    return data

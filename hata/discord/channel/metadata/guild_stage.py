@@ -10,6 +10,8 @@ from ...permission.permission import (
 )
 from ...preconverters import preconvert_str
 
+from ..fields.topic import parse_topic, put_topic_into, validate_topic
+
 from .guild_main_base import ChannelMetadataGuildMainBase
 from .guild_voice_base import ChannelMetadataGuildVoiceBase
 
@@ -51,6 +53,7 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
         if not ChannelMetadataGuildVoiceBase._is_equal_same_type(self, other):
             return False
         
+        # topic
         if self.topic != other.topic:
             return False
         
@@ -71,14 +74,16 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
     def _update_attributes(self, data):
         ChannelMetadataGuildVoiceBase._update_attributes(self, data)
         
-        self.topic = data.get('topic', None)
+        # topic
+        self.topic = parse_topic(data)
     
     
     @copy_docs(ChannelMetadataGuildVoiceBase._difference_update_attributes)
     def _difference_update_attributes(self, data):
         old_attributes = ChannelMetadataGuildVoiceBase._difference_update_attributes(self, data)
         
-        topic = data.get('topic', None)
+        # topic
+        topic = parse_topic(data)
         if self.topic != topic:
             old_attributes['topic'] = self.topic
             self.topic = topic
@@ -91,15 +96,13 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
     def _precreate(cls, keyword_parameters):
         self = super(ChannelMetadataGuildStage, cls)._precreate(keyword_parameters)
         
+        # topic
         try:
             topic = keyword_parameters.pop('topic')
         except KeyError:
             pass
         else:
-            if (topic is not None):
-                topic = preconvert_str(topic, 'topic', 0, 120)
-                if topic:
-                    self.topic = topic
+            self.topic = validate_topic(topic)
         
         return self
     
@@ -108,11 +111,12 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
     def _to_data(self):
         data = ChannelMetadataGuildVoiceBase._to_data(self)
         
-        data['topic'] = self.topic
+        # topic
+        put_topic_into(self.topic, data, True)
         
         return data
-
-
+    
+    
     @copy_docs(ChannelMetadataGuildMainBase._get_permissions_for)
     def _get_permissions_for(self, channel_entity, user):
         result = self._get_base_permissions_for(channel_entity, user)

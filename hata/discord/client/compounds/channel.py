@@ -1045,48 +1045,20 @@ class ClientCompoundChannelEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `channel` was not given neither as ``Channel`` nor as `int`.
-            - If `target` was not passed neither as ``Role``,``User``, neither as ``Client``.
+            - If `channel` is not `int`, ``Channel``.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `allow` was not given neither as ``Permission`` nor as other `int`.
-            - If `deny ` was not given neither as ``Permission`` not as other `int`.
         """
         channel_id = get_channel_id(channel, Channel.is_in_group_guild_sortable)
         
-        if isinstance(target, Role):
-            permission_overwrite_target_type = PermissionOverwriteTargetType.role
-        elif isinstance(target, ClientUserBase):
-            permission_overwrite_target_type = PermissionOverwriteTargetType.user
-        else:
-            raise TypeError(
-                f'`target` can be `{Role.__name__}`, `{ClientUserBase.__name__}`, got '
-                f'{target.__class__.__name__}; {target!r}.'
-            )
+        permission_overwrite = PermissionOverwrite(target, allow = allow, deny = deny)
         
-        if __debug__:
-            if not isinstance(allow, int):
-                raise AssertionError(
-                    f'`allow` can be `{Permission.__name__}`, `int`, got {allow.__class__.__name__}; {allow!r}.'
-                )
+        data = permission_overwrite.to_data()
         
-            if not isinstance(deny, int):
-                raise AssertionError(
-                    f'`deny` can be `{Permission.__name__}`, `int`, got {deny.__class__.__name__}; {deny!r}.'
-                )
-        
-        data = {
-            'target': target.id,
-            'allow': allow,
-            'deny': deny,
-            'type': permission_overwrite_target_type.value,
-        }
-        
-        await self.http.permission_overwrite_create(channel_id, target.id, data, reason)
-        return PermissionOverwrite.custom(target, allow, deny)
+        await self.http.permission_overwrite_create(channel_id, permission_overwrite.target_id, data, reason)
+        return permission_overwrite
     
     
     async def guild_sync_channels(self, guild):

@@ -65,3 +65,29 @@ def validate_available_tags(available_tags):
         available_tags_processed = tuple(sorted(available_tags_processed))
     
     return available_tags_processed
+
+
+def put_available_tags_into(available_tags, data, defaults):
+    """
+    Puts the `available_tags`'s data into the given `data` json serializable object.
+    
+    Parameters
+    ----------
+    available_tags : `None`, `tuple` of ``ForumTag``
+        The channel's tags.
+    data : `dict` of (`str`, `Any`) items
+        Json serializable dictionary.
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict` of (`str`, `Any`) items
+    """
+    if (available_tags is None):
+        if defaults:
+            data['available_tags'] = []
+    else:
+        data['available_tags'] = [tag.to_data() for tag in available_tags]
+    
+    return data

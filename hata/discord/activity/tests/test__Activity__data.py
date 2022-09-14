@@ -48,9 +48,9 @@ def test__Activity__to_data():
     vampytest.assert_eq(data['url'], url)
 
 
-def test__Activity__to_data_user():
+def test__Activity__to_data__user():
     """
-    Tests whether ``Activity.to_data_user`` works as expected.
+    Tests whether `Activity.to_data(user = True)` works as expected.
     """
     name = 'ZYTOKINE'
     activity_type = ActivityType.game
@@ -60,7 +60,7 @@ def test__Activity__to_data_user():
     
     activity = Activity(name, type_ = activity_type, session_id = session_id, state = state, url = url)
     
-    data = activity.to_data_user()
+    data = activity.to_data(user = True)
     
     vampytest.assert_in('name', data)
     vampytest.assert_in('type', data)
@@ -73,9 +73,9 @@ def test__Activity__to_data_user():
     vampytest.assert_eq(data['state'], state)
 
 
-def test__Activity__to_data_full():
+def test__Activity__to_data__include_internals():
     """
-    Tests whether ``Activity.to_data_full`` works as expected.
+    Tests whether `Activity.to_data(include_internals = True)` works as expected.
     """
     name = 'ZYTOKINE'
     activity_type = ActivityType.game
@@ -85,7 +85,7 @@ def test__Activity__to_data_full():
     
     activity = Activity(name, type_ = activity_type, session_id = session_id, state = state, url = url)
     
-    data = activity.to_data_full()
+    data = activity.to_data(include_internals = True)
     
     vampytest.assert_in('name', data)
     vampytest.assert_in('type', data)

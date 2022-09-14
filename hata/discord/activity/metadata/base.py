@@ -101,33 +101,17 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
     
     
 
-    def to_data(self):
+    def to_data(self, *, include_internals=False, user=False):
         """
         Converts the activity metadata to json serializable dictionary, which can be sent with bot account to change
         activity.
         
-        Returns
-        -------
-        activity_data : `dict` of (`str`, `Any`) items
-        """
-        return {}
-    
-    
-    def to_data_user(self):
-        """
-        Converts the activity to json serializable dictionary, which can (?) be sent with user account to change
-        activity.
-        
-        Returns
-        -------
-        activity_data : `dict` of (`str`, `Any`) items
-        """
-        return {}
-    
-    
-    def to_data_full(self):
-        """
-        Converts the whole activity to a dictionary.
+        Parameters
+        ----------
+        include_internals : `bool` = `False`, Optional (Keyword only)
+            Whether internal fields, like id-s should be present as well.
+        user : `bool` = `False`, Optional (Keyword only)
+            Whether not only bot compatible fields should be included.
         
         Returns
         -------

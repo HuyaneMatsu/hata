@@ -153,7 +153,6 @@ class Channel(DiscordEntity, immortal=True):
         metadata._created(self, client)
     
     
-    
     def __repr__(self):
         """Returns the representation of the channel."""
         repr_parts = ['<', self.__class__.__name__]
@@ -1226,7 +1225,13 @@ class Channel(DiscordEntity, immortal=True):
         
         Other Parameters
         ----------------
-        applied_tag_ids : `None`, `tuple` of `int`, Optional (Keyword only)
+        archived : `bool`, Optional (Keyword only)
+            Whether the (thread) channel is archived.
+        
+        archived_at : `None`, `datetime`, Optional (Keyword only)
+            When the thread's archive status was last changed.
+        
+        applied_tag_ids : `None`, `tuple` of (`int`, ``ForumTag``), Optional (Keyword only)
              The tags' identifier which have been applied to the thread. Applicable for threads of a forum.
         
         auto_archive_after: `int`, Optional (Keyword only)
@@ -1240,6 +1245,9 @@ class Channel(DiscordEntity, immortal=True):
         
         bitrate : `int`, Optional (Keyword only)
             The channel's ``.bitrate``.
+        
+        _created_at : `None`, `datetime`, Optional (Keyword only)
+            When the (thread) channel was created.
         
         default_thread_auto_archive_after : `int`, Optional (Keyword only)
             The channel's ``.default_thread_auto_archive_after``.
@@ -1279,6 +1287,15 @@ class Channel(DiscordEntity, immortal=True):
         
         open : `bool`, Optional (Keyword only)
             The channel's ``.open``.
+        
+        parent_id : `None`, `int`, ``Channel``, Optional (Keyword only)
+            The channel's parent's identifier.
+        
+        permission_overwrites : `None`, list` of ``PermissionOverwrite``, Optional (Keyword only)
+            The channel's permission overwrites.
+        
+        position : `int`, Optional (Keyword only)
+            The channel's position.
         
         region : `None`, ``VoiceRegion``, `str`, Optional (Keyword only)
             The channel's voice region.

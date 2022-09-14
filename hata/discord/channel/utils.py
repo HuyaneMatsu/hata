@@ -9,7 +9,6 @@ from scarletio import export, include
 
 from ..bases import maybe_snowflake
 from ..core import CHANNELS
-from ..permission import PermissionOverwrite
 from ..preconverters import preconvert_preinstanced_type
 from ..utils import datetime_to_timestamp
 
@@ -749,28 +748,3 @@ def _maybe_add_channel_default_thread_auto_archive_after_field_to_data(
                 )
         
         channel_data['default_auto_archive_duration'] = default_thread_auto_archive_after // 60
-
-
-@export
-def parse_permission_overwrites(data):
-    """
-    Parses the permission overwrites from the given data and returns them.
-    
-    Parameters
-    ----------
-    data : `list` of (`dict` of (`str`, `Any`) items) elements
-        A list of permission overwrites' data.
-    
-    Returns
-    -------
-    permission_overwrites : `dict` of (`int`, ``PermissionOverwrite``) items
-    """
-    permission_overwrites = {}
-    
-    permission_overwrites_datas = data.get('permission_overwrites', None)
-    if (permission_overwrites_datas is not None) and permission_overwrites_datas:
-        for permission_overwrite_data in permission_overwrites_datas:
-            permission_overwrite = PermissionOverwrite(permission_overwrite_data)
-            permission_overwrites[permission_overwrite.target_id] = permission_overwrite
-    
-    return permission_overwrites

@@ -5,6 +5,16 @@ from scarletio import copy_docs
 from ...preconverters import preconvert_bool, preconvert_int, preconvert_int_options, preconvert_str
 
 from ..constants import AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
+from ..fields.default_thread_auto_archive_after import (
+    parse_default_thread_auto_archive_after, put_default_thread_auto_archive_after_into,
+    validate_default_thread_auto_archive_after
+)
+from ..fields.default_thread_slowmode import (
+    parse_default_thread_slowmode, put_default_thread_slowmode_into, validate_default_thread_slowmode
+)
+from ..fields.nsfw import parse_nsfw, put_nsfw_into, validate_nsfw
+from ..fields.slowmode import parse_slowmode, put_slowmode_into, validate_slowmode
+from ..fields.topic import parse_topic, put_topic_into, validate_topic
 
 from .guild_main_base import ChannelMetadataGuildMainBase
 
@@ -33,7 +43,7 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
     nsfw : `bool`
         Whether the channel is marked as non safe for work.
     slowmode : `int`
-        The amount of time in seconds what a user needs to wait between it's each message. Bots and user accounts with
+        The amount of time in seconds that a user needs to wait between it's each message. Bots and user accounts with
         `manage_messages`, `manage_channel` permissions are unaffected.
     topic : `None`, `str`
         The channel's topic.
@@ -97,30 +107,19 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
         ChannelMetadataGuildMainBase._update_attributes(self, data)
         
         # default_thread_auto_archive_after
-        default_thread_auto_archive_after = data.get('default_auto_archive_duration', None)
-        if default_thread_auto_archive_after is None:
-            default_thread_auto_archive_after = AUTO_ARCHIVE_DEFAULT
-        else:
-            default_thread_auto_archive_after *= 60
-        self.default_thread_auto_archive_after = default_thread_auto_archive_after
+        self.default_thread_auto_archive_after = parse_default_thread_auto_archive_after(data)
         
         # default_thread_slowmode
-        default_thread_slowmode = data.get('default_thread_rate_limit_per_user', None)
-        if default_thread_slowmode is None:
-            default_thread_slowmode = 0
-        self.default_thread_slowmode = default_thread_slowmode
+        self.default_thread_slowmode = parse_default_thread_slowmode(data)
         
         # nsfw
-        self.nsfw = data.get('nsfw', False)
+        self.nsfw = parse_nsfw(data)
         
         # slowmode
-        slowmode = data.get('rate_limit_per_user', None)
-        if slowmode is None:
-            slowmode = 0
-        self.slowmode = slowmode
+        self.slowmode = parse_slowmode(data)
         
         # topic
-        self.topic = data.get('topic', None)
+        self.topic = parse_topic(data)
     
     
     @copy_docs(ChannelMetadataGuildMainBase._difference_update_attributes)
@@ -128,39 +127,31 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
         old_attributes = ChannelMetadataGuildMainBase._difference_update_attributes(self, data)
         
         # default_thread_auto_archive_after
-        default_thread_auto_archive_after = data.get('default_auto_archive_duration', None)
-        if default_thread_auto_archive_after is None:
-            default_thread_auto_archive_after = AUTO_ARCHIVE_DEFAULT
-        else:
-            default_thread_auto_archive_after *= 60
+        default_thread_auto_archive_after = parse_default_thread_auto_archive_after(data)
         if self.default_thread_auto_archive_after != default_thread_auto_archive_after:
             old_attributes['default_thread_auto_archive_after'] = self.default_thread_auto_archive_after
             self.default_thread_auto_archive_after = default_thread_auto_archive_after
         
         # default_thread_slowmode
-        default_thread_slowmode = data.get('default_thread_rate_limit_per_user', None)
-        if default_thread_slowmode is None:
-            default_thread_slowmode = 0
+        default_thread_slowmode = parse_default_thread_slowmode(data)
         if self.default_thread_slowmode != default_thread_slowmode:
             old_attributes['default_thread_slowmode'] = self.default_thread_slowmode
             self.default_thread_slowmode = default_thread_slowmode
         
         # nsfw
-        nsfw = data.get('nsfw', False)
+        nsfw = parse_nsfw(data)
         if self.nsfw != nsfw:
             old_attributes['nsfw'] = self.nsfw
             self.nsfw = nsfw
         
         # slowmode
-        slowmode = data.get('rate_limit_per_user', None)
-        if slowmode is None:
-            slowmode = 0
+        slowmode = parse_slowmode(data)
         if self.slowmode != slowmode:
             old_attributes['slowmode'] = self.slowmode
             self.slowmode = slowmode
         
         # topic
-        topic = data.get('topic', None)
+        topic = parse_topic(data)
         if self.topic != topic:
             old_attributes['topic'] = self.topic
             self.topic = topic
@@ -179,13 +170,9 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
         except KeyError:
             pass
         else:
-            default_thread_auto_archive_after = preconvert_int_options(
-                default_thread_auto_archive_after,
-                'default_thread_auto_archive_after',
-                AUTO_ARCHIVE_OPTIONS,
+            self.default_thread_auto_archive_after = validate_default_thread_auto_archive_after(
+                default_thread_auto_archive_after
             )
-            
-            self.default_thread_auto_archive_after = default_thread_auto_archive_after
         
         # default_thread_slowmode
         try:
@@ -193,8 +180,7 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
         except KeyError:
             pass
         else:
-            default_thread_slowmode = preconvert_int(default_thread_slowmode, 'default_thread_slowmode', 0, 21600)
-            self.default_thread_slowmode = default_thread_slowmode
+            self.default_thread_slowmode = validate_default_thread_slowmode(default_thread_slowmode)
         
         # nsfw
         try:
@@ -202,19 +188,7 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
         except KeyError:
             pass
         else:
-            nsfw = preconvert_bool(nsfw, 'nsfw')
-            self.nsfw = nsfw
-        
-        # topic
-        try:
-            topic = keyword_parameters.pop('topic')
-        except KeyError:
-            pass
-        else:
-            if (topic is not None):
-                topic = preconvert_str(topic, 'topic', 0, 1024)
-                if topic:
-                    self.topic = topic
+            self.nsfw = validate_nsfw(nsfw)
         
         # slowmode
         try:
@@ -222,8 +196,15 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
         except KeyError:
             pass
         else:
-            slowmode = preconvert_int(slowmode, 'slowmode', 0, 21600)
-            self.slowmode = slowmode
+            self.slowmode = validate_slowmode(slowmode)
+        
+        # topic
+        try:
+            topic = keyword_parameters.pop('topic')
+        except KeyError:
+            pass
+        else:
+            self.topic = validate_topic(topic)
         
         return self
     
@@ -233,25 +214,18 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
         data = ChannelMetadataGuildMainBase._to_data(self)
         
         # default_auto_archive_duration
-        data['default_auto_archive_duration'] = self.default_thread_auto_archive_after // 60
+        put_default_thread_auto_archive_after_into(self.default_thread_auto_archive_after, data, True)
         
         # default_thread_slowmode
-        default_thread_slowmode = self.default_thread_slowmode
-        if default_thread_slowmode == 0:
-            default_thread_slowmode = None
-        data['default_thread_rate_limit_per_user'] = default_thread_slowmode
+        put_default_thread_slowmode_into(self.default_thread_slowmode, data, True)
         
         # nsfw
-        if self.nsfw:
-            data['nsfw'] = True
+        put_nsfw_into(self.nsfw, data, True)
         
         # slowmode
-        slowmode = self.slowmode
-        if slowmode == 0:
-            slowmode = None
-        data['rate_limit_per_user'] = slowmode
+        put_slowmode_into(self.slowmode, data, True)
         
         # topic
-        data['topic'] = self.topic
+        put_topic_into(self.topic, data, True)
         
         return data

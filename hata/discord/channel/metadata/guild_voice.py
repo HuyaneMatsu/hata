@@ -7,11 +7,14 @@ from ...permission.permission import (
     PERMISSION_MASK_CONNECT, PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE, PERMISSION_STAGE_DENY,
     PERMISSION_VOICE_DENY_CONNECTION
 )
-from ...preconverters import preconvert_bool, preconvert_preinstanced_type
 
+from ..fields.nsfw import parse_nsfw, put_nsfw_into, validate_nsfw
+from ..fields.video_quality_mode import (
+    parse_video_quality_mode, put_video_quality_mode_into, validate_video_quality_mode
+)
 from ..preinstanced import VideoQualityMode
 
-from .guild_main_base import ChannelMetadataGuildMainBase
+
 from .guild_voice_base import ChannelMetadataGuildVoiceBase
 
 
@@ -54,9 +57,11 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         if not ChannelMetadataGuildVoiceBase._is_equal_same_type(self, other):
             return False
         
+        # nsfw
         if self.nsfw != other.nsfw:
             return False
         
+        # video_quality_mode
         if self.video_quality_mode is not other.video_quality_mode:
             return False
         
@@ -78,21 +83,25 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
     def _update_attributes(self, data):
         ChannelMetadataGuildVoiceBase._update_attributes(self, data)
         
-        self.nsfw = data.get('nsfw', False)
+        # nsfw
+        self.nsfw = parse_nsfw(data)
         
-        self.video_quality_mode = VideoQualityMode.get(data.get('video_quality_mode', 1))
+        # video_quality_mode
+        self.video_quality_mode = parse_video_quality_mode(data)
     
     
     @copy_docs(ChannelMetadataGuildVoiceBase._difference_update_attributes)
     def _difference_update_attributes(self, data):
         old_attributes = ChannelMetadataGuildVoiceBase._difference_update_attributes(self, data)
         
-        nsfw = data.get('nsfw', False)
+        # nsfw
+        nsfw = parse_nsfw(data)
         if self.nsfw != nsfw:
             old_attributes['nsfw'] = self.nsfw
             self.nsfw = nsfw
         
-        video_quality_mode = VideoQualityMode.get(data.get('video_quality_mode', 1))
+        # video_quality_mode
+        video_quality_mode = parse_video_quality_mode(data)
         if self.video_quality_mode is not video_quality_mode:
             old_attributes['video_quality_mode'] = self.video_quality_mode
             self.video_quality_mode = video_quality_mode
@@ -105,26 +114,21 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
     def _precreate(cls, keyword_parameters):
         self = super(ChannelMetadataGuildVoice, cls)._precreate(keyword_parameters)
         
+        # nsfw
         try:
             nsfw = keyword_parameters.pop('nsfw')
         except KeyError:
             pass
         else:
-            nsfw = preconvert_bool(nsfw, 'nsfw')
-            self.nsfw = nsfw
+            self.nsfw = validate_nsfw(nsfw)
         
+        # video_quality_mode
         try:
             video_quality_mode = keyword_parameters.pop('video_quality_mode')
         except KeyError:
             pass
         else:
-            video_quality_mode = preconvert_preinstanced_type(
-                video_quality_mode,
-                'video_quality_mode',
-                VideoQualityMode,
-            )
-            
-            self.video_quality_mode = video_quality_mode
+            self.video_quality_mode = validate_video_quality_mode(video_quality_mode)
         
         return self
     
@@ -134,17 +138,15 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         data = ChannelMetadataGuildVoiceBase._to_data(self)
         
         # nsfw
-        if self.nsfw:
-            data['nsfw'] = True
+        put_nsfw_into(self.nsfw, data, True)
         
-        video_quality_mode = self.video_quality_mode
-        if (video_quality_mode is not VideoQualityMode.nonde):
-            data['video_quality_mode'] = video_quality_mode.value
+        # video_quality_mode
+        put_video_quality_mode_into(self.video_quality_mode, data, True)
         
         return data
-
-
-    @copy_docs(ChannelMetadataGuildMainBase._get_permissions_for)
+    
+    
+    @copy_docs(ChannelMetadataGuildVoiceBase._get_permissions_for)
     def _get_permissions_for(self, channel_entity, user):
         result = self._get_base_permissions_for(channel_entity, user)
         if not result & PERMISSION_MASK_VIEW_CHANNEL:
@@ -159,7 +161,7 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         return Permission(result)
     
     
-    @copy_docs(ChannelMetadataGuildMainBase._get_permissions_for_roles)
+    @copy_docs(ChannelMetadataGuildVoiceBase._get_permissions_for_roles)
     def _get_permissions_for_roles(self, channel_entity, roles):
         result = self._get_base_permissions_for_roles(channel_entity, roles)
         if not result & PERMISSION_MASK_VIEW_CHANNEL:

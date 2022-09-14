@@ -397,7 +397,7 @@ class ActivityMetadataRich(ActivityMetadataBase):
     
     
     @copy_docs(ActivityMetadataBase.to_data)
-    def to_data(self):
+    def to_data(self, *, include_internals=False, user=False):
         data = {}
         
         # name
@@ -408,85 +408,67 @@ class ActivityMetadataRich(ActivityMetadataBase):
         if (url is not None):
             data['url'] = url
         
-        return data
-    
-    
-    @copy_docs(ActivityMetadataBase.to_data_user)
-    def to_data_user(self):
-        data = self.to_data()
+        if user or include_internals:
+            # assets
+            assets = self.assets
+            if (assets is not None) and assets:
+                data['assets'] = assets.to_data()
+            
+            # details
+            details = self.details
+            if (details is not None):
+                data['details'] = details
+            
+            # party
+            party = self.party
+            if (party is not None) and party:
+                data['party'] = party.to_data()
+            
+            # secrets
+            secrets = self.secrets
+            if (secrets is not None) and secrets:
+                data['secrets'] = secrets.to_data()
+            
+            # state
+            state = self.state
+            if (state is not None):
+                data['state'] = state
+            
+            # timestamps
+            timestamps = self.timestamps
+            if (timestamps is not None) and timestamps:
+                data['timestamps'] = timestamps.to_data()
         
-        # assets
-        assets = self.assets
-        if (assets is not None) and assets:
-            data['assets'] = assets.to_data()
         
-        # details
-        details = self.details
-        if (details is not None):
-            data['details'] = details
-        
-        # party
-        party = self.party
-        if (party is not None) and party:
-            data['party'] = party.to_data()
-        
-        # secrets
-        secrets = self.secrets
-        if (secrets is not None) and secrets:
-            data['secrets'] = secrets.to_data()
-        
-        # state
-        state = self.state
-        if (state is not None):
-            data['state'] = state
-        
-        # timestamps
-        timestamps = self.timestamps
-        if (timestamps is not None) and timestamps:
-            data['timestamps'] = timestamps.to_data()
-        
-        return data
-    
-    
-    @copy_docs(ActivityMetadataBase.to_data_full)
-    def to_data_full(self):
-        """
-        Converts the whole activity to a dictionary.
-        
-        Returns
-        -------
-        data : `dict` of (`str`, `Any`) items
-        """
-        data = self.to_data_user()
-        
-        # application_id | receive only?
-        application_id = self.application_id
-        if application_id:
-            data['application_id'] = str(application_id)
-        
-        # created_at | receive only?
-        created_at = self.created_at
-        if (created_at is not None):
-            data['created_at'] = datetime_to_millisecond_unix_time(created_at)
-        
-        # flags | spotify only
-        flags = self.flags
-        if flags:
-            data['flags'] = int(flags)
-        
-        # session_id | spotify only
-        session_id = self.session_id
-        if (session_id is not None):
-            data['session_id'] = session_id
-        
-        # sync_id | spotify only
-        sync_id = self.sync_id
-        if (sync_id is not None):
-            data['sync_id'] = sync_id
+        if include_internals:
+            # application_id | receive only?
+            application_id = self.application_id
+            if application_id:
+                data['application_id'] = str(application_id)
+            
+            # created_at | receive only?
+            created_at = self.created_at
+            if (created_at is not None):
+                data['created_at'] = datetime_to_millisecond_unix_time(created_at)
+            
+            # flags | spotify only
+            flags = self.flags
+            if flags:
+                data['flags'] = int(flags)
+            
+            # session_id | spotify only
+            session_id = self.session_id
+            if (session_id is not None):
+                data['session_id'] = session_id
+            
+            # sync_id | spotify only
+            sync_id = self.sync_id
+            if (sync_id is not None):
+                data['sync_id'] = sync_id
         
         return data
-
-
+    
+    
     @copy_docs(ActivityMetadataBase._update_attributes)
     def _update_attributes(self, data):
         # application_id

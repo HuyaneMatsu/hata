@@ -52,3 +52,26 @@ def validate_default_thread_auto_archive_after(default_thread_auto_archive_after
         'default_thread_auto_archive_after',
         AUTO_ARCHIVE_OPTIONS,
     )
+
+
+def put_default_thread_auto_archive_after_into(default_thread_auto_archive_after, data, defaults):
+    """
+    Puts the `default_thread_auto_archive_after`'s data into the given `data` json serializable object.
+    
+    Parameters
+    ----------
+    default_thread_auto_archive_after : `int`
+        The default duration (in seconds) for newly created threads to automatically archive the themselves.
+    data : `dict` of (`str`, `Any`) items
+        Json serializable dictionary.
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict` of (`str`, `Any`) items
+    """
+    if defaults or (default_thread_auto_archive_after != AUTO_ARCHIVE_DEFAULT):
+        data['default_auto_archive_duration'] = default_thread_auto_archive_after // 60
+    
+    return data

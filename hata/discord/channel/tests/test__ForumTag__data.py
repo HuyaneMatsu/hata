@@ -154,7 +154,7 @@ def test__ForumTag__to_data__2():
     
     forum_tag = ForumTag.precreate(forum_tag_id)
     
-    data = forum_tag.to_data(include_identifiers = True)
+    data = forum_tag.to_data(include_internals = True)
     
     vampytest.assert_in('id', data)
     vampytest.assert_eq(data['id'], str(forum_tag_id))

@@ -63,6 +63,7 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
         if self.owner_id != other.owner_id:
             return False
         
+        # icon
         if self.icon_hash != other.icon_hash:
             return False
         

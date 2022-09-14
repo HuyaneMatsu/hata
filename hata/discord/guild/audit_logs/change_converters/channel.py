@@ -92,11 +92,11 @@ def convert_int__default_thread_slowmode(name, data):
 def convert_overwrites(name, data):
     before = data.get('old_value', None)
     if (before is not None):
-        before = [PermissionOverwrite(overwrite_data) for overwrite_data in before]
+        before = [PermissionOverwrite.from_data(overwrite_data) for overwrite_data in before]
     
     after = data.get('new_value', None)
     if (after is not None):
-        after = [PermissionOverwrite(overwrite_data) for overwrite_data in after]
+        after = [PermissionOverwrite.from_data(overwrite_data) for overwrite_data in after]
     
     return AuditLogChange('overwrites', before, after)
 

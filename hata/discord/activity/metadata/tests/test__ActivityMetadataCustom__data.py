@@ -61,9 +61,9 @@ def test__ActivityMetadataCustom__to_data():
     vampytest.assert_eq(activity_metadata.to_data(), {})
 
 
-def test__ActivityMetadataCustom__to_data_user():
+def test__ActivityMetadataCustom__to_data__user():
     """
-    Tests whether ``ActivityMetadataCustom.to_data_user`` works as intended.
+    Tests whether `ActivityMetadataCustom.to_data(user = True)` works as intended.
     """
     state = 'state'
     emoji = Emoji.precreate(202209060005, name='Code49')
@@ -75,12 +75,12 @@ def test__ActivityMetadataCustom__to_data_user():
         'created_at': datetime_to_millisecond_unix_time(created_at),
     })
     
-    vampytest.assert_eq(activity_metadata.to_data(), {})
+    vampytest.assert_eq(activity_metadata.to_data(user = True), {})
 
 
-def test__ActivityMetadataCustom__to_data_full():
+def test__ActivityMetadataCustom__to_data__include_internals():
     """
-    Tests whether ``ActivityMetadataCustom.to_data_full`` works as intended.
+    Tests whether `ActivityMetadataCustom.to_data(include_internals = True)` works as intended.
     """
     state = 'state'
     emoji = Emoji.precreate(202209060006, name='Code49')
@@ -92,7 +92,7 @@ def test__ActivityMetadataCustom__to_data_full():
         'created_at': datetime_to_millisecond_unix_time(created_at),
     })
     
-    data = activity_metadata.to_data_full()
+    data = activity_metadata.to_data(include_internals = True)
     
     vampytest.assert_in('state', data)
     vampytest.assert_in('emoji', data)

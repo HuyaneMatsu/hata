@@ -2,6 +2,7 @@ import vampytest
 
 from ..topic import parse_topic
 
+
 def test__parse_topic():
     """
     Tests whether ``parse_topic`` works as intended.

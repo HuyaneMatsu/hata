@@ -6,7 +6,9 @@ from scarletio import copy_docs, export, include
 
 from ...core import GUILDS
 from ...permission.permission import PERMISSION_MASK_VIEW_CHANNEL
-from ...preconverters import preconvert_str
+
+from ..fields.name import parse_name, put_name_into, validate_name
+from ..fields.parent_id import parse_parent_id, put_parent_id_into, validate_parent_id
 
 from .base import ChannelMetadataBase
 
@@ -23,17 +25,17 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
     ----------
     _permission_cache : `None`, `dict` of (`int`, ``Permission``) items
         A `user_id` to ``Permission`` relation mapping for caching permissions. Defaults to `None`.
-    parent_id : `int`
-        The channel's parent's identifier.
     name : `str`
         The channel's name.
+    parent_id : `int`
+        The channel's parent's identifier.
     
     Class Attributes
     ----------------
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """
-    __slots__ = ('_permission_cache', 'parent_id', 'name')
+    __slots__ = ('_permission_cache', 'name', 'parent_id')
     
     @copy_docs(ChannelMetadataBase.__new__)
     def __new__(cls, data):
@@ -52,10 +54,13 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
     
     @copy_docs(ChannelMetadataBase._is_equal_same_type)
     def _is_equal_same_type(self, other):
-        if self.parent_id != other.parent_id:
+        
+        # name
+        if self.name != other.name:
             return False
         
-        if self.name != other.name:
+        # parent_id
+        if self.parent_id != other.parent_id:
             return False
         
         return True
@@ -66,12 +71,10 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         data = ChannelMetadataBase._to_data(self)
         
         # name
-        data['name'] = self.name
+        put_name_into(self.name, data, True)
         
         # parent_id
-        parent_id = self.parent_id
-        if parent_id:
-            data['parent_id'] = str(parent_id)
+        put_parent_id_into(self.parent_id, data, True)
         
         return data
     
@@ -87,6 +90,9 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
             except KeyError:
                 pass
             else:
+                if (name is None):
+                    name = ''
+                
                 self.name = name
         
         return self
@@ -98,14 +104,11 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         
         self._permission_cache = None
         
-        self.name = data['name']
+        # name
+        self.name = parse_name(data)
         
-        parent_id = data.get('parent_id', None)
-        if parent_id is None:
-            parent_id = 0
-        else:
-            parent_id = int(parent_id)
-        self.parent_id = parent_id
+        # parent_id
+        self.parent_id = parse_parent_id(data)
         
 
     @copy_docs(ChannelMetadataBase._difference_update_attributes)
@@ -113,18 +116,15 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         old_attributes = ChannelMetadataBase._difference_update_attributes(self, data)
         
         self._permission_cache = None
-
-        name = data['name']
+        
+        # name
+        name = parse_name(data)
         if self.name != name:
             old_attributes['name'] = self.name
             self.name = name
         
-        parent_id = data.get('parent_id', None)
-        if parent_id is None:
-            parent_id = 0
-        else:
-            parent_id = int(parent_id)
-        
+        # parent_id
+        parent_id = parse_parent_id(data)
         if self.parent_id != parent_id:
             old_attributes['parent_id'] = self.parent_id
             self.parent_id = parent_id
@@ -146,7 +146,7 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
     
     @copy_docs(ChannelMetadataBase._get_users)
     def _get_users(self, channel_entity):
-        return list(self._iter_users(channel_entity))
+        return [*self._iter_users(channel_entity)]
     
     
     @copy_docs(ChannelMetadataBase._iter_users)
@@ -339,13 +339,21 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
     def _precreate(cls, keyword_parameters):
         self = super(ChannelMetadataGuildBase, cls)._precreate(keyword_parameters)
         
+        # name
         try:
             name = keyword_parameters.pop('name')
         except KeyError:
             pass
         else:
-            name = preconvert_str(name, 'name', 2, 100)
-            self.name = name
+            self.name = validate_name(name)
+        
+        # parent_id
+        try:
+            parent_id = keyword_parameters.pop('parent_id')
+        except KeyError:
+            pass
+        else:
+            self.parent_id = validate_parent_id(parent_id)
         
         return self
     

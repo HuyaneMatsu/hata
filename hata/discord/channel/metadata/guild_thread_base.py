@@ -1,15 +1,23 @@
 __all__ = ('ChannelMetadataGuildThreadBase', )
 
-from datetime import datetime
-
 from scarletio import copy_docs
 
 from ...core import CHANNELS, GUILDS
 from ...permission.permission import PERMISSION_NONE
-from ...preconverters import preconvert_bool, preconvert_int, preconvert_int_options
-from ...utils import datetime_to_timestamp, id_to_datetime, timestamp_to_datetime
+from ...utils import id_to_datetime
 
-from ..constants import AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
+from ..constants import AUTO_ARCHIVE_DEFAULT
+
+from ..fields.archived import parse_archived, put_archived_into, validate_archived
+from ..fields.archived_at import parse_archived_at, put_archived_at_into, validate_archived_at
+from ..fields.auto_archive_after import (
+    parse_auto_archive_after, put_auto_archive_after_into, validate_auto_archive_after
+)
+from ..fields.created_at import parse_created_at, put_created_at_into, validate_created_at
+from ..fields.open_ import parse_open, put_open_into, validate_open
+from ..fields.owner_id import parse_owner_id, put_owner_id_into, validate_owner_id
+from ..fields.slowmode import parse_slowmode, put_slowmode_into, validate_slowmode
+
 
 from .guild_base import ChannelMetadataGuildBase
 
@@ -29,7 +37,7 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
     _created_at : `None`, `datetime`
         When the channel was created.
     archived : `bool`
-        Whether the thread s archived.
+        Whether the thread is archived.
     archived_at : `None`, `datetime`
         When the thread's archive status was last changed.
     auto_archive_after : `int`
@@ -57,26 +65,15 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
     @copy_docs(ChannelMetadataGuildBase.__new__)
     def __new__(cls, data):
         self = ChannelMetadataGuildBase.__new__(cls, data)
+
+        # created_at
+        self._created_at = parse_created_at(data)
         
-        owner_id = data.get('owner_id', None)
-        if owner_id is None:
-            owner_id = 0
-        else:
-            owner_id = int(owner_id)
-        self.owner_id = owner_id
+        # owner_id
+        self.owner_id = parse_owner_id(data)
         
-        created_at = data.get('create_timestamp', None)
-        if (created_at is not None):
-            created_at = timestamp_to_datetime(created_at)
-        self._created_at = created_at
-        
-        
-        parent_id = data.get('parent_id', None)
-        if (parent_id is None):
-            parent_id = 0
-        else:
-            parent_id = int(parent_id)
-        self.parent_id = parent_id
+        # thread_users
+        self.thread_users = None
         
         return self
     
@@ -96,28 +93,36 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
         if not ChannelMetadataGuildBase._is_equal_same_type(self, other):
             return False
         
-        if self._created_at != other._created_at:
-            return False
-        
+        # archived
         if self.archived != other.archived:
             return False
         
+        # archived_at
         if self.archived_at != other.archived_at:
             return False
         
+        # auto_archive_after
         if self.auto_archive_after != other.auto_archive_after:
             return False
         
+        # created_at
+        if self._created_at != other._created_at:
+            return False
+        
+        # open
         if self.open != other.open:
             return False
         
+        # owner_id
         if self.owner_id != other.owner_id:
             return False
         
+        # slowmode
         if self.slowmode != other.slowmode:
             return False
         
-        # Ignoring `thread_users`
+        # thread_users
+        # Ignore this field
         
         return True
     
@@ -175,70 +180,55 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
     def _update_attributes(self, data):
         ChannelMetadataGuildBase._update_attributes(self, data)
         
-        slowmode = data.get('rate_limit_per_user', None)
-        if slowmode is None:
-            slowmode = 0
-        self.slowmode = slowmode
+        # archived
+        self.archived = parse_archived(data)
         
-        # Move to sub data
-        data = data['thread_metadata']
+        # archived_at
+        self.archived_at = parse_archived_at(data)
         
-        self.archived = data.get('archived', False)
+        # auto_archive_after
+        self.auto_archive_after = parse_auto_archive_after(data)
         
+        # open
+        self.open = parse_open(data)
         
-        self.auto_archive_after = data['auto_archive_duration'] * 60
-        
-        archived_at_data = data.get('archive_timestamp', None)
-        if archived_at_data is None:
-            archived_at = None
-        else:
-            archived_at = timestamp_to_datetime(archived_at_data)
-        self.archived_at = archived_at
-        
-        self.open = not data.get('locked', True)
+        # slowmode
+        self.slowmode = parse_slowmode(data)
     
     
     @copy_docs(ChannelMetadataGuildBase._difference_update_attributes)
     def _difference_update_attributes(self, data):
         old_attributes = ChannelMetadataGuildBase._difference_update_attributes(self, data)
         
-        slowmode = data.get('rate_limit_per_user', None)
-        if slowmode is None:
-            slowmode = 0
-        if self.slowmode != slowmode:
-            old_attributes['slowmode'] = self.slowmode
-            self.slowmode = slowmode
-        
-        
-        # Move to sub data
-        data = data['thread_metadata']
-        
-        
-        archived = data.get('archived', False)
+        # archived
+        archived = parse_archived(data)
         if (self.archived != archived):
             old_attributes['archived'] = self.archived
             self.archived = archived
         
-        
-        auto_archive_after = data['auto_archive_duration']*60
-        if (self.auto_archive_after != auto_archive_after):
-            old_attributes['auto_archive_after'] = self.auto_archive_after
-            self.auto_archive_after = auto_archive_after
-        
-        
-        archived_at_data = data.get('archive_timestamp', None)
-        if archived_at_data is None:
-            archived_at = None
-        else:
-            archived_at = timestamp_to_datetime(archived_at_data)
+        # archived_at
+        archived_at = parse_archived_at(data)
         if (self.archived_at != archived_at):
             old_attributes['archived_at'] = self.archived_at
             self.archived_at = archived_at
         
-        open_ = not data.get('locked', True)
+        # auto_archive_after
+        auto_archive_after = parse_auto_archive_after(data)
+        if (self.auto_archive_after != auto_archive_after):
+            old_attributes['auto_archive_after'] = self.auto_archive_after
+            self.auto_archive_after = auto_archive_after
+        
+        # open
+        open_ = parse_open(data)
         if (self.open != open_):
             old_attributes['open'] = self.open
             self.open = open_
+        
+        # slowmode
+        slowmode = parse_slowmode(data)
+        if self.slowmode != slowmode:
+            old_attributes['slowmode'] = self.slowmode
+            self.slowmode = slowmode
         
         return old_attributes
     
@@ -296,52 +286,62 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
     @copy_docs(ChannelMetadataGuildBase._precreate)
     def _precreate(cls, keyword_parameters):
         self = super(ChannelMetadataGuildThreadBase, cls)._precreate(keyword_parameters)
-    
+        
+        # archived
         try:
-            slowmode = keyword_parameters.pop('slowmode')
+            archived = keyword_parameters.pop('archived')
         except KeyError:
             pass
         else:
-            slowmode = preconvert_int(slowmode, 'slowmode', 0, 21600)
-            self.slowmode = slowmode
+            self.archived = validate_archived(archived)
         
+        # archived_at
+        try:
+            archived_at = keyword_parameters.pop('archived_at')
+        except KeyError:
+            pass
+        else:
+            self.archived_at = validate_archived_at(archived_at)
         
+        # auto_archive_after
         try:
             auto_archive_after = keyword_parameters.pop('auto_archive_after')
         except KeyError:
             pass
         else:
-            auto_archive_after = preconvert_int_options(
-                auto_archive_after,
-                'auto_archive_after',
-                AUTO_ARCHIVE_OPTIONS,
-            )
-            
-            self.auto_archive_after = auto_archive_after
+            self.auto_archive_after = validate_auto_archive_after(auto_archive_after)
         
-        
+        # created_at
         try:
             created_at = keyword_parameters.pop('created_at')
         except KeyError:
             pass
         else:
-            if (created_at is not None):
-                if not isinstance(created_at, datetime):
-                    raise TypeError(
-                        f'`created_at` can be `None`, `datetime`, got {created_at.__class__.__name__}; '
-                        f'{created_at!r}.'
-                    )
-                
-                self._created_at = created_at
+            self._created_at = validate_created_at(created_at)
         
+        # open
         try:
             open_ = keyword_parameters.pop('open')
         except KeyError:
             pass
         else:
-            open_ = preconvert_bool(open_, 'open')
-            self.open_ = open_
+            self.open = validate_open(open_)
         
+        # owner_id
+        try:
+            owner_id = keyword_parameters.pop('owner_id')
+        except KeyError:
+            pass
+        else:
+            self.owner_id = validate_owner_id(owner_id)
+        
+        # slowmode
+        try:
+            slowmode = keyword_parameters.pop('slowmode')
+        except KeyError:
+            pass
+        else:
+            self.slowmode = validate_slowmode(slowmode)
         
         return self
     
@@ -350,30 +350,25 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
     def _to_data(self):
         data = ChannelMetadataGuildBase._to_data(self)
         
-        slowmode = self.slowmode
-        if slowmode:
-            data['rate_limit_per_user'] = slowmode
+        # archived
+        put_archived_into(self.archived, data, True)
         
-        owner_id = self.owner_id
-        if owner_id:
-            data['owner_id'] = str(owner_id)
+        # archived_at
+        put_archived_at_into(self.atchived_at, data, True)
         
-        thread_data = {}
-        data['thread_metadata'] = thread_data
+        # auto_archive_after
+        put_auto_archive_after_into(self.auto_archive_after, data, True)
         
-        thread_data['archived'] = self.archived
+        # created_at
+        put_created_at_into(self._created_at, data, True)
         
-        thread_data['auto_archive_duration'] = self.auto_archive_after // 60
+        # open
+        put_open_into(self.open, data, True)
         
-        archive_timestamp = self.archive_timestamp
-        if (archive_timestamp is not None):
-            archive_timestamp = datetime_to_timestamp(archive_timestamp)
-        thread_data['archive_timestamp'] = archive_timestamp
+        # owner_id
+        put_owner_id_into(self.owner_id, data, True)
         
-        thread_data['locked'] = not self.open
-        
-        created_at = self._created_at
-        if (created_at is not None):
-            data['create_timestamp'] = datetime_to_timestamp(created_at)
+        # slowmode
+        put_slowmode_into(self.slowmode, data, True)
         
         return data

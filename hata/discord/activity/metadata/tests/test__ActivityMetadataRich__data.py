@@ -146,9 +146,9 @@ def test__ActivityMetadataRich__to_data():
     vampytest.assert_not_in('timestamps', data)
 
 
-def test__ActivityMetadataRich__to_data_user():
+def test__ActivityMetadataRich__to_data__user():
     """
-    Tests whether ``ActivityMetadataRich.to_data_user`` works as intended.
+    Tests whether `ActivityMetadataRich.to_data(user = True)` works as intended.
     """
     application_id = 202209070006
     assets = ActivityAssets(image_large='senya')
@@ -180,7 +180,7 @@ def test__ActivityMetadataRich__to_data_user():
         'sync_id': sync_id,
         'timestamps': timestamps,
         'url': url,
-    }).to_data_user()
+    }).to_data(user = True)
     
     vampytest.assert_in('assets', data)
     vampytest.assert_in('details', data)
@@ -208,9 +208,9 @@ def test__ActivityMetadataRich__to_data_user():
     vampytest.assert_not_in('sync_id', data)
 
 
-def test__ActivityMetadataRich__to_data_full():
+def test__ActivityMetadataRich__to_data__include_internals():
     """
-    Tests whether ``ActivityMetadataRich.to_data_full`` works as intended.
+    Tests whether `ActivityMetadataRich.to_data(include_internals = True)` works as intended.
     """
     application_id = 202209070008
     assets = ActivityAssets(image_large='senya')
@@ -242,7 +242,7 @@ def test__ActivityMetadataRich__to_data_full():
         'sync_id': sync_id,
         'timestamps': timestamps,
         'url': url,
-    }).to_data_full()
+    }).to_data(include_internals = True)
     
     vampytest.assert_in('application_id', data)
     vampytest.assert_in('assets', data)

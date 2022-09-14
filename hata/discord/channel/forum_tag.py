@@ -511,13 +511,13 @@ class ForumTag(DiscordEntity, immortal=True):
         return old_attributes
     
     
-    def to_data(self, *, include_identifiers=False):
+    def to_data(self, *, include_internals=False):
         """
         Converts the forum tag to a json serializable object.
         
         Parameters
         ----------
-        include_identifiers : `bool` = `False`
+        include_internals : `bool` = `False`
             Whether we want to include identifiers as well.
         
         
@@ -528,7 +528,7 @@ class ForumTag(DiscordEntity, immortal=True):
         data = {}
         
         # id
-        if include_identifiers:
+        if include_internals:
             id_ = self.id
             if id_:
                 data['id'] = str(id_)

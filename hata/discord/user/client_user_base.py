@@ -2,7 +2,7 @@ __all__ = ('ClientUserBase', 'ClientUserPBase',)
 
 from re import I as re_ignore_case, escape as re_escape, compile as re_compile
 
-from scarletio import copy_docs
+from scarletio import copy_docs, export
 
 from ..activity import Activity, ActivityType
 from ..color import Color
@@ -18,6 +18,7 @@ from .user_base import UserBase, _try_get_guild_and_id, _try_get_guild_id
 ACTIVITY_TYPE_CUSTOM = ActivityType.custom
 
 
+@export
 class ClientUserBase(UserBase):
     """
     Base class for discord users and clients.

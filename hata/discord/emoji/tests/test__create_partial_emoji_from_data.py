@@ -29,7 +29,7 @@ def test__create_partial_emoji_from_data__1():
     
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')
-    
-    emoji = create_partial_emoji_from_data({'emoji_name': unicode_string})
+        
+        emoji = create_partial_emoji_from_data({'emoji_name': unicode_string})
     
     vampytest.assert_eq(emoji.unicode, unicode_string)

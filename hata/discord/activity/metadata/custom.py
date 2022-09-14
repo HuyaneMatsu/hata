@@ -115,24 +115,27 @@ class ActivityMetadataCustom(ActivityMetadataBase):
         return self
     
     
-    @copy_docs(ActivityMetadataBase.to_data_full)
-    def to_data_full(self):
-        data = {
-            'name': 'Custom Status',
-            'id': 'custom',
-        }
+    @copy_docs(ActivityMetadataBase.to_data)
+    def to_data(self, *, include_internals=False, user=False):
+        data = {}
         
-        emoji = self.emoji
-        if (emoji is not None):
-            data['emoji'] = create_partial_emoji_data(emoji)
-        
-        state = self.state
-        if (state is not None):
-            data['state'] = state
-        
-        created_at = self.created_at
-        if created_at != DISCORD_EPOCH_START:
-            data['created_at'] = datetime_to_millisecond_unix_time(created_at)
+        if include_internals:
+            data['name'] = 'Custom Status'
+            
+            # created_at
+            created_at = self.created_at
+            if (created_at is not None):
+                data['created_at'] = datetime_to_millisecond_unix_time(created_at)
+            
+            # emoji
+            emoji = self.emoji
+            if (emoji is not None):
+                data['emoji'] = create_partial_emoji_data(emoji)
+            
+            # state
+            state = self.state
+            if (state is not None):
+                data['state'] = state
         
         return data
     

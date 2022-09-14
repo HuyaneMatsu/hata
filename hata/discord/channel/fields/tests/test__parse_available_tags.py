@@ -1,7 +1,8 @@
 import vampytest
 
-from ..available_tags import parse_available_tags
 from ...forum_tag import ForumTag
+
+from ..available_tags import parse_available_tags
 
 
 def test__parse_available_tags():
@@ -14,7 +15,7 @@ def test__parse_available_tags():
         ({}, None),
         ({'available_tags': None}, None),
         ({'available_tags': []}, None),
-        ({'available_tags': [forum_tag.to_data(include_identifiers = True)]}, (forum_tag, ))
+        ({'available_tags': [forum_tag.to_data(include_internals = True)]}, (forum_tag, ))
     ):
         output = parse_available_tags(input_data)
         

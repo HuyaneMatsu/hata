@@ -179,46 +179,28 @@ class Activity(RichAttributeErrorBaseType):
         return self
     
     
-    def to_data(self):
+    def to_data(self, *, include_internals=False, user=False):
         """
         Converts the activity to json serializable dictionary, which can be sent with bot account to change activity.
         
-        Returns
-        -------
-        data : `dict` of (`str`, `Any`) items
-        """
-        data = self.metadata.to_data()
-        data['type'] = self.type.value
-        return data
-    
-    
-    def to_data_user(self):
-        """
-        Converts the activity to json serializable dictionary, which can (?) be sent with user account to change
-        activity.
+        Parameters
+        ----------
+        include_internals : `bool` = `False`, Optional (Keyword only)
+            Whether internal fields, like id-s should be present as well.
+        user : `bool` = `False`, Optional (Keyword only)
+            Whether not only bot compatible fields should be included.
         
         Returns
         -------
         data : `dict` of (`str`, `Any`) items
         """
-        data = self.metadata.to_data_user()
+        data = self.metadata.to_data(include_internals = include_internals, user = user)
         data['type'] = self.type.value
-        return data
-    
-    
-    def to_data_full(self):
-        """
-        Converts the whole activity to a dictionary.
         
-        Returns
-        -------
-        data : `dict` of (`str`, `Any`) items
-        """
-        data = self.metadata.to_data_full()
-        data['type'] = self.type.value
-                
-        # id | receive only?
-        data['id'] = self.discord_side_id
+        if include_internals:
+            # id | receive only?
+            if ('id' not in data):
+                data['id'] = self.discord_side_id
         
         return data
     
@@ -241,34 +223,34 @@ class Activity(RichAttributeErrorBaseType):
     
     def user_dict(self):
         """
-        Deprecated and will be removed in 2023 Jan, please use ``.to_data_user`` instead.
+        Deprecated and will be removed in 2023 Jan, please use ``.to_data(user = True)`` instead.
         """
         warnings.warn(
             (
                 f'`{self.__class__.__name__}.user_dict` is deprecated and will be removed in 2023 Jan. '
-                f'Please use `.to_data_user` instead.'
+                f'Please use `.to_data(user = True)` instead.'
             ),
             FutureWarning,
             stacklevel = 2,
         )
         
-        return self.to_data_user()
+        return self.to_data(user = True)
     
     
     def full_dict(self):
         """
-        Deprecated and will be removed in 2023 Jan, please use ``.to_data_full`` instead.
+        Deprecated and will be removed in 2023 Jan, please use ``.to_data(include_internals = True)`` instead.
         """
         warnings.warn(
             (
                 f'`{self.__class__.__name__}.full_dict` is deprecated and will be removed in 2023 Jan. '
-                f'Please use `.to_data_full` instead.'
+                f'Please use `.to_data(include_internals = True)` instead.'
             ),
             FutureWarning,
             stacklevel = 2,
         )
         
-        return self.to_data_full()
+        return self.to_data(include_internals = True)
     
     
     def _update_attributes(self, data):

@@ -21,22 +21,22 @@ def test__ActivityMetadataBase__to_data():
     vampytest.assert_eq(activity_metadata.to_data(), {})
 
 
-def test__ActivityMetadataBase__to_data_user():
+def test__ActivityMetadataBase__to_data__user():
     """
-    Tests whether ``ActivityMetadataBase.to_data_user`` works as intended.
-    """
-    activity_metadata = ActivityMetadataBase({})
-    
-    vampytest.assert_eq(activity_metadata.to_data(), {})
-
-
-def test__ActivityMetadataBase__to_data_full():
-    """
-    Tests whether ``ActivityMetadataBase.to_data_full`` works as intended.
+    Tests whether `ActivityMetadataBase.to_data(user = True)` works as intended.
     """
     activity_metadata = ActivityMetadataBase({})
     
-    vampytest.assert_eq(activity_metadata.to_data_full(), {})
+    vampytest.assert_eq(activity_metadata.to_data(user = True), {})
+
+
+def test__ActivityMetadataBase__to_data__include_internals():
+    """
+    Tests whether `ActivityMetadataBase.to_data(include_internals = True)` works as intended.
+    """
+    activity_metadata = ActivityMetadataBase({})
+    
+    vampytest.assert_eq(activity_metadata.to_data(include_internals = True), {})
 
 
 def test__ActivityMetadataBase__update_attributes():

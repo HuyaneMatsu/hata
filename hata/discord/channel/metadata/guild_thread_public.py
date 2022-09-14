@@ -2,8 +2,8 @@ __all__ = ('ChannelMetadataGuildThreadPublic',)
 
 from scarletio import copy_docs
 
-from ...preconverters import preconvert_flag, preconvert_snowflake_array
-
+from ..fields.applied_tag_ids import parse_applied_tag_ids, put_applied_tag_ids_into, validate_applied_tag_ids
+from ..fields.flags import parse_flags, put_flags_into, validate_flags
 from ..flags import ChannelFlag
 
 from .guild_thread_base import ChannelMetadataGuildThreadBase
@@ -89,15 +89,10 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
         ChannelMetadataGuildThreadBase._update_attributes(self, data)
         
         # applied_tag_ids
-        applied_tag_id_array = data.get('applied_tags', None)
-        if (applied_tag_id_array is None) or (not applied_tag_id_array):
-            applied_tag_ids = None
-        else:
-            applied_tag_ids = tuple(sorted(int(tag_id) for tag_id in applied_tag_id_array))
-        self.applied_tag_ids = applied_tag_ids
+        self.applied_tag_ids = parse_applied_tag_ids(data)
         
         # flags
-        self.flags = ChannelFlag(data.get('flags', 0))
+        self.flags = parse_flags(data)
     
     
     @copy_docs(ChannelMetadataGuildThreadBase._difference_update_attributes)
@@ -105,17 +100,13 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
         old_attributes = ChannelMetadataGuildThreadBase._difference_update_attributes(self, data)
         
         # applied_tag_ids
-        applied_tag_id_array = data.get('applied_tags', None)
-        if (applied_tag_id_array is None) or (not applied_tag_id_array):
-            applied_tag_ids = None
-        else:
-            applied_tag_ids = tuple(sorted(int(tag_id) for tag_id in applied_tag_id_array))
+        applied_tag_ids = parse_applied_tag_ids(data)
         if (self.applied_tag_ids != applied_tag_ids):
             old_attributes['applied_tag_ids'] = self.applied_tag_ids
             self.applied_tag_ids = applied_tag_ids
         
         # flags
-        flags = data.get('flags', 0)
+        flags = parse_flags(data)
         if (self.flags != flags):
             flags = ChannelFlag(flags)
             old_attributes['flags'] = self.flags
@@ -135,8 +126,7 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
         except KeyError:
             pass
         else:
-            applied_tag_ids = preconvert_snowflake_array(applied_tag_ids, 'applied_tag_ids')
-            self.applied_tag_ids = applied_tag_ids
+            self.applied_tag_ids = validate_applied_tag_ids(applied_tag_ids)
         
         # flags
         try:
@@ -144,8 +134,7 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
         except KeyError:
             pass
         else:
-            flags = preconvert_flag(flags, 'flags', ChannelFlag)
-            self.flags = flags
+            self.flags = validate_flags(flags)
         
         return self
     
@@ -155,14 +144,9 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
         data = ChannelMetadataGuildThreadBase._to_data(self)
         
         # applied_tag_ids
-        applied_tag_ids = self.applied_tag_ids
-        if applied_tag_ids is None:
-            applied_tag_id_array = []
-        else:
-            applied_tag_id_array = [str(tag_id) for tag_id in applied_tag_ids]
-        data['applied_tag_ids'] = applied_tag_id_array
+        put_applied_tag_ids_into(self.applied_tag_ids, data, True)
         
         # flags
-        data['flags'] = self.flags
+        put_flags_into(self.flags, data, True)
         
         return data

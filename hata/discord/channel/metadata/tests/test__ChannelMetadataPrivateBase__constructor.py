@@ -5,6 +5,10 @@ from ....user import User
 from .. import ChannelMetadataPrivateBase
 
 
+def assert_fields_set(channel_metadata):
+    vampytest.assert_instance(channel_metadata.users, list)
+    
+
 def test__ChannelMetadataPrivateBase__new__0():
     """
     Tests whether ``ChannelMetadataPrivateBase.__new__`` works as intended.
@@ -21,7 +25,7 @@ def test__ChannelMetadataPrivateBase__new__0():
     vampytest.assert_instance(channel_metadata, ChannelMetadataPrivateBase)
     vampytest.assert_eq(keyword_parameters, {})
     
-    vampytest.assert_instance(channel_metadata.users, list)
+    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.users, users)
 
@@ -39,7 +43,7 @@ def test__ChannelMetadataPrivateBase__new__1():
     vampytest.assert_instance(channel_metadata, ChannelMetadataPrivateBase)
     vampytest.assert_eq(keyword_parameters, {})
     
-    vampytest.assert_instance(channel_metadata.users, list)
+    assert_fields_set(channel_metadata)
 
 
 def test__ChannelMetadataPrivateBase__create_empty():
@@ -50,7 +54,7 @@ def test__ChannelMetadataPrivateBase__create_empty():
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataPrivateBase)
     
-    vampytest.assert_instance(channel_metadata.users, list)
+    assert_fields_set(channel_metadata)
 
 
 def test__ChannelMetadataPrivateBase__precreate__0():
@@ -68,7 +72,7 @@ def test__ChannelMetadataPrivateBase__precreate__0():
     vampytest.assert_instance(channel_metadata, ChannelMetadataPrivateBase)
     vampytest.assert_eq(keyword_parameters, {})
     
-    vampytest.assert_instance(channel_metadata.users, list)
+    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.users, users)
 
@@ -86,4 +90,4 @@ def test__ChannelMetadataPrivateBase__precreate__1():
     vampytest.assert_instance(channel_metadata, ChannelMetadataPrivateBase)
     vampytest.assert_eq(keyword_parameters, {})
     
-    vampytest.assert_instance(channel_metadata.users, list)
+    assert_fields_set(channel_metadata)

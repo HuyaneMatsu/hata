@@ -61,7 +61,7 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         The channel's order group used when sorting channels.
     """
     __slots__ = (
-        'available_tags', 'default_thread_auto_archive_after','default_thread_reaction', 'default_thread_slowmode', 
+        'available_tags', 'default_thread_auto_archive_after', 'default_thread_reaction', 'default_thread_slowmode', 
         'flags', 'topic',
     )
     
@@ -220,7 +220,7 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         
         # default_thread_auto_archive_after
         try:
-            default_thread_auto_archive_after = keyword_parameters.pop('default_auto_archive_duration')
+            default_thread_auto_archive_after = keyword_parameters.pop('default_thread_auto_archive_after')
         except KeyError:
             pass
         else:

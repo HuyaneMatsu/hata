@@ -88,6 +88,6 @@ def put_available_tags_into(available_tags, data, defaults):
         if defaults:
             data['available_tags'] = []
     else:
-        data['available_tags'] = [tag.to_data() for tag in available_tags]
+        data['available_tags'] = [tag.to_data(include_internals = True) for tag in available_tags]
     
     return data

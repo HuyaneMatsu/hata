@@ -14,7 +14,7 @@ def test__put_available_tags_into():
     for input_, defaults, expected_output in (
         (None, False, {}),
         (None, True, {'available_tags': []}),
-        ([forum_tag], False, {'available_tags': [forum_tag.to_data()]}),
+        ([forum_tag], False, {'available_tags': [forum_tag.to_data(include_internals = True)]}),
     ):
         data = put_available_tags_into(input_, {}, defaults)
         vampytest.assert_eq(data, expected_output)

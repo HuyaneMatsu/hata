@@ -163,7 +163,7 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
         
         # default_thread_auto_archive_after
         try:
-            default_thread_auto_archive_after = keyword_parameters.pop('default_auto_archive_duration')
+            default_thread_auto_archive_after = keyword_parameters.pop('default_thread_auto_archive_after')
         except KeyError:
             pass
         else:

@@ -6,6 +6,13 @@ from ....user import User
 from .. import ChannelMetadataPrivateGroup
 
 
+def assert_fields_set(channel_metadata):
+    vampytest.assert_instance(channel_metadata.users, list)
+    vampytest.assert_instance(channel_metadata.owner_id, int)
+    vampytest.assert_instance(channel_metadata.icon, Icon)
+    vampytest.assert_instance(channel_metadata.name, str)
+
+
 def test__ChannelMetadataPrivateGroup__new__0():
     """
     Tests whether ``ChannelMetadataPrivateGroup.__new__`` works as intended.
@@ -28,10 +35,7 @@ def test__ChannelMetadataPrivateGroup__new__0():
     vampytest.assert_instance(channel_metadata, ChannelMetadataPrivateGroup)
     vampytest.assert_eq(keyword_parameters, {})
     
-    vampytest.assert_instance(channel_metadata.users, list)
-    vampytest.assert_instance(channel_metadata.owner_id, int)
-    vampytest.assert_instance(channel_metadata.icon, Icon)
-    vampytest.assert_instance(channel_metadata.name, str)
+    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.users, users)
     vampytest.assert_eq(channel_metadata.owner_id, owner_id)
@@ -52,10 +56,7 @@ def test__ChannelMetadataPrivateGroup__new__1():
     vampytest.assert_instance(channel_metadata, ChannelMetadataPrivateGroup)
     vampytest.assert_eq(keyword_parameters, {})
     
-    vampytest.assert_instance(channel_metadata.users, list)
-    vampytest.assert_instance(channel_metadata.owner_id, int)
-    vampytest.assert_instance(channel_metadata.icon, Icon)
-    vampytest.assert_instance(channel_metadata.name, str)
+    assert_fields_set(channel_metadata)
 
 
 def test__ChannelMetadataPrivateGroup__new__2():
@@ -78,10 +79,7 @@ def test__ChannelMetadataPrivateGroup__create_empty():
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataPrivateGroup)
     
-    vampytest.assert_instance(channel_metadata.users, list)
-    vampytest.assert_instance(channel_metadata.owner_id, int)
-    vampytest.assert_instance(channel_metadata.icon, Icon)
-    vampytest.assert_instance(channel_metadata.name, str)
+    assert_fields_set(channel_metadata)
 
 
 
@@ -108,10 +106,7 @@ def test__ChannelMetadataPrivateGroup__precreate__0():
     vampytest.assert_instance(channel_metadata, ChannelMetadataPrivateGroup)
     vampytest.assert_eq(keyword_parameters, {})
     
-    vampytest.assert_instance(channel_metadata.users, list)
-    vampytest.assert_instance(channel_metadata.owner_id, int)
-    vampytest.assert_instance(channel_metadata.icon, Icon)
-    vampytest.assert_instance(channel_metadata.name, str)
+    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.users, users)
     vampytest.assert_eq(channel_metadata.owner_id, owner_id)
@@ -132,7 +127,4 @@ def test__ChannelMetadataPrivateGroup__precreate__1():
     vampytest.assert_instance(channel_metadata, ChannelMetadataPrivateGroup)
     vampytest.assert_eq(keyword_parameters, {})
     
-    vampytest.assert_instance(channel_metadata.users, list)
-    vampytest.assert_instance(channel_metadata.owner_id, int)
-    vampytest.assert_instance(channel_metadata.icon, Icon)
-    vampytest.assert_instance(channel_metadata.name, str)
+    assert_fields_set(channel_metadata)

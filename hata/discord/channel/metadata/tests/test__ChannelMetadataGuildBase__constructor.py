@@ -3,6 +3,12 @@ import vampytest
 from .. import ChannelMetadataGuildBase
 
 
+def assert_fields_set(channel_metadata):    
+    vampytest.assert_instance(channel_metadata.parent_id, int)
+    vampytest.assert_instance(channel_metadata.name, str)
+    vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
+
+
 def test__ChannelMetadataGuildBase__new__0():
     """
     Tests whether ``ChannelMetadataGuildBase.__new__`` works as intended.
@@ -21,9 +27,7 @@ def test__ChannelMetadataGuildBase__new__0():
     vampytest.assert_instance(channel_metadata, ChannelMetadataGuildBase)
     vampytest.assert_eq(keyword_parameters, {})
     
-    vampytest.assert_instance(channel_metadata.parent_id, int)
-    vampytest.assert_instance(channel_metadata.name, str)
-    vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
+    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -42,9 +46,7 @@ def test__ChannelMetadataGuildBase__new__1():
     vampytest.assert_instance(channel_metadata, ChannelMetadataGuildBase)
     vampytest.assert_eq(keyword_parameters, {})
     
-    vampytest.assert_instance(channel_metadata.parent_id, int)
-    vampytest.assert_instance(channel_metadata.name, str)
-    vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
+    assert_fields_set(channel_metadata)
 
 
 def test__ChannelMetadataGuildBase__create_empty():
@@ -55,9 +57,7 @@ def test__ChannelMetadataGuildBase__create_empty():
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataGuildBase)
     
-    vampytest.assert_instance(channel_metadata.parent_id, int)
-    vampytest.assert_instance(channel_metadata.name, str)
-    vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
+    assert_fields_set(channel_metadata)
 
 
 
@@ -80,9 +80,7 @@ def test__ChannelMetadataGuildBase__precreate__0():
     vampytest.assert_instance(channel_metadata, ChannelMetadataGuildBase)
     vampytest.assert_eq(keyword_parameters, {})
     
-    vampytest.assert_instance(channel_metadata.parent_id, int)
-    vampytest.assert_instance(channel_metadata.name, str)
-    vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
+    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -101,6 +99,4 @@ def test__ChannelMetadataGuildBase__precreate__1():
     vampytest.assert_instance(channel_metadata, ChannelMetadataGuildBase)
     vampytest.assert_eq(keyword_parameters, {})
     
-    vampytest.assert_instance(channel_metadata.parent_id, int)
-    vampytest.assert_instance(channel_metadata.name, str)
-    vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
+    assert_fields_set(channel_metadata)

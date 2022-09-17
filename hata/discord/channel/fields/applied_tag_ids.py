@@ -56,9 +56,9 @@ def validate_applied_tag_ids(applied_tag_ids):
     
     applied_tag_ids_processed = None
     
-    for  applied_tag_id in applied_tag_ids:
+    for applied_tag_id in applied_tag_ids:
         if isinstance(applied_tag_id, ForumTag):
-             applied_tag_id_processed =  applied_tag_id.id
+             applied_tag_id_processed = applied_tag_id.id
         
         else:
             applied_tag_id_processed = maybe_snowflake(applied_tag_id)

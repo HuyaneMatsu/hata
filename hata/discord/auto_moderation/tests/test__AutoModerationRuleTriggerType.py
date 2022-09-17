@@ -1,6 +1,6 @@
 import vampytest
 
-from .. import AutoModerationRuleTriggerType, AutoModerationRuleTriggerMetadata
+from .. import AutoModerationRuleTriggerType, AutoModerationRuleTriggerMetadataBase
 
 
 def test__AutoModerationRuleTriggerType__name():
@@ -30,7 +30,7 @@ def test__AutoModerationRuleTriggerType__max_per_guild():
 def test__AutoModerationRuleTriggerType__metadata_type():
     """
     Tests whether ``AutoModerationRuleTriggerType`` instance `.metadata_type`-s are all
-    ``AutoModerationRuleTriggerMetadata``-s or `None`-s.
+    ``AutoModerationRuleTriggerMetadataBase``-s or `None`-s.
     """
     for instance in AutoModerationRuleTriggerType.INSTANCES.values():
-        vampytest.assert_subtype(instance.metadata_type, AutoModerationRuleTriggerMetadata, nullable=True)
+        vampytest.assert_subtype(instance.metadata_type, AutoModerationRuleTriggerMetadataBase, nullable=True)

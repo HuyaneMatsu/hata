@@ -296,7 +296,7 @@ def _validate_trigger_type_with_metadata_options(
     
     Returns
     -------
-    trigger_metadata : `None`, ``AutoModerationRuleTriggerMetadata``
+    trigger_metadata : `None`, ``AutoModerationRuleTriggerMetadataBase``
         Trigger type specific metadata if applicable.
     trigger_type : ``AutoModerationRuleTriggerType``
         The final processed trigger type.
@@ -419,7 +419,7 @@ class AutoModerationRule(DiscordEntity, immortal=True):
     name : `str`
         The rule's name.
     
-    trigger_metadata : `None`, ``AutoModerationRuleTriggerMetadata``
+    trigger_metadata : `None`, ``AutoModerationRuleTriggerMetadataBase``
         Trigger type specific metadata if applicable.
     
     trigger_type : ``AutoModerationRuleTriggerType``
@@ -731,7 +731,7 @@ class AutoModerationRule(DiscordEntity, immortal=True):
             +-------------------------------+-----------------------------------------------------------+
             | name                          | `str`                                                     |
             +-------------------------------+-----------------------------------------------------------+
-            | trigger_metadata              | ``AutoModerationRuleTriggerMetadata``                     |
+            | trigger_metadata              | ``AutoModerationRuleTriggerMetadataBase``                     |
             +-------------------------------+-----------------------------------------------------------+
             | trigger_type                  | ``AutoModerationRuleTriggerType``                         |
             +-------------------------------+-----------------------------------------------------------+

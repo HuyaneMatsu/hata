@@ -115,10 +115,9 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
         return old_attributes
     
     
-    @classmethod
-    @copy_docs(ChannelMetadataGuildThreadBase._precreate)
-    def _precreate(cls, keyword_parameters):
-        self = super(ChannelMetadataGuildThreadPublic, cls)._precreate(keyword_parameters)
+    @copy_docs(ChannelMetadataGuildThreadBase._set_attributes_from_keyword_parameters)
+    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
+        ChannelMetadataGuildThreadBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
         
         # applied_tag_ids
         try:
@@ -135,13 +134,11 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
             pass
         else:
             self.flags = validate_flags(flags)
-        
-        return self
     
     
-    @copy_docs(ChannelMetadataGuildThreadBase._to_data)
-    def _to_data(self):
-        data = ChannelMetadataGuildThreadBase._to_data(self)
+    @copy_docs(ChannelMetadataGuildThreadBase.to_data)
+    def to_data(self):
+        data = ChannelMetadataGuildThreadBase.to_data(self)
         
         # applied_tag_ids
         put_applied_tag_ids_into(self.applied_tag_ids, data, True)

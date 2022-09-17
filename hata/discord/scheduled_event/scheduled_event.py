@@ -28,7 +28,7 @@ class ScheduledEvent(DiscordEntity):
         The event's entity's type.
         
         Defaults to `0`.
-    entity_metadata : `None`, ``ScheduledEventEntityMetadata``
+    entity_metadata : `None`, ``ScheduledEventEntityMetadataBase``
         Metadata about the target entity.
     entity_type : ``ScheduledEventEntityType``
         To which type of entity the event is bound to.
@@ -228,7 +228,7 @@ class ScheduledEvent(DiscordEntity):
             +---------------------------+-----------------------------------------------+
             | entity_id                 | `int`                                         |
             +---------------------------+-----------------------------------------------+
-            | entity_metadata           | `None`, ``ScheduledEventEntityMetadata``      |
+            | entity_metadata           | `None`, ``ScheduledEventEntityMetadataBase``  |
             +---------------------------+-----------------------------------------------+
             | entity_type               | ``ScheduledEventEntityType``                  |
             +---------------------------+-----------------------------------------------+

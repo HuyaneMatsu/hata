@@ -63,6 +63,10 @@
 - Add `created_at` parameter to `Channel.precreate`.
 - Add `archived` parameter to `Channel.precreate`.
 - Add `archived_at` parameter to `Channel.precreate`.
+- Add `users` parameter to `Channel.precreate`.
+- Channel metadatas now use `.from_data` for being constructed from data and `__new__` has been repurposed for partial
+    constructing.
+- Implement `IconSlot.__set__`.
 
 #### Bug fixes
 
@@ -70,6 +74,8 @@
 - `eventlist.__init__` failed on `pypy3.8`.
 - `create_partial_emoji_from_data` handled new unicode emoji cases incorrectly. (from 1.3.4) (Gilgamesh#8939)
 - Some thread fields were wrongly deserialized.
+- `IconSLot.preconvert` could drop `TypeError`.
+- `ChannelMetadataPrivate._create_empty` set `.name` incorrectly.
 
 #### Renames, Deprecation & Removals
 

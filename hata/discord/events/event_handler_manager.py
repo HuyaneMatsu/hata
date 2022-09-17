@@ -832,7 +832,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +---------------------------+-----------------------------------------------+
         | entity_id                 | `int`                                         |
         +---------------------------+-----------------------------------------------+
-        | entity_metadata           | `None`, ``ScheduledEventEntityMetadata``      |
+        | entity_metadata           | `None`, ``ScheduledEventEntityMetadataBase``  |
         +---------------------------+-----------------------------------------------+
         | entity_type               | ``ScheduledEventEntityType``                  |
         +---------------------------+-----------------------------------------------+

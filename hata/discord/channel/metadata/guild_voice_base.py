@@ -4,6 +4,11 @@ from scarletio import copy_docs, include
 
 from ...preconverters import preconvert_int, preconvert_preinstanced_type
 
+from ..constants import BITRATE_DEFAULT, USER_LIMIT_DEFAULT
+from ..fields.bitrate import parse_bitrate, put_bitrate_into, validate_bitrate
+from ..fields.region import parse_region, put_region_into, validate_region
+from ..fields.user_limit import parse_user_limit, put_user_limit_into, validate_user_limit
+
 from .guild_main_base import ChannelMetadataGuildMainBase
 
 
@@ -42,18 +47,21 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
     
     order_group = 2
     
-
+    
     @copy_docs(ChannelMetadataGuildMainBase._is_equal_same_type)
     def _is_equal_same_type(self, other):
         if not ChannelMetadataGuildMainBase._is_equal_same_type(self, other):
             return False
         
+        # bitrate
         if self.bitrate != other.bitrate:
             return False
         
+        # region
         if self.region is not other.region:
             return False
         
+        # user_limit
         if self.user_limit != other.user_limit:
             return False
         
@@ -65,9 +73,9 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
     def _create_empty(cls):
         self = super(ChannelMetadataGuildVoiceBase, cls)._create_empty()
         
-        self.bitrate = 0
+        self.bitrate = BITRATE_DEFAULT
         self.region = None
-        self.user_limit = 0
+        self.user_limit = USER_LIMIT_DEFAULT
         
         return self
     
@@ -76,82 +84,81 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
     def _update_attributes(self, data):
         ChannelMetadataGuildMainBase._update_attributes(self, data)
         
-        self.bitrate = data['bitrate']
-        self.user_limit = data['user_limit']
+        # bitrate
+        self.bitrate = parse_bitrate(data)
         
-        region = data.get('rtc_region', None)
-        if (region is not None):
-            region = VoiceRegion.get(region)
-        self.region = region
+        # region
+        self.region = parse_region(data)
+        
+        # user_limit
+        self.user_limit = parse_user_limit(data)
     
     
     @copy_docs(ChannelMetadataGuildMainBase._difference_update_attributes)
     def _difference_update_attributes(self, data):
         old_attributes = ChannelMetadataGuildMainBase._difference_update_attributes(self, data)
         
-        bitrate = data['bitrate']
+        # bitrate
+        bitrate = parse_bitrate(data)
         if self.bitrate != bitrate:
             old_attributes['bitrate'] = self.bitrate
             self.bitrate = bitrate
         
-        user_limit = data['user_limit']
-        if self.user_limit != user_limit:
-            old_attributes['user_limit'] = self.user_limit
-            self.user_limit = user_limit
-        
-        region = data.get('rtc_region', None)
-        if (region is not None):
-            region = VoiceRegion.get(region)
+        # region
+        region = parse_region(data)
         if self.region is not region:
             old_attributes['region'] = self.region
             self.region = region
         
+        # user_limit
+        user_limit = parse_user_limit(data)
+        if self.user_limit != user_limit:
+            old_attributes['user_limit'] = self.user_limit
+            self.user_limit = user_limit
+        
         return old_attributes
     
     
-    @classmethod
-    @copy_docs(ChannelMetadataGuildMainBase._precreate)
-    def _precreate(cls, keyword_parameters):
-        self = super(ChannelMetadataGuildVoiceBase, cls)._precreate(keyword_parameters)
+    @copy_docs(ChannelMetadataGuildMainBase._set_attributes_from_keyword_parameters)
+    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
+        ChannelMetadataGuildMainBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
         
+        # bitrate
         try:
             bitrate = keyword_parameters.pop('bitrate')
         except KeyError:
             pass
         else:
-            bitrate = preconvert_int(bitrate, 'bitrate', 8000, 384000)
-            self.bitrate = bitrate
-            
-        try:
-            user_limit = keyword_parameters.pop('user_limit')
-        except KeyError:
-            pass
-        else:
-            user_limit = preconvert_int(user_limit, 'user_limit', 0, 99)
-            self.user_limit = user_limit
+            self.bitrate = validate_bitrate(bitrate)
         
+        # region
         try:
             region = keyword_parameters.pop('region')
         except KeyError:
             pass
         else:
-            region = preconvert_preinstanced_type(region, 'region', VoiceRegion)
-            self.region = region
+            self.region = validate_region(region)
         
-        return self
+        # user_limit
+        try:
+            user_limit = keyword_parameters.pop('user_limit')
+        except KeyError:
+            pass
+        else:
+            self.user_limit = validate_user_limit(user_limit)
     
     
-    @copy_docs(ChannelMetadataGuildMainBase._to_data)
-    def _to_data(self):
-        data = ChannelMetadataGuildMainBase._to_data(self)
+    @copy_docs(ChannelMetadataGuildMainBase.to_data)
+    def to_data(self):
+        data = ChannelMetadataGuildMainBase.to_data(self)
         
-        data['bitrate'] = self.bitrate
-        data['user_limit'] = self.user_limit
+        # bitrate
+        put_bitrate_into(self.bitrate, data, True)
         
-        region = self.region
-        if (region is not None):
-            region = region.value
+        # region
+        put_region_into(self.region, data, True)
         
-        data['rtc_region'] = region
+        # user_limit
+        put_user_limit_into(self.user_limit, data, True)
         
         return data

@@ -121,10 +121,12 @@ class Icon(RichAttributeErrorBaseType):
                 hash_value = 0
             else:
                 icon_hash = self.hash
-                hash_value = (icon_hash >> 96) ^ \
-                             ((icon_hash >> 64) & ((1 << 32) - 1)) ^ \
-                             ((icon_hash >> 32) & ((1 << 32) - 1)) ^ \
-                             (icon_hash & ((1 << 32) - 1))
+                hash_value = (
+                    (icon_hash >> 96) ^
+                    ((icon_hash >> 64) & ((1 << 32) - 1)) ^
+                    ((icon_hash >> 32) & ((1 << 32) - 1)) ^
+                    (icon_hash & ((1 << 32) - 1))
+                )
                 
                 if icon_type is ICON_TYPE_ANIMATED:
                     hash_value ^= ((1 << 32) - 1)
@@ -167,12 +169,8 @@ class Icon(RichAttributeErrorBaseType):
         if (type(self) is not type(other)):
             return NotImplemented
         
-        icon_type = self.type
-        if (icon_type is not other.type):
+        if (self.type is not other.type):
             return False
-        
-        if icon_type is ICON_TYPE_NONE:
-            return True
         
         if self.hash == other.hash:
             return True
@@ -376,23 +374,37 @@ class IconSlot:
         for name, value in self.added_class_attributes:
             class_attributes[name] = value
     
-    def __get__(self, obj, type_):
+    
+    def __get__(self, attribute, type_):
         """Returns self if called from class, meanwhile an ``Icon`` if called from an object."""
-        if obj is None:
+        if attribute is None:
             return self
         
         icon_type_name, icon_hash_name = self.added_instance_attributes
-        icon_type = getattr(obj, icon_type_name)
-        icon_hash = getattr(obj, icon_hash_name)
+        icon_type = getattr(attribute, icon_type_name)
+        icon_hash = getattr(attribute, icon_hash_name)
         return Icon(icon_type, icon_hash)
     
-    def __set__(self, obj, value):
-        """Can't set attribute."""
-        raise AttributeError('can\'t set attribute')
     
-    def __delete__(self, obj):
+    def __set__(self, instance, icon):
+        """Can't set attribute."""
+        if not isinstance(icon, Icon):
+            raise TypeError(
+                f'`{instance.__class__.__name__}.{self.internal_name}` can only be set as an `{Icon.__name__}`, '
+                f'got {icon.__class__.__name__}; {icon!r}.'
+            )
+        
+        icon_type_name, icon_hash_name = self.added_instance_attributes
+        setattr(instance, icon_type_name, icon.type)
+        setattr(instance, icon_hash_name, icon.hash)
+    
+    
+    def __delete__(self, instance):
         """Can't delete attribute."""
-        raise AttributeError('can\'t delete attribute')
+        raise AttributeError(
+            f'Can\'t delete `{instance.__class__.__name__}.{self.internal_name}`.'
+        )
+    
     
     def preconvert(self, kwargs, processable):
         """
@@ -475,5 +487,5 @@ class IconSlot:
                     f'got {icon.__class__.__name__}; {icon!r}.'
                 )
         
-        processable[icon_type_name] = icon_type
-        processable[icon_hash_name] = icon_hash
+        processable.append((icon_type_name, icon_type))
+        processable.append((icon_hash_name, icon_hash))

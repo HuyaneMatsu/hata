@@ -1,6 +1,6 @@
 import vampytest
 
-from .. import AutoModerationAction, AutoModerationActionType, SendAlertMessageActionMetadata, TimeoutActionMetadata
+from .. import AutoModerationAction, AutoModerationActionType, AutoModerationActionMetadataSendAlertMessage, AutoModerationActionMetadataTimeout
 
 
 def test__AutoModerationAction__from_data__block_message():
@@ -30,7 +30,7 @@ def test__AutoModerationAction__from_data__send_alert_message():
     
     vampytest.assert_instance(action, AutoModerationAction)
     vampytest.assert_is(action.type, AutoModerationActionType.send_alert_message)
-    vampytest.assert_instance(action.metadata, SendAlertMessageActionMetadata)
+    vampytest.assert_instance(action.metadata, AutoModerationActionMetadataSendAlertMessage)
 
 
 def test__AutoModerationAction__from_data__timeout():
@@ -46,7 +46,7 @@ def test__AutoModerationAction__from_data__timeout():
     
     vampytest.assert_instance(action, AutoModerationAction)
     vampytest.assert_is(action.type, AutoModerationActionType.timeout)
-    vampytest.assert_instance(action.metadata, TimeoutActionMetadata)
+    vampytest.assert_instance(action.metadata, AutoModerationActionMetadataTimeout)
 
 
 def test__AutoModerationAction__to_data__block_message():

@@ -1,12 +1,13 @@
 __all__ = ('ChannelMetadataPrivateGroup',)
 
-
 from scarletio import copy_docs
 
 from ...bases import ICON_TYPE_NONE, IconSlot, Slotted
 from ...http import urls as module_urls
 from ...permission.permission import PERMISSION_GROUP, PERMISSION_GROUP_OWNER, PERMISSION_NONE
-from ...preconverters import preconvert_snowflake, preconvert_str
+
+from ..fields.name import parse_name, put_name_into, validate_name
+from ..fields.owner_id import parse_owner_id, put_owner_id_into, validate_owner_id
 
 from .private_base import ChannelMetadataPrivateBase
 
@@ -37,6 +38,23 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
     
     icon = IconSlot('icon', 'icon', module_urls.channel_group_icon_url, module_urls.channel_group_icon_url_as)
     
+    @copy_docs(ChannelMetadataPrivateBase.__new__)
+    def __new__(cls, keyword_parameters):
+        self = ChannelMetadataPrivateBase.__new__(cls, keyword_parameters)
+        
+        # icon
+        try:
+            icon = keyword_parameters.pop('icon')
+        except KeyError:
+            pass
+        else:
+            raise NotImplementedError(
+                f'`{cls.__name__}.__new__` do not implements `icon` parameter. Got icon={icon!r}'
+            )
+        
+        return self
+    
+    
     @copy_docs(ChannelMetadataPrivateBase._created)
     def _created(self, channel_entity, client):
         if (client is not None):
@@ -57,17 +75,19 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
         if not ChannelMetadataPrivateBase._is_equal_same_type(self, other):
             return False
         
-        if self.name != other.name:
-            return False
-        
-        if self.owner_id != other.owner_id:
-            return False
-        
         # icon
         if self.icon_hash != other.icon_hash:
             return False
         
         if self.icon_type is not other.icon_type:
+            return False
+        
+        # name
+        if self.name != other.name:
+            return False
+        
+        # owner_id
+        if self.owner_id != other.owner_id:
             return False
         
         return True
@@ -90,30 +110,31 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
     def _update_attributes(self, data):
         ChannelMetadataPrivateBase._update_attributes(self, data)
         
-        name = data.get('name', None)
-        if name is None:
-            name = ''
-        self.name = name
-        
-        self.owner_id = int(data['owner_id'])
-        
+        # icon
         self._set_icon(data)
+        
+        # name
+        self.name = parse_name(data)
+        
+        # owner_id
+        self.owner_id = parse_owner_id(data)
     
     
     @copy_docs(ChannelMetadataPrivateBase._difference_update_attributes)
     def _difference_update_attributes(self, data):
         old_attributes = ChannelMetadataPrivateBase._difference_update_attributes(self, data)
         
-        name = data.get('name', None)
-        if name is None:
-            name = ''
+        # icon
+        self._update_icon(data, old_attributes)
+        
+        # name
+        name = parse_name(data)
         if self.name != name:
             old_attributes['name'] = self.name
             self.name = name
         
-        self._update_icon(data, old_attributes)
-        
-        owner_id = int(data['owner_id'])
+        # owner_id
+        owner_id = parse_owner_id(data)
         if self.owner_id != owner_id:
             old_attributes['owner_id'] = self.owner_id
             self.owner_id = owner_id
@@ -149,7 +170,7 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
     def _create_empty(cls):
         self = super(ChannelMetadataPrivateGroup, cls)._create_empty()
         
-        self.name = None
+        self.name = ''
         self.owner_id = 0
         
         self.icon_hash = 0
@@ -159,52 +180,53 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
     
     
     @classmethod
-    @copy_docs(ChannelMetadataPrivateBase._precreate)
-    def _precreate(cls, keyword_parameters):
-        self = super(ChannelMetadataPrivateGroup, cls)._precreate(keyword_parameters)
+    @copy_docs(ChannelMetadataPrivateBase.precreate)
+    def precreate(cls, keyword_parameters):
+        self = super(ChannelMetadataPrivateGroup, cls).precreate(keyword_parameters)
         
-        try:
-            name = keyword_parameters.pop('name')
-        except KeyError:
-            pass
-        else:
-            name = preconvert_str(name, 'name', 2, 100)
-            self.name = name
-        
-        
+        # icon
         processable = []
         cls.icon.preconvert(keyword_parameters, processable)
         if processable:
             for item in processable:
                 setattr(self, *item)
         processable = None
+    
+        return self
+    
+    
+    @copy_docs(ChannelMetadataPrivateBase._set_attributes_from_keyword_parameters)
+    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
+        ChannelMetadataPrivateBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
         
+        # name
+        try:
+            name = keyword_parameters.pop('name')
+        except KeyError:
+            pass
+        else:
+            self.name = validate_name(name)
         
+        # owner_id
         try:
             owner_id = keyword_parameters.pop('owner_id')
         except KeyError:
             pass
         else:
-            owner_id = preconvert_snowflake(owner_id, 'owner_id')
-            self.owner_id = owner_id
-        
-        return self
+            self.owner_id = validate_owner_id(owner_id)
     
     
-    @copy_docs(ChannelMetadataPrivateBase._to_data)
-    def _to_data(self):
-        data = ChannelMetadataPrivateBase._to_data(self)
+    @copy_docs(ChannelMetadataPrivateBase.to_data)
+    def to_data(self):
+        data = ChannelMetadataPrivateBase.to_data(self)
         
         # name
-        name = self.name
-        if not name:
-            name = None
-        data['name'] = name
+        put_name_into(self.name, data, True)
         
         # owner_id
-        data['owner_id'] = str(self.owner_id)
+        put_owner_id_into(self.owner_id, data, True)
         
         # icon
         data['icon'] = self.icon.as_base16_hash
         
-        return self
+        return data

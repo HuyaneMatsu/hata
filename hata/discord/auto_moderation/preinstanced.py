@@ -7,9 +7,11 @@ from scarletio import export
 
 from ..bases import Preinstance as P, PreinstancedBase
 
-from .action_metadata import SendAlertMessageActionMetadata, TimeoutActionMetadata
-from .trigger_metadata import KeywordPresetTriggerMetadata, KeywordTriggerMetadata, MentionSpamTriggerMetadata
-
+from .action_metadata import AutoModerationActionMetadataSendAlertMessage, AutoModerationActionMetadataTimeout
+from .trigger_metadata import (
+    AutoModerationRuleTriggerMetadataKeywordPreset, AutoModerationRuleTriggerMetadataKeyword,
+    AutoModerationRuleTriggerMetadataMentionSpam
+)
 
 
 class AutoModerationActionType(PreinstancedBase):
@@ -22,7 +24,7 @@ class AutoModerationActionType(PreinstancedBase):
         The Discord side identifier value of the auto moderation action type.
     name : `str`
         The default name of the auto moderation action type.
-    metadata_type : `None`, ``AutoModerationActionMetadata``
+    metadata_type : `None`, ``AutoModerationActionMetadataBase``
         The action type's respective metadata type.
     
     
@@ -39,17 +41,17 @@ class AutoModerationActionType(PreinstancedBase):
     
     Every predefined auto moderation action type is also stored as a class attribute:
     
-    +-----------------------+-----------------------+-----------+---------------------------------------+-----------------------------------------------------------------------+
-    | Class attribute name  | Name                  | Value     | Metadata type                         | Description                                                           |
-    +=======================+=======================+===========+=======================================+=======================================================================+
-    | none                  | none                  | 0         | `None`                                | N/A                                                                   |
-    +-----------------------+-----------------------+-----------+---------------------------------------+-----------------------------------------------------------------------+
-    | block_message         | block message         | 1         | `None`                                | Blocks the message's content according to the rule.                   |
-    +-----------------------+-----------------------+-----------+---------------------------------------+-----------------------------------------------------------------------+
-    | send_alert_message    | send alert message    | 2         | ``SendAlertMessageActionMetadata``    | Sends an alert message to the specified channel.                      |
-    +-----------------------+-----------------------+-----------+---------------------------------------+-----------------------------------------------------------------------+
-    | timeout               | timeout               | 3         | ``TimeoutActionMetadata``             | Timeouts the user. Only applicable for `keyword` rules. Max 4 weeks.  |
-    +-----------------------+-----------------------+-----------+---------------------------------------+-----------------------------------------------------------------------+
+    +-----------------------+-----------------------+-----------+---------------------------------------------------+-----------------------------------------------------------------------+
+    | Class attribute name  | Name                  | Value     | Metadata type                                     | Description                                                           |
+    +=======================+=======================+===========+===================================================+=======================================================================+
+    | none                  | none                  | 0         | `None`                                            | N/A                                                                   |
+    +-----------------------+-----------------------+-----------+---------------------------------------------------+-----------------------------------------------------------------------+
+    | block_message         | block message         | 1         | `None`                                            | Blocks the message's content according to the rule.                   |
+    +-----------------------+-----------------------+-----------+---------------------------------------------------+-----------------------------------------------------------------------+
+    | send_alert_message    | send alert message    | 2         | ``AutoModerationActionMetadataSendAlertMessage``  | Sends an alert message to the specified channel.                      |
+    +-----------------------+-----------------------+-----------+---------------------------------------------------+-----------------------------------------------------------------------+
+    | timeout               | timeout               | 3         | ``AutoModerationActionMetadataTimeout``           | Timeouts the user. Only applicable for `keyword` rules. Max 4 weeks.  |
+    +-----------------------+-----------------------+-----------+---------------------------------------------------+-----------------------------------------------------------------------+
     """
     __slots__ = ('metadata_type',)
     
@@ -91,7 +93,7 @@ class AutoModerationActionType(PreinstancedBase):
             The default name of the auto moderation action type.
         max_per_guild : `int`
             The native name of the auto moderation action type.
-        metadata_type : `None`, ``AutoModerationRuleTriggerMetadata``
+        metadata_type : `None`, ``AutoModerationRuleTriggerMetadataBase``
             The action type's respective metadata type.
         """
         self.value = value
@@ -103,8 +105,8 @@ class AutoModerationActionType(PreinstancedBase):
     # predefined
     none = P(0, 'none', None)
     block_message = P(1, 'block message', None)
-    send_alert_message = P(2, 'send alert message', SendAlertMessageActionMetadata)
-    timeout = P(3, 'timeout', TimeoutActionMetadata)
+    send_alert_message = P(2, 'send alert message', AutoModerationActionMetadataSendAlertMessage)
+    timeout = P(3, 'timeout', AutoModerationActionMetadataTimeout)
 
 
 class AutoModerationRuleTriggerType(PreinstancedBase):
@@ -119,7 +121,7 @@ class AutoModerationRuleTriggerType(PreinstancedBase):
         The default name of the auto moderation trigger type.
     max_per_guild : `int`
         The maximal amount of rules of this type per guild.
-    metadata_type : `None`, ``AutoModerationRuleTriggerMetadata``
+    metadata_type : `None`, ``AutoModerationRuleTriggerMetadataBase``
         The trigger type's respective metadata type.
     
     Class Attributes
@@ -135,21 +137,21 @@ class AutoModerationRuleTriggerType(PreinstancedBase):
     
     Every predefined auto moderation trigger type is also stored as a class attribute:
     
-    +-----------------------+-------------------+-----------+---------------+-----------------------------------+
-    | Class attribute name  | Name              | Value     | Max per guild | Metadata type                     |
-    +=======================+===================+===========+===============+===================================+
-    | none                  | none              | 0         | 0             | `None`                            |
-    +-----------------------+-------------------+-----------+---------------+-----------------------------------+
-    | keyword               | keyword           | 1         | 3             | ``KeywordTriggerMetadata``        |
-    +-----------------------+-------------------+-----------+---------------+-----------------------------------+
-    | harmful_link          | harmful link      | 2         | 1             | `None`                            |
-    +-----------------------+-------------------+-----------+---------------+-----------------------------------+
-    | spam                  | spam              | 3         | 1             | `None`                            |
-    +-----------------------+-------------------+-----------+---------------+-----------------------------------+
-    | keyword_preset        | keyword preset    | 4         | 1             | ``KeywordPresetTriggerMetadata``  |
-    +-----------------------+-------------------+-----------+---------------+-----------------------------------+
-    | mention_spam          | mention spam      | 5         | 1             | ``MentionSpamTriggerMetadata``    |
-    +-----------------------+-------------------+-----------+---------------+-----------------------------------+
+    +-----------------------+-------------------+-----------+---------------+-----------------------------------------------------+
+    | Class attribute name  | Name              | Value     | Max per guild | Metadata type                                       |
+    +=======================+===================+===========+===============+=====================================================+
+    | none                  | none              | 0         | 0             | `None`                                              |
+    +-----------------------+-------------------+-----------+---------------+-----------------------------------------------------+
+    | keyword               | keyword           | 1         | 3             | ``AutoModerationRuleTriggerMetadataKeyword``        |
+    +-----------------------+-------------------+-----------+---------------+-----------------------------------------------------+
+    | harmful_link          | harmful link      | 2         | 1             | `None`                                              |
+    +-----------------------+-------------------+-----------+---------------+-----------------------------------------------------+
+    | spam                  | spam              | 3         | 1             | `None`                                              |
+    +-----------------------+-------------------+-----------+---------------+-----------------------------------------------------+
+    | keyword_preset        | keyword preset    | 4         | 1             | ``AutoModerationRuleTriggerMetadataKeywordPreset``  |
+    +-----------------------+-------------------+-----------+---------------+-----------------------------------------------------+
+    | mention_spam          | mention spam      | 5         | 1             | ``AutoModerationRuleTriggerMetadataMentionSpam``    |
+    +-----------------------+-------------------+-----------+---------------+-----------------------------------------------------+
     """
     __slots__ = ('max_per_guild', 'metadata_type')
     
@@ -192,7 +194,7 @@ class AutoModerationRuleTriggerType(PreinstancedBase):
             The default name of the auto moderation trigger type.
         max_per_guild : `int`
             The native name of the auto moderation trigger type.
-        metadata_type : `None`, ``AutoModerationRuleTriggerMetadata``
+        metadata_type : `None`, ``AutoModerationRuleTriggerMetadataBase``
             The trigger type's respective metadata type.
         """
         self.value = value
@@ -204,11 +206,11 @@ class AutoModerationRuleTriggerType(PreinstancedBase):
     
     # predefined
     none = P(0, 'none', 0, None)
-    keyword = P(1, 'keyword', 3, KeywordTriggerMetadata)
+    keyword = P(1, 'keyword', 3, AutoModerationRuleTriggerMetadataKeyword)
     harmful_link = P(2, 'harmful link', 1, None)
     spam = P(3, 'spam', 1, None)
-    keyword_preset = P(4, 'keyword preset', 1, KeywordPresetTriggerMetadata)
-    mention_spam = P(5, 'mention spam', 1, MentionSpamTriggerMetadata)
+    keyword_preset = P(4, 'keyword preset', 1, AutoModerationRuleTriggerMetadataKeywordPreset)
+    mention_spam = P(5, 'mention spam', 1, AutoModerationRuleTriggerMetadataMentionSpam)
 
 
 class AutoModerationEventType(PreinstancedBase):

@@ -2,9 +2,7 @@ __all__ = ('ChannelMetadataGuildTextBase',)
 
 from scarletio import copy_docs
 
-from ...preconverters import preconvert_bool, preconvert_int, preconvert_int_options, preconvert_str
-
-from ..constants import AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
+from ..constants import AUTO_ARCHIVE_DEFAULT
 from ..fields.default_thread_auto_archive_after import (
     parse_default_thread_auto_archive_after, put_default_thread_auto_archive_after_into,
     validate_default_thread_auto_archive_after
@@ -159,10 +157,9 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
         return old_attributes
     
     
-    @classmethod
-    @copy_docs(ChannelMetadataGuildMainBase._precreate)
-    def _precreate(cls, keyword_parameters):
-        self = super(ChannelMetadataGuildTextBase, cls)._precreate(keyword_parameters)
+    @copy_docs(ChannelMetadataGuildMainBase._set_attributes_from_keyword_parameters)
+    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
+        ChannelMetadataGuildMainBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
         
         # default_thread_auto_archive_after
         try:
@@ -205,13 +202,11 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
             pass
         else:
             self.topic = validate_topic(topic)
-        
-        return self
     
     
-    @copy_docs(ChannelMetadataGuildMainBase._to_data)
-    def _to_data(self):
-        data = ChannelMetadataGuildMainBase._to_data(self)
+    @copy_docs(ChannelMetadataGuildMainBase.to_data)
+    def to_data(self):
+        data = ChannelMetadataGuildMainBase.to_data(self)
         
         # default_auto_archive_duration
         put_default_thread_auto_archive_after_into(self.default_thread_auto_archive_after, data, True)

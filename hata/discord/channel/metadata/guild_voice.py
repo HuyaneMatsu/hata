@@ -109,10 +109,9 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
         return old_attributes
     
     
-    @classmethod
-    @copy_docs(ChannelMetadataGuildVoiceBase._precreate)
-    def _precreate(cls, keyword_parameters):
-        self = super(ChannelMetadataGuildVoice, cls)._precreate(keyword_parameters)
+    @copy_docs(ChannelMetadataGuildVoiceBase._set_attributes_from_keyword_parameters)
+    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
+        ChannelMetadataGuildVoiceBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
         
         # nsfw
         try:
@@ -129,13 +128,11 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
             pass
         else:
             self.video_quality_mode = validate_video_quality_mode(video_quality_mode)
-        
-        return self
     
     
-    @copy_docs(ChannelMetadataGuildVoiceBase._to_data)
-    def _to_data(self):
-        data = ChannelMetadataGuildVoiceBase._to_data(self)
+    @copy_docs(ChannelMetadataGuildVoiceBase.to_data)
+    def to_data(self):
+        data = ChannelMetadataGuildVoiceBase.to_data(self)
         
         # nsfw
         put_nsfw_into(self.nsfw, data, True)

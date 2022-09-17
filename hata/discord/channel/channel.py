@@ -82,7 +82,7 @@ class Channel(DiscordEntity, immortal=True):
             self = CHANNELS[channel_id]
         except KeyError:
             channel_type = ChannelType.get(data['type'])
-            metadata = channel_type.metadata_type(data)
+            metadata = channel_type.metadata_type.from_data(data)
             
             self = object.__new__(cls)
             self._message_history = None
@@ -100,7 +100,7 @@ class Channel(DiscordEntity, immortal=True):
                 self._message_history = None
                 
                 type_ = ChannelType.get(data['type'])
-                metadata = type_.metadata_type(data)
+                metadata = type_.metadata_type.from_data(data)
                 self.metadata = metadata
                 self.type = type_
                 metadata._created(self, client)
@@ -109,7 +109,7 @@ class Channel(DiscordEntity, immortal=True):
         
                 type_ = ChannelType.get(data['type'])
                 if self.type is not type_:
-                    metadata = type_.metadata_type(data)
+                    metadata = type_.metadata_type.from_data(data)
                     self.metadata = metadata
                     self.type = type_
                     metadata._created(self, client)
@@ -485,7 +485,7 @@ class Channel(DiscordEntity, immortal=True):
         if metadata_type is type(metadata):
             metadata._update_attributes(data)
         else:
-            self.metadata = metadata_type(data)
+            self.metadata = metadata_type.from_data(data)
         
         self.type = type_
     
@@ -576,7 +576,7 @@ class Channel(DiscordEntity, immortal=True):
                 'metadata': metadata,
             }
             
-            self.metadata = metadata_type(data)
+            self.metadata = metadata_type.from_data(data)
         
         if (type_ is not self.type):
             old_attributes['type'] = self.type
@@ -669,7 +669,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         data : `dict` of (`str`, `str`) items
         """
-        data = self.metadata._to_data()
+        data = self.metadata.to_data()
         
         # id
         data['id'] = str(self.id)
@@ -1308,7 +1308,10 @@ class Channel(DiscordEntity, immortal=True):
         
         user_limit : `int`, Optional (Keyword only)
             The channel's ``.user_limit``.
-        
+            
+        users : `iterable` of (`int`, ``ClientUserBase``), Optional (Keyword only)
+            The users in the channel.
+            
         video_quality_mode : ``VideoQualityMode``, Optional (Keyword only)
             The video quality of the voice channel.
         
@@ -1330,7 +1333,7 @@ class Channel(DiscordEntity, immortal=True):
         else:
             channel_type = preconvert_preinstanced_type(channel_type, 'channel_type', ChannelType)
         
-        metadata = channel_type.metadata_type._precreate(keyword_parameters)
+        metadata = channel_type.metadata_type.precreate(keyword_parameters)
         
         if keyword_parameters:
             raise TypeError(

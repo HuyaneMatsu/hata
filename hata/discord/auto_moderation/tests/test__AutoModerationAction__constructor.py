@@ -2,7 +2,7 @@ import vampytest
 
 from ...channel import Channel
 
-from .. import AutoModerationAction, AutoModerationActionType, SendAlertMessageActionMetadata, TimeoutActionMetadata
+from .. import AutoModerationAction, AutoModerationActionType, AutoModerationActionMetadataSendAlertMessage, AutoModerationActionMetadataTimeout
 
 
 
@@ -42,7 +42,7 @@ def test__AutoModerationAction__new__channel__0():
     action = AutoModerationAction(channel=0)
     
     vampytest.assert_is(action.type, AutoModerationActionType.send_alert_message)
-    vampytest.assert_instance(action.metadata, SendAlertMessageActionMetadata)
+    vampytest.assert_instance(action.metadata, AutoModerationActionMetadataSendAlertMessage)
 
 
 def test__AutoModerationAction__new__channel__1():
@@ -91,7 +91,7 @@ def test__AutoModerationAction__new__duration__0():
     action = AutoModerationAction(duration=0)
     
     vampytest.assert_is(action.type, AutoModerationActionType.timeout)
-    vampytest.assert_instance(action.metadata, TimeoutActionMetadata)
+    vampytest.assert_instance(action.metadata, AutoModerationActionMetadataTimeout)
 
 
 def test__AutoModerationAction__new__duration__1():

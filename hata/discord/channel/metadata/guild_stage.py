@@ -1,6 +1,5 @@
 __all__ = ('ChannelMetadataGuildStage',)
 
-
 from scarletio import copy_docs
 
 from ...permission import Permission
@@ -8,7 +7,6 @@ from ...permission.permission import (
     PERMISSION_MASK_CONNECT, PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE, PERMISSION_TEXT_DENY,
     PERMISSION_VOICE_DENY_CONNECTION
 )
-from ...preconverters import preconvert_str
 
 from ..fields.topic import parse_topic, put_topic_into, validate_topic
 
@@ -91,10 +89,9 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
         return old_attributes
     
     
-    @classmethod
-    @copy_docs(ChannelMetadataGuildVoiceBase._precreate)
-    def _precreate(cls, keyword_parameters):
-        self = super(ChannelMetadataGuildStage, cls)._precreate(keyword_parameters)
+    @copy_docs(ChannelMetadataGuildVoiceBase._set_attributes_from_keyword_parameters)
+    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
+        ChannelMetadataGuildVoiceBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
         
         # topic
         try:
@@ -103,13 +100,11 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
             pass
         else:
             self.topic = validate_topic(topic)
-        
-        return self
     
     
-    @copy_docs(ChannelMetadataGuildVoiceBase._to_data)
-    def _to_data(self):
-        data = ChannelMetadataGuildVoiceBase._to_data(self)
+    @copy_docs(ChannelMetadataGuildVoiceBase.to_data)
+    def to_data(self):
+        data = ChannelMetadataGuildVoiceBase.to_data(self)
         
         # topic
         put_topic_into(self.topic, data, True)

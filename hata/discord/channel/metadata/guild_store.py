@@ -107,10 +107,9 @@ class ChannelMetadataGuildStore(ChannelMetadataGuildMainBase):
         return Permission(result)
     
     
-    @classmethod
-    @copy_docs(ChannelMetadataGuildMainBase._precreate)
-    def _precreate(cls, keyword_parameters):
-        self = super(ChannelMetadataGuildStore, cls)._precreate(keyword_parameters)
+    @copy_docs(ChannelMetadataGuildMainBase._set_attributes_from_keyword_parameters)
+    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
+        ChannelMetadataGuildMainBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
         
         # nsfw
         try:
@@ -119,13 +118,11 @@ class ChannelMetadataGuildStore(ChannelMetadataGuildMainBase):
             pass
         else:
             self.nsfw = validate_nsfw(nsfw)
-        
-        return self
     
     
-    @copy_docs(ChannelMetadataGuildMainBase._to_data)
-    def _to_data(self):
-        data = ChannelMetadataGuildMainBase._to_data(self)
+    @copy_docs(ChannelMetadataGuildMainBase.to_data)
+    def to_data(self):
+        data = ChannelMetadataGuildMainBase.to_data(self)
         
         put_nsfw_into(self.nsfw, data, True)
         

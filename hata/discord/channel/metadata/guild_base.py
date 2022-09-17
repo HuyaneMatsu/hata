@@ -37,9 +37,10 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
     """
     __slots__ = ('_permission_cache', 'name', 'parent_id')
     
-    @copy_docs(ChannelMetadataBase.__new__)
-    def __new__(cls, data):
-        self = ChannelMetadataBase.__new__(cls, data)
+    @classmethod
+    @copy_docs(ChannelMetadataBase.from_data)
+    def from_data(cls, data):
+        self = super(ChannelMetadataGuildBase, cls).from_data(data)
         
         self._permission_cache = None
         
@@ -66,9 +67,9 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         return True
     
     
-    @copy_docs(ChannelMetadataBase._to_data)
-    def _to_data(self):
-        data = ChannelMetadataBase._to_data(self)
+    @copy_docs(ChannelMetadataBase.to_data)
+    def to_data(self):
+        data = ChannelMetadataBase.to_data(self)
         
         # name
         put_name_into(self.name, data, True)
@@ -334,10 +335,9 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         return permissions
     
     
-    @classmethod
-    @copy_docs(ChannelMetadataBase._precreate)
-    def _precreate(cls, keyword_parameters):
-        self = super(ChannelMetadataGuildBase, cls)._precreate(keyword_parameters)
+    @copy_docs(ChannelMetadataBase._set_attributes_from_keyword_parameters)
+    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
+        ChannelMetadataBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
         
         # name
         try:

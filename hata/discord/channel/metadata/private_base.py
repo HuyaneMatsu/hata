@@ -2,7 +2,7 @@ __all__ = ('ChannelMetadataPrivateBase',)
 
 from scarletio import copy_docs
 
-from ...user import User
+from ..fields.users import parse_users, put_users_into, validate_users
 
 from .base import ChannelMetadataBase
 
@@ -23,17 +23,13 @@ class ChannelMetadataPrivateBase(ChannelMetadataBase):
     """
     __slots__ = ('users',)
     
-    @copy_docs(ChannelMetadataBase.__new__)
-    def __new__(cls, data):
-        self = ChannelMetadataBase.__new__(cls, data)
+    @classmethod
+    @copy_docs(ChannelMetadataBase.from_data)
+    def from_data(cls, data):
+        self = super(ChannelMetadataPrivateBase, cls).from_data(data)
         
-        users = []
-        for user_data in data['recipients']:
-            user = User.from_data(user_data)
-            users.append(user)
-        
-        users.sort()
-        self.users = users
+        # users
+        self.users = parse_users(data)
         
         return self
     
@@ -59,7 +55,7 @@ class ChannelMetadataPrivateBase(ChannelMetadataBase):
     @copy_docs(ChannelMetadataBase.name)
     def name(self):
         users = self.users
-        if users:
+        if len(users) == 2:
             name = f'Direct Message {users[0].full_name} with {users[1].full_name}'
         else:
             name = f'Direct Message (partial)'
@@ -75,12 +71,25 @@ class ChannelMetadataPrivateBase(ChannelMetadataBase):
         
         return self
     
-    
-    @copy_docs(ChannelMetadataBase._to_data)
-    def _to_data(self):
-        data = ChannelMetadataBase._to_data(self)
+
+    @copy_docs(ChannelMetadataBase._set_attributes_from_keyword_parameters)
+    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
+        ChannelMetadataBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
         
         # users
-        data['recipients'] = [user.to_data() for user in self.users]
+        try:
+            users = keyword_parameters.pop('users')
+        except KeyError:
+            pass
+        else:
+            self.users = validate_users(users)
+    
+    
+    @copy_docs(ChannelMetadataBase.to_data)
+    def to_data(self):
+        data = ChannelMetadataBase.to_data(self)
         
-        return self
+        # users
+        put_users_into(self.users, data, True)
+        
+        return data

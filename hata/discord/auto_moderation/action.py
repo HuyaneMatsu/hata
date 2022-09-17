@@ -25,7 +25,7 @@ def _validate_action_type_with_metadata_options(action_type, channel, duration):
     
     Returns
     -------
-    action_metadata : `None`, ``AutoModerationActionMetadata``
+    action_metadata : `None`, ``AutoModerationActionMetadataBase``
         Action type specific metadata if applicable.
     action_type : ``AutoModerationActionType``
         The final processed action type.
@@ -103,7 +103,7 @@ class AutoModerationAction(RichAttributeErrorBaseType):
     
     Attributes
     ----------
-    metadata : `None`, ``AutoModerationActionMetadata``
+    metadata : `None`, ``AutoModerationActionMetadataBase``
         Characterises the action
     type : ``AutoModerationActionType``
         The action's type.

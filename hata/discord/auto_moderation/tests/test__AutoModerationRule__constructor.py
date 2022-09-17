@@ -5,8 +5,8 @@ from ...role import Role
 
 from .. import (
     AutoModerationRule, AutoModerationRuleTriggerType, AutoModerationAction, AutoModerationActionType,
-    AutoModerationEventType, KeywordPresetTriggerMetadata, AutoModerationKeywordPresetType, KeywordTriggerMetadata,
-    MentionSpamTriggerMetadata
+    AutoModerationEventType, AutoModerationRuleTriggerMetadataKeywordPreset, AutoModerationKeywordPresetType, AutoModerationRuleTriggerMetadataKeyword,
+    AutoModerationRuleTriggerMetadataMentionSpam
 )
 
 
@@ -364,7 +364,7 @@ def test__AutoModerationRule__new__keyword_presets__1():
     """
     rule = AutoModerationRule('name', None, keyword_presets=None)
 
-    vampytest.assert_instance(rule.trigger_metadata, KeywordPresetTriggerMetadata)
+    vampytest.assert_instance(rule.trigger_metadata, AutoModerationRuleTriggerMetadataKeywordPreset)
 
 
 def test__AutoModerationRule__new__keyword_presets__2():
@@ -469,7 +469,7 @@ def test__AutoModerationRule__new__keywords__1():
     """
     rule = AutoModerationRule('name', None, keywords=None)
 
-    vampytest.assert_instance(rule.trigger_metadata, KeywordTriggerMetadata)
+    vampytest.assert_instance(rule.trigger_metadata, AutoModerationRuleTriggerMetadataKeyword)
 
 
 def test__AutoModerationRule__new__keywords__2():
@@ -623,7 +623,7 @@ def test__AutoModerationRule__new__excluded_keywords__2():
         'name', None, excluded_keywords='owo', keyword_presets=AutoModerationKeywordPresetType.cursing
     )
     
-    trigger_metadata = KeywordPresetTriggerMetadata(AutoModerationKeywordPresetType.cursing, 'owo')
+    trigger_metadata = AutoModerationRuleTriggerMetadataKeywordPreset(AutoModerationKeywordPresetType.cursing, 'owo')
     
     vampytest.assert_eq(rule.trigger_metadata, trigger_metadata)
 
@@ -645,7 +645,7 @@ def test__AutoModerationRule__new__mention_limit__1():
     """
     rule = AutoModerationRule('name', None, mention_limit=None)
 
-    vampytest.assert_instance(rule.trigger_metadata, MentionSpamTriggerMetadata)
+    vampytest.assert_instance(rule.trigger_metadata, AutoModerationRuleTriggerMetadataMentionSpam)
 
 
 def test__AutoModerationRule__new__mention_limit__2():

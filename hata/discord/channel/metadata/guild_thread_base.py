@@ -62,9 +62,9 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
         '_created_at', 'archived', 'archived_at', 'auto_archive_after', 'open', 'owner_id', 'slowmode', 'thread_users'
     )
     
-    @copy_docs(ChannelMetadataGuildBase.__new__)
-    def __new__(cls, data):
-        self = ChannelMetadataGuildBase.__new__(cls, data)
+    @copy_docs(ChannelMetadataGuildBase.from_data)
+    def from_data(cls, data):
+        self = super(ChannelMetadataGuildThreadBase, cls).from_data(data)
 
         # created_at
         self._created_at = parse_created_at(data)
@@ -282,10 +282,9 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
         return parent.permissions_for_roles(*roles)
     
     
-    @classmethod
-    @copy_docs(ChannelMetadataGuildBase._precreate)
-    def _precreate(cls, keyword_parameters):
-        self = super(ChannelMetadataGuildThreadBase, cls)._precreate(keyword_parameters)
+    @copy_docs(ChannelMetadataGuildBase._set_attributes_from_keyword_parameters)
+    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
+        ChannelMetadataGuildBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
         
         # archived
         try:
@@ -342,13 +341,11 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
             pass
         else:
             self.slowmode = validate_slowmode(slowmode)
-        
-        return self
     
     
-    @copy_docs(ChannelMetadataGuildBase._to_data)
-    def _to_data(self):
-        data = ChannelMetadataGuildBase._to_data(self)
+    @copy_docs(ChannelMetadataGuildBase.to_data)
+    def to_data(self):
+        data = ChannelMetadataGuildBase.to_data(self)
         
         # archived
         put_archived_into(self.archived, data, True)

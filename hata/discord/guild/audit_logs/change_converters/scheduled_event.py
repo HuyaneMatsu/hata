@@ -1,7 +1,7 @@
 __all__ = ()
 
 from ....scheduled_event import PrivacyLevel, ScheduledEventEntityType, ScheduledEventStatus
-from ....scheduled_event.metadata import try_get_scheduled_event_metadata_type_from_data
+from ....scheduled_event.metadata.utils import try_get_scheduled_event_metadata_type_from_data
 
 from ..audit_log_change import AuditLogChange
 
@@ -18,7 +18,7 @@ def convert_scheduled_event_entity_metadata(name, data):
         if metadata_type is None:
             before = None
         else:
-            before = metadata_type(before)
+            before = metadata_type.from_data(before)
     
     after = data.get('new_value', None)
     if (after is not None):
@@ -26,7 +26,7 @@ def convert_scheduled_event_entity_metadata(name, data):
         if metadata_type is None:
             after = None
         else:
-            after = metadata_type(after)
+            after = metadata_type.from_data(after)
     
     return AuditLogChange('entity_metadata', before, after)
 

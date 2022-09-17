@@ -112,15 +112,15 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
         return old_attributes
     
     
-    @copy_docs(ChannelMetadataGuildBase._to_data)
-    def _to_data(self):
-        data = ChannelMetadataGuildBase._to_data(self)
+    @copy_docs(ChannelMetadataGuildBase.to_data)
+    def to_data(self):
+        data = ChannelMetadataGuildBase.to_data(self)
         
         # position
         put_position_into(self.position, data, True)
         
         # permission_overwrites
-        put_permission_overwrites_into(self.permission_overwrites, True)
+        put_permission_overwrites_into(self.permission_overwrites, data, True)
         
         return data
     
@@ -136,10 +136,9 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
         return self
     
     
-    @classmethod
-    @copy_docs(ChannelMetadataGuildBase._precreate)
-    def _precreate(cls, keyword_parameters):
-        self = super(ChannelMetadataGuildBase, cls)._precreate(keyword_parameters)
+    @copy_docs(ChannelMetadataGuildBase._set_attributes_from_keyword_parameters)
+    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
+        ChannelMetadataGuildBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
         
         # permission_overwrites
         try:
@@ -156,8 +155,6 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
             pass
         else:
             self.position = validate_position(position)
-        
-        return self
     
     
     def _get_base_permissions_for(self, channel_entity, user):

@@ -30,7 +30,29 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     
     order_group = 0
     
-    def __new__(cls, data):
+    def __new__(cls, keyword_parameters):
+        """
+        Creates a new partially channel metadata.
+        
+        Parameters
+        ----------
+        keyword_parameters : `dict` of (`str`, `Any`) items
+            Keyword parameters to work with.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        self = cls._create_empty()
+        self._set_attributes_from_keyword_parameters(keyword_parameters)
+        return self
+    
+    
+    @classmethod
+    def from_data(cls, data):
         """
         Creating channel metadatas.
         
@@ -38,6 +60,10 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data receive from Discord.
+        
+        Returns
+        -------
+        self : instance<cls>
         """
         self = object.__new__(cls)
         
@@ -92,7 +118,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         pass
     
     
-    def _to_data(cls):
+    def to_data(self):
         """
         Serialises the channel metadata to json serializable object.
         
@@ -526,7 +552,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     
     
     @classmethod
-    def _precreate(cls, keyword_parameters):
+    def precreate(cls, keyword_parameters):
         """
         Precreates the channel metadata. Each channel type exhaust it's own specific attributes from
         `keyword_parameters`.
@@ -543,11 +569,13 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         Raises
         ------
         TypeError
-            If any parameter's type is bad or if unexpected parameter is passed.
+            - If a parameter's type is incorrect.
         ValueError
-            If an parameter's type is good, but it's value is unacceptable.
+            . If an parameter's value is incorrect.
         """
-        return cls._create_empty()
+        self = cls._create_empty()
+        self._set_attributes_from_keyword_parameters(keyword_parameters)
+        return self
     
     
     def _get_created_at(self, channel_entity):
@@ -569,6 +597,17 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         """
         pass
     
+    
+    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
+        """
+        Sets shared parameters used by ``.__new__` and ``._precreate˙`.
+        
+        Parameters
+        ----------
+        keyword_parameters : `dict` of (`str`, `Any`) items
+            Keyword parameters to work with.
+        """
+        pass
     
     # Slot place holders
     

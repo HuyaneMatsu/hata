@@ -14,10 +14,8 @@ from ...channel.utils import (
 )
 from ...guild import Guild, create_partial_guild_from_id
 from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES
-from ...permission import Permission, PermissionOverwrite, PermissionOverwriteTargetType
+from ...permission import Permission, PermissionOverwrite
 from ...preconverters import preconvert_preinstanced_type
-from ...role import Role
-from ...user import ClientUserBase
 from ...utils import get_image_media_type, image_to_base64
 from ...webhook import Webhook
 

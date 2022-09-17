@@ -1,7 +1,7 @@
 __all__ = ()
 
 from ....auto_moderation import AutoModerationAction, AutoModerationEventType, AutoModerationRuleTriggerType
-from ....auto_moderation.trigger_metadata import try_get_auto_moderation_trigger_metadata_type_from_data
+from ....auto_moderation.trigger_metadata.utils import try_get_auto_moderation_trigger_metadata_type_from_data
 
 from ..audit_log_change import AuditLogChange
 
@@ -45,7 +45,7 @@ def convert_auto_moderation_trigger_entity_metadata(name, data):
         if metadata_type is None:
             before = None
         else:
-            before = metadata_type(before)
+            before = metadata_type.from_data(before)
     
     after = data.get('new_value', None)
     if (after is not None):
@@ -53,7 +53,7 @@ def convert_auto_moderation_trigger_entity_metadata(name, data):
         if metadata_type is None:
             after = None
         else:
-            after = metadata_type(after)
+            after = metadata_type.from_data(after)
     
     return AuditLogChange('trigger_metadata', before, after)
 

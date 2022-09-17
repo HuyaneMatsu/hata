@@ -2,7 +2,7 @@ import vampytest
 
 from .. import (
     AutoModerationRule, AutoModerationRuleTriggerType, AutoModerationAction, AutoModerationActionType,
-    AutoModerationEventType, KeywordTriggerMetadata
+    AutoModerationEventType, AutoModerationRuleTriggerMetadataKeyword
 )
 
 
@@ -111,7 +111,7 @@ EDITIONS = (
             ('trigger_metadata', {'keyword_filter': ['owo']},),
         ], [
             ('trigger_type', AutoModerationRuleTriggerType.keyword,),
-            ('trigger_metadata', KeywordTriggerMetadata(keywords='owo'),),
+            ('trigger_metadata', AutoModerationRuleTriggerMetadataKeyword(keywords='owo'),),
         ], [
             ('trigger_type', AutoModerationRuleTriggerType.harmful_link,),
             ('trigger_metadata', None,),
@@ -122,9 +122,9 @@ EDITIONS = (
             ('trigger_metadata', {'keyword_filter': ['typhoon']},),
         ], [
             ('trigger_type', AutoModerationRuleTriggerType.keyword,),
-            ('trigger_metadata', KeywordTriggerMetadata(keywords='typhoon'),),
+            ('trigger_metadata', AutoModerationRuleTriggerMetadataKeyword(keywords='typhoon'),),
         ], [
-            ('trigger_metadata', KeywordTriggerMetadata(keywords='owo'),),
+            ('trigger_metadata', AutoModerationRuleTriggerMetadataKeyword(keywords='owo'),),
         ],
     )
 )

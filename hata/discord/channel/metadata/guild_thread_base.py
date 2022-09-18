@@ -62,6 +62,35 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
         '_created_at', 'archived', 'archived_at', 'auto_archive_after', 'open', 'owner_id', 'slowmode', 'thread_users'
     )
     
+    
+    @copy_docs(ChannelMetadataGuildBase.__hash__)
+    def __hash__(self):
+        hash_value = ChannelMetadataGuildBase.__hash__(self)
+        
+        # created_at
+        created_at = self._created_at
+        if (created_at is not None):
+            hash_value ^= hash(created_at)
+        
+        # archived
+        hash_value ^= self.archived << 5
+        
+        # archived_at
+        hash_value ^= hash(self.archived_at)
+        
+        # open
+        hash_value ^= self.open << 7
+        
+        # owner_id
+        hash_value ^= self.owner_id
+        
+        # slowmode
+        hash_value ^= self.slowmode << 4
+        
+        return hash_value
+    
+    
+    @classmethod
     @copy_docs(ChannelMetadataGuildBase.from_data)
     def from_data(cls, data):
         self = super(ChannelMetadataGuildThreadBase, cls).from_data(data)
@@ -351,7 +380,7 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
         put_archived_into(self.archived, data, True)
         
         # archived_at
-        put_archived_at_into(self.atchived_at, data, True)
+        put_archived_at_into(self.archived_at, data, True)
         
         # auto_archive_after
         put_auto_archive_after_into(self.auto_archive_after, data, True)

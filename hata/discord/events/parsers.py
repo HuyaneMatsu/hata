@@ -88,7 +88,7 @@ def READY(client, data):
         pass
     else:
         for channel_private_data in channel_private_datas:
-            Channel(channel_private_data, client, 0)
+            Channel.from_data(channel_private_data, client, 0)
     
     old_application_id = client.application.id
     client.application._create_update(data['application'], True)
@@ -1249,7 +1249,7 @@ def THREAD_UPDATE__CAL_SC(client, data):
         else:
             guild_id = int(guild_id)
         
-        channel = Channel(data, client, guild_id)
+        channel = Channel.from_data(data, client, guild_id)
         old_attributes = None
         
     else:
@@ -1283,7 +1283,7 @@ def THREAD_UPDATE__CAL_MC(client, data):
             return
     
     if channel is None:
-        channel = Channel(data, client, guild_id)
+        channel = Channel.from_data(data, client, guild_id)
         old_attributes = None
     else:
         old_attributes = channel._difference_update_attributes(data)
@@ -1313,7 +1313,7 @@ def THREAD_UPDATE__OPT_SC(client, data):
         else:
             guild_id = int(guild_id)
         
-        Channel(data, client, guild_id)
+        Channel.from_data(data, client, guild_id)
     else:
         channel._update_attributes(data)
 
@@ -1339,7 +1339,7 @@ def THREAD_UPDATE__OPT_MC(client, data):
             return
     
     if (channel is None):
-        Channel(data, client, guild_id)
+        Channel.from_data(data, client, guild_id)
     else:
         channel._update_attributes(data)
 
@@ -1358,11 +1358,11 @@ del THREAD_UPDATE__CAL_SC, \
 def CHANNEL_CREATE__CAL(client, data):
     guild_id = data.get('guild_id', None)
     if guild_id is None:
-        Channel(data, client, 0)
+        Channel.from_data(data, client, 0)
         return
     
     guild_id = int(guild_id)
-    channel = Channel(data, client, guild_id)
+    channel = Channel.from_data(data, client, guild_id)
     
     Task(client.events.channel_create(client, channel), KOKORO)
 
@@ -1373,7 +1373,7 @@ def CHANNEL_CREATE__OPT(client, data):
     else:
         guild_id = int(guild_id)
     
-    Channel(data, client, guild_id)
+    Channel.from_data(data, client, guild_id)
 
 
 add_parser(
@@ -3518,7 +3518,7 @@ def THREAD_LIST_SYNC(client, data):
     
     thread_channel_datas = data['threads']
     for thread_channel_data in thread_channel_datas:
-        Channel(thread_channel_data, client, guild_id)
+        Channel.from_data(thread_channel_data, client, guild_id)
     
     thread_user_datas = data['members']
     for thread_user_data in thread_user_datas:

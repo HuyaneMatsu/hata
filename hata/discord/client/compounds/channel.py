@@ -399,7 +399,7 @@ class ClientCompoundChannelEndpoints(Compound):
         
         data = {'recipients': user_ids}
         data = await self.http.channel_group_create(self.id, data)
-        return Channel(data, self, 0)
+        return Channel.from_data(data, self, 0)
     
     
     async def channel_private_create(self, user):
@@ -434,7 +434,7 @@ class ClientCompoundChannelEndpoints(Compound):
             channel = self.private_channels[user_id]
         except KeyError:
             data = await self.http.channel_private_create({'recipient_id': user_id})
-            channel = Channel(data, self, 0)
+            channel = Channel.from_data(data, self, 0)
         
         return channel
     
@@ -461,7 +461,7 @@ class ClientCompoundChannelEndpoints(Compound):
         if (not self.bot):
             data = await self.http.channel_private_get_all()
             for channel_data in data:
-                channel = Channel(channel_data, self, 0)
+                channel = Channel.from_data(channel_data, self, 0)
                 channels.append(channel)
         
         return channels
@@ -852,7 +852,7 @@ class ClientCompoundChannelEndpoints(Compound):
         data = cr_pg_channel_object(name, type_, **kwargs, guild=guild)
         data = await self.http.channel_create(guild_id, data, reason)
         
-        return Channel(data, self, guild_id)
+        return Channel.from_data(data, self, guild_id)
     
     
     async def channel_delete(self, channel, *, reason=None):

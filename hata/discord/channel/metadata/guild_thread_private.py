@@ -49,6 +49,16 @@ class ChannelMetadataGuildThreadPrivate(ChannelMetadataGuildThreadBase):
     """
     __slots__ = ('invitable',)
     
+    @copy_docs(ChannelMetadataGuildThreadBase.__hash__)
+    def __hash__(self):
+        hash_value = ChannelMetadataGuildThreadBase.__hash__(self)
+        
+        # invitable
+        hash_value ^= self.invitable << 9
+        
+        return hash_value
+    
+    
     @copy_docs(ChannelMetadataGuildThreadBase._is_equal_same_type)
     def _is_equal_same_type(self, other):
         if not ChannelMetadataGuildThreadBase._is_equal_same_type(self, other):

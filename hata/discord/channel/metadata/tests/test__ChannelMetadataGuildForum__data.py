@@ -1,13 +1,14 @@
 import vampytest
 
 from ....core import BUILTIN_EMOJIS
-from ....emoji import Emoji
 from ....permission import PermissionOverwrite, PermissionOverwriteTargetType
 
 from ...flags import ChannelFlag
 from ...forum_tag import ForumTag
 
 from .. import ChannelMetadataGuildForum
+
+from .test__ChannelMetadataGuildForum__constructor import assert_fields_set
 
 
 def test__ChannelMetadataGuildForum__from_data():
@@ -52,6 +53,7 @@ def test__ChannelMetadataGuildForum__from_data():
     })
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataGuildForum)
+    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -338,16 +340,6 @@ def test__ChannelMetadataGuildForum__from_partial_data():
     })
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataGuildForum)
-    
-    vampytest.assert_instance(channel_metadata.parent_id, int)
-    vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
-    vampytest.assert_instance(channel_metadata.permission_overwrites, dict)
-    vampytest.assert_instance(channel_metadata.position, int)
-    vampytest.assert_instance(channel_metadata.available_tags, tuple, nullable = True)
-    vampytest.assert_instance(channel_metadata.default_thread_auto_archive_after, int)
-    vampytest.assert_instance(channel_metadata.default_thread_reaction, Emoji, nullable = True)
-    vampytest.assert_instance(channel_metadata.default_thread_slowmode, int)
-    vampytest.assert_instance(channel_metadata.flags, ChannelFlag)
-    vampytest.assert_instance(channel_metadata.topic, str, nullable = True)
+    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.name, name)

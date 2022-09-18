@@ -745,7 +745,7 @@ class Message(DiscordEntity, immortal=True):
             _set_message_field(
                 self,
                 MESSAGE_FIELD_KEY_THREAD,
-                Channel(thread_data, None, guild_id),
+                Channel.from_data(thread_data, None, guild_id),
             )
     
     

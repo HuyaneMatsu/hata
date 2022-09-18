@@ -37,6 +37,22 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
     """
     __slots__ = ('_permission_cache', 'name', 'parent_id')
     
+    
+    @copy_docs(ChannelMetadataBase.__hash__)
+    def __hash__(self):
+        hash_value = ChannelMetadataBase.__hash__(self)
+        
+        # name
+        name = self.name
+        if name:
+            hash_value ^= hash(name)
+        
+        # parent_id
+        hash_value ^= self.parent_id
+        
+        return hash_value
+    
+    
     @classmethod
     @copy_docs(ChannelMetadataBase.from_data)
     def from_data(cls, data):
@@ -86,14 +102,8 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         self = super(ChannelMetadataGuildBase, cls)._from_partial_data(data)
         
         if (data is not None):
-            try:
-                name = data['name']
-            except KeyError:
-                pass
-            else:
-                if (name is None):
-                    name = ''
-                
+            name = data.get('name', None)
+            if (name is not None):
                 self.name = name
         
         return self

@@ -5,6 +5,14 @@ from ....permission import PermissionOverwrite, PermissionOverwriteTargetType
 from .. import ChannelMetadataGuildDirectory
 
 
+def assert_fields_set(channel_metadata):
+    vampytest.assert_instance(channel_metadata.parent_id, int)
+    vampytest.assert_instance(channel_metadata.name, str)
+    vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
+    vampytest.assert_instance(channel_metadata.permission_overwrites, dict, nullable = True)
+    vampytest.assert_instance(channel_metadata.position, int)
+
+
 def test__ChannelMetadataGuildDirectory__new__0():
     """
     Tests whether ``ChannelMetadataGuildDirectory.__new__`` works as intended.
@@ -28,13 +36,7 @@ def test__ChannelMetadataGuildDirectory__new__0():
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataGuildDirectory)
     vampytest.assert_eq(keyword_parameters, {})
-    
-    vampytest.assert_instance(channel_metadata.parent_id, int)
-    vampytest.assert_instance(channel_metadata.name, str)
-    vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
-    vampytest.assert_instance(channel_metadata.permission_overwrites, dict)
-    vampytest.assert_instance(channel_metadata.position, int)
-    
+    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -57,12 +59,7 @@ def test__ChannelMetadataGuildDirectory__new__1():
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataGuildDirectory)
     vampytest.assert_eq(keyword_parameters, {})
-    
-    vampytest.assert_instance(channel_metadata.parent_id, int)
-    vampytest.assert_instance(channel_metadata.name, str)
-    vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
-    vampytest.assert_instance(channel_metadata.permission_overwrites, dict)
-    vampytest.assert_instance(channel_metadata.position, int)
+    assert_fields_set(channel_metadata)
 
 
 def test__ChannelMetadataGuildDirectory__create_empty():
@@ -72,12 +69,7 @@ def test__ChannelMetadataGuildDirectory__create_empty():
     channel_metadata = ChannelMetadataGuildDirectory._create_empty()
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataGuildDirectory)
-    
-    vampytest.assert_instance(channel_metadata.parent_id, int)
-    vampytest.assert_instance(channel_metadata.name, str)
-    vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
-    vampytest.assert_instance(channel_metadata.permission_overwrites, dict)
-    vampytest.assert_instance(channel_metadata.position, int)
+    assert_fields_set(channel_metadata)
 
 
 
@@ -105,12 +97,7 @@ def test__ChannelMetadataGuildDirectory__precreate__0():
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataGuildDirectory)
     vampytest.assert_eq(keyword_parameters, {})
-    
-    vampytest.assert_instance(channel_metadata.parent_id, int)
-    vampytest.assert_instance(channel_metadata.name, str)
-    vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
-    vampytest.assert_instance(channel_metadata.permission_overwrites, dict)
-    vampytest.assert_instance(channel_metadata.position, int)
+    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -133,9 +120,4 @@ def test__ChannelMetadataGuildDirectory__precreate__1():
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataGuildDirectory)
     vampytest.assert_eq(keyword_parameters, {})
-    
-    vampytest.assert_instance(channel_metadata.parent_id, int)
-    vampytest.assert_instance(channel_metadata.name, str)
-    vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
-    vampytest.assert_instance(channel_metadata.permission_overwrites, dict)
-    vampytest.assert_instance(channel_metadata.position, int)
+    assert_fields_set(channel_metadata)

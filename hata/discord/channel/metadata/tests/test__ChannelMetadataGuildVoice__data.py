@@ -7,6 +7,8 @@ from ...preinstanced import VideoQualityMode
 
 from .. import ChannelMetadataGuildVoice
 
+from .test__ChannelMetadataGuildVoice__constructor import assert_fields_set
+
 
 def test__ChannelMetadataGuildVoice__from_data():
     """
@@ -40,6 +42,7 @@ def test__ChannelMetadataGuildVoice__from_data():
     })
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataGuildVoice)
+    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -275,15 +278,6 @@ def test__ChannelMetadataGuildVoice__from_partial_data():
     })
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataGuildVoice)
-    
-    vampytest.assert_instance(channel_metadata.parent_id, int)
-    vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
-    vampytest.assert_instance(channel_metadata.permission_overwrites, dict)
-    vampytest.assert_instance(channel_metadata.position, int)
-    vampytest.assert_instance(channel_metadata.bitrate, int)
-    vampytest.assert_instance(channel_metadata.region, VoiceRegion, nullable = True)
-    vampytest.assert_instance(channel_metadata.user_limit, int)
-    vampytest.assert_instance(channel_metadata.nsfw, bool)
-    vampytest.assert_instance(channel_metadata.video_quality_mode, VideoQualityMode)
+    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.name, name)

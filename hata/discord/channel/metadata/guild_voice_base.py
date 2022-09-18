@@ -46,6 +46,22 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
     order_group = 2
     
     
+    @copy_docs(ChannelMetadataGuildMainBase.__hash__)
+    def __hash__(self):
+        hash_value = ChannelMetadataGuildMainBase.__hash__(self)
+        
+        # bitrate
+        hash_value ^= self.bitrate << 12
+        
+        # region
+        hash_value ^= hash(self.region)
+        
+        # user_limit
+        hash_value ^= self.user_limit << 15
+        
+        return hash_value
+    
+    
     @copy_docs(ChannelMetadataGuildMainBase._is_equal_same_type)
     def _is_equal_same_type(self, other):
         if not ChannelMetadataGuildMainBase._is_equal_same_type(self, other):

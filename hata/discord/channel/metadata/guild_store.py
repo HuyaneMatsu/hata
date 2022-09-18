@@ -36,6 +36,16 @@ class ChannelMetadataGuildStore(ChannelMetadataGuildMainBase):
     """
     __slots__ = ('nsfw',)
     
+    @copy_docs(ChannelMetadataGuildMainBase.__hash__)
+    def __hash__(self):
+        hash_value = ChannelMetadataGuildMainBase.__hash__(self)
+        
+        # nsfw
+        hash_value ^= self.nsfw << 28
+        
+        return hash_value
+    
+    
     @copy_docs(ChannelMetadataGuildMainBase._is_equal_same_type)
     def _is_equal_same_type(self, other):
         if not ChannelMetadataGuildMainBase._is_equal_same_type(self, other):

@@ -776,7 +776,7 @@ class RPCClient(RichAttributeErrorBaseType):
         }
         
         data = await self._send_request(data)
-        channel = Channel(data, None, 0)
+        channel = Channel.from_data(data, None, 0)
         
         message_datas = data.get('messages', None)
         if (message_datas is not None) and message_datas:
@@ -838,7 +838,7 @@ class RPCClient(RichAttributeErrorBaseType):
     
         channels = []
         for channel_data in data['channels']:
-            channel = Channel(channel_data, None, guild_id)
+            channel = Channel.from_data(channel_data, None, guild_id)
             channels.append(channel)
         
         return channels
@@ -981,7 +981,7 @@ class RPCClient(RichAttributeErrorBaseType):
         if (data is None):
             channel = None
         else:
-            channel = Channel(data, None, 0)
+            channel = Channel.from_data(data, None, 0)
         
         return channel
     
@@ -1018,7 +1018,7 @@ class RPCClient(RichAttributeErrorBaseType):
         if (data is None):
             channel = None
         else:
-            channel = Channel(data, None, 0)
+            channel = Channel.from_data(data, None, 0)
         
         return channel
     
@@ -1067,7 +1067,7 @@ class RPCClient(RichAttributeErrorBaseType):
         if (data is None):
             channel = None
         else:
-            channel = Channel(data, None, 0)
+            channel = Channel.from_data(data, None, 0)
         
         return channel
     

@@ -67,6 +67,12 @@
 - Channel metadatas now use `.from_data` for being constructed from data and `__new__` has been repurposed for partial
     constructing.
 - Implement `IconSlot.__set__`.
+- Add `__hash__` method to all channel metadata type.
+- Add `Channel.from_data` (renamed `.__new__`).
+- Repurpose `Channel.__new__` as a partial constructor.
+- Add `guild_id` parameter to `Channel.precreate`.
+- `hash` works on fully-partial channels correctly.
+- `==` works on fully-partial channels correctly.
 
 #### Bug fixes
 

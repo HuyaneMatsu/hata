@@ -53,6 +53,31 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
     """
     __slots__ = ('default_thread_auto_archive_after', 'default_thread_slowmode', 'nsfw', 'slowmode', 'topic')
     
+    
+    @copy_docs(ChannelMetadataGuildMainBase.__hash__)
+    def __hash__(self):
+        hash_value = ChannelMetadataGuildMainBase.__hash__(self)
+        
+        # default_thread_auto_archive_after
+        hash_value ^= self.default_thread_auto_archive_after << 16
+        
+        # default_thread_slowmode
+        hash_value ^= self.default_thread_slowmode << 8
+        
+        # nsfw
+        hash_value ^= self.nsfw << 28
+        
+        # slowmode
+        hash_value ^= self.slowmode << 4
+        
+        # topic
+        topic = self.topic
+        if (topic is not None):
+            hash_value ^= hash(topic)
+        
+        return hash_value
+    
+    
     @copy_docs(ChannelMetadataGuildMainBase._is_equal_same_type)
     def _is_equal_same_type(self, other):
         if not ChannelMetadataGuildMainBase._is_equal_same_type(self, other):

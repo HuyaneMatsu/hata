@@ -23,6 +23,20 @@ class ChannelMetadataPrivateBase(ChannelMetadataBase):
     """
     __slots__ = ('users',)
     
+    @copy_docs(ChannelMetadataBase.__hash__)
+    def __hash__(self):
+        hash_value = ChannelMetadataBase.__hash__(self)
+        
+        # users
+        users = self.users
+        hash_value ^= len(users) << 13
+        
+        for user in users:
+            hash_value ^= hash(user)
+        
+        return hash_value
+    
+    
     @classmethod
     @copy_docs(ChannelMetadataBase.from_data)
     def from_data(cls, data):

@@ -4,6 +4,8 @@ from ....permission import PermissionOverwrite, PermissionOverwriteTargetType
 
 from .. import ChannelMetadataGuildDirectory
 
+from .test__ChannelMetadataGuildDirectory__constructor import assert_fields_set
+
 
 def test__ChannelMetadataGuildDirectory__from_data():
     """
@@ -28,6 +30,7 @@ def test__ChannelMetadataGuildDirectory__from_data():
     })
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataGuildDirectory)
+    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -182,10 +185,6 @@ def test__ChannelMetadataGuildDirectory__from_partial_data():
     })
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataGuildDirectory)
-    
-    vampytest.assert_instance(channel_metadata.parent_id, int)
-    vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
-    vampytest.assert_instance(channel_metadata.permission_overwrites, dict)
-    vampytest.assert_instance(channel_metadata.position, int)
+    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.name, name)

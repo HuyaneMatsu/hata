@@ -9,7 +9,7 @@ from ...permission import Permission
 from ...permission.permission import PERMISSION_NONE
 from ...utils import id_to_datetime
 
-from ..constants import AUTO_ARCHIVE_DEFAULT
+from ..constants import AUTO_ARCHIVE_DEFAULT, NAME_DEFAULT
 from ..flags import ChannelFlag
 from ..preinstanced import VideoQualityMode
 
@@ -75,6 +75,11 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     def __repr__(self):
         """Returns the channel metadata's representation."""
         return f'<{self.__class__.__name__}>'
+    
+    
+    def __hash__(self):
+        """Returns the channel metadata's hash value"""
+        return 0
     
     
     def __eq__(self, other):
@@ -652,7 +657,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     
     
     auto_archive_after = PlaceHolder(
-        None,
+        0,
         """
         Returns the duration in seconds to automatically archive the thread after recent activity. Can be one of:
         `3600`, `86400`, `259200`, `604800`.
@@ -661,7 +666,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        auto_archive_after : `None`, `datetime`
+        auto_archive_after : `int`
         """
     )
     
@@ -681,7 +686,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     
     
     bitrate = PlaceHolder(
-        None,
+        0,
         """
         Returns the bitrate (in bits) of the voice channel.
         
@@ -719,7 +724,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     
     
     default_thread_slowmode = PlaceHolder(
-        None,
+        0,
         """
         Returns the default slowmode applied to the threads of the channel.
         
@@ -771,7 +776,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     
 
     name = PlaceHolder(
-        'channel',
+        NAME_DEFAULT,
         """
         Returns the channel's name.
         
@@ -797,7 +802,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     
     
     open = PlaceHolder(
-        False,
+        True,
         """
         Returns whether the thread channel is open.
         

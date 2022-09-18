@@ -45,7 +45,19 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
         The channel's order group used when sorting channels.
     """
     __slots__ = ('topic',)
-
+    
+    @copy_docs(ChannelMetadataGuildVoiceBase.__hash__)
+    def __hash__(self):
+        hash_value = ChannelMetadataGuildVoiceBase.__hash__(self)
+        
+        # topic
+        topic = self.topic
+        if (topic is not None):
+            hash_value ^= hash(topic)
+        
+        return hash_value
+    
+    
     @copy_docs(ChannelMetadataGuildVoiceBase._is_equal_same_type)
     def _is_equal_same_type(self, other):
         if not ChannelMetadataGuildVoiceBase._is_equal_same_type(self, other):

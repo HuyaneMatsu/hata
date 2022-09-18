@@ -2,6 +2,8 @@ import vampytest
 
 from .. import ChannelMetadataGuildBase
 
+from .test__ChannelMetadataGuildBase__constructor import assert_fields_set
+
 
 def test__ChannelMetadataGuildBase__from_data():
     """
@@ -16,6 +18,7 @@ def test__ChannelMetadataGuildBase__from_data():
     })
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataGuildBase)
+    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -107,8 +110,6 @@ def test__ChannelMetadataGuildBase__from_partial_data():
     })
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataGuildBase)
-    
-    vampytest.assert_instance(channel_metadata.parent_id, int)
-    vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
+    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.name, name)

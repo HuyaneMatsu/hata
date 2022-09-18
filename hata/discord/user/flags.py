@@ -54,6 +54,8 @@ class UserFlag(FlagBase):
     +-------------------------------+-------------------+
     | spammer                       | 20                |
     +-------------------------------+-------------------+
+    | premium_disabled              | 21                |
+    +-------------------------------+-------------------+
     | quarantined                   | 44                |
     +-------------------------------+-------------------+
     """
@@ -79,6 +81,7 @@ class UserFlag(FlagBase):
         'certified_moderator': 18,
         'bot_http_interactions': 19,
         'spammer': 20,
+        'premium_disabled': 21,
         'quarantined': 44,
     }
 

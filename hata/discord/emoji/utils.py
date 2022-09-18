@@ -104,7 +104,7 @@ def create_partial_emoji_data(emoji):
     emoji_data = {}
     unicode = emoji.unicode
     if unicode is None:
-        emoji_data['id'] = emoji.id
+        emoji_data['id'] = str(emoji.id)
         emoji_data['name'] = emoji.name
         
         if emoji.animated:

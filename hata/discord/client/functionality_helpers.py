@@ -899,7 +899,7 @@ async def request_channel_thread_channels(client, guild_id, channel_id, request_
         thread_channel_datas = data['threads']
         
         for thread_channel_data in thread_channel_datas:
-            thread_channel = Channel(thread_channel_data, client, guild_id)
+            thread_channel = Channel.from_data(thread_channel_data, client, guild_id)
             thread_channels.append(thread_channel)
         
         thread_user_datas = data['members']

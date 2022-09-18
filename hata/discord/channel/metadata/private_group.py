@@ -38,6 +38,21 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
     
     icon = IconSlot('icon', 'icon', module_urls.channel_group_icon_url, module_urls.channel_group_icon_url_as)
     
+    @copy_docs(ChannelMetadataPrivateBase.__hash__)
+    def __hash__(self):
+        hash_value = ChannelMetadataPrivateBase.__hash__(self)
+        
+        # name
+        name = self.name
+        if name:
+            hash_value ^= hash(name)
+        
+        # owner_id
+        hash_value ^= self.owner_id
+        
+        return hash_value
+    
+    
     @copy_docs(ChannelMetadataPrivateBase.__new__)
     def __new__(cls, keyword_parameters):
         self = ChannelMetadataPrivateBase.__new__(cls, keyword_parameters)

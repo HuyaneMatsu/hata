@@ -40,6 +40,38 @@ def test__ChannelMetadataGuildVoice__repr():
     vampytest.assert_instance(repr(channel_metadata), str)
 
 
+def test__ChannelMetadataGuildVoice__hash():
+    """
+    Tests whether ``.ChannelMetadataGuildVoice.__hash__`` works as intended.
+    """
+    parent_id = 202209180111
+    name = 'Armelyrics'
+    permission_overwrites = [
+        PermissionOverwrite(202209180112, target_type = PermissionOverwriteTargetType.user)
+    ]
+    position = 7
+    bitrate = 50000
+    region = VoiceRegion.brazil
+    user_limit = 4
+    nsfw = True
+    video_quality_mode = VideoQualityMode.auto
+    
+    keyword_parameters = {
+        'parent_id': parent_id,
+        'name': name,
+        'permission_overwrites': permission_overwrites,
+        'position': position,
+        'bitrate': bitrate,
+        'region': region,
+        'user_limit': user_limit,
+        'nsfw': nsfw,
+        'video_quality_mode': video_quality_mode,
+    }
+    channel_metadata = ChannelMetadataGuildVoice(keyword_parameters)
+    
+    vampytest.assert_instance(hash(channel_metadata), int)
+
+
 def test__ChannelMetadataGuildVoice__eq():
     """
     Tests whether ``.ChannelMetadataGuildVoice.__eq__`` works as intended.

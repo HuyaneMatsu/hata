@@ -68,7 +68,7 @@ class ClientCompoundThreadEndpoints(Compound):
         thread_channel_datas = data['threads']
         
         thread_channels = [
-            Channel(thread_channel_data, self, guild_id) for thread_channel_data in thread_channel_datas
+            Channel.from_data(thread_channel_data, self, guild_id) for thread_channel_data in thread_channel_datas
         ]
         
         thread_user_datas = data['members']
@@ -256,7 +256,7 @@ class ClientCompoundThreadEndpoints(Compound):
         else:
             guild_id = channel.guild_id
         
-        return Channel(channel_data, self, guild_id)
+        return Channel.from_data(channel_data, self, guild_id)
     
     
     async def forum_thread_create(
@@ -495,7 +495,7 @@ class ClientCompoundThreadEndpoints(Compound):
         else:
             guild_id = channel.guild_id
         
-        thread_channel = Channel(channel_data, self, guild_id)
+        thread_channel = Channel.from_data(channel_data, self, guild_id)
         
         message_data = channel_data.get('message', None)
         if (message_data is None):

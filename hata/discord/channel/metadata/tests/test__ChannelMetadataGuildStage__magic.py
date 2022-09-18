@@ -36,6 +36,37 @@ def test__ChannelMetadataGuildStage__repr():
     vampytest.assert_instance(repr(channel_metadata), str)
 
 
+
+def test__ChannelMetadataGuildStage__hash():
+    """
+    Tests whether ``.ChannelMetadataGuildStage.__hash__`` works as intended.
+    """
+    parent_id = 2022091800094
+    name = 'Armelyrics'
+    permission_overwrites = [
+        PermissionOverwrite(202209180095, target_type = PermissionOverwriteTargetType.user)
+    ]
+    position = 7
+    bitrate = 50000
+    region = VoiceRegion.brazil
+    user_limit = 4
+    topic = 'crimson'
+    
+    keyword_parameters = {
+        'parent_id': parent_id,
+        'name': name,
+        'permission_overwrites': permission_overwrites,
+        'position': position,
+        'bitrate': bitrate,
+        'region': region,
+        'user_limit': user_limit,
+        'topic': topic,
+    }
+    channel_metadata = ChannelMetadataGuildStage(keyword_parameters)
+    
+    vampytest.assert_instance(hash(channel_metadata), int)
+
+
 def test__ChannelMetadataGuildStage__eq():
     """
     Tests whether ``.ChannelMetadataGuildStage.__eq__`` works as intended.

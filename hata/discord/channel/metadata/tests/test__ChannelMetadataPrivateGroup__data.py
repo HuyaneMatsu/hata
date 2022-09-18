@@ -5,6 +5,8 @@ from ....user import User
 
 from .. import ChannelMetadataPrivateGroup
 
+from .test__ChannelMetadataPrivateGroup__constructor import assert_fields_set
+
 
 def test__ChannelMetadataPrivateGroup__from_data():
     """
@@ -23,6 +25,7 @@ def test__ChannelMetadataPrivateGroup__from_data():
     })
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataPrivateGroup)
+    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.users, [user_1])
     vampytest.assert_eq(channel_metadata.owner_id, owner_id)
@@ -134,9 +137,6 @@ def test__ChannelMetadataPrivateGroup__from_partial_data():
     })
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataPrivateGroup)
-    
-    vampytest.assert_instance(channel_metadata.users, list)
-    vampytest.assert_instance(channel_metadata.owner_id, int)
-    vampytest.assert_instance(channel_metadata.icon, Icon)
+    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.name, name)

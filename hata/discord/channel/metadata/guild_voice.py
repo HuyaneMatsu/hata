@@ -52,6 +52,19 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
     """
     __slots__ = ('nsfw', 'video_quality_mode',)
     
+    @copy_docs(ChannelMetadataGuildVoiceBase.__hash__)
+    def __hash__(self):
+        hash_value = ChannelMetadataGuildVoiceBase.__hash__(self)
+        
+        # nsfw
+        hash_value ^= self.nsfw << 28
+        
+        # video_quality_mode
+        hash_value ^= self.video_quality_mode.value << 11
+        
+        return hash_value
+    
+    
     @copy_docs(ChannelMetadataGuildVoiceBase._is_equal_same_type)
     def _is_equal_same_type(self, other):
         if not ChannelMetadataGuildVoiceBase._is_equal_same_type(self, other):

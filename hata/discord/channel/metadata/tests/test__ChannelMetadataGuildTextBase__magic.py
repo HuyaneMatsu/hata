@@ -37,6 +37,38 @@ def test__ChannelMetadataGuildTextBase__repr():
     vampytest.assert_instance(repr(channel_metadata), str)
 
 
+def test__ChannelMetadataGuildTextBase__hash():
+    """
+    Tests whether ``.ChannelMetadataGuildTextBase.__hash__`` works as intended.
+    """
+    parent_id = 202209180100
+    name = 'Armelyrics'
+    permission_overwrites = [
+        PermissionOverwrite(202209180101, target_type = PermissionOverwriteTargetType.user)
+    ]
+    position = 7
+    default_thread_auto_archive_after = 86400
+    default_thread_slowmode = 60
+    nsfw = True
+    slowmode = 30
+    topic = 'rin'
+    
+    keyword_parameters = {
+        'parent_id': parent_id,
+        'name': name,
+        'permission_overwrites': permission_overwrites,
+        'position': position,
+        'default_thread_auto_archive_after': default_thread_auto_archive_after,
+        'default_thread_slowmode': default_thread_slowmode,
+        'nsfw': nsfw,
+        'slowmode': slowmode,
+        'topic': topic,
+    }
+    channel_metadata = ChannelMetadataGuildTextBase(keyword_parameters)
+    
+    vampytest.assert_instance(hash(channel_metadata), int)
+
+
 def test__ChannelMetadataGuildTextBase__eq():
     """
     Tests whether ``.ChannelMetadataGuildTextBase.__eq__`` works as intended.

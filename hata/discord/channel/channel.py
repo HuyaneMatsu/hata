@@ -53,7 +53,145 @@ class Channel(DiscordEntity, immortal=True):
     """
     __slots__ = ('_message_history', 'guild_id', 'metadata', 'type')
     
-    def __new__(cls, data, client, guild_id):
+    def __new__(cls, channel_type=None, *, guild_id=0, **keyword_parameters):
+        """
+        Creates a partial channel with the given parameters.
+        
+        Parameters
+        ----------
+        channel_type : `None`, `int`, ``ChanelType`` = `None`, Optional (Keyword only)
+            The channel's type.
+        
+        guild_id : `int` = `0`, Optional (Keyword only)
+            The channel's parent guild's identifier.
+        
+        **keyword_parameters : Keyword parameters
+            Additional predefined attributes for the channel.
+        
+        Other Parameters
+        ----------------
+        archived : `bool`, Optional (Keyword only)
+            Whether the (thread) channel is archived.
+        
+        archived_at : `None`, `datetime`, Optional (Keyword only)
+            When the thread's archive status was last changed.
+        
+        applied_tag_ids : `None`, `tuple` of (`int`, ``ForumTag``), Optional (Keyword only)
+             The tags' identifier which have been applied to the thread. Applicable for threads of a forum.
+        
+        auto_archive_after: `int`, Optional (Keyword only)
+            The channel's ``.auto_archive_after``.
+        
+        available_tags : `None`, `tuple` of ``ForumTag``, Optional (Keyword only)
+            The available tags to assign to the child-thread channels.
+        
+        created_at : `None`, `datetime`, Optional (Keyword only)
+            When the channel was created.
+        
+        bitrate : `int`, Optional (Keyword only)
+            The channel's ``.bitrate``.
+        
+        _created_at : `None`, `datetime`, Optional (Keyword only)
+            When the (thread) channel was created.
+        
+        default_thread_auto_archive_after : `int`, Optional (Keyword only)
+            The channel's ``.default_thread_auto_archive_after``.
+        
+        default_thread_slowmode : `int`, Optional (Keyword only)
+            The default slowmode applied to the channel's threads.
+        
+        default_thread_reaction : `None`, ``Emoji``, Optional (Keyword only)
+            The emoji to show in the add reaction button on a thread of the forum channel.
+        
+        flags : `int`, ``ChannelFlag``, Optional (Keyword only)
+            The channel's ``.flags``.
+        
+        icon : `None`, ``Icon``, `str`, Optional (Keyword only)
+            The channel's icon.
+            
+            > Mutually exclusive with `icon_type` and `icon_hash` parameters.
+        
+        icon_type : ``IconType``, Optional (Keyword only)
+            The channel's icon's type.
+            
+            > Mutually exclusive with the `icon` parameter.
+        
+        icon_hash : `int`, Optional (Keyword only)
+            The channel's icon's hash.
+            
+            > Mutually exclusive with the `icon` parameter.
+        
+        invitable : `bool`, Optional (Keyword only)
+            The channel's `..invitable``.
+        
+        name : `str`, Optional (Keyword only)
+            The channel's ``.name``.
+        
+        nsfw : `int`, Optional (Keyword only)
+            The channel's ``.nsfw``.
+        
+        open : `bool`, Optional (Keyword only)
+            The channel's ``.open``.
+        
+        parent_id : `None`, `int`, ``Channel``, Optional (Keyword only)
+            The channel's parent's identifier.
+        
+        permission_overwrites : `None`, list` of ``PermissionOverwrite``, Optional (Keyword only)
+            The channel's permission overwrites.
+        
+        position : `int`, Optional (Keyword only)
+            The channel's position.
+        
+        region : `None`, ``VoiceRegion``, `str`, Optional (Keyword only)
+            The channel's voice region.
+        
+        slowmode : `int`, Optional (Keyword only)
+            The channel's ``.slowmode``.
+        
+        topic : `None`, `str`, Optional (Keyword only)
+            The channel's ``.topic``.
+        
+        user_limit : `int`, Optional (Keyword only)
+            The channel's ``.user_limit``.
+            
+        users : `iterable` of (`int`, ``ClientUserBase``), Optional (Keyword only)
+            The users in the channel.
+            
+        video_quality_mode : ``VideoQualityMode``, Optional (Keyword only)
+            The video quality of the voice channel.
+        
+        Returns
+        -------
+        channel : ``Channel``
+        
+        Raises
+        ------
+        TypeError
+            If any parameter's type is bad or if unexpected parameter is passed.
+        ValueError
+            If an parameter's type is good, but it's value is unacceptable.
+        """
+        guild_id = preconvert_snowflake(guild_id, 'guild_id')
+        
+        if channel_type is None:
+            channel_type = ChannelType.unknown
+        else:
+            channel_type = preconvert_preinstanced_type(channel_type, 'channel_type', ChannelType)
+        
+        metadata = channel_type.metadata_type.precreate(keyword_parameters)
+        
+        if keyword_parameters:
+            raise TypeError(
+                f'Unused or unsettable attributes: {keyword_parameters!r}.'
+            )
+        
+        self = cls._create_empty(0, channel_type, guild_id)
+        self.metadata = metadata
+        return self
+    
+    
+    @classmethod
+    def from_data(cls, data, client=None, guild_id=0):
         """
         Creates a new channel from the channel data received from Discord. If the channel already exists and if it
         is partial, then updates it.
@@ -62,9 +200,9 @@ class Channel(DiscordEntity, immortal=True):
         ----------
         data : `dict` of (`str`, `Any`) items
             Channel data receive from Discord.
-        client : `None`, ``Client``
+        client : `None`, ``Client`` = `None`, Optional
             The client, who received the channel's data, if any.
-        guild_id : `int`
+        guild_id : `int` = `0`, Optional
             The guild's identifier of the channel.
         
         Returns
@@ -157,12 +295,14 @@ class Channel(DiscordEntity, immortal=True):
         """Returns the representation of the channel."""
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' id=')
-        repr_parts.append(repr(self.id))
+        channel_id = self.id
+        if channel_id:
+            repr_parts.append(' id=')
+            repr_parts.append(repr(channel_id))
+            repr_parts.append(',')
         
         metadata = self.metadata
-        
-        repr_parts.append(', name=')
+        repr_parts.append(' name=')
         repr_parts.append(repr(metadata._get_processed_name()))
         
         type_ = self.type
@@ -171,8 +311,44 @@ class Channel(DiscordEntity, immortal=True):
         repr_parts.append('~')
         repr_parts.append(repr(type_.value))
         
+        if self.partial:
+            repr_parts.append(' (partial)')
+        
         repr_parts.append('>')
         return ''.join(repr_parts)
+    
+    
+    def __hash__(self):
+        """Returns the channel's hash value."""
+        channel_id = self.id
+        if channel_id:
+            return channel_id
+        
+        return self._get_hash_partial()
+    
+    
+    def _get_hash_partial(self):
+        """
+        Calculates the channel's hash based on their fields.
+        
+        This method is called by ``.__hash__`` if the channel has no ``.channel_id`` set.
+        
+        Returns
+        -------
+        hash_value : `int`
+        """
+        hash_value = 0
+        
+        # guild_id
+        hash_value ^= self.guild_id
+        
+        # metadata
+        hash_value ^= hash(self.metadata)
+        
+        # type
+        hash_value ^= self.type.value
+        
+        return hash_value
     
     
     def __format__(self, code):
@@ -267,6 +443,9 @@ class Channel(DiscordEntity, immortal=True):
         -------
         is_partial : `bool`
         """
+        if self.id == 0:
+            return True
+        
         return (not self.clients)
     
 
@@ -357,18 +536,6 @@ class Channel(DiscordEntity, immortal=True):
         user : ``ClientUserBase``
         """
         yield from self.metadata._iter_users(self)
-    
-    
-    @property
-    def name(self):
-        """
-        Returns the channel's name.
-        
-        Returns
-        -------
-        name : `str`
-        """
-        return self.metadata.name
     
     
     def has_name_like(self, name):
@@ -619,7 +786,7 @@ class Channel(DiscordEntity, immortal=True):
         channel : ``Channel``
         """
         type_ = ChannelType.get(data.get('type', -1))
-        metadata = type_.metadata._from_partial_data(data)
+        metadata = type_.metadata_type._from_partial_data(data)
         
         self = object.__new__(cls)
         self._message_history = None
@@ -627,8 +794,6 @@ class Channel(DiscordEntity, immortal=True):
         self.guild_id = guild_id
         self.metadata = metadata
         self.type = type_
-        
-        CHANNELS.setdefault(channel_id, self)
         
         return self
     
@@ -675,7 +840,7 @@ class Channel(DiscordEntity, immortal=True):
         data['id'] = str(self.id)
         
         # type
-        data['type'] = self.type
+        data['type'] = self.type.value
         
         # guild_id
         guild_id = self.guild_id
@@ -788,7 +953,7 @@ class Channel(DiscordEntity, immortal=True):
         if type(self) is not type(other):
             return NotImplemented
         
-        return self.id == other.id
+        return self._is_equal_same_time(other)
         
     
     def __ne__(self,other):
@@ -796,8 +961,44 @@ class Channel(DiscordEntity, immortal=True):
         if type(self) is not type(other):
             return NotImplemented
         
-        return self.id != other.id
+        return not self._is_equal_same_time(other)
+    
+    
+    def _is_equal_same_time(self, other):
+        """
+        Returns whether the channel is equal to the other one.
         
+        Parameters
+        ----------
+        other : ``Channel``
+            The other channel entity.
+        
+        Returns
+        -------
+        is_equal : `bool`
+        """
+        self_id = self.id
+        other_id = other.id
+        if self_id and other_id:
+            if self_id == other_id:
+                return True
+            
+            return False
+        
+        # guild_id
+        if self.guild_id != other.guild_id:
+            return False
+        
+        # metadata
+        if self.metadata != other.metadata:
+            return False
+        
+        # type
+        if self.type is not other.type:
+            return False
+        
+        return True
+    
     
     def __le__(self, other):
         """Returns whether this channel's is less or equal than the other's."""
@@ -938,6 +1139,12 @@ class Channel(DiscordEntity, immortal=True):
     @copy_docs(ChannelMetadataBase.invitable)
     def invitable(self):
         return self.metadata.invitable
+    
+    
+    @property
+    @copy_docs(ChannelMetadataBase.name)
+    def name(self):
+        return self.metadata.name
     
     
     @property
@@ -1208,7 +1415,7 @@ class Channel(DiscordEntity, immortal=True):
     
     
     @classmethod
-    def precreate(cls, channel_id, *, channel_type=None, **keyword_parameters):
+    def precreate(cls, channel_id, *, channel_type=None, guild_id=0, **keyword_parameters):
         """
         Precreates the channel by creating a partial one with the given parameters. When the channel is loaded
         the precreated channel will be picked up. If an already existing channel would be precreated, returns that
@@ -1218,8 +1425,13 @@ class Channel(DiscordEntity, immortal=True):
         ----------
         channel_id : `int`, `str`
             The channel's id.
+        
         channel_type : `None`, `int`, ``ChanelType`` = `None`, Optional (Keyword only)
             The channel's type.
+
+        guild_id : `int` = `0`, Optional (Keyword only)
+            The channel's parent guild's identifier.
+        
         **keyword_parameters : Keyword parameters
             Additional predefined attributes for the channel.
         
@@ -1327,6 +1539,7 @@ class Channel(DiscordEntity, immortal=True):
             If an parameter's type is good, but it's value is unacceptable.
         """
         channel_id = preconvert_snowflake(channel_id, 'channel_id')
+        guild_id = preconvert_snowflake(guild_id, 'guild_id')
         
         if channel_type is None:
             channel_type = ChannelType.unknown
@@ -1344,7 +1557,7 @@ class Channel(DiscordEntity, immortal=True):
         try:
             self = CHANNELS[channel_id]
         except KeyError:
-            self = cls._create_empty(channel_id, channel_type, 0)
+            self = cls._create_empty(channel_id, channel_type, guild_id)
             CHANNELS[channel_id] = self
         else:
             if not self.partial:

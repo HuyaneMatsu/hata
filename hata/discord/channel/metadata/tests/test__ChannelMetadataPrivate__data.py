@@ -4,6 +4,8 @@ from ....user import User
 
 from .. import ChannelMetadataPrivate
 
+from .test__ChannelMetadataPrivate__constructor import assert_fields_set
+
 
 def test__ChannelMetadataPrivate__from_data():
     """
@@ -16,6 +18,7 @@ def test__ChannelMetadataPrivate__from_data():
     })
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataPrivate)
+    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.users, [user_1])
 
@@ -63,7 +66,6 @@ def test__ChannelMetadataPrivate__from_partial_data():
     Tests whether ``ChannelMetadataPrivate._from_partial_data`` works as intended.
     """
     channel_metadata = ChannelMetadataPrivate._from_partial_data({})
-    
-    vampytest.assert_instance(channel_metadata, ChannelMetadataPrivate)
+    assert_fields_set(channel_metadata)
 
     vampytest.assert_instance(channel_metadata.users, list)

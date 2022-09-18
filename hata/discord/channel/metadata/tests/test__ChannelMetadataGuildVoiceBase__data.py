@@ -5,6 +5,8 @@ from ....permission import PermissionOverwrite, PermissionOverwriteTargetType
 
 from .. import ChannelMetadataGuildVoiceBase
 
+from .test__ChannelMetadataGuildVoiceBase__constructor import assert_fields_set
+
 
 def test__ChannelMetadataGuildVoiceBase__from_data():
     """
@@ -34,6 +36,7 @@ def test__ChannelMetadataGuildVoiceBase__from_data():
     })
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataGuildVoiceBase)
+    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.parent_id, parent_id)
     vampytest.assert_eq(channel_metadata.name, name)
@@ -237,13 +240,6 @@ def test__ChannelMetadataGuildVoiceBase__from_partial_data():
     })
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataGuildVoiceBase)
-    
-    vampytest.assert_instance(channel_metadata.parent_id, int)
-    vampytest.assert_instance(channel_metadata._permission_cache, dict, nullable = True)
-    vampytest.assert_instance(channel_metadata.permission_overwrites, dict)
-    vampytest.assert_instance(channel_metadata.position, int)
-    vampytest.assert_instance(channel_metadata.bitrate, int)
-    vampytest.assert_instance(channel_metadata.region, VoiceRegion, nullable = True)
-    vampytest.assert_instance(channel_metadata.user_limit, int)
+    assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.name, name)

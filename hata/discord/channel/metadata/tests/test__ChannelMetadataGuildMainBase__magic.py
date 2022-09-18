@@ -27,6 +27,29 @@ def test__ChannelMetadataGuildMainBase__repr():
     vampytest.assert_instance(repr(channel_metadata), str)
 
 
+
+def test__ChannelMetadataGuildMainBase__hash():
+    """
+    Tests whether ``.ChannelMetadataGuildMainBase.__hash__`` works as intended.
+    """
+    parent_id = 202209180092
+    name = 'Armelyrics'
+    permission_overwrites = [
+        PermissionOverwrite(202209180093, target_type = PermissionOverwriteTargetType.user)
+    ]
+    position = 7
+    
+    keyword_parameters = {
+        'parent_id': parent_id,
+        'name': name,
+        'permission_overwrites': permission_overwrites,
+        'position': position,
+    }
+    channel_metadata = ChannelMetadataGuildMainBase(keyword_parameters)
+    
+    vampytest.assert_instance(hash(channel_metadata), int)
+
+
 def test__ChannelMetadataGuildMainBase__eq():
     """
     Tests whether ``.ChannelMetadataGuildMainBase.__eq__`` works as intended.

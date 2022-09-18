@@ -65,6 +65,40 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         'flags', 'topic',
     )
     
+    @copy_docs(ChannelMetadataGuildMainBase.__hash__)
+    def __hash__(self):
+        hash_value = ChannelMetadataGuildMainBase.__hash__(self)
+        
+        # available_tags
+        available_tags = self.available_tags
+        if (available_tags is not None):
+            hash_value ^= len(available_tags) << 4
+            
+            for available_tag in available_tags:
+                hash_value ^= hash(available_tag)
+        
+        # default_thread_auto_archive_after
+        hash_value ^= self.default_thread_auto_archive_after << 16
+        
+        # default_thread_reaction
+        default_thread_reaction = self.default_thread_reaction
+        if (default_thread_reaction is not None):
+            hash_value ^= hash(default_thread_reaction)
+        
+        # default_thread_slowmode
+        hash_value ^= self.default_thread_slowmode << 8
+        
+        # flags
+        hash_value ^= self.flags
+        
+        # topic
+        topic = self.topic
+        if (topic is not None):
+            hash_value ^= hash(topic)
+        
+        return hash_value
+    
+    
     @copy_docs(ChannelMetadataGuildMainBase._is_equal_same_type)
     def _is_equal_same_type(self, other):
         if not ChannelMetadataGuildMainBase._is_equal_same_type(self, other):

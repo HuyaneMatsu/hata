@@ -41,6 +41,23 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
     """
     __slots__ = ('permission_overwrites', 'position', )
     
+    @copy_docs(ChannelMetadataGuildBase.__hash__)
+    def __hash__(self):
+        hash_value = ChannelMetadataGuildBase.__hash__(self)
+        
+        # permission_overwrites
+        permission_overwrites = self.permission_overwrites
+        hash_value ^= len(permission_overwrites) << 8
+        
+        for permission_overwrite in permission_overwrites.values():
+            hash_value ^= hash(permission_overwrite)
+        
+        # position
+        hash_value ^= self.position << 24
+        
+        return hash_value
+    
+    
     @copy_docs(ChannelMetadataGuildBase._created)
     def _created(self, channel_entity, client):
         try:

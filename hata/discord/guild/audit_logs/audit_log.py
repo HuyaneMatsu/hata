@@ -167,7 +167,7 @@ class AuditLog(RichAttributeErrorBaseType):
             threads = self.threads
             
             for thread_data in thread_datas:
-                thread = Channel(thread_data, None, self.guild.id)
+                thread = Channel.from_data(thread_data, None, self.guild.id)
                 threads[thread.id] = thread
         
         

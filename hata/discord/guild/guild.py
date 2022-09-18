@@ -433,7 +433,7 @@ class Guild(DiscordEntity, immortal=True):
                 pass
             else:
                 for channel_data in channel_datas:
-                    Channel(channel_data, client, guild_id)
+                    Channel.from_data(channel_data, client, guild_id)
             
             self._update_attributes(data)
             
@@ -468,7 +468,7 @@ class Guild(DiscordEntity, immortal=True):
                 pass
             else:
                 for thread_data in thread_datas:
-                    Channel(thread_data, client, guild_id)
+                    Channel.from_data(thread_data, client, guild_id)
             
             try:
                 scheduled_event_datas = data['guild_scheduled_events']
@@ -1229,7 +1229,7 @@ class Guild(DiscordEntity, immortal=True):
         old_ids = set(channels)
         
         for channel_data in data:
-            channel = Channel(channel_data, None, self.id)
+            channel = Channel.from_data(channel_data, None, self.id)
             channel_id = channel.id
             try:
                 old_ids.remove(channel_id)

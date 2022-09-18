@@ -18,6 +18,21 @@ def test__ChannelMetadataPrivateBase__repr():
     vampytest.assert_instance(repr(channel_metadata), str)
 
 
+
+def test__ChannelMetadataPrivateBase__hash():
+    """
+    Tests whether ``.ChannelMetadataPrivateBase.__hash__`` works as intended.
+    """
+    users = [User.precreate(202209180119)]
+    
+    channel_metadata = ChannelMetadataPrivateBase({
+        'users': users
+    })
+    
+    vampytest.assert_instance(hash(channel_metadata), int)
+
+
+
 def test__ChannelMetadataPrivateBase__eq():
     """
     Tests whether ``.ChannelMetadataPrivateBase.__eq__`` works as intended.

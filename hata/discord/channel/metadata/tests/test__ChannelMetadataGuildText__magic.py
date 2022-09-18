@@ -12,7 +12,7 @@ def test__ChannelMetadataGuildText__repr():
     parent_id = 202209170225
     name = 'Armelyrics'
     permission_overwrites = [
-        PermissionOverwrite(20220917021226, target_type = PermissionOverwriteTargetType.user)
+        PermissionOverwrite(202209170226, target_type = PermissionOverwriteTargetType.user)
     ]
     position = 7
     default_thread_auto_archive_after = 86400
@@ -35,6 +35,38 @@ def test__ChannelMetadataGuildText__repr():
     channel_metadata = ChannelMetadataGuildText(keyword_parameters)
     
     vampytest.assert_instance(repr(channel_metadata), str)
+
+
+def test__ChannelMetadataGuildText__hash():
+    """
+    Tests whether ``.ChannelMetadataGuildText.__hash__`` works as intended.
+    """
+    parent_id = 202209180098
+    name = 'Armelyrics'
+    permission_overwrites = [
+        PermissionOverwrite(202209180099, target_type = PermissionOverwriteTargetType.user)
+    ]
+    position = 7
+    default_thread_auto_archive_after = 86400
+    default_thread_slowmode = 60
+    nsfw = True
+    slowmode = 30
+    topic = 'rin'
+    
+    keyword_parameters = {
+        'parent_id': parent_id,
+        'name': name,
+        'permission_overwrites': permission_overwrites,
+        'position': position,
+        'default_thread_auto_archive_after': default_thread_auto_archive_after,
+        'default_thread_slowmode': default_thread_slowmode,
+        'nsfw': nsfw,
+        'slowmode': slowmode,
+        'topic': topic,
+    }
+    channel_metadata = ChannelMetadataGuildText(keyword_parameters)
+    
+    vampytest.assert_instance(hash(channel_metadata), int)
 
 
 def test__ChannelMetadataGuildText__eq():

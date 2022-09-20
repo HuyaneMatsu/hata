@@ -19,11 +19,10 @@ class Unicode:
         Unicode value.
     variation_selector_16 : `bool`
         Whether the emoji is a variation selector 16 emoji.
-    
     """
     __slots__ = ('aliases', 'emoticons', 'name', 'value', 'variation_selector_16')
     
-    def __new__(cls, name, raw_value, variation_selector_16, emoticons, aliases):
+    def __new__(cls, name, raw_value, variation_selector_16, aliases, emoticons):
         """
         Creates a new unicode.
         
@@ -35,10 +34,10 @@ class Unicode:
             Binary unicode value.
         variation_selector_16 : `bool`
             Whether the emoji is a variation selector 16 emoji.
-        emoticons : `None`, `tuple` of `str`
-            Emoticons which the emoji represents.
         aliases : `None`, `tuple` of `str`
             Alternative names of the emoji.
+        emoticons : `None`, `tuple` of `str`
+            Emoticons which the emoji represents.
         """
         value = raw_value.decode('utf8')
         

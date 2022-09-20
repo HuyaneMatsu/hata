@@ -552,6 +552,7 @@ ANNOTATION_NAMES_VALUE = frozenset((
 
 CHANNEL_TYPES_GUILD = tuple(
     channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type is not ChannelType.unknown and channel_type is not ChannelType.thread
     if channel_type.flags.guild
 )
 CHANNEL_TYPES_GUILD_CATEGORY = (ChannelType.guild_category, )
@@ -559,24 +560,28 @@ CHANNEL_TYPES_GUILD_DIRECTORY = (ChannelType.guild_directory, )
 CHANNEL_TYPES_GUILD_STORE = (ChannelType.guild_store, )
 CHANNEL_TYPES_GUILD_SYSTEM = tuple(
     channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type is not ChannelType.unknown and channel_type is not ChannelType.thread
     if channel_type.flags.guild_system
 )
 CHANNEL_TYPES_GUILD_TEXT = (ChannelType.guild_text, )
 CHANNEL_TYPES_GUILD_ANNOUNCEMENTS = (ChannelType.guild_announcements, )
 CHANNEL_TYPES_GUILD_CONNECTABLE = tuple(
     channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type is not ChannelType.unknown and channel_type is not ChannelType.thread
     if channel_type.flags.guild and channel_type.flags.connectable
 )
 CHANNEL_TYPES_GUILD_VOICE = (ChannelType.guild_voice, )
 CHANNEL_TYPES_GUILD_STAGE = (ChannelType.guild_stage, )
 CHANNEL_TYPES_PRIVATE_ALL = tuple(
     channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type is not ChannelType.unknown and channel_type is not ChannelType.thread
     if channel_type.flags.private
 )
 CHANNEL_TYPES_PRIVATE = (ChannelType.private, )
 CHANNEL_TYPES_PRIVATE_GROUP = (ChannelType.private_group, )
 CHANNEL_TYPES_THREAD_ALL = tuple(
     channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type is not ChannelType.unknown and channel_type is not ChannelType.thread
     if channel_type.flags.thread
 )
 CHANNEL_TYPES_THREAD_ANNOUNCEMENTS = (ChannelType.guild_thread_announcements, )
@@ -584,18 +589,22 @@ CHANNEL_TYPES_THREAD_PUBLIC = (ChannelType.guild_thread_public, )
 CHANNEL_TYPES_THREAD_PRIVATE = (ChannelType.guild_thread_private, )
 CHANNEL_TYPES_TEXTUAL = tuple(
     channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type is not ChannelType.unknown and channel_type is not ChannelType.thread
     if channel_type.flags.textual
 )
 CHANNEL_TYPES_GUILD_TEXTUAL = tuple(
     channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type is not ChannelType.unknown and channel_type is not ChannelType.thread
     if channel_type.flags.guild and channel_type.flags.textual
 )
 CHANNEL_TYPES_CONNECTABLE = tuple(
     channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type is not ChannelType.unknown and channel_type is not ChannelType.thread
     if channel_type.flags.connectable
 )
 CHANNEL_TYPES_THREADABLE = tuple(
     channel_type for channel_type in ChannelType.INSTANCES.values()
+    if channel_type is not ChannelType.unknown and channel_type is not ChannelType.thread
     if channel_type.flags.threadable
 )
 CHANNEL_TYPES_GUILD_FORUM = (ChannelType.guild_forum, )

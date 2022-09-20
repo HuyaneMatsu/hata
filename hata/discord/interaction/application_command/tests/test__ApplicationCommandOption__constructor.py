@@ -1,5 +1,7 @@
 import vampytest
 
+from ....channel import ChannelType
+
 from .. import ApplicationCommandOption, ApplicationCommandOptionType
 from ..constants import APPLICATION_COMMAND_OPTION_MIN_LENGTH_MAX
 
@@ -89,3 +91,20 @@ def test__ApplicationCommandOption__constructor__min_length__2():
     """
     with vampytest.assert_raises(ValueError):
         ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.integer, min_length=30)
+
+
+def test__ApplicationCommandOption__constructor__channel_types__0():
+    """
+    Tests whether ``ApplicationCommandOption.__new__`` sets `channel_types` correctly.
+    """
+    for input_value, expected_value in (
+        (None, None),
+        ([1, ], (ChannelType.private,)),
+        ([], None),
+        ([ChannelType.private], (ChannelType.private, )),
+        ([ChannelType.private, ChannelType.guild_text], (ChannelType.guild_text, ChannelType.private)),
+    ):
+        option = ApplicationCommandOption(
+            'owo', 'owo', ApplicationCommandOptionType.channel, channel_types = input_value
+        )
+        vampytest.assert_eq(option.channel_types, expected_value)

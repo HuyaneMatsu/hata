@@ -2,6 +2,7 @@ __all__ = ('ApplicationCommandOption',)
 
 from scarletio import RichAttributeErrorBaseType
 
+from ...channel import ChannelType
 from ...localizations.helpers import get_localized_length, localized_dictionary_builder
 from ...localizations.utils import build_locale_dictionary, destroy_locale_dictionary, hash_locale_dictionary
 from ...preconverters import preconvert_preinstanced_type
@@ -326,7 +327,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         
         Mutually exclusive with the ``.choices``. Only applicable for string type parameters.
     
-    channel_types : `None`, `tuple` of `int`
+    channel_types : `None`, `tuple` of ``ChannelType``
         The accepted channel types by the option.
         
         Only applicable if ``.type`` is set to `ApplicationCommandOptionType.channel`.
@@ -411,7 +412,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
             
             Mutually exclusive with the `choices` parameter. Only applicable for string type parameters.
         
-        channel_types : `None`, `iterable` of `int` = `None`, Optional (Keyword only)
+        channel_types : `None`, `iterable` of (``ChannelType``, `int`) = `None`, Optional (Keyword only)
             The accepted channel types by the option.
             
             Only applicable if ``.type`` is set to `ApplicationCommandOptionType.channel`.
@@ -489,14 +490,16 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
                 )
             
             for channel_type in channel_types:
-                if type(channel_type) is int:
+                if isinstance(channel_type, ChannelType):
                     pass
-                elif isinstance(channel_type, int):
-                    channel_type = int(channel_type)
+                
+                elif isinstance(channel_type, ChannelType.VALUE_TYPE):
+                    channel_type = ChannelType.get(channel_type)
+                
                 else:
                     raise TypeError(
-                        f'`channel_types` may include only `int`s, got {channel_type.__class__.__name__}; '
-                        f'{channel_type!r}; channel_types={channel_types!r}.'
+                        f'`channel_types` can have `{ChannelType.__name__}`, `int` elements, '
+                        f'got {channel_type.__class__.__name__}; {channel_type!r}; channel_types={channel_types!r}.'
                     )
                 
                 if channel_types_processed is None:
@@ -504,7 +507,8 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
                 
                 channel_types_processed.add(channel_type)
             
-            channel_types_processed = tuple(sorted(channel_types_processed))
+            if (channel_types_processed is not None):
+                channel_types_processed = tuple(sorted(channel_types_processed))
         
         
         # choices
@@ -839,7 +843,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         if (channel_types is None) or (not channel_types):
             channel_types = None
         else:
-            channel_types = tuple(sorted(channel_types))
+            channel_types = tuple(sorted(ChannelType.get(channel_type) for channel_type in channel_types))
         
         # choices
         choice_datas = data.get('choices', None)
@@ -931,7 +935,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         # channel_types
         channel_types = self.channel_types
         if (channel_types is not None):
-            data['channel_types'] = channel_types
+            data['channel_types'] = [channel_type.value for channel_type in channel_types]
         
         # choices
         choices = self.choices

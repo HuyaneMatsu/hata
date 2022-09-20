@@ -33,7 +33,7 @@ def test__Unicode__iter_emoticons__1():
     Case: 1+
     """
     emoticons = ('owo', 'uwu')
-    unicode = Unicode('', b'', False, emoticons, None)
+    unicode = Unicode('', b'', False, None, emoticons)
     
     vampytest.assert_eq({*unicode.iter_emoticons()}, {*emoticons})
 
@@ -56,7 +56,7 @@ def test__Unicode__iter_aliases__1():
     Case: 1+
     """
     aliases = ('owo', 'uwu')
-    unicode = Unicode('', b'', False, None, aliases)
+    unicode = Unicode('', b'', False, aliases, None)
     
     vampytest.assert_eq({*unicode.iter_aliases()}, {*aliases})
 
@@ -81,6 +81,6 @@ def test__Unicode__iter_alternative_names__1():
     emoticons = ('owo', 'uwu')
     aliases = ('awa', 'iwi')
     
-    unicode = Unicode('', b'', False, emoticons, aliases)
+    unicode = Unicode('', b'', False, aliases, emoticons)
     
     vampytest.assert_eq({*unicode.iter_alternative_names()}, {*emoticons, *aliases})

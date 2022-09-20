@@ -14,7 +14,7 @@ def test__Unicode__new__0():
     emoticons = ('anya',)
     aliases = ('got', 'banned')
     
-    unicode = Unicode(name, value_raw, variation_selector_16, emoticons, aliases)
+    unicode = Unicode(name, value_raw, variation_selector_16, aliases, emoticons)
     
     vampytest.assert_eq(unicode.name, name)
     vampytest.assert_eq(unicode.value, value)

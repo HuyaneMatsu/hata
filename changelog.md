@@ -1,4 +1,4 @@
-## 1.3.8 *\[2022-09-??\]*
+## 1.3.8 *\[2022-09-20\]*
 
 #### Improvements
 
@@ -88,6 +88,7 @@
 - `Channel.created_at` raised `AttributeError`.
 - `Channel.iter_users` could raise `TypeError`.
 - `Message.custom` did not detect `guild_id` from channel correctly. (Gilgamesh#8939)
+- Add 111 new emojis.
 
 #### Renames, Deprecation & Removals
 

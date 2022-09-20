@@ -53,6 +53,7 @@ class ChannelMetadataPrivate(ChannelMetadataPrivateBase):
                 del client.private_channels[user.id]
     
     
+    @property
     @copy_docs(ChannelMetadataPrivateBase.name)
     def name(self):
         users = self.users

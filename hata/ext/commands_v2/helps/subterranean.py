@@ -499,7 +499,8 @@ class SubterraneanHelpCommand:
     from hata import Client
     from hata.ext.commands.helps.subterranean import SubterraneanHelpCommand
     
-    Orin = Client('TOKEN',
+    Orin = Client(
+        'TOKEN',
         extensions = ('commands_v2', 'command_utils'),
         prefix = 'o|',
     )
@@ -529,7 +530,8 @@ class SubterraneanHelpCommand:
     from hata import Client
     from hata.ext.commands.helps.subterranean import SubterraneanHelpCommand
     
-    Orin = Client('TOKEN',
+    Orin = Client(
+        'TOKEN',
         extensions = ('commands_v2', 'command_utils'),
         prefix = 'o|',
     )

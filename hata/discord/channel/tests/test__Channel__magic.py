@@ -59,16 +59,15 @@ def test__Channel__eq():
     keyword_parameters = {
         'channel_type': channel_type,
         'name': name,
-        'guild_id': guild_id,
     }
     
-    channel = Channel.precreate(channel_id_1, **keyword_parameters)
+    channel = Channel.precreate(channel_id_1, **keyword_parameters, guild_id = guild_id)
     
     vampytest.assert_eq(channel, channel)
     vampytest.assert_ne(channel, object())
     
     # another full
-    test_channel = Channel.precreate(channel_id_2, **keyword_parameters)
+    test_channel = Channel.precreate(channel_id_2, **keyword_parameters, guild_id = guild_id)
     vampytest.assert_ne(channel, test_channel)
     
     
@@ -78,7 +77,6 @@ def test__Channel__eq():
     
     # different partials
     for field_name, field_value in (
-        ('guild_id', 202209180143),
         ('name', 'dread'),
         ('channel_type', ChannelType.guild_voice)
     ):
@@ -113,3 +111,16 @@ def test__Channel__sort():
         to_sort,
         [channel_3, channel_1, channel_2]
     )
+
+
+def test__channel__format():
+    """
+    Tests whether ``Channel.__format__`` works as intended.
+    """
+    channel_id = 202209200019
+    channel = Channel.precreate(channel_id)
+    
+    for format_code in ('', 'm', 'd', 'c'):
+        string = format(channel, format_code)
+        
+        vampytest.assert_instance(string, str)

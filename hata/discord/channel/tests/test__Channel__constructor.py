@@ -25,16 +25,14 @@ def test__Channel__new__0():
     Case: fields given.
     """
     channel_type = ChannelType.guild_text
-    guild_id = 202209180130
     name = 'Rose'
     
-    channel = Channel(channel_type = channel_type, guild_id = guild_id, name = name)
+    channel = Channel(channel_type = channel_type, name = name)
     
     vampytest.assert_instance(channel, Channel)
     assert_fields_set(channel)
     
     vampytest.assert_is(channel.type, channel_type)
-    vampytest.assert_eq(channel.guild_id, guild_id)
     vampytest.assert_eq(channel.name, name)
 
 

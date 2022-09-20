@@ -165,7 +165,7 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         guild = channel_entity.guild
         if (guild is not None):
             for user in guild.users.values():
-                if self.permissions_for(user) & PERMISSION_MASK_VIEW_CHANNEL:
+                if self._get_permissions_for(channel_entity, user) & PERMISSION_MASK_VIEW_CHANNEL:
                     yield user
     
     

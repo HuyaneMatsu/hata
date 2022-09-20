@@ -73,6 +73,7 @@
 - Add `guild_id` parameter to `Channel.precreate`.
 - `hash` works on fully-partial channels correctly.
 - `==` works on fully-partial channels correctly.
+- `Channel.parent` will not be `None` if the channel has parent, but not cached.
 
 #### Bug fixes
 
@@ -82,6 +83,10 @@
 - Some thread fields were wrongly deserialized.
 - `IconSLot.preconvert` could drop `TypeError`.
 - `ChannelMetadataPrivate._create_empty` set `.name` incorrectly.
+- `ChannelMetadataGuildBase._iter_users` raised `AttributeError`.
+- `ChannelMetadataPrivate.name` was not a property.
+- `Channel.created_at` raised `AttributeError`.
+- `Channel.iter_users` could raise `TypeError`.
 
 #### Renames, Deprecation & Removals
 

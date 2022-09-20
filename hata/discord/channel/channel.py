@@ -2,9 +2,9 @@ __all__ = ('Channel',)
 
 import warnings
 from collections import deque
-from re import I as re_ignore_case, escape as re_escape, search as re_search
+from re import I as re_ignore_case, escape as re_escape, match as re_match, search as re_search
 
-from scarletio import LOOP_TIME, copy_docs, export
+from scarletio import LOOP_TIME, copy_docs, export, include
 
 from ...env import MESSAGE_CACHE_SIZE
 
@@ -27,6 +27,9 @@ from .channel_type.flags import (
 from .forum_tag import create_forum_tag_from_id
 from .message_history import MessageHistory, MessageHistoryCollector, message_relative_index
 from .metadata import ChannelMetadataBase, ChannelMetadataGuildMainBase
+
+
+create_partial_channel_from_id = include('create_partial_channel_from_id')
 
 
 CHANNEL_TYPE_MASK_GUILD_TEXTUAL = CHANNEL_TYPE_MASK_GUILD | CHANNEL_TYPE_MASK_TEXTUAL
@@ -53,7 +56,7 @@ class Channel(DiscordEntity, immortal=True):
     """
     __slots__ = ('_message_history', 'guild_id', 'metadata', 'type')
     
-    def __new__(cls, channel_type=None, *, guild_id=0, **keyword_parameters):
+    def __new__(cls, channel_type=None, **keyword_parameters):
         """
         Creates a partial channel with the given parameters.
         
@@ -61,9 +64,6 @@ class Channel(DiscordEntity, immortal=True):
         ----------
         channel_type : `None`, `int`, ``ChanelType`` = `None`, Optional (Keyword only)
             The channel's type.
-        
-        guild_id : `int` = `0`, Optional (Keyword only)
-            The channel's parent guild's identifier.
         
         **keyword_parameters : Keyword parameters
             Additional predefined attributes for the channel.
@@ -171,7 +171,6 @@ class Channel(DiscordEntity, immortal=True):
         ValueError
             If an parameter's type is good, but it's value is unacceptable.
         """
-        guild_id = preconvert_snowflake(guild_id, 'guild_id')
         
         if channel_type is None:
             channel_type = ChannelType.unknown
@@ -185,7 +184,7 @@ class Channel(DiscordEntity, immortal=True):
                 f'Unused or unsettable attributes: {keyword_parameters!r}.'
             )
         
-        self = cls._create_empty(0, channel_type, guild_id)
+        self = cls._create_empty(0, channel_type, 0)
         self.metadata = metadata
         return self
     
@@ -554,11 +553,20 @@ class Channel(DiscordEntity, immortal=True):
         if name.startswith('#'):
             name = name[1:]
         
+            match_start = False
+        else:
+            match_start = True
+        
         target_name_length = len(name)
         if (target_name_length < 2) or (target_name_length > 100):
             return False
         
-        if re_search(re_escape(name), self.name, re_ignore_case) is None:
+        if match_start:
+            matching_function = re_search
+        else:
+            matching_function = re_match
+        
+        if matching_function(re_escape(name), self.name, re_ignore_case) is None:
             return False
         
         return True
@@ -863,7 +871,7 @@ class Channel(DiscordEntity, immortal=True):
         -------
         created_at : `datetime`
         """
-        return self._metadata._get_created_at(self)
+        return self.metadata._get_created_at(self)
     
     
     @property
@@ -986,8 +994,7 @@ class Channel(DiscordEntity, immortal=True):
             return False
         
         # guild_id
-        if self.guild_id != other.guild_id:
-            return False
+        # Internal field -> ignore
         
         # metadata
         if self.metadata != other.metadata:
@@ -1238,7 +1245,7 @@ class Channel(DiscordEntity, immortal=True):
         """
         parent_id = self.metadata.parent_id
         if parent_id:
-            return CHANNELS.get(parent_id, None)
+            return create_partial_channel_from_id(parent_id, ChannelType.unknown, self.guild_id)
     
     
     @property

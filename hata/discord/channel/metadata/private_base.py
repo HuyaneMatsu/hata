@@ -62,7 +62,7 @@ class ChannelMetadataPrivateBase(ChannelMetadataBase):
     
     
     @copy_docs(ChannelMetadataBase._iter_users)
-    def _iter_users(self):
+    def _iter_users(self, channel_entity):
         yield from self.users
     
     

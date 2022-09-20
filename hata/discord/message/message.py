@@ -995,7 +995,7 @@ class Message(DiscordEntity, immortal=True):
                     )
             
             if (channel is None):
-                channel = CHANNELS.get('channel_id', None)
+                channel = CHANNELS.get(channel_id, None)
         
             if channel is None:
                 guild_id = 0

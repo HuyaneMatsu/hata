@@ -87,6 +87,7 @@
 - `ChannelMetadataPrivate.name` was not a property.
 - `Channel.created_at` raised `AttributeError`.
 - `Channel.iter_users` could raise `TypeError`.
+- `Message.custom` did not detect `guild_id` from channel correctly. (Gilgamesh#8939)
 
 #### Renames, Deprecation & Removals
 

@@ -1,3 +1,10 @@
+## 1.3.9 *\[2022-09-??\]*
+
+#### Bug fixes
+
+##### ext.plugin_loader
+- Importing from plugins could fail & built tree could be bad.
+
 ## 1.3.8 *\[2022-09-20\]*
 
 #### Improvements

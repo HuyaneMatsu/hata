@@ -73,6 +73,8 @@ class PluginModuleProxyType(ModuleType):
                 f'{self!r} has no attribute `{attribute_name}`.'
             ) from None
         
+        current_plugin = PLUGINS.get(spec.name, None)
+        
         frame = get_last_module_frame()
         if (frame is None):
             spec = None
@@ -84,7 +86,6 @@ class PluginModuleProxyType(ModuleType):
         else:
             plugin = PLUGINS.get(spec.name)
         
-        current_plugin = PLUGINS.get(spec.name, None)
         
         if (plugin is not None) and (current_plugin is not None) and (plugin is not current_plugin):
             plugin.add_child_plugin(current_plugin)

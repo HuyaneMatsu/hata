@@ -87,9 +87,9 @@ class PluginModuleProxyType(ModuleType):
             plugin = PLUGINS.get(spec.name)
         
         
-        if (plugin is not None) and (current_plugin is not None) and (plugin is not current_plugin):
-            plugin.add_child_plugin(current_plugin)
-            current_plugin.add_parent_plugin(plugin)
+        if (plugin is not None) and (current_plugin is not None):
+            plugin.add_child_plugin(plugin)
+            current_plugin.add_parent_plugin(current_plugin)
         
         return attribute_value
     

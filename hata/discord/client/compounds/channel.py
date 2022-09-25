@@ -760,7 +760,7 @@ class ClientCompoundChannelEndpoints(Compound):
         if channel is None:
             channel_type = ChannelType.unknown
         else:
-            channel_type = channel.type_
+            channel_type = channel.type
         
         if (type_ is not ...):
             type_ = preconvert_preinstanced_type(type_, 'type_', ChannelType)

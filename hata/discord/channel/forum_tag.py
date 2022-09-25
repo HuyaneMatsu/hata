@@ -137,7 +137,7 @@ class ForumTag(DiscordEntity, immortal=True):
     
     def _get_hash_partial(self):
         """
-        Hashes the fields of teh forum tag.
+        Hashes the fields of the forum tag.
         
         Returns
         -------

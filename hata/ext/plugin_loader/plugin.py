@@ -743,6 +743,9 @@ class Plugin(RichAttributeErrorBaseType):
         plugin : ``Plugin``
             The plugin to register.
         """
+        if plugin is self:
+            return
+        
         child_plugins = self._child_plugins
         if (child_plugins is None):
             child_plugins = WeakSet()
@@ -868,6 +871,9 @@ class Plugin(RichAttributeErrorBaseType):
         plugin : ``Plugin``
             The plugin to register.
         """
+        if plugin is self:
+            return
+        
         parent_plugins = self._parent_plugins
         if (parent_plugins is None):
             parent_plugins = WeakSet()
@@ -979,8 +985,8 @@ class Plugin(RichAttributeErrorBaseType):
         is_directory : `bool`
         """
         return split_file_name_and_extension(get_file_name(self._spec.origin))[0] == '__init__'
-
-
+    
+    
     def add_sub_module_plugin(self, plugin):
         """
         Registers a sub module plugin.
@@ -990,6 +996,9 @@ class Plugin(RichAttributeErrorBaseType):
         plugin : ``Plugin``
             The plugin to register.
         """
+        if plugin is self:
+            return
+        
         sub_module_plugins = self._sub_module_plugins
         if (sub_module_plugins is None):
             sub_module_plugins = WeakSet()

@@ -2,8 +2,11 @@
 
 #### Bug fixes
 
+- `AttributeError` in `Client.channel_edit`.
+
 ##### ext.plugin_loader
 - Importing from plugins could fail & built tree could be bad.
+- Plugins wont reference themselves.
 
 ## 1.3.8 *\[2022-09-20\]*
 

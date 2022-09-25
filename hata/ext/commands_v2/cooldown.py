@@ -144,7 +144,7 @@ def _check_guild(cooldown_handler, command_context):
         unit = cache[guild_id]
     except KeyError:
         at_ = LOOP_TIME() + cooldown_handler.reset
-        cache[guild_id] = CooldownUnit(at_, command_context.self.limit)
+        cache[guild_id] = CooldownUnit(at_, cooldown_handler.limit)
         KOKORO.call_at(at_, dict.__delitem__, cache, guild_id)
         return 0.
     
@@ -195,7 +195,7 @@ class CooldownHandler:
         limit : `int` = `1`, Optional
             The amount of calls after the respective command goes on cooldown.
         
-        weight : `int` = `int`, Optional
+        weight : `int` = `1`, Optional
             The weight of one call. Defaults to `1`.
         
         Raises

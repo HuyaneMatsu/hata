@@ -1264,6 +1264,52 @@ class Channel(DiscordEntity, immortal=True):
         return tuple(create_forum_tag_from_id(forum_tag_id) for forum_tag_id in applied_tag_ids)
     
     
+    def iter_applied_tag_ids(self):
+        """
+        Iterates over the applied tag identifiers of the channel.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        applied_tag_id : `int`
+        """
+        applied_tag_ids = self.applied_tag_ids
+        if (applied_tag_ids is not None):
+            yield from applied_tag_ids
+    
+    
+    def iter_applied_tags(self):
+        """
+        Iterates over the applied tags of the channels.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        applied_tag : ``ForumTag``
+        """
+        applied_tag_ids = self.applied_tag_ids
+        if (applied_tag_ids is not None):
+            for forum_tag_id in applied_tag_ids:
+                yield create_forum_tag_from_id(forum_tag_id)
+    
+    
+    def iter_available_tags(self):
+        """
+        Iterates over the available tags of the the forum channel.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        available_tag : ``ForumTag``
+        """
+        available_tags = self.available_tags
+        if (available_tags is not None):
+            yield from available_tags
+    
+    
     @property
     def owner(self):
         """

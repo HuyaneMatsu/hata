@@ -746,7 +746,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     reaction_add(client: ``Client``, event: ``ReactionAddEvent``):
         Called when a user reacts on a message with the given emoji.
     
-    reaction_clear(client: ``Client``, message: ``Message``, reactions: {`None`, ``reaction_mapping``}):
+    reaction_clear(client: ``Client``, message: ``Message``, reactions: {`None`, ``ReactionMapping``}):
         Called when the reactions of a message are cleared. The passed `old_reactions` parameter are the old reactions
         of the message.
         
@@ -755,7 +755,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     reaction_delete(client: ``Client``, event: ``ReactionDeleteEvent``):
         Called when a user removes it's reaction from a message.
     
-    reaction_delete_emoji(client: ``Client``, message: ``Message``, users: {`None`, ``reaction_mapping_line``}):
+    reaction_delete_emoji(client: ``Client``, message: ``Message``, users: {`None`, ``ReactionMappingLine``}):
         Called when all the reactions of a specified emoji are removed from a message. The passed `users` parameter
         are the old reactor users of the given emoji.
         

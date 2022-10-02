@@ -1,15 +1,15 @@
 __all__ = (
-    'create_partial_emoji_data', 'create_partial_emoji_from_data', 'create_emoji_from_exclusive_data',
-    'create_unicode_emoji', 'parse_all_emojis', 'parse_all_emojis_ordered', 'parse_custom_emojis',
-    'parse_custom_emojis_ordered', 'parse_emoji', 'parse_reaction', 'put_exclusive_emoji_data_into',
-    'put_partial_emoji_data_into'
+    'create_partial_emoji_data', 'create_partial_emoji_from_data', 'create_partial_emoji_from_id',
+    'create_emoji_from_exclusive_data', 'create_unicode_emoji', 'parse_all_emojis', 'parse_all_emojis_ordered',
+    'parse_custom_emojis', 'parse_custom_emojis_ordered', 'parse_emoji', 'parse_reaction',
+    'put_exclusive_emoji_data_into', 'put_partial_emoji_data_into', 'merge_update_reaction_mapping'
 )
 
 import warnings
 
 from scarletio import export
 
-from ..core import BUILTIN_EMOJIS, UNICODE_TO_EMOJI
+from ..core import BUILTIN_EMOJIS, EMOJIS, UNICODE_TO_EMOJI
 from ..utils import EMOJI_RP, REACTION_RP
 
 from .emoji import Emoji
@@ -82,6 +82,28 @@ def create_partial_emoji_from_data(data):
             emoji_name = ''
             
         emoji = Emoji._create_partial(int(emoji_id), emoji_name, emoji_animated)
+    
+    return emoji
+
+
+def create_partial_emoji_from_id(emoji_id):
+    """
+    Creates a partial emoji from the given id.
+    
+    Parameters
+    ----------
+    emoji_id : `int`
+        The emoji's identifier.
+    
+    Returns
+    -------
+    emoji : ``Emoji``
+    """
+    try:
+        emoji = EMOJIS[emoji_id]
+    except KeyError:
+        emoji = Emoji._create_empty(emoji_id)
+        EMOJIS[emoji_id] = emoji
     
     return emoji
 
@@ -174,7 +196,7 @@ def create_emoji_from_exclusive_data(data):
             emoji = _create_new_unicode(emoji_name)
     
     elif (emoji_id is not None):
-        emoji = Emoji._create_partial(int(emoji_id), '', False)
+        emoji = create_partial_emoji_from_id(int(emoji_id))
     
     else:
         emoji = None
@@ -459,3 +481,47 @@ def create_unicode_emoji(unicode):
         unicode_emoji = Emoji._create_unicode(Unicode('', unicode, False, None, None), False)
     
     return unicode_emoji
+
+
+def merge_update_reaction_mapping(old_reactions, new_reactions):
+    """
+    Merges the two reaction mapping, so values wont be overwritten if not required.
+    
+    Parameters
+    ----------
+    old_reactions : `None`, ``ReactionMapping``
+        The old reactions on a message.
+    new_reactions : `None`, ``ReactionMapping``
+        The new reactions on a message.
+    
+    Returns
+    -------
+    real_reactions : `None`, ``ReactionMapping``
+        The real merged reactions on a message.
+    """
+    if (old_reactions is None):
+        return new_reactions
+    
+    elif (new_reactions is None):
+        old_reactions.clear()
+        return old_reactions
+    
+    old_emojis = {*old_reactions.keys()}
+    new_emojis = {*new_reactions.keys()}
+    
+    for emoji in old_emojis - new_emojis:
+        del old_reactions[emoji]
+    
+    for emoji in new_emojis - old_emojis:
+        old_reactions[emoji] = new_reactions[emoji].copy()
+    
+    for emoji in new_emojis & old_emojis:
+        old_users = old_reactions[emoji]
+        new_users = new_reactions[emoji]
+        
+        if (len(old_users) != len(new_users)) or (not (old_users >= new_users)):
+            old_reactions[emoji] = new_reactions[emoji].copy()
+    
+    old_reactions._full_check()
+    
+    return old_reactions

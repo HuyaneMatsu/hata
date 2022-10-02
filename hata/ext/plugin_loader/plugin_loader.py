@@ -1403,13 +1403,22 @@ class PluginLoader(RichAttributeErrorBaseType):
         for plugin in plugins:
             exception = await self._plugin_unloader(plugin)
             if (exception is None):
-                exception = await self._plugin_loader(plugin)
+                continue
             
-            if (exception is not None):
-                if error_messages is None:
-                    error_messages = []
-                
-                error_messages.append(exception.message)
+            if error_messages is None:
+                error_messages = []
+            
+            error_messages.append(exception.message)
+        
+        for plugin in reversed(plugins):
+            exception = await self._plugin_loader(plugin)
+            if (exception is None):
+                continue
+            
+            if error_messages is None:
+                error_messages = []
+            
+            error_messages.append(exception.message)
         
         if (error_messages is not None):
             raise PluginError(error_messages) from None

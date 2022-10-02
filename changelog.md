@@ -1,12 +1,36 @@
 ## 1.3.9 *\[2022-09-??\]*
 
+#### Improvements
+
+- Add `create_partial_emoji_from_id`.
+- Add `Channel.iter_applied_tag_ids`.
+- Add `Channel.iter_applied_tags`.
+- Add `Channel.iter_available_tags`.
+- Move `ReactionMapping.__init__` to `.from_data`. Add `.__new__`.
+- Move `ReactionMappingLine.__init__` to `.from_data`. Add `.__new__`.
+- Add missing `ReactionMappingLine.__eq__`.
+- Add missing `ReactionMappingLine.__bool__`.
+- Add missing `ReactionMapping.__repr__`.
+- Add missing `ReactionMapping.__bool__`.
+- Add missing `ReactionMapping.__eq__`.
+- Overwrite `ReactionMappingLine.remove`.
+
 #### Bug fixes
 
 - `AttributeError` in `Client.channel_edit`.
+- `create_emoji_from_exclusive_data` overwrote emoji name & animated.
 
 ##### ext.plugin_loader
 - Importing from plugins could fail & built tree could be bad.
 - Plugins wont reference themselves.
+- Plugin reload order improved.
+
+#### Renames, Deprecation & Removals
+
+- Rename `reaction_mapping` to `ReactionMapping`.
+- Rename `reaction_mapping_line` to `ReactionMappingLine`.
+- Deprecate `reaction_mapping`.
+- Deprecate `reaction_mapping_line`.
 
 ## 1.3.8 *\[2022-09-20\]*
 

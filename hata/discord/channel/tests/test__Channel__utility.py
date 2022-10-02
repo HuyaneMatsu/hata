@@ -7,6 +7,7 @@ from ...user import User
 
 from ..channel import Channel
 from ..channel_type import ChannelType
+from ..forum_tag import ForumTag
 
 
 def test__Channel__get_user__0():
@@ -349,3 +350,48 @@ def test__Channel__checks():
             vampytest.assert_true(output)
         else:
             vampytest.assert_false(output)
+
+
+def test__Channel__iter_applied_tag_ids():
+    """
+    Tests whether ``Channel.iter_applied_tag_ids`` works as intended.
+    """
+    for applied_tag_ids in (
+        [],
+        [202209270000],
+    ):
+        channel = Channel(channel_type = ChannelType.guild_thread_public, applied_tag_ids = applied_tag_ids)
+        
+        vampytest.assert_eq(applied_tag_ids, [*channel.iter_applied_tag_ids()])
+
+
+def test__Channel__iter_applied_tags():
+    """
+    Tests whether ``Channel.iter_applied_tags`` works as intended.
+    """
+    for applied_tags in (
+        [],
+        [ForumTag.precreate(202209270001)],
+    ):
+        channel = Channel(
+            channel_type = ChannelType.guild_thread_public,
+            applied_tag_ids = [tag.id for tag in applied_tags],
+        )
+        
+        vampytest.assert_eq(applied_tags, [*channel.iter_applied_tags()])
+
+
+def test__Channel__iter_available_tags():
+    """
+    Tests whether ``Channel.iter_available_tags`` works as intended.
+    """
+    for available_tags in (
+        [],
+        [ForumTag.precreate(202209270002)],
+    ):
+        channel = Channel(
+            channel_type = ChannelType.guild_forum,
+            available_tags = available_tags,
+        )
+        
+        vampytest.assert_eq(available_tags, [*channel.iter_available_tags()])

@@ -10,7 +10,7 @@ from scarletio import BaseMethodDescriptor, export, include
 from ..bases import DiscordEntity, id_sort_key
 from ..core import CHANNELS, GUILDS, MESSAGES
 from ..embed import EXTRA_EMBED_TYPES, EmbedBase, EmbedCore
-from ..emoji import reaction_mapping
+from ..emoji import ReactionMapping, merge_update_reaction_mapping
 from ..http import urls as module_urls
 from ..preconverters import (
     get_type_names, preconvert_bool, preconvert_flag, preconvert_preinstanced_type, preconvert_snowflake,
@@ -560,7 +560,13 @@ class Message(DiscordEntity, immortal=True):
             _set_message_field(
                 self,
                 MESSAGE_FIELD_KEY_REACTIONS,
-                reaction_mapping(reactions_data),
+                merge_update_reaction_mapping(
+                    _get_message_field(
+                        self,
+                        MESSAGE_FIELD_KEY_REACTIONS,
+                    ),
+                    ReactionMapping.from_data(reactions_data),
+                )
             )
         
         referenced_message_data = data.get('referenced_message', None)
@@ -913,7 +919,7 @@ class Message(DiscordEntity, immortal=True):
             
             If called as a classmethod, defaults to `False`.
         
-        reactions : `None`, ``reaction_mapping``, Optional (Keyword only)
+        reactions : `None`, ``ReactionMapping``, Optional (Keyword only)
             The ``.reactions`` attribute of the message.
             
             If called as a classmethod defaults to `None`.
@@ -1369,7 +1375,7 @@ class Message(DiscordEntity, immortal=True):
             reactions = kwargs.pop('reactions')
         except KeyError:
             if base is None:
-                reactions = reaction_mapping(None)
+                reactions = ReactionMapping()
             else:
                 reactions = base.reactions
                 if (reactions is not None):
@@ -1378,13 +1384,13 @@ class Message(DiscordEntity, immortal=True):
         else:
             if reactions is None:
                 # Lets accept `None` and create an empty one
-                reactions = reaction_mapping(None)
-            elif type(reactions) is reaction_mapping:
+                reactions = ReactionMapping()
+            elif type(reactions) is ReactionMapping:
                 # We expect this as default
                 pass
             else:
                 raise TypeError(
-                    f'`reactions`, can be `None`, `{reaction_mapping.__name__}`, got '
+                    f'`reactions`, can be `None`, `{ReactionMapping.__name__}`, got '
                     f'{reactions.__class__.__name__}; {reactions}.'
                 )
         
@@ -2501,7 +2507,7 @@ class Message(DiscordEntity, immortal=True):
         """
         reactions = self.reactions
         if reactions is None:
-            reactions = reaction_mapping(None)
+            reactions = ReactionMapping(None)
             self.reactions = reactions
         
         return reactions.add(emoji, user)
@@ -2534,7 +2540,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        line : `None`, ``reaction_mapping_line``
+        line : `None`, ``ReactionMappingLine``
         """
         reactions = self.reactions
         if (reactions is not None):
@@ -2624,7 +2630,7 @@ class Message(DiscordEntity, immortal=True):
             The ``.pinned`` attribute of the message. Accepts other `int` as `bool` as well, but their value
             still cannot be other than `0`, `1`.
         
-        reactions : `None`, ``reaction_mapping``, Optional (Keyword only)
+        reactions : `None`, ``ReactionMapping``, Optional (Keyword only)
             The ``.reactions`` attribute of the message.
         
         role_mentions : `None`, (`list`, `tuple`) of ``Role``, Optional (Keyword only)
@@ -2693,7 +2699,7 @@ class Message(DiscordEntity, immortal=True):
                 (MESSAGE_FIELD_KEY_REFERENCED_MESSAGE, Message, 'referenced_message'),
                 (MESSAGE_FIELD_KEY_EDITED_AT, datetime, 'edited_at'),
                 (MESSAGE_FIELD_KEY_INTERACTION, MessageInteraction, 'interaction'),
-                (MESSAGE_FIELD_KEY_REACTIONS, reaction_mapping, 'reactions'),
+                (MESSAGE_FIELD_KEY_REACTIONS, ReactionMapping, 'reactions'),
                 (MESSAGE_FIELD_KEY_THREAD, Channel, 'thread'),
             ):
                 try:
@@ -4216,7 +4222,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        reactions : `None`, ``reaction_mapping``
+        reactions : `None`, ``ReactionMapping``
         """
         return _get_message_field(
             self,

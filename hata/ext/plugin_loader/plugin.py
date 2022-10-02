@@ -169,9 +169,8 @@ class Plugin(RichAttributeErrorBaseType):
         repr_parts.append(', state=')
         state_name = PLUGIN_STATE_VALUE_TO_NAME.get(state, '???')
         repr_parts.append(state_name)
-        repr_parts.append(' (')
+        repr_parts.append('~')
         repr_parts.append(repr(state))
-        repr_parts.append(')')
         
         if self._locked:
             repr_parts.append(', locked=True')
@@ -179,13 +178,13 @@ class Plugin(RichAttributeErrorBaseType):
         default_variables = self._default_variables
         if self._extend_default_variables:
             if (default_variables is not None):
-                repr_parts.append(' extends loader\'s defaults with: ')
+                repr_parts.append(' extends defaults with: ')
                 repr_parts.append(repr(default_variables))
         else:
             if default_variables is None:
-                repr_parts.append(' clears loader\'s defaults')
+                repr_parts.append(' clears defaults')
             else:
-                repr_parts.append(' clears loader\'s defaults and uses: ')
+                repr_parts.append(' clears defaults and uses: ')
                 repr_parts.append(repr(default_variables))
         
         repr_parts.append('>')

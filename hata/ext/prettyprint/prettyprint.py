@@ -185,7 +185,7 @@ def str_message(message, index=None, **kwargs):
     
     reactions = message.reactions
     if (reactions is not None) and reactions:
-        result.append(str_reaction_mapping(reactions), 1)
+        result.append(str_ReactionMapping(reactions), 1)
     
     application = message.application
     if (application is not None):
@@ -310,7 +310,7 @@ def str_message(message, index=None, **kwargs):
 def reaction_item_sor_key(item):
     return item[0]
 
-def str_reaction_mapping(reactions, index=None, **kwargs): #ignore index, 1 message can have only 1
+def str_ReactionMapping(reactions, index=None, **kwargs): #ignore index, 1 message can have only 1
     result = PrettyBlock()
     reaction_count = len(reactions)
     result.append(f'Reactions: ({reaction_count})')
@@ -329,7 +329,7 @@ def str_reaction_mapping(reactions, index=None, **kwargs): #ignore index, 1 mess
     #    it will need to be able to handle unknown reactors too!
     return result
 
-def str_reaction_mapping_line(users, **kwargs): #ignore index
+def str_ReactionMappingLine(users, **kwargs): #ignore index
     result = PrettyBlock()
     user_count = len(users)
     unknown = users.unknown
@@ -1813,8 +1813,8 @@ def str_message_interaction(message_interaction, index=None, **kwargs):
 
 
 PRETTY_PRINTERS['Message'] = str_message
-PRETTY_PRINTERS['reaction_mapping'] = str_reaction_mapping
-PRETTY_PRINTERS['reaction_mapping_line'] = str_reaction_mapping_line
+PRETTY_PRINTERS['ReactionMapping'] = str_ReactionMapping
+PRETTY_PRINTERS['ReactionMappingLine'] = str_ReactionMappingLine
 PRETTY_PRINTERS['MessageApplication'] = str_message_application
 PRETTY_PRINTERS['Attachment'] = str_attachment
 PRETTY_PRINTERS['EmbedCore'] = str_embed_core

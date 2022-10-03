@@ -9,7 +9,11 @@
 ##### ext.slash
 - Allow `hdsl` for slash command description.
 
+#### ext.plugin_loader
+- Add `mark_as_plugin_root_directory`
+
 #### Bug Fixes
+
 - `EventHandlerManager.__setattr__` did not wrap deprecated event handlers if required..
 - `EventHandlerManager.__call__` wrapped deprecated event handlers after validating them.
 - `client.events.webhook_update` used different parameters as documented.

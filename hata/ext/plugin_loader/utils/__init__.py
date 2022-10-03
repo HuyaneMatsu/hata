@@ -6,6 +6,7 @@ from .get_plugins_like_ import *
 from .import_plugin_ import *
 from .load_all_plugin_ import *
 from .load_plugin_ import *
+from .mark_as_plugin_root_directory_ import *
 from .register_and_load_plugin_ import *
 from .register_plugin_ import *
 from .reload_all_plugin_ import *
@@ -25,6 +26,7 @@ __all__ = (
     *import_plugin_.__all__,
     *load_all_plugin_.__all__,
     *load_plugin_.__all__,
+    *mark_as_plugin_root_directory_.__all__,
     *register_and_load_plugin_.__all__,
     *register_plugin_.__all__,
     *reload_all_plugin_.__all__,

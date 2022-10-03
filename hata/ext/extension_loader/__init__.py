@@ -6,7 +6,6 @@ from .. import plugin_loader
 
 
 def __getattr__(attribute_name):
-    print('B', attribute_name)
     new_attribute_name = attribute_name.replace(
         'extension', 'plugin'
     ).replace(

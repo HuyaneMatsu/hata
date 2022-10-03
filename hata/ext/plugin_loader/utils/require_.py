@@ -1,6 +1,6 @@
 __all__ = ('require', )
 
-from sys import _getframe as get_frame
+from scarletio import get_last_module_frame
 
 from ..exceptions import DoNotLoadPlugin
 
@@ -16,7 +16,11 @@ def require(*args, **kwargs):
     **kwargs : Keyword parameters
         Variables and their expected value / type.
     """
-    module_globals = get_frame().f_back.f_globals
+    module_frame = get_last_module_frame()
+    if (module_frame is None):
+        return
+    
+    module_globals = module_frame.f_globals
     
     for variable_name in args:
         if variable_name not in module_globals:

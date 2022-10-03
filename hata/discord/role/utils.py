@@ -14,7 +14,7 @@ from .role import Role
 ROLE_MANAGER_TYPE_NONE = RoleManagerType.none
 
 @export
-def create_partial_role_from_id(role_id):
+def create_partial_role_from_id(role_id, guild_id = 0):
     """
     Creates a partial role from the given `role_id`. If the role already exists returns that instead.
     
@@ -22,6 +22,8 @@ def create_partial_role_from_id(role_id):
     ----------
     role_id : `int`
         The unique identifier number of the role.
+    guild_id : `int` = `0`, Optional
+        The role's guild's identifier.
     
     Returns
     -------
@@ -32,10 +34,11 @@ def create_partial_role_from_id(role_id):
     except KeyError:
         pass
     
-    role = Role._create_empty(role_id)
+    role = Role._create_empty(role_id, guild_id)
     ROLES[role_id] = role
     
     return role
+
 
 def cr_p_role_object(name, role_id=None, color=Color(), separated=False, position=0, permissions=Permission(),
         managed=False, mentionable=False):

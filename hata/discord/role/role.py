@@ -313,7 +313,7 @@ class Role(DiscordEntity, immortal=True):
         try:
             self = ROLES[role_id]
         except KeyError:
-            self = cls._create_empty(role_id)
+            self = cls._create_empty(role_id, 0)
             ROLES[role_id] = self
         else:
             if (not self.partial):
@@ -732,6 +732,7 @@ class Role(DiscordEntity, immortal=True):
         
         return manager
     
+    
     @property
     def guild(self):
         """
@@ -764,7 +765,8 @@ class Role(DiscordEntity, immortal=True):
             except KeyError:
                 pass
             else:
-                return guild.partial
+                if (not guild.partial) and (self.id in guild.roles):
+                    return False
         
         return True
     
@@ -830,7 +832,7 @@ class Role(DiscordEntity, immortal=True):
 
 
     @classmethod
-    def _create_empty(cls, role_id):
+    def _create_empty(cls, role_id, guild_id):
         """
         Creates an empty role with the given identifier.
         
@@ -838,6 +840,8 @@ class Role(DiscordEntity, immortal=True):
         ----------
         role_id : `int`
             The role's identifier.
+        guild_id : `int`
+            The role's guild's identifier.
         
         Returns
         -------
@@ -848,7 +852,7 @@ class Role(DiscordEntity, immortal=True):
         self.id = role_id
         
         self.color = Color()
-        self.guild_id = 0
+        self.guild_id = guild_id
         self.separated = False
         self.manager_type = ROLE_MANAGER_TYPE_NONE
         self.mentionable = False

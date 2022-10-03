@@ -10,7 +10,7 @@ from ..auto_moderation import AutoModerationActionExecutionEvent, AutoModeration
 from ..channel import Channel
 from ..core import (
     APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, AUTO_MODERATION_RULES, CHANNELS, CLIENTS, GUILDS, KOKORO,
-    MESSAGES, SCHEDULED_EVENTS, STAGES, USERS
+    MESSAGES, ROLES, SCHEDULED_EVENTS, STAGES, USERS
 )
 from ..emoji import ReactionAddEvent, ReactionDeleteEvent, create_partial_emoji_from_data
 from ..guild import (
@@ -27,7 +27,7 @@ from ..integration import Integration
 from ..interaction import ApplicationCommand, ApplicationCommandPermission, InteractionEvent
 from ..invite import Invite
 from ..message import EMBED_UPDATE_NONE, Message
-from ..role import Role
+from ..role import Role, create_partial_role_from_id
 from ..scheduled_event import ScheduledEvent, ScheduledEventSubscribeEvent, ScheduledEventUnsubscribeEvent
 from ..stage import Stage
 from ..user import (
@@ -36,7 +36,7 @@ from ..user import (
 from ..utils import Gift, Relationship
 
 from .core import DEFAULT_EVENT_HANDLER, add_parser, maybe_ensure_launch
-from .event_types import ApplicationCommandCountUpdate, GuildUserChunkEvent, VoiceServerUpdateEvent
+from .event_types import ApplicationCommandCountUpdate, GuildUserChunkEvent, VoiceServerUpdateEvent, WebhookUpdateEvent
 from .filters import (
     filter_clients, filter_clients_or_me, filter_content_intent_client, filter_just_me, first_client,
     first_client_or_me, first_content_intent_client
@@ -2497,87 +2497,65 @@ del GUILD_ROLE_CREATE__CAL_SC, \
 
 def GUILD_ROLE_DELETE__CAL_SC(client, data):
     guild_id = int(data['guild_id'])
-    try:
-        guild = GUILDS[guild_id]
-    except KeyError:
-        guild_sync(client, data, None)
-        return
-    
     role_id = int(data['role_id'])
-    try:
-        role = guild.roles[role_id]
-    except KeyError:
-        guild_sync(client, data, None)
-        return
-    
+    role = create_partial_role_from_id(role_id, guild_id)
     role._delete()
     
-    Task(client.events.role_delete(client, role, guild), KOKORO)
+    Task(client.events.role_delete(client, role), KOKORO)
+
 
 def GUILD_ROLE_DELETE__CAL_MC(client, data):
     guild_id = int(data['guild_id'])
-    try:
-        guild = GUILDS[guild_id]
-    except KeyError:
-        guild_sync(client, data, None)
-        return
+    guild = GUILDS.get(guild_id, None)
     
-    clients = filter_clients(guild.clients, INTENT_MASK_GUILDS, client)
-    if clients.send(None) is not client:
-        clients.close()
-        return
+    if (guild is None):
+        clients = None
+    else:
+        clients = filter_clients(guild.clients, INTENT_MASK_GUILDS, client)
+        if clients.send(None) is not client:
+            clients.close()
+            return
     
     role_id = int(data['role_id'])
-    try:
-        role = guild.roles[role_id]
-    except KeyError:
-        clients.close()
-        guild_sync(client, data, None)
-        return
-    
+    role = create_partial_role_from_id(role_id, guild_id)
     role._delete()
     
-    for client_ in clients:
-        event_handler = client_.events.role_delete
+    if clients is None:
+        event_handler = client.events.role_delete
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(event_handler(client_, role, guild), KOKORO)
+            Task(event_handler(client, role), KOKORO)
+    else:
+        for client_ in clients:
+            event_handler = client_.events.role_delete
+            if (event_handler is not DEFAULT_EVENT_HANDLER):
+                Task(event_handler(client_, role), KOKORO)
+
 
 def GUILD_ROLE_DELETE__OPT_SC(client, data):
-    guild_id = int(data['guild_id'])
-    try:
-        guild = GUILDS[guild_id]
-    except KeyError:
-        guild_sync(client, data, None)
-        return
-    
     role_id = int(data['role_id'])
     try:
-        role = guild.roles[role_id]
+        role = ROLES[role_id]
     except KeyError:
-        guild_sync(client, data, None)
-        return
-    
-    role._delete()
+        pass
+    else:
+        role._delete()
+
 
 def GUILD_ROLE_DELETE__OPT_MC(client, data):
     guild_id = int(data['guild_id'])
-    try:
-        guild = GUILDS[guild_id]
-    except KeyError:
-        guild_sync(client, data, None)
-        return
+    guild = GUILDS.get(guild_id, None)
     
-    if first_client(guild.clients, INTENT_MASK_GUILDS, client) is not client:
+    if (guild is not None) and first_client(guild.clients, INTENT_MASK_GUILDS, client) is not client:
         return
     
     role_id = int(data['role_id'])
     try:
-        role = guild.roles[role_id]
+        role = ROLES[role_id]
     except KeyError:
-        guild_sync(client, data, None)
-        return
-    
-    role._delete()
+        pass
+    else:
+        role._delete()
+
 
 add_parser(
     'GUILD_ROLE_DELETE',
@@ -2695,18 +2673,8 @@ del GUILD_ROLE_UPDATE__CAL_SC, \
     GUILD_ROLE_UPDATE__OPT_MC
 
 def WEBHOOKS_UPDATE__CAL(client, data):
-    guild_id = int(data['guild_id'])
-    try:
-        guild = GUILDS[guild_id]
-    except KeyError:
-        guild_sync(client, data, 'WEBHOOKS_UPDATE')
-        return
-    
-    channel_id = int(data['channel_id'])
-    channel = CHANNELS.get(channel_id, None)
-    
-    # if this happens the client might ask for update.
-    Task(client.events.webhook_update(client, channel), KOKORO)
+    event = WebhookUpdateEvent(data)
+    Task(client.events.webhook_update(client, event), KOKORO)
 
 def WEBHOOKS_UPDATE__OPT(client, data):
     pass
@@ -3813,9 +3781,8 @@ def GUILD_SCHEDULED_EVENT_DELETE__CAL_SC(client, data):
 def GUILD_SCHEDULED_EVENT_DELETE__CAL_MC(client, data):
     guild_id = int(data['guild_id'])
     
-    try:
-        guild = GUILDS[guild_id]
-    except KeyError:
+    guild = GUILDS.get(guild_id, None)
+    if (guild is None):
         clients = None
     else:
         clients = filter_clients(guild.clients, INTENT_MASK_GUILDS, client)
@@ -3824,7 +3791,8 @@ def GUILD_SCHEDULED_EVENT_DELETE__CAL_MC(client, data):
             return
     
     scheduled_event = ScheduledEvent(data)
-    if (clients is None):
+    
+    if (guild is None):
         event_handler = client.events.scheduled_event_delete
         if (event_handler is not DEFAULT_EVENT_HANDLER):
             Task(event_handler(client, scheduled_event), KOKORO)

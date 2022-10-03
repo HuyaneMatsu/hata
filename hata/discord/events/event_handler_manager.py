@@ -73,7 +73,9 @@ def _get_event_deprecation_state(name):
     if name == 'webhook_update':
         return DEPRECATION_LEVEL_SHOULD_WRAP
     
-    
+    if name == 'role_delete':
+        return DEPRECATION_LEVEL_SHOULD_WRAP
+        
     return DEPRECATION_LEVEL_NONE
 
 
@@ -121,6 +123,30 @@ def _wrap_maybe_deprecated_event(name, func):
                 return await func(client, event.channel)
             
             return webhook_update_event_handler_wrapper
+    
+    
+    elif name == 'role_delete':
+        analyzer = CallableAnalyzer(func)
+        if analyzer.is_async():
+            real_analyzer = analyzer
+        else:
+            real_analyzer = CallableAnalyzer(func.__call__, as_method=True)
+        
+        min_, max_ = real_analyzer.get_non_reserved_positional_parameter_range()
+        if (min_ == 3) and not analyzer.accepts_args():
+            warnings.warn(
+                (
+                    f'`Client.events.role_delete`\'s `guild` parameter` is removed.\n'
+                    f'Please just use `client, role` parameters instead.'
+                ),
+                FutureWarning,
+                stacklevel = 3,
+            )
+        
+            async def role_delete_event_handler_wrapper(client, role):
+                return await func(client, role, role.guild)
+            
+            return role_delete_event_handler_wrapper
     
     return func
 
@@ -777,10 +803,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     role_create(client: ``Client``, role: ``Role``):
         Called when a role is created at a guild.
     
-    role_delete(client: ``Client``, role: ``Role``, guild: ``Guild``):
+    role_delete(client: ``Client``, role: ``Role``):
         Called when a role is deleted from a guild.
-        
-        Deleted role's `.guild` attribute is set as `None`.
     
     role_edit(client: ``Client``, role: ``Role``, old_attributes: `dict`):
         Called when a role is edited.
@@ -1157,9 +1181,9 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         else:
             parser_names = None
         
-        func = check_parameter_count_and_convert(func, parameter_count, name=name)
         if deprecation_state == DEPRECATION_LEVEL_SHOULD_WRAP:
             func = _wrap_maybe_deprecated_event(name, func)
+        func = check_parameter_count_and_convert(func, parameter_count, name=name)
         
         actual = getattr(plugin, name)
         
@@ -1245,7 +1269,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
             object.__setattr__(self, name, value)
             return
         
-        if _get_event_deprecation_state(name) == DEPRECATION_LEVEL_REMOVED:
+        deprecation_state = _get_event_deprecation_state(name)
+        if deprecation_state == DEPRECATION_LEVEL_REMOVED:
             return
         
         plugin, parameter_count = get_plugin_event_handler_and_parameter_count(self, name)
@@ -1258,7 +1283,9 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         else:
             parser_names = None
         
-
+        
+        if deprecation_state == DEPRECATION_LEVEL_SHOULD_WRAP:
+            value = _wrap_maybe_deprecated_event(name, value)
         func = check_parameter_count_and_convert(value, parameter_count, name=name)
         
         actual = getattr(plugin, name)

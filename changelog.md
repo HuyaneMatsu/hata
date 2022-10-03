@@ -1,3 +1,19 @@
+## 1.3.10 *\[2022-10-??\]*
+
+#### Improvements
+- `Role.partial` will now handle correctly if the role is deleted.
+- Add `guild_id` parameter to `create_partial_role_from_id`.
+- Add `guild_id` parameter to `Role._create_empty`.
+- `client.events.role_delete` now accepts only `2` parameters (3rd was redundant).
+
+##### ext.slash
+- Allow `hdsl` for slash command description.
+
+#### Bug Fixes
+- `EventHandlerManager.__setattr__` did not wrap deprecated event handlers if required..
+- `EventHandlerManager.__call__` wrapped deprecated event handlers after validating them.
+- `client.events.webhook_update` used different parameters as documented.
+
 ## 1.3.9 *\[2022-10-03\]*
 
 #### Improvements

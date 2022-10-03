@@ -48,18 +48,27 @@ def normalize_description(description):
         return None
     
     lines = description.splitlines()
-    for index in reversed(range(len(lines))):
-        line = lines[index]
-        line = line.strip()
-        if line:
-            lines[index] = line
-        else:
-            del lines[index]
     
-    if not lines:
-        return None
+    # strip
+    for index in range(len(lines)):
+        lines[index] = lines[index].strip()
     
-    return ' '.join(lines)
+    # Remove empty lines from the start~
+    while lines and not lines[0]:
+        del lines[0]
+    
+    # Remove everything after the first empty line.
+    try:
+        pop_since_index = lines.index('')
+    except ValueError:
+        pop_since_index = -1
+    
+    if pop_since_index != -1:
+        del lines[pop_since_index:]
+    
+    # Build response :KoishiSpam:
+    if lines:
+        return ' '.join(lines)
 
 
 def _check_maybe_route(variable_name, variable_value, route_to, validator):

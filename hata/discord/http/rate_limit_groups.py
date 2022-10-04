@@ -642,26 +642,29 @@ Group Details
 - forum_tag_delete
     - Endpoint : `/channels/{channel_id}/tags/{forum_tag_id}`
     - Method : `DELETE`
-    - Required auth : `?`
-    - Limiter : `?`
-    - Limit : `?`
-    - Resets after : `?`
+    - Required auth : `bot`
+    - Limiter : `channel_id`
+    - Limit : `OPT`
+    - Resets after : `OPT`
+    - Notes : Returns no information.
 
 - forum_tag_edit
     - Endpoint : `/channels/{channel_id}/tags/{forum_tag_id}`
-    - Method : `PATCH`
-    - Required auth : `?`
-    - Limiter : `?`
-    - Limit : `?`
-    - Resets after : `?`
+    - Method : `PUT`
+    - Required auth : `bot`
+    - Limiter : `channel_id`
+    - Limit : `OPT`
+    - Resets after : `OPT`
+    - Notes : Returns no information.
 
 - forum_tag_create
     - Endpoint : `/channels/{channel_id}/tags`
     - Method : `POST`
-    - Required auth : `?`
-    - Limiter : `?`
-    - Limit : `?`
-    - Resets after : `?`
+    - Required auth : `bot`
+    - Limiter : `channel_id`
+    - Limit : `OPT`
+    - Resets after : `OPT`
+    - Notes : Returns no information.
 
 - thread_leave
     - Endpoint : `/channels/{channel_id}/thread-members/@me`
@@ -1995,9 +1998,9 @@ message_pin = GROUP_PIN_MODIFY
 channel_group_user_get_all = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
 channel_group_user_delete = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
 channel_group_user_add = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
-forum_tag_delete = RateLimitGroup() # untested
-forum_tag_edit = RateLimitGroup() # untested
-forum_tag_create = RateLimitGroup() # untested
+forum_tag_delete = RateLimitGroup(LIMITER_CHANNEL, optimistic = True)
+forum_tag_edit = RateLimitGroup(LIMITER_CHANNEL, optimistic = True)
+forum_tag_create = RateLimitGroup(LIMITER_CHANNEL, optimistic = True)
 thread_user_get_all = RateLimitGroup()
 thread_join = GROUP_THREAD_ACTION
 thread_leave = GROUP_THREAD_ACTION

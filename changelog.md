@@ -11,6 +11,12 @@
 - Add `Client.forum_tag_create`.
 - Add `Client.forum_tag_edit`.
 - Add `Client.forum_tag_delete`.
+- Add `RATE_LIMIT_GROUPS.forum_tag_delete`.
+- Add `RATE_LIMIT_GROUPS.forum_tag_edit`.
+- Add `RATE_LIMIT_GROUPS.forum_tag_create`.
+- Add `DiscordHTTPClient.forum_tag_create`.
+- Add `DiscordHTTPClient.forum_tag_edit`.
+- Add `DiscordHTTPClient.forum_tag_delete`.
 
 ##### ext.slash
 - Allow `hdsl` for slash command description.

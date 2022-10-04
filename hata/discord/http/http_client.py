@@ -714,6 +714,36 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/channels/{channel_id}/directory-entries/list',
         )
     
+    # forum tag
+    
+    async def forum_tag_create(self, channel_id, data, reason):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.forum_tag_create, channel_id),
+            METHOD_POST,
+            f'{API_ENDPOINT}/channels/{channel_id}/tags',
+            data,
+            reason = reason,
+        )
+    
+    
+    async def forum_tag_edit(self, channel_id, forum_tag_id, data, reason):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.forum_tag_edit, channel_id),
+            METHOD_PUT,
+            f'{API_ENDPOINT}/channels/{channel_id}/tags/{forum_tag_id}',
+            data,
+            reason = reason,
+        )
+    
+    
+    async def forum_tag_delete(self, channel_id, forum_tag_id, reason):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.forum_tag_delete, channel_id),
+            METHOD_DELETE,
+            f'{API_ENDPOINT}/channels/{channel_id}/tags/{forum_tag_id}',
+            reason = reason,
+        )
+    
     # typing
     
     async def typing(self, channel_id):

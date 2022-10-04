@@ -639,6 +639,30 @@ Group Details
     - Resets after : `OPT`
     - Notes : Untested.
 
+- forum_tag_delete
+    - Endpoint : `/channels/{channel_id}/tags/{forum_tag_id}`
+    - Method : `DELETE`
+    - Required auth : `?`
+    - Limiter : `?`
+    - Limit : `?`
+    - Resets after : `?`
+
+- forum_tag_edit
+    - Endpoint : `/channels/{channel_id}/tags/{forum_tag_id}`
+    - Method : `PATCH`
+    - Required auth : `?`
+    - Limiter : `?`
+    - Limit : `?`
+    - Resets after : `?`
+
+- forum_tag_create
+    - Endpoint : `/channels/{channel_id}/tags`
+    - Method : `POST`
+    - Required auth : `?`
+    - Limiter : `?`
+    - Limit : `?`
+    - Resets after : `?`
+
 - thread_leave
     - Endpoint : `/channels/{channel_id}/thread-members/@me`
     - Method : `DELETE`
@@ -1971,6 +1995,9 @@ message_pin = GROUP_PIN_MODIFY
 channel_group_user_get_all = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
 channel_group_user_delete = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
 channel_group_user_add = RateLimitGroup(LIMITER_CHANNEL, optimistic=True) # untested
+forum_tag_delete = RateLimitGroup() # untested
+forum_tag_edit = RateLimitGroup() # untested
+forum_tag_create = RateLimitGroup() # untested
 thread_user_get_all = RateLimitGroup()
 thread_join = GROUP_THREAD_ACTION
 thread_leave = GROUP_THREAD_ACTION

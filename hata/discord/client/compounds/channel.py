@@ -193,6 +193,22 @@ def _assert__permission_overwrite_edit__deny(deny):
     return True
 
 
+def _forum_tag_data_array_sort_key(forum_tag_data):
+    """
+    Sort key used to sort forum tag data.
+    
+    Parameters
+    ----------
+    forum_tag_data : `dict` of (`str`, `Any`) items
+        Forum tag data.
+    
+    Returns
+    -------
+    sort_key : `int`
+    """
+    return int(forum_tag_data['id'])
+
+
 class ClientCompoundChannelEndpoints(Compound):
     
     http : DiscordHTTPClient
@@ -1115,7 +1131,7 @@ class ClientCompoundChannelEndpoints(Compound):
         return [*guild.channels.values()]
     
     
-    async def forum_tag_create(self, forum_channel, forum_tag = None, **keyword_parameters):
+    async def forum_tag_create(self, forum_channel, forum_tag = None, *, reason = None, **keyword_parameters):
         """
         Creates a new forum tag in the channel.
         
@@ -1129,12 +1145,15 @@ class ClientCompoundChannelEndpoints(Compound):
         forum_tag : ``ForumTag``, `None` = `None`, Optional
             A forum tag which can be used as a template for the newly created tag.
         
+        reason : `None`, `str` = `None`, Optional (Keyword only)
+            Shows up at the respective guild's audit logs.
+        
         **keyword_parameters : Keyword parameters
             Additional keyword parameters either to define the template, or to overwrite specific fields' values.
         
         Returns
         -------
-        forum_tag : ``ForumTag``
+        forum_tag : `None`, ``ForumTag``
             The created forum tag.
         
         Raises
@@ -1157,11 +1176,40 @@ class ClientCompoundChannelEndpoints(Compound):
         """
         channel_id = get_channel_id(forum_channel, Channel.is_guild_forum)
         data = build_create_payload(forum_tag, FORUM_TAG_FIELD_CONVERTERS, keyword_parameters)
-        data = await self.http.forum_tag_create(channel_id, data)
-        return ForumTag.from_data(data)
+        
+        channel_data = await self.http.forum_tag_create(channel_id, data, reason)
+        
+        # Fixing discord bug: Returns channel data instead of forum tag.
+        available_tag_data_array = channel_data.get('available_tags', None)
+        if (available_tag_data_array is None) or (not available_tag_data_array):
+            # Cannot build forum tag from nothing, eww..
+            return None
+        
+        available_tag_data_array = sorted(
+            available_tag_data_array, key = _forum_tag_data_array_sort_key, reverse = True
+        )
+        
+        for forum_tag_data in available_tag_data_array:
+            for key, value in data.items():
+                if forum_tag_data.get(key, None) != value:
+                    break
+            
+            else:
+                # All fields matched.
+                break
+            
+            continue
+        
+        else:
+            # If no fields matched, return the newest tag.
+            forum_tag_data = available_tag_data_array[0]
+        
+        return ForumTag.from_data(forum_tag_data)
     
     
-    async def forum_tag_edit(self, forum_channel, old_forum_tag, forum_tag = None, **keyword_parameters):
+    async def forum_tag_edit(
+        self, forum_channel, old_forum_tag, forum_tag = None, *, reason = None, **keyword_parameters
+    ):
         """
         Edits the given forum tag.
         
@@ -1177,6 +1225,9 @@ class ClientCompoundChannelEndpoints(Compound):
         
         forum_tag : ``ForumTag``, `None` = `None`, Optional
             A forum tag which can be used as a template for edition.
+        
+        reason : `None`, `str` = `None`, Optional (Keyword only)
+            Shows up at the respective guild's audit logs.
         
         **keyword_parameters : Keyword parameters
             Additional keyword parameters either to define the template, or to overwrite specific fields' values.
@@ -1197,11 +1248,16 @@ class ClientCompoundChannelEndpoints(Compound):
         """
         channel_id = get_channel_id(forum_channel, Channel.is_guild_forum)
         old_forum_tag, forum_tag_id = get_forum_tag_and_id(old_forum_tag)
-        data = build_edit_payload(forum_tag, old_forum_tag, FORUM_TAG_FIELD_CONVERTERS, keyword_parameters)
-        await self.http.forum_tag_create(channel_id, forum_tag_id, data)
+        data = build_edit_payload(old_forum_tag, forum_tag, FORUM_TAG_FIELD_CONVERTERS, keyword_parameters)
+        
+        # Fixing discord bug: name.BASE_TYPE_REQUIRED('This field is required')
+        if ('name' not in data) and (old_forum_tag is not None):
+            data['name'] = old_forum_tag.name
+        
+        await self.http.forum_tag_edit(channel_id, forum_tag_id, data, reason)
     
     
-    async def forum_tag_delete(self, forum_channel, forum_tag):
+    async def forum_tag_delete(self, forum_channel, forum_tag, *, reason = None):
         """
         Deletes the given forum tag.
         
@@ -1212,6 +1268,9 @@ class ClientCompoundChannelEndpoints(Compound):
         
         forum_tag : ``ForumTag``, `int`
             The forum tag to delete.
+        
+        reason : `None`, `str` = `None`, Optional (Keyword only)
+            Shows up at the respective guild's audit logs.
         
         Raises
         ------
@@ -1229,4 +1288,4 @@ class ClientCompoundChannelEndpoints(Compound):
         """
         channel_id = get_channel_id(forum_channel, Channel.is_guild_forum)
         forum_tag_id = get_forum_tag_id(forum_tag)
-        await self.http.forum_tag_delete(channel_id, forum_tag_id)
+        await self.http.forum_tag_delete(channel_id, forum_tag_id, reason)

@@ -1027,19 +1027,18 @@ Group Details
     - Endpoint : `/guilds/{guild_id}/emojis`
     - Method : `POST`
     - Required auth : `bot`
-    - Limiter : `GLOBAL`
+    - Limiter : `guild_id`
     - Limit : `50`
     - Resets after : `3600.0`
-    - Notes : Creating an emoji with the same name of an existing one has a different rate limit.
-              Please don't do that.
+    - Notes : Discord do not returns rate limit information.
 
 - emoji_delete
     - Endpoint : `/guilds/{guild_id}/emojis`
     - Method : `DELETE`
     - Required auth : `bot`
     - Limiter : `GLOBAL`
-    - Limit : `1`
-    - Resets after : `2.0`
+    - Limit : `10`
+    - Resets after : `20.0`
 
 - emoji_get
     - Endpoint : `/guilds/{guild_id}/emojis/{emoji_id}`
@@ -1054,8 +1053,8 @@ Group Details
     - Method : `PATCH`
     - Required auth : `bot`
     - Limiter : `GLOBAL`
-    - Limit : `1`
-    - Resets after : `2.0`
+    - Limit : `10`
+    - Resets after : `20.0`
 
 - integration_get_all
     - Endpoint : `/guilds/{guild_id}/integrations`
@@ -2018,7 +2017,7 @@ guild_discovery_edit = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 guild_embed_get = RateLimitGroup(LIMITER_GUILD, optimistic=True) # deprecated
 guild_embed_edit = RateLimitGroup(LIMITER_GUILD, optimistic=True) # deprecated
 emoji_guild_get_all = RateLimitGroup(LIMITER_GUILD, optimistic=True)
-emoji_create = RateLimitGroup()
+emoji_create = RateLimitGroup(LIMITER_GUILD)
 emoji_delete = RateLimitGroup()
 emoji_get = RateLimitGroup(LIMITER_GUILD, optimistic=True)
 emoji_edit = RateLimitGroup()

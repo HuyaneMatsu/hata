@@ -31,6 +31,7 @@ from .ansi_format import *
 from .color import *
 from .core import *
 from .object_binding import *
+from .payload_building import *
 from .preconverters import *
 from .utils import *
 
@@ -65,9 +66,10 @@ __all__ = (
     
     *allowed_mentions.__all__,
     *ansi_format.__all__,
-    *object_binding.__all__,
     *core.__all__,
     *color.__all__,
+    *object_binding.__all__,
+    *payload_building.__all__,
     *preconverters.__all__,
     *utils.__all__,
 )

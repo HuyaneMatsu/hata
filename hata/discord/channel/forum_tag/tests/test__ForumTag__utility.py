@@ -1,6 +1,6 @@
 import vampytest
 
-from ...core import BUILTIN_EMOJIS
+from ....core import BUILTIN_EMOJIS
 
 from .. import ForumTag
 

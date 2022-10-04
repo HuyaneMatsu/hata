@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ...preconverters import preconvert_str
+from ....preconverters import preconvert_str
 
 from ..constants import NAME_LENGTH_MAX, NAME_LENGTH_MIN
 
@@ -32,7 +32,7 @@ def validate_name(name):
     Parameters
     ----------
     name : `None`, `str`
-        The name of the channel.
+        The name of the forum tag.
     
     Returns
     -------
@@ -60,7 +60,7 @@ def put_name_into(name, data, defaults):
     Parameters
     ----------
     name : `None`, `str`
-        The channel's name.
+        The forum tag's name.
     data : `dict` of (`str`, `Any`) items
         Json serializable dictionary.
     defaults : `bool`

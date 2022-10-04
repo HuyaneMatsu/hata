@@ -746,7 +746,7 @@ class RateLimitHandlerCTX:
     
     def exit(self, headers):
         """
-        Checks the context manager whether it was already exited and exists's its parent with the given `headers`
+        Checks the context manager whether it was already exited and exits its parent with the given `headers`
         as well.
         
         Parameters
@@ -771,6 +771,7 @@ class RateLimitHandlerCTX:
             self.parent.exit(None)
         
         return False
+
 
 class StaticRateLimitGroup:
     """

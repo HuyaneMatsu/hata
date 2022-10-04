@@ -4,7 +4,8 @@ import reprlib, warnings
 
 from scarletio import Compound
 
-from ...channel import Channel, ChannelType, cr_pg_channel_object, create_partial_channel_from_id
+from ...channel import Channel, ChannelType, ForumTag, cr_pg_channel_object, create_partial_channel_from_id
+from ...channel.forum_tag.utils import FORUM_TAG_FIELD_CONVERTERS
 from ...channel.utils import (
     _assert_channel_type, _maybe_add_channel_bitrate_field_to_data,
     _maybe_add_channel_default_thread_auto_archive_after_field_to_data, _maybe_add_channel_nsfw_field_to_data,
@@ -15,12 +16,15 @@ from ...channel.utils import (
 from ...guild import Guild, create_partial_guild_from_id
 from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES
 from ...permission import Permission, PermissionOverwrite
+from ...payload_building import build_create_payload, build_edit_payload
 from ...preconverters import preconvert_preinstanced_type
 from ...utils import get_image_media_type, image_to_base64
 from ...webhook import Webhook
 
 from ..functionality_helpers import channel_move_sort_key
-from ..request_helpers import get_channel_and_id, get_channel_id, get_guild_and_id, get_user_id
+from ..request_helpers import (
+    get_channel_and_id, get_channel_id, get_forum_tag_and_id, get_forum_tag_id, get_guild_and_id, get_user_id
+)
 
 
 def _assert__channel_group_edit__name(name):
@@ -1109,3 +1113,120 @@ class ClientCompoundChannelEndpoints(Compound):
         guild._sync_channels(data)
         
         return [*guild.channels.values()]
+    
+    
+    async def forum_tag_create(self, forum_channel, forum_tag = None, **keyword_parameters):
+        """
+        Creates a new forum tag in the channel.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        forum_channel : ``Channel``, `int`
+            The channel to create the tag in.
+        
+        forum_tag : ``ForumTag``, `None` = `None`, Optional
+            A forum tag which can be used as a template for the newly created tag.
+        
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters either to define the template, or to overwrite specific fields' values.
+        
+        Returns
+        -------
+        forum_tag : ``ForumTag``
+            The created forum tag.
+        
+        Raises
+        ------
+        TypeError
+            If a parameter's type is not acceptable.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        
+        Notes
+        -----
+        A forum channel can have up to 25 tags.
+        
+        See Also
+        --------
+        - ``.forum_tag_delete`` : Delete a forum tag.
+        - ``.forum_tag_edit`` : Modify a forum tag.
+        """
+        channel_id = get_channel_id(forum_channel, Channel.is_guild_forum)
+        data = build_create_payload(forum_tag, FORUM_TAG_FIELD_CONVERTERS, keyword_parameters)
+        data = await self.http.forum_tag_create(channel_id, data)
+        return ForumTag.from_data(data)
+    
+    
+    async def forum_tag_edit(self, forum_channel, old_forum_tag, forum_tag = None, **keyword_parameters):
+        """
+        Edits the given forum tag.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        forum_channel : ``Channel``, `int`
+            The channel to edit the tag in.
+        
+        old_forum_tag : ``ForumTag``, `int`
+            The forum tag to edit.
+        
+        forum_tag : ``ForumTag``, `None` = `None`, Optional
+            A forum tag which can be used as a template for edition.
+        
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters either to define the template, or to overwrite specific fields' values.
+        
+        Raises
+        ------
+        TypeError
+            If a parameter's type is not acceptable.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        
+        See Also
+        --------
+        - ``.forum_tag_create`` : Create a forum tag.
+        - ``.forum_tag_delete`` : Delete a forum tag.
+        """
+        channel_id = get_channel_id(forum_channel, Channel.is_guild_forum)
+        old_forum_tag, forum_tag_id = get_forum_tag_and_id(old_forum_tag)
+        data = build_edit_payload(forum_tag, old_forum_tag, FORUM_TAG_FIELD_CONVERTERS, keyword_parameters)
+        await self.http.forum_tag_create(channel_id, forum_tag_id, data)
+    
+    
+    async def forum_tag_delete(self, forum_channel, forum_tag):
+        """
+        Deletes the given forum tag.
+        
+        Parameters
+        ----------
+        forum_channel : ``Channel``, `int`
+            The channel to edit the tag in.
+        
+        forum_tag : ``ForumTag``, `int`
+            The forum tag to delete.
+        
+        Raises
+        ------
+        TypeError
+            If a parameter's type is not acceptable.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        
+        See Also
+        --------
+        - ``.forum_tag_create`` : Create a forum tag.
+        - ``.forum_tag_edit`` : Modify a forum tag.
+        """
+        channel_id = get_channel_id(forum_channel, Channel.is_guild_forum)
+        forum_tag_id = get_forum_tag_id(forum_tag)
+        await self.http.forum_tag_delete(channel_id, forum_tag_id)

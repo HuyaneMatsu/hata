@@ -1,7 +1,7 @@
 import vampytest
 
-from ...core import BUILTIN_EMOJIS, FORUM_TAGS
-from ...emoji import create_partial_emoji_from_data, put_partial_emoji_data_into
+from ....core import BUILTIN_EMOJIS, FORUM_TAGS
+from ....emoji import create_partial_emoji_from_data, put_partial_emoji_data_into
 
 from .. import ForumTag
 

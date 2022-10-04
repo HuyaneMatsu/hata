@@ -13,10 +13,10 @@ from ...env import API_VERSION
 
 from ..auto_moderation import AutoModerationRule
 from ..bases import maybe_snowflake, maybe_snowflake_pair, maybe_snowflake_token_pair
-from ..channel import Channel
+from ..channel import Channel, ForumTag
 from ..core import (
-    APPLICATION_COMMANDS, AUTO_MODERATION_RULES, CHANNELS, GUILDS, MESSAGES, SCHEDULED_EVENTS, STICKERS, STICKER_PACKS,
-    USERS
+    APPLICATION_COMMANDS, AUTO_MODERATION_RULES, CHANNELS, FORUM_TAGS, GUILDS, MESSAGES, SCHEDULED_EVENTS, STICKERS,
+    STICKER_PACKS, USERS
 )
 from ..embed import EmbedBase
 from ..emoji import Emoji, parse_reaction
@@ -1968,7 +1968,7 @@ def get_auto_moderation_rule_guild_id_and_id(auto_moderation_rule):
 
 def get_auto_moderation_rule_and_guild_id_and_id(auto_moderation_rule):
     """
-    Gets the auto moderation, Its guild's identifier and it's own identifier.
+    Gets the auto moderation, its guild's identifier and it's own identifier.
     
     Parameters
     ----------
@@ -2005,3 +2005,71 @@ def get_auto_moderation_rule_and_guild_id_and_id(auto_moderation_rule):
         auto_moderation_rule = AUTO_MODERATION_RULES.get(rule_id, None)
     
     return auto_moderation_rule, guild_id, rule_id
+
+
+def get_forum_tag_id(forum_tag):
+    """
+    Gets the forum tag's identifier.
+    
+    Parameters
+    ----------
+    forum_tag : ``ForumTag``, `int`
+        The forum tag or its identifier.
+    
+    Returns
+    -------
+    forum_tag_id : `int`
+        The forum tag's identifier.
+    
+    Raises
+    ------
+    TypeError
+        - If `forum_tag` type is incorrect.
+    """
+    if isinstance(forum_tag, ForumTag):
+        forum_tag_id = forum_tag.id
+    
+    else:
+        forum_tag_id = maybe_snowflake(forum_tag)
+        if (forum_tag_id is None):
+            raise TypeError(
+                f'`forum_tag` can be `{ForumTag.__name__}, `int`, got {forum_tag.__class__.__name__}; {forum_tag!r}.'
+            )
+    
+    return forum_tag_id
+
+
+def get_forum_tag_and_id(forum_tag):
+    """
+    Gets the forum tag and it's identifier.
+    
+    Parameters
+    ----------
+    forum_tag : ``ForumTag``, `int`
+        The forum tag or its identifier.
+    
+    Returns
+    -------
+    forum_tag : `None`, ``ForumTag``
+        The forum tag if exists.
+    forum_tag_id : `int`
+        The forum tag's identifier.
+    
+    Raises
+    ------
+    TypeError
+        - If `forum_tag` type is incorrect.
+    """
+    if isinstance(forum_tag, ForumTag):
+        forum_tag_id = forum_tag.id
+    
+    else:
+        forum_tag_id = maybe_snowflake(forum_tag)
+        if (forum_tag_id is None):
+            raise TypeError(
+                f'`forum_tag` can be `{ForumTag.__name__}, `int`, got {forum_tag.__class__.__name__}; {forum_tag!r}.'
+            )
+        
+        forum_tag = FORUM_TAGS.get(forum_tag_id, None)
+    
+    return forum_tag, forum_tag_id

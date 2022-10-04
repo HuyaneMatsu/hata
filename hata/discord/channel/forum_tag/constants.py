@@ -1,0 +1,4 @@
+__all__ = ()
+
+NAME_LENGTH_MAX = 20
+NAME_LENGTH_MIN = 1

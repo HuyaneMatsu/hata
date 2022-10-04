@@ -1,6 +1,6 @@
 import vampytest
 
-from .. import create_forum_tag_from_id
+from ..utils import create_forum_tag_from_id
 
 
 def test__create_forum_tag_from_id():

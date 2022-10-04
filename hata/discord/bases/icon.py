@@ -4,7 +4,7 @@ __all__ = (
 
 import sys
 
-from scarletio import DOCS_ENABLED, RichAttributeErrorBaseType, docs_property
+from scarletio import DOCS_ENABLED, RichAttributeErrorBaseType, copy_docs, docs_property
 
 from .preinstanced import Preinstance as P, PreinstancedBase
 
@@ -19,7 +19,13 @@ class IconType(PreinstancedBase):
         The name of the icon type.
     value : `int`
         The identifier value the icon type.
-        
+    allowed_postfixes : `None`, `frozenset` of `str`
+        The allowed postfixes.
+    default_postfix : `str`
+        Default postfix used when building an url with the icon.
+    prefix : `str`
+        Prefix used when building an url with the icon.
+    
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``IconType``) items
@@ -31,20 +37,52 @@ class IconType(PreinstancedBase):
     
     Every predefined icon type can be accessed as class attribute as well:
     
-    +-----------------------+---------------+-------+
-    | Class attribute name  | name          | value |
-    +=======================+===============+=======+
-    | none                  | none          | 0     |
-    +-----------------------+---------------+-------+
-    | static                | static        | 1     |
-    +-----------------------+---------------+-------+
-    | animated              | animated      | 2     |
-    +-----------------------+---------------+-------+
+    +-----------------------+---------------+-------+-----------+-------------------+---------------------------------------+
+    | Class attribute name  | Name          | Value | Prefix    | Default postfix   | Allowed Postfixes                     |
+    +=======================+===============+=======+===========+===================+=======================================+
+    | none                  | none          | 0     | `''`      | `''`              | `None`                                |
+    +-----------------------+---------------+-------+-----------+-------------------|---------------------------------------+
+    | static                | static        | 1     | `''`      | `'png'`           | `'jpg', 'jpeg', 'png', 'webp'`        |
+    +-----------------------+---------------+-------+-----------+-------------------|---------------------------------------+
+    | animated              | animated      | 2     | `'a_'`    | `'gif'`           | `'jpg', 'jpeg', 'png', 'webp', 'gif'` |
+    +-----------------------+---------------+-------+-----------+-------------------+---------------------------------------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
     
-    __slots__ = ()
+    __slots__ = ('allowed_postfixes', 'default_postfix', 'prefix',)
+    
+    
+    @classmethod
+    @copy_docs(PreinstancedBase._from_value)
+    def _from_value(cls, value):
+        raise NotImplementedError
+    
+    
+    def __init__(self, value, name, prefix, default_postfix, allowed_postfixes):
+        """
+        Creates a new icon type with the given parameters and stores it at the type's `.INSTANCES`.
+        
+        Parameters
+        ----------
+        value : `str`
+            The unique identifier of the icon type.
+        name : `str`
+            The icon type's name
+        prefix : `str`
+            Prefix used when building an url with the icon.
+        default_postfix : `str`
+            Default postfix used when building an url with the icon.
+        allowed_postfixes : `None`, `frozenset` of `str`
+            The allowed postfixes.
+        """
+        self.name = name
+        self.value = value
+        self.prefix = prefix
+        self.default_postfix = default_postfix
+        self.allowed_postfixes = allowed_postfixes
+        self.INSTANCES[value] = self
+    
     
     def __bool__(self):
         """Returns whether the icon's type is set."""
@@ -55,9 +93,44 @@ class IconType(PreinstancedBase):
         
         return boolean
     
-    none = P(0, 'none')
-    static = P(1, 'static')
-    animated = P(2, 'animated')
+    
+    def allows_postfix(self, postfix):
+        """
+        Returns whether the icon type allows the given postfix.
+        
+        Parameters
+        ----------
+        postfix : `str`
+            The postfix to check.
+        
+        Returns
+        -------
+        allows_postfix : `bool`
+        """
+        allowed_postfixes = self.allowed_postfixes
+        if (allowed_postfixes is None):
+            return False
+        
+        if (postfix not in allowed_postfixes):
+            return False
+        
+        return True
+    
+    
+    def can_create_url(self):
+        """
+        Returns whether it is possible to create url with the icon.
+        
+        Returns
+        -------
+        can_create_url : `bool`
+        """
+        return (self.allowed_postfixes is None)
+    
+    
+    none = P(0, 'none', '', '', None)
+    static = P(1, 'static', '', 'png', frozenset(('jpg', 'jpeg', 'png', 'webp')))
+    animated = P(2, 'animated', 'a_', 'gif', frozenset(('jpg', 'jpeg', 'png', 'webp', 'gif')))
 
 
 ICON_TYPE_NONE = IconType.none

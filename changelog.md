@@ -5,6 +5,12 @@
 - Add `guild_id` parameter to `create_partial_role_from_id`.
 - Add `guild_id` parameter to `Role._create_empty`.
 - `client.events.role_delete` now accepts only `2` parameters (3rd was redundant).
+- Update `emoji_delete` rate limit documentation.
+- Update `emoji_create` rate limit & documentation.
+- Update `emoji_edit` rate limit documentation.
+- Add `Client.forum_tag_create`.
+- Add `Client.forum_tag_edit`.
+- Add `Client.forum_tag_delete`.
 
 ##### ext.slash
 - Allow `hdsl` for slash command description.

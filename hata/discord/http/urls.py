@@ -1,7 +1,7 @@
 __all__ = (
     'API_ENDPOINT', 'CDN_ENDPOINT', 'DISCORD_ENDPOINT', 'INVITE_URL_RP', 'MESSAGE_JUMP_URL_RP', 'STATUS_ENDPOINT',
     'VALID_ICON_FORMATS', 'VALID_ICON_FORMATS_EXTENDED', 'VALID_ICON_MEDIA_TYPES', 'VALID_ICON_MEDIA_TYPES_EXTENDED',
-    'VALID_STICKER_IMAGE_MEDIA_TYPES', 'is_media_url'
+    'VALID_IMAGE_MEDIA_TYPES_ALL', 'VALID_STICKER_IMAGE_MEDIA_TYPES', 'is_media_url'
 )
 
 import re
@@ -12,10 +12,10 @@ from ...env import (
     API_VERSION, CUSTOM_API_ENDPOINT, CUSTOM_CDN_ENDPOINT, CUSTOM_DISCORD_ENDPOINT, CUSTOM_STATUS_ENDPOINT
 )
 
-from ..bases import ICON_TYPE_NONE, ICON_TYPE_STATIC
-
 
 StickerFormat = include('StickerFormat')
+_try_get_guild_id = include('_try_get_guild_id')
+
 
 API_ENDPOINT = f'https://discord.com/api/v{API_VERSION}' if (CUSTOM_API_ENDPOINT is None) else CUSTOM_API_ENDPOINT
 CDN_ENDPOINT = 'https://cdn.discordapp.com' if (CUSTOM_CDN_ENDPOINT is None) else CUSTOM_CDN_ENDPOINT
@@ -37,13 +37,83 @@ VALID_ICON_MEDIA_TYPES = frozenset(('image/jpeg', 'image/png', 'image/webp'))
 VALID_ICON_MEDIA_TYPES_EXTENDED = frozenset(('image/gif', *VALID_ICON_MEDIA_TYPES))
 
 VALID_STICKER_IMAGE_MEDIA_TYPES = frozenset(('image/png', 'application/json'))
+VALID_IMAGE_MEDIA_TYPES_ALL = frozenset((*VALID_ICON_MEDIA_TYPES_EXTENDED, *VALID_STICKER_IMAGE_MEDIA_TYPES))
+
 
 STYLE_PATTERN = re.compile('(^shield$)|(^banner[1-4]$)')
 
-MESSAGE_JUMP_URL_RP = re.compile('(?:https://)?(?:(?:canary|ptb)\.)?discord(?:app)?.com/channels/(?:(\d{7,21})|@me)/(\d{7,21})/(\d{7,21})')
+MESSAGE_JUMP_URL_RP = re.compile(
+    '(?:https://)?(?:(?:canary|ptb)\.)?discord(?:app)?.com/channels/(?:(\d{7,21})|@me)/(\d{7,21})/(\d{7,21})'
+)
 export(MESSAGE_JUMP_URL_RP, 'MESSAGE_JUMP_URL_RP')
 
-_try_get_guild_id = include('_try_get_guild_id')
+
+
+def _validate_extension(icon_type, ext):
+    """
+    Validates the given icon extension.
+    
+    Parameters
+    ----------
+    icon_type : ``IconType``
+        The respective icon type.
+    ext : `None`, `str`
+        The received extension.
+    
+    Returns
+    -------
+    ext : `str`
+        The validated extension.
+    
+    Raises
+    ------
+    ValueError
+        - If `ext`'s value is not applicable for the given icon type.
+    """
+    if ext is None:
+        ext = icon_type.default_postfix
+    
+    else:
+        if not icon_type.allows_postfix(ext):
+            raise ValueError(
+                f'Extension must be one of {ext.allowed_postfixes}, got {ext!r}.'
+            )
+    
+    return ext
+
+
+def _build_end(size):
+    """
+    Validates the given icon size.
+    
+    Parameters
+    ----------
+    size : `None`, `int`
+        The received size.
+    
+    Returns
+    -------
+    end : `str`
+        The validated size as query string.
+    
+    Raises
+    ------
+    ValueError
+        - If `size`'s value is not applicable for the given icon type.
+    """
+    if size is None:
+        end = ''
+    
+    elif size in VALID_ICON_SIZES:
+        end = f'?size={size}'
+    
+    else:
+        raise ValueError(
+            f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.'
+        )
+    
+    return end
+
 
 # returns a URL that allows the client to jump to this message
 # guild is guild's id, or @me if there is no guild
@@ -128,15 +198,11 @@ def guild_icon_url(guild):
     url : `None`, `str`
     """
     icon_type = guild.icon_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if icon_type is ICON_TYPE_STATIC:
-        prefix = ''
-        ext = 'png'
-    else:
-        prefix = 'a_'
-        ext = 'gif'
+    prefix = icon_type.prefix
+    ext = icon_type.default_postfix
     
     return f'{CDN_ENDPOINT}/icons/{guild.id}/{prefix}{guild.icon_hash:0>32x}.{ext}'
 
@@ -165,33 +231,12 @@ def guild_icon_url_as(guild, ext=None, size=None):
         If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = guild.icon_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if size is None:
-        end = ''
-    elif size in VALID_ICON_SIZES:
-        end = f'?size={size}'
-    else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
-    
-    if ext is None:
-        if icon_type is ICON_TYPE_STATIC:
-            prefix = ''
-            ext = 'png'
-        else:
-            prefix = 'a_'
-            ext = 'gif'
-    
-    else:
-        if icon_type is ICON_TYPE_STATIC:
-            if ext not in VALID_ICON_FORMATS:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
-            prefix = ''
-        else:
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.')
-            prefix = 'a_'
+    prefix = icon_type.prefix
+    ext = _validate_extension(icon_type, ext)
+    end = _build_end(size)
     
     return f'{CDN_ENDPOINT}/icons/{guild.id}/{prefix}{guild.icon_hash:0>32x}.{ext}{end}'
 
@@ -207,15 +252,11 @@ def guild_invite_splash_url(guild):
     url : `None`, `str`
     """
     icon_type = guild.invite_splash_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if icon_type is ICON_TYPE_STATIC:
-        prefix = ''
-        ext = 'png'
-    else:
-        prefix = 'a_'
-        ext = 'gif'
+    prefix = icon_type.prefix
+    ext = icon_type.default_postfix
     
     return f'{CDN_ENDPOINT}/splashes/{guild.id}/{prefix}{guild.invite_splash_hash:0>32x}.{ext}'
 
@@ -243,33 +284,12 @@ def guild_invite_splash_url_as(guild, ext=None, size=None):
         If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = guild.invite_splash_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if size is None:
-        end = ''
-    elif size in VALID_ICON_SIZES:
-        end = f'?size={size}'
-    else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
-    
-    if ext is None:
-        if icon_type is ICON_TYPE_STATIC:
-            prefix = ''
-            ext = 'png'
-        else:
-            prefix = 'a_'
-            ext = 'gif'
-    
-    else:
-        if icon_type is ICON_TYPE_STATIC:
-            if ext not in VALID_ICON_FORMATS:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
-            prefix = ''
-        else:
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.')
-            prefix = 'a_'
+    prefix = icon_type.prefix
+    ext = _validate_extension(icon_type, ext)
+    end = _build_end(size)
     
     return f'{CDN_ENDPOINT}/splashes/{guild.id}/{prefix}{guild.invite_splash_hash:0>32x}.{ext}{end}'
 
@@ -285,15 +305,11 @@ def guild_discovery_splash_url(guild):
     url : `None`, `str`
     """
     icon_type = guild.discovery_splash_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if icon_type is ICON_TYPE_STATIC:
-        prefix = ''
-        ext = 'png'
-    else:
-        prefix = 'a_'
-        ext = 'gif'
+    prefix = icon_type.prefix
+    ext = icon_type.default_postfix
     
     return f'{CDN_ENDPOINT}/discovery-splashes/{guild.id}/{prefix}{guild.discovery_splash_hash:0>32x}.{ext}'
 
@@ -321,33 +337,12 @@ def guild_discovery_splash_url_as(guild, ext=None, size=None):
         If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = guild.discovery_splash_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if size is None:
-        end = ''
-    elif size in VALID_ICON_SIZES:
-        end = f'?size={size}'
-    else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
-    
-    if ext is None:
-        if icon_type is ICON_TYPE_STATIC:
-            prefix = ''
-            ext = 'png'
-        else:
-            prefix = 'a_'
-            ext = 'gif'
-    
-    else:
-        if icon_type is ICON_TYPE_STATIC:
-            if ext not in VALID_ICON_FORMATS:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
-            prefix = ''
-        else:
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.')
-            prefix = 'a_'
+    prefix = icon_type.prefix
+    ext = _validate_extension(icon_type, ext)
+    end = _build_end(size)
     
     return f'{CDN_ENDPOINT}/discovery-splashes/{guild.id}/{prefix}{guild.discovery_splash_hash:0>32x}.{ext}{end}'
 
@@ -363,15 +358,11 @@ def guild_banner_url(guild):
     url : `None`, `str`
     """
     icon_type = guild.banner_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if icon_type is ICON_TYPE_STATIC:
-        prefix = ''
-        ext = 'png'
-    else:
-        prefix = 'a_'
-        ext = 'gif'
+    prefix = icon_type.prefix
+    ext = icon_type.default_postfix
     
     return f'{CDN_ENDPOINT}/banners/{guild.id}/{prefix}{guild.banner_hash:0>32x}.{ext}'
 
@@ -399,34 +390,13 @@ def guild_banner_url_as(guild, ext=None, size=None):
         If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = guild.banner_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if size is None:
-        end = ''
-    elif size in VALID_ICON_SIZES:
-        end = f'?size={size}'
-    else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
+    prefix = icon_type.prefix
+    ext = _validate_extension(icon_type, ext)
+    end = _build_end(size)
     
-    if ext is None:
-        if icon_type is ICON_TYPE_STATIC:
-            prefix = ''
-            ext = 'png'
-        else:
-            prefix = 'a_'
-            ext = 'gif'
-    
-    else:
-        if icon_type is ICON_TYPE_STATIC:
-            if ext not in VALID_ICON_FORMATS:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
-            prefix = ''
-        else:
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.')
-            prefix = 'a_'
-
     return f'{CDN_ENDPOINT}/banners/{guild.id}/{prefix}{guild.banner_hash:0>32x}.{ext}{end}'
 
 
@@ -480,15 +450,11 @@ def channel_group_icon_url(channel):
     url : `None`, `str`
     """
     icon_type = channel.icon_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if icon_type is ICON_TYPE_STATIC:
-        prefix = ''
-        ext = 'png'
-    else:
-        prefix = 'a_'
-        ext = 'gif'
+    prefix = icon_type.prefix
+    ext = icon_type.default_postfix
     
     return f'{CDN_ENDPOINT}/channel-icons/{channel.id}/{prefix}{channel.icon_hash:0>32x}.{ext}'
     
@@ -516,33 +482,12 @@ def channel_group_icon_url_as(channel, ext=None, size=None):
         If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = channel.icon_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if size is None:
-        end = ''
-    elif size in VALID_ICON_SIZES:
-        end = f'?size={size}'
-    else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
-    
-    if ext is None:
-        if icon_type is ICON_TYPE_STATIC:
-            prefix = ''
-            ext = 'png'
-        else:
-            prefix = 'a_'
-            ext = 'gif'
-    
-    else:
-        if icon_type is ICON_TYPE_STATIC:
-            if ext not in VALID_ICON_FORMATS:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
-            prefix = ''
-        else:
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.')
-            prefix = 'a_'
+    prefix = icon_type.prefix
+    ext = _validate_extension(icon_type, ext)
+    end = _build_end(size)
     
     return f'{CDN_ENDPOINT}/channel-icons/{channel.id}/{prefix}{channel.icon_hash:0>32x}.{ext}{end}'
 
@@ -591,15 +536,8 @@ def emoji_url_as(emoji, ext=None, size=None):
     ValueError
         If `ext`, `size` was not passed as any of the expected values.
     """
-    if emoji.is_unicode_emoji():
+    if not emoji.is_custom_emoji():
         return None
-
-    if size is None:
-        end = ''
-    elif size in VALID_ICON_SIZES:
-        end = f'?size={size}'
-    else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
     
     if ext is None:
         if emoji.animated:
@@ -609,10 +547,16 @@ def emoji_url_as(emoji, ext=None, size=None):
     else:
         if emoji.animated:
             if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.')
+                raise ValueError(
+                    f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.'
+                )
         else:
             if ext not in VALID_ICON_FORMATS:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
+                raise ValueError(
+                    f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.'
+                )
+    
+    end = _build_end(size)
     
     return f'{CDN_ENDPOINT}/emojis/{emoji.id}.{ext}{end}'
 
@@ -631,7 +575,7 @@ def webhook_url(webhook):
 
 
 WEBHOOK_URL_PATTERN = re.compile(
-    '(?:https://)?discord(?:app)?.com/api/(?:v\d+/)?webhooks/([0-9]{17,21})/([a-zA-Z0-9\.\-\_%]{60,68})(?:/.*)?'
+    '(?:https://)?discord(?:app)?.com/api/(?:v\d+/)?webhooks/([0-9]{17,21})/([a-zA-Z0-9.\-_%]{60,68})(?:/.*)?'
 )
 
 
@@ -853,15 +797,11 @@ def user_avatar_url(user):
     url : `None`, `str`
     """
     icon_type = user.avatar_type
-    if icon_type is ICON_TYPE_NONE:
-        return user.default_avatar.url
+    if not icon_type.can_create_url():
+        return user.defualt_avatar_url
     
-    if icon_type is ICON_TYPE_STATIC:
-        prefix = ''
-        ext = 'png'
-    else:
-        prefix = 'a_'
-        ext = 'gif'
+    prefix = icon_type.prefix
+    ext = icon_type.default_postfix
     
     return f'{CDN_ENDPOINT}/avatars/{user.id}/{prefix}{user.avatar_hash:0>32x}.{ext}'
 
@@ -890,33 +830,12 @@ def user_avatar_url_as(user, ext=None, size=None):
         If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = user.avatar_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return user.default_avatar.url
     
-    if size is None:
-        end = ''
-    elif size in VALID_ICON_SIZES:
-        end = f'?size={size}'
-    else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
-    
-    if ext is None:
-        if icon_type is ICON_TYPE_STATIC:
-            prefix = ''
-            ext = 'png'
-        else:
-            prefix = 'a_'
-            ext = 'gif'
-    
-    else:
-        if icon_type is ICON_TYPE_STATIC:
-            if ext not in VALID_ICON_FORMATS:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
-            prefix = ''
-        else:
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.')
-            prefix = 'a_'
+    prefix = icon_type.prefix
+    ext = _validate_extension(icon_type, ext)
+    end = _build_end(size)
     
     return f'{CDN_ENDPOINT}/avatars/{user.id}/{prefix}{user.avatar_hash:0>32x}.{ext}{end}'
 
@@ -932,15 +851,11 @@ def user_banner_url(user):
     url : `None`, `str`
     """
     icon_type = user.banner_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if icon_type is ICON_TYPE_STATIC:
-        prefix = ''
-        ext = 'png'
-    else:
-        prefix = 'a_'
-        ext = 'gif'
+    prefix = icon_type.prefix
+    ext = icon_type.default_postfix
     
     return f'{CDN_ENDPOINT}/banners/{user.id}/{prefix}{user.banner_hash:0>32x}.{ext}'
 
@@ -969,33 +884,12 @@ def user_banner_url_as(user, ext=None, size=None):
         If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = user.banner_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if size is None:
-        end = ''
-    elif size in VALID_ICON_SIZES:
-        end = f'?size={size}'
-    else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
-    
-    if ext is None:
-        if icon_type is ICON_TYPE_STATIC:
-            prefix = ''
-            ext = 'png'
-        else:
-            prefix = 'a_'
-            ext = 'gif'
-    
-    else:
-        if icon_type is ICON_TYPE_STATIC:
-            if ext not in VALID_ICON_FORMATS:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
-            prefix = ''
-        else:
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.')
-            prefix = 'a_'
+    prefix = icon_type.prefix
+    ext = _validate_extension(icon_type, ext)
+    end = _build_end(size)
     
     return f'{CDN_ENDPOINT}/banners/{user.id}/{prefix}{user.banner_hash:0>32x}.{ext}{end}'
 
@@ -1023,15 +917,11 @@ def user_avatar_url_for(user, guild):
         return None
     
     icon_type = guild_profile.avatar_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if icon_type is ICON_TYPE_STATIC:
-        prefix = ''
-        ext = 'png'
-    else:
-        prefix = 'a_'
-        ext = 'gif'
+    prefix = icon_type.prefix
+    ext = icon_type.default_postfix
     
     return f'{CDN_ENDPOINT}/guilds/{guild_id}/users/{user.id}/avatars/{prefix}{guild_profile.avatar_hash:0>32x}.{ext}'
 
@@ -1069,33 +959,12 @@ def user_avatar_url_for_as(user, guild, ext=None, size=None):
         return None
     
     icon_type = guild_profile.avatar_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
-    
-    if size is None:
-        end = ''
-    elif size in VALID_ICON_SIZES:
-        end = f'?size={size}'
-    else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
-    
-    if ext is None:
-        if icon_type is ICON_TYPE_STATIC:
-            prefix = ''
-            ext = 'png'
-        else:
-            prefix = 'a_'
-            ext = 'gif'
-    
-    else:
-        if icon_type is ICON_TYPE_STATIC:
-            if ext not in VALID_ICON_FORMATS:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
-            prefix = ''
-        else:
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.')
-            prefix = 'a_'
+
+    prefix = icon_type.prefix
+    ext = _validate_extension(icon_type, ext)
+    end = _build_end(size)
     
     return f'{CDN_ENDPOINT}/guilds/{guild_id}/users/{user.id}/avatars/{prefix}{guild_profile.avatar_hash:0>32x}.' \
            f'{ext}{end}'
@@ -1180,15 +1049,11 @@ def application_icon_url(application):
     url : `None`, `str`
     """
     icon_type = application.icon_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if icon_type is ICON_TYPE_STATIC:
-        prefix = ''
-        ext = 'png'
-    else:
-        prefix = 'a_'
-        ext = 'gif'
+    prefix = icon_type.prefix
+    ext = icon_type.default_postfix
     
     return f'{CDN_ENDPOINT}/app-icons/{application.id}/{prefix}{application.icon_hash:0>32x}.{ext}'
 
@@ -1216,34 +1081,13 @@ def application_icon_url_as(application, ext=None, size=None):
         If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = application.icon_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if size is None:
-        end = ''
-    elif size in VALID_ICON_SIZES:
-        end = f'?size={size}'
-    else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
+    prefix = icon_type.prefix
+    ext = _validate_extension(icon_type, ext)
+    end = _build_end(size)
     
-    if ext is None:
-        if icon_type is ICON_TYPE_STATIC:
-            prefix = ''
-            ext = 'png'
-        else:
-            prefix = 'a_'
-            ext = 'gif'
-    
-    else:
-        if icon_type is ICON_TYPE_STATIC:
-            if ext not in VALID_ICON_FORMATS:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
-            prefix = ''
-        else:
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.')
-            prefix = 'a_'
-
     return f'{CDN_ENDPOINT}/app-icons/{application.id}/{prefix}{application.icon_hash:0>32x}.{ext}{end}'
 
 
@@ -1258,15 +1102,11 @@ def application_cover_url(application):
     url : `None`, `str`
     """
     icon_type = application.cover_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if icon_type is ICON_TYPE_STATIC:
-        prefix = ''
-        ext = 'png'
-    else:
-        prefix = 'a_'
-        ext = 'gif'
+    prefix = icon_type.prefix
+    ext = icon_type.default_postfix
     
     return f'{CDN_ENDPOINT}/app-assets/{application.id}/store/{prefix}{application.cover_hash:0>32x}.{ext}'
 
@@ -1294,33 +1134,12 @@ def application_cover_url_as(application, ext=None, size=None):
         If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = application.cover_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if size is None:
-        end = ''
-    elif size in VALID_ICON_SIZES:
-        end = f'?size={size}'
-    else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
-    
-    if ext is None:
-        if icon_type is ICON_TYPE_STATIC:
-            prefix = ''
-            ext = 'png'
-        else:
-            prefix = 'a_'
-            ext = 'gif'
-    
-    else:
-        if icon_type is ICON_TYPE_STATIC:
-            if ext not in VALID_ICON_FORMATS:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
-            prefix = ''
-        else:
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.')
-            prefix = 'a_'
+    prefix = icon_type.prefix
+    ext = _validate_extension(icon_type, ext)
+    end = _build_end(size)
     
     return f'{CDN_ENDPOINT}/app-assets/{application.id}/store/{prefix}{application.cover_hash:0>32x}.{ext}{end}'
 
@@ -1336,15 +1155,11 @@ def team_icon_url(team):
     url : `None`, `str`
     """
     icon_type = team.icon_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if icon_type is ICON_TYPE_STATIC:
-        prefix = ''
-        ext = 'png'
-    else:
-        prefix = 'a_'
-        ext = 'gif'
+    prefix = icon_type.prefix
+    ext = icon_type.default_postfix
     
     return f'{CDN_ENDPOINT}/team-icons/{team.id}/{prefix}{team.icon_hash:0>32x}.{ext}'
 
@@ -1372,33 +1187,12 @@ def team_icon_url_as(team, ext=None, size=None):
         If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = team.icon_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if size is None:
-        end = ''
-    elif size in VALID_ICON_SIZES:
-        end = f'?size={size}'
-    else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
-    
-    if ext is None:
-        if icon_type is ICON_TYPE_STATIC:
-            prefix = ''
-            ext = 'png'
-        else:
-            prefix = 'a_'
-            ext = 'gif'
-    
-    else:
-        if icon_type is ICON_TYPE_STATIC:
-            if ext not in VALID_ICON_FORMATS:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
-            prefix = ''
-        else:
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.')
-            prefix = 'a_'
+    prefix = icon_type.prefix
+    ext = _validate_extension(icon_type, ext)
+    end = _build_end(size)
     
     return f'{CDN_ENDPOINT}/team-icons/{team.id}/{prefix}{team.icon_hash:0>32x}.{ext}{end}'
 
@@ -1414,15 +1208,11 @@ def achievement_icon_url(achievement):
     url : `None`, `str`
     """
     icon_type = achievement.icon_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if icon_type is ICON_TYPE_STATIC:
-        prefix = ''
-        ext = 'png'
-    else:
-        prefix = 'a_'
-        ext = 'gif'
+    prefix = icon_type.prefix
+    ext = icon_type.default_postfix
     
     return f'{CDN_ENDPOINT}/app-assets/{achievement.application_id}/achievements/{achievement.id}/icons/{prefix}' \
            f'{achievement.icon_hash:0>32x}.{ext}'
@@ -1451,33 +1241,12 @@ def achievement_icon_url_as(achievement, ext=None, size=None):
         If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = achievement.icon_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if size is None:
-        end = ''
-    elif size in VALID_ICON_SIZES:
-        end = f'?size={size}'
-    else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
-    
-    if ext is None:
-        if icon_type is ICON_TYPE_STATIC:
-            prefix = ''
-            ext = 'png'
-        else:
-            prefix = 'a_'
-            ext = 'gif'
-    
-    else:
-        if icon_type is ICON_TYPE_STATIC:
-            if ext not in VALID_ICON_FORMATS:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
-            prefix = ''
-        else:
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.')
-            prefix = 'a_'
+    prefix = icon_type.prefix
+    ext = _validate_extension(icon_type, ext)
+    end = _build_end(size)
     
     return f'{CDN_ENDPOINT}/app-assets/{achievement.application_id}/achievements/{achievement.id}/icons/{prefix}' \
            f'{achievement.icon_hash:0>32x}.{ext}{end}'
@@ -1581,19 +1350,16 @@ def sticker_pack_banner_as(sticker_pack, ext=None, size=None):
     ValueError
         If `ext`, `size` was not passed as any of the expected values.
     """
-    if size is None:
-        end = ''
-    elif size in VALID_ICON_SIZES:
-        end = f'?size={size}'
-    else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
+    end = _build_end(size)
     
     if ext is None:
         ext = 'png'
     
     else:
         if ext not in VALID_ICON_FORMATS:
-            raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
+            raise ValueError(
+                f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.'
+            )
     
     return f'{CDN_ENDPOINT}/app-assets/710982414301790216/store/{sticker_pack.banner_id}.{ext}{end}'
 
@@ -1609,15 +1375,11 @@ def role_icon_url(role):
     url : `None`, `str`
     """
     icon_type = role.icon_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if icon_type is ICON_TYPE_STATIC:
-        prefix = ''
-        ext = 'png'
-    else:
-        prefix = 'a_'
-        ext = 'gif'
+    prefix = icon_type.prefix
+    ext = icon_type.default_postfix
     
     return f'{CDN_ENDPOINT}/role-icons/{role.id}/{prefix}{role.icon_hash:0>32x}.{ext}'
 
@@ -1645,113 +1407,14 @@ def role_icon_url_as(role, ext=None, size=None):
         If `ext`, `size` was not passed as any of the expected values.
     """
     icon_type = role.icon_type
-    if icon_type is ICON_TYPE_NONE:
+    if not icon_type.can_create_url():
         return None
     
-    if size is None:
-        end = ''
-    elif size in VALID_ICON_SIZES:
-        end = f'?size={size}'
-    else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
+    prefix = icon_type.prefix
+    ext = _validate_extension(icon_type, ext)
+    end = _build_end(size)
     
-    if ext is None:
-        if icon_type is ICON_TYPE_STATIC:
-            prefix = ''
-            ext = 'png'
-        else:
-            prefix = 'a_'
-            ext = 'gif'
-    
-    else:
-        if icon_type is ICON_TYPE_STATIC:
-            if ext not in VALID_ICON_FORMATS:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
-            prefix = ''
-        else:
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.')
-            prefix = 'a_'
-
     return f'{CDN_ENDPOINT}/role-icons/{role.id}/{prefix}{role.icon_hash:0>32x}.{ext}{end}'
-
-
-def channel_banner_url(channel):
-    """
-    Returns the channel's banner's url. If the channel has no banner, then returns `None`.
-    
-    This function is a shared property of ``Channel``-s.
-    
-    Returns
-    -------
-    url : `None`, `str`
-    """
-    banner_type = channel.banner_type
-    if banner_type is ICON_TYPE_NONE:
-        return None
-    
-    if banner_type is ICON_TYPE_STATIC:
-        prefix = ''
-        ext = 'png'
-    else:
-        prefix = 'a_'
-        ext = 'gif'
-    
-    return f'{CDN_ENDPOINT}/channel-banners/{channel.id}/{prefix}{channel.banner_hash:0>32x}.{ext}'
-
-
-def channel_banner_url_as(channel, ext=None, size=None):
-    """
-    Returns the channel's banner's url. If the channel has no banner, then returns `None`.
-    
-    This function is a shared method of ``Channel``-s.
-    
-    Parameters
-    ----------
-    ext : `None`, `str` = `None`, Optional
-        The extension of the banner's url. Can be any of: `'jpg'`, `'jpeg'`, `'png'`, `'webp'`.
-    size : `None`, `int` = `None`, Optional
-        The preferred minimal size of the banner's url.
-    
-    Returns
-    -------
-    url : `None`, `str`
-    
-    Raises
-    ------
-    ValueError
-        If `ext`, `size` was not passed as any of the expected values.
-    """
-    banner_type = channel.banner_type
-    if banner_type is ICON_TYPE_NONE:
-        return None
-    
-    if size is None:
-        end = ''
-    elif size in VALID_ICON_SIZES:
-        end = f'?size={size}'
-    else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
-    
-    if ext is None:
-        if banner_type is ICON_TYPE_STATIC:
-            prefix = ''
-            ext = 'png'
-        else:
-            prefix = 'a_'
-            ext = 'gif'
-    
-    else:
-        if banner_type is ICON_TYPE_STATIC:
-            if ext not in VALID_ICON_FORMATS:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
-            prefix = ''
-        else:
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.')
-            prefix = 'a_'
-    
-    return f'{CDN_ENDPOINT}/channel-banners/{channel.id}/{prefix}{channel.banner_hash:0>32x}.{ext}{end}'
 
 
 def scheduled_event_image_url(scheduled_event):
@@ -1764,16 +1427,12 @@ def scheduled_event_image_url(scheduled_event):
     -------
     url : `None`, `str`
     """
-    image_type = scheduled_event.image_type
-    if image_type is ICON_TYPE_NONE:
+    icon_type = scheduled_event.image_type
+    if not icon_type.can_create_url():
         return None
     
-    if image_type is ICON_TYPE_STATIC:
-        prefix = ''
-        ext = 'png'
-    else:
-        prefix = 'a_'
-        ext = 'gif'
+    prefix = icon_type.prefix
+    ext = icon_type.default_postfix
     
     return f'{CDN_ENDPOINT}/guild-events/{scheduled_event.id}/{prefix}{scheduled_event.image_hash:0>32x}.{ext}'
 
@@ -1800,33 +1459,12 @@ def scheduled_event_image_url_as(scheduled_event, ext=None, size=None):
     ValueError
         If `ext`, `size` was not passed as any of the expected values.
     """
-    image_type = scheduled_event.image_type
-    if image_type is ICON_TYPE_NONE:
+    icon_type = scheduled_event.image_type
+    if not icon_type.can_create_url():
         return None
     
-    if size is None:
-        end = ''
-    elif size in VALID_ICON_SIZES:
-        end = f'?size={size}'
-    else:
-        raise ValueError(f'Size must be in {sorted(VALID_ICON_SIZES)!r}, got {size!r}.')
-    
-    if ext is None:
-        if image_type is ICON_TYPE_STATIC:
-            prefix = ''
-            ext = 'png'
-        else:
-            prefix = 'a_'
-            ext = 'gif'
-    
-    else:
-        if image_type is ICON_TYPE_STATIC:
-            if ext not in VALID_ICON_FORMATS:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS}, got {ext!r}.')
-            prefix = ''
-        else:
-            if ext not in VALID_ICON_FORMATS_EXTENDED:
-                raise ValueError(f'Extension must be one of {VALID_ICON_FORMATS_EXTENDED}, got {ext!r}.')
-            prefix = 'a_'
+    prefix = icon_type.prefix
+    ext = _validate_extension(icon_type, ext)
+    end = _build_end(size)
     
     return f'{CDN_ENDPOINT}/guild-events/{scheduled_event.id}/{prefix}{scheduled_event.image_hash:0>32x}.{ext}{end}'

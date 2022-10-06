@@ -2,11 +2,173 @@ __all__ = (
     'ICON_TYPE_ANIMATED', 'ICON_TYPE_NONE', 'ICON_TYPE_STATIC', 'Icon', 'IconType', 'IconSlot', 'PreinstancedBase'
 )
 
-import sys
+import reprlib, sys, warnings
+from base64 import b64encode
 
-from scarletio import DOCS_ENABLED, RichAttributeErrorBaseType, copy_docs, docs_property
+from scarletio import DOCS_ENABLED, RichAttributeErrorBaseType, copy_docs, docs_property, include
 
+from .place_holder import PlaceHolder
 from .preinstanced import Preinstance as P, PreinstancedBase
+
+get_image_media_type = include('get_image_media_type')
+
+
+class IconDetailsBase(RichAttributeErrorBaseType):
+    """
+    Stores details of an icon.
+    """
+    __slots__ = ()
+    
+    allowed_postfixes = PlaceHolder(
+        None,
+        """
+        Returns allowed postfixes.
+        
+        Returns
+        -------
+        allowed_postfixes : `None`, `frozenset` of `str`
+        """
+    )
+    
+    data = PlaceHolder(
+        None,
+        """
+        Returns the icon's raw data.
+        
+        Returns
+        -------
+        data : `None`, `bytes-like`
+        """
+    )
+    
+    default_postfix = PlaceHolder(
+        '',
+        """
+        Returns the icon's default postfix.
+        
+        Returns
+        -------
+        default_postfix : `str`
+        """
+    )
+    
+    prefix = PlaceHolder(
+        '',
+        """
+        Returns the icon's prefix.
+        
+        Returns
+        -------
+        prefix : `str`
+        """
+    )
+    
+    media_type = PlaceHolder(
+        '',
+        """
+        Returns the icon's media type.
+        
+        Returns
+        -------
+        media_type : `str`
+        """
+    )
+    
+    def __repr__(self):
+        """Returns the icon details' representation."""
+        return f'<{self.__class__.__name__}>'
+        
+
+class IconDetailsPreinstanced(IconDetailsBase):
+    """
+    Represents details about a preinstanced icon type.
+    
+    Attributes
+    ----------
+    allowed_postfixes : `None`, `frozenset` of `str`
+        The allowed postfixes.
+    default_postfix : `str`
+        Default postfix used when building an url with the icon.
+    prefix : `str`
+        Prefix used when building an url with the icon.
+    """
+    __slots__ = ('allowed_postfixes', 'default_postfix', 'prefix')
+    
+    def __init__(self, allowed_postfixes, default_postfix, prefix):
+        """
+        Creates a new icon type detail for storing information for a preinstanced icon type.
+        
+        Parameters
+        ----------
+        allowed_postfixes : `None`, `frozenset` of `str`
+            The allowed postfixes.
+        default_postfix : `str`
+            Default postfix used when building an url with the icon.
+        prefix : `str`
+            Prefix used when building an url with the icon.
+        """
+        self.allowed_postfixes = allowed_postfixes
+        self.default_postfix = default_postfix
+        self.prefix = prefix
+    
+    
+    @copy_docs(IconDetailsBase.__repr__)
+    def __repr__(self):
+        repr_parts = ['<', self.__class__.__name__]
+        
+        repr_parts.append(' allowed_postfixes=')
+        repr_parts.append(repr(self.allowed_postfixes))
+        
+        repr_parts.append(', default_postfix=')
+        repr_parts.append(repr(self.default_postfix))
+        
+        repr_parts.append(', prefix=')
+        repr_parts.append(repr(self.prefix))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+
+
+class IconDetailsCustom(IconDetailsBase):
+    """
+    Represents details fo a custom icon type.
+    
+    Attributes
+    ----------
+    data : `None`, `bytes-like`
+        Icon payload.
+    media_type : `str`
+        The icon's data's media type.
+    """
+    __slots__ = ('data', 'media_type')
+    
+    def __init__(self, data, media_type):
+        """
+        Creates a new custom icon type detail.
+        
+        Parameters
+        ----------
+        data : `None`, `bytes-like`
+            The icon's raw data.
+        media_type : `str`
+            The icon's media type.
+        """
+        self.data = data
+        self.media_type = media_type
+    
+    
+    @copy_docs(IconDetailsBase.__repr__)
+    def __repr__(self):
+        repr_parts = ['<', self.__class__.__name__]
+        
+        repr_parts.append(' data[length]=')
+        repr_parts.append(repr(len(self.data)))
+        
+        repr_parts.append(', media_type=')
+        repr_parts.append(repr(self.media_type))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
 
 
 class IconType(PreinstancedBase):
@@ -19,12 +181,8 @@ class IconType(PreinstancedBase):
         The name of the icon type.
     value : `int`
         The identifier value the icon type.
-    allowed_postfixes : `None`, `frozenset` of `str`
-        The allowed postfixes.
-    default_postfix : `str`
-        Default postfix used when building an url with the icon.
-    prefix : `str`
-        Prefix used when building an url with the icon.
+    details : ``IconDetailsBase``
+        Additional details describing the icon type.
     
     Class Attributes
     ----------------
@@ -50,7 +208,7 @@ class IconType(PreinstancedBase):
     INSTANCES = {}
     VALUE_TYPE = int
     
-    __slots__ = ('allowed_postfixes', 'default_postfix', 'prefix',)
+    __slots__ = ('details',)
     
     
     @classmethod
@@ -76,22 +234,126 @@ class IconType(PreinstancedBase):
         allowed_postfixes : `None`, `frozenset` of `str`
             The allowed postfixes.
         """
+        details = IconDetailsPreinstanced(allowed_postfixes, default_postfix, prefix)
+        
+        self.details = details
         self.name = name
         self.value = value
-        self.prefix = prefix
-        self.default_postfix = default_postfix
-        self.allowed_postfixes = allowed_postfixes
+        
         self.INSTANCES[value] = self
+    
+    
+    @classmethod
+    def from_data(cls, data, name = 'icon'):
+        """
+        Creates a custom icon type holding actual raw data.
+        
+        Parameters
+        ----------
+        data : `bytes-like`
+            The icon's raw data.
+        name : `str` = `icon`, Optional
+            The icon's name.
+        
+        Returns
+        -------
+        self : `instance<cls>`
+        
+        Raises
+        ------
+        TypeError
+            - If `data` is not `bytes-like`.
+        """
+        if data is None:
+            media_type = ''
+        
+        else:
+            if not isinstance(data, (bytes, bytearray, memoryview)):
+                raise TypeError(
+                    f'`{name}` can be `None`, `bytes-like`, got {data.__class__.__name__}; {reprlib.repr(data)}'
+                )
+            
+            media_type = get_image_media_type(data)
+        
+        details = IconDetailsCustom(data, media_type)
+        
+        
+        self = PreinstancedBase.__new__(cls)
+        self.details = details
+        self.name = name
+        self.value = -2
+        return self
     
     
     def __bool__(self):
         """Returns whether the icon's type is set."""
-        if self.value:
+        if (self.value > 0) or (self.data is not None):
             boolean = True
         else:
             boolean = False
         
         return boolean
+    
+    
+    def __repr__(self):
+        """Returns the icon detail's representation."""
+        repr_parts = ['<', self.__class__.__name__]
+        
+        repr_parts.append(' value=')
+        repr_parts.append(repr(self.value))
+        
+        repr_parts.append(', name=')
+        repr_parts.append(repr(self.name))
+        
+        repr_parts.append(', details=')
+        repr_parts.append(repr(self.details))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
+    
+    
+    @property
+    @copy_docs(IconDetailsBase.allowed_postfixes)
+    def allowed_postfixes(self):
+        return self.details.allowed_postfixes
+    
+    
+    @property
+    @copy_docs(IconDetailsBase.default_postfix)
+    def default_postfix(self):
+        return self.details.default_postfix
+    
+    
+    @property
+    @copy_docs(IconDetailsBase.prefix)
+    def prefix(self):
+        return self.details.prefix
+    
+    
+    @property
+    @copy_docs(IconDetailsBase.data)
+    def data(self):
+        return self.details.data
+    
+    
+    @property
+    def base_64_data(self):
+        """
+        Returns the icon's data in base 64 encoding.
+        
+        Returns
+        -------
+        data : `None`, `str`
+        """
+        data = self.data
+        if data is not None:
+            return ''.join(['data:', self.media_type, ';base64,', b64encode(data).decode('ascii')])
+    
+    
+    @property
+    @copy_docs(IconDetailsBase.media_type)
+    def media_type(self):
+        return self.details.media_type
     
     
     def allows_postfix(self, postfix):
@@ -169,6 +431,22 @@ class Icon(RichAttributeErrorBaseType):
     @property
     def as_base16_hash(self):
         """
+        Deprecated and will be removed in 2023 February. Please use ``.as_base_16_hash`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__name__}.as_base16_hash` is deprecated and will be removed in 2023 February.'
+                f'Please use `.as_base_16_hash` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return self.as_base_16_hash
+    
+    
+    @property
+    def as_base_16_hash(self):
+        """
         Returns the discord side representation of the icon.
         
         Returns
@@ -178,12 +456,27 @@ class Icon(RichAttributeErrorBaseType):
         icon_type = self.type
         if icon_type is ICON_TYPE_NONE:
             icon = None
+        
         else:
             icon = self.hash.__format__('0>32x')
-            if icon_type is ICON_TYPE_ANIMATED:
-                icon = 'a_' + icon
+            prefix = icon_type.prefix
+            if prefix:
+                icon = prefix + icon
         
         return icon
+    
+    
+    @property
+    def as_base_64_data(self):
+        """
+        Returns the base 64 version of the icon if applicable.
+        
+        Returns
+        -------
+        icon : `None`, `str`
+        """
+        return self.icon.base_64_data
+    
     
     hash_info_width = sys.hash_info.width
     if hash_info_width == 32:
@@ -283,6 +576,7 @@ class Icon(RichAttributeErrorBaseType):
         Parameters
         ----------
         icon : `None`, `str`
+            Discord icon hash.
         
         Returns
         -------
@@ -369,8 +663,8 @@ class IconSlot:
         -------
         self : ``IconSlot``
         """
-        added_instance_attribute_name_hash = internal_name+'_hash'
-        added_internal_attribute_name_type = internal_name+'_type'
+        added_instance_attribute_name_hash = internal_name + '_hash'
+        added_internal_attribute_name_type = internal_name + '_type'
         
         added_class_attributes = []
         if (url_property is not None):
@@ -437,6 +731,7 @@ class IconSlot:
         self.added_class_attributes = added_class_attributes
         return self
     
+    
     def __set_slot__(self, attribute_name, class_attributes, class_slots):
         """Applies the changes of the icon slot on the class's attributes."""
         
@@ -461,15 +756,22 @@ class IconSlot:
     
     def __set__(self, instance, icon):
         """Can't set attribute."""
-        if not isinstance(icon, Icon):
+        if (icon is None):
+            icon_type = ICON_TYPE_NONE
+            icon_hash = 0
+        
+        elif isinstance(icon, Icon):
+            icon_type, icon_hash = icon
+        
+        else:
             raise TypeError(
-                f'`{instance.__class__.__name__}.{self.internal_name}` can only be set as an `{Icon.__name__}`, '
+                f'`{instance.__class__.__name__}.{self.internal_name}` can only be `None`, `{Icon.__name__}`, '
                 f'got {icon.__class__.__name__}; {icon!r}.'
             )
         
         icon_type_name, icon_hash_name = self.added_instance_attributes
-        setattr(instance, icon_type_name, icon.type)
-        setattr(instance, icon_hash_name, icon.hash)
+        setattr(instance, icon_type_name, icon_type)
+        setattr(instance, icon_hash_name, icon_hash)
     
     
     def __delete__(self, instance):
@@ -479,16 +781,88 @@ class IconSlot:
         )
     
     
-    def preconvert(self, kwargs, processable):
+    def validate_data_icon(self, icon):
         """
-        Used at preconverters to parse out from the passed kwargs the icon of the entity.
+        Validates the given icon data.
         
         Parameters
         ----------
-        kwargs : `dict` of (`str`, `Any`) items
-            Keyword parameters passed to the respective preconverter.
-        processable : `list` of `tuple` (`str`, `Any`)
-            A list of instance attributes which will be set when all the passed kwargs are validated.
+        icon : `None`, `bytes`, `bytearray`, `memoryview`, ``Icon``
+            The icon to validate.
+        
+        Returns
+        -------
+        icon : `None`, ``Icon``
+            The validated icon.
+        
+        Raises
+        ------
+        TypeError
+            If `icon` field's type is incorrect.
+        ValueError
+            if `icon` has unexpected media type.
+        """
+        if icon is None:
+            return None
+        
+        if isinstance(icon, Icon):
+            return icon
+        
+        icon_type = IconType.from_data(icon)
+        if icon_type and (not icon_type.media_type):
+            raise ValueError(
+                f'`{self.internal_name}` received unknown media type; Got {reprlib.repr(icon_type.data)}.'
+            )
+        
+        icon_hash = 0
+        
+        return Icon(icon_type, icon_hash)
+    
+    
+    def parse_data_from_keyword_parameters(self, keyword_parameters):
+        """
+        Parses data from keyword parameters.
+        
+        Parameters
+        ----------
+        keyword_parameters : `dict` of (`str`, `Any`) items
+            Keyword parameters passed to parse the icon from.
+        
+        Returns
+        -------
+        icon : `None`, ``Icon``
+            The parsed out icon.
+        
+        Raises
+        ------
+        TypeError
+            If `icon` field's type is incorrect.
+        ValueError
+            if `icon` has unexpected media type.
+        """
+        try:
+            icon = keyword_parameters.pop(self.internal_name)
+        except KeyError:
+            return None
+        
+        return self.validate_data_icon(icon)
+    
+    
+    def parse_from_keyword_parameters(self, keyword_parameters, *, allow_data = False):
+        """
+        Parses the icon out from the given keyword parameters.
+        
+        Parameters
+        ----------
+        keyword_parameters : `dict` of (`str`, `Any`) items
+            Keyword parameters passed to parse the icon from.
+        allow_data : `bool` = `False`, Optional (Keyword only)
+            Whether data parsing is allowed.
+        
+        Returns
+        -------
+        icon : `None`, ``Icon``
+            The parsed out icon.
         
         Raises
         ------
@@ -499,17 +873,19 @@ class IconSlot:
         """
         icon_type_name, icon_hash_name = self.added_instance_attributes
         try:
-            icon = kwargs.pop(self.internal_name)
+            icon = keyword_parameters.pop(self.internal_name)
         except KeyError:
             try:
-                icon_hash = kwargs.pop(icon_hash_name)
+                icon_hash = keyword_parameters.pop(icon_hash_name)
             except KeyError:
-                return
+                return None
             
             if type(icon_hash) is int:
                 pass
+            
             elif isinstance(icon_hash, int):
                 icon_hash = int(icon_hash)
+            
             else:
                 raise TypeError(
                     f'`{icon_hash_name}` can be `int`, got {icon_hash.__class__.__name__}; {icon_hash!r}.'
@@ -521,7 +897,7 @@ class IconSlot:
                 )
             
             try:
-                icon_type = kwargs.pop(icon_type_name)
+                icon_type = keyword_parameters.pop(icon_type_name)
             except KeyError:
                 if icon_hash == 0:
                     icon_type = ICON_TYPE_NONE
@@ -544,9 +920,11 @@ class IconSlot:
             if icon is None:
                 icon_type = ICON_TYPE_NONE
                 icon_hash = 0
+            
             elif type(icon) is Icon:
                 icon_type = icon.type
                 icon_hash = icon.hash
+            
             elif isinstance(icon, str):
                 if icon.startswith('a_'):
                     icon = icon[2:]
@@ -554,11 +932,78 @@ class IconSlot:
                 else:
                     icon_type = ICON_TYPE_STATIC
                 icon_hash = int(icon, 16)
+            
+            elif allow_data and isinstance(icon, (bytes, bytearray, memoryview)):
+                icon_type = IconType.from_data(icon)
+                icon_hash = 0
+            
             else:
                 raise TypeError(
-                    f'`{self.internal_name!r}` can be passed as `None`, `{Icon.__name__}`, `str`, '
-                    f'got {icon.__class__.__name__}; {icon!r}.'
+                    f'`{self.internal_name}` can be passed as `None`, `{Icon.__name__}`, `str` '
+                    f'(or bytes-like if allowed), got {icon.__class__.__name__}; {reprlib.repr(icon)}.'
                 )
+        
+        return Icon(icon_type, icon_hash)
+    
+    
+    def preconvert(self, keyword_parameters, processable):
+        """
+        Used at preconverters to parse out from the passed keyword_parameters the icon of the entity.
+        
+        Parameters
+        ----------
+        keyword_parameters : `dict` of (`str`, `Any`) items
+            Keyword parameters passed to the respective preconverter.
+        processable : `list` of `tuple` (`str`, `Any`)
+            A list of instance attributes which will be set when all the passed keyword_parameters are validated.
+        
+        Raises
+        ------
+        TypeError
+            If any of expected value's type is invalid.
+        ValueError
+            If any of the expected value's type is valid, but it's value is not.
+        """
+        icon = self.parse_from_keyword_parameters(keyword_parameters)
+        if (icon is None):
+            return
+        
+        icon_type, icon_hash = icon
+        icon_type_name, icon_hash_name = self.added_instance_attributes
         
         processable.append((icon_type_name, icon_type))
         processable.append((icon_hash_name, icon_hash))
+    
+    
+    def put_into(self, icon, data, defaults, *, as_data = False):
+        """
+        Puts the icon into the given data.
+        
+        Parameters
+        ----------
+        icon : ``Icon``
+            The icon to serialise.
+        data : `dict` of (`str`, `Any`) items
+            The data put the icon into.
+        defaults : `bool`
+            Whether the `icon`'s value should be put even if it is the default value.
+        as_data : `bool` = `False`, Optional (Keyword only)
+            Whether we want the icon is data or in hash form.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`) items
+        """
+        if icon is None:
+            field_value = None
+        
+        else:
+            if as_data:
+                field_value = icon.as_base_64_data
+            else:
+                field_value = icon.as_base_16_hash
+        
+        if defaults or (field_value is not None):
+            data[self.discord_side_name] = field_value
+        
+        return data

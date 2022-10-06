@@ -118,7 +118,10 @@ def _wrap_maybe_deprecated_event(name, func):
                 FutureWarning,
                 stacklevel = 3,
             )
-        
+            
+            if analyzer is not real_analyzer:
+                func = func()
+            
             async def webhook_update_event_handler_wrapper(client, event):
                 return await func(client, event.channel)
             
@@ -142,7 +145,10 @@ def _wrap_maybe_deprecated_event(name, func):
                 FutureWarning,
                 stacklevel = 3,
             )
-        
+            
+            if analyzer is not real_analyzer:
+                func = func()
+            
             async def role_delete_event_handler_wrapper(client, role):
                 return await func(client, role, role.guild)
             

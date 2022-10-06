@@ -73,9 +73,9 @@ class MessageApplication(DiscordEntity):
         data : `dict` of (`str`, `Any`)
         """
         return {
-            'cover': self.cover.as_base16_hash,
+            'cover': self.cover.as_base_16_hash,
             'description': self.description,
-            'icon': self.icon.as_base16_hash,
+            'icon': self.icon.as_base_16_hash,
             'id': str(self.id),
             'name': self.name,
         }

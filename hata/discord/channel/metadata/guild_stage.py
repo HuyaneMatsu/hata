@@ -115,11 +115,11 @@ class ChannelMetadataGuildStage(ChannelMetadataGuildVoiceBase):
     
     
     @copy_docs(ChannelMetadataGuildVoiceBase.to_data)
-    def to_data(self):
-        data = ChannelMetadataGuildVoiceBase.to_data(self)
+    def to_data(self, *, defaults = False, include_internals = False):
+        data = ChannelMetadataGuildVoiceBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
         # topic
-        put_topic_into(self.topic, data, True)
+        put_topic_into(self.topic, data, defaults)
         
         return data
     

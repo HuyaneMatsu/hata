@@ -144,14 +144,14 @@ class ChannelMetadataGuildVoice(ChannelMetadataGuildVoiceBase):
     
     
     @copy_docs(ChannelMetadataGuildVoiceBase.to_data)
-    def to_data(self):
-        data = ChannelMetadataGuildVoiceBase.to_data(self)
+    def to_data(self, *, defaults = False, include_internals = False):
+        data = ChannelMetadataGuildVoiceBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
         # nsfw
-        put_nsfw_into(self.nsfw, data, True)
+        put_nsfw_into(self.nsfw, data, defaults)
         
         # video_quality_mode
-        put_video_quality_mode_into(self.video_quality_mode, data, True)
+        put_video_quality_mode_into(self.video_quality_mode, data, defaults)
         
         return data
     

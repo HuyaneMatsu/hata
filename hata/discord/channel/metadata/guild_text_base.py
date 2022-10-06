@@ -230,22 +230,22 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
     
     
     @copy_docs(ChannelMetadataGuildMainBase.to_data)
-    def to_data(self):
-        data = ChannelMetadataGuildMainBase.to_data(self)
+    def to_data(self, *, defaults = False, include_internals = False):
+        data = ChannelMetadataGuildMainBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
         # default_auto_archive_duration
-        put_default_thread_auto_archive_after_into(self.default_thread_auto_archive_after, data, True)
+        put_default_thread_auto_archive_after_into(self.default_thread_auto_archive_after, data, defaults)
         
         # default_thread_slowmode
-        put_default_thread_slowmode_into(self.default_thread_slowmode, data, True)
+        put_default_thread_slowmode_into(self.default_thread_slowmode, data, defaults)
         
         # nsfw
-        put_nsfw_into(self.nsfw, data, True)
+        put_nsfw_into(self.nsfw, data, defaults)
         
         # slowmode
-        put_slowmode_into(self.slowmode, data, True)
+        put_slowmode_into(self.slowmode, data, defaults)
         
         # topic
-        put_topic_into(self.topic, data, True)
+        put_topic_into(self.topic, data, defaults)
         
         return data

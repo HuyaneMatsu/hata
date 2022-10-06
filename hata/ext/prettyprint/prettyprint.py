@@ -410,11 +410,11 @@ def str_sticker(sticker, index=None, **kwargs):
     
     asset = sticker.asset
     if asset:
-        result.append(f'- asset : {asset.as_base16_hash}', 1)
+        result.append(f'- asset : {asset.as_base_16_hash}', 1)
     
     preview_asset = sticker.preview_asset
     if preview_asset:
-        result.append(f'- preview_asset : {preview_asset.as_base16_hash}', 1)
+        result.append(f'- preview_asset : {preview_asset.as_base_16_hash}', 1)
     
     return result
 
@@ -1738,7 +1738,7 @@ def str_application(application, index=None, **kwargs):
             result.append(f'{index}.: distributor={sku.distributor!r}, id={sku.id!r} sku={sku.sku!r}' , 2)
     splash = application.splash
     if splash:
-        result.append(f'- splash : {splash.as_base16_hash!r}', 1)
+        result.append(f'- splash : {splash.as_base_16_hash!r}', 1)
     if application.overlay:
         result.append('- overlay', 1)
     if application.overlay_compatibility_hook:

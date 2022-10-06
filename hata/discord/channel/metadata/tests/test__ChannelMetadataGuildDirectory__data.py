@@ -44,6 +44,8 @@ def test__ChannelMetadataGuildDirectory__from_data():
 def test__ChannelMetadataGuildDirectory__to_data():
     """
     Tests whether ``ChannelMetadataGuildDirectory.to_data`` works as intended.
+    
+    Case: include defaults and internals.
     """
     parent_id = 202209170057
     name = 'Armelyrics'
@@ -59,7 +61,7 @@ def test__ChannelMetadataGuildDirectory__to_data():
         'position': position,
     })
     
-    data = channel_metadata.to_data()
+    data = channel_metadata.to_data(defaults = True, include_internals = True)
     
     vampytest.assert_eq(
         data,

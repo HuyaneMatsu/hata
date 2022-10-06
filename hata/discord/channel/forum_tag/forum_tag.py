@@ -28,7 +28,7 @@ class ForumTag(DiscordEntity, immortal=True):
     """
     __slots__ = ('emoji', 'name', 'moderated')
     
-    def __new__(cls, name, *, emoji=None, moderated=False):
+    def __new__(cls, name, *, emoji = None, moderated = False):
         """
         Creates a new forum tag instance.
         
@@ -444,9 +444,9 @@ class ForumTag(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        defaults : `bool` = `False`
+        defaults : `bool` = `False`, Optional (Keyword only)
             Whether default values should be included as well.
-        include_internals : `bool` = `False`
+        include_internals : `bool` = `False`, Optional (Keyword only)
             Whether we want to include identifiers as well.
         
         Returns

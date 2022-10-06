@@ -58,6 +58,8 @@ setup(
         'hata.discord.message',
         'hata.discord.oauth2',
         'hata.discord.permission',
+        'hata.discord.permission.permission_overwrite',
+        'hata.discord.permission.permission_overwrite.fields',
         'hata.discord.role',
         'hata.discord.scheduled_event',
         'hata.discord.scheduled_event.metadata',

@@ -296,25 +296,25 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
     
     
     @copy_docs(ChannelMetadataGuildMainBase.to_data)
-    def to_data(self):
-        data = ChannelMetadataGuildMainBase.to_data(self)
+    def to_data(self, *, defaults = False, include_internals = False):
+        data = ChannelMetadataGuildMainBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
         # available_tags
-        put_available_tags_into(self.available_tags, data, True)
+        put_available_tags_into(self.available_tags, data, defaults, include_internals = include_internals)
         
         # default_auto_archive_duration
-        put_default_thread_auto_archive_after_into(self.default_thread_auto_archive_after, data, True)
+        put_default_thread_auto_archive_after_into(self.default_thread_auto_archive_after, data, defaults)
         
         # default_thread_reaction
-        put_default_thread_reaction_into(self.default_thread_reaction, data, True)
+        put_default_thread_reaction_into(self.default_thread_reaction, data, defaults)
         
         # default_thread_slowmode
-        put_default_thread_slowmode_into(self.default_thread_slowmode, data, True)
+        put_default_thread_slowmode_into(self.default_thread_slowmode, data, defaults)
         
         # flags
-        put_flags_into(self.flags, data, True)
+        put_flags_into(self.flags, data, defaults)
         
         # topic
-        put_topic_into(self.topic, data, True)
+        put_topic_into(self.topic, data, defaults)
         
         return data

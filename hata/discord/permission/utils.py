@@ -4,10 +4,10 @@ from scarletio import include
 
 from ...env import API_VERSION
 
-from .preinstanced import PermissionOverwriteTargetType
 
-
+PermissionOverwriteTargetType = include('PermissionOverwriteTargetType')
 Role = include('Role')
+
 
 if API_VERSION in (6, 7):
     PERMISSION_KEY = 'permissions_new'

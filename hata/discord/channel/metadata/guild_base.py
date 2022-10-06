@@ -84,14 +84,14 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
     
     
     @copy_docs(ChannelMetadataBase.to_data)
-    def to_data(self):
-        data = ChannelMetadataBase.to_data(self)
+    def to_data(self, *, defaults = False, include_internals = False):
+        data = ChannelMetadataBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
         # name
-        put_name_into(self.name, data, True)
+        put_name_into(self.name, data, defaults)
         
         # parent_id
-        put_parent_id_into(self.parent_id, data, True)
+        put_parent_id_into(self.parent_id, data, defaults)
         
         return data
     

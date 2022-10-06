@@ -1,61 +1,26 @@
 __all__ = ()
 
-import reprlib, warnings
+import warnings
 
 from scarletio import Compound
 
-from ...channel import Channel, ChannelType, ForumTag, cr_pg_channel_object, create_partial_channel_from_id
+from ...channel import Channel, ChannelType, ForumTag, create_partial_channel_from_id
 from ...channel.forum_tag.utils import FORUM_TAG_FIELD_CONVERTERS
 from ...channel.utils import (
-    _assert_channel_type, _maybe_add_channel_bitrate_field_to_data,
-    _maybe_add_channel_default_thread_auto_archive_after_field_to_data, _maybe_add_channel_nsfw_field_to_data,
-    _maybe_add_channel_region_field_to_data, _maybe_add_channel_slowmode_field_to_data,
-    _maybe_add_channel_topic_field_to_data, _maybe_add_channel_user_limit_field_to_data,
-    _maybe_add_channel_video_quality_mode_field_to_data
+    CHANNEL_GUILD_FIELD_CONVERTERS, CHANNEL_GUILD_MAIN_FIELD_CONVERTERS, CHANNEL_PRIVATE_GROUP_FIELD_CONVERTERS
 )
 from ...guild import Guild, create_partial_guild_from_id
-from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES
-from ...permission import Permission, PermissionOverwrite
+from ...http import DiscordHTTPClient
+from ...permission import PermissionOverwrite
+from ...permission.permission_overwrite.utils import PERMISSION_OVERWRITE_FIELD_CONVERTERS
 from ...payload_building import build_create_payload, build_edit_payload
-from ...preconverters import preconvert_preinstanced_type
-from ...utils import get_image_media_type, image_to_base64
 from ...webhook import Webhook
 
 from ..functionality_helpers import channel_move_sort_key
 from ..request_helpers import (
-    get_channel_and_id, get_channel_id, get_forum_tag_and_id, get_forum_tag_id, get_guild_and_id, get_user_id
+    get_channel_and_id, get_channel_id, get_forum_tag_and_id, get_forum_tag_id, get_guild_and_id, get_guild_id,
+    get_permission_overwrite_target_id, get_user_id
 )
-
-
-def _assert__channel_group_edit__name(name):
-    """
-    Asserts the the `name` parameter of ``Client.channel_group_edit`.
-    
-    Parameters
-    ----------
-    name : `Ellipsis`, `None`, `str`
-        The new name of the channel.
-    
-    Raises
-    ------
-    AssertionError
-        - If `name` was not given neither as `None`, `str`.
-        - If `name`'s length is out of range `[1:100]`.
-    """
-    if (name is not ...) and (name is not None):
-        if not isinstance(name, str):
-            raise AssertionError(
-                f'`name` can be `None`, `str`, got {name.__class__.__name__}; {name!r}.'
-            )
-            
-        name_length = len(name)
-        if name_length > 100:
-            raise AssertionError(
-                f'`name` length can be in range [0:100], got {name_length}; {name!r}.'
-            )
-    
-    return True
-
 
 def _assert__channel_group_create__users(users):
     """
@@ -76,119 +41,6 @@ def _assert__channel_group_create__users(users):
             f'group channel can be created at least with at least `2` users,  got '
             f'{len(users)}; {users!r}.'
         )
-    
-    return True
-
-
-def _assert__channel_edit__name(name):
-    """
-    Asserts the the `name` parameter of ``Client.channel_edit`.
-    
-    Parameters
-    ----------
-    name : `Ellipsis`, `str`
-        The new name of the channel.
-    
-    Raises
-    ------
-    AssertionError
-        - If `name` was not given neither as `None`, `str`.
-        - If `name`'s length is out of range `[1:100]`.
-    """
-    if (name is not ...) and (name is not None):
-        if not isinstance(name, str):
-            raise AssertionError(
-                f'`name` can be `None`, `str`, got {name.__class__.__name__}; {name!r}.'
-            )
-            
-        name_length = len(name)
-        if (name_length < 1) or (name_length > 100):
-            raise AssertionError(
-                f'`name` length can be in range [1:100], got {name_length}; {name!r}.'
-            )
-    
-    return True
-
-
-def _assert__channel_edit__type(type_, channel, channel_type):
-    """
-    Asserts the the `type_` parameter of ``Client.channel_edit`.
-    
-    Parameters
-    ----------
-    type_ : ``ChannelType``
-        The `channel`'s new type value.
-    channel : `None`, ``Channel``
-        The respective channel.
-    channel_type : ``ChannelType``
-        The respective channel's type.
-    
-    Raises
-    ------
-    AssertionError
-        - If `type_` is not `int` instance.
-        - If cannot interchange to `type_`.
-    """
-    if (channel is not None):
-        _assert_channel_type(
-            channel_type,
-            channel,
-            (ChannelType.guild_text, ChannelType.guild_announcements),
-            'type_',
-            type_,
-        )
-    
-    if (type_ is not ChannelType.guild_text) or (type_ is not ChannelType.guild_announcements):
-        raise AssertionError(
-            f'`type_` can be interchanged to `{ChannelType.guild_text!r}`, `{ChannelType.guild_announcements!r}`'
-            f', got {type_!r}.'
-        )
-    
-    return True
-
-
-def _assert__permission_overwrite__type(permission_overwrite):
-    """
-    Asserts the `permission_overwrite` parameter of ``Client.permission_overwrite_edit`` and of
-    ``Client.permission_overwrite_create``.
-    
-    Parameters
-    ----------
-    permission_overwrite : ``PermissionOverwrite``
-        The permission overwrite to edit.
-    
-    Raises
-    ------
-    AssertionError
-        - If `permission_overwrite` was not given as ``PermissionOverwrite``.
-    """
-    if not isinstance(permission_overwrite, PermissionOverwrite):
-        raise AssertionError(
-            f'`permission_overwrite` can be `{PermissionOverwrite.__name__}`, got '
-            f'{permission_overwrite.__class__.__name__}; {permission_overwrite!r}.'
-        )
-    
-    return True
-
-
-def _assert__permission_overwrite_edit__allow(allow):
-    if (allow is not ...):
-        if not isinstance(allow, int):
-            raise AssertionError(
-                f'`allow` can be `None`, `{Permission.__name__}`, `int`, got '
-                f'{allow.__class__.__name__}; {allow!r}.'
-            )
-    
-    return True
-
-
-def _assert__permission_overwrite_edit__deny(deny):
-    if (deny is not ...):
-        if not isinstance(deny, int):
-            raise AssertionError(
-                f'`deny` can be `None`, `{Permission.__name__}`, `int`, got '
-                f'{deny.__class__.__name__}; {deny!r}.'
-            )
     
     return True
 
@@ -310,7 +162,7 @@ class ClientCompoundChannelEndpoints(Compound):
             await self.http.channel_group_user_delete(channel_id, user_id)
     
     
-    async def channel_group_edit(self, channel, *, name=..., icon=...):
+    async def channel_group_edit(self, channel, channel_template = None, **keyword_parameters):
         """
         Edits the given group channel. Only the provided parameters will be edited.
         
@@ -320,6 +172,8 @@ class ClientCompoundChannelEndpoints(Compound):
         ----------
         channel : ``Channel``, `int`
             The channel to edit.
+        
+        
         name : `None`, `str`, Optional (Keyword only)
             The new name of the channel. By passing `None` or an empty string you can remove the actual one.
         icon : `None`, `bytes-like`, Optional (Keyword only)
@@ -343,38 +197,8 @@ class ClientCompoundChannelEndpoints(Compound):
         No request is done if no optional parameter is provided.
         """
         channel_id = get_channel_id(channel, Channel.is_private_group)
-        
-        assert _assert__channel_group_edit__name(name)
-        
-        data = {}
-        
-        
-        if (name is not ...):
-            if (name is not None) and (not name):
-                name = None
-            
-            data['name'] = name
-        
-        if (icon is not ...):
-            if icon is None:
-                icon_data = None
-            
-            else:
-                if not isinstance(icon, (bytes, bytearray, memoryview)):
-                    raise TypeError(
-                        f'`icon` can be `None`, `bytes-like`, got {icon.__class__.__name__}; {reprlib.repr(icon)}.'
-                    )
-            
-                media_type = get_image_media_type(icon)
-                if media_type not in VALID_ICON_MEDIA_TYPES:
-                    raise ValueError(
-                        f'Invalid `icon` type: {media_type}; got {reprlib.repr(icon)}.'
-                    )
-                
-                icon_data = image_to_base64(icon)
-            
-            data['icon'] = icon_data
-        
+        data = build_edit_payload(channel, channel_template, CHANNEL_PRIVATE_GROUP_FIELD_CONVERTERS, keyword_parameters)
+
         if data:
             await self.http.channel_group_edit(channel_id, data)
     
@@ -707,12 +531,11 @@ class ClientCompoundChannelEndpoints(Compound):
     
     
     async def channel_edit(
-        self, channel, *, name=..., topic=..., nsfw=..., slowmode=..., user_limit=..., bitrate=..., region=...,
-        video_quality_mode=..., type_=..., default_thread_auto_archive_after=..., reason=None
+        self, channel, channel_template = None, *, reason=None, **keyword_parameters,
     ):
         """
-        Edits the given guild channel. Different channel types accept different parameters, so make sure to not pass
-        out of place parameters. Only the passed parameters will be edited of the channel.
+        Edits the given guild channel. Different channel types accept different fields, so make sure to not pass
+        out of place parameters. Only the given fields will be modified of the channel.
         
         This method is a coroutine.
         
@@ -721,90 +544,41 @@ class ClientCompoundChannelEndpoints(Compound):
         channel : ``Channel``, `int`
             The channel to edit.
         
-        bitrate : `int`, Optional (Keyword only)
-            The new bitrate of the `channel`.
-        
-        default_thread_auto_archive_after : `None`, `int`, Optional (Keyword only)
-            The default duration (in seconds) for newly created threads to automatically archive the themselves. Can be
-            one of: `3600`, `86400`, `259200`, `604800`.
-        
-        name : `str`, Optional (Keyword only)
-            The `channel`'s new name.
-        
-        nsfw : `bool`, Optional (Keyword only)
-            Whether the `channel` will be nsfw or not.
-        
-        region : `None`, ``VoiceRegion``, `str`, Optional (Keyword only)
-            The channel's new voice region.
-            
-            > By giving as `None`, you can remove the old value.
-        
-        slowmode : `int`, Optional (Keyword only)
-            The new slowmode value of the `channel`.
-        
-        topic : `str`, Optional (Keyword only)
-            The new topic of the `channel`.
-        
-        type_ : ``ChannelType``, `int`, Optional (Keyword only)
-            The `channel`'s new type value.
-        
-        user_limit : `int`, Optional (Keyword only)
-            The new user limit of the `channel`.
-        
-        video_quality_mode : ``VideoQualityMode``, `int`, Optional (Keyword only)
-            The channel's new video quality mode.
+        channel_template : `None`, ``Channel`` = `None`, Optional
+            A channel to use as a template.
         
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters either to define the template, or to overwrite specific fields' values.
+        
         Raises
         ------
         TypeError
-            - If the given `channel` is not ``Channel``, `int`.
-            - If `region` was not given neither as `None`, `str` nor ``VoiceRegion``.
-            - If `video_quality_mode` was not given neither as ``VideoQualityMode` nor as `int`.
+            - If any parameter's type is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
         channel, channel_id = get_channel_and_id(channel, Channel.is_in_group_guild)
+        data = build_edit_payload(channel, channel_template, CHANNEL_GUILD_FIELD_CONVERTERS, keyword_parameters)
         
-        assert _assert__channel_edit__name(name)
-        
-        channel_data = {}
-        
-        if (name is not ...):
-            channel_data['name'] = name
-        
-        if channel is None:
-            channel_type = ChannelType.unknown
-        else:
-            channel_type = channel.type
-        
-        if (type_ is not ...):
-            type_ = preconvert_preinstanced_type(type_, 'type_', ChannelType)
-            assert _assert__channel_edit__type(type_, channel, channel_type)
-        
-        if (type_ is not ...):
-            channel_data['type'] = type_
-        
-        _maybe_add_channel_topic_field_to_data(channel_type, channel, channel_data, topic)
-        _maybe_add_channel_nsfw_field_to_data(channel_type, channel, channel_data, nsfw)
-        _maybe_add_channel_slowmode_field_to_data(channel_type, channel, channel_data, slowmode)
-        _maybe_add_channel_bitrate_field_to_data(channel_type, channel, channel_data, bitrate)
-        _maybe_add_channel_user_limit_field_to_data(channel_type, channel, channel_data, user_limit)
-        _maybe_add_channel_region_field_to_data(channel_type, channel, channel_data, region)
-        _maybe_add_channel_video_quality_mode_field_to_data(channel_type, channel, channel_data, video_quality_mode)
-        _maybe_add_channel_default_thread_auto_archive_after_field_to_data(
-            channel_type, channel, channel_data, default_thread_auto_archive_after,
-        )
-        
-        
-        await self.http.channel_edit(channel_id, channel_data, reason)
+        if data:
+            await self.http.channel_edit(channel_id, data, reason)
     
     
-    async def channel_create(self, guild, name, type_=ChannelType.guild_text, *, reason=None, **kwargs):
+    async def channel_create(
+        self, 
+        guild,
+        channel_template = None,
+        type_ = ...,
+        *,
+        channel_type = ChannelType.guild_text,
+        reason = None,
+        **keyword_parameters,
+    ):
         """
         Creates a new channel at the given `guild`. If the channel is successfully created returns it.
         
@@ -814,65 +588,67 @@ class ClientCompoundChannelEndpoints(Compound):
         ----------
         guild : ``Guild``, `int`
             The guild where the channel will be created.
-        name : `str`
-            The created channel's name.
-        type_ : ``ChannelType``, `int` = ``ChannelType.guild_text``, Optional
-            The type of the created channel.
+        
+        channel_template : `None`, ``Channel`` = `None`, Optional
+            Channel entity to use as a template.
+        
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the `guild`'s audit logs.
-        **kwargs : Keyword parameters
-            Additional keyword parameters to describe the created channel.
         
-        Other Parameters
-        ----------------
-        permission_overwrites : `list` of ``cr_p_permission_overwrite_object`` returns, Optional (Keyword only)
-            A list of permission overwrites of the channel. The list should contain json serializable permission
-            overwrites made by the ``cr_p_permission_overwrite_object`` function.
-        topic : `str`, Optional (Keyword only)
-            The channel's topic.
-        nsfw : `bool`, Optional (Keyword only)
-            Whether the channel is marked as nsfw.
-        slowmode : `int`, Optional (Keyword only)
-            The channel's slowmode value.
-        bitrate : `int`, Optional (Keyword only)
-            The channel's bitrate.
-        user_limit : `int`, Optional (Keyword only)
-            The channel's user limit.
-        parent : `None`, ``Channel``, `int`, Optional (Keyword only)
-            The channel's parent. If the channel is under a guild, leave it empty.
-        category : `None`, ``Channel``, ``Guild``, `int`, Optional (Keyword only)
-            Deprecated, please use `parent` parameter instead.
-        region : `None`, ``VoiceRegion``, `str`, Optional (Keyword only)
-            The channel's voice region.
-        video_quality_mode : `None`, ``VideoQualityMode``, `int`, Optional (Keyword only)
-            The channel's video quality mode.
-        default_thread_auto_archive_after : `None`, `int`
-            The default duration (in seconds) for newly created threads to automatically archive the themselves. Can be
-            one of: `3600`, `86400`, `259200`, `604800`.
+        channel_type : ``ChannelType``, `int` = ``ChannelType.guild_text``, Optional (Keyword only)
+            The type of the created channel.
+        
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters to create the channel with.
         
         Returns
         -------
-        channel : `None`, ``Channel``
-            The created channel. Returns `None` if the respective `guild` is not cached.
+        channel : ``Channel``
         
         Raises
         ------
         TypeError
-            - If `guild` was not given as ``Guild``, `int`.
-            - If `type_` was not passed as `int`, ``ChannelType``.
-            - If `parent` was not given as `None`, ``Channel``, `int`.
-            - If `region` was not given either as `None`, `str` nor ``VoiceRegion``.
+            - If a parameter's type is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild, guild_id = get_guild_and_id(guild)
+        guild_id = get_guild_id(guild)
         
-        data = cr_pg_channel_object(name, type_, **kwargs, guild=guild)
-        data = await self.http.channel_create(guild_id, data, reason)
+        # Checkout type
+        if type_ is not ...:
+            warnings.warn(
+                (
+                    f'`type_` parameter of `{self.__class__.__name__}.channel_create` is deprecated and will be '
+                    f'removed in 2023 February. Please use `channel_type` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
+            channel_type = type_
         
-        return Channel.from_data(data, self, guild_id)
+        keyword_parameters['channel_type'] = channel_type
+        
+        # Checkout name
+        if (channel_template is not None) and isinstance(channel_template, str) and ('name' not in keyword_parameters):
+            warnings.warn(
+                (
+                    f'`name` parameter of `{self.__class__.__name__}.channel_create` is moved to be a keyword only '
+                    f'parameter and the positional usage is deprecated and will be removed in 2023 February.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
+            keyword_parameters['name'] = channel_template
+            channel_template = None
+        
+        data = build_create_payload(channel_template, CHANNEL_GUILD_MAIN_FIELD_CONVERTERS, keyword_parameters)
+        channel_data = await self.http.channel_create(guild_id, data, reason)
+        
+        return Channel.from_data(channel_data, self, guild_id)
     
     
     async def channel_delete(self, channel, *, reason=None):
@@ -950,7 +726,7 @@ class ClientCompoundChannelEndpoints(Compound):
         return webhook
     
 
-    async def permission_overwrite_edit(self, channel, permission_overwrite, *, allow=..., deny=..., reason=None):
+    async def permission_overwrite_edit(self, channel, permission_overwrite, *, reason = None, **keyword_parameters):
         """
         Edits the given permission overwrite.
         
@@ -960,47 +736,33 @@ class ClientCompoundChannelEndpoints(Compound):
         ----------
         channel : ˙˙Channel``, `int`
             The channel where the permission overwrite is.
+        
         permission_overwrite : ``PermissionOverwrite``
             The permission overwrite to edit.
-        allow : `None`, ``Permission``, `int`, Optional (Keyword only)
-            The permission overwrite's new allowed permission's value.
-        deny : `None`, ``Permission``, `int`, Optional (Keyword only)
-            The permission overwrite's new denied permission's value.
+        
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
+        
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters either to define the template, or to overwrite specific fields' values.
         
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``Channel`` nor as `int`.
+            - If a parameter's type is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `permission_overwrite` was not given as ``PermissionOverwrite``.
-            - If `allow` was not given neither as `None`, ``Permission`` not other `int`.
-            - If `deny` was not given neither as `None`, ``Permission`` not other `int`.
         """
         channel_id = get_channel_id(channel, Channel.is_in_group_guild_sortable)
+        target_id = get_permission_overwrite_target_id(permission_overwrite)
         
-        assert _assert__permission_overwrite__type(permission_overwrite)
-        assert _assert__permission_overwrite_edit__allow(allow)
-        assert _assert__permission_overwrite_edit__deny(deny)
+        data = build_create_payload(
+            permission_overwrite, PERMISSION_OVERWRITE_FIELD_CONVERTERS, keyword_parameters
+        )
         
-        if allow is ...:
-            allow = permission_overwrite.allow
-        
-        if deny is ...:
-            deny = permission_overwrite.deny
-        
-        data = {
-            'allow': allow,
-            'deny': deny,
-            'type': permission_overwrite.target_type.value
-        }
-        
-        await self.http.permission_overwrite_create(channel_id, permission_overwrite.target_id, data, reason)
+        await self.http.permission_overwrite_create(channel_id, target_id, data, reason)
     
     
     async def permission_overwrite_delete(self, channel, permission_overwrite, *, reason=None):
@@ -1013,30 +775,31 @@ class ClientCompoundChannelEndpoints(Compound):
         ----------
         channel : ˙˙Channel``
             The channel where the permission overwrite is.
-        permission_overwrite : ``PermissionOverwrite``
+        
+        permission_overwrite : ``PermissionOverwrite``, `int`
             The permission overwrite to delete.
+        
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
 
         Raises
         ------
         TypeError
-            If `channel` was not given neither as ``Channel`` nor as `int`.
+            - If a parameter's type is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If `permission_overwrite` was not given as ``PermissionOverwrite``.
         """
         channel_id = get_channel_id(channel, Channel.is_in_group_guild_sortable)
+        target_id = get_permission_overwrite_target_id(permission_overwrite)
         
-        assert _assert__permission_overwrite__type(permission_overwrite)
-        
-        await self.http.permission_overwrite_delete(channel_id, permission_overwrite.target_id, reason)
+        await self.http.permission_overwrite_delete(channel_id, target_id, reason)
     
     
-    async def permission_overwrite_create(self, channel, target, allow, deny, *, reason=None):
+    async def permission_overwrite_create(
+        self, channel, permission_overwrite_template = None, *, reason = None, **keyword_parameters
+    ):
         """
         Creates a permission overwrite at the given channel.
         
@@ -1046,14 +809,15 @@ class ClientCompoundChannelEndpoints(Compound):
         ----------
         channel : ``Channel``, `int`
             The channel to what the permission overwrite will be added.
-        target : ``Role``, ``ClientUserBase``
-            The permission overwrite's target.
-        allow : ``Permission``, `int`
-            The permission overwrite's allowed permission's value.
-        deny : ``Permission``, `int`
-            The permission overwrite's denied permission's value.
+        
+        permission_overwrite_template : `None`, ``PermissionOverwrite`` = `None`, Optional
+            Permission overwrite to be used as a template for creating the new one.
+        
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
+        
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters either to define the template, or to overwrite specific fields' values.
         
         Returns
         -------
@@ -1071,12 +835,37 @@ class ClientCompoundChannelEndpoints(Compound):
         """
         channel_id = get_channel_id(channel, Channel.is_in_group_guild_sortable)
         
-        permission_overwrite = PermissionOverwrite(target, allow = allow, deny = deny)
+        if (
+            (permission_overwrite_template is not None) and
+            (not isinstance(permission_overwrite_template, PermissionOverwrite)) and
+            ('target' not in keyword_parameters)
+        ):
+            warnings.warn(
+                (
+                    f'`target` parameter of `{self.__class__.__name__}.permission_overwrite_create` is moved to be '
+                    f'a keyword only parameter and the positional usage is deprecated and will be removed in 2023 '
+                    f'February.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
+            keyword_parameters['target'] = permission_overwrite_template
         
-        data = permission_overwrite.to_data()
+        data = build_create_payload(
+            permission_overwrite_template, PERMISSION_OVERWRITE_FIELD_CONVERTERS, keyword_parameters
+        )
         
-        await self.http.permission_overwrite_create(channel_id, permission_overwrite.target_id, data, reason)
-        return permission_overwrite
+        try:
+            target_id = data['id']
+        except KeyError:
+            raise RuntimeError(
+                f'Cannot create permission overwrite to unknown target. Parameters are already destructed, no '
+                f'additional context is providable.'
+            )
+        
+        await self.http.permission_overwrite_create(channel_id, target_id, data, reason)
+        return PermissionOverwrite.from_data(data)
     
     
     async def guild_sync_channels(self, guild):
@@ -1208,7 +997,7 @@ class ClientCompoundChannelEndpoints(Compound):
     
     
     async def forum_tag_edit(
-        self, forum_channel, old_forum_tag, forum_tag = None, *, reason = None, **keyword_parameters
+        self, forum_channel, forum_tag, template_forum_tag = None, *, reason = None, **keyword_parameters
     ):
         """
         Edits the given forum tag.
@@ -1220,10 +1009,10 @@ class ClientCompoundChannelEndpoints(Compound):
         forum_channel : ``Channel``, `int`
             The channel to edit the tag in.
         
-        old_forum_tag : ``ForumTag``, `int`
+        forum_tag : ``ForumTag``, `int`
             The forum tag to edit.
         
-        forum_tag : ``ForumTag``, `None` = `None`, Optional
+        template_forum_tag : ``ForumTag``, `None` = `None`, Optional
             A forum tag which can be used as a template for edition.
         
         reason : `None`, `str` = `None`, Optional (Keyword only)
@@ -1247,14 +1036,15 @@ class ClientCompoundChannelEndpoints(Compound):
         - ``.forum_tag_delete`` : Delete a forum tag.
         """
         channel_id = get_channel_id(forum_channel, Channel.is_guild_forum)
-        old_forum_tag, forum_tag_id = get_forum_tag_and_id(old_forum_tag)
-        data = build_edit_payload(old_forum_tag, forum_tag, FORUM_TAG_FIELD_CONVERTERS, keyword_parameters)
+        forum_tag, forum_tag_id = get_forum_tag_and_id(forum_tag)
+        data = build_edit_payload(forum_tag, template_forum_tag, FORUM_TAG_FIELD_CONVERTERS, keyword_parameters)
         
-        # Fixing discord bug: name.BASE_TYPE_REQUIRED('This field is required')
-        if ('name' not in data) and (old_forum_tag is not None):
-            data['name'] = old_forum_tag.name
-        
-        await self.http.forum_tag_edit(channel_id, forum_tag_id, data, reason)
+        if data:
+            # Fixing discord bug: name.BASE_TYPE_REQUIRED('This field is required')
+            if (forum_tag is not None) and ('name' not in data):
+                data['name'] = forum_tag.name
+            
+            await self.http.forum_tag_edit(channel_id, forum_tag_id, data, reason)
     
     
     async def forum_tag_delete(self, forum_channel, forum_tag, *, reason = None):

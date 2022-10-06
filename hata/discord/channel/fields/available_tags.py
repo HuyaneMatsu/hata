@@ -67,7 +67,7 @@ def validate_available_tags(available_tags):
     return available_tags_processed
 
 
-def put_available_tags_into(available_tags, data, defaults):
+def put_available_tags_into(available_tags, data, defaults, *, include_internals = False):
     """
     Puts the `available_tags`'s data into the given `data` json serializable object.
     
@@ -79,6 +79,8 @@ def put_available_tags_into(available_tags, data, defaults):
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
+    include_internals : `bool` = `False`, Optional (Keyword only)
+        Whether we want to include identifiers as well.
     
     Returns
     -------
@@ -88,6 +90,6 @@ def put_available_tags_into(available_tags, data, defaults):
         if defaults:
             data['available_tags'] = []
     else:
-        data['available_tags'] = [tag.to_data(include_internals = True) for tag in available_tags]
+        data['available_tags'] = [tag.to_data(include_internals = include_internals) for tag in available_tags]
     
     return data

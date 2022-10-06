@@ -35,6 +35,7 @@ def bind(bind_to, bind_with, name, *, weak=False, weak_cache_size=0):
     Examples
     --------
     Generic binder:
+    
     ```py
     from hata import ClientUserBase, bind
     
@@ -57,6 +58,7 @@ def bind(bind_to, bind_with, name, *, weak=False, weak_cache_size=0):
     ```
     
     Descriptor binder:
+    
     ```py
     from hata import ClientUserBase, bind
     
@@ -75,10 +77,12 @@ def bind(bind_to, bind_with, name, *, weak=False, weak_cache_size=0):
     # Usage:
     user.inventory_size += 10
     ```
+    
     Descriptor binders are familiar ot normal descriptors, except, they are created per object and not per class.
     
     Sometimes you want to clear extra binders with default values. For this you might want to define the `__bool__`
     method.
+    
     ```py
     DEFAULT_VALUE = 10
     
@@ -106,6 +110,7 @@ def bind(bind_to, bind_with, name, *, weak=False, weak_cache_size=0):
     `__setstate__` magic methods.
     
     > Also defining `__bool__` is not required, but recommended.
+    
     ```py
     class Inventory:
         def __init__(self, parent_self):

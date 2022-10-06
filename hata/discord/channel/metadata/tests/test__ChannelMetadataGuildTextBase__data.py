@@ -58,6 +58,8 @@ def test__ChannelMetadataGuildTextBase__from_data():
 def test__ChannelMetadataGuildTextBase__to_data():
     """
     Tests whether ``ChannelMetadataGuildTextBase.to_data`` works as intended.
+    
+    Case: include defaults and internals.
     """
     parent_id = 202209170196
     name = 'Armelyrics'
@@ -83,7 +85,7 @@ def test__ChannelMetadataGuildTextBase__to_data():
         'topic': topic,
     })
     
-    data = channel_metadata.to_data()
+    data = channel_metadata.to_data(defaults = True, include_internals = True)
     
     vampytest.assert_eq(
         data,

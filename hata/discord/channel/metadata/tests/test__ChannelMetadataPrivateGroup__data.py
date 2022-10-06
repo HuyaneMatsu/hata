@@ -20,7 +20,7 @@ def test__ChannelMetadataPrivateGroup__from_data():
     channel_metadata = ChannelMetadataPrivateGroup.from_data({
         'recipients': [user_1.to_data()],
         'owner_id': str(owner_id),
-        'icon': icon.as_base16_hash,
+        'icon': icon.as_base_16_hash,
         'name': name,
     })
     
@@ -33,9 +33,11 @@ def test__ChannelMetadataPrivateGroup__from_data():
     vampytest.assert_eq(channel_metadata.name, name)
 
 
-def test__ChannelMetadataPrivateGroup__to_data():
+def test__ChannelMetadataPrivateGroup__to_data__0():
     """
     Tests whether ``ChannelMetadataPrivateGroup.to_data`` works as intended.
+    
+    Case: include defaults and internals.
     """
     user_1 = User.precreate(202209160011)
     owner_id = 202209160012
@@ -46,20 +48,47 @@ def test__ChannelMetadataPrivateGroup__to_data():
         'users': [user_1],
         'owner_id': owner_id,
         'name': name,
+        'icon': icon,
     })
-    channel_metadata.icon = icon
     
-    data = channel_metadata.to_data()
+    data = channel_metadata.to_data(defaults = True, include_internals = True)
     
     vampytest.assert_eq(
         data,
         {
             'recipients': [user_1.to_data()],
             'owner_id': str(owner_id),
-            'icon': icon.as_base16_hash,
+            'icon': icon.as_base_16_hash,
             'name': name,
         },
     )
+
+def test__ChannelMetadataPrivateGroup__to_data__1():
+    """
+    Tests whether ``ChannelMetadataPrivateGroup.to_data`` works as intended.
+    
+    Case: default.
+    """
+    icon = (
+        b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00'
+        b'\x00\x00\x04sBIT\x08\x08\x08\x08|\x08d\x88\x00\x00\x00\x0bIDAT\x08\x99c\xf8\x0f\x04\x00\t\xfb\x03\xfd\xe3U'
+        b'\xf2\x9c\x00\x00\x00\x00IEND\xaeB`\x82'
+    )
+    
+    name = 'Armelyrics'
+    
+    channel_metadata = ChannelMetadataPrivateGroup({
+        'name': name,
+        'icon': icon,
+    })
+    
+    data = channel_metadata.to_data(defaults = True, include_internals = True)
+    
+    vampytest.assert_in('icon', data)
+    vampytest.assert_in('name', data)
+    
+    vampytest.assert_instance(data['icon'], str)
+    vampytest.assert_eq(data['name'], name)
 
 
 def test__ChannelMetadataPrivateGroup__update_attributes():
@@ -76,12 +105,12 @@ def test__ChannelMetadataPrivateGroup__update_attributes():
     channel_metadata = ChannelMetadataPrivateGroup({
         'owner_id': old_owner_id,
         'name': old_name,
+        'icon': old_icon,
     })
-    channel_metadata.icon = old_icon
     
     channel_metadata._update_attributes({
         'owner_id': str(new_owner_id),
-        'icon': new_icon.as_base16_hash,
+        'icon': new_icon.as_base_16_hash,
         'name': new_name,
     })
     
@@ -104,12 +133,12 @@ def test__ChannelMetadataPrivateGroup__difference_update_attributes():
     channel_metadata = ChannelMetadataPrivateGroup({
         'owner_id': str(old_owner_id),
         'name': old_name,
+        'icon': old_icon,
     })
-    channel_metadata.icon = old_icon
     
     old_attributes = channel_metadata._difference_update_attributes({
         'owner_id': str(new_owner_id),
-        'icon': new_icon.as_base16_hash,
+        'icon': new_icon.as_base_16_hash,
         'name': new_name,
     })
 

@@ -901,10 +901,10 @@ class UserBase(DiscordEntity, immortal=True):
         data['discriminator'] = str(self.discriminator)
         
         # avatar
-        data['avatar'] = self.avatar.as_base16_hash
+        data['avatar'] = self.avatar.as_base_16_hash
         
         # banner
-        data['banner'] = self.banner.as_base16_hash
+        data['banner'] = self.banner.as_base_16_hash
         
         # banner color
         banner_color = self.banner_color

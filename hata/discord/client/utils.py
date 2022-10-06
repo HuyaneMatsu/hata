@@ -38,6 +38,7 @@ def start_clients():
     if (current_thread() is not KOKORO):
         KOKORO.wake_up()
 
+
 def stop_clients():
     """
     Stops all the running clients.
@@ -171,13 +172,16 @@ class BanEntry:
         self.user = user
         self.reason = reason
     
+    
     def __repr__(self):
         """Returns the ban entry's representation."""
         return f'<{self.__class__.__name__} user={self.user!r}, reason={self.reason!r}>'
     
+    
     def __len__(self):
         """Helper for unpacking."""
         return 2
+    
     
     def __iter__(self):
         """Unpacks the ban entry."""
@@ -210,13 +214,16 @@ class UserGuildPermission:
         self.owner = data['owner']
         self.permission = Permission(data[PERMISSION_KEY])
     
+    
     def __repr__(self):
         """Returns the user guild permission's representation."""
         return f'<{self.__class__.__name__}  owner={self.owner}, permissions={int.__repr__(self.permission)}>'
     
+    
     def __len__(self):
         """Helper for unpacking if needed."""
         return 2
+    
     
     def __iter__(self):
         """Unpacks the user guild permission."""
@@ -307,6 +314,7 @@ class Typer:
                 if (self.waiter is not None):
                     raise
     
+    
     def cancel(self):
         """
         If the context manager is still active, cancels it.
@@ -316,6 +324,7 @@ class Typer:
         if (waiter is not None):
             self.waiter = None
             waiter.cancel()
+    
     
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Exits the typer's context block by cancelling it."""
@@ -467,6 +476,7 @@ class ClientWrapper:
             self.parent = parent
             self.parameters = parameters
         
+        
         def __call__(self, func):
             """
             Adds the given `func` as event handler to the parent's clients' with the stored up parameters.
@@ -517,6 +527,7 @@ class ClientWrapper:
         """
         for client in self.clients:
             client.events.__setattr__(attribute_name, attribute_value)
+    
     
     def __delattr__(self, attribute_name):
         """

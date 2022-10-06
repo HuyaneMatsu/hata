@@ -137,13 +137,13 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
     
     
     @copy_docs(ChannelMetadataGuildThreadBase.to_data)
-    def to_data(self):
-        data = ChannelMetadataGuildThreadBase.to_data(self)
+    def to_data(self, *, defaults = False, include_internals = False):
+        data = ChannelMetadataGuildThreadBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
         # applied_tag_ids
-        put_applied_tag_ids_into(self.applied_tag_ids, data, True)
+        put_applied_tag_ids_into(self.applied_tag_ids, data, defaults)
         
         # flags
-        put_flags_into(self.flags, data, True)
+        put_flags_into(self.flags, data, defaults)
         
         return data

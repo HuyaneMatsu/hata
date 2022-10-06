@@ -373,28 +373,34 @@ class ChannelMetadataGuildThreadBase(ChannelMetadataGuildBase):
     
     
     @copy_docs(ChannelMetadataGuildBase.to_data)
-    def to_data(self):
-        data = ChannelMetadataGuildBase.to_data(self)
+    def to_data(self, *, defaults = False, include_internals = False):
+        data = ChannelMetadataGuildBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
         # archived
-        put_archived_into(self.archived, data, True)
+        if include_internals:
+            put_archived_into(self.archived, data, defaults)
         
         # archived_at
-        put_archived_at_into(self.archived_at, data, True)
+        if include_internals:
+            put_archived_at_into(self.archived_at, data, defaults)
         
         # auto_archive_after
-        put_auto_archive_after_into(self.auto_archive_after, data, True)
+        put_auto_archive_after_into(
+            self.auto_archive_after, data, defaults, flatten_thread_metadata = not include_internals
+        )
         
         # created_at
-        put_created_at_into(self._created_at, data, True)
+        if include_internals:
+            put_created_at_into(self._created_at, data, defaults)
         
         # open
-        put_open_into(self.open, data, True)
+        put_open_into(self.open, data, defaults, flatten_thread_metadata = not include_internals)
         
         # owner_id
-        put_owner_id_into(self.owner_id, data, True)
+        if include_internals:
+            put_owner_id_into(self.owner_id, data, defaults)
         
         # slowmode
-        put_slowmode_into(self.slowmode, data, True)
+        put_slowmode_into(self.slowmode, data, defaults)
         
         return data

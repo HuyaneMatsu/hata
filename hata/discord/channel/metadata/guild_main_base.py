@@ -130,14 +130,14 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
     
     
     @copy_docs(ChannelMetadataGuildBase.to_data)
-    def to_data(self):
-        data = ChannelMetadataGuildBase.to_data(self)
+    def to_data(self, *, defaults = False, include_internals = False):
+        data = ChannelMetadataGuildBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
         # position
-        put_position_into(self.position, data, True)
+        put_position_into(self.position, data, defaults)
         
         # permission_overwrites
-        put_permission_overwrites_into(self.permission_overwrites, data, True)
+        put_permission_overwrites_into(self.permission_overwrites, data, defaults)
         
         return data
     

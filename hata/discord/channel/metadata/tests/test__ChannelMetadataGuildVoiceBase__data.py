@@ -53,6 +53,8 @@ def test__ChannelMetadataGuildVoiceBase__from_data():
 def test__ChannelMetadataGuildVoiceBase__to_data():
     """
     Tests whether ``ChannelMetadataGuildVoiceBase.to_data`` works as intended.
+    
+    Case: include defaults and internals.
     """
     parent_id = 202209170130
     name = 'Armelyrics'
@@ -74,7 +76,7 @@ def test__ChannelMetadataGuildVoiceBase__to_data():
         'user_limit': user_limit,
     })
     
-    data = channel_metadata.to_data()
+    data = channel_metadata.to_data(defaults = True, include_internals = True)
     
     vampytest.assert_eq(
         data,

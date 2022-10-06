@@ -1371,7 +1371,7 @@ Group Details
     - Endpoint : `/guilds/{guild_id}/stickers`
     - Method : `POST`
     - Required auth : `bot`
-    - Limiter : `GLOBAL`
+    - Limiter : `guild_id`
     - Limit : `50`
     - Resets after : `3600.0`
 
@@ -1380,16 +1380,16 @@ Group Details
     - Method : `PATCH`
     - Required auth : `bot`
     - Limiter : `GLOBAL`
-    - Limit : `1`
-    - Resets after : `2.0`
+    - Limit : `10`
+    - Resets after : `20.0`
 
 - sticker_guild_delete
     - Endpoint : `/guilds/{guild_id}/stickers/{sticker_id}`
     - Method : `POST`
     - Required auth : `bot`
     - Limiter : `GLOBAL`
-    - Limit : `1`
-    - Resets after : `2.0`
+    - Limit : `10`
+    - Resets after : `20.0`
 
 - sticker_guild_get
     - Endpoint : `/guilds/{guild_id}/stickers/{sticker_id}`
@@ -2086,7 +2086,7 @@ scheduled_event_get = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_edit = RateLimitGroup(LIMITER_GUILD)
 scheduled_event_user_get_chunk = RateLimitGroup(LIMITER_GUILD)
 sticker_guild_get_all = RateLimitGroup.unlimited()
-sticker_guild_create = RateLimitGroup()
+sticker_guild_create = RateLimitGroup(LIMITER_GUILD)
 sticker_guild_edit = RateLimitGroup()
 sticker_guild_delete = RateLimitGroup()
 sticker_guild_get = RateLimitGroup.unlimited()

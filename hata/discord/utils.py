@@ -20,7 +20,7 @@ from random import random
 from re import I as re_ignore_case, U as re_unicode, compile as re_compile
 from time import time as time_now
 
-from scarletio import IS_UNIX, LOOP_TIME, export, include, modulize, set_docs
+from scarletio import LOOP_TIME, export, include, modulize
 
 from .bases import DiscordEntity
 from .core import CHANNELS, ROLES, USERS
@@ -37,7 +37,7 @@ RelationshipType = include('RelationshipType')
 
 DATETIME_FORMAT_CODE = '%Y-%m-%d %H:%M:%S'
 
-def endswith_xFFxD9(data):
+def _endswith_xFFxD9(data):
     """
     Checks whether the given data endswith `b'\xD9\xFF'` ignoring empty bytes at the end of it.
     
@@ -62,6 +62,7 @@ def endswith_xFFxD9(data):
         continue
 
 
+@export
 def get_image_media_type(data):
     """
     Gets the given raw image data's extension and returns it.
@@ -77,7 +78,7 @@ def get_image_media_type(data):
     """
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
         media_type = 'image/png'
-    elif data.startswith(b'\xFF\xD8') and endswith_xFFxD9(data):
+    elif data.startswith(b'\xFF\xD8') and _endswith_xFFxD9(data):
         media_type = 'image/jpeg'
     elif data.startswith(b'\x47\x49\x46\x38\x37\x61') or data.startswith(b'\x47\x49\x46\x38\x39\x61'):
         media_type = 'image/gif'
@@ -117,7 +118,7 @@ def image_to_base64(data):
     """
     if data.startswith(b'\x89\x50\x4E\x47\x0D\x0A\x1A\x0A'):
         media_type = 'image/png'
-    elif data.startswith(b'\xFF\xD8') and endswith_xFFxD9(data):
+    elif data.startswith(b'\xFF\xD8') and _endswith_xFFxD9(data):
         media_type = 'image/jpeg'
     elif data.startswith(b'\x47\x49\x46\x38\x37\x61') or data.startswith(b'\x47\x49\x46\x38\x39\x61'):
         media_type = 'image/gif'

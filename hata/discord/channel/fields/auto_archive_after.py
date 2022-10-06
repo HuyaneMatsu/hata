@@ -59,7 +59,7 @@ def validate_auto_archive_after(auto_archive_after):
     )
 
 
-def put_auto_archive_after_into(auto_archive_after, data, defaults):
+def put_auto_archive_after_into(auto_archive_after, data, defaults, *, flatten_thread_metadata = False):
     """
     Puts the `auto_archive_after`'s data into the given `data` json serializable object.
     
@@ -71,18 +71,24 @@ def put_auto_archive_after_into(auto_archive_after, data, defaults):
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
+    flatten_thread_metadata : `bool` = `False`, Optional (Keyword only)
+        Whether the field should be flattened instead of nested.
     
     Returns
     -------
     data : `dict` of (`str`, `Any`) items
     """
     if defaults or (auto_archive_after != AUTO_ARCHIVE_DEFAULT):
-        try:
-            sub_data = data['thread_metadata']
-        except KeyError:
-            sub_data = {}
-            data['thread_metadata'] = sub_data
+        if flatten_thread_metadata:
+            data_to_use = data
         
-        sub_data['auto_archive_duration'] = auto_archive_after // 60
+        else:
+            try:
+                data_to_use = data['thread_metadata']
+            except KeyError:
+                data_to_use = {}
+                data['thread_metadata'] = data_to_use
+        
+        data_to_use['auto_archive_duration'] = auto_archive_after // 60
     
     return data

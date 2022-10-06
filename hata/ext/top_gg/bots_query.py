@@ -60,7 +60,7 @@ def avatar_to_base16(avatar):
     -------
     avatar : `str`
     """
-    return avatar.as_base16_hash
+    return avatar.as_base_16_hash
 
 
 def nullable_string_tuple_to_string_array(nullable_string_tuple):

@@ -54,6 +54,8 @@ def test__ChannelMetadataGuildThreadBase__from_data():
 def test__ChannelMetadataGuildThreadBase__to_data():
     """
     Tests whether ``ChannelMetadataGuildThreadBase.to_data`` works as intended.
+    
+    Case: include defaults and internals.
     """
     parent_id = 202209180003
     name = 'Armelyrics'
@@ -77,7 +79,7 @@ def test__ChannelMetadataGuildThreadBase__to_data():
         'slowmode': slowmode,
     })
     
-    data = channel_metadata.to_data()
+    data = channel_metadata.to_data(defaults = True, include_internals = True)
     
     vampytest.assert_eq(
         data,

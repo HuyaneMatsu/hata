@@ -19,9 +19,9 @@ def test__ChannelMetadataPrivateGroup__repr():
         'users': users,
         'owner_id': owner_id,
         'name': name,
+        'icon': icon
     }
     channel_metadata = ChannelMetadataPrivateGroup(keyword_parameters)
-    channel_metadata.icon = icon
     
     vampytest.assert_instance(repr(channel_metadata), str)
 
@@ -39,9 +39,9 @@ def test__ChannelMetadataPrivateGroup__hash():
         'users': users,
         'owner_id': owner_id,
         'name': name,
+        'icon': icon,
     }
     channel_metadata = ChannelMetadataPrivateGroup(keyword_parameters)
-    channel_metadata.icon = icon
     
     vampytest.assert_instance(hash(channel_metadata), int)
 
@@ -60,9 +60,9 @@ def test__ChannelMetadataPrivateGroup__eq():
         'users': [user_1],
         'owner_id': owner_id,
         'name': name,
+        'icon': icon,
     }
     channel_metadata = ChannelMetadataPrivateGroup(keyword_parameters)
-    channel_metadata.icon = icon
     
     vampytest.assert_eq(channel_metadata, channel_metadata)
     vampytest.assert_ne(channel_metadata, object())
@@ -73,12 +73,5 @@ def test__ChannelMetadataPrivateGroup__eq():
         ('icon', Icon(IconType.static, 2)),
         ('name', 'Okuu'),        
     ):
-        if field_name == 'icon':
-            test_channel_metadata = ChannelMetadataPrivateGroup(keyword_parameters)
-            test_channel_metadata.icon = field_value
-        
-        else:
-            test_channel_metadata = ChannelMetadataPrivateGroup({**keyword_parameters, field_name: field_value})
-            test_channel_metadata.icon = icon
-        
+        test_channel_metadata = ChannelMetadataPrivateGroup({**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(channel_metadata, test_channel_metadata)

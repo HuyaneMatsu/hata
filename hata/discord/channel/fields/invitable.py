@@ -47,7 +47,7 @@ def validate_invitable(invitable):
     return preconvert_bool(invitable, 'invitable')
 
 
-def put_invitable_into(invitable, data, defaults):
+def put_invitable_into(invitable, data, defaults, *, flatten_thread_metadata = False):
     """
     Puts the `invitable`'s data into the given `data` json serializable object.
     
@@ -59,18 +59,24 @@ def put_invitable_into(invitable, data, defaults):
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
+    flatten_thread_metadata : `bool` = `False`, Optional (Keyword only)
+        Whether the field should be flattened instead of nested.
     
     Returns
     -------
     data : `dict` of (`str`, `Any`) items
     """
     if (not invitable) or defaults:
-        try:
-            sub_data = data['thread_metadata']
-        except KeyError:
-            sub_data = {}
-            data['thread_metadata'] = sub_data
+        if flatten_thread_metadata:
+            data_to_use = data
         
-        sub_data['invitable'] = invitable
+        else:
+            try:
+                data_to_use = data['thread_metadata']
+            except KeyError:
+                data_to_use = {}
+                data['thread_metadata'] = data_to_use
+        
+        data_to_use['invitable'] = invitable
     
     return data

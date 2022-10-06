@@ -100,10 +100,11 @@ class ChannelMetadataPrivateBase(ChannelMetadataBase):
     
     
     @copy_docs(ChannelMetadataBase.to_data)
-    def to_data(self):
-        data = ChannelMetadataBase.to_data(self)
+    def to_data(self, *, defaults = False, include_internals = False):
+        data = ChannelMetadataBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
         # users
-        put_users_into(self.users, data, True)
+        if include_internals:
+            put_users_into(self.users, data, defaults)
         
         return data

@@ -56,7 +56,7 @@ class Channel(DiscordEntity, immortal=True):
     """
     __slots__ = ('_message_history', 'guild_id', 'metadata', 'type')
     
-    def __new__(cls, channel_type=None, **keyword_parameters):
+    def __new__(cls, channel_type = None, **keyword_parameters):
         """
         Creates a partial channel with the given parameters.
         
@@ -834,30 +834,39 @@ class Channel(DiscordEntity, immortal=True):
         return self
     
     
-    def to_data(self):
+    def to_data(self, *, defaults = False, include_internals = False):
         """
         Converts the channel to json serializable representation dictionary.
+        
+        Parameters
+        ----------
+        defaults : `bool` = `False`, Optional (Keyword only)
+            Whether default values should be included as well.
+        include_internals : `bool` = `False`, Optional (Keyword only)
+            Whether we want to include identifiers as well.
         
         Returns
         -------
         data : `dict` of (`str`, `str`) items
         """
-        data = self.metadata.to_data()
+        data = self.metadata.to_data(defaults = defaults, include_internals = include_internals)
         
         # id
-        data['id'] = str(self.id)
+        if include_internals:
+            data['id'] = str(self.id)
         
         # type
         data['type'] = self.type.value
         
         # guild_id
-        guild_id = self.guild_id
-        if guild_id:
-            guild_id = str(guild_id)
-        else:
-            guild_id = None
-        
-        data['guild_id'] = guild_id
+        if include_internals:
+            guild_id = self.guild_id
+            if guild_id:
+                guild_id = str(guild_id)
+            else:
+                guild_id = None
+            
+            data['guild_id'] = guild_id
         
         return data
     

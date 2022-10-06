@@ -1,6 +1,7 @@
 ## 1.3.10 *\[2022-10-??\]*
 
 #### Improvements
+
 - `Role.partial` will now handle correctly if the role is deleted.
 - Add `guild_id` parameter to `create_partial_role_from_id`.
 - Add `guild_id` parameter to `Role._create_empty`.
@@ -17,6 +18,21 @@
 - Add `DiscordHTTPClient.forum_tag_create`.
 - Add `DiscordHTTPClient.forum_tag_edit`.
 - Add `DiscordHTTPClient.forum_tag_delete`.
+- Update `sticker_guild_delete` rate limit documentation.
+- Update `sticker_guild_create` rate limit & documentation.
+- Update `sticker_guild_edit` rate limit documentation.
+- Add `IconSlot.parse_data_from_keyword_parameters`.
+- Add `IconSlot.parse_from_keyword_parameters`.
+- Add `IconSlot.put_into`.
+- `Client.channel_edit` now accepts template entity + smaller changes to parameters.
+- `Client.channel_create` now accepts template entity + smaller changes to parameters.
+- `Client.channel_group_edit` now accepts template entity + smaller changes to parameters.
+- `Client.thread_create` now accepts template entity + smaller changes to parameters.
+- `Client.forum_thread_create` now accepts template entity + smaller changes to parameters.
+- Add `PermissionOverwrite.copy`.
+- `Client.permission_overwrite_edit` now accepts template entity + smaller changes to parameters.
+- `Client.permission_overwrite_create` now accepts template entity + smaller changes to parameters.
+
 
 ##### ext.slash
 - Allow `hdsl` for slash command description.
@@ -29,6 +45,11 @@
 - `EventHandlerManager.__setattr__` did not wrap deprecated event handlers if required..
 - `EventHandlerManager.__call__` wrapped deprecated event handlers after validating them.
 - `client.events.webhook_update` used different parameters as documented.
+- Deprecated event handlers did not accept instantiable types.
+
+#### Renames, Deprecation & Removals
+
+- Deprecate `cr_pg_channel_object`. Please use `Channel(...).to_data(...)` instead.
 
 ## 1.3.9 *\[2022-10-03\]*
 

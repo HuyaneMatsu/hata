@@ -62,6 +62,8 @@ def test__ChannelMetadataGuildThreadPublic__from_data():
 def test__ChannelMetadataGuildThreadPublic__to_data():
     """
     Tests whether ``ChannelMetadataGuildThreadPublic.to_data`` works as intended.
+    
+    Case: include defaults and internals.
     """
     parent_id = 202209180060
     name = 'Armelyrics'
@@ -89,7 +91,7 @@ def test__ChannelMetadataGuildThreadPublic__to_data():
         'flags': flags,
     })
     
-    data = channel_metadata.to_data()
+    data = channel_metadata.to_data(defaults = True, include_internals = True)
     
     vampytest.assert_eq(
         data,

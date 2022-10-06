@@ -2,7 +2,7 @@ from datetime import datetime as DateTime
 
 import vampytest
 
-from ...utils import datetime_to_timestamp
+from ....utils import datetime_to_timestamp
 
 from ..archived_at import put_archived_at_into
 

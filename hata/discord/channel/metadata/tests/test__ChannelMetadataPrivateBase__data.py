@@ -25,6 +25,8 @@ def test__ChannelMetadataPrivateBase__from_data():
 def test__ChannelMetadataPrivateBase__to_data():
     """
     Tests whether ``ChannelMetadataPrivateBase.to_data`` works as intended.
+    
+    Case: include defaults and internals.
     """
     user_1 = User.precreate(202209150011)
     
@@ -32,7 +34,7 @@ def test__ChannelMetadataPrivateBase__to_data():
         'users': [user_1],
     })
     
-    data = channel_metadata.to_data()
+    data = channel_metadata.to_data(defaults = True, include_internals = True)
     
     vampytest.assert_eq(
         data,

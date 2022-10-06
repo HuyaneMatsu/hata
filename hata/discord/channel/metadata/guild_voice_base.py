@@ -163,16 +163,16 @@ class ChannelMetadataGuildVoiceBase(ChannelMetadataGuildMainBase):
     
     
     @copy_docs(ChannelMetadataGuildMainBase.to_data)
-    def to_data(self):
-        data = ChannelMetadataGuildMainBase.to_data(self)
+    def to_data(self, *, defaults = False, include_internals = False):
+        data = ChannelMetadataGuildMainBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
         # bitrate
-        put_bitrate_into(self.bitrate, data, True)
+        put_bitrate_into(self.bitrate, data, defaults)
         
         # region
-        put_region_into(self.region, data, True)
+        put_region_into(self.region, data, defaults)
         
         # user_limit
-        put_user_limit_into(self.user_limit, data, True)
+        put_user_limit_into(self.user_limit, data, defaults)
         
         return data

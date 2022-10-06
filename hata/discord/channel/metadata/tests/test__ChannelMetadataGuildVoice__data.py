@@ -61,6 +61,8 @@ def test__ChannelMetadataGuildVoice__from_data():
 def test__ChannelMetadataGuildVoice__to_data():
     """
     Tests whether ``ChannelMetadataGuildVoice.to_data`` works as intended.
+    
+    Case: include defaults and internals.
     """
     parent_id = 202209170153
     name = 'Armelyrics'
@@ -86,7 +88,7 @@ def test__ChannelMetadataGuildVoice__to_data():
         'video_quality_mode': video_quality_mode,
     })
     
-    data = channel_metadata.to_data()
+    data = channel_metadata.to_data(defaults = True, include_internals = True)
     
     vampytest.assert_eq(
         data,

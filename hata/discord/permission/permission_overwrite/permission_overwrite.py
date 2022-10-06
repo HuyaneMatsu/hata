@@ -2,12 +2,14 @@ __all__ = ('PermissionOverwrite', )
 
 from scarletio import RichAttributeErrorBaseType, include
 
-from ..bases import maybe_snowflake
 from ..permission import Permission
-from ..preconverters import preconvert_preinstanced_type
 
+from .fields.allow import parse_allow, put_allow_into, validate_allow
+from .fields.deny import parse_deny, put_deny_into, validate_deny
+from .fields.target import validate_target
+from .fields.target_id import parse_target_id, put_target_id_into, validate_target_id
+from .fields.target_type import parse_target_type, put_target_type_into, validate_target_type
 from .preinstanced import PermissionOverwriteTargetType
-from .utils import PERMISSION_ALLOW_KEY, PERMISSION_DENY_KEY, get_permission_overwrite_key_value
 
 
 create_partial_role_from_id = include('create_partial_role_from_id')
@@ -53,87 +55,34 @@ class PermissionOverwrite(RichAttributeErrorBaseType):
         Raises
         ------
         TypeError
-            - If `target_id` is not `int`, ``Role``, ``ClientUserBase``.
-            - If `allow` is not `None`, `int`, ``Permission``.
-            - If `deny` is not `None`, `int`, ``Permission``.
-            - If `target_type` is not `None`, ``PermissionOverwriteTargetType``.
+            - If a parameter's type is incorrect.
         ValueError
-            - `target_type` not given and it cannot be detected from `target_id`.
-            - `target_type` is different than the one defined by the `target_id` parameter.
+            - If a parameter's value is incorrect.
         """
-        # target_id
-        if isinstance(target_id, Role):
-            target_id_processed = target_id.id
-            target_type_processed = PERMISSION_OVERWRITE_TYPE_ROLE
+        target_id_processed, target_type_processed = validate_target(target_id)
         
-        elif isinstance(target_id, ClientUserBase):
-            target_id_processed = target_id.id
-            target_type_processed = PERMISSION_OVERWRITE_TYPE_USER
-        
-        else:
-            target_id_processed = maybe_snowflake(target_id)
-            if (target_id_processed is None):
-                raise TypeError(
-                    f'`target_id` can be `int`, `{Role.__name__}`, `{ClientUserBase.__name__}`, got '
-                    f'{target_id.__class__.__name__}; {target_id!r}.'
-                )
-            
-            target_type_processed = None
-        
-        # target_type
-        if target_type is None:
-            if target_type_processed is None:
+        if (target_type is None):
+            if target_type_processed is PermissionOverwriteTargetType.unknown:
                 raise ValueError(
                     f'`target_type` cannot be `None` if `target_id` is given as a snowflake. '
                     f'Got target_id={target_id!r}.'
                 )
         
         else:
-            target_type_processed_from_target_type = preconvert_preinstanced_type(
-                target_type, 'target_type', PermissionOverwriteTargetType
-            )
-            
-            if target_type_processed is None:
+            target_type_processed_from_target_type = validate_target_type(target_type)
+            if target_type_processed is PermissionOverwriteTargetType.unknown:
                 target_type_processed = target_type_processed_from_target_type
-            
             else:
                 if target_type_processed is not target_type_processed_from_target_type:
                     raise ValueError(
                         f'If `target_id` is given as an entity, then `target_type` should not be given, or should '
                         f'match the entity\'s type. Got target_id={target_id!r}; target_type={target_type!r}.'
                     )
+                    
         
-        # allow
-        if allow is None:
-            allow = Permission()
+        allow = validate_allow(allow)
+        deny = validate_deny(deny)
         
-        elif isinstance(allow, Permission):
-            pass
-        
-        elif isinstance(allow, int):
-            allow = Permission(allow)
-        
-        else:
-            raise TypeError(
-                f'`allow` can be `None`, `{Permission.__name__}`, `int`, got {allow.__class__.__name__}; {allow!r}.'
-            )
-        
-        # deny
-        if deny is None:
-            deny = Permission()
-        
-        elif isinstance(deny, Permission):
-            pass
-        
-        elif isinstance(deny, int):
-            deny = Permission(deny)
-        
-        else:
-            raise TypeError(
-                f'`deny` can be `None`, `{Permission.__name__}`, `int`, got {deny.__class__.__name__}; {deny!r}.'
-            )
-        
-        # Build
         self = object.__new__(cls)
         self.target_id = target_id_processed
         self.target_type = target_type_processed
@@ -158,20 +107,25 @@ class PermissionOverwrite(RichAttributeErrorBaseType):
         """
         self = object.__new__(cls)
         
-        self.target_id = int(data['id'])
-        self.target_type = PermissionOverwriteTargetType.get(get_permission_overwrite_key_value(data))
-        self.allow = Permission(data[PERMISSION_ALLOW_KEY])
-        self.deny = Permission(data[PERMISSION_DENY_KEY])
+        self.target_id = parse_target_id(data)
+        self.target_type = parse_target_type(data)
+        self.allow = parse_allow(data)
+        self.deny = parse_deny(data)
         
         return self
     
     
-    def to_data(self, *, include_internals=False):
+    def to_data(self, *, defaults = False, include_internals = False):
         """
         Converts the permission overwrite to a json serializable object.
         
         Parameters
         ----------
+        defaults : `bool` = `False`, Optional (Keyword only)
+            Whether default fields should be included as well.
+            
+            > This parameter has no effect on any fields.
+        
         include_internals : `bool` = `False`, Optional (Keyword only)
             Whether internal fields (like id-s) should be included.
         
@@ -179,14 +133,12 @@ class PermissionOverwrite(RichAttributeErrorBaseType):
         -------
         data : `dict` of (`str`, `Any`) items
         """
-        data = {
-            'type': self.target_type.value,
-            PERMISSION_ALLOW_KEY: format(self.allow, 'd'),
-            PERMISSION_DENY_KEY: format(self.deny, 'd'),
-        }
+        data = {}
         
-        if include_internals:
-            data['id'] = str(self.target_id)
+        put_allow_into(self.allow, data, defaults)
+        put_deny_into(self.deny, data, defaults)
+        put_target_id_into(self.target_id, data, defaults, include_internals = include_internals)
+        put_target_type_into(self.target_type, data, defaults)
         
         return data
     
@@ -428,3 +380,84 @@ class PermissionOverwrite(RichAttributeErrorBaseType):
             return False
         
         return False
+    
+    
+    def copy(self):
+        """
+        Copies the permission overwrite.
+        
+        Returns
+        -------
+        new : `instance<cls<self>>`
+        """
+        new = object.__new__(type(self))
+        new.allow = self.allow
+        new.deny = self.deny
+        new.target_id = self.target_id
+        new.target_type = self.target_type
+        return new
+    
+    
+    def copy_with(self, **keyword_parameters):
+        """
+        Copies the permission overwrite modifying the given values.
+        
+        Parameters
+        ----------
+        **keyword_parameters : Keyword parameters
+            The specified fields to change.
+        """
+        allow = self.allow
+        deny = self.deny
+        target_id = self.target_id
+        target_type = self.target_type
+        
+        # allow
+        try:
+            allow = keyword_parameters.pop('allow')
+        except KeyError:
+            pass
+        else:
+            allow = validate_allow(allow)
+        
+        # deny
+        try:
+            deny = keyword_parameters.pop('deny')
+        except KeyError:
+            pass
+        else:
+            deny = validate_deny(deny)
+        
+        # [EXTRA] target 
+        try:
+            target = keyword_parameters.pop('target')
+        except KeyError:
+            pass
+        else:
+            target_id, potential_target_type = validate_target(target)
+            if (potential_target_type is not PermissionOverwriteTargetType.unknown):
+                target_type = potential_target_type
+        
+        # target_id
+        try:
+            target_id = keyword_parameters.pop('target_id')
+        except KeyError:
+            pass
+        else:
+            target_id = validate_target_id(target_id)
+        
+        # target_type
+        try:
+            target_type = keyword_parameters.pop('target_type')
+        except KeyError:
+            pass
+        else:
+            target_type = validate_target_type(target_type)
+        
+        
+        new = object.__new__(type(self))
+        new.allow = allow
+        new.deny = deny
+        new.target_id = target_id
+        new.target_type = target_type
+        return new

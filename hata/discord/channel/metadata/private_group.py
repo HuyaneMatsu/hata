@@ -2,13 +2,13 @@ __all__ = ('ChannelMetadataPrivateGroup',)
 
 from scarletio import copy_docs
 
-from ...bases import ICON_TYPE_NONE, IconSlot, Slotted
-from ...http import urls as module_urls
+from ...bases import ICON_TYPE_NONE, Slotted
 from ...permission.permission import PERMISSION_GROUP, PERMISSION_GROUP_OWNER, PERMISSION_NONE
 
 from ..fields.name import parse_name, put_name_into, validate_name
 from ..fields.owner_id import parse_owner_id, put_owner_id_into, validate_owner_id
 
+from .base import CHANNEL_METADATA_ICON_SLOT
 from .private_base import ChannelMetadataPrivateBase
 
 
@@ -36,7 +36,7 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
     """
     __slots__ = ('name', 'owner_id')
     
-    icon = IconSlot('icon', 'icon', module_urls.channel_group_icon_url, module_urls.channel_group_icon_url_as)
+    icon = CHANNEL_METADATA_ICON_SLOT
     
     @copy_docs(ChannelMetadataPrivateBase.__hash__)
     def __hash__(self):
@@ -58,14 +58,7 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
         self = ChannelMetadataPrivateBase.__new__(cls, keyword_parameters)
         
         # icon
-        try:
-            icon = keyword_parameters.pop('icon')
-        except KeyError:
-            pass
-        else:
-            raise NotImplementedError(
-                f'`{cls.__name__}.__new__` do not implements `icon` parameter. Got icon={icon!r}'
-            )
+        self.icon = cls.icon.parse_from_keyword_parameters(keyword_parameters, allow_data = True)
         
         return self
     
@@ -200,13 +193,8 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
         self = super(ChannelMetadataPrivateGroup, cls).precreate(keyword_parameters)
         
         # icon
-        processable = []
-        cls.icon.preconvert(keyword_parameters, processable)
-        if processable:
-            for item in processable:
-                setattr(self, *item)
-        processable = None
-    
+        self.icon = cls.icon.parse_from_keyword_parameters(keyword_parameters)
+        
         return self
     
     
@@ -232,16 +220,17 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
     
     
     @copy_docs(ChannelMetadataPrivateBase.to_data)
-    def to_data(self):
-        data = ChannelMetadataPrivateBase.to_data(self)
+    def to_data(self, *, defaults = False, include_internals = False):
+        data = ChannelMetadataPrivateBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
         # name
-        put_name_into(self.name, data, True)
+        put_name_into(self.name, data, defaults)
         
         # owner_id
-        put_owner_id_into(self.owner_id, data, True)
+        if include_internals:
+            put_owner_id_into(self.owner_id, data, defaults)
         
         # icon
-        data['icon'] = self.icon.as_base16_hash
+        type(self).icon.put_into(self.icon, data, defaults, as_data = not include_internals)
         
         return data

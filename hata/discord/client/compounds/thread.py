@@ -1,5 +1,7 @@
 __all__ = ()
 
+import warnings
+
 from scarletio import Compound, set_docs
 
 from ....env import API_VERSION
@@ -7,12 +9,11 @@ from ....env import API_VERSION
 from ...allowed_mentions import parse_allowed_mentions
 from ...bases import maybe_snowflake, maybe_snowflake_pair
 from ...channel import Channel, ChannelType, create_partial_channel_from_id
-from ...channel.constants import AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS
-from ...channel.utils import _maybe_add_channel_slowmode_field_to_data
+from ...channel.utils import CHANNEL_GUILD_THREAD_FIELD_CONVERTERS
 from ...core import CHANNELS
 from ...http import DiscordHTTPClient
 from ...message import Message, MessageFlag
-from ...preconverters import preconvert_preinstanced_type
+from ...payload_building import build_create_payload
 from ...sticker import Sticker
 from ...user import ClientUserBase, create_partial_user_from_id, thread_user_create
 
@@ -21,7 +22,6 @@ from ..request_helpers import (
     add_file_to_message_data, get_channel_and_id, get_channel_id, get_components_data, get_guild_id,
     get_channel_guild_id_and_id, get_user_and_id, get_user_id, validate_content_and_embed,
 )
-
 
 
 MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS = MessageFlag().update_by_keys(embeds_suppressed=True)
@@ -88,7 +88,7 @@ class ClientCompoundThreadEndpoints(Compound):
     
     
     async def thread_create(
-        self, message_or_channel, name, *, auto_archive_after = None, type_ = None, invitable = True, slowmode = None
+        self, message_or_channel, channel_template, *, type_ = ..., channel_type = None, **keyword_parameters,
     ):
         """
         Creates a new thread derived from the given message or channel.
@@ -104,22 +104,14 @@ class ClientCompoundThreadEndpoints(Compound):
             
             > If given as a channel instance, will create a private thread, else a public one.
         
-        name : `str`
-            The created thread's name.
+        channel_template : `None`, ``Channel`` = `None`, Optional
+            New (thread) channel to use as a template.
         
-        auto_archive_after : `None`, `int` = `None`, Optional (Keyword only)
-            The duration in seconds after the thread auto archives. Can be any of `3600`, `86400`, `259200`, `604800`.
+        channel_type : `None`, ``ChannelType``, `int` = `None`, Optional (Keyword only)
+            The type of the created (thread) channel.
         
-        type_ : `None`, `int` = `None`, Optional (Keyword only)
-            The thread channel's type to create.
-        
-        invitable : `bool` = `True`, Optional (Keyword only)
-            Whether non-moderators can invite other non-moderators to the threads. Only applicable for private threads.
-            
-            Applicable for private threads. Defaults to `True`.
-        
-        slowmode : `int`, Optional (Keyword only)
-            Slowmode for the new thread channel.
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters either to define the template, or to overwrite specific fields' values.
         
         Returns
         -------
@@ -129,17 +121,11 @@ class ClientCompoundThreadEndpoints(Compound):
         Raises
         ------
         TypeError
-            If `message`'s type is incorrect.
+            If any parameter's type is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `name` is not `str`.
-            - If `name`'s length is out of range [2:100].
-            - If `auto_archive_after` is neither `int`, nor `bool`.
-            - If `auto_archive_after` is not any of the expected ones.
-            - If `invitable` is not `bool`.
         """
         # Message check order
         # 1.: Message
@@ -181,67 +167,45 @@ class ClientCompoundThreadEndpoints(Compound):
                 
                 channel_id, message_id = snowflake_pair
                 channel = CHANNELS.get(channel_id)
+                # Checkout type
         
-        if __debug__:
-            if not isinstance(name, str):
-                raise AssertionError(
-                    f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
-                )
+        # Checkout type
+        if type_ is not ...:
+            warnings.warn(
+                (
+                    f'`type_` parameter of `{self.__class__.__name__}.thread_create` is deprecated and will be '
+                    f'removed in 2023 February. Please use `channel_type` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
             
-            name_length = len(name)
-            
-            if (name_length) < 2 or (name_length > 100):
-                raise AssertionError(
-                    f'`name` length can be in range [2:100], got {name_length}; {name!r}.'
-                )
+            channel_type = type_
         
-        if auto_archive_after is None:
-            if channel is None:
-                auto_archive_after = AUTO_ARCHIVE_DEFAULT
+        # Checkout name
+        if (channel_template is not None) and isinstance(channel_template, str) and ('name' not in keyword_parameters):
+            warnings.warn(
+                (
+                    f'`name` parameter of `{self.__class__.__name__}.thread_create` is moved to be a keyword only '
+                    f'parameter and the positional usage is deprecated and will be removed in 2023 February.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
+            keyword_parameters['name'] = channel_template
+            channel_template = None
+        
+        if channel_type is None:
+            if message_id is None:
+                channel_type = ChannelType.guild_thread_private
             else:
-                auto_archive_after = channel.default_auto_archive_after
-        else:
-            if __debug__:
-                if not isinstance(auto_archive_after, int):
-                    raise AssertionError(
-                        f'`auto_archive_after` can be `None`, `datetime`, got '
-                        f'{auto_archive_after.__class__.__name__}; {auto_archive_after!r}.'
-                    )
-                
-                if auto_archive_after not in AUTO_ARCHIVE_OPTIONS:
-                    raise AssertionError(
-                        f'`auto_archive_after` can be any of: {AUTO_ARCHIVE_OPTIONS}, got {auto_archive_after!r}.'
-                    )
+                channel_type = ChannelType.guild_thread_public
         
-        if type_ is None:
-            type_ = ChannelType.guild_thread_public
-        
-        else:
-            type_ = preconvert_preinstanced_type(type_, 'type_', ChannelType)
-            
-            if not message_or_channel.flags.thread:
-                raise TypeError(
-                    f'{type_!r} is not a thread type.'
-                )
-        
-        if __debug__:
-            if not isinstance(invitable, bool):
-                raise AssertionError(
-                    f'`invitable` can be `bool`, got {invitable.__class__.__name__}; {invitable!r}.'
-                )
-        
-        data = {
-            'name': name,
-            'auto_archive_duration': auto_archive_after // 60,
-            'type': type_,
-        }
-        
-        _maybe_add_channel_slowmode_field_to_data(type_, None, data, slowmode)
+        keyword_parameters['channel_type'] = channel_type
         
         
-        if (type_ is ChannelType.guild_thread_private) and (not invitable):
-            data['invitable'] = invitable
-        
+        data = build_create_payload(channel_template, CHANNEL_GUILD_THREAD_FIELD_CONVERTERS, keyword_parameters)
         
         if message_id is None:
             coroutine = self.http.thread_create(channel_id, data)
@@ -260,9 +224,20 @@ class ClientCompoundThreadEndpoints(Compound):
     
     
     async def forum_thread_create(
-        self, channel_forum, name, content=None, *, allowed_mentions=...,  auto_archive_after=None,
-        components=None, embed=None, file=None, nonce=None, slowmode=None, sticker=None,
-        suppress_embeds=False, tts=False
+        self,
+        channel_forum,
+        channel_template = None,
+        content = None,
+        *,
+        allowed_mentions = ...,
+        components = None,
+        embed = None,
+        file = None,
+        nonce = None,
+        sticker = None,
+        suppress_embeds = False,
+        tts = False,
+        **keyword_parameters,
     ):
         """
         Creates and thread at the given `channel` with the given message fields. If there is nothing to send will
@@ -275,8 +250,8 @@ class ClientCompoundThreadEndpoints(Compound):
         channel_forum : ``Channel``, `int`
             The forum channel's identifier where the thread will be started.
         
-        name : `str`
-            The created thread's name.
+        channel_template : `None`, ``Channel`` = `None`, Optional
+            (Thread) channel entity to use as a template.
         
         content : `None`, `str`, ``EmbedBase``, `Any` = `None`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
@@ -287,9 +262,6 @@ class ClientCompoundThreadEndpoints(Compound):
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
-        
-        auto_archive_after : `None`, `int` = `None`, Optional (Keyword only)
-            The duration in seconds after the thread auto archives. Can be any of `3600`, `86400`, `259200`, `604800`.
         
         components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
                 ``ComponentBase``) = `None`, Optional (Keyword only)
@@ -308,9 +280,6 @@ class ClientCompoundThreadEndpoints(Compound):
         nonce : `None`, `str` = `None`, Optional (Keyword only)
             Used for optimistic message sending. Will shop up at the message's data.
         
-        slowmode : `int`, Optional (Keyword only)
-            Slowmode for the new thread channel.
-        
         sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`) = `None` \
                 , Optional (Keyword only)
             Sticker or stickers to send within the message.
@@ -320,6 +289,9 @@ class ClientCompoundThreadEndpoints(Compound):
         
         tts : `bool` = `False`, Optional (Keyword only)
             Whether the message is text-to-speech.
+        
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters to create the (thread) channel with.
         
         Returns
         -------
@@ -345,39 +317,6 @@ class ClientCompoundThreadEndpoints(Compound):
         ``.thread_create`` : Create thread in a text channel.
         """
         channel, channel_id = get_channel_and_id(channel_forum, Channel.is_guild_forum)
-        
-        # name & auto_archive_after
-        
-        if __debug__:
-            if not isinstance(name, str):
-                raise AssertionError(
-                    f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
-                )
-            
-            name_length = len(name)
-            
-            if (name_length) < 2 or (name_length > 100):
-                raise AssertionError(
-                    f'`name` length can be in range [2:100], got {name_length}; {name!r}.'
-                )
-        
-        if auto_archive_after is None:
-            if channel is None:
-                auto_archive_after = AUTO_ARCHIVE_DEFAULT
-            else:
-                auto_archive_after = channel.default_auto_archive_after
-        else:
-            if __debug__:
-                if not isinstance(auto_archive_after, int):
-                    raise AssertionError(
-                        f'`auto_archive_after` can be `None`, `datetime`, got '
-                        f'{auto_archive_after.__class__.__name__}; {auto_archive_after!r}.'
-                    )
-                
-                if auto_archive_after not in AUTO_ARCHIVE_OPTIONS:
-                    raise AssertionError(
-                        f'`auto_archive_after` can be any of: {AUTO_ARCHIVE_OPTIONS}, got {auto_archive_after!r}.'
-                    )
         
         content, embed = validate_content_and_embed(content, embed, False)
         
@@ -478,13 +417,25 @@ class ClientCompoundThreadEndpoints(Compound):
         if message_data is None:
             return None, None
         
-        data = {
-            'name': name,
-            'auto_archive_duration': auto_archive_after // 60,
-            'message': message_data,
-        }
+        # Checkout name
+        if (channel_template is not None) and isinstance(channel_template, str) and ('name' not in keyword_parameters):
+            warnings.warn(
+                (
+                    f'`name` parameter of `{self.__class__.__name__}.forum_thread_create` is moved to be a keyword '
+                    f'only parameter and the positional usage is deprecated and will be removed in 2023 February.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
+            keyword_parameters['name'] = channel_template
+            channel_template = None
         
-        _maybe_add_channel_slowmode_field_to_data(ChannelType.guild_thread_public, None, data, slowmode)
+        data = build_create_payload(
+            channel_template, CHANNEL_GUILD_THREAD_FIELD_CONVERTERS, keyword_parameters
+        )
+        
+        data['message'] = message_data
         
         channel_data = await self.http.thread_create(channel_id, data)
         
@@ -719,10 +670,7 @@ class ClientCompoundThreadEndpoints(Compound):
         async def channel_thread_get_all_active(self, channel):
             guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_threadable)
             return await request_channel_thread_channels(
-                self,
-                guild_id,
-                channel_id,
-                type(self.http).channel_thread_get_chunk_active,
+                self, guild_id, channel_id, type(self.http).channel_thread_get_chunk_active,
             )
     
     set_docs(
@@ -781,10 +729,7 @@ class ClientCompoundThreadEndpoints(Compound):
         """
         guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_threadable)
         return await request_channel_thread_channels(
-            self,
-            guild_id,
-            channel_id,
-            type(self.http).channel_thread_get_chunk_archived_private,
+            self, guild_id, channel_id, type(self.http).channel_thread_get_chunk_archived_private,
         )
     
     
@@ -812,10 +757,7 @@ class ClientCompoundThreadEndpoints(Compound):
         """
         guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_threadable)
         return await request_channel_thread_channels(
-            self,
-            guild_id,
-            channel_id,
-            type(self.http).channel_thread_get_chunk_archived_public,
+            self, guild_id, channel_id, type(self.http).channel_thread_get_chunk_archived_public,
         )
     
     
@@ -843,9 +785,5 @@ class ClientCompoundThreadEndpoints(Compound):
         """
         guild_id, channel_id = get_channel_guild_id_and_id(channel, Channel.is_in_group_threadable)
         return await request_channel_thread_channels(
-            self,
-            guild_id,
-            channel_id,
-            type(self.http).channel_thread_get_chunk_self_archived,
+            self, guild_id, channel_id, type(self.http).channel_thread_get_chunk_self_archived,
     )
-    

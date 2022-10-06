@@ -1,10 +1,10 @@
 __all__ = ()
 
 import reprlib
-from datetime import datetime, timedelta
 from collections import deque
-from os.path import split as split_path
+from datetime import datetime, timedelta
 from math import floor
+from os.path import split as split_path
 
 from scarletio import include, to_json
 from scarletio.web_common import Formdata
@@ -24,6 +24,7 @@ from ..guild import Guild, GuildDiscovery
 from ..interaction import ApplicationCommand
 from ..message import Attachment, Message
 from ..oauth2 import Achievement
+from ..permission import PermissionOverwrite
 from ..role import Role
 from ..scheduled_event import ScheduledEvent
 from ..stage import Stage
@@ -2073,3 +2074,35 @@ def get_forum_tag_and_id(forum_tag):
         forum_tag = FORUM_TAGS.get(forum_tag_id, None)
     
     return forum_tag, forum_tag_id
+
+
+def get_permission_overwrite_target_id(permission_overwrite):
+    """
+    Returns the given `permission_overwrite`'s target id.
+    
+    Parameters
+    ----------
+    permission_overwrite : ``PermissionOverwrite``
+        The permission overwrite or it's target id.
+    
+    Returns
+    -------
+    target_id : `int`
+    
+    Raises
+    ------
+    TypeError
+        - If `permission_overwrite` type is incorrect.
+    """
+    if isinstance(permission_overwrite, PermissionOverwrite):
+        target_id = permission_overwrite.target_id
+    
+    else:
+        target_id = maybe_snowflake(permission_overwrite)
+        if (target_id is None):
+            raise TypeError(
+                f'`permission_overwrite` can be `{PermissionOverwrite.__name__}`, `int` got '
+                f'{permission_overwrite.__class__.__name__}; {permission_overwrite!r}.'
+            )
+    
+    return target_id

@@ -126,25 +126,23 @@ def test__ForumTag__to_data__0():
     
     Case: default.
     """
-    emoji = BUILTIN_EMOJIS['heart']
+    emoji = None
     name = 'EMOTiON'
-    moderated = True
+    moderated = False
     
     forum_tag = ForumTag(name, emoji = emoji, moderated = moderated)
     
     data = forum_tag.to_data()
     
     vampytest.assert_in('name', data)
-    vampytest.assert_in('moderated', data)
-    vampytest.assert_in('emoji_name', data)
+    vampytest.assert_not_in('moderated', data)
+    vampytest.assert_not_in('emoji_name', data)
+    vampytest.assert_not_in('emoji_id', data)
     
     vampytest.assert_eq(data['name'], name)
-    vampytest.assert_eq(data['moderated'], moderated)
-    
-    vampytest.assert_is(create_partial_emoji_from_data(data), emoji)
-    
 
-def test__ForumTag__to_data__2():
+
+def test__ForumTag__to_data__1():
     """
     Tests whether ``ForumTag.to_data`` works as intended.
     
@@ -158,3 +156,27 @@ def test__ForumTag__to_data__2():
     
     vampytest.assert_in('id', data)
     vampytest.assert_eq(data['id'], str(forum_tag_id))
+
+
+def test__ForumTag__to_data__2():
+    """
+    Tests whether ``ForumTag.to_data`` works as intended.
+    
+    Case: include defaults.
+    """
+    emoji = BUILTIN_EMOJIS['heart']
+    name = 'EMOTiON'
+    moderated = True
+    
+    forum_tag = ForumTag(name, emoji = emoji, moderated = moderated)
+    
+    data = forum_tag.to_data(defaults = True)
+    
+    vampytest.assert_in('name', data)
+    vampytest.assert_in('moderated', data)
+    vampytest.assert_in('emoji_name', data)
+    
+    vampytest.assert_eq(data['name'], name)
+    vampytest.assert_eq(data['moderated'], moderated)
+    
+    vampytest.assert_is(create_partial_emoji_from_data(data), emoji)

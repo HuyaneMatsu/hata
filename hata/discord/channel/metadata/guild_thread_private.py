@@ -118,10 +118,10 @@ class ChannelMetadataGuildThreadPrivate(ChannelMetadataGuildThreadBase):
     
     
     @copy_docs(ChannelMetadataGuildThreadBase.to_data)
-    def to_data(self):
-        data = ChannelMetadataGuildThreadBase.to_data(self)
+    def to_data(self, *, defaults = False, include_internals = False):
+        data = ChannelMetadataGuildThreadBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
         # invitable
-        put_invitable_into(self.invitable, data, True)
+        put_invitable_into(self.invitable, data, defaults, flatten_thread_metadata = not include_internals)
         
         return data

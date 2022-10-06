@@ -131,9 +131,9 @@ class ChannelMetadataGuildStore(ChannelMetadataGuildMainBase):
     
     
     @copy_docs(ChannelMetadataGuildMainBase.to_data)
-    def to_data(self):
-        data = ChannelMetadataGuildMainBase.to_data(self)
+    def to_data(self, *, defaults = False, include_internals = False):
+        data = ChannelMetadataGuildMainBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
-        put_nsfw_into(self.nsfw, data, True)
+        put_nsfw_into(self.nsfw, data, defaults)
         
         return data

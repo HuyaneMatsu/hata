@@ -28,9 +28,9 @@ def test__ChannelMetadataPrivateGroup__new__0():
         'users': users,
         'owner_id': owner_id,
         'name': name,
+        'icon': icon,
     }
     channel_metadata = ChannelMetadataPrivateGroup(keyword_parameters)
-    channel_metadata.icon = icon
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataPrivateGroup)
     vampytest.assert_eq(keyword_parameters, {})
@@ -57,19 +57,6 @@ def test__ChannelMetadataPrivateGroup__new__1():
     vampytest.assert_eq(keyword_parameters, {})
     
     assert_fields_set(channel_metadata)
-
-
-def test__ChannelMetadataPrivateGroup__new__2():
-    """
-    Tests whether ``ChannelMetadataPrivateGroup.__new__`` works as intended.
-    
-    Case: `icon` parameter is not yet implemented.
-    """
-    keyword_parameters = {'icon': b''}
-    
-    with vampytest.assert_raises(NotImplementedError):
-        ChannelMetadataPrivateGroup(keyword_parameters)
-
 
 def test__ChannelMetadataPrivateGroup__create_empty():
     """

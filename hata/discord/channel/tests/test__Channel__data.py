@@ -62,9 +62,11 @@ def test__Channel__from_data__1():
     vampytest.assert_is(channel, existing_channel)
 
 
-def test__Channel__to_data():
+def test__Channel__to_data__0():
     """
     Tests whether ``Channel.to_data`` works as intended.
+    
+    Case: include internals & defaults.
     """
     channel_id = 202209180143
     guild_id = 202209180144
@@ -73,7 +75,7 @@ def test__Channel__to_data():
     
     channel = Channel.precreate(channel_id, channel_type = channel_type, name = name, guild_id = guild_id)
     
-    data = channel.to_data()
+    data = channel.to_data(defaults = True, include_internals = True)
     
     vampytest.assert_in('id', data)
     vampytest.assert_in('guild_id', data)

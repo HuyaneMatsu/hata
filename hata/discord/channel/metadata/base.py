@@ -4,7 +4,8 @@ from re import I as re_ignore_case, compile as re_compile, escape as re_escape
 
 from scarletio import RichAttributeErrorBaseType, include
 
-from ...bases import Icon, IconType, PlaceHolder
+from ...bases import Icon, IconType, PlaceHolder, IconSlot
+from ...http import urls as module_urls
 from ...permission import Permission
 from ...permission.permission import PERMISSION_NONE
 from ...utils import id_to_datetime
@@ -15,6 +16,14 @@ from ..preinstanced import VideoQualityMode
 
 
 Client = include('Client')
+
+
+CHANNEL_METADATA_ICON_SLOT = IconSlot(
+    'icon',
+    'icon',
+    module_urls.channel_group_icon_url,
+    module_urls.channel_group_icon_url_as,
+)
 
 
 class ChannelMetadataBase(RichAttributeErrorBaseType):
@@ -123,9 +132,16 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         pass
     
     
-    def to_data(self):
+    def to_data(self, *, defaults = False, include_internals = False):
         """
         Serialises the channel metadata to json serializable object.
+        
+        Parameters
+        ----------
+        defaults : `bool` = `False`, Optional (Keyword only)
+            Whether default values should be included as well.
+        include_internals : `bool` = `False`, Optional (Keyword only)
+            Whether we want to include identifiers as well.
         
         Returns
         -------

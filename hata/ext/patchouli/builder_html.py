@@ -345,7 +345,7 @@ def code_block_serializer(code_block, object_, path, linker):
                 break
             yield '<br>'
     else:
-        yield from iter_highlight_code_lines(lines, PATCHOULI_FORMATTER_CONTEXT)
+        yield from iter_highlight_code_lines([line + '\n' for line in lines], PATCHOULI_FORMATTER_CONTEXT)
     
     yield '</pre></div>'
 

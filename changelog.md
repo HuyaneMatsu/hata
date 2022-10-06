@@ -47,6 +47,9 @@
 - `client.events.webhook_update` used different parameters as documented.
 - Deprecated event handlers did not accept instantiable types.
 
+##### ext.patchouli
+- When html rendering codeblocks the lines were not closed with linebreaks. (Event Horizon#2913)
+
 #### Renames, Deprecation & Removals
 
 - Deprecate `cr_pg_channel_object`. Please use `Channel(...).to_data(...)` instead.

@@ -706,6 +706,7 @@ class TableConverter:
         to_extend.append('<<END>>')
         return ''.join(to_extend)
 
+
 class CodeBlockConverter:
     """
     Converter class for code blocks, when building text.
@@ -745,7 +746,7 @@ class CodeBlockConverter:
         indent = builder_context.indent * indent_level
         self = object.__new__(cls)
         self.lines = [f'{indent}{line}\n' for line in code_block.lines]
-        ender = indent+'```'
+        ender = indent + '```'
         language = code_block.language
         if language is None:
             starter = ender
@@ -755,6 +756,7 @@ class CodeBlockConverter:
         self.starter = starter
         self.ender = ender
         yield self
+    
     
     @property
     def character_count(self):
@@ -772,6 +774,7 @@ class CodeBlockConverter:
         
         return length
     
+    
     @property
     def interactive_row_count(self):
         """
@@ -787,6 +790,7 @@ class CodeBlockConverter:
                 length += 1
         
         return length
+    
     
     @property
     def code_row_count(self):
@@ -808,7 +812,7 @@ class CodeBlockConverter:
                 continue
             
             last_line_void = True
-            length +=1
+            length += 1
         
         return length
     
@@ -868,6 +872,7 @@ class CodeBlockConverter:
         self.ender = ender
         return self
     
+    
     def _do_interactive_break(self, number_of_rows):
         """
         Does a break at the given interactive row input-output.
@@ -909,6 +914,7 @@ class CodeBlockConverter:
         
         return code_block_1, code_block_2
     
+    
     def _test_break(self):
         """
         Returns whether this code block should be rendered alone as a broken part of a bigger one.
@@ -922,7 +928,8 @@ class CodeBlockConverter:
             return False
         
         return True
-        
+    
+    
     def _do_code_break(self, number_of_rows):
         """
         Does a break at the given interactive row input-output.
@@ -952,16 +959,16 @@ class CodeBlockConverter:
             line = lines[index]
             if line:
                 last_line_void = False
-                index +=1
+                index += 1
                 continue
             
             if last_line_void:
-                index +=1
+                index += 1
                 continue
             
-            rows_found +=1
+            rows_found += 1
             if rows_found != number_of_rows:
-                index +=1
+                index += 1
                 continue
             
             code_block_1 = self._create_remove_empty_lines(lines[:index], self.starter, self.ender)
@@ -969,6 +976,7 @@ class CodeBlockConverter:
             break
         
         return code_block_1, code_block_2
+    
     
     def _do_line_break(self, number_of_rows):
         """
@@ -987,6 +995,7 @@ class CodeBlockConverter:
         code_block_1 = self._create_remove_empty_lines(self.lines[:number_of_rows], self.starter, self.ender)
         code_block_2 = self._create_remove_empty_lines(self.lines[number_of_rows:], self.starter, self.ender)
         return code_block_1, code_block_2
+    
     
     def do_break(self, number_of_chars):
         """
@@ -1069,6 +1078,7 @@ class CodeBlockConverter:
             
         return best_fit
     
+    
     def render_to(self, to_extend):
         """
         Renders the code block's lines to the given `list`.
@@ -1081,6 +1091,7 @@ class CodeBlockConverter:
         to_extend.append(self.starter)
         to_extend.extend(self.lines)
         to_extend.append(self.ender)
+    
     
     def __repr__(self):
         """Returns the code block's representation."""

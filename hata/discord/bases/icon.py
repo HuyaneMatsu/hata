@@ -387,7 +387,7 @@ class IconType(PreinstancedBase):
         -------
         can_create_url : `bool`
         """
-        return (self.allowed_postfixes is None)
+        return (self.allowed_postfixes is not None)
     
     
     none = P(0, 'none', '', '', None)

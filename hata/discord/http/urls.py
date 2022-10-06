@@ -798,7 +798,7 @@ def user_avatar_url(user):
     """
     icon_type = user.avatar_type
     if not icon_type.can_create_url():
-        return user.defualt_avatar_url
+        return user.default_avatar.url
     
     prefix = icon_type.prefix
     ext = icon_type.default_postfix

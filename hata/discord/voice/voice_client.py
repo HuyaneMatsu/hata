@@ -86,19 +86,20 @@ class VoiceClient(RichAttributeErrorBaseType):
         clients' ``.queue`` as expected.
         
         This attribute of the client can be modified freely. To it `2` parameters are passed:
-         +------------------+---------------------------+
-         | Respective name  | Type                      |
-         +==================+===========================+
-         | client           | ``VoiceClient``           |
-         +------------------+---------------------------+
-         | last_source      | `None`, ``AudioSource``   |
-         +------------------+---------------------------+
-         
-         The ``VoiceClient`` also includes some other predefined function for setting as `call_after`:
-         - ``._play_next``
-         - ``._loop_actual``
-         - ``._loop_queue``
-     
+        
+        +------------------+---------------------------+
+        | Respective name  | Type                      |
+        +==================+===========================+
+        | client           | ``VoiceClient``           |
+        +------------------+---------------------------+
+        | last_source      | `None`, ``AudioSource``   |
+        +------------------+---------------------------+
+        
+        The ``VoiceClient`` also includes some other predefined function for setting as `call_after`:
+        - ``._play_next``
+        - ``._loop_actual``
+        - ``._loop_queue``
+    
     channel_id : `int`
         The channel's identifier where the voice client currently is.
     client : ``Client``

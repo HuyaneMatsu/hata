@@ -12,7 +12,9 @@ from ...channel.utils import (
 from ...guild import Guild, create_partial_guild_from_id
 from ...http import DiscordHTTPClient
 from ...permission import PermissionOverwrite
-from ...permission.permission_overwrite.utils import PERMISSION_OVERWRITE_FIELD_CONVERTERS
+from ...permission.permission_overwrite.utils import (
+    PERMISSION_OVERWRITE_FIELD_CONVERTERS, PERMISSION_OVERWRITE_PERMISSION_FIELD_CONVERTERS
+)
 from ...payload_building import build_create_payload, build_edit_payload
 from ...webhook import Webhook
 
@@ -173,21 +175,24 @@ class ClientCompoundChannelEndpoints(Compound):
         channel : ``Channel``, `int`
             The channel to edit.
         
+        channel_template : `None`, ``Channel`` = `None`, Optional
+            A channel to use as a template.
+        
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters to define which fields should be modified.
+        
+        Other Parameters
+        ----------------
+        icon : `None`, `bytes-like`, Optional (Keyword only)
+            The new icon of the channel. By passing `None` your can remove the actual one.
         
         name : `None`, `str`, Optional (Keyword only)
             The new name of the channel. By passing `None` or an empty string you can remove the actual one.
-        icon : `None`, `bytes-like`, Optional (Keyword only)
-            The new icon of the channel. By passing `None` your can remove the actual one.
         
         Raises
         ------
         TypeError
-            - If `channel` was not given neither as ``Channel`` nor `int`.
-            - If `name` is neither `None`, `str`.
-            - If `icon` is neither `None`, `bytes-like`.
-        ValueError
-            - If `name` is passed as `str`, but it's length is `1`, or over `100`.
-            - If `icon` is passed as `bytes-like`, but it's format is not any of the expected formats.
+            - If a parameter's type is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
@@ -531,7 +536,7 @@ class ClientCompoundChannelEndpoints(Compound):
     
     
     async def channel_edit(
-        self, channel, channel_template = None, *, reason=None, **keyword_parameters,
+        self, channel, channel_template = None, *, reason = None, **keyword_parameters,
     ):
         """
         Edits the given guild channel. Different channel types accept different fields, so make sure to not pass
@@ -552,6 +557,53 @@ class ClientCompoundChannelEndpoints(Compound):
         
         **keyword_parameters : Keyword parameters
             Additional keyword parameters either to define the template, or to overwrite specific fields' values.
+        
+        Other Parameters
+        ----------------
+        bitrate : `int`, Optional (Keyword only)
+            The bitrate (in bits) of the voice channel.
+        
+        default_thread_auto_archive_after : `int`, Optional (Keyword only)
+            The default duration (in seconds) for newly created threads to automatically archive the themselves.
+        
+        default_thread_reaction : `None`, ``Emoji``, Optional (Keyword only)
+            The emoji to show in the add reaction button on a thread of the forum channel.
+                
+        default_thread_slowmode : `int`, Optional (Keyword only)
+            The default slowmode applied to the channel's threads.
+        
+        flags : `int`, ``ChannelFlag``, Optional (Keyword only)
+            The channel's flags.
+        
+        name : `str`, Optional (Keyword only)
+            The channel's name.
+        
+        nsfw : `int`, Optional (Keyword only)
+            Whether the channel is marked as non safe for work.
+        
+        parent_id : `None`, `int`, ``Channel``, Optional (Keyword only)
+            The channel's parent's identifier.
+        
+        permission_overwrites : `None`, list` of ``PermissionOverwrite``, Optional (Keyword only)
+            The channel's permission overwrites.
+        
+        position : `int`, Optional (Keyword only)
+            The channel's position.
+        
+        region : `None`, ``VoiceRegion``, `str`, Optional (Keyword only)
+            The channel's voice region.
+        
+        slowmode : `int`, Optional (Keyword only)
+            The channel's slowmode.
+        
+        topic : `None`, `str`, Optional (Keyword only)
+            The channel's topic.
+        
+        users : `iterable` of (`int`, ``ClientUserBase``), Optional (Keyword only)
+            The users in the channel.
+            
+        video_quality_mode : ``VideoQualityMode``, Optional (Keyword only)
+            The video quality of the voice channel.
         
         Raises
         ------
@@ -600,6 +652,53 @@ class ClientCompoundChannelEndpoints(Compound):
         
         **keyword_parameters : Keyword parameters
             Additional keyword parameters to create the channel with.
+        
+        Other Parameters
+        ----------------
+        bitrate : `int`, Optional (Keyword only)
+            The bitrate (in bits) of the voice channel.
+        
+        default_thread_auto_archive_after : `int`, Optional (Keyword only)
+            The default duration (in seconds) for newly created threads to automatically archive the themselves.
+        
+        default_thread_reaction : `None`, ``Emoji``, Optional (Keyword only)
+            The emoji to show in the add reaction button on a thread of the forum channel.
+                
+        default_thread_slowmode : `int`, Optional (Keyword only)
+            The default slowmode applied to the channel's threads.
+        
+        flags : `int`, ``ChannelFlag``, Optional (Keyword only)
+            The channel's flags.
+        
+        name : `str`, Optional (Keyword only)
+            The channel's name.
+        
+        nsfw : `int`, Optional (Keyword only)
+            Whether the channel is marked as non safe for work.
+        
+        parent_id : `None`, `int`, ``Channel``, Optional (Keyword only)
+            The channel's parent's identifier.
+        
+        permission_overwrites : `None`, list` of ``PermissionOverwrite``, Optional (Keyword only)
+            The channel's permission overwrites.
+        
+        position : `int`, Optional (Keyword only)
+            The channel's position.
+        
+        region : `None`, ``VoiceRegion``, `str`, Optional (Keyword only)
+            The channel's voice region.
+        
+        slowmode : `int`, Optional (Keyword only)
+            The channel's slowmode.
+        
+        topic : `None`, `str`, Optional (Keyword only)
+            The channel's topic.
+        
+        users : `iterable` of (`int`, ``ClientUserBase``), Optional (Keyword only)
+            The users in the channel.
+            
+        video_quality_mode : ``VideoQualityMode``, Optional (Keyword only)
+            The video quality of the voice channel.
         
         Returns
         -------
@@ -746,6 +845,14 @@ class ClientCompoundChannelEndpoints(Compound):
         **keyword_parameters : Keyword parameters
             Additional keyword parameters either to define the template, or to overwrite specific fields' values.
         
+        Other Parameters
+        ----------------
+        allow : `None`, ``Permission``, `int`, Optional (Keyword only)
+            The permission overwrite's allowed permission's value.
+        
+        deny : `None`, ``Permission``, `int`, Optional (Keyword only)
+            The permission overwrite's denied permission's value.
+        
         Raises
         ------
         TypeError
@@ -759,13 +866,13 @@ class ClientCompoundChannelEndpoints(Compound):
         target_id = get_permission_overwrite_target_id(permission_overwrite)
         
         data = build_create_payload(
-            permission_overwrite, PERMISSION_OVERWRITE_FIELD_CONVERTERS, keyword_parameters
+            permission_overwrite, PERMISSION_OVERWRITE_PERMISSION_FIELD_CONVERTERS, keyword_parameters
         )
         
         await self.http.permission_overwrite_create(channel_id, target_id, data, reason)
     
     
-    async def permission_overwrite_delete(self, channel, permission_overwrite, *, reason=None):
+    async def permission_overwrite_delete(self, channel, permission_overwrite, *, reason = None):
         """
         Deletes the given permission overwrite.
         
@@ -819,6 +926,24 @@ class ClientCompoundChannelEndpoints(Compound):
         **keyword_parameters : Keyword parameters
             Additional keyword parameters either to define the template, or to overwrite specific fields' values.
         
+        Other Parameters
+        ----------------
+        allow : `None`, ``Permission``, `int`, Optional (Keyword only)
+            The permission overwrite's allowed permission's value.
+        
+        deny : `None`, ``Permission``, `int`, Optional (Keyword only)
+            The permission overwrite's denied permission's value.
+        
+        target : `int`, ``Role``, ``ClientUserBase``, Optional (Keyword only)
+            The permission overwrite's target. Shortcut for defining `target_id` and `target_type` with 1 parameter.
+        
+        target_id : `int`, Optional (Keyword only)
+            The permission overwrite's target's identifier.
+        
+        target_type : `None`, ``PermissionOverwriteTargetType``, Optional (Keyword only)
+            The permission overwrite's target's type. Required if `target_id` is given as a snowflake.
+        
+        
         Returns
         -------
         permission_overwrite : ``PermissionOverwrite``
@@ -827,7 +952,7 @@ class ClientCompoundChannelEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `channel` is not `int`, ``Channel``.
+            - If a parameter's type is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
@@ -940,6 +1065,17 @@ class ClientCompoundChannelEndpoints(Compound):
         **keyword_parameters : Keyword parameters
             Additional keyword parameters either to define the template, or to overwrite specific fields' values.
         
+        Other Parameters
+        ----------------
+        emoji : `None`, ``Emoji``, Optional (Keyword only)
+            The tag's emoji.
+            
+        moderated : `bool`, Optional (Keyword only)
+            Whether this tag can only be added or removed by a user with `manage_threads` permission.
+        
+        name : `str`, Optional (Keyword only)
+            The tag's name.
+        
         Returns
         -------
         forum_tag : `None`, ``ForumTag``
@@ -1020,6 +1156,17 @@ class ClientCompoundChannelEndpoints(Compound):
         
         **keyword_parameters : Keyword parameters
             Additional keyword parameters either to define the template, or to overwrite specific fields' values.
+        
+        Other Parameters
+        ----------------
+        emoji : `None`, ``Emoji``, Optional (Keyword only)
+            The tag's emoji.
+            
+        moderated : `bool`, Optional (Keyword only)
+            Whether this tag can only be added or removed by a user with `manage_threads` permission.
+        
+        name : `str`, Optional (Keyword only)
+            The tag's name.
         
         Raises
         ------

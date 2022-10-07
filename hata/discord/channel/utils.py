@@ -55,14 +55,15 @@ CHANNEL_GUILD_MAIN_FIELD_CONVERTERS = {
     'video_quality_mode': (validate_video_quality_mode, put_video_quality_mode_into),
 }
 
+
 CHANNEL_PRIVATE_GROUP_FIELD_CONVERTERS = {
     'icon': (
         CHANNEL_METADATA_ICON_SLOT.validate_data_icon,
         partial_func(CHANNEL_METADATA_ICON_SLOT.put_into, as_data = True),
     ),
     'name': (validate_name, put_name_into),
-    'topic': (validate_topic, put_topic_into),
 }
+
 
 CHANNEL_GUILD_THREAD_FIELD_CONVERTERS = {
     'applied_tag_ids': (validate_applied_tag_ids, put_applied_tag_ids_into),
@@ -75,6 +76,7 @@ CHANNEL_GUILD_THREAD_FIELD_CONVERTERS = {
     'open_': (validate_open, partial_func(put_open_into, flatten_thread_metadata = True)),
     'slowmode': (validate_slowmode, put_slowmode_into),
 }
+
 
 CHANNEL_GUILD_FIELD_CONVERTERS = {
     **CHANNEL_GUILD_THREAD_FIELD_CONVERTERS,

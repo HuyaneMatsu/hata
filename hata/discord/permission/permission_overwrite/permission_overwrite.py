@@ -39,8 +39,10 @@ class PermissionOverwrite(RichAttributeErrorBaseType):
     """
     __slots__ = ('allow', 'deny', 'target_id', 'target_type')
     
-    def __new__(cls, target_id, *, target_type=None, allow=None, deny=None):
+    def __new__(cls, target_id, *, target_type = None, allow = None, deny = None):
         """
+        Creates a new permission overwrite from the given parameters.
+        
         Parameters
         ----------
         target_id : `int`, ``Role``, ``ClientUserBase``

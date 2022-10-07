@@ -113,6 +113,29 @@ class ClientCompoundThreadEndpoints(Compound):
         **keyword_parameters : Keyword parameters
             Additional keyword parameters either to define the template, or to overwrite specific fields' values.
         
+        Other Parameters
+        ----------------
+        applied_tag_ids : `None`, `tuple` of (`int`, ``ForumTag``), Optional (Keyword only)
+             The tags' identifier which have been applied to the thread. Applicable for threads of a forum.
+        
+        auto_archive_after : `int`, Optional (Keyword only)
+            The default duration (in seconds) for newly created threads to automatically archive the themselves.
+        
+        flags : `int`, ``ChannelFlag``, Optional (Keyword only)
+            The channel's flags.
+        
+        invitable : `bool`, Optional (Keyword only)
+            Whether non-moderators can invite other non-moderators to the threads.
+        
+        name : `str`, Optional (Keyword only)
+            The channel's name.
+        
+        open_ : `bool`, Optional (Keyword only)
+            Whether the thread channel is open.
+        
+        slowmode : `int`, Optional (Keyword only)
+            The channel's slowmode.
+        
         Returns
         -------
         thread_channel : ``Channel``
@@ -292,6 +315,29 @@ class ClientCompoundThreadEndpoints(Compound):
         
         **keyword_parameters : Keyword parameters
             Additional keyword parameters to create the (thread) channel with.
+        
+        Other Parameters
+        ----------------
+        applied_tag_ids : `None`, `tuple` of (`int`, ``ForumTag``), Optional (Keyword only)
+             The tags' identifier which have been applied to the thread. Applicable for threads of a forum.
+        
+        auto_archive_after : `int`, Optional (Keyword only)
+            The default duration (in seconds) for newly created threads to automatically archive the themselves.
+        
+        flags : `int`, ``ChannelFlag``, Optional (Keyword only)
+            The channel's flags.
+        
+        invitable : `bool`, Optional (Keyword only)
+            Whether non-moderators can invite other non-moderators to the threads.
+        
+        name : `str`, Optional (Keyword only)
+            The channel's name.
+        
+        open_ : `bool`, Optional (Keyword only)
+            Whether the thread channel is open.
+        
+        slowmode : `int`, Optional (Keyword only)
+            The channel's slowmode.
         
         Returns
         -------

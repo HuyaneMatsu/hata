@@ -89,22 +89,22 @@ class Channel(DiscordEntity, immortal=True):
             When the channel was created.
         
         bitrate : `int`, Optional (Keyword only)
-            The channel's ``.bitrate``.
+            The bitrate (in bits) of the voice channel.
         
         _created_at : `None`, `datetime`, Optional (Keyword only)
             When the (thread) channel was created.
         
         default_thread_auto_archive_after : `int`, Optional (Keyword only)
-            The channel's ``.default_thread_auto_archive_after``.
-        
-        default_thread_slowmode : `int`, Optional (Keyword only)
-            The default slowmode applied to the channel's threads.
+            The default duration (in seconds) for newly created threads to automatically archive the themselves.
         
         default_thread_reaction : `None`, ``Emoji``, Optional (Keyword only)
             The emoji to show in the add reaction button on a thread of the forum channel.
         
+        default_thread_slowmode : `int`, Optional (Keyword only)
+            The default slowmode applied to the channel's threads.
+        
         flags : `int`, ``ChannelFlag``, Optional (Keyword only)
-            The channel's ``.flags``.
+            The channel's flags.
         
         icon : `None`, ``Icon``, `str`, Optional (Keyword only)
             The channel's icon.
@@ -122,16 +122,16 @@ class Channel(DiscordEntity, immortal=True):
             > Mutually exclusive with the `icon` parameter.
         
         invitable : `bool`, Optional (Keyword only)
-            The channel's `..invitable``.
+            Whether non-moderators can invite other non-moderators to the threads.
         
         name : `str`, Optional (Keyword only)
-            The channel's ``.name``.
+            The channel's name.
         
         nsfw : `int`, Optional (Keyword only)
-            The channel's ``.nsfw``.
+            Whether the channel is marked as non safe for work.
         
         open : `bool`, Optional (Keyword only)
-            The channel's ``.open``.
+            Whether the thread channel is open.
         
         parent_id : `None`, `int`, ``Channel``, Optional (Keyword only)
             The channel's parent's identifier.
@@ -146,13 +146,13 @@ class Channel(DiscordEntity, immortal=True):
             The channel's voice region.
         
         slowmode : `int`, Optional (Keyword only)
-            The channel's ``.slowmode``.
+            The channel's slowmode.
         
         topic : `None`, `str`, Optional (Keyword only)
-            The channel's ``.topic``.
+            The channel's topic.
         
         user_limit : `int`, Optional (Keyword only)
-            The channel's ``.user_limit``.
+            The maximal amount of users, who can join the voice channel, or `0` if unlimited.
             
         users : `iterable` of (`int`, ``ClientUserBase``), Optional (Keyword only)
             The users in the channel.
@@ -1535,7 +1535,7 @@ class Channel(DiscordEntity, immortal=True):
         flags : `int`, ``ChannelFlag``, Optional (Keyword only)
             The channel's ``.flags``.
         
-        icon : `None`, ``Icon``, `str`, Optional (Keyword only)
+        icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The channel's icon.
             
             > Mutually exclusive with `icon_type` and `icon_hash` parameters.

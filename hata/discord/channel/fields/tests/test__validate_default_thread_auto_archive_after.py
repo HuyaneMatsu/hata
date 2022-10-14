@@ -22,7 +22,7 @@ def test__validate_default_thread_auto_archive_after__1():
     """
     Tests whether ``validate_default_thread_auto_archive_after`` works as intended.
     
-    Case: value error.
+    Case: `ValueError`.
     """
     for input_parameter in (
         -1,
@@ -35,7 +35,7 @@ def test__validate_default_thread_auto_archive_after__2():
     """
     Tests whether ``validate_default_thread_auto_archive_after`` works as intended.
     
-    Case: type error.
+    Case: `TypeError`.
     """
     for input_parameter in (
         '',

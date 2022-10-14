@@ -82,6 +82,7 @@ def join_oauth2_scopes(scopes):
     Parameters
     ----------
     scopes : `None`, `tuple` of ``Oauth2Scope``
+        Oauth2 scopes to join.
     
     Returns
     -------
@@ -92,6 +93,26 @@ def join_oauth2_scopes(scopes):
     
     return ' '.join([scope.value for scope in scopes])
 
+
+def make_oauth2_scope_array(scopes):
+    """
+    Converts the given oath2 scopes into a string array.
+    
+    Parameters
+    ----------
+    scopes : `None`, `tuple` of ``Oauth2Scope``
+        Oauth2 scopes to use.
+    
+    Returns
+    -------
+    scope_array : `list` of `str`
+    """
+    if scopes is None:
+        scope_array = []
+    else:
+        scope_array = [scope.value for scope in scopes]
+    
+    return scope_array
 
 
 def _get_one_scope_value(scope):

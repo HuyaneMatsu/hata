@@ -2336,7 +2336,7 @@ def INTEGRATION_CREATE__CAL(client, data):
         guild_sync(client, data, 'INTEGRATION_CREATE')
         return
     
-    integration = Integration(data)
+    integration = Integration.from_data(data)
     
     Task(client.events.integration_create(client, guild, integration), KOKORO)
 
@@ -2390,7 +2390,7 @@ def INTEGRATION_UPDATE__CAL(client, data):
         guild_sync(client, data, 'INTEGRATION_UPDATE')
         return
     
-    integration = Integration(data)
+    integration = Integration.from_data(data)
     
     Task(client.events.integration_edit(client, guild, integration), KOKORO)
 

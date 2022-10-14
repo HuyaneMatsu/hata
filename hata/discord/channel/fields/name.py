@@ -55,7 +55,7 @@ def validate_name(name):
 
 def put_name_into(name, data, defaults):
     """
-    Puts the `name`'s data into the given `data` json serializable object.
+    Puts the `name` into the given `data` json serializable object.
     
     Parameters
     ----------

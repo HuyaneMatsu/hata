@@ -482,7 +482,7 @@ class ClientCompoundClientEndpoints(Compound):
         For a bot account this request will always return an empty list.
         """
         data = await self.http.client_connection_get_all()
-        return [Connection(connection_data) for connection_data in data]
+        return [Connection.from_data(connection_data) for connection_data in data]
     
     
     async def guild_leave(self, guild):

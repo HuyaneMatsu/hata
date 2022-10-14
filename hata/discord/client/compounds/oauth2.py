@@ -230,7 +230,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
         data = await self.http.user_connection_get_all(headers)
-        return [Connection(connection_data) for connection_data in data]
+        return [Connection.from_data(connection_data) for connection_data in data]
     
     
     async def renew_access_token(self, access):

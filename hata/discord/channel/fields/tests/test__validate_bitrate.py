@@ -22,7 +22,7 @@ def test__validate_bitrate__1():
     """
     Validates whether ``validate_bitrate`` works as intended.
     
-    Case: value error.
+    Case: `ValueError`.
     """
     for input_value in (
         -1,
@@ -35,7 +35,7 @@ def test__validate_bitrate__2():
     """
     Validates whether ``validate_bitrate`` works as intended.
     
-    Case: type error.
+    Case: `TypeError`.
     """
     for input_value in (
         '',

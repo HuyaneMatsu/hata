@@ -475,7 +475,7 @@ class Icon(RichAttributeErrorBaseType):
         -------
         icon : `None`, `str`
         """
-        return self.icon.base_64_data
+        return self.type.base_64_data
     
     
     hash_info_width = sys.hash_info.width

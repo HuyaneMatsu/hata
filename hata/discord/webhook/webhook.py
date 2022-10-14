@@ -55,7 +55,7 @@ class Webhook(WebhookBase):
     source_guild : `None`, ``WebhookSourceGuild``
         The webhook's source guild. Applicable for ``WebhookType.server`` webhooks.
     token : `str`
-        The webhooks's token. You need an `id` and a `token` to send webhook message. Defaults to empty string.
+        The webhook's token. You need an `id` and a `token` to send webhook message. Defaults to empty string.
     user : ``ClientUserBase``
         The creator of the webhook, or `ZEROUSER` if unknown.
     

@@ -26,7 +26,7 @@ def test__validate_available_tags__1():
     """
     Tests whether ``validate_available_tags`` works as intended.
     
-    Case: type error.
+    Case: `TypeError`.
     """
     for input_parameter in (
         12.6,

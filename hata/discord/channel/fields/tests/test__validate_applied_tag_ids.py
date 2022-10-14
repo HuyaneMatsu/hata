@@ -28,7 +28,7 @@ def test__validate_applied_tag_ids__1():
     """
     Tests whether `validate_applied_tag_ids` works as intended.
     
-    Case: type error.
+    Case: `TypeError`.
     """
     for input_value in (
         12.6,

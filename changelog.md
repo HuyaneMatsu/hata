@@ -32,7 +32,42 @@
 - Add `PermissionOverwrite.copy`.
 - `Client.permission_overwrite_edit` now accepts template entity + smaller changes to parameters.
 - `Client.permission_overwrite_create` now accepts template entity + smaller changes to parameters.
-
+- Add `GuildFeature.thread_limit_increased`.
+- Add `MessageType.deletable`.
+- Add `Connection.two_way_link`.
+- Add `ConnectionVisibility`.
+- Move `Connection.__init__` to `.from_data`
+- Add `Connection.__new__`.
+- Add `Connection.precreate`.
+- Add `ConnectionType.unknown`.
+- Add `Connection.__repr__`.
+- Add `Connection.to_data`.
+- Add `Connection._create_empty`.
+- `Connection.__eq__` now supports rich comparing.
+- Add `Connection.iter_integrations`.
+- Move `IntegrationApplication.__init__` to `.from_data`.
+- Add `IntegrationApplication.__new__`.
+- Add `IntegrationApplication.precreate`.
+- Add `IntegrationApplication.__repr__`.
+- Add `IntegrationApplication.to_data`.
+- `IntegrationApplication.__eq__` now supports rich comparing.
+- Add `IntegrationApplication.partial`.
+- Add `IntegrationApplication._create_empty`.
+- Move `IntegrationAccount.__new__` to `.from_data`.
+- Add `IntegrationAccount.__new__`
+- Add `IntegrationAccount.to_data.`
+- Add `IntegrationAccount.__eq__`.
+- Add `IntegrationAccount.__hash__`.
+- Add `IntegrationType.twitch`
+- Integrations now use metadata system. (this actually contains a lot of changes)
+- Add `Integration._create_empty`.
+- Add `Integration.__hash__`.
+- Add `Integration.from_data` (moved from `.__new__`)
+- Repurpose `Integration.__new__` for partial constructor.
+- Add `Integration.precreate`.
+- `Integration.__hash__` now supports partial entities.
+- `Integration.__eq__` now supports partial entities.
+- Add `Integration.role`.
 
 ##### ext.slash
 - Allow `hdsl` for slash command description.
@@ -53,6 +88,8 @@
 #### Renames, Deprecation & Removals
 
 - Deprecate `cr_pg_channel_object`. Please use `Channel(...).to_data(...)` instead.
+- Rename `Integration.detail` to `.details`.
+- Rename `IntegrationDetail` to `IntegrationDetails`.
 
 ## 1.3.9 *\[2022-10-03\]*
 

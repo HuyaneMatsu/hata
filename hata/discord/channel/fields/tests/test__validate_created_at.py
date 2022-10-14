@@ -25,7 +25,7 @@ def test__validate_created_at__1():
     """
     Tests whether ``validate_created_at`` works as intended.
     
-    Case: type error.
+    Case: `TypeError`.
     """
     for input_parameter in (
         12.6,

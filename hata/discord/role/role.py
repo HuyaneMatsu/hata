@@ -725,7 +725,7 @@ class Role(DiscordEntity, immortal=True):
                 manager.bot = True
         
         elif manager_type is ROLE_MANAGER_TYPE_INTEGRATION:
-            manager = create_partial_integration_from_id(self.manager_id, role=self)
+            manager = create_partial_integration_from_id(self.manager_id, self.id)
         
         else:
             manager = None

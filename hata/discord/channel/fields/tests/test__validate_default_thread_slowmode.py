@@ -20,7 +20,7 @@ def test__validate_default_thread_slowmode__1():
     """
     Validates whether ``validate_default_thread_slowmode`` works as intended.
     
-    Case: value error.
+    Case: `ValueError`.
     """
     for input_value in (
         -1,
@@ -34,7 +34,7 @@ def test__validate_default_thread_slowmode__2():
     """
     Validates whether ``validate_default_thread_slowmode`` works as intended.
     
-    Case: type error.
+    Case: `TypeError`.
     """
     for input_value in (
         '',

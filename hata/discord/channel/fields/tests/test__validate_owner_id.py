@@ -27,7 +27,7 @@ def test__validate_owner_id__1():
     """
     Tests whether `validate_owner_id` works as intended.
     
-    Case: value error.
+    Case: `ValueError`.
     """
     for input_value in (
         '1',
@@ -41,7 +41,7 @@ def test__validate_owner_id__2():
     """
     Tests whether `validate_owner_id` works as intended.
     
-    Case: type error.
+    Case: `TypeError`.
     """
     for input_value in (
         12.6,

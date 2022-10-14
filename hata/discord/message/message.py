@@ -2465,6 +2465,14 @@ class Message(DiscordEntity, immortal=True):
                     is_deletable = False
                     break
             
+            try:
+                message_type = fields[MESSAGE_FIELD_KEY_TYPE]
+            except KeyError:
+                pass
+            else:
+                is_deletable = message_type.deletable
+                break
+            
             is_deletable = True
             break
         

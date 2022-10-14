@@ -43,7 +43,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
             guild_id = get_guild_id(guild)
             
             integration_datas = await self.http.integration_get_all(guild_id, None)
-            return [Integration(integration_data) for integration_data in integration_datas]
+            return [Integration.from_data(integration_data) for integration_data in integration_datas]
     
     else:
         async def integration_get_all(self, guild):
@@ -73,7 +73,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
             guild_id = get_guild_id(guild)
             
             integration_datas = await self.http.integration_get_all(guild_id, {'include_applications': True})
-            return [Integration(integration_data) for integration_data in integration_datas]
+            return [Integration.from_data(integration_data) for integration_data in integration_datas]
     
     
     async def integration_create(self, guild, integration_id, type_):
@@ -128,7 +128,7 @@ class ClientCompoundIntegrationEndpoints(Compound):
         }
         
         data = await self.http.integration_create(guild_id, data)
-        return Integration(data)
+        return Integration.from_data(data)
     
     
     async def integration_edit(

@@ -2,9 +2,9 @@ __all__ = ('create_forum_tag_from_id', )
 
 from ...core import FORUM_TAGS
 
-from .fields.emoji import put_emoji_into, validate_emoji
-from .fields.moderated import put_moderated_into, validate_moderated
-from .fields.name import put_name_into, validate_name
+from .fields import (
+    put_emoji_into, put_moderated_into, put_name_into, validate_emoji, validate_moderated, validate_name
+)
 from .forum_tag import ForumTag
 
 

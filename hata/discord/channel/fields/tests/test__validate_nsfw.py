@@ -21,7 +21,7 @@ def test__validate_nsfw__1():
     """
     Tests whether `validate_nsfw` works as intended.
     
-    Case: type error.
+    Case: `TypeError`.
     """
     for input_value in (
         12.6,

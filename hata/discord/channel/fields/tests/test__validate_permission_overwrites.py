@@ -26,7 +26,7 @@ def test__validate_permission_overwrites__1():
     """
     Tests whether ``validate_permission_overwrites`` works as intended.
     
-    Case: type error.
+    Case: `TypeError`.
     """
     for input_parameter in (
         12.6,

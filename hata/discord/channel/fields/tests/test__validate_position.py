@@ -20,7 +20,7 @@ def test__validate_position__1():
     """
     Tests whether `validate_position` works as intended.
     
-    Case: value error.
+    Case: `ValueError`.
     """
     for input_value in (
         -1,
@@ -33,7 +33,7 @@ def test__validate_position__2():
     """
     Tests whether `validate_position` works as intended.
     
-    Case: type error.
+    Case: `TypeError`.
     """
     for input_value in (
         12.6,

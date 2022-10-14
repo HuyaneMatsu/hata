@@ -56,7 +56,7 @@ def put_video_quality_mode_into(video_quality_mode, data, defaults):
     
     Parameters
     ----------
-    video_quality_mode : `None`, `str`
+    video_quality_mode : ``VideoQualityMode``
         The video quality of the voice channel.
     data : `dict` of (`str`, `Any`) items
         Json serializable dictionary.

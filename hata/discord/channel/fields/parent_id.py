@@ -3,31 +3,15 @@ __all__ = ()
 from scarletio import include
 
 from ...bases import maybe_snowflake
+from ...field_parsers import entity_id_parser_factory
+from ...field_putters import entity_id_optional_putter_factory
 
 
 Channel = include('Channel')
 
 
-def parse_parent_id(data):
-    """
-    Parses out the `parent_id` field from the given data.
-    
-    Parameters
-    ----------
-    data : `dict` of (`str`, `Any`) items
-        Channel data.
-    
-    Returns
-    -------
-    parent_id : `int`
-    """
-    parent_id = data.get('parent_id', None)
-    if (parent_id is None):
-        parent_id = 0
-    else:
-        parent_id = int(parent_id)
-    
-    return parent_id
+parse_parent_id = entity_id_parser_factory('parent_id')
+put_parent_id_into = entity_id_optional_putter_factory('parent_id')
 
 
 def validate_parent_id(parent_id):
@@ -65,30 +49,3 @@ def validate_parent_id(parent_id):
             )
     
     return processed_parent_id
-
-
-def put_parent_id_into(parent_id, data, defaults):
-    """
-    Puts the `parent_id`'s data into the given `data` json serializable object.
-    
-    Parameters
-    ----------
-    parent_id : `int`
-        The channel's parent's identifier.
-    data : `dict` of (`str`, `Any`) items
-        Json serializable dictionary.
-    defaults : `bool`
-        Whether default values should be included as well.
-    
-    Returns
-    -------
-    data : `dict` of (`str`, `Any`) items
-    """
-    if parent_id:
-        data['parent_id'] = str(parent_id)
-    
-    else:
-        if defaults:
-            data['parent_id'] = None
-    
-    return data

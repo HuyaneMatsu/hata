@@ -30,10 +30,14 @@ from .allowed_mentions import *
 from .ansi_format import *
 from .color import *
 from .core import *
+from .field_parsers import *
+from .field_putters import *
+from .field_validators import *
 from .object_binding import *
 from .payload_building import *
 from .preconverters import *
 from .utils import *
+
 
 __all__ = (
     *activity.__all__,
@@ -67,6 +71,9 @@ __all__ = (
     *allowed_mentions.__all__,
     *ansi_format.__all__,
     *core.__all__,
+    *field_parsers.__all__,
+    *field_putters.__all__,
+    *field_validators.__all__,
     *color.__all__,
     *object_binding.__all__,
     *payload_building.__all__,

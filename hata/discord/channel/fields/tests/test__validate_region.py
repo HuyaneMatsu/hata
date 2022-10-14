@@ -24,7 +24,7 @@ def test__validate_region__1():
     """
     Validates whether ``validate_region`` works as intended.
     
-    Case: type error.
+    Case: `TypeError`.
     """
     for input_value in (
         12.6,

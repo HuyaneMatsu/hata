@@ -24,7 +24,7 @@ def test__validate_topic__1():
     """
     Tests whether `validate_topic` works as intended.
     
-    Case: value error.
+    Case: `ValueError`.
     """
     for input_value in (
         'a' * (TOPIC_LENGTH_MAX + 1),
@@ -37,7 +37,7 @@ def test__validate_topic__2():
     """
     Tests whether `validate_topic` works as intended.
     
-    Case: type error.
+    Case: `TypeError`.
     """
     for input_value in (
         12.6,

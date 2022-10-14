@@ -21,7 +21,7 @@ def test__validate_invitable__1():
     """
     Tests whether `validate_invitable` works as intended.
     
-    Case: type error.
+    Case: `TypeError`.
     """
     for input_value in (
         12.6,

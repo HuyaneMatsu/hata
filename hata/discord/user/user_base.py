@@ -881,9 +881,16 @@ class UserBase(DiscordEntity, immortal=True):
         self.banner_type = ICON_TYPE_NONE
     
     
-    def to_data(self):
+    def to_data(self, *, defaults = False, include_internals = False):
         """
         Tries to convert the user back to a json serializable dictionary.
+        
+        Parameters
+        ----------
+        defaults : `bool` = `False`, Optional (Keyword only)
+            Whether default values should be included as well.
+        include_internals : `bool` = `False`, Optional (Keyword only)
+            Whether internal fields should be included as well.
         
         Returns
         -------

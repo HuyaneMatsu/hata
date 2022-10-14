@@ -21,7 +21,7 @@ def test__validate_open__1():
     """
     Tests whether `validate_open` works as intended.
     
-    Case: type error.
+    Case: `TypeError`.
     """
     for input_value in (
         12.6,

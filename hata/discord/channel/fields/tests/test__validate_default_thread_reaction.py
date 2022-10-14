@@ -25,7 +25,7 @@ def test__validate_default_thread_reaction__1():
     """
     Tests whether ``validate_default_thread_reaction`` works as intended.
     
-    Case: type error.
+    Case: `TypeError`.
     """
     for input_parameter in (
         12.6,

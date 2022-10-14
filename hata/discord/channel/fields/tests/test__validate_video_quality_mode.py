@@ -23,7 +23,7 @@ def test__validate_video_quality_mode__1():
     """
     Tests whether `validate_video_quality_mode` works as intended.
     
-    Case: type error.
+    Case: `TypeError`.
     """
     for input_value in (
         12.6,

@@ -6,9 +6,10 @@ from ...bases import DiscordEntity
 from ...core import FORUM_TAGS
 from ...preconverters import preconvert_snowflake
 
-from .fields.emoji import parse_emoji, put_emoji_into, validate_emoji
-from .fields.moderated import parse_moderated, put_moderated_into, validate_moderated
-from .fields.name import parse_name, put_name_into, validate_name
+from .fields import (
+    parse_emoji, parse_moderated, parse_name, put_emoji_into, put_moderated_into, put_name_into, validate_emoji,
+    validate_moderated, validate_name
+)
 
 
 class ForumTag(DiscordEntity, immortal=True):
@@ -140,14 +141,14 @@ class ForumTag(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        other : `type<self>`
+        other : `instance<type<<self>>`
             The other instance. Must be from the same type.
         
         Returns
         -------
         is_equal : `bool`
         """
-        # id_
+        # id
         self_id = self.id
         other_id = other.id
         if self_id and other_id:

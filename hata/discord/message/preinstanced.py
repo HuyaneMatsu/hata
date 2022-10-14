@@ -268,89 +268,89 @@ class MessageType(PreinstancedBase):
     
     Attributes
     ----------
-    converter : `function`
-        The converter function of the message type, what tries to convert the message's content to it's Discord side
-        representation.
     name : `str`
         The default name of the message type.
     value : `int`
         The Discord side identifier value of the message type.
-    VALUE_TYPE : `type` = `int`
-        The message types' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the message types.
-    DEFAULT_CONVERT : `function`
-        The default ``.converter`` attribute of the message types.
+    converter : `FunctionType`
+        The converter function of the message type, what tries to convert the message's content to it's Discord side
+        representation.
+    deletable : `bool`
+        Whether the message with this type can be deleted.
     
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`int`, ``MessageType``) items
         Stores the predefined ``MessageType``-s. These can be accessed with their `value` as key.
+    VALUE_TYPE : `type` = `int`
+        The message types' values' type.
+    DEFAULT_NAME : `str` = `'Undefined'`
+        The default name of the message types.
     
     Every predefined message type can be accessed as class attribute as well:
     
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | Class attribute name                      | Name                                      | converter                                         | value |
-    +===========================================+===========================================+===================================================+=======+
-    | default                                   | default                                   | MESSAGE_DEFAULT_CONVERTER                         | 0     |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | add_user                                  | add user                                  | convert_add_user                                  | 1     |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | remove_user                               | remove user                               | convert_remove_user                               | 2     |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | call                                      | call                                      | convert_call                                      | 3     |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | channel_name_change                       | channel name change                       | convert_channel_name_change                       | 4     |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | channel_icon_change                       | channel icon change                       | convert_channel_icon_change                       | 5     |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | new_pin                                   | new pin                                   | convert_new_pin                                   | 6     |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | welcome                                   | welcome                                   | convert_welcome                                   | 7     |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | guild_boost                               | guild boost                               | convert_guild_boost                               | 8     |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | guild_boost_tier_1                        | guild boost tier 1                        | convert_guild_boost_tier_1                        | 9     |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | guild_boost_tier_2                        | guild boost tier 2                        | convert_guild_boost_tier_2                        | 10    |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | guild_boost_tier_3                        | guild boost tier 3                        | convert_guild_boost_tier_3                        | 11    |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | new_follower_channel                      | new follower channel                      | convert_new_follower_channel                      | 12    |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | stream                                    | stream                                    | convert_stream                                    | 13    |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | discovery_disqualified                    | discovery disqualified                    | convert_discovery_disqualified                    | 14    |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | discovery_requalified                     | discovery requalified                     | convert_discovery_requalified                     | 15    |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | discovery_grace_period_initial_warning    | discovery grace period initial warning    | convert_discovery_grace_period_initial_warning    | 16    |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | discovery_grace_period_final_warning      | discovery grace period final warning      | convert_discovery_grace_period_final_warning      | 17    |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | thread_created                            | thread created                            | convert_thread_created                            | 18    |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | inline_reply                              | inline reply                              | MESSAGE_DEFAULT_CONVERTER                         | 19    |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | slash_command                             | slash command                             | MESSAGE_DEFAULT_CONVERTER                         | 20    |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | thread_started                            | thread started                            | MESSAGE_DEFAULT_CONVERTER                         | 21    |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | invite_reminder                           | invite reminder                           | convert_invite_reminder                           | 22    |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | context_command                           | context command                           | MESSAGE_DEFAULT_CONVERTER                         | 23    |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | auto_moderation_action                    | auto moderation_action                    | MESSAGE_DEFAULT_CONVERTER                         | 24    |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | role_subscription_purchase                | role subscription purchase                | MESSAGE_DEFAULT_CONVERTER                         | 25    |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
-    | interaction_premium_upsell                | interaction premium upsell                | MESSAGE_DEFAULT_CONVERTER                         | 26    |
-    +-------------------------------------------+-------------------------------------------+---------------------------------------------------+-------+
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | Class attribute name                      | Name                                      | Value | Converter                                         | Deletable |
+    +===========================================+===========================================+=======+===================================================+===========+
+    | default                                   | default                                   | 0     | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | add_user                                  | add user                                  | 1     | convert_add_user                                  | false     |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | remove_user                               | remove user                               | 2     | convert_remove_user                               | false     |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | call                                      | call                                      | 3     | convert_call                                      | false     |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | channel_name_change                       | channel name change                       | 4     | convert_channel_name_change                       | false     |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | channel_icon_change                       | channel icon change                       | 5     | convert_channel_icon_change                       | false     |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | new_pin                                   | new pin                                   | 6     | convert_new_pin                                   | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | welcome                                   | welcome                                   | 7     | convert_welcome                                   | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | guild_boost                               | guild boost                               | 8     | convert_guild_boost                               | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | guild_boost_tier_1                        | guild boost tier 1                        | 9     | convert_guild_boost_tier_1                        | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | guild_boost_tier_2                        | guild boost tier 2                        | 10    | convert_guild_boost_tier_2                        | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | guild_boost_tier_3                        | guild boost tier 3                        | 11    | convert_guild_boost_tier_3                        | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | new_follower_channel                      | new follower channel                      | 12    | convert_new_follower_channel                      | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | stream                                    | stream                                    | 13    | convert_stream                                    | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | discovery_disqualified                    | discovery disqualified                    | 14    | convert_discovery_disqualified                    | false     |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | discovery_requalified                     | discovery requalified                     | 15    | convert_discovery_requalified                     | false     |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | discovery_grace_period_initial_warning    | discovery grace period initial warning    | 16    | convert_discovery_grace_period_initial_warning    | false     |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | discovery_grace_period_final_warning      | discovery grace period final warning      | 17    | convert_discovery_grace_period_final_warning      | false     |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | thread_created                            | thread created                            | 18    | convert_thread_created                            | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | inline_reply                              | inline reply                              | 19    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | slash_command                             | slash command                             | 20    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | thread_started                            | thread started                            | 21    | MESSAGE_DEFAULT_CONVERTER                         | false     |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | invite_reminder                           | invite reminder                           | 22    | convert_invite_reminder                           | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | context_command                           | context command                           | 23    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | auto_moderation_action                    | auto moderation_action                    | 24    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | role_subscription_purchase                | role subscription purchase                | 25    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | interaction_premium_upsell                | interaction premium upsell                | 26    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
     
-    __slots__ = ('converter',)
+    __slots__ = ('converter', 'deletable',)
     
     @classmethod
     def _from_value(cls, value):
@@ -371,11 +371,12 @@ class MessageType(PreinstancedBase):
         self.name = cls.DEFAULT_NAME
         self.value = value
         self.converter = MESSAGE_DEFAULT_CONVERTER
+        self.deletable = True
         
         return self
     
     
-    def __init__(self, value, name, converter):
+    def __init__(self, value, name, converter, deletable):
         """
         Creates an ``MessageType`` and stores it at the class's `.INSTANCES` class attribute as well.
         
@@ -385,55 +386,73 @@ class MessageType(PreinstancedBase):
             The Discord side identifier value of the message type.
         name : `str`
             The default name of the message type.
-        converter : `function`
+        converter : `FunctionType`
             The converter function of the message type.
+        deletable : `bool`
+            Whether the message with this type can be deleted.
         """
         self.value = value
         self.name = name
         self.converter = converter
+        self.deletable = deletable
         
         self.INSTANCES[value] = self
     
     
     def __repr__(self):
         """Returns the representation of the message type."""
-        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r}, converter={self.converter!r})'
+        repr_parts = ['<', self.__class__.__name__]
+        
+        repr_parts.append(' name=')
+        repr_parts.append(repr(self.name))
+        
+        repr_parts.append(', value=')
+        repr_parts.append(repr(self.value))
+        
+        repr_parts.append(' converter=')
+        repr_parts.append(repr(self.converter))
+        
+        repr_parts.append(', deletable=')
+        repr_parts.append(repr(self.deletable))
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
     
     
     # predefined
-    default = P(0, 'default', MESSAGE_DEFAULT_CONVERTER)
-    add_user = P(1, 'add user', convert_add_user)
-    remove_user = P(2, 'remove user', convert_remove_user)
-    call = P(3, 'call', convert_call)
-    channel_name_change = P(4, 'channel name change', convert_channel_name_change)
-    channel_icon_change = P(5, 'channel icon change', convert_channel_icon_change)
-    new_pin = P(6, 'new pin', convert_new_pin)
-    welcome = P(7, 'welcome', convert_welcome)
-    guild_boost = P(8, 'guild boost', convert_guild_boost)
-    guild_boost_tier_1 = P(9, 'guild boost tier 1', convert_guild_boost_tier_1)
-    guild_boost_tier_2 = P(10, 'guild boost tier 2', convert_guild_boost_tier_2)
-    guild_boost_tier_3 = P(11, 'guild boost tier 3', convert_guild_boost_tier_3)
-    new_follower_channel = P(12, 'new follower channel', convert_new_follower_channel)
-    stream = P(13, 'stream', convert_stream)
-    discovery_disqualified = P(14, 'discovery disqualified', convert_discovery_disqualified)
-    discovery_requalified = P(15, 'discovery requalified', convert_discovery_requalified)
+    default = P(0, 'default', MESSAGE_DEFAULT_CONVERTER, True)
+    add_user = P(1, 'add user', convert_add_user, False)
+    remove_user = P(2, 'remove user', convert_remove_user, False)
+    call = P(3, 'call', convert_call, False)
+    channel_name_change = P(4, 'channel name change', convert_channel_name_change, False)
+    channel_icon_change = P(5, 'channel icon change', convert_channel_icon_change, False)
+    new_pin = P(6, 'new pin', convert_new_pin, True)
+    welcome = P(7, 'welcome', convert_welcome, True)
+    guild_boost = P(8, 'guild boost', convert_guild_boost, True)
+    guild_boost_tier_1 = P(9, 'guild boost tier 1', convert_guild_boost_tier_1, True)
+    guild_boost_tier_2 = P(10, 'guild boost tier 2', convert_guild_boost_tier_2, True)
+    guild_boost_tier_3 = P(11, 'guild boost tier 3', convert_guild_boost_tier_3, True)
+    new_follower_channel = P(12, 'new follower channel', convert_new_follower_channel, True)
+    stream = P(13, 'stream', convert_stream, False)
+    discovery_disqualified = P(14, 'discovery disqualified', convert_discovery_disqualified, False)
+    discovery_requalified = P(15, 'discovery requalified', convert_discovery_requalified, False)
     discovery_grace_period_initial_warning = P(
-        16, 'discovery grace period initial warning', convert_discovery_grace_period_initial_warning
+        16, 'discovery grace period initial warning', convert_discovery_grace_period_initial_warning, False
     )
     discovery_grace_period_final_warning = P(
-        17, 'discovery grace period final warning', convert_discovery_grace_period_final_warning
+        17, 'discovery grace period final warning', convert_discovery_grace_period_final_warning, False
     )
-    thread_created = P(18, 'thread created', convert_thread_created)
-    inline_reply = P(19, 'inline reply', MESSAGE_DEFAULT_CONVERTER)
-    slash_command = P(20, 'slash command', MESSAGE_DEFAULT_CONVERTER)
-    thread_started = P(21, 'thread started', MESSAGE_DEFAULT_CONVERTER)
-    invite_reminder = P(22, 'invite reminder', convert_invite_reminder)
-    context_command = P(23, 'context command', MESSAGE_DEFAULT_CONVERTER)
-    auto_moderation_action = P(24, 'auto moderation action', MESSAGE_DEFAULT_CONVERTER)
-    role_subscription_purchase = P (25, 'role subscription purchase', MESSAGE_DEFAULT_CONVERTER)
-    interaction_premium_upsell = P(26, 'interaction premium upsell', MESSAGE_DEFAULT_CONVERTER)
+    thread_created = P(18, 'thread created', convert_thread_created, True)
+    inline_reply = P(19, 'inline reply', MESSAGE_DEFAULT_CONVERTER, True)
+    slash_command = P(20, 'slash command', MESSAGE_DEFAULT_CONVERTER, True)
+    thread_started = P(21, 'thread started', MESSAGE_DEFAULT_CONVERTER, False)
+    invite_reminder = P(22, 'invite reminder', convert_invite_reminder, True)
+    context_command = P(23, 'context command', MESSAGE_DEFAULT_CONVERTER, True)
+    auto_moderation_action = P(24, 'auto moderation action', MESSAGE_DEFAULT_CONVERTER, True)
+    role_subscription_purchase = P (25, 'role subscription purchase', MESSAGE_DEFAULT_CONVERTER, True)
+    interaction_premium_upsell = P(26, 'interaction premium upsell', MESSAGE_DEFAULT_CONVERTER, True)
     
-    
+        
     @class_property
     def new_guild_sub(cls):
         warnings.warn(

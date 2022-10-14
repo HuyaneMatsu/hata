@@ -59,7 +59,7 @@ def preconvert_snowflake_array(snowflake_array, name):
     
     Parameters
     ----------
-    snowflake : `None` or `iterable` of (`str`, `int`)
+    snowflake_array : `None` or `iterable` of (`str`, `int`)
         The snowflakes to convert.
     name : `str`
         The name of the snowflake array.

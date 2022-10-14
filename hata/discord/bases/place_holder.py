@@ -29,7 +29,7 @@ class PlaceHolder:
     __slots__ = ('default', 'docs', 'name')
     
     
-    def __new__(cls, default, docs=None):
+    def __new__(cls, default, docs = None):
         """
         Creates a new new slot place holder.
         

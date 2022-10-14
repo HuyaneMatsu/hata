@@ -155,7 +155,7 @@ class AuditLog(RichAttributeErrorBaseType):
             integrations = self.integrations
             
             for integration_data in integration_datas:
-                integration = Integration(integration_data)
+                integration = Integration.from_data(integration_data)
                 integrations[integration.id] = integration
         
         

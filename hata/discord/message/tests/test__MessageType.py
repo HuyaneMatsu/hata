@@ -27,3 +27,11 @@ def test__MessageType__converter():
     """
     for instance in MessageType.INSTANCES.values():
         vampytest.assert_instance(instance.converter, FunctionType)
+
+
+def test__MessageType__deletable():
+    """
+    Tests whether ``MessageType.deletable``-s are all set as expected.
+    """
+    for instance in MessageType.INSTANCES.values():
+        vampytest.assert_instance(instance.deletable, bool)

@@ -25,7 +25,7 @@ def test__validate_archived_at__1():
     """
     Tests whether ``validate_archived_at`` works as intended.
     
-    Case: type error.
+    Case: `TypeError`.
     """
     for input_parameter in (
         12.6,

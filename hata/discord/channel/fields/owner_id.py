@@ -3,31 +3,14 @@ __all__ = ()
 from scarletio import include
 
 from ...bases import maybe_snowflake
+from ...field_parsers import entity_id_parser_factory
+from ...field_putters import entity_id_optional_putter_factory
 
 
 ClientUserBase = include('ClientUserBase')
 
 
-def parse_owner_id(data):
-    """
-    Parses out the `owner_id` field from the given data.
-    
-    Parameters
-    ----------
-    data : `dict` of (`str`, `Any`) items
-        channel data.
-    
-    Returns
-    -------
-    owner_id : `int`
-    """
-    owner_id = data.get('owner_id', None)
-    if (owner_id is None):
-        owner_id = 0
-    else:
-        owner_id = int(owner_id)
-    
-    return owner_id
+parse_owner_id = entity_id_parser_factory('owner_id')
 
 
 def validate_owner_id(owner_id):
@@ -67,28 +50,4 @@ def validate_owner_id(owner_id):
     return processed_owner_id
 
 
-def put_owner_id_into(owner_id, data, defaults):
-    """
-    Puts the `owner_id`'s data into the given `data` json serializable object.
-    
-    Parameters
-    ----------
-    owner_id : `int`
-        The user's identifier who created the group or the thread channel.
-    data : `dict` of (`str`, `Any`) items
-        Json serializable dictionary.
-    defaults : `bool`
-        Whether default values should be included as well.
-    
-    Returns
-    -------
-    data : `dict` of (`str`, `Any`) items
-    """
-    if owner_id:
-        data['owner_id'] = str(owner_id)
-    
-    else:
-        if defaults:
-            data['owner_id'] = None
-    
-    return data
+put_owner_id_into = entity_id_optional_putter_factory('owner_id')

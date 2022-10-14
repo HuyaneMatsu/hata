@@ -20,7 +20,7 @@ def test__validate_user_limit__1():
     """
     Validates whether ``validate_user_limit`` works as intended.
     
-    Case: value error.
+    Case: `ValueError`.
     """
     for input_value in (
         -1,
@@ -33,7 +33,7 @@ def test__validate_user_limit__2():
     """
     Validates whether ``validate_user_limit`` works as intended.
     
-    Case: type error.
+    Case: `TypeError`.
     """
     for input_value in (
         '',

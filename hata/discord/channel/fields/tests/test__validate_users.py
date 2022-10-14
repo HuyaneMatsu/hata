@@ -31,7 +31,7 @@ def test__validate_users__1():
     """
     Validates whether ``validate_users`` works as intended.
     
-    Case: type error.
+    Case: `TypeError`.
     """
     for input_value in (
         12.6,

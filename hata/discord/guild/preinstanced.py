@@ -414,6 +414,8 @@ class GuildFeature(PreinstancedBase):
     +-----------------------------------+-----------------------------------+-------------------------------------------+
     | threads_enabled_testing           | threads enabled testing           | THREADS_ENABLED_TESTING                   |
     +-----------------------------------+-----------------------------------+-------------------------------------------+
+    | thread_limit_increased            | thread limit increased            | INCREASED_THREAD_LIMIT                    |
+    +-----------------------------------+-----------------------------------+-------------------------------------------+
     | ticket_events_enabled             | ticket events enabled             | TICKETED_EVENTS_ENABLED                   |
     +-----------------------------------+-----------------------------------+-------------------------------------------+
     | vanity_invite                     | vanity invite                     | VANITY_URL                                |
@@ -498,6 +500,7 @@ class GuildFeature(PreinstancedBase):
     thread_archive_three_day = P('THREE_DAY_THREAD_ARCHIVE', 'thread archive three day')
     threads_enabled = P('THREADS_ENABLED', 'threads enabled')
     threads_enabled_testing = P('THREADS_ENABLED_TESTING', 'threads enabled testing')
+    thread_limit_increased = P('INCREASED_THREAD_LIMIT', 'thread limit increased')
     ticket_events_enabled = P('TICKETED_EVENTS_ENABLED', 'ticket events enabled')
     vanity_invite = P('VANITY_URL', 'vanity invite')
     verification_screen_enabled = P('MEMBER_VERIFICATION_GATE_ENABLED', 'verification screen enabled')

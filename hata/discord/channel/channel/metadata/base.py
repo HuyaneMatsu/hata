@@ -11,7 +11,7 @@ from ....utils import id_to_datetime
 
 from ..constants import AUTO_ARCHIVE_DEFAULT, NAME_DEFAULT
 from ..flags import ChannelFlag
-from ..preinstanced import VideoQualityMode
+from ..preinstanced import SortOrder, VideoQualityMode, VoiceRegion
 
 
 Client = include('Client')
@@ -193,6 +193,8 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
             | available_tags                        | `None`, `tuple` of ``ForumTag``                           |
             +---------------------------------------+-----------------------------------------------------------+
             | bitrate                               | `int`                                                     |
+            +---------------------------------------+-----------------------------------------------------------+
+            | default_sort_order                    | ``SortOrder``                                             |
             +---------------------------------------+-----------------------------------------------------------+
             | default_thread_auto_archive_after     | `int`                                                     |
             +---------------------------------------+-----------------------------------------------------------+
@@ -714,6 +716,18 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     )
     
     
+    default_sort_order = PlaceHolder(
+        SortOrder.latest_activity,
+        """
+        Returns how the posts ordered in a forum channel by default.
+        
+        Returns
+        -------
+        default_sort_order : ``SortOrder``
+        """
+    )
+    
+    
     default_thread_auto_archive_after = PlaceHolder(
         AUTO_ARCHIVE_DEFAULT,
         """
@@ -887,7 +901,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     
     
     region = PlaceHolder(
-        None,
+        VoiceRegion.unknown,
         """
         Returns the voice region of the channel.
         

@@ -72,6 +72,15 @@
 - Add `VoiceRegion.unknown`.
 - Add `ERROR_CODES.invalid_activity_action`.
 - `Channel.voice_region` is not nullable anymore.
+- Add `SortOrder`.
+- Add `ChannelMetadataBase.default_sort_order`.
+- Add `Channel.default_sort_order`.
+- Add `ChannelMetadataGuildForum.default_sort_order`.
+- Add `default_sort_order` parameter to `Channel.__new__`.
+- Add `default_sort_order` parameter to `Channel.precreate`.
+- Add `default_sort_order` parameter to `Client.channel_create`.
+- Add `default_sort_order` parameter to `Client.channel_edit`.
+- Add `default_sort_order` audit log change converter.
 
 ##### ext.slash
 - Allow `hdsl` for slash command description.

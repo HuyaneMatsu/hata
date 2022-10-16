@@ -91,8 +91,11 @@ class Channel(DiscordEntity, immortal=True):
         bitrate : `int`, Optional (Keyword only)
             The bitrate (in bits) of the voice channel.
         
-        _created_at : `None`, `datetime`, Optional (Keyword only)
+        created_at : `None`, `datetime`, Optional (Keyword only)
             When the (thread) channel was created.
+        
+        default_sort_order : ``SortOrder``, `int`, Optional (Keyword only)
+            How the posts ordered in a forum channel by default.
         
         default_thread_auto_archive_after : `int`, Optional (Keyword only)
             The default duration (in seconds) for newly created threads to automatically archive the themselves.
@@ -697,6 +700,8 @@ class Channel(DiscordEntity, immortal=True):
             +---------------------------------------+-----------------------------------------------------------+
             | bitrate                               | `int`                                                     |
             +---------------------------------------+-----------------------------------------------------------+
+            | default_sort_order                    | ``SortOrder``                                             |
+            +---------------------------------------+-----------------------------------------------------------+
             | default_thread_auto_archive_after     | `int`                                                     |
             +---------------------------------------+-----------------------------------------------------------+
             | default_thread_reaction               | `None`, ``Emoji``                                         |
@@ -1122,6 +1127,12 @@ class Channel(DiscordEntity, immortal=True):
     
     
     @property
+    @copy_docs(ChannelMetadataBase.default_sort_order)
+    def default_sort_order(self):
+        return self.metadata.default_sort_order
+    
+    
+    @property
     @copy_docs(ChannelMetadataBase.default_thread_auto_archive_after)
     def default_thread_auto_archive_after(self):
         return self.metadata.default_thread_auto_archive_after
@@ -1520,8 +1531,11 @@ class Channel(DiscordEntity, immortal=True):
         bitrate : `int`, Optional (Keyword only)
             The channel's ``.bitrate``.
         
-        _created_at : `None`, `datetime`, Optional (Keyword only)
+        created_at : `None`, `datetime`, Optional (Keyword only)
             When the (thread) channel was created.
+        
+        default_sort_order : ``SortOrder``, `int`, Optional (Keyword only)
+            How the posts ordered in a forum channel by default.
         
         default_thread_auto_archive_after : `int`, Optional (Keyword only)
             The channel's ``.default_thread_auto_archive_after``.

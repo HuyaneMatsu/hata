@@ -6,6 +6,7 @@ from .....permission import PermissionOverwrite, PermissionOverwriteTargetType
 from ....forum_tag import ForumTag
 
 from ...flags import ChannelFlag
+from ...preinstanced import SortOrder
 
 from ..guild_forum import ChannelMetadataGuildForum
 
@@ -33,6 +34,7 @@ def test__ChannelMetadataGuildForum__repr():
     default_thread_slowmode = 60
     flags = ChannelFlag(1)
     topic = 'Dearest'
+    default_sort_order = SortOrder.creation_date
     
     keyword_parameters = {
         'parent_id': parent_id,
@@ -45,6 +47,7 @@ def test__ChannelMetadataGuildForum__repr():
         'default_thread_slowmode': default_thread_slowmode,
         'flags': flags,
         'topic': topic,
+        'default_sort_order': default_sort_order,
     }
     channel_metadata = ChannelMetadataGuildForum(keyword_parameters)
     
@@ -74,6 +77,7 @@ def test__ChannelMetadataGuildForum__hash():
     default_thread_slowmode = 60
     flags = ChannelFlag(1)
     topic = 'Dearest'
+    default_sort_order = SortOrder.creation_date
     
     keyword_parameters = {
         'parent_id': parent_id,
@@ -86,6 +90,7 @@ def test__ChannelMetadataGuildForum__hash():
         'default_thread_slowmode': default_thread_slowmode,
         'flags': flags,
         'topic': topic,
+        'default_sort_order': default_sort_order,
     }
     channel_metadata = ChannelMetadataGuildForum(keyword_parameters)
     
@@ -115,6 +120,7 @@ def test__ChannelMetadataGuildForum__eq():
     default_thread_slowmode = 60
     flags = ChannelFlag(1)
     topic = 'Dearest'
+    default_sort_order = SortOrder.creation_date
     
     keyword_parameters = {
         'parent_id': parent_id,
@@ -127,6 +133,7 @@ def test__ChannelMetadataGuildForum__eq():
         'default_thread_slowmode': default_thread_slowmode,
         'flags': flags,
         'topic': topic,
+        'default_sort_order': default_sort_order,
     }
     channel_metadata = ChannelMetadataGuildForum(keyword_parameters)
     
@@ -149,6 +156,7 @@ def test__ChannelMetadataGuildForum__eq():
         ('default_thread_slowmode', 0),
         ('flags', ChannelFlag(3)),
         ('topic', 'Dai'),
+        ('default_sort_order', SortOrder.latest_activity),
     ):
         test_channel_metadata = ChannelMetadataGuildForum({**keyword_parameters, field_name: field_value})
         

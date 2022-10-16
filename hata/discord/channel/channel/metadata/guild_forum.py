@@ -8,14 +8,15 @@ from ....permission.permission import PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_N
 
 from ..constants import AUTO_ARCHIVE_DEFAULT, SLOWMODE_DEFAULT
 from ..fields import (
-    parse_available_tags, parse_default_thread_auto_archive_after, parse_default_thread_reaction,
-    parse_default_thread_slowmode, put_available_tags_into, put_default_thread_auto_archive_after_into,
-    put_default_thread_reaction_into, put_default_thread_slowmode_into, validate_available_tags,
-    validate_default_thread_auto_archive_after, validate_default_thread_reaction, validate_default_thread_slowmode
+    parse_available_tags, parse_default_sort_order, parse_default_thread_auto_archive_after,
+    parse_default_thread_reaction, parse_default_thread_slowmode, parse_flags, parse_topic, put_available_tags_into,
+    put_default_sort_order_into, put_default_thread_auto_archive_after_into, put_default_thread_reaction_into,
+    put_default_thread_slowmode_into, put_flags_into, put_topic_into, validate_available_tags,
+    validate_default_sort_order, validate_default_thread_auto_archive_after, validate_default_thread_reaction,
+    validate_default_thread_slowmode, validate_flags, validate_topic
 )
-from ..fields import parse_flags, put_flags_into, validate_flags
-from ..fields import parse_topic, put_topic_into, validate_topic
 from ..flags import ChannelFlag
+from ..preinstanced import SortOrder
 
 from .guild_main_base import ChannelMetadataGuildMainBase
 
@@ -38,6 +39,8 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         The channel's position.
     available_tags : `None`, `tuple` of ``ForumTag``
         The available tags to assign to the child-thread channels.
+    default_sort_order : ``SortOrder``
+        How the posts ordered in a forum channel by default.
     default_thread_auto_archive_after : `int`
         The default duration (in seconds) for newly created threads to automatically archive the themselves. Defaults
         to `3600`. Can be one of: `3600`, `86400`, `259200`, `604800`.
@@ -56,8 +59,8 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         The channel's order group used when sorting channels.
     """
     __slots__ = (
-        'available_tags', 'default_thread_auto_archive_after', 'default_thread_reaction', 'default_thread_slowmode', 
-        'flags', 'topic',
+        'available_tags', 'default_sort_order', 'default_thread_auto_archive_after', 'default_thread_reaction',
+        'default_thread_slowmode', 'flags', 'topic',
     )
     
     @copy_docs(ChannelMetadataGuildMainBase.__hash__)
@@ -71,6 +74,9 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
             
             for available_tag in available_tags:
                 hash_value ^= hash(available_tag)
+        
+        # default_sort_order
+        hash_value ^= self.default_sort_order.value << 20
         
         # default_thread_auto_archive_after
         hash_value ^= self.default_thread_auto_archive_after << 16
@@ -101,6 +107,10 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         
         # available_tags
         if self.available_tags != other.available_tags:
+            return False
+        
+        # default_sort_order
+        if self.default_sort_order is not other.default_sort_order:
             return False
         
         # default_thread_auto_archive_after
@@ -137,6 +147,7 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         self = super(ChannelMetadataGuildForum, cls)._create_empty()
         
         self.available_tags = None
+        self.default_sort_order = SortOrder.latest_activity
         self.default_thread_auto_archive_after = AUTO_ARCHIVE_DEFAULT
         self.default_thread_reaction = None
         self.default_thread_slowmode = SLOWMODE_DEFAULT
@@ -152,6 +163,9 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         
         # available_tags
         self.available_tags = parse_available_tags(data)
+        
+        # default_sort_order
+        self.default_sort_order = parse_default_sort_order(data)
         
         # default_thread_auto_archive_after
         self.default_thread_auto_archive_after = parse_default_thread_auto_archive_after(data)
@@ -178,6 +192,12 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         if (self.available_tags != available_tags):
             old_attributes['available_tags'] = self.available_tags
             self.available_tags = available_tags
+        
+        # default_sort_order
+        default_sort_order = parse_default_sort_order(data)
+        if self.default_sort_order is not default_sort_order:
+            old_attributes['default_sort_order'] = self.default_sort_order
+            self.default_sort_order = default_sort_order
         
         # default_thread_auto_archive_after
         default_thread_auto_archive_after = parse_default_thread_auto_archive_after(data)
@@ -247,6 +267,14 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         else:
             self.available_tags = validate_available_tags(available_tags)
         
+        # default_sort_order
+        try:
+            default_sort_order = keyword_parameters.pop('default_sort_order')
+        except KeyError:
+            pass
+        else:
+            self.default_sort_order = validate_default_sort_order(default_sort_order)
+        
         # default_thread_auto_archive_after
         try:
             default_thread_auto_archive_after = keyword_parameters.pop('default_thread_auto_archive_after')
@@ -296,6 +324,9 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         
         # available_tags
         put_available_tags_into(self.available_tags, data, defaults, include_internals = include_internals)
+        
+        # default_sort_order
+        put_default_sort_order_into(self.default_sort_order, data, defaults)
         
         # default_auto_archive_duration
         put_default_thread_auto_archive_after_into(self.default_thread_auto_archive_after, data, defaults)

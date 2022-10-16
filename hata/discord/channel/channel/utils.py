@@ -15,7 +15,8 @@ from .fields import (
     validate_applied_tag_ids, validate_auto_archive_after, validate_bitrate, validate_default_thread_auto_archive_after,
     validate_default_thread_reaction, validate_default_thread_slowmode, validate_flags, validate_invitable,
     validate_name, validate_nsfw, validate_open, validate_parent_id, validate_permission_overwrites, validate_position,
-    validate_region, validate_slowmode, validate_topic, validate_user_limit, validate_video_quality_mode
+    validate_region, validate_slowmode, validate_topic, validate_user_limit, validate_video_quality_mode,
+    validate_default_sort_order, put_default_sort_order_into
 )
 from .metadata.base import CHANNEL_METADATA_ICON_SLOT
 
@@ -25,6 +26,7 @@ Channel = include('Channel')
 
 CHANNEL_GUILD_MAIN_FIELD_CONVERTERS = {
     'bitrate': (validate_bitrate, put_bitrate_into),
+    'default_sort_order': (validate_default_sort_order, put_default_sort_order_into),
     'default_thread_auto_archive_after': (
         validate_default_thread_auto_archive_after, put_default_thread_auto_archive_after_into
     ),

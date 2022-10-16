@@ -6,7 +6,7 @@ from .....bases import Icon
 from .....emoji import Emoji
 
 from ...flags import ChannelFlag
-from ...preinstanced import VideoQualityMode, VoiceRegion
+from ...preinstanced import SortOrder, VideoQualityMode, VoiceRegion
 
 from ..base import ChannelMetadataBase
 
@@ -23,6 +23,7 @@ def test__ChannelMetadataBase__place_holders():
     vampytest.assert_instance(channel_metadata.auto_archive_after, int)
     vampytest.assert_instance(channel_metadata.available_tags, tuple, nullable = True)
     vampytest.assert_instance(channel_metadata.bitrate, int)
+    vampytest.assert_instance(channel_metadata.default_sort_order, SortOrder)
     vampytest.assert_instance(channel_metadata.default_thread_auto_archive_after, int)
     vampytest.assert_instance(channel_metadata.default_thread_reaction, Emoji, nullable = True)
     vampytest.assert_instance(channel_metadata.flags, ChannelFlag)
@@ -35,7 +36,7 @@ def test__ChannelMetadataBase__place_holders():
     vampytest.assert_instance(channel_metadata.parent_id, int)
     vampytest.assert_instance(channel_metadata.permission_overwrites, dict, nullable = True)
     vampytest.assert_instance(channel_metadata.position, int)
-    vampytest.assert_instance(channel_metadata.region, VoiceRegion, nullable = True)
+    vampytest.assert_instance(channel_metadata.region, VoiceRegion)
     vampytest.assert_instance(channel_metadata.slowmode, int)
     vampytest.assert_instance(channel_metadata.thread_users, dict, nullable = True)
     vampytest.assert_instance(channel_metadata.topic, str, nullable = True)

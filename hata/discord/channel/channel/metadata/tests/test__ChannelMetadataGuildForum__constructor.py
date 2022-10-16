@@ -7,6 +7,7 @@ from .....permission import PermissionOverwrite, PermissionOverwriteTargetType
 from ....forum_tag import ForumTag
 
 from ...flags import ChannelFlag
+from ...preinstanced import SortOrder
 
 from ..guild_forum import ChannelMetadataGuildForum
 
@@ -23,6 +24,7 @@ def assert_fields_set(channel_metadata):
     vampytest.assert_instance(channel_metadata.default_thread_slowmode, int)
     vampytest.assert_instance(channel_metadata.flags, ChannelFlag)
     vampytest.assert_instance(channel_metadata.topic, str, nullable = True)
+    vampytest.assert_instance(channel_metadata.default_sort_order, SortOrder)
 
 
 def test__ChannelMetadataGuildForum__new__0():
@@ -50,6 +52,7 @@ def test__ChannelMetadataGuildForum__new__0():
     default_thread_slowmode = 60
     flags = ChannelFlag(1)
     topic = 'Dearest'
+    default_sort_order = SortOrder.creation_date
     
     keyword_parameters = {
         'parent_id': parent_id,
@@ -62,6 +65,7 @@ def test__ChannelMetadataGuildForum__new__0():
         'default_thread_slowmode': default_thread_slowmode,
         'flags': flags,
         'topic': topic,
+        'default_sort_order': default_sort_order,
     }
     
     channel_metadata = ChannelMetadataGuildForum(keyword_parameters)
@@ -84,6 +88,7 @@ def test__ChannelMetadataGuildForum__new__0():
     vampytest.assert_eq(channel_metadata.default_thread_slowmode, default_thread_slowmode)
     vampytest.assert_eq(channel_metadata.flags, flags)
     vampytest.assert_eq(channel_metadata.topic, topic)
+    vampytest.assert_eq(channel_metadata.default_sort_order, default_sort_order)
 
 
 def test__ChannelMetadataGuildForum__new__1():
@@ -138,6 +143,7 @@ def test__ChannelMetadataGuildForum__precreate__0():
     default_thread_slowmode = 60
     flags = ChannelFlag(1)
     topic = 'Dearest'
+    default_sort_order = SortOrder.creation_date
     
     keyword_parameters = {
         'parent_id': parent_id,
@@ -150,6 +156,7 @@ def test__ChannelMetadataGuildForum__precreate__0():
         'default_thread_slowmode': default_thread_slowmode,
         'flags': flags,
         'topic': topic,
+        'default_sort_order': default_sort_order,
     }
     
     channel_metadata = ChannelMetadataGuildForum.precreate(keyword_parameters)
@@ -172,6 +179,7 @@ def test__ChannelMetadataGuildForum__precreate__0():
     vampytest.assert_eq(channel_metadata.default_thread_slowmode, default_thread_slowmode)
     vampytest.assert_eq(channel_metadata.flags, flags)
     vampytest.assert_eq(channel_metadata.topic, topic)
+    vampytest.assert_eq(channel_metadata.default_sort_order, default_sort_order)
 
 
 def test__ChannelMetadataGuildForum__precreate__1():

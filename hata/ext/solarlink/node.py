@@ -6,8 +6,8 @@ from scarletio import (
 )
 from scarletio.web_common import ConnectionClosed, InvalidHandshake, WebSocketProtocolError
 
+from ...discord.channel import VoiceRegion
 from ...discord.core import KOKORO
-from ...discord.guild import VoiceRegion
 
 from .constants import (
     HEADER_AUTHORIZATION, HEADER_CLIENT_NAME, HEADER_RESUME_KEY, HEADER_SHARD_COUNT, HEADER_USER_ID,

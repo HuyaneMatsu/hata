@@ -563,6 +563,9 @@ class ClientCompoundChannelEndpoints(Compound):
         bitrate : `int`, Optional (Keyword only)
             The bitrate (in bits) of the voice channel.
         
+        default_sort_order : ``SortOrder``, `int`, Optional (Keyword only)
+            How the posts ordered in a forum channel by default.
+        
         default_thread_auto_archive_after : `int`, Optional (Keyword only)
             The default duration (in seconds) for newly created threads to automatically archive the themselves.
         
@@ -657,6 +660,9 @@ class ClientCompoundChannelEndpoints(Compound):
         ----------------
         bitrate : `int`, Optional (Keyword only)
             The bitrate (in bits) of the voice channel.
+        
+        default_sort_order : ``SortOrder``, `int`, Optional (Keyword only)
+            How the posts ordered in a forum channel by default.
         
         default_thread_auto_archive_after : `int`, Optional (Keyword only)
             The default duration (in seconds) for newly created threads to automatically archive the themselves.

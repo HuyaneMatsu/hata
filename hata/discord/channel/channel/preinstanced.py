@@ -1,6 +1,46 @@
-__all__ = ('VideoQualityMode', 'VoiceRegion',)
+__all__ = ('SortOrder', 'VideoQualityMode', 'VoiceRegion',)
 
 from ...bases import Preinstance as P, PreinstancedBase
+
+
+class SortOrder(PreinstancedBase):
+    """
+    Represents the default sort order propagated by forum channels.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the sort order.
+    value : `int`
+        The identifier value the sort order.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`int`, ``SortOrder``) items
+        Stores the predefined ``SortOrder``-s. These can be accessed with their `value` as key.
+    VALUE_TYPE : `type` = `int`
+        The sort orders' values' type.
+    DEFAULT_NAME : `str` = `'UNDEFINED'`
+        The default name of the sort orders.
+    
+    Every predefined sort order can be accessed as class attribute as well:
+    
+    +-----------------------+-------------------+-------+
+    | Class attribute name  | Name              | Value |
+    +=======================+===================+=======+
+    | latest_activity       | latest activity   | 0     |
+    +-----------------------+-------------------+-------+
+    | creation_date         | creation date     | 1     |
+    +-----------------------+-------------------+-------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = int
+    DEFAULT_NAME = 'UNDEFINED'
+    
+    __slots__ = ()
+    
+    latest_activity = P(0, 'latest activity')
+    creation_date = P(1, 'creation date')
 
 
 class VideoQualityMode(PreinstancedBase):

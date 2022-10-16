@@ -14,7 +14,7 @@ from ...forum_tag import ForumTag
 from ..channel_type import ChannelType
 from ..channel import Channel
 from ..flags import ChannelFlag
-from ..preinstanced import VideoQualityMode, VoiceRegion
+from ..preinstanced import SortOrder, VideoQualityMode, VoiceRegion
 
 
 def test__Channel__thread_users__0():
@@ -62,6 +62,7 @@ def test__Channel__general_properties():
         (ChannelType.guild_text, 'topic', 'determination'),
         (ChannelType.guild_voice, 'user_limit', 66),
         (ChannelType.guild_voice, 'video_quality_mode', VideoQualityMode.full),
+        (ChannelType.guild_forum, 'default_sort_order', SortOrder.creation_date),
     ):
         channel = Channel(channel_type = channel_type, **{field_name: value})
         

@@ -329,6 +329,8 @@ Error Codes
 +---------------------------------------------------------------+-----------+-----------+
 | cannot_add_user_to_guild_where_bot_is_not_in                  | 50036     | -         |
 +---------------------------------------------------------------+-----------+-----------+
+| invalid_activity_action                                       | 50039     | -         |
++---------------------------------------------------------------+-----------+-----------+
 | invalid_oauth2_redirect_url                                   | 50040     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | invalid_API_version                                           | 50041     | -         |
@@ -350,6 +352,8 @@ Error Codes
 | invalid_message_type                                          | 50068     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | payment_source_required_to_redeem_gift                        | 50070     | -         |
++---------------------------------------------------------------+-----------+-----------+
+| cannot_edit_system_webhook                                    | 50077     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | cannot_delete_community_channel                               | 50074     | -         |
 +---------------------------------------------------------------+-----------+-----------+
@@ -659,6 +663,7 @@ invalid_recipients = 50033
 bulk_delete_message_too_old = 50034
 invalid_form_body = 50035
 cannot_add_user_to_guild_where_bot_is_not_in = 50036
+invalid_activity_action = 50039
 invalid_oauth2_redirect_url = 50040
 invalid_API_version = 50041
 asset_size_too_large = 50045
@@ -670,6 +675,7 @@ cannot_self_redeem_this_gift = 50054
 invalid_guild = 50055
 invalid_message_type = 50068
 payment_source_required_to_redeem_gift = 50070
+cannot_edit_system_webhook = 50073
 cannot_delete_community_channel = 50074
 cannot_edit_sticker_within_message = 50080
 invalid_sticker_sent = 50081

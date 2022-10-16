@@ -1,5 +1,6 @@
 __all__ = ()
 
+from ..channel import VoiceRegion
 from ..core import CHANNELS
 
 
@@ -16,12 +17,12 @@ def try_get_voice_region(guild_id, channel_id):
     
     Returns
     -------
-    region : `None`, ``VoiceRegion``
+    region : ``VoiceRegion``
     """
     try:
         channel = CHANNELS[channel_id]
     except KeyError:
-        region = None
+        region = VoiceRegion.unknown
     else:
         region = channel.region
     

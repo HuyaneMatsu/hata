@@ -896,7 +896,7 @@ def user_banner_url_as(user, ext=None, size=None):
 
 def user_avatar_url_for(user, guild):
     """
-    Returns the user's guild specific avatar. If the user has no guild specific avatar, returns `None`.
+    Returns the user's guild specific avatar. If the user has no guild local avatar, returns `None`.
     
     This function is a shared method of ``UserBase``-s.
     
@@ -928,7 +928,7 @@ def user_avatar_url_for(user, guild):
 
 def user_avatar_url_for_as(user, guild, ext=None, size=None):
     """
-    Returns the user's guild specific avatar. If the user has no avatar, then returns it's default avatar's url.
+    Returns the user's guild specific avatar. If the user has no guild local avatar, then returns `None`.
     
     This function is a shared method of ``UserBase``-s.
     
@@ -973,7 +973,6 @@ def user_avatar_url_for_as(user, guild, ext=None, size=None):
 def user_avatar_url_at(user, guild):
     """
     Returns the user's avatar's url at the guild.
-    
     
     This function is a shared method of ``UserBase``-s.
     

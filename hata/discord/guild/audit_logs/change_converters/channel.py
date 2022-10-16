@@ -1,10 +1,8 @@
 __all__ = ()
 
-from ....channel import ChannelFlag, ForumTag, VideoQualityMode
+from ....channel import ChannelFlag, ForumTag, VideoQualityMode, VoiceRegion
 from ....emoji import create_emoji_from_exclusive_data
 from ....permission import PermissionOverwrite
-
-from ...preinstanced import VoiceRegion
 
 from ..audit_log_change import AuditLogChange
 

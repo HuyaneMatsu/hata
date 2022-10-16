@@ -6,13 +6,12 @@ from datetime import datetime
 from scarletio import Compound
 
 from ...bases import maybe_snowflake
-from ...channel import Channel
+from ...channel import Channel, VoiceRegion
 from ...exceptions import DiscordException
 from ...guild import (
-    AuditLog, AuditLogEvent, AuditLogIterator, COMMUNITY_FEATURES, ContentFilterLevel, Guild,
-    GuildFeature, GuildPreview, GuildWidget, MessageNotificationLevel, SystemChannelFlag,
-    VerificationLevel, VerificationScreen, VerificationScreenStep, VoiceRegion, WelcomeChannel, WelcomeScreen,
-    create_partial_guild_from_data, create_partial_guild_from_id
+    AuditLog, AuditLogEvent, AuditLogIterator, COMMUNITY_FEATURES, ContentFilterLevel, Guild, GuildFeature,
+    GuildPreview, GuildWidget, MessageNotificationLevel, SystemChannelFlag, VerificationLevel, VerificationScreen,
+    VerificationScreenStep, WelcomeChannel, WelcomeScreen, create_partial_guild_from_data, create_partial_guild_from_id
 )
 from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES, VALID_ICON_MEDIA_TYPES_EXTENDED
 from ...localizations.utils import Locale

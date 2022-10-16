@@ -436,8 +436,11 @@ async def add_emoji(client, event,
     message = yield InteractionResponse(embed=embed, components=ADD_EMOJI_COMPONENTS)
     
     try:
-        component_interaction = await wait_for_component_interaction(message, timeout=300.0,
-            check=functools.partial(check_is_user_same, event.user))
+        component_interaction = await wait_for_component_interaction(
+            message,
+            timeout = 300.0,
+            check = functools.partial(check_is_user_same, event.user)
+        )
     
     except TimeoutError:
         component_interaction = None

@@ -14,7 +14,7 @@ from scarletio import WeakValueDictionary, export, include
 from ...env import CACHE_PRESENCE, CACHE_USER
 
 from ..bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
-from ..channel import Channel
+from ..channel import Channel, VoiceRegion
 from ..core import GUILDS
 from ..emoji import Emoji
 from ..http import urls as module_urls
@@ -31,7 +31,7 @@ from ..utils import DATETIME_FORMAT_CODE, EMOJI_NAME_RP
 from .embedded_activity_state import EmbeddedActivityState
 from .flags import SystemChannelFlag
 from .preinstanced import (
-    ContentFilterLevel, GuildFeature, HubType, MFA, MessageNotificationLevel, NsfwLevel, VerificationLevel, VoiceRegion
+    ContentFilterLevel, GuildFeature, HubType, MFA, MessageNotificationLevel, NsfwLevel, VerificationLevel
 )
 
 

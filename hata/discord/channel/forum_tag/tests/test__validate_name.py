@@ -1,6 +1,6 @@
 import vampytest
 
-from ...constants import NAME_LENGTH_MAX
+from ..constants import NAME_LENGTH_MAX
 
 from ..fields import validate_name
 

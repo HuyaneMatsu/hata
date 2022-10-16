@@ -68,6 +68,10 @@
 - `Integration.__hash__` now supports partial entities.
 - `Integration.__eq__` now supports partial entities.
 - Add `Integration.role`.
+- Add `ERROR_CODES.cannot_edit_system_webhook`.
+- Add `VoiceRegion.unknown`.
+- Add `ERROR_CODES.invalid_activity_action`.
+- `Channel.voice_region` is not nullable anymore.
 
 ##### ext.slash
 - Allow `hdsl` for slash command description.

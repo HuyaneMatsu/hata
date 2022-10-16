@@ -23,7 +23,7 @@ def message_relative_index(messages, message_id):
     messages : `deque` of ``Message``
         The message history of a channel.
     message_id : `int`
-        A messages's id to search.
+        A messages' id to search.
     
     Returns
     -------

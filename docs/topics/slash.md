@@ -224,7 +224,8 @@ complicated as might look for first time. All parameter has 3 fields what we nee
 from hata import Embed
 
 @Nitori.interactions(guild=TEST_GUILD)
-async def cookie(event,
+async def cookie(
+    event,
     user: ('user', 'To who?'),
 ):
     """Gifts a cookie!"""
@@ -250,7 +251,8 @@ CAKES = [
 ]
 
 @Nitori.interactions(guild=TEST_GUILD)
-async def cake(event,
+async def cake(
+    event,
     user: P('user', 'To who?'),
 ):
     """Gifts a cake!"""
@@ -271,7 +273,9 @@ Lets improve the `cookie` command to not require user!
 from hata import Embed
 
 @Nitori.interactions(guild=TEST_GUILD)
-async def cookie(client, event,
+async def cookie(
+    client,
+    event,
     user: ('user', 'To who?') = None,
 ):
     """Gifts a cookie!"""
@@ -312,7 +316,8 @@ Choice parameters go to the "annotation type field" and they can be either:
 from hata import Embed
 
 @Nitori.interactions(guild=TEST_GUILD)
-async def guild_icon(event,
+async def guild_icon(
+    event,
     choice: (
         {
             'Icon': 'icon',
@@ -372,7 +377,8 @@ GUILD_ICON_CHOICES = {
 }
 
 @Nitori.interactions(guild=TEST_GUILD)
-async def guild_icon(event,
+async def guild_icon(
+    event,
     choice: (GUILD_ICON_CHOICES, 'Which icon of the guild?' ) = 'icon',
 ):
     """Shows the guild's icon."""
@@ -544,7 +550,10 @@ class Action:
         self.action_name = action_name
         self.embed_color = embed_color
     
-    async def __call__(self, client, event,
+    async def __call__(
+        self,
+        client,
+        event,
         user: ('user', 'Who?') = None,
     ):
         if user is None:

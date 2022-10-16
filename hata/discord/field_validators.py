@@ -8,7 +8,7 @@ from .preconverters import preconvert_bool, preconvert_int_options, preconvert_p
 
 def entity_id_validator_factory(field_name, entity_type):
     """
-    Returns a new entity id validator.
+    Returns an entity id validator.
     
     Parameters
     ----------
@@ -60,6 +60,82 @@ def entity_id_validator_factory(field_name, entity_type):
                 )
         
         return processed_entity_id
+    
+    return validator
+
+
+def entity_id_array_validator_factory(field_name, entity_type):
+    """
+    Returns an entity id array validator.
+    
+    Parameters
+    ----------
+    field_name : `str`
+        The field's name.
+    entity_type : ``DiscordEntity``
+        The accepted entity's type.
+    
+    Returns
+    -------
+    validator : `FunctionType`
+    """
+    def validator(entity_id_array):
+        """
+        Validates the given entity identifier.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        entity_id_array : `None`, `iterable` of (`int`, `entity_type`) items
+            the entity or it's identifier.
+        
+        Returns
+        -------
+        entity_id_array : `None`, `tuple` of `int`
+            The entity's identifier.
+        
+        Raises
+        ------
+        TypeError
+            - If `entity_id_array`'s type is incorrect.
+            - If an element of `entity_id_array` has incorrect type.
+        """
+        nonlocal field_name
+        nonlocal entity_type
+        
+        if entity_id_array is None:
+            return None
+        
+        if (getattr(entity_id_array, '__iter__', None) is None):
+            raise TypeError(
+                f'`{field_name}` can be `None`, `iterable` of (`int`, `{entity_type.__name__}`), '
+                f'got {entity_id_array.__class__.__name__}; {entity_id_array!r}.'
+            )
+        
+        entity_id_array_processed = None
+        
+        for applied_tag_id in entity_id_array:
+            if isinstance(applied_tag_id, entity_type):
+                 applied_tag_id_processed = applied_tag_id.id
+            
+            else:
+                applied_tag_id_processed = maybe_snowflake(applied_tag_id)
+                if applied_tag_id_processed is None:
+                    raise TypeError(
+                        f'`{field_name}` can contain `int`, `{entity_type.__name__}` elements, got '
+                        f'{applied_tag_id.__class__.__name__}; {applied_tag_id!r}; entity_id_array={entity_id_array!r}.'
+                    )
+            
+            if entity_id_array_processed is None:
+                entity_id_array_processed = set()
+            
+            entity_id_array_processed.add(applied_tag_id_processed)
+        
+        if entity_id_array_processed is None:
+            return None
+        
+        return tuple(sorted(entity_id_array_processed))
     
     return validator
 
@@ -286,6 +362,66 @@ def int_conditional_validator_factory(field_name, condition_check, condition_mes
             )
         
         return integer
+    
+    return validator
+
+
+def flag_validator_factory(field_name, flag_type):
+    """
+    Returns a new `int` with condition validator.
+    
+    Parameters
+    ----------
+    field_name : `str`
+        The field's name.
+    flag_type : `type`
+        The flag type to use.
+    
+    Returns
+    -------
+    validator : `FunctionType`
+    """
+    def validator(flag):
+        """
+        Validates the given flag.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        integer : `None`, `int`, `instance<flag_type>`
+            The flag to validate.
+        
+        Returns
+        -------
+        integer : `instance<flag_type>`
+        
+        Raises
+        ------
+        TypeError
+            - If `flag` is not `int`.
+        ValueError
+            - If `flag` is not any of the expected options.
+        """
+        nonlocal field_name
+        nonlocal flag_type
+        
+        if flag is None:
+            flag = flag_type()
+        
+        elif isinstance(flag, flag_type):
+            pass
+        
+        elif isinstance(flag, int):
+            flag = flag_type(flag)
+        
+        else:
+            raise TypeError(
+                f'`{field_name}` can be `None`, `int`, `{flag_type.__name__}`, '
+                f'got {flag.__class__.__name__}; {flag!r}.'
+            )
+    
+        return flag
     
     return validator
 

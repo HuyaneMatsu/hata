@@ -122,7 +122,17 @@ class PreinstancedBase(RichAttributeErrorBaseType, metaclass=PreinstancedMeta):
         obj_ : ``PreinstancedBase``
         """
         if value is None:
-            value = 0
+            value_type = cls.VALUE_TYPE
+            if value_type is int:
+                value = 0
+            
+            elif value_type is str:
+                value = ''
+            
+            else:
+                raise NotImplementedError(
+                    f'Getting `{cls.__name__}` with value of `None` failed.'
+                )
         
         try:
             obj_ = cls.INSTANCES[value]

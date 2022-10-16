@@ -9,7 +9,7 @@ from ....env import API_VERSION
 from ...allowed_mentions import parse_allowed_mentions
 from ...bases import maybe_snowflake, maybe_snowflake_pair
 from ...channel import Channel, ChannelType, create_partial_channel_from_id
-from ...channel.utils import CHANNEL_GUILD_THREAD_FIELD_CONVERTERS
+from ...channel.channel.utils import CHANNEL_GUILD_THREAD_FIELD_CONVERTERS
 from ...core import CHANNELS
 from ...http import DiscordHTTPClient
 from ...message import Message, MessageFlag

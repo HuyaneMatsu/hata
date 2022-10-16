@@ -5,10 +5,10 @@ import warnings
 from scarletio import Compound
 
 from ...channel import Channel, ChannelType, ForumTag, create_partial_channel_from_id
-from ...channel.forum_tag.utils import FORUM_TAG_FIELD_CONVERTERS
-from ...channel.utils import (
+from ...channel.channel.utils import (
     CHANNEL_GUILD_FIELD_CONVERTERS, CHANNEL_GUILD_MAIN_FIELD_CONVERTERS, CHANNEL_PRIVATE_GROUP_FIELD_CONVERTERS
 )
+from ...channel.forum_tag.utils import FORUM_TAG_FIELD_CONVERTERS
 from ...guild import Guild, create_partial_guild_from_id
 from ...http import DiscordHTTPClient
 from ...permission import PermissionOverwrite

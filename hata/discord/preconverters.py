@@ -444,10 +444,15 @@ def preconvert_preinstanced_type(value, name, type_):
     value_type = value.__class__
     if (value_type is not type_):
         value_expected_type = type_.VALUE_TYPE
-        if value_type is value_expected_type:
+        if value is None:
+            value = type_.get(value)
+        
+        elif value_type is value_expected_type:
             pass
+        
         elif issubclass(value_type, value_expected_type):
             value = value_expected_type(value)
+        
         else:
             raise TypeError(
                 f'`{name}` can be `{type_.__name__}`, `{value_expected_type.__name__}` , got '

@@ -5,7 +5,7 @@ from .utils import timestamp_to_datetime
 
 def entity_id_parser_factory(field_key):
     """
-    Returns a new entity parser.
+    Returns a new entity id parser.
     
     Parameters
     ----------
@@ -40,6 +40,47 @@ def entity_id_parser_factory(field_key):
             entity_id = int(entity_id)
         
         return entity_id
+    
+    return parser
+
+
+def entity_id_array_parser_factory(field_key):
+    """
+    Returns a new entity id array parser.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    
+    Returns
+    -------
+    parser : `FunctionType`
+    """
+    def parser(data):
+        """
+        Parses out an entity id field from the given data.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Entity data.
+        
+        Returns
+        -------
+        entity_id_array : `None`, `tuple` of `int`
+        """
+        nonlocal field_key
+                
+        entity_id_array = data.get(field_key, None)
+        if (entity_id_array is None) or (not entity_id_array):
+            entity_id_array = None
+        else:
+            entity_id_array = tuple(sorted(int(entity_id) for entity_id in entity_id_array))
+        
+        return entity_id_array
     
     return parser
 
@@ -138,7 +179,7 @@ def preinstanced_array_parser_factory(field_key, preinstanced_type):
 
 def int_parser_factory(field_key, default_value):
     """
-    Returns a new `int` parser.
+    Returns an `int` parser.
     
     Parameters
     ----------
@@ -172,6 +213,97 @@ def int_parser_factory(field_key, default_value):
         value = data.get(field_key, None)
         if (value is None):
             value = default_value
+        
+        return value
+    
+    return parser
+
+
+def int_postprocess_parser_factory(field_key, default_value, postprocessor):
+    """
+    Returns an `int` parser. with a postprocessor function applied to it.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    default_value : `int`
+        The default value to use if the key is not present.
+    postprocessor : `callable`
+        Postprocessor to call on the field.
+    
+    Returns
+    -------
+    parser : `FunctionType`
+    """
+    def parser(data):
+        """
+        Parses out an integer from the given payload.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Entity data.
+        
+        Returns
+        -------
+        field_value : `int`
+        """
+        nonlocal field_key
+        nonlocal default_value
+        nonlocal postprocessor
+        
+        value = data.get(field_key, None)
+        if (value is None):
+            value = default_value
+        else:
+            value = postprocessor(value)
+        
+        return value
+    
+    return parser
+
+
+def flag_parser_factory(field_key, flag_type):
+    """
+    Returns a `flag` parser.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    flag_type : `type`
+        The type of the flag to return.
+    
+    Returns
+    -------
+    parser : `FunctionType`
+    """
+    def parser(data):
+        """
+        Parses out an flag from the given payload.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Entity data.
+        
+        Returns
+        -------
+        field_value : `instance<flag_type>`
+        """
+        nonlocal field_key
+        nonlocal flag_type
+        
+        value = data.get(field_key, None)
+        if (value is None):
+            value = flag_type()
+        else:
+            value = flag_type(value)
         
         return value
     

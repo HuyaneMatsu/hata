@@ -7,8 +7,7 @@ from scarletio import copy_docs, export, include
 from ....core import GUILDS
 from ....permission.permission import PERMISSION_MASK_VIEW_CHANNEL
 
-from ..fields.name import parse_name, put_name_into, validate_name
-from ..fields.parent_id import parse_parent_id, put_parent_id_into, validate_parent_id
+from ..fields import parse_name, parse_parent_id, put_name_into, put_parent_id_into, validate_name, validate_parent_id
 
 from .base import ChannelMetadataBase
 

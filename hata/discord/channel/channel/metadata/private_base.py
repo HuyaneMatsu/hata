@@ -2,7 +2,7 @@ __all__ = ('ChannelMetadataPrivateBase',)
 
 from scarletio import copy_docs
 
-from ..fields.users import parse_users, put_users_into, validate_users
+from ..fields import parse_users, put_users_into, validate_users
 
 from .base import ChannelMetadataBase
 

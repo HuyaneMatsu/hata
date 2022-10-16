@@ -34,7 +34,6 @@ setup(
         'hata.discord.channel',
         'hata.discord.channel.channel',
         'hata.discord.channel.channel.channel_type',
-        'hata.discord.channel.channel.fields',
         'hata.discord.channel.channel.metadata',
         'hata.discord.channel.forum_tag',
         'hata.discord.client',

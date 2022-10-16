@@ -8,12 +8,11 @@ from ....permission.permission import (
     PERMISSION_VOICE_DENY_CONNECTION
 )
 
-from ..fields.nsfw import parse_nsfw, put_nsfw_into, validate_nsfw
-from ..fields.video_quality_mode import (
-    parse_video_quality_mode, put_video_quality_mode_into, validate_video_quality_mode
+from ..fields import (
+    parse_nsfw, parse_video_quality_mode, put_nsfw_into, put_video_quality_mode_into, validate_nsfw,
+    validate_video_quality_mode
 )
 from ..preinstanced import VideoQualityMode
-
 
 from .guild_voice_base import ChannelMetadataGuildVoiceBase
 

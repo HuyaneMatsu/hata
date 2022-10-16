@@ -5,8 +5,7 @@ from scarletio import copy_docs
 from ....bases import ICON_TYPE_NONE, Slotted
 from ....permission.permission import PERMISSION_GROUP, PERMISSION_GROUP_OWNER, PERMISSION_NONE
 
-from ..fields.name import parse_name, put_name_into, validate_name
-from ..fields.owner_id import parse_owner_id, put_owner_id_into, validate_owner_id
+from ..fields import parse_name, parse_owner_id, put_name_into, put_owner_id_into, validate_name, validate_owner_id
 
 from .base import CHANNEL_METADATA_ICON_SLOT
 from .private_base import ChannelMetadataPrivateBase

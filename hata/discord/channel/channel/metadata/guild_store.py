@@ -5,7 +5,7 @@ from scarletio import copy_docs
 from ....permission import Permission
 from ....permission.permission import PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE, PERMISSION_TEXT_AND_VOICE_DENY
 
-from ..fields.nsfw import parse_nsfw, put_nsfw_into, validate_nsfw
+from ..fields import parse_nsfw, put_nsfw_into, validate_nsfw
 
 from .guild_main_base import ChannelMetadataGuildMainBase
 

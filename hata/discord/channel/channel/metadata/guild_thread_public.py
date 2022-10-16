@@ -2,8 +2,10 @@ __all__ = ('ChannelMetadataGuildThreadPublic',)
 
 from scarletio import copy_docs
 
-from ..fields.applied_tag_ids import parse_applied_tag_ids, put_applied_tag_ids_into, validate_applied_tag_ids
-from ..fields.flags import parse_flags, put_flags_into, validate_flags
+from ..fields import (
+    parse_applied_tag_ids, parse_flags, put_applied_tag_ids_into, put_flags_into, validate_applied_tag_ids,
+    validate_flags
+)
 from ..flags import ChannelFlag
 
 from .guild_thread_base import ChannelMetadataGuildThreadBase

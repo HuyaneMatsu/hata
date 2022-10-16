@@ -8,7 +8,6 @@ from ....permission.permission import (
     PERMISSION_NONE, PERMISSION_TEXT_DENY, PERMISSION_VOICE_DENY
 )
 
-
 from .guild_text_base import ChannelMetadataGuildTextBase
 
 

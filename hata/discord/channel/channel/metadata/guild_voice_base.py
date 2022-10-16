@@ -3,9 +3,10 @@ __all__ = ('ChannelMetadataGuildVoiceBase',)
 from scarletio import copy_docs
 
 from ..constants import BITRATE_DEFAULT, USER_LIMIT_DEFAULT
-from ..fields.bitrate import parse_bitrate, put_bitrate_into, validate_bitrate
-from ..fields.region import parse_region, put_region_into, validate_region
-from ..fields.user_limit import parse_user_limit, put_user_limit_into, validate_user_limit
+from ..fields import (
+    parse_bitrate, parse_region, parse_user_limit, put_bitrate_into, put_region_into, put_user_limit_into,
+    validate_bitrate, validate_region, validate_user_limit
+)
 from ..preinstanced import VoiceRegion
 
 from .guild_main_base import ChannelMetadataGuildMainBase

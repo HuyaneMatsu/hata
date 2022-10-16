@@ -3,16 +3,12 @@ __all__ = ('ChannelMetadataGuildTextBase',)
 from scarletio import copy_docs
 
 from ..constants import AUTO_ARCHIVE_DEFAULT, SLOWMODE_DEFAULT
-from ..fields.default_thread_auto_archive_after import (
-    parse_default_thread_auto_archive_after, put_default_thread_auto_archive_after_into,
-    validate_default_thread_auto_archive_after
+from ..fields import (
+    parse_default_thread_auto_archive_after, parse_default_thread_slowmode, parse_nsfw, parse_slowmode, parse_topic,
+    put_default_thread_auto_archive_after_into, put_default_thread_slowmode_into, put_nsfw_into, put_slowmode_into,
+    put_topic_into, validate_default_thread_auto_archive_after, validate_default_thread_slowmode, validate_nsfw,
+    validate_slowmode, validate_topic
 )
-from ..fields.default_thread_slowmode import (
-    parse_default_thread_slowmode, put_default_thread_slowmode_into, validate_default_thread_slowmode
-)
-from ..fields.nsfw import parse_nsfw, put_nsfw_into, validate_nsfw
-from ..fields.slowmode import parse_slowmode, put_slowmode_into, validate_slowmode
-from ..fields.topic import parse_topic, put_topic_into, validate_topic
 
 from .guild_main_base import ChannelMetadataGuildMainBase
 

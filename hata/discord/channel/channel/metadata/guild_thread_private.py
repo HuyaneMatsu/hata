@@ -2,7 +2,7 @@ __all__ = ('ChannelMetadataGuildThreadPrivate',)
 
 from scarletio import copy_docs
 
-from ..fields.invitable import parse_invitable, put_invitable_into, validate_invitable
+from ..fields import parse_invitable, put_invitable_into, validate_invitable
 
 from .guild_thread_base import ChannelMetadataGuildThreadBase
 

@@ -7,27 +7,16 @@ from scarletio import export, include
 from ...core import CHANNELS
 
 from .channel_type import ChannelType
-from .fields.applied_tag_ids import validate_applied_tag_ids, put_applied_tag_ids_into
-from .fields.auto_archive_after import validate_auto_archive_after, put_auto_archive_after_into
-from .fields.bitrate import validate_bitrate, put_bitrate_into
-from .fields.default_thread_auto_archive_after import (
-    validate_default_thread_auto_archive_after, put_default_thread_auto_archive_after_into
+from .fields import (
+    put_applied_tag_ids_into, put_auto_archive_after_into, put_bitrate_into, put_default_thread_auto_archive_after_into,
+    put_default_thread_reaction_into, put_default_thread_slowmode_into, put_flags_into, put_invitable_into,
+    put_name_into, put_nsfw_into, put_open_into, put_parent_id_into, put_permission_overwrites_into, put_position_into,
+    put_region_into, put_slowmode_into, put_topic_into, put_user_limit_into, put_video_quality_mode_into,
+    validate_applied_tag_ids, validate_auto_archive_after, validate_bitrate, validate_default_thread_auto_archive_after,
+    validate_default_thread_reaction, validate_default_thread_slowmode, validate_flags, validate_invitable,
+    validate_name, validate_nsfw, validate_open, validate_parent_id, validate_permission_overwrites, validate_position,
+    validate_region, validate_slowmode, validate_topic, validate_user_limit, validate_video_quality_mode
 )
-from .fields.default_thread_reaction import validate_default_thread_reaction, put_default_thread_reaction_into
-from .fields.default_thread_slowmode import validate_default_thread_slowmode, put_default_thread_slowmode_into
-from .fields.flags import validate_flags, put_flags_into
-from .fields.invitable import validate_invitable, put_invitable_into
-from .fields.name import validate_name, put_name_into
-from .fields.nsfw import validate_nsfw, put_nsfw_into
-from .fields.open_ import validate_open, put_open_into
-from .fields.parent_id import validate_parent_id, put_parent_id_into
-from .fields.permission_overwrites import validate_permission_overwrites, put_permission_overwrites_into
-from .fields.position import validate_position, put_position_into
-from .fields.region import validate_region, put_region_into
-from .fields.slowmode import validate_slowmode, put_slowmode_into
-from .fields.topic import validate_topic, put_topic_into
-from .fields.user_limit import validate_user_limit, put_user_limit_into
-from .fields.video_quality_mode import validate_video_quality_mode, put_video_quality_mode_into
 from .metadata.base import CHANNEL_METADATA_ICON_SLOT
 
 

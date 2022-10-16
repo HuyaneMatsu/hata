@@ -8,7 +8,7 @@ from ....permission.permission import (
     PERMISSION_VOICE_DENY_CONNECTION
 )
 
-from ..fields.topic import parse_topic, put_topic_into, validate_topic
+from ..fields import parse_topic, put_topic_into, validate_topic
 
 from .guild_main_base import ChannelMetadataGuildMainBase
 from .guild_voice_base import ChannelMetadataGuildVoiceBase

@@ -9,10 +9,10 @@ from ....permission.permission import (
 )
 from ....user import ClientUserBase
 
-from ..fields.permission_overwrites import (
-    parse_permission_overwrites, put_permission_overwrites_into, validate_permission_overwrites
+from ..fields import (
+    parse_permission_overwrites, parse_position, put_permission_overwrites_into, put_position_into,
+    validate_permission_overwrites, validate_position
 )
-from ..fields.position import parse_position, put_position_into, validate_position
 
 from .guild_base import ChannelMetadataGuildBase
 

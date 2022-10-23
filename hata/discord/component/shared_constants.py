@@ -1,0 +1,5 @@
+__all__ = ()
+
+CUSTOM_ID_LENGTH_MAX = 100
+
+COMPONENTS_LENGTH_MAX = 5

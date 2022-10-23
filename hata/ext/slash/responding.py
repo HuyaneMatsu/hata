@@ -3,8 +3,9 @@ __all__ = ('abort', 'InteractionResponse',)
 from scarletio import is_coroutine_generator, skip_ready_cycle
 
 from ...discord.client import Client
+from ...discord.component import InteractionForm
 from ...discord.embed import EmbedBase
-from ...discord.interaction import InteractionForm, InteractionType
+from ...discord.interaction import InteractionType
 
 from .response_modifier import (
     get_show_for_invoking_user_only_from, get_show_for_invoking_user_only_of, get_wait_for_acknowledgement_of,
@@ -434,7 +435,7 @@ class InteractionResponse:
             Which user or role can the message ping (or everyone). Check ``Client._parse_allowed_mentions`` for
             details.
         
-        components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
+        components : `None`, ``Component``, (`set`, `list`) of ``Component``, Optional (Keyword only)
             Components attached to the message.
         
         embed : `None`, ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
@@ -693,7 +694,7 @@ def abort(content=..., *, allowed_mentions=..., components=..., embed=..., event
             , Optional (Keyword only)
         Which user or role can the message ping (or everyone). Check ``Client._parse_allowed_mentions`` for details.
     
-    components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
+    components : `None`, ``Component``, (`set`, `list`) of ``Component``, Optional (Keyword only)
         Components attached to the message.
     
     embed : `None` ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)

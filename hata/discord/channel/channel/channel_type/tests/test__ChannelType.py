@@ -2,7 +2,8 @@ import vampytest
 
 from ...metadata import ChannelMetadataBase
 
-from .. import ChannelType, ChannelTypeFlag
+from ..flags import ChannelTypeFlag
+from ..preinstanced import ChannelType
 
 
 def test__ChannelType__name():

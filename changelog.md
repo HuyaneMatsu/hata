@@ -1,3 +1,31 @@
+## 1.3.11 *\[2022-10-??\]*
+
+#### Improvements
+
+- Add `Message.iter_components`.
+- Add `Component.button_style`.
+- Add `Component.text_input_style`.
+- Add `Component.iter_components`.
+- Add `Component.iter_options`.
+- Add `Component.channel_types`.
+- Add `InteractionForm.iter_components`.
+- Add `create_button` to replace `ComponentButton`.
+- Add `create_row` to replace `ComponentRow`.
+- Add `create_string_select` to replace `ComponentSelect`.
+- Add `create_text_input` to replace `ComponentTextInput`.
+- Add `create_user_select`.
+- Add `create_role_select`.
+- Add `create_channel_select`.
+- Add `create_mentionable_select`.
+
+#### Renames, Deprecation & Removals
+
+- Rename `Guild.sticker_count` to `.sticker_counts` (it was actually a typo the whole time).
+- Deprecate `Guild.sticker_count`.
+- Deprecate `style` parameters of components.
+- Deprecate `ComponentSelectOption`. Use `StringSelectOption` instead.
+- Deprecate `ComponentBase`. Use `Component` instead. Remove all other component types.
+
 ## 1.3.10 *\[2022-10-16\]*
 
 #### Improvements

@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from math import floor
 from os.path import split as split_path
 
-from scarletio import include, to_json
+from scarletio import to_json
 from scarletio.web_common import Formdata
 
 from ...env import API_VERSION
@@ -14,6 +14,7 @@ from ...env import API_VERSION
 from ..auto_moderation import AutoModerationRule
 from ..bases import maybe_snowflake, maybe_snowflake_pair, maybe_snowflake_token_pair
 from ..channel import Channel, ForumTag
+from ..component import Component, ComponentType, create_row
 from ..core import (
     APPLICATION_COMMANDS, AUTO_MODERATION_RULES, CHANNELS, FORUM_TAGS, GUILDS, MESSAGES, SCHEDULED_EVENTS, STICKERS,
     STICKER_PACKS, USERS
@@ -34,18 +35,13 @@ from ..utils import random_id
 from ..webhook import Webhook
 
 
-ComponentBase = include('ComponentBase')
-ComponentType = include('ComponentType')
-ComponentRow = include('ComponentRow')
-
 def get_components_data(components, is_edit):
     """
     Gets component data from the given components.
     
     Parameters
     ----------
-    components : `None`, ``ComponentBase``, (`set`, `list`) of \
-            (``ComponentBase``, (`set`, `list`) of ``ComponentBase``)
+    components : `None`, ``Component``, (`set`, `list`) of (``Component``, (`set`, `list`) of ``Component``)
         Components to be attached to a message.
     is_edit : `bool`
         Whether the processed `components` fields are for message edition. At this case passing `None` will
@@ -59,17 +55,17 @@ def get_components_data(components, is_edit):
     Raises
     ------
     TypeError
-        - If `components` was not given neither as `None`, ``ComponentBase``, (`list`, `tuple`) of ``ComponentBase``
+        - If `components` was not given neither as `None`, ``Component``, (`list`, `tuple`) of ``Component``
             instances.
     AssertionError
-        - If `components` contains a non ``ComponentBase`` element.
+        - If `components` contains a non ``Component`` element.
     """
     
     # Components check order:
     # 1.: None -> None || []
     # 2.: Ellipsis -> None || Ellipsis
-    # 2.: ComponentBase -> [component.to_data()]
-    # 3.: (list, tuple) of ComponentBase, (list, tuple) of ComponentBase -> [component.to_data(), ...] / None
+    # 2.: Component -> [component.to_data()]
+    # 3.: (list, tuple) of Component, (list, tuple) of Component -> [component.to_data(), ...] / None
     # 4.: raise
     
     if components is None:
@@ -85,26 +81,26 @@ def get_components_data(components, is_edit):
             component_datas = None
     
     else:
-        if isinstance(components, ComponentBase):
+        if isinstance(components, Component):
             if components.type is not ComponentType.row:
-                components = ComponentRow(components)
+                components = create_row(components)
                 
             component_datas = [components.to_data()]
         elif isinstance(components, (list, tuple)):
             component_datas = None
             
             for component in components:
-                if isinstance(component, ComponentBase):
+                if isinstance(component, Component):
                     if component.type is not ComponentType.row:
-                        component = ComponentRow(component)
+                        component = create_row(component)
                 
                 elif isinstance(component, (list, tuple)):
-                    component = ComponentRow(*component)
+                    component = create_row(*component)
                 
                 else:
                     raise TypeError(
-                        f'`components` can contain contain `{ComponentBase.__name__}`, (`list`, `tuple`) of '
-                        f'`{ComponentBase.__name__}`, got {components.__class__.__name__}; {components!r}.'
+                        f'`components` can contain contain `{Component.__name__}`, (`list`, `tuple`) of '
+                        f'`{Component.__name__}`, got {components.__class__.__name__}; {components!r}.'
                     )
                 
                 if component_datas is None:
@@ -115,8 +111,8 @@ def get_components_data(components, is_edit):
         
         else:
             raise TypeError(
-                f'`components` can be `{ComponentBase.__name__}`, (`list`, `tuple`) of '
-                f'(`{ComponentBase.__name__}`, (`list`, `tuple`) of `{ComponentBase.__name__}`), '
+                f'`components` can be `{Component.__name__}`, (`list`, `tuple`) of '
+                f'(`{Component.__name__}`, (`list`, `tuple`) of `{Component.__name__}`), '
                 f'got {components.__class__.__name__}; {components!r}.'
             )
     

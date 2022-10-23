@@ -17,7 +17,7 @@ from ...field_putters import (
 from ...field_validators import (
     bool_validator_factory, default_entity_validator, entity_id_validator_factory, entity_validator_factory,
     force_string_validator_factory, int_conditional_validator_factory, int_options_validator_factory,
-    nullable_date_time_validator_factory, nullable_entity_validator, preinstanced_array_validator_factory,
+    nullable_date_time_validator_factory, nullable_entity_validator_factory, preinstanced_array_validator_factory,
     preinstanced_validator_factory
 )
 from ...oauth2 import Oauth2Scope
@@ -98,7 +98,7 @@ validate_account__discord = entity_validator_factory('account', ClientUserBase)
 
 parse_application = nullable_entity_parser_factory('application', IntegrationApplication)
 put_application_into = nullable_entity_putter_factory('application', IntegrationApplication)
-validate_application = nullable_entity_validator('application', IntegrationApplication)
+validate_application = nullable_entity_validator_factory('application', IntegrationApplication)
 
 # enabled
 

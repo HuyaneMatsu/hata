@@ -188,7 +188,7 @@ class CommandContext:
             A file or files to send. Check ``create_file_form`` for details.
         sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`)
             Sticker or stickers to send within the message.
-        components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
+        components : `None`, ``Component``, (`set`, `list`) of ``Component``, Optional (Keyword only)
             Components attached to the message.
             
             > `components` do not count towards having any content in the message.
@@ -255,7 +255,7 @@ class CommandContext:
             A file or files to send. Check ``create_file_form`` for details.
         sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`)
             Sticker or stickers to send within the message.
-        components : `None`, ``ComponentBase``, (`set`, `list`) of ``ComponentBase``, Optional (Keyword only)
+        components : `None`, ``Component``, (`set`, `list`) of ``Component``, Optional (Keyword only)
             Components attached to the message.
             
             > `components` do not count towards having any content in the message.

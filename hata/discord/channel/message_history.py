@@ -7,8 +7,8 @@ from time import time as current_time
 from scarletio import LOOP_TIME, WeakReferer
 
 from ..core import KOKORO
-from ..message import Message
 from ..utils import DATETIME_FORMAT_CODE
+
 
 
 # searches the relative index of a message in a list

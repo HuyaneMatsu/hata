@@ -100,7 +100,6 @@ parse_description = nullable_string_parser_factory('description')
 put_description_into = nullable_string_putter_factory('description')
 validate_description = nullable_string_validator_factory('description', DESCRIPTION_LENGTH_MIN, DESCRIPTION_LENGTH_MAX)
 
-
 # name
 
 parse_name = force_string_parser_factory('name')

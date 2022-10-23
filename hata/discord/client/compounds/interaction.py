@@ -8,10 +8,9 @@ from scarletio import Compound
 from ...allowed_mentions import parse_allowed_mentions
 from ...application import Application
 from ...bases import maybe_snowflake
+from ...component import InteractionForm
 from ...http import DiscordHTTPClient
-from ...interaction import (
-    INTERACTION_RESPONSE_TYPES, InteractionEvent, InteractionForm, InteractionResponseContext, InteractionType
-)
+from ...interaction import INTERACTION_RESPONSE_TYPES, InteractionEvent, InteractionResponseContext, InteractionType
 
 from ...message import Message, MessageFlag
 from ...message.utils import try_resolve_interaction_message
@@ -192,7 +191,7 @@ class ClientCompoundInteractionEndpoints(Compound):
             warnings.warn(
                 (
                     f'`{self.__class__.__name__}.interaction_response_form` called on an interaction already '
-                    f'acknowledged /answered: {interaction!r}. Returning `None`.'
+                    f'acknowledged / answered: {interaction!r}. Returning `None`.'
                 ),
                 ResourceWarning,
                 stacklevel = 2,
@@ -257,8 +256,8 @@ class ClientCompoundInteractionEndpoints(Compound):
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
         
-        components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
-                ``ComponentBase``) = `None`, Optional (Keyword only)
+        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of
+                ``Component``) = `None`, Optional (Keyword only)
             Components attached to the message.
             
             > `components` do not count towards having any content in the message.
@@ -481,8 +480,8 @@ class ClientCompoundInteractionEndpoints(Compound):
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
         
-        components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
-                ``ComponentBase``), Optional (Keyword only)
+        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of
+                ``Component``), Optional (Keyword only)
             Components attached to the message.
             
             Pass it as `None` remove the actual ones.
@@ -748,8 +747,8 @@ class ClientCompoundInteractionEndpoints(Compound):
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
         
 
-        components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
-                ``ComponentBase``) = `None`, Optional (Keyword only)
+        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of
+                ``Component``) = `None`, Optional (Keyword only)
             Components attached to the message.
             
             > `components` do not count towards having any content in the message.
@@ -925,8 +924,8 @@ class ClientCompoundInteractionEndpoints(Compound):
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
             for details.
         
-        components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
-                ``ComponentBase``), Optional (Keyword only)
+        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of
+                ``Component``), Optional (Keyword only)
             Components attached to the message.
             
             Pass it as `None` remove the actual ones.

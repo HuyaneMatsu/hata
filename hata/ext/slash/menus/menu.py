@@ -11,15 +11,8 @@ from ....discord.client import Client
 from ....discord.core import KOKORO
 from ....discord.embed import EmbedBase
 from ....discord.exceptions import DiscordException, ERROR_CODES
-from ....discord.interaction import (
-    ComponentBase, ComponentButton, ComponentRow, ComponentSelect, ComponentSelectOption, ComponentType,
-    InteractionEvent, InteractionType
-)
-from ....discord.interaction.components.debug import (
-    _debug_component_components, _debug_component_custom_id, _debug_component_default, _debug_component_description,
-    _debug_component_emoji, _debug_component_enabled, _debug_component_label, _debug_component_max_values,
-    _debug_component_min_values, _debug_component_options, _debug_component_placeholder, _debug_component_url
-)
+from ....discord.component import Component, ComponentType, create_row
+from ....discord.interaction import  InteractionEvent, InteractionType
 from ....discord.message import Message
 
 from ..waiters import Timeouter
@@ -41,7 +34,7 @@ class ComponentSourceIdentityHasher:
     
     Attributes
     ----------
-    component : ``ComponentBase``
+    component : ``Component``
         The stored component by the hasher.
     """
     __slots__ = ('component', )
@@ -75,18 +68,14 @@ class ComponentAttributeDescriptor:
     
     Attributes
     ----------
-    _debugger : `callable`
-        Debugger to check whether the given value is correct.
-    _is_collection : `None`, ``ComponentBase``
+    _is_collection : `None`, ``Component``
         Sub-component type if applicable.
-    _supported_types : `tuple` of `type`
-        The supported types of the respective component.
     _name : `str`
         The attribute's name.
     """
-    __slots__ = ('_debugger', '_is_collection', '_supported_types', '_name')
+    __slots__ = ('_is_collection', '_name')
     
-    def __new__(cls, name, supported_types, debugger, is_collection):
+    def __new__(cls, name, is_collection):
         """
         Creates a new ``ComponentAttributeDescriptor`` with the given parameters.
         
@@ -94,19 +83,14 @@ class ComponentAttributeDescriptor:
         ----------
         name : `str`
             The attribute's name.
-        supported_types : `tuple` of `type`
-            The supported component types.
-        debugger : `None`, `Function`
-            Debugger function to check the passed values in debug mode.
         is_collection : `bool`
             Whether the component is collection of components.
         """
         self = object.__new__(cls)
-        self._debugger = debugger
-        self._supported_types = supported_types
         self._name = name
         self._is_collection = is_collection
         return self
+    
     
     def __get__(self, instance, type_):
         """
@@ -133,12 +117,6 @@ class ComponentAttributeDescriptor:
         else:
             component = instance._get_component_overwrite()
         
-        if __debug__:
-            if (not isinstance(component, self._supported_types)):
-                raise AssertionError(
-                    f'{self._name} not supports {component.__class__.__name__}, got {component!r}.'
-                )
-        
         attribute_value = getattr(component, self._name)
         if is_collection and (attribute_value is not None):
             menu_instance = instance._instance
@@ -160,17 +138,7 @@ class ComponentAttributeDescriptor:
         value : `Any`
             The value to set as attribute.
         """
-        if __debug__:
-            self._debugger(value)
-        
         component = instance._get_component_overwrite()
-        
-        if __debug__:
-            if (not isinstance(component, self._supported_types)):
-                raise AssertionError(
-                    f'{self._name} not supports {component.__class__.__name__}, got {component!r}.'
-                )
-        
         
         setattr(component, self._name, value)
     
@@ -181,8 +149,6 @@ class ComponentAttributeDescriptor:
             self.__class__.__name__,
             ' name=',
             repr(self._name),
-            ', supported_types=',
-            repr(self._supported_types)
         ]
         
         if self._is_collection:
@@ -193,15 +159,15 @@ class ComponentAttributeDescriptor:
         return ''.join(repr_parts)
 
 
-class ComponentDescriptorState(ComponentBase):
+class ComponentDescriptorState:
     """
     Stateless component descriptor.
     
     Attributes
     ----------
-    _component : ``ComponentBase``
+    _component : ``Component``
         The wrapped component instance.
-    _source_component : ``ComponentBase``
+    _source_component : ``Component``
         The source component from which the descriptor is created from.
     _sub_components : `None`, `list` of ``ComponentDescriptor``
         Sub components applicable to the component.
@@ -219,7 +185,7 @@ class ComponentDescriptorState(ComponentBase):
         
         Parameters
         ----------
-        source : ``ComponentBase``
+        source : ``Component``
             The source component to create the descriptor from.
         sub_components : `None`, `list` of ``ComponentDescriptor``
             A list of sub components added
@@ -285,7 +251,7 @@ class ComponentDescriptorState(ComponentBase):
         RichAttributeErrorBaseType.__getattr__(self, attribute_name)
     
     
-    @copy_docs(ComponentBase.__dir__)
+    @copy_docs(Component.__dir__)
     def __dir__(self):
         directory = set(object.__dir__(self))
         
@@ -296,12 +262,12 @@ class ComponentDescriptorState(ComponentBase):
         return sorted(directory)
     
     
-    @copy_docs(ComponentBase.to_data)
+    @copy_docs(Component.to_data)
     def to_data(self):
         return self._component.to_data()
     
     
-    @copy_docs(ComponentBase.__eq__)
+    @copy_docs(Component.__eq__)
     def __eq__(self, other):
         if type(other) is not type(self):
             return NotImplemented
@@ -312,12 +278,12 @@ class ComponentDescriptorState(ComponentBase):
         return False
     
     
-    @copy_docs(ComponentBase.__hash__)
+    @copy_docs(Component.__hash__)
     def __hash__(self):
         return hash(self._component)
     
     
-    @copy_docs(ComponentBase._iter_components)
+    @copy_docs(Component._iter_components)
     def _iter_components(self):
         yield self
         
@@ -327,7 +293,7 @@ class ComponentDescriptorState(ComponentBase):
                 yield from sub_component._iter_components()
     
     
-    @copy_docs(ComponentBase._iter_direct_sub_components)
+    @copy_docs(Component._iter_direct_sub_components)
     def _iter_direct_sub_components(self):
         sub_components = self._sub_components
         if (sub_components is not None):
@@ -340,9 +306,9 @@ class ComponentDescriptor(ComponentDescriptorState):
     
     Attributes
     ----------
-    _component : ``ComponentBase``
+    _component : ``Component``
         The wrapped component instance.
-    _source_component : ``ComponentBase``
+    _source_component : ``Component``
         The source component from which the descriptor is created from.
     _sub_components : `None`, `list` of ``ComponentDescriptor``
         Sub components applicable to the component.
@@ -365,7 +331,7 @@ class ComponentDescriptor(ComponentDescriptorState):
         
         Parameters
         ----------
-        source : ``ComponentBase``
+        source : ``Component``
             The source component to create the descriptor from.
         sub_components : `list` of ``ComponentDescriptor``
             A list of sub components added
@@ -427,7 +393,7 @@ class ComponentDescriptor(ComponentDescriptorState):
         return ''.join(repr_parts)
 
 
-class ComponentProxy(ComponentBase):
+class ComponentProxy:
     """
     Proxy class for components.
     
@@ -484,7 +450,7 @@ class ComponentProxy(ComponentBase):
         
         Returns
         -------
-        component : ``ComponentBase``
+        component : ``Component``
         """
         component = self._component_overwrite
         if (component is None):
@@ -499,19 +465,13 @@ class ComponentProxy(ComponentBase):
         
         Returns
         -------
-        component : ``ComponentBase``
+        component : ``Component``
         """
         component = self._component_overwrite
         if (component is None):
             self._component_overwrite = component = self._descriptor._component.copy()
         
         return component
-    
-    
-    @property
-    def type(self):
-        """Returns the component's type."""
-        return self._descriptor._component.type
     
     
     def __repr__(self):
@@ -523,7 +483,7 @@ class ComponentProxy(ComponentBase):
         return f'<{self.__class__.__name__} component={component!r}>'
     
     
-    @copy_docs(ComponentBase.__hash__)
+    @copy_docs(Component.__hash__)
     def __hash__(self):
         component = self._component_overwrite
         if (component is None):
@@ -532,147 +492,68 @@ class ComponentProxy(ComponentBase):
         return hash(component)
     
     
-    @copy_docs(ComponentBase.to_data)
-    def to_data(self):
-        # We will brute force some things. It ain't pretty.
-        component_type = type(self._descriptor._component)
-        
-        if issubclass(component_type, ComponentRow):
-            data = {
-                'type': ComponentType.row.value,
-            }
-            
-            attribute_value = self.components
-            if attribute_value is None:
-                field_value = []
-            else:
-                field_value = [sub_component.to_data() for sub_component in attribute_value]
-            data['components'] = field_value
-        
-        elif issubclass(component_type, ComponentButton):
-            data = self._get_component().to_data()
-        
-        elif issubclass(component_type,  ComponentSelectOption):
-            data = self._get_component().to_data()
-        
-        elif issubclass(component_type,  ComponentSelect):
-            data = {
-                'type': ComponentType.select.value,
-            }
-            
-            attribute_value = self.options
-            if attribute_value is None:
-                field_value = []
-            else:
-                field_value = [sub_component.to_data() for sub_component in attribute_value]
-            data['options'] = field_value
-            
-            component = self._get_component()
-            
-            data['custom_id'] = component.custom_id
-            
-            placeholder = component.placeholder
-            if (placeholder is not None):
-                data['placeholder'] = placeholder
-            
-            min_values = component.min_values
-            if min_values != 1:
-                data['min_values'] = min_values
-            
-            max_values = component.max_values
-            if max_values != 1:
-                data['max_values'] = max_values
-            
-            if (not component.enabled):
-                data['disabled'] = True
-                
-        else:
-            data = {}
-        
-        return data
-    
-    
     components = ComponentAttributeDescriptor(
         'components',
-        (ComponentRow,),
-        _debug_component_components,
         True,
     )
     
     custom_id = ComponentAttributeDescriptor(
         'custom_id',
-        (ComponentButton, ComponentSelect,),
-        _debug_component_custom_id,
         False,
     )
     
     emoji = ComponentAttributeDescriptor(
         'emoji',
-        (ComponentButton, ComponentSelectOption),
-        _debug_component_emoji,
         False,
     )
     
     label = ComponentAttributeDescriptor(
         'label',
-        (ComponentButton, ComponentSelectOption),
-        _debug_component_label,
         False,
     )
 
     enabled = ComponentAttributeDescriptor(
         'enabled',
-        (ComponentButton, ComponentSelect),
-        _debug_component_enabled,
         False,
     )
 
     url = ComponentAttributeDescriptor(
         'url',
-        (ComponentButton,),
-        _debug_component_url,
-        False,
-    )
-    
-    description = ComponentAttributeDescriptor(
-        'description',
-        (ComponentSelectOption,),
-        _debug_component_description,
-        False,
-    )
-    
-    default = ComponentAttributeDescriptor(
-        'default',
-        (ComponentSelectOption,),
-        _debug_component_default,
         False,
     )
     
     options = ComponentAttributeDescriptor(
         'options',
-        (ComponentSelect,),
-        _debug_component_options,
         True,
     )
     
     placeholder = ComponentAttributeDescriptor(
         'placeholder',
-        (ComponentSelect,),
-        _debug_component_placeholder,
         False,
     )
     
     min_values = ComponentAttributeDescriptor(
         'min_values',
-        (ComponentSelect,),
-        _debug_component_min_values,
         False,
     )
     
     max_values = ComponentAttributeDescriptor(
         'max_values',
-        (ComponentSelect,),
-        _debug_component_max_values,
+        False,
+    )
+    
+    min_length = ComponentAttributeDescriptor(
+        'min_length',
+        False,
+    )
+    
+    max_length = ComponentAttributeDescriptor(
+        'max_length',
+        False,
+    )
+    
+    channel_types = ComponentAttributeDescriptor(
+        'channel_types',
         False,
     )
 
@@ -709,7 +590,7 @@ def validate_check(check):
     
     if min_ != 2:
         if max_ < 2:
-            if not analyzer.accepts_args():
+            if not analyzer.accepts_positional_parameters():
                 raise TypeError(
                     f'`check` should accept `2` parameters, meanwhile the given one expects '
                     f'up to `{max_!r}`, got {check!r}.'
@@ -749,7 +630,7 @@ def validate_invoke(invoke):
     
     if min_ != 2:
         if max_ < 2:
-            if not analyzer.accepts_args():
+            if not analyzer.accepts_positional_parameters():
                 raise TypeError(
                     f'`invoke` should accept `2` parameters, meanwhile the given one expects '
                     f'up to `{max_!r}`, got {invoke!r}.'
@@ -788,7 +669,7 @@ def validate_initial_invoke(initial_invoke):
     
     if min_ != 1:
         if max_ < 1:
-            if not analyzer.accepts_args():
+            if not analyzer.accepts_positional_parameters():
                 raise TypeError(
                     f'`initial_invoke` should accept `1` parameters, meanwhile the given callable '
                     f'expects up to `{max_!r}`, got {initial_invoke!r}.'
@@ -827,7 +708,7 @@ def validate_get_timeout(get_timeout):
     
     if min_ != 1:
         if max_ < 1:
-            if not analyzer.accepts_args():
+            if not analyzer.accepts_positional_parameters():
                 raise TypeError(
                     f'`get_timeout` should accept `1` parameters, meanwhile the given callable '
                     f'expects up to `{max_!r}`, got {get_timeout!r}.'
@@ -866,7 +747,7 @@ def validate_close(close):
     
     if min_ != 2:
         if max_ < 2:
-            if not analyzer.accepts_args():
+            if not analyzer.accepts_positional_parameters():
                 raise TypeError(
                     f'`close` should accept `2` parameters, meanwhile the given one expects '
                     f'up to `{max_!r}`, got {close!r}.'
@@ -978,9 +859,9 @@ class MenuStructure:
         +-------------------+---------------------------+
         | interaction_event | ``InteractionEvent``      |
         +-------------------+---------------------------+
-        | *args             | Positional parameters     |
+        | *positional_parameters             | Positional parameters     |
         +-------------------+---------------------------+
-        | **kwargs          | Keyword parameters        |
+        | **keyword_parameters          | Keyword parameters        |
         +-------------------+---------------------------+
     
     initial_invoke : `None`, `CoroutineFunction`
@@ -1305,9 +1186,11 @@ class MenuType(type):
                 secondary = tracked_components
                 component_hasher = ComponentSourceIdentityHasher(attribute_value._source_component)
                 all_component_descriptor[component_hasher] = attribute_value
-            elif isinstance(attribute_value, ComponentBase):
+            
+            elif isinstance(attribute_value, Component):
                 container = tracked_components
                 secondary = component_descriptors
+            
             else:
                 continue
             
@@ -1385,7 +1268,7 @@ class MenuType(type):
         return type.__new__(cls, class_name, class_parents, class_attributes)
 
 
-class Menu(metaclass=MenuType):
+class Menu(metaclass = MenuType):
     """
     Base class for custom component based menus.
     
@@ -1395,7 +1278,7 @@ class Menu(metaclass=MenuType):
         The used allowed mentions when editing the respective message.
     _canceller : None`, `CoroutineFunction`
         Canceller set as `._canceller_function``, meanwhile the gui is not cancelled.
-    _components : `None`, `tuple` of ``ComponentBase``
+    _components : `None`, `tuple` of ``Component``
         Rendered components of the menu.
     _component_proxy_cache : `dict` of (`int`, ``ComponentProxy``) items
         A dictionary of component proxy identifiers and component proxies.
@@ -1440,7 +1323,7 @@ class Menu(metaclass=MenuType):
         'channel', 'client', 'message', '_components',
     )
     
-    async def __new__(cls, client, target, *args, **kwargs):
+    async def __new__(cls, client, target, *positional_parameters, **keyword_parameters):
         """
         Creates a new menu instance.
         
@@ -1450,9 +1333,9 @@ class Menu(metaclass=MenuType):
             The client instance whi will execute the action.
         target : ``InteractionEvent``, ``Message``, ``Channel``, `int`
             The event to respond to, or the channel to send the message at, or the message to edit.
-        *args : Positional parameters
+        *positional_parameters : Positional parameters
             Additional positional parameters.
-        **kwargs : Keyword parameters
+        **keyword_parameters : Keyword parameters
             Additional keyword parameters.
         
         Raises
@@ -1503,7 +1386,6 @@ class Menu(metaclass=MenuType):
                 f'{target.__class__.__name__}; {target!r}.'
             )
         
-        
         self = object.__new__(cls)
         self._canceller = None
         self.message = target_message
@@ -1517,7 +1399,7 @@ class Menu(metaclass=MenuType):
         
         init = menu_structure.init
         if (init is not None):
-            init(self, client, target, *args, **kwargs)
+            init(self, client, target, *positional_parameters, **keyword_parameters)
         
         await menu_structure.initial_invoke(self)
         
@@ -1528,14 +1410,14 @@ class Menu(metaclass=MenuType):
                 f'{menu_structure.initial_invoke!r} did not change any parameters.'
             )
         
-        kwargs = tracked_changes.copy()
+        keyword_parameters = tracked_changes.copy()
         tracked_changes.clear()
         
         allowed_mentions = self._allowed_mentions
         if (allowed_mentions is not None):
-            kwargs['allowed_mentions'] = allowed_mentions
+            keyword_parameters['allowed_mentions'] = allowed_mentions
         
-        kwargs['components'] = self._components
+        keyword_parameters['components'] = self._components
         
         if is_interaction:
             interaction_event_type = interaction_event.type
@@ -1544,12 +1426,14 @@ class Menu(metaclass=MenuType):
                     if interaction_event.is_unanswered():
                         await client.interaction_application_command_acknowledge(interaction_event)
                     
-                    target_message = await client.interaction_followup_message_create(interaction_event, **kwargs)
+                    target_message = await client.interaction_followup_message_create(
+                        interaction_event, **keyword_parameters
+                    )
                 else:
-                    await client.interaction_response_message_edit(interaction_event, **kwargs)
+                    await client.interaction_response_message_edit(interaction_event, **keyword_parameters)
             
             elif interaction_event_type is INTERACTION_TYPE_MESSAGE_COMPONENT:
-                await client.interaction_component_message_edit(interaction_event, **kwargs)
+                await client.interaction_component_message_edit(interaction_event, **keyword_parameters)
             
             else:
                 # nani desu ka?
@@ -1557,9 +1441,9 @@ class Menu(metaclass=MenuType):
         
         else:
             if target_message is None:
-                target_message = await client.message_create(target_channel_id, **kwargs)
+                target_message = await client.message_create(target_channel_id, **keyword_parameters)
             else:
-                await client.message_edit(target_message, **kwargs)
+                await client.message_edit(target_message, **keyword_parameters)
         
         self.message = target_message
         
@@ -1630,17 +1514,17 @@ class Menu(metaclass=MenuType):
         
         if should_edit:
             tracked_changes = self._tracked_changes
-            kwargs = tracked_changes.copy()
+            keyword_parameters = tracked_changes.copy()
             tracked_changes.clear()
             
             allowed_mentions = self._allowed_mentions
             if (allowed_mentions is not None):
-                kwargs['allowed_mentions'] = allowed_mentions
+                keyword_parameters['allowed_mentions'] = allowed_mentions
             
             try:
                 await client.interaction_component_message_edit(
                     interaction_event,
-                    **kwargs,
+                    **keyword_parameters,
                     components = self._components,
                 )
             except GeneratorExit as err:
@@ -1951,14 +1835,14 @@ class Menu(metaclass=MenuType):
             else:
                 
                 component_descriptor = ComponentDescriptorState(
-                    ComponentRow(raw_components._source_component),
+                    create_row(raw_components._source_component),
                     [raw_components],
                 )
                 component_proxy = component_descriptor.get_component_proxy(self)
                 
                 components.append(component_proxy)
         
-        elif isinstance(raw_components, ComponentBase):
+        elif isinstance(raw_components, Component):
             raw_component = raw_components
             sub_component_descriptors = None
             sub_component_relations = None
@@ -1986,7 +1870,7 @@ class Menu(metaclass=MenuType):
                 raw_component._replace_direct_sub_components(sub_component_relations)
             
             component_descriptor = ComponentDescriptorState(
-                ComponentRow(raw_component),
+                create_row(raw_component),
                 sub_component_descriptors,
             )
             
@@ -2003,14 +1887,14 @@ class Menu(metaclass=MenuType):
                     else:
                         
                         component_descriptor = ComponentDescriptorState(
-                            ComponentRow(raw_sub_component._source_component),
+                            create_row(raw_sub_component._source_component),
                             [raw_sub_component],
                         )
                         component_proxy = component_descriptor.get_component_proxy(self)
                         
                         components.append(component_proxy)
                     
-                elif isinstance(raw_sub_component, ComponentBase):
+                elif isinstance(raw_sub_component, Component):
                     component_hasher = ComponentSourceIdentityHasher(raw_sub_component)
                     
                     if all_component_descriptor is None:
@@ -2066,7 +1950,7 @@ class Menu(metaclass=MenuType):
                             
                             sub_component_descriptors.append(raw_nested_sub_component)
                         
-                        elif isinstance(raw_nested_sub_component, ComponentBase):
+                        elif isinstance(raw_nested_sub_component, Component):
                             if raw_nested_sub_component.type is ComponentType.row:
                                 raise TypeError(
                                     f'Cannot double-nest row components, got {raw_components!r}.'
@@ -2088,12 +1972,12 @@ class Menu(metaclass=MenuType):
                         else:
                             raise TypeError(
                                 f'Nested-sub components can be `{ComponentProxy.__name__}`,  '
-                                f'`{ComponentBase.__name__}`, got {raw_nested_sub_component.__class__.__name__}; '
+                                f'`{Component.__name__}`, got {raw_nested_sub_component.__class__.__name__}; '
                                 f'{raw_nested_sub_component!r}; raw_components={raw_components!r}.'
                             )
                     
                     component_descriptor = ComponentDescriptorState(
-                        ComponentRow(*raw_components),
+                        create_row(*raw_components),
                         sub_component_descriptors,
                     )
                     
@@ -2103,7 +1987,7 @@ class Menu(metaclass=MenuType):
         
         else:
             raise TypeError(
-                f'`raw_components` can be `None`, `{ComponentProxy.__name__}`, `{ComponentBase.__name__}`, '
+                f'`raw_components` can be `None`, `{ComponentProxy.__name__}`, `{Component.__name__}`, '
                 f'(`list`, `tuple`) of repeat, no triple nesting, got {raw_components.__class__.__name__}; '
                 f'{raw_components!r}.'
             )

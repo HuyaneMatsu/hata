@@ -2878,7 +2878,7 @@ class Guild(DiscordEntity, immortal=True):
     
     
     @property
-    def sticker_count(self):
+    def sticker_counts(self):
         """
         Returns the sticker counts of the guild for each type.
         
@@ -2910,6 +2910,23 @@ class Guild(DiscordEntity, immortal=True):
                 continue
         
         return static_count, animated_count, lottie_count
+    
+    
+    @property
+    def sticker_count(self):
+        """
+        `.sticker_count` is deprecated and will be removed in 2023 August. Please use `.sticker_counts` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.sticker_count` is deprecated and will be removed in 2023 January. '
+                f'Please use `.sticker_counts` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return self.sticker_counts
     
     
     @property

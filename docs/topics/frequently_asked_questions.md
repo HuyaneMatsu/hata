@@ -5,25 +5,25 @@ repository.
 
 ### How do I set activity?
 
-When creating a client, you may pass an `ActivityRich` instance to the `activity` parameter.
+When creating a client, you may pass an `Activity` instance to the `activity` parameter.
 
 ```py3
-from hata import ActivityRich, Client
+from hata import Activity, Client
 
 client = Client(
     'token',
-    activity = ActivityRich('Eating'),
+    activity = Activity('Eating'),
 )
 ```
 
-To change the type of the activity, use the `type_` parameter of `ActivityRich`.
+To change the type of the activity, use the `type_` parameter of `Activity`.
 
 ```py3
-from hata import ACTIVITY_TYPES, ActivityRich, Client
+from hata import ActivityType, Activity, Client
 
 client = Client(
     'token',
-    activity = ActivityRich('Eating', type_=ACTIVITY_TYPES.competing),
+    activity = Activity('Eating', type_ = ActivityType.competing),
 )
 ```
 

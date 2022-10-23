@@ -4,7 +4,7 @@ import reprlib
 
 from scarletio import copy_docs
 
-from ..components import ComponentType
+from ...component import ComponentType
 
 from .interaction_field_base import InteractionFieldBase
 
@@ -16,7 +16,7 @@ class FormSubmitInteraction(InteractionFieldBase):
     Attributes
     ----------
     custom_id : `None`, `str`
-        The forms's custom identifier.
+        The forms' custom identifier.
     options : `None`, `tuple` of ``FormSubmitInteractionOption``
         Submitted component values.
     """

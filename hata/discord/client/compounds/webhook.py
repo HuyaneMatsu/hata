@@ -577,8 +577,8 @@ class ClientCompoundWebhookEndpoints(Compound):
             
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
         
-        components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
-                ``ComponentBase``) = `None`, Optional (Keyword only)
+        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of
+                ``Component``) = `None`, Optional (Keyword only)
             Components attached to the message.
             
             > `components` do not count towards having any content in the message.
@@ -791,8 +791,8 @@ class ClientCompoundWebhookEndpoints(Compound):
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
             for details.
         
-        components : `None`, ``ComponentBase``, (`tuple`, `list`) of (``ComponentBase``, (`tuple`, `list`) of
-                ``ComponentBase``), Optional (Keyword only)
+        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of
+                ``Component``), Optional (Keyword only)
             Components attached to the message.
         
         Raises

@@ -11,7 +11,6 @@ from ....env import MESSAGE_CACHE_SIZE
 from ...bases import DiscordEntity
 from ...core import CHANNELS, GUILDS
 from ...core import MESSAGES
-from ...message import Message
 from ...permission.permission import PERMISSION_STAGE_MODERATOR
 from ...preconverters import preconvert_preinstanced_type, preconvert_snowflake
 from ...user import ZEROUSER, create_partial_user_from_id
@@ -30,7 +29,7 @@ from .metadata import ChannelMetadataBase, ChannelMetadataGuildMainBase
 
 
 create_partial_channel_from_id = include('create_partial_channel_from_id')
-
+Message = include('Message')
 
 CHANNEL_TYPE_MASK_GUILD_TEXTUAL = CHANNEL_TYPE_MASK_GUILD | CHANNEL_TYPE_MASK_TEXTUAL
 CHANNEL_TYPE_MASK_GUILD_CONNECTABLE = CHANNEL_TYPE_MASK_GUILD | CHANNEL_TYPE_MASK_CONNECTABLE

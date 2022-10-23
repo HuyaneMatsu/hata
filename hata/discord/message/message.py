@@ -9,6 +9,7 @@ from scarletio import BaseMethodDescriptor, export, include
 
 from ..bases import DiscordEntity, id_sort_key
 from ..core import CHANNELS, GUILDS, MESSAGES
+from ..component import Component
 from ..embed import EXTRA_EMBED_TYPES, EmbedBase, EmbedCore
 from ..emoji import ReactionMapping, merge_update_reaction_mapping
 from ..http import urls as module_urls
@@ -37,9 +38,7 @@ from .utils import try_resolve_interaction_message
 
 Channel = include('Channel')
 ChannelType = include('ChannelType')
-ComponentBase = include('ComponentBase')
 InteractionType = include('InteractionType')
-create_component = include('create_component')
 create_partial_channel_from_id = include('create_partial_channel_from_id')
 
 
@@ -709,7 +708,7 @@ class Message(DiscordEntity, immortal=True):
             _set_message_field(
                 self,
                 MESSAGE_FIELD_KEY_COMPONENTS,
-                tuple(create_component(component_data) for component_data in component_datas),
+                tuple(Component.from_data(component_data) for component_data in component_datas),
             )
         
         
@@ -844,7 +843,7 @@ class Message(DiscordEntity, immortal=True):
             
             If called as a classmethod this attribute must be passed, or `TypeError` is raised.
         
-        components : `None`, (`list`, `tuple`) of ``ComponentBase``, Optional (Keyword only)
+        components : `None`, (`list`, `tuple`) of ``Component``, Optional (Keyword only)
             The ``.components`` attribute of the message.
             
             If called as a classmethod, defaults to `None`.
@@ -1553,7 +1552,7 @@ class Message(DiscordEntity, immortal=True):
             if (components is not None):
                 if not isinstance(components, (list, tuple)):
                     raise TypeError(
-                        f'`components` can be `None`, `tuple`, `list` of `{ComponentBase.__name__}` , got '
+                        f'`components` can be `None`, `tuple`, `list` of `{Component.__name__}` , got '
                         f'{components.__class__.__name__}; {components!r}.'
                     )
                 
@@ -1561,9 +1560,9 @@ class Message(DiscordEntity, immortal=True):
                 
                 if components:
                     for component in components:
-                        if not isinstance(component, ComponentBase):
+                        if not isinstance(component, Component):
                             raise TypeError(
-                                f'`components` can contain `{ComponentBase.__name__}` elements, got '
+                                f'`components` can contain `{Component.__name__}` elements, got '
                                 f'{component.__class__.__name__}; {component!r}.'
                             )
                     
@@ -1736,7 +1735,7 @@ class Message(DiscordEntity, immortal=True):
         +===================+=======================================================================+
         | attachments       | `None`, (`tuple` of ``Attachment``)                                   |
         +-------------------+-----------------------------------------------------------------------+
-        | components        | `None`, (`tuple` of ``ComponentBase``)                                |
+        | components        | `None`, (`tuple` of ``Component``)                                |
         +-------------------+-----------------------------------------------------------------------+
         | content           | `None`, `str`                                                         |
         +-------------------+-----------------------------------------------------------------------+
@@ -1899,7 +1898,7 @@ class Message(DiscordEntity, immortal=True):
             if (component_datas is None) or (not component_datas):
                 components = None
             else:
-                components = tuple(create_component(component_data) for component_data in component_datas)
+                components = tuple(Component.from_data(component_data) for component_data in component_datas)
             
             self_components = self.components
             if self_components != components:
@@ -2090,7 +2089,7 @@ class Message(DiscordEntity, immortal=True):
             if (component_datas is None) or (not component_datas):
                 components = None
             else:
-                components = tuple(create_component(component_data) for component_data in component_datas)
+                components = tuple(Component.from_data(component_data) for component_data in component_datas)
             self.components = components
         
         
@@ -2595,7 +2594,7 @@ class Message(DiscordEntity, immortal=True):
         channel_id : ``Channel``, `int`, Optional if called as method (Keyword only)
             The ``.channel_id`` attribute of the message.
         
-        components : `None`, (`list`, `tuple`) of ``ComponentBase``, Optional (Keyword only)
+        components : `None`, (`list`, `tuple`) of ``Component``, Optional (Keyword only)
             The ``.components`` attribute of the message.
         
         content : `None`, `str`, Optional (Keyword only)
@@ -2735,7 +2734,7 @@ class Message(DiscordEntity, immortal=True):
             
             for variable_field_key, variable_element_type, variable_name, is_sorted in (
                 (MESSAGE_FIELD_KEY_ATTACHMENTS, Attachment, 'attachments', False),
-                (MESSAGE_FIELD_KEY_COMPONENTS, ComponentBase, 'components', False),
+                (MESSAGE_FIELD_KEY_COMPONENTS, Component, 'components', False),
                 (MESSAGE_FIELD_KEY_STICKERS, Sticker, 'stickers', False),
                 (MESSAGE_FIELD_KEY_CROSS_MENTIONS, (Channel, UnknownCrossMention), 'cross_mentions', True),
                 (MESSAGE_FIELD_KEY_USER_MENTIONS, ClientUserBase, 'user_mentions', True),
@@ -3494,7 +3493,7 @@ class Message(DiscordEntity, immortal=True):
         
         Returns
         -------
-        components : `None`, `tuple` of ``ComponentBase``
+        components : `None`, `tuple` of ``Component``
         """
         return _get_message_field(
             self,
@@ -3532,6 +3531,22 @@ class Message(DiscordEntity, immortal=True):
         has_components : `bool`
         """
         return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_COMPONENTS,
+        )
+    
+    
+    def iter_components(self):
+        """
+        Iterates over the components of the message.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        component : ``Component``
+        """
+        yield from _iter_message_field(
             self,
             MESSAGE_FIELD_KEY_COMPONENTS,
         )

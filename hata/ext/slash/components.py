@@ -1,11 +1,11 @@
 __all__ = ('Button', 'ButtonStyle', 'Form', 'Option', 'Row', 'Select', 'TextInput', 'TextInputStyle')
 
+from ...discord.component import (
+    ButtonStyle, create_button as Button, create_row as Row, create_string_select as Select,
+    StringSelectOption as Option, create_text_input as TextInput, InteractionForm as Form, TextInputStyle
+)
 from ...discord.core import APPLICATION_ID_TO_CLIENT
 from ...discord.exceptions import DiscordException, ERROR_CODES
-from ...discord.interaction import (
-    ButtonStyle, ComponentButton as Button, ComponentRow as Row, ComponentSelect as Select,
-    ComponentSelectOption as Option, ComponentTextInput as TextInput, InteractionForm as Form, TextInputStyle
-)
 
 
 async def acknowledge_component_interaction(interaction_event):

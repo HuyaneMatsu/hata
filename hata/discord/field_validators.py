@@ -4,6 +4,7 @@ from datetime import datetime as DateTime
 
 from .bases import maybe_snowflake
 from .preconverters import preconvert_bool, preconvert_int_options, preconvert_preinstanced_type, preconvert_str
+from .utils import is_url
 
 
 def entity_id_validator_factory(field_name, entity_type):
@@ -664,6 +665,64 @@ def nullable_string_validator_factory(field_name, length_min, length_max):
     return validator
 
 
+
+def url_optional_validator_factory(field_name):
+    """
+    Returns an optional url validator.
+    
+    Parameters
+    ----------
+    field_name : `str`
+        The field's name.
+    
+    Returns
+    -------
+    validator : `FunctionType`
+    """
+    def validator(url):
+        """
+        Validates the given string.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        url : `None`, `str`
+            The url to validate.
+        
+        Returns
+        -------
+        string : `None`, `str`
+                
+        Raises
+        ------
+        TypeError
+            - If `url` is not `None`, `str`.
+        ValueError
+            - If `url` is not an url.
+        """
+        nonlocal field_name
+        
+        if (url is not None):
+            if not isinstance(url, str):
+                raise TypeError(
+                    f'`{field_name}` can be `None`, `str`, got {url.__class__.__name__}; {url!r}.'
+                )
+            
+            if url:
+                if not is_url(url):
+                    raise TypeError(
+                        f'`{field_name}` is not a valid url, got {url!r}.'
+                    )
+            
+            else:
+                url = None
+        
+        return url
+    
+    return validator
+
+
 def nullable_entity_array_validator_factory(field_name, entity_type):
     """
     Returns a nullable entity array validator.
@@ -731,7 +790,7 @@ def nullable_entity_array_validator_factory(field_name, entity_type):
     return validator
 
 
-def nullable_entity_validator(field_name, entity_type):
+def nullable_entity_validator_factory(field_name, entity_type):
     """
     Returns a nullable entity validator.
     
@@ -875,5 +934,72 @@ def entity_validator_factory(field_name, entity_type):
             )
         
         return entity
+    
+    return validator
+
+
+def nullable_object_array_validator_factory(field_name, object_type):
+    """
+    Returns a nullable object array validator.
+    
+    Parameters
+    ----------
+    field_name : `str`
+        The field's name.
+    object_type : `type`
+        The allowed object type.
+    
+    Returns
+    -------
+    validator : `FunctionType`
+    """
+    def validator(object_array):
+        """
+        Validates the given nullable object array field.
+        
+        Parameters
+        ----------
+        object_array : `None`, `iterable` of `instance<object_type>`
+            The object array to validate.
+        
+        Returns
+        -------
+        object_array : `None`, `tuple` of `instance<object_type>`
+        
+        Raises
+        ------
+        TypeError
+            - If `object_array` is not `None`, `iterable` of `object_type`.
+        """
+        nonlocal field_name
+        nonlocal object_type
+        
+        if object_array is None:
+            return None
+        
+        if (getattr(object_array, '__iter__', None) is None):
+            raise TypeError(
+                f'`{field_name}` can be `None`, `iterable` of `{object_type.__name__}`, got '
+                f'{object_array.__class__.__name__}; {object_array!r}.'
+            )
+            
+        object_array_processed = None
+        
+        for object in object_array:
+            if not isinstance(object, object_type):
+                raise TypeError(
+                    f'`{field_name}` can contain `{object_type.__name__}` elements, got '
+                    f'{object.__class__.__name__}; {object!r}; object_array = {object_array!r}.'
+                )
+            
+            if (object_array_processed is None):
+                object_array_processed = []
+            
+            object_array_processed.append(object)
+        
+        if (object_array_processed is not None):
+            object_array_processed = tuple(object_array_processed)
+        
+        return object_array_processed
     
     return validator

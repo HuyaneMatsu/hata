@@ -312,7 +312,7 @@ def flag_parser_factory(field_key, flag_type):
 
 def bool_parser_factory(field_key, default_value):
     """
-    Returns a new `bool` parser.
+    Returns a `bool` parser.
     
     Parameters
     ----------
@@ -327,7 +327,7 @@ def bool_parser_factory(field_key, default_value):
     """
     def parser(data):
         """
-        Parses out an integer from the given payload.
+        Parses out a `bool` from the given payload.
         
         > This function is generated.
         
@@ -344,6 +344,51 @@ def bool_parser_factory(field_key, default_value):
         nonlocal default_value
         
         return data.get(field_key, default_value)
+    
+    return parser
+
+
+def negated_bool_parser_factory(field_key, default_value):
+    """
+    Returns a negated `bool` parser.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    default_value : `bool`
+        The default value to use if the key is not present.
+    
+    Returns
+    -------
+    parser : `FunctionType`
+    """
+    def parser(data):
+        """
+        Parses out a `bool` from the given payload as returns it as negated.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Entity data.
+        
+        Returns
+        -------
+        field_value : `bool`
+        """
+        nonlocal field_key
+        nonlocal default_value
+        
+        try:
+            field_value = data[field_key]
+        except KeyError:
+            field_value = default_value
+        else:
+            field_value = not field_value
+        
+        return field_value
     
     return parser
 
@@ -508,7 +553,7 @@ def nullable_entity_array_parser_factory(field_key, entity_type):
 
 def nullable_entity_parser_factory(field_key, entity_type):
     """
-    Returns a new nullable entity parser.
+    Returns an nullable entity parser.
     
     Parameters
     ----------
@@ -526,7 +571,7 @@ def nullable_entity_parser_factory(field_key, entity_type):
 
 def default_entity_parser_factory(field_key, entity_type, default):
     """
-    Returns a new entity parser with default return value.
+    Returns an entity parser with default return value.
     
     Parameters
     ----------
@@ -567,5 +612,91 @@ def default_entity_parser_factory(field_key, entity_type, default):
             entity = entity_type.from_data(entity_data)
         
         return entity
+    
+    return parser
+
+
+def nullable_functional_parser_factor(field_key, function):
+    """
+    Returns an entity parser with default return value.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    function : `FunctionType`
+        Function to call with the received field value.
+    
+    Returns
+    -------
+    parser : `FunctionType`
+    """
+    def parser(data):
+        """
+        Parses out a field from the given `data`. IF anything is received calls the specified function on it.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Entity data.
+        
+        Returns
+        -------
+        field_value : `None`, `object`
+        """
+        nonlocal field_key
+        nonlocal function
+        
+        field_value = data.get(field_key, None)
+        if (field_value is not None):
+            field_value = function(field_value)
+        
+        return field_value
+    
+    return parser
+
+
+def nullable_object_array_parser_factory(field_key, object_type):
+    """
+    Returns a new nullable object array parser.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    object_type : `type` with `{from_data}`
+        Entity's type.
+    
+    Returns
+    -------
+    parser : `FunctionType`
+    """
+    def parser(data):
+        """
+        Parses out a nullable object array from the given payload.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Entity data.
+        
+        Returns
+        -------
+        object_array : `None`, `tuple` of `instance<object_type>`
+        """
+        nonlocal field_key
+        nonlocal object_type
+        
+        object_data_array = data.get(field_key, None)
+        if (object_data_array is None) or (not object_data_array):
+            object_array = None
+        else:
+            object_array = tuple(object_type.from_data(object_data) for object_data in object_data_array)
+        
+        return object_array
     
     return parser

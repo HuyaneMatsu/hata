@@ -18,7 +18,7 @@ from ...field_putters import (
 from ...field_validators import (
     bool_validator_factory, entity_id_array_validator_factory, entity_id_validator_factory, flag_validator_factory,
     force_string_validator_factory, int_conditional_validator_factory, int_options_validator_factory,
-    nullable_date_time_validator_factory, nullable_entity_array_validator_factory, nullable_entity_validator,
+    nullable_date_time_validator_factory, nullable_entity_array_validator_factory, nullable_entity_validator_factory,
     nullable_string_validator_factory, preinstanced_validator_factory
 )
 from ...permission import PermissionOverwrite
@@ -386,7 +386,7 @@ def put_default_thread_reaction_into(default_thread_reaction, data, defaults):
     return data
 
 
-validate_default_thread_reaction = nullable_entity_validator('default_thread_reaction', Emoji)
+validate_default_thread_reaction = nullable_entity_validator_factory('default_thread_reaction', Emoji)
 
 # default_thread_slowmode
 

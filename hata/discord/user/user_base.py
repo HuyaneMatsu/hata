@@ -501,7 +501,10 @@ class UserBase(DiscordEntity, immortal=True):
         bot : `bool`
         """
         warnings.warn(
-            f'{self.__class__.__name__} is deprecated and will be removed in 2023 August. Please use `.bot` instead.',
+            (
+                f'`{self.__class__.__name__}.is_bot` is deprecated and will be removed in 2023 August.'
+                f'Please use `.bot` instead.'
+            ),
             FutureWarning,
             stacklevel = 2,
         )

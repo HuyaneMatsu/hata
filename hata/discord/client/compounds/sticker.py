@@ -316,10 +316,14 @@ class ClientCompoundStickerEndpoints(Compound):
         
         if (description is not None):
             form_data.add_field('description', description)
+        else:
+            # If no description is given Discord drops back an unrelated error
+            form_data.add_field('description', '')
         
         form_data.add_field('tags', tag)
         
         form_data.add_field('file', image, filename=f'file.{extension}', content_type=media_type)
+        
         
         sticker_data = await self.http.sticker_guild_create(guild_id, form_data, reason)
         

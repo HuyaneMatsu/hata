@@ -1,6 +1,6 @@
 __all__ = ()
 
-from .....discord.interaction.components.constants import COMPONENT_CUSTOM_ID_LENGTH_MAX
+from .....discord.component.shared_constants import CUSTOM_ID_LENGTH_MAX
 
 from ...converters import (
     RegexMatcher, check_component_converters_satisfy_regex, check_component_converters_satisfy_string
@@ -38,9 +38,9 @@ def _validate_custom_id(custom_id):
             custom_id = str(custom_id)
         
         custom_id_length = len(custom_id)
-        if (custom_id_length < 1) or (custom_id_length > COMPONENT_CUSTOM_ID_LENGTH_MAX):
+        if (custom_id_length < 1) or (custom_id_length > CUSTOM_ID_LENGTH_MAX):
             raise ValueError(
-                f'`custom_id` length can be in range [1:{COMPONENT_CUSTOM_ID_LENGTH_MAX}], got '
+                f'`custom_id` length can be in range [1:{CUSTOM_ID_LENGTH_MAX}], got '
                 f'{custom_id_length}; {custom_id!r}.'
             )
     

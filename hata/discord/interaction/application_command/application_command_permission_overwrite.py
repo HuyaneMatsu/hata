@@ -449,7 +449,7 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
         return True
     
     
-    def copy_width(self, **keyword_parameters):
+    def copy_with(self, **keyword_parameters):
         """
         Copies the application command permission overwrite with modifying the given parameters inside of it.
         

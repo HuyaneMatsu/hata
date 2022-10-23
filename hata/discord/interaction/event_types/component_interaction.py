@@ -1,10 +1,10 @@
 __all__ = ('ComponentInteraction',)
 
-import reprlib, warnings
+import reprlib
 
 from scarletio import copy_docs
 
-from ..components import ComponentBase, ComponentType
+from ...component import Component, ComponentType
 
 from .interaction_field_base import InteractionFieldBase
 
@@ -101,7 +101,7 @@ class ComponentInteraction(InteractionFieldBase):
             return True
         
         # Compare with components.
-        if issubclass(other_type, ComponentBase):
+        if issubclass(other_type, Component):
             # Check `type` before `custom_id`
             
             # type

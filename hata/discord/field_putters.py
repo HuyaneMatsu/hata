@@ -439,7 +439,7 @@ def nullable_int_optional_putter_factory(field_key, default_value):
 
 def bool_optional_putter_factory(field_key, default_value):
     """
-    Returns a new optional `bool` putter.
+    Returns an optional `bool` putter.
     
     Parameters
     ----------
@@ -476,6 +476,51 @@ def bool_optional_putter_factory(field_key, default_value):
         
         if defaults or (field_value != default_value):
             data[field_key] = field_value
+        
+        return data
+    
+    return putter
+
+
+def negated_bool_optional_putter_factory(field_key, default_value):
+    """
+    Returns an negated optional `bool` putter.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    default_value : `bool`
+        The default value to ignore if defaults are not required.
+    
+    Returns
+    -------
+    putter : `FunctionType`
+    """
+    def putter(field_value, data, defaults):
+        """
+        Negates the given `bool` and puts it into the given `data` json serializable object.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        field_value : `bool`
+            Boolean field value.
+        data : `dict` of (`str`, `Any`) items
+            Json serializable dictionary.
+        defaults : `bool`
+            Whether default values should be included as well.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`) items
+        """
+        nonlocal field_key
+        nonlocal default_value
+        
+        if defaults or (field_value != default_value):
+            data[field_key] = not field_value
         
         return data
     
@@ -571,7 +616,7 @@ def force_string_putter_factory(field_key):
 
 def nullable_string_putter_factory(field_key):
     """
-    Returns a new nullable string putter.
+    Returns a nullable string putter.
     
     Returns
     -------
@@ -613,9 +658,9 @@ def nullable_string_putter_factory(field_key):
     return putter
 
 
-def nullable_entity_array_putter_factory(field_key):
+def nullable_string_optional_putter_factory(field_key):
     """
-    Returns a new nullable entity array putter.
+    Returns a nullable & optional string putter.
     
     Returns
     -------
@@ -626,40 +671,164 @@ def nullable_entity_array_putter_factory(field_key):
     -------
     putter : `FunctionType`
     """
-    def putter(entity_array, data, defaults, *, include_internals = False):
+    def putter(field_value, data, defaults):
         """
-        Puts the given entity array into the given `data` json serializable object.
+        Puts the given `string` into the given `data` json serializable object.
         
         > This function is generated.
         
         Parameters
         ----------
-        entity_array : `None`, `tuple` of `object`
-            Entity array.
+        field_value : `None`, `string`
+            String field value.
         data : `dict` of (`str`, `Any`) items
             Json serializable dictionary.
         defaults : `bool`
             Whether default values should be included as well.
-        include_internals : `bool` = `False`, Optional (Keyword only)
-            Whether internal fields should be included.
         
         Returns
         -------
         data : `dict` of (`str`, `Any`) items
         """
         nonlocal field_key
-            
-        if entity_array is None:
-            entity_data_array = []
-        else:
-            entity_data_array = [
-                entity.to_data(defaults = defaults, include_internals = include_internals)
-                for entity in entity_array
-            ]
         
-        data[field_key] = entity_data_array
+        if defaults:
+            if field_value is None:
+                field_value = ''
+        
+        else:
+            if field_value is None:
+                return data
+        
+        data[field_key] = field_value
+        return data
+    
+    return putter
+
+
+def url_optional_putter_factory(field_key):
+    """
+    Returns an optional `url` putter.
+    
+    Returns
+    -------
+    field_key : `str`
+        The field's key used in payload.
+    
+    Returns
+    -------
+    putter : `FunctionType`
+    """
+    def putter(field_value, data, defaults):
+        """
+        Puts the given `string` into the given `data` json serializable object.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        field_value : `None`, `string`
+            String field value.
+        data : `dict` of (`str`, `Any`) items
+            Json serializable dictionary.
+        defaults : `bool`
+            Whether default values should be included as well.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`) items
+        """
+        nonlocal field_key
+        
+        if defaults or (field_value is not None):
+            data[field_key] = field_value
         
         return data
+    
+    return putter
+    
+
+def nullable_entity_array_putter_factory(field_key, field_type):
+    """
+    Returns a new nullable entity array putter.
+    
+    Returns
+    -------
+    field_key : `str`
+        The field's key used in payload.
+    field_type : `type`
+        The field's type.
+    
+    Returns
+    -------
+    putter : `FunctionType`
+    """
+    if _has_entity_include_internals_parameter(field_type):
+        def putter(entity_array, data, defaults, *, include_internals = False):
+            """
+            Puts the given entity array into the given `data` json serializable object.
+            
+            > This function is generated.
+            
+            Parameters
+            ----------
+            entity_array : `None`, `tuple` of `object`
+                Entity array.
+            data : `dict` of (`str`, `Any`) items
+                Json serializable dictionary.
+            defaults : `bool`
+                Whether default values should be included as well.
+            include_internals : `bool` = `False`, Optional (Keyword only)
+                Whether internal fields should be included.
+            
+            Returns
+            -------
+            data : `dict` of (`str`, `Any`) items
+            """
+            nonlocal field_key
+                
+            if entity_array is None:
+                entity_data_array = []
+            else:
+                entity_data_array = [
+                    entity.to_data(defaults = defaults, include_internals = include_internals)
+                    for entity in entity_array
+                ]
+            
+            data[field_key] = entity_data_array
+            
+            return data
+    
+    else:
+        def putter(entity_array, data, defaults):
+            """
+            Puts the given entity array into the given `data` json serializable object.
+            
+            > This function is generated.
+            
+            Parameters
+            ----------
+            entity_array : `None`, `tuple` of `object`
+                Entity array.
+            data : `dict` of (`str`, `Any`) items
+                Json serializable dictionary.
+            defaults : `bool`
+                Whether default values should be included as well.
+            
+            Returns
+            -------
+            data : `dict` of (`str`, `Any`) items
+            """
+            nonlocal field_key
+                
+            if entity_array is None:
+                entity_data_array = []
+            else:
+                entity_data_array = [entity.to_data(defaults = defaults) for entity in entity_array]
+            
+            data[field_key] = entity_data_array
+            
+            return data
     
     return putter
 
@@ -888,6 +1057,56 @@ def entity_putter_factory(field_key, entity_type):
             data[field_key] = entity.to_data(defaults = defaults)
             
             return data
+    
+    return putter
+
+
+
+def nullable_functional_optional_putter_factory(field_key, function):
+    """
+    Returns a new nullable optional functional putter. If the given `field_value` is not `None`, it will call the
+    function on field's value and put it into the received `data`.
+    
+    Returns
+    -------
+    field_key : `str`
+        The field's key used in payload.
+    function : `FunctionType`
+    
+    Returns
+    -------
+    putter : `FunctionType`
+    """
+    def putter(field_value, data, defaults):
+        """
+        Puts the given `field_value` into the given `data` json serializable object. The `field_value` is processed by
+        a function which is defined at the putter's creation.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        field_value : `object`
+            Field value.
+        data : `dict` of (`str`, `Any`) items
+            Json serializable dictionary.
+        defaults : `bool`
+            Whether default values should be included as well.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`) items
+        """
+        nonlocal function
+        nonlocal field_key
+        
+        if defaults or (field_value is not None):
+            if field_value is not None:
+                field_value = function(field_value)
+            
+            data[field_key] = field_value
+        
+        return data
     
     return putter
 

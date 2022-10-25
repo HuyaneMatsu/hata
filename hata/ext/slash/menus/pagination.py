@@ -2,7 +2,7 @@ __all__ = ('Pagination', )
 
 from scarletio import CancelledError
 
-from ....discord.interaction import ComponentButton, ComponentRow
+from ....discord.component import create_button, create_row
 
 from .helpers import (
     CUSTOM_ID_CANCEL, EMOJI_CANCEL, EMOJI_LEFT, EMOJI_LEFT_2, EMOJI_RIGHT, EMOJI_RIGHT_2, get_auto_check,
@@ -12,13 +12,13 @@ from .menu import Menu
 
 
 class Pagination(Menu):
-    BUTTON_LEFT_2 = ComponentButton(emoji=EMOJI_LEFT_2)
-    BUTTON_LEFT = ComponentButton(emoji=EMOJI_LEFT)
-    BUTTON_RIGHT = ComponentButton(emoji=EMOJI_RIGHT)
-    BUTTON_RIGHT_2 = ComponentButton(emoji=EMOJI_RIGHT_2)
-    BUTTON_CANCEL = ComponentButton(emoji=EMOJI_CANCEL, custom_id=CUSTOM_ID_CANCEL)
+    BUTTON_LEFT_2 = create_button(emoji = EMOJI_LEFT_2)
+    BUTTON_LEFT = create_button(emoji = EMOJI_LEFT)
+    BUTTON_RIGHT = create_button(emoji = EMOJI_RIGHT)
+    BUTTON_RIGHT_2 = create_button(emoji = EMOJI_RIGHT_2)
+    BUTTON_CANCEL = create_button(emoji = EMOJI_CANCEL, custom_id = CUSTOM_ID_CANCEL)
     
-    BUTTONS = ComponentRow(BUTTON_LEFT_2, BUTTON_LEFT, BUTTON_RIGHT, BUTTON_RIGHT_2, BUTTON_CANCEL,)
+    BUTTONS = create_row(BUTTON_LEFT_2, BUTTON_LEFT, BUTTON_RIGHT, BUTTON_RIGHT_2, BUTTON_CANCEL)
     
     __slots__ = ('page_index', 'pages', 'timeout', 'user_check')
     

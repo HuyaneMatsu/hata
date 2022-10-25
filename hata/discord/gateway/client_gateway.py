@@ -8,7 +8,7 @@ from scarletio import (
 )
 from scarletio.web_common import ConnectionClosed, InvalidHandshake, WebSocketProtocolError
 
-from ...env import API_VERSION, CACHE_PRESENCE
+from ...env import API_VERSION, CACHE_PRESENCE, LIBRARY_NAME
 
 from ..activity import ACTIVITY_UNKNOWN
 from ..core import KOKORO
@@ -561,8 +561,8 @@ class DiscordGateway:
                 'token': client.token,
                 'properties': {
                     'os': sys.platform,
-                    'browser': 'hata',
-                    'device': 'hata',
+                    'browser': LIBRARY_NAME,
+                    'device': LIBRARY_NAME,
                 },
                 'compress': True,                       # Whether we support compression | Discord default: False
                 'large_threshold': LARGE_GUILD_LIMIT,   # between 50 and 250             | Discord default: 50

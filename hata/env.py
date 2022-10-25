@@ -36,8 +36,17 @@ HATA_DOCS_ENABLED : `bool` = `True`
     
     If python is run with `-OO`, then this always defaults to `False`.
 
+HATA_LIBRARY_AGENT_APPENDIX : `str` = `None`
+    Library agent appendix used instead of the default generated one.
+
+HATA_LIBRARY_NAME : `str` = `'hata'`
+    Library name used when identifying.
+
 HATA_LIBRARY_URL : `str` = `'https://github.com/HuyaneMatsu/hata'`
     Library url used at user agents.
+
+HATA_LIBRARY_VERSION : `str` = `None`
+    Library version used in user agents.
 
 HATA_MESSAGE_CACHE_SIZE : `int` = `10`
     The default message cache size per channel.
@@ -66,11 +75,11 @@ __all__ = (
     'RICH_DISCORD_EXCEPTION'
 )
 
-def get_bool_env(name, default, *, warn_if_empty=True):
+def get_bool_env(name, default, *, warn_if_empty = True):
     """
     Gets the given environmental variable.
     
-    If the environmental variable is not present or not present as a bool's representation returns `default` instead.
+    If the environmental variable is not present or not present as a boolean's representation returns `default` instead.
     
     Parameters
     ----------
@@ -103,7 +112,7 @@ def get_bool_env(name, default, *, warn_if_empty=True):
     return default
 
 
-def get_str_env(name, default=None, *, warn_if_empty=True):
+def get_str_env(name, default=None, *, warn_if_empty = True):
     """
     Gets the given environmental variable.
     
@@ -137,7 +146,7 @@ def get_str_env(name, default=None, *, warn_if_empty=True):
     return default
 
 
-def get_int_env(name, default, *, warn_if_empty=True):
+def get_int_env(name, default, *, warn_if_empty = True):
     """
     Gets the given environmental variable.
     
@@ -230,6 +239,10 @@ if API_VERSION != DEFAULT_API_VERSION:
         )
 
 
+LIBRARY_AGENT_APPENDIX = get_str_env('HATA_LIBRARY_AGENT_APPENDIX', None)
+LIBRARY_NAME = get_str_env('HATA_LIBRARY_NAME', 'hata')
 LIBRARY_URL = get_str_env('HATA_LIBRARY_URL', 'https://github.com/HuyaneMatsu/hata')
+LIBRARY_VERSION = get_str_env('HATA_LIBRARY_VERSION', None)
+
 
 RICH_DISCORD_EXCEPTION = get_bool_env('HATA_RICH_DISCORD_EXCEPTION', False)

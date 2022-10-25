@@ -2,8 +2,9 @@ __all__ = ()
 
 from functools import partial as partial_func
 
+from ....discord.component import create_auto_custom_id
 from ....discord.core import BUILTIN_EMOJIS
-from ....discord.interaction import InteractionEvent, create_auto_custom_id
+from ....discord.interaction import InteractionEvent
 from ....discord.message import Message
 
 

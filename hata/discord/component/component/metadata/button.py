@@ -128,9 +128,9 @@ class ComponentMetadataButton(ComponentMetadataBase):
             if self.custom_id is None:
                 self.custom_id = create_auto_custom_id()
             
-            if self.button_style is ButtonStyle.link:
+            if (self.button_style is ButtonStyle.link) or (self.button_style is ButtonStyle.none):
                 self.button_style = BUTTON_STYLE_DEFAULT
-        
+            
         else:
             if self.custom_id is None:
                 self.button_style = ButtonStyle.link
@@ -362,7 +362,7 @@ class ComponentMetadataButton(ComponentMetadataBase):
         else:
             warnings.warn(
                 (
-                    '`style` parameter of components is deprecated and will be removed in 2023 February.'
+                    '`style` parameter of components is deprecated and will be removed in 2023 February. '
                     'Please use `button_style` for button components.'
                 ),
                 FutureWarning,

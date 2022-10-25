@@ -97,9 +97,10 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         try:
             required = keyword_parameters.pop('required')
         except KeyError:
-            required = True
+            required = None
         else:
-            required = validate_required(required)
+            if (required is not None):
+                required = validate_required(required)
         
         # text_input_style
         try:
@@ -108,7 +109,7 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
             text_input_style = TEXT_INPUT_STYLE_DEFAULT
         else:
             text_input_style = validate_text_input_style(text_input_style)
-
+        
         # value
         try:
             value = keyword_parameters.pop('value')
@@ -116,6 +117,19 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
             value = None
         else:
             value = validate_value(value)
+        
+        # Auto detect required if not-given / None
+        
+        if (required is None):
+            if min_length > 0:
+                required = True
+            else:
+                required = False
+        
+        # Extra checks
+        
+        if text_input_style is text_input_style.none:
+            text_input_style = TEXT_INPUT_STYLE_DEFAULT
         
         # Construct
         
@@ -408,7 +422,7 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         else:
             warnings.warn(
                 (
-                    '`style` parameter of components is deprecated and will be removed in 2023 February.'
+                    '`style` parameter of components is deprecated and will be removed in 2023 February. '
                     'Please use `text_input_style` for text input components.'
                 ),
                 FutureWarning,
@@ -416,6 +430,11 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
             )
             
             text_input_style = validate_text_input_style(style)
+        
+        # Extra checks
+        
+        if text_input_style is text_input_style.none:
+            text_input_style = TEXT_INPUT_STYLE_DEFAULT
         
         # Construct
         

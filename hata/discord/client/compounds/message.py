@@ -483,6 +483,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
         if (components is not None):
             message_data['components'] = components
+            contains_content = True
         
         if tts:
             message_data['tts'] = True

@@ -105,9 +105,9 @@ Sometimes leaving the main thread might cause problems when trying to shut down 
 want to use `wait_for_interruption()`, which disconnects the clients gracefully and closes the event loop on keyboard
 interrupt.
 
-We got some tutorials on `github:https://github.com/HuyaneMatsu/hata/tree/master/docs` as well, please check them too!
+We got some `tutorials:https://www.astil.dev/project/hata/guides/` as well, please check them too!
 """
-__version__ = '1.3.10'
+__version__ = '1.3.11'
 
 from .utils.module_deprecation import get_deprecation_function
 

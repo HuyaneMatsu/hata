@@ -4,6 +4,7 @@ from .auto_moderation import *
 from .bases import *
 from .channel import *
 from .client import *
+from .component import *
 from .embed import *
 from .emoji import *
 from .events import *
@@ -48,6 +49,7 @@ __all__ = (
     *client.__all__,
     *embed.__all__,
     *emoji.__all__,
+    *component.__all__,
     *events.__all__,
     *exceptions.__all__,
     *gateway.__all__,

@@ -1,5 +1,6 @@
 from .add_default_plugin_variables_ import *
 from .clear_default_plugin_variables_ import *
+from .frame_filter_ import *
 from .get_plugin_ import *
 from .get_plugin_like_ import *
 from .get_plugins_like_ import *
@@ -20,6 +21,7 @@ from .unload_plugin_ import *
 __all__ = (
     *add_default_plugin_variables_.__all__,
     *clear_default_plugin_variables_.__all__,
+    *frame_filter_.__all__,
     *get_plugin_.__all__,
     *get_plugin_like_.__all__,
     *get_plugins_like_.__all__,

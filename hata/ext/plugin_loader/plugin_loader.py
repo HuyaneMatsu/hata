@@ -4,66 +4,19 @@ import warnings
 from functools import partial as partial_func
 
 from scarletio import (
-    HybridValueDictionary, RichAttributeErrorBaseType, Task, alchemy_incendiary, export, is_coroutine_function,
-    render_exception_into, run_coroutine, shield
+    CauseGroup, HybridValueDictionary, RichAttributeErrorBaseType, Task, alchemy_incendiary, export,
+    is_coroutine_function, run_coroutine, shield
 )
 
 from ...discord.core import KOKORO
 
 from .constants import PLUGIN_STATE_LOADED, PLUGINS
 from .exceptions import PluginError
-from .import_overwrite.source_loader import __file__ as PLUGIN_LOADER_SOURCE_LOADER_FILE_PATH
-from .plugin import Plugin, __file__ as PLUGIN_LOADER_PLUGIN_FILE_PATH
+from .plugin import Plugin
 from .helpers import (
     PROTECTED_NAMES, _build_plugin_tree, _get_plugin_name_and_path, _get_path_plugin_name,
     _iter_plugin_names_and_paths, _validate_entry_or_exit, validate_plugin_parameters
 )
-
-
-PLUGIN_LOADER_PLUGIN_LOADER_FILE_PATH = __file__
-
-
-def _render_exception_message(exception, header):
-    """
-    Renders an exception' traceback.
-    
-    Parameters
-    ----------
-    exception : `BaseException`
-        The exception to render.
-    header : `list` of `str`
-        Header of the rendered traceback.
-    
-    Returns
-    -------
-    message : `str`
-        The `exception`'s rendered traceback.
-    
-    Notes
-    -----
-    This function should run in an executor.
-    """
-    return ''.join(render_exception_into(exception, header, filter=_ignore_module_import_frames))
-
-
-async def _render_exception_message_async(exception, header):
-    """
-    Returns the exception message inside of an executor.
-    
-    Parameters
-    ----------
-    exception : `BaseException`
-        The exception to render.
-    header : `list` of `str`
-        Header of the rendered traceback.
-    
-    Returns
-    -------
-    message : `str`
-        The `exception`'s rendered traceback.
-    """
-    return await KOKORO.run_in_executor(alchemy_incendiary(_render_exception_message, (exception, header)))
-
 
 def _try_get_plugin(plugin_name, plugin_path):
     """
@@ -123,7 +76,9 @@ async def _get_plugins(name, deep):
         for plugin_name, plugin_path in plugin_names_and_paths:
             plugin = _try_get_plugin(plugin_name, plugin_path)
             if plugin is None:
-                raise PluginError(f'No plugin was added with name: `{plugin_name}`.')
+                raise PluginError(
+                    f'No plugin was added with name: `{plugin_name}`.'
+                )
             
             plugins.add(plugin)
             continue
@@ -142,74 +97,9 @@ async def _get_plugins(name, deep):
         raise
     
     except BaseException as err:
-        message = await _render_exception_message_async(
-            err,
-            [
-                'Exception occurred meanwhile looking up plugins for name: `',
-                repr(name),
-                '`.\n',
-            ]
-        )
-        
-        raise PluginError(message)
-
-
-def _ignore_module_import_frames(file_name, name, line_number, line):
-    """
-    Ignores import frames of plugin loading.
-    
-    Parameters
-    ----------
-    file_name : `str`
-        The frame's respective file's name.
-    name : `str`
-        The frame's respective function's name.
-    line_number : `int`
-        The line's index where the exception occurred.
-    line : `str`
-        The frame's respective stripped line.
-    
-    Returns
-    -------
-    should_show_frame : `bool`
-        Whether the frame should be shown.
-    """
-    should_show_frame = True
-    
-    if file_name.startswith('<') and file_name.endswith('>'):
-        should_show_frame = False
-    
-    elif file_name == PLUGIN_LOADER_PLUGIN_FILE_PATH:
-        if name == '_load':
-            if line == 'loaded = self._load_module()':
-                should_show_frame = False
-        
-        elif name == '_load_module':
-            if line == 'spec.loader.exec_module(module)':
-                should_show_frame = False
-    
-    elif file_name == PLUGIN_LOADER_PLUGIN_LOADER_FILE_PATH:
-        if name == '_plugin_loader_task':
-            if line in (
-                'module = await KOKORO.run_in_executor(plugin._load)',
-                'await entry_point(module)',
-                'entry_point(module)',
-            ):
-                should_show_frame = False
-        
-        elif name == '_plugin_unloader_task':
-            if line in (
-                'await exit_point(module)',
-                'exit_point(module)',
-            ):
-                should_show_frame = False
-    
-    elif file_name == PLUGIN_LOADER_SOURCE_LOADER_FILE_PATH:
-        if name == 'exec_module':
-            if line == 'SourceFileLoader.exec_module(self, self._module)':
-                should_show_frame = False
-    
-    return should_show_frame
+        raise PluginError(
+            f'Exception occurred meanwhile looking up plugins for name: {name!r}'
+        ) from err
 
 
 def _pop_unloader_task_callback(plugin, task):
@@ -383,7 +273,7 @@ class PluginLoader(RichAttributeErrorBaseType):
       File ".../hata/ext/plugin_loader/plugin_loader.py", line 670, in _reload_all_task
         raise PluginError(error_messages) from None
     hata.ext.plugin_loader.PluginError: PluginError (1):
-    Exception occurred meanwhile loading an plugin: `plugin`.
+    Exception occurred meanwhile loading a plugin: `plugin`.
     
     Traceback (most recent call last):
       File ".../plugin.py", line 1, in <module>
@@ -1070,18 +960,21 @@ class PluginLoader(RichAttributeErrorBaseType):
         """
         plugins = await _get_plugins(name, deep)
         
-        error_messages = None
+        exceptions = None
         
         for plugin in plugins:
             exception = await self._plugin_loader(plugin)
             if (exception is not None):
-                if error_messages is None:
-                    error_messages = []
+                if exceptions is None:
+                    exceptions = []
                 
-                error_messages.append(exception.message)
+                exceptions.append(exception)
         
-        if (error_messages is not None):
-            raise PluginError(error_messages) from None
+        if (exceptions is not None):
+            try:
+                raise PluginError() from CauseGroup(*exceptions)
+            finally:
+                exceptions = None
         
         return plugins
     
@@ -1145,18 +1038,21 @@ class PluginLoader(RichAttributeErrorBaseType):
         """
         plugins = await _get_plugins(name, deep)
         
-        error_messages = None
+        exceptions = None
         
         for plugin in plugins:
             exception = await self._plugin_unloader(plugin)
             if (exception is not None):
-                if error_messages is None:
-                    error_messages = []
+                if exceptions is None:
+                    exceptions = []
                 
-                error_messages.append(exception.message)
+                exceptions.append(exception)
         
-        if (error_messages is not None):
-            raise PluginError(error_messages) from None
+        if (exceptions is not None):
+            try:
+                raise PluginError() from CauseGroup(*exceptions)
+            finally:
+                exceptions = None
         
         return plugins
     
@@ -1222,30 +1118,33 @@ class PluginLoader(RichAttributeErrorBaseType):
         
         await self._check_for_syntax(plugins)
         
-        error_messages = None
+        exceptions = None
         
         for plugin in plugins:
             exception = await self._plugin_unloader(plugin)
             if (exception is not None):
-                if error_messages is None:
-                    error_messages = {}
+                if exceptions is None:
+                    exceptions = {}
                 
-                error_messages[plugin.name] = exception.message
+                exceptions[plugin.name] = exception
         
         
         for plugin in plugins:
-            if (error_messages is not None) and (plugin.name in error_messages):
+            if (exceptions is not None) and (plugin.name in exceptions):
                 continue
             
             exception = await self._plugin_loader(plugin)
             if (exception is not None):
-                if error_messages is None:
-                    error_messages = {}
+                if exceptions is None:
+                    exceptions = {}
                 
-                error_messages[plugin.name] = exception.message
+                exceptions[plugin.name] = exception
         
-        if (error_messages is not None):
-            raise PluginError([*error_messages.values()]) from None
+        if (exceptions is not None):
+            try:
+                raise PluginError() from CauseGroup(*exceptions.values())
+            finally:
+                exceptions = None
         
         return plugins
     
@@ -1286,7 +1185,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         PluginError
             If any plugin failed to load correctly.
         """
-        error_messages = None
+        exceptions = None
         
         for plugin in tuple(PLUGINS.values()):
             if plugin._locked:
@@ -1294,14 +1193,16 @@ class PluginLoader(RichAttributeErrorBaseType):
             
             exception = await self._plugin_loader(plugin)
             if (exception is not None):
-                if error_messages is None:
-                    error_messages = []
+                if exceptions is None:
+                    exceptions = []
                 
-                error_messages.append(exception.message)
+                exceptions.append(exception)
         
-        if (error_messages is not None):
-            raise PluginError(error_messages) from None
-    
+        if (exceptions is not None):
+            try:
+                raise PluginError() from CauseGroup(*exceptions)
+            finally:
+                exceptions = None
     
     def unload_all(self, *, blocking=True):
         """
@@ -1339,7 +1240,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         PluginError
             If any plugin failed to unload correctly.
         """
-        error_messages = None
+        exceptions = None
         
         for plugin in tuple(PLUGINS.values()):
             if plugin._locked:
@@ -1347,13 +1248,16 @@ class PluginLoader(RichAttributeErrorBaseType):
             
             exception = await self._plugin_unloader(plugin)
             if (exception is not None):
-                if error_messages is None:
-                    error_messages = []
+                if exceptions is None:
+                    exceptions = []
                 
-                error_messages.append(exception.message)
-            
-        if (error_messages is not None):
-            raise PluginError(error_messages) from None
+                exceptions.append(exception)
+        
+        if (exceptions is not None):
+            try:
+                raise PluginError() from CauseGroup(*exceptions)
+            finally:
+                exceptions = None
     
     
     def reload_all(self, *, blocking=True):
@@ -1392,7 +1296,7 @@ class PluginLoader(RichAttributeErrorBaseType):
         PluginError
             If any plugin failed to reload correctly.
         """
-        error_messages = None
+        exceptions = None
         
         plugins = _build_plugin_tree(
             [plugin for plugin in PLUGINS.values() if not plugin._locked],
@@ -1402,26 +1306,25 @@ class PluginLoader(RichAttributeErrorBaseType):
         
         for plugin in plugins:
             exception = await self._plugin_unloader(plugin)
-            if (exception is None):
-                continue
-            
-            if error_messages is None:
-                error_messages = []
-            
-            error_messages.append(exception.message)
+            if (exception is not None):
+                if exceptions is None:
+                    exceptions = []
+                
+                exceptions.append(exception)
         
         for plugin in reversed(plugins):
             exception = await self._plugin_loader(plugin)
-            if (exception is None):
-                continue
-            
-            if error_messages is None:
-                error_messages = []
-            
-            error_messages.append(exception.message)
+            if (exception is not None):
+                if exceptions is None:
+                    exceptions = []
+                
+                exceptions.append(exception)
         
-        if (error_messages is not None):
-            raise PluginError(error_messages) from None
+        if (exceptions is not None):
+            try:
+                raise PluginError() from CauseGroup(*exceptions)
+            finally:
+                exceptions = None
     
     
     async def _plugin_loader(self, plugin):
@@ -1503,16 +1406,10 @@ class PluginLoader(RichAttributeErrorBaseType):
                 raise
             
             except BaseException as err:
-                message = await _render_exception_message_async(
-                    err,
-                    [
-                        'Exception occurred meanwhile loading an plugin: `',
-                        plugin.name,
-                        '`.\n\n',
-                    ],
+                return PluginError(
+                    f'Exception occurred meanwhile loading a plugin: `{plugin.name}`',
+                    cause = err,
                 )
-                
-                return PluginError(message)
             
             if module is None:
                 return # already loaded
@@ -1537,18 +1434,15 @@ class PluginLoader(RichAttributeErrorBaseType):
                 raise
             
             except BaseException as err:
-                message = await _render_exception_message_async(
-                    err,
-                    [
-                        'Exception occurred meanwhile entering an plugin: `',
-                        plugin.name,
-                        '`.\nAt entry_point:',
-                        repr(entry_point),
-                        '\n\n',
-                    ],
+                return PluginError(
+                    (
+                        f'Exception occurred meanwhile entering a plugin: `{plugin.name}`; '
+                        f'At entry_point: {entry_point!r}.',
+                    ),
+                    cause = err,
                 )
-                
-                return PluginError(message)
+        
+        
         finally:
             execute_counter = self._execute_counter - 1
             self._execute_counter = execute_counter
@@ -1655,18 +1549,13 @@ class PluginLoader(RichAttributeErrorBaseType):
                     raise
                 
                 except BaseException as err:
-                    message = await _render_exception_message_async(
-                        err,
-                        [
-                            'Exception occurred meanwhile unloading an plugin: `',
-                            plugin.name,
-                            '`.\nAt exit_point:',
-                            repr(exit_point),
-                            '\n\n',
-                        ],
-                    )
-                    
-                    return PluginError(message)
+                    return PluginError(
+                        (
+                            f'Exception occurred meanwhile unloading a plugin: `{plugin.name}`; '
+                            f'At exit point: {exit_point!r},'
+                        ),
+                        cause = err,
+                    ) 
             
             finally:
                 plugin._unassign_variables()

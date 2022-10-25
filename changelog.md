@@ -17,6 +17,15 @@
 - Add `create_role_select`.
 - Add `create_channel_select`.
 - Add `create_mentionable_select`.
+- Use `CauseGroup` at `DiscordHTTPClient.discord_request`.
+- Add `HATA_LIBRARY_NAME` env variable.
+- Add `HATA_LIBRARY_AGENT_APPENDIX` env variable.
+- Add `HATA_LIBRARY_VERSION` env variable.
+- `Client.message_create` now supports sending only components.
+
+##### ext.plugin_loader
+- Use `CauseGroup` for `PluginError`-s if applicable.
+- New `PluginError`-s now store exception instead of traceback, so expose `filter_frames`.
 
 #### Renames, Deprecation & Removals
 

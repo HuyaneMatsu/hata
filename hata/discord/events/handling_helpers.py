@@ -1909,8 +1909,10 @@ class EventWaitforMeta(type):
     
     async def _call_role_create(self, client, role):
         args = (client, role)
+        
         guild = role.guild
-        self._run_waitfors_for(guild, args)
+        if (guild is not None):
+            self._run_waitfors_for(guild, args)
     
     _call_waitfors['role_create'] = _call_role_create
     del _call_role_create
@@ -1918,16 +1920,21 @@ class EventWaitforMeta(type):
     async def _call_role_edit(self, client, role, old_attributes):
         args = (client, role, old_attributes)
         self._run_waitfors_for(role, args)
+        
         guild = role.guild
-        self._run_waitfors_for(guild, args)
+        if (guild is not None):
+            self._run_waitfors_for(guild, args)
     
     _call_waitfors['role_edit'] = _call_role_edit
     del _call_role_edit
 
-    async def _call_role_delete(self, client, role, guild):
-        args = (client, role, guild)
+    async def _call_role_delete(self, client, role):
+        args = (client, role)
         self._run_waitfors_for(role, args)
-        self._run_waitfors_for(guild, args)
+        
+        guild = role.guild
+        if (guild is not None):
+            self._run_waitfors_for(guild, args)
     
     _call_waitfors['role_delete'] = _call_role_delete
     del _call_role_delete

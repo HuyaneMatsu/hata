@@ -5,6 +5,7 @@ import reprlib
 from scarletio import copy_docs
 
 from ...shared_fields import parse_custom_id, put_custom_id_into, validate_custom_id
+from ...shared_helpers import create_auto_custom_id
 
 from ..constants import MAX_VALUES_DEFAULT, MIN_VALUES_DEFAULT
 from ..fields import (
@@ -80,6 +81,11 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
             placeholder = None
         else:
             placeholder = validate_placeholder(placeholder)
+        
+        # Extra checks
+        
+        if custom_id is None:
+            custom_id = create_auto_custom_id()
         
         # Construct
         
@@ -292,6 +298,11 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
             placeholder = self.placeholder
         else:
             placeholder = validate_placeholder(placeholder)
+        
+        # Extra checks
+        
+        if custom_id is None:
+            custom_id = create_auto_custom_id()
         
         # Construct
         

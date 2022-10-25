@@ -3,7 +3,8 @@ __all__ = ('DiscordHTTPClient', 'LIBRARY_USER_AGENT',)
 import sys
 
 from scarletio import (
-    Future, IgnoreCaseMultiValueDictionary, LOOP_TIME, WeakKeyDictionary, WeakMap, call, from_json, sleep, to_json
+    CauseGroup, Future, IgnoreCaseMultiValueDictionary, LOOP_TIME, WeakKeyDictionary, WeakMap, call, from_json, sleep,
+    to_json
 )
 from scarletio.http_client import HTTPClient, RequestContextManager, TCPConnector
 from scarletio.web_common import Formdata, quote
@@ -12,7 +13,7 @@ from scarletio.web_common.headers import (
 )
 
 from ... import __version__
-from ...env import API_VERSION, LIBRARY_URL
+from ...env import API_VERSION, LIBRARY_AGENT_APPENDIX, LIBRARY_URL, LIBRARY_VERSION
 
 from ..core import KOKORO
 from ..exceptions import DiscordException
@@ -23,10 +24,16 @@ from .rate_limit import NO_SPECIFIC_RATE_LIMITER, RateLimitHandler, StackedStati
 from .urls import API_ENDPOINT, DISCORD_ENDPOINT, STATUS_ENDPOINT
 
 
-LIBRARY_USER_AGENT_BASE = f'DiscordBot ({LIBRARY_URL}, {__version__}) Python'
+if LIBRARY_VERSION is None:
+    LIBRARY_VERSION = __version__
+
+LIBRARY_USER_AGENT_BASE = f'DiscordBot ({LIBRARY_URL}, {LIBRARY_VERSION})'
 LIBRARY_USER_AGENT = LIBRARY_USER_AGENT_BASE
 
 NON_JSON_TYPES = (Formdata, bytes, type(None))
+
+REQUEST_RETRY_LIMIT = 5
+
 
 @call
 def generate_user_agent():
@@ -34,23 +41,31 @@ def generate_user_agent():
     Generates the user agent header used by the wrapper.
     """
     global LIBRARY_USER_AGENT
-    implement = sys.implementation
-    version_l = [
-        LIBRARY_USER_AGENT_BASE,
-        ' (',
-        implement.name,
-        ' ',
-        str(implement.version[0]),
-        '.',
-        str(implement.version[1]),
-    ]
     
-    if implement.version[3] != 'final':
-        version_l.append(' ')
-        version_l.append(implement.version[3])
+    version_list = []
+    version_list.append(LIBRARY_USER_AGENT_BASE),
+    version_list.append(' ')
     
-    version_l.append(')')
-    LIBRARY_USER_AGENT = ''.join(version_l)
+    if LIBRARY_AGENT_APPENDIX is None:
+        implement = sys.implementation
+        
+        version_list.append('Python (')
+        version_list.append(implement.name)
+        version_list.append(' ')
+        version_list.append(str(implement.version[0]))
+        version_list.append('.')
+        version_list.append(str(implement.version[1]))
+        
+        if implement.version[3] != 'final':
+            version_list.append(' ')
+            version_list.append(implement.version[3])
+        
+        version_list.append(')')
+    
+    else:
+        version_list.append(LIBRARY_AGENT_APPENDIX)
+    
+    LIBRARY_USER_AGENT = ''.join(version_list)
 
 
 class _ConnectorRefCounter:
@@ -255,7 +270,8 @@ class DiscordHTTPClient(HTTPClient):
         if not handler.is_unlimited():
             handler = self.handlers.set(handler)
         
-        try_again = 4
+        causes = None
+        
         while True:
             global_rate_limit_expires_at = self.global_rate_limit_expires_at
             if global_rate_limit_expires_at > LOOP_TIME():
@@ -269,13 +285,21 @@ class DiscordHTTPClient(HTTPClient):
                     async with RequestContextManager(self._request(method, url, headers, data, params)) as response:
                         response_data = await response.text(encoding='utf-8')
                 except OSError as err:
-                    if not try_again:
-                        raise ConnectionError('Invalid address or no connection with Discord.') from err
+                    if causes is None:
+                        causes = []
+                    causes.append(err)
+                    
+                    if len(causes) >= REQUEST_RETRY_LIMIT:
+                        try:
+                            raise ConnectionError(
+                                'Invalid address or no connection with Discord.'
+                            ) from CauseGroup(*causes)
+                        finally:
+                            causes = None
                     
                     # os can not handle more, need to wait for the blocking job to be done. This can happen on Windows.
-                    await sleep(0.5 / try_again, self.loop)
+                    await sleep(0.1 * len(causes), self.loop)
                     # Invalid address causes OSError too, but we will let it run 5 times, then raise a ConnectionError
-                    try_again -= 1
                     continue
                 
                 response_headers = response.headers
@@ -291,7 +315,12 @@ class DiscordHTTPClient(HTTPClient):
                 
                 if status == 429:
                     if 'code' in response_data: # Can happen at the case of rate limit ban
-                        raise DiscordException(response, response_data, data, self._debug_options)
+                        try:
+                            raise DiscordException(
+                                response, response_data, data, self._debug_options
+                            ) from (None if causes is None else CauseGroup(*causes))
+                        finally:
+                            causes = None
                     
                     retry_after = response_data.get('retry_after', 0.0)
                     if response_data.get('global', False):
@@ -304,14 +333,23 @@ class DiscordHTTPClient(HTTPClient):
                         await sleep(retry_after, self.loop)
                     continue
                 
-                if try_again and (status in (500, 502, 503)):
-                    await sleep(10.0 / try_again, self.loop)
-                    try_again -= 1
+                if ((causes is None) or (len(causes) < REQUEST_RETRY_LIMIT)) and (status in (500, 502, 503)):
+                    if causes is None:
+                        causes = []
+                    causes.append(DiscordException(response, response_data, None, None))
+                    
+                    await sleep(2.0 * len(causes), self.loop)
                     continue
                 
                 lock.exit(response_headers)
-                raise DiscordException(response, response_data, data, self._debug_options)
-    
+                
+                try:
+                    raise DiscordException(
+                        response, response_data, data, self._debug_options
+                    ) from (None if causes is None else CauseGroup(*causes))
+                finally:
+                    causes = None
+
     # client
     
     async def client_edit(self, data):

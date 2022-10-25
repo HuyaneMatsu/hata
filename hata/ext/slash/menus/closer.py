@@ -2,7 +2,7 @@ __all__ = ('Closer', )
 
 from scarletio import CancelledError
 
-from ....discord.interaction import ComponentButton, ComponentRow
+from ....discord.component import create_button, create_row
 
 from .helpers import CUSTOM_ID_CANCEL, EMOJI_CANCEL, get_auto_check, top_level_check, top_level_get_timeout
 from .menu import Menu
@@ -10,9 +10,9 @@ from .menu import Menu
 
 class Closer(Menu):
     
-    BUTTON_CANCEL = ComponentButton(emoji=EMOJI_CANCEL, custom_id=CUSTOM_ID_CANCEL)
+    BUTTON_CANCEL = create_button(emoji = EMOJI_CANCEL, custom_id = CUSTOM_ID_CANCEL)
     
-    BUTTONS = ComponentRow(BUTTON_CANCEL,)
+    BUTTONS = create_row(BUTTON_CANCEL)
     
     __slots__ = ('page', 'timeout', 'user_check')
     

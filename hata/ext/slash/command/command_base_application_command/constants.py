@@ -2,7 +2,7 @@ __all__ = ()
 
 from scarletio import export
 
-from .....discord.interaction import ApplicationCommandOptionType
+from .....discord.application_command import ApplicationCommandOptionType
 
 
 APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND = ApplicationCommandOptionType.sub_command

@@ -7,7 +7,7 @@ from ....user import User
 from ...channel import Channel
 from ...forum_tag import ForumTag
 
-from ..channel_type import ChannelType
+from ..preinstanced import ChannelType
 
 
 def test__Channel__get_user__0():

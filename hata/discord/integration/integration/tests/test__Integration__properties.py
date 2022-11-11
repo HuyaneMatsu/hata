@@ -2,14 +2,14 @@ from datetime import datetime as DateTime
 
 import vampytest
 
-from ....user import ClientUserBase, User
+from ....user import User
 
 from ...integration_account import IntegrationAccount
 from ...integration_application import IntegrationApplication
+from ...integration_metadata import IntegrationExpireBehavior
 
 from ..integration import Integration
-from ..integration_type import IntegrationType
-from ..preinstanced import IntegrationExpireBehavior
+from ..preinstanced import IntegrationType
 
 
 def _check_integration_proxied_properties(integration):

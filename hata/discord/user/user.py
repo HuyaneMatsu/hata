@@ -122,7 +122,7 @@ class User(USER_BASE_CLASS):
                     profile = self.guild_profiles[guild.id]
                 except KeyError:
                     guild.users[user_id] = self
-                    self.guild_profiles[guild.id] = GuildProfile(guild_profile_data)
+                    self.guild_profiles[guild.id] = GuildProfile.from_data(guild_profile_data)
                 else:
                     profile._set_joined(guild_profile_data)
             
@@ -167,7 +167,7 @@ class User(USER_BASE_CLASS):
                     guild_profile = self.guild_profiles[guild.id]
                 except KeyError:
                     guild.users[user_id] = self
-                    self.guild_profiles[guild.id] = GuildProfile(guild_profile_data)
+                    self.guild_profiles[guild.id] = GuildProfile.from_data(guild_profile_data)
                 else:
                     guild_profile._set_joined(guild_profile_data)
                     
@@ -208,7 +208,7 @@ class User(USER_BASE_CLASS):
             self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
-                self.guild_profiles[guild.id] = GuildProfile(guild_profile_data)
+                self.guild_profiles[guild.id] = GuildProfile.from_data(guild_profile_data)
             
             return self
     
@@ -259,7 +259,7 @@ class User(USER_BASE_CLASS):
                 try:
                     guild_profile = self.guild_profiles[guild_id]
                 except KeyError:
-                    self.guild_profiles[guild_id] = GuildProfile(guild_profile_data)
+                    self.guild_profiles[guild_id] = GuildProfile.from_data(guild_profile_data)
                 else:
                     guild_profile._set_joined(guild_profile_data)
                     guild_profile._update_attributes(guild_profile_data)
@@ -295,7 +295,7 @@ class User(USER_BASE_CLASS):
                 try:
                     guild_profile = self.guild_profiles[guild_id]
                 except KeyError:
-                    self.guild_profiles[guild_id] = GuildProfile(guild_profile_data)
+                    self.guild_profiles[guild_id] = GuildProfile.from_data(guild_profile_data)
                 else:
                     guild_profile._set_joined(guild_profile_data)
                     guild_profile._update_attributes(guild_profile_data)
@@ -328,7 +328,7 @@ class User(USER_BASE_CLASS):
             self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and guild_id:
-                self.guild_profiles[guild_id] = GuildProfile(guild_profile_data)
+                self.guild_profiles[guild_id] = GuildProfile.from_data(guild_profile_data)
             
             return self
     
@@ -525,7 +525,7 @@ class User(USER_BASE_CLASS):
                     guild_profile = self.guild_profiles[guild.id]
                 except KeyError:
                     guild.users[user_id] = self
-                    self.guild_profiles[guild.id] = GuildProfile(guild_profile_data)
+                    self.guild_profiles[guild.id] = GuildProfile.from_data(guild_profile_data)
                 else:
                     guild_profile._set_joined(guild_profile_data)
                     guild_profile._update_attributes(guild_profile_data)
@@ -561,7 +561,7 @@ class User(USER_BASE_CLASS):
                     guild_profile = self.guild_profiles[guild.id]
                 except KeyError:
                     guild.users[user_id] = self
-                    self.guild_profiles[guild.id] = GuildProfile(guild_profile_data)
+                    self.guild_profiles[guild.id] = GuildProfile.from_data(guild_profile_data)
                 else:
                     guild_profile._set_joined(guild_profile_data)
                     guild_profile._update_attributes(guild_profile_data)
@@ -594,7 +594,7 @@ class User(USER_BASE_CLASS):
             self._update_attributes(user_data)
             
             if (guild_profile_data is not None) and (guild is not None):
-                self.guild_profiles[guild.id] = GuildProfile(guild_profile_data)
+                self.guild_profiles[guild.id] = GuildProfile.from_data(guild_profile_data)
             
             return self
     

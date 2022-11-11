@@ -1,7 +1,7 @@
 import vampytest
 
 from ..fields import put_type_into
-from ..integration_type import IntegrationType
+from ..preinstanced import IntegrationType
 
 
 def test__put_type_into():

@@ -1,7 +1,7 @@
 import vampytest
 
 from ..component import Component
-from ..component_type import ComponentType
+from ..preinstanced import ComponentType
 
 from .test__Component__constructor import _check_is_all_field_set
 

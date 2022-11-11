@@ -14,7 +14,7 @@ from ...guild import (
     VerificationScreenStep, WelcomeChannel, WelcomeScreen, create_partial_guild_from_data, create_partial_guild_from_id
 )
 from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES, VALID_ICON_MEDIA_TYPES_EXTENDED
-from ...localizations.utils import Locale
+from ...localization.utils import Locale
 from ...role import Role
 from ...user import ClientUserBase, GuildProfile, PremiumType, User, UserBase
 from ...utils import datetime_to_timestamp, get_image_media_type, image_to_base64, log_time_converter
@@ -495,7 +495,7 @@ class ClientCompoundGuildEndpoints(Compound):
             try:
                 profile = self.guild_profiles[guild.id]
             except KeyError:
-                self.guild_profiles[guild.id] = GuildProfile(user_data)
+                self.guild_profiles[guild.id] = GuildProfile.from_data(user_data)
                 if guild not in guild.clients:
                     guild.clients.append(self)
             else:
@@ -513,7 +513,7 @@ class ClientCompoundGuildEndpoints(Compound):
 ##            try:
 ##                profile = client.guild_profiles[guild.id]
 ##            except KeyError:
-##                client.guild_profiles[guild.id] = GuildProfile(user_data)
+##                client.guild_profiles[guild.id] = GuildProfile.from_data(user_data)
 ##                if client not in guild.clients:
 ##                    guild.clients.append(client)
 ##            else:
@@ -594,12 +594,10 @@ class ClientCompoundGuildEndpoints(Compound):
             The name of the new guild.
         icon : `None`, `bytes-like` = `None`, Optional (Keyword only)
             The icon of the new guild.
-        roles : `None`, `list` of ``cr_p_role_object`` returns = `None`, Optional (Keyword only)
-            A list of roles of the new guild. It should contain json serializable roles made by the
-            ``cr_p_role_object`` function.
-        channels : `None`, `list` of ``cr_pg_channel_object`` returns = `None`, Optional (Keyword only)
-            A list of channels of the new guild.  It should contain json serializable channels made by the
-            ``cr_p_role_object`` function.
+        roles : `None`, `list` of `dict` = `None`, Optional (Keyword only)
+            A list of roles of the new guild. It should contain role data objects.
+        channels : `None`, `list` of `dict` = `None`, Optional (Keyword only)
+            A list of channels of the new guild. It should contain channel data objects.
         afk_channel_id : `None`, `int` = `None`, Optional (Keyword only)
             The id of the guild's afk channel. The id should be one of the channel's id from `channels`.
         system_channel_id: `int`, Optional (Keyword only)

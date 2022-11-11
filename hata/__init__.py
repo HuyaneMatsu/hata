@@ -109,13 +109,12 @@ We got some `tutorials:https://www.astil.dev/project/hata/guides/` as well, plea
 """
 __version__ = '1.3.11'
 
-from .utils.module_deprecation import get_deprecation_function
-
 from .discord import *
 from .ext import *
 from .utils import *
 
 from .env import *
+
 
 __all__ = (
     *discord.__all__,
@@ -125,7 +124,23 @@ __all__ = (
     *env.__all__,
 )
 
+# Additional imports
+
+import sys
+
 from scarletio import check_satisfaction
+
+from .utils.module_deprecation import get_deprecation_function
+
+# Check whether every export is satisfied
+
 check_satisfaction()
 
+# Setup deprecations
+
 __getattr__ = get_deprecation_function()
+
+# Setup tests
+
+if 'vampytest' in sys.modules:
+    from . import tests

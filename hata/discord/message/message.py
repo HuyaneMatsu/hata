@@ -307,6 +307,10 @@ class Message(DiscordEntity, immortal=True):
         ----------
         data : `dict` of (`str`, `Any`) items
             Message data.
+        
+        Returns
+        -------
+        self : ``Message``
         """
         message_id = int(data['id'])
         
@@ -330,6 +334,9 @@ class Message(DiscordEntity, immortal=True):
         self._fields = None
         self._set_attributes(data)
         return self
+    
+    
+    from_data = classmethod(__new__)
     
     
     @classmethod
@@ -660,7 +667,7 @@ class Message(DiscordEntity, immortal=True):
             _set_message_field(
                 self,
                 MESSAGE_FIELD_KEY_ATTACHMENTS,
-                tuple(Attachment(attachment) for attachment in attachment_datas),
+                tuple(Attachment.from_data(attachment) for attachment in attachment_datas),
             )
         
         
@@ -1830,7 +1837,7 @@ class Message(DiscordEntity, immortal=True):
             pass
         else:
             if (attachment_datas is not None) and attachment_datas:
-                attachments = tuple(Attachment(attachment) for attachment in attachment_datas)
+                attachments = tuple(Attachment.from_data(attachment) for attachment in attachment_datas)
             else:
                 attachments = None
             
@@ -2065,7 +2072,7 @@ class Message(DiscordEntity, immortal=True):
             pass
         else:
             if attachment_datas:
-                attachments = tuple(Attachment(attachment) for attachment in attachment_datas)
+                attachments = tuple(Attachment.from_data(attachment) for attachment in attachment_datas)
             else:
                 attachments = None
             self.attachments = attachments
@@ -2626,6 +2633,9 @@ class Message(DiscordEntity, immortal=True):
             The ``.flags`` attribute of the message. If passed as other `int` than ``MessageFlag``, then will
             be converted to ``MessageFlag``.
         
+        guild_id : ``Guild``, `int`, Optional if called as method (Keyword only)
+            The ``.guild_id`` attribute of the message.
+        
         interaction : `None`, ``MessageInteraction``, Optional (Keyword only)
            The `.interaction` attribute of the message.
         
@@ -2909,12 +2919,18 @@ class Message(DiscordEntity, immortal=True):
         return self
     
     
-    def to_data(self, *, recursive=True):
+    def to_data(self, *, defaults = False, include_internals = False, recursive = True):
         """
         Tries to convert the message back to json serializable dictionary.
         
         Parameters
         ----------
+        defaults : `bool` = `False`, Optional (Keyword only)
+            Whether fields with their default value should be included as well.
+        
+        include_internals : `bool` = `False`, Optional (Keyword only)
+            Whether internal fields should be included as well.
+        
         recursive : `bool` = `True`, Optional (Keyword only)
             Whether referenced messages can be converted as well.
         
@@ -2961,7 +2977,9 @@ class Message(DiscordEntity, immortal=True):
         if attachments is None:
             attachment_datas = []
         else:
-            attachment_datas = [attachment.to_data() for attachment in attachments]
+            attachment_datas = [
+                attachment.to_data(defaults = True, include_internals = True) for attachment in attachments
+            ]
         data['attachments'] = attachment_datas
         
         # components

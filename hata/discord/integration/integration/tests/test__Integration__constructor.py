@@ -2,9 +2,10 @@ import vampytest
 
 from ....user import ClientUserBase, User
 
+from ...integration_metadata import IntegrationMetadataBase
+
 from ..integration import Integration
-from ..integration_type import IntegrationType
-from ..metadata import IntegrationMetadataBase
+from ..preinstanced import IntegrationType
 
 
 def _check_is_attribute_set(integration):

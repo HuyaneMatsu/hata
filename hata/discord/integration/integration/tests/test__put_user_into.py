@@ -1,6 +1,6 @@
 import vampytest
 
-from ....user import User, ZEROUSER
+from ....user import User
 
 from ..fields import put_user_into
 

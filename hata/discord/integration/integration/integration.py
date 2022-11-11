@@ -10,12 +10,13 @@ from ...preconverters import preconvert_snowflake
 from ...role import create_partial_role_from_id
 from ...user import ZEROUSER
 
+from ..integration_metadata import IntegrationMetadataBase, IntegrationMetadataSubscription
+
 from .fields import (
     parse_enabled, parse_name, parse_type, parse_user, put_enabled_into, put_name_into, put_type_into, put_user_into,
     validate_enabled, validate_name, validate_type, validate_user
 )
-from .integration_type import IntegrationType
-from .metadata import IntegrationMetadataBase, IntegrationMetadataSubscription
+from .preinstanced import IntegrationType
 
 
 @export

@@ -4,10 +4,10 @@ from scarletio import copy_docs, set_docs
 
 from ...env import CACHE_PRESENCE
 
+from ..application_command import ApplicationCommandTargetType
 from ..bases import EventBase
 from ..channel import ChannelType, create_partial_channel_from_id
 from ..core import GUILDS
-from ..interaction import ApplicationCommandTargetType
 from ..user import User
 
 

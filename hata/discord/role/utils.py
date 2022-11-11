@@ -1,17 +1,27 @@
 __all__ = ('create_partial_role_from_id', 'cr_p_role_object', 'parse_role', 'parse_role_mention')
 
+import warnings
+
 from scarletio import export
 
-from ..color import Color
 from ..core import ROLES
-from ..permission import Permission
-from ..utils import ID_RP, ROLE_MENTION_RP, random_id
+from ..utils import ID_RP, ROLE_MENTION_RP
 
-from .preinstanced import RoleManagerType
 from .role import Role
+from .fields import validate_color, put_color_into, validate_mentionable, put_mentionable_into, \
+    validate_name, put_name_into, validate_permissions, put_separated_into, \
+    put_permissions_into, put_position_into, validate_separated, validate_position
 
 
-ROLE_MANAGER_TYPE_NONE = RoleManagerType.none
+ROLE_FIELD_CONVERTERS = {
+    'color': (validate_color, put_color_into),
+    'mentionable': (validate_mentionable, put_mentionable_into),
+    'name': (validate_name, put_name_into),
+    'permissions': (validate_permissions, put_permissions_into),
+    'position': (validate_position, put_position_into),
+    'separated': (validate_separated, put_separated_into),
+}
+
 
 @export
 def create_partial_role_from_id(role_id, guild_id = 0):
@@ -40,47 +50,21 @@ def create_partial_role_from_id(role_id, guild_id = 0):
     return role
 
 
-def cr_p_role_object(name, role_id=None, color=Color(), separated=False, position=0, permissions=Permission(),
-        managed=False, mentionable=False):
+def cr_p_role_object(name, **keyword_parameters):
     """
-    Creates a json serializable object representing a ``Role``.
+    Deprecated, please use `Role(..).to_data(...)` instead.
     
-    Parameters
-    ----------
-    name : `str`
-        The name of the role.
-    role_id : `None`, `int` = `None`, Optional
-        The role's unique identifier number. If given as `None`, then a random `id` will be generated.
-    color : `None`, ``Color`` = `None`, Optional
-        The role's color. Defaults to `Color(0)`
-    separated : `bool`, Optional
-        Users show up in separated groups by their highest `separated` role. Defaults to `False`.
-    position : `int` = `0`, Optional
-        The role's position at the guild. Defaults to `0`.
-    permissions : ``Permission`` = `Permission(0)`, Optional
-        The permissions of the users having the role.
-    managed : `bool` = `False`, Optional
-        Whether the role is managed by an integration.
-    mentionable : `bool` = `False`, Optional
-        Whether the role can be mentioned.
-    
-    Returns
-    -------
-    role_data : `dict` of (`str`, `Any`) items
+    Will be removed in 2023 February.
     """
-    if role_id is None:
-        role_id = random_id()
-    
-    return {
-        'id': role_id,
-        'name': name,
-        'color': color,
-        'hoist': separated,
-        'position': position,
-        'permissions': permissions,
-        'managed': managed,
-        'mentionable': mentionable,
-    }
+    warnings.warn(
+        (
+            f'`cr_p_role_object` is deprecated and will be removed in 2023 February. '
+            f'Please use `Role(..).to_data(...)` instead.'
+        ),
+        FutureWarning,
+        stacklevel = 2,
+    )
+    return Role(name = name, **keyword_parameters).to_data()
 
 
 def parse_role_mention(text):
@@ -105,7 +89,7 @@ def parse_role_mention(text):
     return ROLES.get(role_id, None)
 
 
-def parse_role(text, message=None):
+def parse_role(text, message = None):
     """
     Tries to parse a role out from the given text.
     
@@ -113,6 +97,7 @@ def parse_role(text, message=None):
     ----------
     text : `str`
         The text to parse the role out.
+    
     message : `None`, ``Message`` = `None`, Optional
         Context for name based parsing.
     

@@ -1,4 +1,117 @@
-## 1.3.11 *\[2022-10-??\]*
+## 1.3.12 *\[2022-11-??\]*
+
+#### Improvements
+
+- Repurpose `GuildProfile.__init__`. Rename it to `.from_data`.
+- Add `GuildProfile.__new__`.
+- Add `GuildProfile.__eq__`.
+- Add `GuildProfile.__hash__`.
+- Add `GuildProfile.iter_role_ids`.
+- Add `GuildProfile.iter_roles`.
+- Add `GuildProfile.to_data`.
+- Add `GuildProfile.copy`.
+- Add `GuildProfile.copy_with`.
+- Repurpose `InteractionOption.__init__`. Rename to `.from_data`.
+- Add `InteractionOption.to_data`.
+- Add `InteractionOption.__new__`.
+- Add `InteractionOption.get_value_of_recursive`.
+- Repurpose `Attachment.__init__`. Rename to `.from_data`.
+- Add `Attachment.__new__`.
+- Add `Attachment.__hash__`.
+- Add `Attachment.__eq__`.
+- Add `Attachment.copy`.
+- Add `Attachment.copy_with`.
+- Add `Attachment.precreate`.
+- Repurpose `Role.__new__. Rename to `.from_data`.
+- Add `Role.__new__`.
+- Add `Role.to_data`.
+- Add `Role.copy`.
+- Add `Role.copy_with`.
+- Support partial `Role.__eq__`.
+- Support partial `Role.__hash__`.
+- `Role.is_default` is now a method (from property).
+- `Icon.__eq__` now supports `tuple`-s.
+- `Icon.__eq__` now supports `none`-s.
+- Add `Resolved`.
+- Add `InteractionMetadataComponent.resolved`.
+- Add `InteractionType.metadata_type`.
+- Add `InteractionEvent._create_empty`.
+- `InteractionEvent.__eq__` now supports partial instances.
+- `InteractionEvent.__hash__` now supports partial instances.
+- Add `InteractionEvent.to_data`.
+- Add `InteractionEvent._create_empty`.
+- Add `InteractionEvent.copy`.
+- Add `InteractionEvent.copy_with`.
+- Add `InteractionOption.iter_options`.
+- Add `InteractionComponent.iter_components`.
+- Add `InteractionResponseContext.__eq__`.
+- Add `InteractionResponseContext.__hash__`.
+- Add `InteractionMetadataBase.resolve_user`.
+- Add `InteractionMetadataBase.resolve_channel`.
+- Add `InteractionMetadataBase.resolve_attachment`.
+- Add `InteractionMetadataBase.resolve_role`.
+- Add `InteractionMetadataBase.resolve_message`.
+- Add `InteractionMetadataBase.resolve_mentionable`.
+- Add `InteractionMetadataBase.entities`.
+- Add `InteractionMetadataBase.iter_values`.
+- Add `InteractionMetadataBase.iter_entities`.
+- Add `InteractionMetadataBase.iter_components`.
+- Add `InteractionMetadataBase.iter_options`.
+- Add `InteractionEvent.component_type`.
+- Add `InteractionEvent.components`.
+- Add `InteractionEvent.custom_id`.
+- Add `InteractionEvent.application_command_id`.
+- Add `InteractionEvent.application_command_name`.
+- Add `InteractionEvent.options`.
+- Add `InteractionEvent.resolved`.
+- Add `InteractionEvent.target_id`.
+- Add `InteractionEvent.values`.
+- Add `InteractionEvent.target`.
+- Add `InteractionEvent.iter_options`.
+- Add `InteractionEvent.focused_option`.
+- Add `InteractionEvent.get_non_focused_values`.
+- Add `InteractionEvent.get_value_of`.
+- Add `InteractionEvent.value`.
+- Add `InteractionEvent.iter_values`.
+- Add `InteractionEvent.iter_entities`.
+- Add `InteractionEvent.entities`.
+- Add `InteractionEvent.iter_components`.
+- Add `InteractionEvent.iter_custom_ids_and_values`.
+- Add `InteractionEvent.get_custom_id_value_relation`.
+- Add `InteractionEvent.get_value_for`.
+- Add `InteractionEvent.get_match_and_value`.
+- Add `InteractionEvent.iter_matches_and_values`.
+- Add `InteractionEvent.resolve_attachment`.
+- Add `InteractionEvent.resolve_channel`.
+- Add `InteractionEvent.resolve_message`.
+- Add `InteractionEvent.resolve_role`.
+- Add `InteractionEvent.resolve_user`.
+- Add `InteractionEvent.resolve_mentionable`.
+- Add `InteractionEvent.resolve_entity`.
+- `Client.interaction_followup_message_create` now supports sending only components.
+- `Client.interaction_response_message_create` now supports sending only components.
+
+##### ext.slash
+
+- Add `StringSelect`. (Alternative name of `Select`).
+- Add `UserSelect`.
+- Add `ChannelSelect`.
+- Add `RoleSelect`.
+- Add `MentionableSelect`.
+
+#### Renames, Deprecation & Removals
+
+- Deprecate `InteractionComponent.options`. Use `.values` instead.
+- Deprecate `cr_p_role_object`. Use `Role(..).to_data(...)` instead.
+- Deprecate `InteractionComponent.type`. Use `.component_type` instead.
+- Deprecate `FormSubmitInteraction.options`. Use `.components` instead.
+- Rename `ApplicationCommandAutocompleteInteraction` to `InteractionMetadataApplicationCommandAutocomplete`.
+- Rename `ApplicationCommandInteraction` to `InteractionMetadataApplicationCommand`.
+- Rename `ForumSubmitInteraction` to `InteractionMetadataForumSubmit`.
+- Rename `ComponentInteraction` to `InteractionMetadataMessageComponent`.
+- Rename `InteractionFieldBase` to `InteractionMetadataBase`.
+
+## 1.3.11 *\[2022-10-25\]*
 
 #### Improvements
 

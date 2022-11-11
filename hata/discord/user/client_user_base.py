@@ -164,7 +164,7 @@ class ClientUserBase(UserBase):
         try:
             guild_profile = user.guild_profiles[guild.id]
         except KeyError:
-            user.guild_profiles[guild.id] = GuildProfile(data)
+            user.guild_profiles[guild.id] = GuildProfile.from_data(data)
             guild.users[user_id] = user
             return user, {}
         
@@ -204,7 +204,7 @@ class ClientUserBase(UserBase):
             try:
                 guild_profile = user.guild_profiles[guild.id]
             except KeyError:
-                user.guild_profiles[guild.id] = GuildProfile(data)
+                user.guild_profiles[guild.id] = GuildProfile.from_data(data)
             else:
                 guild_profile._update_attributes(data)
         
@@ -240,7 +240,7 @@ class ClientUserBase(UserBase):
             guild_profile = user.guild_profiles[guild.id]
         except KeyError:
             guild.users[user_id] = user
-            user.guild_profiles[guild.id] = GuildProfile(guild_profile_data)
+            user.guild_profiles[guild.id] = GuildProfile.from_data(guild_profile_data)
         else:
             guild_profile._set_joined(guild_profile_data)
             guild_profile._update_attributes(guild_profile_data)

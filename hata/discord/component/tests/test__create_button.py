@@ -2,7 +2,8 @@ import vampytest
 
 from ...core import BUILTIN_EMOJIS
 
-from ..component import Component, ComponentType, ButtonStyle
+from ..component import Component, ComponentType
+from ..component_metadata import ButtonStyle
 from ..utils import create_button
 
 

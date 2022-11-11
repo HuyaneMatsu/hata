@@ -4,7 +4,7 @@ __all__ = (
 )
 
 from .component import Component, ComponentType
-from .component.constants import MAX_LENGTH_DEFAULT, MAX_VALUES_DEFAULT, MIN_LENGTH_DEFAULT, MIN_VALUES_DEFAULT
+from .component_metadata.constants import MAX_LENGTH_DEFAULT, MAX_VALUES_DEFAULT, MIN_LENGTH_DEFAULT, MIN_VALUES_DEFAULT
 
 
 def create_button(

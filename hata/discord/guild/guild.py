@@ -18,7 +18,7 @@ from ..channel import Channel, VoiceRegion
 from ..core import GUILDS
 from ..emoji import Emoji
 from ..http import urls as module_urls
-from ..localizations.utils import DEFAULT_LOCALE, get_locale
+from ..localization.utils import DEFAULT_LOCALE, get_locale
 from ..permission import Permission
 from ..permission.permission import PERMISSION_ALL, PERMISSION_MASK_ADMINISTRATOR, PERMISSION_NONE
 from ..preconverters import preconvert_bool, preconvert_preinstanced_type, preconvert_snowflake, preconvert_str
@@ -405,7 +405,7 @@ class Guild(DiscordEntity, immortal=True):
                 pass
             else:
                 for role_data in role_datas:
-                    Role(role_data, guild_id)
+                    Role.from_data(role_data, guild_id)
             
             try:
                 emoji_datas = data['emojis']
@@ -1257,7 +1257,7 @@ class Guild(DiscordEntity, immortal=True):
         old_ids = set(roles)
         # every new role can cause mass switchings at the role orders, can it mess up the order tho?
         for role_data in data:
-            role = Role(role_data, self.id)
+            role = Role.from_data(role_data, self.id)
             try:
                 old_ids.remove(role.id)
                 role._update_attributes(role_data)

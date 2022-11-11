@@ -532,16 +532,45 @@ class Icon(RichAttributeErrorBaseType):
     
     def __eq__(self, other):
         """Returns whether the two icons are equal."""
-        if (type(self) is not type(other)):
-            return NotImplemented
-        
-        if (self.type is not other.type):
-            return False
-        
-        if self.hash == other.hash:
+        if other is None:
+            if self.type is not ICON_TYPE_NONE:
+                return False
+            
+            if self.hash:
+                return False
+            
             return True
         
-        return False
+        elif type(self) is type(other):
+            # Use `==` to compare value at the case of custom icons.
+            if self.type != other.type:
+                return False
+            
+            if self.hash != other.hash:
+                return False
+            
+            return True
+        
+        elif isinstance(other, tuple):
+            if len(other) != 2:
+                return NotImplemented
+            
+            other_type, other_hash = other
+            if not isinstance(other_type, IconType):
+                return NotImplemented
+            
+            if not isinstance(other_hash, int):
+                return NotImplemented
+            
+            if self.type != other_type:
+                return False
+            
+            if self.hash != other_hash:
+                return False
+            
+            return True
+        
+        return NotImplemented
     
     
     def __repr__(self):

@@ -10,11 +10,10 @@ from ....permission import PermissionOverwrite, PermissionOverwriteTargetType
 from ....user import ClientUserBase, User, ZEROUSER, create_partial_user_from_id
 
 from ...forum_tag import ForumTag
+from ...channel_metadata import ChannelFlag, SortOrder, VideoQualityMode, VoiceRegion
 
-from ..channel_type import ChannelType
+from ..preinstanced import ChannelType
 from ..channel import Channel
-from ..flags import ChannelFlag
-from ..preinstanced import SortOrder, VideoQualityMode, VoiceRegion
 
 
 def test__Channel__thread_users__0():

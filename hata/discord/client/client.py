@@ -28,7 +28,7 @@ from ..gateway.client_gateway import (
 )
 from ..guild import Guild
 from ..http import DiscordHTTPClient, RateLimitProxy
-from ..localizations.utils import DEFAULT_LOCALE, Locale, get_locale
+from ..localization.utils import DEFAULT_LOCALE, Locale, get_locale
 from ..message import Message
 from ..preconverters import (
     preconvert_bool, preconvert_color, preconvert_discriminator, preconvert_flag, preconvert_preinstanced_type,
@@ -1873,7 +1873,7 @@ class Client(
         try:
             profile = self.guild_profiles[guild.id]
         except KeyError:
-            self.guild_profiles[guild.id] = GuildProfile(data)
+            self.guild_profiles[guild.id] = GuildProfile.from_data(data)
             guild.users[self.id] = self
             return {}
         
@@ -1894,7 +1894,7 @@ class Client(
         try:
             profile = self.guild_profiles[guild.id]
         except KeyError:
-            self.guild_profiles[guild.id] = GuildProfile(data)
+            self.guild_profiles[guild.id] = GuildProfile.from_data(data)
             guild.users[self.id] = self
         else:
             profile._update_attributes(data)

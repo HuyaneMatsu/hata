@@ -1,21 +1,20 @@
 __all__ = ()
 
-import reprlib, warnings
+import warnings
 
 from scarletio import Compound, Theory, change_on_switch
 
 from ...bases import maybe_snowflake_pair
-from ...color import Color
 from ...core import GUILDS, ROLES
 from ...emoji import Emoji
 from ...guild import create_partial_guild_from_id
-from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES_EXTENDED
-from ...permission import Permission
+from ...http import DiscordHTTPClient
+from ...payload_building import build_create_payload, build_edit_payload
 from ...role import Role
-from ...utils import get_image_media_type, image_to_base64
+from ...role.utils import ROLE_FIELD_CONVERTERS
 
 from ..functionality_helpers import role_move_key, role_reorder_valid_roles_sort_key
-from ..request_helpers import get_guild_and_id, get_guild_id, get_role_guild_id_and_id
+from ..request_helpers import get_guild_and_id, get_guild_id, get_role_role_guild_id_and_id, get_role_guild_id_and_id
 
 
 class ClientCompoundRoleEndpoints(Compound):
@@ -26,10 +25,128 @@ class ClientCompoundRoleEndpoints(Compound):
     async def guild_sync(self, guild): ...
     
     
-    async def role_edit(
-        self, role, *, name=..., color=..., separated=..., mentionable=..., permissions=..., position=..., icon=...,
-        reason=None
-    ):
+    async def guild_role_get_all(self, guild):
+        """
+        Requests the given guild's roles and if there any de-sync between the wrapper and Discord, applies the
+        changes.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild``, `int`
+            The guild, what's roles will be requested.
+        
+        Returns
+        -------
+        roles : `list` of ``Role``
+        
+        Raises
+        ------
+        TypeError
+            If `guild` was not given neither as ``Guild``, nor as `int`.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        guild, guild_id = get_guild_and_id(guild)
+        
+        data = await self.http.guild_role_get_all(guild_id)
+        if guild is None:
+            guild = create_partial_guild_from_id(guild_id)
+        
+        guild._sync_roles(data)
+        
+        return [*guild.roles.values()]
+    
+    
+    async def role_create(self, guild, role_template = None, *, reason = None, icon = ..., **keyword_parameters):
+        """
+        Creates a role at the given guild.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild``, `int`
+            The guild where the role will be created.
+        
+        role_template : `None`, ``Role`` = `None`, Optional
+            Role entity to use as a template.
+        
+        reason : `None`, `str` = `None`, Optional (Keyword only)
+            Shows up at the guild's audit logs.
+        
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters to create the role with.
+        
+        Other Parameters
+        ----------------
+        color : `int`, ``Color``, Optional (Keyword only)
+            The role's color.
+        
+        icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+            The role's icon.
+        
+        mentionable : `bool`, Optional (Keyword only)
+            Whether the role can be mentioned.
+        
+        name : `str`, Optional (Keyword only)
+            The role's name.
+        
+        permissions : `int`, ``Permission``, Optional (Keyword only)
+            The permissions of the users having the role.
+        
+        position : `int`, Optional (Keyword only)
+            The role's position.
+        
+        separated : `bool`, Optional (Keyword only)
+            Users show up in separated groups by their highest `separated` role.
+        
+        unicode_emoji : `None`, ``Emoji``, Optional (Keyword only)
+            The role's icon as an unicode emoji.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        guild_id = get_guild_id(guild)
+        
+        # checkout icon
+        if (icon is not ...):
+            if isinstance(icon, Emoji):
+                warnings.warn(
+                    (
+                        f'Passing `icon` parameters as `{Emoji.__name__}` into `{self.__class__.__name__}.role_create` '
+                        f'Is deprecated and will be removed in 2023 February. '
+                        f'Please use the `unicode_emoji` parameter instead.'
+                    ),
+                    FutureWarning,
+                    stacklevel = 2,
+                )
+                
+                icon_key = 'unicode_emoji'
+                
+            else:
+                icon_key = 'icon'
+            
+            keyword_parameters[icon_key] = icon
+        
+        data = build_create_payload(role_template, ROLE_FIELD_CONVERTERS, keyword_parameters)
+        role_data = await self.http.role_create(guild_id, data, reason)
+        
+        return Role.from_data(role_data, guild_id)
+    
+    
+    async def role_edit(self, role, role_template = None, *, icon=..., reason = None, **keyword_parameters):
         """
         Edits the role with the given parameters.
         
@@ -39,153 +156,83 @@ class ClientCompoundRoleEndpoints(Compound):
         ----------
         role : ``Role``, `tuple` (`int`, `int`)
             The role to edit.
-        name : `str`, Optional (Keyword only)
-            The role's new name. It's length ca be in range [2:32].
-        color : ``Color``, `int`, Optional (Keyword only)
-            The role's new color.
-        separated : `bool`, Optional (Keyword only)
-            Whether the users with this role should be shown up as separated from the others.
-        mentionable : `bool`, Optional (Keyword only)
-            Whether the role should be mentionable.
-        permissions : ``Permission``, `int`, Optional (Keyword only)
-            The new permission value of the role.
-        position : `int`, Optional (Keyword only)
-            The role's new position.
-        icon : `None`, ``Emoji``, `bytes-like`, Optional (Keyword only)
-            The new icon of the role. Can be `'jpg'`, `'png'`, `'webp'`, `'gif'` image's raw data.
-            
-            Pass it as an ``Emoji`` to set role's icon to it.
-            
-            Pass it as `None` to remove the role's current icon.
+        
+        role_template : `None`, ``Role`` = `None`, Optional
+            Role entity to use as a template.
         
         reason : `None`, `str` = `None`, Optional (Keyword only)
-            Shows up at the respective guild's audit logs.
+            Shows up at the guild's audit logs.
+        
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters to create the role with.
+        
+        Other Parameters
+        ----------------
+        color : `int`, ``Color``, Optional (Keyword only)
+            The role's color.
+        
+        icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+            The role's icon.
+            
+        mentionable : `bool`, Optional (Keyword only)
+            Whether the role can be mentioned.
+        
+        name : `str`, Optional (Keyword only)
+            The role's name.
+        
+        permissions : `int`, ``Permission``, Optional (Keyword only)
+            The permissions of the users having the role.
+        
+        position : `int`, Optional (Keyword only)
+            The role's position.
+        
+        separated : `bool`, Optional (Keyword only)
+            Users show up in separated groups by their highest `separated` role.
+        
+        unicode_emoji : `None`, ``Emoji``, Optional (Keyword only)
+            The role's icon as an unicode emoji.
         
         Raises
         ------
         TypeError
-            - If `role` was not given neither as ``Role`` nor as `tuple` of (`int`, `int`).
-            - If `icon` is neither `None`, `bytes-like`.
+            - If a parameter's type is incorrect.
         ValueError
-            - If default role would be moved.
-            - If any role would be moved to position `0`.
+            - If a parameter's value is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `name` was not given neither as `None` nor `str`.
-            - If `name` length is out of range [2:32].
-            - If `color` was not given as `None`, ``Color`` nor as other `int`.
-            - If `separated` was not given as `None`, nor as `bool`.
-            - If `mentionable` was not given as `None`, nor as `bool˛`.
-            - If `permissions` was not given as `None`, ``Permission``, neither as other `int`.
-            - If `icon` was passed as `bytes-like`, but it's format is not any of the expected formats.
         """
-        snowflake_pair = get_role_guild_id_and_id(role)
-        if snowflake_pair is None:
-            raise TypeError(
-                f'`role` can be `{Role.__name__}`, `tuple` (`int`, `int`), got '
-                f'{role.__class__.__name__}; {role!r}.'
-            )
+        role, guild_id, role_id = get_role_role_guild_id_and_id(role)
         
-        guild_id, role_id = snowflake_pair
-        
-        if (position is not None):
-            await self.role_move((guild_id, role_id), position, reason=reason)
-        
-        data = {}
-        
-        if (name is not ...):
-            if __debug__:
-                if not isinstance(name, str):
-                    raise AssertionError(
-                        f'`name` can be `None`, `str`, got {name.__class__.__name__}; {name!r}.'
-                    )
-                
-                name_length = len(name)
-                if name_length < 2 or name_length > 32:
-                    raise AssertionError(
-                        f'`name` length can be in range [2:32], got {name_length!r}; {name!r}.'
-                    )
-            
-            data['name'] = name
-        
-        if (color is not ...):
-            if __debug__:
-                if not isinstance(color, int):
-                    raise AssertionError(
-                        f'`color` can be `None`, `{Color.__name__}`, `int`, got {color.__class__.__name__}.'
-                    )
-            
-            data['color'] = color
-        
-        if (separated is not ...):
-            if __debug__:
-                if not isinstance(separated, bool):
-                    raise AssertionError(
-                        f'`separated` can be `None`, `bool`, got {separated.__class__.__name__}; {separated!r}.'
-                    )
-            
-            data['hoist'] = separated
-        
-        if (mentionable is not ...):
-            if __debug__:
-                if not isinstance(mentionable, bool):
-                    raise AssertionError(
-                        f'`mentionable` can be `None`, `bool`, got {mentionable.__class__.__name__}.'
-                    )
-            
-            data['mentionable'] = mentionable
-        
-        if (permissions is not ...):
-            if __debug__:
-                if not isinstance(permissions, int):
-                    raise AssertionError(
-                        f'`permissions` can be `None`, `{Permission.__name__}`, `int`, got '
-                        f'{permissions.__class__.__name__}; {permissions!r}.'
-                    )
-            
-            data['permissions'] = permissions
-        
+        # checkout icon
         if (icon is not ...):
-            if icon is None:
-                data['icon'] = None
-            
-            elif isinstance(icon, Emoji):
-                if icon.is_unicode_emoji():
-                    data['unicode_emoji'] = icon.unicode
-                elif icon.is_custom_emoji():
-                    async with self.http.get(icon.url) as response:
-                        icon = await response.read()
-                    
-                    data['icon'] = image_to_base64(icon)
-                
-                # no more cases
-            
-            elif isinstance(icon, (bytes, bytearray, memoryview)):
-                if __debug__:
-                    media_type = get_image_media_type(icon)
-                    
-                    if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
-                        raise AssertionError(
-                            f'Invalid `icon` type for the role: {media_type}; got {reprlib.repr(icon)}.'
-                        )
-                
-                data['icon'] = image_to_base64(icon)
-            
-            else:
-                raise TypeError(
-                    f'`icon` can be `None`, `{Emoji.__name__}`, `bytes-like`, got '
-                    f'{icon.__class__.__name__}; {reprlib.repr(icon)}.'
+            if isinstance(icon, Emoji):
+                warnings.warn(
+                    (
+                        f'Passing `icon` parameters as `{Emoji.__name__}` into `{self.__class__.__name__}.role_create` '
+                        f'Is deprecated and will be removed in 2023 February. '
+                        f'Please use the `unicode_emoji` parameter instead.'
+                    ),
+                    FutureWarning,
+                    stacklevel = 2,
                 )
+                
+                icon_key = 'unicode_emoji'
+                
+            else:
+                icon_key = 'icon'
+            
+            keyword_parameters[icon_key] = icon
         
+        
+        data = build_edit_payload(role, role_template, ROLE_FIELD_CONVERTERS, keyword_parameters)
         
         if data:
             await self.http.role_edit(guild_id, role_id, data, reason)
     
     
-    async def role_delete(self, role, *, reason=None):
+    async def role_delete(self, role, *, reason = None):
         """
         Deletes the given role.
         
@@ -195,6 +242,7 @@ class ClientCompoundRoleEndpoints(Compound):
         ----------
         role : ``Role``, `tuple` (`int`, `int`)
             The role to delete
+        
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
@@ -207,158 +255,11 @@ class ClientCompoundRoleEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        snowflake_pair = get_role_guild_id_and_id(role)
-        if snowflake_pair is None:
-            raise TypeError(
-                f'`role` can be `{Role.__name__}`, `tuple` (`int`, `int`), got {role.__class__.__name__}; {role!r}.'
-            )
-        
-        guild_id, role_id = snowflake_pair
-        
+        guild_id, role_id = get_role_guild_id_and_id(role)
         await self.http.role_delete(guild_id, role_id, reason)
     
     
-    async def role_create(
-        self, guild, *, name=None, permissions=None, color=None, separated=None, mentionable=None, icon=None,
-        reason=None
-    ):
-        """
-        Creates a role at the given guild.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        guild : ``Guild``, `int`
-            The guild where the role will be created.
-        name : `None`, `str` = `None`, Optional (Keyword only)
-            The created role's name. It's length can be in range [2:32].
-        color : `None`, ``Color``, `int` = `None`, Optional (Keyword only)
-            The created role's color.
-        separated : `None`, `bool` = `None`, Optional (Keyword only)
-            Whether the users with the created role should show up as separated from the others.
-        mentionable : `None`, `bool` = `None`, Optional (Keyword only)
-            Whether the created role should be mentionable.
-        permissions : `None`, ``Permission``, `int` = `None`, Optional (Keyword only)
-            The permission value of the created role.
-        icon : `None`, ``Emoji``, `bytes-like` = `None`, Optional (Keyword only)
-            The icon for the role.
-        reason : `None`, `str` = `None`, Optional (Keyword only)
-            Shows up at the guild's audit logs.
-        
-        Raises
-        ------
-        TypeError
-            - If `guild` was not given neither as ``Guild`` nor as `int`.
-            - If `icon` is neither `None`, ``Emoji``,  or `bytes-like`.
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        AssertionError
-            - If `name` was not given neither as `None` nor `str`.
-            - If `name` length is out of range [2:32].
-            - If `color` was not given as `None`, ``Color`` nor as other `int`.
-            - If `separated` was not given as `None`, nor as `bool`.
-            - If `mentionable` was not given as `None`, nor as `bool˛`.
-            - If `permissions` was not given as `None`, ``Permission``, neither as other `int`.
-            - If `icon` is passed as `bytes-like`, but it's format is not a valid image format.
-        """
-        guild_id = get_guild_id(guild)
-        
-        data = {}
-        
-        if (name is not None):
-            if __debug__:
-                if not isinstance(name, str):
-                    raise AssertionError(
-                        f'`name` can be `None`, `str`, got {name.__class__.__name__}; {name!r}.'
-                    )
-                
-                name_length = len(name)
-                if name_length < 2 or name_length > 32:
-                    raise AssertionError(
-                        f'`name` length can be in range [2:32], got {name_length!r}; {name!r}.'
-                    )
-            
-            data['name'] = name
-        
-        if (permissions is not None):
-            if __debug__:
-                if not isinstance(color, int):
-                    raise AssertionError(
-                        f'`permissions` can be `None`, `{Permission.__name__}`, `int`, got '
-                        f'{permissions.__class__.__name__}; {permissions!r}.'
-                    )
-            
-            data['permissions'] = permissions
-        
-        if (color is not None):
-            if __debug__:
-                if not isinstance(color, int):
-                    raise AssertionError(
-                        f'`color` can be `None`, `{Color.__name__}`, `int`, got {color.__class__.__name__}; {color!r}.'
-                    )
-            
-            data['color'] = color
-        
-        if (separated is not None):
-            if __debug__:
-                if not isinstance(separated, bool):
-                    raise AssertionError(
-                        f'`separated` can be `None`, `bool`, got {separated.__class__.__name__}; {separated!r}.'
-                    )
-            
-            data['hoist'] = separated
-        
-        if (mentionable is not None):
-            if __debug__:
-                if not isinstance(mentionable, bool):
-                    raise AssertionError(
-                        f'`mentionable` can be `None`, `bool`, got {mentionable.__class__.__name__}; {mentionable!r}.'
-                    )
-            
-            data['mentionable'] = mentionable
-        
-        if icon is None:
-            pass
-        
-        elif isinstance(icon, Emoji):
-            if icon.is_unicode_emoji():
-                data['unicode_emoji'] = icon.unicode
-            
-            elif icon.is_custom_emoji():
-                async with self.http.get(icon.url) as response:
-                    icon = await response.read()
-                
-                data['icon'] = image_to_base64(icon)
-            
-            # no more cases
-        
-        elif not isinstance(icon, (bytes, bytearray, memoryview)):
-            if __debug__:
-                media_type = get_image_media_type(icon)
-                
-                if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
-                    raise AssertionError(
-                        f'Invalid `icon` type for the role: {media_type}; got {reprlib.repr(icon)}.'
-                    )
-            
-            data['icon'] = image_to_base64(icon)
-        
-        else:
-            raise TypeError(
-                f'`icon` can be `None`, `{Emoji.__name__}`, `bytes-like`, got '
-                f'{icon.__class__.__name__}; {reprlib.repr(icon)}.'
-            )
-        
-        
-        data = await self.http.role_create(guild_id, data, reason)
-        
-        return Role(data, guild_id)
-    
-    
-    async def role_move(self, role, position, *, reason=None):
+    async def role_move(self, role, position, *, reason = None):
         """
         Moves the given role.
         
@@ -387,7 +288,7 @@ class ClientCompoundRoleEndpoints(Compound):
         """
         if isinstance(role, Role):
             guild_id = role.guild_id
-            role_id = 0
+            role_id = role.id
         
         else:
             snowflake_pair = maybe_snowflake_pair(role)
@@ -428,7 +329,7 @@ class ClientCompoundRoleEndpoints(Compound):
                     f'Role cannot be moved to position `0`, got {role!r}.'
                 )
         
-        data = change_on_switch(guild.role_list, role, position, key=role_move_key)
+        data = change_on_switch(guild.role_list, role, position, key = role_move_key)
         if not data:
             return
         
@@ -537,7 +438,7 @@ class ClientCompoundRoleEndpoints(Compound):
             )
     
     
-    async def role_reorder(self, roles, *, reason=None):
+    async def role_reorder(self, roles, *, reason = None):
         """
         Moves more roles at their guild to the specific positions.
         
@@ -769,39 +670,3 @@ class ClientCompoundRoleEndpoints(Compound):
         )
         
         return await self.guild_role_get_all(guild)
-    
-    
-    async def guild_role_get_all(self, guild):
-        """
-        Requests the given guild's roles and if there any de-sync between the wrapper and Discord, applies the
-        changes.
-        
-        This method is a coroutine.
-        
-        Parameters
-        ----------
-        guild : ``Guild``, `int`
-            The guild, what's roles will be requested.
-        
-        Returns
-        -------
-        roles : `list` of ``Role``
-        
-        Raises
-        ------
-        TypeError
-            If `guild` was not given neither as ``Guild``, nor as `int`.
-        ConnectionError
-            No internet connection.
-        DiscordException
-            If any exception was received from the Discord API.
-        """
-        guild, guild_id = get_guild_and_id(guild)
-        
-        data = await self.http.guild_role_get_all(guild_id)
-        if guild is None:
-            guild = create_partial_guild_from_id(guild_id)
-        
-        guild._sync_roles(data)
-        
-        return [*guild.roles.values()]

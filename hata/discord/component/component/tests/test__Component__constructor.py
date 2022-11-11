@@ -1,8 +1,9 @@
 import vampytest
 
+from ...component_metadata import ComponentMetadataBase
+
 from ..component import Component
-from ..component_type import ComponentType
-from ..metadata import ComponentMetadataBase
+from ..preinstanced import ComponentType
 
 
 def _check_is_all_field_set(component):

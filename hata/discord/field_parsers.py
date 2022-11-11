@@ -1,5 +1,7 @@
 __all__ = ()
 
+from scarletio import include_with_callback
+
 from .utils import timestamp_to_datetime
 
 
@@ -468,9 +470,48 @@ def force_string_parser_factory(field_key):
     return parser
 
 
+def field_parser_factory(field_key):
+    """
+    Returns a field parser. This parser 1:1 returns the parsed value.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    
+    Returns
+    -------
+    parser : `FunctionType`
+    """
+    def parser(data):
+        """
+        Parses out any value from the given payload.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Entity data.
+        
+        Returns
+        -------
+        field_value : `object`
+        """
+        nonlocal field_key
+        
+        field_value = data.get(field_key, None)
+        if (field_value is not None) and isinstance(field_value, str) and (not field_value):
+            field_value = None
+        
+        return field_value
+    
+    return parser
+
+
 def nullable_string_parser_factory(field_key):
     """
-    Returns a new nullable string parser.
+    Returns a nullable string parser.
     
     Parameters
     ----------
@@ -503,6 +544,47 @@ def nullable_string_parser_factory(field_key):
             field_value = None
         
         return field_value
+    
+    return parser
+
+
+def nullable_string_array_parser_factory(field_key):
+    """
+    Returns a nullable string array parser.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    
+    Returns
+    -------
+    parser : `FunctionType`
+    """
+    def parser(data):
+        """
+        Parses out a nullable string array from the given payload.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Entity data.
+        
+        Returns
+        -------
+        string_array : `None`, `tuple` of `str`
+        """
+        nonlocal field_key
+        
+        raw_string_array = data.get(field_key, None)
+        if (raw_string_array is None) or (not raw_string_array):
+            string_array = None
+        else:
+            string_array = tuple(sorted(raw_string_array))
+        
+        return string_array
     
     return parser
 
@@ -616,7 +698,7 @@ def default_entity_parser_factory(field_key, entity_type, default):
     return parser
 
 
-def nullable_functional_parser_factor(field_key, function):
+def nullable_functional_parser_factor(field_key, function, *, include = None):
     """
     Returns an entity parser with default return value.
     
@@ -624,8 +706,13 @@ def nullable_functional_parser_factor(field_key, function):
     ----------
     field_key : `str`
         The field's key used in payload.
+    
     function : `FunctionType`
         Function to call with the received field value.
+    
+    include : `None`, `str` = `None`, Optional (Keyword only)
+        The function's name to include `function` with. Should be used when `function` cannot be resolved initially.
+    
     
     Returns
     -------
@@ -655,10 +742,18 @@ def nullable_functional_parser_factor(field_key, function):
         
         return field_value
     
+    
+    if (include is not None):
+        @include_with_callback(include)
+        def include_object_type(value):
+            nonlocal function
+            function = value
+    
+    
     return parser
 
 
-def nullable_object_array_parser_factory(field_key, object_type):
+def nullable_object_array_parser_factory(field_key, object_type, *, include = None):
     """
     Returns a new nullable object array parser.
     
@@ -666,8 +761,12 @@ def nullable_object_array_parser_factory(field_key, object_type):
     ----------
     field_key : `str`
         The field's key used in payload.
+    
     object_type : `type` with `{from_data}`
-        Entity's type.
+        Object's type.
+    
+    include : `None`, `str` = `None`, Optional (Keyword only)
+        The name to include `entity_type` with. Should be used when `entity_type` cannot be resolved initially.
     
     Returns
     -------
@@ -698,5 +797,13 @@ def nullable_object_array_parser_factory(field_key, object_type):
             object_array = tuple(object_type.from_data(object_data) for object_data in object_data_array)
         
         return object_array
+    
+    
+    if (include is not None):
+        @include_with_callback(include)
+        def include_object_type(value):
+            nonlocal object_type
+            object_type = value
+    
     
     return parser

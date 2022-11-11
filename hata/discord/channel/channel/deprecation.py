@@ -6,7 +6,7 @@ from scarletio import modulize
 
 from ....utils.module_deprecation import deprecated_import
 
-from .channel_type import ChannelType
+from .preinstanced import ChannelType
 
 
 @deprecated_import

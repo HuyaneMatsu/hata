@@ -16,16 +16,16 @@ from ...preconverters import preconvert_preinstanced_type, preconvert_snowflake
 from ...user import ZEROUSER, create_partial_user_from_id
 from ...utils import DATETIME_FORMAT_CODE
 
+from ..channel_metadata import ChannelMetadataBase, ChannelMetadataGuildMainBase
 from ..forum_tag import create_forum_tag_from_id
 from ..message_history import MessageHistory, MessageHistoryCollector, message_relative_index
 
-from .channel_type import ChannelType
-from .channel_type.flags import (
+from .preinstanced import ChannelType
+from .flags import (
     CHANNEL_TYPE_MASK_CONNECTABLE, CHANNEL_TYPE_MASK_GUILD, CHANNEL_TYPE_MASK_GUILD_SORTABLE,
     CHANNEL_TYPE_MASK_GUILD_SYSTEM, CHANNEL_TYPE_MASK_INVITABLE, CHANNEL_TYPE_MASK_PRIVATE, CHANNEL_TYPE_MASK_TEXTUAL,
     CHANNEL_TYPE_MASK_THREAD, CHANNEL_TYPE_MASK_THREADABLE
 )
-from .metadata import ChannelMetadataBase, ChannelMetadataGuildMainBase
 
 
 create_partial_channel_from_id = include('create_partial_channel_from_id')
@@ -1487,7 +1487,7 @@ class Channel(DiscordEntity, immortal=True):
     
     
     @classmethod
-    def precreate(cls, channel_id, *, channel_type=None, guild_id=0, **keyword_parameters):
+    def precreate(cls, channel_id, *, channel_type = None, guild_id = 0, **keyword_parameters):
         """
         Precreates the channel by creating a partial one with the given parameters. When the channel is loaded
         the precreated channel will be picked up. If an already existing channel would be precreated, returns that

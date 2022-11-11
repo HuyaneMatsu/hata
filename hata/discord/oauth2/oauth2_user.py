@@ -2,7 +2,7 @@ __all__ = ('Oauth2User',)
 
 from scarletio import copy_docs
 
-from ..localizations.utils import get_locale
+from ..localization.utils import get_locale
 from ..user import PremiumType, UserBase, UserFlag
 
 

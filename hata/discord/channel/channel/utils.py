@@ -1,13 +1,14 @@
 __all__ = ('cr_pg_channel_object', 'create_partial_channel_from_data', 'create_partial_channel_from_id')
 
+import warnings
 from functools import partial as partial_func
 
 from scarletio import export, include
 
 from ...core import CHANNELS
 
-from .channel_type import ChannelType
-from .fields import (
+from ..channel_metadata.base import CHANNEL_METADATA_ICON_SLOT
+from ..channel_metadata.fields import (
     put_applied_tag_ids_into, put_auto_archive_after_into, put_bitrate_into, put_default_thread_auto_archive_after_into,
     put_default_thread_reaction_into, put_default_thread_slowmode_into, put_flags_into, put_invitable_into,
     put_name_into, put_nsfw_into, put_open_into, put_parent_id_into, put_permission_overwrites_into, put_position_into,
@@ -18,7 +19,8 @@ from .fields import (
     validate_region, validate_slowmode, validate_topic, validate_user_limit, validate_video_quality_mode,
     validate_default_sort_order, put_default_sort_order_into
 )
-from .metadata.base import CHANNEL_METADATA_ICON_SLOT
+
+from .preinstanced import ChannelType
 
 
 Channel = include('Channel')
@@ -146,4 +148,12 @@ def cr_pg_channel_object(name, channel_type, *, guild = None, **keyword_paramete
     
     Will be removed in 2023 February.
     """
+    warnings.warn(
+        (
+            f'`cr_pg_channel_object` is deprecated and will be removed in 2023 February. '
+            f'Please use `Channel(..).to_data(...)` instead.'
+        ),
+        FutureWarning,
+        stacklevel = 2,
+    )
     return Channel(channel_type = channel_type, name = name, **keyword_parameters).to_data()

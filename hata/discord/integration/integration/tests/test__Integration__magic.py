@@ -3,7 +3,7 @@ import vampytest
 from ....user import User
 
 from ..integration import Integration
-from ..integration_type import IntegrationType
+from ..preinstanced import IntegrationType
 
 
 def test__Integration__repr():

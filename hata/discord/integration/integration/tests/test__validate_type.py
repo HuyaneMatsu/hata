@@ -1,7 +1,7 @@
 import vampytest
 
 from ..fields import validate_type
-from ..integration_type import IntegrationType
+from ..preinstanced import IntegrationType
 
 
 def test__validate_type__0():

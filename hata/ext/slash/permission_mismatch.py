@@ -3,7 +3,7 @@ __all__ = ('PermissionMismatchWarning',)
 import warnings
 
 from ...discord.application import Team
-from ...discord.interaction import ApplicationCommandPermissionOverwriteTargetType
+from ...discord.application_command import ApplicationCommandPermissionOverwriteTargetType
 
 
 class PermissionMismatchWarning(RuntimeWarning):
@@ -199,7 +199,7 @@ def _reduce_application_command_permission_overwrites(guild_id, application_comm
     
     Returns
     -------
-    reduced : `None`
+    reduced : `None`, `list` of ``ApplicationCommandPermissionOverwrite``
     """
     # Optimal case
     if application_command_permission_overwrites is None:

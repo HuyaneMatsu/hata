@@ -2,7 +2,7 @@ __all__ = ()
 
 from scarletio import from_json
 
-from ...discord.interaction.application_command.helpers import maybe_locale
+from ...discord.application_command.helpers import maybe_locale
 
 
 def validate_translation_table(translation_table):

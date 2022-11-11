@@ -3,7 +3,7 @@ import vampytest
 from ....core import CHANNELS
 
 from ..channel import Channel
-from ..channel_type import ChannelType
+from ..preinstanced import ChannelType
 from ..utils import create_partial_channel_from_data
 
 

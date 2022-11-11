@@ -6,12 +6,12 @@ import reprlib
 
 from scarletio import RichAttributeErrorBaseType, copy_docs, include
 
-from ...discord.client import Client
-from ...discord.guild import Guild
-from ...discord.interaction import ApplicationCommandPermissionOverwrite, ApplicationCommandOptionType
-from ...discord.interaction.application_command.application_command_option import (
+from ...discord.application_command import ApplicationCommandPermissionOverwrite, ApplicationCommandOptionType
+from ...discord.application_command.application_command_option import (
     _validate_max_length, _validate_min_length
 )
+from ...discord.client import Client
+from ...discord.guild import Guild
 from ...discord.preconverters import preconvert_snowflake
 
 from .converters import (

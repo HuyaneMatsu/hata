@@ -1,6 +1,6 @@
 __all__ = ('validate_application_target_type', )
 
-from ....discord.interaction import ApplicationCommandTargetType
+from ....discord.application_command import ApplicationCommandTargetType
 
 
 DEFAULT_APPLICATION_COMMAND_TARGET_TYPE = ApplicationCommandTargetType.chat

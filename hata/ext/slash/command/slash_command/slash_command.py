@@ -4,9 +4,9 @@ from functools import partial as partial_func
 
 from scarletio import WeakReferer, copy_docs, export
 
+from .....discord.application_command import ApplicationCommandTargetType
+from .....discord.application_command.constants import APPLICATION_COMMAND_OPTIONS_MAX
 from .....discord.events.handling_helpers import Router, _EventHandlerManager, check_name, route_name, route_value
-from .....discord.interaction import ApplicationCommandTargetType
-from .....discord.interaction.application_command.constants import APPLICATION_COMMAND_OPTIONS_MAX
 
 from ...converters import get_slash_command_parameter_converters
 from ...exceptions import SlashCommandParameterConversionError, handle_command_exception

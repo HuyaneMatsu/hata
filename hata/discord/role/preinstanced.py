@@ -56,6 +56,7 @@ class RoleManagerType(PreinstancedBase):
         
         return boolean
     
+    
     none = P(0, 'none',)
     unset = P(1, 'unset',)
     unknown = P(2, 'unknown',)

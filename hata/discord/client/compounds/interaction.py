@@ -10,7 +10,7 @@ from ...application import Application
 from ...bases import maybe_snowflake
 from ...component import InteractionForm
 from ...http import DiscordHTTPClient
-from ...interaction import INTERACTION_RESPONSE_TYPES, InteractionEvent, InteractionResponseContext, InteractionType
+from ...interaction import InteractionEvent, InteractionResponseContext, InteractionResponseType, InteractionType
 
 from ...message import Message, MessageFlag
 from ...message.utils import try_resolve_interaction_message
@@ -74,7 +74,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         if not interaction.is_unanswered():
             return
         
-        data = {'type': INTERACTION_RESPONSE_TYPES.source}
+        data = {'type': InteractionResponseType.source.value}
         
         if show_for_invoking_user_only:
             data['data'] = {'flags': MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY}
@@ -135,7 +135,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         choices = application_command_autocomplete_choice_parser(choices)
         
         data = {
-            'type': INTERACTION_RESPONSE_TYPES.application_command_autocomplete_result,
+            'type': InteractionResponseType.application_command_autocomplete_result.value,
             'data': {
                 'choices': choices,
             },
@@ -217,7 +217,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         # Build payload
         data = {
             'data': form.to_data(),
-            'type': INTERACTION_RESPONSE_TYPES.form
+            'type': InteractionResponseType.form.value,
         }
         
         async with InteractionResponseContext(interaction, False, True):
@@ -355,6 +355,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         if (components is not None):
             message_data['components'] = components
+            contains_content = True
         
         if tts:
             message_data['tts'] = True
@@ -381,11 +382,11 @@ class ClientCompoundInteractionEndpoints(Compound):
             data['data'] = message_data
         
         if is_deferring:
-            response_type = INTERACTION_RESPONSE_TYPES.source
+            response_type = InteractionResponseType.source
         else:
-            response_type = INTERACTION_RESPONSE_TYPES.message_and_source
+            response_type = InteractionResponseType.message_and_source
         
-        data['type'] = response_type
+        data['type'] = response_type.value
         
         async with InteractionResponseContext(interaction, is_deferring, show_for_invoking_user_only):
             await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
@@ -435,7 +436,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         if not interaction.is_unanswered():
             return
         
-        data = {'type': INTERACTION_RESPONSE_TYPES.component}
+        data = {'type': InteractionResponseType.component.value}
         
         context = InteractionResponseContext(interaction, True, False)
         coroutine = self.http.interaction_response_message_create(interaction.id, interaction.token, data)
@@ -630,7 +631,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         data = {
             'data': message_data,
-            'type': INTERACTION_RESPONSE_TYPES.component_message_edit,
+            'type': InteractionResponseType.component_message_edit.value,
         }
         
         
@@ -857,6 +858,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         if (components is not None):
             message_data['components'] = components
+            contains_content = True
         
         if tts:
             message_data['tts'] = True

@@ -1,8 +1,8 @@
 __all__ = ()
 
 from .....discord.guild import Guild
-from .....discord.interaction.application_command.application_command import _assert__application_command__nsfw
-from .....discord.interaction.application_command.constants import (
+from .....discord.application_command.application_command import _assert__application_command__nsfw
+from .....discord.application_command.constants import (
     APPLICATION_COMMAND_NAME_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN
 )
 from .....discord.permission import Permission

@@ -1,7 +1,7 @@
 import vampytest
 
 from ..component import Component
-from ..component_type import ComponentType
+from ..preinstanced import ComponentType
 
 
 def test__Component__iter():

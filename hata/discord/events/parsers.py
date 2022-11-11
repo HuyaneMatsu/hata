@@ -6,6 +6,7 @@ from scarletio import Task, include
 
 from ...env import CACHE_PRESENCE, CACHE_USER
 
+from ..application_command import ApplicationCommand, ApplicationCommandPermission
 from ..auto_moderation import AutoModerationActionExecutionEvent, AutoModerationRule
 from ..channel import Channel
 from ..core import (
@@ -24,7 +25,7 @@ from ..guild.embedded_activity_state import (
     difference_handle_embedded_activity_update_event, handle_embedded_update_event
 )
 from ..integration import Integration
-from ..interaction import ApplicationCommand, ApplicationCommandPermission, InteractionEvent
+from ..interaction import InteractionEvent
 from ..invite import Invite
 from ..message import EMBED_UPDATE_NONE, Message
 from ..role import Role, create_partial_role_from_id
@@ -2433,7 +2434,7 @@ del GUILD_INTEGRATIONS_UPDATE__CAL, \
 def GUILD_ROLE_CREATE__CAL_SC(client, data):
     guild_id = int(data['guild_id'])
     
-    role = Role(data['role'], guild_id)
+    role = Role.from_data(data['role'], guild_id)
     
     Task(client.events.role_create(client, role), KOKORO)
 
@@ -2450,7 +2451,7 @@ def GUILD_ROLE_CREATE__CAL_MC(client, data):
             clients.close()
             return
     
-    role = Role(data['role'], guild_id)
+    role = Role.from_data(data['role'], guild_id)
     
     if clients is None:
         event_handler = client.events.role_create
@@ -2467,7 +2468,7 @@ def GUILD_ROLE_CREATE__CAL_MC(client, data):
 def GUILD_ROLE_CREATE__OPT_SC(client, data):
     guild_id = int(data['guild_id'])
     
-    Role(data['role'], guild_id)
+    Role.from_data(data['role'], guild_id)
 
 
 def GUILD_ROLE_CREATE__OPT_MC(client, data):
@@ -2480,7 +2481,7 @@ def GUILD_ROLE_CREATE__OPT_MC(client, data):
         if first_client(guild.clients, INTENT_MASK_GUILDS, client) is not client:
             return
     
-    Role(data['role'], guild_id)
+    Role.from_data(data['role'], guild_id)
 
 
 add_parser(
@@ -3246,7 +3247,7 @@ del CHANNEL_UNREAD_UPDATE
 def INTERACTION_CREATE__CAL(client, data):
     # Since interaction can be called from guilds, where the bot is not in, we will call it even if the respective
     # channel & guild are not cached.
-    event = InteractionEvent(data)
+    event = InteractionEvent.from_data(data)
     
     Task(client.events.interaction_create(client, event), KOKORO)
 

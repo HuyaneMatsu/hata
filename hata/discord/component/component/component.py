@@ -4,15 +4,15 @@ from scarletio import RichAttributeErrorBaseType, copy_docs, export
 
 from ...preconverters import preconvert_preinstanced_type
 
-from ..shared_fields import validate_components, validate_custom_id, validate_emoji
-
-from .component_type import ComponentType
-from .fields import (
+from ..component_metadata import ComponentMetadataBase
+from ..component_metadata.fields import (
     validate_button_style, validate_channel_types, validate_enabled, validate_label, validate_max_length,
     validate_max_values, validate_min_length, validate_min_values, validate_options, validate_placeholder,
     validate_required, validate_text_input_style, validate_url, validate_value
 )
-from .metadata import ComponentMetadataBase
+from ..shared_fields import validate_components, validate_custom_id, validate_emoji
+
+from .preinstanced import ComponentType
 
 
 @export

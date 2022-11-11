@@ -2,10 +2,10 @@ __all__ = ('AuditLog', )
 
 from scarletio import RichAttributeErrorBaseType, WeakReferer
 
+from ...application_command import ApplicationCommand
 from ...auto_moderation import AutoModerationRule
 from ...channel import Channel
 from ...integration import Integration
-from ...interaction import ApplicationCommand
 from ...scheduled_event import ScheduledEvent
 from ...user import User
 from ...webhook import Webhook

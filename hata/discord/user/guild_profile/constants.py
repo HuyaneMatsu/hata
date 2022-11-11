@@ -1,0 +1,4 @@
+__all__ = ()
+
+NICK_LENGTH_MIN = 1
+NICK_LENGTH_MAX = 32

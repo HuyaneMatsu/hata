@@ -11,18 +11,18 @@ from scarletio.web_common import Formdata
 
 from ...env import API_VERSION
 
+from ..application_command import ApplicationCommand
 from ..auto_moderation import AutoModerationRule
 from ..bases import maybe_snowflake, maybe_snowflake_pair, maybe_snowflake_token_pair
 from ..channel import Channel, ForumTag
 from ..component import Component, ComponentType, create_row
 from ..core import (
-    APPLICATION_COMMANDS, AUTO_MODERATION_RULES, CHANNELS, FORUM_TAGS, GUILDS, MESSAGES, SCHEDULED_EVENTS, STICKERS,
-    STICKER_PACKS, USERS
+    APPLICATION_COMMANDS, AUTO_MODERATION_RULES, CHANNELS, FORUM_TAGS, GUILDS, MESSAGES, ROLES, SCHEDULED_EVENTS,
+    STICKERS, STICKER_PACKS, USERS
 )
 from ..embed import EmbedBase
 from ..emoji import Emoji, parse_reaction
 from ..guild import Guild, GuildDiscovery
-from ..interaction import ApplicationCommand
 from ..message import Attachment, Message
 from ..oauth2 import Achievement
 from ..permission import PermissionOverwrite
@@ -1373,17 +1373,62 @@ def get_role_id(role):
 
 def get_role_guild_id_and_id(role):
     """
+    Gets the role identifier from the given role or of it's identifier.
+    
+    Parameters
+    ----------
+    role : ``Role``, `tuple` (`int`, `int`)
+        The role, or a `guild-id`, `role-id` pair.
+    
+    Returns
+    -------
+    role : `None`, ``Role``
+        The respective role.
+    
+    guild_id : `int`
+        The role's guild's identifier.
+    
+    role_id : `int`
+        The role's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `role`'s type is incorrect.
+    """
+    if isinstance(role, Role):
+        role_id = role.id
+        guild_id = role.guild_id
+    
+    else:
+        snowflake_pair = maybe_snowflake_pair(role)
+        if snowflake_pair is None:
+            raise TypeError(
+                f'`role` can be `{Role.__name__}`, `tuple` (`int`, `int`), got {role.__class__.__name__}; {role!r}.'
+            )
+        
+        guild_id, role_id = snowflake_pair
+        role = ROLES.get(role_id, None)
+    
+    return role, guild_id, role_id
+
+
+def get_role_role_guild_id_and_id(role):
+    """
     Gets the role's and it's guild's identifier from the given role or of a `guild-id`, `role-id` pair.
     
     Parameters
     ----------
     role : ``Role``, `tuple` (`int`, `int`)
-        The role, or `guild-id`, `role-id` pair.
+        The role, or a `guild-id`, `role-id` pair.
     
     Returns
     -------
-    snowflake_pair : `None`, `tuple` (`int`, `int`)
-        The role's guild's and it's own identifier if applicable.
+    guild_id : `int`
+        The role's guild's identifier.
+    
+    role_id : `int`
+        The role's identifier.
     
     Raises
     ------
@@ -1401,7 +1446,6 @@ def get_role_guild_id_and_id(role):
         f'`role` can be `{Role.__name__}`, `tuple` (`int`, `int`), got {role.__class__.__name__}; {role!r}.'
     )
     
-
 
 def get_webhook_id(webhook):
     """

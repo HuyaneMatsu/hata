@@ -1,6 +1,7 @@
 import vampytest
 
-from ..component import Component, ComponentType, TextInputStyle
+from ..component import Component, ComponentType
+from ..component_metadata import TextInputStyle
 from ..utils import create_text_input
 
 def test__ComponentMetadataTextInput__new__1():

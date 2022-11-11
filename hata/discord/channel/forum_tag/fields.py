@@ -79,7 +79,6 @@ parse_moderated = bool_parser_factory('moderated', False)
 put_moderated_into = bool_optional_putter_factory('moderated', False)
 validate_moderated = bool_validator_factory('moderated')
 
-
 # name
 
 parse_name = force_string_parser_factory('name')

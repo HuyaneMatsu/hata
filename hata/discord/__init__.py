@@ -1,5 +1,6 @@
 ﻿from .activity import *
 from .application import *
+from .application_command import *
 from .auto_moderation import *
 from .bases import *
 from .channel import *
@@ -15,7 +16,7 @@ from .http import *
 from .integration import *
 from .interaction import *
 from .invite import *
-from .localizations import *
+from .localization import *
 from .message import *
 from .oauth2 import *
 from .permission import *
@@ -43,6 +44,7 @@ from .utils import *
 __all__ = (
     *activity.__all__,
     *application.__all__,
+    *application_command.__all__,
     *auto_moderation.__all__,
     *bases.__all__,
     *channel.__all__,
@@ -58,7 +60,7 @@ __all__ = (
     *integration.__all__,
     *interaction.__all__,
     *invite.__all__,
-    *localizations.__all__,
+    *localization.__all__,
     *message.__all__,
     *oauth2.__all__,
     *permission.__all__,

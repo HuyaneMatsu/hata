@@ -1,7 +1,7 @@
 __all__ = ()
 
 from ....channel import VoiceRegion
-from ....localizations import Locale
+from ....localization import Locale
 
 from ...flags import SystemChannelFlag
 from ...preinstanced import ContentFilterLevel, HubType, MFA, MessageNotificationLevel, NsfwLevel, VerificationLevel

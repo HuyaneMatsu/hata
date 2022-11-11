@@ -6,14 +6,14 @@ from scarletio import Compound, IgnoreCaseMultiValueDictionary
 from scarletio.web_common.headers import AUTHORIZATION
 
 from ...application import Application
-from ...http import DiscordHTTPClient
-from ...interaction import (
+from ...application_command import (
     ApplicationCommand, ApplicationCommandPermission, ApplicationCommandPermissionOverwrite,
     ApplicationCommandPermissionOverwriteTargetType
 )
-from ...interaction.application_command.constants import (
+from ...application_command.constants import (
     APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD, APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
 )
+from ...http import DiscordHTTPClient
 from ...oauth2 import Oauth2Access, Oauth2Scope, Oauth2User
 
 from ..request_helpers import (

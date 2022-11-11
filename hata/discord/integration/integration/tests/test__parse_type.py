@@ -1,6 +1,6 @@
 import vampytest
 
-from ..integration_type import IntegrationType
+from ..preinstanced import IntegrationType
 
 from ..fields import parse_type
 

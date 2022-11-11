@@ -1,7 +1,7 @@
 import vampytest
 
 from ..channel import Channel
-from ..channel_type import ChannelType
+from ..preinstanced import ChannelType
 
 
 def test__Channel__repr():

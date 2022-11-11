@@ -4,10 +4,9 @@ from functools import partial as partial_func
 
 from scarletio import WeakReferer, RichAttributeErrorBaseType
 
+from .....discord.application_command import ApplicationCommandOption, ApplicationCommandOptionType
 from .....discord.client import Client
-from .....discord.interaction import (
-    ApplicationCommandOption, ApplicationCommandOptionType, InteractionEvent
-)
+from .....discord.interaction import InteractionEvent
 
 from ...converters import InternalParameterConverter, SlashCommandParameterConverter
 from ...exceptions import _register_exception_handler, handle_command_exception, test_exception_handler

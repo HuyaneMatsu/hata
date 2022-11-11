@@ -1,8 +1,13 @@
-__all__ = ('Button', 'ButtonStyle', 'Form', 'Option', 'Row', 'Select', 'TextInput', 'TextInputStyle')
+__all__ = (
+    'Button', 'ButtonStyle', 'ChannelSelect', 'Form', 'MentionableSelect', 'Option', 'RoleSelect', 'Row', 'Select',
+    'StringSelect', 'TextInput', 'TextInputStyle', 'UserSelect'
+)
 
 from ...discord.component import (
-    ButtonStyle, create_button as Button, create_row as Row, create_string_select as Select,
-    StringSelectOption as Option, create_text_input as TextInput, InteractionForm as Form, TextInputStyle
+    ButtonStyle, InteractionForm as Form, StringSelectOption as Option, TextInputStyle, create_button as Button,
+    create_channel_select as ChannelSelect, create_mentionable_select as MentionableSelect,
+    create_role_select as RoleSelect, create_row as Row, create_string_select as Select,
+    create_string_select as StringSelect, create_text_input as TextInput, create_user_select as UserSelect
 )
 from ...discord.core import APPLICATION_ID_TO_CLIENT
 from ...discord.exceptions import DiscordException, ERROR_CODES

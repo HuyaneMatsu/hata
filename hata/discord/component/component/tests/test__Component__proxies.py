@@ -4,11 +4,11 @@ from ....channel import ChannelType
 from ....core import BUILTIN_EMOJIS
 from ....emoji import Emoji
 
+from ...component_metadata import ButtonStyle, TextInputStyle
 from ...string_select_option import StringSelectOption
 
 from ..component import Component
-from ..component_type import ComponentType
-from ..preinstanced import ButtonStyle, TextInputStyle
+from ..preinstanced import ComponentType
 
 
 def test__Component__proxies__0():

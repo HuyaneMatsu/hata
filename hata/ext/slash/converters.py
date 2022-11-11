@@ -5,20 +5,21 @@ from enum import Enum
 
 from scarletio import CallableAnalyzer, RichAttributeErrorBaseType, copy_docs, include, un_map_pack
 
+from ...discord.application_command import (
+    ApplicationCommandOption, ApplicationCommandOptionChoice, ApplicationCommandOptionType
+)
+from ...discord.application_command.application_command_option import _validate_max_length, _validate_min_length
+from ...discord.application_command.constants import (
+    APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN,
+    APPLICATION_COMMAND_OPTIONS_MAX
+)
 from ...discord.channel import Channel, ChannelType
 from ...discord.client import Client
 from ...discord.core import CHANNELS, ROLES
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.interaction import (
-    ApplicationCommandOption, ApplicationCommandOptionChoice, ApplicationCommandOptionType, InteractionEvent,
+     InteractionEvent,
     InteractionType
-)
-from ...discord.interaction.application_command.application_command_option import (
-    _validate_max_length, _validate_min_length
-)
-from ...discord.interaction.application_command.constants import (
-    APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN,
-    APPLICATION_COMMAND_OPTIONS_MAX
 )
 from ...discord.message import Attachment
 from ...discord.role import Role
@@ -106,7 +107,7 @@ async def converter_self_interaction_target(client, interaction_event):
     if interaction_event.type is not INTERACTION_TYPE_APPLICATION_COMMAND:
         return None
     
-    return interaction_event.interaction.target
+    return interaction_event.target
     
 
 async def converter_self_interaction_value(client, interaction_event):
@@ -131,7 +132,7 @@ async def converter_self_interaction_value(client, interaction_event):
     if interaction_event.type is not INTERACTION_TYPE_APPLICATION_COMMAND_AUTOCOMPLETE:
         return None
     
-    return interaction_event.interaction.value
+    return interaction_event.value
 
 
 async def converter_int(client, interaction_event, value):
@@ -266,17 +267,8 @@ async def converter_attachment(client, interaction_event, value):
         If conversion fails, then returns `None`.
     """
     attachment_id = await converter_snowflake(client, interaction_event, value)
-    
-    if attachment_id is None:
-        attachment = None
-    else:
-        resolved_attachments = interaction_event.interaction.resolved_attachments
-        if resolved_attachments is None:
-            attachment = None
-        else:
-            attachment = resolved_attachments.get(attachment_id, None)
-    
-    return attachment
+    if (attachment_id is not None):
+        return interaction_event.resolve_attachment(attachment_id)
 
 
 async def converter_snowflake(client, interaction_event, value):
@@ -331,27 +323,20 @@ async def converter_user(client, interaction_event, value):
         If conversion fails, then returns `None`.
     """
     user_id = await converter_snowflake(client, interaction_event, value)
-    
-    if user_id is None:
-        user = None
-    else:
-        resolved_users = interaction_event.interaction.resolved_users
-        if resolved_users is None:
-            user = None
-        else:
-            user = resolved_users.get(user_id, None)
-        
+    if (user_id is not None):
+        user = interaction_event.resolve_user(user_id)
         if user is None:
             try:
                 user = await client.user_get(user_id)
             except ConnectionError:
-                user = 0
+                user = None
             except DiscordException as err:
                 if err.code == ERROR_CODES.unknown_user:
                     user = None
                 else:
                     raise
-    return user
+        
+        return user
 
 
 async def converter_role(client, interaction_event, value):
@@ -375,20 +360,12 @@ async def converter_role(client, interaction_event, value):
         If conversion fails, then returns `None`.
     """
     role_id = await converter_snowflake(client, interaction_event, value)
-    
-    if role_id is None:
-        role = None
-    else:
-        resolved_roles = interaction_event.interaction.resolved_roles
-        if resolved_roles is None:
-            role = None
-        else:
-            role = resolved_roles.get(role_id, None)
-        
+    if (role_id is not None):
+        role = interaction_event.resolve_role(role_id)
         if role is None:
             role = ROLES.get(role_id, None)
-    
-    return role
+        
+        return role
 
 
 async def converter_channel(client, interaction_event, value):
@@ -412,20 +389,12 @@ async def converter_channel(client, interaction_event, value):
         If conversion fails, then returns `None`.
     """
     channel_id = await converter_snowflake(client, interaction_event, value)
-    
-    if channel_id is None:
-        channel = None
-    else:
-        resolved_channels = interaction_event.interaction.resolved_channels
-        if resolved_channels is None:
-            channel = None
-        else:
-            channel = resolved_channels.get(channel_id, None)
-        
+    if (channel_id is not None):
+        channel = interaction_event.resolve_channel(channel_id)
         if channel is None:
             channel = CHANNELS.get(channel_id, None)
-    
-    return channel
+        
+        return channel
 
 
 async def converter_mentionable(client, interaction_event, value):
@@ -448,36 +417,9 @@ async def converter_mentionable(client, interaction_event, value):
     value : `None`, ``DiscordEntity``
         If conversion fails, then returns `None`.
     """
-    entity_id = await converter_snowflake(client, interaction_event, value)
-    
-    # Use goto
-    while True:
-        if entity_id is None:
-            entity = None
-            break
-        
-        resolved_users = interaction_event.interaction.resolved_users
-        if (resolved_users is not None):
-            try:
-                entity = resolved_users[entity_id]
-            except KeyError:
-                pass
-            else:
-                break
-        
-        resolved_roles = interaction_event.interaction.resolved_roles
-        if (resolved_roles is not None):
-            try:
-                entity = resolved_roles[entity_id]
-            except KeyError:
-                pass
-            else:
-                break
-        
-        entity = None
-        break
-    
-    return entity
+    mentionable_id = await converter_snowflake(client, interaction_event, value)
+    if (mentionable_id is not None):
+        return interaction_event.resolve_mentionable(mentionable_id)
 
 
 async def converter_expression(client, interaction_event, value):
@@ -2495,7 +2437,7 @@ class FormFieldKeywordParameterConverter(ParameterConverter):
         value : `Any`
             The matched value or the converter's default value.
         """
-        value = interaction_event.interaction.get_value_for(converter.annotation)
+        value = interaction_event.get_value_for(converter.annotation)
         if (value is None):
             value = converter.default
         
@@ -2519,7 +2461,7 @@ class FormFieldKeywordParameterConverter(ParameterConverter):
         value : `Any`
             The matched value or the converter's default value.
         """
-        match, value = interaction_event.interaction.get_match_and_value(converter.annotation.fullmatch)
+        match, value = interaction_event.get_match_and_value(converter.annotation.fullmatch)
         if (value is None):
             value = converter.default
         
@@ -2545,7 +2487,7 @@ class FormFieldKeywordParameterConverter(ParameterConverter):
         groups : `dict` of (`str`, `str`) items
             The matched values by the regex pattern.
         """
-        match, value = interaction_event.interaction.get_match_and_value(converter.annotation.fullmatch)
+        match, value = interaction_event.get_match_and_value(converter.annotation.fullmatch)
         if (value is None):
             value = converter.default
         
@@ -2572,7 +2514,7 @@ class FormFieldKeywordParameterConverter(ParameterConverter):
         groups : `tuple` of `str`
             The matched values by the regex pattern.
         """
-        match, value = interaction_event.interaction.get_match_and_value(converter.annotation.fullmatch)
+        match, value = interaction_event.get_match_and_value(converter.annotation.fullmatch)
         if (value is None):
             value = converter.default
         
@@ -2614,7 +2556,7 @@ class FormFieldMultiParameterConverter(FormFieldKeywordParameterConverter):
         values : `None`, `list` of `Any`
             The matched values.
         """
-        value = interaction_event.interaction.get_value_for(converter.annotation)
+        value = interaction_event.get_value_for(converter.annotation)
         
         if (value is None):
             values = None
@@ -2643,7 +2585,7 @@ class FormFieldMultiParameterConverter(FormFieldKeywordParameterConverter):
         """
         values = None
         
-        for match, value in interaction_event.interaction.iter_matches_and_values(converter.annotation.fullmatch):
+        for match, value in interaction_event.iter_matches_and_values(converter.annotation.fullmatch):
             if (value is not None):
                 if (values is None):
                     values = []
@@ -2672,7 +2614,7 @@ class FormFieldMultiParameterConverter(FormFieldKeywordParameterConverter):
         """
         values = None
         
-        for match, value in interaction_event.interaction.iter_matches_and_values(converter.annotation.fullmatch):
+        for match, value in interaction_event.iter_matches_and_values(converter.annotation.fullmatch):
             
             groups = match.groupdict()
             
@@ -2703,7 +2645,7 @@ class FormFieldMultiParameterConverter(FormFieldKeywordParameterConverter):
         """
         values = None
         
-        for match, value in interaction_event.interaction.iter_matches_and_values(converter.annotation.fullmatch):
+        for match, value in interaction_event.iter_matches_and_values(converter.annotation.fullmatch):
             
             groups = match.groups()
             

@@ -714,6 +714,8 @@ class ClientCompoundChannelEndpoints(Compound):
         ------
         TypeError
             - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
         ConnectionError
             No internet connection.
         DiscordException

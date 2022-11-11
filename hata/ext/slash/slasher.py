@@ -8,16 +8,16 @@ from scarletio import (
     RichAttributeErrorBaseType, Task, WaitTillAll, WeakKeyDictionary, WeakReferer, export, run_coroutine
 )
 
+from ...discord.application_command import (
+    APPLICATION_COMMAND_CONTEXT_TARGET_TYPES, ApplicationCommand, ApplicationCommandTargetType
+)
 from ...discord.client import Client
 from ...discord.client.request_helpers import get_guild_id
 from ...discord.core import KOKORO
 from ...discord.events.handling_helpers import EventHandlerBase, Router, asynclist
 from ...discord.exceptions import DiscordException, ERROR_CODES
 from ...discord.guild import Guild
-from ...discord.interaction import (
-    APPLICATION_COMMAND_CONTEXT_TARGET_TYPES, ApplicationCommand, ApplicationCommandTargetType, InteractionEvent,
-    InteractionType
-)
+from ...discord.interaction import InteractionEvent, InteractionType
 
 from .command import (
     CommandBase, CommandBaseApplicationCommand, ComponentCommand, ContextCommand, FormSubmitCommand, SlashCommand,

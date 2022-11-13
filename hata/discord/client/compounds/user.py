@@ -347,10 +347,7 @@ class ClientCompoundUserEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        snowflake_pair = get_role_guild_id_and_id(role)
-        if snowflake_pair is None:
-            return
-        guild_id, role_id = snowflake_pair
+        guild_id, role_id = get_role_guild_id_and_id(role)
         user_id = get_user_id(user)
         
         await self.http.user_role_add(guild_id, user_id, role_id, reason)
@@ -381,10 +378,7 @@ class ClientCompoundUserEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        snowflake_pair = get_role_guild_id_and_id(role)
-        if snowflake_pair is None:
-            return
-        guild_id, role_id = snowflake_pair
+        guild_id, role_id = get_role_guild_id_and_id(role)
         user_id = get_user_id(user)
         
         await self.http.user_role_delete(guild_id, user_id, role_id, reason)

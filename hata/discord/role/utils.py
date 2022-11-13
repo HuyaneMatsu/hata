@@ -1,25 +1,30 @@
 __all__ = ('create_partial_role_from_id', 'cr_p_role_object', 'parse_role', 'parse_role_mention')
 
 import warnings
+from functools import partial as partial_func
 
 from scarletio import export
 
 from ..core import ROLES
 from ..utils import ID_RP, ROLE_MENTION_RP
 
+from .fields import (
+    put_color_into, put_mentionable_into, put_name_into, put_permissions_into, put_position_into, put_separated_into,
+    put_unicode_emoji_into, validate_color, validate_mentionable, validate_name, validate_permissions,
+    validate_position, validate_separated, validate_unicode_emoji
+)
 from .role import Role
-from .fields import validate_color, put_color_into, validate_mentionable, put_mentionable_into, \
-    validate_name, put_name_into, validate_permissions, put_separated_into, \
-    put_permissions_into, put_position_into, validate_separated, validate_position
 
 
 ROLE_FIELD_CONVERTERS = {
     'color': (validate_color, put_color_into),
+    'icon': (Role.icon.validate_data_icon, partial_func(Role.icon.put_into, as_data = True)),
     'mentionable': (validate_mentionable, put_mentionable_into),
     'name': (validate_name, put_name_into),
     'permissions': (validate_permissions, put_permissions_into),
     'position': (validate_position, put_position_into),
     'separated': (validate_separated, put_separated_into),
+    'unicode_emoji': (validate_unicode_emoji, put_unicode_emoji_into),
 }
 
 

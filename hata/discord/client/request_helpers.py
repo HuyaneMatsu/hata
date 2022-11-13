@@ -1371,7 +1371,7 @@ def get_role_id(role):
     return role_id
 
 
-def get_role_guild_id_and_id(role):
+def get_role_role_guild_id_and_id(role):
     """
     Gets the role identifier from the given role or of it's identifier.
     
@@ -1413,7 +1413,7 @@ def get_role_guild_id_and_id(role):
     return role, guild_id, role_id
 
 
-def get_role_role_guild_id_and_id(role):
+def get_role_guild_id_and_id(role):
     """
     Gets the role's and it's guild's identifier from the given role or of a `guild-id`, `role-id` pair.
     

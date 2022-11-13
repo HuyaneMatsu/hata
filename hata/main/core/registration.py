@@ -6,7 +6,7 @@ from .command import Command, CommandCategory, CommandFunction
 from .command.helpers import get_function_description, get_function_name
 
 
-def register(func=..., *, alters=None, description=None, into=None, name=None):
+def register(func=..., *, alters=None, description = None, into=None, name=None):
     """
     Registers the given command.
     
@@ -36,7 +36,7 @@ def register(func=..., *, alters=None, description=None, into=None, name=None):
         - `into`'s parent command already garbage collected.
     """
     if func is ...:
-        return partial_func(register, alters=alters, description=description, into=into, name=name)
+        return partial_func(register, alters=alters, description = description, into=into, name=name)
     
     name = get_function_name(func, name)
     description = get_function_description(func, description)

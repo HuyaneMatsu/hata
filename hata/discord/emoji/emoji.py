@@ -19,7 +19,7 @@ UNICODE_EMOJI_LIMIT = 1 << 21
 
 
 @export
-class Emoji(DiscordEntity, immortal=True):
+class Emoji(DiscordEntity, immortal = True):
     """
     Represents a Discord emoji. It can be custom or builtin (unicode) emoji as well. Builtin emojis are loaded when the
     module is imported and they are stores at `BUILTIN_EMOJIS` dictionary. At `BUILTIN_EMOJIS` the keys are the

@@ -14,7 +14,7 @@ class PluginFinder(PathFinder):
     Plugin finder type. Subclass of ``PathFinder``
     """
     @classmethod
-    def find_spec(cls, full_name, paths=None, target=None):
+    def find_spec(cls, full_name, paths=None, target = None):
         """
         Tries to find the module specification of the given name.
         

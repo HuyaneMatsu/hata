@@ -232,8 +232,8 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     )
     
     def __new__(
-        cls, name, description=None, *, allow_by_default=None, allow_in_dm=None, description_localizations=None,
-        name_localizations=None, nsfw=None, options=None, required_permissions=None, target_type=None
+        cls, name, description = None, *, allow_by_default = None, allow_in_dm=None, description_localizations=None,
+        name_localizations=None, nsfw = None, options=None, required_permissions = None, target_type=None
     ):
         """
         Creates a new ``ApplicationCommand`` with the given parameters.
@@ -932,12 +932,12 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         # description
         description = self.description
         if (description is not None):
-            repr_parts.append(', description=')
+            repr_parts.append(', description = ')
             repr_parts.append(repr(self.description))
         
         # allow_by_default | Deprecated
         if not self.allow_by_default:
-            repr_parts.append(', allow_by_default=False')
+            repr_parts.append(', allow_by_default = False')
         
         # allow_in_dm
         if not self.allow_in_dm:
@@ -945,11 +945,11 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         required_permissions = self.required_permissions
         if required_permissions:
-            repr_parts.append(', required_permissions=')
+            repr_parts.append(', required_permissions = ')
             repr_parts.append(required_permissions.__format__('d'))
         
         if self.nsfw:
-            repr_parts.append(', nsfw=True')
+            repr_parts.append(', nsfw = True')
         
         # options
         options = self.options
@@ -1369,7 +1369,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         >>> from hata import ApplicationCommand
         >>> application_command = ApplicationCommand('cake-lover', 'Sends a random cake recipe OwO')
         >>> application_command
-        <ApplicationCommand partial name='cake-lover', description='Sends a random cake recipe OwO'>
+        <ApplicationCommand partial name='cake-lover', description = 'Sends a random cake recipe OwO'>
         >>> # no code stands for `application_command.name`.
         >>> f'{application_command}'
         'CakeLover'

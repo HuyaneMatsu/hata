@@ -72,6 +72,7 @@ class DefaultAvatar(PreinstancedBase):
         INSTANCES = cls.INSTANCES
         return INSTANCES[user.discriminator % len(INSTANCES)]
     
+    
     @classmethod
     def _from_value(cls, value):
         """
@@ -93,6 +94,7 @@ class DefaultAvatar(PreinstancedBase):
         self.color = self.DEFAULT_COLOR
         return self
     
+    
     def __init__(self, value, name, color):
         """
         Creates a default avatar and puts it into the class's `.INSTANCES`.
@@ -111,9 +113,11 @@ class DefaultAvatar(PreinstancedBase):
         self.color = color
         self.INSTANCES[value] = self
     
+    
     def __repr__(self):
         """Returns the default's avatar's representation."""
-        return f'<{self.__class__.__name__} name={self.name}, value={self.value}, color={self.color!r}>'
+        return f'<{self.__class__.__name__} name = {self.name}, value = {self.value}, color = {self.color!r}>'
+    
     
     url = property(module_urls.default_avatar_url)
     
@@ -262,40 +266,43 @@ class Status(PreinstancedBase):
     
     def __repr__(self):
         """Returns the representation of the status."""
-        return f'<{self.__class__.__name__} value={self.value!r}>'
+        return f'<{self.__class__.__name__} value = {self.value!r}>'
+    
     
     def __gt__(self, other):
         """Returns whether this status's position is greater than the other's."""
         other_type = other.__class__
         self_type = self.__class__
-        if other_type is other_type:
+        if self_type is other_type:
             pass
+        
         elif issubclass(other_type, self_type.VALUE_TYPE):
             try:
                 other = self_type.INSTANCES[other]
             except KeyError:
-                return P
+                return False
         else:
-            return P
+            return NotImplemented
         
         if self.position > other.position:
             return True
         else:
             return False
     
-    def __ge__(self,other):
+    def __ge__(self, other):
         """Returns whether this status's position is greater than the other's or whether the two status is equal."""
         other_type = other.__class__
         self_type = self.__class__
-        if other_type is other_type:
+        if self_type is other_type:
             pass
+        
         elif issubclass(other_type, self_type.VALUE_TYPE):
             try:
                 other = self_type.INSTANCES[other]
             except KeyError:
-                return P
+                return False
         else:
-            return P
+            return NotImplemented
         
         self_position = self.position
         other_position = other.position
@@ -314,15 +321,16 @@ class Status(PreinstancedBase):
         """Returns whether the two status is equal."""
         other_type = other.__class__
         self_type = self.__class__
-        if other_type is other_type:
+        if self_type is other_type:
             pass
+        
         elif issubclass(other_type, self_type.VALUE_TYPE):
             try:
                 other = self_type.INSTANCES[other]
             except KeyError:
-                return P
+                return False
         else:
-            return P
+            return NotImplemented
     
         if self.position != other.position:
             return False
@@ -332,19 +340,20 @@ class Status(PreinstancedBase):
         
         return False
     
-    def __ne__(self,other):
+    def __ne__(self, other):
         """Returns whether the two status is not equal."""
         other_type = other.__class__
         self_type = self.__class__
-        if other_type is other_type:
+        if self_type is other_type:
             pass
+        
         elif issubclass(other_type, self_type.VALUE_TYPE):
             try:
                 other = self_type.INSTANCES[other]
             except KeyError:
-                return P
+                return True
         else:
-            return P
+            return NotImplemented
         
         if self.position != other.position:
             return True
@@ -358,15 +367,16 @@ class Status(PreinstancedBase):
         """Returns whether this status's position is less than the other's or whether the two status is equal."""
         other_type = other.__class__
         self_type = self.__class__
-        if other_type is other_type:
+        if self_type is other_type:
             pass
+        
         elif issubclass(other_type, self_type.VALUE_TYPE):
             try:
                 other = self_type.INSTANCES[other]
             except KeyError:
-                return P
+                return True
         else:
-            return P
+            return NotImplemented
         
         self_position = self.position
         other_position = other.position
@@ -381,19 +391,20 @@ class Status(PreinstancedBase):
         
         return False
     
-    def __lt__(self,other):
+    def __lt__(self, other):
         """Returns whether this status's position is less than the other's."""
         other_type = other.__class__
         self_type = self.__class__
-        if other_type is other_type:
+        if self_type is other_type:
             pass
+        
         elif issubclass(other_type, self_type.VALUE_TYPE):
             try:
                 other = self_type.INSTANCES[other]
             except KeyError:
-                return P
+                return True
         else:
-            return P
+            return NotImplemented
         
         if self.position < other.position:
             return True
@@ -436,9 +447,11 @@ class PremiumType(PreinstancedBase):
     +=======================+===============+=======+
     | none                  | none          | 0     |
     +-----------------------+---------------+-------+
-    | nitro_classic         | nitro_classic | 1     |
+    | nitro_classic         | nitro classic | 1     |
     +-----------------------+---------------+-------+
     | nitro                 | nitro         | 2     |
+    +-----------------------+---------------+-------+
+    | nitro_basic           | nitro basic   | 3     |
     +-----------------------+---------------+-------+
     """
     INSTANCES = {}
@@ -448,8 +461,9 @@ class PremiumType(PreinstancedBase):
     
     # predefined
     none = P(0, 'none')
-    nitro_classic = P(1, 'nitro_classic')
+    nitro_classic = P(1, 'nitro classic')
     nitro = P(2, 'nitro')
+    nitro_basic = P(2, 'nitro basic')
 
 
 @export
@@ -485,9 +499,9 @@ class RelationshipType(PreinstancedBase):
     +-----------------------+-------------------+-------+
     | blocked               | blocked           | 2     |
     +-----------------------+-------------------+-------+
-    | pending_incoming      | pending_incoming  | 3     |
+    | pending_incoming      | pending incoming  | 3     |
     +-----------------------+-------------------+-------+
-    | pending_outgoing      | pending_outgoing  | 4     |
+    | pending_outgoing      | pending outgoing  | 4     |
     +-----------------------+-------------------+-------+
     | implicit              | implicit          | 5     |
     +-----------------------+-------------------+-------+
@@ -501,8 +515,8 @@ class RelationshipType(PreinstancedBase):
     stranger = P(0, 'stranger')
     friend = P(1, 'friend')
     blocked = P(2, 'blocked')
-    pending_incoming = P(3, 'pending_incoming')
-    pending_outgoing = P(4, 'pending_outgoing')
+    pending_incoming = P(3, 'pending incoming')
+    pending_outgoing = P(4, 'pending outgoing')
     implicit = P(5, 'implicit')
 
 
@@ -600,9 +614,9 @@ class FriendRequestFlag(PreinstancedBase):
     
     # predefined
     none = P(0, 'none')
-    mutual_guilds = P(1, 'mutual_guilds')
-    mutual_friends = P(2, 'mutual_friends')
-    mutual_guilds_and_friends = P(3, 'mutual_guilds_and_friends')
+    mutual_guilds = P(1, 'mutual guilds')
+    mutual_friends = P(2, 'mutual friends')
+    mutual_guilds_and_friends = P(3, 'mutual guilds and friends')
     all = P(4, 'all')
 
 

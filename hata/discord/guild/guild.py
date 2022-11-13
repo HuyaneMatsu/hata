@@ -1268,7 +1268,7 @@ class Guild(DiscordEntity, immortal=True):
             roles[role_id]._delete()
     
     
-    def get_user(self, name, default=None):
+    def get_user(self, name, default = None):
         """
         Tries to find the a user with the given name at the guild. Returns the first matched one.
         
@@ -1328,7 +1328,7 @@ class Guild(DiscordEntity, immortal=True):
         return default
     
     
-    def get_user_like(self, name, default=None):
+    def get_user_like(self, name, default = None):
         """
         Searches a user, who's name or nick starts with the given string and returns the first find. Also matches full
         name.
@@ -1490,11 +1490,11 @@ class Guild(DiscordEntity, immortal=True):
         if not to_sort:
             return to_sort
         
-        to_sort.sort(key=_user_date_sort_key)
+        to_sort.sort(key = _user_date_sort_key)
         return [item[0] for item in to_sort]
     
     
-    def get_emoji(self, name, default=None):
+    def get_emoji(self, name, default = None):
         """
         Searches an emoji of the guild, what's name equals the given name.
         
@@ -1519,7 +1519,7 @@ class Guild(DiscordEntity, immortal=True):
         return default
     
     
-    def get_emoji_like(self, name, default=None):
+    def get_emoji_like(self, name, default = None):
         """
         Searches an emoji of the guild, whats name starts with the given string and returns the first find.
         
@@ -1595,11 +1595,11 @@ class Guild(DiscordEntity, immortal=True):
         if not to_sort:
             return to_sort
         
-        to_sort.sort(key=_emoji_match_sort_key)
+        to_sort.sort(key = _emoji_match_sort_key)
         return [item[0] for item in to_sort]
     
     
-    def get_sticker(self, name, default=None):
+    def get_sticker(self, name, default = None):
         """
         Searches a sticker of the guild, what's name equals to the given name.
         
@@ -1621,7 +1621,7 @@ class Guild(DiscordEntity, immortal=True):
         return default
     
     
-    def get_sticker_like(self, name, default=None):
+    def get_sticker_like(self, name, default = None):
         """
         Searches a sticker of the guild, what's name or a tag starts with the given name.
         
@@ -1738,10 +1738,10 @@ class Guild(DiscordEntity, immortal=True):
         if not matches:
             return []
         
-        return [item[0] for item in sorted(matches.items(), key=_sticker_match_sort_key)]
+        return [item[0] for item in sorted(matches.items(), key = _sticker_match_sort_key)]
     
     
-    def get_channel(self, name, default=None):
+    def get_channel(self, name, default = None):
         """
         Searches a channel of the guild, what's name equals the given name.
         
@@ -1770,7 +1770,7 @@ class Guild(DiscordEntity, immortal=True):
         return default
     
     
-    def get_channel_like(self, name, default=None, type_checker=None, *, type_=None):
+    def get_channel_like(self, name, default = None, type_checker=None, *, type_=None):
         """
         Searches a channel of the guild, whats name starts with the given string and returns the first find.
         
@@ -1837,7 +1837,7 @@ class Guild(DiscordEntity, immortal=True):
         return accurate_channel
     
     
-    def get_role(self, name, default=None):
+    def get_role(self, name, default = None):
         """
         Searches a role of the guild, what's name equals the given name.
         
@@ -1859,7 +1859,7 @@ class Guild(DiscordEntity, immortal=True):
         return default
     
     
-    def get_role_like(self, name, default=None):
+    def get_role_like(self, name, default = None):
         """
         Searches a role of the guild, whats name starts with the given string and returns the first find.
         
@@ -2831,7 +2831,7 @@ class Guild(DiscordEntity, immortal=True):
                     
                     boosters_ordered.append((user, boosts_since),)
                     
-                boosters_ordered.sort(key=_user_date_sort_key)
+                boosters_ordered.sort(key = _user_date_sort_key)
                 boosters = [element[0] for element in boosters_ordered]
             else:
                 boosters = []

@@ -158,7 +158,7 @@ class TeamMember(RichAttributeErrorBaseType):
     def __repr__(self):
         """Returns the team member's representation."""
         return (
-            f'<{self.__class__.__name__} user={self.user.full_name} state={self.state.name} permissions='
+            f'<{self.__class__.__name__} user = {self.user.full_name} state = {self.state.name} permissions = '
             f'{self.permissions}>'
         )
     

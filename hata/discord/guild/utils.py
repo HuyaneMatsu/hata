@@ -48,7 +48,7 @@ def create_partial_guild_from_data(data):
     guild._set_icon(data)
     guild._set_invite_splash(data)
     guild._set_discovery_splash(data)
-    guild.description=data.get('description', None)
+    guild.description = data.get('description', None)
     
     try:
         verification_level = data['verification_level']

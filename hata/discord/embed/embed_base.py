@@ -66,7 +66,7 @@ class EmbedThumbnail:
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' url=',
+            ' url = ',
         ]
         
         url = self.url
@@ -183,7 +183,7 @@ class EmbedThumbnail:
         return self
     
     
-    def copy_with(self, *, url=...):
+    def copy_with(self, *, url = ...):
         """
         Copies the ``EmbedThumbnail`` and updates it with the given parameters.
         
@@ -259,7 +259,7 @@ class EmbedVideo:
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' url=',
+            ' url = ',
         ]
         
         url = self.url
@@ -424,7 +424,7 @@ class EmbedImage:
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' url=',
+            ' url = ',
         ]
         
         url = self.url
@@ -532,7 +532,7 @@ class EmbedImage:
         return self
     
     
-    def copy_with(self, *, url=...):
+    def copy_with(self, *, url = ...):
         """
         Copies the ``EmbedImage`` and updates it with the given parameters.
         
@@ -612,7 +612,7 @@ class EmbedProvider:
             self.__class__.__name__,
             ' length=',
             str(len(self)),
-            ', url='
+            ', url = '
         ]
         
         url = self.url
@@ -768,7 +768,7 @@ class EmbedAuthor:
     """
     __slots__ = ('icon_url', 'name', 'proxy_icon_url', 'url')
     
-    def __init__(self, name=None, icon_url=None, url=None):
+    def __init__(self, name=None, icon_url = None, url = None):
         """
         Creates an embed author with the given parameters.
         
@@ -829,7 +829,7 @@ class EmbedAuthor:
             self.__class__.__name__,
             ' length=',
             str(len(self)),
-            ', url='
+            ', url = '
         ]
         
         url = self.url
@@ -841,7 +841,7 @@ class EmbedAuthor:
             repr_parts.append(url)
             repr_parts.append('\'')
         
-        repr_parts.append(', icon_url=')
+        repr_parts.append(', icon_url = ')
         icon_url = self.icon_url
         if icon_url is None:
             repr_parts.append('None')
@@ -960,7 +960,7 @@ class EmbedAuthor:
         return self
     
     
-    def copy_with(self, *, icon_url=..., name=..., url=...):
+    def copy_with(self, *, icon_url = ..., name=..., url = ...):
         """
         Copies the ``EmbedAuthor`` and updates it with the given parameters.
         
@@ -1015,7 +1015,7 @@ class EmbedFooter:
     __slots__ = ('icon_url', 'proxy_icon_url', 'text',)
     
     
-    def __init__(self, text, icon_url=None):
+    def __init__(self, text, icon_url = None):
         """
         Creates an embed footer with the given parameters.
         
@@ -1059,7 +1059,7 @@ class EmbedFooter:
             self.__class__.__name__,
             ' length=',
             str(len(self)),
-            ', url='
+            ', url = '
         ]
         
         icon_url = self.icon_url
@@ -1164,7 +1164,7 @@ class EmbedFooter:
         return self
     
     
-    def copy_with(self, *, text=..., icon_url=...):
+    def copy_with(self, *, text=..., icon_url = ...):
         """
         Copies the ``EmbedFooter`` and updates it with the given parameters.
         

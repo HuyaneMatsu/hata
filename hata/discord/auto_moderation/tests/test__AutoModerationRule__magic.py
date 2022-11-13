@@ -48,7 +48,7 @@ def test__AutoModerationRule__eq__0():
         ),
         AutoModerationRule(
             'weather boy',
-            [AutoModerationAction(channel=6)],
+            [AutoModerationAction(channel = 6)],
             enabled = True,
             event_type = AutoModerationEventType.message_send,
             excluded_channels = [68],

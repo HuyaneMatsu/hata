@@ -29,12 +29,12 @@ def test__AutoModerationAction__eq__0():
     
     vampytest.assert_not_eq(
         AutoModerationAction(duration=60),
-        AutoModerationAction(channel=59),
+        AutoModerationAction(channel = 59),
     )
     
     vampytest.assert_not_eq(
         AutoModerationAction(AutoModerationActionType.block_message),
-        AutoModerationAction(channel=59),
+        AutoModerationAction(channel = 59),
     )
 
 

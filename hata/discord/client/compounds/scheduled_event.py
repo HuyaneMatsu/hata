@@ -21,8 +21,8 @@ class ClientCompoundScheduledEventEndpoints(Compound):
     
     
     async def scheduled_event_create(
-        self, guild, name, start, *, description=None, end=None, privacy_level=PrivacyLevel.guild_only,
-        location=None, stage=None, voice=None, reason=None
+        self, guild, name, start, *, description = None, end=None, privacy_level=PrivacyLevel.guild_only,
+        location=None, stage=None, voice=None, reason = None
     ):
         """
         Creates a guild scheduled events.
@@ -178,8 +178,8 @@ class ClientCompoundScheduledEventEndpoints(Compound):
     # In theory you can edit the target entity is as well, but we will ignore it for now.
     
     async def scheduled_event_edit(
-        self, scheduled_event, *, name=..., description=..., start=..., end=..., privacy_level=..., status=...,
-        location=..., stage=..., voice=..., reason=None
+        self, scheduled_event, *, name=..., description = ..., start=..., end=..., privacy_level=..., status=...,
+        location=..., stage=..., voice=..., reason = None
     ):
         """
         Edits the given scheduled event.

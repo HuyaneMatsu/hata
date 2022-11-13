@@ -315,7 +315,7 @@ def str_ReactionMapping(reactions, index=None, **kwargs): #ignore index, 1 messa
     reaction_count = len(reactions)
     result.append(f'Reactions: ({reaction_count})')
     reaction_ordering = list((len(v), k) for k, v in reactions.items())
-    reaction_ordering.sort(reverse=True, key=reaction_item_sor_key)
+    reaction_ordering.sort(reverse=True, key = reaction_item_sor_key)
     for times, emoji in reaction_ordering:
         if emoji.is_unicode_emoji():
             animated = ''
@@ -476,11 +476,11 @@ def str_embed_core(embed, index=None, **kwargs):
             content=content.replace('`', '\\`')
             result.append(f'--------------------\n{content}\n--------------------', -1)
         
-        icon_url=footer.icon_url
+        icon_url = footer.icon_url
         if icon_url is not None:
             result.append(f'- icon_url : {icon_url}', 2)
             
-            proxy_icon_url=footer.proxy_icon_url
+            proxy_icon_url = footer.proxy_icon_url
             if proxy_icon_url is not None:
                 result.append(f'- proxy_icon_url : {proxy_icon_url}', 2)
                 
@@ -1507,8 +1507,8 @@ def str_GuildWidget(widget, **kwargs):
     result.append(f'- invite_url : {invite_url}', 1)
     result.append(f'- approximate online_count : {widget.approximate_online_count}', 1)
     
-    result.append(str_list(widget.users, name='user', **kwargs), 1)
-    result.append(str_list(widget.channels, name='channels', **kwargs), 1)
+    result.append(str_list(widget.users, name = 'user', **kwargs), 1)
+    result.append(str_list(widget.channels, name = 'channels', **kwargs), 1)
     
     return result
 
@@ -1557,7 +1557,7 @@ def str_achievement(achievement, index=None, **kwargs):
     result.append(f'- description : {achievement.description}', 1)
     result.append(f'- secret : {achievement.secret}', 1)
     result.append(f'- secure : {achievement.secure}', 1)
-    result.append(f'- icon: {achievement.icon_url_as(size=4096)}', 1)
+    result.append(f'- icon: {achievement.icon_url_as(size = 4096)}', 1)
     
     return result
 
@@ -1776,7 +1776,7 @@ def str_team(team, index=None, **kwargs):
     if members:
         result.append(f'- members: ({len(members)})', 1)
         for index, member in enumerate(members, 1):
-            result.append(f'{index}.: state={member.state.name}, permissions={member.permissions!r}', 2)
+            result.append(f'{index}.: state = {member.state.name}, permissions = {member.permissions!r}', 2)
             result.append(str_user(member.user), 3)
     
     return result

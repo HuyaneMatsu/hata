@@ -137,7 +137,7 @@ class ComponentMetadataButton(ComponentMetadataBase):
             else:
                 raise ValueError(
                     f'`custom_id` and `url` fields are mutually exclusive, got '
-                    f'custom_id={self.custom_id!r}, url={self.url!r}.'
+                    f'custom_id = {self.custom_id!r}, url = {self.url!r}.'
                 )
     
     
@@ -149,7 +149,7 @@ class ComponentMetadataButton(ComponentMetadataBase):
         
         # button_style
         button_style = self.button_style
-        repr_parts.append(' button_style=')
+        repr_parts.append(' button_style = ')
         repr_parts.append(button_style.name)
         repr_parts.append(' (')
         repr_parts.append(repr(button_style.value))
@@ -160,7 +160,7 @@ class ComponentMetadataButton(ComponentMetadataBase):
         # custom_id
         custom_id = self.custom_id
         if (custom_id is not None):
-            repr_parts.append(', custom_id=')
+            repr_parts.append(', custom_id = ')
             repr_parts.append(reprlib.repr(custom_id))
         
         # Text fields : emoji & label
@@ -168,13 +168,13 @@ class ComponentMetadataButton(ComponentMetadataBase):
         # emoji
         emoji = self.emoji
         if (emoji is not None):
-            repr_parts.append(', emoji=')
+            repr_parts.append(', emoji = ')
             repr_parts.append(repr(emoji))
         
         # label
         label = self.label
         if (label is not None):
-            repr_parts.append(', label=')
+            repr_parts.append(', label = ')
             repr_parts.append(reprlib.repr(label))
         
         
@@ -183,13 +183,13 @@ class ComponentMetadataButton(ComponentMetadataBase):
         # url
         url = self.url
         if (url is not None):
-            repr_parts.append(', url=')
+            repr_parts.append(', url = ')
             repr_parts.append(url_cutter(url))
         
         # enabled
         enabled = self.enabled
         if (not enabled):
-            repr_parts.append(', enabled=')
+            repr_parts.append(', enabled = ')
             repr_parts.append(repr(enabled))
         
         repr_parts.append('>')

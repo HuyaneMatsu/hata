@@ -144,6 +144,8 @@ class GuildFeature(PreinstancedBase):
     +-----------------------------------+-----------------------------------+-------------------------------------------+
     | community                         | community                         | COMMUNITY                                 |
     +-----------------------------------+-----------------------------------+-------------------------------------------+
+    | developer_support_guild           | developer support guild           | DEVELOPER_SUPPORT_SERVER                  |
+    +-----------------------------------+-----------------------------------+-------------------------------------------+
     | discoverable                      | discoverable                      | DISCOVERABLE                              |
     +-----------------------------------+-----------------------------------+-------------------------------------------+
     | discoverable_disabled             | discoverable disabled             | DISCOVERABLE_DISABLED                     |
@@ -261,6 +263,7 @@ class GuildFeature(PreinstancedBase):
     creator_monetizable = P('CREATOR_MONETIZABLE', 'creator monetizable')
     creator_monetizable_disabled = P('CREATOR_MONETIZABLE_DISABLED', 'creator monetizable disabled')
     community = P('COMMUNITY', 'community')
+    developer_support_guild = P('DEVELOPER_SUPPORT_SERVER', 'developer support guild')
     discoverable = P('DISCOVERABLE', 'discoverable')
     discoverable_disabled = P('DISCOVERABLE_DISABLED', 'discoverable disabled')
     embedded_activities_experiment = P('EXPOSED_TO_ACTIVITIES_WTP_EXPERIMENT', 'embedded activities experiment')
@@ -389,7 +392,7 @@ class NsfwLevel(PreinstancedBase):
     
     def __repr__(self):
         """Returns the nsfw level's representation."""
-        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r}, nsfw={self.nsfw!r})'
+        return f'{self.__class__.__name__}(value = {self.value!r}, name = {self.name!r}, nsfw = {self.nsfw!r})'
     
     
     none = P(0, 'none', False)

@@ -244,28 +244,28 @@ class Track(RichAttributeErrorBaseType):
         if not field_added:
             repr_parts.append(',')
         
-        repr_parts.append(' author=')
+        repr_parts.append(' author = ')
         repr_parts.append(repr(self.author))
         
-        repr_parts.append(', duration=')
+        repr_parts.append(', duration = ')
         repr_parts.append(self.duration.__format__('.03f'))
         repr_parts.append('s')
         
         position = self.position
         if position:
-            repr_parts.append(', position=')
+            repr_parts.append(', position = ')
             repr_parts.append(position.__format__('.03f'))
             repr_parts.append('s')
         
-        repr_parts.append(', identifier=')
+        repr_parts.append(', identifier = ')
         repr_parts.append(repr(self.identifier))
         
-        repr_parts.append(', title=')
+        repr_parts.append(', title = ')
         repr_parts.append(repr(self.title))
         
         url = self.url
         if (url is not None):
-            repr_parts.append(', url=')
+            repr_parts.append(', url = ')
             repr_parts.append(repr(url))
         
         repr_parts.append('>')

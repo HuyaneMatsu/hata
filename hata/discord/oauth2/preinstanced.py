@@ -74,6 +74,9 @@ class Oauth2Scope(PreinstancedBase):
     +-------------------------------------------+-----------------------+-------------------------------------------+
     | relationships_read                        | relationships read    | relationships.read                        |
     +-------------------------------------------+-----------------------+-------------------------------------------+
+    | role_connections_write                    | role connections      | role_connections.write                    |
+    |                                           | write                 |                                           |
+    +-------------------------------------------+-----------------------+-------------------------------------------+
     | rpc                                       | rpc                   | rpc                                       |
     +-------------------------------------------+-----------------------+-------------------------------------------+
     | rpc_activities_write                      | rpc activities write  | rpc.activities.write                      |
@@ -116,6 +119,7 @@ class Oauth2Scope(PreinstancedBase):
     identify = P('identify', 'identify')
     messages_read = P('messages.read', 'messages read')
     relationships_read = P('relationships.read', 'relationships read')
+    role_connections_write = P('role_connections.write', 'role connections write')
     rpc = P('rpc', 'rpc')
     rpc_activities_write = P('rpc.activities.write', 'rpc activities write')
     rpc_notifications_read = P('rpc.notifications.read', 'rpc notifications read')

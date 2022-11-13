@@ -50,7 +50,7 @@ def test__ApplicationCommand__len__1():
 
             )
         ],
-        required_permissions = Permission().update_by_keys(administrator=True),
+        required_permissions = Permission().update_by_keys(administrator = True),
         target_type = ApplicationCommandTargetType.chat,
     )
     
@@ -193,7 +193,7 @@ def test__ApplicationCommand__repr():
 
             )
         ],
-        required_permissions = Permission().update_by_keys(administrator=True),
+        required_permissions = Permission().update_by_keys(administrator = True),
         target_type = ApplicationCommandTargetType.chat,
     )
     
@@ -301,7 +301,7 @@ def test__ApplicationCommand__hash():
 
             )
         ],
-        required_permissions = Permission().update_by_keys(administrator=True),
+        required_permissions = Permission().update_by_keys(administrator = True),
         target_type = ApplicationCommandTargetType.chat,
     )
     

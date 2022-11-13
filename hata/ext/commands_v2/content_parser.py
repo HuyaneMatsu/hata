@@ -626,9 +626,9 @@ ConverterFlag.emoji_default = ConverterFlag().update_by_keys(mention=True, name=
 ConverterFlag.emoji_all = ConverterFlag.emoji_default.update_by_keys(everywhere=True)
 ConverterFlag.guild_default = ConverterFlag().update_by_keys(id=True)
 ConverterFlag.guild_all = ConverterFlag.guild_default.update_by_keys(everywhere=True)
-ConverterFlag.message_default = ConverterFlag().update_by_keys(url=True, id=True)
+ConverterFlag.message_default = ConverterFlag().update_by_keys(url = True, id=True)
 ConverterFlag.message_all = ConverterFlag.message_default.update_by_keys(everywhere=True)
-ConverterFlag.invite_default = ConverterFlag().update_by_keys(url=True, id=True)
+ConverterFlag.invite_default = ConverterFlag().update_by_keys(url = True, id=True)
 ConverterFlag.invite_all = ConverterFlag.invite_default
 ConverterFlag.sticker_default = ConverterFlag().update_by_keys(name=True, id=True)
 ConverterFlag.sticker_all = ConverterFlag.sticker_default.update_by_keys(everywhere=True)
@@ -679,7 +679,7 @@ class ConverterSetting(RichAttributeErrorBaseType):
     )
     
     def __new__(cls, converter, uses_flags, default_flags, all_flags, alternative_type_name, default_type,
-            alternative_types, requires_part, *, alternative_checked_types=None):
+            alternative_types, requires_part, *, alternative_checked_types = None):
         """
         Creates a new ``ConverterSetting`` to store settings related to a converter function.
         
@@ -801,7 +801,7 @@ class ConverterSetting(RichAttributeErrorBaseType):
                 if not isinstance(alternative_type, type):
                     raise TypeError(
                         f'`alternative_types[{index}]` can be `type`, got {alternative_type.__class__.__name__}; '
-                        f'{alternative_type!r}; alternative_types={alternative_types!r}.'
+                        f'{alternative_type!r}; alternative_types = {alternative_types!r}.'
                     )
                 
                 alternative_types_processed.append(alternative_type)
@@ -913,7 +913,7 @@ class ConverterSetting(RichAttributeErrorBaseType):
             if (alternative_checked_types is not None):
                 alternative_checked_types_names = list(alternative_checked_types.keys())
                 
-                repr_parts.append(', alternative_checked_types=[')
+                repr_parts.append(', alternative_checked_types = [')
                 
                 index = 0
                 limit = len(alternative_checked_types_names)
@@ -934,7 +934,7 @@ class ConverterSetting(RichAttributeErrorBaseType):
             
             alternative_types = self.alternative_types
             if (alternative_types is not None):
-                repr_parts.append(', alternative_types=[')
+                repr_parts.append(', alternative_types = [')
                 
                 index = 0
                 limit = len(alternative_types)
@@ -2315,23 +2315,23 @@ class ContentParserParameter(RichAttributeErrorBaseType):
     def __repr__(self):
         """Returns the content parser parameter's representation."""
         repr_parts = ['<', self.__class__.__name__,
-            ' name=', repr(self.name),
+            ' name = ', repr(self.name),
          ]
         
         if self.has_default:
-            repr_parts.append(', default=')
+            repr_parts.append(', default = ')
             repr_parts.append(repr(self.default))
         
         detail = self.detail
         if (detail is None):
-            repr_parts.append(', details=')
+            repr_parts.append(', details = ')
             repr_parts.append(repr(self.details))
         else:
             if (detail.converter_setting is CONVERTER_NONE):
                 if self.is_rest:
-                    repr_parts.append(', is_rest=True')
+                    repr_parts.append(', is_rest = True')
             else:
-                repr_parts.append(', details=[')
+                repr_parts.append(', details = [')
                 repr_parts.append(repr(detail))
                 repr_parts.append(']')
         

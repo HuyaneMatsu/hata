@@ -16,7 +16,7 @@ class Closer(Menu):
     
     __slots__ = ('page', 'timeout', 'user_check')
     
-    def __init__(self, client, event, page, *, check=..., timeout=-1.0):
+    def __init__(self, client, event, page, *, check = ..., timeout = -1.0):
         if check is ...:
             check = get_auto_check(event)
         

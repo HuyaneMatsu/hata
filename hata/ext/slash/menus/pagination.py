@@ -22,7 +22,7 @@ class Pagination(Menu):
     
     __slots__ = ('page_index', 'pages', 'timeout', 'user_check')
     
-    def __init__(self, client, event, pages, *, check=..., timeout=300.0):
+    def __init__(self, client, event, pages, *, check = ..., timeout = 300.0):
         if check is ...:
             check = get_auto_check(event)
         

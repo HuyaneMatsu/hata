@@ -40,6 +40,8 @@ class ApplicationFlag(FlagBase):
     +-----------------------------------+-------------------+
     | application_command_badge         | 23                |
     +-----------------------------------+-------------------+
+    | active                            | 24                |
+    +-----------------------------------+-------------------+
     """
     __keys__ = {
         'embedded_released': 1,
@@ -56,6 +58,7 @@ class ApplicationFlag(FlagBase):
         'gateway_message_content_limited': 19,
         'embedded_first_party': 20,
         'application_command_badge': 23,
+        'active': 24,
     }
 
 

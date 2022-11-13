@@ -164,8 +164,8 @@ class ChooseMenu(PaginationBase):
     
     __slots__ = ('check', 'embed', 'selected', 'choices', 'timeout', 'prefix', 'selector')
     
-    async def __new__(cls, client, channel, choices, selector, embed=Embed(), *, timeout=240., message=None,
-            prefix=None, check=None):
+    async def __new__(cls, client, channel, choices, selector, embed = Embed(), *, timeout = 240., message = None,
+            prefix = None, check = None):
         """
         Creates a new choose menu with the given parameters.
         
@@ -309,12 +309,12 @@ class ChooseMenu(PaginationBase):
                     if not channel.is_acknowledged():
                         await client.interaction_response_message_create(channel)
                     
-                    message = await client.interaction_followup_message_create(channel, embed=self._render_embed())
+                    message = await client.interaction_followup_message_create(channel, embed = self._render_embed())
                 else:
-                    message = await client.message_create(channel, embed=self._render_embed())
+                    message = await client.message_create(channel, embed = self._render_embed())
                 self.message = message
             else:
-                await client.message_edit(message, embed=self._render_embed())
+                await client.message_edit(message, embed = self._render_embed())
         except BaseException as err:
             self.cancel(err)
             if isinstance(err, ConnectionError):
@@ -564,7 +564,7 @@ class ChooseMenu(PaginationBase):
         self.selected = selected
         self._task_flag = GUI_STATE_SWITCHING_PAGE
         try:
-            await client.message_edit(message, embed=self._render_embed())
+            await client.message_edit(message, embed = self._render_embed())
         except BaseException as err:
             self.cancel(err)
             
@@ -602,9 +602,9 @@ class ChooseMenu(PaginationBase):
     def __repr__(self):
         repr_parts = [
             '<', self.__class__.__name__,
-            ' client=', repr(self.client),
-            ', channel=', repr(self.channel),
-            ', state='
+            ' client = ', repr(self.client),
+            ', channel = ', repr(self.channel),
+            ', state = '
         ]
         
         task_flag = self._task_flag
@@ -617,16 +617,16 @@ class ChooseMenu(PaginationBase):
         repr_parts.append(')')
         
         # Third party things go here
-        repr_parts.append(', choices=')
+        repr_parts.append(', choices = ')
         repr_parts.append(repr(self.choices))
-        repr_parts.append(', selected=')
+        repr_parts.append(', selected = ')
         repr_parts.append(repr(self.selected))
-        repr_parts.append(', selector=')
+        repr_parts.append(', selector = ')
         repr_parts.append(repr(self.selector))
         
         prefix = self.prefix
         if (prefix is not None):
-            repr_parts.append(', prefix=')
+            repr_parts.append(', prefix = ')
             repr_parts.append(repr(prefix))
         
         repr_parts.append('>')

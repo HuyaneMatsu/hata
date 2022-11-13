@@ -103,13 +103,13 @@ If you invited your bot without it, no worries, go back to the [getting started]
 look up there how to do it.
 
 Hata has an already pre-made slash (and other interaction handling). It makes registering and
-handling commands easy. To add the extension to your client use the `extensions` parameter like `extensions='slash'`.
+handling commands easy. To add the extension to your client use the `extensions` parameter like `extensions = 'slash'`.
 
 ```py3
 from hata import Client, wait_for_interruption
 
 # Add the `slash` extension to our client.
-client = Client('super secret token comes here', extensions='slash')
+client = Client('super secret token comes here', extensions = 'slash')
 
 
 @client.events
@@ -119,10 +119,10 @@ def ready(client):
 
 # To register a slash command, use `@client.interactions` decorator.
 #
-# To register a command to your guild, use the `guild=guild_id` or `guild=guild` keyword parameter.
-# To register a global command, use the `is_global=True` parameter. Note that global commands can take up to
+# To register a command to your guild, use the `guild = guild_id` or `guild = guild` keyword parameter.
+# To register a global command, use the `is_global = True` parameter. Note that global commands can take up to
 # 1 hour to show up.
-@client.interactions(guild=your_guilds_id)
+@client.interactions(guild = your_guilds_id)
 async def ping():
     return 'Pong!'
 

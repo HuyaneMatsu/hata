@@ -156,8 +156,8 @@ class ClientCompoundUserEndpoints(Compound):
     id : int
     
     async def user_guild_profile_edit(
-        self, guild, user, *, nick=..., deaf=..., mute=..., voice_channel=..., roles=..., timeout_duration=...,
-        timed_out_until=..., reason=None
+        self, guild, user, *, nick=..., deaf=..., mute=..., voice_channel = ..., roles=..., timeout_duration=...,
+        timed_out_until=..., reason = None
     ):
         """
         Edits the user's guild profile at the given guild.
@@ -322,7 +322,7 @@ class ClientCompoundUserEndpoints(Compound):
         await self.http.user_guild_profile_edit(guild_id, user_id, data, reason)
     
     
-    async def user_role_add(self, user, role, *, reason=None):
+    async def user_role_add(self, user, role, *, reason = None):
         """
         Adds the role on the user.
         
@@ -356,7 +356,7 @@ class ClientCompoundUserEndpoints(Compound):
         await self.http.user_role_add(guild_id, user_id, role_id, reason)
     
     
-    async def user_role_delete(self, user, role, *, reason=None):
+    async def user_role_delete(self, user, role, *, reason = None):
         """
         Deletes the role from the user.
         

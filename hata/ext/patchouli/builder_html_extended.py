@@ -890,7 +890,7 @@ class AttributeSection:
         yield '>'
         
         relations = self.relations
-        attribute_names = sorted(relations, key=name_sort_key)
+        attribute_names = sorted(relations, key = name_sort_key)
         
         for attribute_name in attribute_names:
             attribute_unit = relations[attribute_name]
@@ -960,7 +960,7 @@ class AttributeSection:
         
         children = []
         
-        for child_title in sorted(self.relations, key=name_sort_key):
+        for child_title in sorted(self.relations, key = name_sort_key):
             if prefix:
                 child_prefixed_title = f'{prefix}-{anchor_escape(child_title)}'
             else:
@@ -1209,7 +1209,7 @@ class ParameterSubSection:
         
         description = self.description
         if (description is not None):
-            repr_parts.append(', description=')
+            repr_parts.append(', description = ')
             repr_parts.append(reprlib.repr(description))
         
         if self.optional:
@@ -1501,15 +1501,15 @@ class TypeSerializer:
             continue
         
         if collected_properties:
-            collected_properties = [item for item in sorted(collected_properties, key=item_sort_key)]
+            collected_properties = [item for item in sorted(collected_properties, key = item_sort_key)]
             section_parts[SECTION_TYPE_PROPERTIES] = UnitSection('Properties', object_, collected_properties, path)
         
         if collected_methods:
-            collected_methods = [item for item in sorted(collected_methods, key=item_sort_key)]
+            collected_methods = [item for item in sorted(collected_methods, key = item_sort_key)]
             section_parts[SECTION_TYPE_METHODS] = UnitSection('Methods', object_, collected_methods, path)
         
         if collected_classes:
-            collected_classes = [item for item in sorted(collected_classes, key=item_sort_key)]
+            collected_classes = [item for item in sorted(collected_classes, key = item_sort_key)]
             section_parts[SECTION_TYPE_CLASSES] = UnitSection('Classes', object_, collected_classes, path)
         
         sections = []
@@ -1774,15 +1774,15 @@ class ModuleSerializer:
             continue
         
         if collected_functions:
-            collected_functions = [item[1] for item in sorted(collected_functions, key=item_sort_key)]
+            collected_functions = [item[1] for item in sorted(collected_functions, key = item_sort_key)]
             section_parts[SECTION_TYPE_FUNCTIONS] = UnitListerSection('Functions', object_, collected_functions, path)
         
         if collected_classes:
-            collected_classes = [item[1] for item in sorted(collected_classes, key=item_sort_key)]
+            collected_classes = [item[1] for item in sorted(collected_classes, key = item_sort_key)]
             section_parts[SECTION_TYPE_CLASSES] = UnitListerSection('Classes', object_, collected_classes, path)
         
         if collected_modules:
-            collected_modules = [item[1] for item in sorted(collected_modules, key=item_sort_key)]
+            collected_modules = [item[1] for item in sorted(collected_modules, key = item_sort_key)]
             section_parts[SECTION_TYPE_MODULES] = UnitListerSection('Modules', object_, collected_modules, path)
         
         sections = []

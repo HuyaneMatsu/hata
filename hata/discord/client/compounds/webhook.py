@@ -347,7 +347,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         await self.http.webhook_delete_token(webhook_id, webhook_token)
     
     # later there gonna be more stuff that's why 2 different
-    async def webhook_edit(self, webhook, *, name=..., avatar=..., channel=...):
+    async def webhook_edit(self, webhook, *, name=..., avatar=..., channel = ...):
         """
         Edits and updates the given webhook.
         
@@ -543,8 +543,8 @@ class ClientCompoundWebhookEndpoints(Compound):
     
     
     async def webhook_message_create(
-        self, webhook, content=None, *, embed=None, file=None, allowed_mentions=..., components=None, tts=False,
-        name=None, avatar_url=None, thread=None, wait=False
+        self, webhook, content=None, *, embed = None, file=None, allowed_mentions = ..., components = None, tts=False,
+        name=None, avatar_url = None, thread=None, wait=False
     ):
         """
         Sends a message with the given webhook. If there is nothing to send, or if `wait` was not passed as `True`
@@ -756,7 +756,7 @@ class ClientCompoundWebhookEndpoints(Compound):
     
     
     async def webhook_message_edit(
-        self, webhook, message, content=..., *, embed=..., file=..., allowed_mentions=..., components=...
+        self, webhook, message, content=..., *, embed = ..., file=..., allowed_mentions = ..., components = ...
     ):
         """
         Edits the message sent by the given webhook. The message's author must be the webhook itself.

@@ -58,7 +58,7 @@ def _validate_max_length(max_length, type_):
     if type_ is not ApplicationCommandOptionType.string:
         raise ValueError(
             f'`max_length` is only meaningful if `type` is {ApplicationCommandOptionType.string!r}, got '
-            f'type_={type_!r}; max_length={max_length!r}.'
+            f'type_={type_!r}; max_length = {max_length!r}.'
         )
     
     if max_length < APPLICATION_COMMAND_OPTION_MAX_LENGTH_MIN:
@@ -310,7 +310,7 @@ def _assert__application_command_option__channel_types__applicability(channel_ty
     if (channel_types is not None) and (type_ is not ApplicationCommandOptionType.channel):
         raise AssertionError(
             f'`channel_types` is only meaningful if `type_` is `{ApplicationCommandOptionType.__name__}.channel`, got '
-            f'type_={type_!r}; channel_types={channel_types!r}.'
+            f'type_={type_!r}; channel_types = {channel_types!r}.'
         )
 
     return True
@@ -389,8 +389,8 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
     )
     
     def __new__(
-        cls, name, description, type_, *, autocomplete=False, channel_types=None, choices=None, default=False,
-        description_localizations=None, max_length=None, max_value=None, min_length=None, min_value=None,
+        cls, name, description, type_, *, autocomplete=False, channel_types = None, choices=None, default = False,
+        description_localizations=None, max_length = None, max_value = None, min_length = None, min_value = None,
         name_localizations=None, options=None, required=False
     ):
         """
@@ -499,7 +499,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
                 else:
                     raise TypeError(
                         f'`channel_types` can have `{ChannelType.__name__}`, `int` elements, '
-                        f'got {channel_type.__class__.__name__}; {channel_type!r}; channel_types={channel_types!r}.'
+                        f'got {channel_type.__class__.__name__}; {channel_type!r}; channel_types = {channel_types!r}.'
                     )
                 
                 if channel_types_processed is None:
@@ -622,7 +622,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
                 raise ValueError(
                     f'`max_value` is only meaningful if `type` is either '
                     f'{ApplicationCommandOptionType.integer!r}, or {ApplicationCommandOptionType.float!r}, got '
-                    f'type_={type_!r}; max_value={max_value!r}.'
+                    f'type_={type_!r}; max_value = {max_value!r}.'
                 )
         
         # min_length
@@ -648,7 +648,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
                 raise ValueError(
                     f'`min_value` is only meaningful if `type` is either '
                     f'{ApplicationCommandOptionType.integer!r}, or {ApplicationCommandOptionType.float!r}, got '
-                    f'type_={type_!r}; min_value={min_value!r}.'
+                    f'type_={type_!r}; min_value = {min_value!r}.'
                 )
         
         # postprocessing | autocomplete
@@ -1028,7 +1028,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         
         # default
         if self.default:
-            repr_parts.append(', default=True')
+            repr_parts.append(', default = True')
         
         # required
         if self.required:
@@ -1038,13 +1038,13 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
             # min_length
             min_length = self.min_length
             if (min_length != 0):
-                repr_parts.append(', min_length=')
+                repr_parts.append(', min_length = ')
                 repr_parts.append(repr(min_length))
             
             # max_length
             max_length = self.max_length
             if (max_length != 0):
-                repr_parts.append(', max_length=')
+                repr_parts.append(', max_length = ')
                 repr_parts.append(repr(max_length))
         
         
@@ -1052,19 +1052,19 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
             # min_value
             min_value = self.min_value
             if (min_value is not None):
-                repr_parts.append(', min_value=')
+                repr_parts.append(', min_value = ')
                 repr_parts.append(repr(min_value))
             
             # max_value
             max_value = self.max_value
             if (max_value is not None):
-                repr_parts.append(', max_value=')
+                repr_parts.append(', max_value = ')
                 repr_parts.append(repr(max_value))
         
         # channel_types
         channel_types = self.channel_types
         if (channel_types is not None):
-            repr_parts.append(', channel_types=[')
+            repr_parts.append(', channel_types = [')
             
             index = 0
             limit = len(channel_types)

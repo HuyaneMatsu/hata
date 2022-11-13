@@ -27,7 +27,7 @@ async def ready(client):
 MY_GUILD = Guild.precreate(12345)
 
 
-@Sakuya.interactions(guild=MY_GUILD)
+@Sakuya.interactions(guild = MY_GUILD)
 async def join(client, event):
     """Joins to voice channel."""
     # Getting the author voice state
@@ -50,7 +50,7 @@ async def join(client, event):
     return f'Joined to {voice_state.channel.name}'
 
 
-@Sakuya.interactions(guild=MY_GUILD)
+@Sakuya.interactions(guild = MY_GUILD)
 async def yt(event,
     url: ('str', 'The name or the url of a track') = None,
 ):
@@ -83,7 +83,7 @@ async def yt(event,
 
 
 # Tailing `_` are removed from command names.
-@Sakuya.interactions(guild=MY_GUILD)
+@Sakuya.interactions(guild = MY_GUILD)
 async def volume_(event,
     volume: ('int', 'Volume to set to.') = None,
 ):
@@ -107,7 +107,7 @@ async def volume_(event,
     return f'Volume set to {volume * 100.:.0f}%'
 
 
-@Sakuya.interactions(guild=MY_GUILD)
+@Sakuya.interactions(guild = MY_GUILD)
 async def disconnect(event):
     """Disconnects the bot from voice."""
     voice_client = event.voice_client

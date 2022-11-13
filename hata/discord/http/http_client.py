@@ -133,7 +133,7 @@ class DiscordHTTPClient(HTTPClient):
     
     CONNECTOR_REFERENCE_COUNTS = WeakKeyDictionary()
     
-    def __init__(self, bot, token, *, proxy_url=None, proxy_auth=None, debug_options=None):
+    def __init__(self, bot, token, *, proxy_url = None, proxy_auth=None, debug_options=None):
         """
         Creates a new Discord http client.
         
@@ -215,7 +215,7 @@ class DiscordHTTPClient(HTTPClient):
             connector.close()
     
     
-    async def discord_request(self, handler, method, url, data=None, params=None, headers=None, reason=None):
+    async def discord_request(self, handler, method, url, data=None, params=None, headers=None, reason = None):
         """
         Does a request towards Discord.
         

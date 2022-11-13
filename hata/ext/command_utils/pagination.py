@@ -115,7 +115,7 @@ class Pagination(PaginationBase):
     
     __slots__ = ('check', 'page_index', 'pages', 'timeout',)
     
-    async def __new__(cls, client, channel, pages, *, timeout=240., message=None, check=None):
+    async def __new__(cls, client, channel, pages, *, timeout = 240., message = None, check = None):
         """
         Creates a new pagination with the given parameters.
         
@@ -258,7 +258,7 @@ class Pagination(PaginationBase):
             
             raise
         
-        self._timeouter = Timeouter(self, timeout=timeout)
+        self._timeouter = Timeouter(self, timeout = timeout)
         client.events.reaction_add.append(message, self)
         client.events.reaction_delete.append(message, self)
         return self
@@ -395,9 +395,9 @@ class Pagination(PaginationBase):
     def __repr__(self):
         repr_parts = [
             '<', self.__class__.__name__,
-            ' client=', repr(self.client),
-            ', channel=', repr(self.channel),
-            ', state='
+            ' client = ', repr(self.client),
+            ', channel = ', repr(self.channel),
+            ', state = '
         ]
         
         task_flag = self._task_flag
@@ -410,9 +410,9 @@ class Pagination(PaginationBase):
         repr_parts.append(')')
         
         # Third party things go here
-        repr_parts.append(', pages=')
+        repr_parts.append(', pages = ')
         repr_parts.append(repr(len(self.pages)))
-        repr_parts.append(', page_index=')
+        repr_parts.append(', page_index = ')
         repr_parts.append(repr(self.page_index))
         
         repr_parts.append('>')

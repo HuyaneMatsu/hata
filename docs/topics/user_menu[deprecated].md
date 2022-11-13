@@ -197,7 +197,7 @@ class CatFeeder:
                 await menu.client.reaction_clear(menu.message)
 
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def cat_feeder(client, event):
     """Feed the cat!"""
     await CatFeeder(client, event)
@@ -234,7 +234,7 @@ class ZerefPagination(UserPagination):
         
         return await UserPagination.invoke(self, event)
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def zeref_pagination(client, event):
     """Zeref's cake paginator."""
     await ZerefPagination(client, event, ['hi', 'hello'], event.user)

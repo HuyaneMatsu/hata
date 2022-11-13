@@ -62,7 +62,7 @@ class ClientCompoundGuildEndpoints(Compound):
         return GuildPreview(data)
     
     
-    async def guild_user_delete(self, guild, user, *, reason=None):
+    async def guild_user_delete(self, guild, user, *, reason = None):
         """
         Removes the given user from the guild.
         
@@ -134,7 +134,7 @@ class ClientCompoundGuildEndpoints(Compound):
         return welcome_screen
     
     
-    async def welcome_screen_edit(self, guild, *, enabled=..., description=..., welcome_channels=...):
+    async def welcome_screen_edit(self, guild, *, enabled=..., description = ..., welcome_channels=...):
         """
         Edits the given guild's welcome screen.
         
@@ -295,7 +295,7 @@ class ClientCompoundGuildEndpoints(Compound):
         return verification_screen
     
     
-    async def verification_screen_edit(self, guild, *, enabled=..., description=..., steps=...):
+    async def verification_screen_edit(self, guild, *, enabled=..., description = ..., steps=...):
         """
         Requests the given guild's verification screen.
         
@@ -578,7 +578,7 @@ class ClientCompoundGuildEndpoints(Compound):
     
     async def guild_create(
         self, name, *, icon=None, roles=None, channels=None, afk_channel_id=None, system_channel_id=None,
-        afk_timeout=None, region=..., verification_level=VerificationLevel.medium,
+        afk_timeout = None, region=..., verification_level=VerificationLevel.medium,
         message_notification=MessageNotificationLevel.only_mentions, content_filter=ContentFilterLevel.disabled,
         boost_progress_bar_enabled=None
     ):
@@ -800,7 +800,7 @@ class ClientCompoundGuildEndpoints(Compound):
         return create_partial_guild_from_data(data)
     
     
-    async def guild_prune(self, guild, days, *, roles=None, count=False, reason=None):
+    async def guild_prune(self, guild, days, *, roles=None, count=False, reason = None):
         """
         Kicks the members of the guild which were inactive since x days.
         
@@ -969,10 +969,10 @@ class ClientCompoundGuildEndpoints(Compound):
     
     async def guild_edit(
         self, guild, *, name=..., icon=..., invite_splash=..., discovery_splash=..., banner=...,
-        afk_channel=..., system_channel=..., rules_channel=..., public_updates_channel=..., owner=..., region=...,
-        afk_timeout=..., verification_level=..., content_filter=..., message_notification=..., description=...,
+        afk_channel = ..., system_channel = ..., rules_channel = ..., public_updates_channel = ..., owner=..., region=...,
+        afk_timeout = ..., verification_level=..., content_filter=..., message_notification=..., description = ...,
         preferred_locale=..., system_channel_flags=..., add_feature=..., remove_feature=...,
-        boost_progress_bar_enabled=..., reason=None
+        boost_progress_bar_enabled=..., reason = None
     ):
         """
         Edits the guild with the given parameters.
@@ -1758,7 +1758,7 @@ class ClientCompoundGuildEndpoints(Compound):
         return voice_regions
     
     
-    async def audit_log_get_chunk(self, guild, limit=100, *, before=None, after=None, user=None, event=None):
+    async def audit_log_get_chunk(self, guild, limit=100, *, before=None, after=None, user=None, event = None):
         """
         Request a batch of audit logs of the guild and returns them. The `after`, `around` and the `before` parameters
         are mutually exclusive and they can be `int`, or as a ``DiscordEntity`` or as a `datetime`
@@ -1855,7 +1855,7 @@ class ClientCompoundGuildEndpoints(Compound):
         return AuditLog(data, guild)
     
     
-    async def audit_log_iterator(self, guild, *, user=None, event=None):
+    async def audit_log_iterator(self, guild, *, user=None, event = None):
         """
         Returns an audit log iterator for the given guild.
         
@@ -1874,4 +1874,4 @@ class ClientCompoundGuildEndpoints(Compound):
         -------
         audit_log_iterator : ``AuditLogIterator``
         """
-        return await AuditLogIterator(self, guild, user=user, event=event)
+        return await AuditLogIterator(self, guild, user=user, event = event)

@@ -151,8 +151,8 @@ class SlashCommand(CommandBaseApplicationCommand):
     
     
     def __new__(
-        cls, func, name=None, description=None, is_global=None, guild=None, is_default=None, delete_on_unload=None,
-        allow_by_default=None, allow_in_dm=None, required_permissions=None, nsfw = None, **keyword_parameters,
+        cls, func, name=None, description = None, is_global = None, guild=None, is_default = None, delete_on_unload=None,
+        allow_by_default = None, allow_in_dm=None, required_permissions = None, nsfw = None, **keyword_parameters,
     ):
         """
         Creates a new ``SlashCommand`` with the given parameters.
@@ -305,7 +305,7 @@ class SlashCommand(CommandBaseApplicationCommand):
                 
                 if is_global and (guild_ids is not None):
                     raise TypeError(
-                        f'`is_global` and `guild` contradict each other, got is_global={is_global!r}, '
+                        f'`is_global` and `guild` contradict each other, got is_global = {is_global!r}, '
                         f'guild={guild!r}.'
                     )
                 
@@ -352,7 +352,7 @@ class SlashCommand(CommandBaseApplicationCommand):
         else:
             if is_global and (guild_ids is not None):
                 raise TypeError(
-                    f'`is_global` and `guild` contradict each other, got is_global={is_global!r}, '
+                    f'`is_global` and `guild` contradict each other, got is_global = {is_global!r}, '
                     f'guild={guild!r}.'
                 )
             
@@ -404,7 +404,7 @@ class SlashCommand(CommandBaseApplicationCommand):
             
             description = self.description
             if self.name != description:
-                 repr_parts.append(', description=')
+                 repr_parts.append(', description = ')
                  repr_parts.append(repr(description))
     
     

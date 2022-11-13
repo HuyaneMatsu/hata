@@ -31,7 +31,7 @@ def test_ApplicationCommand__from_data__0():
 
         )
     ]
-    required_permissions = Permission().update_by_keys(administrator=True)
+    required_permissions = Permission().update_by_keys(administrator = True)
     target_type = ApplicationCommandTargetType.chat
     
     application_command_id = 202209030002
@@ -116,7 +116,7 @@ def test__ApplicationCommand__update_attributes():
 
         )
     ]
-    old_required_permissions = Permission().update_by_keys(administrator=True)
+    old_required_permissions = Permission().update_by_keys(administrator = True)
     new_required_permissions = Permission().update_by_keys(kick_users=True)
     old_target_type = ApplicationCommandTargetType.chat
     new_target_type = ApplicationCommandTargetType.message
@@ -210,7 +210,7 @@ def test__ApplicationCommand__difference_update_attributes():
 
         )
     ]
-    old_required_permissions = Permission().update_by_keys(administrator=True)
+    old_required_permissions = Permission().update_by_keys(administrator = True)
     new_required_permissions = Permission().update_by_keys(kick_users=True)
     old_target_type = ApplicationCommandTargetType.chat
     new_target_type = ApplicationCommandTargetType.message
@@ -304,7 +304,7 @@ def test_ApplicationCommand__to_data__0():
 
         )
     ]
-    required_permissions = Permission().update_by_keys(administrator=True)
+    required_permissions = Permission().update_by_keys(administrator = True)
     target_type = ApplicationCommandTargetType.chat
     
     application_command_id = 202209030011

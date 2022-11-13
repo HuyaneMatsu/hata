@@ -85,7 +85,7 @@ class ClientCompoundGuildBanEndpoints(Compound):
     http : DiscordHTTPClient
     
     
-    async def guild_ban_add(self, guild, user, *, delete_message_days=0, delete_message_duration=0, reason=None):
+    async def guild_ban_add(self, guild, user, *, delete_message_days=0, delete_message_duration=0, reason = None):
         """
         Bans the given user from the guild.
         
@@ -150,7 +150,7 @@ class ClientCompoundGuildBanEndpoints(Compound):
         await self.http.guild_ban_add(guild_id, user_id, data, reason)
     
     
-    async def guild_ban_delete(self, guild, user, *, reason=None):
+    async def guild_ban_delete(self, guild, user, *, reason = None):
         """
         Unbans the user from the given guild.
         

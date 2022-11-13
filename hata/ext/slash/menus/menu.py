@@ -1311,7 +1311,7 @@ class Menu(metaclass = MenuType):
         if isinstance(exception, TimeoutError):
             if (message.components is not None):
                 try:
-                    await client.message_edit(message, components=None)
+                    await client.message_edit(message, components = None)
                 except GeneratorExit:
                     raise
                 
@@ -1494,7 +1494,7 @@ class Menu(metaclass = MenuType):
                 else:
                     raise TypeError(
                         f'`components` contains an element of unexpected type, got '
-                        f'{raw_sub_component.__class__.__name__}; {raw_sub_component!r}; components={raw_components!r}.'
+                        f'{raw_sub_component.__class__.__name__}; {raw_sub_component!r}; components = {raw_components!r}.'
                     )
                 
                 if components is None:

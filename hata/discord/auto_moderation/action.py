@@ -46,7 +46,7 @@ def _validate_action_type_with_metadata_options(action_type, channel, duration):
     if (channel is not ...) + (duration is not ...) > 1:
         raise TypeError(
             f'`channel` and `duration` parameters are mutually exclusive, got '
-            f'channel={channel!r}; duration={duration!r}.'
+            f'channel = {channel!r}; duration = {duration!r}.'
         )
     
     if (channel is not ...):
@@ -83,8 +83,8 @@ def _validate_action_type_with_metadata_options(action_type, channel, duration):
                 
                 raise TypeError(
                     f'Both `action_type` and `{received_parameter_name}` parameters refer to a different '
-                    f'action type, got action_type={action_type!r}, '
-                    f'{received_parameter_name}={received_parameter_value!r}.'
+                    f'action type, got action_type = {action_type!r}, '
+                    f'{received_parameter_name} = {received_parameter_value!r}.'
                 )
     
     action_metadata_type = action_type.metadata_type
@@ -110,7 +110,7 @@ class AutoModerationAction(RichAttributeErrorBaseType):
     """
     __slots__ = ('metadata', 'type')
     
-    def __new__(cls, action_type=..., *, channel=..., duration=...):
+    def __new__(cls, action_type=..., *, channel = ..., duration=...):
         """
         Creates a new auto moderation action from the given parameters.
         

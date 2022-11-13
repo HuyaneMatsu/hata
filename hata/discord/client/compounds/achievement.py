@@ -372,7 +372,7 @@ class ClientCompoundAchievementEndpoints(Compound):
     
     
     async def achievement_edit(
-        self, achievement, *, description=..., description_localizations=..., icon=..., name=...,
+        self, achievement, *, description = ..., description_localizations=..., icon=..., name=...,
         name_localizations=...,  secret=..., secure=...
     ):
         """

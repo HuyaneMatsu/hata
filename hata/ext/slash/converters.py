@@ -1023,8 +1023,8 @@ class SlashParameter(RichAttributeErrorBaseType):
         'type_or_choice'
     )
     
-    def __new__(cls, type_or_choice=None, description=None, name=None, *, autocomplete=None, channel_types=None,
-            max_length=None, max_value=None, min_length=None, min_value=None):
+    def __new__(cls, type_or_choice=None, description = None, name=None, *, autocomplete=None, channel_types = None,
+            max_length = None, max_value = None, min_length = None, min_value = None):
         """
         Creates a new ``Parameter``.
         
@@ -1082,7 +1082,7 @@ class SlashParameter(RichAttributeErrorBaseType):
                 repr_parts.append(',')
             else:
                 field_added = True
-            repr_parts.append(' channel_types=')
+            repr_parts.append(' channel_types = ')
             repr_parts.append(repr(channel_types))
         
         description = self.description
@@ -1091,7 +1091,7 @@ class SlashParameter(RichAttributeErrorBaseType):
                 repr_parts.append(',')
             else:
                 field_added = True
-            repr_parts.append(' description=')
+            repr_parts.append(' description = ')
             repr_parts.append(repr(description))
         
         # max_length
@@ -1101,7 +1101,7 @@ class SlashParameter(RichAttributeErrorBaseType):
                 repr_parts.append(',')
             else:
                 field_added = True
-            repr_parts.append(' max_length=')
+            repr_parts.append(' max_length = ')
             repr_parts.append(repr(max_length))
         
         max_value = self.max_value
@@ -1110,7 +1110,7 @@ class SlashParameter(RichAttributeErrorBaseType):
                 repr_parts.append(',')
             else:
                 field_added = True
-            repr_parts.append(' max_value=')
+            repr_parts.append(' max_value = ')
             repr_parts.append(repr(max_value))
         
         # min_length
@@ -1120,7 +1120,7 @@ class SlashParameter(RichAttributeErrorBaseType):
                 repr_parts.append(',')
             else:
                 field_added = True
-            repr_parts.append(' min_length=')
+            repr_parts.append(' min_length = ')
             repr_parts.append(repr(min_length))
         
         min_value = self.min_value
@@ -1129,7 +1129,7 @@ class SlashParameter(RichAttributeErrorBaseType):
                 repr_parts.append(',')
             else:
                 field_added = True
-            repr_parts.append(' min_value=')
+            repr_parts.append(' min_value = ')
             repr_parts.append(repr(min_value))
         
         name = self.name
@@ -1197,7 +1197,7 @@ def preprocess_channel_types(channel_types):
             else:
                 raise TypeError(
                     f'`channel_types` can contain `int`, `{ChannelType.__name__}` elements, got '
-                    f'{channel_type.__class__.__name__}; {channel_type!r}; channel_types={channel_types!r}.'
+                    f'{channel_type.__class__.__name__}; {channel_type!r}; channel_types = {channel_types!r}.'
                 )
             
             if processed_channel_types is None:
@@ -2328,7 +2328,7 @@ class RegexParameterConverter(ParameterConverter):
         ]
         
         if not self.required:
-            repr_parts.append(', default=')
+            repr_parts.append(', default = ')
             repr_parts.append(repr(self.default))
         
         repr_parts.append('>')
@@ -2406,14 +2406,14 @@ class FormFieldKeywordParameterConverter(ParameterConverter):
         repr_parts =[
             '<',
             self.__class__.__name__,
-            ' parameter_name=',
+            ' parameter_name = ',
             repr(self.parameter_name),
         ]
         
-        repr_parts.append(', annotation=')
+        repr_parts.append(', annotation = ')
         repr_parts.append(repr(self.annotation))
         
-        repr_parts.append(', default=')
+        repr_parts.append(', default = ')
         repr_parts.append(repr(self.default))
         
         repr_parts.append('>')
@@ -2862,57 +2862,57 @@ class SlashCommandParameterConverter(ParameterConverter):
         ]
         
         parameter_name = self.parameter_name
-        repr_parts.append(' parameter_name=')
+        repr_parts.append(' parameter_name = ')
         repr_parts.append(repr(self.parameter_name))
         
         name = self.name
         if (parameter_name != name):
-            repr_parts.append(', name=')
+            repr_parts.append(', name = ')
             repr_parts.append(repr(self.name))
         
-        repr_parts.append(', type=')
+        repr_parts.append(', type = ')
         repr_parts.append(ANNOTATION_TYPE_TO_STR_ANNOTATION[self.type])
         
-        repr_parts.append(', description=')
+        repr_parts.append(', description = ')
         repr_parts.append(reprlib.repr(self.description))
         
         if not self.required:
-            repr_parts.append(', default=')
+            repr_parts.append(', default = ')
             repr_parts.append(repr(self.default))
         
         choices = self.choices
         if (choices is not None):
-            repr_parts.append(', choices=')
+            repr_parts.append(', choices = ')
             repr_parts.append(repr(choices))
         
         auto_completer = self.auto_completer
         if (auto_completer is not None):
-            repr_parts.append(', auto_completer=')
+            repr_parts.append(', auto_completer = ')
             repr_parts.append(repr(auto_completer))
         
         channel_types = self.channel_types
         if (channel_types is not None):
-            repr_parts.append(', channel_types=')
+            repr_parts.append(', channel_types = ')
             repr_parts.append(repr(channel_types))
         
         min_value = self.min_value
         if (min_value is not None):
-            repr_parts.append(', min_value=')
+            repr_parts.append(', min_value = ')
             repr_parts.append(repr(min_value))
         
         max_value = self.max_value
         if (max_value is not None):
-            repr_parts.append(', max_value=')
+            repr_parts.append(', max_value = ')
             repr_parts.append(repr(max_value))
         
         min_length = self.min_length
         if (min_length != 0):
-            repr_parts.append(', min_length=')
+            repr_parts.append(', min_length = ')
             repr_parts.append(repr(min_length))
         
         max_length = self.max_length
         if (max_length != 0):
-            repr_parts.append(', max_length=')
+            repr_parts.append(', max_length = ')
             repr_parts.append(repr(max_length))
         
         repr_parts.append('>')

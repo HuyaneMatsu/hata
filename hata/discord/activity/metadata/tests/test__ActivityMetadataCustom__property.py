@@ -26,7 +26,7 @@ def test__ActivityMetadataCustom__name__1():
     Case: All fields given.
     """
     state = 'state'
-    emoji = Emoji.precreate(202209060009, name='Code49')
+    emoji = Emoji.precreate(202209060009, name = 'Code49')
     created_at = DateTime(2014, 9, 16)
     
     activity_metadata = ActivityMetadataCustom.from_data({

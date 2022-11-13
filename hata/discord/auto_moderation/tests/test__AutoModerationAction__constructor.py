@@ -39,7 +39,7 @@ def test__AutoModerationAction__new__channel__0():
     Tests whether the auto moderation action's `channel` parameter works as intended.
     Checking metadata type.
     """
-    action = AutoModerationAction(channel=0)
+    action = AutoModerationAction(channel = 0)
     
     vampytest.assert_is(action.type, AutoModerationActionType.send_alert_message)
     vampytest.assert_instance(action.metadata, AutoModerationActionMetadataSendAlertMessage)
@@ -50,7 +50,7 @@ def test__AutoModerationAction__new__channel__1():
     Tests whether the auto moderation action's `channel` parameter works as intended.
     Checking metadata value and passing `0`.
     """
-    action = AutoModerationAction(channel=0)
+    action = AutoModerationAction(channel = 0)
     vampytest.assert_eq(action.metadata.channel_id, 0)
 
 
@@ -59,7 +59,7 @@ def test__AutoModerationAction__new__channel__2():
     Tests whether the auto moderation action's `channel` parameter works as intended.
     Checking metadata value and passing `None`.
     """
-    action = AutoModerationAction(channel=None)
+    action = AutoModerationAction(channel = None)
     vampytest.assert_eq(action.metadata.channel_id, 0)
 
 
@@ -68,7 +68,7 @@ def test__AutoModerationAction__new__channel__3():
     Tests whether the auto moderation action's `channel` parameter works as intended.
     Checking metadata value and passing `int`.
     """
-    action = AutoModerationAction(channel=69)
+    action = AutoModerationAction(channel = 69)
     
     vampytest.assert_eq(action.metadata.channel_id, 69)
 
@@ -78,7 +78,7 @@ def test__AutoModerationAction__new__channel__4():
     Tests whether the auto moderation action's `channel` parameter works as intended.
     Checking metadata value and passing ``Channel``.
     """
-    action = AutoModerationAction(channel=Channel.precreate(69))
+    action = AutoModerationAction(channel = Channel.precreate(69))
     
     vampytest.assert_eq(action.metadata.channel_id, 69)
 
@@ -139,7 +139,7 @@ def test__AutoModerationAction__new__metadata_type_match__0():
     Tests whether the auto moderation action's type & type specific keyword parameters are accepted at the same time.
     Case: `send_alert_message`.
     """
-    action = AutoModerationAction(AutoModerationActionType.send_alert_message, channel=0)
+    action = AutoModerationAction(AutoModerationActionType.send_alert_message, channel = 0)
     
     vampytest.assert_is(action.type, AutoModerationActionType.send_alert_message)
 
@@ -160,7 +160,7 @@ def test__AutoModerationAction__new__metadata_type_contradiction__0():
     at the same time.
     """
     with vampytest.assert_raises(TypeError):
-        AutoModerationAction(AutoModerationActionType.timeout, channel=0)
+        AutoModerationAction(AutoModerationActionType.timeout, channel = 0)
 
 
 def test__AutoModerationAction__new__metadata_type_contradiction__1():
@@ -168,4 +168,4 @@ def test__AutoModerationAction__new__metadata_type_contradiction__1():
     Tests whether the auto moderation action's two type specific parameters are not accepted at the same.
     """
     with vampytest.assert_raises(TypeError):
-        AutoModerationAction(channel=0, duration=0)
+        AutoModerationAction(channel = 0, duration=0)

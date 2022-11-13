@@ -479,7 +479,7 @@ class UserMenuRunner(PaginationBase):
     """
     __slots__ = ('_factory', '_instance',)
     
-    async def __new__(cls, factory, client, channel, *args, message=None, **kwargs):
+    async def __new__(cls, factory, client, channel, *args, message = None, **kwargs):
         """
         Creates a new user menu runner instance with the given parameters.
         
@@ -723,7 +723,7 @@ class UserMenuRunner(PaginationBase):
         repr_parts = [
             '<', self.__class__.__name__,
             ' client=', repr(self.client),
-            ', channel=', repr(self.channel),
+            ', channel = ', repr(self.channel),
             ', state='
         ]
         

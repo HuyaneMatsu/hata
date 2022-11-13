@@ -123,7 +123,7 @@ class InteractionForm(RichAttributeErrorBaseType):
                 repr_parts.append(',')
             else:
                 field_added = True
-            repr_parts.append(' custom_id=')
+            repr_parts.append(' custom_id = ')
             repr_parts.append(reprlib.repr(custom_id))
         
         # Text fields : label & placeholder
@@ -135,7 +135,7 @@ class InteractionForm(RichAttributeErrorBaseType):
                 repr_parts.append(',')
             else:
                 field_added = True
-            repr_parts.append(' title=')
+            repr_parts.append(' title = ')
             repr_parts.append(reprlib.repr(title))
         
         # sub-component fields : components
@@ -145,7 +145,7 @@ class InteractionForm(RichAttributeErrorBaseType):
             repr_parts.append(',')
         else:
             field_added = True
-        repr_parts.append(' components=')
+        repr_parts.append(' components = ')
         components = self.components
         if (components is None):
             repr_parts.append('[]')

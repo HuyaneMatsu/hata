@@ -69,8 +69,8 @@ def setup_ext_top_gg(client, *args, **kwargs):
     top_gg_client = TopGGClient(client, *args, **kwargs)
     
     client.top_gg = top_gg_client
-    client.events(_start_auto_post, name='launch')
-    client.events(_stop_auto_post, name='shutdown')
+    client.events(_start_auto_post, name = 'launch')
+    client.events(_stop_auto_post, name = 'shutdown')
     
     return top_gg_client
 

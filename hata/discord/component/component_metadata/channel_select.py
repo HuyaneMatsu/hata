@@ -52,7 +52,7 @@ class ComponentMetadataChannelSelect(ComponentMetadataSelectBase):
     @copy_docs(ComponentMetadataSelectBase._add_type_specific_repr_fields_into)
     def _add_type_specific_repr_fields_into(self, repr_parts):
         # channel_types
-        repr_parts.append(', channel_types=')
+        repr_parts.append(', channel_types = ')
         channel_types = self.channel_types
         if (channel_types is None):
             repr_parts.append('[]')

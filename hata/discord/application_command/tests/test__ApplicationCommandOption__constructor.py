@@ -44,7 +44,7 @@ def test__ApplicationCommandOption__constructor__max_length__1():
     Tests whether ``ApplicationCommandOption`` raises when `max_length` is given incorrectly.
     """
     with vampytest.assert_raises(TypeError):
-        ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.string, max_length='owo')
+        ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.string, max_length = 'owo')
 
 
 def test__ApplicationCommandOption__constructor__max_length__2():
@@ -52,7 +52,7 @@ def test__ApplicationCommandOption__constructor__max_length__2():
     Tests whether ``ApplicationCommandOption`` raises when `max_length` is given, but type is incorrect.
     """
     with vampytest.assert_raises(ValueError):
-        ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.integer, max_length=30)
+        ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.integer, max_length = 30)
 
 
 def test__ApplicationCommandOption__constructor__max_length__3():
@@ -82,7 +82,7 @@ def test__ApplicationCommandOption__constructor__min_length__1():
     Tests whether ``ApplicationCommandOption`` raises when `min_length` is given incorrectly.
     """
     with vampytest.assert_raises(TypeError):
-        ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.string, min_length='owo')
+        ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.string, min_length = 'owo')
 
 
 def test__ApplicationCommandOption__constructor__min_length__2():
@@ -90,7 +90,7 @@ def test__ApplicationCommandOption__constructor__min_length__2():
     Tests whether ``ApplicationCommandOption`` raises when `min_length` is given, but type is incorrect.
     """
     with vampytest.assert_raises(ValueError):
-        ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.integer, min_length=30)
+        ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.integer, min_length = 30)
 
 
 def test__ApplicationCommandOption__constructor__channel_types__0():

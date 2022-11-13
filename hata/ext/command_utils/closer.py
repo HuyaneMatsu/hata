@@ -85,7 +85,7 @@ class Closer(PaginationBase):
     
     __slots__ = ('check',)
     
-    async def __new__(cls, client, channel, content, *, timeout=240., message=None, check=None):
+    async def __new__(cls, client, channel, content, *, timeout = 240., message = None, check = None):
         """
         Creates a new pagination with the given parameters.
         
@@ -219,7 +219,7 @@ class Closer(PaginationBase):
             raise
         
         
-        self._timeouter = Timeouter(self, timeout=timeout)
+        self._timeouter = Timeouter(self, timeout = timeout)
         client.events.reaction_add.append(message, self)
         return self
     

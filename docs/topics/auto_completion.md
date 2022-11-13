@@ -26,7 +26,7 @@ CAKE_NAMES = [
 EMOJI_CAKE = BUILTIN_EMOJIS['cake']
 
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def cake_love(
     cake_name: ('str', 'Please pick a cake.')
 ):
@@ -84,7 +84,7 @@ def get_options_like(options, name):
     return [option for option in options if name in option]
 
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def shop(
     product: ([*PRODUCT_TYPES], 'Select a product to buy.'),
     type_: ('str', 'Select a type'),
@@ -151,7 +151,7 @@ def get_cake_names_like(name):
     return [cake_name for cake_name in CAKE_NAMES if (name in cake_name)]
 
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def pick_cake(
     cake_name_1: ('str', 'Select a cake!'),
     cake_name_2: ('str', 'Another one.'),
@@ -329,7 +329,7 @@ async def autocomplete_sticker_name(event, value):
     return sorted(sticker.name for sticker in guild.get_stickers_like(value))
 
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def get_sticker_id(
     event,
     sticker: P('str', 'Sticker\'s name', autocomplete=autocomplete_sticker_name),

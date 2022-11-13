@@ -12,7 +12,7 @@ parameter name as the first parameter in `configure_parameter`.
 from hata import parse_emoji
 from hata.ext.slash import abort, configure_parameter
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 @configure_parameter('emoji_name', 'str', 'Yes?', 'emoji')
 async def show_emoji(
     emoji_name: str
@@ -33,11 +33,11 @@ async def show_emoji(
 `configure_parameter` supports every parameter that `SlashParameter` (`P`) does.
 
 ```py3
-from hata import CHANNEL_TYPES, Channel
+from hata import ChannelType, Channel
 from hata.ext.slash import P
 
-@Nitori.interactions(guild=TEST_GUILD)
-@configure_parameter('channel', 'channel', 'Select a text channel', channel_types=[CHANNEL_TYPES.guild_text])
+@Nitori.interactions(guild = TEST_GUILD)
+@configure_parameter('channel', 'channel', 'Select a text channel', channel_types = [ChannelType.guild_text])
 async def text_channel_name_length(
     channel: Channel
 ):
@@ -64,12 +64,12 @@ from hata import Embed
 from hata.ext.slash import P
 
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def grocery_bag(
-    cucumber: Annotated[int, P('int', 'How much cucumbers to buy?', min_value=0, max_value=1000)] = 0,
-    strawberry: Annotated[int, P('int', 'How much oranges to buy?', min_value=0, max_value=1000)] = 0,
-    orange: Annotated[int, P('int', 'How much oranges to buy?', min_value=0, max_value=1000)] = 0,
-    watermelon: Annotated[int, P('int', 'How much watermelons to buy?', min_value=0, max_value=1000)] = 0,
+    cucumber: Annotated[int, P('int', 'How much cucumbers to buy?', min_value = 0, max_value = 1000)] = 0,
+    strawberry: Annotated[int, P('int', 'How much oranges to buy?', min_value = 0, max_value = 1000)] = 0,
+    orange: Annotated[int, P('int', 'How much oranges to buy?', min_value = 0, max_value = 1000)] = 0,
+    watermelon: Annotated[int, P('int', 'How much watermelons to buy?', min_value = 0, max_value = 1000)] = 0,
 ):
     in_bag = []
     
@@ -98,7 +98,7 @@ You can also spread out annotation to multiple metadata fields.
 ```py3
 from typing import Annotated
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def set_difficulty(
     difficulty: Annotated[str, ['easy', 'lunatic'], 'difficulty'],
 ):

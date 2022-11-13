@@ -88,9 +88,9 @@ class Stage(DiscordEntity):
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' channel=',
+            ' channel = ',
             repr(self.channel),
-            ', topic=',
+            ', topic = ',
             reprlib.repr(self.topic),
             '>',
         ]

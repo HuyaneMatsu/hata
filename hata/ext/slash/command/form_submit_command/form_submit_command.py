@@ -63,7 +63,7 @@ class FormSubmitCommand(CommandBaseCustomId):
     __slots__ = ('_keyword_parameter_converters', '_multi_parameter_converter')
     
     
-    def __new__(cls, func, custom_id, name=None, target=None, **kwargs):
+    def __new__(cls, func, custom_id, name=None, target = None, **kwargs):
         """
         Creates a new ``FormSubmitCommand`` with the given parameters
         

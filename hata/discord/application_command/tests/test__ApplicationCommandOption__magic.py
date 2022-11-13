@@ -26,17 +26,17 @@ def test__ApplicationCommandOption__eq():
     This test tests string sub-fields.
     """
     vampytest.assert_eq(
-        ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.string, min_length=30, max_length=60),
-        ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.string, min_length=30, max_length=60),
+        ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.string, min_length = 30, max_length = 60),
+        ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.string, min_length = 30, max_length = 60),
     )
     
     vampytest.assert_not_eq(
-        ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.string, min_length=30, max_length=60),
-        ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.string, min_length=30, max_length=59),
+        ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.string, min_length = 30, max_length = 60),
+        ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.string, min_length = 30, max_length = 59),
     )
 
     vampytest.assert_not_eq(
-        ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.string, min_length=30, max_length=60),
+        ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.string, min_length = 30, max_length = 60),
         ApplicationCommandOption('owo', 'owo', ApplicationCommandOptionType.string),
     )
 

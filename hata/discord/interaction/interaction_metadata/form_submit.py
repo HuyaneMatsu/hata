@@ -90,7 +90,7 @@ class InteractionMetadataFormSubmit(InteractionMetadataBase):
         # components
         components = self.components
         if (components is not None):
-            repr_parts.append(' components=')
+            repr_parts.append(' components = ')
             repr_parts.append(repr(components))
             
             field_added = False
@@ -105,7 +105,7 @@ class InteractionMetadataFormSubmit(InteractionMetadataBase):
             else:
                 field_added = True
             
-            repr_parts.append(' custom_id=')
+            repr_parts.append(' custom_id = ')
             repr_parts.append(repr(custom_id))
         
         return field_added

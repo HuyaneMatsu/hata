@@ -245,7 +245,7 @@ class CommandFunction(RichAttributeErrorBaseType):
         generic_line_length = get_render_generic_line_length(generic_lengths)
         modifier_lengths = get_lengths(parameters_modifier, ParameterRenderer.get_modifier_lengths)
         modifier_line_length = get_render_modifier_line_length(modifier_lengths)
-        sub_command_line_length = max((len(sub_command_name) for sub_command_name in sub_command_names), default=0)
+        sub_command_line_length = max((len(sub_command_name) for sub_command_name in sub_command_names), default = 0)
         
         
         line_length = 0

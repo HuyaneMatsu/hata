@@ -455,7 +455,7 @@ class ClientUserBase(UserBase):
     
     
     @copy_docs(UserBase.top_role_at)
-    def top_role_at(self, guild, default=None):
+    def top_role_at(self, guild, default = None):
         guild_id = _try_get_guild_id(guild)
         
         try:

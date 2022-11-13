@@ -54,7 +54,7 @@ class AuditLogIterator(AuditLog):
     """
     __slots__ = ('_data', '_index', 'client',)
     
-    async def __new__(cls, client, guild, user=None, event=None):
+    async def __new__(cls, client, guild, user=None, event = None):
         """
         Creates an audit log iterator with the given parameters.
         

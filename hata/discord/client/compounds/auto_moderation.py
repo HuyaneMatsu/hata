@@ -87,7 +87,7 @@ class ClientCompoundAutoModerationEndpoints(Compound):
         ]
     
     
-    async def auto_moderation_rule_create(self, guild, auto_moderation_rule, *, reason=None):
+    async def auto_moderation_rule_create(self, guild, auto_moderation_rule, *, reason = None):
         """
         Creates an auto moderation rule at the given guild.
         
@@ -132,7 +132,7 @@ class ClientCompoundAutoModerationEndpoints(Compound):
         return AutoModerationRule.from_data(auto_moderation_rule_data)
     
     
-    async def auto_moderation_rule_edit(self, old_auto_moderation_rule, new_auto_moderation_rule, *, reason=None):
+    async def auto_moderation_rule_edit(self, old_auto_moderation_rule, new_auto_moderation_rule, *, reason = None):
         """
         Edits the specified auto moderation rule
         
@@ -174,7 +174,7 @@ class ClientCompoundAutoModerationEndpoints(Compound):
         await self.http.auto_moderation_rule_edit(guild_id, auto_moderation_rule_id, data, reason)
     
     
-    async def auto_moderation_rule_delete(self, auto_moderation_rule, *, reason=None):
+    async def auto_moderation_rule_delete(self, auto_moderation_rule, *, reason = None):
         """
         Deletes the specified auto moderation rule.
         

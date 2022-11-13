@@ -15,7 +15,7 @@ slash = setup_ext_slash(Sakuya, use_default_exception_handler=False)
 
 MY_GUILD = Guild.precreate(12345)
 
-@Sakuya.interactions(guild=MY_GUILD)
+@Sakuya.interactions(guild = MY_GUILD)
 async def test(event):
     """
     Simple command, this is just used to test a error handler.

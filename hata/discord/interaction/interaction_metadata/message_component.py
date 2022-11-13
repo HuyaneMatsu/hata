@@ -125,25 +125,25 @@ class InteractionMetadataMessageComponent(InteractionMetadataBase):
     @copy_docs(InteractionMetadataBase._put_attribute_representations_into)
     def _put_attribute_representations_into(self, repr_parts):
         # component_type
-        repr_parts.append(' component_type=')
+        repr_parts.append(' component_type = ')
         repr_parts.append(repr(self.component_type))
         
         # custom_id
         custom_id = self.custom_id
         if (custom_id is not None):
-            repr_parts.append(', custom_id=')
+            repr_parts.append(', custom_id = ')
             repr_parts.append(repr(custom_id))
         
         # resolved
         resolved = self.resolved
         if (resolved is not None):
-            repr_parts.append(', resolved=')
+            repr_parts.append(', resolved = ')
             repr_parts.append(repr(resolved))
         
         # values
         values = self.values
         if (values is not None):
-            repr_parts.append(', values=')
+            repr_parts.append(', values = ')
             repr_parts.append(repr(values))
         
         return True

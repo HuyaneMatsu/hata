@@ -90,6 +90,17 @@
 - Add `InteractionEvent.resolve_entity`.
 - `Client.interaction_followup_message_create` now supports sending only components.
 - `Client.interaction_response_message_create` now supports sending only components.
+- Add `PremiumType.nitro_basic`.
+- Add `UserFlag.active_developer`.
+- Add `ERROR_CODES.invalid_request_origin`.
+- Add `ApplicationFlag.active`.
+- Add `ConnectionType.tiktok`.
+- Add `ERROR_CODES.rate_limit_resource`.
+- Add `Oauth2Scope.role_connections_write`.
+- Add `ERROR_CODES.ineligible_for_subscription`.
+- Add `ERROR_CODES.rate_limit_service_resource`.
+- Add `DiscordException.retry_after`.
+- Add `GuildFeature.developer_support_guild`.
 
 ##### ext.slash
 
@@ -98,6 +109,15 @@
 - Add `ChannelSelect`.
 - Add `RoleSelect`.
 - Add `MentionableSelect`.
+- Add `CommandBase.mention`.
+- Add `CommandBase.mention_at`.
+- Add `CommandBase.__format__`.
+- Add `SlashCommandCategory.mention`.
+- Add `SlashCommandCategory.mention_at`.
+- Add `SlashCommandCategory.__format__`.
+- Add `SlashCommandFunction.mention`.
+- Add `SlashCommandFunction.mention_at`.
+- Add `SlashCommandFunction.__format__`.
 
 #### Renames, Deprecation & Removals
 
@@ -3697,7 +3717,7 @@ Rework `role.py` and `permission.py`.
 - Fix a `NameError` in `Client.webhook_message_create`.
 
 ##### ext.slash
-- `InteractionResponse` with `force_new_message=True` was not handling `show_for_invoking_user_only` correctly.
+- `InteractionResponse` with `force_new_message = True` was not handling `show_for_invoking_user_only` correctly.
 - When passing `allowed_mentions`, `tts` to `abort`, do not set `show_for_invoking_user_only=False` if not given.
 
 #### Renames, Deprecation & Removals

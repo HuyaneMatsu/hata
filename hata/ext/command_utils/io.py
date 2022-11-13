@@ -242,14 +242,16 @@ class ChannelOutputStream:
     
     def __repr__(self):
         """Returns the stream's representation."""
-        repr_parts = ['<', self.__class__.__name__, ' client=', repr(self._client), ', channel=', repr(self._channel)]
+        repr_parts = [
+            '<', self.__class__.__name__, ' client = ', repr(self._client), ', channel = ', repr(self._channel)
+        ]
         
         chunks_size = 0
         for data in self._chunks:
             chunks_size += len(data)
         
         if chunks_size:
-            repr_parts.append(' size=')
+            repr_parts.append(' size = ')
             repr_parts.append(repr(chunks_size))
         
         repr_parts.append('>')
@@ -269,7 +271,7 @@ class ChannelOutputStream:
         if (close_waiter is not None):
             close_waiter.set_result_if_pending(None)
     
-    async def wait_for_close(self, timeout=None):
+    async def wait_for_close(self, timeout = None):
         """
         Waits till the stream is closed.
         
@@ -489,7 +491,7 @@ class ChannelInputStream:
             payload_waiter.set_exception_if_pending(err)
     
     
-    async def wait_for_close(self, timeout=None):
+    async def wait_for_close(self, timeout = None):
         """
         Waits till the stream is closed.
         
@@ -857,7 +859,7 @@ def get_channel_stdout(client, channel, *, chunk_size=1000, sanitize=False):
     return ChannelOutputStream(client, channel, chunk_size, sanitize)
 
 
-def get_channel_stdin(client, channel, *, check=None):
+def get_channel_stdin(client, channel, *, check = None):
     """
     Gets an input stream from the given channel.
     

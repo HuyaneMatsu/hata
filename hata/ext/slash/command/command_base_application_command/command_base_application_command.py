@@ -4,6 +4,7 @@ from scarletio import copy_docs
 
 from .....discord.application_command import ApplicationCommand, ApplicationCommandTargetType
 from .....discord.application_command.constants import APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
+from .....discord.user.user_base import _try_get_guild_id
 
 from ...utils import SYNC_ID_GLOBAL, SYNC_ID_NON_GLOBAL, UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_INHERIT
 
@@ -108,6 +109,7 @@ class CommandBaseApplicationCommand(CommandBase):
         target ``ApplicationCommandTargetType``
         """
         return ApplicationCommandTargetType.none
+    
     
     @target.setter
     def target(self, value):
@@ -276,7 +278,7 @@ class CommandBaseApplicationCommand(CommandBase):
     def _cursed_repr_builder(self):
         for repr_parts in CommandBase._cursed_repr_builder(self):
             
-            repr_parts.append(', type=')
+            repr_parts.append(', type = ')
             guild_ids = self.guild_ids
             if guild_ids is None:
                 if self.global_:
@@ -292,27 +294,27 @@ class CommandBaseApplicationCommand(CommandBase):
             
             allow_by_default = self.allow_by_default
             if (allow_by_default is not None):
-                repr_parts.append(', allow_by_default=')
+                repr_parts.append(', allow_by_default = ')
                 repr_parts.append(repr(allow_by_default))
             
             allow_in_dm = self.allow_in_dm
             if (allow_in_dm is not None):
-                repr_parts.append(', allow_in_dm=')
+                repr_parts.append(', allow_in_dm = ')
                 repr_parts.append(repr(allow_in_dm))
             
             nsfw = self.nsfw
             if (nsfw is not None):
-                repr_parts.append(', nsfw=')
+                repr_parts.append(', nsfw = ')
                 repr_parts.append(repr(nsfw))
             
             required_permissions = self.required_permissions
             if (required_permissions is not None):
-                repr_parts.append(', required_permissions=')
+                repr_parts.append(', required_permissions = ')
                 repr_parts.append(repr(required_permissions))
             
             unloading_behaviour = self._unloading_behaviour
             if unloading_behaviour != UNLOADING_BEHAVIOUR_INHERIT:
-                repr_parts.append(', unloading_behaviour=')
+                repr_parts.append(', unloading_behaviour = ')
                 if unloading_behaviour == UNLOADING_BEHAVIOUR_DELETE:
                     unloading_behaviour_name = 'delete'
                 else:
@@ -321,7 +323,7 @@ class CommandBaseApplicationCommand(CommandBase):
                 repr_parts.append(unloading_behaviour_name)
             
             if (guild_ids is not None):
-                repr_parts.append(', guild_ids=')
+                repr_parts.append(', guild_ids = ')
                 repr_parts.append(repr(guild_ids))
     
     
@@ -341,6 +343,140 @@ class CommandBaseApplicationCommand(CommandBase):
             The option to autocomplete.
         """
         pass
+    
+    # ---- Mention ----
+    
+    @property
+    @copy_docs(CommandBase.mention)
+    def mention(self):
+        return self._build_mention(self._get_application_id_for_mention(), None)
+    
+    
+    @copy_docs(CommandBase.mention_at)
+    def mention_at(self, guild):
+        return self._build_mention(self._get_application_id_for_mention_at(guild), None)
+    
+    
+    def _mention_recursive(self, *sub_command_names):
+        """
+        Returns the application command's mention.
+        
+        Parameters
+        ----------
+        *sub_command_names : `str`
+            Already included sub-command name stack to mention.
+        
+        Returns
+        -------
+        mention : `str`
+        """
+        return self._build_mention(self._get_application_id_for_mention(), sub_command_names)
+    
+    
+    def _mention_at_recursive(self, guild, *sub_command_names):
+        """
+        Returns the application command's mention.
+        
+        Parameters
+        ----------
+        guild : ``Guild``, `int`
+            The guild to mention the command at.
+        
+        *sub_command_names : `str`
+            Already included sub-command name stack to mention.
+        
+        Returns
+        -------
+        mention : `str`
+        """
+        return self._build_mention(self._get_application_id_for_mention_at(guild), sub_command_names)
+    
+    
+    def _get_application_id_for_mention(self):
+        """
+        Gets the application command's identifier to mention.
+        
+        This function is used by ``.mention`` and works if the application command is global or if it is added only
+        to one guild.
+        
+        Returns
+        -------
+        application_command_id : `int`
+        """
+        registered_application_command_ids = self._registered_application_command_ids
+        if (registered_application_command_ids is None) or (len(registered_application_command_ids) > 1):
+            application_command_id = 0
+        else:
+            try:
+                application_command_id = registered_application_command_ids[SYNC_ID_GLOBAL]
+            except KeyError:
+                application_command_id = next(iter(registered_application_command_ids.values()))
+        
+        return application_command_id
+    
+    
+    def _get_application_id_for_mention_at(self, guild):
+        """
+        Gets the application command's identifier to mention at the specified guild.
+        
+        This function is used by ``.mention_at``.
+        
+        Parameters
+        ----------
+        guild : ``Guild``, `int`
+            The guild to mention the application command at.
+        
+        Returns
+        -------
+        application_command_id : `int`
+        """
+        registered_application_command_ids = self._registered_application_command_ids
+        if registered_application_command_ids is None:
+            application_command_id = 0
+        else:
+            if self.global_:
+                application_command_id = registered_application_command_ids.get(SYNC_ID_GLOBAL, 0)
+            else:
+                application_command_id = registered_application_command_ids.get(_try_get_guild_id(guild), 0)
+        
+        return application_command_id
+    
+    
+    def _build_mention(self, application_command_id, sub_command_name_stack):
+        """
+        Builds the application command's mention.
+        
+        Parameters
+        ----------
+        application_command_id : `int`
+            The respective application command's identifier.
+        
+        sub_command_name_stack : `None`, `tuple` of `str`
+            Additional sub command names to include in the mention.
+        
+        Returns
+        -------
+        mention : `str`
+        """
+        mention_parts = []
+        
+        if application_command_id:
+            mention_parts.append('<')
+            
+        mention_parts.append('/')
+        mention_parts.append(self.name)
+        
+        if (sub_command_name_stack is not None):
+            for sub_command_name in sub_command_name_stack:
+                mention_parts.append(' ')
+                mention_parts.append(sub_command_name)
+        
+        if application_command_id:
+            mention_parts.append(':')
+            mention_parts.append(str(application_command_id))
+            mention_parts.append('>')
+        
+        return ''.join(mention_parts)
     
     # ---- Utility ----
     
@@ -376,7 +512,7 @@ class CommandBaseApplicationCommand(CommandBase):
         Can be used as a decorator, as:
         
         ```py
-        @bot.interactions(is_global=True)
+        @bot.interactions(is_global = True)
         async def buy(
             item: ('str', 'Select an item to buy.'),
         ):

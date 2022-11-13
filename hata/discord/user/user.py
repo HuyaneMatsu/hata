@@ -80,7 +80,7 @@ class User(USER_BASE_CLASS):
     __slots__ = ()
     
     if CACHE_PRESENCE:
-        def __new__(cls, data, guild=None):
+        def __new__(cls, data, guild = None):
             
             warnings.warn(
                 (
@@ -129,7 +129,7 @@ class User(USER_BASE_CLASS):
             return self
     
     elif CACHE_USER:
-        def __new__(cls, data, guild=None):
+        def __new__(cls, data, guild = None):
             
             warnings.warn(
                 (
@@ -174,7 +174,7 @@ class User(USER_BASE_CLASS):
             return self
     
     else:
-        def __new__(cls, data, guild=None):
+        def __new__(cls, data, guild = None):
             
             warnings.warn(
                 (
@@ -495,7 +495,7 @@ class User(USER_BASE_CLASS):
     
     if CACHE_PRESENCE:
         @classmethod
-        def _create_and_update(cls, data, guild=None):
+        def _create_and_update(cls, data, guild = None):
             try:
                 user_data = data['user']
                 guild_profile_data = data
@@ -534,7 +534,7 @@ class User(USER_BASE_CLASS):
         
     elif CACHE_USER:
         @classmethod
-        def _create_and_update(cls, data, guild=None):
+        def _create_and_update(cls, data, guild = None):
             try:
                 user_data = data['user']
                 guild_profile_data = data
@@ -570,7 +570,7 @@ class User(USER_BASE_CLASS):
         
     else:
         @classmethod
-        def _create_and_update(cls, data, guild=None):
+        def _create_and_update(cls, data, guild = None):
             try:
                 user_data = data['user']
             except KeyError:

@@ -56,7 +56,7 @@ An improved example using the `commands` extension to handle common use cases.
 ```py
 from hata import Client, wait_for_interruption
 
-Saki = Client('TOKEN', extensions='commands_v2', prefix='s!')
+Saki = Client('TOKEN', extensions = 'commands_v2', prefix = 's!')
 
 @Saki.events
 async def ready(client):
@@ -78,13 +78,13 @@ from hata import Client, Guild, wait_for_interruption
 
 GUILD = Guild.precreate(guild_id)
 
-Seija = Client('TOKEN', extensions='slash')
+Seija = Client('TOKEN', extensions = 'slash')
 
 @Seija.events
 async def ready(client):
     print(f'{client:f} logged in.')
 
-@Seija.interactions(guild=GUILD)
+@Seija.interactions(guild = GUILD)
 async def ping():
     \"\"\"ping-pong\"\"\"
     return 'pong'

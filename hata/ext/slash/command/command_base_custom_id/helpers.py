@@ -88,7 +88,7 @@ def _validate_custom_ids(custom_id):
             
             raise TypeError(
                 f'`custom_id` contains a non `str` element, got: '
-                f'{sub_custom_id.__class__.__name__}; {sub_custom_id!r}; custom_id={custom_id!r}.'
+                f'{sub_custom_id.__class__.__name__}; {sub_custom_id!r}; custom_id = {custom_id!r}.'
             )
     
     else:

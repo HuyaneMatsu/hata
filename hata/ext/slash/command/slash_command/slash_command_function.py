@@ -2,7 +2,7 @@ __all__ = ('SlashCommandFunction',)
 
 from functools import partial as partial_func
 
-from scarletio import WeakReferer, RichAttributeErrorBaseType
+from scarletio import WeakReferer, RichAttributeErrorBaseType, copy_docs
 
 from .....discord.application_command import ApplicationCommandOption, ApplicationCommandOptionType
 from .....discord.client import Client
@@ -12,6 +12,7 @@ from ...converters import InternalParameterConverter, SlashCommandParameterConve
 from ...exceptions import _register_exception_handler, handle_command_exception, test_exception_handler
 from ...responding import process_command_coroutine
 
+from ..command_base import CommandBase
 from ..command_base_application_command.constants import APPLICATION_COMMAND_FUNCTION_DEEPNESS
 
 from .helpers import _build_auto_complete_parameter_names, _register_auto_complete_function
@@ -238,21 +239,35 @@ class SlashCommandFunction(RichAttributeErrorBaseType):
         """Returns the application command option's representation."""
         repr_parts = [
             '<', self.__class__.__name__,
-            ' name=', repr(self.name),
-            ', description=', repr(self.description),
+            ' name = ', repr(self.name),
+            ', description = ', repr(self.description),
         ]
         
         if self.default:
-            repr_parts.append(', default=True')
+            repr_parts.append(', default = True')
         
         response_modifier = self.response_modifier
         if (response_modifier is not None):
-            repr_parts.append(', response_modifier=')
+            repr_parts.append(', response_modifier = ')
             repr_parts.append(repr(response_modifier))
         
         repr_parts.append('>')
         
         return ''.join(repr_parts)
+    
+    
+    def __format__(self, code):
+        """Formats the slash command function in a format string."""
+        if not code:
+            return str(self)
+        
+        if code == 'm':
+            return self.mention
+        
+        raise ValueError(
+            f'Unknown format code {code!r} for {self.__class__.__name__}; {self!r}. '
+            f'Available format codes: {""!r}, {"m"!r}.'
+        )
     
     
     def as_option(self):
@@ -613,3 +628,33 @@ class SlashCommandFunction(RichAttributeErrorBaseType):
             self._self_reference = self_reference
         
         return self_reference
+    
+    # ---- Mention ----
+    
+    @property
+    @copy_docs(CommandBase.mention)
+    def mention(self):
+        parent_reference = self._parent_reference
+        if parent_reference is None:
+            parent = None
+        else:
+            parent = parent_reference()
+        
+        if parent is None:
+            return ''
+        
+        return parent._mention_recursive(self.name)
+    
+    
+    @copy_docs(CommandBase.mention_at)
+    def mention_at(self, guild):
+        parent_reference = self._parent_reference
+        if parent_reference is None:
+            parent = None
+        else:
+            parent = parent_reference()
+        
+        if parent is None:
+            return ''
+        
+        return parent._mention_at_recursive(guild, self.name)

@@ -747,7 +747,7 @@ class UserBase(DiscordEntity, immortal=True):
         return False
     
     
-    def top_role_at(self, guild, default=None):
+    def top_role_at(self, guild, default = None):
         """
         Returns the top role of the user at the given guild.
         

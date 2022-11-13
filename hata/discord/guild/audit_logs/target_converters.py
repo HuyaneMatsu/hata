@@ -64,7 +64,7 @@ def target_converter_invite(entry):
     else:
         guild = parent.guild
     
-    return Invite.precreate(code, guild=guild)
+    return Invite.precreate(code, guild = guild)
 
 
 def target_converter_webhook(entry):

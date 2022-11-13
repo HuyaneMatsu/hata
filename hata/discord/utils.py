@@ -1468,7 +1468,7 @@ def sanitise_mention_escaper(transformations, match):
     return transformations.get(mention, mention)
 
 
-def sanitize_mentions(content, guild=None):
+def sanitize_mentions(content, guild = None):
     """
     Sanitizes the given content, removing the mentions from it.
     
@@ -1525,7 +1525,7 @@ def sanitize_mentions(content, guild=None):
     return re_compile('|'.join(transformations)).sub(partial_func(sanitise_mention_escaper, transformations), content)
 
 
-def sanitize_content(content, guild=None):
+def sanitize_content(content, guild = None):
     """
     Sanitizes the markdown and the mentions in the given content.
     
@@ -1541,7 +1541,7 @@ def sanitize_content(content, guild=None):
     content : `None`, `str`
     """
     content = escape_markdown(content)
-    content = sanitize_mentions(content, guild=guild)
+    content = sanitize_mentions(content, guild = guild)
     return content
 
 
@@ -1748,7 +1748,7 @@ class TIMESTAMP_STYLES:
     relative_time = 'R'
 
 
-def format_datetime(date_time, style=None):
+def format_datetime(date_time, style = None):
     """
     Formats date time to Discord's timestamp markdown format.
     
@@ -1768,7 +1768,7 @@ def format_datetime(date_time, style=None):
     return format_unix_time(datetime_to_unix_time(date_time), style)
 
 
-def format_id(id_, style=None):
+def format_id(id_, style = None):
     """
     Formats Discord identifier to Discord's timestamp markdown format.
     
@@ -1788,7 +1788,7 @@ def format_id(id_, style=None):
     return format_unix_time(id_to_unix_time(id_), style)
 
 
-def format_loop_time(loop_time, style=None):
+def format_loop_time(loop_time, style = None):
     """
     Formats monotonic event loop time to Discord's timestamp markdown format.
     
@@ -1808,7 +1808,7 @@ def format_loop_time(loop_time, style=None):
     return format_unix_time(loop_time - LOOP_TIME() + time_now(), style)
 
 
-def format_unix_time(unix_time, style=None):
+def format_unix_time(unix_time, style = None):
     """
     Formats unix time to Discord's timestamp  markdown format.
     

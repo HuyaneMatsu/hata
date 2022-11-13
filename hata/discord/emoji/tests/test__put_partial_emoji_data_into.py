@@ -33,7 +33,7 @@ def test__put_partial_emoji_data_into__2():
     Tests whether ``put_partial_emoji_data_into`` works as intended for a unicode emoji.
     """
     data = {}
-    emoji = Emoji.precreate(202209090000, name='Eliminator')
+    emoji = Emoji.precreate(202209090000, name = 'Eliminator')
     
     put_partial_emoji_data_into(emoji, data)
     

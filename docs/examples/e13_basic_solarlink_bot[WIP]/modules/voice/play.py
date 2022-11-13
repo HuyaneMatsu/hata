@@ -7,7 +7,7 @@ from utils import duration_to_string
 
 Sakuya: Client
 
-@Sakuya.interactions(guild=TEST_GUILD)
+@Sakuya.interactions(guild = TEST_GUILD)
 async def play(
     client,
     event,

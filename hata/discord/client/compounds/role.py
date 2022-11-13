@@ -547,7 +547,7 @@ class ClientCompoundRoleEndpoints(Compound):
             continue
         
         # Now that we have the roles, lets order them
-        roles_valid.sort(key=role_reorder_valid_roles_sort_key)
+        roles_valid.sort(key = role_reorder_valid_roles_sort_key)
         
         # Cut out non roles.
         limit = len(roles_valid)

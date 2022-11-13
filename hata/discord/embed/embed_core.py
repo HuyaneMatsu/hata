@@ -52,7 +52,7 @@ class EmbedCore(EmbedBase):
         'type', 'url', 'video'
     )
     
-    def __init__(self, title=None, description=None, color=None, url=None, timestamp=None, type_='rich'):
+    def __init__(self, title=None, description = None, color = None, url = None, timestamp=None, type_='rich'):
         """
         Creates an embed core instance. Accepts the base parameters of the embed and sets the other ones as `None`.
         

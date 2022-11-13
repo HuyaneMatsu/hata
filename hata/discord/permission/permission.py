@@ -92,7 +92,8 @@ PERMISSION_MASK_USE_EMBEDDED_ACTIVITIES = 1 << PERMISSION_SHIFT_USE_EMBEDDED_ACT
 PERMISSION_MASK_MODERATE_USERS = 1 << PERMISSION_SHIFT_MODERATE_USERS
 PERMISSION_MASK_VIEW_CREATOR_MONETIZATION_ANALYTICS = 1 << PERMISSION_SHIFT_VIEW_CREATOR_MONETIZATION_ANALYTICS
 
-class Permission(FlagBase, access_keyword='can', enable_keyword='allow', disable_keyword='deny'):
+
+class Permission(FlagBase, access_keyword = 'can', enable_keyword = 'allow', disable_keyword = 'deny'):
     """
     Represents a Discord permission.
     

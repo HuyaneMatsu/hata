@@ -7,7 +7,7 @@ from utils import duration_to_string, get_queue_duration, create_track_repr
 Sakuya: Client
 
 
-@Sakuya.interactions(guild=TEST_GUILD)
+@Sakuya.interactions(guild = TEST_GUILD)
 async def queue_(
     client,
     event,

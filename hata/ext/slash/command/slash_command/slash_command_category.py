@@ -2,7 +2,7 @@ __all__ = ('SlashCommandCategory',)
 
 from functools import partial as partial_func
 
-from scarletio import RichAttributeErrorBaseType, WeakReferer, include
+from scarletio import RichAttributeErrorBaseType, WeakReferer, copy_docs, include
 
 from .....discord.application_command import ApplicationCommandOption, ApplicationCommandOptionType
 from .....discord.application_command.constants import APPLICATION_COMMAND_OPTIONS_MAX
@@ -14,6 +14,7 @@ from ...exceptions import (
     SlashCommandParameterConversionError, _register_exception_handler, handle_command_exception, test_exception_handler
 )
 
+from ..command_base import CommandBase
 from ..command_base_application_command.constants import (
     APPLICATION_COMMAND_CATEGORY_DEEPNESS_MAX, APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND,
     APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND_CATEGORY
@@ -289,6 +290,20 @@ class SlashCommandCategory(RichAttributeErrorBaseType):
             hash_value ^= hash(name)
         
         return hash_value
+    
+
+    def __format__(self, code):
+        """Formats the command in a format string."""
+        if not code:
+            return str(self)
+        
+        if code == 'm':
+            return self.mention
+        
+        raise ValueError(
+            f'Unknown format code {code!r} for {self.__class__.__name__}; {self!r}. '
+            f'Available format codes: {""!r}, {"m"!r}.'
+        )
     
     
     @property
@@ -649,3 +664,73 @@ class SlashCommandCategory(RichAttributeErrorBaseType):
             self._self_reference = self_reference
         
         return self_reference
+    
+    
+    # ---- Mention ----
+    
+    @property
+    @copy_docs(CommandBase.mention)
+    def mention(self):
+        return self._mention_recursive()
+    
+    
+    def _mention_recursive(self, *sub_command_names):
+        """
+        Returns the application command category's mention.
+        
+        Called by ``.mention`` to include the sub-commands' names.
+        
+        Parameters
+        ----------
+        *sub_command_names : `str`
+            Already included sub-command name stack to mention.
+        
+        Returns
+        -------
+        mention : `str`
+        """
+        parent_reference = self._parent_reference
+        if parent_reference is None:
+            parent = None
+        else:
+            parent = parent_reference()
+        
+        if parent is None:
+            return ''
+        
+        return parent._mention_recursive(self.name, *sub_command_names)
+    
+    
+    @copy_docs(CommandBase.mention_at)
+    def mention_at(self, guild):
+        return self._mention_at_recursive(guild)
+    
+    
+    def _mention_at_recursive(self, guild, *sub_command_names):
+        """
+        Returns the application command category's mention.
+        
+        Called by ``.mention`` to include the sub-commands' names.
+        
+        Parameters
+        ----------
+        guild : ``Guild``, `int`
+            The guild to mention the command at.
+        
+        *sub_command_names : `str`
+            Already included sub-command name stack to mention.
+        
+        Returns
+        -------
+        mention : `str`
+        """
+        parent_reference = self._parent_reference
+        if parent_reference is None:
+            parent = None
+        else:
+            parent = parent_reference()
+        
+        if parent is None:
+            return ''
+        
+        return parent._mention_at_recursive(guild, self.name, *sub_command_names)

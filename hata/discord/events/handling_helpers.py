@@ -114,8 +114,8 @@ def check_name(func, name):
     return name
 
 
-def check_parameter_count_and_convert(func, expected, *, name='event', can_be_async_generator=False,
-        error_message=None):
+def check_parameter_count_and_convert(func, expected, *, name = 'event', can_be_async_generator=False,
+        error_message = None):
     """
     If needed converts the given `func` to an async callable and then checks whether it expects the specified
     amount of non reserved positional parameters.
@@ -1125,7 +1125,7 @@ class Router(tuple):
         return ''.join(result)
 
 
-def route_value(to_route_value, count, default=None):
+def route_value(to_route_value, count, default = None):
     """
     Routes only a single `name` - `value` pair.
     

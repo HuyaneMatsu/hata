@@ -154,7 +154,7 @@ class TrieNode:
         
         nodes = self.nodes
         if (nodes is not None):
-            nodes = sorted(nodes.values(), key=trie_node_sort_key)
+            nodes = sorted(nodes.values(), key = trie_node_sort_key)
             
             node_count = len(nodes)
             if node_count == 1:

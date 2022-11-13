@@ -104,7 +104,7 @@ function.
 ```py3
 from hata import Client
 
-Nitori = Client(TOKEN, extensions='slash')
+Nitori = Client(TOKEN, extensions = 'slash')
 ```
 or
 ```py3
@@ -172,7 +172,7 @@ After the extension is setupped, commands can be added using the `client.interac
 ```py3
 from hata import Embed
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def perms(event):
     """Shows your permissions."""
     user_permissions = event.user_permissions
@@ -223,13 +223,13 @@ complicated as might look for first time. All parameter has 3 fields what we nee
 ```py3
 from hata import Embed
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def cookie(
     event,
     user: ('user', 'To who?'),
 ):
     """Gifts a cookie!"""
-    return Embed(description=f'{event.user:f} just gifted a cookie to {user:f} !')
+    return Embed(description = f'{event.user:f} just gifted a cookie to {user:f} !')
 ```
 
 ![](assets/slash_0002.png)
@@ -250,13 +250,13 @@ CAKES = [
     'https://tenor.com/view/cake-fat-slice-gif-4931308',
 ]
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def cake(
     event,
     user: P('user', 'To who?'),
 ):
     """Gifts a cake!"""
-    return Embed(description=f'{event.user:f} just gifted a cookie to {user:f} !').add_image(choice(CAKES))
+    return Embed(description = f'{event.user:f} just gifted a cookie to {user:f} !').add_image(choice(CAKES))
 ```
 
 # Optional parameters
@@ -272,7 +272,7 @@ Lets improve the `cookie` command to not require user!
 ```py3
 from hata import Embed
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def cookie(
     client,
     event,
@@ -286,7 +286,7 @@ async def cookie(
         source_user = event.user
         target_user = user
     
-    return Embed(description=f'{source_user:f} just gifted a cookie to {target_user:f} !')
+    return Embed(description = f'{source_user:f} just gifted a cookie to {target_user:f} !')
 ```
 
 ![](assets/slash_0006.png)
@@ -315,7 +315,7 @@ Choice parameters go to the "annotation type field" and they can be either:
 ```py3
 from hata import Embed
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def guild_icon(
     event,
     choice: (
@@ -335,30 +335,30 @@ async def guild_icon(
     
     if choice == 'icon':
         name = 'icon'
-        url = guild.icon_url_as(size=4096)
+        url = guild.icon_url_as(size = 4096)
         hash_value = guild.icon_hash
     
     elif choice == 'banner':
         name = 'banner'
-        url = guild.banner_url_as(size=4096)
+        url = guild.banner_url_as(size = 4096)
         hash_value = guild.banner_hash
     
     elif choice == 'discovery_splash':
         name = 'discovery splash'
-        url = guild.discovery_splash_url_as(size=4096)
+        url = guild.discovery_splash_url_as(size = 4096)
         hash_value = guild.discovery_splash_hash
     
     else:
         name = 'invite splash'
-        url = guild.invite_splash_url_as(size=4096)
+        url = guild.invite_splash_url_as(size = 4096)
         hash_value = guild.invite_splash_hash
     
     if url is None:
         color = (event.id >> 22) & 0xFFFFFF
-        return Embed(f'{guild.name} has no {name}', color=color)
+        return Embed(f'{guild.name} has no {name}', color = color)
     
     color = hash_value & 0xFFFFFF
-    return Embed(f'{guild.name}\'s {name}', color=color, url=url).add_image(url)
+    return Embed(f'{guild.name}\'s {name}', color = color, url = url).add_image(url)
 ```
 
 ![](assets/slash_0003.png)
@@ -376,7 +376,7 @@ GUILD_ICON_CHOICES = {
     'Invite-splash': 'invite_splash',
 }
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def guild_icon(
     event,
     choice: (GUILD_ICON_CHOICES, 'Which icon of the guild?' ) = 'icon',
@@ -402,14 +402,14 @@ When defining annotations only as `value`-s, the `name`-s will set as `str(value
 ```py3
 from random import random
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def roll(
     dice_count: (range(1, 7), 'With how much dice do you wanna roll?') = 1,
 ):
     """Rolls with dices."""
     amount = 0
     for _ in range(dice_count):
-        amount += round(1.+(random()*5.))
+        amount += round(1.0 + (random() * 5.0))
     
     return str(amount)
 ```
@@ -437,7 +437,7 @@ def create_pet_info_field(field, user):
      return f'**{field.value}**: {(user.id >> (22 + len(field.value))) % 101}'
 
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def pet_info(client, event, field: PetInfoFieldType = PetInfoFieldType.all):
     user = event.user
     
@@ -485,7 +485,7 @@ This is a perfect time to change up our `/perms` command.
 ```py3
 from hata import Embed
 
-@Nitori.interactions(guild=TEST_GUILD, show_for_invoking_user_only=True)
+@Nitori.interactions(guild = TEST_GUILD, show_for_invoking_user_only = True)
 async def perms(event):
     """Shows your permissions."""
     user_permissions = event.user_permissions
@@ -512,7 +512,7 @@ As an example: an already used function's name has conflict with the command's.
 ```py3
 from hata import id_to_datetime, DATETIME_FORMAT_CODE, elapsed_time
 
-@Nitro.interactions(guild=TEST_GUILD, name='id-to-time')
+@Nitro.interactions(guild = TEST_GUILD, name = 'id-to-time')
 async def idtotime(
     snowflake: ('int', 'Id please!'),
 ):
@@ -528,7 +528,7 @@ You can resolve name conflicts in an other way as well. Trailing `_` characters 
 ```py3
 from hata import id_to_datetime, DATETIME_FORMAT_CODE, elapsed_time
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def id_to_datetime_(
     snowflake: ('int', 'Id please!'),
 ):
@@ -563,7 +563,7 @@ class Action:
             source_user = event.user
             target_user = user
         
-        return Embed(description=f'{source_user:f} {self.action_name}s {target_user:f} !', color=self.embed_color)
+        return Embed(description = f'{source_user:f} {self.action_name}s {target_user:f} !', color = self.embed_color)
 
 for action_name, embed_color in (('pat', 0x325b34), ('hug', 0xa4b51b), ('lick', 0x7840c3), ('slap', 0xdff1dc),):
     Nitori.interactions(Action(action_name, embed_color),
@@ -593,7 +593,7 @@ used to *disable* commands in dm.
 ```py3
 from hata import Embed
 
-@Nitori.interactions(is_global=True, allow_in_dm=False)
+@Nitori.interactions(is_global = True, allow_in_dm = False)
 async def guild_features(event):
     """Shows the guild's features."""
     guild = event.guild
@@ -613,7 +613,7 @@ Allows you to customize the required permissions to see & use the command.
 ```py3
 from hata import DiscordException, Permission
 
-@Nitori.interactions(guild=TEST_GUILD, required_permissions=Permission().update_by_keys(manage_channel=True))
+@Nitori.interactions(guild = TEST_GUILD, required_permissions = Permission().update_by_keys(manage_channel = True))
 async def channel_create(
     client, event, name: (str, 'The channel\'s name to create.')
 ):
@@ -646,7 +646,7 @@ still way more comfy than typing out the whole client method, so there is a midd
 ```py3
 from hata.ext.slash import SlashResponse
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def repeat(
     text: ('str', 'The content to repeat')
 ):
@@ -654,7 +654,7 @@ async def repeat(
     if not text:
         text = 'nothing to repeat'
     
-    return SlashResponse(text, allowed_mentions=None)
+    return SlashResponse(text, allowed_mentions = None)
 ```
 
 
@@ -692,7 +692,7 @@ IMPROVISATION_CHOICES = [
     'Marisa\'s underskirt shrooms are poggers'
 ]
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def improvise():
     """Improvises some derpage"""
     yield '*Thinks*'
@@ -711,12 +711,12 @@ The first response can be also empty just to acknowledge the event.
 ```py3
 from time import perf_counter
 
-@Nitori.interactions(guild=TEST_GUILD, wait_for_acknowledgement=True)
+@Nitori.interactions(guild = TEST_GUILD, wait_for_acknowledgement = True)
 async def ping():
     """HTTP ping-pong."""
     start = perf_counter()
     yield
-    delay = (perf_counter()-start)*1000.0
+    delay = (perf_counter() - start) * 1000.0
     
     yield f'{delay:.0f} ms'
 ```
@@ -756,7 +756,7 @@ meaning it will always yield back a `Message` instance.
 from scarletio import sleep
 from hata.ext.slash import SlashResponse
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def collect_reactions():
     """Collects reactions"""
     message = yield SlashResponse('Collecting reactions for 1 minute!')
@@ -798,13 +798,13 @@ async def get_neko_life(client, keyword):
     yield content
 
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def text_cat(client):
     """I will send text cats :3"""
     async for content in get_neko_life(client, 'cat')
         yield content
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def why(client):
     """why are you using this commands?"""
     async for content in get_neko_life(client, 'why')
@@ -816,12 +816,12 @@ loop derpy, or `yield` or `return` it, because having regard to this case, it is
 `coroutine generator` object as well.
 
 ```py3
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def text_cat(client):
     """I will send text cats :3"""
     return get_neko_life(client, 'cat')
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def why(client):
     """why are you using this commands?"""
     yield get_neko_life(client, 'why')
@@ -841,7 +841,7 @@ error message, so if only string `content` is passed to abort, it will show up o
 from hata import DiscordException, ERROR_CODES, Embed
 from hata.ext.slash import abort
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def is_banned(client, event,
     user: ('user', 'Who should I check?')
 ):
@@ -890,7 +890,7 @@ parameter names as well, but at some cases it is not enough. For this cases, you
 annotation tuple, or to your `SlashParameter`.
 
 ```py3
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def user_id(event,
     user_id: ('user_id', 'Get the id of an other user?', 'user') = None,
 ):
@@ -919,21 +919,21 @@ from time import perf_counter
 from hata import Embed
 from hata.ext.slash import abort
 
-@Nitori.interactions(wait_for_acknowledgement=True)
+@Nitori.interactions(wait_for_acknowledgement = True)
 async def ping():
     """HTTP ping-pong."""
     start = perf_counter()
     yield
-    delay = (perf_counter()-start)*1000.0
+    delay = (perf_counter() - start) * 1000.0
     
     yield f'{delay:.0f} ms'
 
 
-@Nitori.interactions(is_global=True)
+@Nitori.interactions(is_global = True)
 async def enable_ping(
     client,
     event,
-    allow: ('bool', 'Enable?')=True,
+    allow: ('bool', 'Enable?') = True,
 ):
     """Enables the ping command in your guild."""
     guild = event.guild
@@ -999,7 +999,7 @@ async def get_image_embed(client, tags, name, color):
         # Request image information
         async with client.http.get(SAFE_BOORU + tags) as response:
             if response.status != 200:
-                return Embed('Error', 'Safe-booru unavailable', color=color)
+                return Embed('Error', 'Safe-booru unavailable', color = color)
             
             result = await response.read()
         
@@ -1008,16 +1008,16 @@ async def get_image_embed(client, tags, name, color):
         image_urls = [post['file_url'] for post in soup.find_all('post')]
         
         if not image_urls:
-            return Embed('Error', 'No images found.\nPlease try again later.', color=color)
+            return Embed('Error', 'No images found.\nPlease try again later.', color = color)
         
         # If we received image urls, cache them
         IMAGE_URL_CACHE[tags] = image_urls
     
     image_url = choice(image_urls)
-    return Embed(name, color=color, url=image_url).add_image(image_url)
+    return Embed(name, color = color, url = image_url).add_image(image_url)
 
 
-SCARLET = Nitori.interactions(None, name='scarlet', description='Scarlet?', guild=TEST_GUILD)
+SCARLET = Nitori.interactions(None, name = 'scarlet', description = 'Scarlet?', guild = TEST_GUILD)
 
 @SCARLET.interactions
 async def flandre(client):
@@ -1037,7 +1037,7 @@ You can also set default sub-command, which is used if a sub command is selected
 > Sub-commands and default commands are not yet fully supported by Discord.
 
 ```py3
-@SCARLET.interactions(is_default=True)
+@SCARLET.interactions(is_default = True)
 async def devil(client, event):
     """Flandre & Remilia!"""
     yield
@@ -1056,12 +1056,12 @@ acknowledge time still stands. You also may use `Client.interaction_application_
 acknowledge the event.
 
 ```py3
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def repeat(client, event,
     text: ('str', 'Uhum?')
 ):
     """What should I exactly repeat?"""
-    await client.interaction_response_message_create(event, text, allowed_mentions=None)
+    await client.interaction_response_message_create(event, text, allowed_mentions = None)
 ```
 
 Not like `Client.message_create`, this endpoint can be called without any content to still acknowledge the
@@ -1078,7 +1078,7 @@ An example using pure client methods:
 ```py3
 from scarletio import sleep
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def kaboom(client, event):
     """Kabooom!!"""
     await client.interaction_application_command_acknowledge(event)
@@ -1103,7 +1103,7 @@ An example using mixed `yield` and `Client` methods:
 ```py3
 from scarletio import sleep
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def kaboom_mixed(client, event):
     """Kabooom!!"""
     yield
@@ -1160,7 +1160,7 @@ Or use group names covering multiple one.
 > Using `channel_id` prefix instead of `channel`, will give back their id instead.
 
 ```py3
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def thread_channel_name_length(
     channel: ('channel_group_thread', 'Select a thread channel.')
 ):
@@ -1176,12 +1176,12 @@ When using `SlashParameter`, the `channel_types` keyword only parameter can be u
 
 
 ```py3
-from hata import CHANNEL_TYPES
+from hata import ChannelType
 from hata.ext.slash import P
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def voice_channel_name_length(
-    channel: P('channel', 'Select a voice channel', channel_types=[CHANNEL_TYPES.guild_voice])
+    channel: P('channel', 'Select a voice channel', channel_types = [ChannelType.guild_voice])
 ):
     """Returns the selected voice channel's name's length."""
     return len(channel.name)
@@ -1218,12 +1218,12 @@ MOST_POPULAR_TOUHOU_CHARACTERS = [
     'Tatara Kogasa',
 ]
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def character_popularity(
-    position: P('number', 'Please select a number between 1 and 20', min_value=1, max_value=20)
+    position: P('number', 'Please select a number between 1 and 20', min_value = 1, max_value = 20)
 ):
     """Returns the name of the touhou character by it's popularity position."""
-    return MOST_POPULAR_TOUHOU_CHARACTERS[position-1]
+    return MOST_POPULAR_TOUHOU_CHARACTERS[position - 1]
 ```
 
 ![](assets/slash_0025.gif)
@@ -1239,13 +1239,13 @@ from hata.ext.slash import P
 
 @Nitori.interactions(
     guild = TEST_GUILD,
-    required_permissions = Permission().update_by_keys(manage_nicknames=True),
+    required_permissions = Permission().update_by_keys(manage_nicknames = True),
 )
 async def set_nick(
     client,
     event,
     user: ('user', 'Who\'s?'),
-    nick: P(str, 'Their new nick', min_length=1, max_length=32) = None,
+    nick: P(str, 'Their new nick', min_length = 1, max_length = 32) = None,
 ):
     """Edit's the selected user's nick."""
     yield
@@ -1262,10 +1262,10 @@ decorator. The `target` parameter can be given either as `'user'` / `'message'`.
 > `'chat'` target works as well, but that refers to regular slash commands and will ot make any difference.
 
 ```py3
-@Nitori.interactions(guild=TEST_GUILD, target='user')
+@Nitori.interactions(guild = TEST_GUILD, target = 'user')
 async def avatar(target):
-    avatar_url = target.avatar_url_as(size=4096)
-    return Embed(f'{target.full_name}\'s avatar', url=avatar_url).add_image(avatar_url)
+    avatar_url = target.avatar_url_as(size = 4096)
+    return Embed(f'{target.full_name}\'s avatar', url = avatar_url).add_image(avatar_url)
 ```
 
 ![](assets/slash_0026.gif)
@@ -1276,7 +1276,7 @@ Defining any other parameter will yield error, since context commands do not sup
 Sub commands are also not supported.
 
 ```py3
-@Nitori.interactions(guild=TEST_GUILD, target='message')
+@Nitori.interactions(guild = TEST_GUILD, target = 'message')
 async def length(target):
     return len(target)
 ```
@@ -1291,7 +1291,7 @@ The amount of active commands can be get with using the `Client.slasher.get_glob
 > Non-global commands do not count as active commands.
 
 ```py3
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def command_count(client, event):
     global_command_count = client.slasher.get_global_command_count()
     

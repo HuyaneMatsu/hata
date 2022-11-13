@@ -104,7 +104,7 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         # System fields : custom_id
         
         # custom_id
-        repr_parts.append(' custom_id=')
+        repr_parts.append(' custom_id = ')
         repr_parts.append(reprlib.repr(self.custom_id))
         
         # Type specific fields
@@ -115,7 +115,7 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         # placeholder
         placeholder = self.placeholder
         if (placeholder is not None):
-            repr_parts.append(', placeholder=')
+            repr_parts.append(', placeholder = ')
             repr_parts.append(repr(placeholder))
         
         # Optional descriptive fields: min_values & max_values & enabled
@@ -123,19 +123,19 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         # min_values
         min_values = self.min_values
         if min_values != MIN_VALUES_DEFAULT:
-            repr_parts.append(', min_values=')
+            repr_parts.append(', min_values = ')
             repr_parts.append(repr(min_values))
         
         # max_values
         max_values = self.max_values
         if max_values != MAX_VALUES_DEFAULT:
-            repr_parts.append(', max_values=')
+            repr_parts.append(', max_values = ')
             repr_parts.append(repr(max_values))
         
         # enabled
         enabled = self.enabled
         if (not enabled):
-            repr_parts.append(', enabled=')
+            repr_parts.append(', enabled = ')
             repr_parts.append(repr(enabled))
         
         repr_parts.append('>')

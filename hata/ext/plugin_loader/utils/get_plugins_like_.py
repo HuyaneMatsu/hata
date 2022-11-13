@@ -53,5 +53,5 @@ def get_plugins_like(name):
     if not to_sort:
         return to_sort
     
-    to_sort.sort(key=_plugin_match_sort_key)
+    to_sort.sort(key = _plugin_match_sort_key)
     return [item[0] for item in to_sort]

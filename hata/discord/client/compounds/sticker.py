@@ -207,7 +207,7 @@ class ClientCompoundStickerEndpoints(Compound):
         return sticker
     
     
-    async def sticker_guild_create(self, guild, name, image, emoji_representation, description=None, *, reason=None):
+    async def sticker_guild_create(self, guild, name, image, emoji_representation, description = None, *, reason = None):
         """
         Creates a sticker in the guild.
         
@@ -330,7 +330,7 @@ class ClientCompoundStickerEndpoints(Compound):
         return Sticker(sticker_data)
     
     
-    async def sticker_guild_edit(self, sticker, *, name=..., emoji_representation=..., description=..., reason=None):
+    async def sticker_guild_edit(self, sticker, *, name=..., emoji_representation=..., description = ..., reason = None):
         """
         Edits the given guild bound sticker,
         
@@ -438,7 +438,7 @@ class ClientCompoundStickerEndpoints(Compound):
         await self.http.sticker_guild_edit(sticker.guild_id, sticker.id, data, reason)
     
     
-    async def sticker_guild_delete(self, sticker, *, reason=None):
+    async def sticker_guild_delete(self, sticker, *, reason = None):
         """
         Deletes the sticker.
         

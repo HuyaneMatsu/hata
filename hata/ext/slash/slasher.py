@@ -1379,7 +1379,7 @@ class Slasher(EventHandlerBase):
         self._component_interaction_waiters[message] = actual_waiter
     
     
-    def create_event(self, func, *args, target=None, **kwargs):
+    def create_event(self, func, *args, target = None, **kwargs):
         """
         Adds a command.
         
@@ -1463,7 +1463,7 @@ class Slasher(EventHandlerBase):
         else:
             target = validate_application_target_type(target)
             if target in APPLICATION_COMMAND_CONTEXT_TARGET_TYPES:
-                command = ContextCommand(func, *args, **kwargs, target=target)
+                command = ContextCommand(func, *args, **kwargs, target = target)
             else:
                 command = SlashCommand(func, *args, **kwargs)
         

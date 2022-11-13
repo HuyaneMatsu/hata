@@ -398,7 +398,7 @@ class ClientCompoundClientGateway(Compound):
             return []
     
     
-    async def wait_for(self, event_name, check, timeout=None):
+    async def wait_for(self, event_name, check, timeout = None):
         """
         O(n) event waiter with massive overhead compared to other optimized event waiters.
         

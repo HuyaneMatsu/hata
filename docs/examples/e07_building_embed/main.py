@@ -39,7 +39,7 @@ async def message_create(client, message):
         # We use reusable IO as requests sometimes fail (connection issues, Discord servers derp out etc).
         # In these case the wrapper tries to repeat the request 5 times. This is when reusable io-s come to the picture.
         with (await ReuAsyncIO('flan.png')) as file:
-            await client.message_create(message.channel, embed=embed, file=file)
+            await client.message_create(message.channel, embed = embed, file=file)
 
 
 @Sakuya.events

@@ -180,7 +180,7 @@ class ClientCompoundEmojiEndpoints(Compound):
         return await self.emoji_guild_get_all(guild)
     
     
-    async def emoji_create(self, guild, name, image, *, roles=None, reason=None):
+    async def emoji_create(self, guild, name, image, *, roles=None, reason = None):
         """
         Creates an emoji at the given guild.
         
@@ -274,7 +274,7 @@ class ClientCompoundEmojiEndpoints(Compound):
         return emoji
     
     
-    async def emoji_delete(self, emoji, *, reason=None):
+    async def emoji_delete(self, emoji, *, reason = None):
         """
         Deletes the given emoji.
         
@@ -302,10 +302,10 @@ class ClientCompoundEmojiEndpoints(Compound):
         if guild_id is None:
             return
         
-        await self.http.emoji_delete(guild_id, emoji_id, reason=reason)
+        await self.http.emoji_delete(guild_id, emoji_id, reason = reason)
     
     
-    async def emoji_edit(self, emoji, *, name=..., roles=..., reason=None):
+    async def emoji_edit(self, emoji, *, name=..., roles=..., reason = None):
         """
         Edits the given emoji.
         

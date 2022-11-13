@@ -58,7 +58,7 @@ class ComponentCommand(CommandBaseCustomId):
     __slots__ = ()
     
     
-    def __new__(cls, func, custom_id, name=None, target=None, **kwargs):
+    def __new__(cls, func, custom_id, name=None, target = None, **kwargs):
         """
         Creates a new ``ComponentCommand`` with the given parameters
         

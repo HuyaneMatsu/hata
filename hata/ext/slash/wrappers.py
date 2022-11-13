@@ -321,8 +321,8 @@ class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
         '_max_value', '_min_length', '_min_value', '_name', '_parameter_name', '_type'
     )
     
-    def __new__(cls, parameter_name, type_or_choice, description=None, name=None, *, autocomplete=None,
-            channel_types=None, max_length=None, max_value=None, min_length=None, min_value=None):
+    def __new__(cls, parameter_name, type_or_choice, description = None, name=None, *, autocomplete=None,
+            channel_types = None, max_length = None, max_value = None, min_length = None, min_value = None):
         """
         Creates a partial function to wrap a command.
         
@@ -423,13 +423,13 @@ class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
         """Returns the command wrapper's representation."""
         repr_parts = [
             '<', self.__class__.__name__,
-            ' wrapped=', repr(self._wrapped),
-            ', parameter_name=', repr(self.parameter_name),
+            ' wrapped = ', repr(self._wrapped),
+            ', parameter_name = ', repr(self.parameter_name),
         ]
         
         type_ = self._type
         type_name = ANNOTATION_TYPE_TO_STR_ANNOTATION[type_]
-        repr_parts.append(', type=')
+        repr_parts.append(', type = ')
         repr_parts.append(type_name)
         repr_parts.append(' (')
         repr_parts.append(repr(type_))
@@ -437,57 +437,57 @@ class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
         
         autocomplete = self._autocomplete
         if (autocomplete is not None):
-            repr_parts.append(', autocomplete=')
+            repr_parts.append(', autocomplete = ')
             repr_parts.append(repr(autocomplete))
         
         choice_enum_type = self._choice_enum_type
         if (choice_enum_type is not None):
-            repr_parts.append(', choice_enum_type=')
+            repr_parts.append(', choice_enum_type = ')
             repr_parts.append(choice_enum_type.__name__)
         
         choices = self.choices
         if (choices is not None):
-            repr_parts.append(', choices=')
+            repr_parts.append(', choices = ')
             repr_parts.append(repr(choices))
         
         description = self._description
         if (description is not None):
-            repr_parts.append(', description=')
+            repr_parts.append(', description = ')
             repr_parts.append(reprlib.repr(description))
         
         name = self._name
         if (name is not None):
-            repr_parts.append(', name=')
+            repr_parts.append(', name = ')
             repr_parts.append(repr(name))
         
         channel_types = self.channel_types
         if (channel_types is not None):
-            repr_parts.append(', channel_types=')
+            repr_parts.append(', channel_types = ')
             repr_parts.append(repr(channel_types))
         
         if type_ is ApplicationCommandOptionType.string:
             # min_length
             min_length = self._min_length
             if (min_length != 0):
-                repr_parts.append(', min_length=')
+                repr_parts.append(', min_length = ')
                 repr_parts.append(repr(min_length))
             
             # max_length
             max_length = self._max_length
             if (max_length != 0):
-                repr_parts.append(', max_length=')
+                repr_parts.append(', max_length = ')
                 repr_parts.append(repr(max_length))
         
         
         if type_ is ApplicationCommandOptionType.integer or type_ is ApplicationCommandOptionType.float:
             min_value = self._min_value
             if (min_value is not None):
-                repr_parts.append(', min_value=')
+                repr_parts.append(', min_value = ')
                 repr_parts.append(repr(min_value))
             
             max_value = self._max_value
             if (max_value is not None):
-                repr_parts.append(', max_value=')
+                repr_parts.append(', max_value = ')
                 repr_parts.append(repr(max_value))
         
         repr_parts.append('>')

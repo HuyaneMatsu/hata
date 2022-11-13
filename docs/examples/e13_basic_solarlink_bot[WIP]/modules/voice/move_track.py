@@ -6,7 +6,7 @@ from utils import create_track_repr, get_player
 
 Sakuya: Client
 
-@Sakuya.interactions(guild=TEST_GUILD)
+@Sakuya.interactions(guild = TEST_GUILD)
 async def move_track(
     client,
     event,

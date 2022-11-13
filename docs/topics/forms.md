@@ -46,7 +46,7 @@ INTRODUCTION_FORM = Form(
     custom_id = 'introduction',
 )
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def introduce_myself():
     """Creates an introduction embed after filling a form."""
     return INTRODUCTION_FORM
@@ -56,14 +56,14 @@ Defining `custom_id` for each component is not required, but its highly recommen
 its `custom_id`.
 
 You may add form commands to slasher by specifying what forms they should capture based on their `custom_id`. Also, you can
-specify that you want to match forms submit interaction and not component interactions by passing `target=` either as
+specify that you want to match forms submit interaction and not component interactions by passing `target = ` either as
 `'form'` / `'form_submit'`.
 
 
 ```py3
 from hata import Embed
 
-@Nitori.interactions(custom_id='introduction', target='form')
+@Nitori.interactions(custom_id = 'introduction', target = 'form')
 async def introduction_form_submit(event, *, name, bio):
     return Embed(
         f'Hi, my name is {name}',
@@ -103,7 +103,7 @@ ADD_ROLE_FORM = Form(
 )
 
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def add_role(
     client,
     event,
@@ -131,14 +131,14 @@ async def add_role(
     )
 
 
-@Nitori.interactions(custom_id=re.compile('add_role\.(\d+)\.(\d+)'), target='form')
+@Nitori.interactions(custom_id = re.compile('add_role\.(\d+)\.(\d+)'), target = 'form')
 async def add_role(client, event, user_id, role_id, *, message):
     user_id = int(user_id)
     role_id = int(role_id)
     
     yield # acknowledge the even
     
-    await client.user_role_add(user_id, (event.guild_id, role_id), reason=message)
+    await client.user_role_add(user_id, (event.guild_id, role_id), reason = message)
     
     # Try to send DM to the poor being.
     channel = await client.channel_private_create(user_id)
@@ -158,7 +158,7 @@ async def add_role(client, event, user_id, role_id, *, message):
         )
 
     try:
-        await client.message_create(channel, embed=embed) 
+        await client.message_create(channel, embed = embed) 
     except DiscordException as err:
         # Ignore the exception if the user has dm-s disabled.
         if err.code != ERROR_CODES.cannot_message_user: # user has dm-s disabled
@@ -277,13 +277,13 @@ WAIFU_FORM = Form(
 
 # Add command
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def add_waifu():
     """Add a new waifu to the database!"""
     return WAIFU_FORM
 
 
-@Nitori.interactions(custom_id=CUSTOM_ID_WAIFU_FORM, target='form')
+@Nitori.interactions(custom_id = CUSTOM_ID_WAIFU_FORM, target = 'form')
 async def waifu_add_form_submit(
     event,
     *,
@@ -307,7 +307,7 @@ async def waifu_add_form_submit(
 ```py3
 # Get command
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def get_waifu(
     name: ('str', 'Their name?')
 ):
@@ -353,7 +353,7 @@ FIELD_TO_ATTRIBUTE = {
     'hair': Waifu.hair,
 }
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def edit_waifu(
     event,
     name: ('str', 'Their name?'),
@@ -392,7 +392,7 @@ async def autocomplete_waifu_name(event, value):
     return [waifu.name for key, waifu in WAIFUS.items() if value in key and waifu.user is user]
 
 
-@Nitori.interactions(custom_id=CUSTOM_ID_WAIFU_EDIT_REGEX, target='form')
+@Nitori.interactions(custom_id = CUSTOM_ID_WAIFU_EDIT_REGEX, target = 'form')
 async def waifu_edit_form_submit(
     key,
     *,
@@ -433,7 +433,7 @@ CUSTOM_ID_RATE_CAKE_FIELD = 'rate_cake.field'
 
 
 
-@Nitori.interactions(guild=TEST_GUILD)
+@Nitori.interactions(guild = TEST_GUILD)
 async def rate_cakes(
     cake_1: ('str', 'Please rate this cake'),
     cake_2: ('str', 'Please rate this cake') = None,
@@ -467,7 +467,7 @@ async def autocomplete_cake_name(value):
     return [cake_name for cake_name in CAKE_NAMES if (value in cake_name)]
 
 
-@Nitori.interactions(custom_id=CUSTOM_ID_RATE_CAKE, target='form')
+@Nitori.interactions(custom_id = CUSTOM_ID_RATE_CAKE, target = 'form')
 async def rate_cake_form_submit(
     event,
     *cakes: re.compile(f'{CUSTOM_ID_RATE_CAKE_FIELD}\[(\w+)\]'),

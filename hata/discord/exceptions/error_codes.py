@@ -219,6 +219,8 @@ Error Codes
 +---------------------------------------------------------------+-----------+-----------+
 | bitrate_too_high_for_channel_type                             | 30052     | -         |
 +---------------------------------------------------------------+-----------+-----------+
+| rate_limit_resource                                           | 31002     | -         |
++---------------------------------------------------------------+-----------+-----------+
 | unauthorized                                                  | 40001     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | email_verification_required                                   | 40002     | -         |
@@ -260,6 +262,8 @@ Error Codes
 | interaction_already_acknowledged                              | 40060     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | tag_name_not_unique                                           | 40061     | -         |
++---------------------------------------------------------------+-----------+-----------+
+| rate_limit_service_resource                                   | 40062     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | no_tags_available_for_non_moderators                          | 40066     | -         |
 +---------------------------------------------------------------+-----------+-----------+
@@ -348,6 +352,8 @@ Error Codes
 | cannot_self_redeem_this_gift                                  | 50054     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | invalid_guild                                                 | 50055     | -         |
++---------------------------------------------------------------+-----------+-----------+
+| invalid_request_origin                                        | 50067     | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | invalid_message_type                                          | 50068     | -         |
 +---------------------------------------------------------------+-----------+-----------+
@@ -456,6 +462,8 @@ Error Codes
 | negative_invoice_amount                                       | 100027    | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | authentication_required                                       | 100029    | -         |
++---------------------------------------------------------------+-----------+-----------+
+| ineligible_for_subscription                                   | 100053    | -         |
 +---------------------------------------------------------------+-----------+-----------+
 | billing_non_refundable_payment_source                         | 100060    | -         |
 +---------------------------------------------------------------+-----------+-----------+
@@ -606,6 +614,7 @@ rate_limit_edit_to_message_older_than_one_hour = 30046
 max_pinned_threads_in_forum_channel = 30047
 max_forum_channel_tags = 30048
 bitrate_too_high_for_channel_type = 30052
+rate_limit_resource = 31002
 
 unauthorized = 40001
 email_verification_required = 40002
@@ -628,6 +637,7 @@ interaction_failed_to_send = 40043
 cannot_send_message_to_forum_channel = 40058
 interaction_already_acknowledged = 40060
 tag_name_not_unique = 40061
+rate_limit_service_resource = 40062
 no_tags_available_for_non_moderators = 40066
 tag_required = 40067
 
@@ -673,6 +683,7 @@ invalid_application_name = 50050
 invalid_gift_redemption_owned = 50051
 cannot_self_redeem_this_gift = 50054
 invalid_guild = 50055
+invalid_request_origin = 50067
 invalid_message_type = 50068
 payment_source_required_to_redeem_gift = 50070
 cannot_edit_system_webhook = 50073
@@ -732,6 +743,7 @@ invalid_gift_redemption_subscription_incompatible = 100023
 invalid_gift_redemption_invoice_open = 100024
 negative_invoice_amount = 100027
 authentication_required = 100029
+ineligible_for_subscription = 100053
 billing_non_refundable_payment_source = 100060
 
 application_not_yet_available = 110001

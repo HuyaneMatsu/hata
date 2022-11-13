@@ -13,7 +13,7 @@ def test__ActivityMetadataCustom__repr():
     Tests whether ``ActivityMetadataCustom.__repr__`` works as intended.
     """
     state = 'state'
-    emoji = Emoji.precreate(202209060000, name='Code49')
+    emoji = Emoji.precreate(202209060000, name = 'Code49')
     created_at = DateTime(2014, 9, 16)
     
     activity_metadata = ActivityMetadataCustom.from_data({
@@ -30,7 +30,7 @@ def test__ActivityMetadataCustom__hash():
     Tests whether ``ActivityMetadataCustom.__hash__`` works as intended.
     """
     state = 'state'
-    emoji = Emoji.precreate(202209060001, name='Code49')
+    emoji = Emoji.precreate(202209060001, name = 'Code49')
     created_at = DateTime(2014, 9, 16)
     
     activity_metadata = ActivityMetadataCustom.from_data({
@@ -47,7 +47,7 @@ def test__ActivityMetadataCustom__eq():
     Tests whether ``ActivityMetadataCustom.__eq__`` works as intended.
     """
     state = 'state'
-    emoji = Emoji.precreate(202209060002, name='Code49')
+    emoji = Emoji.precreate(202209060002, name = 'Code49')
     created_at = DateTime(2014, 9, 16)
     
     data = {

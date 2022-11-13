@@ -56,6 +56,8 @@ class UserFlag(FlagBase):
     +-------------------------------+-------------------+
     | premium_disabled              | 21                |
     +-------------------------------+-------------------+
+    | active_developer              | 22                |
+    +-------------------------------+-------------------+
     | quarantined                   | 44                |
     +-------------------------------+-------------------+
     """
@@ -82,6 +84,7 @@ class UserFlag(FlagBase):
         'bot_http_interactions': 19,
         'spammer': 20,
         'premium_disabled': 21,
+        'active_developer': 22,
         'quarantined': 44,
     }
 

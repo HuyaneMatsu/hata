@@ -400,7 +400,7 @@ def guild_banner_url_as(guild, ext=None, size=None):
     return f'{CDN_ENDPOINT}/banners/{guild.id}/{prefix}{guild.banner_hash:0>32x}.{ext}{end}'
 
 
-def guild_widget_url(guild, style='shield'):
+def guild_widget_url(guild, style = 'shield'):
     """
     Returns the guild's widget image's url in `.png` format.
     

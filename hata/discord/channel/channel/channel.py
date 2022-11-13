@@ -462,7 +462,7 @@ class Channel(DiscordEntity, immortal=True):
         return self.metadata._get_clients(self)
     
     
-    def get_user(self, name, default=None):
+    def get_user(self, name, default = None):
         """
         Tries to find the a user with the given name at the channel. Returns the first matched one.
         
@@ -480,7 +480,7 @@ class Channel(DiscordEntity, immortal=True):
         return self.metadata._get_user(self, name, default)
     
     
-    def get_user_like(self, name, default=None):
+    def get_user_like(self, name, default = None):
         """
         Searches a user, who's name or nick starts with the given string and returns the first find.
         

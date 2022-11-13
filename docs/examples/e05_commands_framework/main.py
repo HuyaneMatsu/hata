@@ -43,7 +43,7 @@ async def latency(ctx):
 @Sakuya.commands
 async def say(ctx, content):
     """Repeats what the user passes as parameter. Ensures that users and roles are not pinged."""
-    await ctx.send(content, allowed_mentions=None)
+    await ctx.send(content, allowed_mentions = None)
 
 
 # The command processor can be accessed with the `.command_processor` attribute
@@ -108,7 +108,7 @@ EMOJI_CAT = BUILTIN_EMOJIS['cat']
 
 # Limit the command to administrators only
 @Sakuya.commands(aliases=['kitty', 'neko'])
-@checks.has_permissions(administrator=True)
+@checks.has_permissions(administrator = True)
 async def cat():
     """Returns a cat back."""
     return EMOJI_CAT.as_emoji
@@ -118,7 +118,7 @@ EMOJI_BIRD = BUILTIN_EMOJIS['bird']
 
 
 @Sakuya.commands
-async def bird(animal:str=None):
+async def bird(animal:str = None):
     """Bird finds animals."""
     if animal is None:
         content = f'{EMOJI_BIRD} finds animals for you.'
@@ -129,7 +129,7 @@ async def bird(animal:str=None):
 
 
 # Example for explicit permission check.
-# We could have used `@checks.has_permissions(administrator=True)` here but that would not reply by default
+# We could have used `@checks.has_permissions(administrator = True)` here but that would not reply by default
 # (would have to define error handler and reply there).
 @Sakuya.commands
 async def am_i_admin(ctx):
@@ -161,13 +161,13 @@ async def slowmode(ctx, slowmode_rate:int=None):
 
 # A command can have sub-commands, just like in command-line tools.
 # Example `!upper` and `!upper sub`
-@Sakuya.commands(name='upper')
+@Sakuya.commands(name = 'upper')
 async def upper_command():
     """This is main command."""
     return 'This is the main command!'
 
 
-@upper_command.commands(name='sub')
+@upper_command.commands(name = 'sub')
 async def sub_command():
     """This is the upper command's sub command"""
     return 'This is the sub-command.'

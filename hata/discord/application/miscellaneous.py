@@ -292,7 +292,7 @@ class ApplicationInstallParameters:
         """Returns the application install parameters' representation."""
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' scopes=[')
+        repr_parts.append(' scopes = [')
         
         scopes = self.scopes
         if (scopes is not None):
@@ -309,7 +309,7 @@ class ApplicationInstallParameters:
                 repr_parts.append(', ')
                 continue
         
-        repr_parts.append(', permissions=')
+        repr_parts.append(', permissions = ')
         repr_parts.append(format(self.permissions, 'd'))
         
         repr_parts.append('>')

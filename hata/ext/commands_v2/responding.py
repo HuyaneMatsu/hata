@@ -54,7 +54,7 @@ async def send_response(command_context, response):
         return await command_context.client.message_create(command_context.channel, response)
         
     if isinstance(response, EmbedBase) or is_only_embed(response) and response:
-        return await command_context.client.message_create(command_context.channel, embed=response)
+        return await command_context.client.message_create(command_context.channel, embed = response)
     
     if is_coroutine_generator(response):
         return await process_command_coroutine_generator(command_context, response)

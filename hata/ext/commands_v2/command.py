@@ -757,7 +757,7 @@ class Command:
             COMMAND_COMMAND_NAME)
     
     
-    def __new__(cls, command, name=None, description=None, aliases=None, category=None, checks=None,
+    def __new__(cls, command, name=None, description = None, aliases=None, category=None, checks=None,
             error_handlers=None, separator=None, assigner=None, hidden=None, hidden_if_checks_fail=None):
         """
         Creates a new ``Command`` object.
@@ -769,7 +769,7 @@ class Command:
         name : `None`, `str`, `tuple` of (`None`, `Ellipsis`, `str`) = `None`, Optional
             The name to be used instead of the passed `command`'s.
         description : `None`, `Any`, `tuple` of (`None`, `Ellipsis`, `Any`) = `None`, Optional
-            Description added to the command. If no description is provided, then it will check the commands's
+            Description added to the command. If no description is provided, then it will check the commands'
             `.__doc__` attribute for it. If the description is a string instance, then it will be normalized with the
             ``normalize_description`` function. If it ends up as an empty string, then `None` will be set as the
             description.
@@ -824,7 +824,7 @@ class Command:
             name = [check_name(command, name) for name in name]
             name = [raw_name_to_display(name) for name in name]
             default_description = _generate_description_from(command, None)
-            description = route_value(description, route_to, default=default_description)
+            description = route_value(description, route_to, default = default_description)
             aliases = route_value(aliases, route_to)
             category = route_value(category, route_to)
             checks = route_value(checks, route_to)

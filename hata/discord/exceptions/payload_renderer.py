@@ -321,7 +321,7 @@ def reconstruct_hash_map_into(value, into, indent):
         into.append('\n')
         item_indent = indent + 1
         
-        for item_key, item_value in sorted(value.items(), key=hash_map_key_sort_key):
+        for item_key, item_value in sorted(value.items(), key = hash_map_key_sort_key):
             for counter in range(item_indent):
                 into.append(VALUE_INDENT)
             

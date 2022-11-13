@@ -286,7 +286,7 @@ def get_and_validate_setup_functions(extensions, kwargs):
                 else:
                     raise TypeError(
                         f'`extensions` can contain `str` elements, got '
-                        f'{extension.__class__.__name__}; {extension!r}; extensions={extensions!r}.'
+                        f'{extension.__class__.__name__}; {extension!r}; extensions = {extensions!r}.'
                     )
                 
                 if extensions_to_setup is None:

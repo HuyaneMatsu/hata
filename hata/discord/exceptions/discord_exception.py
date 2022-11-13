@@ -172,15 +172,11 @@ class DiscordException(Exception):
         
         
         if response.status == 429:
-            try:
-                retry_after = response.headers[RETRY_AFTER]
-            except KeyError:
-                pass
-            else:
-                message_parts.append(', ')
-                message_parts.append(str(RETRY_AFTER))
-                message_parts.append(': ')
-                message_parts.append(repr(retry_after))
+            if not message_base.endswith(('.', ',')):
+                message_parts.append(';')
+            
+            message_parts.append('retry after: ')
+            message_parts.append(format(self.retry_after, '.02f'))
         
         return ''.join(message_parts)
     
@@ -510,6 +506,29 @@ class DiscordException(Exception):
         status_code : `int`
         """
         return self.response.status
+    
+    
+    @property
+    def retry_after(self):
+        """
+        After how much seconds the request should be retried.
+        Applicable for rate limit errors, so the ones with status `429`.
+        
+        Returns
+        -------
+        retry_after : `float`
+        """
+        try:
+            retry_after = self.response.headers[RETRY_AFTER]
+        except KeyError:
+            return 0.0
+        
+        try:
+            retry_after = float(retry_after)
+        except ValueError:
+            return 0.0
+        
+        return retry_after
     
     
     def __repr__(self):

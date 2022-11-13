@@ -536,7 +536,7 @@ async def get_interaction_client_and_message(event_or_message, timeout):
         client = get_client_from_message(message)
     
     elif isinstance(event_or_message, InteractionEvent):
-        message = await event_or_message.wait_for_response_message(timeout=timeout)
+        message = await event_or_message.wait_for_response_message(timeout = timeout)
         client = get_client_from_interaction_event(event_or_message)
     
     else:
@@ -548,7 +548,7 @@ async def get_interaction_client_and_message(event_or_message, timeout):
     return client, message
 
 
-async def wait_for_component_interaction(event_or_message, *, timeout=None, check=None):
+async def wait_for_component_interaction(event_or_message, *, timeout = None, check = None):
     """
     Waits for interaction.
     
@@ -581,7 +581,7 @@ async def wait_for_component_interaction(event_or_message, *, timeout=None, chec
     return await ComponentInteractionWaiter(client, message, check, timeout)
 
 
-async def iter_component_interactions(event_or_message, *, timeout=None, check=None, count=-1):
+async def iter_component_interactions(event_or_message, *, timeout = None, check = None, count=-1):
     """
     Iterates component interactions.
     

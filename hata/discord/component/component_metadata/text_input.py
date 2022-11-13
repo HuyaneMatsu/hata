@@ -150,7 +150,7 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         
         # text_input_style
         text_input_style = self.text_input_style
-        repr_parts.append(' text_input_style=')
+        repr_parts.append(' text_input_style = ')
         repr_parts.append(text_input_style.name)
         repr_parts.append(' (')
         repr_parts.append(repr(text_input_style.value))
@@ -161,7 +161,7 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         # custom_id
         custom_id = self.custom_id
         if (custom_id is not None):
-            repr_parts.append(', custom_id=')
+            repr_parts.append(', custom_id = ')
             repr_parts.append(reprlib.repr(custom_id))
         
         # Text fields : label & placeholder & value
@@ -169,13 +169,13 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         # label
         label = self.label
         if (label is not None):
-            repr_parts.append(', label=')
+            repr_parts.append(', label = ')
             repr_parts.append(reprlib.repr(label))
         
         # placeholder
         placeholder = self.placeholder
         if (placeholder is not None):
-            repr_parts.append(', placeholder=')
+            repr_parts.append(', placeholder = ')
             repr_parts.append(repr(placeholder))
         
         # value
@@ -189,19 +189,19 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         # min_length
         min_length = self.min_length
         if min_length:
-            repr_parts.append(', min_length=')
+            repr_parts.append(', min_length = ')
             repr_parts.append(repr(min_length))
         
         # min_length
         max_length = self.max_length
         if max_length:
-            repr_parts.append(', max_length=')
+            repr_parts.append(', max_length = ')
             repr_parts.append(repr(max_length))
         
         # required (relation with `min_length`)
         required = self.required
         if (min_length > 0) ^ required:
-            repr_parts.append(', required=')
+            repr_parts.append(', required = ')
             repr_parts.append(repr(required))
         
         

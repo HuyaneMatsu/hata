@@ -7,7 +7,7 @@ from utils import get_player
 
 Sakuya: Client
 
-@Sakuya.interactions(guild=TEST_GUILD)
+@Sakuya.interactions(guild = TEST_GUILD)
 async def seek(
     client,
     event,

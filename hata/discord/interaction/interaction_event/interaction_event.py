@@ -892,7 +892,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
             
             repr_parts.append('),')
         
-        repr_parts.append(' type=')
+        repr_parts.append(' type = ')
         metadata_type = self.type
         repr_parts.append(metadata_type.name)
         repr_parts.append(' (')
@@ -902,34 +902,34 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         guild_id = self.guild_id
         if guild_id:
-            repr_parts.append(', guild_id=')
+            repr_parts.append(', guild_id = ')
             repr_parts.append(repr(guild_id))
             
-            repr_parts.append(', application_permissions=')
+            repr_parts.append(', application_permissions = ')
             repr_parts.append(format(self.application_permissions, 'd'))
         
         
-        repr_parts.append(', channel_id=')
+        repr_parts.append(', channel_id = ')
         repr_parts.append(repr(self.channel_id))
         
         
         message = self.message
         if (message is not None):
-            repr_parts.append(', message=')
+            repr_parts.append(', message = ')
             repr_parts.append(repr(message))
         
         
-        repr_parts.append(', user=')
+        repr_parts.append(', user = ')
         repr_parts.append(repr(self.user))
         
-        repr_parts.append(', guild_locale=')
+        repr_parts.append(', guild_locale = ')
         repr_parts.append(repr(self.guild_locale.name))
         
         if guild_id:
-            repr_parts.append(', locale=')
+            repr_parts.append(', locale = ')
             repr_parts.append(repr(self.locale.name))
         
-        repr_parts.append(', interaction=')
+        repr_parts.append(', interaction = ')
         repr_parts.append(repr(self.interaction))
         
         

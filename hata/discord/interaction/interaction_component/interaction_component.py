@@ -256,7 +256,7 @@ class InteractionComponent(RichAttributeErrorBaseType):
         # type
         type_ = self.type
         if type_ is not ComponentType.none:
-            repr_parts.append(' type=')
+            repr_parts.append(' type = ')
             repr_parts.append(type_.name)
             repr_parts.append(' (')
             repr_parts.append(repr(type_.value))
@@ -278,7 +278,7 @@ class InteractionComponent(RichAttributeErrorBaseType):
             else:
                 field_added = True
             
-            repr_parts.append(' custom_id=')
+            repr_parts.append(' custom_id = ')
             repr_parts.append(reprlib.repr(custom_id))
         
         # Extra descriptive fields : components | value
@@ -290,7 +290,7 @@ class InteractionComponent(RichAttributeErrorBaseType):
             else:
                 field_added = True
             
-            repr_parts.append(' components=[')
+            repr_parts.append(' components = [')
             
             index = 0
             limit = len(components)
@@ -314,7 +314,7 @@ class InteractionComponent(RichAttributeErrorBaseType):
             if field_added:
                 repr_parts.append(',')
             
-            repr_parts.append(' value=')
+            repr_parts.append(' value = ')
             repr_parts.append(repr(value))
         
         repr_parts.append('>')

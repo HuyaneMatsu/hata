@@ -115,10 +115,10 @@ def setup_ext_slash(client, **kwargs):
     client.events(slasher)
     client.slasher = slasher
     client.interactions = slasher.shortcut
-    client.events(_do_initial_sync, name='launch')
-    client.events(_application_command_create_watcher, name='application_command_create')
-    client.events(_application_command_delete_watcher, name='application_command_delete')
-    client.events(_application_command_permission_update_watcher, name='application_command_permission_update')
+    client.events(_do_initial_sync, name = 'launch')
+    client.events(_application_command_create_watcher, name = 'application_command_create')
+    client.events(_application_command_delete_watcher, name = 'application_command_delete')
+    client.events(_application_command_permission_update_watcher, name = 'application_command_permission_update')
     
     return slasher
 

@@ -112,7 +112,7 @@ def get_bool_env(name, default, *, warn_if_empty = True):
     return default
 
 
-def get_str_env(name, default=None, *, warn_if_empty = True):
+def get_str_env(name, default = None, *, warn_if_empty = True):
     """
     Gets the given environmental variable.
     

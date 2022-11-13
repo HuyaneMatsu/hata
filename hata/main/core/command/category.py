@@ -418,7 +418,7 @@ class CommandCategory(RichAttributeErrorBaseType):
             into = command_function.render_usage_into(into)
             yield into
         
-        for command_category in sorted(self.iter_sub_categories(), key=command_sort_key):
+        for command_category in sorted(self.iter_sub_categories(), key = command_sort_key):
             into = yield from command_category.walk_usage_into(into)
         
         return into
@@ -452,7 +452,7 @@ class CommandCategory(RichAttributeErrorBaseType):
         into.append(' ...')
         
         sub_command_names = [*self.iter_sub_category_names()]
-        sub_command_line_length = max((len(sub_command_name) for sub_command_name in sub_command_names), default=0)
+        sub_command_line_length = max((len(sub_command_name) for sub_command_name in sub_command_names), default = 0)
         
         line_length = 0
         if sub_command_line_length:

@@ -1160,7 +1160,7 @@ class CachedSearcher:
                 if isinstance(value, QualPath):
                     continue
                 
-                value.sort(key=qual_path_sort_key)
+                value.sort(key = qual_path_sort_key)
         
         return cached_possibilities, cached_relations
     

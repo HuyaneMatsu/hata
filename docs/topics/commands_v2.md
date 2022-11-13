@@ -15,7 +15,7 @@ async def ping():
 
 If you set the prefix for example to `!`, you could call the command as `!ping`.
 
-You can setup the commands extension by passing `extensions='commands_v2'` to the client constructor. The extension
+You can setup the commands extension by passing `extensions = 'commands_v2'` to the client constructor. The extension
 also required a `prefix`, so pass that as well.
 
 > Naming your bots might be important when using multiple ones, so in the examples it will be called `NekoBot` from
@@ -43,7 +43,7 @@ from hata.ext.commands import setup_ext_commands
 
 TOKEN = ''
 NekoBot = Client(TOKEN)
-setup_ext_commands(NekoBot, prefix='!')
+setup_ext_commands(NekoBot, prefix = '!')
 ```
 
 # Command Parameters
@@ -107,12 +107,12 @@ You can define them as any other parameter with annotation added. String annotat
 ```py3
 @NekoBot.commands
 async def repeat(ctx, to_repeat: str):
-    await ctx.reply(to_repeat, allowed_mentions=None)
+    await ctx.reply(to_repeat, allowed_mentions = None)
 ```
 
 The command will accept one word as parameter, and then reply it back. You may use `"..."` to pass multiple words.
 
-> `.reply` replies on the invoking message, meanwhile `allowed_mentions=None` blocks all the outgoing mentions.
+> `.reply` replies on the invoking message, meanwhile `allowed_mentions = None` blocks all the outgoing mentions.
 > Using these is a great way with dealing random user inputs.
 
 ## Default values
@@ -122,11 +122,11 @@ By using default values you can make parameters optional, like as in python.
 
 ```py3
 @NekoBot.commands
-async def repeat(ctx, to_repeat: str=None):
+async def repeat(ctx, to_repeat: str = None):
     if to_repeat is None:
         to_repeat = '*nothing to repeat*'
     
-    await ctx.reply(to_repeat, allowed_mentions=None)
+    await ctx.reply(to_repeat, allowed_mentions = None)
 ```
 
 ## Keyword only parameters
@@ -135,13 +135,13 @@ You may use keyword only parameters inside of commands.
 
 ```py3
 @NekoBot.commands
-async def repeat(ctx, to_repeat: str=None, *, upper=False):
+async def repeat(ctx, to_repeat: str = None, *, upper = False):
     if to_repeat is None:
         to_repeat = '*nothing to repeat*'
     elif upper:
         to_repeat = to_repeat.upper()
     
-    await ctx.reply(to_repeat, allowed_mentions=None)
+    await ctx.reply(to_repeat, allowed_mentions = None)
 ```
 
 Keyword only parameter can be passed using the parameter's name followed by a colon, a space character and then the
@@ -213,7 +213,7 @@ You can also use default values for the cases if no additional content is given.
 from hata import Embed
 
 @NekoBot.commands
-async def pat(ctx, user, message=None):
+async def pat(ctx, user, message = None):
     embed = Embed(f'{ctx.author} pats {user:f}')
     
     if (message is not None):
@@ -300,7 +300,7 @@ async def avatar(ctx, user: 'User'=None):
     if user is None:
         user = ctx.author
     
-    return user.avatar_url_as(size=4096)
+    return user.avatar_url_as(size = 4096)
 ```
 
 The default flags are the following:
@@ -348,7 +348,7 @@ async def avatar(ctx, user: 'User'=None):
     if user is None:
         user = ctx.author
     
-    return user.avatar_url_as(size=4096)
+    return user.avatar_url_as(size = 4096)
 ```
 
 Although usually you want to create the category first to apply [checks](#checks) or description to it. If you have a
@@ -365,7 +365,7 @@ async def avatar(ctx, user: 'User'=None):
     if user is None:
         user = ctx.author
     
-    return user.avatar_url_as(size=4096)
+    return user.avatar_url_as(size = 4096)
 ```
 
 As on command processor, `.commands` works on categories as well.
@@ -382,7 +382,7 @@ async def avatar(ctx, user: 'User'=None):
     if user is None:
         user = ctx.author
     
-    return user.avatar_url_as(size=4096)
+    return user.avatar_url_as(size = 4096)
 ```
 
 ## Default category

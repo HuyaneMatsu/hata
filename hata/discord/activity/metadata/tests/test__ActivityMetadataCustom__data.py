@@ -29,7 +29,7 @@ def test__ActivityMetadataCustom__from_data__1():
     Case: All fields given.
     """
     state = 'state'
-    emoji = Emoji.precreate(202209060003, name='Code49')
+    emoji = Emoji.precreate(202209060003, name = 'Code49')
     created_at = DateTime(2014, 9, 16)
     
     activity_metadata = ActivityMetadataCustom.from_data({
@@ -49,7 +49,7 @@ def test__ActivityMetadataCustom__to_data():
     Tests whether ``ActivityMetadataCustom.to_data`` works as intended.
     """
     state = 'state'
-    emoji = Emoji.precreate(202209060004, name='Code49')
+    emoji = Emoji.precreate(202209060004, name = 'Code49')
     created_at = DateTime(2014, 9, 16)
     
     activity_metadata = ActivityMetadataCustom.from_data({
@@ -66,7 +66,7 @@ def test__ActivityMetadataCustom__to_data__user():
     Tests whether `ActivityMetadataCustom.to_data(user = True)` works as intended.
     """
     state = 'state'
-    emoji = Emoji.precreate(202209060005, name='Code49')
+    emoji = Emoji.precreate(202209060005, name = 'Code49')
     created_at = DateTime(2014, 9, 16)
     
     activity_metadata = ActivityMetadataCustom.from_data({
@@ -83,7 +83,7 @@ def test__ActivityMetadataCustom__to_data__include_internals():
     Tests whether `ActivityMetadataCustom.to_data(include_internals = True)` works as intended.
     """
     state = 'state'
-    emoji = Emoji.precreate(202209060006, name='Code49')
+    emoji = Emoji.precreate(202209060006, name = 'Code49')
     created_at = DateTime(2014, 9, 16)
     
     activity_metadata = ActivityMetadataCustom.from_data({
@@ -109,8 +109,8 @@ def test__ActivityMetadataCustom__update_attributes():
     """
     old_state = 'state'
     new_state = 'remilia'
-    old_emoji = Emoji.precreate(202209060007, name='Code49')
-    new_emoji = Emoji.precreate(202209060008, name='Howling')
+    old_emoji = Emoji.precreate(202209060007, name = 'Code49')
+    new_emoji = Emoji.precreate(202209060008, name = 'Howling')
     old_created_at = DateTime(2014, 9, 16)
     new_created_at = DateTime(2014, 9, 17)
     
@@ -137,8 +137,8 @@ def test__ActivityMetadataCustom__difference_update_attributes():
     """
     old_state = 'state'
     new_state = 'remilia'
-    old_emoji = Emoji.precreate(202209060007, name='Code49')
-    new_emoji = Emoji.precreate(202209060008, name='Howling')
+    old_emoji = Emoji.precreate(202209060007, name = 'Code49')
+    new_emoji = Emoji.precreate(202209060008, name = 'Howling')
     old_created_at = DateTime(2014, 9, 16)
     new_created_at = DateTime(2014, 9, 17)
     

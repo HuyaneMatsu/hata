@@ -40,7 +40,7 @@ def list_commands():
     command_count = len(REGISTERED_COMMANDS)
     index_adjust = floor(log10(command_count)) + 1
     
-    for index, command in enumerate(sorted(REGISTERED_COMMANDS, key=command_sort_key), 1):
+    for index, command in enumerate(sorted(REGISTERED_COMMANDS, key = command_sort_key), 1):
         command_name = command.name
         output_parts.append(str(index).rjust(index_adjust))
         output_parts.append('. ')
@@ -77,7 +77,7 @@ def list_all():
     output_parts = []
     field_added = False
     
-    for command in sorted(REGISTERED_COMMANDS, key=command_sort_key):
+    for command in sorted(REGISTERED_COMMANDS, key = command_sort_key):
         for output_parts in command.walk_usage_into(output_parts):
             output_parts.append('\n\n')
             output_parts.append(BREAK_LINE)

@@ -451,7 +451,7 @@ def command_result_processor_command_not_found(command_name):
         'The available commands are the following:\n'
     )
     
-    for command in sorted(REGISTERED_COMMANDS, key=command_sort_key):
+    for command in sorted(REGISTERED_COMMANDS, key = command_sort_key):
         message_parts.append('- ')
         message_parts.append(command.name)
         message_parts.append('\n')

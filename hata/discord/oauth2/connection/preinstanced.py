@@ -56,6 +56,8 @@ class ConnectionType(PreinstancedBase):
     +-----------------------+-----------------------+-------------------+
     | steam                 | Steam                 | steam             |
     +-----------------------+-----------------------+-------------------+
+    | tiktok                | TikTok                | tiktok            |
+    +-----------------------+-----------------------+-------------------+
     | twitch                | Twitch                | twitch            |
     +-----------------------+-----------------------+-------------------+
     | twitter               | Twitter               | twitter           |
@@ -87,6 +89,7 @@ class ConnectionType(PreinstancedBase):
     spotify = P('spotify', 'Spotify')
     skype = P('skype', 'Skype')
     steam = P('steam', 'Steam')
+    tiktok = P('tiktok', 'TikTok')
     twitch = P('twitch', 'Twitch')
     twitter = P('twitter', 'Twitter')
     xbox = P('xbox', 'Xbox')

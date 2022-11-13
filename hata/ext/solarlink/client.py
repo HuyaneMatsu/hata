@@ -67,7 +67,7 @@ class SolarClient(RichAttributeErrorBaseType):
         return self
     
     
-    def add_node(self, host, port, password, region, resume_key=None, reconnect_attempts=3):
+    def add_node(self, host, port, password, region, resume_key = None, reconnect_attempts=3):
         """
         Adds a node to Lavalink's node manager.
         
@@ -498,7 +498,7 @@ class SolarClient(RichAttributeErrorBaseType):
             if region_nodes:
                 nodes = region_nodes
         
-        return min(nodes, key=node_penalty_key)
+        return min(nodes, key = node_penalty_key)
     
     
     async def _node_connected(self, node):

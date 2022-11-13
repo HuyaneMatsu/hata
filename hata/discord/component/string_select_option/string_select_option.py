@@ -136,7 +136,7 @@ class StringSelectOption(RichAttributeErrorBaseType):
         # System fields : value
         
         # value
-        repr_parts.append(', value=')
+        repr_parts.append(', value = ')
         repr_parts.append(reprlib.repr(self.value))
         
         # Text fields : emoji & label
@@ -144,13 +144,13 @@ class StringSelectOption(RichAttributeErrorBaseType):
         # emoji
         emoji = self.emoji
         if (emoji is not None):
-            repr_parts.append(', emoji=')
+            repr_parts.append(', emoji = ')
             repr_parts.append(repr(emoji))
         
         # label
         label = self.label
         if (label is not None):
-            repr_parts.append(', label=')
+            repr_parts.append(', label = ')
             repr_parts.append(reprlib.repr(label))
         
         # Optional descriptive fields: description & default
@@ -158,12 +158,12 @@ class StringSelectOption(RichAttributeErrorBaseType):
         # description
         description = self.description
         if (description is not None):
-            repr_parts.append(', description=')
+            repr_parts.append(', description = ')
             repr_parts.append(reprlib.repr(description))
         
         # default
         if self.default:
-            repr_parts.append(', default=True')
+            repr_parts.append(', default = True')
         
         repr_parts.append('>')
         return ''.join(repr_parts)

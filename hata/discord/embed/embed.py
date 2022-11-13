@@ -50,7 +50,7 @@ class Embed(EmbedBase):
     
     # Sending the message
     with (await ReuAsyncIO('some_file_path')) as file:
-        await client.message_create(channel, embed=embed, file=('image.png', file))
+        await client.message_create(channel, embed = embed, file=('image.png', file))
     ```
     
     Note that you should use async io wrappers, but one which do not closes on `.close` either, but it resets
@@ -59,7 +59,7 @@ class Embed(EmbedBase):
     """
     __slots__ = ('_data',)
     
-    def __init__(self, title=None, description=None, color=None, url=None, timestamp=None, type_='rich'):
+    def __init__(self, title=None, description = None, color = None, url = None, timestamp=None, type_='rich'):
         """
         Creates an embed instance. Accepts the base parameters of the embed.
         
@@ -945,7 +945,7 @@ class Embed(EmbedBase):
     
     # author
     
-    def add_author(self, name=None, icon_url=None, url=None):
+    def add_author(self, name=None, icon_url = None, url = None):
         """
         Adds an ``EmbedAuthor`` to the embed with the given parameters.
         
@@ -1180,7 +1180,7 @@ class Embed(EmbedBase):
     
     # footer
     
-    def add_footer(self, text, icon_url=None):
+    def add_footer(self, text, icon_url = None):
         """
         Adds an ``EmbedFooter`` to the embed with the given parameters.
         

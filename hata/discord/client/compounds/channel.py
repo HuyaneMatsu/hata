@@ -316,7 +316,7 @@ class ClientCompoundChannelEndpoints(Compound):
         return channels
     
     
-    async def channel_move(self, channel, visual_position, *, parent=..., lock_permissions=False, reason=None):
+    async def channel_move(self, channel, visual_position, *, parent=..., lock_permissions = False, reason = None):
         """
         Moves a guild channel to the given visual position under it's parent, or guild. If the algorithm can not
         place the channel exactly on that location, it will place it as close, as it can. If there is nothing to
@@ -387,7 +387,7 @@ class ClientCompoundChannelEndpoints(Compound):
         # Cannot put category under category
         if isinstance(parent, Channel) and channel.is_guild_category() and (not channel.partial):
             raise ValueError(
-                f'Can not move category channel under category channel. channel={channel!r}; parent={parent!r}'
+                f'Can not move category channel under category channel. channel = {channel!r}; parent = {parent!r}'
             )
         
         if not isinstance(visual_position, int):
@@ -487,7 +487,7 @@ class ClientCompoundChannelEndpoints(Compound):
         # Move, yayyy
         move_to.insert(visual_position, channel_key_to_move)
         # Reorder
-        move_to.sort(key=channel_move_sort_key)
+        move_to.sort(key = channel_move_sort_key)
         
         # Now we resort every channel in the guild and categories, mostly for security issues
         to_sort_all = [display_new]
@@ -758,7 +758,7 @@ class ClientCompoundChannelEndpoints(Compound):
         return Channel.from_data(channel_data, self, guild_id)
     
     
-    async def channel_delete(self, channel, *, reason=None):
+    async def channel_delete(self, channel, *, reason = None):
         """
         Deletes the specified guild channel.
         

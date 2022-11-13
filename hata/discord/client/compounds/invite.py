@@ -175,7 +175,7 @@ class ClientCompoundInviteEndpoints(Compound):
         return Invite._create_vanity(guild, invite_data)
     
     
-    async def vanity_invite_edit(self, guild, vanity_code, *, reason=None):
+    async def vanity_invite_edit(self, guild, vanity_code, *, reason = None):
         """
         Edits the given guild's vanity invite's code.
         
@@ -692,7 +692,7 @@ class ClientCompoundInviteEndpoints(Compound):
         return [Invite(invite_data, False) for invite_data in invite_datas]
     
     
-    async def invite_delete(self, invite, *, reason=None):
+    async def invite_delete(self, invite, *, reason = None):
         """
         Deletes the given invite.
         

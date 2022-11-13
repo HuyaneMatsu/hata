@@ -1517,7 +1517,7 @@ class Client(
         return voice_client
     
     
-    def get_guild(self, name, default=None):
+    def get_guild(self, name, default = None):
         """
         Tries to find a guild by it's name. If there is no guild with the given name, then returns the passed
         default value.

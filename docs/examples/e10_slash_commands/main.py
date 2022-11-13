@@ -20,23 +20,23 @@ async def ready(client):
 
 # Slash commands can be registered with the `.interactions` decorator if the client has slash extension setuped.
 #
-# Passing `is_global=True` will make the command global. These commands are available in each guild and in dm as well.
+# Passing `is_global = True` will make the command global. These commands are available in each guild and in dm as well.
 # Global command updates are distributed after 1 hour.
-@Sakuya.interactions(is_global=True)
+@Sakuya.interactions(is_global = True)
 async def ping():
     """A ping command"""
     return 'pong'
 
 
-# `guild=...` parameter will make the command guild bound.
-@Sakuya.interactions(guild=MY_GUILD)
+# `guild = ...` parameter will make the command guild bound.
+@Sakuya.interactions(guild = MY_GUILD)
 async def ayaya():
     """Ayaya?"""
     return 'ayaya!'
 
 
 # `client` and `event` parameters are passed to slash commands if required. They must be the first defined parameters.
-@Sakuya.interactions(is_global=True)
+@Sakuya.interactions(is_global = True)
 async def message_me(client, event):
     channel = await client.channel_private_create(event.user)
     await client.message_create(channel, 'Hello!')
@@ -46,7 +46,7 @@ async def message_me(client, event):
 
 # Extra parameters will be added to the application commands. These can be annotated with a tuple of their type and
 # description.
-@Sakuya.interactions(is_global=True)
+@Sakuya.interactions(is_global = True)
 async def id_(
     user: ('user', 'The user to lookup')
 ):
@@ -55,7 +55,7 @@ async def id_(
 
 
 # Use default values to mark a parameter as optional
-@Sakuya.interactions(is_global=True)
+@Sakuya.interactions(is_global = True)
 async def id_(event,
     user: ('user', 'The user to lookup') = None,
 ):
@@ -72,7 +72,7 @@ WELCOME_MESSAGES = [
     ('game', 'I hope that you brought your danmaku skills.'),
 ]
 
-@Sakuya.interactions(is_global=True)
+@Sakuya.interactions(is_global = True)
 async def welcome(event,
     user: ('user', 'The user to welcome'),
     message: (WELCOME_MESSAGES, 'The message to send'),

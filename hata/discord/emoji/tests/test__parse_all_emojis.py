@@ -24,7 +24,7 @@ def test__parse_all_emojis__custom():
     """
     Tests whether `parse_all_emojis` can parse custom emojis correctly.
     """
-    emoji = Emoji.precreate(20220815000000000, name='haru', animated=True)
+    emoji = Emoji.precreate(20220815000000000, name = 'haru', animated=True)
     parsed_emojis = parse_all_emojis(emoji.as_emoji)
     vampytest.assert_eq({emoji}, parsed_emojis)
 
@@ -45,9 +45,9 @@ def test__parse_all_emojis__mixed():
     """
     emojis = {
         BUILTIN_EMOJIS['heart'],
-        Emoji.precreate(20220815000000000, name='haru', animated=True),
+        Emoji.precreate(20220815000000000, name = 'haru', animated=True),
         BUILTIN_EMOJIS['knife'],
-        Emoji.precreate(20220815000000001, name='kuroi'),
+        Emoji.precreate(20220815000000001, name = 'kuroi'),
     }
     text = ' '.join([emoji.as_emoji for emoji in emojis] * 2)
     parsed_emojis = parse_all_emojis(text)
@@ -134,9 +134,9 @@ def test__parse_all_emojis_ordered():
     """
     emojis = [
         BUILTIN_EMOJIS['heart'],
-        Emoji.precreate(20220815000000000, name='haru', animated=True),
+        Emoji.precreate(20220815000000000, name = 'haru', animated=True),
         BUILTIN_EMOJIS['knife'],
-        Emoji.precreate(20220815000000001, name='kuroi'),
+        Emoji.precreate(20220815000000001, name = 'kuroi'),
     ]
     text = ' '.join([emoji.as_emoji for emoji in emojis] * 2)
     

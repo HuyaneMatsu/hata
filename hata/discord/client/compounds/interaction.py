@@ -23,6 +23,143 @@ MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY = MessageFlag().update_by_keys(invoking_us
 MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS = MessageFlag().update_by_keys(embeds_suppressed=True)
 
 
+def _assert__interaction_event_type(interaction_event):
+    """
+    Asserts whether the interaction event's type is correct.
+    
+    Parameters
+    ----------
+    interaction_event : ``InteractionEvent``
+        Respective interaction event.
+    
+    Raises
+    ------
+    AssertionError
+        - If `interaction_event` is not ``InteractionEvent``.
+    """
+    if not isinstance(interaction_event, InteractionEvent):
+        raise AssertionError(
+            f'`interaction` can be `{InteractionEvent.__name__}`, got '
+            f'{interaction_event.__class__.__name__}; {interaction_event!r}.'
+        )
+    
+    return True
+
+
+def _assert__application_id(application_id):
+    """
+    Asserts whether the client's application is synced by checking the `application_id`'s value.
+    
+    Parameters
+    ----------
+    application_id : `int`
+        Client's application's id.
+    
+    Raises
+    ------
+    AssertionError
+        - If the client's application is not yet synced..
+    """
+    if application_id == 0:
+        raise AssertionError(
+            'The client\'s application is not yet synced.'
+        )
+    
+    return True
+
+
+def _assert__form(form):
+    """
+    Asserts whether the form's type is correct.
+    
+    Parameters
+    ----------
+    form : ``InteractionForm``
+        Respective form.
+    
+    Raises
+    ------
+    AssertionError
+        - If `form` is not ``InteractionForm``.
+    """
+    if not isinstance(form, InteractionForm):
+        raise AssertionError(
+            f'`form` can be `{InteractionForm.__name__}`, got '
+            f'{form.__class__.__name__}; {form!r}.'
+        )
+    
+    return True
+
+
+def _assert__show_for_invoking_user_only(show_for_invoking_user_only):
+    """
+    Asserts whether the given `show_for_invoking_user_only`'s type is correct.
+    
+    Parameters
+    ----------
+    show_for_invoking_user_only : ``bool``
+        Whether the sent message should only be shown to the invoking user.
+    
+    Raises
+    ------
+    AssertionError
+        - If `show_for_invoking_user_only` is not ``bool``.
+    """
+    if not isinstance(show_for_invoking_user_only, bool):
+        raise AssertionError(
+            f'`show_for_invoking_user_only` can be `bool`, got '
+            f'{show_for_invoking_user_only.__class__.__name__}; {show_for_invoking_user_only!r}.'
+        )
+    
+    return True
+
+
+def _assert__suppress_embeds(suppress_embeds):
+    """
+    Asserts whether the given `suppress_embeds`'s type is correct.
+    
+    Parameters
+    ----------
+    suppress_embeds : ``bool``
+        Whether the message's embeds should be suppressed initially.
+    
+    Raises
+    ------
+    AssertionError
+        - If `suppress_embeds` is not ``bool``.
+    """
+    if not isinstance(suppress_embeds, bool):
+        raise AssertionError(
+            f'`suppress_embeds` can be `bool`, got '
+            f'{suppress_embeds.__class__.__name__}; {suppress_embeds!r}.'
+        )
+    
+    return True
+
+
+def _assert__tts(tts):
+    """
+    Asserts whether the given `tts`'s type is correct.
+    
+    Parameters
+    ----------
+    tts : ``bool``
+        Whether the message is text-to-speech.
+    
+    Raises
+    ------
+    AssertionError
+        - If `tts` is not ``bool``.
+    """
+    if not isinstance(tts, bool):
+        raise AssertionError(
+            f'`tts` can be `bool`, got '
+            f'{tts.__class__.__name__}; {tts!r}.'
+        )
+    
+    return True
+
+
 class ClientCompoundInteractionEndpoints(Compound):
     
     application : Application
@@ -30,7 +167,7 @@ class ClientCompoundInteractionEndpoints(Compound):
     
     
     async def interaction_application_command_acknowledge(
-        self, interaction, wait=True, *, show_for_invoking_user_only=False
+        self, interaction_event, wait = True, *, show_for_invoking_user_only = False
     ):
         """
         Acknowledges the given application command interaction.
@@ -39,7 +176,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         Parameters
         ----------
-        interaction : ``InteractionEvent``
+        interaction_event : ``InteractionEvent``
             Interaction to acknowledge
         wait : `bool` = `True`, Optional
             Whether the interaction should be ensured asynchronously.
@@ -52,8 +189,6 @@ class ClientCompoundInteractionEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If `interaction` was not given an ``InteractionEvent``.
         
         Notes
         -----
@@ -63,15 +198,10 @@ class ClientCompoundInteractionEndpoints(Compound):
         DiscordException Not Found (404), code=10062: Unknown interaction
         ```
         """
-        if __debug__:
-            if not isinstance(interaction, InteractionEvent):
-                raise AssertionError(
-                    f'`interaction` can be `{InteractionEvent.__name__}`, got '
-                    f'{interaction.__class__.__name__}; {interaction!r}.'
-                )
+        assert _assert__interaction_event_type(interaction_event)
         
         # Do not ack twice
-        if not interaction.is_unanswered():
+        if not interaction_event.is_unanswered():
             return
         
         data = {'type': InteractionResponseType.source.value}
@@ -79,8 +209,8 @@ class ClientCompoundInteractionEndpoints(Compound):
         if show_for_invoking_user_only:
             data['data'] = {'flags': MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY}
         
-        context = InteractionResponseContext(interaction, True, show_for_invoking_user_only)
-        coroutine = self.http.interaction_response_message_create(interaction.id, interaction.token, data)
+        context = InteractionResponseContext(interaction_event, True, show_for_invoking_user_only)
+        coroutine = self.http.interaction_response_message_create(interaction_event.id, interaction_event.token, data)
         
         if wait:
             async with context:
@@ -89,7 +219,7 @@ class ClientCompoundInteractionEndpoints(Compound):
             await context.ensure(coroutine)
     
     
-    async def interaction_application_command_autocomplete(self, interaction, choices):
+    async def interaction_application_command_autocomplete(self, interaction_event, choices):
         """
         Forwards auto completion choices for the user.
         
@@ -97,7 +227,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         Parameters
         ----------
-        interaction : ``InteractionEvent``
+        interaction_event : ``InteractionEvent``
             Interaction to acknowledge
         choices : `None`, `iterable` of `str`
             Choices to show for the user.
@@ -110,8 +240,6 @@ class ClientCompoundInteractionEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If `interaction` was not given an ``InteractionEvent``.
         
         Notes
         -----
@@ -121,15 +249,10 @@ class ClientCompoundInteractionEndpoints(Compound):
         DiscordException Not Found (404), code=10062: Unknown interaction
         ```
         """
-        if __debug__:
-            if not isinstance(interaction, InteractionEvent):
-                raise AssertionError(
-                    f'`interaction` can be `{InteractionEvent.__name__}`, got '
-                    f'{interaction.__class__.__name__}; {interaction!r}.'
-                )
+        assert _assert__interaction_event_type(interaction_event)
         
         # Do not auto complete twice
-        if not interaction.is_unanswered():
+        if not interaction_event.is_unanswered():
             return
         
         choices = application_command_autocomplete_choice_parser(choices)
@@ -141,11 +264,11 @@ class ClientCompoundInteractionEndpoints(Compound):
             },
         }
         
-        async with InteractionResponseContext(interaction, True, False):
-            await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
+        async with InteractionResponseContext(interaction_event, True, False):
+            await self.http.interaction_response_message_create(interaction_event.id, interaction_event.token, data)
     
     
-    async def interaction_form_send(self, interaction, form):
+    async def interaction_form_send(self, interaction_event, form):
         """
         Responds on an interaction with a form.
         
@@ -153,7 +276,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         Parameters
         ----------
-        interaction : ``InteractionEvent``
+        interaction_event : ``InteractionEvent``
             Interaction to respond to.
         form : ``InteractionForm``
             The to respond with.
@@ -166,9 +289,6 @@ class ClientCompoundInteractionEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `interaction` is not ``InteractionEvent``.
-            - If `form` is not is not ``InteractionForm``.
         
         Notes
         -----
@@ -180,18 +300,13 @@ class ClientCompoundInteractionEndpoints(Compound):
         DiscordException Not Found (404), code=10062: Unknown interaction
         ```
         """
-        if __debug__:
-            if not isinstance(interaction, InteractionEvent):
-                raise AssertionError(
-                    f'`interaction` can be `{InteractionEvent.__name__}`, got '
-                    f'{interaction.__class__.__name__}; {interaction!r}.'
-                )
+        assert _assert__interaction_event_type(interaction_event)
         
-        if not interaction.is_unanswered():
+        if not interaction_event.is_unanswered():
             warnings.warn(
                 (
                     f'`{self.__class__.__name__}.interaction_response_form` called on an interaction already '
-                    f'acknowledged / answered: {interaction!r}. Returning `None`.'
+                    f'acknowledged / answered: {interaction_event!r}. Returning `None`.'
                 ),
                 ResourceWarning,
                 stacklevel = 2,
@@ -199,19 +314,15 @@ class ClientCompoundInteractionEndpoints(Compound):
             
             return None
         
-        if __debug__:
-            if not isinstance(form, InteractionForm):
-                raise AssertionError(
-                    f'`form` can be `{InteractionForm.__name__}`, got '
-                    f'{form.__class__.__name__}; {form!r}.')
+        assert _assert__form(form)
         
         if (
-            (interaction.type is not InteractionType.application_command) and
-            (interaction.type is not InteractionType.message_component)
+            (interaction_event.type is not InteractionType.application_command) and
+            (interaction_event.type is not InteractionType.message_component)
         ):
             raise RuntimeError(
                 f'Only `application_command` and `message_component` interactions can be answered with '
-                f'form, got `{interaction.type.name}`; {interaction!r}; form={form!r}.'
+                f'form, got `{interaction_event.type.name}`; {interaction_event!r}; form={form!r}.'
             )
         
         # Build payload
@@ -220,15 +331,23 @@ class ClientCompoundInteractionEndpoints(Compound):
             'type': InteractionResponseType.form.value,
         }
         
-        async with InteractionResponseContext(interaction, False, True):
-            await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
+        async with InteractionResponseContext(interaction_event, False, True):
+            await self.http.interaction_response_message_create(interaction_event.id, interaction_event.token, data)
         
         return None
     
     
     async def interaction_response_message_create(
-        self, interaction, content=None, *, allowed_mentions=..., components=None, embed=None,
-        show_for_invoking_user_only=False, suppress_embeds=False, tts=False
+        self,
+        interaction_event,
+        content = None,
+        *,
+        allowed_mentions = ...,
+        components = None,
+        embed = None,
+        show_for_invoking_user_only = False,
+        suppress_embeds = False,
+        tts = False,
     ):
         """
         Sends an interaction response. After receiving an ``InteractionEvent``, you should acknowledge it within
@@ -243,7 +362,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         Parameters
         ----------
-        interaction : ``InteractionEvent``
+        interaction_event : ``InteractionEvent``
             Interaction to respond to.
         
         content : `None`, `str`, ``EmbedBase``, `Any` = `None`, Optional
@@ -290,13 +409,6 @@ class ClientCompoundInteractionEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `interaction` was not given an ``InteractionEvent``.
-            - If `tts` was not given as `bool`.
-            - If `show_for_invoking_user_only` was not given as `bool`.
-            - If `embed` contains a non ``EmbedBase`` element.
-            - If both `content` and `embed` fields are embeds.
-            - If `suppress_embeds` is not `bool`.
         
         Notes
         -----
@@ -308,34 +420,14 @@ class ClientCompoundInteractionEndpoints(Compound):
         DiscordException Not Found (404), code=10062: Unknown interaction
         ```
         """
-        if __debug__:
-            if not isinstance(interaction, InteractionEvent):
-                raise AssertionError(
-                    f'`interaction` can be `{InteractionEvent.__name__}`, got '
-                    f'{interaction.__class__.__name__}; {interaction!r}.'
-                )
-        
+        assert _assert__interaction_event_type(interaction_event)
         
         content, embed = validate_content_and_embed(content, embed, False)
-        
         components = get_components_data(components, False)
         
-        if __debug__:
-            if not isinstance(show_for_invoking_user_only, bool):
-                raise AssertionError(
-                    f'`show_for_invoking_user_only` can be `bool`, got '
-                    f'{show_for_invoking_user_only.__class__.__name__}; {show_for_invoking_user_only!r}.'
-                )
-            
-            if not isinstance(suppress_embeds, bool):
-                raise AssertionError(
-                    f'`suppress_embeds` can be `bool`, got {suppress_embeds.__class__.__name__}; {suppress_embeds!r}.'
-                )
-            
-            if not isinstance(tts, bool):
-                raise AssertionError(
-                    f'`tts` can be `bool`, got {tts.__class__.__name__}; {tts!r}.'
-                )
+        assert _assert__show_for_invoking_user_only(show_for_invoking_user_only)
+        assert _assert__suppress_embeds(suppress_embeds)
+        assert _assert__tts(tts)
         
         # Build payload
         
@@ -388,14 +480,14 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         data['type'] = response_type.value
         
-        async with InteractionResponseContext(interaction, is_deferring, show_for_invoking_user_only):
-            await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
+        async with InteractionResponseContext(interaction_event, is_deferring, show_for_invoking_user_only):
+            await self.http.interaction_response_message_create(interaction_event.id, interaction_event.token, data)
         
         # No message data is returned by Discord, return `None`.
         return None
     
     
-    async def interaction_component_acknowledge(self, interaction, wait=True):
+    async def interaction_component_acknowledge(self, interaction_event, wait = True):
         """
         Acknowledges the given component interaction.
         
@@ -403,7 +495,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         Parameters
         ----------
-        interaction : ``InteractionEvent``
+        interaction_event : ``InteractionEvent``
             Interaction to acknowledge
         wait : `bool` = `True`, Optional
             Whether the interaction should be ensured asynchronously.
@@ -414,8 +506,6 @@ class ClientCompoundInteractionEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If `interaction` was not given an ``InteractionEvent``.
         
         Notes
         -----
@@ -425,21 +515,16 @@ class ClientCompoundInteractionEndpoints(Compound):
         DiscordException Not Found (404), code=10062: Unknown interaction
         ```
         """
-        if __debug__:
-            if not isinstance(interaction, InteractionEvent):
-                raise AssertionError(
-                    f'`interaction` can be `{InteractionEvent.__name__}`, got '
-                    f'{interaction.__class__.__name__}; {interaction!r}.'
-                )
+        assert _assert__interaction_event_type(interaction_event)
         
         # Do not ack twice
-        if not interaction.is_unanswered():
+        if not interaction_event.is_unanswered():
             return
         
         data = {'type': InteractionResponseType.component.value}
         
-        context = InteractionResponseContext(interaction, True, False)
-        coroutine = self.http.interaction_response_message_create(interaction.id, interaction.token, data)
+        context = InteractionResponseContext(interaction_event, True, False)
+        coroutine = self.http.interaction_response_message_create(interaction_event.id, interaction_event.token, data)
         
         
         if wait:
@@ -450,7 +535,14 @@ class ClientCompoundInteractionEndpoints(Compound):
     
     
     async def interaction_response_message_edit(
-        self, interaction, content=..., *, embed=..., file=..., allowed_mentions=..., components=...
+        self,
+        interaction_event,
+        content = ...,
+        *,
+        embed = ...,
+        file = ...,
+        allowed_mentions = ...,
+        components = ...,
     ):
         """
         Edits the given `interaction`'s source response. If the source interaction event was only deferred, this call
@@ -460,7 +552,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         Parameters
         ----------
-        interaction : ``InteractionEvent``
+        interaction_event : ``InteractionEvent``
             Interaction, what's source response message will be edited.
         
         content : `None`, `str`, ``EmbedBase``, `Any`, Optional
@@ -499,11 +591,6 @@ class ClientCompoundInteractionEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `interaction` was not given as ``InteractionEvent``.
-            - If the client's application is not yet synced.
-            - If `embed` contains a non ``EmbedBase`` element.
-            - If both `content` and `embed` fields are embeds.
         
         Notes
         -----
@@ -513,15 +600,10 @@ class ClientCompoundInteractionEndpoints(Compound):
         DiscordException Not Found (404), code=10008: Unknown Message
         ```
         """
-        application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError('The client\'s application is not yet synced.')
+        assert _assert__interaction_event_type(interaction_event)
         
-        if __debug__:
-            if not isinstance(interaction, InteractionEvent):
-                raise AssertionError(f'`interaction` can be `{InteractionEvent.__name__}`, got '
-                    f'{interaction.__class__.__name__}; {interaction!r}.')
+        application_id = self.application.id
+        assert _assert__application_id(application_id)
         
         content, embed = validate_content_and_embed(content, embed, True)
         
@@ -548,14 +630,20 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         message_data = add_file_to_message_data(message_data, file, True, True)
         
-        async with InteractionResponseContext(interaction, False, False):
+        async with InteractionResponseContext(interaction_event, False, False):
             await self.http.interaction_response_message_edit(
-                application_id, interaction.id, interaction.token, message_data
+                application_id, interaction_event.id, interaction_event.token, message_data
             )
     
     
     async def interaction_component_message_edit(
-        self, interaction, content=..., *, embed=..., allowed_mentions=..., components=...
+        self,
+        interaction_event,
+        content = ...,
+        *,
+        embed = ...,
+        allowed_mentions = ...,
+        components = ...,
     ):
         """
         Edits the given component interaction's source message.
@@ -564,7 +652,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         Parameters
         ----------
-        interaction : ``InteractionEvent``
+        interaction_event : ``InteractionEvent``
             Interaction, what's source response message will be edited.
         
         content : `None`, `str`, ``EmbedBase``, `Any`, Optional
@@ -594,18 +682,8 @@ class ClientCompoundInteractionEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `interaction` was not given as ``InteractionEvent``.
-            - If the client's application is not yet synced.
-            - If `embed` contains a non ``EmbedBase`` element.
-            - If both `content` and `embed` fields are embeds.
         """
-        if __debug__:
-            if not isinstance(interaction, InteractionEvent):
-                raise AssertionError(
-                    f'`interaction` can be `{InteractionEvent.__name__}`, got '
-                    f'{interaction.__class__.__name__}; {interaction!r}.'
-                )
+        assert _assert__interaction_event_type(interaction_event)
         
         content, embed = validate_content_and_embed(content, embed, True)
         
@@ -635,11 +713,11 @@ class ClientCompoundInteractionEndpoints(Compound):
         }
         
         
-        async with InteractionResponseContext(interaction, False, False):
-            await self.http.interaction_response_message_create(interaction.id, interaction.token, data)
+        async with InteractionResponseContext(interaction_event, False, False):
+            await self.http.interaction_response_message_create(interaction_event.id, interaction_event.token, data)
     
     
-    async def interaction_response_message_delete(self, interaction):
+    async def interaction_response_message_delete(self, interaction_event):
         """
         Deletes the given `interaction`'s source response message.
         
@@ -647,7 +725,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         Parameters
         ----------
-        interaction : ``InteractionEvent``
+        interaction_event : ``InteractionEvent``
             Interaction, what's source response message will be deleted.
         
         Raises
@@ -656,28 +734,16 @@ class ClientCompoundInteractionEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `interaction` was not given as ``InteractionEvent``.
-            - If the client's application is not yet synced.
         """
+        assert _assert__interaction_event_type(interaction_event)
+        
         application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError(
-                    'The client\'s application is not yet synced.'
-                )
+        assert _assert__application_id(application_id)
         
-        if __debug__:
-            if not isinstance(interaction, InteractionEvent):
-                raise AssertionError(
-                    f'`interaction` can be `{InteractionEvent.__name__}`, got '
-                    f'{interaction.__class__.__name__}; {interaction!r}.'
-                )
-        
-        await self.http.interaction_response_message_delete(application_id, interaction.id, interaction.token)
+        await self.http.interaction_response_message_delete(application_id, interaction_event.id, interaction_event.token)
     
     
-    async def interaction_response_message_get(self, interaction):
+    async def interaction_response_message_get(self, interaction_event):
         """
         Gets the given `interaction`'s source response message.
         
@@ -685,7 +751,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         Parameters
         ----------
-        interaction : ``InteractionEvent``
+        interaction_event : ``InteractionEvent``
             Interaction, what's source response message will be deleted.
         
         Returns
@@ -699,33 +765,32 @@ class ClientCompoundInteractionEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `interaction` was not given as ``InteractionEvent``.
-            - If the client's application is not yet synced.
         """
+        assert _assert__interaction_event_type(interaction_event)
+        
         application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError(
-                    'The client\'s application is not yet synced.'
-                )
+        assert _assert__application_id(application_id)
         
-        if __debug__:
-            if not isinstance(interaction, InteractionEvent):
-                raise AssertionError(
-                    f'`interaction` can be `{InteractionEvent.__name__}`, got '
-                    f'{interaction.__class__.__name__}; {interaction!r}.'
-                )
         
-        message_data = await self.http.interaction_response_message_get(application_id, interaction.id,
-            interaction.token)
+        message_data = await self.http.interaction_response_message_get(
+            application_id, interaction_event.id, interaction_event.token
+        )
         
         return Message(message_data)
     
     
     async def interaction_followup_message_create(
-        self, interaction, content=None, *, allowed_mentions=..., components=None,  embed=None, file=None,
-        show_for_invoking_user_only=False, suppress_embeds=False, tts=False
+        self,
+        interaction_event,
+        content = None,
+        *,
+        allowed_mentions = ...,
+        components = None,
+        embed = None,
+        file = None,
+        show_for_invoking_user_only = False,
+        suppress_embeds = False,
+        tts = False,
     ):
         """
         Sends a followup message with the given interaction.
@@ -734,7 +799,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         Parameters
         ----------
-        interaction : ``InteractionEvent``
+        interaction_event : ``InteractionEvent``
             Interaction to create followup message with.
         
         content : `None`, `str`, ``EmbedBase``, `Any` = `True`, Optional
@@ -795,50 +860,18 @@ class ClientCompoundInteractionEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `interaction` was not given as ``InteractionEvent``.
-            - If the client's application is not yet synced.
-            - If `tts` was not given as `bool`.
-            - If `show_for_invoking_user_only` was not given as `bool`.
-            - If `embed` contains a non ``EmbedBase`` element.
-            - If both `content` and `embed` fields are embeds.
-            - If `suppress_embeds` is not `bool`.
         """
-        if __debug__:
-            if not isinstance(interaction, InteractionEvent):
-                raise AssertionError(
-                    f'`interaction` can be `{InteractionEvent.__name__}`, got '
-                    f'{interaction.__class__.__name__}; {interaction!r}.'
-                )
-        
+        assert _assert__interaction_event_type(interaction_event)
         
         application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError(
-                    'The client\'s application is not yet synced.'
-                )
+        assert _assert__application_id(application_id)
         
         content, embed = validate_content_and_embed(content, embed, False)
-        
         components = get_components_data(components, False)
         
-        if __debug__:
-            if not isinstance(show_for_invoking_user_only, bool):
-                raise AssertionError(
-                    f'`show_for_invoking_user_only` can be `bool`, got '
-                    f'{show_for_invoking_user_only.__class__.__name__}; {show_for_invoking_user_only!r}.'
-                )
-            
-            if not isinstance(suppress_embeds, bool):
-                raise AssertionError(
-                    f'`suppress_embeds` can be `bool`, got {suppress_embeds.__class__.__name__}; {suppress_embeds!r}.'
-                )
-            
-            if not isinstance(tts, bool):
-                raise AssertionError(
-                    f'`tts` can be `bool`, got {tts.__class__.__name__}; {tts!r}.'
-                )
+        assert _assert__show_for_invoking_user_only(show_for_invoking_user_only)
+        assert _assert__suppress_embeds(suppress_embeds)
+        assert _assert__tts(tts)
         
         # Build payload
         
@@ -878,17 +911,25 @@ class ClientCompoundInteractionEndpoints(Compound):
         if message_data is None:
             return
         
-        async with InteractionResponseContext(interaction, False, show_for_invoking_user_only):
-            message_data = await self.http.interaction_followup_message_create(application_id, interaction.id,
-                interaction.token, message_data)
+        async with InteractionResponseContext(interaction_event, False, show_for_invoking_user_only):
+            message_data = await self.http.interaction_followup_message_create(application_id, interaction_event.id,
+                interaction_event.token, message_data)
         
-        message = interaction.channel._create_new_message(message_data)
-        try_resolve_interaction_message(message, interaction)
+        message = interaction_event.channel._create_new_message(message_data)
+        try_resolve_interaction_message(message, interaction_event)
         return message
     
     
     async def interaction_followup_message_edit(
-        self, interaction, message, content=..., *, embed=..., file=..., allowed_mentions=..., components=...
+        self,
+        interaction_event,
+        message,
+        content = ...,
+        *,
+        embed = ...,
+        file = ...,
+        allowed_mentions = ...,
+        components = ...,
     ):
         """
         Edits the given interaction followup message.
@@ -897,7 +938,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         Parameters
         ----------
-        interaction : ``InteractionEvent``
+        interaction_event : ``InteractionEvent``
             Interaction with what the followup message was sent with.
         
         message : ``Message``, `int`
@@ -945,11 +986,6 @@ class ClientCompoundInteractionEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `interaction` was not given as ``InteractionEvent``.
-            - If the client's application is not yet synced.
-            - If `embed` contains a non ``EmbedBase`` element.
-            - If both `content` and `embed` fields are embeds.
         
         Notes
         -----
@@ -959,19 +995,10 @@ class ClientCompoundInteractionEndpoints(Compound):
         DiscordException Not Found (404), code=10008: Unknown Message
         ```
         """
-        application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError(
-                    'The client\'s application is not yet synced.'
-                )
+        assert _assert__interaction_event_type(interaction_event)
         
-        if __debug__:
-            if not isinstance(interaction, InteractionEvent):
-                raise AssertionError(
-                    f'`interaction` can be `{InteractionEvent.__name__}`, got '
-                    f'{interaction.__class__.__name__}; {interaction!r}.'
-                )
+        application_id = self.application.id
+        assert _assert__application_id(application_id)
         
         # Detect message id
         # 1.: Message
@@ -1013,15 +1040,15 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         message_data = add_file_to_message_data(message_data, file, True, True)
         
-        async with InteractionResponseContext(interaction, False, False):
+        async with InteractionResponseContext(interaction_event, False, False):
             # We receive the new message data, but we do not update the message, so dispatch events can get the
             # difference.
             await self.http.interaction_followup_message_edit(
-                application_id, interaction.id, interaction.token, message_id, message_data
+                application_id, interaction_event.id, interaction_event.token, message_id, message_data
             )
     
     
-    async def interaction_followup_message_delete(self, interaction, message):
+    async def interaction_followup_message_delete(self, interaction_event, message):
         """
         Deletes an interaction's followup message.
         
@@ -1029,7 +1056,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         Parameters
         ----------
-        interaction : ``InteractionEvent``
+        interaction_event : ``InteractionEvent``
             Interaction with what the followup message was sent with.
         message : ``Message``, `int`
             The interaction followup's message to edit.
@@ -1042,23 +1069,11 @@ class ClientCompoundInteractionEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `interaction` was not given as ``InteractionEvent``.
-            - If the client's application is not yet synced.
         """
-        application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError(
-                    'The client\'s application is not yet synced.'
-                )
+        assert _assert__interaction_event_type(interaction_event)
         
-        if __debug__:
-            if not isinstance(interaction, InteractionEvent):
-                raise AssertionError(
-                    f'`interaction` can be `{InteractionEvent.__name__}`, got '
-                    f'{interaction.__class__.__name__}; {interaction!r}.'
-                )
+        application_id = self.application.id
+        assert _assert__application_id(application_id)
         
         # Detect message id
         # 1.: Message
@@ -1075,11 +1090,11 @@ class ClientCompoundInteractionEndpoints(Compound):
                 )
         
         await self.http.interaction_followup_message_delete(
-            application_id, interaction.id, interaction.token, message_id
+            application_id, interaction_event.id, interaction_event.token, message_id
         )
     
     
-    async def interaction_followup_message_get(self, interaction, message_id):
+    async def interaction_followup_message_get(self, interaction_event, message_id):
         """
         Gets a previously sent message with an interaction.
         
@@ -1087,7 +1102,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         
         Parameters
         ----------
-        interaction : ``InteractionEvent``
+        interaction_event : ``InteractionEvent``
             Interaction with what the followup message was sent with.
         message_id : `int`
             The webhook's message's identifier to get.
@@ -1104,23 +1119,12 @@ class ClientCompoundInteractionEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `interaction` was not given as ``InteractionEvent``.
-            - If the client's application is not yet synced.
         """
-        application_id = self.application.id
-        if __debug__:
-            if application_id == 0:
-                raise AssertionError(
-                    'The client\'s application is not yet synced.'
-                )
+        assert _assert__interaction_event_type(interaction_event)
         
-        if __debug__:
-            if not isinstance(interaction, InteractionEvent):
-                raise AssertionError(
-                    f'`interaction` can be `{InteractionEvent.__name__}`, got '
-                    f'{interaction.__class__.__name__}; {interaction!r}.'
-                )
+        application_id = self.application.id
+        assert _assert__application_id(application_id)
+        
         
         message_id_value = maybe_snowflake(message_id)
         if message_id_value is None:
@@ -1129,7 +1133,7 @@ class ClientCompoundInteractionEndpoints(Compound):
             )
         
         message_data = await self.http.interaction_followup_message_get(
-            application_id, interaction.id, interaction.token, message_id
+            application_id, interaction_event.id, interaction_event.token, message_id
         )
         
         return Message(message_data)

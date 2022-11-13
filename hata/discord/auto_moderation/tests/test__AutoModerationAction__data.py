@@ -68,7 +68,7 @@ def test__AutoModerationAction__to_data__send_alert_message():
     """
     Tests whether the auto moderation action's `to_data` method works.
     """
-    action = AutoModerationAction(channel=0)
+    action = AutoModerationAction(channel = 0)
     
     vampytest.assert_eq(
         action.to_data(),

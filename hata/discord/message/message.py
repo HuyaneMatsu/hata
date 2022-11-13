@@ -1181,7 +1181,7 @@ class Message(DiscordEntity, immortal=True):
                     cross_mentions_processed.append(channel_)
                 
                 if cross_mentions_processed:
-                    cross_mentions_processed.sort(key=id_sort_key)
+                    cross_mentions_processed.sort(key = id_sort_key)
                     cross_mentions = tuple(cross_mentions_processed)
                 else:
                     cross_mentions = None
@@ -1527,7 +1527,7 @@ class Message(DiscordEntity, immortal=True):
                                 f'{user.__class__.__name__}; {user!r}.'
                             )
                     
-                    user_mentions = tuple(sorted(user_mentions, key=id_sort_key))
+                    user_mentions = tuple(sorted(user_mentions, key = id_sort_key))
                     
                 else:
                     user_mentions = None
@@ -1676,7 +1676,7 @@ class Message(DiscordEntity, immortal=True):
         --------
         ```py
         >>>> from hata import Message, Channel, now_as_id
-        >>>> message = Message.custom(content='Fluffy nekos', channel=Channel.precreate(now_as_id()))
+        >>>> message = Message.custom(content = 'Fluffy nekos', channel = Channel.precreate(now_as_id()))
         >>>> message
         <Message id=0, ln=12, author=#0000>
         >>>> # No code stands for str(message), what is same as repr(message) for the time being.
@@ -2777,7 +2777,7 @@ class Message(DiscordEntity, immortal=True):
                         
                         if variable_values_processed:
                             if is_sorted:
-                                variable_values_processed.sort(key=id_sort_key)
+                                variable_values_processed.sort(key = id_sort_key)
                             
                             variable_values_processed = tuple(variable_values_processed)
                             processable_by_field.append((variable_field_key, variable_values_processed))
@@ -3452,7 +3452,7 @@ class Message(DiscordEntity, immortal=True):
                     channel_mentions.append(channel)
             
             if channel_mentions:
-                channel_mentions.sort(key=id_sort_key)
+                channel_mentions.sort(key = id_sort_key)
                 channel_mentions = tuple(channel_mentions)
             else:
                 channel_mentions = None

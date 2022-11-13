@@ -201,7 +201,7 @@ class CommandProcessor(EventWaitforBase):
     __event_name__ = 'message_create'
     SUPPORTED_TYPES = (Command, )
     
-    def __new__(cls, prefix, *, precheck=None, mention_prefix_enabled=True, category_name_rule=None,
+    def __new__(cls, prefix, *, precheck = None, mention_prefix_enabled=True, category_name_rule=None,
             command_name_rule=None, default_category_name=None, prefix_ignore_case=True):
         """
         Creates a new command processor instance.
@@ -441,7 +441,7 @@ class CommandProcessor(EventWaitforBase):
         return error_handler
     
     
-    def update_prefix(self, *, prefix=None, prefix_ignore_case=None):
+    def update_prefix(self, *, prefix = None, prefix_ignore_case=None):
         """
         Updates the prefix of he
         
@@ -558,7 +558,7 @@ class CommandProcessor(EventWaitforBase):
         return self._default_category
     
     
-    def create_category(self, category_name, *, checks=None, description=None):
+    def create_category(self, category_name, *, checks=None, description = None):
         """
         Creates a category with the given parameters.
         
@@ -589,7 +589,7 @@ class CommandProcessor(EventWaitforBase):
                 f'There is already a category added with that name: {category_name!r}'
             )
         
-        category = Category(category_name, checks=checks, description=description)
+        category = Category(category_name, checks=checks, description = description)
         category.set_command_processor(self)
         
         return category
@@ -886,7 +886,7 @@ class CommandProcessor(EventWaitforBase):
         self._precheck = precheck_to_set
         return precheck
     
-    def create_event(self, command, name=None, description=None, aliases=None, category=None, checks=None,
+    def create_event(self, command, name=None, description = None, aliases=None, category=None, checks=None,
             error_handlers=None, separator=None, assigner=None, hidden=None, hidden_if_checks_fail=None):
         """
         Adds a command to the command processor.

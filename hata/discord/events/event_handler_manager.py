@@ -574,7 +574,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     guild_create(client: ``Client``, guild: ``Guild``):
         Called when a client joins or creates a guild.
     
-    guild_delete(client: ``Client``, guild: ``Guild``, profile: {`None`, ``GuildProfile``}):
+    guild_delete(client: ``Client``, guild: ``Guild``, guild_profile: {`None`, ``GuildProfile``}):
         Called when the guild is deleted or just the client left (kicked or banned as well) from it. The `profile`
         parameter is the client's respective guild profile for the guild.
     

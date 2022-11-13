@@ -217,7 +217,7 @@ class UserGuildPermission:
     
     def __repr__(self):
         """Returns the user guild permission's representation."""
-        return f'<{self.__class__.__name__}  owner={self.owner}, permissions={int.__repr__(self.permission)}>'
+        return f'<{self.__class__.__name__}  owner = {self.owner}, permissions = {int.__repr__(self.permission)}>'
     
     
     def __len__(self):
@@ -252,7 +252,7 @@ class Typer:
     """
     __slots__ = ('channel_id', 'client', 'timeout', 'waiter',)
     
-    def __init__(self, client, channel_id, timeout=300.0):
+    def __init__(self, client, channel_id, timeout = 300.0):
         """
         Parameters
         ----------

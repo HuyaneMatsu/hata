@@ -7,11 +7,11 @@ from utils import get_player
 
 Sakuya: Client
 
-@Sakuya.interactions(guild=TEST_GUILD)
+@Sakuya.interactions(guild = TEST_GUILD)
 async def volume_(
     client,
     event,
-    volume: P('number', 'Volume percentage', min_value=0, max_value=200),
+    volume: P('number', 'Volume percentage', min_value = 0, max_value = 200),
 ):
     """Sets the player's volume."""
     player = get_player(client, event)

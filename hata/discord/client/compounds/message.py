@@ -267,7 +267,7 @@ class ClientCompoundMessageEndpoints(Compound):
     
     
     async def message_create(
-        self, channel, content=None, *, allowed_mentions=...,  components=None, embed=None, file=None, nonce=None,
+        self, channel, content=None, *, allowed_mentions = ...,  components = None, embed = None, file=None, nonce=None,
         reply_fail_fallback=False,  sticker=None, suppress_embeds=False, tts=False
     ):
         """
@@ -515,7 +515,7 @@ class ClientCompoundMessageEndpoints(Compound):
     
 
     async def message_edit(
-        self, message, content=..., *, embed=..., file=..., allowed_mentions=..., components=..., suppress=...,
+        self, message, content=..., *, embed = ..., file=..., allowed_mentions = ..., components = ..., suppress=...,
         suppress_embeds=...
     ):
         """
@@ -652,7 +652,7 @@ class ClientCompoundMessageEndpoints(Compound):
         await self.http.message_edit(channel_id, message_id, message_data)
     
     
-    async def message_delete(self, message, *, reason=None):
+    async def message_delete(self, message, *, reason = None):
         """
         Deletes the given message.
         
@@ -702,7 +702,7 @@ class ClientCompoundMessageEndpoints(Compound):
             message.deleted = True
     
     
-    async def message_delete_multiple(self, messages, *, reason=None):
+    async def message_delete_multiple(self, messages, *, reason = None):
         """
         Deletes the given messages. The messages can be from different channels as well.
         
@@ -826,7 +826,7 @@ class ClientCompoundMessageEndpoints(Compound):
             raise last_exception
     
         
-    async def message_delete_sequence(self, channel, *, after=None, before=None, limit=None, filter=None, reason=None):
+    async def message_delete_sequence(self, channel, *, after=None, before=None, limit=None, filter=None, reason = None):
         """
         Deletes messages between an interval determined by `before` and `after`. They can be `int`, or as
         a ``DiscordEntity`` or as a `datetime` object.
@@ -1169,7 +1169,7 @@ class ClientCompoundMessageEndpoints(Compound):
     
     
     async def multi_client_message_delete_sequence(
-        self, channel, *, after=None, before=None, limit=None, filter=None, reason=None
+        self, channel, *, after=None, before=None, limit=None, filter=None, reason = None
     ):
         """
         Deletes messages between an interval determined by `before` and `after`. They can be `int`, or as
@@ -1372,7 +1372,7 @@ class ClientCompoundMessageEndpoints(Compound):
                                     # We collected 1 message -> We cannot use mass delete on this.
                                     who_s, message_id = message_group_new.popleft()
                                     delete_new_task = Task(sub_sharder.client.http.message_delete(channel_id,
-                                        message_id, reason=reason), KOKORO)
+                                        message_id, reason = reason), KOKORO)
                                     sub_sharder.delete_new_task = delete_new_task
                                     tasks.append(delete_new_task)
                                     break

@@ -77,7 +77,7 @@ class CommandBase(RichAttributeErrorBaseType):
         )
 
 
-    def __new__(cls, func, name=None, **keyword_parameters):
+    def __new__(cls, func, name = None, **keyword_parameters):
         """
         Creates a new custom_id based command instance.
         
@@ -132,6 +132,20 @@ class CommandBase(RichAttributeErrorBaseType):
             pass
         
         return ''.join(repr_parts)
+    
+    
+    def __format__(self, code):
+        """Formats the command in a format string."""
+        if not code:
+            return str(self)
+        
+        if code == 'm':
+            return self.mention
+        
+        raise ValueError(
+            f'Unknown format code {code!r} for {self.__class__.__name__}; {self!r}. '
+            f'Available format codes: {""!r}, {"m"!r}.'
+        )
     
     
     async def invoke(self, client, interaction_event):
@@ -237,7 +251,7 @@ class CommandBase(RichAttributeErrorBaseType):
         return new
     
     
-    def error(self, exception_handler=None, *, first=False):
+    def error(self, exception_handler = None, *, first = False):
         """
         Registers an exception handler to the command.
         
@@ -286,3 +300,35 @@ class CommandBase(RichAttributeErrorBaseType):
             exception_handlers.append(exception_handler)
         
         return exception_handler
+    
+    # ---- Mention ----
+    
+    @property
+    def mention(self):
+        """
+        Returns the command mention.
+        Applicable for slash and context commands.
+        
+        Returns
+        -------
+        mention : `str`
+        """
+        return ''
+    
+    
+    def mention_at(self, guild):
+        """
+        Mentions the command at the specified guild.
+        Should be used when the command is added to multiple guilds.
+        Applicable for slash and context commands.
+        
+        Parameters
+        ----------
+        guild : ``Guild``, `int`
+            The guild to get the command's mention.
+        
+        Returns
+        -------
+        mention : `str`
+        """
+        return ''

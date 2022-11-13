@@ -119,7 +119,7 @@ class ClientCompoundClientEndpoints(Compound):
     
     
     async def edit(
-        self, *, avatar=..., banner=..., banner_color=..., bio=..., name=..., # Generic
+        self, *, avatar=..., banner=..., banner_color = ..., bio=..., name=..., # Generic
         password=..., new_password=..., email=..., # User account only
     ):
         """
@@ -333,7 +333,7 @@ class ClientCompoundClientEndpoints(Compound):
     
     
     async def guild_profile_edit(
-        self, guild, *, nick=..., avatar=..., timeout_duration = ..., timed_out_until=..., reason=None
+        self, guild, *, nick=..., avatar=..., timeout_duration = ..., timed_out_until=..., reason = None
     ):
         """
         Edits the client guild profile in the given guild. Nick and guild specific avatars can be edited on this way.

@@ -1065,13 +1065,13 @@ def application_command_autocomplete_choice_parser(choices):
         for choice in choices:
             choices_processed.append(application_command_autocomplete_choice_validator(choice))
         
-        choices_processed.sort(key=application_command_autocomplete_choice_sort_key)
+        choices_processed.sort(key = application_command_autocomplete_choice_sort_key)
     
     elif isinstance(choices, dict):
         for choice_item in choices.items():
             choices_processed.append(application_command_autocomplete_choice_validator_tuple_item(choice_item))
         
-        choices_processed.sort(key=application_command_autocomplete_choice_sort_key)
+        choices_processed.sort(key = application_command_autocomplete_choice_sort_key)
     
     elif hasattr(type(choices), '__iter__'):
         for choice in choices:

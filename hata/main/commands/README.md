@@ -60,7 +60,7 @@ def vani():
     return 'Vani.'
 
 
-@register(description='Did you see choco?')
+@register(description = 'Did you see choco?')
 def vani():
     return 'Vani.'
 ```
@@ -69,7 +69,7 @@ By default the command's name is the normalized name of the function, but with a
 overwritten too.
 
 ```py3
-@register(name='vani')
+@register(name = 'vani')
 def vanilla():
     return 'Vani.'
 ```
@@ -77,7 +77,7 @@ def vanilla():
 A command can have alternative names. These can be defined using the `alters` keyword parameter.
 
 ```py3
-@register(alters=['vanilla'])
+@register(alters = ['vanilla'])
 def vani():
     return 'Vani.'
 ```
@@ -122,7 +122,7 @@ Sub-commands might be registered with the `into` keyword passed in `@register`.
 def main():
     return 'I am main'
 
-@register(into=main)
+@register(into = main)
 def sub():
     return 'i am sub'
 ```
@@ -130,7 +130,7 @@ def sub():
 Empty command groups can be registered by passing `None` as command function.
 
 ```py3
-main = register(None, name='main')
+main = register(None, name = 'main')
 
 @register(into=main)
 def sub():

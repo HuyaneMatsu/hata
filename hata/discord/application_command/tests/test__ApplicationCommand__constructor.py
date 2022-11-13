@@ -32,7 +32,7 @@ def test__ApplicationCommand__new__0():
 
         )
     ]
-    required_permissions = Permission().update_by_keys(administrator=True)
+    required_permissions = Permission().update_by_keys(administrator = True)
     target_type = ApplicationCommandTargetType.chat
     
     application_command = ApplicationCommand(

@@ -64,7 +64,7 @@ class EmbeddedActivityConfiguration(RichAttributeErrorBaseType):
             else:
                 field_added = True
             
-            repr_parts.append(' premium_tier_treatment_default=')
+            repr_parts.append(' premium_tier_treatment_default = ')
             repr_parts.append(repr(premium_tier_treatment_default))
         
         
@@ -75,7 +75,7 @@ class EmbeddedActivityConfiguration(RichAttributeErrorBaseType):
             else:
                 field_added = True
             
-            repr_parts.append(' premium_tier_treatment_map=')
+            repr_parts.append(' premium_tier_treatment_map = ')
             repr_parts.append(repr(premium_tier_treatment_map))
             
         
@@ -86,7 +86,7 @@ class EmbeddedActivityConfiguration(RichAttributeErrorBaseType):
             else:
                 field_added = True
             
-            repr_parts.append(' required_premium_tier=')
+            repr_parts.append(' required_premium_tier = ')
             repr_parts.append(repr(required_premium_tier))
         
         repr_parts.append('>')

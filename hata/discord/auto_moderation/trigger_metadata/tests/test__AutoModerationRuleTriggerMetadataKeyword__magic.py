@@ -1,52 +1,66 @@
 import vampytest
 
-from hata.discord.auto_moderation import AutoModerationRuleTriggerMetadataKeyword
+from ..keyword import AutoModerationRuleTriggerMetadataKeyword
 
 
-def test__AutoModerationRuleTriggerMetadataKeyword__eq__0():
+def test__AutoModerationRuleTriggerMetadataKeyword__eq():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.__eq__`` method works as expected.
+    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.__eq__`` works as intended.
     """
-    vampytest.assert_eq(
-        AutoModerationRuleTriggerMetadataKeyword(None),
-        AutoModerationRuleTriggerMetadataKeyword(None),
-    )
-
-
-def test__AutoModerationRuleTriggerMetadataKeyword__eq__1():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.__eq__`` method refuses incorrect types.
-    """
-    vampytest.assert_not_eq(
-        AutoModerationRuleTriggerMetadataKeyword(None),
-        0,
-    )
-
-
-def test__AutoModerationRuleTriggerMetadataKeyword__not_eq__0():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.__eq__`` method works as expected when passing
-    objects with different values.
-    """
-    vampytest.assert_not_eq(
-        AutoModerationRuleTriggerMetadataKeyword(None),
-        AutoModerationRuleTriggerMetadataKeyword('owo'),
-    )
-
+    excluded_keywords = ['find', 'way',  'your']
+    keywords = ['Howling', 'Moon']
+    regex_patterns = ['apple', 'peach']
+    
+    keyword_parameters = {
+        'excluded_keywords': excluded_keywords,
+        'keywords': keywords,
+        'regex_patterns': regex_patterns,
+    }
+    
+    metadata = AutoModerationRuleTriggerMetadataKeyword(**keyword_parameters)
+    
+    vampytest.assert_eq(metadata, metadata)
+    vampytest.assert_ne(metadata, object())
+    
+    
+    for field_name, field_value in (
+        ('excluded_keywords', None),
+        ('keywords', None),
+        ('regex_patterns', None),
+    ):
+        test_metadata = AutoModerationRuleTriggerMetadataKeyword(**{**keyword_parameters, field_name: field_value})
+        vampytest.assert_ne(metadata, test_metadata)
+        
 
 def test__AutoModerationRuleTriggerMetadataKeyword__hash():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.__hash__`` method works as intended
+    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.__hash__`` works as intended.
     """
-    metadata = AutoModerationRuleTriggerMetadataKeyword(None)
+    excluded_keywords = ['find', 'way',  'your']
+    keywords = ['Howling', 'Moon']
+    regex_patterns = ['apple', 'peach']
+    
+    metadata = AutoModerationRuleTriggerMetadataKeyword(
+        keywords,
+        regex_patterns,
+        excluded_keywords = excluded_keywords,
+    )
     
     vampytest.assert_instance(hash(metadata), int)
 
 
 def test__AutoModerationRuleTriggerMetadataKeyword__repr():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.__repr__`` method works as intended
+    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.__repr__`` works as intended.
     """
-    metadata = AutoModerationRuleTriggerMetadataKeyword(None)
+    excluded_keywords = ['find', 'way',  'your']
+    keywords = ['Howling', 'Moon']
+    regex_patterns = ['apple', 'peach']
+    
+    metadata = AutoModerationRuleTriggerMetadataKeyword(
+        keywords,
+        regex_patterns,
+        excluded_keywords = excluded_keywords,
+    )
     
     vampytest.assert_instance(repr(metadata), str)

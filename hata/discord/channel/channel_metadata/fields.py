@@ -242,6 +242,7 @@ parse_bitrate = int_parser_factory('bitrate', BITRATE_DEFAULT)
 put_bitrate_into = int_putter_factory('bitrate')
 validate_bitrate = int_conditional_validator_factory(
     'bitrate',
+    BITRATE_MIN,
     (lambda bitrate: bitrate >= BITRATE_MIN and bitrate <= BITRATE_MAX),
     f'>= {BITRATE_MIN} and <= {BITRATE_MAX},'
 )
@@ -397,6 +398,7 @@ put_default_thread_slowmode_into = nullable_int_optional_putter_factory(
 )
 validate_default_thread_slowmode = int_conditional_validator_factory(
     'default_thread_slowmode',
+    SLOWMODE_MIN,
     (
         lambda default_thread_slowmode:
         default_thread_slowmode >= SLOWMODE_MIN and default_thread_slowmode <= SLOWMODE_MAX
@@ -687,6 +689,7 @@ parse_position = int_parser_factory('position', 0)
 put_position_into = int_putter_factory('position')
 validate_position = int_conditional_validator_factory(
     'position',
+    0,
     lambda position : position >= 0,
     '>= 0',
 )
@@ -706,6 +709,7 @@ put_slowmode_into = nullable_int_optional_putter_factory(
 )
 validate_slowmode = int_conditional_validator_factory(
     'slowmode',
+    SLOWMODE_MIN,
     (
         lambda slowmode:
         slowmode >= SLOWMODE_MIN and slowmode <= SLOWMODE_MAX
@@ -725,6 +729,7 @@ parse_user_limit = int_parser_factory('user_limit', USER_LIMIT_DEFAULT)
 put_user_limit_into = int_putter_factory('user_limit')
 validate_user_limit = int_conditional_validator_factory(
     'user_limit',
+    USER_LIMIT_MIN,
     (lambda user_limit: user_limit >= USER_LIMIT_MIN and user_limit <= USER_LIMIT_MAX),
     f'>= {USER_LIMIT_MIN} and <= {USER_LIMIT_MAX},'
 )

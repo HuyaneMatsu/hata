@@ -33,7 +33,7 @@ def parse_components(data):
 
 def put_components_into(components, data, defaults):
     """
-    Puts the given components to teh given `data`.
+    Puts the given components to the given `data`.
     
     Parameters
     ----------

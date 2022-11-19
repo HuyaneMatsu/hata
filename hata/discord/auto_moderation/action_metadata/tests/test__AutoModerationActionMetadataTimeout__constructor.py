@@ -1,44 +1,40 @@
 import vampytest
 
-from ....channel import Channel
+from ..timeout import AutoModerationActionMetadataTimeout
 
-from .. import AutoModerationActionMetadataTimeout
+
+def _check_is_all_attribute_set(metadata):
+    """
+    Asserts whether all attributes are set of the given auto moderation action metadata.
+    
+    Parameters
+    ----------
+    metadata : ``AutoModerationActionMetadataTimeout``
+        The action metadata to test.
+    """
+    vampytest.assert_instance(metadata, AutoModerationActionMetadataTimeout)
+    vampytest.assert_instance(metadata.duration, int)
 
 
 def test__AutoModerationActionMetadataTimeout__new__0():
     """
-    Tests whether ``AutoModerationActionMetadataTimeout``'s constructor returns as expected.
-    """
-    metadata = AutoModerationActionMetadataTimeout(0)
+    Tests whether ``AutoModerationActionMetadataTimeout.__new__`` works as intended.
     
-    vampytest.assert_instance(metadata, AutoModerationActionMetadataTimeout)
+    Case: no parameters.
+    """
+    metadata = AutoModerationActionMetadataTimeout()
+    _check_is_all_attribute_set(metadata)
 
 
 def test__AutoModerationActionMetadataTimeout__new__1():
     """
-    Tests whether ``AutoModerationActionMetadataTimeout``'s constructor works as expected.
-    Passing parameter as `None`
-    """
-    metadata = AutoModerationActionMetadataTimeout(None)
+    Tests whether ``AutoModerationActionMetadataTimeout.__new__`` works as intended.
     
-    vampytest.assert_eq(metadata.duration, 0)
-
-
-def test__AutoModerationActionMetadataTimeout__new__2():
+    Case: parameters.
     """
-    Tests whether ``AutoModerationActionMetadataTimeout``'s constructor works as expected.
-    Passing parameter as `int`
-    """
-    metadata = AutoModerationActionMetadataTimeout(69)
+    duration = 69
     
-    vampytest.assert_eq(metadata.duration, 69)
-
-
-def test__AutoModerationActionMetadataTimeout__new__3():
-    """
-    Tests whether ``AutoModerationActionMetadataTimeout``'s constructor works as expected.
-    Passing parameter as ``float``
-    """
-    metadata = AutoModerationActionMetadataTimeout(69.0)
+    metadata = AutoModerationActionMetadataTimeout(duration)
+    _check_is_all_attribute_set(metadata)
     
-    vampytest.assert_eq(metadata.duration, 69)
+    vampytest.assert_eq(metadata.duration, duration)

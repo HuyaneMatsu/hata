@@ -2,9 +2,8 @@ __all__ = ('AutoModerationActionMetadataSendAlertMessage',)
 
 from scarletio import copy_docs
 
-from ...channel import Channel, ChannelType, create_partial_channel_from_id
-
 from .base import AutoModerationActionMetadataBase
+from .fields import parse_channel_id, put_channel_id_into, validate_channel_id
 
 
 class AutoModerationActionMetadataSendAlertMessage(AutoModerationActionMetadataBase):
@@ -18,34 +17,21 @@ class AutoModerationActionMetadataSendAlertMessage(AutoModerationActionMetadataB
     """
     __slots__ = ('channel_id',)
     
-    def __new__(cls, channel):
+    def __new__(cls, channel_id = None):
         """
         Creates a new send alert message action metadata.
         
         Parameters
         ----------
-        channel : `None`, ``Channel``, `int`
+        channel_id : `None`, ``Channel``, `int` = `None`, Optional
             The channel where the alert message should be sent.
                
         Raises
         ------
         TypeError
-            - If `channel`'s type is incorrect.
+            - If `channel_id`'s type is incorrect.
         """
-        if channel is None:
-            channel_id = 0
-        
-        elif isinstance(channel, Channel):
-            channel_id = channel.id
-        
-        elif isinstance(channel, int):
-            channel_id = channel
-        
-        else:
-            raise TypeError(
-                f'`channel` parameter can be `{Channel.__name__}`, `int`, '
-                f'got {channel.__class__.__name__}; {channel!r}.'
-            )
+        channel_id = validate_channel_id(channel_id)
         
         self = object.__new__(cls)
         self.channel_id = channel_id
@@ -56,7 +42,7 @@ class AutoModerationActionMetadataSendAlertMessage(AutoModerationActionMetadataB
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' channel_id=')
+        repr_parts.append(' channel_id = ')
         repr_parts.append(repr(self.channel_id))
         
         repr_parts.append('>')
@@ -66,12 +52,7 @@ class AutoModerationActionMetadataSendAlertMessage(AutoModerationActionMetadataB
     @classmethod
     @copy_docs(AutoModerationActionMetadataBase.from_data)
     def from_data(cls, data):
-        channel_id = data.get('channel_id', None)
-        if (channel_id is None):
-            channel_id = 0
-        
-        else:
-            channel_id = int(channel_id)
+        channel_id = parse_channel_id(data)
         
         self = object.__new__(cls)
         self.channel_id = channel_id
@@ -79,10 +60,10 @@ class AutoModerationActionMetadataSendAlertMessage(AutoModerationActionMetadataB
     
     
     @copy_docs(AutoModerationActionMetadataBase.to_data)
-    def to_data(self):
+    def to_data(self, *, defaults = False):
         data = {}
         
-        data['channel_id'] = self.channel_id
+        put_channel_id_into(self.channel_id, data, defaults)
         
         return data
     
@@ -106,17 +87,28 @@ class AutoModerationActionMetadataSendAlertMessage(AutoModerationActionMetadataB
     @copy_docs(AutoModerationActionMetadataBase.copy)
     def copy(self):
         new = AutoModerationActionMetadataBase.copy(self)
-        
-        # channel_id
         new.channel_id = self.channel_id
-        
         return new
     
-    @property
-    def channel(self):
+    
+    def copy_with(self, *, channel_id = ...):
         """
-        Returns the channels where the alert messages are sent.
+        Copies the action metadata and modifies it's attributes by the given values.
+        
+        Parameters
+        ----------
+        channel_id : `None`, ``Channel``, `int`, Optional (Keyword only)
+            The channel where the alert message should be sent.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
         """
-        channel_id = self.channel_id
-        if channel_id:
-            return create_partial_channel_from_id(channel_id, ChannelType.unknown, 0)
+        if channel_id is ...:
+            channel_id = self.channel_id
+        else:
+            channel_id = validate_channel_id(channel_id)
+        
+        new = AutoModerationActionMetadataBase.copy(self)
+        new.channel_id = channel_id
+        return new

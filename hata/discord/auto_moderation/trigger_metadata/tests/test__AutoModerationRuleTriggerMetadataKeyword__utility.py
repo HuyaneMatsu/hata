@@ -1,53 +1,124 @@
 import vampytest
 
-from hata.discord.auto_moderation import AutoModerationRuleTriggerMetadataKeyword
+from ..keyword import AutoModerationRuleTriggerMetadataKeyword
+
+from .test__AutoModerationRuleTriggerMetadataKeyword__constructor import _assert_is_every_attribute_set
 
 
-def test__AutoModerationRuleTriggerMetadataKeyword__copy__0():
+def test__AutoModerationRuleTriggerMetadataKeyword__copy():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.copy`` method works as expected.
+    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.copy`` works as intended.
+    """
+    excluded_keywords = ['find', 'way',  'your']
+    keywords = ['Howling', 'Moon']
+    regex_patterns = ['apple', 'peach']
     
-    Case: no keywords.
-    """
-    metadata = AutoModerationRuleTriggerMetadataKeyword(None)
+    metadata = AutoModerationRuleTriggerMetadataKeyword(
+        keywords,
+        regex_patterns,
+        excluded_keywords = excluded_keywords,
+    )
     
     copy = metadata.copy()
+    _assert_is_every_attribute_set(copy)
     
     vampytest.assert_eq(metadata, copy)
     vampytest.assert_is_not(metadata, copy)
 
 
-def test__AutoModerationRuleTriggerMetadataKeyword__copy__1():
+def test__AutoModerationRuleTriggerMetadataKeyword__copy_with__0():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.copy`` method works as expected.
+    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.copy_with`` works as intended.
     
-    Case: *n* keyword(s).
+    Case: No fields.
     """
-    metadata = AutoModerationRuleTriggerMetadataKeyword('owo')
+    excluded_keywords = ['find', 'way',  'your']
+    keywords = ['Howling', 'Moon']
+    regex_patterns = ['apple', 'peach']
     
-    copy = metadata.copy()
+    metadata = AutoModerationRuleTriggerMetadataKeyword(
+        keywords,
+        regex_patterns,
+        excluded_keywords = excluded_keywords,
+    )
+    
+    copy = metadata.copy_with()
+    _assert_is_every_attribute_set(copy)
     
     vampytest.assert_eq(metadata, copy)
     vampytest.assert_is_not(metadata, copy)
 
 
-def test__AutoModerationRuleTriggerMetadataKeyword__iter_keywords__0():
+def test__AutoModerationRuleTriggerMetadataKeyword__copy_with__1():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.iter_keywords`` method works as expected.
+    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.copy_with`` works as intended.
     
-    Case: no keywords.
+    Case: All fields.
     """
-    metadata = AutoModerationRuleTriggerMetadataKeyword(None)
+    old_excluded_keywords = ['find', 'way',  'your']
+    new_excluded_keywords = ['flower', 'other', 'the']
+    old_keywords = ['Howling', 'Moon']
+    new_keywords = ['suika']
+    old_regex_patterns = ['apple', 'peach']
+    new_regex_patterns = ['suwako']
     
-    vampytest.assert_eq([*metadata.iter_keywords()], [])
+    metadata = AutoModerationRuleTriggerMetadataKeyword(
+        old_keywords,
+        old_regex_patterns,
+        excluded_keywords = old_excluded_keywords,
+    )
+    
+    copy = metadata.copy_with(
+        excluded_keywords = new_excluded_keywords,
+        keywords = new_keywords,
+        regex_patterns = new_regex_patterns,
+    )
+    _assert_is_every_attribute_set(copy)
+    
+    vampytest.assert_is_not(metadata, copy)
+    
+    vampytest.assert_eq(copy.excluded_keywords, tuple(new_excluded_keywords))
+    vampytest.assert_eq(copy.keywords, tuple(new_keywords))
+    vampytest.assert_eq(copy.regex_patterns, tuple(new_regex_patterns))
 
 
-def test__AutoModerationRuleTriggerMetadataKeyword__iter_keywords__1():
+def test__AutoModerationRuleTriggerMetadataKeyword__iter_excluded_keywords():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.iter_keywords`` method works as expected.
-    
-    Case: *n* keyword(s).
+    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.iter_excluded_keywords`` works as intended.
     """
-    metadata = AutoModerationRuleTriggerMetadataKeyword('owo')
+    old_excluded_keywords = ['find', 'way',  'your']
     
-    vampytest.assert_eq([*metadata.iter_keywords()], ['owo'])
+    for input_keyword_presents, expected_output in (
+        (None, []),
+        (old_excluded_keywords, old_excluded_keywords),
+    ):
+        metadata = AutoModerationRuleTriggerMetadataKeyword(excluded_keywords = input_keyword_presents)
+        vampytest.assert_eq([*metadata.iter_excluded_keywords()], expected_output)
+
+
+def test__AutoModerationRuleTriggerMetadataKeyword__iter_keywords():
+    """
+    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.iter_keywords`` works as intended.
+    """
+    keyword_presents = ['koishi', 'orin']
+    
+    for input_keyword_presents, expected_output in (
+        (None, []),
+        (keyword_presents, keyword_presents),
+    ):
+        metadata = AutoModerationRuleTriggerMetadataKeyword(keywords = input_keyword_presents)
+        vampytest.assert_eq([*metadata.iter_keywords()], expected_output)
+
+
+def test__AutoModerationRuleTriggerMetadataKeyword__iter_regex_patterns():
+    """
+    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.iter_regex_patterns`` works as intended.
+    """
+    old_regex_patterns = ['apple', 'peach']
+    
+    for input_keyword_presents, expected_output in (
+        (None, []),
+        (old_regex_patterns, old_regex_patterns),
+    ):
+        metadata = AutoModerationRuleTriggerMetadataKeyword(regex_patterns = input_keyword_presents)
+        vampytest.assert_eq([*metadata.iter_regex_patterns()], expected_output)

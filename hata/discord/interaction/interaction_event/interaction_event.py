@@ -938,7 +938,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     
     
     def __eq__(self, other):
-        """Returns whether teh two interaction events are equal."""
+        """Returns whether the two interaction events are equal."""
         if type(self) is not type(other):
             return NotImplemented
         

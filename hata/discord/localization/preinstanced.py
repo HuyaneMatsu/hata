@@ -64,6 +64,8 @@ class Locale(PreinstancedBase):
     +-----------------------+-------------------------------+-----------+---------------------------------------+
     | hungarian             | Hungarian                     | hu        | Magyar                                |
     +-----------------------+-------------------------------+-----------+---------------------------------------+
+    | indonesian            | Indonesian                    | id        | Bahasa Indonesia                      |
+    +-----------------------+-------------------------------+-----------+---------------------------------------+
     | italian               | Italian                       | it        | Italiano                              |
     +-----------------------+-------------------------------+-----------+---------------------------------------+
     | japanese              | Japanese                      | jp        | \u65e5\u672c\u8a9e                    |
@@ -159,6 +161,7 @@ class Locale(PreinstancedBase):
     greek = P('el', 'Greek', 'Ελληνικά')
     hindi = P('hi', 'Hindi', '\u0939\u093f\u0928\u094d\u0926\u0940')
     hungarian = P('hu', 'Hungarian', 'Magyar')
+    indonesian = P('id', 'Indonesian', 'Bahasa Indonesia')
     italian = P('it', 'Italian', 'Italiano')
     japanese = P('jp', 'Japanese', '\u65e5\u672c\u8a9e')
     korean = P('ko', 'Korean', '\ud55c\uad6d\uc5b4')

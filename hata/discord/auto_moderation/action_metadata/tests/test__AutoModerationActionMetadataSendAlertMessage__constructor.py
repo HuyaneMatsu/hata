@@ -1,47 +1,40 @@
 import vampytest
 
-from ....channel import Channel
+from ..alert_message import AutoModerationActionMetadataSendAlertMessage
 
-from .. import AutoModerationActionMetadataSendAlertMessage
+
+def _check_is_all_attribute_set(metadata):
+    """
+    Asserts whether all attributes are set of the given auto moderation action metadata.
+    
+    Parameters
+    ----------
+    metadata : ``AutoModerationActionMetadataSendAlertMessage``
+        The action metadata to test.
+    """
+    vampytest.assert_instance(metadata, AutoModerationActionMetadataSendAlertMessage)
+    vampytest.assert_instance(metadata.channel_id, int)
 
 
 def test__AutoModerationActionMetadataSendAlertMessage__new__0():
     """
-    Tests whether ``AutoModerationActionMetadataSendAlertMessage.__new__`` returns as expected.
-    """
-    metadata = AutoModerationActionMetadataSendAlertMessage(0)
+    Tests whether ``AutoModerationActionMetadataSendAlertMessage.__new__`` works as expected.
     
-    vampytest.assert_instance(metadata, AutoModerationActionMetadataSendAlertMessage)
+    Case: No parameters given
+    """
+    metadata = AutoModerationActionMetadataSendAlertMessage()
+    _check_is_all_attribute_set(metadata)
 
 
 def test__AutoModerationActionMetadataSendAlertMessage__new__1():
     """
     Tests whether ``AutoModerationActionMetadataSendAlertMessage.__new__`` works as expected.
     
-    Case: Passing parameter as `None`
+    Case: Parameters given
     """
-    metadata = AutoModerationActionMetadataSendAlertMessage(None)
+    channel_id = 202211130001
     
-    vampytest.assert_eq(metadata.channel_id, 0)
-
-
-def test__AutoModerationActionMetadataSendAlertMessage__new__2():
-    """
-    Tests whether ``AutoModerationActionMetadataSendAlertMessage.__new__`` works as expected.
+    metadata = AutoModerationActionMetadataSendAlertMessage(channel_id = channel_id)
     
-    Case: Passing parameter as `int`
-    """
-    metadata = AutoModerationActionMetadataSendAlertMessage(69)
-    
-    vampytest.assert_eq(metadata.channel_id, 69)
-
-
-def test__AutoModerationActionMetadataSendAlertMessage__new__3():
-    """
-    Tests whether ``AutoModerationActionMetadataSendAlertMessage.__new__`` works as expected.
-    
-    Case: Passing parameter as ``Channel``
-    """
-    metadata = AutoModerationActionMetadataSendAlertMessage(Channel.precreate(69))
-    
-    vampytest.assert_eq(metadata.channel_id, 69)
+    _check_is_all_attribute_set(metadata)
+    vampytest.assert_eq(metadata.channel_id, channel_id)

@@ -1,3 +1,38 @@
+## 1.3.13 *\[2022-11-??\]*
+
+#### Improvements
+
+- Add `AutoModerationActionMetadataBase.copy_with`.
+- Add `AutoModerationActionMetadataBase.channel_id` (moved up).
+- Add `AutoModerationActionMetadataBase.channel` (moved up).
+- Add `AutoModerationActionMetadataBase.duration` (moved up).
+- Add `AutoModerationRuleTriggerMetadataBase.regex_patterns`.
+- Add `AutoModerationRuleTriggerMetadataBase.excluded_keywords` (moved up).
+- Add `AutoModerationRuleTriggerMetadataBase.keyword_presets` (moved up).
+- Add `AutoModerationRuleTriggerMetadataBase.mention_limit` (moved up).
+- Add `AutoModerationRuleTriggerMetadataBase.keywords` (moved up).
+- Add `AutoModerationRuleTriggerMetadataBase.iter_regex_patterns`.
+- Add `AutoModerationRuleTriggerMetadataBase.iter_keywords` (moved up).
+- Add `AutoModerationRuleTriggerMetadataBase.iter_keyword_presets` (moved up).
+- Add `AutoModerationRuleTriggerMetadataBase.iter_excluded_keywords` (moved up).
+- Add `AutoModerationRuleTriggerMetadataBase.copy_with`.
+- Add `AutoModerationAction.channel_id`.
+- Add `AutoModerationAction.duration`.
+- Add `AutoModerationAction.channel`.
+- Add `AutoModerationActionExecutionEvent.alert_system_message`.
+- Add `AutoModerationActionExecutionEvent.rule`.
+- Repurpose `AutoModerationActionExecutionEvent.__new__`. Rename to `.from_data`.
+- Add `AutoModerationActionExecutionEvent.to_data`.
+- Add `AutoModerationActionExecutionEvent.__new__`.
+- Add `AutoModerationActionExecutionEvent.copy`.
+- Add `AutoModerationActionExecutionEvent.copy_with`.
+- Add `AutoModerationRule.precreate`.
+- Add `AutoModerationRule.guild`.
+- Add `AutoModerationRule._create_empty`.
+- Add `GuildFeature.application_command_permissions_v2`.
+- Add `Locale.indonesian`.
+- Add `AutoModerationRuleTriggerMetadataKeyword.excluded_keywords.`
+
 ## 1.3.12 *\[2022-11-12\]*
 
 #### Improvements

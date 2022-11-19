@@ -13,7 +13,7 @@ def test__parse_scopes():
         ({}, None),
         ({'scopes': None}, None),
         ({'scopes': []}, None),
-        ({'scopes': [Oauth2Scope.bot.value]}, (Oauth2Scope.bot.value,)),
+        ({'scopes': [Oauth2Scope.bot.value]}, (Oauth2Scope.bot,)),
     ):
         output = parse_scopes(input_data)
         vampytest.assert_eq(output, expected_output)

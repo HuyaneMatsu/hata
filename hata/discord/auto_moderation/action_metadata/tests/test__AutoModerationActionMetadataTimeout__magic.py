@@ -1,46 +1,47 @@
 import vampytest
 
-from .. import AutoModerationActionMetadataTimeout
+from ..timeout import AutoModerationActionMetadataTimeout
 
 
 def test__AutoModerationActionMetadataTimeout__eq__0():
     """
-    Tests whether ``AutoModerationActionMetadataTimeout``'s `__eq__` method works as expected.
+    Tests whether ``AutoModerationActionMetadataTimeout.__eq__` works as intended.
     """
-    vampytest.assert_eq(
-        AutoModerationActionMetadataTimeout(0),
-        AutoModerationActionMetadataTimeout(0),
-    )
-
-    vampytest.assert_not_eq(
-        AutoModerationActionMetadataTimeout(0),
-        AutoModerationActionMetadataTimeout(1),
-    )
-
-
-def test__AutoModerationActionMetadataTimeout__eq__1():
-    """
-    Tests whether ``AutoModerationActionMetadataTimeout``'s `__eq__` method refuses incorrect types.
-    """
-    vampytest.assert_not_eq(
-        AutoModerationActionMetadataTimeout(0),
-        0,
-    )
+    duration = 69
+    
+    keyword_parameters = {
+        'duration': duration,
+    }
+    
+    metadata = AutoModerationActionMetadataTimeout(**keyword_parameters)
+    
+    vampytest.assert_eq(metadata, metadata)
+    vampytest.assert_ne(metadata, object())
+    
+    for field_name, field_value in (
+        ('duration', 70),
+    ):
+        test_metadata = AutoModerationActionMetadataTimeout(**{**keyword_parameters, field_name: field_value})
+        vampytest.assert_ne(metadata, test_metadata)
 
 
 def test__AutoModerationActionMetadataTimeout__hash():
     """
-    Tests whether ``AutoModerationActionMetadataTimeout``'s `__hash__` method works as intended
+    Tests whether ``AutoModerationActionMetadataTimeout.__hash__` works as intended.
     """
-    metadata = AutoModerationActionMetadataTimeout(0)
+    duration = 69
+    
+    metadata = AutoModerationActionMetadataTimeout(duration)
     
     vampytest.assert_instance(hash(metadata), int)
 
 
 def test__AutoModerationActionMetadataTimeout__repr():
     """
-    Tests whether ``AutoModerationActionMetadataTimeout``'s `__repr__` method works as intended
+    Tests whether ``AutoModerationActionMetadataTimeout.__repr__` works as intended.
     """
-    metadata = AutoModerationActionMetadataTimeout(0)
+    duration = 69
+    
+    metadata = AutoModerationActionMetadataTimeout(duration)
     
     vampytest.assert_instance(repr(metadata), str)

@@ -1,9 +1,10 @@
 import vampytest
 
-from hata.discord.auto_moderation import (
-    AutoModerationRuleTriggerMetadataKeyword, AutoModerationRuleTriggerMetadataKeywordPreset
-)
-from hata.discord.auto_moderation.trigger_metadata.utils import try_get_auto_moderation_trigger_metadata_type_from_data
+from ..base import AutoModerationRuleTriggerMetadataBase
+from ..keyword import AutoModerationRuleTriggerMetadataKeyword
+from ..keyword_preset import AutoModerationRuleTriggerMetadataKeywordPreset
+
+from ..utils import try_get_auto_moderation_trigger_metadata_type_from_data
 
 
 def test__try_get_auto_moderation_trigger_metadata_type_from_data():
@@ -11,7 +12,7 @@ def test__try_get_auto_moderation_trigger_metadata_type_from_data():
     Tests whether ``try_get_auto_moderation_trigger_metadata_type_from_data`` works as intended.
     """
     for data, expected_value in (
-        ({}, None,),
+        ({}, AutoModerationRuleTriggerMetadataBase,),
         ({'keyword_filter': None}, AutoModerationRuleTriggerMetadataKeyword),
         ({'presets': None}, AutoModerationRuleTriggerMetadataKeywordPreset),
     ):

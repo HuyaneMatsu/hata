@@ -1,41 +1,40 @@
 import vampytest
 
-from hata.discord.auto_moderation import AutoModerationRuleTriggerMetadataMentionSpam
+from ..mention_spam import AutoModerationRuleTriggerMetadataMentionSpam
+
+
+def _assert_is_every_attribute_set(metadata):
+    """
+    Asserts whether all attributes are set of the given rule trigger metadata.
+    
+    Parameters
+    ----------
+    metadata : ``AutoModerationRuleTriggerMetadataMentionSpam``
+        The metadata object to check.
+    """
+    vampytest.assert_instance(metadata, AutoModerationRuleTriggerMetadataMentionSpam)
+    vampytest.assert_instance(metadata.mention_limit, int)
 
 
 def test__AutoModerationRuleTriggerMetadataMentionSpam__new__0():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataMentionSpam.__new__`` returns as expected.
-    """
-    metadata = AutoModerationRuleTriggerMetadataMentionSpam(None)
+    Tests whether ``AutoModerationRuleTriggerMetadataMentionSpam.__new__`` work as intended.
     
-    vampytest.assert_instance(metadata, AutoModerationRuleTriggerMetadataMentionSpam)
+    Case: No parameters given.
+    """
+    metadata = AutoModerationRuleTriggerMetadataMentionSpam()
+    _assert_is_every_attribute_set(metadata)
 
 
 def test__AutoModerationRuleTriggerMetadataMentionSpam__new__1():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataMentionSpam.__new__`` sets `.mention_limit` as expected.
-    Case: `None`.
-    """
-    metadata = AutoModerationRuleTriggerMetadataMentionSpam(None)
+    Tests whether ``AutoModerationRuleTriggerMetadataMentionSpam.__new__`` work as intended.
     
-    vampytest.assert_instance(metadata.mention_limit, int)
-
-
-def test__AutoModerationRuleTriggerMetadataMentionSpam__new__2():
+    Case: stuffed.
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataMentionSpam.__new__`` sets `.mention_limit` as expected.
-    Case: `20`.
-    """
-    metadata = AutoModerationRuleTriggerMetadataMentionSpam(20)
+    mention_limit = 20
     
-    vampytest.assert_eq(metadata.mention_limit, 20)
-
-
-def test__AutoModerationRuleTriggerMetadataMentionSpam__new__3():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataMentionSpam.__new__`` raises as expected on bad parameter.
-    Case: `12.6`.
-    """
-    with vampytest.assert_raises(TypeError):
-        AutoModerationRuleTriggerMetadataMentionSpam(12.6)
+    metadata = AutoModerationRuleTriggerMetadataMentionSpam(mention_limit)
+    _assert_is_every_attribute_set(metadata)
+    
+    vampytest.assert_eq(metadata.mention_limit, mention_limit)

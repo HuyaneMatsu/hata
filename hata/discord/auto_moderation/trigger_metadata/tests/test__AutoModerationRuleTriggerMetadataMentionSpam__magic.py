@@ -1,52 +1,48 @@
 import vampytest
 
-from hata.discord.auto_moderation import AutoModerationRuleTriggerMetadataMentionSpam
+from ..mention_spam import AutoModerationRuleTriggerMetadataMentionSpam
 
 
 def test__AutoModerationRuleTriggerMetadataMentionSpam__eq__0():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataMentionSpam``'s `__eq__` method works as expected.
+    Tests whether ``AutoModerationRuleTriggerMetadataMentionSpam.__eq__`` works as intended.
     """
-    vampytest.assert_eq(
-        AutoModerationRuleTriggerMetadataMentionSpam(None),
-        AutoModerationRuleTriggerMetadataMentionSpam(None),
-    )
-
-
-def test__AutoModerationRuleTriggerMetadataMentionSpam__eq__1():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataMentionSpam``'s `__eq__` method refuses incorrect types.
-    """
-    vampytest.assert_not_eq(
-        AutoModerationRuleTriggerMetadataMentionSpam(None),
-        0,
-    )
-
-
-def test__AutoModerationRuleTriggerMetadataMentionSpam__not_eq__0():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataMentionSpam``'s `__eq__` method works as expected when passing
-    objects with different values.
-    """
-    vampytest.assert_not_eq(
-        AutoModerationRuleTriggerMetadataMentionSpam(None),
-        AutoModerationRuleTriggerMetadataMentionSpam(20),
-    )
+    mention_limit = 20
+    
+    keyword_parameters = {
+        'mention_limit': mention_limit
+    }
+    
+    metadata = AutoModerationRuleTriggerMetadataMentionSpam(**keyword_parameters)
+    
+    vampytest.assert_eq(metadata, metadata)
+    vampytest.assert_ne(metadata, object())
+    
+    for field_name, field_value in (
+        ('mention_limit', 19),
+    ):
+        test_metadata = AutoModerationRuleTriggerMetadataMentionSpam(**{**keyword_parameters, field_name: field_value})
+        vampytest.assert_ne(metadata, test_metadata)
+        
 
 
 def test__AutoModerationRuleTriggerMetadataMentionSpam__hash():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataMentionSpam``'s `__hash__` method works as intended
+    Tests whether ``AutoModerationRuleTriggerMetadataMentionSpam.__hash__`` works as intended.
     """
-    metadata = AutoModerationRuleTriggerMetadataMentionSpam(None)
+    mention_limit = 20
+    
+    metadata = AutoModerationRuleTriggerMetadataMentionSpam(mention_limit)
     
     vampytest.assert_instance(hash(metadata), int)
 
 
 def test__AutoModerationRuleTriggerMetadataMentionSpam__repr():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataMentionSpam``'s `__repr__` method works as intended
+    Tests whether ``AutoModerationRuleTriggerMetadataMentionSpam.__repr__`` works as intended.
     """
-    metadata = AutoModerationRuleTriggerMetadataMentionSpam(None)
+    mention_limit = 20
+    
+    metadata = AutoModerationRuleTriggerMetadataMentionSpam(mention_limit)
     
     vampytest.assert_instance(repr(metadata), str)

@@ -378,6 +378,12 @@ def preinstanced_array_validator_factory(field_name, preinstanced_type):
         if preinstanced_array is None:
             return None
         
+        if isinstance(preinstanced_array, preinstanced_type):
+            return (preinstanced_array, )
+        
+        if isinstance(preinstanced_array, preinstanced_type.VALUE_TYPE):
+            return (preinstanced_type.get(preinstanced_array), )
+        
         if getattr(preinstanced_array, '__iter__', None) is None:
             raise TypeError(
                 f'{field_name} can be `None` or `iterable`, got '
@@ -413,7 +419,7 @@ def preinstanced_array_validator_factory(field_name, preinstanced_type):
     return validator
 
 
-def int_conditional_validator_factory(field_name, condition_check, condition_message):
+def int_conditional_validator_factory(field_name, default_value, condition_check, condition_message):
     """
     Returns a new `int` with condition validator.
     
@@ -421,6 +427,8 @@ def int_conditional_validator_factory(field_name, condition_check, condition_mes
     ----------
     field_name : `str`
         The field's name.
+    default_value : `int`
+        The default to return.
     condition_check : `callable`
         The condition which needs to pass.
     condition_message : `str`
@@ -452,19 +460,24 @@ def int_conditional_validator_factory(field_name, condition_check, condition_mes
         ValueError
             - If `integer` is not any of the expected options.
         """
-        nonlocal field_name
         nonlocal condition_check
+        nonlocal default_value
         nonlocal condition_message
+        nonlocal field_name
         
-        if not isinstance(integer, int):
-            raise TypeError(
-                f'`{field_name}` can be `int`, got {integer.__class__.__name__}; {integer!r}.'
-            )
+        if integer is None:
+            integer = default_value
         
-        if not condition_check(integer):
-            raise ValueError(
-                f'`{field_name}` must be {condition_message}, got {integer!r}.'
-            )
+        else:
+            if not isinstance(integer, int):
+                raise TypeError(
+                    f'`{field_name}` can be `int`, got {integer.__class__.__name__}; {integer!r}.'
+                )
+            
+            if not condition_check(integer):
+                raise ValueError(
+                    f'`{field_name}` must be {condition_message}, got {integer!r}.'
+                )
         
         return integer
     
@@ -806,6 +819,9 @@ def nullable_string_array_validator_factory(field_name):
         
         if (string_array is None):
             return None
+        
+        if isinstance(string_array, str):
+            return (string_array, )
         
         if getattr(string_array, '__iter__', None) is None:
             raise TypeError(

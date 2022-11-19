@@ -1,31 +1,21 @@
 import vampytest
 
-from hata.discord.auto_moderation import AutoModerationRuleTriggerMetadataBase
+from ..base import AutoModerationRuleTriggerMetadataBase
 
 
-def test__AutoModerationRuleTriggerMetadataBase__eq__0():
+def test__AutoModerationRuleTriggerMetadataBase__eq():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataBase``'s `__eq__` method works as expected.
+    Tests whether ``AutoModerationRuleTriggerMetadataBase.__eq__`` works as intended.
     """
-    vampytest.assert_eq(
-        AutoModerationRuleTriggerMetadataBase(),
-        AutoModerationRuleTriggerMetadataBase(),
-    )
-
-
-def test__AutoModerationRuleTriggerMetadataBase__eq__1():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataBase``'s `__eq__` method refuses incorrect types.
-    """
-    vampytest.assert_not_eq(
-        AutoModerationRuleTriggerMetadataBase(),
-        0,
-    )
+    metadata = AutoModerationRuleTriggerMetadataBase()
+    
+    vampytest.assert_eq(metadata, metadata)
+    vampytest.assert_ne(metadata, object())
 
 
 def test__AutoModerationRuleTriggerMetadataBase__hash():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataBase``'s `__hash__` method works as intended
+    Tests whether ``AutoModerationRuleTriggerMetadataBase.__eq__`` works as intended.
     """
     metadata = AutoModerationRuleTriggerMetadataBase()
     
@@ -34,7 +24,7 @@ def test__AutoModerationRuleTriggerMetadataBase__hash():
 
 def test__AutoModerationRuleTriggerMetadataBase__repr():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataBase``'s `__repr__` method works as intended
+    Tests whether ``AutoModerationRuleTriggerMetadataBase.__eq__`` works as intended.
     """
     metadata = AutoModerationRuleTriggerMetadataBase()
     

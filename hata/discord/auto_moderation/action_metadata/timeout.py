@@ -1,12 +1,9 @@
 __all__ = ('AutoModerationActionMetadataTimeout',)
 
-from math import ceil
-
 from scarletio import copy_docs
 
-from ..constants import AUTO_MODERATION_ACTION_TIMEOUT_MAX
-
 from .base import AutoModerationActionMetadataBase
+from .fields import parse_duration, put_duration_into, validate_duration
 
 
 class AutoModerationActionMetadataTimeout(AutoModerationActionMetadataBase):
@@ -20,40 +17,21 @@ class AutoModerationActionMetadataTimeout(AutoModerationActionMetadataBase):
     """
     __slots__ = ('duration',)
     
-    def __new__(cls, duration):
+    def __new__(cls, duration = None):
         """
         Creates a new timeout action metadata for ``AutoModerationAction``-s.
         
         Parameters
         ----------
-        duration : `None`, `int`, `float`
-        The timeout's duration applied on trigger.
+        duration : `None`, `int`, `float` = `None`, Optional
+            The timeout's duration applied on trigger.
         
         Raises
         ------
         TypeError
             - If `duration` type is incorrect.
-        ValueError
-            - If `duration` is out of the expected range.
         """
-        if duration is None:
-            duration = 0
-        
-        elif isinstance(duration, int):
-            pass
-        
-        elif isinstance(duration, float):
-            duration = ceil(duration)
-        
-        else:
-            raise TypeError(
-                f'`duration` can be `None`, `int`, `float`, got {duration.__class__.__name__}; {duration!r}.'
-            )
-        
-        if duration > AUTO_MODERATION_ACTION_TIMEOUT_MAX:
-            raise ValueError(
-                f'`duration` can be max {AUTO_MODERATION_ACTION_TIMEOUT_MAX!r}, got {duration!r}.'
-            )
+        duration = validate_duration(duration)
         
         self = object.__new__(cls)
         self.duration = duration
@@ -64,7 +42,7 @@ class AutoModerationActionMetadataTimeout(AutoModerationActionMetadataBase):
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' duration=')
+        repr_parts.append(' duration = ')
         repr_parts.append(repr(self.duration))
         
         repr_parts.append('>')
@@ -74,9 +52,7 @@ class AutoModerationActionMetadataTimeout(AutoModerationActionMetadataBase):
     @classmethod
     @copy_docs(AutoModerationActionMetadataBase.from_data)
     def from_data(cls, data):
-        duration = data.get('duration_seconds', None)
-        if (duration is None):
-            duration = 0
+        duration = parse_duration(data)
         
         self = object.__new__(cls)
         self.duration = duration
@@ -84,11 +60,9 @@ class AutoModerationActionMetadataTimeout(AutoModerationActionMetadataBase):
     
     
     @copy_docs(AutoModerationActionMetadataBase.to_data)
-    def to_data(self):
+    def to_data(self, *, defaults = False):
         data = {}
-        
-        data['duration_seconds'] = self.duration
-        
+        put_duration_into(self.duration, data, defaults)
         return data
     
     
@@ -115,4 +89,27 @@ class AutoModerationActionMetadataTimeout(AutoModerationActionMetadataBase):
         # duration
         new.duration = self.duration
         
+        return new
+    
+    
+    def copy_with(self, *, duration = ...):
+        """
+        Copies the action metadata and modifies it's attributes by the given values.
+        
+        Parameters
+        ----------
+        duration : `None`, `int`, `float`, Optional (Keyword only)
+            The timeout's duration applied on trigger.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        """
+        if duration is ...:
+            duration = self.duration
+        else:
+            duration = validate_duration(duration)
+        
+        new = AutoModerationActionMetadataBase.copy(self)
+        new.duration = duration
         return new

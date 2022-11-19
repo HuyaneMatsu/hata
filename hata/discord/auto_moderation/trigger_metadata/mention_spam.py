@@ -2,9 +2,8 @@ __all__ = ('AutoModerationRuleTriggerMetadataMentionSpam',)
 
 from scarletio import copy_docs
 
-from ..constants import AUTO_MODERATION_TRIGGER_MENTION_LIMIT_MAX
-
 from .base import AutoModerationRuleTriggerMetadataBase
+from .fields import parse_mention_limit, put_mention_limit_into, validate_mention_limit
 
 
 class AutoModerationRuleTriggerMetadataMentionSpam(AutoModerationRuleTriggerMetadataBase):
@@ -18,13 +17,13 @@ class AutoModerationRuleTriggerMetadataMentionSpam(AutoModerationRuleTriggerMeta
     """
     __slots__ = ('mention_limit',)
     
-    def __new__(cls, mention_limit):
+    def __new__(cls, mention_limit = None):
         """
         Creates a new mention spam trigger metadata for ``AutoModerationRule``-s.
         
         Parameters
         ----------
-        mention_limit : `None`, `int`
+        mention_limit : `None`, `int`, = `None`, Optional
             The amount of mentions in a message after the rule is triggered.
             
             Defaults to the allowed maximal amount if given as `None`.
@@ -34,20 +33,7 @@ class AutoModerationRuleTriggerMetadataMentionSpam(AutoModerationRuleTriggerMeta
         TypeError
             - If `mention_limit` type is incorrect.
         """
-        if (mention_limit is None):
-            mention_limit = AUTO_MODERATION_TRIGGER_MENTION_LIMIT_MAX
-        
-        elif isinstance(mention_limit, int):
-            if mention_limit < 0:
-                mention_limit = 0
-            
-            elif mention_limit > AUTO_MODERATION_TRIGGER_MENTION_LIMIT_MAX:
-                mention_limit = AUTO_MODERATION_TRIGGER_MENTION_LIMIT_MAX
-            
-        else:
-            raise TypeError(
-                f'`mention_limit` can be `None`, `int`, got {mention_limit.__class__.__name__}; {mention_limit!r}.'
-            )
+        mention_limit = validate_mention_limit(mention_limit)
         
         self = object.__new__(cls)
         self.mention_limit = mention_limit
@@ -59,7 +45,7 @@ class AutoModerationRuleTriggerMetadataMentionSpam(AutoModerationRuleTriggerMeta
         repr_parts = ['<', self.__class__.__name__]
         
         # mention_limit
-        repr_parts.append(' mention_limit=')
+        repr_parts.append(' mention_limit = ')
         repr_parts.append(repr(self.mention_limit))
         
         repr_parts.append('>')
@@ -69,21 +55,15 @@ class AutoModerationRuleTriggerMetadataMentionSpam(AutoModerationRuleTriggerMeta
     @classmethod
     @copy_docs(AutoModerationRuleTriggerMetadataBase.from_data)
     def from_data(cls, data):
-        mention_limit = data.get('mention_total_limit', None)
-        if (mention_limit is None):
-            mention_limit = AUTO_MODERATION_TRIGGER_MENTION_LIMIT_MAX
-        
         self = object.__new__(cls)
-        self.mention_limit = mention_limit
+        self.mention_limit = parse_mention_limit(data)
         return self
     
     
     @copy_docs(AutoModerationRuleTriggerMetadataBase.to_data)
-    def to_data(self):
+    def to_data(self, *, defaults = False):
         data = {}
-        
-        data['mention_total_limit'] = self.mention_limit
-        
+        put_mention_limit_into(self.mention_limit, data, defaults)
         return data
     
     
@@ -110,9 +90,38 @@ class AutoModerationRuleTriggerMetadataMentionSpam(AutoModerationRuleTriggerMeta
     
     @copy_docs(AutoModerationRuleTriggerMetadataBase.copy)
     def copy(self):
-        new = AutoModerationRuleTriggerMetadataBase.copy(self)
+        new = object.__new__(type(self))
         
         # mention_limit
         new.mention_limit = self.mention_limit
         
+        return new
+    
+    
+    def copy_with(self, *, mention_limit = ..., keyword_presets = ...):
+        """
+        Copies the trigger metadata with altering it's attributes based on the given fields.
+        
+        Parameters
+        ----------
+        mention_limit : `None`, `int`, Optional (Keyword only)
+            The amount of mentions in a message after the rule is triggered.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+               
+        Raises
+        ------
+        TypeError
+            - If a parameter of incorrect type given.
+        """
+        # mention_limit
+        if mention_limit is ...:
+            mention_limit = self.mention_limit
+        else:
+            mention_limit = validate_mention_limit(mention_limit)
+        
+        new = object.__new__(type(self))
+        new.mention_limit = mention_limit
         return new

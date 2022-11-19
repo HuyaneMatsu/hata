@@ -2,6 +2,9 @@ __all__ = ('AutoModerationActionMetadataBase',)
 
 from scarletio import RichAttributeErrorBaseType
 
+from ...bases import PlaceHolder
+from ...channel import ChannelType, create_partial_channel_from_id
+
 
 class AutoModerationActionMetadataBase(RichAttributeErrorBaseType):
     """
@@ -38,9 +41,14 @@ class AutoModerationActionMetadataBase(RichAttributeErrorBaseType):
         return object.__new__(cls)
     
     
-    def to_data(self):
+    def to_data(self, *, defaults = False):
         """
         Converts the action metadata to json serializable object.
+        
+        Parameters
+        ----------
+        defaults : `bool`
+            Whether fields with their default value should be included as well.
         
         Returns
         -------
@@ -68,6 +76,56 @@ class AutoModerationActionMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        new : `instance<cls>`
+        new : `instance<type<self>>`
         """
         return object.__new__(type(self))
+    
+    
+    def copy_with(self):
+        """
+        Copies the action metadata and modifies it's attributes by the given values.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        """
+        return self.copy()
+    
+    # ---- Place holders ----
+    
+    channel_id = PlaceHolder(
+        0,
+        """
+        The channel's identifier where the alert messages are sent.
+        
+        Returns
+        -------
+        channel_id : `int`
+        """
+    )
+    
+    duration = PlaceHolder(
+        0,
+        """
+        The timeout's duration applied on trigger.
+        
+        Returns
+        -------
+        duration : `int`
+        """
+    )
+    
+    # ---- Additional utility ---
+    
+    @property
+    def channel(self):
+        """
+        Returns the channels where the alert messages are sent.
+        
+        Returns
+        -------
+        channel : `None`, ``Channel``
+        """
+        channel_id = self.channel_id
+        if channel_id:
+            return create_partial_channel_from_id(channel_id, ChannelType.unknown, 0)

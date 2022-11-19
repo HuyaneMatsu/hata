@@ -77,8 +77,6 @@ def entity_id_optional_putter_factory(field_key):
     return putter
 
 
-
-
 def entity_id_putter_factory(field_key):
     """
     Returns an entity id putter.

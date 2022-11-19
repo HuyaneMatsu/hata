@@ -1,86 +1,38 @@
 import vampytest
 
-from hata.discord.auto_moderation import AutoModerationRuleTriggerMetadataMentionSpam
+from ..mention_spam import AutoModerationRuleTriggerMetadataMentionSpam
+
+from .test__AutoModerationRuleTriggerMetadataMentionSpam__constructor import _assert_is_every_attribute_set
 
 
 def test__AutoModerationRuleTriggerMetadataMentionSpam__to_data__0():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataMentionSpam``'s `to_data` method works as expected.
-    Defining no keyword(s).
+    Tests whether ``AutoModerationRuleTriggerMetadataMentionSpam.to_data`` works as expected.
     """
-    metadata = AutoModerationRuleTriggerMetadataMentionSpam(None)
+    mention_limit = 20
     
-    vampytest.assert_instance(metadata.to_data()['mention_total_limit'], int)
-
-
-def test__AutoModerationRuleTriggerMetadataMentionSpam__to_data__1():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataMentionSpam``'s `to_data` method works as expected.
-    Defining keyword(s).
-    """
-    metadata = AutoModerationRuleTriggerMetadataMentionSpam(20)
+    metadata = AutoModerationRuleTriggerMetadataMentionSpam(mention_limit)
     
     vampytest.assert_eq(
-        metadata.to_data(),
+        metadata.to_data(defaults = True),
         {
-            'mention_total_limit': 20,
-        },
+            'mention_total_limit': mention_limit
+        }
     )
+
 
 
 def test__AutoModerationRuleTriggerMetadataMentionSpam__from_data__0():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataMentionSpam``'s `from_data` method works as expected.
-    Case: `None`.
+    Tests whether ``AutoModerationRuleTriggerMetadataMentionSpam.from_data`` works as expected.
     """
-    metadata = AutoModerationRuleTriggerMetadataMentionSpam.from_data({
-        'mention_total_limit': None,
-    })
+    mention_limit = 20
     
-    vampytest.assert_eq(
-        metadata,
-        AutoModerationRuleTriggerMetadataMentionSpam(None),
-    )
-
-
-def test__AutoModerationRuleTriggerMetadataMentionSpam__from_data__1():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataMentionSpam``'s `from_data` method works as expected.
-    Case: *missing*.
-    """
-    metadata = AutoModerationRuleTriggerMetadataMentionSpam.from_data({})
+    data = {
+        'mention_total_limit': mention_limit
+    }
     
-    vampytest.assert_eq(
-        metadata,
-        AutoModerationRuleTriggerMetadataMentionSpam(None),
-    )
-
-
-def test__AutoModerationRuleTriggerMetadataMentionSpam__from_data__2():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataMentionSpam``'s `from_data` method works as expected.
-    Case: `None`.
-    """
-    metadata = AutoModerationRuleTriggerMetadataMentionSpam.from_data({
-        'mention_total_limit': None,
-    })
+    metadata = AutoModerationRuleTriggerMetadataMentionSpam.from_data(data)
+    _assert_is_every_attribute_set(metadata)
     
-    vampytest.assert_eq(
-        metadata,
-        AutoModerationRuleTriggerMetadataMentionSpam(None),
-    )
-
-
-def test__AutoModerationRuleTriggerMetadataMentionSpam__from_data__3():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataMentionSpam``'s `from_data` method works as expected.
-    Case: `20`.
-    """
-    metadata = AutoModerationRuleTriggerMetadataMentionSpam.from_data({
-        'mention_total_limit': 20,
-    })
-    
-    vampytest.assert_eq(
-        metadata,
-        AutoModerationRuleTriggerMetadataMentionSpam(20),
-    )
+    vampytest.assert_eq(metadata.mention_limit, mention_limit)

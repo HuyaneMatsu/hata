@@ -131,7 +131,7 @@ validate_role_id = entity_id_validator_factory('role_id', Role)
 parse_subscriber_count = int_parser_factory('subscriber_count', SUBSCRIBER_COUNT_DEFAULT)
 put_subscriber_count_into = int_optional_putter_factory('subscriber_count', SUBSCRIBER_COUNT_DEFAULT)
 validate_subscriber_count = int_conditional_validator_factory(
-    'subscriber_count', lambda integer: integer >= SUBSCRIBER_COUNT_DEFAULT, 'positive'
+    'subscriber_count', 0, lambda integer: integer >= SUBSCRIBER_COUNT_DEFAULT, 'positive'
 )
 
 # synced_at

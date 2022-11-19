@@ -1,76 +1,51 @@
 import vampytest
 
-from hata.discord.auto_moderation import AutoModerationRuleTriggerMetadataKeyword
+from ..keyword import AutoModerationRuleTriggerMetadataKeyword
+
+
+def _assert_is_every_attribute_set(metadata):
+    """
+    Asserts whether all attributes are set of the given rule trigger metadata.
+    
+    Parameters
+    ----------
+    metadata : ``AutoModerationRuleTriggerMetadataKeyword``
+        The metadata object to check.
+    """
+    vampytest.assert_instance(metadata, AutoModerationRuleTriggerMetadataKeyword)
+    vampytest.assert_instance(metadata.excluded_keywords, tuple, nullable = True)
+    vampytest.assert_instance(metadata.keywords, tuple, nullable = True)
+    vampytest.assert_instance(metadata.regex_patterns, tuple, nullable = True)
 
 
 def test__AutoModerationRuleTriggerMetadataKeyword__new__0():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.__new__`` returns as expected.
+    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.__new__`` works as intended.
     
+    Case: No fields.
     """
-    metadata = AutoModerationRuleTriggerMetadataKeyword(None)
+    metadata = AutoModerationRuleTriggerMetadataKeyword()
+    _assert_is_every_attribute_set(metadata)
     
     vampytest.assert_instance(metadata, AutoModerationRuleTriggerMetadataKeyword)
 
 
 def test__AutoModerationRuleTriggerMetadataKeyword__new__1():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.__new__`` sets `.keywords` as expected.
+    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.__new__`` works as intended.
     
-    Case: `None`.
+    Case: All fields.
     """
-    metadata = AutoModerationRuleTriggerMetadataKeyword(None)
+    excluded_keywords = ['find', 'way',  'your']
+    keywords = ['Howling', 'Moon']
+    regex_patterns = ['apple', 'peach']
     
-    vampytest.assert_is(metadata.keywords, None)
-
-
-def test__AutoModerationRuleTriggerMetadataKeyword__new__2():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.__new__`` sets `.keywords` as expected.
+    metadata = AutoModerationRuleTriggerMetadataKeyword(
+        keywords,
+        regex_patterns,
+        excluded_keywords = excluded_keywords
+    )
+    _assert_is_every_attribute_set(metadata)
     
-    Case: `[]`.
-    """
-    metadata = AutoModerationRuleTriggerMetadataKeyword([])
-    
-    vampytest.assert_is(metadata.keywords, None)
-
-
-def test__AutoModerationRuleTriggerMetadataKeyword__new__3():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.__new__`` sets `.keywords` as expected.
-    
-    Case: `'owo'`.
-    """
-    metadata = AutoModerationRuleTriggerMetadataKeyword('owo')
-    
-    vampytest.assert_eq(metadata.keywords, ('owo', ))
-
-
-def test__AutoModerationRuleTriggerMetadataKeyword__new__4():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.__new__`` sets `.keywords` as expected.
-    Case: `['owo']`.
-    """
-    metadata = AutoModerationRuleTriggerMetadataKeyword(['owo'])
-    
-    vampytest.assert_eq(metadata.keywords, ('owo', ))
-
-
-def test__AutoModerationRuleTriggerMetadataKeyword__new__5():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.__new__`` raises as expected on bad parameter.
-    
-    Case: `12.6`.
-    """
-    with vampytest.assert_raises(TypeError):
-        AutoModerationRuleTriggerMetadataKeyword(12.6)
-
-
-def test__AutoModerationRuleTriggerMetadataKeyword__new__6():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.__new__`` raises as expected on bad parameter.
-    
-    Case: `[12.6]`.
-    """
-    with vampytest.assert_raises(TypeError):
-        AutoModerationRuleTriggerMetadataKeyword([12.6])
+    vampytest.assert_eq(metadata.keywords, tuple(keywords))
+    vampytest.assert_eq(metadata.regex_patterns, tuple(regex_patterns))

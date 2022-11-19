@@ -33,6 +33,7 @@ parse_height = int_parser_factory('height', 0)
 put_height_into = int_putter_factory('height')
 validate_height = int_conditional_validator_factory(
     'height',
+    0,
     lambda height : height >= 0,
     '>= 0',
 )
@@ -61,6 +62,7 @@ parse_size = int_parser_factory('size', 0)
 put_size_into = int_putter_factory('size')
 validate_size = int_conditional_validator_factory(
     'size',
+    0,
     lambda size : size >= 0,
     '>= 0',
 )
@@ -83,6 +85,7 @@ parse_width = int_parser_factory('width', 0)
 put_width_into = int_putter_factory('width')
 validate_width = int_conditional_validator_factory(
     'width',
+    0,
     lambda width : width >= 0,
     '>= 0',
 )

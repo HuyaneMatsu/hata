@@ -30,7 +30,7 @@ class InteractionComponent(RichAttributeErrorBaseType):
         The represented component's type.
     
     value : `None`, `str`
-        The components value defined by teh user.
+        The components value defined by the user.
         
         > Mutually exclusive with the `components` field.
     """
@@ -58,7 +58,7 @@ class InteractionComponent(RichAttributeErrorBaseType):
             The represented component's type.
         
         value : `None`, `str`, Optional (Keyword only)
-            The components value defined by teh user.
+            The components value defined by the user.
         
         Raises
         ------
@@ -130,7 +130,7 @@ class InteractionComponent(RichAttributeErrorBaseType):
             The represented component's type.
         
         value : `None`, `str`, Optional (Keyword only)
-            The components value defined by teh user.
+            The components value defined by the user.
         
         Returns
         -------

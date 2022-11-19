@@ -1,5 +1,6 @@
 __all__ = ()
 
+from .base import AutoModerationRuleTriggerMetadataBase
 from .keyword import AutoModerationRuleTriggerMetadataKeyword
 from .keyword_preset import AutoModerationRuleTriggerMetadataKeywordPreset
 from .mention_spam import AutoModerationRuleTriggerMetadataMentionSpam
@@ -16,16 +17,16 @@ def try_get_auto_moderation_trigger_metadata_type_from_data(data):
     
     Returns
     -------
-    metadata_type : `None`, `type`
+    metadata_type : `type<AutoModerationRuleTriggerMetadataBase>`
     """
-    if 'keyword_filter' in data:
+    if ('keyword_filter' in data) or ('regex_patterns' in data):
         metadata_type = AutoModerationRuleTriggerMetadataKeyword
-    elif 'presets' in data:
+    elif ('presets' in data):
         metadata_type = AutoModerationRuleTriggerMetadataKeywordPreset
-    elif 'mention_limit' in data:
+    elif ('mention_limit' in data):
         metadata_type = AutoModerationRuleTriggerMetadataMentionSpam
     else:
-        metadata_type = None
+        metadata_type = AutoModerationRuleTriggerMetadataBase
     
     return metadata_type
 

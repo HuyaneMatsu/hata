@@ -36,7 +36,7 @@ CHANNEL_TYPE_MASK_GUILD_CONNECTABLE = CHANNEL_TYPE_MASK_GUILD | CHANNEL_TYPE_MAS
 
 
 @export
-class Channel(DiscordEntity, immortal=True):
+class Channel(DiscordEntity, immortal = True):
     """
     Represents a Discord channel.
     

@@ -234,7 +234,8 @@ class InteractionMetadataMessageComponent(InteractionMetadataBase):
                 f'`{self.__class__.__name__}.options` is deprecated and will be removed in 2023 February. '
                 f'Please use `.values` instead. If you are accessing this field as a proxied attribute, '
                 f'you can ignore this warning.'
-            )
+            ),
+            stacklevel = 2,
         )
         
         return self.values
@@ -250,7 +251,8 @@ class InteractionMetadataMessageComponent(InteractionMetadataBase):
             (
                 f'`{self.__class__.__name__}.type` is deprecated and will be removed in 2023 February. '
                 f'Please use `.component_type` instead.'
-            )
+            ),
+            stacklevel = 2,
         )
         
         return self.component_type

@@ -1,91 +1,51 @@
 import vampytest
 
-from hata.discord.auto_moderation import AutoModerationRuleTriggerMetadataKeyword
+from ..keyword import AutoModerationRuleTriggerMetadataKeyword
+
+from .test__AutoModerationRuleTriggerMetadataKeyword__constructor import _assert_is_every_attribute_set
 
 
-def test__AutoModerationRuleTriggerMetadataKeyword__to_data__0():
+def test__AutoModerationRuleTriggerMetadataKeyword__to_data():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeyword``'s `to_data` method works as expected.
-    Defining no keyword(s).
+    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.to_data`` works as intended.
     """
-    metadata = AutoModerationRuleTriggerMetadataKeyword(None)
+    excluded_keywords = ['find', 'way',  'your']
+    keywords = ['Howling', 'Moon']
+    regex_patterns = ['apple', 'peach']
     
-    vampytest.assert_eq(
-        metadata.to_data(),
-        {
-            'keyword_filter': [],
-        },
+    metadata = AutoModerationRuleTriggerMetadataKeyword(
+        keywords,
+        regex_patterns,
+        excluded_keywords = excluded_keywords,
     )
-
-
-def test__AutoModerationRuleTriggerMetadataKeyword__to_data__1():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeyword``'s `to_data` method works as expected.
-    Defining keyword(s).
-    """
-    metadata = AutoModerationRuleTriggerMetadataKeyword('owo')
     
     vampytest.assert_eq(
-        metadata.to_data(),
+        metadata.to_data(defaults = True),
         {
-            'keyword_filter': ['owo'],
+            'allow_list': excluded_keywords,
+            'keyword_filter': keywords,
+            'regex_patterns': regex_patterns,
         },
     )
 
 
 def test__AutoModerationRuleTriggerMetadataKeyword__from_data__0():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeyword``'s `from_data` method works as expected.
-    Case: `None`.
+    Tests whether ``AutoModerationRuleTriggerMetadataKeyword.from_data`` works as intended.
     """
-    metadata = AutoModerationRuleTriggerMetadataKeyword.from_data({
-        'keyword_filter': None,
-    })
+    excluded_keywords = ['find', 'way',  'your']
+    keywords = ['Howling', 'Moon']
+    regex_patterns = ['apple', 'peach']
     
-    vampytest.assert_eq(
-        metadata,
-        AutoModerationRuleTriggerMetadataKeyword(None),
-    )
-
-
-def test__AutoModerationRuleTriggerMetadataKeyword__from_data__1():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeyword``'s `from_data` method works as expected.
-    Case: *missing*.
-    """
-    metadata = AutoModerationRuleTriggerMetadataKeyword.from_data({})
+    data = {
+        'allow_list': excluded_keywords,
+        'keyword_filter': keywords,
+        'regex_patterns': regex_patterns,
+    }
     
-    vampytest.assert_eq(
-        metadata,
-        AutoModerationRuleTriggerMetadataKeyword(None),
-    )
-
-
-def test__AutoModerationRuleTriggerMetadataKeyword__from_data__2():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeyword``'s `from_data` method works as expected.
-    Case: `[]`.
-    """
-    metadata = AutoModerationRuleTriggerMetadataKeyword.from_data({
-        'keyword_filter': [],
-    })
+    metadata = AutoModerationRuleTriggerMetadataKeyword.from_data(data)
+    _assert_is_every_attribute_set(metadata)
     
-    vampytest.assert_eq(
-        metadata,
-        AutoModerationRuleTriggerMetadataKeyword(None),
-    )
-
-
-def test__AutoModerationRuleTriggerMetadataKeyword__from_data__3():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeyword``'s `from_data` method works as expected.
-    Case: `['owo']`.
-    """
-    metadata = AutoModerationRuleTriggerMetadataKeyword.from_data({
-        'keyword_filter': ['owo'],
-    })
-    
-    vampytest.assert_eq(
-        metadata,
-        AutoModerationRuleTriggerMetadataKeyword('owo'),
-    )
+    vampytest.assert_eq(metadata.excluded_keywords, tuple(excluded_keywords))
+    vampytest.assert_eq(metadata.keywords, tuple(keywords))
+    vampytest.assert_eq(metadata.regex_patterns, tuple(regex_patterns))

@@ -132,7 +132,7 @@ Empty command groups can be registered by passing `None` as command function.
 ```py3
 main = register(None, name = 'main')
 
-@register(into=main)
+@register(into = main)
 def sub():
     return 'i am sub'
 ```

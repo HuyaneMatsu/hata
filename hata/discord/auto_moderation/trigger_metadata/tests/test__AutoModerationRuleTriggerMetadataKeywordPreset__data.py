@@ -1,96 +1,43 @@
 import vampytest
 
-from hata.discord.auto_moderation import AutoModerationRuleTriggerMetadataKeywordPreset, AutoModerationKeywordPresetType
+from ..keyword_preset import AutoModerationRuleTriggerMetadataKeywordPreset
+from ..preinstanced import AutoModerationKeywordPresetType
+
+from .test__AutoModerationRuleTriggerMetadataKeywordPreset__constructor import _assert_is_every_attribute_set
 
 
-def test__AutoModerationRuleTriggerMetadataKeywordPreset__to_data__0():
+def test__AutoModerationRuleTriggerMetadataKeywordPreset__to_data():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeywordPreset``'s `to_data` method works as expected.
-    Defining no keyword(s).
+    Tests whether ``AutoModerationRuleTriggerMetadataKeywordPreset.to_data`` works as intended.
     """
-    metadata = AutoModerationRuleTriggerMetadataKeywordPreset(None)
+    keyword_presets = [AutoModerationKeywordPresetType.cursing, AutoModerationKeywordPresetType.slur]
+    excluded_keywords = ['koishi', 'orin']
+    
+    metadata = AutoModerationRuleTriggerMetadataKeywordPreset(keyword_presets, excluded_keywords)
     
     vampytest.assert_eq(
-        metadata.to_data(),
-        {
-            'presets': [],
-            'allow_list': [],
+        metadata.to_data(defaults = True),{
+            'presets': [keyword_preset.value for keyword_preset in keyword_presets],
+            'allow_list': excluded_keywords,
         },
     )
 
 
-def test__AutoModerationRuleTriggerMetadataKeywordPreset__to_data__1():
+def test__AutoModerationRuleTriggerMetadataKeywordPreset__from_data():
     """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeywordPreset``'s `to_data` method works as expected.
-    Defining keyword(s).
-    """
-    metadata = AutoModerationRuleTriggerMetadataKeywordPreset(AutoModerationKeywordPresetType.slur, 'owo')
-    
-    vampytest.assert_eq(
-        metadata.to_data(),
-        {
-            'presets': [AutoModerationKeywordPresetType.slur.value],
-            'allow_list': ['owo']
-        },
-    )
-
-
-def test__AutoModerationRuleTriggerMetadataKeywordPreset__from_data__0():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeywordPreset``'s `from_data` method works as expected.
+    Tests whether ``AutoModerationRuleTriggerMetadataKeywordPreset.from_data`` works as intended.
     None value cases.
     """
-    metadata = AutoModerationRuleTriggerMetadataKeywordPreset.from_data({
-        'presets': None,
-        'allow_list': None,
-    })
+    keyword_presets = [AutoModerationKeywordPresetType.cursing, AutoModerationKeywordPresetType.slur]
+    excluded_keywords = ['koishi', 'orin']
     
-    vampytest.assert_eq(
-        metadata,
-        AutoModerationRuleTriggerMetadataKeywordPreset(None),
-    )
-
-
-def test__AutoModerationRuleTriggerMetadataKeywordPreset__from_data__1():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeywordPreset``'s `from_data` method works as expected.
-    Missing data case.
-    """
-    metadata = AutoModerationRuleTriggerMetadataKeywordPreset.from_data({})
+    data = {
+        'presets': [keyword_preset.value for keyword_preset in keyword_presets],
+        'allow_list': excluded_keywords,
+    }
     
-    vampytest.assert_eq(
-        metadata,
-        AutoModerationRuleTriggerMetadataKeywordPreset(None),
-    )
-
-
-def test__AutoModerationRuleTriggerMetadataKeywordPreset__from_data__2():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeywordPreset``'s `from_data` method works as expected.
-    Empty data case.
-    """
-    metadata = AutoModerationRuleTriggerMetadataKeywordPreset.from_data({
-        'presets': [],
-        'allow_list': [],
-    })
+    metadata = AutoModerationRuleTriggerMetadataKeywordPreset.from_data(data)
+    _assert_is_every_attribute_set(metadata)
     
-    vampytest.assert_eq(
-        metadata,
-        AutoModerationRuleTriggerMetadataKeywordPreset(None),
-    )
-
-
-def test__AutoModerationRuleTriggerMetadataKeywordPreset__from_data__3():
-    """
-    Tests whether ``AutoModerationRuleTriggerMetadataKeywordPreset``'s `from_data` method works as expected.
-    Stuffed data case.
-    """
-    metadata = AutoModerationRuleTriggerMetadataKeywordPreset.from_data({
-        'presets': [AutoModerationKeywordPresetType.slur.value],
-        'allow_list': ['owo'],
-    })
-    
-    vampytest.assert_eq(
-        metadata,
-        AutoModerationRuleTriggerMetadataKeywordPreset(AutoModerationKeywordPresetType.slur, 'owo'),
-    )
+    vampytest.assert_eq(metadata.keyword_presets, tuple(keyword_presets))
+    vampytest.assert_eq(metadata.excluded_keywords, tuple(excluded_keywords))

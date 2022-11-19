@@ -60,6 +60,7 @@ parse_max_length = int_parser_factory('max_length', MAX_LENGTH_DEFAULT)
 put_max_length_into = int_optional_putter_factory('max_length', MAX_LENGTH_DEFAULT)
 validate_max_length = int_conditional_validator_factory(
     'max_length',
+    MAX_LENGTH_MIN,
     (lambda user_limit: user_limit >= MAX_LENGTH_MIN and user_limit <= MAX_LENGTH_MAX),
     f'>= {MAX_LENGTH_MIN} and <= {MAX_LENGTH_MAX},'
 )
@@ -70,6 +71,7 @@ parse_max_values = int_parser_factory('max_values', MAX_VALUES_DEFAULT)
 put_max_values_into = int_optional_putter_factory('max_values', MAX_VALUES_DEFAULT)
 validate_max_values = int_conditional_validator_factory(
     'max_values',
+    MAX_VALUES_MIN,
     (lambda user_limit: user_limit >= MAX_VALUES_MIN and user_limit <= MAX_VALUES_MAX),
     f'>= {MAX_VALUES_MIN} and <= {MAX_VALUES_MAX},'
 )
@@ -80,6 +82,7 @@ parse_min_length = int_parser_factory('min_length', MIN_LENGTH_DEFAULT)
 put_min_length_into = int_optional_putter_factory('min_length', MIN_LENGTH_DEFAULT)
 validate_min_length = int_conditional_validator_factory(
     'min_length',
+    MIN_LENGTH_MIN,
     (lambda user_limit: user_limit >= MIN_LENGTH_MIN and user_limit <= MIN_LENGTH_MAX),
     f'>= {MIN_LENGTH_MIN} and <= {MIN_LENGTH_MAX},'
 )
@@ -90,6 +93,7 @@ parse_min_values = int_parser_factory('min_values', MIN_VALUES_DEFAULT)
 put_min_values_into = int_optional_putter_factory('min_values', MIN_VALUES_DEFAULT)
 validate_min_values = int_conditional_validator_factory(
     'min_values',
+    MIN_VALUES_MIN,
     (lambda user_limit: user_limit >= MIN_VALUES_MIN and user_limit <= MIN_VALUES_MAX),
     f'>= {MIN_VALUES_MIN} and <= {MIN_VALUES_MAX},'
 )

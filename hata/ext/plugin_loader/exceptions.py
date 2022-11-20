@@ -75,7 +75,7 @@ class PluginError(Exception):
             else:
                 messages.append(repr(cause))
         
-        return message
+        return messages
     
     
     def __len__(self):

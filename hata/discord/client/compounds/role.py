@@ -413,7 +413,7 @@ class ClientCompoundRoleEndpoints(Compound):
         
         Parameters
         ----------
-        `roles`: (`dict` like or `iterable`) of `tuple` (``Role`` or (`tuple` (`int, `int`), `int`) items
+        roles : (`dict` like or `iterable`) of `tuple` (``Role`` or (`tuple` (`int, `int`), `int`) items
             A `dict`, `list`, `set`, `tuple`, which contains role-position items.
         
         Yields
@@ -450,7 +450,7 @@ class ClientCompoundRoleEndpoints(Compound):
         
         Parameters
         ----------
-        roles : (`dict` like or `iterable`) of `tuple` (``Role`` or (`tuple` (`int, `int`), `int`) items
+        roles : (`dict` like or `iterable`) of `tuple` (``Role`` or (`tuple` (`int`, `int`), `int`) items
             A `dict`, `list`, `set`, `tuple`, which contains role-position items.
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.

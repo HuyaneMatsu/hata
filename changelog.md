@@ -33,6 +33,14 @@
 - Add `Locale.indonesian`.
 - Add `AutoModerationRuleTriggerMetadataKeyword.excluded_keywords.`
 
+#### Bug fixes
+
+##### ext.plugin_loader
+- `PluginError.messages` returned an incorrect value.
+
+##### ext.patchouli
+- Optional parameters were incorrectly displayed (was actually a bug caused by an older fix :derp:).
+
 ## 1.3.12 *\[2022-11-12\]*
 
 #### Improvements

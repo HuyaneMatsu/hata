@@ -1022,7 +1022,8 @@ class ParameterSubSection:
     
     def __init__(self, header, description):
         self.description = description
-        header_contents = header.content.copy()
+        header = header.copy()
+        header_contents = header.content
         
         parameter_name_part = header_contents[0]
         if isinstance(parameter_name_part, str):

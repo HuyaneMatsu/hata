@@ -781,7 +781,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
             > If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
-            raised.
+            > raised.
         
         file : `None`, `Any`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
@@ -791,7 +791,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
             for details.
         
-        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of
+        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of \
                 ``Component``), Optional (Keyword only)
             Components attached to the message.
         

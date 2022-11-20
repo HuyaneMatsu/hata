@@ -375,7 +375,7 @@ class ClientCompoundInteractionEndpoints(Compound):
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
         
-        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of
+        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of \
                 ``Component``) = `None`, Optional (Keyword only)
             Components attached to the message.
             
@@ -573,7 +573,7 @@ class ClientCompoundInteractionEndpoints(Compound):
                 , Optional (Keyword only)
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
         
-        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of
+        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of \
                 ``Component``), Optional (Keyword only)
             Components attached to the message.
             
@@ -813,7 +813,7 @@ class ClientCompoundInteractionEndpoints(Compound):
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
         
 
-        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of
+        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of \
                 ``Component``) = `None`, Optional (Keyword only)
             Components attached to the message.
             
@@ -967,7 +967,7 @@ class ClientCompoundInteractionEndpoints(Compound):
             Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
             for details.
         
-        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of
+        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of \
                 ``Component``), Optional (Keyword only)
             Components attached to the message.
             

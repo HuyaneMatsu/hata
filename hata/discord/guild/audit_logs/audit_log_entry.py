@@ -21,7 +21,7 @@ class AuditLogEntry:
         Reference to the audit log entry keys' parent.
     changes : `list` of ``AuditLogChange``
         The changes of the entry.
-    details : `None`, `dict` of (l`str`, `Any`) items
+    details : `None`, `dict` of (`str`, `Any`) items
         Additional information for a specific action types.
     id : `int`
         The unique identifier number of the entry.

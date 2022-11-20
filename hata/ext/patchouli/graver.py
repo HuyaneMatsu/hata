@@ -469,9 +469,23 @@ class GravedDescription:
         self.content = content
         return self
     
+    
     def __repr__(self):
         """Returns the graved description's representation."""
         return f'<{self.__class__.__name__} content={graved_to_source_text(self.content)!r}>'
+    
+    
+    def copy(self):
+        """
+        Copies the graved description.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        """
+        new = object.__new__(type(self))
+        new.content = self.content.copy()
+        return new
     
     
     def split_at(self, pattern):

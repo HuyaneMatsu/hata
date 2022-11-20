@@ -163,7 +163,7 @@ def _strip_emoji_name(name):
 # discord does not send `widget_channel_id`, `widget_enabled`, `max_presences`, `max_users` correctly and that is sad.
 
 @export
-class Guild(DiscordEntity, immortal=True):
+class Guild(DiscordEntity, immortal = True):
     """
     Represents a Discord guild (or server).
     

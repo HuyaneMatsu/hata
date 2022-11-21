@@ -50,7 +50,7 @@ Here is a short example of disabling the permissions for everyone role, and enab
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from hata import Embed, elapsed_time, DATETIME_FORMAT_CODE
-from hata.ext.slash import SlashResponse, set_permission
+from hata.ext.slash import InteractionResponse, set_permission
 
 
 @Nitori.interactions(guild = TEST_GUILD)
@@ -91,7 +91,7 @@ async def latest_users(event):
     else:
         embed.description = '*none*'
     
-    return SlashResponse(embed = embed, allowed_mentions = None)
+    return InteractionResponse(embed = embed, allowed_mentions = None)
 ```
 
 ![](assets/slash_0021.png)

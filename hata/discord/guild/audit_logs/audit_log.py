@@ -57,7 +57,7 @@ class AuditLog(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `None`, `dict` of (`str`, `Any`) items
             Data received from Discord.
         guild : ``Guild``
             The respective guild of the audit logs.
@@ -73,6 +73,10 @@ class AuditLog(RichAttributeErrorBaseType):
         self.threads = {}
         self.users = {}
         self.webhooks = {}
+        
+        if (data is not None):
+            self._populate(data)
+        
         return self
     
     

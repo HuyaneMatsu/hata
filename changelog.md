@@ -32,8 +32,13 @@
 - Add `GuildFeature.application_command_permissions_v2`.
 - Add `Locale.indonesian`.
 - Add `AutoModerationRuleTriggerMetadataKeyword.excluded_keywords.`
+- `run_console_till_interruption` now picks up variables from main file too as intended.
+- `interpreter` command now picks up variables correctly depending whether it was called from library or from outer
+    sources, including outer main files.
+- Add `Attachment` example.
 
 #### Bug fixes
+- `Client.audit_log_get_chunk` did not populate the returned audit log :derp:.
 
 ##### ext.plugin_loader
 - `PluginError.messages` returned an incorrect value.

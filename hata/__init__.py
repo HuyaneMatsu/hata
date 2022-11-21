@@ -119,8 +119,8 @@ from .env import *
 __all__ = (
     *discord.__all__,
     *ext.__all__,
-    
     *utils.__all__,
+    
     *env.__all__,
 )
 
@@ -143,4 +143,4 @@ __getattr__ = get_deprecation_function()
 # Setup tests
 
 if 'vampytest' in sys.modules:
-    from . import tests
+    from . import test_config

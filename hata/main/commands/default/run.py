@@ -5,8 +5,9 @@ from datetime import datetime
 
 from scarletio import Future, LOOP_TIME, Task, WaitTillAll, WeakReferer
 
-from .... import CLIENTS, DATETIME_FORMAT_CODE, KOKORO, stop_clients, run_console_till_interruption, wait_for_interruption
-
+from .... import (
+    CLIENTS, DATETIME_FORMAT_CODE, KOKORO, stop_clients, run_console_till_interruption, wait_for_interruption
+)
 from ... import register
 
 

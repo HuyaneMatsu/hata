@@ -4,11 +4,10 @@ __all__ = (
 )
 
 import sys
-from importlib.util import module_from_spec
 from threading import current_thread
 from time import sleep as blocking_sleep
 
-from scarletio import CancelledError, Task, WaitTillAll, include, sleep
+from scarletio import CancelledError, Task, WaitTillAll, get_last_module_frame, include, sleep
 from scarletio.tools.asynchronous_interactive_console import (
     create_banner, create_exit_message, run_asynchronous_interactive_console
 )
@@ -115,26 +114,12 @@ def run_console_till_interruption():
     if current_thread() is KOKORO:
         raise RuntimeError(f'`run_console_till_interruption` cannot be used inside of {KOKORO!r}.')
     
-    frame = sys._getframe().f_back
-    spec = frame.f_globals.get('__spec__', None)
-    if (spec is None):
-        module = None
-    else:
-        module = sys.modules.get(spec.name, None)
-        if module is None:
-            module = module_from_spec(spec)
+    frame = get_last_module_frame()
     
     interactive_console_locals = {}
-    
-    if module is None:
-        for variable_name, variable_value in frame.f_globals.items():
-            if (variable_name not in IGNORED_CONSOLE_VARIABLES):
-                interactive_console_locals[variable_name] = variable_value
-    
-    else:
-        for variable_name in dir(module):
-            if (variable_name not in IGNORED_CONSOLE_VARIABLES):
-                interactive_console_locals[variable_name] = getattr(module, variable_name)
+    for variable_name, variable_value in frame.f_globals.items():
+        if (variable_name not in IGNORED_CONSOLE_VARIABLES):
+            interactive_console_locals[variable_name] = variable_value
     
     run_asynchronous_interactive_console(
         interactive_console_locals,

@@ -137,6 +137,7 @@ class AuditLogEntry:
             target_id = int(target_id)
         
         self.target_id = target_id
+        return self
     
     
     @property

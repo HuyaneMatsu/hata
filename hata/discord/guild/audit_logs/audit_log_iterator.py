@@ -133,7 +133,7 @@ class AuditLogIterator(AuditLog):
         else:
             log_data = None
         
-        self = AuditLog.__new__(cls, data, guild)
+        self = AuditLog.__new__(cls, None, guild)
         self._data = data
         self._index = 0
         self.client = client

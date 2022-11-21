@@ -25,7 +25,7 @@ Discord sets the following limitations:
 - A command can have `25` sub-commands or sub-categories.
 - A sub-category can have `25` sub-commands.
 - A sub-category cannot have sub-category under itself.
-- Global commands are updated only after `1` hour.
+- Updating global commands might take up to `1` hour.
 - Acknowledging must be done within `3` seconds.
 - Followup messages can be sent within 15 minutes after acknowledging.
 - Custom emojis only show up correctly in interaction responses when `@everyone` role has `use_external_emojis`
@@ -641,10 +641,10 @@ async def channel_create(
 ### Sending rich response
 
 With `return` and `yield` statements, you can only send either `content` or `embed` fields. Using these statements is
-still way more comfy than typing out the whole client method, so there is a middle way, called `SlashResponse`.
+still way more comfy than typing out the whole client method, so there is a middle way, called `InteractionResponse`.
 
 ```py3
-from hata.ext.slash import SlashResponse
+from hata.ext.slash import InteractionResponse
 
 @Nitori.interactions(guild = TEST_GUILD)
 async def repeat(
@@ -654,7 +654,7 @@ async def repeat(
     if not text:
         text = 'nothing to repeat'
     
-    return SlashResponse(text, allowed_mentions = None)
+    return InteractionResponse(text, allowed_mentions = None)
 ```
 
 
@@ -727,8 +727,30 @@ Acknowledging can be useful if you do an additional request to an other site, be
 within 3 seconds to send followup messages. If the event is acknowledged, followup messages can be sent within an
 additional 15 minutes!
 
-By default, acknowledgement will run parallel with the command. To wait till the acknowledgement is done, use the
+By default acknowledgement will run parallel with the command. To wait till the acknowledgement is done, use the
 `wait_for_acknowledgement` decorator parameter.
+
+### Handling attachments
+
+There is a lot of confusing around attachments, but in reality they are pretty simple. Attachment parameters
+produce the same attachment objects as messages do and they can be handled on the same way. Checking their name, size,
+content type and resolution, all the same.
+
+Here is a simple message of downloading the passed attachment and sending it back.
+
+```py3
+from hata.ext.slash import InteractionResponse
+
+@Nitori.interactions(guild = TEST_GUILD)
+async def resend(
+    client,
+    event,
+    attachment: ('attachment', 'File!'),
+):
+    yield
+    file = await client.download_attachment(attachment)
+    yield InteractionResponse(file = (attachment.name, file))
+```
 
 ### Capturing messages & exceptions
 
@@ -749,17 +771,17 @@ except BaseException as err:
 ```
 
 After an interaction event is acknowledged with empty content, the second `yield` will edit the source message,
-causing no `Message` instance to be retrieved. `SlashResponse` will always acknowledge the respective event first,
+causing no `Message` instance to be retrieved. `InteractionResponse` will always acknowledge the respective event first,
 meaning it will always yield back a `Message` instance.
 
 ```py3
 from scarletio import sleep
-from hata.ext.slash import SlashResponse
+from hata.ext.slash import InteractionResponse
 
 @Nitori.interactions(guild = TEST_GUILD)
 async def collect_reactions():
     """Collects reactions"""
-    message = yield SlashResponse('Collecting reactions for 1 minute!')
+    message = yield InteractionResponse('Collecting reactions for 1 minute!')
     await sleep(60.0)
     
     reactions = message.reactions
@@ -834,7 +856,7 @@ Both works completely fine.
 ### Aborting command
 
 Commands may be aborted using the `abort` function. It leaves from the command's execution and sends the passed
-content familiarly to `SlashResponse`. The one difference is, that abort should be mainly used to send end-command
+content familiarly to `InteractionResponse`. The one difference is, that abort should be mainly used to send end-command
 error message, so if only string `content` is passed to abort, it will show up only for the invoking user.
 
 ```py3

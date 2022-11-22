@@ -502,14 +502,14 @@ def emoji_url(emoji):
     -------
     url : `None`, `str`
     """
-    if emoji.is_unicode_emoji():
+    if emoji.unicode is not None:
         return None
     
     if emoji.animated:
          ext = 'gif'
     else:
          ext = 'png'
-        
+    
     return f'{CDN_ENDPOINT}/emojis/{emoji.id}.{ext}'
 
 

@@ -744,7 +744,6 @@ from hata.ext.slash import InteractionResponse
 @Nitori.interactions(guild = TEST_GUILD)
 async def resend(
     client,
-    event,
     attachment: ('attachment', 'File!'),
 ):
     yield

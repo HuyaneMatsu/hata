@@ -19,6 +19,82 @@ from ..request_helpers import get_guild_and_id, get_guild_id, get_sticker_and_id
 STICKER_PACK_CACHE = ForceUpdateCache()
 
 
+def _handle_emoji_representation_parameter_deprecation(instance, tags, emoji_representation):
+    """
+    Handles the deprecation of the `emoji_representation` parameter.
+    
+    Parameters
+    ----------
+    instance : ``Client``
+        Client instance used for raising correct warning.
+    tags : ``Emoji``, `str`, `iterable` of `str`
+        The tags of the sticker.
+    emoji_representation : ``Emoji``, `str`, `iterable` of `str`
+        The tags of the sticker.
+    
+    Returns
+    -------
+    tags : ``Emoji``, `str`, `iterable` of `str`
+    """
+    if emoji_representation is not ...:
+        warnings.warn(
+            (
+                f'`{instance.__class__.__name__}.sticker_guild_create`\'s `emoji_representation` is deprecated '
+                f'and will be removed in 2023 Marc. '
+                f'Please use `tags` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 3,
+        )
+        
+        tags = emoji_representation
+    
+    return tags
+
+
+def _validate_tags(tags):
+    """
+    Validates the given tags value.
+    
+    Parameters
+    ----------
+    tags : ``Emoji``, `str`, `iterable` of `str`
+        The tags of the sticker.
+    
+    Returns
+    -------
+    tags : `set` of `str`
+        The validated tags.
+    
+    Raises
+    ------
+    TypeError
+        - If `tags`'s type is incorrect.
+    """
+    validated_tags = set()
+    
+    if isinstance(tags, str):
+        validated_tags.add(tags)
+    
+    elif isinstance(tags, Emoji):
+        validated_tags.add(tags.name)
+    
+    elif (getattr(tags, '__iter__', None) is not None):
+        for tag in tags:
+            if not isinstance(tag, str):
+                raise TypeError(
+                    f'`tags` can have `str` elements, got {tag.__class__.__name__}; {tag!r}; tags = {tags!r}'
+                )
+            validated_tags.add(tag)
+    
+    else:
+        raise TypeError(
+            f'`tags` can be `str`, `{Emoji.__name__}`, `iterable` of `str`, got {tags.__class__.__name__}; {tags!r}.'
+        )
+    
+    return validated_tags
+
+
 class ClientCompoundStickerEndpoints(Compound):
     
     http : DiscordHTTPClient
@@ -207,7 +283,9 @@ class ClientCompoundStickerEndpoints(Compound):
         return sticker
     
     
-    async def sticker_guild_create(self, guild, name, image, emoji_representation, description = None, *, reason = None):
+    async def sticker_guild_create(
+        self, guild, name, image, tags = ..., description = None, *, emoji_representation = ..., reason = None
+    ):
         """
         Creates a sticker in the guild.
         
@@ -219,8 +297,8 @@ class ClientCompoundStickerEndpoints(Compound):
             The guild to create the sticker in.
         name : `str`
             The sticker's name. It's length can be in range [2:32]
-        emoji_representation : ``Emoji``, `str`
-            The emoji representation of the sticker. Used as a tag for the sticker.
+        tags : ``Emoji``, `str`, `iterable` of `str`
+            The tags of the sticker.
         image : `bytes-like`
             The sticker's image in bytes.
         description : `None`, `str` = `None`, Optional
@@ -236,7 +314,7 @@ class ClientCompoundStickerEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `emoji_representation` is neither `str` nor ``Emoji``.
+            - If `str` is neither `str` nor ``Emoji``, `iterable` of `str`.
             - If `guild` is neither ``Guild`` nor `int`.
         ValueError
             If `image`s media type is neither `image/png` nor `application/json`.
@@ -249,8 +327,12 @@ class ClientCompoundStickerEndpoints(Compound):
             - If `name`'s length is out of range [2:32].
             - If `description` is neither `None`, `str`.
             - If `description`'s length is out of range [0:100].
-            - If `emoji_representation` is a custom ``Emoji``.
         """
+        # Handle deprecation.
+        tags = _handle_emoji_representation_parameter_deprecation(self, tags, emoji_representation)
+        if tags is ...:
+            raise TypeError('`tags` parameter is required.')
+        
         guild_id = get_guild_id(guild)
         
         if __debug__:
@@ -281,21 +363,7 @@ class ClientCompoundStickerEndpoints(Compound):
         if (description is not None) and (not description):
             description = None
         
-        if isinstance(emoji_representation, str):
-            tag = emoji_representation
-        elif isinstance(emoji_representation, Emoji):
-            if __debug__:
-                if emoji_representation.is_custom_emoji():
-                    raise AssertionError(
-                        f'Only unicode (builtin) emojis can be used as tags, got {emoji_representation!r}.'
-                    )
-            
-            tag = emoji_representation.name
-        else:
-            raise TypeError(
-                f'`emoji_representation` can be `str`, `{Emoji.__name__}`, got '
-                f'{emoji_representation.__class__.__name__}; {emoji_representation!r}.'
-            )
+        tags = _validate_tags(tags)
         
         if __debug__:
             if not isinstance(image, (bytes, bytearray, memoryview)):
@@ -320,7 +388,7 @@ class ClientCompoundStickerEndpoints(Compound):
             # If no description is given Discord drops back an unrelated error
             form_data.add_field('description', '')
         
-        form_data.add_field('tags', tag)
+        form_data.add_field('tags', ', '.join(tags))
         
         form_data.add_field('file', image, filename=f'file.{extension}', content_type=media_type)
         
@@ -330,7 +398,9 @@ class ClientCompoundStickerEndpoints(Compound):
         return Sticker(sticker_data)
     
     
-    async def sticker_guild_edit(self, sticker, *, name=..., emoji_representation=..., description = ..., reason = None):
+    async def sticker_guild_edit(
+        self, sticker, *, name=..., tags = ..., emoji_representation=..., description = ..., reason = None
+    ):
         """
         Edits the given guild bound sticker,
         
@@ -342,7 +412,7 @@ class ClientCompoundStickerEndpoints(Compound):
             The respective sticker.
         name : `str`, Optional (keyword only)
             New name of the sticker. It's length can be in range [2:32].
-        emoji_representation : ``Emoji``, `str`, Optional (keyword Only)
+        tags : `str`, ``Emoji``, `iterable` of `str`, Optional (keyword Only)
             The new emoji representation of the sticker. Used as a tag for the sticker.
         description : `None`, `str`, Optional (Keyword only)
             New description for the sticker. It's length can be in range [0:100].
@@ -353,7 +423,6 @@ class ClientCompoundStickerEndpoints(Compound):
         ------
         TypeError
             - If `sticker` is neither ``Sticker``, nor `int`.
-            - If `emoji_representation` is neither `str` nor ``Emoji``.
         ConnectionError
             No internet connection.
         DiscordException
@@ -364,8 +433,10 @@ class ClientCompoundStickerEndpoints(Compound):
             - If `name`'s length is out of range [2:32].
             - If `description` is neither `None`, `str`.
             - If `description`'s length is out of range [0:100].
-            - If `emoji_representation` is a custom ``Emoji``.
         """
+        # Handle deprecation.
+        tags = _handle_emoji_representation_parameter_deprecation(self, tags, emoji_representation)
+        
         sticker = await self.sticker_get(sticker)
         
         if __debug__:
@@ -389,24 +460,10 @@ class ClientCompoundStickerEndpoints(Compound):
                         f'`name` length can be in range [2:32], got {name_length!r}; {name!r}.'
                     )
         
-        if (emoji_representation is ...):
-            tag = ', '.join(sticker.tags)
+        if (tags is ...):
+            tags = sticker.tags
         else:
-            if isinstance(emoji_representation, str):
-                tag = emoji_representation
-            elif isinstance(emoji_representation, Emoji):
-                if __debug__:
-                    if emoji_representation.is_custom_emoji():
-                        raise AssertionError(
-                            f'Only unicode (builtin) emojis can be used as tags, got {emoji_representation!r}.'
-                        )
-                
-                tag = emoji_representation.name
-            else:
-                raise TypeError(
-                    f'`emoji_representation` can be `str`, `{Emoji.__name__}`, got '
-                    f'{emoji_representation.__class__.__name__}; {emoji_representation!r}.'
-                )
+            tags = _validate_tags(tags)
         
         if (description is ...):
             description = sticker.description
@@ -431,7 +488,7 @@ class ClientCompoundStickerEndpoints(Compound):
         
         data = {
             'name': name,
-            'tags': tag,
+            'tags': ', '.join(tags),
             'description': description,
         }
         

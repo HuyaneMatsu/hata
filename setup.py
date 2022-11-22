@@ -147,21 +147,21 @@ setup(
     ],
     include_package_data = True,
     package_data = {
-        'hata.discord.bin' : [
+        'hata.discord.bin': [
             'libopus-0.x64.dll',
             'libopus-0.x86.dll',
         ],
     },
     python_requires = '>=3.6',
     install_requires = [
-        'scarletio>=1.0.44',
+        'scarletio>=1.0.47',
         'chardet>=2.0',
     ],
     extras_require = {
-        'voice' : [
+        'voice': [
             'PyNaCl>=1.3.0',
         ],
-        'relativedelta' : [
+        'relativedelta': [
             'python-dateutil>=2.0',
         ],
         'cpythonspeedups': [

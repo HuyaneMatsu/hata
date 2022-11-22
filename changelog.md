@@ -1,4 +1,4 @@
-## 1.3.13 *\[2022-11-??\]*
+## 1.3.13 *\[2022-11-22\]*
 
 #### Improvements
 
@@ -37,14 +37,24 @@
     sources, including outer main files.
 - Add `Attachment` example.
 
+
 #### Bug fixes
+
 - `Client.audit_log_get_chunk` did not populate the returned audit log :derp:.
+- Fix `ValueError` when Discord says our rate limit resets at year 584556072.
+- `Emoji.url` will not return `None` if the emoji's id is malformed. Instead will check for unicode value.
 
 ##### ext.plugin_loader
 - `PluginError.messages` returned an incorrect value.
 
 ##### ext.patchouli
 - Optional parameters were incorrectly displayed (was actually a bug caused by an older fix :derp:).
+
+
+#### Renames, Deprecation & Removals
+
+- Rename `Client.sticker_guild_create`'s `emoji_representation` parameter to `tags`.
+- Rename `Client.sticker_guild_edit`'s `emoji_representation` parameter to `tags`.
 
 ## 1.3.12 *\[2022-11-12\]*
 

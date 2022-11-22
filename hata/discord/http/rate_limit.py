@@ -25,6 +25,7 @@ LIMITER_INTERACTION = 'interaction_id'
 LIMITER_GLOBAL = 'global'
 LIMITER_UNLIMITED = 'unlimited'
 
+
 class RateLimitGroup:
     """
     Represents a rate limit group of one endpoint or of more endpoints sharing the same one.
@@ -307,6 +308,36 @@ class RateLimitUnit:
         repr_parts.append('>')
         
         return ''.join(repr_parts)
+
+
+def get_rate_limit_delay_from_headers(headers):
+    """
+    Returns rate limit delay based on the given headers.
+    
+    Parameters
+    ----------
+    headers : ``IgnoreCaseMultiValueDictionary``
+        Request headers.
+    
+    Returns
+    -------
+    delay : `float`
+    """
+    delay_reset_after = float(headers[RATE_LIMIT_RESET_AFTER])
+    
+    try:
+        rate_limit_reset_at = datetime.fromtimestamp(float(headers[RATE_LIMIT_RESET]), timezone.utc)
+    except ValueError:
+        # I dont know what they drank, but it happened:
+        # ValueError: year 584556072 is out of range
+        return delay_reset_after
+    
+    request_done_at = parse_date_header_to_datetime(headers[DATE])
+    
+    return min(
+        delay_reset_after,
+        (rate_limit_reset_at - request_done_at).total_seconds(),
+    )
 
 
 class RateLimitHandler:
@@ -610,16 +641,7 @@ class RateLimitHandler:
         if optimistic:
             delay = 1.0
         else:
-            delay1 = (
-                datetime.fromtimestamp(
-                    float(headers[RATE_LIMIT_RESET]), timezone.utc) - parse_date_header_to_datetime(headers[DATE])
-                        ).total_seconds()
-            delay2 = float(headers[RATE_LIMIT_RESET_AFTER])
-            
-            if delay1 < delay2:
-                delay = delay1
-            else:
-                delay = delay2
+            delay = get_rate_limit_delay_from_headers(headers)
         
         drop = LOOP_TIME() + delay
         

@@ -1,3 +1,107 @@
+## 1.3.14 *\[2022-??-??\]*
+
+- Repurpose `TeamMember.__init__`. Rename to `.from_data`.
+- Add `TeamMember.to_data`.
+- Add `TeamMember.__new__`.
+- Add `TeamMemberPermission`.
+- Add `TeamMember.copy`.
+- Add `TeamMember.copy_with`.
+- Add `TeamMember.iter_permissions`.
+- `Team.__hash__` now supports partial instances.
+- `Team.__eq__` now supports partial instances.
+- Add `Team.iter_members`.
+- Repurpose `Team.__new__`. Rename to `.from_data`.
+- Add `Team.__new__`.
+- Add `Team.copy`.
+- Add `Team.copy_with`.
+- Add `Team.precreate`.
+- Add `Team.partial`.
+- `TeamMember`-s are now sortable.
+- Repurpose `ApplicationEntity.__init__`. Rename to `.from_data`.
+- `ApplicationEntity.__eq__` now supports partial instances.
+- Add `ApplicationEntity.partial`.
+- Add `ApplicationEntity.__new__`.
+- Add `ApplicationEntity.precreate`.
+- `ApplicationEntity.__hash__` now supports partial instances.
+- Add `ApplicationEntity.to_data`.
+- Add `ApplicationEntity.copy`.
+- Add `ApplicationEntity.copy_with`.
+- `ApplicationInstallParameters` now supports rich attribute exceptions.
+- Repurpose `ApplicationInstallParameters.__new__`. Rename to `.from_data`.
+- Add `ApplicationInstallParameters.__new__`.
+- Add `ApplicationInstallParameters.to_data`.
+- Add `ApplicationInstallParameters.copy`.
+- Add `ApplicationInstallParameters.copy_with`.
+- `ApplicationExecutable` now supports rich attribute exceptions.
+- Repurpose `ApplicationExecutable.__init__`. Rename to `.from_data`.
+- Add `OperationSystem`.
+- Add `ApplicationExecutable.to_data`.
+- Add `ApplicationExecutable.__new__`.
+- Add `ApplicationExecutable.copy`.
+- Add `ApplicationExecutable.copy_with`.
+- `ThirdPartySKU` now supports rich attribute exceptions.
+- Repurpose `ThirdPartySKU.__init__`. Rename to `.from_data`.
+- Add `ThirdPartySKU.to_data`.
+- Add `ThirdPartySKU.__new__`.
+- Add `ThirdPartySKU.copy`.
+- Add `ThirdPartySKU.copy_with`.
+- Repurpose `EULA.__new__`. Rename to `.from_data`.
+- Add `EULA.__new__`.
+- Add `EULA.to_data`.
+- Add `EULA.__eq__` now supports partial instances.
+- Add `EULA.precreate`.
+- Add `EULA.copy`.
+- Add `EULA.copy_with`.
+- Add `EULA.partial`.
+- `EULA.__hash__` now supports partial instances.
+- Add `ApplicationFlag.embedded_iap`
+- `ApplicationExecutable` is now sortable.
+- Add `Team.to_data_user`.
+- Add `ApplicationType`.
+- `ThirdPartySKU` is now sortable.
+- Add `Application.deeplink_url`.
+- Add `Application.type`.
+- Add Application.role_connections_verification_url`.
+- Add `Application.from_data_ready`.
+- Add `Application.from_data_own`.
+- Add `Application.from_data_invite`.
+- Add `Application.from_data_detectable`.
+- Repurpose `Application.__new__`. Rename to `.from_data`.
+- `Application.precreate` now accepts (way) more parameters.
+- `Application.partial` now checks for it's client being more loose.
+- Add `Application.__new__`.
+- `Application.__hash__` now works on partial instances as well.
+- `Application.__eq__` now works with partial instances as well.
+- Add `Application.copy`.
+- Add `Application.copy_with`.
+- Add `Application.iter_aliases`.
+- Add `Application.iter_developers`.
+- Add `Application.iter_executables`.
+- Add `Application.iter_publishers`.
+- Add `Application.iter_rpc_origins`.
+- Add `Application.iter_tags`.
+- Add `Application.iter_third_party_skus`.
+- Add `Application.to_data`.
+- Add `Application.to_data_ready`.
+- Add `Application.to_data_own`.
+- Add `Application.to_data_invite`.
+- Add `Application.to_data_detectable`.
+
+#### Bug fixes
+
+- Fix infinite loop in ``ApplicationInstallParameters.__repr__``.
+- `Application.max_participants` now correctly defaults to `0`.
+
+#### Renames, Deprecation & Removals
+
+- Rename `ApplicationSubEntity` to `ApplicationEntity`.
+- Rename `ApplicationExecutable.is_launcher` to `launcher`.
+- Deprecate `ApplicationExecutable.is_launcher`.
+- Remove `EmbeddedActivityConfiguration` (not used anymore).
+- Deprecate `Application.embedded_activity_configuration`.
+
+#### Improvements
+
 ## 1.3.13 *\[2022-11-22\]*
 
 #### Improvements
@@ -37,7 +141,6 @@
     sources, including outer main files.
 - Add `Attachment` example.
 
-
 #### Bug fixes
 
 - `Client.audit_log_get_chunk` did not populate the returned audit log :derp:.
@@ -50,11 +153,11 @@
 ##### ext.patchouli
 - Optional parameters were incorrectly displayed (was actually a bug caused by an older fix :derp:).
 
-
 #### Renames, Deprecation & Removals
 
 - Rename `Client.sticker_guild_create`'s `emoji_representation` parameter to `tags`.
 - Rename `Client.sticker_guild_edit`'s `emoji_representation` parameter to `tags`.
+
 
 ## 1.3.12 *\[2022-11-12\]*
 

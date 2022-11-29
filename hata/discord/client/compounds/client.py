@@ -113,7 +113,8 @@ class ClientCompoundClientEndpoints(Compound):
                 f'`{self.__class__.__name__}.client_edit` is deprecated and will be removed in '
                 f'2022 December. Please use `.edit` instead.'
             ),
-            FutureWarning
+            FutureWarning,
+            stacklevel = 2,
         )
         return await self.edit(**keyword_parameters)
     

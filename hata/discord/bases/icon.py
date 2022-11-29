@@ -810,14 +810,16 @@ class IconSlot:
         )
     
     
-    def validate_data_icon(self, icon):
+    def validate_icon(self, icon, *, allow_data = False):
         """
         Validates the given icon data.
         
         Parameters
         ----------
-        icon : `None`, `bytes`, `bytearray`, `memoryview`, ``Icon``
+        icon : `None`, `bytes`, `bytearray`, `memoryview`, ``Icon``, `str`
             The icon to validate.
+        allow_data : `bool` = `False`, Optional (Keyword only)
+            Whether data parsing is allowed.
         
         Returns
         -------
@@ -836,6 +838,22 @@ class IconSlot:
         
         if isinstance(icon, Icon):
             return icon
+        
+        if isinstance(icon, str):
+            if icon.startswith('a_'):
+                icon = icon[2:]
+                icon_type = ICON_TYPE_ANIMATED
+            else:
+                icon_type = ICON_TYPE_STATIC
+            icon_hash = int(icon, 16)
+            
+            return Icon(icon_type, icon_hash)
+        
+        if not allow_data:
+            raise TypeError(
+                f'`{self.internal_name}` can be passed as `None`, `{Icon.__name__}`, `str` '
+                f'(or bytes-like if allowed), got {icon.__class__.__name__}; {reprlib.repr(icon)}.'
+            )
         
         icon_type = IconType.from_data(icon)
         if icon_type and (not icon_type.media_type):
@@ -874,7 +892,7 @@ class IconSlot:
         except KeyError:
             return None
         
-        return self.validate_data_icon(icon)
+        return self.validate_icon(icon, allow_data = True)
     
     
     def parse_from_keyword_parameters(self, keyword_parameters, *, allow_data = False):

@@ -283,19 +283,19 @@ class PluginLoader(RichAttributeErrorBaseType):
     
     Adding Plugins
     -----------------
-    Plugins can be registered with the `.registered` method.
+    Plugins can be register with the `.register` method.
     
     ```py
-    PLUGIN_LOADER.registered('cute_commands')
+    PLUGIN_LOADER.register('cute_commands')
     ```
     
     Or more plugin can be added as well by passing an iterable:
     
     ```py
-    PLUGIN_LOADER.registered(['cute_commands', 'nice_commands'])
+    PLUGIN_LOADER.register(['cute_commands', 'nice_commands'])
     ```
     
-    If an plugin's file is not found, then `.registered` will raise  `ModuleNotFoundError`. If the passed parameter
+    If an plugin's file is not found, then `.register` will raise  `ModuleNotFoundError`. If the passed parameter
     is not `str` or not `iterable` of `str`, `TypeError` is raised.
     
     Loading
@@ -318,7 +318,7 @@ class PluginLoader(RichAttributeErrorBaseType):
     PLUGIN_LOADER.register_and_load('cute_commands')
     ```
     
-    `.register_and_load` method supports all the keyword parameters as `.registered`.
+    `.register_and_load` method supports all the keyword parameters as `.register`.
     
     ##### Passing variables to plugins
     

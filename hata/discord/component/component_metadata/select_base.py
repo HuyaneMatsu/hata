@@ -305,10 +305,10 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         
         # Construct
         
-        self = object.__new__(type(self))
-        self.custom_id = custom_id
-        self.enabled = enabled
-        self.max_values = max_values
-        self.min_values = min_values
-        self.placeholder = placeholder
-        return self
+        new = object.__new__(type(self))
+        new.custom_id = custom_id
+        new.enabled = enabled
+        new.max_values = max_values
+        new.min_values = min_values
+        new.placeholder = placeholder
+        return new

@@ -174,7 +174,7 @@ class Role(DiscordEntity, immortal = True):
         if icon is ...:
             icon = None
         else:
-            icon = cls.icon.validate_data_icon(icon)
+            icon = cls.icon.validate_icon(icon, allow_data = True)
         
         # manager
         if manager is ...:
@@ -1277,7 +1277,7 @@ class Role(DiscordEntity, immortal = True):
         if icon is ...:
             icon = self_icon
         else:
-            icon = type(self).icon.validate_data_icon(icon)
+            icon = type(self).icon.validate_icon(icon, allow_data = True)
         
         # manager
         if manager is ...:

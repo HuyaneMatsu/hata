@@ -1,6 +1,6 @@
 import vampytest
 
-from .. import SKUType
+from ..preinstanced import SKUType
 
 
 def test__SKUType__name():

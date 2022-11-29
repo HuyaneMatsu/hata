@@ -10,8 +10,6 @@ def test__validate_url__0():
     Case: passing.
     """
     for input_value, expected_output in (
-        (None, None),
-        ('', None),
         ('https://orindance.party/', 'https://orindance.party/'),
     ):
         output = validate_url(input_value)
@@ -25,6 +23,8 @@ def test__validate_url__1():
     Case: `ValueError`.
     """
     for input_value in (
+        None,
+        '',
         'a',
     ):
         with vampytest.assert_raises(ValueError):

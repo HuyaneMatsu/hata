@@ -161,13 +161,13 @@ class Resolved(RichAttributeErrorBaseType):
             users = users.copy()
         
         # Construct
-        self = object.__new__(type(self))
-        self.attachments = attachments
-        self.channels = channels
-        self.roles = roles
-        self.messages = messages
-        self.users = users
-        return self
+        new = object.__new__(type(self))
+        new.attachments = attachments
+        new.channels = channels
+        new.roles = roles
+        new.messages = messages
+        new.users = users
+        return new
     
     
     def copy_with(self, *, attachments = ..., channels = ..., roles = ..., messages = ..., users = ...):
@@ -239,13 +239,13 @@ class Resolved(RichAttributeErrorBaseType):
             users = validate_users(users)
         
         # Construct
-        self = object.__new__(type(self))
-        self.attachments = attachments
-        self.channels = channels
-        self.roles = roles
-        self.messages = messages
-        self.users = users
-        return self
+        new = object.__new__(type(self))
+        new.attachments = attachments
+        new.channels = channels
+        new.roles = roles
+        new.messages = messages
+        new.users = users
+        return new
     
     
     def __repr__(self):

@@ -108,8 +108,16 @@ class FlagMeta(type):
     """
     Metaclass for bitwise flags.
     """
-    def __new__(cls, class_name, class_parents, class_attributes, access_keyword=None, enable_keyword=None,
-            disable_keyword=None, base_class=False):
+    def __new__(
+        cls,
+        class_name,
+        class_parents,
+        class_attributes,
+        access_keyword = None,
+        enable_keyword = None,
+        disable_keyword = None,
+        base_class = False,
+    ):
         """
         Creates a bitwise flag type.
         
@@ -243,7 +251,7 @@ class FlagMeta(type):
         return type.__new__(cls, class_name, class_parents, class_attributes)
 
 
-class FlagBase(int, metaclass=FlagMeta, base_class=True):
+class FlagBase(int, metaclass = FlagMeta, base_class = True):
     """
     Base class for bitwise flags.
     
@@ -263,7 +271,7 @@ class FlagBase(int, metaclass=FlagMeta, base_class=True):
     __enabler_factory__ = create_flag_enabler
     __disabler_factory__ = create_flag_disabler
     
-    def __new__(self, base=None):
+    def __new__(self, base = None):
         """You cannot subclass flag base classes."""
         raise NotImplementedError
     

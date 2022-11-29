@@ -10,7 +10,8 @@ from ...field_putters import (
 )
 from ...field_validators import (
     bool_validator_factory, entity_id_validator_factory, force_string_validator_factory,
-    int_conditional_validator_factory, nullable_string_validator_factory, url_optional_validator_factory
+    int_conditional_validator_factory, nullable_string_validator_factory, url_optional_validator_factory,
+    url_required_validator_factory
 )
 
 from .constants import DESCRIPTION_LENGTH_MAX
@@ -77,7 +78,7 @@ validate_temporary = bool_validator_factory('temporary')
 
 parse_url = force_string_parser_factory('url')
 put_url_into = url_optional_putter_factory('url')
-validate_url = url_optional_validator_factory('url')
+validate_url = url_required_validator_factory('url')
 
 # width
 

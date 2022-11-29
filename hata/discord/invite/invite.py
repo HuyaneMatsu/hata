@@ -21,7 +21,6 @@ from .preinstanced import InviteTargetType, InviteType
 # Experimental addition
 
 EMBEDDED_ACTIVITY_NAME_TO_APPLICATION_ID = {
-    'Awkword': 879863881349087252,
     'Betrayal.io': 773336526917861400,
     'Chess in The Park': 832012774040141894,
     'Fishington.io': 814288819477020702,
@@ -303,7 +302,7 @@ class Invite(DiscordEntity, immortal=True):
         except KeyError:
             target_application = None
         else:
-            target_application = Application(target_application_data)
+            target_application = Application.from_data_invite(target_application_data)
         
         self.target_application = target_application
         
@@ -416,7 +415,7 @@ class Invite(DiscordEntity, immortal=True):
         except KeyError:
             pass
         else:
-            self.target_application = Application(target_application_data)
+            self.target_application = Application.from_data_invite(target_application_data)
         
         try:
             invite_stage_data = data['stage_instance']

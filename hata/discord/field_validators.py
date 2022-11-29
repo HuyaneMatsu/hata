@@ -907,6 +907,145 @@ def url_optional_validator_factory(field_name):
     return validator
 
 
+def url_required_validator_factory(field_name):
+    """
+    Returns a required url validator.
+    
+    Parameters
+    ----------
+    field_name : `str`
+        The field's name.
+    
+    Returns
+    -------
+    validator : `FunctionType`
+    """
+    def validator(url):
+        """
+        Validates the given string.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        url : `None`, `str`
+            The url to validate.
+        
+        Returns
+        -------
+        string : `None`, `str`
+                
+        Raises
+        ------
+        TypeError
+            - If `url` is not `None`, `str`.
+        ValueError
+            - If `url` is not an url.
+        """
+        nonlocal field_name
+        
+        if (url is not None) and not isinstance(url, str):
+            if not isinstance(url, str):
+                raise TypeError(
+                    f'`{field_name}` can be `None`, `str`, got {url.__class__.__name__}; {url!r}.'
+                )
+        
+        if (url is None) or (not url):
+            if not isinstance(url, str):
+                raise ValueError(
+                    f'`{field_name}` cannot be empty, got {type(url).__name__}; {url!r}.'
+                )
+        
+        if not is_url(url):
+            raise ValueError(
+                f'`{field_name}` is not a valid url, got {url!r}.'
+            )
+        
+        return url
+    
+    return validator
+
+
+def url_array_optional_validator_factory(field_name):
+    """
+    Returns an optional url array validator.
+    
+    Parameters
+    ----------
+    field_name : `str`
+        The field's name.
+    
+    Returns
+    -------
+    validator : `FunctionType`
+    """
+    def validator(url_array):
+        """
+        Validates the given string.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        url_array : `None`, `str`, `iterable` of `str`
+            The url array to validate.
+        
+        Returns
+        -------
+        url_array : `None`, `str`
+                
+        Raises
+        ------
+        TypeError
+            - If `url` is not `None`, `str`, `iterable` of `str`
+        ValueError
+            - If an `url` is not an url.
+        """
+        nonlocal field_name
+        
+        if (url_array is None):
+            return None
+        
+        if isinstance(url_array, str):
+            if not is_url(url_array):
+                raise ValueError(
+                    f'`{field_name}` is not a valid url, got {url_array!r}.'
+                )
+            
+            return (url_array, )
+        
+        if getattr(url_array, '__iter__', None) is None:
+            raise TypeError(
+                f'`{field_name}` can be `None`, `iterable` of `str`, got '
+                f'{url_array.__class__.__name__}; {url_array!r}.'
+            )
+        
+        processed_values = None
+        
+        for url in url_array:
+            if not isinstance(url, str):
+                raise TypeError(
+                    f'`{field_name}` elements can be `str`, got '
+                    f'{url.__class__.__name__}; {url!r}; {field_name}={url_array!r}.'
+                )
+            
+            if not is_url(url):
+                raise ValueError(
+                    f'`{field_name}` element is not a valid url, got {url!r}; {field_name}={url_array!r}.'
+                )
+            
+            if (processed_values is None):
+                processed_values = []
+            
+            processed_values.append(url)
+        
+        if processed_values is not None:
+            processed_values.sort()
+            return tuple(processed_values)
+    
+    return validator
+
+
 def nullable_entity_array_validator_factory(field_name, entity_type):
     """
     Returns a nullable entity array validator.

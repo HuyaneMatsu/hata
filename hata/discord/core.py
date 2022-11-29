@@ -191,4 +191,4 @@ UNICODE_TO_EMOJI = {}
 try:
     KOKORO = get_event_loop()
 except RuntimeError:
-    KOKORO = create_event_loop(daemon=False, name = 'KOKORO')
+    KOKORO = create_event_loop(daemon = False, name = 'KOKORO')

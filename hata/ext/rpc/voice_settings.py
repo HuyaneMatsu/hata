@@ -842,7 +842,7 @@ class ShortcutKey:
     
     def to_data(self):
         """
-        Converts the shortcut key to json serializible object.
+        Converts the shortcut key to json serializable object.
         
         Returns
         -------

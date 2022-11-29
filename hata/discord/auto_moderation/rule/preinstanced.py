@@ -41,7 +41,7 @@ class AutoModerationRuleTriggerType(PreinstancedBase):
     +=======================+===================+===========+===============+=====================================================+
     | none                  | none              | 0         | 0             | ``AutoModerationRuleTriggerMetadataBase``           |
     +-----------------------+-------------------+-----------+---------------+-----------------------------------------------------+
-    | keyword               | keyword           | 1         | 3             | ``AutoModerationRuleTriggerMetadataKeyword``        |
+    | keyword               | keyword           | 1         | 5             | ``AutoModerationRuleTriggerMetadataKeyword``        |
     +-----------------------+-------------------+-----------+---------------+-----------------------------------------------------+
     | harmful_link          | harmful link      | 2         | 1             | ``AutoModerationRuleTriggerMetadataBase``           |
     +-----------------------+-------------------+-----------+---------------+-----------------------------------------------------+
@@ -105,7 +105,7 @@ class AutoModerationRuleTriggerType(PreinstancedBase):
     
     # predefined
     none = P(0, 'none', 0, AutoModerationRuleTriggerMetadataBase)
-    keyword = P(1, 'keyword', 3, AutoModerationRuleTriggerMetadataKeyword)
+    keyword = P(1, 'keyword', 5, AutoModerationRuleTriggerMetadataKeyword)
     harmful_link = P(2, 'harmful link', 1, AutoModerationRuleTriggerMetadataBase)
     spam = P(3, 'spam', 1, AutoModerationRuleTriggerMetadataBase)
     keyword_preset = P(4, 'keyword preset', 1, AutoModerationRuleTriggerMetadataKeywordPreset)

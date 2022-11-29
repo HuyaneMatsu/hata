@@ -56,7 +56,7 @@ def put_bot_into(user, data, defaults, *, include_internals = False):
         
         else:
             # User not implements `defaults` and `include_internals` for now, so we wont forward them.
-            user_data = user.to_data()
+            user_data = user.to_data(defaults = defaults, include_internals = include_internals)
         
         data['bot'] = user_data
     

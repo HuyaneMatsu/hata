@@ -1,5 +1,6 @@
-__all__ = ('FailingAddress', 'RoutePlannerBase', 'RoutePlannerNanoIP', 'RoutePlannerRotatingIp',
-    'RoutePlannerRotatingNanoIP')
+__all__ = (
+    'FailingAddress', 'RoutePlannerBase', 'RoutePlannerNanoIP', 'RoutePlannerRotatingIp', 'RoutePlannerRotatingNanoIP'
+)
 
 import warnings
 

@@ -97,7 +97,7 @@ class ClientCompoundMiscellaneousEndpoints(Compound):
         
         eula_data = await self.http.eula_get(eula_id)
         if eula is None:
-            eula = EULA(eula_data)
+            eula = EULA.from_data(eula_data)
         else:
             eula._update_attributes(eula_data)
         
@@ -122,7 +122,7 @@ class ClientCompoundMiscellaneousEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         applications_data = await self.http.application_get_all_detectable()
-        return [Application(application_data) for application_data in applications_data]
+        return [Application.from_data_detectable(application_data) for application_data in applications_data]
     
     
     async def typing(self, channel):

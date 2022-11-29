@@ -6,7 +6,8 @@ from ..flags import ChannelFlag
 
 def test__parse_flags():
     """
-    Tests whether ``parse_flags`` works as intended."""
+    Tests whether ``parse_flags`` works as intended.
+    """
     for input_data, expected_output in (
         ({}, ChannelFlag(0)),
         ({'flags': 1}, ChannelFlag(1)),

@@ -931,3 +931,14 @@ class UserBase(DiscordEntity, immortal=True):
         data['flags'] = int(self.flags)
         
         return data
+    
+    
+    def copy(self):
+        """
+        Copies the user. (Not implemented)
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        """
+        return self

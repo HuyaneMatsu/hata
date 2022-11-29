@@ -18,7 +18,7 @@ from .role import Role
 
 ROLE_FIELD_CONVERTERS = {
     'color': (validate_color, put_color_into),
-    'icon': (Role.icon.validate_data_icon, partial_func(Role.icon.put_into, as_data = True)),
+    'icon': (partial_func(Role.icon.validate_icon, allow_data = True), partial_func(Role.icon.put_into, as_data = True)),
     'mentionable': (validate_mentionable, put_mentionable_into),
     'name': (validate_name, put_name_into),
     'permissions': (validate_permissions, put_permissions_into),

@@ -1,7 +1,8 @@
 import vampytest
 
-from ..fields import validate_available_tags
 from ...forum_tag import ForumTag
+
+from ..fields import validate_available_tags
 
 
 def test__validate_available_tags__0():

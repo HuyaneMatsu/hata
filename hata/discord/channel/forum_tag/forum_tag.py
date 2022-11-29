@@ -56,9 +56,9 @@ class ForumTag(DiscordEntity, immortal=True):
     
     @copy_docs(DiscordEntity.__hash__)
     def __hash__(self):
-        id_ = self.id
-        if id_:
-            return id_
+        forum_tag_id = self.id
+        if forum_tag_id:
+            return forum_tag_id
         
         return self._get_hash_partial()
     

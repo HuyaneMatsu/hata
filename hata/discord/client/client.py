@@ -953,7 +953,7 @@ class Client(
             data = await self.http.application_get_own()
             application = self.application
             old_application_id = application.id
-            application = application._create_update(data, False)
+            application = application.from_data_own(data)
             self.application = application
             new_application_id = application.id
             

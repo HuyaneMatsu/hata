@@ -5,7 +5,7 @@ from ..fields import put_nsfw_into
 
 def test__put_nsfw_into():
     """
-    Tests whether ``put_nsfw_into`` is working as intended.
+    Tests whether ``put_nsfw_into`` works as intended.
     """
     for input_, defaults, expected_output in (
         (False, False, {}),

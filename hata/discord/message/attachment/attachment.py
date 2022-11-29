@@ -11,7 +11,7 @@ from .fields import (
 )
     
 
-PRECREATE_FIELD_RESOLUTION = {
+PRECREATE_FIELDS = {
     'content_type': ('content_type', validate_content_type),
     'description': ('description', validate_description),
     'height': ('height', validate_height),
@@ -592,7 +592,7 @@ class Attachment(DiscordEntity):
             while keyword_parameters:
                 field_name, field_value = keyword_parameters.popitem()
                 try:
-                    attribute_name, validator = PRECREATE_FIELD_RESOLUTION[field_name]
+                    attribute_name, validator = PRECREATE_FIELDS[field_name]
                 except KeyError:
                     if extra is None:
                         extra = {}

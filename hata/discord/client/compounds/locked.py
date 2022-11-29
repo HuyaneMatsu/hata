@@ -239,13 +239,6 @@ class ClientCompoundLockedEndpoints(Compound):
                     f'`application` can be `{Application.__name__}`, `int`, got '
                     f'{application.__class__.__name__}; {application!r}.'
                 )
-            
-            application = APPLICATIONS.get(application_id, None)
-            
-        application_data = await self.http.application_get(application_id)
-        if application is None:
-            application = Application(application_data)
-        else:
-            application._update_attributes(application_data)
         
-        return application
+        application_data = await self.http.application_get(application_id)
+        return Application.from_data_own(application_data)

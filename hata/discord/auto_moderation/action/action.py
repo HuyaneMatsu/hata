@@ -219,10 +219,10 @@ class AutoModerationAction(RichAttributeErrorBaseType):
         else:
             metadata = action_type.metadata_type(**keyword_parameters)
         
-        self = object.__new__(type(self))
-        self.type = action_type
-        self.metadata = metadata
-        return self
+        new = object.__new__(type(self))
+        new.type = action_type
+        new.metadata = metadata
+        return new
     
     
     # ---- Field proxies ----

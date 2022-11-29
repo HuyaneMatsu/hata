@@ -851,7 +851,7 @@ def url_optional_putter_factory(field_key):
     
     return putter
 
-    
+
 def nullable_string_array_optional_putter_factory(field_key):
     """
     Returns an nullable optional string putter.

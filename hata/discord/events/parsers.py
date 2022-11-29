@@ -92,7 +92,7 @@ def READY(client, data):
             Channel.from_data(channel_private_data, client, 0)
     
     old_application_id = client.application.id
-    client.application._create_update(data['application'], True)
+    client.application.from_data_ready(data['application'])
     new_application_id = client.application.id
     
     if old_application_id != new_application_id:

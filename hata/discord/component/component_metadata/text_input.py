@@ -437,13 +437,13 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         
         # Construct
         
-        self = object.__new__(type(self))
-        self.custom_id = custom_id
-        self.label = label
-        self.max_length = max_length
-        self.min_length = min_length
-        self.placeholder = placeholder
-        self.required = required
-        self.text_input_style = text_input_style
-        self.value = value
-        return self
+        new = object.__new__(type(self))
+        new.custom_id = custom_id
+        new.label = label
+        new.max_length = max_length
+        new.min_length = min_length
+        new.placeholder = placeholder
+        new.required = required
+        new.text_input_style = text_input_style
+        new.value = value
+        return new

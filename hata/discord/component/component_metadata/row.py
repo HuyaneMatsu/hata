@@ -138,6 +138,6 @@ class ComponentMetadataRow(ComponentMetadataBase):
         
         # Construct
         
-        self = object.__new__(type(self))
-        self.components = components
-        return self
+        new = object.__new__(type(self))
+        new.components = components
+        return new

@@ -50,7 +50,7 @@ CHANNEL_GUILD_MAIN_FIELD_CONVERTERS = {
 
 CHANNEL_PRIVATE_GROUP_FIELD_CONVERTERS = {
     'icon': (
-        CHANNEL_METADATA_ICON_SLOT.validate_data_icon,
+        CHANNEL_METADATA_ICON_SLOT.validate_icon,
         partial_func(CHANNEL_METADATA_ICON_SLOT.put_into, as_data = True),
     ),
     'name': (validate_name, put_name_into),

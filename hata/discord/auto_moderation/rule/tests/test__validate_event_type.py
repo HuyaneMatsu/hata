@@ -4,7 +4,7 @@ from ..fields import validate_event_type
 from ..preinstanced import AutoModerationEventType
 
 
-def test__validate_event_type():
+def test__validate_event_type__0():
     """
     Tests whether ``validate_event_type`` is working as intended.
     """

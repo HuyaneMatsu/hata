@@ -372,14 +372,14 @@ class ComponentMetadataButton(ComponentMetadataBase):
         
         # Construct
         
-        self = object.__new__(type(self))
-        self.button_style = button_style
-        self.custom_id = custom_id
-        self.emoji = emoji
-        self.enabled = enabled
-        self.label = label
-        self.url = url
+        new = object.__new__(type(self))
+        new.button_style = button_style
+        new.custom_id = custom_id
+        new.emoji = emoji
+        new.enabled = enabled
+        new.label = label
+        new.url = url
         
-        self._validate()
+        new._validate()
         
-        return self
+        return new

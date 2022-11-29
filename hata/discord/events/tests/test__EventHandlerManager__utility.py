@@ -14,7 +14,7 @@ def test__EventHandlerManager__clear():
     client = Client('token_20220718')
     
     try:
-        with module_warnings.catch_warnings(record=True) as warnings:
+        with module_warnings.catch_warnings(record = True) as warnings:
             module_warnings.simplefilter('always')
             
             client.events.clear()

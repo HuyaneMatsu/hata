@@ -42,12 +42,12 @@ def test__ActivityParty__to_data__0():
     
     Case: all fields set.
     """
-    id_ = 'plain'
+    party_id = 'plain'
     size = 6
     max_ = 12
     
     field = ActivityParty(
-        id_ = id_,
+        party_id = party_id,
         size = size,
         max_ = max_,
     )
@@ -57,7 +57,7 @@ def test__ActivityParty__to_data__0():
     vampytest.assert_in('id', data)
     vampytest.assert_in('size', data)
     
-    vampytest.assert_eq(data['id'], id_)
+    vampytest.assert_eq(data['id'], party_id)
     vampytest.assert_eq(data['size'], [size, max_])
 
 

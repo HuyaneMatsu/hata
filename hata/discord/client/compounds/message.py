@@ -255,13 +255,13 @@ class ClientCompoundMessageEndpoints(Compound):
                 message = MESSAGES.get(message_id, None)
             
             if (message is None):
-                message = Message(message_data)
+                message = Message.from_data(message_data)
             
             else:
                 message._set_attributes(message_data)
         
         else:
-            message = Message(message_data)
+            message = Message.from_data(message_data)
         
         return message
     
@@ -1119,7 +1119,7 @@ class ClientCompoundMessageEndpoints(Compound):
                                 else:
                                     author_id = int(author_id)
                         else:
-                            message_ = Message(message_data)
+                            message_ = Message.from_data(message_data)
                             last_message_id = message_.id
                             
                             # Did we reach the after limit?
@@ -1521,7 +1521,7 @@ class ClientCompoundMessageEndpoints(Compound):
                                 else:
                                     author_id = int(author_id)
                         else:
-                            message_ = Message(message_data)
+                            message_ = Message.from_data(message_data)
                             last_message_id = message_.id
                             
                             # Did we reach the after limit?
@@ -1718,7 +1718,7 @@ class ClientCompoundMessageEndpoints(Compound):
         
         data = await self.http.channel_pin_get_all(channel_id)
         
-        return [Message(message_data) for message_data in data]
+        return [Message.from_data(message_data) for message_data in data]
     
     
     async def _load_messages_till(self, channel, index):

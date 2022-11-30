@@ -224,7 +224,7 @@ def parse_messages(data):
     resolved_messages = {}
     
     for message_data in resolved_message_datas.values():
-        message = Message(message_data)
+        message = Message.from_data(message_data)
         resolved_messages[message.id] = message
     
     return resolved_messages

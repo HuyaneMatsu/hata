@@ -46,9 +46,9 @@ def test__ActivityMetadataRich__new__1():
     created_at = DateTime(2014, 9, 11)
     details = 'vocal'
     flags = ActivityFlag(1)
-    id_ = 202209070001
+    activity_id = 202209070001
     name = 'Iceon'
-    party = ActivityParty(id_='Kamase-Tora')
+    party = ActivityParty(party_id = 'Kamase-Tora')
     secrets = ActivitySecrets(join='deitarabochi')
     session_id = 'Autobahn'
     state = 'plain'
@@ -62,7 +62,7 @@ def test__ActivityMetadataRich__new__1():
         'created_at': created_at,
         'details': details,
         'flags': flags,
-        'id_': id_,
+        'activity_id': activity_id,
         'name': name,
         'party': party,
         'secrets': secrets,
@@ -82,7 +82,7 @@ def test__ActivityMetadataRich__new__1():
     vampytest.assert_eq(activity_metadata.created_at, created_at)
     vampytest.assert_eq(activity_metadata.details, details)
     vampytest.assert_eq(activity_metadata.flags, flags)
-    vampytest.assert_eq(activity_metadata.id, id_)
+    vampytest.assert_eq(activity_metadata.id, activity_id)
     vampytest.assert_eq(activity_metadata.name, name)
     vampytest.assert_eq(activity_metadata.party, party)
     vampytest.assert_eq(activity_metadata.secrets, secrets)

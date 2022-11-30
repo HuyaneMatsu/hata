@@ -9,7 +9,7 @@ def test__ActivityParty__new__0():
     correct type.
     """
     field = ActivityParty(
-        id_ = '',
+        party_id = '',
     )
     
     vampytest.assert_is(field.id, None)
@@ -21,16 +21,16 @@ def test__ActivityParty__new__1():
     """
     Tests whether ``ActivityParty.__new__`` sets string values as expected.
     """
-    id_ = 'plain'
+    party_id = 'plain'
     size = 6
     max_ = 12
     
     field = ActivityParty(
-        id_ = id_,
+        party_id = party_id,
         size = size,
         max_ = max_,
     )
     
-    vampytest.assert_eq(field.id, id_)
+    vampytest.assert_eq(field.id, party_id)
     vampytest.assert_eq(field.size, size)
     vampytest.assert_eq(field.max, max_)

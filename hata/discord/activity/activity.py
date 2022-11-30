@@ -30,7 +30,7 @@ class Activity(RichAttributeErrorBaseType):
     """
     __slots__ = ('metadata', 'type')
     
-    def __new__(cls, name, *, type_=None, **keyword_parameters):
+    def __new__(cls, name, *, activity_type = ..., type_ = ..., **keyword_parameters):
         """
         Creates a new activity with the given parameters.
         
@@ -38,7 +38,7 @@ class Activity(RichAttributeErrorBaseType):
         ----------
         name : `str`
             The name of the activity.
-        type_ : `None`, `int` = `None`, Optional (Keyword only)
+        activity_type : `int`, ``ActivityType`` = `None`, Optional (Keyword only)
             The type value of the activity.
         **keyword_parameters : Keyword parameters
             Additional parameters to pass to the activity-type specific constructor.
@@ -55,7 +55,7 @@ class Activity(RichAttributeErrorBaseType):
             What the player is currently doing.
         flags : ``ActivityFlag``, `int`, Optional (Keyword only)
             The flags of the activity.
-        id_ : `int`, Optional (Keyword only)
+        activity_id : `int`, Optional (Keyword only)
             The id of the activity.
         party : `None`, ``ActivityParty``, Optional (Keyword only)
             The activity's party.
@@ -84,13 +84,25 @@ class Activity(RichAttributeErrorBaseType):
         ValueError
             - If a parameter's value is incorrect.
         """
-        if type_ is None:
-            type_ = ActivityType.game
+        if type_ is not ...:
+            warnings.warn(
+                (
+                    f'`{cls.__name__}.__new__`\'s `type_` parameter is deprecated and will be removed in 2023 Marc. '
+                    f'Please use `activity_type` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
+            activity_type = type_
+        
+        if activity_type is ...:
+            activity_type = ActivityType.game
         else:
-            type_ = preconvert_preinstanced_type(type_, 'type_', ActivityType)
+            activity_type = preconvert_preinstanced_type(activity_type, 'activity_type', ActivityType)
         
         keyword_parameters['name'] = name
-        metadata = type_.metadata_type(keyword_parameters)
+        metadata = activity_type.metadata_type(keyword_parameters)
         
         if keyword_parameters:
             raise TypeError(
@@ -99,7 +111,7 @@ class Activity(RichAttributeErrorBaseType):
         
         self = object.__new__(cls)
         self.metadata = metadata
-        self.type = type_
+        self.type = activity_type
         return self
     
     
@@ -789,4 +801,4 @@ class Activity(RichAttributeErrorBaseType):
             return timestamps.end
 
 
-ACTIVITY_UNKNOWN = Activity('', type_=ActivityType.unknown)
+ACTIVITY_UNKNOWN = Activity('', activity_type = ActivityType.unknown)

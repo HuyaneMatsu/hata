@@ -23,7 +23,7 @@ from hata import ActivityType, Activity, Client
 
 client = Client(
     'token',
-    activity = Activity('Eating', type_ = ActivityType.competing),
+    activity = Activity('Eating', activity_type = ActivityType.competing),
 )
 ```
 

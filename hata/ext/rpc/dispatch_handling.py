@@ -85,7 +85,7 @@ def handle_dispatch_voice_connection_status(rpc_client, data):
 
 
 def handle_dispatch_message_create(rpc_client, data):
-    message = Message(data)
+    message = Message.from_data(data)
     
     Task(rpc_client.events.message_create(rpc_client, message), KOKORO)
 
@@ -98,7 +98,7 @@ def handle_dispatch_message_edit(rpc_client, data):
             return
     
         # Dead event handling
-        message = Message(data)
+        message = Message.from_data(data)
         old_attributes = None
     
     else:

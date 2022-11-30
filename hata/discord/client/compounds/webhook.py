@@ -1007,4 +1007,4 @@ class ClientCompoundWebhookEndpoints(Compound):
             )
         
         message_data = await self.http.webhook_message_get(webhook_id, webhook_token, message_id_value)
-        return Message(message_data)
+        return Message.from_data(message_data)

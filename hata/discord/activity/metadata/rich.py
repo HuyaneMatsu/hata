@@ -1,5 +1,6 @@
 __all__ = ('ActivityMetadataRich',)
 
+import warnings
 from datetime import datetime
 
 from scarletio import copy_docs
@@ -105,13 +106,29 @@ class ActivityMetadataRich(ActivityMetadataBase):
         else:
             flags = preconvert_flag(flags, 'flags', ActivityFlag)
         
-        # id_
         try:
-            id_ = keyword_parameters.pop('id_')
+            activity_id = keyword_parameters.pop('id_')
         except KeyError:
-            id_ = 0
+            pass
         else:
-            id_ = preconvert_snowflake(id_, 'id_')
+            warnings.warn(
+                (
+                    f'`{cls.__name__}.__new__`\'s `id_` parameter is deprecated and will be removed in 2023 Marc. '
+                    f'Please use `activity_id` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
+            keyword_parameters['activity_id'] = activity_id
+        
+        # activity_id
+        try:
+            activity_id = keyword_parameters.pop('activity_id')
+        except KeyError:
+            activity_id = 0
+        else:
+            activity_id = preconvert_snowflake(activity_id, 'activity_id')
         
         # name
         try:
@@ -217,7 +234,7 @@ class ActivityMetadataRich(ActivityMetadataBase):
         self.sync_id = sync_id
         self.session_id = session_id
         self.created_at = created_at
-        self.id = id_
+        self.id = activity_id
         self.timestamps = timestamps
         self.url = url
         

@@ -91,6 +91,7 @@
 
 - Fix infinite loop in ``ApplicationInstallParameters.__repr__``.
 - `Application.max_participants` now correctly defaults to `0`.
+- Lookup channel's `.guild_id` if missing from message data. (We can count this as an api bug.)
 
 #### Renames, Deprecation & Removals
 
@@ -99,6 +100,14 @@
 - Deprecate `ApplicationExecutable.is_launcher`.
 - Remove `EmbeddedActivityConfiguration` (not used anymore).
 - Deprecate `Application.embedded_activity_configuration`.
+- Rename `Message.__new__` to `.from_data`.
+- Deprecate `Message.__new__`.
+- Rename `Guild.__new__` to `.from_data`.
+- Deprecate `Guild.__new__`.
+- Rename `Activity.__new__`'s `type_` parameter to `activity_type`.
+- Deprecate `Activity.__new__`'s `type_` parameter.
+- Rename `ActivityParty.__new__`'s `id_` parameter to `party_id`.
+- Deprecate `ActivityParty.__new__`'s `id_` parameter.
 
 #### Improvements
 

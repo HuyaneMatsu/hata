@@ -444,7 +444,7 @@ class ClientCompoundGuildEndpoints(Compound):
             data['channels'] = channel_datas
             user_data = await self.http.guild_user_get(guild_id, self.id)
             data['members'] = [user_data]
-            guild = Guild(data, self)
+            guild = Guild.from_data(data, self)
         else:
             guild._sync(data)
         
@@ -484,7 +484,7 @@ class ClientCompoundGuildEndpoints(Compound):
             data['channels'] = channel_datas
             user_data = await self.http.guild_user_get(guild_id, self.id)
             data['members'] = [user_data]
-            guild = Guild(data, self)
+            guild = Guild.from_data(data, self)
         else:
             data = await self.http.guild_get(guild_id, None)
             guild._sync(data)

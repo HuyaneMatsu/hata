@@ -776,7 +776,7 @@ class ClientCompoundInteractionEndpoints(Compound):
             application_id, interaction_event.id, interaction_event.token
         )
         
-        return Message(message_data)
+        return Message.from_data(message_data)
     
     
     async def interaction_followup_message_create(
@@ -1136,4 +1136,4 @@ class ClientCompoundInteractionEndpoints(Compound):
             application_id, interaction_event.id, interaction_event.token, message_id
         )
         
-        return Message(message_data)
+        return Message.from_data(message_data)

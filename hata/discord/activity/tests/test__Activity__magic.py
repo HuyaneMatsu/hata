@@ -5,7 +5,10 @@ import vampytest
 from ...emoji import Emoji, create_partial_emoji_data
 from ...utils import datetime_to_millisecond_unix_time
 
-from .. import Activity, ActivityAssets, ActivityFlag, ActivityParty, ActivitySecrets, ActivityTimestamps, ActivityType
+from ..activity import Activity
+from ..fields import ActivityAssets, ActivityParty, ActivitySecrets, ActivityTimestamps
+from ..flags import ActivityFlag
+from ..preinstanced import ActivityType
 
 
 def iter_activity_datas_by_type():
@@ -15,8 +18,8 @@ def iter_activity_datas_by_type():
     created_at = DateTime(2014, 9, 11)
     details = 'vocal'
     flags = ActivityFlag(1)
-    id_ = 202209070022
-    party = ActivityParty(id_ = 'Kamase-Tora')
+    activity_id = 202209070022
+    party = ActivityParty(party_id = 'Kamase-Tora')
     secrets = ActivitySecrets(join = 'deitarabochi')
     session_id = 'Autobahn'
     state = 'plain'
@@ -31,7 +34,7 @@ def iter_activity_datas_by_type():
         'created_at': datetime_to_millisecond_unix_time(created_at),
         'details': details,
         'flags': int(flags),
-        'id': format(id_, 'x'),
+        'id': format(activity_id, 'x'),
         'name': name,
         'party': party.to_data(),
         'secrets': secrets.to_data(),
@@ -43,8 +46,8 @@ def iter_activity_datas_by_type():
         'emoji': create_partial_emoji_data(emoji)
     }
     
-    for type_ in ActivityType.INSTANCES.values():
-        yield {**data, 'type': type_.value}
+    for activity_type in ActivityType.INSTANCES.values():
+        yield {**data, 'type': activity_type.value}
 
 
 def test__Activity__hash():
@@ -69,11 +72,11 @@ def test__Activity__eq():
     Tests whether ``Activity.__eq__`` works as expected.
     """
     name = ''
-    type_ = ActivityType.game
+    activity_type = ActivityType.game
     
     keyword_parameters = {
         'name': name,
-        'type_': type_,
+        'activity_type': activity_type,
     }
     
     activity = Activity(**keyword_parameters)
@@ -83,7 +86,7 @@ def test__Activity__eq():
     
     for filed_name, field_value in (
         ('name', 'Nue'),
-        ('type_', ActivityType.unknown),
+        ('activity_type', ActivityType.unknown),
     ):
         other_activity = Activity(**{**keyword_parameters, filed_name: field_value})
         

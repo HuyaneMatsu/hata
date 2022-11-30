@@ -57,7 +57,7 @@ def process_message_chunk(message_datas, channel):
     if index != limit:
         if channel is None:
             for message_data in message_datas:
-                message = Message(message_data)
+                message = Message.from_data(message_data)
                 received.append(message)
         else:
             message_data = message_datas[index]
@@ -96,7 +96,7 @@ def process_message_chunk(message_datas, channel):
                     
                     message_data = message_datas[index]
                     index += 1
-                    message = Message(message_data)
+                    message = Message.from_data(message_data)
                     received.append(message)
                     continue
     

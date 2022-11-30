@@ -1,5 +1,7 @@
 __all__ = ('ActivityParty', )
 
+import warnings
+
 from scarletio import copy_docs
 
 from .base import ActivityFieldBase
@@ -98,7 +100,7 @@ class ActivityParty(ActivityFieldBase):
     """
     __slots__ = ('id', 'size', 'max',)
     
-    def __new__(cls, *, id_=None, size=0, max_=0):
+    def __new__(cls, *, party_id = None, id_ = ..., size = 0, max_ = 0):
         """
         Creates a new activity party instance form the given parameters.
         
@@ -111,15 +113,27 @@ class ActivityParty(ActivityFieldBase):
         max_ : `int` = `0`, Optional (Keyword only)
             The party's actual size, which in the player is.
         """
-        assert _assert__activity_secrets__id(id_)
+        if id_ is not ...:
+            warnings.warn(
+                (
+                    f'`{cls.__name__}.__new__`\'s `type_` parameter is deprecated and will be removed in 2023 Marc. '
+                    f'Please use `activity_type` instead.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
+            party_id = id_
+        
+        assert _assert__activity_secrets__id(party_id)
         assert _assert__activity_secrets__size(size)
         assert _assert__activity_secrets__max(max_)
         
-        if (id_ is not None) and (not id_):
-            id_ = None
+        if (party_id is not None) and (not party_id):
+            party_id = None
         
         self = object.__new__(cls)
-        self.id = id_
+        self.id = party_id
         self.size = size
         self.max = max_
         return self

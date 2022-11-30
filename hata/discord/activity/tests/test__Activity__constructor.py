@@ -4,7 +4,10 @@ import vampytest
 
 from ...emoji import Emoji
 
-from .. import Activity, ActivityAssets, ActivityFlag, ActivityParty, ActivitySecrets, ActivityTimestamps, ActivityType
+from ..activity import Activity
+from ..fields import ActivityAssets, ActivityParty, ActivitySecrets, ActivityTimestamps
+from ..flags import ActivityFlag
+from ..preinstanced import ActivityType
 
 
 def test__Activity__new__0():
@@ -14,15 +17,15 @@ def test__Activity__new__0():
     Case: Creating rich activity.
     """
     name = 'Iceon'
-    type_ = ActivityType.game
+    activity_type = ActivityType.game
     
     application_id = 202209070019
     assets = ActivityAssets(image_large = 'senya')
     created_at = DateTime(2014, 9, 11)
     details = 'vocal'
     flags = ActivityFlag(1)
-    id_ = 202209070020
-    party = ActivityParty(id_ = 'Kamase-Tora')
+    activity_id = 202209070020
+    party = ActivityParty(party_id = 'Kamase-Tora')
     secrets = ActivitySecrets(join = 'deitarabochi')
     session_id = 'Autobahn'
     state = 'plain'
@@ -32,13 +35,13 @@ def test__Activity__new__0():
     
     activity = Activity(
         name,
-        type_ = type_,
+        activity_type = activity_type,
         application_id = application_id,
         assets = assets,
         created_at = created_at,
         details = details,
         flags = flags,
-        id_ = id_,
+        activity_id = activity_id,
         party = party,
         secrets = secrets,
         session_id = session_id,
@@ -50,13 +53,13 @@ def test__Activity__new__0():
     
     vampytest.assert_instance(activity, Activity)
     
-    vampytest.assert_is(activity.type, type_)
+    vampytest.assert_is(activity.type, activity_type)
     vampytest.assert_eq(activity.application_id, application_id)
     vampytest.assert_eq(activity.assets, assets)
     vampytest.assert_eq(activity.created_at, created_at)
     vampytest.assert_eq(activity.details, details)
     vampytest.assert_eq(activity.flags, flags)
-    vampytest.assert_eq(activity.id, id_)
+    vampytest.assert_eq(activity.id, activity_id)
     vampytest.assert_eq(activity.name, name)
     vampytest.assert_eq(activity.party, party)
     vampytest.assert_eq(activity.secrets, secrets)
@@ -76,7 +79,7 @@ def test__Activity__new__1():
     Case: Creating custom activity.
     """
     name = 'Keine'
-    type_ = ActivityType.custom
+    activity_type = ActivityType.custom
     
     with vampytest.assert_raises(TypeError):
-        Activity(name, type_ = type_)
+        Activity(name, activity_type = activity_type)

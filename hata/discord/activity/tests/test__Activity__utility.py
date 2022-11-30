@@ -5,14 +5,16 @@ import vampytest
 from ...color import Color
 from ...utils import is_url
 
-from .. import Activity, ActivityType, ActivityAssets, ActivityTimestamps
+from ..activity import Activity
+from ..fields import ActivityAssets, ActivityTimestamps
+from ..preinstanced import ActivityType
 
 
 def test__Activity__color():
     """
     Tests whether ``Activity.color`` works as intended.
     """
-    activity = Activity('', type_ = ActivityType.game)
+    activity = Activity('', activity_type = ActivityType.game)
     vampytest.assert_instance(activity.color, Color)
 
 
@@ -22,7 +24,7 @@ def test__Activity__discord_side_id__0():
     
     Case: no id.
     """
-    activity = Activity('', type_ = ActivityType.game)
+    activity = Activity('', activity_type = ActivityType.game)
     vampytest.assert_instance(activity.discord_side_id, str)
 
 
@@ -33,7 +35,7 @@ def test__Activity__discord_side_id__1():
     Case: id given.
     """
     activity_id = 202209080000
-    activity = Activity('', type_ = ActivityType.game, id_ = activity_id)
+    activity = Activity('', activity_type = ActivityType.game, activity_id = activity_id)
     vampytest.assert_instance(activity.discord_side_id, str)
 
 
@@ -43,7 +45,9 @@ def test__Activity__twitch_name():
     """
     name = 'senya'
     
-    activity = Activity('', type_ = ActivityType.stream, assets = ActivityAssets(image_large = f'twitch:{name}'))
+    activity = Activity(
+        '', activity_type = ActivityType.stream, assets = ActivityAssets(image_large = f'twitch:{name}')
+    )
     
     vampytest.assert_eq(activity.twitch_name, name)
 
@@ -54,7 +58,9 @@ def test__Activity__twitch_preview_image_url():
     """
     name = 'senya'
     
-    activity = Activity('', type_ = ActivityType.stream, assets = ActivityAssets(image_large = f'twitch:{name}'))
+    activity = Activity(
+        '', activity_type = ActivityType.stream, assets = ActivityAssets(image_large = f'twitch:{name}')
+    )
     
     twitch_preview_image_url = activity.twitch_preview_image_url
     vampytest.assert_instance(twitch_preview_image_url, str)
@@ -68,7 +74,9 @@ def test__Activity__youtube_video_id():
     """
     name = 'senya'
     
-    activity = Activity('', type_ = ActivityType.stream, assets = ActivityAssets(image_large = f'youtube:{name}'))
+    activity = Activity(
+        '', activity_type = ActivityType.stream, assets = ActivityAssets(image_large = f'youtube:{name}')
+    )
     
     vampytest.assert_eq(activity.youtube_video_id, name)
 
@@ -79,7 +87,9 @@ def test__Activity__youtube_preview_image_url():
     """
     name = 'senya'
     
-    activity = Activity('', type_ = ActivityType.stream, assets = ActivityAssets(image_large = f'youtube:{name}'))
+    activity = Activity(
+        '', activity_type = ActivityType.stream, assets = ActivityAssets(image_large = f'youtube:{name}')
+    )
     
     youtube_preview_image_url = activity.youtube_preview_image_url
     vampytest.assert_instance(youtube_preview_image_url, str)
@@ -95,7 +105,9 @@ def test__Activity__spotify_track_duration():
     start = DateTime(2022, 6, 6)
     end = start + duration
     
-    activity = Activity('', type_ = ActivityType.spotify, timestamps = ActivityTimestamps(end = end, start = start))
+    activity = Activity(
+        '', activity_type = ActivityType.spotify, timestamps = ActivityTimestamps(end = end, start = start)
+    )
     
     vampytest.assert_eq(activity.spotify_track_duration, duration)
 
@@ -106,7 +118,9 @@ def test__Activity__spotify_cover_id():
     """
     name = 'senya'
     
-    activity = Activity('', type_ = ActivityType.spotify, assets = ActivityAssets(image_large = f'spotify:{name}'))
+    activity = Activity(
+        '', activity_type = ActivityType.spotify, assets = ActivityAssets(image_large = f'spotify:{name}')
+    )
     
     vampytest.assert_eq(activity.spotify_cover_id, name)
 
@@ -117,7 +131,9 @@ def test__Activity__spotify_album_cover_url():
     """
     name = 'senya'
     
-    activity = Activity('', type_ = ActivityType.spotify, assets = ActivityAssets(image_large = f'spotify:{name}'))
+    activity = Activity(
+        '', activity_type = ActivityType.spotify, assets = ActivityAssets(image_large = f'spotify:{name}')
+    )
     
     spotify_album_cover_url = activity.spotify_album_cover_url
     vampytest.assert_instance(spotify_album_cover_url, str)
@@ -131,7 +147,9 @@ def test__Activity__spotify_track_id():
     """
     name = 'senya'
     
-    activity = Activity('', type_ = ActivityType.spotify, sync_id = name)
+    activity = Activity(
+        '', activity_type = ActivityType.spotify, sync_id = name
+    )
     
     vampytest.assert_eq(activity.spotify_track_id, name)
 
@@ -142,7 +160,9 @@ def test__Activity__spotify_track_url():
     """
     name = 'senya'
     
-    activity = Activity('', type_ = ActivityType.spotify, sync_id = name)
+    activity = Activity(
+        '', activity_type = ActivityType.spotify, sync_id = name
+    )
     
     spotify_track_url = activity.spotify_track_url
     vampytest.assert_instance(spotify_track_url, str)
@@ -216,7 +236,9 @@ def test__Activity__start():
     """
     start = DateTime(2022, 6, 6)
     
-    activity = Activity('', type_ = ActivityType.spotify, timestamps = ActivityTimestamps(start = start))
+    activity = Activity(
+        '', activity_type = ActivityType.spotify, timestamps = ActivityTimestamps(start = start)
+    )
     
     vampytest.assert_eq(activity.start, start)
 
@@ -227,6 +249,8 @@ def test__Activity__end():
     """
     end = DateTime(2022, 6, 6)
     
-    activity = Activity('', type_ = ActivityType.spotify, timestamps = ActivityTimestamps(end = end))
+    activity = Activity(
+        '', activity_type = ActivityType.spotify, timestamps = ActivityTimestamps(end = end)
+    )
     
     vampytest.assert_eq(activity.end, end)

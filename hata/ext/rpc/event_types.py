@@ -248,7 +248,7 @@ class NotificationCreateEvent(EventBase):
         self.body = data['body']
         self.channel_id = int(data['channel_id'])
         self.icon_url = data.get('icon_url', None)
-        self.message = Message(data['message'])
+        self.message = Message.from_data(data['message'])
         self.title = data['title']
         return self
     

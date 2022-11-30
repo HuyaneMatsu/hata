@@ -333,7 +333,21 @@ class Guild(DiscordEntity, immortal = True):
         module_urls.guild_discovery_splash_url_as,
     )
     
+    
     def __new__(cls, data, client):
+        """
+        `.__new__` will be repurposed. Please use `.from_data` instead.
+        """
+        warnings.warn(
+            f'`{cls.__name__}.__new__` will be repurposed. Please use `.from_data` instead.',
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return cls.from_data(data, client)
+    
+    
+    @classmethod
+    def from_data(cls, data, client = None):
         """
         Tries to find the guild from the already existing ones. If it can not find, creates a new one. If the found
         guild is partial (or freshly created), sets it's attributes from the given `data`. If the the guild is not
@@ -343,7 +357,7 @@ class Guild(DiscordEntity, immortal = True):
         ----------
         data : `dict` of (`str`, `Any`) items
             Received guild data.
-        client : ``Client``
+        client : `None`, ``Client`` = `None`, Optional
             The client who received the guild's data.
         
         Returns

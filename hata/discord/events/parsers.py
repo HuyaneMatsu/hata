@@ -72,7 +72,7 @@ def READY(client, data):
     # and those disappear so there is not reason to create them
     if not client.bot:
         for guild_data in guild_datas:
-            guild = Guild(guild_data, client)
+            guild = Guild.from_data(guild_data, client)
             ready_state.feed_guild(client, guild)
     
     try:
@@ -401,7 +401,7 @@ def MESSAGE_UPDATE__CAL_SC(client, data):
             return
         
         # Dead event handling
-        message = Message(data)
+        message = Message.from_data(data)
         Task(client.events.message_edit(client, message, None), KOKORO)
         return
     
@@ -426,7 +426,7 @@ def MESSAGE_UPDATE__CAL_MC(client, data):
         if 'edited_timestamp' not in data:
             return
         
-        message = Message(data)
+        message = Message.from_data(data)
         message_cached_before = False
     else:
         message_cached_before = True
@@ -2065,7 +2065,7 @@ if CACHE_PRESENCE:
         if guild_state:
             return
         
-        guild = Guild(data, client)
+        guild = Guild.from_data(data, client)
         
         ready_state = client.ready_state
         if (ready_state is None) or (not ready_state.feed_guild(client, guild)):
@@ -2080,7 +2080,7 @@ if CACHE_PRESENCE:
         if guild_state:
             return
         
-        guild = Guild(data, client)
+        guild = Guild.from_data(data, client)
         
         ready_state = client.ready_state
         if (ready_state is None) or (not ready_state.feed_guild(client, guild)):
@@ -2093,7 +2093,7 @@ elif CACHE_USER:
         if guild_state:
             return
         
-        guild = Guild(data, client)
+        guild = Guild.from_data(data, client)
         
         ready_state = client.ready_state
         if (ready_state is None) or (not ready_state.feed_guild(client, guild)):
@@ -2107,7 +2107,7 @@ elif CACHE_USER:
         if guild_state:
             return
         
-        guild = Guild(data, client)
+        guild = Guild.from_data(data, client)
         
         ready_state = client.ready_state
         if (ready_state is None) or (not ready_state.feed_guild(client, guild)):
@@ -2120,7 +2120,7 @@ else:
         if guild_state:
             return
         
-        guild = Guild(data, client)
+        guild = Guild.from_data(data, client)
         
         ready_state = client.ready_state
         if (ready_state is None) or (not ready_state.feed_guild(client, guild)):
@@ -2131,7 +2131,7 @@ else:
         if guild_state:
             return
         
-        guild = Guild(data, client)
+        guild = Guild.from_data(data, client)
         
         ready_state = client.ready_state
         if (ready_state is not None):

@@ -237,7 +237,7 @@ def _iter_message_field(message, field_key):
 
 
 @export
-class Message(DiscordEntity, immortal=True):
+class Message(DiscordEntity, immortal = True):
     """
     Represents a message from Discord.
     
@@ -299,7 +299,21 @@ class Message(DiscordEntity, immortal=True):
     """
     __slots__ = ('_fields', 'author', 'channel_id', 'guild_id')
     
+    
     def __new__(cls, data):
+        """
+        `.__new__` will be repurposed. Please use `.from_data` instead.
+        """
+        warnings.warn(
+            f'`{cls.__name__}.__new__` will be repurposed. Please use `.from_data` instead.',
+            FutureWarning,
+            stacklevel = 2,
+        )
+        return cls.from_data(data)
+    
+    
+    @classmethod
+    def from_data(cls, data):
         """
         Creates a new message object form the given message payload. If the message already exists, picks it up.
         
@@ -334,9 +348,6 @@ class Message(DiscordEntity, immortal=True):
         self._fields = None
         self._set_attributes(data)
         return self
-    
-    
-    from_data = classmethod(__new__)
     
     
     @classmethod
@@ -450,7 +461,6 @@ class Message(DiscordEntity, immortal=True):
         else:
             guild_id = int(guild_id)
         self.guild_id = guild_id
-        
         return self
     
     
@@ -502,11 +512,20 @@ class Message(DiscordEntity, immortal=True):
         channel_id = int(data['channel_id'])
         self.channel_id = channel_id
         
-        guild_id = data.get('guild_id', None)
-        if guild_id is None:
-            guild_id = 0
+        try:
+            guild_id = data['guild_id']
+        except KeyError:
+            try:
+                channel = CHANNELS[channel_id]
+            except KeyError:
+                guild_id = 0
+            else:
+                guild_id = channel.guild_id
         else:
-            guild_id = int(guild_id)
+            if guild_id is None:
+                guild_id = 0
+            else:
+                guild_id = int(guild_id)
         
         self.guild_id = guild_id
         
@@ -583,10 +602,7 @@ class Message(DiscordEntity, immortal=True):
             else:
                 referenced_message = self._create_from_partial_data(referenced_message_data)
         else:
-            # Discord do not sends `guild_id` for nested message instances.
-            referenced_message_data['guild_id'] = data.get('guild_id', None)
-            
-            referenced_message = type(self)(referenced_message_data)
+            referenced_message = type(self).from_data(referenced_message_data)
         
         if (referenced_message is not None):
             _set_message_field(self, MESSAGE_FIELD_KEY_REFERENCED_MESSAGE, referenced_message)

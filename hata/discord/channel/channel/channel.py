@@ -1823,7 +1823,7 @@ class Channel(DiscordEntity, immortal = True):
         -----
         The created message cannot be added to the channel's message history, if it has no more spaces.
         """
-        message = Message(message_data)
+        message = Message.from_data(message_data)
         message_id = message.id
         
         messages = self.messages
@@ -1864,7 +1864,7 @@ class Channel(DiscordEntity, immortal = True):
                 if message.id == message_id:
                     return message, True
         
-        message = Message(message_data)
+        message = Message.from_data(message_data)
         
         if chained:
             self._maybe_increase_queue_size().append(message)

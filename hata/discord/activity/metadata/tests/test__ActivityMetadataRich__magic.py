@@ -16,9 +16,9 @@ def test__ActivityMetadataRich__repr():
     created_at = DateTime(2014, 9, 11)
     details = 'vocal'
     flags = ActivityFlag(1)
-    id_ = 202209070014
+    activity_id = 202209070014
     name = 'Iceon'
-    party = ActivityParty(id_='Kamase-Tora')
+    party = ActivityParty(party_id = 'Kamase-Tora')
     secrets = ActivitySecrets(join='deitarabochi')
     session_id = 'Autobahn'
     state = 'plain'
@@ -32,7 +32,7 @@ def test__ActivityMetadataRich__repr():
         'created_at': created_at,
         'details': details,
         'flags': flags,
-        'id_': id_,
+        'activity_id': activity_id,
         'name': name,
         'party': party,
         'secrets': secrets,
@@ -51,14 +51,14 @@ def test__ActivityMetadataRich__hash():
     Tests whether ``ActivityMetadataRich.__hash__`` works as intended.
     """
     application_id = 202209070015
-    assets = ActivityAssets(image_large='senya')
+    assets = ActivityAssets(image_large = 'senya')
     created_at = DateTime(2014, 9, 11)
     details = 'vocal'
     flags = ActivityFlag(1)
-    id_ = 202209070016
+    activity_id = 202209070016
     name = 'Iceon'
-    party = ActivityParty(id_='Kamase-Tora')
-    secrets = ActivitySecrets(join='deitarabochi')
+    party = ActivityParty(party_id = 'Kamase-Tora')
+    secrets = ActivitySecrets(join = 'deitarabochi')
     session_id = 'Autobahn'
     state = 'plain'
     sync_id = 'asia'
@@ -71,7 +71,7 @@ def test__ActivityMetadataRich__hash():
         'created_at': created_at,
         'details': details,
         'flags': flags,
-        'id_': id_,
+        'activity_id': activity_id,
         'name': name,
         'party': party,
         'secrets': secrets,
@@ -90,18 +90,18 @@ def test__ActivityMetadataRich__eq():
     Tests whether ``ActivityMetadataRich.__eq__`` works as intended.
     """
     application_id = 202209070017
-    assets = ActivityAssets(image_large='senya')
+    assets = ActivityAssets(image_large = 'senya')
     created_at = DateTime(2014, 9, 11)
     details = 'vocal'
     flags = ActivityFlag(1)
-    id_ = 202209070018
+    activity_id = 202209070018
     name = 'Iceon'
-    party = ActivityParty(id_='Kamase-Tora')
-    secrets = ActivitySecrets(join='deitarabochi')
+    party = ActivityParty(party_id = 'Kamase-Tora')
+    secrets = ActivitySecrets(join = 'deitarabochi')
     session_id = 'Autobahn'
     state = 'plain'
     sync_id = 'asia'
-    timestamps = ActivityTimestamps(end=DateTime(2014, 9, 12), start=DateTime(2014, 9, 10))
+    timestamps = ActivityTimestamps(end = DateTime(2014, 9, 12), start = DateTime(2014, 9, 10))
     url = 'https://www.astil.dev/'
     
     keyword_parameters = {
@@ -110,7 +110,7 @@ def test__ActivityMetadataRich__eq():
         'created_at': created_at,
         'details': details,
         'flags': flags,
-        'id_': id_,
+        'activity_id': activity_id,
         'name': name,
         'party': party,
         'secrets': secrets,
@@ -131,7 +131,7 @@ def test__ActivityMetadataRich__eq():
         ('created_at', None),
         ('details', None),
         ('flags', ActivityFlag(0)),
-        ('id_', 0),
+        ('activity_id', 0),
         ('name', ''),
         ('party', None),
         ('secrets', None),

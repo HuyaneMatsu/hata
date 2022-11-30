@@ -47,7 +47,7 @@ def test__ActivityMetadataRich__from_data__1():
     flags = ActivityFlag(1)
     id_ = 202209070003
     name = 'Iceon'
-    party = ActivityParty(id_='Kamase-Tora')
+    party = ActivityParty(party_id = 'Kamase-Tora')
     secrets = ActivitySecrets(join='deitarabochi')
     session_id = 'Autobahn'
     state = 'plain'
@@ -99,9 +99,9 @@ def test__ActivityMetadataRich__to_data():
     created_at = DateTime(2014, 9, 11)
     details = 'vocal'
     flags = ActivityFlag(1)
-    id_ = 202209070005
+    activity_id = 202209070005
     name = 'Iceon'
-    party = ActivityParty(id_='Kamase-Tora')
+    party = ActivityParty(party_id = 'Kamase-Tora')
     secrets = ActivitySecrets(join='deitarabochi')
     session_id = 'Autobahn'
     state = 'plain'
@@ -115,7 +115,7 @@ def test__ActivityMetadataRich__to_data():
         'created_at': created_at,
         'details': details,
         'flags': flags,
-        'id_': id_,
+        'activity_id': activity_id,
         'name': name,
         'party': party,
         'secrets': secrets,
@@ -155,9 +155,9 @@ def test__ActivityMetadataRich__to_data__user():
     created_at = DateTime(2014, 9, 11)
     details = 'vocal'
     flags = ActivityFlag(1)
-    id_ = 202209070007
+    activity_id = 202209070007
     name = 'Iceon'
-    party = ActivityParty(id_='Kamase-Tora')
+    party = ActivityParty(party_id = 'Kamase-Tora')
     secrets = ActivitySecrets(join='deitarabochi')
     session_id = 'Autobahn'
     state = 'plain'
@@ -171,7 +171,7 @@ def test__ActivityMetadataRich__to_data__user():
         'created_at': created_at,
         'details': details,
         'flags': flags,
-        'id_': id_,
+        'activity_id': activity_id,
         'name': name,
         'party': party,
         'secrets': secrets,
@@ -217,9 +217,9 @@ def test__ActivityMetadataRich__to_data__include_internals():
     created_at = DateTime(2014, 9, 11)
     details = 'vocal'
     flags = ActivityFlag(1)
-    id_ = 202209070009
+    activity_id = 202209070009
     name = 'Iceon'
-    party = ActivityParty(id_='Kamase-Tora')
+    party = ActivityParty(party_id = 'Kamase-Tora')
     secrets = ActivitySecrets(join='deitarabochi')
     session_id = 'Autobahn'
     state = 'plain'
@@ -233,7 +233,7 @@ def test__ActivityMetadataRich__to_data__include_internals():
         'created_at': created_at,
         'details': details,
         'flags': flags,
-        'id_': id_,
+        'activity_id': activity_id,
         'name': name,
         'party': party,
         'secrets': secrets,
@@ -288,10 +288,10 @@ def test__ActivityMetadataRich__update_attributes():
     new_details = 'pop'
     old_flags = ActivityFlag(1)
     new_flags = ActivityFlag(2)
-    id_ = 202209070011
+    activity_id = 202209070011
     old_name = 'Iceon'
     new_name = 'Worldly'
-    old_party = ActivityParty(id_='Kamase-Tora')
+    old_party = ActivityParty(party_id = 'Kamase-Tora')
     new_party = ActivityParty(max_ = 12, size = 6)
     old_secrets = ActivitySecrets(join='deitarabochi')
     new_secrets = ActivitySecrets(join='Flower')
@@ -312,7 +312,7 @@ def test__ActivityMetadataRich__update_attributes():
         'created_at': old_created_at,
         'details': old_details,
         'flags': old_flags,
-        'id_': id_,
+        'activity_id': activity_id,
         'name': old_name,
         'party': old_party,
         'secrets': old_secrets,
@@ -365,10 +365,10 @@ def test__ActivityMetadataRich__difference_update_attributes():
     new_details = 'pop'
     old_flags = ActivityFlag(1)
     new_flags = ActivityFlag(2)
-    id_ = 202209070013
+    activity_id = 202209070013
     old_name = 'Iceon'
     new_name = 'Worldly'
-    old_party = ActivityParty(id_='Kamase-Tora')
+    old_party = ActivityParty(party_id = 'Kamase-Tora')
     new_party = ActivityParty(max_ = 12, size = 6)
     old_secrets = ActivitySecrets(join='deitarabochi')
     new_secrets = ActivitySecrets(join='Flower')
@@ -389,7 +389,7 @@ def test__ActivityMetadataRich__difference_update_attributes():
         'created_at': old_created_at,
         'details': old_details,
         'flags': old_flags,
-        'id_': id_,
+        'activity_id': activity_id,
         'name': old_name,
         'party': old_party,
         'secrets': old_secrets,

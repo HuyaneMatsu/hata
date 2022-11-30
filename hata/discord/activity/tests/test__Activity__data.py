@@ -1,6 +1,7 @@
 import vampytest
 
-from .. import Activity, ActivityType
+from ..activity import Activity
+from ..preinstanced import ActivityType
 
 
 def test__Activity__from_data():
@@ -35,7 +36,7 @@ def test__Activity__to_data():
     state = 'Hollow'
     session_id = 'Ensemble'
     
-    activity = Activity(name, type_ = activity_type, session_id = session_id, state = state, url = url)
+    activity = Activity(name, activity_type = activity_type, session_id = session_id, state = state, url = url)
     
     data = activity.to_data()
     
@@ -58,7 +59,7 @@ def test__Activity__to_data__user():
     state = 'Hollow'
     session_id = 'Ensemble'
     
-    activity = Activity(name, type_ = activity_type, session_id = session_id, state = state, url = url)
+    activity = Activity(name, activity_type = activity_type, session_id = session_id, state = state, url = url)
     
     data = activity.to_data(user = True)
     
@@ -83,7 +84,7 @@ def test__Activity__to_data__include_internals():
     state = 'Hollow'
     session_id = 'Ensemble'
     
-    activity = Activity(name, type_ = activity_type, session_id = session_id, state = state, url = url)
+    activity = Activity(name, activity_type = activity_type, session_id = session_id, state = state, url = url)
     
     data = activity.to_data(include_internals = True)
     
@@ -114,7 +115,9 @@ def test__Activity__update_attributes():
     old_session_id = 'Ensemble'
     new_session_id = 'LIFE'
     
-    activity = Activity(old_name, type_ = activity_type, session_id = old_session_id, state = old_state, url = old_url)
+    activity = Activity(
+        old_name, activity_type = activity_type, session_id = old_session_id, state = old_state, url = old_url
+    )
     
     activity._update_attributes({
         'name': new_name,
@@ -143,7 +146,9 @@ def test__Activity__difference_update_attributes():
     old_session_id = 'Ensemble'
     new_session_id = 'LIFE'
     
-    activity = Activity(old_name, type_ = activity_type, session_id = old_session_id, state = old_state, url = old_url)
+    activity = Activity(
+        old_name, activity_type = activity_type, session_id = old_session_id, state = old_state, url = old_url
+    )
     
     old_attributes = activity._difference_update_attributes({
         'name': new_name,

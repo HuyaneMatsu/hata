@@ -857,6 +857,22 @@ class UserBase(DiscordEntity, immortal=True):
         yield
     
     
+    def is_boosting(self, guild):
+        """
+        Returns whether the user is boosting the given guild.
+        
+        Parameters
+        ----------
+        guild : `None`, ``Guild``, `int`
+            The guild to get whether the user is booster of.
+        
+        Returns
+        -------
+        is_boosting : `bool`
+        """
+        return False
+    
+    
     avatar_url_for = module_urls.user_avatar_url_for
     avatar_url_for_as = module_urls.user_avatar_url_for_as
     avatar_url_at = module_urls.user_avatar_url_at

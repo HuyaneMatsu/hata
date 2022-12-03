@@ -583,6 +583,18 @@ class ClientUserBase(UserBase):
             yield guild, guild_profile
     
     
+    @copy_docs(UserBase.is_boosting)
+    def is_boosting(self, guild):
+        guild_id = _try_get_guild_id(guild)
+        
+        try:
+            guild_profile = self.guild_profiles[guild_id]
+        except KeyError:
+            return False
+        
+        return (guild_profile.boosts_since is not None)
+    
+    
     @property
     @copy_docs(UserBase.partial)
     def partial(self):

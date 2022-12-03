@@ -38,7 +38,7 @@ class ChannelMetadataGuildTextBase(ChannelMetadataGuildMainBase):
         Whether the channel is marked as non safe for work.
     slowmode : `int`
         The amount of time in seconds that a user needs to wait between it's each message. Bots and user accounts with
-        `manage_messages`, `manage_channel` permissions are unaffected.
+        `manage_messages`, `manage_channels` permissions are unaffected.
     topic : `None`, `str`
         The channel's topic.
     

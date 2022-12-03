@@ -1,4 +1,4 @@
-## 1.3.14 *\[2022-??-??\]*
+## 1.3.14 *\[2022-12-03\]*
 
 - Repurpose `TeamMember.__init__`. Rename to `.from_data`.
 - Add `TeamMember.to_data`.
@@ -86,6 +86,8 @@
 - Add `Application.to_data_own`.
 - Add `Application.to_data_invite`.
 - Add `Application.to_data_detectable`.
+- Add a way to deprecate flags.
+- Add `UserBase.is_boosting`.
 
 #### Bug fixes
 
@@ -108,6 +110,7 @@
 - Deprecate `Activity.__new__`'s `type_` parameter.
 - Rename `ActivityParty.__new__`'s `id_` parameter to `party_id`.
 - Deprecate `ActivityParty.__new__`'s `id_` parameter.
+- Deprecate `manage_channel` permission. Please use `manage_channels` instead.
 
 #### Improvements
 

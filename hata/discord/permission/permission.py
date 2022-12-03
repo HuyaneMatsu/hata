@@ -1,7 +1,5 @@
 __all__ = ('Permission', )
 
-import warnings
-
 from ..bases import FlagBase
 
 
@@ -9,7 +7,7 @@ PERMISSION_SHIFT_CREATE_INSTANT_INVITE = 0
 PERMISSION_SHIFT_KICK_USERS = 1
 PERMISSION_SHIFT_BAN_USERS = 2
 PERMISSION_SHIFT_ADMINISTRATOR = 3
-PERMISSION_SHIFT_MANAGE_CHANNEL = 4
+PERMISSION_SHIFT_MANAGE_CHANNELS = 4
 PERMISSION_SHIFT_MANAGE_GUILD = 5
 PERMISSION_SHIFT_ADD_REACTION = 6
 PERMISSION_SHIFT_VIEW_AUDIT_LOGS = 7
@@ -53,7 +51,7 @@ PERMISSION_MASK_CREATE_INSTANT_INVITE = 1 << PERMISSION_SHIFT_CREATE_INSTANT_INV
 PERMISSION_MASK_KICK_USERS = 1 << PERMISSION_SHIFT_KICK_USERS
 PERMISSION_MASK_BAN_USERS = 1 << PERMISSION_SHIFT_BAN_USERS
 PERMISSION_MASK_ADMINISTRATOR = 1 << PERMISSION_SHIFT_ADMINISTRATOR
-PERMISSION_MASK_MANAGE_CHANNEL = 1 << PERMISSION_SHIFT_MANAGE_CHANNEL
+PERMISSION_MASK_MANAGE_CHANNELS = 1 << PERMISSION_SHIFT_MANAGE_CHANNELS
 PERMISSION_MASK_MANAGE_GUILD = 1 << PERMISSION_SHIFT_MANAGE_GUILD
 PERMISSION_MASK_ADD_REACTION = 1 << PERMISSION_SHIFT_ADD_REACTION
 PERMISSION_MASK_VIEW_AUDIT_LOGS = 1 << PERMISSION_SHIFT_VIEW_AUDIT_LOGS
@@ -110,7 +108,7 @@ class Permission(FlagBase, access_keyword = 'can', enable_keyword = 'allow', dis
     +---------------------------------------+-------------------+
     | administrator                         |  3                |
     +---------------------------------------+-------------------+
-    | manage_channel                        |  4                |
+    | manage_channels                       |  4                |
     +---------------------------------------+-------------------+
     | manage_guild                          |  5                |
     +---------------------------------------+-------------------+
@@ -194,7 +192,7 @@ class Permission(FlagBase, access_keyword = 'can', enable_keyword = 'allow', dis
         'kick_users': PERMISSION_SHIFT_KICK_USERS,
         'ban_users': PERMISSION_SHIFT_BAN_USERS,
         'administrator': PERMISSION_SHIFT_ADMINISTRATOR,
-        'manage_channel': PERMISSION_SHIFT_MANAGE_CHANNEL,
+        'manage_channels': PERMISSION_SHIFT_MANAGE_CHANNELS,
         'manage_guild': PERMISSION_SHIFT_MANAGE_GUILD,
         'add_reactions': PERMISSION_SHIFT_ADD_REACTION,
         'view_audit_logs': PERMISSION_SHIFT_VIEW_AUDIT_LOGS,
@@ -234,18 +232,9 @@ class Permission(FlagBase, access_keyword = 'can', enable_keyword = 'allow', dis
         'view_creator_monetization_analytics': PERMISSION_SHIFT_VIEW_CREATOR_MONETIZATION_ANALYTICS,
     }
     
-    
-    @property
-    def can_start_embedded_activities(self):
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.can_start_embedded_activities` is deprecated and will be removed in '
-                f'2022 Jul.\nPlease use `.can_use_embedded_activities` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.can_use_embedded_activities
+    __deprecated_keys__ = {
+        'manage_channel': (PERMISSION_SHIFT_MANAGE_CHANNELS, '2023 Marc', 'manage_channels'),
+    }
 
 
 PERMISSION_ALL = Permission().update_by_keys(
@@ -253,7 +242,7 @@ PERMISSION_ALL = Permission().update_by_keys(
     kick_users = True,
     ban_users = True,
     administrator = True,
-    manage_channel = True,
+    manage_channels = True,
     manage_guild = True,
     add_reactions = True,
     view_audit_logs = True,
@@ -300,7 +289,7 @@ PERMISSION_PRIVATE = Permission().update_by_keys(
     kick_users = False,
     ban_users = False,
     administrator = False,
-    manage_channel = False,
+    manage_channels = False,
     manage_guild = False,
     add_reactions = True,
     view_audit_logs = False,
@@ -355,7 +344,7 @@ PERMISSION_TEXT_ALL = Permission().update_by_keys(
     kick_users = False,
     ban_users = False,
     administrator = False,
-    manage_channel = False,
+    manage_channels = False,
     manage_guild = False,
     add_reactions = True,
     view_audit_logs = False,
@@ -414,7 +403,7 @@ PERMISSION_VOICE_ALL = Permission().update_by_keys(
     kick_users = False,
     ban_users = False,
     administrator = False,
-    manage_channel = False,
+    manage_channels = False,
     manage_guild = False,
     add_reactions = False,
     view_audit_logs = False,
@@ -464,7 +453,7 @@ PERMISSION_THREAD_AND_VOICE_DENY = PERMISSION_VOICE_DENY.update_by_keys(
 
 PERMISSION_VOICE_DENY_CONNECTION = PERMISSION_VOICE_DENY.update_by_keys(
     manage_roles = False,
-    manage_channel = False,
+    manage_channels = False,
 )
 
 PERMISSION_TEXT_AND_VOICE_DENY = Permission(PERMISSION_THREAD_AND_VOICE_DENY | PERMISSION_VOICE_DENY)
@@ -474,7 +463,7 @@ PERMISSION_STAGE_MODERATOR = Permission().update_by_keys(
     kick_users = False,
     ban_users = False,
     administrator = False,
-    manage_channel = False,
+    manage_channels = False,
     manage_guild = False,
     add_reactions = False,
     view_audit_logs = False,

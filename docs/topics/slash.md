@@ -613,7 +613,7 @@ Allows you to customize the required permissions to see & use the command.
 ```py3
 from hata import DiscordException, Permission
 
-@Nitori.interactions(guild = TEST_GUILD, required_permissions = Permission().update_by_keys(manage_channel = True))
+@Nitori.interactions(guild = TEST_GUILD, required_permissions = Permission().update_by_keys(manage_channels = True))
 async def channel_create(
     client, event, name: (str, 'The channel\'s name to create.')
 ):

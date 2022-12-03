@@ -38,7 +38,7 @@ class ChannelMetadataGuildText(ChannelMetadataGuildTextBase):
         The channel's topic.
     slowmode : `int`
         The amount of time in seconds what a user needs to wait between it's each message. Bots and user accounts with
-        `manage_messages`, `manage_channel` permissions are unaffected.
+        `manage_messages`, `manage_channels` permissions are unaffected.
     
     Class Attributes
     ----------------

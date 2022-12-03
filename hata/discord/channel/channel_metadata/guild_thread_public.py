@@ -36,7 +36,7 @@ class ChannelMetadataGuildThreadPublic(ChannelMetadataGuildThreadBase):
         Whether the thread channel is open.
     slowmode : `int`
         The amount of time in seconds what a user needs to wait between it's each message. Bots and user accounts with
-        `manage_messages`, `manage_channel` permissions are unaffected.
+        `manage_messages`, `manage_channels` permissions are unaffected.
     thread_users : `None`, `dict` of (`int`, ``ClientUserBase``) items
         The users inside of the thread if any.
     type : `int` = `12`

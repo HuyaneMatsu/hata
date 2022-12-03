@@ -1,7 +1,48 @@
 __all__ = ('FlagBase', 'ReverseFlagBase', )
 
+import warnings
 
-def create_flag_getter(name, shift):
+
+def maybe_apply_deprecation(function, name, deprecation_info):
+    """
+    CApplies deprecation to the given getter / enabled / disabler function.
+    
+    Parameters
+    ----------
+    function : `FunctionType`
+        The function to apply it to.
+    name : `str`
+        The flag's name.
+    deprecation_info : `None`, `tuple` (`str`, `str`)
+        Deprecation info for the field if deprecated.
+    
+    Returns
+    -------
+    function : `FunctionType`
+    """
+    if (deprecation_info is None):
+        return function
+    
+    def deprecated_field(self):
+        nonlocal deprecation_info
+        nonlocal function
+        nonlocal name
+        
+        warnings.warn(
+            (
+                f'{self.__class__.__name__}`\s {name} field is deprecated and will be removed in '
+                f'{deprecation_info[0]}. Please use {deprecation_info[1]} instead.'
+            ),
+            FutureWarning,
+            stacklevel = 3,
+        )
+        
+        return function(self)
+    
+    return deprecated_field
+
+
+def create_flag_getter(name, shift, deprecation_info):
     """
     Creates a flag getter function.
     
@@ -11,22 +52,26 @@ def create_flag_getter(name, shift):
         The flag's name.
     shift : `int`
         Bit shift value.
+    deprecation_info : `None`, `tuple` (`str`, `str`)
+        Deprecation info for the field if deprecated.
     
     Returns
     -------
     flag_getter : `FunctionType`
     """
-    locals_ = {}
-    func_name = f'_get_{name}'
-    exec(compile((
-        f'def {func_name}(self):\n'
-        f'    return (self >> 0x{shift:x}) & 1'
-    ), f'<create_flag_getter>', 'exec', optimize=2), {}, locals_)
+    def flag_getter(self):
+        nonlocal shift
+        return (self >> shift) & 1
     
-    return locals_[func_name]
+    maybe_apply_deprecation(flag_getter, name, deprecation_info)
+    function_name = f'_get_{name}'
+    flag_getter.__name__ = function_name
+    flag_getter.__qualname__ = function_name
+    
+    return flag_getter
 
 
-def create_reversed_flag_getter(name, shift):
+def create_reversed_flag_getter(name, shift, deprecation_info):
     """
     Creates a reversed flag getter function.
     
@@ -36,22 +81,27 @@ def create_reversed_flag_getter(name, shift):
         The flag's name.
     shift : `int`
         Bit shift value.
+    deprecation_info : `None`, `tuple` (`str`, `str`)
+        Deprecation info for the field if deprecated.
     
     Returns
     -------
     reversed_flag_getter : `FunctionType`
     """
-    locals_ = {}
-    func_name = f'_get_{name}'
-    exec(compile((
-        f'def {func_name}(self):\n'
-        f'    return ((self >> 0x{shift:x}) & 1) ^ 1'
-    ), f'<create_reversed_flag_getter>', 'exec', optimize=2), {}, locals_)
+    def flag_getter(self):
+        nonlocal shift
+        return ((self >> shift) & 1) ^ 1
     
-    return locals_[func_name]
+    maybe_apply_deprecation(flag_getter, name, deprecation_info)
+    function_name = f'_get_{name}'
+    flag_getter.__name__ = function_name
+    flag_getter.__qualname__ = function_name
+    
+    return flag_getter
 
 
-def create_flag_enabler(name, shift):
+
+def create_flag_enabler(name, shift, deprecation_info):
     """
     Creates a flag enabler function.
     
@@ -61,22 +111,26 @@ def create_flag_enabler(name, shift):
         The flag's name.
     shift : `int`
         Bit shift value.
+    deprecation_info : `None`, `tuple` (`str`, `str`)
+        Deprecation info for the field if deprecated.
     
     Returns
     -------
     flag_enabler : `FunctionType`
     """
-    locals_ = {}
-    func_name = f'_enable_{name}'
-    exec(compile((
-        f'def {func_name}(self):\n'
-        f'    return int.__new__(type(self), (self | (1 << 0x{shift:x})))'
-    ), f'<create_flag_enabler>', 'exec', optimize=2), {}, locals_)
+    def flag_enabled(self):
+        nonlocal shift
+        return int.__new__(type(self), (self | (1 << shift)))
     
-    return locals_[func_name]
+    maybe_apply_deprecation(flag_enabled, name, deprecation_info)
+    function_name = f'_enable_{name}'
+    flag_enabled.__name__ = function_name
+    flag_enabled.__qualname__ = function_name
+    
+    return flag_enabled
 
 
-def create_flag_disabler(name, shift):
+def create_flag_disabler(name, shift, deprecation_info):
     """
     Creates a flag disabler function.
     
@@ -86,22 +140,166 @@ def create_flag_disabler(name, shift):
         The flag's name.
     shift : `int`
         Bit shift value.
+    deprecation_info : `None`, `tuple` (`str`, `str`)
+        Deprecation info for the field if deprecated.
     
     Returns
     -------
     flag_disabler : `FunctionType`
     """
-    locals_ = {}
-    func_name = f'_disable_{name}'
-    exec(compile((
-        f'def {func_name}(self):\n'
-        f'    if (self >> 0x{shift:x}) & 1:\n'
-        f'        return int.__new__(type(self), (self ^ (1 << 0x{shift:x})))\n'
-        f'    else:\n'
-        f'        return self'
-    ), f'<create_flag_enabler>', 'exec', optimize=2), {}, locals_)
+    def flag_disabler(self):
+        nonlocal shift
+        if (self >> shift) & 1:
+            return int.__new__(type(self), (self ^ (1 << shift)))
+        
+        return self
     
-    return locals_[func_name]
+    maybe_apply_deprecation(flag_disabler, name, deprecation_info)
+    function_name = f'_disable_{name}'
+    flag_disabler.__name__ = function_name
+    flag_disabler.__qualname__ = function_name
+    
+    return flag_disabler
+
+
+def validate_shift(shift, keys_name, shift_name):
+    """
+    Validates a shift.
+    
+    shift : `int`
+        The shift to validate.
+    keys_name : `str`
+        The name of the keys we are validating.
+    shift_name : `str`
+        The shift field's name.
+    
+    Raises
+    ------
+        - If `shift`'s type or value is not acceptable.
+    """
+    if not isinstance(shift, int):
+        raise TypeError(
+            f'`{keys_name}`\'s {shift_name}s should be `int`, got {shift.__class__.__name__}; {shift!r}.'
+        )
+    
+    if shift < 0 or shift > 63:
+        raise TypeError(
+            f'`{keys_name}`\' {shift_name}s must be between 0 and 63, got: {shift!r}'
+        )
+
+
+def deprecated_value_validator(value, keys_name):
+    """
+    Deprecated value validator for key values.
+    
+    Parameters
+    ----------
+    value : `int`
+        The value to validate.
+    keys_name : `str`
+        The name of the keys we are validating.
+    
+    Raises
+    ------
+        - If `value`'s type or structure is not acceptable.
+    """
+    if not isinstance(value, tuple) or (len(value) != 3):
+        raise TypeError(
+            f'`{keys_name}`\'s values can be `tuple` of length 3.'
+        )
+    
+    shift, removed_at, use_instead = value
+    validate_shift(shift, keys_name, 'shift')
+    
+    if not isinstance(removed_at, str):
+        raise TypeError(
+            f'`{keys_name}`\'s removed_at-s should be `str`, got {removed_at.__class__.__name__}; {removed_at!r}.'
+        )
+    
+    if not isinstance(use_instead, str):
+        raise TypeError(
+            f'`{keys_name}`\'s use_instead-s should be `str`, got {removed_at.__class__.__name__}; {removed_at!r}.'
+        )
+
+
+def default_value_validator(value, keys_name):
+    """
+    Default validator for key values.
+    
+    Parameters
+    ----------
+    value : `int`
+        The value to validate.
+    keys_name : `str`
+        The name of the keys we are validating.
+    
+    Raises
+    ------
+        - If `value`'s type or value is not acceptable.
+    """
+    validate_shift(value, keys_name, 'value')
+
+
+def validate_keys(keys, keys_name, value_validator):
+    """
+    Validates the given flag keys.
+    
+    Parameters
+    ----------
+    keys : `dict` of (`str`, `int`) items
+        Flag keys to validate.
+    keys_name : `str`
+        The name of the keys we are validating.
+    value_validator : `FunctionType`
+        Validates the item's value.
+    
+    Raises
+    ------
+        - If `keys`' type or structure is not acceptable.
+    """
+    if not isinstance(keys, dict):
+        raise TypeError(
+            f'`{keys_name}` defined as non `dict`: `{keys.__class__.__name__}`.'
+        )
+    
+    for name, value in keys.items():
+        if not isinstance(name, str):
+            raise TypeError(
+                f'`{keys_name}`\'s keys should be `str`-s, meanwhile got at least 1 non `str`: '
+                f'{name.__class__.__name__}; {name!r}.'
+            )
+        
+        value_validator(value, keys_name)
+
+
+def iterate_keys(keys, deprecated_keys):
+    """
+    Iterates over the items of the given keys.
+    
+    This function is an iterable generator.
+    
+    Parameters
+    ----------
+    keys : `dict` of (`str`, `int`) items
+        Flag keys to iterate over.
+    validate_keys : `NotImplemented`, `dict` of (`str`, `int`) items
+        Deprecated flag keys to validate.
+    
+    Yields
+    ------
+    key : `str`
+        Field key.
+    shift : `int`
+        Flag shift.
+    deprecation_info : `None`, `tuple` (`str`, `str`)
+        The deprecation info of the field.
+    """
+    for item in keys.items():
+        yield (*item, None)
+    
+    if (deprecated_keys is not NotImplemented):
+        for key, (shift, *deprecation_info) in deprecated_keys.items():
+            yield key, shift, deprecation_info
 
 
 class FlagMeta(type):
@@ -204,28 +402,11 @@ class FlagMeta(type):
                 f'`{class_name}` did not define `__keys__` attribute.'
             ) from None
         
-        if (type(keys) is not dict):
-            raise TypeError(
-                f'`__keys__` defined as non `dict`: `{keys.__class__.__name__}`.'
-            )
+        validate_keys(keys, '__keys__', default_value_validator)
         
-        for name, shift in keys.items():
-            if not isinstance(name, str):
-                raise TypeError(
-                    f'`__keys__`\'s keys should be `str`-s, meanwhile got at least 1 non `str`: '
-                    f'{name.__class__.__name__}; {name!r}.'
-                )
-            
-            if not isinstance(shift, int):
-                raise TypeError(
-                    f'`__keys__`\'s values should be `int`-s, meanwhile got at least 1 non `int`: '
-                    f'{shift.__class__.__name__}; {shift!r}.'
-                )
-            
-            if shift < 0 or shift > 63:
-                raise TypeError(
-                    f'`__keys__`\' values must be between 0 and 63, got: {shift!r}'
-                )
+        deprecated_keys = class_attributes.get('__deprecated_keys__', NotImplemented)
+        if (deprecated_keys is not NotImplemented):
+            validate_keys(deprecated_keys, '__deprecated_keys__', deprecated_value_validator)
         
         class_attributes.setdefault('__new__', int.__new__)
         
@@ -234,19 +415,19 @@ class FlagMeta(type):
         disabler = parent.__disabler_factory__
         
         # Add properties
-        for name, shift in keys.items():
+        for name, shift, deprecation_info in iterate_keys(keys, deprecated_keys):
             if access_keyword is None:
                 access_name = name
             else:
                 access_name = f'{access_keyword}_{name}'
             
-            class_attributes[access_name] = property(getter(name, shift))
+            class_attributes[access_name] = property(getter(name, shift, deprecation_info))
             
             if (enable_keyword is not None):
-                class_attributes[f'{enable_keyword}_{name}'] = enabler(name, shift)
+                class_attributes[f'{enable_keyword}_{name}'] = enabler(name, shift, deprecation_info)
             
             if (disable_keyword is not None):
-                class_attributes[f'{disable_keyword}_{name}'] = disabler(name, shift)
+                class_attributes[f'{disable_keyword}_{name}'] = disabler(name, shift, deprecation_info)
         
         return type.__new__(cls, class_name, class_parents, class_attributes)
 
@@ -266,6 +447,7 @@ class FlagBase(int, metaclass = FlagMeta, base_class = True):
     """
     __slots__ = ()
     __keys__ = NotImplemented
+    __deprecated_keys__ = NotImplemented
     
     __getter_factory__ = create_flag_getter
     __enabler_factory__ = create_flag_enabler
@@ -359,13 +541,61 @@ class FlagBase(int, metaclass = FlagMeta, base_class = True):
     __lt__ = is_strict_subset
     __le__ = is_subset
     
-    def update_by_keys(self, **kwargs):
+    
+    def _get_shift_of(self, key):
+        """
+        Gets the shift value for the given keys.
+        
+        Parameters
+        ----------
+        keys : `str`
+            The key's name.
+        
+        Returns
+        -------
+        shift : `int`
+        
+        Raises
+        ------
+        LookupError
+            - Invalid key given.
+        """
+        try:
+            shift = self.__keys__[key]
+        except KeyError:
+            pass
+        
+        else:
+            return shift
+        
+        deprecated_keys = self.__deprecated_keys__
+        if (deprecated_keys is not NotImplemented):
+            try:
+                shift, removed_at, use_instead = deprecated_keys[key]
+            except KeyError:
+                pass
+            else:
+                warnings.warn(
+                    (
+                        f'`{self.__class__.__name__}`\'s {key} is deprecated and will be removed at {removed_at}. '
+                        f'Please use {use_instead} instead.'
+                    ),
+                    FutureWarning,
+                    stacklevel = 3,
+                )
+                
+                return shift
+        
+        raise LookupError(f'Invalid key: {key!r}.')
+    
+    
+    def update_by_keys(self, **keyword_parameters):
         """
         Updates the source value with the given flags and returns a new one.
         
         Parameters
         ----------
-        **kwargs : Keyword parameters
+        **keyword_parameters : Keyword parameters
             `flag-name` - `bool` relations.
         
         Returns
@@ -390,11 +620,8 @@ class FlagBase(int, metaclass = FlagMeta, base_class = True):
         ```
         """
         new = self
-        for key, value in kwargs.items():
-            try:
-                shift = self.__keys__[key]
-            except KeyError:
-                raise LookupError(f'Invalid key: {key!r}.') from None
+        for key, value in keyword_parameters.items():
+            shift = self._get_shift_of(key)
             
             if value:
                 new |= (1 << shift)
@@ -405,7 +632,7 @@ class FlagBase(int, metaclass = FlagMeta, base_class = True):
         return int.__new__(type(self), new)
 
 
-class ReverseFlagBase(FlagBase, base_class=True):
+class ReverseFlagBase(FlagBase, base_class = True):
     """
     Base class for reversed bitwise flags.
     
@@ -437,7 +664,7 @@ class ReverseFlagBase(FlagBase, base_class=True):
         name : `str`
         """
         for name, shift in self.__keys__.items():
-            if ((self >> shift) & 1)^1:
+            if ((self >> shift) & 1) ^ 1:
                 yield name
     
     __iter__ = keys
@@ -472,6 +699,7 @@ class ReverseFlagBase(FlagBase, base_class=True):
         for name, shift in self.__keys__.items():
             yield name, ((self >> shift) & 1) ^ 1
     
+    
     def __contains__(self, key):
         """Returns whether the specific flag of the given name is enabled."""
         try:
@@ -481,17 +709,21 @@ class ReverseFlagBase(FlagBase, base_class=True):
         
         return ((self >> position) & 1) ^ 1
     
+    
     def is_subset(self, other):
         """Returns whether self has the same amount or more flags disabled than other."""
         return (self | other) == self
+    
     
     def is_superset(self, other):
         """Returns whether self has the same amount or more flags enabled than other."""
         return (self & other) == self
     
+    
     def is_strict_subset(self, other):
         """Returns whether self has more flags disabled than other."""
         return self != other and (self | other) == self
+    
     
     def is_strict_superset(self, other):
         """Returns whether self has more flags enabled than other."""
@@ -502,13 +734,14 @@ class ReverseFlagBase(FlagBase, base_class=True):
     __lt__ = is_strict_subset
     __le__ = is_subset
     
-    def update_by_keys(self, **kwargs):
+    
+    def update_by_keys(self, **keyword_parameters):
         """
         Updates the source value with the given flags and returns a new one.
         
         Parameters
         ----------
-        **kwargs : Keyword parameters
+        **keyword_parameters : Keyword parameters
             `flag-name` - `bool` relations.
         
         Returns
@@ -528,12 +761,8 @@ class ReverseFlagBase(FlagBase, base_class=True):
         ```
         """
         new = self
-        for key, value in kwargs.items():
-            try:
-                shift = self.__keys__[key]
-            except KeyError as err:
-                err.args = (f'Invalid key:{key!r}.',)
-                raise
+        for key, value in keyword_parameters.items():
+            shift = self._get_shift_of(key)
             
             if value:
                 if (new >> shift) & 1:

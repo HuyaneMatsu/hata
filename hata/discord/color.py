@@ -484,6 +484,7 @@ class COLORS:
     khaki = Color(0xF0E68C)
     koishi_mint = Color(0x7FE3B5)
     koishi_pine = Color(0x6EC8A9)
+    koishi_shiny = Color(0xB3FCFF)
     koishi_turquoise = Color(0x498B7E)
     lavender = Color(0xE6E6FA)
     lavender_blush = Color(0xFFF0F5)

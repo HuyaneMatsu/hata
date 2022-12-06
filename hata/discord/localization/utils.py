@@ -40,7 +40,7 @@ def build_locale_dictionary(dictionary):
     -------
     transformed : `dict` of (``Locale``, `Any`) items
     """
-    if dictionary is not None:
+    if (dictionary is not None) and dictionary:
         return {Locale.get(key): value for key, value in dictionary.items()}
 
 

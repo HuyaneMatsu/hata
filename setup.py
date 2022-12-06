@@ -30,6 +30,8 @@ setup(
         'hata.discord.application.application_entity',
         'hata.discord.application.application_executable',
         'hata.discord.application.application_install_parameters',
+        'hata.discord.application.application_role_connection',
+        'hata.discord.application.application_role_connection_metadata',
         'hata.discord.application.eula',
         'hata.discord.application.team',
         'hata.discord.application.team_member',

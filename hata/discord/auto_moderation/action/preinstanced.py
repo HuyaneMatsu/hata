@@ -69,7 +69,7 @@ class AutoModerationActionType(PreinstancedBase):
         self = object.__new__(cls)
         self.name = cls.DEFAULT_NAME
         self.value = value
-        self.metadata_type = None
+        self.metadata_type = AutoModerationActionMetadataBase
         
         return self
     
@@ -84,8 +84,6 @@ class AutoModerationActionType(PreinstancedBase):
             The Discord side identifier value of the auto moderation action type.
         name : `str`
             The default name of the auto moderation action type.
-        max_per_guild : `int`
-            The native name of the auto moderation action type.
         metadata_type : ``AutoModerationRuleTriggerMetadataBase``
             The action type's respective metadata type.
         """

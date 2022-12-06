@@ -1,4 +1,31 @@
+## 1.3.15 
+
+#### Improvements
+
+- Add `ApplicationRoleConnection`.
+- Add `ApplicationRoleConnectionMetadata`.
+- Add `ApplicationRoleConnectionValueType`.
+- Add `ApplicationRoleConnectionMetadataType`.
+- Add `Client.user_application_role_connection_get`.
+- Add `Client.user_application_role_connection_edit`.
+- Add `Client.application_role_connection_metadata_get_all`.
+- Add `Client.application_role_connection_metadata_edit_all`.
+- Add `DiscordHTTPClient.user_application_role_connection_get`.
+- Add `RATE_LIMIT_GROUPS.user_application_role_connection_get`.
+- Add `DiscordHTTPClient.user_application_role_connection_edit`.
+- Add `RATE_LIMIT_GROUPS.user_application_role_connection_edit`.
+- Add `DiscordHTTPClient.application_role_connection_metadata_get_all`.
+- Add `RATE_LIMIT_GROUPS.application_role_connection_metadata_get_all`.
+- Add `DiscordHTTPClient.application_role_connection_metadata_edit_all`.
+- Add `RATE_LIMIT_GROUPS.application_role_connection_metadata_edit_all`.
+
+#### Bug fixes
+
+- Webhook message author name length was limited to 32 (can be up to 80 long).
+
 ## 1.3.14 *\[2022-12-03\]*
+
+#### Improvements
 
 - Repurpose `TeamMember.__init__`. Rename to `.from_data`.
 - Add `TeamMember.to_data`.

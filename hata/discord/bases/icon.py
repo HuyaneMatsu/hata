@@ -1029,7 +1029,7 @@ class IconSlot:
         Parameters
         ----------
         icon : ``Icon``
-            The icon to serialise.
+            The icon to serialize.
         data : `dict` of (`str`, `Any`) items
             The data put the icon into.
         defaults : `bool`

@@ -10,7 +10,7 @@ class ApplicationType(PreinstancedBase):
     Attributes
     ----------
     name : `str`
-        The name of the feature type.
+        The name of the application type.
     value : `int`
         The Discord side identifier value of the application type.
         

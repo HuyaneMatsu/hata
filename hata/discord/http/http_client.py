@@ -501,7 +501,24 @@ class DiscordHTTPClient(HTTPClient):
             headers = headers,
         )
     
-    #channel
+    async def user_application_role_connection_get(self, application_id, headers):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.user_application_role_connection_get, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{API_ENDPOINT}/users/@me/applications/{application_id}/role-connection',
+            headers = headers,
+        )
+    
+    async def user_application_role_connection_edit(self, application_id, data, headers):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.user_application_role_connection_edit, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_PUT  ,
+            f'{API_ENDPOINT}/users/@me/applications/{application_id}/role-connection',
+            data,
+            headers = headers,
+        )
+    
+    # channel
     async def channel_private_create(self, data):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.channel_private_create, NO_SPECIFIC_RATE_LIMITER),
@@ -1522,6 +1539,23 @@ class DiscordHTTPClient(HTTPClient):
             RateLimitHandler(RATE_LIMIT_GROUPS.user_achievement_update, NO_SPECIFIC_RATE_LIMITER),
             METHOD_PUT,
             f'{API_ENDPOINT}/users/{user_id}/applications/{application_id}/achievements/{achievement_id}',
+            data,
+        )
+    
+    # application role connection
+    
+    async def application_role_connection_metadata_get_all(self, application_id):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.application_role_connection_metadata_get_all, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_GET,
+            f'{API_ENDPOINT}/applications/{application_id}/role-connections/metadata',
+        )
+    
+    async def application_role_connection_metadata_edit_all(self, application_id, data):
+        return await self.discord_request(
+            RateLimitHandler(RATE_LIMIT_GROUPS.application_role_connection_metadata_edit_all, NO_SPECIFIC_RATE_LIMITER),
+            METHOD_PUT,
+            f'{API_ENDPOINT}/applications/{application_id}/role-connections/metadata',
             data,
         )
     

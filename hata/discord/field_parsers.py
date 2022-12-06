@@ -698,7 +698,7 @@ def default_entity_parser_factory(field_key, entity_type, default):
     return parser
 
 
-def nullable_functional_parser_factor(field_key, function, *, include = None):
+def nullable_functional_parser_factory(field_key, function, *, include = None):
     """
     Returns an entity parser with default return value.
     

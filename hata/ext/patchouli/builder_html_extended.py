@@ -1133,9 +1133,9 @@ class ParameterSubSection:
         Parameters
         ----------
         parent : ``ParameterSerializer``
-            The parent parameter serialiser.
+            The parent parameter serializer.
         mask : `int`
-            Mask to serialise the mask based of.
+            Mask to serialize the mask based of.
         
         Yields
         ------

@@ -140,6 +140,36 @@ DISCORD_EPOCH = 1420070400000
 
 PARSE_TIMESTAMP_RP = re_compile('(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.(\\d{3})?)?.*')
 
+
+def _datetime_from_parsed(parsed):
+    """
+    Creates a datetime from a parsed timestamp.
+    
+    Parameters
+    ----------
+    parsed : `re.Match`
+        Parsed datetime.
+    
+    Returns
+    -------
+    time : `datetime`
+    """
+    year = int(parsed.group(1))
+    month = int(parsed.group(2))
+    day = int(parsed.group(3))
+    hour = int(parsed.group(4))
+    minute = int(parsed.group(5))
+    second = int(parsed.group(6))
+    micro = parsed.group(7)
+    
+    if micro is None:
+        micro = 0
+    else:
+        micro = int(micro)
+    
+    return datetime(year, month, day, hour, minute, second, micro)
+
+
 def timestamp_to_datetime(timestamp):
     """
     Parses the given timestamp.
@@ -174,20 +204,29 @@ def timestamp_to_datetime(timestamp):
         sys.stderr.write(f'Cannot parse timestamp: `{timestamp}`, returning `DISCORD_EPOCH_START`\n')
         return DISCORD_EPOCH_START
     
-    year = int(parsed.group(1))
-    month = int(parsed.group(2))
-    day = int(parsed.group(3))
-    hour = int(parsed.group(4))
-    minute = int(parsed.group(5))
-    second = int(parsed.group(6))
-    micro = parsed.group(7)
+    return _datetime_from_parsed(parsed)
+
+
+def timestamp_to_datetime_soft(timestamp):
+    """
+    Creates a datetime from the given timestamp. If parsing fails returns `None`.
     
-    if micro is None:
-        micro = 0
-    else:
-        micro = int(micro)
+    Parameters
+    ----------
+    timestamp : `str`
+        The timestamp to parse.
     
-    return datetime(year, month, day, hour, minute, second, micro)
+    Returns
+    -------
+    time : `datetime`
+    
+    See Also
+    --------
+    - ``timestamp_to_datetime`` : Hard timestamp parsing.
+    """
+    parsed = PARSE_TIMESTAMP_RP.fullmatch(timestamp)
+    if (parsed is not None):
+        return _datetime_from_parsed(parsed)
 
 
 def datetime_to_timestamp(date_time):

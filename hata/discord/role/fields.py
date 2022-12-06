@@ -3,7 +3,7 @@ __all__ = ()
 from ..color import Color
 from ..field_parsers import (
     bool_parser_factory, flag_parser_factory, force_string_parser_factory, int_parser_factory,
-    nullable_functional_parser_factor
+    nullable_functional_parser_factory
 )
 from ..field_putters import (
     bool_optional_putter_factory, flag_optional_putter_factory, force_string_putter_factory, int_putter_factory,
@@ -214,7 +214,7 @@ validate_separated = bool_validator_factory('separated')
 
 # unicode_emoji
 
-parse_unicode_emoji = nullable_functional_parser_factor(
+parse_unicode_emoji = nullable_functional_parser_factory(
     'unicode_emoji', NotImplemented, include = 'create_unicode_emoji'
 )
 put_unicode_emoji_into = nullable_functional_optional_putter_factory('unicode_emoji', lambda emoji: emoji.unicode)

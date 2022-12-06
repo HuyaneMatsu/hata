@@ -24,7 +24,7 @@ from ..embed import EmbedBase
 from ..emoji import Emoji, parse_reaction
 from ..guild import Guild, GuildDiscovery
 from ..message import Attachment, Message
-from ..oauth2 import Achievement
+from ..oauth2 import Achievement, Oauth2Access, Oauth2Scope, Oauth2User
 from ..permission import PermissionOverwrite
 from ..role import Role
 from ..scheduled_event import ScheduledEvent
@@ -2146,3 +2146,107 @@ def get_permission_overwrite_target_id(permission_overwrite):
             )
     
     return target_id
+
+
+def _check_required_scope(access, required_scope):
+    if (required_scope is not None) and (not access.has_scope(required_scope)):
+        raise ValueError(
+            f'The given `access` not grants {required_scope.name!r} scope, what is required, '
+            f'got {access!r}.'
+        )
+
+
+def get_oauth2_access_token(access, required_scope = None):
+    """
+    Returns the given oauth2 access's access token. Accepts both access and just token as well.
+    
+    Parameters
+    ----------
+    access : ``Oauth2Access``, ``Oauth2User``, `str`
+        Oauth2 access to the respective user or it's access token.
+    required_scope : `None`, ``Oauth2Scope`` = `None`, Optional
+        Required scope of the access if any.
+    
+    Returns
+    -------
+    access_token : `str`
+    
+    Raises
+    ------
+    TypeError
+        - If `access` is not ``Oauth2Access``, ``Oauth2User``, `str`.
+    ValueError
+        - If the given `access` is not providing the required scope.
+    """
+    if isinstance(access, (Oauth2Access, Oauth2User)):
+        _check_required_scope(access, required_scope)
+        access_token = access.access_token
+    
+    elif isinstance(access, str):
+        access_token = access
+    
+    else:
+        raise TypeError(
+            f'`access` can be `{Oauth2Access.__name__}`, `{Oauth2User.__name__}`, `str`'
+            f', got {access.__class__.__name__}; {access!r}.'
+        )
+    
+    return access_token
+
+
+def get_oauth2_access_token_and_user_id(access, user, required_scope = None):
+    """
+    Returns the given oauth2 access's access token and the user's identifier.
+    
+    Parameters
+    ----------
+    access : ``Oauth2Access``, ``Oauth2User``, `str`
+        Oauth2 access to the respective user or it's access token.
+    required_scope : `None`, ``Oauth2Scope`` = `None`, Optional
+        Required scope of the access if any.
+    
+    Raises
+    ------
+    TypeError
+        - If `access` is not ``Oauth2Access``, ``Oauth2User``, `str`.
+        - If `user` is not `None`, ``ClientUserBase``.
+        - If `user.id` could nto be determined.
+    ValueError
+        - If the given `access` is not providing the required scope.
+        - If `user` and `access` refers to a different user.
+    """
+    user_id = get_user_id_nullable(user)
+    
+    if isinstance(access, Oauth2Access):
+        _check_required_scope(access, required_scope)
+        access_token = access.access_token
+    
+    elif isinstance(access, Oauth2User):
+        _check_required_scope(access, required_scope)
+        access_token = access.access_token
+        
+        if user_id and (user_id != access.id):
+            raise ValueError(
+                f'The given `user` and `access` refers to different users, got user={user!r}, '
+                f'access={access!r}.'
+            )
+        
+        user_id = access.id
+    
+    elif isinstance(access, str):
+        access_token = access
+    
+    else:
+        raise TypeError(
+            f'`access` can be `{Oauth2Access.__name__}`, `{Oauth2User.__name__}`, `str`, got '
+            f'{access.__class__.__name__}; {access!r}.'
+        )
+    
+    
+    if not user_id:
+        raise TypeError(
+            f'`user` was not detectable neither from `user` nor from `access` parameters, got '
+            f'user={user!r}, access={access!r}.'
+        )
+    
+    return access_token, user_id

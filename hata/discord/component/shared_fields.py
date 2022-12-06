@@ -3,7 +3,7 @@ __all__ = ()
 from scarletio import include
 
 from ..emoji import Emoji, create_partial_emoji_data, create_partial_emoji_from_data
-from ..field_parsers import nullable_functional_parser_factor, nullable_string_parser_factory
+from ..field_parsers import nullable_functional_parser_factory, nullable_string_parser_factory
 from ..field_putters import nullable_functional_optional_putter_factory, url_optional_putter_factory
 from ..field_validators import nullable_entity_validator_factory, nullable_string_validator_factory
 
@@ -38,7 +38,7 @@ def put_components_into(components, data, defaults):
     Parameters
     ----------
     components : `None`, `tuple` of ``Component``
-        The components to serialise.
+        The components to serialize.
     data : `dict` of (`str`, `Any`) items
         Json serializable dictionary.
     defaults : `bool`
@@ -111,6 +111,6 @@ validate_custom_id = nullable_string_validator_factory('custom_id', 0, CUSTOM_ID
 
 # emoji
 
-parse_emoji = nullable_functional_parser_factor('emoji', create_partial_emoji_from_data)
+parse_emoji = nullable_functional_parser_factory('emoji', create_partial_emoji_from_data)
 put_emoji_into = nullable_functional_optional_putter_factory('emoji', create_partial_emoji_data)
 validate_emoji = nullable_entity_validator_factory('emoji', Emoji)

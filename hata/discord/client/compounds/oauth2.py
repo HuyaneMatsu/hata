@@ -4,19 +4,69 @@ from scarletio import Compound, IgnoreCaseMultiValueDictionary
 from scarletio.web_common import BasicAuth
 from scarletio.web_common.headers import AUTHORIZATION
 
+from ...application import Application, ApplicationRoleConnection
+from ...application.application_role_connection.utils import APPLICATION_ROLE_CONNECTION_FIELD_CONVERTERS
 from ...bases import maybe_snowflake
 from ...guild import create_partial_guild_from_data
 from ...http import DiscordHTTPClient
 from ...oauth2 import Connection, Oauth2Access, Oauth2Scope, Oauth2User
 from ...oauth2.helpers import build_joined_scopes, join_oauth2_scopes
+from ...payload_building import build_edit_payload
 from ...role import Role
 
-from ..request_helpers import get_guild_id, get_user_id_nullable
+from ..request_helpers import get_guild_id, get_oauth2_access_token, get_oauth2_access_token_and_user_id
 from ..utils import UserGuildPermission
+
+from .application_command import _assert__application_id
+
+
+def _assert__redirect_url(redirect_url):
+    """
+    Asserts whether the `redirect_url`'s type is correct.
+    
+    Parameters
+    ----------
+    redirect_url : `str`
+        The url, where the activation page redirected to.
+    
+    Raises
+    ------
+    AssertionError
+        - If `redirect_url` is not `str`.
+    """
+    if not isinstance(redirect_url, str):
+        raise AssertionError(
+            f'`redirect_url` can be `str`, got {redirect_url.__class__.__name__}; {redirect_url!r}.'
+        )
+    
+    return True
+
+
+def _assert__code(code):
+    """
+    Asserts whether the `code`'s type is correct.
+    
+    Parameters
+    ----------
+    code : `str`
+        The code, what is included with the redirect url after a successful activation.
+    
+    Raises
+    ------
+    AssertionError
+        - If `code` is not `str`.
+    """
+    if not isinstance(code, str):
+        raise AssertionError(
+            f'`code` can be `str`, got {code.__class__.__name__}; {code!r}.'
+        )
+    
+    return True
 
 
 class ClientCompoundOauth2Endpoints(Compound):
     
+    application : Application
     http : DiscordHTTPClient
     id : int
     secret : str
@@ -50,24 +100,13 @@ class ClientCompoundOauth2Endpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `redirect_url` was not given as `str`.
-            - If `code` was not given as `str`.
         
         See Also
         --------
         ``parse_oauth2_redirect_url`` : Parses `redirect_url` and the `code` from a full url.
         """
-        if __debug__:
-            if not isinstance(redirect_url, str):
-                raise AssertionError(
-                    f'`redirect_url` can be `str`, got {redirect_url.__class__.__name__}; {redirect_url!r}.'
-                )
-            
-            if not isinstance(code, str):
-                raise AssertionError(
-                    f'`code` can be `str`, got {code.__class__.__name__}; {code!r}.'
-                )
+        assert _assert__redirect_url(redirect_url)
+        assert _assert__code(code)
         
         joined_scopes = build_joined_scopes(scopes)
         
@@ -156,7 +195,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         Raises
         ------
         TypeError
-            If `access` was not given neither as ``Oauth2Access``, ``Oauth2User``  or `str`.
+            - If `access` is not ``Oauth2Access``, ``Oauth2User``, `str`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -166,15 +205,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         -----
         Needs `'email'` or / and `'identify'` scopes granted for more data
         """
-        if isinstance(access, (Oauth2Access, Oauth2User)):
-            access_token = access.access_token
-        elif isinstance(access, str):
-            access_token = access
-        else:
-            raise TypeError(
-                f'`access` can be `{Oauth2Access.__name__}`, `{Oauth2User.__name__}`, `str`, got '
-                f'{access.__class__.__name__}; {access!r}.'
-            )
+        access_token = get_oauth2_access_token(access)
         
         headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
@@ -202,30 +233,15 @@ class ClientCompoundOauth2Endpoints(Compound):
         Raises
         ------
         TypeError
-            If `access` was not given neither as ``Oauth2Access``, ``Oauth2User``  or `str`.
+            - If `access` is not ``Oauth2Access``, ``Oauth2User``, `str`.
+        ValueError
+            - If the given `access` is not providing the required scope.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If the given `access` not grants `'connections'` scope.
         """
-        if isinstance(access, (Oauth2Access, Oauth2User)):
-            if __debug__:
-                if not access.has_scope(Oauth2Scope.connections):
-                    raise AssertionError(
-                        f'The given `access` not grants `\'connections\'` scope, what is required, '
-                        f'got {access!r}.'
-                    )
-            
-            access_token = access.access_token
-        elif isinstance(access, str):
-            access_token = access
-        else:
-            raise TypeError(
-                f'`access` can be `{Oauth2Access.__name__}`, `{Oauth2User.__name__}`, `str`'
-                f', got {access.__class__.__name__}; {access!r}.'
-            )
+        access_token = get_oauth2_access_token(access, Oauth2Scope.connections)
         
         headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
@@ -246,23 +262,22 @@ class ClientCompoundOauth2Endpoints(Compound):
         
         Raises
         ------
+        TypeError
+            - If `access` is not ``Oauth2Access``, ``Oauth2User``.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If `access` was not given neither as ``Oauth2Access``, ``Oauth2User``.
         
         Notes
         -----
         By default access tokens expire after one week.
         """
-        if __debug__:
-            if not isinstance(access, (Oauth2Access, Oauth2User)):
-                raise AssertionError(
-                    f'`access` can be `{Oauth2Access.__name__}`, `{Oauth2User.__name__}`'
-                    f', got {access.__class__.__name__}; {access!r}.'
-                )
+        if not isinstance(access, (Oauth2Access, Oauth2User)):
+            raise TypeError(
+                f'`access` can be `{Oauth2Access.__name__}`, `{Oauth2User.__name__}`'
+                f', got {access.__class__.__name__}; {access!r}.'
+            )
         
         redirect_url = access.redirect_url
         if redirect_url:
@@ -327,65 +342,15 @@ class ClientCompoundOauth2Endpoints(Compound):
             - If the given `access` not grants `'guilds.join'` scope.
             - If `guild` was not given neither as ``Guild``, not `int`.
             - If `roles` contain not ``Role``, nor `int`.
+        ValueError
+            - If the given `access` is not providing the required scope.
+            - If `user` and `access` refers to a different user.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `user` and `access` refers to a different user.
-            - If the nick's length is over `32`.
-            - If the nick was not given neither as `None`, `str`.
-            - If `mute` was not given as `bool`.
-            - If `deaf` was not given as `bool`.
-            - If `roles` was not given neither as `None`, `list`.
         """
-        user_id = get_user_id_nullable(user)
-        
-        
-        if isinstance(access, Oauth2Access):
-            access_token = access.access_token
-            
-            if __debug__:
-                if not access.has_scope(Oauth2Scope.guilds_join):
-                    raise AssertionError(
-                        f'The given `access` not grants `\'guilds.join\'` scope, what is required, '
-                        f'got {access!r}.'
-                    )
-        
-        elif isinstance(access, Oauth2User):
-            access_token = access.access_token
-            if __debug__:
-                if not access.has_scope(Oauth2Scope.guilds_join):
-                    raise AssertionError(
-                        f'The given `access` not grants `\'guilds.join\'` scope, what is required, '
-                        f'got access={access!r}, scopes={access.scopes!r}.'
-                    )
-                
-                if user_id and (user_id != access.id):
-                    raise AssertionError(
-                        f'The given `user` and `access` refers to different users, got user={user!r}, '
-                        f'access={access!r}.'
-                    )
-            
-            user_id = access.id
-        
-        elif isinstance(access, str):
-            access_token = access
-        
-        else:
-            raise TypeError(
-                f'`access` can be `{Oauth2Access.__name__}`, `{Oauth2User.__name__}`, `str`, got '
-                f'{access.__class__.__name__}; {access!r}.'
-            )
-        
-        
-        if not user_id:
-            raise TypeError(
-                f'`user` was not detectable neither from `user` nor from `access` parameters, got '
-                f'user={user!r}, access={access!r}.'
-            )
-        
-        
+        access_token, user_id = get_oauth2_access_token_and_user_id(access, user, Oauth2Scope.guilds_join)
         guild_id = get_guild_id(guild)
         
         
@@ -462,8 +427,8 @@ class ClientCompoundOauth2Endpoints(Compound):
     
     async def user_guild_get_all(self, access):
         """
-        Requests a user's guilds with it's ``Oauth2Access``. The user must provide the `'guilds'` oauth2  scope for this
-        request to succeed.
+        Requests a user's guilds with it's ``Oauth2Access``.
+        The user must provide the `Oauth2Scope.guilds` scope for this request to succeed.
         
         This method is a coroutine.
         
@@ -480,34 +445,115 @@ class ClientCompoundOauth2Endpoints(Compound):
         Raises
         ------
         TypeError
-            If `access` was not given neither as ``Oauth2Access``, ``Oauth2User``  or `str`.
+            - If `access` is not ``Oauth2Access``, ``Oauth2User``, `str`.
+        ValueError
+            - If the given `access` is not providing the required scope.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If the given `access` not grants `'guilds'` scope.
         """
-        if isinstance(access, (Oauth2Access, Oauth2User)):
-            if __debug__:
-                if not access.has_scope(Oauth2Scope.guilds):
-                    raise AssertionError(
-                        f'The given `access` not grants `\'guilds\'` scope, what is required, '
-                        f'got {access!r}.'
-                    )
-            
-            access_token = access.access_token
-        
-        elif isinstance(access, str):
-            access_token = access
-        
-        else:
-            raise TypeError(
-                f'`access` can be `{Oauth2Access.__name__}`, `{Oauth2User.__name__}` `str`'
-                f', got {access.__class__.__name__}; {access!r}.'
-            )
+        access_token = get_oauth2_access_token(access, Oauth2Scope.guilds)
         
         headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
         data = await self.http.user_guild_get_all(headers)
         return [(create_partial_guild_from_data(guild_data), UserGuildPermission(guild_data)) for guild_data in data]
+    
+    
+    async def user_application_role_connection_get(self, access):
+        """
+        Requests a user's application role connections with it's ``Oauth2Access``.
+        The user must provide the `Oauth2Scope.role_connections_write` scope for this request to succeed.
+                
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        access: ``Oauth2Access``, ``Oauth2User``, `str`
+            The access of the user, who will's application role connections will be requested..
+        
+        Returns
+        -------
+        application_role_connection : ``ApplicationRoleConnection``
+        
+        Raises
+        ------
+        TypeError
+            - If `access` is not ``Oauth2Access``, ``Oauth2User``, `str`.
+        ValueError
+            - If the given `access` is not providing the required scope.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        application_id = self.application.id
+        assert _assert__application_id(application_id)
+        access_token = get_oauth2_access_token(access, Oauth2Scope.role_connections_write)
+        
+        headers = IgnoreCaseMultiValueDictionary()
+        headers[AUTHORIZATION] = f'Bearer {access_token}'
+        data = await self.http.user_application_role_connection_get(application_id, headers)
+        return ApplicationRoleConnection.from_data(data)
+    
+    
+    async def user_application_role_connection_edit(
+        self, access, application_role_connection_template = None, **keyword_parameters
+    ):
+        """
+        Edits a user's application role connections with it's ``Oauth2Access``.
+        The user must provide the `Oauth2Scope.role_connections_write` scope for this request to succeed.
+                
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        access: ``Oauth2Access``, ``Oauth2User``, `str`
+            The access of the user, who will's application role connections will be requested..
+        
+        application_role_connection_template : `None`, ``ApplicationRoleConnection`` = `None`, Optional
+            Application role connection to use as a template.
+        
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters either to define the template, or to overwrite specific fields' values.
+        
+        Other Parameters
+        ----------------
+        platform_name : `None`, `str`, Optional (Keyword only)
+            The vanity name of the platform the application represents.
+        platform_user_name : `None`, `str`, Optional (Keyword only)
+            The name of the user on the application's platform.
+        metadata_values : `None`, `dict` of (`str`, `str`) items, Optional (Keyword only)
+            Metadata key to attached value relation.
+        
+        Returns
+        -------
+        application_role_connection : ``ApplicationRoleConnection``
+        
+        Raises
+        ------
+        TypeError
+            - If `access` is not ``Oauth2Access``, ``Oauth2User``, `str`.
+        ValueError
+            - If the given `access` is not providing the required scope.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        application_id = self.application.id
+        assert _assert__application_id(application_id)
+        access_token = get_oauth2_access_token(access, Oauth2Scope.role_connections_write)
+        
+        data = build_edit_payload(
+            None,
+            application_role_connection_template,
+            APPLICATION_ROLE_CONNECTION_FIELD_CONVERTERS,
+            keyword_parameters,
+        )
+        
+        headers = IgnoreCaseMultiValueDictionary()
+        headers[AUTHORIZATION] = f'Bearer {access_token}'
+        data = await self.http.user_application_role_connection_edit(application_id, data, headers)
+        return ApplicationRoleConnection.from_data(data)

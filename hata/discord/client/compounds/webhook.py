@@ -711,9 +711,9 @@ class ClientCompoundWebhookEndpoints(Compound):
                     )
                 
                 name_length = len(name)
-                if name_length > 32:
+                if name_length > 80:
                     raise AssertionError(
-                        f'`name` length can be in range [1:32], got {name_length}; {name!r}.'
+                        f'`name` length can be in range [1:80], got {name_length}; {name!r}.'
                     )
             
             if name:

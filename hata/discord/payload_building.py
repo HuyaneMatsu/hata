@@ -11,7 +11,7 @@ def build_edit_payload(old_entity, new_entity, field_converters, keyword_paramet
         Original entity.
     
     new_entity : `None` `object with to_data(defaults)`
-        New entity to serialise to.
+        New entity to serialize to.
     
     field_converters : `dict` of (`str`, `tuple` (`callable`, `callable`)) items
         Fields converters to use.
@@ -55,7 +55,7 @@ def build_create_payload(entity, field_converters, keyword_parameters):
     Parameters
     ----------
     entity : `None`, `object with to_data(defaults)`
-        An entity which can be serialised.
+        An entity which can be serialized.
     
     field_converters : `dict` of (`str`, `tuple` (`callable`, `callable`)) items
         Fields converters to use.

@@ -10,7 +10,7 @@ class SKUFeatureType(PreinstancedBase):
     Attributes
     ----------
     name : `str`
-        The name of the feature type.
+        The name of the SKU feature type.
     value : `int`
         The Discord side identifier value of the SKU feature type.
         
@@ -87,7 +87,7 @@ class SKUGenre(PreinstancedBase):
     Attributes
     ----------
     name : `str`
-        The name of the feature type.
+        The name of the SKU genre type.
     value : `int`
         The Discord side identifier value of the SKU genre.
         

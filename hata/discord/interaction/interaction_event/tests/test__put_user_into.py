@@ -11,8 +11,8 @@ def test__put_user_into():
     """
     user = User.precreate(202210280009)
     guild_profile = GuildProfile()
-    serialise_guild_id = 202210280010
-    user.guild_profiles[serialise_guild_id] = guild_profile
+    serialize_guild_id = 202210280010
+    user.guild_profiles[serialize_guild_id] = guild_profile
     
     
     for input_value, expected_output, guild_id in (
@@ -39,7 +39,7 @@ def test__put_user_into():
                     )
                 }
             },
-            serialise_guild_id,
+            serialize_guild_id,
         )
         
     ):

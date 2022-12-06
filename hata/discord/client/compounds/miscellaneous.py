@@ -14,6 +14,29 @@ from ..request_helpers import get_channel_id
 from ..utils import Typer
 
 
+def _assert__attachment(attachment):
+    """
+    Asserts whether the attachment's type is correct.
+    
+    Parameters
+    ----------
+    attachment : ``Attachment``, ``EmbedImage``
+        The attachment object.
+    
+    Raises
+    ------
+    AssertionError
+        - If `attachment` is not ``Attachment``, ``EmbedImage``.
+    """
+    if not isinstance(attachment, (Attachment, EmbedImage)):
+        raise AssertionError(
+            f'`attachment` can be `{Attachment.__name__}`, `{EmbedImage.__name__}`, got '
+            f'{attachment.__class__.__name__}; {attachment!r}.'
+        )
+    
+    return True
+
+
 class ClientCompoundMiscellaneousEndpoints(Compound):
     
     http : DiscordHTTPClient
@@ -40,15 +63,8 @@ class ClientCompoundMiscellaneousEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            If `attachment` was not given as ``Attachment`` nor ``EmbedImage``.
         """
-        if __debug__:
-            if not isinstance(attachment, (Attachment, EmbedImage)):
-                raise AssertionError(
-                    f'`attachment` can be `{Attachment.__name__}`, `{EmbedImage.__name__}`, got '
-                    f'{attachment.__class__.__name__}; {attachment!r}.'
-                )
+        assert _assert__attachment(attachment)
         
         url = attachment.proxy_url
         if (url is None) or is_media_url(url):
@@ -154,7 +170,7 @@ class ClientCompoundMiscellaneousEndpoints(Compound):
         await self.http.typing(channel_id)
     
     
-    def keep_typing(self, channel, timeout=300.0):
+    def keep_typing(self, channel, timeout = 300.0):
         """
         Returns a context manager which will keep sending typing events at the channel. Can be used to indicate that
         the bot is working.

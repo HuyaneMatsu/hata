@@ -232,6 +232,15 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         return old_attributes
     
     
+    @copy_docs(ChannelMetadataGuildMainBase._iter_delete)
+    def _iter_delete(self, channel_entity, client):
+        for thread in channel_entity.threads:
+            thread._delete(client)
+            yield thread
+        
+        yield from ChannelMetadataGuildMainBase._iter_delete(self, channel_entity, client)
+    
+    
     @copy_docs(ChannelMetadataGuildMainBase._get_permissions_for)
     def _get_permissions_for(self, channel_entity, user):
         result = self._get_base_permissions_for(channel_entity, user)

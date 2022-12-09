@@ -1,6 +1,7 @@
 import vampytest
 
 from ....client import Client
+from ....guild import Guild
 from ....permission import Permission
 from ....user import User
 
@@ -395,3 +396,306 @@ def test__Channel__iter_available_tags():
         )
         
         vampytest.assert_eq(available_tags, [*channel.iter_available_tags()])
+
+
+def test__Channel__delete__0():
+    """
+    Tests whether ``Channel._delete`` works as intended.
+    
+    Case: private.
+    """
+    client_id = 202211090000
+    channel_id = 202211090001
+    user_id = 202211090002
+    
+    client = Client(
+        token = 'token_20221209_0000',
+        client_id = client_id,
+    )
+    
+    try:
+        user = User.precreate(user_id)
+        
+        channel = Channel.precreate(channel_id, channel_type = ChannelType.private, users = [client, user])
+        client.private_channels[user_id] = channel
+        
+        channel._delete(client)
+        
+        vampytest.assert_not_in(user_id, client.private_channels)
+    
+    # Cleanup
+    finally:
+        client._delete()
+        client = None
+
+
+def test__Channel__delete__1():
+    """
+    Tests whether ``Channel._delete`` works as intended.
+    
+    Case: group.
+    """
+    client_id = 202211090003
+    channel_id = 202211090004
+    
+    client = Client(
+        token = 'token_20221209_0001',
+        client_id = client_id,
+    )
+    
+    try:
+        channel = Channel.precreate(channel_id, channel_type = ChannelType.private_group)
+        client.group_channels[channel_id] = channel
+        
+        channel._delete(client)
+        
+        vampytest.assert_not_in(channel_id, client.group_channels)
+    
+    # Cleanup
+    finally:
+        client._delete()
+        client = None
+
+
+def test__Channel__delete__2():
+    """
+    Tests whether ``Channel._delete`` works as intended.
+    
+    Case: guild main.
+    """
+    guild_id = 202211090005
+    channel_id = 202211090006
+    
+    guild = Guild.precreate(guild_id)
+    
+    channel = Channel.precreate(channel_id, channel_type = ChannelType.guild_category, guild_id = guild_id)
+    guild.channels[channel_id] = channel
+    
+    channel._delete(None)
+    
+    vampytest.assert_not_in(channel_id, guild.channels)
+
+
+def test__Channel__delete__3():
+    """
+    Tests whether ``Channel._delete`` works as intended.
+    
+    Case: guild thread.
+    """
+    guild_id = 202211090007
+    channel_id = 202211090008
+    
+    guild = Guild.precreate(guild_id)
+    
+    channel = Channel.precreate(channel_id, channel_type = ChannelType.guild_thread_public, guild_id = guild_id)
+    guild.threads[channel_id] = channel
+    
+    channel._delete(None)
+    
+    vampytest.assert_not_in(channel_id, guild.threads)
+
+
+def test__Channel__iter_threads():
+    """
+    Tests whether ``Channel.iter_threads` works as intended.
+    """
+    channel_id_0 = 202211090009
+    channel_id_1 = 202211090010
+    channel_id_2 = 202211090011
+    guild_id = 202211090012
+    
+    guild = Guild.precreate(guild_id)
+    channel = Channel.precreate(channel_id_0, channel_type = ChannelType.guild_text, guild_id = guild_id)
+    thread_0 = Channel.precreate(
+        channel_id_1, channel_type = ChannelType.guild_thread_public, parent_id = channel_id_0, guild_id = guild_id
+    )
+    thread_1 = Channel.precreate(
+        channel_id_2, channel_type = ChannelType.guild_thread_public, parent_id = channel_id_0, guild_id = guild_id
+    )
+    
+    guild.channels[channel_id_0] = channel
+    guild.threads[channel_id_1] = thread_0
+    guild.threads[channel_id_2] = thread_1
+    
+    vampytest.assert_eq({*channel.iter_threads()}, {thread_0, thread_1})
+
+
+def test__Channel__threads():
+    """
+    Tests whether ``Channel.threads` works as intended.
+    """
+    channel_id_0 = 202211090013
+    channel_id_1 = 202211090014
+    channel_id_2 = 202211090015
+    guild_id = 202211090016
+    
+    guild = Guild.precreate(guild_id)
+    channel = Channel.precreate(channel_id_0, channel_type = ChannelType.guild_text, guild_id = guild_id)
+    thread_0 = Channel.precreate(
+        channel_id_1, channel_type = ChannelType.guild_thread_public, parent_id = channel_id_0, guild_id = guild_id
+    )
+    thread_1 = Channel.precreate(
+        channel_id_2, channel_type = ChannelType.guild_thread_public, parent_id = channel_id_0, guild_id = guild_id
+    )
+    
+    guild.channels[channel_id_0] = channel
+    guild.threads[channel_id_1] = thread_0
+    guild.threads[channel_id_2] = thread_1
+    
+    vampytest.assert_eq({*channel.threads}, {thread_0, thread_1})
+
+
+def test__Channel__iter_delete__0():
+    """
+    Tests whether ``Channel._iter_delete`` works as intended.
+    
+    Case: private.
+    """
+    client_id = 202211090017
+    channel_id = 202211090018
+    user_id = 202211090019
+    
+    client = Client(
+        token = 'token_20221209_0002',
+        client_id = client_id,
+    )
+    
+    try:
+        user = User.precreate(user_id)
+        
+        channel = Channel.precreate(channel_id, channel_type = ChannelType.private, users = [client, user])
+        client.private_channels[user_id] = channel
+        
+        channels = {*channel._iter_delete(client)}
+        
+        vampytest.assert_eq(channels, {channel})
+        vampytest.assert_not_in(user_id, client.private_channels)
+    
+    # Cleanup
+    finally:
+        client._delete()
+        client = None
+
+
+def test__Channel__iter_delete__1():
+    """
+    Tests whether ``Channel._iter_delete`` works as intended.
+    
+    Case: group.
+    """
+    client_id = 202211090020
+    channel_id = 202211090021
+    
+    client = Client(
+        token = 'token_20221209_0003',
+        client_id = client_id,
+    )
+    
+    try:
+        channel = Channel.precreate(channel_id, channel_type = ChannelType.private_group)
+        client.group_channels[channel_id] = channel
+        
+        channels = {*channel._iter_delete(client)}
+        
+        vampytest.assert_eq(channels, {channel})
+        vampytest.assert_not_in(channel_id, client.group_channels)
+    
+    # Cleanup
+    finally:
+        client._delete()
+        client = None
+
+
+def test__Channel__iter_delete__2():
+    """
+    Tests whether ``Channel._iter_delete`` works as intended.
+    
+    Case: guild main.
+    """
+    guild_id = 202211090022
+    channel_id = 202211090023
+    
+    guild = Guild.precreate(guild_id)
+    
+    channel = Channel.precreate(channel_id, channel_type = ChannelType.guild_category, guild_id = guild_id)
+    guild.channels[channel_id] = channel
+    
+    channels = {*channel._iter_delete(None)}
+    
+    vampytest.assert_eq(channels, {channel})
+    vampytest.assert_not_in(channel_id, guild.channels)
+
+
+def test__Channel__iter_delete__3():
+    """
+    Tests whether ``Channel._iter_delete`` works as intended.
+    
+    Case: guild thread.
+    """
+    guild_id = 202211090024
+    channel_id = 202211090025
+    
+    guild = Guild.precreate(guild_id)
+    
+    channel = Channel.precreate(channel_id, channel_type = ChannelType.guild_thread_public, guild_id = guild_id)
+    guild.threads[channel_id] = channel
+    
+    channels = {*channel._iter_delete(None)}
+    
+    vampytest.assert_eq(channels, {channel})
+    vampytest.assert_not_in(channel_id, guild.threads)
+
+
+def test__Channel__iter_delete__4():
+    """
+    Tests whether ``Channel._iter_delete`` works as intended.
+    
+    Case: guild thread.
+    """
+    guild_id = 202211090026
+    channel_id = 202211090027
+    
+    guild = Guild.precreate(guild_id)
+    
+    channel = Channel.precreate(channel_id, channel_type = ChannelType.guild_thread_public, guild_id = guild_id)
+    guild.threads[channel_id] = channel
+    
+    channels = {*channel._iter_delete(None)}
+    
+    vampytest.assert_eq(channels, {channel})
+    vampytest.assert_not_in(channel_id, guild.threads)
+
+
+def test__Channel__iter_delete__5():
+    """
+    Tests whether ``Channel._iter_delete`` works as intended.
+    
+    Case: guild forum.
+    """
+    guild_id = 202211090026
+    channel_id_0 = 202211090027
+    channel_id_1 = 202211090028
+    channel_id_2 = 202211090029
+    
+    
+    guild = Guild.precreate(guild_id)
+    
+    channel = Channel.precreate(channel_id_0, channel_type = ChannelType.guild_forum, guild_id = guild_id)
+    thread_0 = Channel.precreate(
+        channel_id_1, channel_type = ChannelType.guild_thread_public, parent_id = channel_id_0, guild_id = guild_id
+    )
+    thread_1 = Channel.precreate(
+        channel_id_2, channel_type = ChannelType.guild_thread_public, parent_id = channel_id_0, guild_id = guild_id
+    )
+    
+    guild.channels[channel_id_0] = channel
+    guild.threads[channel_id_1] = thread_0
+    guild.threads[channel_id_2] = thread_1
+    
+    
+    channels = {*channel._iter_delete(None)}
+    
+    vampytest.assert_eq(channels, {channel, thread_0, thread_1})
+    vampytest.assert_not_in(channel_id_0, guild.channels)
+    vampytest.assert_not_in(channel_id_1, guild.threads)
+    vampytest.assert_not_in(channel_id_2, guild.threads)

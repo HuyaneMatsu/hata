@@ -2,7 +2,11 @@
 
 #### Improvements
 
+- Add `Channel.threads`.
+- Add `Channel.iter_threads`.
+- Add `Channel._iter_delete`.
 - Add `ApplicationRoleConnection`.
+- Add `ChannelMetadataBase._iter_delete`.
 - Add `ApplicationRoleConnectionMetadata`.
 - Add `ApplicationRoleConnectionValueType`.
 - Add `ApplicationRoleConnectionMetadataType`.
@@ -22,6 +26,7 @@
 #### Bug fixes
 
 - Webhook message author name length was limited to 32 (can be up to 80 long).
+- When a forum channel was deleted discord is not dropping thread deletes. Now this is handled.
 
 ## 1.3.14 *\[2022-12-03\]*
 

@@ -645,6 +645,39 @@ class Channel(DiscordEntity, immortal = True):
             return GUILDS.get(guild_id, None)
     
     
+    def iter_threads(self):
+        """
+        Iterates over the channel's threads.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        channel : ``Channel``
+        """
+        guild = self.guild
+        if guild is None:
+            return
+        
+        channel_id = self.id
+        
+        for thread in guild.threads.values():
+            if thread.parent_id == channel_id:
+                yield thread
+    
+    
+    @property
+    def threads(self):
+        """
+        Returns the channel's threads.
+        
+        Returns
+        -------
+        channels : `list` of ``Channel``
+        """
+        return [*self.iter_threads()]
+    
+    
     def _update_attributes(self, data):
         """
         Updates the channel with overwriting it's old attributes.
@@ -776,6 +809,25 @@ class Channel(DiscordEntity, immortal = True):
             The parent client entity.
         """
         self.metadata._delete(self, client)
+    
+    
+    def _iter_delete(self, client):
+        """
+        Called when a channel is deleted. Not like ``._delete`` this will apply deletion to all related channel as well,
+        technically calling ``._delete`` on all.
+        
+        This method is an iterable generator.
+        
+        Parameters
+        ----------
+        client : `None`, ``Client``
+            The parent client entity.
+        
+        Yields
+        ------
+        channel : ``Channel``
+        """
+        yield from self.metadata._iter_delete(self, client)
     
     
     @classmethod

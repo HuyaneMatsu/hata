@@ -1104,6 +1104,7 @@ del GUILD_MEMBER_UPDATE__CAL_SC, \
     GUILD_MEMBER_UPDATE__OPT_SC, \
     GUILD_MEMBER_UPDATE__OPT_MC
 
+
 def CHANNEL_DELETE__CAL_SC(client, data):
     channel_id = int(data['id'])
     try:
@@ -1111,14 +1112,11 @@ def CHANNEL_DELETE__CAL_SC(client, data):
     except KeyError:
         return
     
-    if channel.is_in_group_guild():
-        guild = channel.guild
-        if guild is None:
-            return
+    event_handler = client.events.channel_delete
     
-    channel._delete(client)
-    
-    Task(client.events.channel_delete(client, channel), KOKORO)
+    for channel in channel._iter_delete(client):
+        Task(event_handler(client, channel), KOKORO)
+
 
 def CHANNEL_DELETE__CAL_MC(client, data):
     channel_id = int(data['id'])
@@ -1127,25 +1125,21 @@ def CHANNEL_DELETE__CAL_MC(client, data):
     except KeyError:
         return
     
+    clients = channel.clients
     if channel.is_in_group_guild():
-        clients = filter_clients(channel.clients, INTENT_MASK_GUILDS, client)
+        clients = filter_clients(clients, INTENT_MASK_GUILDS, client)
         if clients.send(None) is not client:
             clients.close()
             return
-        
-        channel._delete(client)
-        
-        for client_ in clients:
-            event_handler = client_.events.channel_delete
-            if (event_handler is not DEFAULT_EVENT_HANDLER):
-                Task(event_handler(client_, channel), KOKORO)
-        
-    else:
-        channel._delete(client)
-        
-        event_handler = client.events.channel_delete
+    
+    channels = (*channel._iter_delete(client),)
+    
+    for client_ in clients:
+        event_handler = client_.events.channel_delete
         if (event_handler is not DEFAULT_EVENT_HANDLER):
-            Task(client.events.channel_delete(client, channel), KOKORO)
+            for channel in channels:
+                Task(event_handler(client_, channel), KOKORO)
+
 
 def CHANNEL_DELETE__OPT(client, data):
     channel_id = int(data['id'])
@@ -1154,7 +1148,9 @@ def CHANNEL_DELETE__OPT(client, data):
     except KeyError:
         return
     
-    channel._delete(client)
+    for channel in channel._iter_delete(client):
+        pass
+
 
 add_parser(
     ('CHANNEL_DELETE', 'THREAD_DELETE'),
@@ -1165,6 +1161,7 @@ add_parser(
 del CHANNEL_DELETE__CAL_SC, \
     CHANNEL_DELETE__CAL_MC, \
     CHANNEL_DELETE__OPT
+
 
 def CHANNEL_UPDATE__CAL_SC(client, data):
     channel_id = int(data['id'])

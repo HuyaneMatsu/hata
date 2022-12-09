@@ -281,9 +281,31 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         channel_entity : ``Channel``
             The channel entity owning the metadata.
         client : `None`, ``Client``
-            The parent client entity,
+            The parent client entity.
         """
         pass
+    
+    
+    def _iter_delete(self, channel_entity, client):
+        """
+        Called when the channel is deleted. This method also applies deletion of other related channels too, invoking
+        their ``._delete` technically.
+        
+        This method is an iterable generator.
+        
+        Parameters
+        ----------
+        channel_entity : ``Channel``
+            The channel entity owning the metadata.
+        client : `None`, ``Client``
+            The parent client entity.
+        
+        Yields
+        ------
+        channel : ``Channel``
+        """
+        self._delete(channel_entity, client)
+        yield channel_entity
     
     
     def _get_users(self, channel_entity):

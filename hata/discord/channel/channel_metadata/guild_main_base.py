@@ -70,8 +70,6 @@ class ChannelMetadataGuildMainBase(ChannelMetadataGuildBase):
     
     @copy_docs(ChannelMetadataGuildBase._delete)
     def _delete(self, channel_entity, client):
-        ChannelMetadataGuildBase._delete(self, channel_entity, client)
-        
         try:
             guild = GUILDS[channel_entity.guild_id]
         except KeyError:

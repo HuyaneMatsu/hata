@@ -61,12 +61,6 @@ class ChannelMetadataGuildBase(ChannelMetadataBase):
         
         return self
     
-
-    @copy_docs(ChannelMetadataBase._delete)
-    def _delete(self, channel_entity, client):
-        self.permission_overwrites.clear()
-        self._permission_cache = None
-    
     
     @copy_docs(ChannelMetadataBase._is_equal_same_type)
     def _is_equal_same_type(self, other):

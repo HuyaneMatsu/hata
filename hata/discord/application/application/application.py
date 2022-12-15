@@ -540,7 +540,7 @@ class Application(DiscordEntity, immortal = True):
         self : `None`, `instance<cls>>`
             The application instance the method was called if any.
         
-        data : or `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Application data.
         
         Returns
@@ -580,7 +580,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : or `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Application data.
         
         Returns
@@ -612,7 +612,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : or `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Application data.
         
         Returns
@@ -642,7 +642,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : or `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Application data.
         
         Returns
@@ -663,7 +663,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : or `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Application data.
         
         Returns
@@ -684,7 +684,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : or `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Application data.
         
         Returns
@@ -705,7 +705,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : or `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Application data.
         
         Returns
@@ -723,7 +723,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : or `dict` of (`str`, `Any`) items, Optional
+        data : `dict` of (`str`, `object`) items, Optional
             Application data.
         """
         self.flags = parse_flags(data)
@@ -735,7 +735,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : or `dict` of (`str`, `Any`) items, Optional
+        data : `dict` of (`str`, `object`) items, Optional
             Application data.
         """
         self._update_attributes_common(data)
@@ -754,7 +754,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : or `dict` of (`str`, `Any`) items, Optional
+        data : `dict` of (`str`, `object`) items, Optional
             Application data.
         """
         self._update_attributes_common(data)
@@ -767,7 +767,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : or `dict` of (`str`, `Any`) items, Optional
+        data : `dict` of (`str`, `object`) items, Optional
             Application data.
         """
         self._update_attributes_common(data)
@@ -791,7 +791,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : or `dict` of (`str`, `Any`) items, Optional
+        data : `dict` of (`str`, `object`) items, Optional
             Application data.
         """
         self.bot_public = parse_bot_public(data)
@@ -811,7 +811,7 @@ class Application(DiscordEntity, immortal = True):
         self.verify_key = parse_verify_key(data)
     
     
-    def to_data(self, defaults = False, include_internals = False):
+    def to_data(self, *, defaults = False, include_internals = False):
         """
         Convert the application back to a json serializable dictionary.
         
@@ -846,7 +846,7 @@ class Application(DiscordEntity, immortal = True):
         return self._to_data_common(defaults, include_internals)
     
     
-    def to_data_ready(self, defaults = False, include_internals = False):
+    def to_data_ready(self, *, defaults = False, include_internals = False):
         """
         Convert the application to a json serializable dictionary matching a ready event application one.
         
@@ -869,7 +869,7 @@ class Application(DiscordEntity, immortal = True):
         return data
     
     
-    def to_data_own(self, defaults = False, include_internals = False):
+    def to_data_own(self, *, defaults = False, include_internals = False):
         """
         Convert the application to a json serializable dictionary matching the payload received from requesting the
         client's own payload.
@@ -898,7 +898,7 @@ class Application(DiscordEntity, immortal = True):
         return data
     
     
-    def to_data_invite(self, defaults = False, include_internals = False):
+    def to_data_invite(self, *, defaults = False, include_internals = False):
         """
         Convert the application to a json serializable dictionary matching an invite's application data.
         
@@ -919,7 +919,7 @@ class Application(DiscordEntity, immortal = True):
         return data
     
     
-    def to_data_detectable(self, defaults = False, include_internals = False):
+    def to_data_detectable(self, *, defaults = False, include_internals = False):
         """
         Convert the application to a json serializable dictionary matching a detectable application's data.
         
@@ -995,7 +995,7 @@ class Application(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : or `dict` of (`str`, `Any`) items, Optional
+        data : `dict` of (`str`, `object`) items, Optional
             Application data received from Discord.
         ready_data : `bool`
             Whether the application data was received from a ready event.
@@ -1905,7 +1905,7 @@ class Application(DiscordEntity, immortal = True):
     @property
     def embedded_activity_configuration(self):
         """
-        Deprecated and will be removed in 2022 Marc.
+        Deprecated and will be removed in 2023 Marc.
         """
         warnings.warn(
             (

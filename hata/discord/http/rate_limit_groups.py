@@ -999,7 +999,7 @@ Group Details
     - Limit : `OPT`
     - Resets after : `OPT`
 
-- guild_discovery_delete_subcategory
+- guild_discovery_delete_sub_category
     - Endpoint : `/guilds/{guild_id}/discovery-categories/{category_id}`
     - Method : `DELETE`
     - Required auth : `bot`
@@ -1007,7 +1007,7 @@ Group Details
     - Limit : `OPT`
     - Resets after : `OPT`
 
-- guild_discovery_add_subcategory
+- guild_discovery_add_sub_category
     - Endpoint : `/guilds/{guild_id}/discovery-categories/{category_id}`
     - Method : `POST`
     - Required auth : `bot`
@@ -2076,8 +2076,8 @@ guild_ban_add = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 guild_channel_get_all = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 channel_move = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 channel_create = RateLimitGroup(LIMITER_GUILD, optimistic = True)
-guild_discovery_delete_subcategory = RateLimitGroup(LIMITER_GUILD, optimistic = True)
-guild_discovery_add_subcategory = RateLimitGroup(LIMITER_GUILD, optimistic = True)
+guild_discovery_delete_sub_category = RateLimitGroup(LIMITER_GUILD, optimistic = True)
+guild_discovery_add_sub_category = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 guild_discovery_get = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 guild_discovery_edit = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 guild_embed_get = RateLimitGroup(LIMITER_GUILD, optimistic = True) # deprecated

@@ -87,7 +87,7 @@ class PreinstancedMeta(type):
         return type_
 
 
-class PreinstancedBase(RichAttributeErrorBaseType, metaclass=PreinstancedMeta):
+class PreinstancedBase(RichAttributeErrorBaseType, metaclass = PreinstancedMeta):
     """
     Base class for preinstanced types.
     

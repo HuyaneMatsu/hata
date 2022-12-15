@@ -919,16 +919,16 @@ class DiscordHTTPClient(HTTPClient):
             data,
         )
     
-    async def guild_discovery_add_subcategory(self, guild_id, category_id):
+    async def guild_discovery_add_sub_category(self, guild_id, category_id):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.guild_discovery_add_subcategory, guild_id),
-            METHOD_POST,
+            RateLimitHandler(RATE_LIMIT_GROUPS.guild_discovery_add_sub_category, guild_id),
+            METHOD_PUT,
             f'{API_ENDPOINT}/guilds/{guild_id}/discovery-categories/{category_id}'
         )
     
-    async def guild_discovery_delete_subcategory(self, guild_id, category_id):
+    async def guild_discovery_delete_sub_category(self, guild_id, category_id):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.guild_discovery_delete_subcategory, guild_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.guild_discovery_delete_sub_category, guild_id),
             METHOD_DELETE,
             f'{API_ENDPOINT}/guilds/{guild_id}/discovery-categories/{category_id}',
         )
@@ -1583,11 +1583,12 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/store/eulas/{eula_id}',
         )
     
-    async def discovery_category_get_all(self):
+    async def discovery_category_get_all(self, params):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.discovery_category_get_all, NO_SPECIFIC_RATE_LIMITER),
             METHOD_GET,
             f'{API_ENDPOINT}/discovery/categories',
+            params = params,
         )
     
     async def discovery_validate_term(self, data):

@@ -1,5 +1,7 @@
 from .audit_logs import *
 from .discovery import *
+from .discovery_category import *
+
 from .embedded_activity_state import *
 from .event_types import *
 from .flags import *
@@ -11,9 +13,12 @@ from .verification_screen import *
 from .welcome_screen import *
 from .widget import *
 
+
 __all__ = (
     *audit_logs.__all__,
     *discovery.__all__,
+    *discovery_category.__all__,
+    
     *event_types.__all__,
     *embedded_activity_state.__all__,
     *flags.__all__,

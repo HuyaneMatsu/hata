@@ -1,15 +1,16 @@
 __all__ = ()
 
+import warnings
 
 from scarletio import Compound
 
-from ...bases import maybe_snowflake
-from ...core import DISCOVERY_CATEGORIES
 from ...guild import DiscoveryCategory, Guild, GuildDiscovery
+from ...guild.discovery.utils import GUILD_DISCOVERY_FIELD_CONVERTERS
 from ...http import DiscordHTTPClient, rate_limit_groups
+from ...payload_building import build_edit_payload
 
 from ..functionality_helpers import DiscoveryCategoryRequestCacher, DiscoveryTermRequestCacher
-from ..request_helpers import get_guild_discovery_and_guild_id
+from ..request_helpers import get_guild_id
 
 
 class ClientCompoundDiscoveryEndpoints(Compound):
@@ -36,16 +37,19 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         
         Raises
         ------
+        TypeError
+            - If `guild` is not ``Guild``, `int`.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
         """
-        guild_discovery_data = await self.http.guild_discovery_get(guild.id)
-        return GuildDiscovery(guild_discovery_data, guild)
+        guild_id = get_guild_id(guild)
+        guild_discovery_data = await self.http.guild_discovery_get(guild_id)
+        return GuildDiscovery.from_data(guild_discovery_data)
     
     
-    async def guild_discovery_edit(self, guild, *, primary_category=..., keywords=..., emoji_discovery=...):
+    async def guild_discovery_edit(self, guild, discovery_template = None, **keyword_parameters):
         """
         Edits the guild's discovery metadata.
         
@@ -53,137 +57,69 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         
         This method is a coroutine.
         
+        
+        > To modify sub-categories use the ``.guild_discovery_add_sub_category`` and the
+        > ``.guild_discovery_delete_sub_category`` methods.
+        
         Parameters
         ----------
-        guild : ``Guild``, ``GuildDiscovery``, `int`
+        guild : ``Guild``, `int`
             The guild what's discovery metadata will be edited or an existing discovery metadata object.
-        primary_category : `None`, ``DiscoveryCategory``, `int`, Optional (Keyword only)
-            The guild discovery's new primary category's id. Can be given as a ``DiscoveryCategory`` object as well.
-            If given as `None`, then resets the guild discovery's primary category id to it's default, what is `0`.
-        keywords : `None`, (`iterable` of `str`), Optional (Keyword only)
-            The guild discovery's new keywords. Can be given as `None` to reset to the default value, what is `None`,
-            or as an `iterable` of strings.
-        emoji_discovery : `None`, `bool`, Optional (Keyword only)
-            Whether the guild info should be shown when the respective guild's emojis are clicked. If passed as `None`
-            then will reset the guild discovery's `emoji_discovery` value to it's default, what is `True`.
+        
+        discovery_template : `None`, ``GuildDiscovery`` = `None`, Optional
+            Guild discovery to use as a template.
+        
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters to define which fields should be modified.
+        
+        Other Parameters
+        ----------------
+        emoji_discovery : `bool`, Optional (Keyword only)
+            Whether guild info is shown when the respective guild's emojis are clicked.
+        keywords : `None`, `iterable` of `str`, Optional (Keyword only)
+            The set discovery search keywords for the guild.
+        primary_category : ``DiscoveryCategory``, `int`, Optional (Keyword only)
+            The primary discovery category of the guild.
         
         Returns
         -------
         guild_discovery : ``GuildDiscovery``
-            Updated guild discovery object.
         
         Raises
         ------
+        TypeError
+            - If `guild` is not ``Guild``, `int`.
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
         ConnectionError
             No internet connection.
-        TypeError
-            - If `guild` was neither given as ``Guild``, ``GuildDiscovery``, `int`.
-            - If `primary_category_id` was not given neither as `None`, `int`, ``DiscoveryCategory``.
-            - If `keywords` was not passed neither as `None`, `iterable` of `str`.
-            - If `emoji_discovery` was not given as `None`, `bool`.
-        ValueError
-            - If `primary_category_id` was given as not primary ``DiscoveryCategory`` object.
-            - If `emoji_discovery` was given as `int`, but not as `0`, `1`.
         DiscordException
             If any exception was received from the Discord API.
         """
-        if isinstance(guild, Guild):
-            guild_id = guild.id
-        
-        elif isinstance(guild, GuildDiscovery):
-            guild_id = guild.guild.id
-        
-        else:
-            guild_id = maybe_snowflake(guild)
-            if guild_id is None:
-                raise TypeError(
-                    f'`guild` can be `{Guild.__name__}`, `{GuildDiscovery.__name__}`, `int`, got '
-                    f'{guild.__class__.__name__}; {guild!r}.'
-                )
-        
-        data = {}
-        
-        if (primary_category is not ...):
-            if (primary_category is None):
-                primary_category_id = None
-            else:
-                primary_category_type = primary_category.__class__
-                if primary_category_type is DiscoveryCategory:
-                    # If name is set means that we should know whether the category is loaded, or just it's `.id`
-                    # is known.
-                    if (primary_category.name and (not primary_category.primary)):
-                        raise ValueError(
-                            f'The given `primary_category_id` is not a primary `{DiscoveryCategory.__name__}`, '
-                            f'got {primary_category!r}.'
-                        )
-                    primary_category_id = primary_category.id
-                
-                elif primary_category_type is int:
-                    primary_category_id = primary_category
-                
-                elif issubclass(primary_category_type, int):
-                    primary_category_id = int(primary_category)
-                
-                else:
-                    raise TypeError(
-                        f'`primary_category` can be `None`, `int`, `{DiscoveryCategory.__name__}`, '
-                        f'got {primary_category_type.__name__}; {primary_category!r}.'
-                    )
-            
-            data['primary_category_id'] = primary_category_id
-        
-        if (keywords is not ...):
-            if (keywords is None):
-                pass
-            elif (not isinstance(keywords, str)) and hasattr(type(keywords), '__iter__'):
-                keywords_processed = set()
-                index = 0
-                for keyword in keywords:
-                    if (type(keyword) is str):
-                        pass
-                    
-                    elif isinstance(keyword, str):
-                        keyword = str(keyword)
-                    
-                    else:
-                        raise TypeError(
-                            f'`keywords[{index}]` is not `str`, got {keyword.__class__.__name__}; {keyword!r}; '
-                            f'keywords={keyword!r}.'
-                        )
-                    
-                    keywords_processed.add(keyword)
-                    index += 1
-                
-                keywords = keywords_processed
-            else:
-                raise TypeError(
-                    f'`keywords` can be `None`, `iterable` of `str`, got {keywords.__class__.__name__}; {keywords!r}.'
-                )
-            
-            data['keywords'] = keywords
-        
-        if (emoji_discovery is not ...):
-            if (emoji_discovery is not None) and (not isinstance(emoji_discovery, bool)):
-                raise TypeError(
-                    f'`emoji_discovery` can be `None`, `bool`, got {emoji_discovery.__class__.__name__}; '
-                    f'{emoji_discovery!r}.'
-                )
-            
-            data['emoji_discoverability_enabled'] = emoji_discovery
-        
+        guild_id = get_guild_id(guild)
+        data = build_edit_payload(None, discovery_template, GUILD_DISCOVERY_FIELD_CONVERTERS, keyword_parameters)
         guild_discovery_data = await self.http.guild_discovery_edit(guild_id, data)
-        
-        if isinstance(guild, Guild):
-            guild_discovery = GuildDiscovery(guild_discovery_data, guild)
-        
-        else:
-            guild_discovery = guild
-            guild_discovery._update_attributes(guild_discovery_data)
-        
-        return guild_discovery
+        return GuildDiscovery.from_data(guild_discovery_data)
     
     
-    async def guild_discovery_add_subcategory(self, guild, category):
+    async def guild_discovery_add_subcategory(self, *positional_parameters, **keyword_parameters):
+        """
+        ``Client.guild_discovery_add_subcategory`` is deprecated and will be removed in 2023 Mar.
+        Please use ``.guild_discovery_add_sub_category`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.guild_discovery_add_subcategory` is deprecated and will be removed in '
+                f'2023 Mar. Please use `.guild_discovery_add_sub_category` instead.'
+            ),
+            FutureWarning
+        )
+        
+        return await self.guild_discovery_add_sub_category(*positional_parameters, **keyword_parameters)
+    
+    
+    async def guild_discovery_add_sub_category(self, guild, category):
         """
         Adds a discovery subcategory to the guild.
         
@@ -193,7 +129,7 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, ``GuildDiscovery``, `int`
+        guild : ``Guild``, `int`
             The guild to what the discovery subcategory will be added.
         category : ``DiscoveryCategory``, `int`
             The discovery category or it's id what will be added as a subcategory.
@@ -201,8 +137,8 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `guild` was not given neither as ``Guild``, ``GuildDiscovery``, neither as `int`.
-            - If `category` was not passed neither as ``DiscoveryCategory``, `int`.
+            - If `guild` is not ``Guild``, `int`.
+            - If `category`is not ``DiscoveryCategory``, `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -211,30 +147,39 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         Notes
         -----
         A guild can have maximum `5` discovery subcategories.
-        
-        If `guild` was given as ``GuildDiscovery``, then it will be updated.
         """
-        guild_discovery, guild_id = get_guild_discovery_and_guild_id(guild)
+        guild_id = get_guild_id(guild)
         
-        category_type = category.__class__
-        if category_type is DiscoveryCategory:
+        if isinstance(category, DiscoveryCategory):
             category_id = category.id
-        elif category_type is int:
+        elif isinstance(category, DiscoveryCategory.VALUE_TYPE):
             category_id = category
-        elif issubclass(category_type, int):
-            category_id = int(category)
         else:
             raise TypeError(
-                f'`category` can be `int`, `{DiscoveryCategory.__name__}`, got {category_type.__name__}; {category!r}.'
+                f'`category` can be `{DiscoveryCategory.__name__}`, `{DiscoveryCategory.VALUE_TYPE.__name__}`, '
+                f'got {category.__class__.__name__}; {category!r}.'
             )
         
-        await self.http.guild_discovery_add_subcategory(guild_id, category_id)
+        await self.http.guild_discovery_add_sub_category(guild_id, category_id)
+    
+    
+    async def guild_discovery_delete_subcategory(self, *positional_parameters, **keyword_parameters):
+        """
+        ``Client.guild_discovery_delete_subcategory`` is deprecated and will be removed in 2023 Mar.
+        Please use ``.guild_discovery_delete_sub_category`` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.guild_discovery_delete_subcategory` is deprecated and will be removed in '
+                f'2023 Mar. Please use `.guild_discovery_delete_sub_category` instead.'
+            ),
+            FutureWarning
+        )
         
-        if (guild_discovery is not None):
-            guild_discovery.sub_categories.add(category_id)
+        return await self.guild_discovery_delete_sub_category(*positional_parameters, **keyword_parameters)
     
     
-    async def guild_discovery_delete_subcategory(self, guild, category):
+    async def guild_discovery_delete_sub_category(self, guild, category):
         """
         Removes a discovery subcategory of the guild.
         
@@ -244,7 +189,7 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         
         Parameters
         ----------
-        guild : ``Guild``, ``GuildDiscovery``, `int`
+        guild : ``Guild``, `int`
             The guild to what the discovery subcategory will be removed from.
         category : ``DiscoveryCategory``, `int`
             The discovery category or it's id what will be removed from the subcategories.
@@ -252,8 +197,8 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `guild` was not given neither as ``Guild``, ``GuildDiscovery``, neither as `int`.
-            - If `category` was not passed neither as ``DiscoveryCategory``, `int`.
+            - If `guild` is not ``Guild``, `int`.
+            - If `category`is not ``DiscoveryCategory``, `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -262,30 +207,23 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         Notes
         -----
         A guild can have maximum `5` discovery subcategories.
-        
-        If `guild` was given as ``GuildDiscovery``, then it will be updated.
         """
-        guild_discovery, guild_id = get_guild_discovery_and_guild_id(guild)
+        guild_id = get_guild_id(guild)
         
-        category_type = category.__class__
-        if category_type is DiscoveryCategory:
+        if isinstance(category, DiscoveryCategory):
             category_id = category.id
-        elif category_type is int:
+        elif isinstance(category, DiscoveryCategory.VALUE_TYPE):
             category_id = category
-        elif issubclass(category_type, int):
-            category_id = int(category)
         else:
             raise TypeError(
-                f'`category` can be `int`, `{DiscoveryCategory.__name__}`, got {category_type.__name__}; {category!r}.'
+                f'`category` can be `{DiscoveryCategory.__name__}`, `{DiscoveryCategory.VALUE_TYPE.__name__}`, '
+                f'got {category.__class__.__name__}; {category!r}.'
             )
         
-        await self.http.guild_discovery_delete_subcategory(guild_id, category_id)
-        
-        if (guild_discovery is not None):
-            guild_discovery.sub_categories.discard(category_id)
+        await self.http.guild_discovery_delete_sub_category(guild_id, category_id)
     
     
-    async def _discovery_category_get_all(self):
+    async def discovery_category_get_all(self):
         """
         Returns a list of discovery categories, which can be used when editing guild discovery.
         
@@ -302,16 +240,18 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        discovery_category_datas = await self.http.discovery_category_get_all()
-        return [DiscoveryCategory.from_data(discovery_category_data)
-            for discovery_category_data in discovery_category_datas]
+        discovery_category_datas = await self.http.discovery_category_get_all(None)
+        return [
+            DiscoveryCategory.from_data(discovery_category_data)
+            for discovery_category_data in discovery_category_datas
+        ]
     
     
     # Add cached, so even tho the first request fails with `ConnectionError` will not be raised.
     discovery_category_get_all = DiscoveryCategoryRequestCacher(
-        _discovery_category_get_all,
+        discovery_category_get_all,
         3600.0,
-        list(DISCOVERY_CATEGORIES.values()),
+        [*DiscoveryCategory.INSTANCES.values()],
     )
     
     
@@ -324,6 +264,7 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         Parameters
         ----------
         term : `str`
+            Discovery term to validate.
         
         Returns
         -------
@@ -338,6 +279,7 @@ class ClientCompoundDiscoveryEndpoints(Compound):
         """
         data = await self.http.discovery_validate_term({'term': term})
         return data['valid']
+    
     
     discovery_validate_term = DiscoveryTermRequestCacher(
         discovery_validate_term,

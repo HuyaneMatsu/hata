@@ -18,7 +18,6 @@ class ActivityType(PreinstancedBase):
     metadata_type : `type<ActivityMetadataBase>`
         The activity type's respective metadata type.
     
-    
     Class Attributes
     ----------------
     INSTANCES : `dict` of (`str`, ``ActivityType``) items
@@ -54,7 +53,7 @@ class ActivityType(PreinstancedBase):
     
     INSTANCES = {}
     VALUE_TYPE = int
-
+    
     @classmethod
     def _from_value(cls, value):
         """

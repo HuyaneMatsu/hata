@@ -1139,46 +1139,6 @@ def get_guild_and_id(guild):
     return guild, guild_id
 
 
-def get_guild_discovery_and_guild_id(guild):
-    """
-    Gets the guild discovery and it's identifier from the given guild or it's identifier.
-    
-    Parameters
-    ----------
-    guild : ``Guild``, `int`
-        The guild, or it's identifier.
-    
-    Returns
-    -------
-    guild : ``GuildDiscovery``, `None`
-        The guild or the
-    guild_id : `int`
-        The guild's identifier.
-    
-    Raises
-    ------
-    TypeError
-        If `guild`'s type is incorrect.
-    """
-    if isinstance(guild, Guild):
-        guild_id = guild.id
-        guild_discovery = None
-    elif isinstance(guild, GuildDiscovery):
-        guild_id = guild.guild.id
-        guild_discovery = guild
-    else:
-        guild_id = maybe_snowflake(guild)
-        if guild_id is None:
-            raise TypeError(
-                f'`guild` can be `{Guild.__name__}`, `{GuildDiscovery.__name__}`, `int`, got '
-                f'{guild.__class__.__name__}; {guild!r}.'
-            )
-        
-        guild_discovery = None
-    
-    return guild_discovery, guild_id
-
-
 def get_achievement_id(achievement):
     """
     Gets the achievement identifier from the given achievement or of it's identifier.

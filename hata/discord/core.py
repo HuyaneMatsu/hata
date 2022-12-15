@@ -1,7 +1,7 @@
 ﻿__all__ = (
-    'APPLICATIONS', 'APPLICATION_COMMANDS', 'BUILTIN_EMOJIS', 'CHANNELS', 'CLIENTS', 'DISCOVERY_CATEGORIES',
-    'EMBEDDED_ACTIVITY_STATES', 'EMOJIS', 'EULAS', 'FORUM_TAGS', 'GUILDS', 'INTEGRATIONS', 'INVITES', 'KOKORO',
-    'MESSAGES', 'ROLES', 'SCHEDULED_EVENTS', 'STAGES', 'STICKERS', 'STICKER_PACKS', 'TEAMS', 'UNICODE_TO_EMOJI', 'USERS'
+    'APPLICATIONS', 'APPLICATION_COMMANDS', 'BUILTIN_EMOJIS', 'CHANNELS', 'CLIENTS', 'EMBEDDED_ACTIVITY_STATES',
+    'EMOJIS', 'EULAS', 'FORUM_TAGS', 'GUILDS', 'INTEGRATIONS', 'INVITES', 'KOKORO', 'MESSAGES', 'ROLES',
+    'SCHEDULED_EVENTS', 'STAGES', 'STICKERS', 'STICKER_PACKS', 'TEAMS', 'UNICODE_TO_EMOJI', 'USERS'
 )
 
 from scarletio import WeakKeyDictionary, WeakValueDictionary, create_event_loop, get_event_loop
@@ -38,12 +38,6 @@ Weak Caches
 - `CHANNELS` : ``WeakValueDictionary``
     
     Contains various ``Channel``.
-
-- `DISCOVERY_CATEGORIES` : ``WeakValueDictionary``
-    
-    Stores the available ``DiscoveryCategory``.
-    
-    Discovery categories are populated startup time.
 
 - `EMBEDDED_ACTIVITY_STATES` : ``WeakValueDictionary``
     
@@ -164,7 +158,6 @@ APPLICATIONS = WeakValueDictionary()
 APPLICATION_COMMANDS = WeakValueDictionary()
 AUTO_MODERATION_RULES = WeakValueDictionary()
 CHANNELS = WeakValueDictionary()
-DISCOVERY_CATEGORIES = WeakValueDictionary()
 EMBEDDED_ACTIVITY_STATES = WeakValueDictionary()
 EMOJIS = WeakValueDictionary()
 EULAS = WeakValueDictionary()

@@ -1,65 +1,10 @@
-__all__ = ('MessageType', 'MessageActivityType')
+__all__ = ('MessageType', )
 
-import warnings
-
-from scarletio import any_to_any, class_property
+from scarletio import any_to_any
 
 from ..activity import ACTIVITY_TYPES
 from ..bases import Preinstance as P, PreinstancedBase
 from ..utils import sanitize_mentions
-
-
-class MessageActivityType(PreinstancedBase):
-    """
-    Represents a ``MessageActivity``'s type.
-    
-    Attributes
-    ----------
-    name : `str`
-        The name of the message activity type.
-    value : `int`
-        The Discord side identifier value of the message activity type.
-    
-    Class Attributes
-    ----------------
-    INSTANCES : `dict` of (`int`, ``MessageActivityType``) items
-        Stores the predefined ``MessageActivityType``-s. These can be accessed with their `value` as key.
-    VALUE_TYPE : `type` = `int`
-        The message activity types' values' type.
-    DEFAULT_NAME : `str` = `'Undefined'`
-        The default name of the message activity types.
-    
-    Every predefined message activity type can be accessed as class attribute as well:
-    
-    +-----------------------+---------------+-------+
-    | Class attribute name  | name          | value |
-    +=======================+===============+=======+
-    | none                  | none          | 0     |
-    +-----------------------+---------------+-------+
-    | join                  | join          | 1     |
-    +-----------------------+---------------+-------+
-    | spectate              | spectate      | 2     |
-    +-----------------------+---------------+-------+
-    | listen                | listen        | 3     |
-    +-----------------------+---------------+-------+
-    | watch                 | watch         | 4     |
-    +-----------------------+---------------+-------+
-    | join_request          | join_request  | 5     |
-    +-----------------------+---------------+-------+
-    """
-    INSTANCES = {}
-    VALUE_TYPE = int
-    
-    __slots__ = ()
-    
-    # predefined
-    none = P(0, 'none')
-    join = P(1, 'join')
-    spectate = P(2, 'spectate')
-    listen = P(3, 'listen')
-    watch = P(4, 'watch')
-    join_request = P(5, 'join_request')
-
 
 
 def MESSAGE_DEFAULT_CONVERTER(self):
@@ -451,108 +396,6 @@ class MessageType(PreinstancedBase):
     auto_moderation_action = P(24, 'auto moderation action', MESSAGE_DEFAULT_CONVERTER, True)
     role_subscription_purchase = P (25, 'role subscription purchase', MESSAGE_DEFAULT_CONVERTER, True)
     interaction_premium_upsell = P(26, 'interaction premium upsell', MESSAGE_DEFAULT_CONVERTER, True)
-    
-        
-    @class_property
-    def new_guild_sub(cls):
-        warnings.warn(
-            (
-                f'`{cls.__name__}.new_guild_sub` is deprecated and will be removed in 2022 Nov.'
-                f'Please use `.new_guild_subscription` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-
-    @class_property
-    def new_guild_sub_t1(cls):
-        warnings.warn(
-            (
-                f'`{cls.__name__}.new_guild_sub_t1` is deprecated and will be removed in 2022 Nov.'
-                f'Please use `.new_guild_subscription_tier_1` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-
-    @class_property
-    def new_guild_sub_t2(cls):
-        warnings.warn(
-            (
-                f'`{cls.__name__}.new_guild_sub_t2` is deprecated and will be removed in 2022 Nov.'
-                f'Please use `.new_guild_subscription_tier_2` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-    
-    @class_property
-    def new_guild_sub_t3(cls):
-        warnings.warn(
-            (
-                f'`{cls.__name__}.new_guild_sub_t3` is deprecated and will be removed in 2022 Nov.'
-                f'Please use `.new_guild_subscription_tier_3` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-    
-    @property
-    def convert(self):
-        warnings.warn(
-            (
-                f'`{self.___class__.__name__}.convert` is deprecated and will be removed in 2022 Nov.'
-                f'Please use `.converter` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.converter
-
-    @class_property
-    def new_guild_subscription(cls):
-        warnings.warn(
-            (
-                f'`{cls.__name__}.new_guild_subscription` is deprecated and will be removed in 2022 Dec.'
-                f'Please use `.guild_boost` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-
-    @class_property
-    def new_guild_subscription_tier_1(cls):
-        warnings.warn(
-            (
-                f'`{cls.__name__}.new_guild_subscription_tier_1` is deprecated and will be removed in 2022 Dec.'
-                f'Please use `.guild_boost_tier_1` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-
-    @class_property
-    def new_guild_subscription_tier_2(cls):
-        warnings.warn(
-            (
-                f'`{cls.__name__}.new_guild_subscription_tier_2` is deprecated and will be removed in 2022 Dec.'
-                f'Please use `.guild_boost_tier_2` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-    
-    @class_property
-    def new_guild_subscription_tier_3(cls):
-        warnings.warn(
-            (
-                f'`{cls.__name__}.new_guild_subscription_tier_3` is deprecated and will be removed in 2022 Dec.'
-                f'Please use `.guild_boost_tier_3` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
 
 
 del convert_add_user

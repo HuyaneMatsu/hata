@@ -11,7 +11,7 @@ from ...guild import create_partial_guild_from_id
 from ...http import DiscordHTTPClient
 from ...payload_building import build_create_payload, build_edit_payload
 from ...role import Role
-from ...role.utils import ROLE_FIELD_CONVERTERS
+from ...role.role.utils import ROLE_FIELD_CONVERTERS
 
 from ..functionality_helpers import role_move_key, role_reorder_valid_roles_sort_key
 from ..request_helpers import get_guild_and_id, get_guild_id, get_role_role_guild_id_and_id, get_role_guild_id_and_id
@@ -654,19 +654,3 @@ class ClientCompoundRoleEndpoints(Compound):
             return
         
         await self.http.role_move(guild.id, data, reason)
-    
-    
-    async def guild_sync_roles(self, guild):
-        """
-        Deprecated and will be removed in 2022 Dec. Please use ``.guild_role_get_all`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.guild_sync_roles` is deprecated and will be '
-                f'removed in 2022 Dec. Please use `.guild_role_get_all` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return await self.guild_role_get_all(guild)

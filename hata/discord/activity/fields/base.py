@@ -23,8 +23,12 @@ class ActivityFieldBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Activity field data.
+        
+        Returns
+        -------
+        self : `instance<cls>`
         """
         return object.__new__(cls)
     

@@ -1,7 +1,5 @@
 __all__ = ()
 
-import warnings
-
 from scarletio import Compound
 
 from ...bases import maybe_snowflake
@@ -156,8 +154,8 @@ class ClientCompoundUserEndpoints(Compound):
     id : int
     
     async def user_guild_profile_edit(
-        self, guild, user, *, nick=..., deaf=..., mute=..., voice_channel = ..., roles=..., timeout_duration=...,
-        timed_out_until=..., reason = None
+        self, guild, user, *, nick = ..., deaf = ..., mute = ..., voice_channel = ..., roles = ...,
+        timeout_duration = ..., reason = None
     ):
         """
         Edits the user's guild profile at the given guild.
@@ -196,11 +194,6 @@ class ClientCompoundUserEndpoints(Compound):
             
             The max allowed value equals to 28 days.
             
-        timed_out_until : `None`, `datetime`, Optional (Keyword only)
-            Till when the user is timed out. Pass it as `None` to remove it.
-            
-            > Deprecated and will be removed in 2022 december. Please use `timeout_duration` instead.
-        
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Will show up at the guild's audit logs.
         
@@ -297,17 +290,6 @@ class ClientCompoundUserEndpoints(Compound):
                     role_ids.add(role_id)
             
             data['roles'] = role_ids
-        
-        
-        if (timed_out_until is not ...):
-            warnings.warn(
-                (
-                    f'`timed_out_until` parameter of `{self.__class__.__name__}.user_guild_profile_edit` is deprecated'
-                    f'and will be removed in 2022 December. Please use `timeout_duration` instead.'
-                ),
-                FutureWarning,
-            )
-            timeout_duration = timed_out_until
         
         
         if (timeout_duration is not ...):

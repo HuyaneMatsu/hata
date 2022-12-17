@@ -6,7 +6,7 @@ from ....permission import PermissionOverwrite, PermissionOverwriteTargetType
 from ...forum_tag import ForumTag
 
 from ..flags import ChannelFlag
-from ..preinstanced import SortOrder
+from ..preinstanced import ForumLayout, SortOrder
 
 from ..guild_forum import ChannelMetadataGuildForum
 
@@ -35,6 +35,7 @@ def test__ChannelMetadataGuildForum__repr():
     flags = ChannelFlag(1)
     topic = 'Dearest'
     default_sort_order = SortOrder.creation_date
+    default_forum_layout = ForumLayout.list
     
     keyword_parameters = {
         'parent_id': parent_id,
@@ -48,6 +49,7 @@ def test__ChannelMetadataGuildForum__repr():
         'flags': flags,
         'topic': topic,
         'default_sort_order': default_sort_order,
+        'default_forum_layout': default_forum_layout,
     }
     channel_metadata = ChannelMetadataGuildForum(keyword_parameters)
     
@@ -78,6 +80,7 @@ def test__ChannelMetadataGuildForum__hash():
     flags = ChannelFlag(1)
     topic = 'Dearest'
     default_sort_order = SortOrder.creation_date
+    default_forum_layout = ForumLayout.list
     
     keyword_parameters = {
         'parent_id': parent_id,
@@ -91,6 +94,7 @@ def test__ChannelMetadataGuildForum__hash():
         'flags': flags,
         'topic': topic,
         'default_sort_order': default_sort_order,
+        'default_forum_layout': default_forum_layout,
     }
     channel_metadata = ChannelMetadataGuildForum(keyword_parameters)
     
@@ -121,6 +125,7 @@ def test__ChannelMetadataGuildForum__eq():
     flags = ChannelFlag(1)
     topic = 'Dearest'
     default_sort_order = SortOrder.creation_date
+    default_forum_layout = ForumLayout.list
     
     keyword_parameters = {
         'parent_id': parent_id,
@@ -134,6 +139,7 @@ def test__ChannelMetadataGuildForum__eq():
         'flags': flags,
         'topic': topic,
         'default_sort_order': default_sort_order,
+        'default_forum_layout': default_forum_layout,
     }
     channel_metadata = ChannelMetadataGuildForum(keyword_parameters)
     
@@ -157,6 +163,7 @@ def test__ChannelMetadataGuildForum__eq():
         ('flags', ChannelFlag(3)),
         ('topic', 'Dai'),
         ('default_sort_order', SortOrder.latest_activity),
+        ('default_forum_layout', ForumLayout.gallery),
     ):
         test_channel_metadata = ChannelMetadataGuildForum({**keyword_parameters, field_name: field_value})
         

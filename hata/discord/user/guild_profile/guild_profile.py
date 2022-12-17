@@ -157,7 +157,7 @@ class GuildProfile(metaclass = Slotted):
     
     
     def __eq__(self, other):
-        """Returns whether the two guild profiles are equal."""    
+        """Returns whether the two guild profiles are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
@@ -651,7 +651,7 @@ class GuildProfile(metaclass = Slotted):
     @property
     def created_at(self):
         """
-        Returns ``.joined_at`` if set, else the Discord epoch in datetime.
+        Returns ``.joined_at`` if set, else the Discord epoch.
         
         Returns
         -------

@@ -1,13 +1,19 @@
 __all__ = ()
 
-from ...field_parsers import nullable_string_parser_factory, entity_id_array_parser_factory, \
-    nullable_date_time_parser_factory, bool_parser_factory
-from ...field_putters import nullable_string_optional_putter_factory, entity_id_array_optional_putter_factory, \
-    nullable_date_time_optional_putter_factory, bool_optional_putter_factory
-from ...field_validators import nullable_string_validator_factory, entity_id_array_validator_factory, \
-    nullable_date_time_validator_factory, bool_validator_factory
+from ...field_parsers import (
+    bool_parser_factory, entity_id_array_parser_factory, nullable_date_time_parser_factory,
+    nullable_string_parser_factory
+)
+from ...field_putters import (
+    bool_optional_putter_factory, entity_id_array_optional_putter_factory, nullable_date_time_optional_putter_factory,
+    nullable_string_optional_putter_factory
+)
+from ...field_validators import (
+    bool_validator_factory, entity_id_array_validator_factory, nullable_date_time_validator_factory,
+    nullable_string_validator_factory
+)
 
-from .constants import NICK_LENGTH_MIN, NICK_LENGTH_MAX
+from .constants import NICK_LENGTH_MAX, NICK_LENGTH_MIN
 
 # boosts_since
 

@@ -622,7 +622,7 @@ class Message(DiscordEntity, immortal = True):
             _set_message_field(
                 self,
                 MESSAGE_FIELD_KEY_ACTIVITY,
-                MessageActivity(activity_data),
+                MessageActivity.from_data(activity_data),
             )
         
         
@@ -820,7 +820,7 @@ class Message(DiscordEntity, immortal = True):
     
     
     @BaseMethodDescriptor
-    def custom(cls, base, validate=True, **kwargs):
+    def custom(cls, base, validate = True, **kwargs):
         """
         Creates a custom message. If called as a method of a message, then the attributes of the created custom message
         will default to that message's. Meanwhile if called as a classmethod, then the attributes of the created
@@ -998,54 +998,32 @@ class Message(DiscordEntity, immortal = True):
             raise TypeError(f'`base` can be `None`, or type `{cls.__name__}`, got `{base!r}`')
         
         try:
-            channel = kwargs.pop('channel')
+            channel_id = kwargs.pop('channel_id')
         except KeyError:
-            
-            try:
-                channel_id = kwargs.pop('channel_id')
-            except KeyError:
-                if base is None:
-                    raise TypeError(
-                        '`channel_id` is a required parameter if called as a classmethod.'
-                    )
-                
-                channel_id = base.channel_id
-                channel = None
-            else:
-                if isinstance(channel_id, int):
-                    channel = None
-                elif isinstance(channel_id, Channel):
-                    channel = channel_id
-                    channel_id = channel_id.id
-                else:
-                    raise TypeError(
-                        f'`channel_id` can be `int`, `{Channel.__name__}`, got `{channel_id!r}`.'
-                    )
-            
-            if (channel is None):
-                channel = CHANNELS.get(channel_id, None)
-        
-            if channel is None:
-                guild_id = 0
-            else:
-                guild_id = channel.guild_id
-        
-        else:
-            warnings.warn(
-                (
-                    f'`{cls.__name__}.custom`\'s `channel` parameter is deprecated, and will be removed in 2022 '
-                    f'January. Please use `channel_id` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            if not isinstance(channel, Channel):
+            if base is None:
                 raise TypeError(
-                    f'`channel` can be `{Channel.__name__}`, got {channel.__class__.__name__}; {channel!r}.'
+                    '`channel_id` is a required parameter if called as a classmethod.'
                 )
-                
-            channel_id = channel.id
+            
+            channel_id = base.channel_id
+            channel = None
+        else:
+            if isinstance(channel_id, int):
+                channel = None
+            elif isinstance(channel_id, Channel):
+                channel = channel_id
+                channel_id = channel_id.id
+            else:
+                raise TypeError(
+                    f'`channel_id` can be `int`, `{Channel.__name__}`, got `{channel_id!r}`.'
+                )
+        
+        if (channel is None):
+            channel = CHANNELS.get(channel_id, None)
+    
+        if channel is None:
+            guild_id = 0
+        else:
             guild_id = channel.guild_id
         
         

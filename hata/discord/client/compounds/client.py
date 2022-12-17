@@ -1,7 +1,6 @@
 __all__ = ()
 
-
-import reprlib, warnings
+import reprlib
 from datetime import datetime
 
 from scarletio import Compound, Theory
@@ -14,7 +13,6 @@ from ...user import PremiumType
 from ...utils import datetime_to_timestamp, get_image_media_type, image_to_base64
 
 from ..request_helpers import get_guild_and_id, get_guild_id, get_channel_guild_id_and_id, validate_timeout_duration
-
 
 
 def _assert__guild_profile_edit__nick(nick):
@@ -101,22 +99,6 @@ class ClientCompoundClientEndpoints(Compound):
     
     @Theory
     def _set_attributes(self, data): ...
-    
-    
-    async def client_edit(self, **keyword_parameters):
-        """
-        ``Client.client_edit`` is deprecated and will be removed in 2022 December.
-        Please use ``.edit`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.client_edit` is deprecated and will be removed in '
-                f'2022 December. Please use `.edit` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return await self.edit(**keyword_parameters)
     
     
     async def edit(
@@ -318,23 +300,8 @@ class ClientCompoundClientEndpoints(Compound):
                 self.token = token
     
     
-    async def client_guild_profile_edit(self, *positional_parameters, **keyword_parameters):
-        """
-        ``Client.client_guild_profile_edit`` is deprecated and will be removed in 2022 December.
-        Please use ``.guild_profile_edit`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.client_guild_profile_edit` is deprecated and will be removed in '
-                f'2022 December. Please use `.guild_profile_edit` instead.'
-            ),
-            FutureWarning
-        )
-        return await self.guild_profile_edit(*positional_parameters, **keyword_parameters)
-    
-    
     async def guild_profile_edit(
-        self, guild, *, nick=..., avatar=..., timeout_duration = ..., timed_out_until=..., reason = None
+        self, guild, *, nick=..., avatar=..., timeout_duration = ..., reason = None
     ):
         """
         Edits the client guild profile in the given guild. Nick and guild specific avatars can be edited on this way.
@@ -364,11 +331,6 @@ class ClientCompoundClientEndpoints(Compound):
             Pass it as `None` or as a non-positive duration to remove it.
             
             The max allowed value equals to 28 days.
-        
-        timed_out_until : `None`, `datetime`, Optional (Keyword only)
-            Till when the client is timed out. Pass it as `None` to remove it.
-            
-            > Deprecated and will be removed in 2022 december. Please use `timeout_duration` instead.
         
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Will show up at the respective guild's audit logs.
@@ -421,17 +383,6 @@ class ClientCompoundClientEndpoints(Compound):
             data['avatar'] = avatar_data
         
         
-        if (timed_out_until is not ...):
-            warnings.warn(
-                (
-                    f'`timed_out_until` parameter of `{self.__class__.__name__}.guild_profile_edit` is deprecated'
-                    f'and will be removed in 2022 December. Please use `timeout_duration` instead.'
-                ),
-                FutureWarning,
-            )
-            timeout_duration = timed_out_until
-        
-        
         if (timeout_duration is not ...):
             timeout_ends_at = validate_timeout_duration(timeout_duration)
             
@@ -444,21 +395,6 @@ class ClientCompoundClientEndpoints(Compound):
         
         if data:
             await self.http.client_guild_profile_edit(guild_id, data, reason)
-    
-    
-    async def client_connection_get_all(self):
-        """
-        ``Client.client_connection_get_all`` is deprecated and will be removed in 2022 December.
-        Please use ``.connection_get_all`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.client_connection_get_all` is deprecated and will be removed in '
-                f'2022 December. Please use `.connection_get_all` instead.'
-            ),
-            FutureWarning
-        )
-        return await self.connection_get_all()
     
     
     async def connection_get_all(self):

@@ -30,23 +30,25 @@ class IntegrationType(PreinstancedBase):
     
     Every predefined integration type can be accessed as class attribute as well:
     
-    +-----------------------+---------------+---------------+---------------------------------------+
-    | Class attribute name  | Name          | Value         | Metadata type                         |
-    +=======================+===============+===============+=======================================+
-    | none                  | none          | `''`          | ``IntegrationMetadataBase``           |
-    +-----------------------+---------------+---------------+---------------------------------------+
-    | discord               | Discord       | `'discord'`   | ``IntegrationMetadataDiscord``        |
-    +-----------------------+---------------+---------------+---------------------------------------+
-    | twitch                | Twitch        | `'twitch'`    | ``IntegrationMetadataSubscription``   |
-    +-----------------------+---------------+---------------+---------------------------------------+
-    | youtube               | Youtube       | `'youtube'`   | ``IntegrationMetadataSubscription``   |
-    +-----------------------+---------------+---------------+---------------------------------------+
+    +-----------------------+-----------------------+---------------------------+---------------------------------------+
+    | Class attribute name  | Name                  | Value                     | Metadata type                         |
+    +=======================+=======================+===========================+=======================================+
+    | none                  | none                  | `''`                      | ``IntegrationMetadataBase``           |
+    +-----------------------+-----------------------+---------------------------+---------------------------------------+
+    | discord               | Discord               | `'discord'`               | ``IntegrationMetadataDiscord``        |
+    +-----------------------+-----------------------+---------------------------+---------------------------------------+
+    | twitch                | Twitch                | `'twitch'`                | ``IntegrationMetadataSubscription``   |
+    +-----------------------+-----------------------+---------------------------+---------------------------------------+
+    | youtube               | Youtube               | `'youtube'`               | ``IntegrationMetadataSubscription``   |
+    +-----------------------+-----------------------+---------------------------+---------------------------------------+
+    | guild_subscription    | guild subscription    | `'guild_subscription'`    | ``IntegrationMetadataSubscription``   |
+    +-----------------------+-----------------------+---------------------------+---------------------------------------+
     
     """
     INSTANCES = {}
     VALUE_TYPE = str
     
-    __slots__ = ('metadata_type')
+    __slots__ = ('metadata_type',)
     
 
     @classmethod
@@ -96,3 +98,4 @@ class IntegrationType(PreinstancedBase):
     discord = P('discord', 'Discord', IntegrationMetadataDiscord)
     twitch = P('twitch', 'twitch', IntegrationMetadataSubscription)
     youtube = P('youtube', 'Youtube', IntegrationMetadataSubscription)
+    guild_subscription = P('guild_subscription', 'guild subscription', IntegrationMetadataSubscription)

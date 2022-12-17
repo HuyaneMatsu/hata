@@ -1,7 +1,5 @@
 __all__ = ('Locale',)
 
-import warnings
-
 from ..bases import Preinstance as P, PreinstancedBase
 
 
@@ -177,37 +175,3 @@ class Locale(PreinstancedBase):
     turkish = P('tr', 'Turkish', 'Türkçe')
     ukrainian = P('uk', 'Ukrainian', 'Українська')
     vietnamese = P('vi', 'Vietnamese', 'Tiếng Việt')
-    
-    
-    @property
-    def spanish_sp(self):
-        """
-        `.spanish_sp` is deprecated and will be removed in 2022 Aug. Please use `.spanish` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.spanish_sp` is deprecated and will be removed in 2022 Aug. '
-                f'Please use `.spanish` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.spanish
-    
-    
-    @property
-    def portuguese_br(self):
-        """
-        `.portuguese_br` is deprecated and will be removed in 2022 Aug. Please use `.portuguese` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.portuguese_br` is deprecated and will be removed in 2022 Aug. '
-                f'Please use `.portuguese` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.portuguese

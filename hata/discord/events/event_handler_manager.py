@@ -57,17 +57,17 @@ def _get_event_deprecation_state(name):
     -------
     deprecation_level : `int`
     """
-    if name == 'guild_join_reject':
-        warnings.warn(
-            (
-                '`Client.events.guild_join_reject` is deprecated and will be removed in 2022 march.\n'
-                'Please use `Client.events.guild_join_request_delete(client, event)` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-        
-        return DEPRECATION_LEVEL_REMOVED
+    # if name == 'stuff':
+    #    warnings.warn(
+    #        (
+    #            '`Client.events.stuff` is deprecated and will be removed in 2222 yay.\n'
+    #            'Please use `Client.events.stiff(client, event)` instead.'
+    #        ),
+    #        FutureWarning,
+    #        stacklevel = 3,
+    #    )
+    #    
+    #    return DEPRECATION_LEVEL_REMOVED
     
     
     if name == 'webhook_update':
@@ -368,6 +368,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +---------------------------------------+-----------------------------------------------------------+
         | bitrate                               | `int`                                                     |
         +---------------------------------------+-----------------------------------------------------------+
+        | default_forum_layout                  | ``ForumLayout``                                           |
+        +---------------------------------------+-----------------------------------------------------------+
         | default_sort_order                    | ``SortOrder``                                             |
         +---------------------------------------+-----------------------------------------------------------+
         | default_thread_auto_archive_after     | `int`                                                     |
@@ -649,13 +651,6 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-------------------------------+-------------------------------+
         | widget_enabled                | `bool`                        |
         +-------------------------------+-------------------------------+
-    
-    guild_join_reject(client: ``Client``, guild: ``Guild``, user: ``ClientUserBase``):
-        Called when a user leaves from a guild before completing it's verification screen.
-        
-        > ``.guild_user_delete`` is called as well.
-        
-        Deprecated in favor of ``.guild_join_request_delete`.
     
     guild_join_request_create(client: ``Client``, join_request: ``GuildJoinRequest``)
         Called when a user completes the verification screen of the guild, which needs an approval.
@@ -1247,8 +1242,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         """
         delete = type(self).__delattr__
         for name in EVENT_HANDLER_NAME_TO_PARSER_NAMES:
-            if name != 'guild_join_reject':
-                delete(self, name)
+            delete(self, name)
         
         for event_handler_name, event_handler, instance_event_handler in DEFAULT_EVENT_HANDLERS:
             if instance_event_handler:

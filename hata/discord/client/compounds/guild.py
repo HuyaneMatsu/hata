@@ -578,7 +578,7 @@ class ClientCompoundGuildEndpoints(Compound):
     
     async def guild_create(
         self, name, *, icon=None, roles=None, channels=None, afk_channel_id=None, system_channel_id=None,
-        afk_timeout = None, region=..., verification_level=VerificationLevel.medium,
+        afk_timeout = None, verification_level=VerificationLevel.medium,
         message_notification=MessageNotificationLevel.only_mentions, content_filter=ContentFilterLevel.disabled,
         boost_progress_bar_enabled=None
     ):
@@ -604,10 +604,7 @@ class ClientCompoundGuildEndpoints(Compound):
             The id of the guild's system channel. The id should be one of the channel's id from `channels`.
         afk_timeout : `None`, `int` = `None`, Optional (Keyword only)
             The afk timeout for the users at the guild's afk channel.
-        region : ``VoiceRegion``, `str`, Optional (Keyword only)
-            The voice region of the new guild.
-            
-            This parameter is deprecated and will be removed in 2022 July.
+        
         verification_level : ``VerificationLevel``, `int` = `VerificationLevel.medium`, Optional (Keyword only)
             The verification level of the new guild.
         message_notification : ``MessageNotificationLevel``, `int` = `MessageNotificationLevel.only_mentions`
@@ -627,7 +624,6 @@ class ClientCompoundGuildEndpoints(Compound):
         ------
         TypeError
             - If `icon` is neither `None`, `bytes-like`.
-            - If `region` was not given neither as ``VoiceRegion`` nor `str`.
             - If `verification_level` was not given neither as ``VerificationLevel`` not `int`.
             - If `content_filter` was not given neither as ``ContentFilterLevel`` not `int`.
             - If `message_notification` was not given neither as ``MessageNotificationLevel`` nor `int`.
@@ -690,18 +686,6 @@ class ClientCompoundGuildEndpoints(Compound):
                     )
             
             icon_data = image_to_base64(icon)
-        
-        
-        if (region is not ...):
-            warnings.warn(
-                (
-                    f'`region` parameter of `{self.__class__.__name__}.guild_create` is deprecated and will be '
-                    f'removed in 2022 Jun. '
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-        
         
         if isinstance(verification_level, VerificationLevel):
             verification_level_value = verification_level.value
@@ -969,7 +953,7 @@ class ClientCompoundGuildEndpoints(Compound):
     
     async def guild_edit(
         self, guild, *, name=..., icon=..., invite_splash=..., discovery_splash=..., banner=...,
-        afk_channel = ..., system_channel = ..., rules_channel = ..., public_updates_channel = ..., owner=..., region=...,
+        afk_channel = ..., system_channel = ..., rules_channel = ..., public_updates_channel = ..., owner=...,
         afk_timeout = ..., verification_level=..., content_filter=..., message_notification=..., description = ...,
         preferred_locale=..., system_channel_flags=..., add_feature=..., remove_feature=...,
         boost_progress_bar_enabled=..., reason = None
@@ -1010,10 +994,6 @@ class ClientCompoundGuildEndpoints(Compound):
             current one by passing is as `None`.
         owner : ``ClientUserBase``, `int`, Optional (Keyword only)
             The new owner of the guild. You must be the owner of the guild to transfer ownership.
-        region : ``VoiceRegion``, Optional (Keyword only)
-            The new voice region of the guild.
-            
-            The parameter is deprecated and will be removed in 2022 July.
             
         afk_timeout : `int`, Optional (Keyword only)
             The new afk timeout for the users at the guild's afk channel.
@@ -1350,18 +1330,6 @@ class ClientCompoundGuildEndpoints(Compound):
             
             
             data['owner_id'] = owner_id
-        
-        
-        if (region is not ...):
-            warnings.warn(
-                (
-                    f'`region` parameter of `{self.__class__.__name__}.guild_edit` is deprecated and will be '
-                    f'removed in 2022 Jun. '
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-        
         
         if (afk_timeout is not ...):
             if __debug__:

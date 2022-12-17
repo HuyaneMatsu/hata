@@ -1,3 +1,94 @@
+## 1.3.16 *\[2022-12-??\]*
+
+#### Improvements
+
+- Add `ForumLayout`.
+- Add `Integration.copy`.
+- Add `ThreadProfile.copy`.
+- Add `GuildDiscovery.copy`.
+- Add `ThreadProfile.__eq__`.
+- Add `MessageActivity.copy`.
+- Add `ThreadProfile.__new__`.
+- Add `Role.manager_metadata`.
+- Add `Integration.copy_with`.
+- Add `RoleManagerMetadataBot`.
+- Add `ThreadProfile.__hash__`.
+- Add `GuildDiscovery.__new__`.
+- Add `GuildDiscovery.to_data`.
+- Add `RoleManagerMetadataBase`.
+- Add `IntegrationAccount.copy`.
+- Add `ThreadProfile.copy_with`.
+- Add `MessageActivity.__new__`.
+- Add `MessageActivity.__hash__`.
+- Add `GuildDiscovery.copy_with`.
+- Add `MessageActivity.copy_with`.
+- Add `ERROR_CODES.card_declined`.
+- Add `DiscoveryCategory.to_data`.
+- Add `RoleManagerMetadataBooster`.
+- Add `IntegrationApplication.copy`.
+- Add `Channel.default_forum_layout`.
+- Add `GuildDiscovery.iter_keywords`.
+- Add `RoleManagerType.subscription`.
+- Add `IntegrationMetadataBase.copy`.
+- Add `IntegrationAccount.copy_with`.
+- Add `ERROR_CODES.user_quarantined`.
+- Add `ERROR_CODES.invites_disabled`.
+- Add `ERROR_CODES.max_premium_emoji`.
+- Add `GuildDiscovery.sub_categories`.
+- Add `RoleManagerType.metadata_type`.
+- Add `RoleManagerMetadataIntegration`.
+- Add `RoleManagerMetadataSubscription`.
+- Add `IntegrationApplication.cop_with`.
+- Add `IntegrationMetadataBase.copy_with`.
+- Add `ERROR_CODES.confirmation_required`.
+- Add `IntegrationType.guild_subscription`.
+- Add `ERROR_CODES.feature_not_yet_rolled_out`.
+- Add `default_sort_order` audit log converter.
+- Add `ChannelMetadataBase.default_forum_layout`.
+- Add `ERROR_CODES.auto_moderation_invalid_regex`.
+- Add `ERROR_CODES.vanity_url_requirements_not_met`.
+- Add `ERROR_CODES.subscription_renewal_in_progress`.
+- Add `ChannelMetadataGuildForum.default_forum_layout`.
+- Add `ERROR_CODES.invalid_activity_launch_afk_channel`.
+- Add `ERROR_CODES.invalid_currency_for_payment_source`.
+- `GuildDiscovery` now supports rich attribute exceptions.
+- Add `ERROR_CODES.purchase_token_authorization_required`.
+- `MessageActivity` now supports rich attribute exceptions.
+- Add `ERROR_CODES.vanity_url_employee_only_guild_disabled`.
+- Repurpose `ThreadProfile.__init__`. Rename to `.from_data`.
+- `IntegrationAccount` now supports rich attribute exceptions.
+- Repurpose `GuildDiscovery.__init__`. Rename to `.from_data`.
+- Repurpose `MessageActivity.__init__`. Rename to `.from_data`.
+- Add `ERROR_CODES.event_entity_type_different_from_the_entitys`.
+- Add `ERROR_CODES.cannot_convert_emoji_between_premium_and_non_premium`.
+- Add `ERROR_CODES.cannot_mix_subscription_and_non_subscription_roles_for_an_emoji`.
+
+
+#### Bug fixes
+
+- Fix an `AttributeError` in `Client._delete`.
+- `thread_user_difference_update` was always returning `None`.
+- Rename `DiscordHTTPClient.guild_discovery_add_sub_category` used bad http method.
+- At cases when `thread_user_pop` did not need to pop thread profile it still popped the thread user.
+
+#### Renames, Deprecation & Removals
+
+- Remove `DISCOVERY_CATEGORIES`.
+- Remove `GuildDiscovery.guild`.
+- Rename `DiscoveryCategory.id` to `.value`.
+- Deprecate `Client.guild_discovery_add_subcategory`.
+- Rename `DiscoveryCategory.from_id` to `._from_value`.
+- Deprecate `Client.guild_discovery_delete_subcategory`.
+- Deprecate `DiscoveryCategory.id`. Please use `.value` instead.
+- Rename `DiscoveryCategory.local_names` to `.name_localizations`.
+- Rename `Client.guild_discovery_add_subcategory` to `.guild_discovery_add_sub_category`.
+- Rename `Client.guild_discovery_delete_subcategory` to `.guild_discovery_delete_sub_category`.
+- Rename `DiscordHTTPClient.guild_discovery_add_subcategory` to `.guild_discovery_add_sub_category`.
+- Rename `RATE_LIMIT_GROUPS.guild_discovery_add_subcategory` to `.guild_discovery_add_sub_category`.
+- Rename `DiscordHTTPClient.guild_discovery_delete_subcategory` to `.guild_discovery_delete_sub_category`.
+- Rename `RATE_LIMIT_GROUPS.guild_discovery_delete_subcategory` to `.guild_discovery_delete_sub_category`.
+- Rename `thread_user_update` to `.thread_user_difference_update`.
+
 ## 1.3.15 *\[2022-12-13\]*
 
 #### Improvements

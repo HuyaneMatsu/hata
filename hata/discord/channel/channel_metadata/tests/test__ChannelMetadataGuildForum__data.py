@@ -6,7 +6,7 @@ from ....permission import PermissionOverwrite, PermissionOverwriteTargetType
 from ...forum_tag import ForumTag
 
 from ..flags import ChannelFlag
-from ..preinstanced import SortOrder
+from ..preinstanced import ForumLayout, SortOrder
 
 from ..guild_forum import ChannelMetadataGuildForum
 
@@ -37,6 +37,7 @@ def test__ChannelMetadataGuildForum__from_data():
     flags = ChannelFlag(1)
     topic = 'Dearest'
     default_sort_order = SortOrder.creation_date
+    default_forum_layout = ForumLayout.list
     
     
     channel_metadata = ChannelMetadataGuildForum.from_data({
@@ -54,6 +55,7 @@ def test__ChannelMetadataGuildForum__from_data():
         'flags': int(flags),
         'topic': topic,
         'default_sort_order': default_sort_order.value,
+        'default_forum_layout': default_forum_layout.value,
     })
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataGuildForum)
@@ -72,7 +74,8 @@ def test__ChannelMetadataGuildForum__from_data():
     vampytest.assert_eq(channel_metadata.default_thread_slowmode, default_thread_slowmode)
     vampytest.assert_eq(channel_metadata.flags, flags)
     vampytest.assert_eq(channel_metadata.topic, topic)
-    vampytest.assert_eq(channel_metadata.default_sort_order, default_sort_order)
+    vampytest.assert_is(channel_metadata.default_sort_order, default_sort_order)
+    vampytest.assert_is(channel_metadata.default_forum_layout, default_forum_layout)
 
 
 def test__ChannelMetadataGuildForum__to_data():
@@ -101,6 +104,7 @@ def test__ChannelMetadataGuildForum__to_data():
     flags = ChannelFlag(1)
     topic = 'Dearest'
     default_sort_order = SortOrder.creation_date
+    default_forum_layout = ForumLayout.list
     
     channel_metadata = ChannelMetadataGuildForum({
         'parent_id': parent_id,
@@ -114,6 +118,7 @@ def test__ChannelMetadataGuildForum__to_data():
         'flags': flags,
         'topic': topic,
         'default_sort_order': default_sort_order,
+        'default_forum_layout': default_forum_layout,
     })
     
     data = channel_metadata.to_data(defaults = True, include_internals = True)
@@ -137,6 +142,7 @@ def test__ChannelMetadataGuildForum__to_data():
             'flags': int(flags),
             'topic': topic,
             'default_sort_order': default_sort_order.value,
+            'default_forum_layout': default_forum_layout.value,
         },
     )
 
@@ -185,6 +191,8 @@ def test__ChannelMetadataGuildForum__update_attributes():
     new_topic = 'My'
     old_default_sort_order = SortOrder.creation_date
     new_default_sort_order = SortOrder.latest_activity
+    old_default_forum_layout = ForumLayout.list
+    new_default_forum_layout = ForumLayout.gallery
     
     channel_metadata = ChannelMetadataGuildForum({
         'parent_id': old_parent_id,
@@ -198,6 +206,7 @@ def test__ChannelMetadataGuildForum__update_attributes():
         'flags': old_flags,
         'topic': old_topic,
         'default_sort_order': old_default_sort_order,
+        'default_forum_layout': old_default_forum_layout,
     })
     
     channel_metadata._update_attributes({
@@ -215,6 +224,7 @@ def test__ChannelMetadataGuildForum__update_attributes():
         'flags': int(new_flags),
         'topic': new_topic,
         'default_sort_order': new_default_sort_order.value,
+        'default_forum_layout': new_default_forum_layout.value,
     })
     
     vampytest.assert_eq(channel_metadata.parent_id, new_parent_id)
@@ -230,7 +240,8 @@ def test__ChannelMetadataGuildForum__update_attributes():
     vampytest.assert_eq(channel_metadata.default_thread_slowmode, new_default_thread_slowmode)
     vampytest.assert_eq(channel_metadata.flags, new_flags)
     vampytest.assert_eq(channel_metadata.topic, new_topic)
-    vampytest.assert_eq(channel_metadata.default_sort_order, new_default_sort_order)
+    vampytest.assert_is(channel_metadata.default_sort_order, new_default_sort_order)
+    vampytest.assert_is(channel_metadata.default_forum_layout, new_default_forum_layout)
 
 
 def test__ChannelMetadataGuildForum__difference_update_attributes():
@@ -277,6 +288,8 @@ def test__ChannelMetadataGuildForum__difference_update_attributes():
     new_topic = 'My'
     old_default_sort_order = SortOrder.creation_date
     new_default_sort_order = SortOrder.latest_activity
+    old_default_forum_layout = ForumLayout.list
+    new_default_forum_layout = ForumLayout.gallery
     
     channel_metadata = ChannelMetadataGuildForum({
         'parent_id': old_parent_id,
@@ -290,6 +303,7 @@ def test__ChannelMetadataGuildForum__difference_update_attributes():
         'flags': old_flags,
         'topic': old_topic,
         'default_sort_order': old_default_sort_order,
+        'default_forum_layout': old_default_forum_layout,
     })
     
     old_attributes = channel_metadata._difference_update_attributes({
@@ -307,6 +321,7 @@ def test__ChannelMetadataGuildForum__difference_update_attributes():
         'flags': int(new_flags),
         'topic': new_topic,
         'default_sort_order': new_default_sort_order.value,
+        'default_forum_layout': new_default_forum_layout.value,
     })
 
     vampytest.assert_eq(channel_metadata.parent_id, new_parent_id)
@@ -322,7 +337,8 @@ def test__ChannelMetadataGuildForum__difference_update_attributes():
     vampytest.assert_eq(channel_metadata.default_thread_slowmode, new_default_thread_slowmode)
     vampytest.assert_eq(channel_metadata.flags, new_flags)
     vampytest.assert_eq(channel_metadata.topic, new_topic)
-    vampytest.assert_eq(channel_metadata.default_sort_order, new_default_sort_order)
+    vampytest.assert_is(channel_metadata.default_sort_order, new_default_sort_order)
+    vampytest.assert_is(channel_metadata.default_forum_layout, new_default_forum_layout)
     
     vampytest.assert_in('parent_id', old_attributes)
     vampytest.assert_in('name', old_attributes)
@@ -335,6 +351,7 @@ def test__ChannelMetadataGuildForum__difference_update_attributes():
     vampytest.assert_in('flags', old_attributes)
     vampytest.assert_in('topic', old_attributes)
     vampytest.assert_in('default_sort_order', old_attributes)
+    vampytest.assert_in('default_forum_layout', old_attributes)
     
     vampytest.assert_eq(old_attributes['parent_id'], old_parent_id)
     vampytest.assert_eq(old_attributes['name'], old_name)
@@ -350,6 +367,7 @@ def test__ChannelMetadataGuildForum__difference_update_attributes():
     vampytest.assert_eq(old_attributes['flags'], old_flags)
     vampytest.assert_eq(old_attributes['topic'], old_topic)
     vampytest.assert_eq(old_attributes['default_sort_order'], old_default_sort_order)
+    vampytest.assert_eq(old_attributes['default_forum_layout'], old_default_forum_layout)
 
 
 def test__ChannelMetadataGuildForum__from_partial_data():

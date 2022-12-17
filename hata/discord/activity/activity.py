@@ -601,22 +601,6 @@ class Activity(RichAttributeErrorBaseType):
     
     
     @property
-    def duration(self):
-        """
-        Drops a deprecation warning and returns ``.spotify_track_duration``.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.duration` is deprecated and will be removed in 2022 December. '
-                f'Please use `.spotify_track_duration` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.spotify_track_duration
-    
-    
-    @property
     def spotify_track_duration(self):
         """
         Returns the spotify activity's duration, or `None` if not applicable.
@@ -684,22 +668,6 @@ class Activity(RichAttributeErrorBaseType):
         spotify_cover_id = self.spotify_cover_id
         if (spotify_cover_id is not None):
             return f'https://i.scdn.co/image/{spotify_cover_id}'
-    
-    
-    @property
-    def album_cover_url(self):
-        """
-        Drops a deprecation warning and returns ``.spotify_album_cover_url``.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.album_cover_url` is deprecated and will be removed in 2022 December. '
-                f'Please use `.spotify_album_cover_url` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        return self.spotify_album_cover_url
     
     
     @property

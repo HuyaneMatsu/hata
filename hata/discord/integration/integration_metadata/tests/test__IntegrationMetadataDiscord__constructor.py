@@ -1,8 +1,7 @@
 import vampytest
 
-from ....user import ClientUserBase, User
+from ....user import User
 
-from ...integration_account import IntegrationAccount
 from ...integration_application import IntegrationApplication
 
 from ..discord import IntegrationMetadataDiscord
@@ -23,7 +22,7 @@ def _check_all_fields_set(integration_metadata):
     vampytest.assert_instance(integration_metadata.application, IntegrationApplication, nullable = True)
 
 
-def test__IntegrationMetadataDiscord__new_0():
+def test__IntegrationMetadataDiscord__new__0():
     """
     Tests whether ``IntegrationMetadataDiscord.__new__`` works as intended.
     
@@ -33,7 +32,7 @@ def test__IntegrationMetadataDiscord__new_0():
     _check_all_fields_set(integration_metadata)
 
 
-def test__IntegrationMetadataDiscord__new_1():
+def test__IntegrationMetadataDiscord__new__1():
     """
     Tests whether ``IntegrationMetadataDiscord.__new__`` works as intended.
     

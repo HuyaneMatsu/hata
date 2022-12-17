@@ -18,7 +18,7 @@ class ClientCompoundReactionEndpoints(Compound):
     http : DiscordHTTPClient
     
     @Theory
-    async def message_get(self, message, *positional_parameters, force_update=False): ...
+    async def message_get(self, message, *, force_update = False): ...
     
     
     async def reaction_add(self, message, emoji):

@@ -15,7 +15,7 @@ from ...ext import get_and_validate_setup_functions, run_setup_functions
 from ..activity import ACTIVITY_UNKNOWN, Activity, ActivityType
 from ..application import Application, Team
 
-from ..core import APPLICATION_ID_TO_CLIENT, CLIENTS, GUILDS, KOKORO, USERS
+from ..core import APPLICATION_ID_TO_CLIENT, CHANNELS, CLIENTS, GUILDS, KOKORO, USERS
 from ..events.core import register_client, unregister_client
 from ..events.event_handler_manager import EventHandlerManager
 from ..events.handling_helpers import ensure_shutdown_event_handlers, ensure_voice_client_shutdown_event_handlers
@@ -865,10 +865,15 @@ class Client(
             
             thread_profiles = self.thread_profiles
             if (thread_profiles is not None):
-                for channel in thread_profiles.keys():
-                    thread_users = channel.thread_users
-                    if (thread_users is not None):
-                        thread_users[client_id] = alter_ego
+                for channel_id in thread_profiles.keys():
+                    try:
+                        channel = CHANNELS[channel_id]
+                    except KeyError:
+                        pass
+                    else:
+                        thread_users = channel.thread_users
+                        if (thread_users is not None):
+                            thread_users[client_id] = alter_ego
             
             self.relationships.clear()
             for channel in self.group_channels.values():

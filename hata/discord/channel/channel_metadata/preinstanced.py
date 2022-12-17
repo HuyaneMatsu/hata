@@ -1,6 +1,49 @@
-__all__ = ('SortOrder', 'VideoQualityMode', 'VoiceRegion',)
+__all__ = ('ForumLayout', 'SortOrder', 'VideoQualityMode', 'VoiceRegion',)
 
 from ...bases import Preinstance as P, PreinstancedBase
+
+
+class ForumLayout(PreinstancedBase):
+    """
+    Represents the default forum layout propagated by forum channels.
+    
+    Attributes
+    ----------
+    name : `str`
+        The name of the forum layout.
+    value : `int`
+        The identifier value the forum layout.
+    
+    Class Attributes
+    ----------------
+    INSTANCES : `dict` of (`int`, ``ForumLayout``) items
+        Stores the predefined ``ForumLayout``-s. These can be accessed with their `value` as key.
+    VALUE_TYPE : `type` = `int`
+        The forum layouts' values' type.
+    DEFAULT_NAME : `str` = `'UNDEFINED'`
+        The default name of the forum layouts.
+    
+    Every predefined forum layout can be accessed as class attribute as well:
+    
+    +-----------------------+-------------------+-------+
+    | Class attribute name  | Name              | Value |
+    +=======================+===================+=======+
+    | none                  | none              | 0     |
+    +-----------------------+-------------------+-------+
+    | list                  | list              | 1     |
+    +-----------------------+-------------------+-------+
+    | gallery               | gallery           | 2     |
+    +-----------------------+-------------------+-------+
+    """
+    INSTANCES = {}
+    VALUE_TYPE = int
+    DEFAULT_NAME = 'UNDEFINED'
+    
+    __slots__ = ()
+    
+    none = P(0, 'none')
+    list = P(1, 'list')
+    gallery = P(2, 'gallery')
 
 
 class SortOrder(PreinstancedBase):

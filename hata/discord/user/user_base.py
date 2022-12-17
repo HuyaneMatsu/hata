@@ -77,7 +77,7 @@ def _try_get_guild_and_id(guild):
     return guild, guild_id
 
 
-class UserBase(DiscordEntity, immortal=True):
+class UserBase(DiscordEntity, immortal = True):
     """
     Base class for user instances.
     
@@ -108,6 +108,10 @@ class UserBase(DiscordEntity, immortal=True):
     
     avatar = IconSlot('avatar', 'avatar', module_urls.user_avatar_url, module_urls.user_avatar_url_as)
     banner = IconSlot('banner', 'banner', module_urls.user_banner_url, module_urls.user_banner_url_as)
+    
+    
+    def __new__(cls, *positional_parameters, **keyword_parameters):
+        raise NotImplementedError
     
     
     def _update_attributes(self, data):

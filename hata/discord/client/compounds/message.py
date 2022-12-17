@@ -1,7 +1,5 @@
 __all__ = ()
 
-
-import warnings
 from collections import deque
 from time import time as time_now
 
@@ -29,7 +27,7 @@ from ..request_helpers import (
 )
 
 
-MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS = MessageFlag().update_by_keys(embeds_suppressed=True)
+MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS = MessageFlag().update_by_keys(embeds_suppressed = True)
 
 
 class ClientCompoundMessageEndpoints(Compound):
@@ -38,7 +36,7 @@ class ClientCompoundMessageEndpoints(Compound):
     id : int
     
     
-    async def message_get_chunk(self, channel, limit=100, *, after=None, around=None, before=None):
+    async def message_get_chunk(self, channel, limit = 100, *, after = None, around = None, before = None):
         """
         Requests messages from the given text channel. The `after`, `around` and the `before` parameters are mutually
         exclusive and they can be `int`, or as a ``DiscordEntity`` or as a `datetime` object.
@@ -186,7 +184,7 @@ class ClientCompoundMessageEndpoints(Compound):
         return messages
     
     
-    async def message_get(self, message, *positional_parameters, force_update=False):
+    async def message_get(self, message, *, force_update = False):
         """
         Requests a specific message by it's id at the given `channel`.
         
@@ -212,41 +210,21 @@ class ClientCompoundMessageEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if positional_parameters:
-            warnings.warn(
-                f'`{self.__class__.__name__}.message_get` parameters are modified from `channel + message_id` to '
-                f'`Message` / `(channel_id, message_id`). The old usage is deprecated and will be removed in 2022 '
-                f'December.'
-            )
-            
-            channel, message_id = message, *positional_parameters
-                
-            channel_id = get_channel_id(channel, Channel.is_in_group_textual)
-            
-            message_id_value = maybe_snowflake(message_id)
-            if message_id_value is None:
-                raise TypeError(
-                    f'`message_id` can be `int`, got {message_id.__class__.__name__}; {message_id!r}.'
-                )
-            
-            message_id = message_id_value
+        if isinstance(message, Message):
+            message_id = message.id
+            channel_id = message.channel_id
         
         else:
-            if isinstance(message, Message):
-                message_id = message.id
-                channel_id = message.channel_id
+            snowflake_pair = maybe_snowflake_pair(message)
+            if (snowflake_pair is not None):
+                channel_id, message_id = snowflake_pair
+                message = None
             
             else:
-                snowflake_pair = maybe_snowflake_pair(message)
-                if (snowflake_pair is not None):
-                    channel_id, message_id = snowflake_pair
-                    message = None
-                
-                else:
-                    raise TypeError(
-                        f'`message` can be `{Message.__name__}`, `tuple` (`int`, `int`), '
-                        f'got {message.__class__.__name__}; {message!r}.'
-                    )
+                raise TypeError(
+                    f'`message` can be `{Message.__name__}`, `tuple` (`int`, `int`), '
+                    f'got {message.__class__.__name__}; {message!r}.'
+                )
         
         message_data = await self.http.message_get(channel_id, message_id)
         
@@ -515,8 +493,8 @@ class ClientCompoundMessageEndpoints(Compound):
     
 
     async def message_edit(
-        self, message, content=..., *, embed = ..., file=..., allowed_mentions = ..., components = ..., suppress=...,
-        suppress_embeds=...
+        self, message, content = ..., *, embed = ..., file = ..., allowed_mentions = ..., components = ...,
+        suppress_embeds = ...
     ):
         """
         Edits the given `message`.
@@ -552,11 +530,6 @@ class ClientCompoundMessageEndpoints(Compound):
             Components attached to the message.
             
             Pass it as `None` remove the actual ones.
-        
-        suppress : `bool`, Optional (Keyword only)
-            Whether the message's embeds should be suppressed or unsuppressed.
-            
-            Deprecated, please use `suppress_embeds` parameter instead.
         
         suppress_embeds : `bool`, Optional (Keyword only)
             Whether the message's embeds should be suppressed or unsuppressed.
@@ -595,18 +568,6 @@ class ClientCompoundMessageEndpoints(Compound):
         content, embed = validate_content_and_embed(content, embed, True)
         
         components = get_components_data(components, True)
-        
-        if (suppress is not ...):
-            warnings.warn(
-                (
-                    f'`{self.__class__.__name__}.message_edit`\'s `suppress` parameter is deprecated, and '
-                    f'will be removed in 2022 May. Please use `suppress_embeds` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            suppress_embeds = suppress
         
         if __debug__:
             if (suppress_embeds is not ...) and (not isinstance(suppress_embeds, bool)):

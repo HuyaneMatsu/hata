@@ -25,7 +25,7 @@ def test__ComponentMetadataRow__copy():
     vampytest.assert_eq(copy.components, tuple(components))
 
 
-def test__ComponentMetadataRow__copy_with_0():
+def test__ComponentMetadataRow__copy_with__0():
     """
     Tests whether ``ComponentMetadataRow.copy_with`` works as intended.
     

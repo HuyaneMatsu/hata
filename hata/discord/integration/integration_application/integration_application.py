@@ -2,13 +2,22 @@ __all__ = ('IntegrationApplication',)
 
 from ...bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
 from ...http import urls as module_urls
-from ...preconverters import preconvert_snowflake
 from ...user import ZEROUSER
 
 from .fields import (
-    parse_bot, parse_description, parse_name, put_bot_into, put_description_into, put_name_into, validate_bot,
-    validate_description, validate_name
+    parse_bot, parse_description, parse_id, parse_name, put_bot_into, put_description_into, put_id_into, put_name_into,
+    validate_bot, validate_description, validate_id, validate_name
 )
+
+application_icon = IconSlot('icon', 'icon', module_urls.application_icon_url, module_urls.application_icon_url_as)
+
+
+PRECREATE_FIELDS = {
+    'bot': ('bot', validate_bot),
+    'description': ('description', validate_description),
+    'icon': ('icon', application_icon.validate_icon),
+    'name': ('name', validate_name),
+}
 
 
 class IntegrationApplication(DiscordEntity):
@@ -32,20 +41,14 @@ class IntegrationApplication(DiscordEntity):
     """
     __slots__ = ('bot', 'description', 'name', )
     
-    icon = IconSlot('icon', 'icon', module_urls.application_icon_url, module_urls.application_icon_url_as)
+    icon = application_icon
     
-    
-    def __new__(cls, **keyword_parameters):
+    def __new__(cls, *, bot = ..., description = ..., icon = ..., name = ...):
         """
         Creates a new integration application from the given keyword parameters.
         
         Parameters
         ----------
-        **keyword_parameters : Keyword parameters
-            The attributes to set.
-        
-        Other Parameters
-        ----------------
         bot : `None`, ``ClientUserBase``, Optional (Keyword only)
             The application's bot if applicable.
         
@@ -62,21 +65,39 @@ class IntegrationApplication(DiscordEntity):
         ------
         TypeError
             - If a parameter's type is incorrect.
-            - Extra or unused parameters.
         ValueError
             - If a parameter's value is incorrect.
         """
-        self = cls._create_empty(0)
-        self._set_attributes_from_keyword_parameters(keyword_parameters)
+        # bot
+        if bot is ...:
+            bot = ZEROUSER
+        else:
+            bot = validate_bot(bot)
+        
+        # description
+        if description is ...:
+            description = None
+        else:
+            description = validate_description(description)
         
         # icon
-        self.icon = cls.icon.parse_from_keyword_parameters(keyword_parameters, allow_data = True)
+        if icon is ...:
+            icon = None
+        else:
+            icon = cls.icon.validate_icon(icon, allow_data = True)
         
-        if keyword_parameters:
-            raise TypeError(
-                f'Extra or unused parameters: {keyword_parameters!r}.'
-            )
+        # name
+        if name is ...:
+            name = ''
+        else:
+            name = validate_name(name)
         
+        self = object.__new__(cls)
+        self.bot = bot
+        self.description = description
+        self.icon = icon
+        self.id = 0
+        self.name = name
         return self
     
     
@@ -99,11 +120,11 @@ class IntegrationApplication(DiscordEntity):
         bot : `None`, ``ClientUserBase``, Optional (Keyword only)
             The application's bot if applicable.
         
-        icon : `None`, ``Icon``, Optional (Keyword only)
-            The icon of the integration application.
-        
         description : `None`, `str`, Optional (Keyword only)
             The description of the application.
+        
+        icon : `None`, ``Icon``, Optional (Keyword only)
+            The icon of the integration application.
         
         name : `None, `str`, Optional (Keyword only)
             The name of the application.
@@ -120,17 +141,40 @@ class IntegrationApplication(DiscordEntity):
         ValueError
             - If a parameter's value is incorrect.
         """
-        integration_application_id = preconvert_snowflake(integration_application_id, 'integration_application_id')
-        self = cls._create_empty(integration_application_id)
-        self._set_attributes_from_keyword_parameters(keyword_parameters)
-        
-        # icon
-        self.icon = cls.icon.parse_from_keyword_parameters(keyword_parameters)
+        integration_application_id = validate_id(integration_application_id)
         
         if keyword_parameters:
-            raise TypeError(
-                f'Extra or unused parameters: {keyword_parameters!r}.'
-            )
+            processable = []
+            
+            extra = None
+            
+            while keyword_parameters:
+                field_name, field_value = keyword_parameters.popitem() 
+                try:
+                    attribute_name, validator = PRECREATE_FIELDS[field_name]
+                except KeyError:
+                    if extra is None:
+                        extra = {}
+                    extra[field_name] = field_value
+                    continue
+                
+                attribute_value = validator(field_value)
+                processable.append((attribute_name, attribute_value))
+                continue
+                
+            if (extra is not None):
+                raise TypeError(
+                    f'Unused or unsettable keyword parameters: {extra!r}.'
+                )
+        
+        else:
+            processable = None
+        
+        self = cls._create_empty(integration_application_id)
+        
+        if (processable is not None):
+            for item in processable:
+                setattr(self, *item)
         
         return self
     
@@ -150,11 +194,11 @@ class IntegrationApplication(DiscordEntity):
         self : `instance<cls>`
         """
         self = object.__new__(cls)
-        self.id = integration_application_id
         self.bot = ZEROUSER
         self.description = None
         self.icon_type = ICON_TYPE_NONE
         self.icon_hash = 0
+        self.id = integration_application_id
         self.name = ''
         return self
     
@@ -174,7 +218,7 @@ class IntegrationApplication(DiscordEntity):
         self : `instance<cls>`
         """
         self = object.__new__(cls)
-        self.id = int(data['id'])
+        self.id = parse_id(data)
         self._set_icon(data)
         self.bot = parse_bot(data)
         self.description = parse_description(data)
@@ -199,65 +243,15 @@ class IntegrationApplication(DiscordEntity):
         """
         data = {}
         
-        # id
         if include_internals:
-            data['id'] = str(self.id)
+            put_id_into(self.id, data, defaults)
         
-        # bot
         put_bot_into(self.bot, data, defaults)
-        
-        # description
         put_description_into(self.description, data, defaults)
-        
-        # icon
         type(self).icon.put_into(self.icon, data, defaults, as_data = not include_internals)
-        
-        # name
         put_name_into(self.name, data, defaults)
         
-        
         return data
-    
-    
-    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
-        """
-        Sets the integration application's attributes from the given keyword parameters.
-        
-        Parameters
-        ----------
-        keyword_parameters : `dict` of (`str`, `Any`) items
-            The keyword parameters to set the integration application's attributes from.
-        
-        Raises
-        ------
-        TypeError
-            A field of invalid type.
-        ValueError
-            A field of invalid value.
-        """
-        # bot
-        try:
-            bot = keyword_parameters.pop('bot')
-        except KeyError:
-            pass
-        else:
-            self.bot = validate_bot(bot)
-        
-        # description
-        try:
-            description = keyword_parameters.pop('description')
-        except KeyError:
-            pass
-        else:
-            self.description = validate_description(description)
-        
-        # name
-        try:
-            name = keyword_parameters.pop('name')
-        except KeyError:
-            pass
-        else:
-            self.name = validate_name(name)
     
     
     @property
@@ -302,11 +296,17 @@ class IntegrationApplication(DiscordEntity):
         is_equal : `bool`
         """
         # id
-        if self.id != other.id:
+        self_id = self.id
+        other_id = other.id
+        if (self_id and other_id) and (self_id != other_id):
             return False
         
         # bot
         if self.bot != other.bot:
+            return False
+        
+        # description
+        if self.description != other.description:
             return False
         
         # icon_hash
@@ -315,10 +315,6 @@ class IntegrationApplication(DiscordEntity):
         
         # icon_type
         if self.icon_type != other.icon_type:
-            return False
-        
-        # description
-        if self.description != other.description:
             return False
         
         # name
@@ -356,13 +352,16 @@ class IntegrationApplication(DiscordEntity):
         # bot
         hash_value ^= hash(self.bot)
         
-        # icon
-        hash_value ^= hash(self.icon)
-        
         # description
         description = self.description
         if (description is not None):
             hash_value ^= hash(description)
+        
+        # icon
+        hash_value ^= hash(self.icon)
+        
+        # id
+        hash_value ^= self.id
         
         # name
         name = self.name
@@ -370,3 +369,83 @@ class IntegrationApplication(DiscordEntity):
             hash_value ^= hash(name)
         
         return hash_value
+    
+    
+    def copy(self):
+        """
+        Copies the integration application returning a new partial one.
+        
+        Returns
+        -------
+        new : `instance<cls>`
+        """
+        new = object.__new__(type(self))
+        new.bot = self.bot
+        new.description = self.description
+        new.icon_hash = self.icon_hash
+        new.icon_type = self.icon_type
+        new.id = 0
+        new.name = self.name
+        return new
+
+
+    def copy_with(self, *, bot = ..., description = ..., icon = ..., name = ...):
+        """
+        Copies the integration application with the given fields returning a new partial one.
+        
+        Parameters
+        ----------
+        bot : `None`, ``ClientUserBase``, Optional (Keyword only)
+            The application's bot if applicable.
+        
+        icon : `None`, `bytes`, `bytearray`, `memoryview`, ``Icon``, Optional (Keyword only)
+            The icon of the integration application.
+        
+        description : `None`, `str`, Optional (Keyword only)
+            The description of the application.
+        
+        name : `None, `str`, Optional (Keyword only)
+            The name of the application.
+        
+        Returns
+        -------
+        new : `instance<cls>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # bot
+        if bot is ...:
+            bot = self.bot
+        else:
+            bot = validate_bot(bot)
+        
+        # description
+        if description is ...:
+            description = self.description
+        else:
+            description = validate_description(description)
+        
+        # icon
+        if icon is ...:
+            icon = self.icon
+        else:
+            icon = type(self).icon.validate_icon(icon, allow_data = True)
+        
+        # name
+        if name is ...:
+            name = self.name
+        else:
+            name = validate_name(name)
+        
+        new = object.__new__(type(self))
+        new.bot = bot
+        new.description = description
+        new.icon = icon
+        new.id = 0
+        new.name = name
+        return new

@@ -10,7 +10,7 @@ from ....permission import PermissionOverwrite, PermissionOverwriteTargetType
 from ....user import ClientUserBase, User, ZEROUSER, create_partial_user_from_id
 
 from ...forum_tag import ForumTag
-from ...channel_metadata import ChannelFlag, SortOrder, VideoQualityMode, VoiceRegion
+from ...channel_metadata import ChannelFlag, ForumLayout, SortOrder, VideoQualityMode, VoiceRegion
 
 from ..preinstanced import ChannelType
 from ..channel import Channel
@@ -62,6 +62,7 @@ def test__Channel__general_properties():
         (ChannelType.guild_voice, 'user_limit', 66),
         (ChannelType.guild_voice, 'video_quality_mode', VideoQualityMode.full),
         (ChannelType.guild_forum, 'default_sort_order', SortOrder.creation_date),
+        (ChannelType.guild_forum, 'default_forum_layout', ForumLayout.list),
     ):
         channel = Channel(channel_type = channel_type, **{field_name: value})
         

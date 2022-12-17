@@ -1,4 +1,6 @@
 from .attachment import *
+from .message_activity import *
+
 from .cross_mention import *
 from .flags import *
 from .message import *
@@ -7,8 +9,11 @@ from .message_interaction import *
 from .preinstanced import *
 from .utils import *
 
+
 __all__ = (
     *attachment.__all__,
+    *message_activity.__all__,
+    
     *cross_mention.__all__,
     *flags.__all__,
     *message.__all__,

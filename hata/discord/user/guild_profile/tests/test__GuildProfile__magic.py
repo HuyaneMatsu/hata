@@ -89,6 +89,7 @@ def test__GuildProfile__eq():
     for field_name, field_value in (
         ('avatar', None),
         ('boosts_since', None),
+        ('joined_at', None),
         ('nick', None),
         ('pending', True),
         ('role_ids', None),

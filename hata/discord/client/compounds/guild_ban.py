@@ -1,7 +1,5 @@
 __all__ = ()
 
-import warnings
-
 from scarletio import Compound
 
 from ...http import DiscordHTTPClient
@@ -10,29 +8,6 @@ from ...utils import log_time_converter
 
 from ..request_helpers import get_guild_id, get_user_id
 from ..utils import BanEntry
-
-
-def _assert__guild_ban_add__delete_message_days(delete_message_days):
-    """
-    Asserts the `delete_message_days` parameter of ``Client.guild_ban_add`` method.
-    
-    Parameters
-    ----------
-    delete_message_days : `int`
-        How much days back the user's messages should be deleted. Can be in range [0:7].
-    
-    Raises
-    ------
-    AssertionError
-        - If `delete_message_days` was not given as `int`.
-    """
-    if not isinstance(delete_message_days, int):
-        raise AssertionError(
-            f'`delete_message_days` can be `int`, '
-            f'got {delete_message_days.__class__.__name__}; {delete_message_days!r}.'
-        )
-    
-    return True
 
 
 def _assert__guild_ban_add__delete_message_duration(delete_message_duration):
@@ -85,7 +60,7 @@ class ClientCompoundGuildBanEndpoints(Compound):
     http : DiscordHTTPClient
     
     
-    async def guild_ban_add(self, guild, user, *, delete_message_days=0, delete_message_duration=0, reason = None):
+    async def guild_ban_add(self, guild, user, *, delete_message_duration = 0, reason = None):
         """
         Bans the given user from the guild.
         
@@ -98,11 +73,6 @@ class ClientCompoundGuildBanEndpoints(Compound):
         
         user : ``ClientUserBase``, `int`
             The user to ban from the guild.
-        
-        delete_message_days : `int` = `0`, Optional (Keyword only)
-            How much days back the user's messages should be deleted. Can be in range [0:7].
-            
-            Deprecated. Please use `delete_message_duration` instead.
         
         delete_message_duration : `int` = `0`, Optional (Keyword only)
             How much seconds back the user's messages should be deleted. Can be in range [0:604800].
@@ -123,20 +93,7 @@ class ClientCompoundGuildBanEndpoints(Compound):
         guild_id = get_guild_id(guild)
         user_id = get_user_id(user)
         
-        assert _assert__guild_ban_add__delete_message_days(delete_message_days)
         assert _assert__guild_ban_add__delete_message_duration(delete_message_duration)
-        
-        
-        if delete_message_days:
-            warnings.warn(
-                (
-                    f'`delete_message_days` parameter of `{self.__class__.__name__}.guild_ban_add` is deprecated and '
-                    f'will be removed in 2022 December. Please use `delete_message_duration` instead.'
-                ),
-                FutureWarning,
-            )
-            
-            delete_message_duration = delete_message_days * 24 * 60 * 60
         
         data = {}
         

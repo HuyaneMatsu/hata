@@ -115,6 +115,7 @@ def test__GuildProfile__copy_with__1():
     vampytest.assert_not_is(guild_profile, copy)
 
     vampytest.assert_eq(copy.avatar, new_avatar)
+    vampytest.assert_eq(copy.joined_at, new_joined_at)
     vampytest.assert_eq(copy.boosts_since, new_boosts_since)
     vampytest.assert_eq(copy.nick, new_nick)
     vampytest.assert_eq(copy.pending, new_pending)

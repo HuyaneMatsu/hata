@@ -1,42 +1,37 @@
 __all__ = ('IntegrationAccount', )
 
-from scarletio import include
+from scarletio import RichAttributeErrorBaseType
 
 from .fields import parse_name, parse_id, validate_name, validate_id, put_name_into, put_id_into
 
 
-IntegrationType = include('IntegrationType')
-
-
-class IntegrationAccount:
+class IntegrationAccount(RichAttributeErrorBaseType):
     """
     Account for who an ``Integration`` is for.
     
     Attributes
     ----------
     id : `str`
-        The respective account's id.
+        The respective account's identifier.
     name : `str`
         The respective account's name.
     """
     __slots__ = ('id', 'name', )
     
-    def __new__(cls, integration_account_id = None, name = None):
+    def __new__(cls, integration_account_id = ..., name = ...):
         """
         Creates a new integration account instance from the given account data and integration type.
         
-        If `integration_type` is `'discord'`, then returns a Discord user instead.
-        
         Parameters
         ----------
-        integration_account_id : `None`, `str` = `None` Optional
+        integration_account_id : `None`, `str`, Optional
             The integration account's identifier.
-        name : `None`, `str` = `None`, Optional
+        name : `None`, `str`, Optional
             The integration account's name.
         
         Returns
         -------
-        self : ``IntegrationAccount``, ``ClientUserBase``
+        self : `instance<cls>`
         
         Raises
         ------
@@ -45,14 +40,21 @@ class IntegrationAccount:
         ValueError
             - If a parameter's value is incorrect.
         """
-        integration_account_id = validate_id(integration_account_id)
-        name = validate_name(name)
+        # integration_account_id
+        if integration_account_id is ...:
+            integration_account_id = ''
+        else:
+            integration_account_id = validate_id(integration_account_id)
+        
+        # name
+        if name is ...:
+            name = ''
+        else:
+            name = validate_name(name)
         
         self = object.__new__(cls)
-        
         self.id = integration_account_id
         self.name = name
-        
         return self
     
     
@@ -61,22 +63,18 @@ class IntegrationAccount:
         """
         Creates a new integration account instance from the given account data and integration type.
         
-        If `integration_type` is `IntegrationType.discord`, then returns a Discord user instead.
-        
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Integration account data.
         
         Returns
         -------
-        self : ``IntegrationAccount``
+        self : `instance<cls>`
         """
         self = object.__new__(cls)
-        
         self.id = parse_id(data)
         self.name = parse_name(data)
-        
         return self
     
     
@@ -91,13 +89,11 @@ class IntegrationAccount:
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         data = {}
-        
         put_id_into(self.id, data, defaults)
         put_name_into(self.name, data, defaults)
-        
         return data
     
     
@@ -146,3 +142,56 @@ class IntegrationAccount:
         self.id = ''
         self.name = ''
         return self
+    
+    
+    def copy(self):
+        """
+        Copies the integration application returning a new one.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        """
+        new = object.__new__(type(self))
+        new.id = self.id
+        new.name = self.name
+        return new
+    
+
+    def copy_with(self, *, integration_account_id = ..., name = ...):
+        """
+        Copies the integration application with the given fields.
+        
+        Parameters
+        ----------
+        integration_account_id : `None`, `str`, Optional (Keyword only)
+            The integration account's identifier.
+        name : `None`, `str`, Optional (Keyword only)
+            The integration account's name.
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # integration_account_id
+        if integration_account_id is ...:
+            integration_account_id = self.id
+        else:
+            integration_account_id = validate_id(integration_account_id)
+        
+        # name
+        if name is ...:
+            name = self.name
+        else:
+            name = validate_name(name)
+        
+        new = object.__new__(type(self))
+        new.id = integration_account_id
+        new.name = name
+        return new

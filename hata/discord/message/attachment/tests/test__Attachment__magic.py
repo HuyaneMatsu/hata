@@ -2,8 +2,6 @@ import vampytest
 
 from ..attachment import Attachment
 
-from .test__Attachment__constructor import _check_is_all_attribute_set
-
 
 def test__Attachment__repr():
     """

@@ -46,7 +46,7 @@ class Oauth2User(UserBase):
     """
     __slots__ = ('access', 'email', 'flags', 'locale', 'mfa', 'premium_type', 'system', 'verified', )
     
-    def __init__(self, data, access):
+    def __new__(cls, data, access):
         """
         Creates a new ``Oauth2User`` instance.
         
@@ -57,10 +57,11 @@ class Oauth2User(UserBase):
         access : ``Oauth2Access``
             Source oauth2 access.
         """
+        self = object.__new__(cls)
         self.access = access
         self.id = int(data['id'])
-        
         self._update_attributes(data)
+        return self
     
     
     @copy_docs(UserBase._update_attributes)

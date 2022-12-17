@@ -1,4 +1,4 @@
-__all__ = ('PurchasedFlag', 'ThreadProfileFlag', 'UserFlag', )
+__all__ = ('PurchasedFlag', 'UserFlag')
 
 from ..bases import FlagBase
 
@@ -86,32 +86,6 @@ class UserFlag(FlagBase):
         'premium_disabled': 21,
         'active_developer': 22,
         'quarantined': 44,
-    }
-
-
-class ThreadProfileFlag(FlagBase):
-    """
-    Represents a ``ThreadProfile``'s user specific bitwise flag based settings.
-    
-    The implemented thread flags are the following:
-    
-    +-------------------------------+-------------------+
-    | Respective name               | Bitwise position  |
-    +===============================+===================+
-    | has_interacted                | 0                 |
-    +-------------------------------+-------------------+
-    | all_messages                  | 1                 |
-    +-------------------------------+-------------------+
-    | only_mentions                 | 2                 |
-    +-------------------------------+-------------------+
-    | no_messages                   | 3                 |
-    +-------------------------------+-------------------+
-    """
-    __keys__ = {
-        'has_interacted': 0,
-        'all_messages': 1,
-        'only_mentions': 2,
-        'no_messages': 3,
     }
 
 

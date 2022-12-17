@@ -16,6 +16,139 @@ class IntegrationMetadataBase(RichAttributeErrorBaseType):
     """
     __all__ = ()
     
+    def __eq__(self, other):
+        """Returns whether the two integration accounts are the same."""
+        if type(self) is not type(other):
+            return False
+        
+        return self._is_equal_same_type(other)
+    
+    
+    def _is_equal_same_type(self, other):
+        """
+        Returns whether the two integration metadatas are equal.
+        
+        > Both object must have the same type.
+        
+        Parameters
+        ----------
+        other : `instance<type<cls>>`
+            The other instance.
+        """
+        return True
+    
+    
+    def __hash__(self):
+        """Returns the integration account's hash value."""
+        return 0
+    
+    
+    def __repr__(self):
+        return f'<{self.__class__.__name__}>'
+    
+    
+    def __new__(cls, keyword_parameters):
+        """
+        Creates a new integration metadata from the given keyword parameters.
+        
+        Parameters
+        ----------
+        keyword_parameters : `dict` of (`str`, `object`) items
+            Keyword parameters to populate the attributes.
+        
+        The used fields are removed from `keyword_parameters`.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        return object.__new__(cls)
+    
+    
+    @classmethod
+    def _create_empty(cls):
+        """
+        Creates an empty integration metadata with it's default attributes set.
+        
+        Returns
+        -------
+        self : `instance<self>`
+        """
+        return object.__new__(cls)
+    
+    
+    @classmethod
+    def from_data(cls, data):
+        """
+        Creates a new integration metadata from the given data.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `object`) items
+            Integration data.
+        
+        Returns
+        -------
+        self : `instance<cls>`
+        """
+        return object.__new__(cls)
+    
+    
+    def to_data(self, *, defaults = False):
+        """
+        Converts the integration metadata into json serializable object.
+        
+        Parameters
+        ----------
+        defaults : `bool` = `False`, Optional (Keyword only)
+            Whether default fields should be included as well.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `object`) items
+        """
+        return {}
+    
+    
+    def copy(self):
+        """
+        Returns a copy of the integration metadata.
+        
+        Returns
+        -------
+        copy : `instance<cls>`
+        """
+        return object.__new__(type(self))
+    
+    
+    def copy_with(self, keyword_parameters):
+        """
+        Returns a copy of the integration metadata with using the given keyword parameters to populate it.
+        
+        The used fields are removed from `keyword_parameters`.
+        
+        Parameters
+        ----------
+        keyword_parameters : `dict` of (`str`, `object`) items
+            Keyword parameters to populate the attributes.
+        
+        Returns
+        -------
+        copy : `instance<cls>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        return self.copy()
+    
+    
     account = PlaceHolder(
         IntegrationAccount._create_empty(),
         """
@@ -36,7 +169,7 @@ class IntegrationMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        application : ``IntegrationApplication``
+        application : `None`, ``IntegrationApplication``
         """
     )
     
@@ -133,97 +266,3 @@ class IntegrationMetadataBase(RichAttributeErrorBaseType):
         syncing : `bool`
         """
     )
-    
-    def __eq__(self, other):
-        """Returns whether the two integration accounts are the same."""
-        if type(self) is not type(other):
-            return False
-        
-        return self._is_equal_same_type(other)
-    
-    
-    def _is_equal_same_type(self, other):
-        """
-        Returns whether the two integration metadatas are equal.
-        
-        > Both object must have the same type.
-        
-        Parameters
-        ----------
-        other : `instance<type<cls>>`
-            The other instance.
-        """
-        return True
-    
-    
-    def __hash__(self):
-        """Returns the integration account's hash value."""
-        return 0
-    
-    
-    def __repr__(self):
-        return f'<{self.__class__.__name__}>'
-    
-    
-    def __new__(cls, keyword_parameters):
-        """
-        Creates a new integration metadata from the given keyword parameters.
-        
-        Parameters
-        ----------
-        keyword_parameters : `dict` of (`str`, `Any`) items
-            Keyword parameters to populate the attributes.
-        
-        Raises
-        ------
-        TypeError
-            - If a parameter's type is incorrect.
-        ValueError
-            - If a parameter's value is incorrect.
-        """
-        return object.__new__(cls)
-    
-    
-    @classmethod
-    def _create_empty(cls):
-        """
-        Creates an empty integration metadata with it's default attributes set.
-        
-        Returns
-        -------
-        self : `instance<self>`
-        """
-        return object.__new__(cls)
-    
-    
-    @classmethod
-    def from_data(cls, data):
-        """
-        Creates a new integration metadata from the given data.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Integration data.
-        
-        Returns
-        -------
-        self : `instance<cls>`
-        """
-        return object.__new__(cls)
-    
-    
-    def to_data(self, *, defaults = False):
-        """
-        Converts the integration metadata into json serializable object.
-        
-        Parameters
-        ----------
-        defaults : `bool` = `False`, Optional (Keyword only)
-            Whether default fields should be included as well.
-        
-        Returns
-        -------
-        data : `dict` of (`str`, `Any`) items
-        """
-        return {}

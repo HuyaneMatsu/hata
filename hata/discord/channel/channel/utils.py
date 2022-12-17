@@ -9,15 +9,16 @@ from ...core import CHANNELS
 
 from ..channel_metadata.base import CHANNEL_METADATA_ICON_SLOT
 from ..channel_metadata.fields import (
-    put_applied_tag_ids_into, put_auto_archive_after_into, put_bitrate_into, put_default_thread_auto_archive_after_into,
-    put_default_thread_reaction_into, put_default_thread_slowmode_into, put_flags_into, put_invitable_into,
-    put_name_into, put_nsfw_into, put_open_into, put_parent_id_into, put_permission_overwrites_into, put_position_into,
-    put_region_into, put_slowmode_into, put_topic_into, put_user_limit_into, put_video_quality_mode_into,
-    validate_applied_tag_ids, validate_auto_archive_after, validate_bitrate, validate_default_thread_auto_archive_after,
-    validate_default_thread_reaction, validate_default_thread_slowmode, validate_flags, validate_invitable,
-    validate_name, validate_nsfw, validate_open, validate_parent_id, validate_permission_overwrites, validate_position,
-    validate_region, validate_slowmode, validate_topic, validate_user_limit, validate_video_quality_mode,
-    validate_default_sort_order, put_default_sort_order_into
+    put_applied_tag_ids_into, put_auto_archive_after_into, put_bitrate_into, put_default_forum_layout_into,
+    put_default_sort_order_into, put_default_thread_auto_archive_after_into, put_default_thread_reaction_into,
+    put_default_thread_slowmode_into, put_flags_into, put_invitable_into, put_name_into, put_nsfw_into, put_open_into,
+    put_parent_id_into, put_permission_overwrites_into, put_position_into, put_region_into, put_slowmode_into,
+    put_topic_into, put_user_limit_into, put_video_quality_mode_into, validate_applied_tag_ids,
+    validate_auto_archive_after, validate_bitrate, validate_default_forum_layout, validate_default_sort_order,
+    validate_default_thread_auto_archive_after, validate_default_thread_reaction, validate_default_thread_slowmode,
+    validate_flags, validate_invitable, validate_name, validate_nsfw, validate_open, validate_parent_id,
+    validate_permission_overwrites, validate_position, validate_region, validate_slowmode, validate_topic,
+    validate_user_limit, validate_video_quality_mode
 )
 
 from .preinstanced import ChannelType
@@ -28,6 +29,7 @@ Channel = include('Channel')
 
 CHANNEL_GUILD_MAIN_FIELD_CONVERTERS = {
     'bitrate': (validate_bitrate, put_bitrate_into),
+    'default_forum_layout': (validate_default_forum_layout, put_default_forum_layout_into),
     'default_sort_order': (validate_default_sort_order, put_default_sort_order_into),
     'default_thread_auto_archive_after': (
         validate_default_thread_auto_archive_after, put_default_thread_auto_archive_after_into

@@ -6,7 +6,7 @@ from ....bases import Icon
 from ....emoji import Emoji
 
 from ..flags import ChannelFlag
-from ..preinstanced import SortOrder, VideoQualityMode, VoiceRegion
+from ..preinstanced import ForumLayout, SortOrder, VideoQualityMode, VoiceRegion
 
 from ..base import ChannelMetadataBase
 
@@ -23,6 +23,7 @@ def test__ChannelMetadataBase__place_holders():
     vampytest.assert_instance(channel_metadata.auto_archive_after, int)
     vampytest.assert_instance(channel_metadata.available_tags, tuple, nullable = True)
     vampytest.assert_instance(channel_metadata.bitrate, int)
+    vampytest.assert_instance(channel_metadata.default_forum_layout, ForumLayout)
     vampytest.assert_instance(channel_metadata.default_sort_order, SortOrder)
     vampytest.assert_instance(channel_metadata.default_thread_auto_archive_after, int)
     vampytest.assert_instance(channel_metadata.default_thread_reaction, Emoji, nullable = True)

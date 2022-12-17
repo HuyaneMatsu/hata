@@ -11,7 +11,7 @@ from ...utils import id_to_datetime
 
 from .constants import AUTO_ARCHIVE_DEFAULT, NAME_DEFAULT
 from .flags import ChannelFlag
-from .preinstanced import SortOrder, VideoQualityMode, VoiceRegion
+from .preinstanced import ForumLayout, SortOrder, VideoQualityMode, VoiceRegion
 
 
 Client = include('Client')
@@ -193,6 +193,8 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
             | available_tags                        | `None`, `tuple` of ``ForumTag``                           |
             +---------------------------------------+-----------------------------------------------------------+
             | bitrate                               | `int`                                                     |
+            +---------------------------------------+-----------------------------------------------------------+
+            | default_forum_layout                  | ``ForumLayout``                                           |
             +---------------------------------------+-----------------------------------------------------------+
             | default_sort_order                    | ``SortOrder``                                             |
             +---------------------------------------+-----------------------------------------------------------+
@@ -738,10 +740,21 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     )
     
     
+    default_forum_layout = PlaceHolder(
+        ForumLayout.none,
+        """
+        The default layout used to display threads of the forum.
+        
+        Returns
+        -------
+        default_forum_layout : ``ForumLayout``
+        """
+    )
+    
     default_sort_order = PlaceHolder(
         SortOrder.latest_activity,
         """
-        Returns how the posts ordered in a forum channel by default.
+        The default thread ordering of the forum.
         
         Returns
         -------

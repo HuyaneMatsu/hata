@@ -214,7 +214,7 @@ class ClientCompoundStickerEndpoints(Compound):
         return sticker_packs
     
     
-    async def sticker_guild_get(self, sticker, *deprecated_parameters, force_update=False):
+    async def sticker_guild_get(self, sticker, *, force_update = False):
         """
         Gets the specified sticker from the respective guild.
         
@@ -236,40 +236,19 @@ class ClientCompoundStickerEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if deprecated_parameters:
-            if len(deprecated_parameters) > 1:
+        if isinstance(sticker, Sticker):
+            guild_id = sticker.guild_id
+            sticker_id = sticker.id
+        else:
+            snowflake_pair = maybe_snowflake_pair(sticker)
+            if snowflake_pair is None:
                 raise TypeError(
-                    f'`{self.__class__.__name__}.sticker_guild_get` accepts up to `2` positional parameters, got '
-                    f'{len(deprecated_parameters) + 1}.'
+                    f'`sticker` can be `{Sticker.__name__}`, `tuple` (`int`, `int`), '
+                    f'got {sticker.__class__.__name__}; {sticker!r}.'
                 )
             
-            warnings.warn(
-                (
-                    f'2nd parameter of `{self.__class__.__name__}.sticker_guild_get` is deprecated and will be '
-                    f'removed in 2022 Jun. Please pass just an `{Sticker.__name__}` or a pair of snowflake.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            guild, sticker, = sticker, *deprecated_parameters
-            sticker, sticker_id = get_sticker_and_id(sticker)
-            guild_id = get_guild_id(guild)
-            
-        else:
-            if isinstance(sticker, Sticker):
-                guild_id = sticker.guild_id
-                sticker_id = sticker.id
-            else:
-                snowflake_pair = maybe_snowflake_pair(sticker)
-                if snowflake_pair is None:
-                    raise TypeError(
-                        f'`sticker` can be `{Sticker.__name__}`, `tuple` (`int`, `int`), '
-                        f'got {sticker.__class__.__name__}; {sticker!r}.'
-                    )
-                
-                guild_id, sticker_id = snowflake_pair
-                sticker = STICKERS.get(sticker_id, None)
+            guild_id, sticker_id = snowflake_pair
+            sticker = STICKERS.get(sticker_id, None)
         
         if (sticker is not None) and (not sticker.partial) and (not force_update):
             return sticker
@@ -572,19 +551,3 @@ class ClientCompoundStickerEndpoints(Compound):
             stickers = [*guild.stickers.values()]
         
         return stickers
-    
-    
-    async def guild_sync_stickers(self, guild):
-        """
-        Deprecated and will be removed in 2022 Jun. Please use ``.sticker_guild_get_all`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.guild_sync_stickers` is deprecated and will be '
-                f'removed in 2022 Jun. Please use `.sticker_guild_get_all` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return await self.sticker_guild_get_all(guild)

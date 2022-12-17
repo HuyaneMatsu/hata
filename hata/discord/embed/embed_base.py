@@ -3,11 +3,10 @@ __all__ = (
     'EmbedThumbnail', 'EmbedVideo'
 )
 
-import warnings
 from datetime import datetime
 
 from ..color import Color
-from ..utils import is_url, url_cutter
+from ..utils import url_cutter
 
 
 EXTRA_EMBED_TYPES = frozenset((
@@ -706,51 +705,6 @@ class EmbedProvider:
         return self
 
 
-def _warn_bad_embed_author_constructor_parameter_order(name, icon_url):
-    """
-    Checks whether the embed author `name` and `icon_url`-s are passed the other way around. If not drops a warning.
-    
-    Parameters
-    ----------
-    name : `None`, `str`
-        Embed author name.
-    icon_url : `None`, `str`
-        Embed author icon url.
-    
-    Returns
-    -------
-    name : `None`, `str`
-        Embed author name.
-    icon_url : `None`, `str`
-        Embed author icon url.
-    """
-    if name is None:
-        if (icon_url is not None) and (not is_url(icon_url)):
-            switch = True
-        else:
-            switch = False
-    
-    else:
-        if is_url(name) and ((icon_url is None) or (not is_url(icon_url))):
-            switch = True
-        else:
-            switch = False
-    
-    if switch:
-        warnings.warn(
-            (
-                f'Embed author parameter order changed to `name, icon_url, url` from `icon_url`, `name`, `url` one. '
-                f'Using the old version is deprecated and will be removed in 2022 Jul.'
-            ),
-            FutureWarning,
-            stacklevel = 3,
-        )
-        
-        icon_url, name = name, icon_url
-    
-    return name, icon_url
-
-
 class EmbedAuthor:
     """
     Represents an embed's author.
@@ -781,8 +735,6 @@ class EmbedAuthor:
         url : `None`, `str` = `None`, Optional
             The url of the author.
         """
-        name, icon_url = _warn_bad_embed_author_constructor_parameter_order(name, icon_url)
-        
         self.icon_url = icon_url
         self.name = name
         self.proxy_icon_url = None

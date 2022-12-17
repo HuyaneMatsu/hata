@@ -1,6 +1,6 @@
 __all__ = ()
 
-from ....channel import ChannelFlag, ForumTag, SortOrder, VideoQualityMode, VoiceRegion
+from ....channel import ChannelFlag, ForumLayout, ForumTag, SortOrder, VideoQualityMode, VoiceRegion
 from ....emoji import create_emoji_from_exclusive_data
 from ....permission import PermissionOverwrite
 
@@ -123,12 +123,17 @@ def default_sort_order(name, data):
     return _convert_preinstanced('default_sort_order', data, SortOrder)
 
 
+def default_forum_layout(name, data):
+    return _convert_preinstanced('default_forum_layout', data, ForumLayout)
+
+
 CHANNEL_CONVERTERS = {
     'applied_tags': convert_snowflake_array__applied_tag_ids,
     'archived': convert_nothing,
     'auto_archive_duration': convert_int__auto_archive_after,
     'available_tags': convert_forum_tags,
     'bitrate': convert_nothing,
+    'default_forum_layout': default_forum_layout,
     'default_sort_order': default_sort_order,
     'default_auto_archive_duration': convert_int__default_thread_auto_archive_after,
     'default_reaction_emoji': convert_default_thread_reaction,

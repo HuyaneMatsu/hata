@@ -344,7 +344,7 @@ class RPCClient(RichAttributeErrorBaseType):
             self._protocol = protocol
     else:
         async def _open_pipe(self, ipc_path):
-            raise NotImplemented(f'Opening inter-process connection is not supported on {PLATFORM}.')
+            raise NotImplementedError(f'Opening inter-process connection is not supported on {PLATFORM}.')
     
     
     async def _send_handshake(self):

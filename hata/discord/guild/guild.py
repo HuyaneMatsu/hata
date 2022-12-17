@@ -14,7 +14,7 @@ from scarletio import WeakValueDictionary, export, include
 from ...env import CACHE_PRESENCE, CACHE_USER
 
 from ..bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
-from ..channel import Channel, VoiceRegion
+from ..channel import Channel
 from ..core import GUILDS
 from ..emoji import Emoji
 from ..http import urls as module_urls
@@ -656,20 +656,6 @@ class Guild(DiscordEntity, immortal = True):
                 else:
                     attribute_value = preconvert_preinstanced_type(attribute_value, attribute_name, attribute_type)
                     processable.append((attribute_name, attribute_value))
-            
-            try:
-                kwargs.pop('region')
-            except KeyError:
-                pass
-            else:
-                warnings.warn(
-                    (
-                        f'`region` parameter of `{cls.__name__}.precreate` is deprecated and will be '
-                        f'removed in 2022 Jun.'
-                    ),
-                    FutureWarning,
-                    stacklevel = 2,
-                )
             
             try:
                 boost_progress_bar_enabled = kwargs.pop('boost_progress_bar_enabled')
@@ -1784,7 +1770,7 @@ class Guild(DiscordEntity, immortal = True):
         return default
     
     
-    def get_channel_like(self, name, default = None, type_checker=None, *, type_=None):
+    def get_channel_like(self, name, default = None, type_checker = None):
         """
         Searches a channel of the guild, whats name starts with the given string and returns the first find.
         
@@ -1794,25 +1780,13 @@ class Guild(DiscordEntity, immortal = True):
             The name to search for.
         default : `Any` = `None`, Optional
             The value what is returned when no channel was found. Defaults to `None`.
-        type_checker : `None` callable` = `None`, Optional
-            Checks whether a specific entity's type is correct.
         
         Returns
         -------
         channel : ``Channel``, `default`
         """
         if isinstance(type_checker, type):
-            type_ = type_checker
             type_checker = None
-        
-        if (type_ is not None):
-            warnings.warn(
-                f'`{self.__class__.__name__}.get_channel_like`\'s `type` parameter has been changed to '
-                f'`type_checker`, which is a `callable` instead of an expected `type`. Please use that instead.'
-                f'The `type` parameter will be removed at 2022 Jul.'
-            )
-            
-            type_checker = lambda value: isinstance(value, type_)
         
         if name.startswith('#'):
             name = name[1:]
@@ -3065,40 +3039,6 @@ class Guild(DiscordEntity, immortal = True):
         widget_channel_id = self.widget_channel_id
         if widget_channel_id:
             return self.channels.get(widget_channel_id, None)
-    
-    
-    @property
-    def region(self):
-        """
-        `.region` is deprecated and will be removed in 2022 Jun. Please access `channel.region` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.region` is deprecated and will be removed in 2022 Jun. '
-                f'Please access `channel.region` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return VoiceRegion._deprecated
-    
-    
-    @property
-    def booster_count(self):
-        """
-        `.booster_count` is deprecated and will be removed in 2022 Aug. Please use `.boost_count` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.booster_count` is deprecated and will be removed in 2022 Aug. '
-                f'Please use `.boost_count` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.boost_count
     
     
     vanity_url = property(module_urls.guild_vanity_invite_url)

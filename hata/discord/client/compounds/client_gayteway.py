@@ -1,7 +1,5 @@
 __all__ = ()
 
-
-import warnings
 from time import time as time_now
 
 from scarletio import CancelledError, Compound, Future, Theory, future_or_timeout
@@ -191,22 +189,6 @@ class ClientCompoundClientGateway(Compound):
         await self.gateway.send_as_json(data)
     
     
-    async def client_edit_presence(self, **keyword_parameters):
-        """
-        ``Client.client_edit_presence`` is deprecated and will be removed in 2022 December.
-        Please use ``.edit_presence`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.client_edit_presence` is deprecated and will be removed in 2022 December. '
-                f'Please use `.edit_presence` instead.'
-            ),
-            FutureWarning
-        )
-        
-        return await self.edit_presence(**keyword_parameters)
-    
-
     async def join_voice(self, channel):
         """
         Joins a voice client to the channel. If there is an already existing voice client at the respective guild,

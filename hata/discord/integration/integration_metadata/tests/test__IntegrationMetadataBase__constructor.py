@@ -15,7 +15,7 @@ def _check_all_fields_set(integration_metadata):
     vampytest.assert_instance(integration_metadata, IntegrationMetadataBase)
         
 
-def test__IntegrationMetadataBase__new_0():
+def test__IntegrationMetadataBase__new__0():
     """
     Tests whether ``IntegrationMetadataBase.__new__`` works as intended.
     

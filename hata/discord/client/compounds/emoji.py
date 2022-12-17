@@ -1,6 +1,6 @@
 __all__ = ()
 
-import re, warnings
+import re
 
 from scarletio import Compound
 
@@ -12,6 +12,7 @@ from ...role import Role
 from ...utils import image_to_base64
 from ..request_helpers import get_guild_and_id, get_guild_id, get_emoji_guild_id_and_id
 
+
 _VALID_NAME_CHARS = re.compile('([0-9A-Za-z_]+)')
 
 
@@ -20,7 +21,7 @@ class ClientCompoundEmojiEndpoints(Compound):
     http : DiscordHTTPClient
     
     
-    async def emoji_get(self, emoji, *deprecated_parameters, force_update=False):
+    async def emoji_get(self, emoji, force_update = False):
         """
         Requests the emoji by it's id at the given guild. If the client's logging in is finished, then it should have
         it's every emoji loaded already.
@@ -31,10 +32,6 @@ class ClientCompoundEmojiEndpoints(Compound):
         ----------
         emoji : ``Emoji``, `tuple` (`int`, `int`) items
             The emoji, or 2 snowflake representing it.
-        *deprecated_parameters : Additional parameters, Optional
-            Old style parameter passing, as `guild` and `emoji`.
-            
-            Please pass either an ``Emoji``, or a snowflake pair (`guild_id`, `emoji_id`).
         
         force_update : `bool` = `False`, Optional (Keyword only)
             Whether the emoji should be requested even if it supposed to be up to date.
@@ -52,52 +49,19 @@ class ClientCompoundEmojiEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        # Check for old-style deprecated
-        if deprecated_parameters:
-            if len(deprecated_parameters) > 1:
+        if isinstance(emoji, Emoji):
+            guild_id = emoji.guild_id
+            emoji_id = emoji.id
+        else:
+            snowflake_pair = maybe_snowflake_pair(emoji)
+            if snowflake_pair is None:
                 raise TypeError(
-                    f'`{self.__class__.__name__}.emoji_get` accepts up to `2` positional parameters, got '
-                    f'{len(deprecated_parameters) + 1}.'
+                    f'`emoji` can be `{Emoji.__name__}`, `tuple` (`int`, `int`), '
+                    f'got {emoji.__class__.__name__}; {emoji!r}.'
                 )
             
-            warnings.warn(
-                (
-                    f'2nd parameter of `{self.__class__.__name__}.emoji_get` is deprecated and will be '
-                    f'removed in 2022 Jun. Please pass just an `{Emoji.__name__}` or a pair of snowflake.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            guild, emoji, = emoji, *deprecated_parameters
-            
-            guild_id = get_guild_id(guild)
-            
-            if isinstance(emoji, Emoji):
-                emoji_id = emoji.id
-            else:
-                emoji_id = maybe_snowflake(emoji)
-                if emoji_id is None:
-                    raise TypeError(
-                        f'`emoji` can be `{Emoji.__name__}`, `int`, got {emoji.__class__.__name__}; {emoji!r}.'
-                    )
-                
-                emoji = EMOJIS.get(emoji_id, None)
-        
-        else:
-            if isinstance(emoji, Emoji):
-                guild_id = emoji.guild_id
-                emoji_id = emoji.id
-            else:
-                snowflake_pair = maybe_snowflake_pair(emoji)
-                if snowflake_pair is None:
-                    raise TypeError(
-                        f'`emoji` can be `{Emoji.__name__}`, `tuple` (`int`, `int`), '
-                        f'got {emoji.__class__.__name__}; {emoji!r}.'
-                    )
-                
-                guild_id, emoji_id = snowflake_pair
-                emoji = EMOJIS.get(emoji_id, None)
+            guild_id, emoji_id = snowflake_pair
+            emoji = EMOJIS.get(emoji_id, None)
         
         
         # If the emoji has no linked guild, we cannot request it, so we return instantly.
@@ -162,22 +126,6 @@ class ClientCompoundEmojiEndpoints(Compound):
             emojis = list(guild.emojis.values())
         
         return emojis
-    
-    
-    async def guild_sync_emojis(self, guild):
-        """
-        Deprecated and will be removed in 2022 Jun. Please use ``.emoji_guild_get_all`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.guild_sync_emojis` is deprecated and will be '
-                f'removed in 2022 Jun. Please use `.emoji_guild_get_all` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return await self.emoji_guild_get_all(guild)
     
     
     async def emoji_create(self, guild, name, image, *, roles=None, reason = None):

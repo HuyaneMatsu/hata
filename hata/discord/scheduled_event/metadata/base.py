@@ -13,7 +13,7 @@ class ScheduledEventEntityMetadataBase(RichAttributeErrorBaseType):
         """
         Creates a new entity metadata instance.
         """
-        raise NotImplemented
+        raise NotImplementedError
         
     def __repr__(self):
         """Returns the entity metadata's representation."""
@@ -34,7 +34,7 @@ class ScheduledEventEntityMetadataBase(RichAttributeErrorBaseType):
         -------
         self : `instance<cls>`
         """
-        raise NotImplemented
+        raise NotImplementedError
     
     
     def to_data(self):

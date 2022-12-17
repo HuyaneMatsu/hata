@@ -1,7 +1,5 @@
 __all__ = ()
 
-import warnings
-
 from scarletio import Compound, IgnoreCaseMultiValueDictionary
 from scarletio.web_common.headers import AUTHORIZATION
 
@@ -714,7 +712,7 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         return ApplicationCommandPermission.from_data(permission_data)
     
     
-    async def application_command_permission_edit(self, access, guild, application_command, permission_overwrites=...):
+    async def application_command_permission_edit(self, access, guild, application_command, permission_overwrites):
         """
         Edits the permissions of the given `application_command` in the given `guild`.
         
@@ -769,21 +767,6 @@ class ClientCompoundApplicationCommandEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        if (permission_overwrites is ...):
-            warnings.warn(
-                (
-                    f'`{self.__class__.__name__}.application_command_permission_edit` accepts `4` parameters: '
-                    f'`access`, `guild`, `application_command`, `permission_overwrites`.\n'
-                    f'Oauth2 access with `applications.commands.permissions.update` scope is required to edit '
-                    f'application command permission overwrites. (Bots are blocked down from the endpoint.)\n'
-                    f'Returning without further code execution...\n'
-                    f'This warning will be removed in 2022 December.'
-                ),
-                RuntimeWarning,
-                stacklevel = 2,
-            )
-            return
-        
         # application_id
         application_id = self.application.id
         assert _assert__application_id(application_id)

@@ -94,8 +94,36 @@ class IntegrationMetadataDiscord(IntegrationMetadataBase):
     @copy_docs(IntegrationMetadataBase.to_data)
     def to_data(self, defaults = False):
         data = {}
-        
         put_account_into__discord(self.account, data, defaults)
         put_application_into(self.application, data, defaults)
-        
         return data
+    
+    
+    @copy_docs(IntegrationMetadataBase.copy)
+    def copy(self):
+        new = object.__new__(type(self))
+        new.account = self.account
+        new.application = self.application
+        return new
+    
+    
+    @copy_docs(IntegrationMetadataBase.copy_with)
+    def copy_with(self, keyword_parameters):
+        try:
+            account = keyword_parameters.pop('account')
+        except KeyError:
+            account = self.account
+        else:
+            account = validate_account__discord(account)
+        
+        try:
+            application = keyword_parameters.pop('application')
+        except KeyError:
+            application = self.application
+        else:
+            application = validate_application(application)
+        
+        new = object.__new__(type(self))
+        new.account = account
+        new.application = application
+        return new

@@ -41,14 +41,31 @@ class Integration(DiscordEntity, immortal = True):
     """
     __slots__ = ('enabled', 'name', 'metadata', 'type', 'user')
     
-    def __new__(cls, *, integration_type = None, **keyword_parameters):
+    def __new__(
+        cls,
+        *,
+        integration_type = ...,
+        enabled = ...,
+        name = ...,
+        user = ...,
+        **keyword_parameters,
+    ):
         """
         Creates a new integration from the given keyword parameters.
         
         Parameters
         ----------
-        integration_type : `None`, `str`, ``IntegrationType`` = `None`, Optional (Keyword only)
+        integration_type : `str`, ``IntegrationType``, Optional (Keyword only)
             The integration's type.
+        
+        enabled : `bool`, Optional (Keyword only)
+            Whether this integration is enabled.
+        
+        name : `str`, Optional (Keyword only)
+            The name of the integration.
+        
+        user : ``ClientUserBase``, Optional (Keyword only)
+            User for who the integration is.
         
         **keyword_parameters : Keyword parameters
             keyword parameters to set the integration's attributes as.
@@ -61,9 +78,6 @@ class Integration(DiscordEntity, immortal = True):
         
         application : ``IntegrationApplication``, Optional (Keyword only)
             The application of the integration if applicable.
-        
-        enabled : `bool`, Optional (Keyword only)
-            Whether this integration is enabled.
         
         expire_behavior : `int`, ``IntegrationExpireBehavior``, Optional (Keyword only)
             The behavior of expiring subscription.
@@ -86,12 +100,9 @@ class Integration(DiscordEntity, immortal = True):
         syncing : `bool`, Optional (Keyword only)
             Whether the integration syncing.
         
-        user : ``ClientUserBase``, Optional (Keyword only)
-            User for who the integration is.
-        
         Returns
         -------
-        integration : ``Integration``
+        self : `instance<cls>`
         
         Raises
         ------
@@ -101,60 +112,56 @@ class Integration(DiscordEntity, immortal = True):
         ValueError
             - Parameter value incorrect.
         """
-        integration_type = validate_type(integration_type)
+        # integration_type
+        if integration_type is ...:
+            integration_type = IntegrationType.none
+        else:
+            integration_type = validate_type(integration_type)
         
         # enabled
-        try:
-            enabled = keyword_parameters.pop('enabled')
-        except KeyError:
+        if enabled is ...:
             enabled = False
         else:
             enabled = validate_enabled(enabled)
         
         # name
-        try:
-            name = keyword_parameters.pop('name')
-        except KeyError:
+        if name is ...:
             name = ''
         else:
             name = validate_name(name)
         
-        metadata = integration_type.metadata_type(keyword_parameters)
-        
         # user
-        try:
-            user = keyword_parameters.pop('user')
-        except KeyError:
+        if user is ...:
             user = ZEROUSER
         else:
             user = validate_user(user)
+        
+        metadata = integration_type.metadata_type(keyword_parameters)
             
         if keyword_parameters:
             raise TypeError(
-                f'Extra or unused parameters: {keyword_parameters!r}.'
+                f'Extra or unused keyword parameters: {keyword_parameters!r}.'
             )
         
         self = object.__new__(cls)
-        
         self.id = 0
         self.enabled = enabled
         self.name = name
         self.metadata = metadata
         self.type = integration_type
         self.user = user
-        
         return self
     
     
     @classmethod
-    def precreate(cls, integration_id, *, integration_type = None, **keyword_parameters):
+    def precreate(cls, integration_id, *, integration_type = ..., **keyword_parameters):
         """
         Parameters
         ----------
         integration_id : `int`
             The integration's identifier.
         
-        integration_type : `None`, `str`, ``IntegrationType`` = `None`, Optional (Keyword only)
+        integration_type : `str`, ``IntegrationType``, Optional (Keyword only)
             The integration's type.
         
         **keyword_parameters : Keyword parameters
@@ -178,6 +185,9 @@ class Integration(DiscordEntity, immortal = True):
         expire_grace_period : `int`, Optional (Keyword only)
             The grace period in days for expiring subscribers.
         
+        name : `str`, Optional (Keyword only)
+            The name of the integration.
+        
         role_id : `int`, Optional (Keyword only)
             The role's identifier what the integration uses for subscribers.
         
@@ -198,7 +208,7 @@ class Integration(DiscordEntity, immortal = True):
         
         Returns
         -------
-        integration : ``Integration``
+        self : `instance<cls>`
         
         Raises
         ------
@@ -210,10 +220,13 @@ class Integration(DiscordEntity, immortal = True):
         """
         integration_id = preconvert_snowflake(integration_id, 'integration_id')
         
-        if (integration_type is not None) or keyword_parameters:
+        if (integration_type is not ...) or keyword_parameters:
             processable = []
             
-            integration_type = validate_type(integration_type)
+            if integration_type is ...:
+                integration_type = IntegrationType.none
+            else:
+                integration_type = validate_type(integration_type)
             processable.append(('type', integration_type))
             
             # enabled
@@ -249,7 +262,7 @@ class Integration(DiscordEntity, immortal = True):
             
             if keyword_parameters:
                 raise TypeError(
-                    f'Extra or unused parameters: {keyword_parameters!r}.'
+                    f'Extra or unused keyword parameters: {keyword_parameters!r}.'
                 )
         
         else:
@@ -333,7 +346,7 @@ class Integration(DiscordEntity, immortal = True):
         
         Returns
         -------
-        integration : ``Integration``
+        integration : `instance<cls>`
         """
         integration_id = int(data['id'])
         
@@ -547,6 +560,140 @@ class Integration(DiscordEntity, immortal = True):
             return False
         
         return True
+    
+    
+    def copy(self):
+        """
+        Copies the integration.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        """
+        new = object.__new__(type(self))
+        new.id = 0
+        new.enabled = self.enabled
+        new.name = self.name
+        new.metadata = self.metadata.copy()
+        new.type = self.type
+        new.user = self.user
+        return new
+    
+    
+    def copy_with(
+        self,
+        *,
+        integration_type = ...,
+        enabled = ...,
+        name = ...,
+        user = ...,
+        **keyword_parameters,
+    ):
+        """
+        Copies the integration account with the given fields.
+        
+        Parameters
+        ----------
+        integration_type : `str`, ``IntegrationType``, Optional (Keyword only)
+            The integration's type.
+        
+        enabled : `bool`, Optional (Keyword only)
+            Whether this integration is enabled.
+        
+        name : `str`, Optional (Keyword only)
+            The name of the integration.
+        
+        user : ``ClientUserBase``, Optional (Keyword only)
+            User for who the integration is.
+        
+        **keyword_parameters : Keyword parameters
+            keyword parameters to set the integration's attributes as.
+        
+        Other Parameters
+        ----------------
+        account : ``IntegrationAccount``, ``ClientUserBase``, Optional (Keyword only)
+            The integration's respective account. If the integration type is `'discord'`, then set as a discord user
+            itself.
+        
+        application : ``IntegrationApplication``, Optional (Keyword only)
+            The application of the integration if applicable.
+        
+        expire_behavior : `int`, ``IntegrationExpireBehavior``, Optional (Keyword only)
+            The behavior of expiring subscription.
+        
+        expire_grace_period : `int`, Optional (Keyword only)
+            The grace period in days for expiring subscribers.
+        
+        role_id : `int`, Optional (Keyword only)
+            The role's identifier what the integration uses for subscribers.
+        
+        scopes : `None`, `iterable` of (`str`, ``Oauth2Scope``) items, Optional (Keyword only)
+            The scopes the application was authorized with.
+        
+        subscriber_count : `int`, Optional (Keyword only)
+            How many subscribers the integration has. 
+        
+        synced_at : `None`, `datetime`, Optional (Keyword only)
+            When the integration was last synced.
+        
+        syncing : `bool`, Optional (Keyword only)
+            Whether the integration syncing.
+        
+        Returns
+        -------
+        self : `instance<cls>`
+        
+        Raises
+        ------
+        TypeError
+            - Parameter type incorrect.
+            - Extra or unused parameters.
+        ValueError
+            - Parameter value incorrect.
+        """
+        # integration_type
+        if integration_type is ...:
+            integration_type = self.type
+        else:
+            integration_type = validate_type(integration_type)
+        
+        # enabled
+        if enabled is ...:
+            enabled = self.enabled
+        else:
+            enabled = validate_enabled(enabled)
+        
+        # name
+        if name is ...:
+            name = self.name
+        else:
+            name = validate_name(name)
+        
+        # user
+        if user is ...:
+            user = self.user
+        else:
+            user = validate_user(user)
+        
+        # metadata
+        if integration_type is self.type:
+            metadata = self.metadata.copy_with(keyword_parameters)
+        else:
+            metadata = integration_type.metadata_type(keyword_parameters)
+        
+        if keyword_parameters:
+            raise TypeError(
+                f'Extra or unused keyword parameters: {keyword_parameters!r}.'
+            )
+        
+        new = object.__new__(type(self))
+        new.id = 0
+        new.enabled = enabled
+        new.name = name
+        new.metadata = metadata
+        new.type = integration_type
+        new.user = user
+        return new
     
     
     @property

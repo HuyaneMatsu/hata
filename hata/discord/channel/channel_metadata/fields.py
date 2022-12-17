@@ -33,7 +33,7 @@ from .constants import (
     USER_LIMIT_DEFAULT, USER_LIMIT_MAX, USER_LIMIT_MIN
 )
 from .flags import ChannelFlag
-from .preinstanced import SortOrder, VideoQualityMode, VoiceRegion
+from .preinstanced import ForumLayout, SortOrder, VideoQualityMode, VoiceRegion
 
 
 Channel = include('Channel')
@@ -312,12 +312,17 @@ def put_created_at_into(created_at, data, defaults):
 
 validate_created_at = nullable_date_time_validator_factory('created_at')
 
+# default_forum_layout
+
+parse_default_forum_layout = preinstanced_parser_factory('default_forum_layout', ForumLayout, ForumLayout.none)
+put_default_forum_layout_into = preinstanced_optional_putter_factory('default_forum_layout', ForumLayout.none)
+validate_default_forum_layout = preinstanced_validator_factory('default_forum_layout', ForumLayout)
+
 # default_sort_order
 
 parse_default_sort_order = preinstanced_parser_factory('default_sort_order', SortOrder, SortOrder.latest_activity)
 put_default_sort_order_into = preinstanced_optional_putter_factory('default_sort_order', SortOrder.latest_activity)
 validate_default_sort_order = preinstanced_validator_factory('default_sort_order', SortOrder)
-
 
 # default_thread_auto_archive_after
 

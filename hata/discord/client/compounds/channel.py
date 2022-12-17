@@ -563,8 +563,11 @@ class ClientCompoundChannelEndpoints(Compound):
         bitrate : `int`, Optional (Keyword only)
             The bitrate (in bits) of the voice channel.
         
+        default_forum_layout : ``ForumLayout``, `int`, Optional (Keyword only)
+            The default layout used to display threads of the forum.
+        
         default_sort_order : ``SortOrder``, `int`, Optional (Keyword only)
-            How the posts ordered in a forum channel by default.
+            The default thread ordering of the forum.
         
         default_thread_auto_archive_after : `int`, Optional (Keyword only)
             The default duration (in seconds) for newly created threads to automatically archive the themselves.
@@ -661,8 +664,11 @@ class ClientCompoundChannelEndpoints(Compound):
         bitrate : `int`, Optional (Keyword only)
             The bitrate (in bits) of the voice channel.
         
+        default_forum_layout : ``ForumLayout``, `int`, Optional (Keyword only)
+            The default layout used to display threads of the forum.
+        
         default_sort_order : ``SortOrder``, `int`, Optional (Keyword only)
-            How the posts ordered in a forum channel by default.
+            The default thread ordering of the forum.
         
         default_thread_auto_archive_after : `int`, Optional (Keyword only)
             The default duration (in seconds) for newly created threads to automatically archive the themselves.
@@ -999,22 +1005,6 @@ class ClientCompoundChannelEndpoints(Compound):
         
         await self.http.permission_overwrite_create(channel_id, target_id, data, reason)
         return PermissionOverwrite.from_data(data)
-    
-    
-    async def guild_sync_channels(self, guild):
-        """
-        Deprecated and will be removed in 2022 Dec. Please use ``.guild_channels_get_all`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.guild_sync_channels` is deprecated and will be '
-                f'removed in 2022 Dec. Please use `.guild_channel_get_all` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return await self.guild_channel_get_all(guild)
     
     
     async def guild_channel_get_all(self, guild):

@@ -61,7 +61,7 @@ def test__Attachment__copy__1():
     vampytest.assert_is(copy.proxy_url, None)
 
 
-def test__Attachment__copy_with_0():
+def test__Attachment__copy_with__0():
     """
     Tests whether ``Attachment.copy_with`` works as intended.
     

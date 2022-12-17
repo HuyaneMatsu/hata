@@ -32,7 +32,8 @@ from ..role import Role, create_partial_role_from_id
 from ..scheduled_event import ScheduledEvent, ScheduledEventSubscribeEvent, ScheduledEventUnsubscribeEvent
 from ..stage import Stage
 from ..user import (
-    User, create_partial_user_from_id, thread_user_create, thread_user_delete, thread_user_pop, thread_user_update
+    User, create_partial_user_from_id, thread_user_create, thread_user_delete, thread_user_difference_update,
+    thread_user_pop
 )
 from ..utils import Gift, Relationship
 
@@ -3516,7 +3517,7 @@ def THREAD_MEMBER_UPDATE__CAL_SC(client, data):
     except KeyError:
         return
     
-    old_attributes = thread_user_update(thread_channel, client, data)
+    old_attributes = thread_user_difference_update(thread_channel, client, data)
     if (old_attributes is None):
         return
     
@@ -3535,7 +3536,7 @@ def THREAD_MEMBER_UPDATE__CAL_MC(client, data):
         clients.close()
         return
     
-    old_attributes = thread_user_update(thread_channel, client, data)
+    old_attributes = thread_user_difference_update(thread_channel, client, data)
     if (old_attributes is None):
         clients.close()
         return

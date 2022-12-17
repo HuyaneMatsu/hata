@@ -1,6 +1,5 @@
 __all__ = ('PLUGIN_LOADER', 'PluginLoader', )
 
-import warnings
 from functools import partial as partial_func
 
 from scarletio import (
@@ -589,23 +588,6 @@ class PluginLoader(RichAttributeErrorBaseType):
         """
         self._default_variables.clear()
     
-
-    
-    def add(self, name, *parameters, blocking=True, **keyword_parameters):
-        """
-        Deprecated and will be removed in 2022 December. Please use ``.register`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.load_plugin` is deprecated and will be removed in 2022 December. '
-                f'Please use `.register` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.register_and_load(name, *parameters, blocking=blocking, **keyword_parameters)
-    
     
     def register(self, name, *positional_parameters, **keyword_parameters):
         """
@@ -757,22 +739,6 @@ class PluginLoader(RichAttributeErrorBaseType):
                 continue
             
             plugin._unlink()
-    
-    
-    def load_plugin(self, name, *parameters, blocking=True, **keyword_parameters):
-        """
-        Deprecated and will be removed in 2022 December. Please use ``.register_and_load`` instead.
-        """
-        warnings.warn(
-            (
-                f'`{self.__class__.__name__}.load_plugin` is deprecated and will be removed in 2022 December. '
-                f'Please use `.register_and_load` instead.'
-            ),
-            FutureWarning,
-            stacklevel = 2,
-        )
-        
-        return self.register_and_load(name, *parameters, blocking=blocking, **keyword_parameters)
     
     
     def register_and_load(self, name, *parameters, blocking=True, **keyword_parameters):
@@ -1738,31 +1704,6 @@ class PluginLoader(RichAttributeErrorBaseType):
             
             for done_callback in done_callbacks:
                 KOKORO.call_soon(done_callback)
-    
-    
-    
-    def __getattr__(self, attribute_name):
-        """Warns deprecations."""
-        
-        new_attribute_name = attribute_name.replace('extension', 'plugin')
-        if attribute_name != new_attribute_name:
-            try:
-                value = object.__getattribute__(self, new_attribute_name)
-            except AttributeError:
-                pass
-            else:
-                warnings.warn(
-                    (
-                        f'`{self.__class__.__name__}.{attribute_name}` is deprecated and will be removed in 2022 '
-                        f'December. Please use `.{new_attribute_name}` instead,'
-                    ),
-                    FutureWarning,
-                    stacklevel = 2
-                )
-                
-                return value
-        
-        return RichAttributeErrorBaseType.__getattr__(self, new_attribute_name)
 
 
 PLUGIN_LOADER = PluginLoader()

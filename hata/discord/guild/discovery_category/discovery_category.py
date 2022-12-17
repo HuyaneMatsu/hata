@@ -2,8 +2,6 @@ __all__ = ('DiscoveryCategory',)
 
 import warnings
 
-from scarletio import copy_docs
-
 from ...bases import Preinstance as P, PreinstancedBase
 
 from .fields import (

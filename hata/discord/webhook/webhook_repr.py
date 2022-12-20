@@ -41,7 +41,7 @@ class WebhookRepr(WebhookBase):
     """
     __slots__ = ()
     
-    def __init__(self, data, webhook_id, type_, channel_id):
+    def __new__(cls, data, webhook_id, type_, channel_id):
         """
         Creates a webhook representation.
         
@@ -56,6 +56,7 @@ class WebhookRepr(WebhookBase):
         channel_id : `int`
             The respective webhook's channel's identifier.
         """
+        self = object.__new__(cls)
         self.id = webhook_id
         self.discriminator = 0
         self.name = data['username']
@@ -64,6 +65,8 @@ class WebhookRepr(WebhookBase):
         self.type = type_
         self.channel_id = channel_id
         self.banner_color = None
+        return self
+    
     
     @property
     def webhook(self):

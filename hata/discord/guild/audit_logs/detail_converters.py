@@ -1,7 +1,7 @@
 __all__ = ()
 
 from ...auto_moderation import AutoModerationRuleTriggerType
-from ...permission import PermissionOverwriteTargetType
+from ...channel import PermissionOverwriteTargetType
 
 
 def detail_converter_channel_id(key, value):

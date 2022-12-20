@@ -1,8 +1,9 @@
 __all__ = ()
 
-from ....channel import ChannelFlag, ForumLayout, ForumTag, SortOrder, VideoQualityMode, VoiceRegion
+from ....channel import (
+    ChannelFlag, ForumLayout, ForumTag, PermissionOverwrite, SortOrder, VideoQualityMode, VoiceRegion
+)
 from ....emoji import create_emoji_from_exclusive_data
-from ....permission import PermissionOverwrite
 
 from ..audit_log_change import AuditLogChange
 

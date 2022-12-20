@@ -5,7 +5,7 @@ from ...field_putters import preinstanced_array_putter_factory, string_flag_putt
 from ...field_validators import flag_validator_factory, preinstanced_array_validator_factory
 from ...oauth2 import Oauth2Scope
 from ...permission import Permission
-from ...permission.utils import PERMISSION_KEY
+from ...permission.constants import PERMISSION_KEY
 
 # permissions
 

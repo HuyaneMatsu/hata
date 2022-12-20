@@ -14,7 +14,7 @@ from ...field_validators import (
     int_conditional_validator_factory, nullable_entity_conditional_validator_factory, preinstanced_validator_factory
 )
 from ...permission import Permission
-from ...permission.utils import PERMISSION_KEY
+from ...permission.constants import PERMISSION_KEY
 
 from ..role_manager_metadata import RoleManagerMetadataBase
 from ..role_manager_metadata.constants import BOOSTER_KEY, BOT_ID_KEY, INTEGRATION_ID_KEY, SUBSCRIPTION_LISTING_ID_KEY

@@ -2,8 +2,7 @@ __all__ = ()
 
 from ....preconverters import preconvert_preinstanced_type
 
-from ...utils import get_permission_overwrite_key_value
-
+from ..helpers import get_permission_overwrite_key_value
 from ..preinstanced import PermissionOverwriteTargetType
 
 

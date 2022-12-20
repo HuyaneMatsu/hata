@@ -1,6 +1,6 @@
 import vampytest
 
-from ....permission import Permission
+from .....permission import Permission
 
 from ..deny import put_deny_into
 

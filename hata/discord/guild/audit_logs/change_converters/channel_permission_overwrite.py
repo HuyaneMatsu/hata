@@ -2,7 +2,7 @@ __all__ = ()
 
 from .....env import API_VERSION
 
-from ....permission import PermissionOverwriteTargetType
+from ....channel import PermissionOverwriteTargetType
 
 from .shared import _convert_preinstanced, convert_deprecated, convert_permission, convert_snowflake
 

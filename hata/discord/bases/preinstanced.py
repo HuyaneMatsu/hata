@@ -301,4 +301,4 @@ class PreinstancedBase(RichAttributeErrorBaseType, metaclass = PreinstancedMeta)
     
     def __repr__(self):
         """Returns the representation of the preinstanced object."""
-        return f'{self.__class__.__name__}(value={self.value!r}, name={self.name!r})'
+        return f'<{self.__class__.__name__} value = {self.value!r}, name = {self.name!r}>'

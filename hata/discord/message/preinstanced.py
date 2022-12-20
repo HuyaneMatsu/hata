@@ -291,6 +291,18 @@ class MessageType(PreinstancedBase):
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     | interaction_premium_upsell                | interaction premium upsell                | 26    | MESSAGE_DEFAULT_CONVERTER                         | true      |
     +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | stage_start                               | stage start                               | 27    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | stage_end                                 | stage end                                 | 28    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | stage_speaker                             | stage speaker                             | 29    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | stage_request_to_speak                    | stage request to speak                    | 30    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | stage_topic_change                        | stage topic change                        | 31    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
+    | application_subscription                  | application subscription                  | 32    | MESSAGE_DEFAULT_CONVERTER                         | true      |
+    +-------------------------------------------+-------------------------------------------+-------+---------------------------------------------------+-----------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -396,6 +408,12 @@ class MessageType(PreinstancedBase):
     auto_moderation_action = P(24, 'auto moderation action', MESSAGE_DEFAULT_CONVERTER, True)
     role_subscription_purchase = P (25, 'role subscription purchase', MESSAGE_DEFAULT_CONVERTER, True)
     interaction_premium_upsell = P(26, 'interaction premium upsell', MESSAGE_DEFAULT_CONVERTER, True)
+    stage_start = P(27, 'stage start', MESSAGE_DEFAULT_CONVERTER, True)
+    stage_end = P(28, 'stage end', MESSAGE_DEFAULT_CONVERTER, True)
+    stage_speaker = P(29, 'stage speaker', MESSAGE_DEFAULT_CONVERTER, True)
+    stage_request_to_speak = P(30, 'stage request to speak', MESSAGE_DEFAULT_CONVERTER, True)
+    stage_topic_change = P(31, 'stage topic change', MESSAGE_DEFAULT_CONVERTER, True)
+    application_subscription = P(32, 'application subscription', MESSAGE_DEFAULT_CONVERTER, True)
 
 
 del convert_add_user

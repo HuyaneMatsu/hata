@@ -459,11 +459,11 @@ class Sticker(DiscordEntity, immortal=True):
                     processable.append((attribute_name, attribute_value))
             
             for attribute_name, preinstanced_type in (
-                ('format_type', StickerFormat),
+                ('format', StickerFormat),
                 ('type', StickerType),
             ):
                 try:
-                    attribute_value = kwargs.pop('attribute_name')
+                    attribute_value = kwargs.pop(attribute_name)
                 except KeyError:
                     pass
                 else:

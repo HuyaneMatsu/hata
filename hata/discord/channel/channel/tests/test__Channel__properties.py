@@ -6,11 +6,11 @@ from ....client import Client
 from ....core import BUILTIN_EMOJIS
 from ....bases import Icon, IconType
 from ....guild import Guild, create_partial_guild_from_id
-from ....permission import PermissionOverwrite, PermissionOverwriteTargetType
 from ....user import ClientUserBase, User, ZEROUSER, create_partial_user_from_id
 
 from ...forum_tag import ForumTag
 from ...channel_metadata import ChannelFlag, ForumLayout, SortOrder, VideoQualityMode, VoiceRegion
+from ...permission_overwrite import PermissionOverwrite, PermissionOverwriteTargetType
 
 from ..preinstanced import ChannelType
 from ..channel import Channel

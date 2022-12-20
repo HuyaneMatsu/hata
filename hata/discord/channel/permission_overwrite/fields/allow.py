@@ -1,7 +1,7 @@
 __all__ = ()
 
-from ...permission import Permission
-from ...utils import PERMISSION_ALLOW_KEY
+from ....permission import Permission
+from ....permission.constants import PERMISSION_ALLOW_KEY
 
 
 def parse_allow(data):

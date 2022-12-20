@@ -15,7 +15,7 @@ from scarletio.tools.asynchronous_interactive_console import (
 from ... import __package__ as PACKAGE_NAME
 from ..core import CLIENTS, KOKORO
 from ..permission import Permission
-from ..permission.utils import PERMISSION_KEY
+from ..permission.constants import PERMISSION_KEY
 
 PACKAGE = __import__(PACKAGE_NAME)
 

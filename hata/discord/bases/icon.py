@@ -116,13 +116,13 @@ class IconDetailsPreinstanced(IconDetailsBase):
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' allowed_postfixes=')
+        repr_parts.append(' allowed_postfixes = ')
         repr_parts.append(repr(self.allowed_postfixes))
         
-        repr_parts.append(', default_postfix=')
+        repr_parts.append(', default_postfix = ')
         repr_parts.append(repr(self.default_postfix))
         
-        repr_parts.append(', prefix=')
+        repr_parts.append(', prefix = ')
         repr_parts.append(repr(self.prefix))
         
         repr_parts.append('>')
@@ -161,10 +161,10 @@ class IconDetailsCustom(IconDetailsBase):
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' data[length]=')
+        repr_parts.append(' data[length] = ')
         repr_parts.append(repr(len(self.data)))
         
-        repr_parts.append(', media_type=')
+        repr_parts.append(', media_type = ')
         repr_parts.append(repr(self.media_type))
         
         repr_parts.append('>')
@@ -299,13 +299,13 @@ class IconType(PreinstancedBase):
         """Returns the icon detail's representation."""
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' value=')
+        repr_parts.append(' value = ')
         repr_parts.append(repr(self.value))
         
-        repr_parts.append(', name=')
+        repr_parts.append(', name = ')
         repr_parts.append(repr(self.name))
         
-        repr_parts.append(', details=')
+        repr_parts.append(', details = ')
         repr_parts.append(repr(self.details))
         
         repr_parts.append('>')
@@ -575,7 +575,7 @@ class Icon(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the representation of the icon."""
-        return f'{self.__class__.__name__}(type=ICON_TYPE_{self.type.name.upper()}, hash={self.hash})'
+        return f'{self.__class__.__name__}(type = ICON_TYPE_{self.type.name.upper()}, hash = {self.hash})'
     
     
     def __iter__(self):

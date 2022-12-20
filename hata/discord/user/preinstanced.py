@@ -505,6 +505,8 @@ class RelationshipType(PreinstancedBase):
     +-----------------------+-------------------+-------+
     | implicit              | implicit          | 5     |
     +-----------------------+-------------------+-------+
+    | suggestion            | suggestion        | 6     |
+    +-----------------------+-------------------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -518,6 +520,7 @@ class RelationshipType(PreinstancedBase):
     pending_incoming = P(3, 'pending incoming')
     pending_outgoing = P(4, 'pending outgoing')
     implicit = P(5, 'implicit')
+    suggestion = P(6, 'suggestion')
 
 
 class FriendRequestFlag(PreinstancedBase):

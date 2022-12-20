@@ -1,6 +1,6 @@
 import vampytest
 
-from ...permission import Permission
+from ....permission import Permission
 
 from ..permission_overwrite import PermissionOverwrite
 from ..preinstanced import PermissionOverwriteTargetType

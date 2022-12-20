@@ -138,13 +138,27 @@ class GuildFeature(PreinstancedBase):
     +---------------------------------------+---------------------------------------+-------------------------------------------+
     | banner                                | banner                                | BANNER                                    |
     +---------------------------------------+---------------------------------------+-------------------------------------------+
+    | burst_reactions                       | burst reactions                       | BURST_REACTIONS                           |
+    +---------------------------------------+---------------------------------------+-------------------------------------------+
     | channel_banners                       | channel banners                       | CHANNEL_BANNER                            |
     +---------------------------------------+---------------------------------------+-------------------------------------------+
+    | channel_highlights                    | channel highlights                    | CHANNEL_HIGHLIGHTS                        |
+    +---------------------------------------+---------------------------------------+-------------------------------------------+
+    | channel_highlights_disabled           | channel highlights disabled           | CHANNEL_HIGHLIGHTS_DISABLED               |
+    +---------------------------------------+---------------------------------------+-------------------------------------------+
     | commerce                              | commerce                              | COMMERCE                                  |
+    +---------------------------------------+---------------------------------------+-------------------------------------------+
+    | creator_store_page                    | creator store page                    | CREATOR_STORE_PAGE                        |
     +---------------------------------------+---------------------------------------+-------------------------------------------+
     | creator_monetizable                   | creator monetizable                   | CREATOR_MONETIZABLE                       |
     +---------------------------------------+---------------------------------------+-------------------------------------------+
     | creator_monetizable_disabled          | creator monetizable disabled          | CREATOR_MONETIZABLE_DISABLED              |
+    +---------------------------------------+---------------------------------------+-------------------------------------------+
+    | creator_monetizable_restricted        | creator monetizable restricted        | CREATOR_MONETIZABLE_RESTRICTED            |
+    +---------------------------------------+---------------------------------------+-------------------------------------------+
+    | creator_monetizable_premium_service   | creator monetizable premium service   | CREATOR_MONETIZABLE_WHITEGLOVE            |
+    +---------------------------------------+---------------------------------------+-------------------------------------------+
+    | creator_monetizable_temporarily       | creator monetizable temporarily       | CREATOR_MONETIZABLE_PROVISIONAL           |
     +---------------------------------------+---------------------------------------+-------------------------------------------+
     | community                             | community                             | COMMUNITY                                 |
     +---------------------------------------+---------------------------------------+-------------------------------------------+
@@ -162,6 +176,8 @@ class GuildFeature(PreinstancedBase):
     +---------------------------------------+---------------------------------------+-------------------------------------------+
     | has_directory_entry                   | has directory entry                   | HAS_DIRECTORY_ENTRY                       |
     +---------------------------------------+---------------------------------------+-------------------------------------------+
+    | home_override                         | home override                         | GUILD_HOME_OVERRIDE                       |
+    +---------------------------------------+---------------------------------------+-------------------------------------------+
     | home_test                             | home test                             | GUILD_HOME_TEST                           |
     +---------------------------------------+---------------------------------------+-------------------------------------------+
     | hub                                   | hub                                   | HUB                                       |
@@ -174,6 +190,8 @@ class GuildFeature(PreinstancedBase):
     +---------------------------------------+---------------------------------------+-------------------------------------------+
     | linked_to_hub                         | linked to hub                         | LINKED_TO_HUB                             |
     +---------------------------------------+---------------------------------------+-------------------------------------------+
+    | marketplaces_connection_roles         | marketplaces connection roles         | MARKETPLACES_CONNECTION_ROLES             |
+    +---------------------------------------+---------------------------------------+-------------------------------------------+
     | member_list_disabled                  | member list disabled                  | MEMBER_LIST_DISABLED                      |
     +---------------------------------------+---------------------------------------+-------------------------------------------+
     | monetization_enabled                  | monetization enabled                  | MONETIZATION_ENABLED                      |
@@ -184,15 +202,23 @@ class GuildFeature(PreinstancedBase):
     +---------------------------------------+---------------------------------------+-------------------------------------------+
     | new_thread_permissions                | new thread permissions                | NEW_THREAD_PERMISSIONS                    |
     +---------------------------------------+---------------------------------------+-------------------------------------------+
-    | partnered                             | partnered                             | PARTNERED                                 |
+    | onboarding                            | onboarding                            | GUILD_ONBOARDING                          |
     +---------------------------------------+---------------------------------------+-------------------------------------------+
-    | public                                | public                                | PUBLIC                                    |
+    | onboarding_ever_enabled               | onboarding evert enabled              | GUILD_ONBOARDING_EVER_ENABLED             |
+    +---------------------------------------+---------------------------------------+-------------------------------------------+
+    | onboarding_has_prompts                | onboarding has prompts                | GUILD_ONBOARDING_HAS_PROMPTS              |
+    +---------------------------------------+---------------------------------------+-------------------------------------------+
+    | partnered                             | partnered                             | PARTNERED                                 |
     +---------------------------------------+---------------------------------------+-------------------------------------------+
     | preview_enabled                       | preview enabled                       | PREVIEW_ENABLED                           |
     +---------------------------------------+---------------------------------------+-------------------------------------------+
+    | private_threads                       | private threads                       | PRIVATE_THREADS                           |
+    +---------------------------------------+---------------------------------------+-------------------------------------------+
+    | public                                | public                                | PUBLIC                                    |
+    +---------------------------------------+---------------------------------------+-------------------------------------------+
     | public_disabled                       | public disabled                       | PUBLIC_DISABLED                           |
     +---------------------------------------+---------------------------------------+-------------------------------------------+
-    | private_threads                       | private threads                       | PRIVATE_THREADS                           |
+    | raid_alerts_enabled                   | raid alerts enabled                   | RAID_ALERTS_ENABLED                       |
     +---------------------------------------+---------------------------------------+-------------------------------------------+
     | relay_enabled                         | relay enabled                         | RELAY_ENABLED                             |
     +---------------------------------------+---------------------------------------+-------------------------------------------+
@@ -201,6 +227,8 @@ class GuildFeature(PreinstancedBase):
     | role_subscriptions_enabled            | role subscriptions enabled            | ROLE_SUBSCRIPTIONS_ENABLED                |
     +---------------------------------------+---------------------------------------+-------------------------------------------+
     | role_subscription_purchasable         | role subscription purchasable         | ROLE_SUBSCRIPTIONS_AVAILABLE_FOR_PURCHASE |
+    +---------------------------------------+---------------------------------------+-------------------------------------------+
+    | text_in_stage_enabled                 | text in stage enabled                 | TEXT_IN_STAGE_ENABLED                     |
     +---------------------------------------+---------------------------------------+-------------------------------------------+
     | text_in_voice_enabled                 | text in voice enabled                 | TEXT_IN_VOICE_ENABLED                     |
     +---------------------------------------+---------------------------------------+-------------------------------------------+
@@ -262,10 +290,17 @@ class GuildFeature(PreinstancedBase):
     announcement_channels = P('NEWS', 'announcement channels')
     auto_moderation_enabled = P('AUTO_MODERATION', 'auto moderation enabled')
     banner = P('BANNER', 'banner')
+    burst_reactions = P('BURST_REACTIONS', 'burst reactions')
     channel_banners = P('CHANNEL_BANNER', 'channel banners')
+    channel_highlights = P('CHANNEL_HIGHLIGHTS', 'channel highlights')
+    channel_highlights_disabled = P('CHANNEL_HIGHLIGHTS_DISABLED', 'channel highlights disabled')
     commerce = P('COMMERCE', 'commerce')
+    creator_store_page = P('CREATOR_STORE_PAGE', 'creator store page')
     creator_monetizable = P('CREATOR_MONETIZABLE', 'creator monetizable')
     creator_monetizable_disabled = P('CREATOR_MONETIZABLE_DISABLED', 'creator monetizable disabled')
+    creator_monetizable_restricted = P('CREATOR_MONETIZABLE_RESTRICTED', 'creator monetizable restricted')
+    creator_monetizable_premium_service = P('CREATOR_MONETIZABLE_WHITEGLOVE', 'creator monetizable premium service')
+    creator_monetizable_temporarily = P('CREATOR_MONETIZABLE_PROVISIONAL', 'creator monetizable temporarily')
     community = P('COMMUNITY', 'community')
     developer_support_guild = P('DEVELOPER_SUPPORT_SERVER', 'developer support guild')
     discoverable = P('DISCOVERABLE', 'discoverable')
@@ -274,26 +309,33 @@ class GuildFeature(PreinstancedBase):
     discoverable_enabled_before = P('ENABLED_DISCOVERABLE_BEFORE', 'discoverable enabled before')
     featurable = P('FEATURABLE', 'featurable')
     has_directory_entry = P('HAS_DIRECTORY_ENTRY', 'has directory_entry')
+    home_override = P('GUILD_HOME_OVERRIDE', 'home override')
     home_test = P('GUILD_HOME_TEST', 'home test')
     hub = P('HUB', 'hub')
     internal_employee_only = P('INTERNAL_EMPLOYEE_ONLY', 'internal employee only')
     invite_splash = P('INVITE_SPLASH', 'invite splash')
     invites_disabled = P('INVITES_DISABLED', 'invites disabled')
     linked_to_hub = P('LINKED_TO_HUB', 'linked to hub')
+    marketplaces_connection_roles = P('MARKETPLACES_CONNECTION_ROLES', 'marketplaces connection roles')
     member_list_disabled = P('MEMBER_LIST_DISABLED', 'member list disabled')
     monetization_enabled = P('MONETIZATION_ENABLED', 'monetization enabled')
     more_emoji = P('MORE_EMOJI', 'more emoji')
     more_sticker = P('MORE_STICKERS', 'more sticker')
     new_thread_permissions = P('NEW_THREAD_PERMISSIONS', 'new thread permissions')
+    onboarding = P('GUILD_ONBOARDING', 'onboarding')
+    onboarding_ever_enabled  = P('GUILD_ONBOARDING_EVER_ENABLED', 'onboarding evert enabled')
+    onboarding_has_prompts  = P('GUILD_ONBOARDING_HAS_PROMPTS', 'onboarding has prompts')
     partnered = P('PARTNERED', 'partnered')
     preview_enabled = P('PREVIEW_ENABLED', 'preview enabled')
     private_threads = P('PRIVATE_THREADS', 'private threads')
     public = P('PUBLIC', 'public')
     public_disabled = P('PUBLIC_DISABLED', 'public disabled')
+    raid_alerts_enabled = P('RAID_ALERTS_ENABLED', 'raid alerts enabled')
     relay_enabled = P('RELAY_ENABLED', 'relay enabled')
     role_icons = P('ROLE_ICONS', 'role icons')
     role_subscriptions_enabled = P('ROLE_SUBSCRIPTIONS_ENABLED', 'role subscriptions enabled')
     role_subscription_purchasable = P('ROLE_SUBSCRIPTIONS_AVAILABLE_FOR_PURCHASE', 'role subscription purchasable')
+    text_in_stage_enabled = P('TEXT_IN_STAGE_ENABLED', 'text in stage enabled')
     text_in_voice_enabled = P('TEXT_IN_VOICE_ENABLED', 'text in voice enabled')
     thread_archive_seven_day = P('SEVEN_DAY_THREAD_ARCHIVE', 'thread archive seven day')
     thread_archive_three_day = P('THREE_DAY_THREAD_ARCHIVE', 'thread archive three day')

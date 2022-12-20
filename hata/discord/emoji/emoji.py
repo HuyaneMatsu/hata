@@ -7,7 +7,7 @@ from ..bases import instance_or_id_to_instance, instance_or_id_to_snowflake, ite
 from ..core import BUILTIN_EMOJIS, EMOJIS, GUILDS, UNICODE_TO_EMOJI
 from ..http import urls as module_urls
 from ..preconverters import preconvert_bool, preconvert_snowflake, preconvert_str
-from ..role import Role, create_partial_role_from_id
+from ..role import Role, RoleManagerType, create_partial_role_from_id
 from ..user import User, ZEROUSER
 from ..utils import DATETIME_FORMAT_CODE, DISCORD_EPOCH_START, id_to_datetime
 
@@ -16,7 +16,7 @@ Client = include('Client')
 Guild = include('Guild')
 
 UNICODE_EMOJI_LIMIT = 1 << 21
-
+ROLE_MANAGER_TYPE_SUBSCRIPTION = RoleManagerType.subscription
 
 @export
 class Emoji(DiscordEntity, immortal = True):
@@ -705,3 +705,35 @@ class Emoji(DiscordEntity, immortal = True):
             ))
         
         return roles
+    
+    
+    def iter_roles(self):
+        """
+        Iterates over the emoji's roles. Not like ``.roles``, this will not sort the roles of the emoji based on their
+        position, instead uses teh default ordering (id).
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        role : ``Role``
+        """
+        role_ids = self.role_ids
+        if (role_ids is not None):
+            for role_id in role_ids:
+                yield create_partial_role_from_id(role_id)
+    
+    
+    def is_premium(self):
+        """
+        Returns whether the role is a premium one.
+        
+        Returns
+        -------
+        is_premium : `bool`
+        """
+        for role in self.iter_roles():
+            if role.manager_type is ROLE_MANAGER_TYPE_SUBSCRIPTION:
+                return True
+        
+        return False

@@ -1,10 +1,9 @@
 import vampytest
 
-from ....permission import PermissionOverwrite, PermissionOverwriteTargetType
-
-from ..preinstanced import VoiceRegion
+from ...permission_overwrite import PermissionOverwrite, PermissionOverwriteTargetType
 
 from ..guild_voice_base import ChannelMetadataGuildVoiceBase
+from ..preinstanced import VoiceRegion
 
 
 def assert_fields_set(channel_metadata):

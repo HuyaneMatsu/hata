@@ -2,7 +2,7 @@ __all__ = ('PermissionOverwrite', )
 
 from scarletio import RichAttributeErrorBaseType, include
 
-from ..permission import Permission
+from ...permission import Permission
 
 from .fields.allow import parse_allow, put_allow_into, validate_allow
 from .fields.deny import parse_deny, put_deny_into, validate_deny

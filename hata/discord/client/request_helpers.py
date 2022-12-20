@@ -14,7 +14,7 @@ from ...env import API_VERSION
 from ..application_command import ApplicationCommand
 from ..auto_moderation import AutoModerationRule
 from ..bases import maybe_snowflake, maybe_snowflake_pair, maybe_snowflake_token_pair
-from ..channel import Channel, ForumTag
+from ..channel import Channel, ForumTag, PermissionOverwrite
 from ..component import Component, ComponentType, create_row
 from ..core import (
     APPLICATION_COMMANDS, AUTO_MODERATION_RULES, CHANNELS, FORUM_TAGS, GUILDS, MESSAGES, ROLES, SCHEDULED_EVENTS,
@@ -22,10 +22,9 @@ from ..core import (
 )
 from ..embed import EmbedBase
 from ..emoji import Emoji, parse_reaction
-from ..guild import Guild, GuildDiscovery
+from ..guild import Guild
 from ..message import Attachment, Message
-from ..oauth2 import Achievement, Oauth2Access, Oauth2Scope, Oauth2User
-from ..permission import PermissionOverwrite
+from ..oauth2 import Achievement, Oauth2Access, Oauth2User
 from ..role import Role
 from ..scheduled_event import ScheduledEvent
 from ..stage import Stage

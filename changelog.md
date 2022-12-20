@@ -2,14 +2,22 @@
 
 #### Improvements
 
+- Add `EmojiCounts`.
 - Add `ForumLayout`.
+- Add `StickerCounts`.
+- Add `Emoji.iter_roles`.
+- Add `Emoji.is_premium`.
 - Add `Integration.copy`.
+- Add `GuildPremiumPerks`.
+- Add `Guild.has_feature`.
 - Add `ThreadProfile.copy`.
 - Add `GuildDiscovery.copy`.
+- Add `Guild.premium_perks`.
 - Add `ThreadProfile.__eq__`.
 - Add `MessageActivity.copy`.
 - Add `ThreadProfile.__new__`.
 - Add `Role.manager_metadata`.
+- Add `MessageType.stage_end`.
 - Add `Integration.copy_with`.
 - Add `RoleManagerMetadataBot`.
 - Add `ThreadProfile.__hash__`.
@@ -19,17 +27,24 @@
 - Add `IntegrationAccount.copy`.
 - Add `ThreadProfile.copy_with`.
 - Add `MessageActivity.__new__`.
+- Add `GuildFeature.onboarding`.
+- Add `MessageType.stage_start`.
 - Add `MessageActivity.__hash__`.
 - Add `GuildDiscovery.copy_with`.
 - Add `MessageActivity.copy_with`.
-- Add `ERROR_CODES.card_declined`.
 - Add `DiscoveryCategory.to_data`.
+- Add `ERROR_CODES.card_declined`.
+- Add `MessageType.stage_speaker`.
+- Add `ConnectionType.crunchyroll`.
 - Add `RoleManagerMetadataBooster`.
+- Add `GuildFeature.home_override`.
+- Add `RelationshipType.suggestion`.
 - Add `IntegrationApplication.copy`.
 - Add `Channel.default_forum_layout`.
 - Add `GuildDiscovery.iter_keywords`.
 - Add `RoleManagerType.subscription`.
 - Add `IntegrationMetadataBase.copy`.
+- Add `GuildFeature.burst_reactions`.
 - Add `IntegrationAccount.copy_with`.
 - Add `ERROR_CODES.user_quarantined`.
 - Add `ERROR_CODES.invites_disabled`.
@@ -37,23 +52,38 @@
 - Add `GuildDiscovery.sub_categories`.
 - Add `RoleManagerType.metadata_type`.
 - Add `RoleManagerMetadataIntegration`.
+- Add `MessageType.stage_topic_change`.
 - Add `RoleManagerMetadataSubscription`.
+- Add `GuildFeature.channel_highlights`.
 - Add `IntegrationApplication.cop_with`.
+- Add `GuildFeature.creator_store_page`.
+- Add `GuildFeature.raid_alerts_enabled`.
 - Add `IntegrationMetadataBase.copy_with`.
 - Add `ERROR_CODES.confirmation_required`.
+- Add `MessageType.stage_request_to_speak`.
 - Add `IntegrationType.guild_subscription`.
-- Add `ERROR_CODES.feature_not_yet_rolled_out`.
+- Add `GuildFeature.text_in_stage_enabled`.
+- Add `GuildFeature.onboarding_has_prompts`.
+- Add `MessageType.application_subscription`.
+- Add `GuildFeature.onboarding_ever_enabled`.
 - Add `default_sort_order` audit log converter.
+- Add `ERROR_CODES.feature_not_yet_rolled_out`.
 - Add `ChannelMetadataBase.default_forum_layout`.
+- Add `GuildFeature.channel_highlights_disabled`.
 - Add `ERROR_CODES.auto_moderation_invalid_regex`.
+- Add `GuildFeature.marketplaces_connection_roles`.
 - Add `ERROR_CODES.vanity_url_requirements_not_met`.
+- Add `GuildFeature.creator_monetizable_restricted`.
 - Add `ERROR_CODES.subscription_renewal_in_progress`.
+- Add `GuildFeature.creator_monetizable_temporarily`.
 - Add `ChannelMetadataGuildForum.default_forum_layout`.
 - Add `ERROR_CODES.invalid_activity_launch_afk_channel`.
 - Add `ERROR_CODES.invalid_currency_for_payment_source`.
+- Add `GuildFeature.creator_monetizable_premium_service`.
 - `GuildDiscovery` now supports rich attribute exceptions.
 - Add `ERROR_CODES.purchase_token_authorization_required`.
 - `MessageActivity` now supports rich attribute exceptions.
+- Move `PermissionOverwrite` under the `channel` directory.
 - Add `ERROR_CODES.vanity_url_employee_only_guild_disabled`.
 - Repurpose `ThreadProfile.__init__`. Rename to `.from_data`.
 - `IntegrationAccount` now supports rich attribute exceptions.
@@ -63,11 +93,11 @@
 - Add `ERROR_CODES.cannot_convert_emoji_between_premium_and_non_premium`.
 - Add `ERROR_CODES.cannot_mix_subscription_and_non_subscription_roles_for_an_emoji`.
 
-
 #### Bug fixes
 
 - Fix an `AttributeError` in `Client._delete`.
 - `thread_user_difference_update` was always returning `None`.
+- `Sticker.precreate`'s `format` and `type` parameters were broken.
 - Rename `DiscordHTTPClient.guild_discovery_add_sub_category` used bad http method.
 - At cases when `thread_user_pop` did not need to pop thread profile it still popped the thread user.
 
@@ -75,19 +105,24 @@
 
 - Remove `DISCOVERY_CATEGORIES`.
 - Remove `GuildDiscovery.guild`.
+- Deprecate unpacking `Guild.emoji_counts`.
 - Rename `DiscoveryCategory.id` to `.value`.
+- Deprecate unpacking `Guild.sticker_counts`.
+- Deprecate `cr_p_permission_overwrite_object`.
 - Deprecate `Client.guild_discovery_add_subcategory`.
 - Rename `DiscoveryCategory.from_id` to `._from_value`.
 - Deprecate `Client.guild_discovery_delete_subcategory`.
 - Deprecate `DiscoveryCategory.id`. Please use `.value` instead.
 - Rename `DiscoveryCategory.local_names` to `.name_localizations`.
+- Rename `thread_user_update` to `.thread_user_difference_update`.
+- Remove `AuditLogEvent.guild_home_remove_item` to `.home_remove_item`.
+- Remove `AuditLogEvent.guild_home_feature_item` to `.home_feature_item`.
 - Rename `Client.guild_discovery_add_subcategory` to `.guild_discovery_add_sub_category`.
 - Rename `Client.guild_discovery_delete_subcategory` to `.guild_discovery_delete_sub_category`.
 - Rename `DiscordHTTPClient.guild_discovery_add_subcategory` to `.guild_discovery_add_sub_category`.
 - Rename `RATE_LIMIT_GROUPS.guild_discovery_add_subcategory` to `.guild_discovery_add_sub_category`.
 - Rename `DiscordHTTPClient.guild_discovery_delete_subcategory` to `.guild_discovery_delete_sub_category`.
 - Rename `RATE_LIMIT_GROUPS.guild_discovery_delete_subcategory` to `.guild_discovery_delete_sub_category`.
-- Rename `thread_user_update` to `.thread_user_difference_update`.
 
 ## 1.3.15 *\[2022-12-13\]*
 

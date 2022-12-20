@@ -1,14 +1,13 @@
 import vampytest
 
 from ....core import BUILTIN_EMOJIS
-from ....permission import PermissionOverwrite, PermissionOverwriteTargetType
 
 from ...forum_tag import ForumTag
+from ...permission_overwrite import PermissionOverwrite, PermissionOverwriteTargetType
 
 from ..flags import ChannelFlag
-from ..preinstanced import ForumLayout, SortOrder
-
 from ..guild_forum import ChannelMetadataGuildForum
+from ..preinstanced import ForumLayout, SortOrder
 
 
 def test__ChannelMetadataGuildForum__repr():

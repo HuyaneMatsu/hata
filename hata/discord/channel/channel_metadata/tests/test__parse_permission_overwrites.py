@@ -1,6 +1,6 @@
 import vampytest
 
-from ....permission import PermissionOverwrite, PermissionOverwriteTargetType
+from ...permission_overwrite import PermissionOverwrite, PermissionOverwriteTargetType
 
 from ..fields import parse_permission_overwrites
 

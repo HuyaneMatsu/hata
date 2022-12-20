@@ -315,9 +315,9 @@ class AuditLogEvent(PreinstancedBase):
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
     | role_prompt_delete                    | role_prompt_delete                    | 162   | none                          |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
-    | guild_home_feature_item               | guild_home_feature_item               | 171   | none                          |
+    | home_feature_item                     | home_feature_item                     | 171   | none                          |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
-    | guild_home_remove_item                | guild_home_remove_item                | 172   | none                          |
+    | home_remove_item                      | home_remove_item                      | 172   | none                          |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
     """
     INSTANCES = {}
@@ -420,8 +420,8 @@ class AuditLogEvent(PreinstancedBase):
     role_prompt_edit =  P(161, 'role prompt edit', AuditLogTargetType.none)
     role_prompt_delete = P(162, 'role prompt delete', AuditLogTargetType.none)
     
-    guild_home_feature_item = P(171, 'guild_home_feature_item', AuditLogTargetType.none)
-    guild_home_remove_item = P(172, 'guild_home_remove_item', AuditLogTargetType.none)
+    home_feature_item = P(171, 'home_feature_item', AuditLogTargetType.none)
+    home_remove_item = P(172, 'home_remove_item', AuditLogTargetType.none)
     
     
     def __init__(self, value, name, target_type):
@@ -465,8 +465,8 @@ class AuditLogEvent(PreinstancedBase):
     def __repr__(self):
         return (
             f'<{self.__class__.__name__} '
-            f'name={self.name!r}, '
-            f'value={self.value!r}, '
-            f'target_type={self.target_type.name!r}'
+            f'name = {self.name!r}, '
+            f'value = {self.value!r}, '
+            f'target_type = {self.target_type.name!r}'
             '>'
         )

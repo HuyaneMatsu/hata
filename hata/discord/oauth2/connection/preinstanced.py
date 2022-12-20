@@ -30,6 +30,8 @@ class ConnectionType(PreinstancedBase):
     +=======================+=======================+===================+
     | battlenet             | Battle.net            | battlenet         |
     +-----------------------+-----------------------+-------------------+
+    | crunchyroll           | Crunchyroll           | crunchyroll       |
+    +-----------------------+-----------------------+-------------------+
     | ebay                  | eBay                  | ebay              |
     +-----------------------+-----------------------+-------------------+
     | epic_games            | Epic Games            | epicgames         |
@@ -76,6 +78,7 @@ class ConnectionType(PreinstancedBase):
     __slots__ = ()
     
     battlenet = P('battlenet', 'Battle.net')
+    crunchyroll = P('crunchyroll', 'Crunchyroll')
     ebay = P('ebay', 'eBay')
     epic_games = P('epicgames', 'Epic Games')
     facebook = P('facebook', 'Facebook')

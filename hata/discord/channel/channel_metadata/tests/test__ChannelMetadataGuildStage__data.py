@@ -1,10 +1,9 @@
 import vampytest
 
-from ....permission import PermissionOverwrite, PermissionOverwriteTargetType
-
-from ..preinstanced import VoiceRegion
+from ...permission_overwrite import PermissionOverwrite, PermissionOverwriteTargetType
 
 from ..guild_stage import ChannelMetadataGuildStage
+from ..preinstanced import VoiceRegion
 
 from .test__ChannelMetadataGuildStage__constructor import assert_fields_set
 

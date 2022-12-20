@@ -21,11 +21,11 @@ from ...field_validators import (
     nullable_date_time_validator_factory, nullable_entity_array_validator_factory, nullable_entity_validator_factory,
     nullable_string_validator_factory, preinstanced_validator_factory
 )
-from ...permission import PermissionOverwrite
 from ...user import ClientUserBase, User, create_partial_user_from_id
 from ...utils import datetime_to_timestamp, timestamp_to_datetime
 
 from ..forum_tag import ForumTag
+from ..permission_overwrite import PermissionOverwrite
 
 from .constants import (
     AUTO_ARCHIVE_DEFAULT, AUTO_ARCHIVE_OPTIONS, BITRATE_DEFAULT, BITRATE_MAX, BITRATE_MIN, NAME_LENGTH_MAX,

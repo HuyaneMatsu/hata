@@ -24,15 +24,19 @@ from ..permission.permission import PERMISSION_ALL, PERMISSION_MASK_ADMINISTRATO
 from ..preconverters import preconvert_bool, preconvert_preinstanced_type, preconvert_snowflake, preconvert_str
 from ..role import Role
 from ..scheduled_event import ScheduledEvent
-from ..sticker import Sticker, StickerFormat
+from ..sticker import Sticker
 from ..user import ClientUserBase, User, VoiceState, ZEROUSER, create_partial_user_from_id
 from ..utils import DATETIME_FORMAT_CODE, EMOJI_NAME_RP
 
 from .embedded_activity_state import EmbeddedActivityState
+from .emoji_counts import EmojiCounts
+from .fields import parse_features, parse_premium_tier, validate_features, validate_premium_tier
 from .flags import SystemChannelFlag
+from .guild_premium_perks import TIER_MAX as PREMIUM_TIER_MAX, TIERS as PREMIUM_TIERS
 from .preinstanced import (
     ContentFilterLevel, GuildFeature, HubType, MFA, MessageNotificationLevel, NsfwLevel, VerificationLevel
 )
+from .sticker_counts import StickerCounts
 
 
 VoiceClient = include('VoiceClient')
@@ -59,11 +63,6 @@ VOICE_STATE_JOIN = 1
 VOICE_STATE_LEAVE = 2
 VOICE_STATE_UPDATE = 3
 VOICE_STATE_MOVE = 4
-
-
-STICKER_FORMAT_STATIC = StickerFormat.png
-STICKER_FORMAT_ANIMATED = StickerFormat.apng
-STICKER_FORMAT_LOTTIE = StickerFormat.lottie
 
 COMMUNITY_FEATURES = frozenset((
     GuildFeature.community,
@@ -211,7 +210,7 @@ class Guild(DiscordEntity, immortal = True):
         The guild's discovery splash's type.
     emojis : `dict` of (`int`, ``Emoji``) items
         The emojis of the guild stored in `emoji_id` - `emoji` relation.
-    features : `list` of ``GuildFeature``
+    features : `None`, `tuple` of ``GuildFeature``
         The guild's features.
     hub_type : ``HubType``
         The guild's hub type. Only applicable for hub guilds.
@@ -245,7 +244,7 @@ class Guild(DiscordEntity, immortal = True):
     preferred_locale : ``Locale``
         The preferred language of the guild. The guild must be a Community guild, defaults to `'en-US'`.
     premium_tier : `int`
-        The premium tier of the guild. More subs = higher tier.
+        The premium tier of the guild. More boosters = higher tier.
     public_updates_channel_id : `int`
         The channel's identifier where the guild's public updates should go. The guild must be a `community` guild.
         
@@ -598,7 +597,10 @@ class Guild(DiscordEntity, immortal = True):
             The guild's discovery splash's hash.
             
             > Mutually exclusive with the `discovery_splash` parameter.
-        
+            
+        features : `None`, `tuple` of `(`int`, `GuildFeature``), Optional (Keyword only)
+            The guild's features.
+            
         icon : `None`, ``Icon``, `str`, Optional (Keyword only)
             The guild's icon.
             
@@ -616,17 +618,20 @@ class Guild(DiscordEntity, immortal = True):
         
         nsfw_level : ``NsfwLevel``, Optional (Keyword only)
             The nsfw level of the guild.
+            
+        premium_tier : `int`, Optional (Keyword only)
+            The premium tier of the guild.
         
         Returns
         -------
-        guild : ``Guild``
+        guild : `instance<cls>`
         
         Raises
         ------
         TypeError
-            If any parameter's type is bad or if unexpected parameter is passed.
+            - If any parameter's type is bad or if unexpected parameter is passed.
         ValueError
-            If an parameter's type is good, but it's value is unacceptable.
+            - If an parameter's type is good, but it's value is unacceptable.
         """
         guild_id = preconvert_snowflake(guild_id, 'guild_id')
         
@@ -664,6 +669,18 @@ class Guild(DiscordEntity, immortal = True):
             else:
                 boost_progress_bar_enabled = preconvert_bool(boost_progress_bar_enabled, 'boost_progress_bar_enabled')
                 processable.append(('boost_progress_bar_enabled', boost_progress_bar_enabled))
+            
+            for attribute_name, field_validator in (
+                ('features', validate_features),
+                ('premium_tier', validate_premium_tier),
+            ):
+                try:
+                    attribute_value = kwargs.pop(attribute_name)
+                except KeyError:
+                    continue
+                
+                attribute_value = field_validator(attribute_value)
+                processable.append((attribute_name, attribute_value))
             
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
@@ -763,7 +780,7 @@ class Guild(DiscordEntity, immortal = True):
         """Returns the guild's representation."""
         repr_parts = [
             '<', self.__class__.__name__,
-            ' id=', repr(self.id),
+            ' id = ', repr(self.id),
         ]
         
         if self.partial:
@@ -771,7 +788,7 @@ class Guild(DiscordEntity, immortal = True):
         
         name = self.name
         if name:
-            repr_parts.append(', name=')
+            repr_parts.append(', name = ')
             repr_parts.append(repr(name))
         
         repr_parts.append('>')
@@ -2161,14 +2178,7 @@ class Guild(DiscordEntity, immortal = True):
             old_attributes['available'] = self.available
             self.available = available
         
-        try:
-            features = data['features']
-        except KeyError:
-            features = []
-        else:
-            features = [GuildFeature.get(feature) for feature in features]
-            features.sort()
-        
+        features = parse_features(data)
         if self.features != features:
             old_attributes['features'] = self.features
             self.features = features
@@ -2277,7 +2287,7 @@ class Guild(DiscordEntity, immortal = True):
             old_attributes['max_video_channel_users'] = self.max_video_channel_users
             self.max_video_channel_users = max_video_channel_users
         
-        premium_tier = data['premium_tier']
+        premium_tier = parse_premium_tier(data)
         if self.premium_tier != premium_tier:
             old_attributes['premium_tier'] = self.premium_tier
             self.premium_tier = premium_tier
@@ -2350,14 +2360,7 @@ class Guild(DiscordEntity, immortal = True):
 
         self.available = (not data.get('unavailable', False))
         
-        try:
-            features = data['features']
-        except KeyError:
-            self.features.clear()
-        else:
-            features = [GuildFeature.get(feature) for feature in features]
-            features.sort()
-            self.features = features
+        self.features = parse_features(data)
         
         system_channel_id = data.get('system_channel_id', None)
         if system_channel_id is None:
@@ -2428,7 +2431,7 @@ class Guild(DiscordEntity, immortal = True):
             max_video_channel_users = MAX_VIDEO_CHANNEL_USERS_DEFAULT
         self.max_video_channel_users = max_video_channel_users
         
-        self.premium_tier = data['premium_tier']
+        self.premium_tier = parse_premium_tier(data)
         
         boost_count = data.get('premium_subscription_count', None)
         if boost_count is None:
@@ -2728,6 +2731,38 @@ class Guild(DiscordEntity, immortal = True):
         return owner
     
     
+    def has_feature(self, feature):
+        """
+        Returns whether the guild has the give feature.
+        
+        Parameters
+        ----------
+        feature : ``GuildFeature``
+            The feature to look for.
+        
+        Returns
+        -------
+        has_feature : `bool`
+        """
+        features = self.features
+        if features is None:
+            return False
+        
+        return feature in features
+    
+    
+    @property
+    def premium_perks(self):
+        """
+        Returns the guild's premium tier perks for it's current level.
+        
+        Returns
+        -------
+        premium_perks : ``GuildPremiumPerks``
+        """
+        return PREMIUM_TIERS.get(self.premium_tier, PREMIUM_TIER_MAX)
+    
+    
     @property
     def emoji_limit(self):
         """
@@ -2737,8 +2772,8 @@ class Guild(DiscordEntity, immortal = True):
         -------
         limit : `int`
         """
-        limit = (50, 100, 150, 250)[self.premium_tier]
-        if limit < 200 and (GuildFeature.more_emoji in self.features):
+        limit = self.premium_perks.emoji_limit
+        if limit < 200 and self.has_feature(GuildFeature.more_emoji):
             limit = 200
         
         return limit
@@ -2753,9 +2788,10 @@ class Guild(DiscordEntity, immortal = True):
         -------
         limit : `int`
         """
-        limit = (96000, 128000, 256000, 384000)[self.premium_tier]
-        if limit < 128000 and (GuildFeature.vip in self.features):
+        limit = self.premium_perks.bitrate_limit
+        if limit < 128000 and self.has_feature(GuildFeature.vip_voice_regions):
             limit = 128000
+        
         return limit
     
     
@@ -2768,7 +2804,7 @@ class Guild(DiscordEntity, immortal = True):
         -------
         limit : `int`
         """
-        return (8388608, 8388608, 52428800, 104857600)[self.premium_tier]
+        return self.premium_perks.upload_limit
     
     
     @property
@@ -2780,8 +2816,8 @@ class Guild(DiscordEntity, immortal = True):
         -------
         limit : `int`
         """
-        limit = (5, 15, 30, 60)[self.premium_tier]
-        if limit < 30 and (GuildFeature.more_sticker in self.features):
+        limit = self.premium_perks.sticker_limit
+        if limit < 30 and self.has_feature(GuildFeature.more_sticker):
             limit = 30
         
         return limit
@@ -2836,33 +2872,9 @@ class Guild(DiscordEntity, immortal = True):
         
         Returns
         -------
-        normal_static : `int`
-            The static emoji count of the guild (excluding managed static).
-        normal_animated : `int`
-            The animated emoji count of the guild (excluding managed animated).
-        managed_static : `int`
-            The static managed emoji count of the guild.
-        manged_animated : `int`
-            The animated managed emoji count of the guild.
+        emoji_counts : ``EmojiCounts``
         """
-        normal_static = 0
-        normal_animated = 0
-        managed_static = 0
-        manged_animated = 0
-        
-        for emoji in self.emojis.values():
-            if emoji.animated:
-                if emoji.managed:
-                    manged_animated += 1
-                else:
-                    normal_animated += 1
-            else:
-                if emoji.managed:
-                    managed_static += 1
-                else:
-                    normal_static += 1
-        
-        return normal_static, normal_animated, managed_static, manged_animated
+        return EmojiCounts.from_emojis(self.emojis.values())
     
     
     @property
@@ -2872,32 +2884,9 @@ class Guild(DiscordEntity, immortal = True):
         
         Returns
         -------
-        static : `int`
-            The amount of static (``StickerFormat.png``) stickers of the guild.
-        animated : `int`
-            The amount of animated (``StickerFormat.apng``) stickers of the guild.
-        lottie : `int`
-            The amount of lottie (``StickerFormat.lottie``) stickers of the guild.
+        sticker_counts : ``StickerCounts``
         """
-        static_count = 0
-        animated_count = 0
-        lottie_count = 0
-        
-        for sticker in self.stickers.values():
-            sticker_format = sticker.format
-            if sticker_format is STICKER_FORMAT_STATIC:
-                static_count += 1
-                continue
-            
-            if sticker_format is STICKER_FORMAT_ANIMATED:
-                animated_count += 1
-                continue
-            
-            if sticker_format is STICKER_FORMAT_LOTTIE:
-                lottie_count += 1
-                continue
-        
-        return static_count, animated_count, lottie_count
+        return StickerCounts.from_stickers(self.stickers.values())
     
     
     @property

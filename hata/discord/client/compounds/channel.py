@@ -4,17 +4,16 @@ import warnings
 
 from scarletio import Compound
 
-from ...channel import Channel, ChannelType, ForumTag, create_partial_channel_from_id
+from ...channel import Channel, ChannelType, ForumTag, PermissionOverwrite, create_partial_channel_from_id
 from ...channel.channel.utils import (
     CHANNEL_GUILD_FIELD_CONVERTERS, CHANNEL_GUILD_MAIN_FIELD_CONVERTERS, CHANNEL_PRIVATE_GROUP_FIELD_CONVERTERS
+)
+from ...channel.permission_overwrite.utils import (
+    PERMISSION_OVERWRITE_FIELD_CONVERTERS, PERMISSION_OVERWRITE_PERMISSION_FIELD_CONVERTERS
 )
 from ...channel.forum_tag.utils import FORUM_TAG_FIELD_CONVERTERS
 from ...guild import Guild, create_partial_guild_from_id
 from ...http import DiscordHTTPClient
-from ...permission import PermissionOverwrite
-from ...permission.permission_overwrite.utils import (
-    PERMISSION_OVERWRITE_FIELD_CONVERTERS, PERMISSION_OVERWRITE_PERMISSION_FIELD_CONVERTERS
-)
 from ...payload_building import build_create_payload, build_edit_payload
 from ...webhook import Webhook
 

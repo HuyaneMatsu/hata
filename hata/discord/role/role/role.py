@@ -7,7 +7,7 @@ from ...color import Color
 from ...core import GUILDS, ROLES
 from ...http import urls as module_urls
 from ...permission.permission import PERMISSION_NONE, Permission
-from ...permission.utils import PERMISSION_KEY
+from ...permission.constants import PERMISSION_KEY
 from ...preconverters import preconvert_snowflake
 from ...utils import DATETIME_FORMAT_CODE
 

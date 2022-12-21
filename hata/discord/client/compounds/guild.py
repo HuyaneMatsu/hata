@@ -283,7 +283,7 @@ class ClientCompoundGuildEndpoints(Compound):
         """
         guild, guild_id = get_guild_and_id(guild)
         
-        if (guild is None) or (GuildFeature.verification_screen_enabled in guild.features):
+        if (guild is None) or guild.has_feature(GuildFeature.verification_screen_enabled):
             verification_screen_data = await self.http.verification_screen_get(guild_id)
             if verification_screen_data is None:
                 verification_screen = None
@@ -295,7 +295,7 @@ class ClientCompoundGuildEndpoints(Compound):
         return verification_screen
     
     
-    async def verification_screen_edit(self, guild, *, enabled=..., description = ..., steps=...):
+    async def verification_screen_edit(self, guild, *, enabled = ..., description = ..., steps = ...):
         """
         Requests the given guild's verification screen.
         
@@ -1089,16 +1089,7 @@ class ClientCompoundGuildEndpoints(Compound):
                 
                 if __debug__:
                     media_type = get_image_media_type(icon)
-                    
-                    if guild is None:
-                        valid_icon_media_types = VALID_ICON_MEDIA_TYPES_EXTENDED
-                    else:
-                        if GuildFeature.animated_icon in guild.features:
-                            valid_icon_media_types = VALID_ICON_MEDIA_TYPES_EXTENDED
-                        else:
-                            valid_icon_media_types = VALID_ICON_MEDIA_TYPES
-                    
-                    if media_type not in valid_icon_media_types:
+                    if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
                         raise AssertionError(
                             f'Invalid `icon` type for the guild: {media_type}; got {reprlib.repr(icon)}.'
                         )
@@ -1109,13 +1100,6 @@ class ClientCompoundGuildEndpoints(Compound):
         
         
         if (banner is not ...):
-            if __debug__:
-                if (guild is not None) and (GuildFeature.banner not in guild.features):
-                    raise AssertionError(
-                        f'The guild has no `BANNER` feature, meanwhile `banner` is given; got {reprlib.repr(banner)}; '
-                        f'guild={guild!r}.'
-                    )
-            
             if banner is None:
                 banner_data = None
             else:
@@ -1127,13 +1111,7 @@ class ClientCompoundGuildEndpoints(Compound):
                 
                 if __debug__:
                     media_type = get_image_media_type(banner)
-                    
-                    if (guild is not None) and (GuildFeature.animated_banner not in guild.features):
-                        valid_banner_media_types = VALID_ICON_MEDIA_TYPES_EXTENDED
-                    else:
-                        valid_banner_media_types = VALID_ICON_MEDIA_TYPES
-                    
-                    if media_type not in valid_banner_media_types:
+                    if media_type not in VALID_ICON_MEDIA_TYPES_EXTENDED:
                         raise AssertionError(
                             f'Invalid `banner` type: {media_type}; got {reprlib.repr(banner)}.'
                         )
@@ -1144,13 +1122,6 @@ class ClientCompoundGuildEndpoints(Compound):
         
         
         if (invite_splash is not ...):
-            if __debug__:
-                if (guild is not None) and (GuildFeature.invite_splash not in guild.features):
-                    raise AssertionError(
-                        f'The guild has no `INVITE_SPLASH` feature, meanwhile `invite_splash` is given; got '
-                        f'{reprlib.repr(invite_splash)}; guild={guild!r}.'
-                    )
-            
             if invite_splash is None:
                 invite_splash_data = None
             else:
@@ -1173,13 +1144,6 @@ class ClientCompoundGuildEndpoints(Compound):
         
         
         if (discovery_splash is not ...):
-            if __debug__:
-                if (guild is not None) and (GuildFeature.discoverable not in guild.features):
-                    raise AssertionError(
-                        f'The guild is not discoverable, but `discovery_splash` was given; '
-                        f'got {reprlib.repr(discovery_splash)}; guild={guild!r}.'
-                    )
-            
             if discovery_splash is None:
                 discovery_splash_data = None
             else:
@@ -1250,13 +1214,6 @@ class ClientCompoundGuildEndpoints(Compound):
         
         
         if (rules_channel is not ...):
-            if __debug__:
-                if (guild is not None) and (not COMMUNITY_FEATURES.intersection(guild.features)):
-                    raise AssertionError(
-                        f'The guild is not Community guild and `rules_channel` was given; got {rules_channel!r}; '
-                        f'guild={guild!r}.'
-                    )
-            
             while True:
                 if rules_channel is None:
                     rules_channel_id = None
@@ -1281,13 +1238,6 @@ class ClientCompoundGuildEndpoints(Compound):
         
         
         if (public_updates_channel is not ...):
-            if __debug__:
-                if (guild is not None) and (not COMMUNITY_FEATURES.intersection(guild.features)):
-                    raise AssertionError(
-                        f'The guild is not Community guild and `public_updates_channel` was given, got '
-                        f'{public_updates_channel!r}; guild={guild!r}.'
-                    )
-            
             while True:
                 if public_updates_channel is None:
                     public_updates_channel_id = None
@@ -1403,13 +1353,6 @@ class ClientCompoundGuildEndpoints(Compound):
         
         
         if (preferred_locale is not ...):
-            if __debug__:
-                if (guild is not None) and (not COMMUNITY_FEATURES.intersection(guild.features)):
-                    raise AssertionError(
-                        f'The guild is not Community guild and `preferred_locale` was given, got {preferred_locale!r}, '
-                        f'guild={guild!r}'
-                    )
-                
             if isinstance(preferred_locale, Locale):
                 preferred_locale_value = preferred_locale.value
             
@@ -1440,7 +1383,7 @@ class ClientCompoundGuildEndpoints(Compound):
             # Collect actual
             features = set()
             if (guild is not None):
-                for feature in guild.features:
+                for feature in guild.iter_features():
                     features.add(feature.value)
             
             # Collect added

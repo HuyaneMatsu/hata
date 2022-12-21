@@ -2731,6 +2731,21 @@ class Guild(DiscordEntity, immortal = True):
         return owner
     
     
+    def iter_features(self):
+        """
+        Iterates over the features of the guild.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        feature : ``GuildFeature``
+        """
+        features = self.features
+        if (features is not None):
+            yield from features
+    
+    
     def has_feature(self, feature):
         """
         Returns whether the guild has the give feature.

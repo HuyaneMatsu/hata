@@ -39,13 +39,12 @@ def test__Guild__has_feature():
     Tests whether ``Guild.has_feature`` works as intended.
     """
     feature = GuildFeature.animated_icon
-    for features, expected_output in (
-        ([], False),
-        ([GuildFeature.animated_banner], False),
-        ([feature], True),
-        ([GuildFeature.animated_banner, feature], True),
+    for guild, expected_output in (
+        (Guild.precreate(202212190038, features = []), False),
+        (Guild.precreate(202212200020, features = [GuildFeature.animated_banner]), False),
+        (Guild.precreate(202212200021, features = [feature]), True),
+        (Guild.precreate(202212200022, features = [GuildFeature.animated_banner, feature]), True),
     ):
-        guild = Guild.precreate(202212190038, features = features)
         vampytest.assert_eq(guild.has_feature(feature), expected_output)
 
 
@@ -91,7 +90,6 @@ def test__Guild__bitrate_limit():
         ),
     ):
         vampytest.assert_eq(guild.bitrate_limit, expected_value)
-
 
 
 def test__Guild__upload_limit():
@@ -153,3 +151,19 @@ def test__Guild__sticker_counts():
     vampytest.assert_instance(sticker_counts, StickerCounts)
     vampytest.assert_eq(sticker_counts.static, 1)
     vampytest.assert_eq(sticker_counts.animated, 1)
+
+
+def test__Guild__iter_features():
+    """
+    Tests whether ``Guild.iter_features`` works as intended.
+    """
+    for guild, expected_output in (
+        (
+            Guild.precreate(202212200033, features = []),
+            [],
+        ), (
+            Guild.precreate(202212200022, features = [GuildFeature.animated_banner, GuildFeature.animated_icon]),
+            [GuildFeature.animated_banner, GuildFeature.animated_icon],
+        ),
+    ):
+        vampytest.assert_eq([*guild.iter_features()], expected_output)

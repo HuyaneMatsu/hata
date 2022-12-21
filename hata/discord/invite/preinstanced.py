@@ -25,15 +25,17 @@ class InviteTargetType(PreinstancedBase):
     
     Every predefined invite target type can be accessed as class attribute as well:
     
-    +-----------------------+-----------------------+-------+
-    | Class attribute name  | name                  | value |
-    +=======================+=======================+=======+
-    | none                  | none                  | 0     |
-    +-----------------------+-----------------------+-------+
-    | stream                | stream                | 1     |
-    +-----------------------+-----------------------+-------+
-    | embedded_application  | embedded_application  | 2     |
-    +-----------------------+-----------------------+-------+
+    +-------------------------------+-------------------------------+-------+
+    | Class attribute name          | name                          | value |
+    +===============================+===============================+=======+
+    | none                          | none                          | 0     |
+    +-------------------------------+-------------------------------+-------+
+    | stream                        | stream                        | 1     |
+    +-------------------------------+-------------------------------+-------+
+    | embedded_application          | embedded application          | 2     |
+    +-------------------------------+-------------------------------+-------+
+    | role_subscription_purchase    | role subscription purchase    | 2     |
+    +-------------------------------+-------------------------------+-------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -41,9 +43,10 @@ class InviteTargetType(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    none = P(0, 'none', )
-    stream = P(1, 'stream', )
-    embedded_application = P(2, 'embedded_application', )
+    none = P(0, 'none')
+    stream = P(1, 'stream')
+    embedded_application = P(2, 'embedded application')
+    role_subscription_purchase = P(3, 'role subscription purchase')
 
 
 class InviteType(PreinstancedBase):
@@ -73,7 +76,9 @@ class InviteType(PreinstancedBase):
     +=======================+=======================+=======+
     | guild                 | guild                 | 0     |
     +-----------------------+-----------------------+-------+
-    | group_channel         | group_channel         | 1     |
+    | group_channel         | group channel         | 1     |
+    +-----------------------+-----------------------+-------+
+    | friend                | friend                | 2     |
     +-----------------------+-----------------------+-------+
     """
     INSTANCES = {}
@@ -82,5 +87,6 @@ class InviteType(PreinstancedBase):
     __slots__ = ()
     
     # predefined
-    guild = P(0, 'guild', )
-    group_channel = P(1, 'group_channel', )
+    guild = P(0, 'guild')
+    group_channel = P(1, 'group channel')
+    friend = P(2, 'friend')

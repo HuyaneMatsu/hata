@@ -97,7 +97,7 @@ async def _get_plugins(name, deep):
     
     except BaseException as err:
         raise PluginError(
-            f'Exception occurred meanwhile looking up plugins for name: {name!r}'
+            f'Exception occurred meanwhile looking up plugins for name: {name!r}.'
         ) from err
 
 

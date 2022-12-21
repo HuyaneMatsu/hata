@@ -1,4 +1,4 @@
-## 1.3.16 *\[2022-12-??\]*
+## 1.3.16 *\[2022-12-21\]*
 
 #### Improvements
 
@@ -10,9 +10,11 @@
 - Add `Integration.copy`.
 - Add `GuildPremiumPerks`.
 - Add `Guild.has_feature`.
+- Add `InviteType.friend`.
 - Add `ThreadProfile.copy`.
 - Add `GuildDiscovery.copy`.
 - Add `Guild.premium_perks`.
+- Add `Guild.iter_features`.
 - Add `ThreadProfile.__eq__`.
 - Add `MessageActivity.copy`.
 - Add `ThreadProfile.__new__`.
@@ -74,6 +76,7 @@
 - Add `GuildFeature.marketplaces_connection_roles`.
 - Add `ERROR_CODES.vanity_url_requirements_not_met`.
 - Add `GuildFeature.creator_monetizable_restricted`.
+- Add `InviteTargetType.role_subscription_purchase`.
 - Add `ERROR_CODES.subscription_renewal_in_progress`.
 - Add `GuildFeature.creator_monetizable_temporarily`.
 - Add `ChannelMetadataGuildForum.default_forum_layout`.

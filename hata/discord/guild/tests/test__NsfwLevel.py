@@ -1,6 +1,6 @@
 import vampytest
 
-from .. import NsfwLevel
+from ..preinstanced import NsfwLevel
 
 
 def test__NsfwLevel__name():

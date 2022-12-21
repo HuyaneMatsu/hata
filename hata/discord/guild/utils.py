@@ -4,8 +4,9 @@ from scarletio import export
 
 from ..core import GUILDS
 
+from .fields import parse_features
 from .guild import Guild
-from .preinstanced import GuildFeature, VerificationLevel
+from .preinstanced import VerificationLevel
 
 
 # We need to ignore client adding, because clients count to being not partial.
@@ -57,13 +58,8 @@ def create_partial_guild_from_data(data):
     else:
         guild.verification_level = VerificationLevel.get(verification_level)
     
-    try:
-        features = data['features']
-    except KeyError:
-        pass
-    else:
-        features = [GuildFeature.get(feature) for feature in features]
-        features.sort()
+    features = parse_features(data)
+    if (features is not None):
         guild.features = features
     
     return guild

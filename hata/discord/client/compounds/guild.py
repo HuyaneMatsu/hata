@@ -1,7 +1,6 @@
 __all__ = ()
 
-import reprlib, warnings
-from datetime import datetime
+import reprlib
 
 from scarletio import Compound
 
@@ -9,21 +8,24 @@ from ...bases import maybe_snowflake
 from ...channel import Channel, VoiceRegion
 from ...exceptions import DiscordException
 from ...guild import (
-    AuditLog, AuditLogEvent, AuditLogIterator, COMMUNITY_FEATURES, ContentFilterLevel, Guild, GuildFeature,
+    AuditLog, AuditLogEvent, AuditLogIterator, ContentFilterLevel, Guild, GuildFeature,
     GuildPreview, GuildWidget, MessageNotificationLevel, SystemChannelFlag, VerificationLevel, VerificationScreen,
-    VerificationScreenStep, WelcomeChannel, WelcomeScreen, create_partial_guild_from_data, create_partial_guild_from_id
+    WelcomeChannel, WelcomeScreen, create_partial_guild_from_data, create_partial_guild_from_id
 )
+from ...guild.verification_screen.utils import VERIFICATION_SCREEN_FIELD_CONVERTERS
 from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES, VALID_ICON_MEDIA_TYPES_EXTENDED
 from ...localization.utils import Locale
+from ...payload_building import build_create_payload, build_edit_payload
 from ...role import Role
-from ...user import ClientUserBase, GuildProfile, PremiumType, User, UserBase
-from ...utils import datetime_to_timestamp, get_image_media_type, image_to_base64, log_time_converter
+from ...user import ClientUserBase, GuildProfile, PremiumType, User, UserBase, UserFlag
+from ...utils import get_image_media_type, image_to_base64, log_time_converter
 
 from ..request_helpers import get_guild_and_id, get_guild_id, get_role_id, get_user_id
 
 
 class ClientCompoundGuildEndpoints(Compound):
     
+    flags : UserFlag
     guild_profiles : dict
     guilds : set
     http : DiscordHTTPClient
@@ -271,7 +273,7 @@ class ClientCompoundGuildEndpoints(Compound):
         Raises
         ------
         TypeError
-            If `guild` was not given neither as ``Guild`` nor `int`.
+            - If `guild` was not ``Guild``, `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -281,21 +283,13 @@ class ClientCompoundGuildEndpoints(Compound):
         -----
         If the guild has no verification screen enabled, will not do any request.
         """
-        guild, guild_id = get_guild_and_id(guild)
+        guild_id = get_guild_id(guild)
         
-        if (guild is None) or guild.has_feature(GuildFeature.verification_screen_enabled):
-            verification_screen_data = await self.http.verification_screen_get(guild_id)
-            if verification_screen_data is None:
-                verification_screen = None
-            else:
-                verification_screen = VerificationScreen.from_data(verification_screen_data)
-        else:
-            verification_screen = None
-        
-        return verification_screen
+        verification_screen_data = await self.http.verification_screen_get(guild_id)
+        return VerificationScreen.from_data(verification_screen_data)
     
     
-    async def verification_screen_edit(self, guild, *, enabled = ..., description = ..., steps = ...):
+    async def verification_screen_edit(self, guild, verification_screen_template = None, **keyword_parameters):
         """
         Requests the given guild's verification screen.
         
@@ -304,111 +298,57 @@ class ClientCompoundGuildEndpoints(Compound):
         Parameters
         ----------
         guild : ``Guild``, `int`
-            The guild, what's verification screen will be requested.
+            The guild what's verification screen will be edited.
+        
+        verification_screen_template : `None`, ``VerificationScreen``` = `None`, Optional
+            Verification screen to use as a template.
+        
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters to edit the verification screen with.
+        
+        
+        Other Parameters
+        ----------------
+        description  : `None`, `str`, Optional (Keyword only)
+            The guild's description shown in the verification screen.
+        
+        edited_at : `None`, `datetime`, Optional (Keyword only)
+            When the last version of the screen was created.
+        
         enabled : `bool`, Optional (Keyword only)
-            Whether the guild should have verification screen enabled.
-        description : `None`, `str`, Optional (Keyword only)
-            The guild's new description showed on the verification screen. It's length can be in range [0:300].
-        steps : `None`, ``VerificationScreenStep`` or  (`tuple`, `list`) of ``VerificationScreenStep``
-                , Optional (Keyword only)
-            The new steps of the verification screen.
+            Whether the verification screen should be enabled.
+        
+        steps : `None`, `tuple` of ``VerificationScreenStep``, Optional (Keyword only)
+            The step in the verification screen.
         
         Returns
         -------
-        verification_screen : `None`, ``VerificationScreen``
-            The updated verification screen. Always returns `None` if no change was propagated.
+        verification_screen : ``VerificationScreen``
         
         Raises
         ------
         TypeError
-            - If `guild` was not given neither as ``Guild`` nor `int`.
-            - If `steps` was not given neither as `None`, ``VerificationScreenStep`` nor as (`tuple`, `list`) of
-                ``VerificationScreenStep``-s.
-            - If `steps` contains a non ``VerificationScreenStep``.
+            - If `guild` was not ``Guild``, `int`.
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `enabled` was not given as `bool`.
-            - If `description` was not given neither as `None`, `str`.
-            - If `description`'s length is out of range [0:300].
         
         Notes
         -----
-        When editing steps, `DiscordException Internal Server Error (500): 500: Internal Server Error` will be dropped.
+        When editing steps, `DiscordException Internal Server Error (500)` will be dropped.
         """
         guild_id = get_guild_id(guild)
         
-        data = {}
+        data = build_edit_payload(
+            None, verification_screen_template, VERIFICATION_SCREEN_FIELD_CONVERTERS, keyword_parameters
+        )
+        verification_screen_data = await self.http.verification_screen_edit(guild_id, data)
         
-        if (enabled is not ...):
-            if __debug__:
-                if not isinstance(enabled, bool):
-                    raise AssertionError(
-                        f'`enabled` can be `bool`, got {enabled.__class__.__name__}; {enabled!r}.'
-                    )
-            
-            data['enabled'] = enabled
-        
-        if (description is not ...):
-            if __debug__:
-                if (description is not None):
-                    if not isinstance(description, str):
-                        raise AssertionError(
-                            f'`description` can be `None`, `str`, got {description.__class__.__name__}; '
-                            f'{description!r}.'
-                        )
-                    
-                    description_length = len(description)
-                    if description_length > 300:
-                        raise AssertionError(
-                            f'`description` length can be in range [0:300], got '
-                            f'{description_length!r}; {description!r}.'
-                        )
-            
-            if (description is not None) and (not description):
-                description = None
-            
-            data['description'] = description
-        
-        if (steps is not ...):
-            step_datas = []
-            if steps is None:
-                pass
-        
-            elif isinstance(steps, VerificationScreenStep):
-                step_datas.append(steps.to_data())
-            
-            elif isinstance(steps, (list, tuple)):
-                for index, step in enumerate(steps):
-                    if not isinstance(step, VerificationScreenStep):
-                        raise TypeError(
-                            f'`steps[{index}]` is not `{VerificationScreenStep.__name__}`, got '
-                            f'{step.__class__.__name__}; {step!r}; steps={steps!r}.'
-                        )
-                    
-                    step_datas.append(step.to_data())
-            else:
-                raise TypeError(
-                    f'`steps` can be `None`, `{VerificationScreenStep.__name__}`, '
-                    f'(`list`, `tuple`) of `{VerificationScreenStep.__name__}, got '
-                    f'{steps.__class__.__name__}; {steps!r}.'
-                )
-            
-            data['form_fields'] = step_datas
-        
-        if data:
-            data['version'] = datetime_to_timestamp(datetime.utcnow())
-            data = await self.http.verification_screen_edit(guild_id, data)
-            if data is None:
-                verification_screen = None
-            else:
-                verification_screen = VerificationScreen.from_data(data)
-        else:
-            verification_screen = None
-        
-        return verification_screen
+        return VerificationScreen.from_data(verification_screen_data)
     
     
     async def guild_get(self, guild):
@@ -435,6 +375,7 @@ class ClientCompoundGuildEndpoints(Compound):
         ConnectionError
             No internet connection.
         DiscordException
+            If any exception was received from the Discord API.
         """
         guild, guild_id = get_guild_and_id(guild)
         data = await self.http.guild_get(guild_id, {'with_counts': True})

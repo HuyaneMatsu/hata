@@ -74,7 +74,7 @@ def test__GuildDiscovery__new__copy_with__1():
     old_application_requested = DateTime(2017, 6, 4)
     new_application_requested = DateTime(2017, 6, 9)
     old_emoji_discovery = True
-    new_emoji_discovery = True
+    new_emoji_discovery = False
     old_keywords = ['kisaki']
     new_keywords = ['nasca']
     old_primary_category = DiscoveryCategory.music

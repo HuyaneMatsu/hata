@@ -1,8 +1,7 @@
 import vampytest
 
-from ..preinstanced import IntegrationType
-
 from ..fields import parse_type
+from ..preinstanced import IntegrationType
 
 
 def test__parse_type():

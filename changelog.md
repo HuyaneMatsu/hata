@@ -1,3 +1,28 @@
+## 1.3.17 *\[2022-12-22\]*
+
+#### Improvements
+
+- Add `VerificationScreen.copy`.
+- Add `VerificationScreen.__new__`.
+- Add `VerificationScreenStep.copy`.
+- Add `VerificationScreen.copy_with`.
+- Add `VerificationScreen.iter_steps`.
+- Add `VerificationScreenStep.__new__`.
+- Add `VerificationScreenStep.copy_with˙.
+- Add `VerificationScreenStep.iter_values`.
+- Add `ERROR_CODES.max_webhooks_of_guilds`.
+
+#### Bug Fixes
+
+- Fix `NameError` in `Client.message_edit`. (from 1.3.16 probably)
+
+#### Renames, Deprecation & Removals
+
+- Deprecate `type` parameter of `VerificationScreenStep.custom`, use `step_type` instead.
+- Deprecate `VerificationScreenStep.custom`. use `.__new__` or `.copy_with` respectively.
+- Rename `VerificationScreen.created_at` to `.edited_at`.
+- Deprecate VerificationScreen.created_at`.
+
 ## 1.3.16 *\[2022-12-21\]*
 
 #### Improvements

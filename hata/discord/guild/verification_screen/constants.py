@@ -1,0 +1,3 @@
+__all__ = ()
+
+DESCRIPTION_LENGTH_MAX = 300

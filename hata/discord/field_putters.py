@@ -541,6 +541,47 @@ def nullable_int_optional_putter_factory(field_key, default_value):
     return putter
 
 
+def force_bool_putter_factory(field_key):
+    """
+    Returns a forced `bool` putter.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    
+    Returns
+    -------
+    putter : `FunctionType`
+    """
+    def putter(field_value, data, defaults):
+        """
+        Puts the given `bool` into the given `data` json serializable object.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        field_value : `bool`
+            Boolean field value.
+        data : `dict` of (`str`, `Any`) items
+            Json serializable dictionary.
+        defaults : `bool`
+            Whether default values should be included as well.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `Any`) items
+        """
+        nonlocal field_key
+        
+        data[field_key] = field_value
+        
+        return data
+    
+    return putter
+
+
 def bool_optional_putter_factory(field_key, default_value):
     """
     Returns an optional `bool` putter.

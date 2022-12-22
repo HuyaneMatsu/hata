@@ -107,7 +107,7 @@ interrupt.
 
 We got some `tutorials:https://www.astil.dev/project/hata/guides/` as well, please check them too!
 """
-__version__ = '1.3.16'
+__version__ = '1.3.17'
 
 from .discord import *
 from .ext import *

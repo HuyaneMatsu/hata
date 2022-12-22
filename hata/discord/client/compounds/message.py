@@ -593,7 +593,7 @@ class ClientCompoundMessageEndpoints(Compound):
         if (components is not ...):
             message_data['components'] = components
         
-        if (suppress is not ...):
+        if (suppress_embeds is not ...):
             if message is None:
                 flags = 0
             else:

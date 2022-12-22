@@ -68,6 +68,8 @@ setup(
         'hata.discord.guild.audit_logs.change_converters',
         'hata.discord.guild.discovery',
         'hata.discord.guild.discovery_category',
+        'hata.discord.guild.verification_screen',
+        'hata.discord.guild.verification_screen_step',
         'hata.discord.http',
         'hata.discord.integration',
         'hata.discord.integration.integration',

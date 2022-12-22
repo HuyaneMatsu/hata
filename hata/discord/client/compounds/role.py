@@ -146,7 +146,7 @@ class ClientCompoundRoleEndpoints(Compound):
         return Role.from_data(role_data, guild_id)
     
     
-    async def role_edit(self, role, role_template = None, *, icon=..., reason = None, **keyword_parameters):
+    async def role_edit(self, role, role_template = None, *, icon = ..., reason = None, **keyword_parameters):
         """
         Edits the role with the given parameters.
         

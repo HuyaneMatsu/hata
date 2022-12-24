@@ -2,8 +2,9 @@ import vampytest
 
 from ...core import BUILTIN_EMOJIS, UNICODE_TO_EMOJI
 
-from .. import Emoji, parse_all_emojis, parse_all_emojis_ordered
+from ..emoji import Emoji
 from ..unicodes import UNICODES
+from ..utils import parse_all_emojis, parse_all_emojis_ordered
 
 
 def test__parse_all_emojis__unicode_all__0():

@@ -7,7 +7,7 @@ from ...verification_screen_step import VerificationScreenStep, VerificationScre
 from ..verification_screen import VerificationScreen
 
 
-def test__DiscoveryCategory__repr():
+def test__VerificationScreen__repr():
     """
     Tests whether ``VerificationScreen.__repr__`` works as intended.
     """
@@ -30,7 +30,7 @@ def test__DiscoveryCategory__repr():
     vampytest.assert_instance(repr(verification_screen), str)
 
 
-def test__DiscoveryCategory__hash():
+def test__VerificationScreen__hash():
     """
     Tests whether ``VerificationScreen.__hash__`` works as intended.
     """
@@ -53,7 +53,7 @@ def test__DiscoveryCategory__hash():
     vampytest.assert_instance(hash(verification_screen), int)
 
 
-def test__DiscoveryCategory__eq():
+def test__VerificationScreen__eq():
     """
     Tests whether ``VerificationScreen.__eq__`` works as intended.
     """

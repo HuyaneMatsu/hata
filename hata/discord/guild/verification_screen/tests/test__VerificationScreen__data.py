@@ -44,7 +44,7 @@ def test__VerificationScreen__to_data():
     """
     Tests whether ``VerificationScreen.to_data`` works as intended.
     
-    Case: include defaults and internals
+    Case: include defaults and internals.
     """
     edited_at = DateTime(2016, 5, 14)
     description = 'Yukari'

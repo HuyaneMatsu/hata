@@ -8,20 +8,20 @@ from types import ModuleType
 DEPRECATIONS = []
 
 
-def deprecated_import(obj=None, obj_name=None):
+def deprecated_import(obj = None, obj_name = None):
     """
     Deprecates the import.
     
     Parameters
     ----------
-    obj : `Any` = `None`, Optional
+    obj : `object` = `None`, Optional
         The object to export.
     obj_name : `str` = `None`, Optional
         The name of the object. If not given, is detected from `obj` itself.
     
     Returns
     -------
-    obj / wrapper : `Any`, `functools.partial`
+    obj / wrapper : `object`, `functools.partial`
         Object if defined, else a wrapper.
     """
     if obj_name is None:
@@ -56,7 +56,7 @@ def _get_deprecations_for_spec_name(name):
     
     Returns
     -------
-    deprecations : `dict` of (`str`, `Any`) items
+    deprecations : `dict` of (`str`, `object`) items
     """
     target_spec_access_path = tuple(name.split('.'))
     target_spec_access_path_length = len(target_spec_access_path)

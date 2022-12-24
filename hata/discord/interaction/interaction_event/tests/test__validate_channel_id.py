@@ -11,7 +11,7 @@ def test__validate_channel_id__0():
     
     Case: passing.
     """
-    channel_id = 2022110100012
+    channel_id = 202211010012
     
     for input_value, expected_output in (
         (None, 0),

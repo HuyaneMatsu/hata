@@ -3,7 +3,7 @@ import vampytest
 from ....core import BUILTIN_EMOJIS, FORUM_TAGS
 from ....emoji import Emoji
 
-from .. import ForumTag
+from ..forum_tag import ForumTag
 
 
 def test__ForumTag__new__0():

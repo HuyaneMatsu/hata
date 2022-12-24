@@ -10,12 +10,13 @@ from ...exceptions import DiscordException
 from ...guild import (
     AuditLog, AuditLogEvent, AuditLogIterator, ContentFilterLevel, Guild, GuildFeature,
     GuildPreview, GuildWidget, MessageNotificationLevel, SystemChannelFlag, VerificationLevel, VerificationScreen,
-    WelcomeChannel, WelcomeScreen, create_partial_guild_from_data, create_partial_guild_from_id
+    WelcomeScreenChannel, WelcomeScreen, create_partial_guild_from_data, create_partial_guild_from_id
 )
 from ...guild.verification_screen.utils import VERIFICATION_SCREEN_FIELD_CONVERTERS
+from ...guild.welcome_screen.utils import WELCOME_SCREEN_FIELD_CONVERTERS
 from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES, VALID_ICON_MEDIA_TYPES_EXTENDED
 from ...localization.utils import Locale
-from ...payload_building import build_create_payload, build_edit_payload
+from ...payload_building import build_edit_payload
 from ...role import Role
 from ...user import ClientUserBase, GuildProfile, PremiumType, User, UserBase, UserFlag
 from ...utils import get_image_media_type, image_to_base64, log_time_converter
@@ -110,12 +111,12 @@ class ClientCompoundGuildEndpoints(Compound):
         
         Returns
         -------
-        welcome_screen : `None`, ``WelcomeScreen``
+        welcome_screen : ``WelcomeScreen``
         
         Raises
         ------
         TypeError
-            If `guild` was not given neither as ``Guild`` nor `int`.
+            - If `guild` is not ``Guild``, `int`.
         ConnectionError
             No internet connection.
         DiscordException
@@ -128,15 +129,10 @@ class ClientCompoundGuildEndpoints(Compound):
         guild_id = get_guild_id(guild)
         
         welcome_screen_data = await self.http.welcome_screen_get(guild_id)
-        if welcome_screen_data is None:
-            welcome_screen = None
-        else:
-            welcome_screen = WelcomeScreen.from_data(welcome_screen_data)
-        
-        return welcome_screen
+        return WelcomeScreen.from_data(welcome_screen_data)
     
     
-    async def welcome_screen_edit(self, guild, *, enabled=..., description = ..., welcome_channels=...):
+    async def welcome_screen_edit(self, guild, welcome_screen_template = None, **keyword_parameters):
         """
         Edits the given guild's welcome screen.
         
@@ -146,113 +142,45 @@ class ClientCompoundGuildEndpoints(Compound):
         ----------
         guild : ``Guild``, `int`
             The guild, what's welcome screen will be edited.
-        enabled : `bool`, Optional (Keyword only)
-            Whether the guild's welcome screen should be enabled.
+        
+        welcome_screen_template : `None`, ``WelcomeScreen``` = `None`, Optional
+            Welcome screen to use as a template.
+        
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters to edit the welcome screen with.
+        
+        Other Parameters
+        ----------------
         description : `None`, `str`, Optional (Keyword only)
-            The welcome screen's new description. It's length can be in range [0:140].
-        welcome_channels : `None`, ``WelcomeChannel`` or  (`tuple`, `list`) of ``WelcomeChannel``
-                , Optional (Keyword only)
-            The channels mentioned on the welcome screen.
+            Description, of what is the server about.
+        
+        enabled : `bool`, Optional (Keyword only)
+            Whether the welcome screen should be enabled.
+        
+        welcome_channels : `None`, `iterable` of ``WelcomeScreenChannel``, Optional (Keyword only)
+            The featured channels by the welcome screen.
         
         Returns
         -------
-        welcome_screen : `None or ``WelcomeScreen``
-            The updated welcome screen. Always returns `None` if no change was propagated.
+        welcome_screen : ``WelcomeScreen``
         
         Raises
         ------
         TypeError
-            - If `guild` was not given neither as ``Guild`` nor `int`.
-            - If `welcome_channels` was not given neither as `None`, ``WelcomeChannel`` nor as (`tuple`, `list`) of
-                ``WelcomeChannel``-s.
-            - If `welcome_channels` contains a non ``WelcomeChannel``.
+            - If `guild` is not ``Guild``, `int`.
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `enabled` was not given as `bool`.
-            - If `description` was not given neither as `None`, `str`.
-            - If `description`'s length is out of range [0:140].
-            - If `welcome_channels`'s length is out of range [0:5].
         """
         guild_id = get_guild_id(guild)
         
-        data = {}
-        
-        if (enabled is not ...):
-            if __debug__:
-                if not isinstance(enabled, bool):
-                    raise AssertionError(
-                        f'`enabled` can be `bool`, got {enabled.__class__.__name__}; {enabled!r}.'
-                    )
-            
-            data['enabled'] = enabled
-        
-        if (description is not ...):
-            if __debug__:
-                if (description is not None):
-                    if not isinstance(description, str):
-                        raise AssertionError(
-                            f'`description` can be `None`, `str`, got {description.__class__.__name__}; '
-                            f'{description!r}.'
-                        )
-                
-                    description_length = len(description)
-                    if description_length > 300:
-                        raise AssertionError(
-                            f'`description` length can be in range [0:140], got {description_length!r}; '
-                            f'{description!r}.'
-                        )
-                
-            if (description is not None) and (not description):
-                description = None
-            
-            data['description'] = description
-        
-        if (welcome_channels is not ...):
-            welcome_channel_datas = []
-            if welcome_channel_datas is None:
-                pass
-            elif isinstance(welcome_channels, WelcomeChannel):
-                welcome_channel_datas.append(welcome_channels.to_data())
-            elif isinstance(welcome_channels, (list, tuple)):
-                if __debug__:
-                    welcome_channels_length = len(welcome_channels)
-                    if welcome_channels > 5:
-                        raise AssertionError(
-                            f'`welcome_channels` length can be in range [0:5], got '
-                            f'{welcome_channels_length!r}; {welcome_channels!r}.'
-                        )
-                
-                for index, welcome_channel in enumerate(welcome_channels):
-                    if not isinstance(welcome_channel, WelcomeChannel):
-                        raise TypeError(
-                            f'`welcome_channels[{index}]` is not `{WelcomeChannel.__name__}` , got '
-                            f'{welcome_channel.__class__.__name__}; {welcome_channel!r}; '
-                            f'welcome_channels={welcome_channels!r}.'
-                        )
-                    
-                    welcome_channel_datas.append(welcome_channel.to_data())
-            else:
-                raise TypeError(
-                    f'`welcome_channels` can be `None`, `{WelcomeChannel.__name__}`, '
-                    f'(`list`, `tuple`) of `{WelcomeChannel.__name__}, got '
-                    f'{welcome_channels.__class__.__name__}; {welcome_channels!r}.'
-                )
-            
-            data['welcome_channels'] = welcome_channel_datas
-        
-        if data:
-            data = await self.http.welcome_screen_edit(guild_id, data)
-            if data:
-                welcome_screen = WelcomeScreen.from_data(data)
-            else:
-                welcome_screen = None
-        else:
-            welcome_screen = None
-        
-        return welcome_screen
+        data = build_edit_payload(None, welcome_screen_template, WELCOME_SCREEN_FIELD_CONVERTERS, keyword_parameters)
+        welcome_screen_data = await self.http.welcome_screen_edit(guild_id, data)
+        return WelcomeScreen.from_data(welcome_screen_data)
     
     
     async def verification_screen_get(self, guild):
@@ -336,10 +264,6 @@ class ClientCompoundGuildEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        
-        Notes
-        -----
-        When editing steps, `DiscordException Internal Server Error (500)` will be dropped.
         """
         guild_id = get_guild_id(guild)
         
@@ -725,7 +649,7 @@ class ClientCompoundGuildEndpoints(Compound):
         return create_partial_guild_from_data(data)
     
     
-    async def guild_prune(self, guild, days, *, roles=None, count=False, reason = None):
+    async def guild_prune(self, guild, days, *, roles = None, count = False, reason = None):
         """
         Kicks the members of the guild which were inactive since x days.
         

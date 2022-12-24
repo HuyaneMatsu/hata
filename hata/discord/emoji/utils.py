@@ -1,8 +1,9 @@
 __all__ = (
-    'create_partial_emoji_data', 'create_partial_emoji_from_data', 'create_partial_emoji_from_id',
-    'create_emoji_from_exclusive_data', 'create_unicode_emoji', 'parse_all_emojis', 'parse_all_emojis_ordered',
-    'parse_custom_emojis', 'parse_custom_emojis_ordered', 'parse_emoji', 'parse_reaction',
-    'put_exclusive_emoji_data_into', 'put_partial_emoji_data_into', 'merge_update_reaction_mapping'
+    'create_emoji_from_exclusive_data', 'create_partial_emoji_data', 'create_partial_emoji_from_data',
+    'create_partial_emoji_from_id', 'create_partial_emoji_from_inline_data', 'create_unicode_emoji',
+    'merge_update_reaction_mapping', 'parse_all_emojis', 'parse_all_emojis_ordered', 'parse_custom_emojis',
+    'parse_custom_emojis_ordered', 'parse_emoji', 'parse_reaction', 'put_exclusive_emoji_data_into',
+    'put_partial_emoji_inline_data_into'
 )
 
 import warnings
@@ -50,23 +51,54 @@ def create_partial_emoji_from_data(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Partial emoji data.
     
     Returns
     -------
     emoji : `None`, ``Emoji``
     """
-    try:
-        emoji_name = data['emoji_name']
-    except KeyError:
-        emoji_name = data['name']
-        emoji_id = data.get('id', None)
-        emoji_animated = data.get('animated', False)
-    else:
-        emoji_id = data.get('emoji_id', None)
-        emoji_animated = data.get('emoji_animated', False)
+    return _create_partial_emoji_from_fields(
+        data.get('name', None), data.get('id', None), data.get('animated', False),
+    )
+
+
+@export
+def create_partial_emoji_from_inline_data(data):
+    """
+    Creates an emoji from inline partial emoji data sent by Discord.
     
+    Parameters
+    ----------
+    data : `dict` of (`str`, `object`) items
+        Partial emoji data.
+    
+    Returns
+    -------
+    emoji : `None`, ``Emoji``
+    """
+    return _create_partial_emoji_from_fields(
+        data.get('emoji_name', None), data.get('emoji_id', None), data.get('emoji_animated', False)
+    )
+
+
+def _create_partial_emoji_from_fields(emoji_name, emoji_id, emoji_animated):
+    """
+    Creates a partial emoji from the given fields.
+    
+    Parameters
+    ----------
+    emoji_name : `None`, `str`
+        The emoji's name.
+    emoji_id : `None`, `str`
+        The emoji's identifier.
+    emoji_animated : `bool`
+        Whether the emoji is animated.
+    
+    Returns
+    -------
+    emoji : `None`, ``Emoji``
+    """
     if emoji_name is None:
         return None
     
@@ -80,7 +112,7 @@ def create_partial_emoji_from_data(data):
         # name can change
         if emoji_name is None:
             emoji_name = ''
-            
+        
         emoji = Emoji._create_partial(int(emoji_id), emoji_name, emoji_animated)
     
     return emoji
@@ -120,7 +152,7 @@ def create_partial_emoji_data(emoji):
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         The serialized emoji data.
     """
     emoji_data = {}
@@ -137,7 +169,7 @@ def create_partial_emoji_data(emoji):
     return emoji_data
 
 
-def put_partial_emoji_data_into(emoji, data):
+def put_partial_emoji_inline_data_into(emoji, data):
     """
     Familiar to ``create_partial_emoji_data``, but instead of creating a standalone emoji data, uses the `emoji_`
     prefix field form to add it to an already defined dictionary.
@@ -146,12 +178,12 @@ def put_partial_emoji_data_into(emoji, data):
     ----------
     emoji : `None`, ``Emoji``
         The emoji to serialize.
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         The data to put the emoji fields into.
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     if (emoji is None):
         # Require at least the `emoji_name` field.
@@ -179,7 +211,7 @@ def create_emoji_from_exclusive_data(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Partial emoji data.
     
     Returns
@@ -212,12 +244,12 @@ def put_exclusive_emoji_data_into(emoji, data):
     ----------
     emoji : `None`, ``Emoji``
         The emoji to serialize.
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         The data to put the emoji fields into.
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     if (emoji is None):
         # Require at least the `emoji_name` field.

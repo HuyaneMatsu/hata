@@ -70,6 +70,8 @@ setup(
         'hata.discord.guild.discovery_category',
         'hata.discord.guild.verification_screen',
         'hata.discord.guild.verification_screen_step',
+        'hata.discord.guild.welcome_screen',
+        'hata.discord.guild.welcome_screen_channel',
         'hata.discord.http',
         'hata.discord.integration',
         'hata.discord.integration.integration',

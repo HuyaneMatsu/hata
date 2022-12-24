@@ -1,9 +1,9 @@
 import vampytest
 
 from ....core import BUILTIN_EMOJIS, FORUM_TAGS
-from ....emoji import create_partial_emoji_from_data, put_partial_emoji_data_into
+from ....emoji import create_partial_emoji_from_inline_data, put_partial_emoji_inline_data_into
 
-from .. import ForumTag
+from ..forum_tag import ForumTag
 
 
 def test__ForumTag__from_data__0():
@@ -23,7 +23,7 @@ def test__ForumTag__from_data__0():
         'moderated': moderated,
     }
     
-    put_partial_emoji_data_into(emoji, data)
+    put_partial_emoji_inline_data_into(emoji, data)
     
     forum_tag = ForumTag.from_data(data)
     
@@ -76,7 +76,7 @@ def test__ForumTag__update_attributes():
         'moderated': new_moderated,
     }
     
-    put_partial_emoji_data_into(new_emoji, data)
+    put_partial_emoji_inline_data_into(new_emoji, data)
     
     forum_tag._update_attributes(data)
 
@@ -103,7 +103,7 @@ def test__ForumTag__difference_update_attributes():
         'moderated': new_moderated,
     }
     
-    put_partial_emoji_data_into(new_emoji, data)
+    put_partial_emoji_inline_data_into(new_emoji, data)
     
     old_attributes = forum_tag._difference_update_attributes(data)
 
@@ -179,4 +179,4 @@ def test__ForumTag__to_data__2():
     vampytest.assert_eq(data['name'], name)
     vampytest.assert_eq(data['moderated'], moderated)
     
-    vampytest.assert_is(create_partial_emoji_from_data(data), emoji)
+    vampytest.assert_is(create_partial_emoji_from_inline_data(data), emoji)

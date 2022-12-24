@@ -23,7 +23,7 @@ def _check_is_every_field_set(verification_screen):
 
 
 
-def test__DiscoveryCategory__new__0():
+def test__VerificationScreen__new__0():
     """
     Tests whether ``VerificationScreen.__new__`` works as intended.
     
@@ -33,7 +33,7 @@ def test__DiscoveryCategory__new__0():
     _check_is_every_field_set(verification_screen)
 
 
-def test__DiscoveryCategory__new__1():
+def test__VerificationScreen__new__1():
     """
     Tests whether ``VerificationScreen.__new__`` works as intended.
     

@@ -2,7 +2,7 @@ import vampytest
 
 from ...core import BUILTIN_EMOJIS
 
-from .. import Emoji
+from ..emoji import Emoji
 from ..unicode_type import Unicode
 
 

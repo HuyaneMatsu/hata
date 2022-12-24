@@ -2,7 +2,8 @@ import vampytest
 
 from ...core import BUILTIN_EMOJIS
 
-from .. import Emoji, create_emoji_from_exclusive_data
+from ..emoji import Emoji
+from ..utils import create_emoji_from_exclusive_data
 
 
 def test__create_emoji_from_exclusive_data__0():

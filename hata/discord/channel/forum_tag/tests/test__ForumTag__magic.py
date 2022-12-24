@@ -2,7 +2,7 @@ import vampytest
 
 from ....core import BUILTIN_EMOJIS
 
-from .. import ForumTag
+from ..forum_tag import ForumTag
 
 
 def test__ForumTag__hash():

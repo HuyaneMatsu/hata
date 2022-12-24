@@ -1,3 +1,23 @@
+## 1.3.18 *\[2022-12-??\]*
+
+#### Improvements
+
+- Add `WelcomeScreenChannel.__new__`.
+- Add `WelcomeScreenChannel.copy`.
+- Add `WelcomeScreenChannel.copy_with`.
+- Add `create_partial_emoji_from_inline_data`. The same logic is excluded from `create_partial_emoji_from_data`.
+- Add `WelcomeScreen.__new__`.
+- Add `WelcomeScreen.copy`.
+- Add `WelcomeScreen.copy_with`.
+- Add `WelcomeScreen.iter_welcome_channels`.
+
+#### Renames, Deprecation & Removals
+
+- Rename `WelcomeScreenChannel` to `WelcomeChannel`.
+- Deprecate `WelcomeChannel`.
+- Deprecate `type` parameter of `WelcomeScreenChannel.custom`, use `step_type` instead.
+- Deprecate `WelcomeScreenChannel.custom`. use `.__new__` or `.copy_with` respectively.
+
 ## 1.3.17 *\[2022-12-22\]*
 
 #### Improvements

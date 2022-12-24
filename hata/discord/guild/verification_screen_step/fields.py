@@ -12,6 +12,7 @@ from ...field_validators import (
     preinstanced_validator_factory
 )
 
+from .constants import TITLE_LENGTH_MAX
 from .preinstanced import VerificationScreenStepType
 
 # required
@@ -24,7 +25,7 @@ validate_required = bool_validator_factory('required')
 
 parse_title = force_string_parser_factory('label')
 put_title_into = force_string_putter_factory('label')
-validate_title = force_string_validator_factory('title', 0, 1024)
+validate_title = force_string_validator_factory('title', 0, TITLE_LENGTH_MAX)
 
 # type
 

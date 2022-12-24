@@ -4,7 +4,7 @@ from ..preinstanced import VerificationScreenStepType
 from ..verification_screen_step import VerificationScreenStep
 
 
-def test__DiscoveryCategory__repr():
+def test__VerificationScreenStep__repr():
     """
     Tests whether ``VerificationScreenStep.__repr__`` works as intended.
     """
@@ -22,7 +22,7 @@ def test__DiscoveryCategory__repr():
     vampytest.assert_instance(repr(verification_screen_step), str)
 
 
-def test__DiscoveryCategory__hash():
+def test__VerificationScreenStep__hash():
     """
     Tests whether ``VerificationScreenStep.__hash__`` works as intended.
     """
@@ -40,7 +40,7 @@ def test__DiscoveryCategory__hash():
     vampytest.assert_instance(hash(verification_screen_step), int)
 
 
-def test__DiscoveryCategory__eq():
+def test__VerificationScreenStep__eq():
     """
     Tests whether ``VerificationScreenStep.__eq__`` works as intended.
     """

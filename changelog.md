@@ -2,19 +2,32 @@
 
 #### Improvements
 
-- Add `WelcomeScreenChannel.__new__`.
-- Add `WelcomeScreenChannel.copy`.
-- Add `WelcomeScreenChannel.copy_with`.
-- Add `create_partial_emoji_from_inline_data`. The same logic is excluded from `create_partial_emoji_from_data`.
-- Add `WelcomeScreen.__new__`.
 - Add `WelcomeScreen.copy`.
+- Add `WelcomeScreen.__new__`.
 - Add `WelcomeScreen.copy_with`.
+- Add `EmbeddedActivityStateKey`.
+- Add `WelcomeScreenChannel.copy`.
+- Add `EmbeddedActivityState.copy`.
+- Add `WelcomeScreenChannel.__new__`.
+- Add `EmbeddedActivityState.to_data`.
+- Add `EmbeddedActivityState.__new__`.
+- Add `WelcomeScreenChannel.copy_with`.
+- Add `EmbeddedActivityState.from_data`.
+- Add `EmbeddedActivityState.copy_with`.
 - Add `WelcomeScreen.iter_welcome_channels`.
+- Repurpose `EmbeddedActivityState.__new__`. Rename to `.from_data_is_created`.
+- Add `create_partial_emoji_from_inline_data`. The same logic is excluded from `create_partial_emoji_from_data`.
+- Add `EmbeddedActivityState.key`.
+- Add `EmbeddedActivityState.application_id`.
+
+#### Bug Fixes
+
+- Initially received ``EmbeddedActivityState`` were not cached correctly.
 
 #### Renames, Deprecation & Removals
 
-- Rename `WelcomeScreenChannel` to `WelcomeChannel`.
 - Deprecate `WelcomeChannel`.
+- Rename `WelcomeChannel` to `WelcomeScreenChannel`.
 - Deprecate `type` parameter of `WelcomeScreenChannel.custom`, use `step_type` instead.
 - Deprecate `WelcomeScreenChannel.custom`. use `.__new__` or `.copy_with` respectively.
 

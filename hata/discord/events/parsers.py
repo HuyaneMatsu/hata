@@ -19,10 +19,12 @@ from ..guild import (
     STICKER_UPDATE_CREATE, STICKER_UPDATE_DELETE, STICKER_UPDATE_EDIT, VOICE_STATE_JOIN, VOICE_STATE_LEAVE,
     VOICE_STATE_MOVE, VOICE_STATE_UPDATE, create_partial_guild_from_id
 )
-from ..guild.embedded_activity_state import (
+from ..guild.embedded_activity_state.constants import (
     EMBEDDED_ACTIVITY_UPDATE_CREATE, EMBEDDED_ACTIVITY_UPDATE_DELETE, EMBEDDED_ACTIVITY_UPDATE_UPDATE,
     EMBEDDED_ACTIVITY_UPDATE_USER_ADD, EMBEDDED_ACTIVITY_UPDATE_USER_DELETE,
-    difference_handle_embedded_activity_update_event, handle_embedded_update_event
+)
+from ..guild.embedded_activity_state.utils import (
+    difference_handle_embedded_activity_update_event, handle_embedded_activity_update_event
 )
 from ..integration import Integration
 from ..interaction import InteractionEvent
@@ -4105,7 +4107,7 @@ def EMBEDDED_ACTIVITY_UPDATE__CAL_MC(client, data):
                 continue
 
 def EMBEDDED_ACTIVITY_UPDATE__OPT_SC(client, data):
-    handle_embedded_update_event(data)
+    handle_embedded_activity_update_event(data)
 
 
 def EMBEDDED_ACTIVITY_UPDATE__OPT_MC(client, data):
@@ -4118,7 +4120,7 @@ def EMBEDDED_ACTIVITY_UPDATE__OPT_MC(client, data):
         if first_client(guild.clients, INTENT_MASK_GUILDS, client) is not client:
             return
     
-    handle_embedded_update_event(data)
+    handle_embedded_activity_update_event(data)
 
 
 add_parser(

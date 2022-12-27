@@ -3,7 +3,7 @@ __all__ = ('Application', )
 import warnings
 from functools import partial as partial_func
 
-from scarletio import BaseMethodDescriptor
+from scarletio import BaseMethodDescriptor, export
 
 from ...bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
 from ...core import APPLICATION_ID_TO_CLIENT, APPLICATIONS
@@ -319,6 +319,7 @@ def process_application_constructor_parameters(keyword_parameters, field_relatio
     return processable
 
 
+@export
 class Application(DiscordEntity, immortal = True):
     """
     Represents a Discord application with all of it's spice.

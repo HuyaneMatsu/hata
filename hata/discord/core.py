@@ -41,7 +41,7 @@ Weak Caches
 
 - `EMBEDDED_ACTIVITY_STATES` : ``WeakValueDictionary``
     
-    Contains ``EmbeddedActivityState``
+    Contains ``EmbeddedActivityState``.
     
 - `EMOJIS` : ``WeakValueDictionary``
     

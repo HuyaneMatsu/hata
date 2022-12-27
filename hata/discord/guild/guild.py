@@ -502,8 +502,7 @@ class Guild(DiscordEntity, immortal = True):
                 pass
             else:
                 for embedded_activity_state_data in embedded_activity_state_datas:
-                    EmbeddedActivityState(embedded_activity_state_data, guild_id)
-            
+                    EmbeddedActivityState.from_data(embedded_activity_state_data, guild_id)
         
         if (not CACHE_PRESENCE):
             # we get information about the client here

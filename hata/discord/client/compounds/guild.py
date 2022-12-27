@@ -4,13 +4,13 @@ import reprlib
 
 from scarletio import Compound
 
+from ...audit_logs import AuditLog, AuditLogEvent, AuditLogIterator
 from ...bases import maybe_snowflake
 from ...channel import Channel, VoiceRegion
 from ...exceptions import DiscordException
 from ...guild import (
-    AuditLog, AuditLogEvent, AuditLogIterator, ContentFilterLevel, Guild, GuildFeature,
-    GuildPreview, GuildWidget, MessageNotificationLevel, SystemChannelFlag, VerificationLevel, VerificationScreen,
-    WelcomeScreenChannel, WelcomeScreen, create_partial_guild_from_data, create_partial_guild_from_id
+    ContentFilterLevel, Guild, GuildFeature, GuildPreview, GuildWidget, MessageNotificationLevel, SystemChannelFlag,
+    VerificationLevel, VerificationScreen, WelcomeScreen, create_partial_guild_from_data, create_partial_guild_from_id
 )
 from ...guild.verification_screen.utils import VERIFICATION_SCREEN_FIELD_CONVERTERS
 from ...guild.welcome_screen.utils import WELCOME_SCREEN_FIELD_CONVERTERS
@@ -61,8 +61,8 @@ class ClientCompoundGuildEndpoints(Compound):
         """
         guild_id = get_guild_id(guild)
         
-        data = await self.http.guild_preview_get(guild_id)
-        return GuildPreview(data)
+        guild_preview_data = await self.http.guild_preview_get(guild_id)
+        return GuildPreview(guild_preview_data)
     
     
     async def guild_user_delete(self, guild, user, *, reason = None):

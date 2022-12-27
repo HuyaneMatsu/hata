@@ -191,7 +191,7 @@ class Activity(RichAttributeErrorBaseType):
         return self
     
     
-    def to_data(self, *, include_internals=False, user=False):
+    def to_data(self, *, include_internals = False, user = False):
         """
         Converts the activity to json serializable dictionary, which can be sent with bot account to change activity.
         

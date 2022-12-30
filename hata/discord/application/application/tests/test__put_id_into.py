@@ -5,7 +5,7 @@ from ..fields import put_id_into
 
 def test__put_id_into():
     """
-    Tests whether ``put_id_into`` is working as intended.
+    Tests whether ``put_id_into`` works as intended.
     """
     application_id = 202211270012
     

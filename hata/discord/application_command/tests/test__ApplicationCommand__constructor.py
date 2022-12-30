@@ -75,12 +75,12 @@ def test__ApplicationCommand__new__1():
     )
     
     vampytest.assert_eq(application_command.name, name)
-    vampytest.assert_instance(application_command.description, str, nullable=True)
+    vampytest.assert_instance(application_command.description, str, nullable = True)
     vampytest.assert_instance(application_command.allow_in_dm, bool)
-    vampytest.assert_instance(application_command.description_localizations, dict, nullable=True)
-    vampytest.assert_instance(application_command.name_localizations, dict, nullable=True)
+    vampytest.assert_instance(application_command.description_localizations, dict, nullable = True)
+    vampytest.assert_instance(application_command.name_localizations, dict, nullable = True)
     vampytest.assert_instance(application_command.nsfw, bool)
-    vampytest.assert_instance(application_command.options, list, nullable=True)
+    vampytest.assert_instance(application_command.options, list, nullable = True)
     vampytest.assert_instance(application_command.required_permissions, Permission)
     vampytest.assert_instance(application_command.target_type, ApplicationCommandTargetType)
     
@@ -101,12 +101,12 @@ def test__ApplicationCommand__create_empty():
     application_command = ApplicationCommand._create_empty(application_command_id, application_id)
     
     vampytest.assert_instance(application_command.name, str)
-    vampytest.assert_instance(application_command.description, str, nullable=True)
+    vampytest.assert_instance(application_command.description, str, nullable = True)
     vampytest.assert_instance(application_command.allow_in_dm, bool)
-    vampytest.assert_instance(application_command.description_localizations, dict, nullable=True)
-    vampytest.assert_instance(application_command.name_localizations, dict, nullable=True)
+    vampytest.assert_instance(application_command.description_localizations, dict, nullable = True)
+    vampytest.assert_instance(application_command.name_localizations, dict, nullable = True)
     vampytest.assert_instance(application_command.nsfw, bool)
-    vampytest.assert_instance(application_command.options, list, nullable=True)
+    vampytest.assert_instance(application_command.options, list, nullable = True)
     vampytest.assert_instance(application_command.required_permissions, Permission)
     vampytest.assert_instance(application_command.target_type, ApplicationCommandTargetType)
     

@@ -30,7 +30,7 @@ validate_value = int_conditional_validator_factory(
 
 parse_name = force_string_parser_factory('name')
 put_name_into = force_string_putter_factory('name')
-validate_name = force_string_validator_factory('name', 0, 10024)
+validate_name = force_string_validator_factory('name', 0, 1024)
 
 # name_localizations
 

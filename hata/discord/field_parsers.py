@@ -713,7 +713,6 @@ def nullable_functional_parser_factory(field_key, function, *, include = None):
     include : `None`, `str` = `None`, Optional (Keyword only)
         The function's name to include `function` with. Should be used when `function` cannot be resolved initially.
     
-    
     Returns
     -------
     parser : `FunctionType`

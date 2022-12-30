@@ -114,7 +114,7 @@ def test__EmbeddedActivityState__application_id():
     Tests whether ``EmbeddedActivityState.application_id`` works as intended.
     """
     application_id = 202212260118
-    activity = Activity('', application_id = application_id)
+    activity = Activity(application_id = application_id)
     
     embedded_activity_state = EmbeddedActivityState(
         activity = activity,
@@ -130,7 +130,7 @@ def test__EmbeddedActivityState__key():
     application_id = 202212260119
     channel_id = 202212260120
     guild_id = 202212260121
-    activity = Activity('', application_id = application_id)
+    activity = Activity(application_id = application_id)
     
     embedded_activity_state = EmbeddedActivityState(
         activity = activity,

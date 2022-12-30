@@ -16,8 +16,8 @@ def test__UNICODES():
             vampytest.assert_is(unicode.aliases, None)
             vampytest.assert_is(unicode.emoticons, None)
         else:
-            vampytest.assert_instance(unicode.aliases, tuple, nullable=True)
-            vampytest.assert_instance(unicode.emoticons, tuple, nullable=True)
+            vampytest.assert_instance(unicode.aliases, tuple, nullable = True)
+            vampytest.assert_instance(unicode.emoticons, tuple, nullable = True)
         
         for alternative_name in unicode.iter_alternative_names():
             vampytest.assert_instance(alternative_name, str)

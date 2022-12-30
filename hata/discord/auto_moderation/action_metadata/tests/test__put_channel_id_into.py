@@ -5,12 +5,14 @@ from ..fields import put_channel_id_into
 
 def test__put_channel_id_into():
     """
-    Tests whether ``put_channel_id_into`` is working as intended.
+    Tests whether ``put_channel_id_into`` works as intended.
     """
-    for input_, defaults, expected_output in (
+    channel_id = 202212290003
+    
+    for input_value, defaults, expected_output in (
         (0, False, {}),
         (0, True, {'channel_id': None}),
-        (1, False, {'channel_id': '1'}),
+        (channel_id, False, {'channel_id': str(channel_id)}),
     ):
-        data = put_channel_id_into(input_, {}, defaults)
+        data = put_channel_id_into(input_value, {}, defaults)
         vampytest.assert_eq(data, expected_output)

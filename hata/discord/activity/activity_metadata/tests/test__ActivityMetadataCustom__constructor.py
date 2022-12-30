@@ -1,0 +1,59 @@
+from datetime import datetime as DateTime
+
+import vampytest
+
+from ....core import BUILTIN_EMOJIS
+from ....emoji import Emoji
+
+from ..custom import ActivityMetadataCustom
+
+
+def _assert_fields_set(activity_metadata):
+    """
+    Asserts whether the given custom activity metadata's fields are all set correctly.
+    
+    Parameters
+    ----------
+    activity_metadata : ``ActivityMetadataCustom``
+        The activity metadata to check.
+    """
+    vampytest.assert_instance(activity_metadata, ActivityMetadataCustom)
+    vampytest.assert_instance(activity_metadata.created_at, DateTime, nullable = True)
+    vampytest.assert_instance(activity_metadata.emoji, Emoji, nullable = True)
+    vampytest.assert_instance(activity_metadata.state, str, nullable = True)
+
+
+def test__ActivityMetadataCustom__new__0():
+    """
+    Tests whether ``ActivityMetadataCustom.__new__`` works as intended.
+    
+    Case: No fields given.
+    """
+    keyword_parameters = {}
+    activity_metadata = ActivityMetadataCustom(keyword_parameters)
+    _assert_fields_set(activity_metadata)
+    vampytest.assert_eq(keyword_parameters, {})
+
+
+def test__ActivityMetadataCustom__new__1():
+    """
+    Tests whether ``ActivityMetadataCustom.__new__`` works as intended.
+    
+    Case: All fields given.
+    """
+    created_at = DateTime(2016, 5, 4)
+    emoji = BUILTIN_EMOJIS['x']
+    state = 'bloody'
+    
+    keyword_parameters = {
+        'created_at': created_at,
+        'emoji': emoji,
+        'state': state,
+    }
+    activity_metadata = ActivityMetadataCustom(keyword_parameters)
+    _assert_fields_set(activity_metadata)
+    vampytest.assert_eq(keyword_parameters, {})
+    
+    vampytest.assert_eq(activity_metadata.created_at, created_at)
+    vampytest.assert_eq(activity_metadata.emoji, emoji)
+    vampytest.assert_eq(activity_metadata.state, state)

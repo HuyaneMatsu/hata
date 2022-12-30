@@ -13,8 +13,8 @@ def test__parse_activity():
     
     for input_data, expected_output in (
         ({'embedded_activity': activity.to_data(include_internals = True, user = True)}, activity),
-        ({'embedded_activity': None}, Activity('')),
-        ({}, Activity('')),
+        ({'embedded_activity': None}, Activity()),
+        ({}, Activity()),
     ):
         output = parse_activity(input_data)
         vampytest.assert_eq(output, expected_output)

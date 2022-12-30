@@ -15,7 +15,7 @@ def test__validate_activity__0():
     
     for input_value, expected_output in (
         (activity, activity),
-        (None, Activity('')),
+        (None, Activity()),
     ):
         output = validate_activity(input_value)
         vampytest.assert_eq(output, expected_output)

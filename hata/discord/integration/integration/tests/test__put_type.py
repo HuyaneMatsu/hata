@@ -6,7 +6,7 @@ from ..preinstanced import IntegrationType
 
 def test__put_type_into():
     """
-    Tests whether ``put_type_into`` is working as intended.
+    Tests whether ``put_type_into`` works as intended.
     """
     for input_, defaults, expected_output in (
         (IntegrationType.discord, False, {'type': IntegrationType.discord.value}),

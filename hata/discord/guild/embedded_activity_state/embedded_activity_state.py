@@ -62,7 +62,7 @@ class EmbeddedActivityState(RichAttributeErrorBaseType):
         """
         # activity
         if activity is ...:
-            activity = Activity('')
+            activity = Activity()
         else:
             activity = validate_activity(activity)
         

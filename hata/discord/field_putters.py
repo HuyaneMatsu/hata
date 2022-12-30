@@ -1399,7 +1399,7 @@ def entity_putter_factory(field_key, entity_type):
 
 
 
-def nullable_functional_optional_putter_factory(field_key, function):
+def nullable_functional_optional_putter_factory(field_key, function, *, include = None):
     """
     Returns a new nullable optional functional putter. If the given `field_value` is not `None`, it will call the
     function on field's value and put it into the received `data`.
@@ -1409,6 +1409,9 @@ def nullable_functional_optional_putter_factory(field_key, function):
     field_key : `str`
         The field's key used in payload.
     function : `FunctionType`
+        The function to call to serialise the field value.
+    include : `None`, `str` = `None`, Optional (Keyword only)
+        The function's name to include `function` with. Should be used when `function` cannot be resolved initially.
     
     Returns
     -------
@@ -1444,6 +1447,14 @@ def nullable_functional_optional_putter_factory(field_key, function):
             data[field_key] = field_value
         
         return data
+    
+    
+    if (include is not None):
+        @include_with_callback(include)
+        def include_object_type(value):
+            nonlocal function
+            function = value
+    
     
     return putter
 
@@ -1485,7 +1496,7 @@ def flag_optional_putter_factory(field_key, default_value):
         nonlocal field_key
         nonlocal default_value
         
-        if defaults or (flag != defaults):
+        if defaults or (flag != default_value):
             data[field_key] = int(flag)
         
         return data

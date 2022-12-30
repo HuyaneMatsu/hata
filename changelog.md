@@ -2,23 +2,29 @@
 
 #### Improvements
 
+- Add `Activity.copy`.
+- Add `Activity.copy_with`.
 - Add `WelcomeScreen.copy`.
 - Add `WelcomeScreen.__new__`.
+- Add `ActivityFieldBase.copy`.
 - Add `WelcomeScreen.copy_with`.
 - Add `EmbeddedActivityStateKey`.
+- Add `ActivityMetadataBase.copy`.
+- Add `EmbeddedActivityState.key`.
 - Add `WelcomeScreenChannel.copy`.
 - Add `EmbeddedActivityState.copy`.
+- Add `ActivityFieldBase.copy_with`.
 - Add `WelcomeScreenChannel.__new__`.
 - Add `EmbeddedActivityState.to_data`.
 - Add `EmbeddedActivityState.__new__`.
+- Add `ActivityMetadataBase.copy_with`.
 - Add `WelcomeScreenChannel.copy_with`.
 - Add `EmbeddedActivityState.from_data`.
 - Add `EmbeddedActivityState.copy_with`.
 - Add `WelcomeScreen.iter_welcome_channels`.
+- Add `EmbeddedActivityState.application_id`.
 - Repurpose `EmbeddedActivityState.__new__`. Rename to `.from_data_is_created`.
 - Add `create_partial_emoji_from_inline_data`. The same logic is excluded from `create_partial_emoji_from_data`.
-- Add `EmbeddedActivityState.key`.
-- Add `EmbeddedActivityState.application_id`.
 
 #### Bug Fixes
 

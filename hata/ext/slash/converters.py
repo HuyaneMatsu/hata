@@ -3471,7 +3471,7 @@ def get_application_command_parameter_auto_completer_converters(func):
     ValueError
         - If any parameter is not internal.
     """
-    analyzer, real_analyzer, should_instance = check_command_coroutine(func, False, False, False, False)
+    analyzer, real_analyzer, should_instance = check_command_coroutine(func, True, False, False, False)
     
     parameters = real_analyzer.get_non_reserved_positional_parameters()
     

@@ -1,6 +1,7 @@
 __all__ = ('Attachment', )
 
 from ...bases import DiscordEntity
+from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .fields import (
     parse_content_type, parse_description, parse_height, parse_id, parse_name, parse_proxy_url, parse_size,
@@ -586,29 +587,10 @@ class Attachment(DiscordEntity):
         attachment_id = validate_id(attachment_id)
         
         if keyword_parameters:
-            processable = []
-            extra = None
-            
-            while keyword_parameters:
-                field_name, field_value = keyword_parameters.popitem()
-                try:
-                    attribute_name, validator = PRECREATE_FIELDS[field_name]
-                except KeyError:
-                    if extra is None:
-                        extra = {}
-                    extra[field_name] = field_value
-                
-                else:
-                    attribute_value = validator(field_value)
-                    processable.append((attribute_name, attribute_value))
-                
-                if extra:
-                    raise TypeError(
-                        f'Extra or unused keyword parameters: {extra!r}.'
-                    )
+            processed = process_precreate_parameters_and_raise_extra(keyword_parameters, PRECREATE_FIELDS)
         
         else:
-            processable = None
+            processed = None
         
         # Construct
         
@@ -624,8 +606,8 @@ class Attachment(DiscordEntity):
         self.url = ''
         self.width = 0
         
-        if (processable is not None):
-            for item in processable:
+        if (processed is not None):
+            for item in processed:
                 setattr(self, *item)
         
         return self

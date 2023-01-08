@@ -9,6 +9,7 @@ from ...http import urls as module_urls
 from ...permission.permission import PERMISSION_NONE, Permission
 from ...permission.constants import PERMISSION_KEY
 from ...preconverters import preconvert_snowflake
+from ...precreate_helpers import process_precreate_parameters, raise_extra
 from ...utils import DATETIME_FORMAT_CODE
 
 from ..role_manager_metadata import RoleManagerMetadataBase
@@ -242,7 +243,7 @@ class Role(DiscordEntity, immortal = True):
     
     
     @classmethod
-    def from_data(cls, data, guild_id):
+    def from_data(cls, data, guild_id = 0):
         """
         Creates a role from the given `data` at the given `guild`. If the role already exists and is not partial, then
         returns it. However it is partial, then updates it as well.
@@ -251,7 +252,7 @@ class Role(DiscordEntity, immortal = True):
         ----------
         data : `dict` of (`str`, `Any`) items
             Role data received from Discord.
-        guild_id : `int`
+        guild_id : `int` = `0`, Optional
             The owner guild's identifier.
         
         Returns
@@ -440,12 +441,12 @@ class Role(DiscordEntity, immortal = True):
         guild_id = preconvert_snowflake(guild_id, 'guild_id')
         
         if keyword_parameters:
-            processable = []
+            processed = []
             
             # icon
             icon = cls.icon.parse_from_keyword_parameters(keyword_parameters)
             if (icon is not None):
-                processable.append(('icon', icon))
+                processed.append(('icon', icon))
             
             # unicode_emoji
             try:
@@ -455,7 +456,7 @@ class Role(DiscordEntity, immortal = True):
             else:
                 unicode_emoji = validate_unicode_emoji(unicode_emoji)
                 if (unicode_emoji is not None):
-                    processable.append(('unicode_emoji', unicode_emoji))
+                    processed.append(('unicode_emoji', unicode_emoji))
             
             # Mutually exclusive check
             if (icon is not None) and (unicode_emoji is not None):
@@ -471,32 +472,14 @@ class Role(DiscordEntity, immortal = True):
                 pass
             else:
                 manager_type, manager_metadata = validate_manager(manager)
-                processable.append(('manager_type', manager_type))
-                processable.append(('manager_metadata', manager_metadata))
+                processed.append(('manager_type', manager_type))
+                processed.append(('manager_metadata', manager_metadata))
             
-            extra = None
-            
-            while keyword_parameters:
-                field_name, field_value = keyword_parameters.popitem() 
-                try:
-                    attribute_name, validator = PRECREATE_FIELDS[field_name]
-                except KeyError:
-                    if extra is None:
-                        extra = {}
-                    extra[field_name] = field_value
-                    continue
-                
-                attribute_value = validator(field_value)
-                processable.append((attribute_name, attribute_value))
-                continue
-                
-            if (extra is not None):
-                raise TypeError(
-                    f'Unused or unsettable keyword parameters: {extra!r}.'
-                )
+            extra = process_precreate_parameters(keyword_parameters, PRECREATE_FIELDS, processed)
+            raise_extra(extra)
         
         else:
-            processable = None
+            processed = None
         
         try:
             self = ROLES[role_id]
@@ -510,8 +493,8 @@ class Role(DiscordEntity, immortal = True):
             if guild_id and (not self.guild_id):
                 self.guild_id = guild_id
         
-        if (processable is not None):
-            for item in processable:
+        if (processed is not None):
+            for item in processed:
                 setattr(self, *item)
         
         return self
@@ -586,18 +569,12 @@ class Role(DiscordEntity, immortal = True):
         
         role_id = self.id
         if role_id:
-            repr_parts.append(' role_id=')
+            repr_parts.append(' role_id = ')
             repr_parts.append(repr(role_id))
-        
-        if self.partial:
-            repr_parts.append(' (partial)')
-    
-        else:
-            if role_id:
-                repr_parts.append(',')
+            repr_parts.append(',')
             
-            repr_parts.append(' name=')
-            repr_parts.append(repr(self.name))
+        repr_parts.append(' name = ')
+        repr_parts.append(repr(self.name))
         
         repr_parts.append('>')
         return ''.join(repr_parts)

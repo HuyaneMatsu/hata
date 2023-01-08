@@ -100,7 +100,7 @@ class ClientCompoundStickerEndpoints(Compound):
     http : DiscordHTTPClient
     
     
-    async def sticker_get(self, sticker, *, force_update=False):
+    async def sticker_get(self, sticker, *, force_update = False):
         """
         Gets an sticker by it's id. If the sticker is already loaded updates it.
         
@@ -134,9 +134,9 @@ class ClientCompoundStickerEndpoints(Compound):
         
         data = await self.http.sticker_get(sticker_id)
         if (sticker is None):
-            sticker = Sticker(data)
+            sticker = Sticker.from_data(data)
         else:
-            sticker._update_from_partial(data)
+            sticker._set_attributes(data)
         
         return sticker
     
@@ -170,7 +170,7 @@ class ClientCompoundStickerEndpoints(Compound):
         
         if (sticker_pack is None) or force_update:
             sticker_pack_data = await self.http.sticker_pack_get(sticker_pack_id)
-            sticker_pack = StickerPack._create_and_update(sticker_pack_data)
+            sticker_pack = StickerPack.from_data(sticker_pack_data, force_update = True)
         
         return sticker_pack
     
@@ -200,11 +200,10 @@ class ClientCompoundStickerEndpoints(Compound):
         if force_update or (not STICKER_PACK_CACHE.synced):
             data = await self.http.sticker_pack_get_all()
             sticker_pack_datas = data['sticker_packs'] # Discord pls.
-            if force_update:
-                sticker_packs = [StickerPack._create_and_update(sticker_pack_data) for sticker_pack_data in
-                    sticker_pack_datas]
-            else:
-                sticker_packs = [StickerPack(sticker_pack_data) for sticker_pack_data in sticker_pack_datas]
+            sticker_packs = [
+                StickerPack._create_and_update(sticker_pack_data, force_update = force_update)
+                for sticker_pack_data in sticker_pack_datas
+            ]
             
             STICKER_PACK_CACHE.set(sticker_packs)
         
@@ -255,9 +254,9 @@ class ClientCompoundStickerEndpoints(Compound):
         
         data = await self.http.sticker_guild_get(guild_id, sticker_id)
         if (sticker is None):
-            sticker = Sticker(data)
+            sticker = Sticker.from_data(data)
         else:
-            sticker._update_from_partial(data)
+            sticker._set_attributes(data)
         
         return sticker
     
@@ -374,7 +373,7 @@ class ClientCompoundStickerEndpoints(Compound):
         
         sticker_data = await self.http.sticker_guild_create(guild_id, form_data, reason)
         
-        return Sticker(sticker_data)
+        return Sticker.from_data(sticker_data)
     
     
     async def sticker_guild_edit(
@@ -545,7 +544,7 @@ class ClientCompoundStickerEndpoints(Compound):
             guild = GUILDS.get(guild_id, None)
         
         if guild is None:
-            stickers = [Sticker(sticker_data) for sticker_data in sticker_datas]
+            stickers = [Sticker.from_data(sticker_data) for sticker_data in sticker_datas]
         else:
             guild._sync_stickers(sticker_datas)
             stickers = [*guild.stickers.values()]

@@ -135,17 +135,22 @@ def preinstanced_parser_factory(field_key, preinstanced_type, default_value):
     return parser
 
 
-def preinstanced_array_parser_factory(field_key, preinstanced_type):
+def preinstanced_array_parser_factory(field_key, preinstanced_type, *, include = None):
     """
     Returns a new preinstanced array parser.
-    
     
     Parameters
     ----------
     field_key : `str`
         The field's key used in payload.
+        
     preinstanced_type : ``PreinstancedBase``
         The preinstanced type to use.
+
+    include : `None`, `str` = `None`, Optional (Keyword only)
+        The type's name to include `preinstanced_type` with.
+        Should be used when `preinstanced_type` cannot be resolved initially.
+    
     Returns
     -------
     parser : `FunctionType`
@@ -175,6 +180,13 @@ def preinstanced_array_parser_factory(field_key, preinstanced_type):
             preinstanced_array = tuple(sorted(preinstanced_type.get(value) for value in value_array))
         
         return preinstanced_array
+    
+    
+    if (include is not None):
+        @include_with_callback(include)
+        def include_object_type(value):
+            nonlocal preinstanced_type
+            preinstanced_type = value
     
     return parser
 
@@ -698,9 +710,60 @@ def default_entity_parser_factory(field_key, entity_type, default):
     return parser
 
 
+
+def functional_parser_factory(field_key, function, *, include = None):
+    """
+    Returns a functional parser.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    
+    function : `FunctionType`
+        Function to call with the received field value.
+    
+    include : `None`, `str` = `None`, Optional (Keyword only)
+        The function's name to include `function` with. Should be used when `function` cannot be resolved initially.
+    
+    Returns
+    -------
+    parser : `FunctionType`
+    """
+    def parser(data):
+        """
+        Parses out a field from the given `data`. IF anything is received calls the specified function on it.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `Any`) items
+            Entity data.
+        
+        Returns
+        -------
+        field_value : `None`, `object`
+        """
+        nonlocal field_key
+        nonlocal function
+        
+        return function(data[field_key])
+    
+    
+    if (include is not None):
+        @include_with_callback(include)
+        def include_object_type(value):
+            nonlocal function
+            function = value
+    
+    
+    return parser
+
+
 def nullable_functional_parser_factory(field_key, function, *, include = None):
     """
-    Returns an entity parser with default return value.
+    Returns a functional parser with default return value.
     
     Parameters
     ----------

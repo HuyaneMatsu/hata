@@ -10,6 +10,7 @@ from ...emoji import Emoji
 from ...http import DiscordHTTPClient
 from ...role import Role
 from ...utils import image_to_base64
+
 from ..request_helpers import get_guild_and_id, get_guild_id, get_emoji_guild_id_and_id
 
 
@@ -78,7 +79,7 @@ class ClientCompoundEmojiEndpoints(Compound):
         emoji_data = await self.http.emoji_get(guild_id, emoji_id)
         
         if (emoji is None):
-            emoji = Emoji(emoji_data, guild_id)
+            emoji = Emoji.from_data(emoji_data, guild_id)
         else:
             emoji._set_attributes(emoji_data, guild_id)
         
@@ -120,15 +121,15 @@ class ClientCompoundEmojiEndpoints(Compound):
             guild = GUILDS.get(guild_id, None)
         
         if guild is None:
-            emojis = [Emoji(emoji_data, guild_id) for emoji_data in emoji_datas]
+            emojis = [Emoji.from_data(emoji_data, guild_id) for emoji_data in emoji_datas]
         else:
             guild._sync_emojis(emoji_datas)
-            emojis = list(guild.emojis.values())
+            emojis = [*guild.emojis.values()]
         
         return emojis
     
     
-    async def emoji_create(self, guild, name, image, *, roles=None, reason = None):
+    async def emoji_create(self, guild, name, image, *, roles = None, reason = None):
         """
         Creates an emoji at the given guild.
         
@@ -217,7 +218,7 @@ class ClientCompoundEmojiEndpoints(Compound):
         
         data = await self.http.emoji_create(guild_id, data, reason)
         
-        emoji = Emoji(data, guild_id)
+        emoji = Emoji.from_data(data, guild_id)
         emoji.user = self
         return emoji
     

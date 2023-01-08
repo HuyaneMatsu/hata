@@ -4,6 +4,7 @@ from ...bases import DiscordEntity
 from ...channel import ChannelType, create_partial_channel_from_id
 from ...core import AUTO_MODERATION_RULES, GUILDS
 from ...role import create_partial_role_from_id
+from ...precreate_helpers import process_precreate_parameters
 from ...user import ZEROUSER, create_partial_user_from_id
 
 from ..trigger_metadata import AutoModerationRuleTriggerMetadataBase
@@ -998,7 +999,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
         rule_id = validate_id(rule_id)
         
         if keyword_parameters:
-            processable = []
+            processed = []
             
             # trigger_type
             try:
@@ -1008,21 +1009,7 @@ class AutoModerationRule(DiscordEntity, immortal = True):
             else:
                 trigger_type = validate_trigger_type(trigger_type)
             
-            extra = None
-            
-            while keyword_parameters:
-                field_name, field_value = keyword_parameters.popitem() 
-                try:
-                    attribute_name, validator = PRECREATE_FIELDS[field_name]
-                except KeyError:
-                    if extra is None:
-                        extra = {}
-                    extra[field_name] = field_value
-                    continue
-                
-                attribute_value = validator(field_value)
-                processable.append((attribute_name, attribute_value))
-                continue
+            extra = process_precreate_parameters(keyword_parameters, PRECREATE_FIELDS, processed)
             
             # trigger_metadata
             if (extra is None):
@@ -1032,11 +1019,11 @@ class AutoModerationRule(DiscordEntity, immortal = True):
                 trigger_metadata = trigger_type.metadata_type(**extra)
             
             if (trigger_type is not AutoModerationRuleTriggerType.none):
-                processable.append(('trigger_type', trigger_type))
-                processable.append(('trigger_metadata', trigger_metadata))
+                processed.append(('trigger_type', trigger_type))
+                processed.append(('trigger_metadata', trigger_metadata))
         
         else:
-            processable = None
+            processed = None
         
         try:
             self = AUTO_MODERATION_RULES[rule_id]
@@ -1045,8 +1032,8 @@ class AutoModerationRule(DiscordEntity, immortal = True):
             AUTO_MODERATION_RULES[rule_id] = self
         
         
-        if (processable is not None):
-            for item in processable:
+        if (processed is not None):
+            for item in processed:
                 setattr(self, *item)
         
         return self

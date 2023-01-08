@@ -3,6 +3,7 @@ __all__ = ('Team', )
 from ...bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
 from ...core import TEAMS
 from ...http import urls as module_urls
+from ...precreate_helpers import process_precreate_parameters, raise_extra
 from ...user import ClientUserBase, ZEROUSER, create_partial_user_from_id
 
 from ..team_member import TeamMember, TeamMembershipState
@@ -206,36 +207,18 @@ class Team(DiscordEntity, immortal = True):
         team_id = validate_id(team_id)
 
         if keyword_parameters:
-            processable = []
+            processed = []
             
             # icon
             icon = cls.icon.parse_from_keyword_parameters(keyword_parameters)
             if (icon is not None):
-                processable.append(('icon', icon))
+                processed.append(('icon', icon))
             
-            extra = None
+            extra = process_precreate_parameters(keyword_parameters, PRECREATE_FIELDS, processed)
+            raise_extra(extra)
             
-            while keyword_parameters:
-                field_name, field_value = keyword_parameters.popitem() 
-                try:
-                    attribute_name, validator = PRECREATE_FIELDS[field_name]
-                except KeyError:
-                    if extra is None:
-                        extra = {}
-                    extra[field_name] = field_value
-                    continue
-                
-                attribute_value = validator(field_value)
-                processable.append((attribute_name, attribute_value))
-                continue
-                
-            if (extra is not None):
-                raise TypeError(
-                    f'Unused or unsettable keyword parameters: {extra!r}.'
-                )
-        
         else:
-            processable = None
+            processed = None
         
         try:
             self = TEAMS[team_id]
@@ -246,8 +229,8 @@ class Team(DiscordEntity, immortal = True):
             if (not self.partial):
                 return self
         
-        if (processable is not None):
-            for item in processable:
+        if (processed is not None):
+            for item in processed:
                 setattr(self, *item)
         
         return self

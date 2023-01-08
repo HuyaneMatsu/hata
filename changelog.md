@@ -1,39 +1,92 @@
-## 1.3.18 *\[2022-12-??\]*
+## 1.3.18 *\[2023-01-??\]*
 
 #### Improvements
 
+- Add `Emoji.copy`.
+- Add `Sticker.copy`.
+- Add `Emoji.__new__`.
+- Add `Emoji.partial`.
+- Add `Emoji.to_data`.
 - Add `Activity.copy`.
+- Add `Sticker.has_tag`.
+- Add `Emoji.copy_with`.
+- Add `Sticker.__new__`.
+- Add `StickerPack.copy`.
+- Add `GuildPreview.copy`.
+- Add `Sticker.copy_with`.
 - Add `Activity.copy_with`.
+- Add `Sticker.__format__`.
 - Add `WelcomeScreen.copy`.
+- Add `StickerPack.to_data`.
+- Add `StickerPack.partial`.
+- Add `StickerPack.__new__`.
+- Add `Emoji.iter_role_ids`.
+- Add `GuildPreview.__new__`.
+- Add `GuildPreview.to_data`.
+- Add `ReactionAddEvent.copy`.
 - Add `WelcomeScreen.__new__`.
+- Add `StickerPack.precreate`.
+- Add `StickerPack.copy_with`.
+- Add `GuildPreview.copy_with`.
 - Add `ActivityFieldBase.copy`.
+- Add `StickerPack.has_sticker`.
 - Add `WelcomeScreen.copy_with`.
+- Add `ReactionAddEvent.to_data`.
+- Add `GuildPreview.has_feature`.
 - Add `EmbeddedActivityStateKey`.
 - Add `ActivityMetadataBase.copy`.
 - Add `EmbeddedActivityState.key`.
+- Add `StickerPack.iter_stickers`.
 - Add `WelcomeScreenChannel.copy`.
 - Add `EmbeddedActivityState.copy`.
+- Add `GuildPreview.iter_features`.
+- Add `ReactionAddEvent.copy_with`.
+- Add `ReactionAddEvent.from_data`.
 - Add `ActivityFieldBase.copy_with`.
+- Add `ReactionAddEvent.from_values`.
 - Add `WelcomeScreenChannel.__new__`.
 - Add `EmbeddedActivityState.to_data`.
 - Add `EmbeddedActivityState.__new__`.
 - Add `ActivityMetadataBase.copy_with`.
+- Add missing `StickerPack.banner_url`.
 - Add `WelcomeScreenChannel.copy_with`.
 - Add `EmbeddedActivityState.from_data`.
 - Add `EmbeddedActivityState.copy_with`.
+- `GuildPreview.__eq__` now deep compares.
+- `GuildPreview.__hash__` now deep hashes.
 - Add `WelcomeScreen.iter_welcome_channels`.
 - Add `EmbeddedActivityState.application_id`.
+- `Emoji.__eq__` now supports partial instances.
+- `Emoji.__hash__` now supports partial instances.
+- `Sticker.__eq__` now supports partial instances.
+- `Unicode` now support rich attribute exceptions.
+- `Sticker.__hash__` now supports partial instances.
+- Repurpose `Emoji.__new__`. Rename to `.from_data`.
+- `StickerPack.__eq__` now supports partial instances.
+- Repurpose `Sticker.__new__`. Rename to `.from_data`.
+- `StickerPack.__hash__`` now supports partial instances.
+- Repurpose `StickerPack.__new__`. Rename to `.from_data`.
+- Repurpose `GuildPreview.__init__`. Rename to `.from_data`.
 - Repurpose `EmbeddedActivityState.__new__`. Rename to `.from_data_is_created`.
 - Add `create_partial_emoji_from_inline_data`. The same logic is excluded from `create_partial_emoji_from_data`.
+- `ReactionAddEvent` and `ReactionDeleteEvent`-s now populate `.user.guild_profiles` with the local guild if applicable.
+
+##### ext.slash
+
+- Auto-completers now support coroutine generators.
 
 #### Bug Fixes
 
+- `Emoji.roles` sorted the roles incorrectly.
+- `parse_reaction` could raise `AttributeError`.
+- `create_unicode_emoji` could raise `AttributeError`.
 - Initially received ``EmbeddedActivityState`` were not cached correctly.
 
 #### Renames, Deprecation & Removals
 
 - Deprecate `WelcomeChannel`.
 - Rename `WelcomeChannel` to `WelcomeScreenChannel`.
+- Rename `Sticker._from_partial` to `.from_partial_data`.
 - Deprecate `type` parameter of `WelcomeScreenChannel.custom`, use `step_type` instead.
 - Deprecate `WelcomeScreenChannel.custom`. use `.__new__` or `.copy_with` respectively.
 

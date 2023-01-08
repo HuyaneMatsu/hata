@@ -7,7 +7,7 @@ from ..fields import put_scopes_into
 
 def test__put_scopes_into():
     """
-    Tests whether ``put_scopes_into`` is working as intended.
+    Tests whether ``put_scopes_into`` works as intended.
     """
     for input_, defaults, expected_output in (
         (None, False, {'scopes': []}),

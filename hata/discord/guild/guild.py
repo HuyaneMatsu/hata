@@ -354,7 +354,7 @@ class Guild(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Received guild data.
         client : `None`, ``Client`` = `None`, Optional
             The client who received the guild's data.
@@ -427,7 +427,7 @@ class Guild(DiscordEntity, immortal = True):
             else:
                 emojis = self.emojis
                 for emoji_data in emoji_datas:
-                    emoji = Emoji(emoji_data, guild_id)
+                    emoji = Emoji.from_data(emoji_data, guild_id)
                     emojis[emoji.id] = emoji
             
             try:
@@ -437,7 +437,7 @@ class Guild(DiscordEntity, immortal = True):
             else:
                 stickers = self.stickers
                 for sticker_data in sticker_datas:
-                    sticker = Sticker(sticker_data)
+                    sticker = Sticker.from_data(sticker_data)
                     stickers[sticker.id] = sticker
             
             try:
@@ -907,7 +907,7 @@ class Guild(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Data received from Discord.
         user : ``ClientUserBase``
             The respective user.
@@ -938,7 +938,7 @@ class Guild(DiscordEntity, immortal = True):
             
             Will be returned as `None` if action is `VOICE_STATE_NONE`.
         
-        old_attributes / old_channel_id : `None` or (`dict` of (`str`, `Any`) items / `int`)
+        old_attributes / old_channel_id : `None` or (`dict` of (`str`, `object`) items / `int`)
             If `action` is `VOICE_STATE_UPDATE`, then `old_attributes` is returned as a `dict` containing the changed
             attributes in `attribute-name` - `old-value` relation. All item at the returned dictionary is optional.
             
@@ -989,7 +989,7 @@ class Guild(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Data received from Discord.
         user : ``ClientUserBase``
             The respective user.
@@ -1160,7 +1160,7 @@ class Guild(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Received guild data.
         """
         try:
@@ -1218,7 +1218,7 @@ class Guild(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `list` of (`dict` of (`str`, `Any`) items)
+        data : `list` of (`dict` of (`str`, `object`) items)
             Guild's users' presences' data.
         """
         users = self.users
@@ -1238,7 +1238,7 @@ class Guild(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data `list` of (`dict` of (`str`, `Any`) items)
+        data `list` of (`dict` of (`str`, `object`) items)
             Received guild channel datas.
         """
         channels = self.channels
@@ -1266,7 +1266,7 @@ class Guild(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data `list` of (`dict` of (`str`, `Any`) items)
+        data `list` of (`dict` of (`str`, `object`) items)
             Received guild role datas.
         """
         roles = self.roles
@@ -1297,7 +1297,7 @@ class Guild(DiscordEntity, immortal = True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any` = `None`, Optional
+        default : `object` = `None`, Optional
             The value what is returned when no user was found. Defaults to `None`.
         
         Returns
@@ -1353,7 +1353,7 @@ class Guild(DiscordEntity, immortal = True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any` = `None`, Optional
+        default : `object` = `None`, Optional
             The value what is returned when no user was found. Defaults to `None`.
         
         Returns
@@ -1518,7 +1518,7 @@ class Guild(DiscordEntity, immortal = True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any` = `None`, Optional
+        default : `object` = `None`, Optional
             The value what is returned when no emoji was found. Defaults to `None`.
         
         Returns
@@ -1543,7 +1543,7 @@ class Guild(DiscordEntity, immortal = True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any` = `None`, Optional
+        default : `object` = `None`, Optional
             The value what is returned when no emoji was found. Defaults to `None`.
         
         Returns
@@ -1623,7 +1623,7 @@ class Guild(DiscordEntity, immortal = True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any` = `None`, Optional
+        default : `object` = `None`, Optional
             The value what is returned when no emoji was found. Defaults to `None`.
         
         Returns
@@ -1645,7 +1645,7 @@ class Guild(DiscordEntity, immortal = True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any` = `None`, Optional
+        default : `object` = `None`, Optional
             The value what is returned when no emoji was found. Defaults to `None`.
         
         Returns
@@ -1765,7 +1765,7 @@ class Guild(DiscordEntity, immortal = True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any` = `None`, Optional
+        default : `object` = `None`, Optional
             The value what is returned when no channel was found. Defaults to `None`.
         
         Returns
@@ -1794,7 +1794,7 @@ class Guild(DiscordEntity, immortal = True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any` = `None`, Optional
+        default : `object` = `None`, Optional
             The value what is returned when no channel was found. Defaults to `None`.
         
         Returns
@@ -1849,7 +1849,7 @@ class Guild(DiscordEntity, immortal = True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any` = `None`, Optional
+        default : `object` = `None`, Optional
             The value what is returned when no role was found. Defaults to `None`.
         
         Returns
@@ -1871,7 +1871,7 @@ class Guild(DiscordEntity, immortal = True):
         ----------
         name : `str`
             The name to search for.
-        default : `Any` = `None`, Optional
+        default : `object` = `None`, Optional
             The value what is returned when no role was found. Defaults to `None`.
         
         Returns
@@ -2044,12 +2044,12 @@ class Guild(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Guild data received from Discord.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `object`) items
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -2327,7 +2327,7 @@ class Guild(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Guild data received from Discord.
         """
         # ignoring 'roles'
@@ -2454,7 +2454,7 @@ class Guild(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Received guild data.
         """
         try:
@@ -2478,12 +2478,12 @@ class Guild(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `list` of (`dict` of (`str`, `Any`) items)
+        data : `list` of (`dict` of (`str`, `object`) items)
             Received emoji datas.
         
         Returns
         -------
-        changes : `list` of `tuple` (`int`, ``Emoji``, (`None`, `dict` of (`str`, `Any`) items)))
+        changes : `list` of `tuple` (`int`, ``Emoji``, (`None`, `dict` of (`str`, `object`) items)))
             The changes broken down for each changed emoji. Each element of the list is a tuple of 3 elements:
             
             +-------+-------------------+-----------------------------------------------+
@@ -2493,7 +2493,7 @@ class Guild(DiscordEntity, immortal = True):
             +-------+-------------------+-----------------------------------------------+
             | 1     | emoji             | ``Emoji``                                     |
             +-------+-------------------+-----------------------------------------------+
-            | 2     | old_attributes    | `None`, `dict` of (`str`, `Any`) items        |
+            | 2     | old_attributes    | `None`, `dict` of (`str`, `object`) items     |
             +-------+-------------------+-----------------------------------------------+
             
             Possible actions:
@@ -2526,7 +2526,7 @@ class Guild(DiscordEntity, immortal = True):
             +-------------------+-------------------------------+
             | require_colons    | `bool`                        |
             +-------------------+-------------------------------+
-            | roles_ids         | `None`, `tuple` of ``Role``   |
+            | roles_ids         | `None`, `tuple` of `int`      |
             +-------------------+-------------------------------+
         """
         emojis = self.emojis
@@ -2538,8 +2538,8 @@ class Guild(DiscordEntity, immortal = True):
             try:
                 emoji = emojis[emoji_id]
             except KeyError:
-                emoji = Emoji(emoji_data, self.id)
-                emojis[emoji_id] = emoji
+                emoji = Emoji.from_data(emoji_data, self.id)
+                emojis[emoji.id] = emoji
                 changes.append((EMOJI_UPDATE_CREATE, emoji, None),)
             else:
                 old_attributes = emoji._difference_update_attributes(emoji_data)
@@ -2564,28 +2564,17 @@ class Guild(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        emoji_datas : `list` of (`dict` of (`str`, `Any`) items)
+        emoji_datas : `list` of (`dict` of (`str`, `object`) items)
             Received emoji datas.
         """
         emojis = self.emojis
-        old_ids = set(emojis)
+        if emojis:
+            emoji_cache = [*emojis.values()]
+            emojis.clear()
         
         for emoji_data in emoji_datas:
-            emoji_id = int(emoji_data['id'])
-            try:
-                emoji = emojis[emoji_id]
-            except KeyError:
-                emoji = Emoji(emoji_data, self.id)
-                emojis[emoji_id] = emoji
-            else:
-                emoji._update_attributes(emoji_data)
-                old_ids.remove(emoji_id)
-        
-        for emoji_id in old_ids:
-            try:
-                del emojis[emoji_id]
-            except KeyError:
-                pass
+            emoji = Emoji.from_data(emoji_data, self.id)
+            emojis[emoji.id] = emoji
     
     
     def _update_stickers(self, data):
@@ -2594,12 +2583,12 @@ class Guild(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `list` of (`dict` of (`str`, `Any`) items)
+        data : `list` of (`dict` of (`str`, `object`) items)
             Received sticker datas.
         
         Returns
         -------
-        changes : `list` of `tuple` (`int`, ``Sticker``, (`None`, `dict` of (`str`, `Any`) items)))
+        changes : `list` of `tuple` (`int`, ``Sticker``, (`None`, `dict` of (`str`, `object`) items)))
             The changes broken down for each changed sticker. Each element of the list is a tuple of 3 elements:
             
             +-------+-------------------+-----------------------------------------------+
@@ -2609,7 +2598,7 @@ class Guild(DiscordEntity, immortal = True):
             +-------+-------------------+-----------------------------------------------+
             | 1     | sticker           | ``Sticker``                                   |
             +-------+-------------------+-----------------------------------------------+
-            | 2     | old_attributes    | `None`, `dict` of (`str`, `Any`) items      |
+            | 2     | old_attributes    | `None`, `dict` of (`str`, `object`) items     |
             +-------+-------------------+-----------------------------------------------+
             
             Possible actions:
@@ -2634,7 +2623,7 @@ class Guild(DiscordEntity, immortal = True):
             +=======================+===================================+
             | available             | `bool`                            |
             +-----------------------+-----------------------------------+
-            | description           | `None`, `str`                   |
+            | description           | `None`, `str`                     |
             +-----------------------+-----------------------------------+
             | name                  | `str`                             |
             +-----------------------+-----------------------------------+
@@ -2652,8 +2641,8 @@ class Guild(DiscordEntity, immortal = True):
             try:
                 sticker = stickers[sticker_id]
             except KeyError:
-                sticker = Sticker(sticker_data)
-                stickers[sticker_id] = sticker
+                sticker = Sticker.from_data(sticker_data)
+                stickers[sticker.id] = sticker
                 changes.append((STICKER_UPDATE_CREATE, sticker, None),)
             else:
                 old_attributes = sticker._difference_update_attributes(sticker_data)
@@ -2672,34 +2661,24 @@ class Guild(DiscordEntity, immortal = True):
         return changes
     
     
-    def _sync_stickers(self, data):
+    def _sync_stickers(self, sticker_datas):
         """
         Syncs the stickers of the guild.
         
         Parameters
         ----------
-        data : `list` of (`dict` of (`str`, `Any`) items)
+        sticker_datas : `list` of (`dict` of (`str`, `object`) items)
             Received sticker datas.
         """
         stickers = self.stickers
-        old_ids = set(stickers)
+        if stickers:
+            sticker_cache = [*stickers.values()]
+            stickers.clear()
         
-        for sticker_data in data:
-            sticker_id = int(sticker_data['id'])
-            try:
-                sticker = stickers[sticker_id]
-            except KeyError:
-                sticker = Sticker(sticker_data)
-                stickers[sticker_id] = sticker
-            else:
-                sticker._update_attributes(sticker_data)
-                old_ids.remove(sticker_id)
-        
-        for sticker_id in old_ids:
-            try:
-                del stickers[sticker_id]
-            except KeyError:
-                pass
+        for sticker_data in sticker_datas:
+            sticker = Sticker.from_data(sticker_data)
+            sticker[sticker.id] = sticker
+
     
     
     def _invalidate_permission_cache(self):

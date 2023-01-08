@@ -140,8 +140,8 @@ def test__Guild__sticker_counts():
     """
     Tests whether ``Guild.sticker_counts`` works as intended.
     """
-    sticker_0 = Sticker.precreate(202212200017, format = StickerFormat.png)
-    sticker_1 = Sticker.precreate(202212200018, format = StickerFormat.apng)
+    sticker_0 = Sticker.precreate(202212200017, sticker_format = StickerFormat.png)
+    sticker_1 = Sticker.precreate(202212200018, sticker_format = StickerFormat.apng)
     
     guild = Guild.precreate(202212200019)
     guild.stickers[sticker_0.id] = sticker_0

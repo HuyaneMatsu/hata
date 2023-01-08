@@ -8,6 +8,7 @@ from scarletio import BaseMethodDescriptor, export
 from ...bases import DiscordEntity, ICON_TYPE_NONE, IconSlot
 from ...core import APPLICATION_ID_TO_CLIENT, APPLICATIONS
 from ...http import urls as module_urls
+from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 from ...user import ZEROUSER
 
 from .constants import (
@@ -222,7 +223,7 @@ application_splash = IconSlot(
 )
 
 
-COMMON_CONSTRUCT_RELATIONS = {
+COMMON_CONSTRUCT_FIELDS = {
     'aliases': ('aliases', validate_aliases),
     'bot_public': ('bot_public', validate_bot_public),
     'bot_require_code_grant': ('bot_require_code_grant', validate_bot_require_code_grant),
@@ -254,69 +255,19 @@ COMMON_CONSTRUCT_RELATIONS = {
     'verify_key': ('verify_key', validate_verify_key),
 }
 
-PRECREATE_RELATIONS = {
-    **COMMON_CONSTRUCT_RELATIONS,
+PRECREATE_FIELDS = {
+    **COMMON_CONSTRUCT_FIELDS,
     'cover': ('cover', application_cover.validate_icon),
     'icon': ('icon', application_icon.validate_icon),
     'splash': ('splash', application_splash.validate_icon),
 }
 
-NEW_RELATIONS = {
-    **COMMON_CONSTRUCT_RELATIONS,
+NEW_FIELDS = {
+    **COMMON_CONSTRUCT_FIELDS,
     'cover': ('cover', partial_func(application_cover.validate_icon, allow_data = True)),
     'icon': ('icon', partial_func(application_icon.validate_icon, allow_data = True)),
     'splash': ('splash', partial_func(application_splash.validate_icon, allow_data = True)),
 }
-
-
-def process_application_constructor_parameters(keyword_parameters, field_relations):
-    """
-    Helpers function to process parameters passed to an ``Application`` constructor.
-    
-    Parameters
-    ----------
-    keyword_parameters : `dict` of (`str`, `object`) items
-        Keyword parameters passed to an application constructor.
-    
-    field_relations : `dict` of `tuple` (`str`, `callable`)
-        Field relations used for parameter name lookup.
-    
-    Returns
-    -------
-    processable : `list` of `tuple` (`str`, `object`)
-        Processed field names and their values that can be set by the constructor.
-    
-    Raises
-    ------
-    TypeError
-        - If a parameter's type is incorrect.
-        - Extra parameter(s).
-    ValueError
-        - If an parameter's value is incorrect.
-    """
-    processable = []
-    extra = None
-    
-    while keyword_parameters:
-        field_name, field_value = keyword_parameters.popitem() 
-        try:
-            attribute_name, validator = field_relations[field_name]
-        except KeyError:
-            if extra is None:
-                extra = {}
-            extra[field_name] = field_value
-            continue
-        
-        attribute_value = validator(field_value)
-        processable.append((attribute_name, attribute_value))
-        continue
-        
-    if (extra is not None):
-        raise TypeError(
-            f'Unused or unsettable keyword parameters: {extra!r}.'
-        )
-    
-    return processable
 
 
 @export
@@ -1514,14 +1465,14 @@ class Application(DiscordEntity, immortal = True):
             - If an parameter's value is incorrect.
         """
         if keyword_parameters:
-            processable = process_application_constructor_parameters(keyword_parameters, NEW_RELATIONS)
+            processed = process_precreate_parameters_and_raise_extra(keyword_parameters, NEW_FIELDS)
         else:
-            processable = None
+            processed = None
         
         self = cls._create_empty(0)
         
-        if (processable is not None):
-            for item in processable:
+        if (processed is not None):
+            for item in processed:
                 setattr(self, *item)
         
         return self
@@ -1654,9 +1605,9 @@ class Application(DiscordEntity, immortal = True):
         application_id = validate_id(application_id)
         
         if keyword_parameters:
-            processable = process_application_constructor_parameters(keyword_parameters, PRECREATE_RELATIONS)
+            processed = process_precreate_parameters_and_raise_extra(keyword_parameters, PRECREATE_FIELDS)
         else:
-            processable = None
+            processed = None
         
         try:
             self = APPLICATIONS[application_id]
@@ -1667,8 +1618,8 @@ class Application(DiscordEntity, immortal = True):
         else:
             update = self.partial
         
-        if update and (processable is not None):
-            for item in processable:
+        if update and (processed is not None):
+            for item in processed:
                 setattr(self, *item)
         
         return self
@@ -1794,14 +1745,14 @@ class Application(DiscordEntity, immortal = True):
             - If an parameter's value is incorrect.
         """
         if keyword_parameters:
-            processable = process_application_constructor_parameters(keyword_parameters, NEW_RELATIONS)
+            processed = process_precreate_parameters_and_raise_extra(keyword_parameters, NEW_FIELDS)
         else:
-            processable = None
+            processed = None
         
         new = self.copy()
         
-        if (processable is not None):
-            for item in processable:
+        if (processed is not None):
+            for item in processed:
                 setattr(new, *item)
         
         return new

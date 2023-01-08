@@ -9,11 +9,11 @@ def test__validate_id__0():
     
     Case: passing.
     """
-    id_ = 202211240043
+    application_id = 202211240043
     
     for input_value, expected_output in (
-        (id_, id_),
-        (str(id_), id_)
+        (application_id, application_id),
+        (str(application_id), application_id)
     ):
         output = validate_id(input_value)
         vampytest.assert_eq(output, expected_output)

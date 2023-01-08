@@ -5,12 +5,14 @@ from ..fields import put_id_into
 
 def test__put_id_into():
     """
-    Tests whether ``put_id_into`` is working as intended.
+    Tests whether ``put_id_into`` works as intended.
     """
-    for input_, defaults, expected_output in (
+    attachment_id = 202212310001
+    
+    for input_value, defaults, expected_output in (
         (0, False, {'id': None}),
         (0, True, {'id': None}),
-        (1, False, {'id': '1'}),
+        (attachment_id, False, {'id': str(attachment_id)}),
     ):
-        data = put_id_into(input_, {}, defaults)
+        data = put_id_into(input_value, {}, defaults)
         vampytest.assert_eq(data, expected_output)

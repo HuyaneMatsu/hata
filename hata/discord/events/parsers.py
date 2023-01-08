@@ -13,7 +13,11 @@ from ..core import (
     APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, AUTO_MODERATION_RULES, CHANNELS, CLIENTS, GUILDS, KOKORO,
     MESSAGES, ROLES, SCHEDULED_EVENTS, STAGES, USERS
 )
-from ..emoji import ReactionAddEvent, ReactionDeleteEvent, create_partial_emoji_from_data
+from ..emoji import ReactionAddEvent, ReactionDeleteEvent
+from ..emoji.reaction_events.fields import (
+    parse_emoji as parse_reaction_event_emoji, parse_message as parse_reaction_event_message,
+    parse_user as parse_reaction_event_user
+)
 from ..guild import (
     EMOJI_UPDATE_CREATE, EMOJI_UPDATE_DELETE, EMOJI_UPDATE_EDIT, Guild, GuildJoinRequest, GuildJoinRequestDeleteEvent,
     STICKER_UPDATE_CREATE, STICKER_UPDATE_DELETE, STICKER_UPDATE_EDIT, VOICE_STATE_JOIN, VOICE_STATE_LEAVE,
@@ -514,22 +518,18 @@ del MESSAGE_UPDATE__CAL_SC, \
 
 
 def MESSAGE_REACTION_ADD__CAL_SC(client, data):
-    message = Message._create_from_partial_data(data)
-    
-    user = create_partial_user_from_id(int(data['user_id']))
-    emoji = create_partial_emoji_from_data(data['emoji'])
+    message = parse_reaction_event_message(data)
+    emoji = parse_reaction_event_emoji(data)
+    user = parse_reaction_event_user(data)
     
     message._add_reaction(emoji, user)
     
-    event = ReactionAddEvent(message, emoji, user)
+    event = ReactionAddEvent.from_values(message, emoji, user)
     Task(client.events.reaction_add(client, event), KOKORO)
 
 
 def MESSAGE_REACTION_ADD__CAL_MC(client, data):
-    message = Message._create_from_partial_data(data)
-    
-    channel = message.channel
-    
+    channel = CHANNELS.get(int(data['channel_id']), None)
     if channel is None:
         clients = None
     else:
@@ -542,13 +542,13 @@ def MESSAGE_REACTION_ADD__CAL_MC(client, data):
             clients.close()
             return
     
-    user_id = int(data['user_id'])
-    user = create_partial_user_from_id(user_id)
-    emoji = create_partial_emoji_from_data(data['emoji'])
+    message = parse_reaction_event_message(data)
+    emoji = parse_reaction_event_emoji(data)
+    user = parse_reaction_event_user(data)
     
     message._add_reaction(emoji, user)
     
-    event = ReactionAddEvent(message, emoji, user)
+    event = ReactionAddEvent.from_values(message, emoji, user)
     if clients is None:
         event_handler = client.events.reaction_add
         if (event_handler is not DEFAULT_EVENT_HANDLER):
@@ -561,19 +561,17 @@ def MESSAGE_REACTION_ADD__CAL_MC(client, data):
 
 
 def MESSAGE_REACTION_ADD__OPT_SC(client, data):
-    message_id = int(data['message_id'])
-    message = MESSAGES.get(message_id, None)
+    message = MESSAGES.get(int(data['message_id']), None)
     if message is None:
         return
     
-    user_id = int(data['user_id'])
-    user = create_partial_user_from_id(user_id)
-    emoji = create_partial_emoji_from_data(data['emoji'])
+    emoji = parse_reaction_event_emoji(data)
+    user = parse_reaction_event_user(data)
     message._add_reaction(emoji, user)
 
+
 def MESSAGE_REACTION_ADD__OPT_MC(client, data):
-    message_id = int(data['message_id'])
-    message = MESSAGES.get(message_id, None)
+    message = MESSAGES.get(int(data['message_id']), None)
     if message is None:
         return
     
@@ -585,10 +583,10 @@ def MESSAGE_REACTION_ADD__OPT_MC(client, data):
     ) is not client:
         return
     
-    user_id = int(data['user_id'])
-    user = create_partial_user_from_id(user_id)
-    emoji = create_partial_emoji_from_data(data['emoji'])
+    emoji = parse_reaction_event_emoji(data)
+    user = parse_reaction_event_user(data)
     message._add_reaction(emoji, user)
+
 
 add_parser(
     'MESSAGE_REACTION_ADD',
@@ -621,9 +619,7 @@ def MESSAGE_REACTION_REMOVE_ALL__CAL_SC(client, data):
 
 
 def MESSAGE_REACTION_REMOVE_ALL__CAL_MC(client, data):
-    message = Message._create_from_partial_data(data)
-    
-    channel = message.channel
+    channel = CHANNELS.get(int(data['channel_id']), None)
     if channel is None:
         clients = None
     
@@ -636,6 +632,8 @@ def MESSAGE_REACTION_REMOVE_ALL__CAL_MC(client, data):
         if clients.send(None) is not client:
             clients.close()
             return
+    
+    message = parse_reaction_event_message(data)
     
     if message.partial:
         reactions = None
@@ -661,8 +659,7 @@ def MESSAGE_REACTION_REMOVE_ALL__CAL_MC(client, data):
 
 
 def MESSAGE_REACTION_REMOVE_ALL__OPT_SC(client, data):
-    message_id = int(data['message_id'])
-    message = MESSAGES.get(message_id, None)
+    message = MESSAGES.get(int(data['message_id']), None)
     if message is None:
         return
     
@@ -672,8 +669,7 @@ def MESSAGE_REACTION_REMOVE_ALL__OPT_SC(client, data):
 
 
 def MESSAGE_REACTION_REMOVE_ALL__OPT_MC(client, data):
-    message_id = int(data['message_id'])
-    message = MESSAGES.get(message_id, None)
+    message = MESSAGES.get(int(data['message_id']), None)
     if message is None:
         return
     
@@ -702,21 +698,18 @@ del MESSAGE_REACTION_REMOVE_ALL__CAL_SC, \
 
 
 def MESSAGE_REACTION_REMOVE__CAL_SC(client, data):
-    message = Message._create_from_partial_data(data)
-    
-    user = create_partial_user_from_id(int(data['user_id']))
-    emoji = create_partial_emoji_from_data(data['emoji'])
+    message = parse_reaction_event_message(data)
+    user = parse_reaction_event_user(data)
+    emoji = parse_reaction_event_emoji(data)
     
     message._remove_reaction(emoji, user)
     
-    event = ReactionDeleteEvent(message, emoji, user)
+    event = ReactionDeleteEvent.from_values(message, emoji, user)
     Task(client.events.reaction_delete(client, event), KOKORO)
 
 
 def MESSAGE_REACTION_REMOVE__CAL_MC(client, data):
-    message = Message._create_from_partial_data(data)
-    
-    channel = message.channel
+    channel = CHANNELS.get(int(data['channel_id']), None)
     if channel is None:
         clients = None
     
@@ -730,13 +723,13 @@ def MESSAGE_REACTION_REMOVE__CAL_MC(client, data):
             clients.close()
             return
     
-    user_id = int(data['user_id'])
-    user = create_partial_user_from_id(user_id)
-    emoji = create_partial_emoji_from_data(data['emoji'])
+    message = parse_reaction_event_message(data)
+    emoji = parse_reaction_event_emoji(data)
+    user = parse_reaction_event_user(data)
     
     message._remove_reaction(emoji, user)
     
-    event = ReactionDeleteEvent(message, emoji, user)
+    event = ReactionDeleteEvent.from_values(message, emoji, user)
     
     if clients is None:
         event_handler = client.events.reaction_delete
@@ -750,19 +743,17 @@ def MESSAGE_REACTION_REMOVE__CAL_MC(client, data):
 
 
 def MESSAGE_REACTION_REMOVE__OPT_SC(client, data):
-    message_id = int(data['message_id'])
-    message = MESSAGES.get(message_id, None)
+    message = MESSAGES.get(int(data['message_id']), None)
     if message is None:
         return
     
-    user_id = int(data['user_id'])
-    user = create_partial_user_from_id(user_id)
-    emoji = create_partial_emoji_from_data(data['emoji'])
+    emoji = parse_reaction_event_emoji(data)
+    user = parse_reaction_event_user(data)
     message._remove_reaction(emoji, user)
 
+
 def MESSAGE_REACTION_REMOVE__OPT_MC(client, data):
-    message_id = int(data['message_id'])
-    message = MESSAGES.get(message_id, None)
+    message = MESSAGES.get(int(data['message_id']), None)
     if message is None:
         return
     
@@ -774,10 +765,10 @@ def MESSAGE_REACTION_REMOVE__OPT_MC(client, data):
     ) is not client:
         return
     
-    user_id = int(data['user_id'])
-    user = create_partial_user_from_id(user_id)
-    emoji = create_partial_emoji_from_data(data['emoji'])
+    emoji = parse_reaction_event_emoji(data)
+    user = parse_reaction_event_user(data)
     message._remove_reaction(emoji, user)
+
 
 add_parser(
     'MESSAGE_REACTION_REMOVE',
@@ -792,9 +783,8 @@ del MESSAGE_REACTION_REMOVE__CAL_SC, \
 
 
 def MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC(client, data):
-    message = Message._create_from_partial_data(data)
-    
-    emoji = create_partial_emoji_from_data(data['emoji'])
+    message = parse_reaction_event_message(data)
+    emoji = parse_reaction_event_emoji(data)
     
     if message.partial:
         users = None
@@ -808,9 +798,7 @@ def MESSAGE_REACTION_REMOVE_EMOJI__CAL_SC(client, data):
 
 
 def MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC(client, data):
-    message = Message._create_from_partial_data(data)
-    
-    channel = message.channel
+    channel = CHANNELS.get(int(data['channel_id']), None)
     if (channel is None):
         clients = None
     
@@ -824,7 +812,8 @@ def MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC(client, data):
             clients.close()
             return
     
-    emoji = create_partial_emoji_from_data(data['emoji'])
+    message = parse_reaction_event_message(data)
+    emoji = parse_reaction_event_emoji(data)
     
     if message.partial:
         users = None
@@ -848,17 +837,16 @@ def MESSAGE_REACTION_REMOVE_EMOJI__CAL_MC(client, data):
 
 
 def MESSAGE_REACTION_REMOVE_EMOJI__OPT_SC(client, data):
-    message_id = int(data['message_id'])
-    message = MESSAGES.get(message_id, None)
+    message = MESSAGES.get(int(data['message_id']), None)
     if message is None:
         return
     
-    emoji = create_partial_emoji_from_data(data['emoji'])
+    emoji = parse_reaction_event_emoji(data)
     message._remove_reaction_emoji(emoji)
 
+
 def MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC(client, data):
-    message_id = int(data['message_id'])
-    message = MESSAGES.get(message_id, None)
+    message = MESSAGES.get(int(data['message_id']), None)
     if message is None:
         return
     
@@ -870,8 +858,9 @@ def MESSAGE_REACTION_REMOVE_EMOJI__OPT_MC(client, data):
     ) is not client:
         return
     
-    emoji = create_partial_emoji_from_data(data['emoji'])
+    emoji = parse_reaction_event_emoji(data)
     message._remove_reaction_emoji(emoji)
+
 
 add_parser(
     'MESSAGE_REACTION_REMOVE_EMOJI',

@@ -62,7 +62,7 @@ class ClientCompoundGuildEndpoints(Compound):
         guild_id = get_guild_id(guild)
         
         guild_preview_data = await self.http.guild_preview_get(guild_id)
-        return GuildPreview(guild_preview_data)
+        return GuildPreview.from_data(guild_preview_data)
     
     
     async def guild_user_delete(self, guild, user, *, reason = None):

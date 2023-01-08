@@ -92,9 +92,9 @@ def test__StickerCounts__from_stickers__1():
     static_ids = (202212190035, 202212190036, 202212190037)
     
     stickers = [
-        *(Sticker.precreate(sticker_id, format = StickerFormat.apng) for sticker_id in animated_ids),
-        *(Sticker.precreate(sticker_id, format = StickerFormat.lottie) for sticker_id in lottie_ids),
-        *(Sticker.precreate(sticker_id, format = StickerFormat.png) for sticker_id in static_ids),
+        *(Sticker.precreate(sticker_id, sticker_format = StickerFormat.apng) for sticker_id in animated_ids),
+        *(Sticker.precreate(sticker_id, sticker_format = StickerFormat.lottie) for sticker_id in lottie_ids),
+        *(Sticker.precreate(sticker_id, sticker_format = StickerFormat.png) for sticker_id in static_ids),
     ]
     
     sticker_counts = StickerCounts.from_stickers(stickers)

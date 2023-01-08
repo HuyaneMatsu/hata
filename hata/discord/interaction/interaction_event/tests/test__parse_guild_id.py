@@ -7,10 +7,12 @@ def test__parse_guild_id():
     """
     Tests whether ``parse_guild_id`` works as intended.
     """
+    guild_id = 202301040000
+    
     for input_data, expected_output in (
         ({}, 0),
         ({'guild_id': None}, 0),
-        ({'guild_id': '1'}, 1),
+        ({'guild_id': str(guild_id)}, guild_id),
     ):
         output = parse_guild_id(input_data)
         vampytest.assert_eq(output, expected_output)

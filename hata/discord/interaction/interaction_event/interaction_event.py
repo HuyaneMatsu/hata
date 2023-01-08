@@ -9,6 +9,7 @@ from ...core import (
 )
 from ...message import Message
 from ...permission import Permission
+from ...precreate_helpers import process_precreate_parameters, raise_extra
 from ...user import ClientUserBase, ZEROUSER
 from ...utils import now_as_id
 
@@ -504,7 +505,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         interaction_id = validate_id(interaction_id)
         
         if keyword_parameters:
-            processable = []
+            processed = []
             
             # interaction & interaction_type
             try:
@@ -513,47 +514,29 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
                 interaction_type = InteractionType.none
             else:
                 interaction_type = validate_type(interaction_type)
-                processable.append(('type', interaction_type))
+                processed.append(('type', interaction_type))
             
             try:
                 interaction = keyword_parameters.pop('interaction')
             except KeyError:
                 if interaction_type is not InteractionType.none:
                     interaction = interaction_type.metadata_type()
-                    processable.append(('interaction', interaction))
+                    processed.append(('interaction', interaction))
             else:
                 interaction = validate_interaction(interaction, interaction_type)
-                processable.append(('interaction', interaction))
+                processed.append(('interaction', interaction))
             
             
-            extra = None
-            
-            while keyword_parameters:
-                field_name, field_value = keyword_parameters.popitem() 
-                try:
-                    attribute_name, validator = PRECREATE_FIELDS[field_name]
-                except KeyError:
-                    if extra is None:
-                        extra = {}
-                    extra[field_name] = field_value
-                    continue
-                
-                attribute_value = validator(field_value)
-                processable.append((attribute_name, attribute_value))
-                continue
-                
-            if (extra is not None):
-                raise TypeError(
-                    f'Unused or unsettable keyword parameters: {extra!r}.'
-                )
+            extra = process_precreate_parameters(keyword_parameters, PRECREATE_FIELDS, processed)
+            raise_extra(extra)
         
         else:
-            processable = None
+            processed = None
         
         self = cls._create_empty(interaction_id)
         
-        if (processable is not None):
-            for item in processable:
+        if (processed is not None):
+            for item in processed:
                 setattr(self, *item)
         
         return self

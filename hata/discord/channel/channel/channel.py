@@ -301,16 +301,16 @@ class Channel(DiscordEntity, immortal = True):
         
         channel_id = self.id
         if channel_id:
-            repr_parts.append(' id=')
+            repr_parts.append(' id = ')
             repr_parts.append(repr(channel_id))
             repr_parts.append(',')
         
         metadata = self.metadata
-        repr_parts.append(' name=')
+        repr_parts.append(' name = ')
         repr_parts.append(repr(metadata._get_processed_name()))
         
         type_ = self.type
-        repr_parts.append(' type=')
+        repr_parts.append(' type = ')
         repr_parts.append(type_.name)
         repr_parts.append('~')
         repr_parts.append(repr(type_.value))

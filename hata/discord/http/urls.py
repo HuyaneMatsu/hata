@@ -502,7 +502,7 @@ def emoji_url(emoji):
     -------
     url : `None`, `str`
     """
-    if emoji.unicode is not None:
+    if not emoji.is_custom_emoji():
         return None
     
     if emoji.animated:
@@ -513,7 +513,7 @@ def emoji_url(emoji):
     return f'{CDN_ENDPOINT}/emojis/{emoji.id}.{ext}'
 
 
-def emoji_url_as(emoji, ext=None, size=None):
+def emoji_url_as(emoji, ext = None, size = None):
     """
     Returns the emoji's image's url. If the emoji is unicode emoji, then returns `None` instead.
     
@@ -1290,15 +1290,15 @@ def sticker_url_as(sticker, size=None, preview=False):
     ValueError
         If `size` was not passed as any of the expected values.
     """
-    format = sticker.format
-    if format is StickerFormat.none:
+    sticker_format = sticker.format
+    if sticker_format is StickerFormat.none:
         return None
     
     # Resolve size
     if size is None:
         end = ''
     else:
-        if format is StickerFormat.lottie:
+        if sticker_format is StickerFormat.lottie:
             end = ''
         else:
             if size in VALID_ICON_SIZES:
@@ -1308,10 +1308,10 @@ def sticker_url_as(sticker, size=None, preview=False):
     
     # Resolve preview
     if preview:
-        if format is StickerFormat.apng:
+        if sticker_format is StickerFormat.apng:
             end = f'{end}{"&" if end else "?"}passthrough=false'
     
-    return f'{CDN_ENDPOINT}/stickers/{sticker.id}.{format.extension}{end}'
+    return f'{CDN_ENDPOINT}/stickers/{sticker.id}.{sticker_format.extension}{end}'
 
 
 def sticker_pack_banner(sticker_pack):
@@ -1324,7 +1324,9 @@ def sticker_pack_banner(sticker_pack):
     -------
     url : `None`, `str`
     """
-    return f'{CDN_ENDPOINT}/app-assets/710982414301790216/store/{sticker_pack.banner_id}.png'
+    banner_id = sticker_pack.banner_id
+    if banner_id:
+        return f'{CDN_ENDPOINT}/app-assets/710982414301790216/store/{banner_id}.png'
 
 
 def sticker_pack_banner_as(sticker_pack, ext=None, size=None):

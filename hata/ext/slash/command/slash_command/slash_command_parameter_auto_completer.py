@@ -11,7 +11,7 @@ from .....discord.interaction import InteractionEvent
 from ...converters import SlashCommandParameterConverter, get_application_command_parameter_auto_completer_converters
 
 from ...exceptions import _register_exception_handler, handle_command_exception, test_exception_handler
-from ...responding import process_auto_completer_coroutine
+from ...responding import process_command_coroutine
 from ...utils import raw_name_to_display
 
 from ..command_base_application_command.constants import APPLICATION_COMMAND_FUNCTION_DEEPNESS
@@ -259,9 +259,10 @@ class SlashCommandParameterAutoCompleter(RichAttributeErrorBaseType):
         auto_completer_coroutine = self._command_function(*parameters)
         
         try:
-            await process_auto_completer_coroutine(
+            await process_command_coroutine(
                 client,
                 interaction_event,
+                None,
                 auto_completer_coroutine,
             )
         except GeneratorExit:

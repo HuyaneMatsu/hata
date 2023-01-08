@@ -3,6 +3,8 @@ __all__ = (
     'NsfwLevel', 'VerificationLevel'
 )
 
+from scarletio import export
+
 from ..bases import Preinstance as P, PreinstancedBase
 
 
@@ -102,6 +104,7 @@ class ContentFilterLevel(PreinstancedBase):
 
 
 
+@export
 class GuildFeature(PreinstancedBase):
     """
     Represents a ``Guild``'s feature.

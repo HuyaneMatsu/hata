@@ -1,23 +1,19 @@
 from .emoji import *
-from .emoji_all_pattern import *
-from .event_types import *
-from .reaction_mapping import *
-from .reaction_mapping_line import *
-from .unicode_type import *
-from .unicodes import *
-from .utils import *
+from .parsing import *
+from .reaction import *
+from .reaction_events import *
+from .unicode import *
+
 
 __all__ = (
     *emoji.__all__,
-    *emoji_all_pattern.__all__,
-    *event_types.__all__,
-    *reaction_mapping.__all__,
-    *reaction_mapping_line.__all__,
-    *unicode_type.__all__,
-    *unicodes.__all__,
-    *utils.__all__,
+    *parsing.__all__,
+    *reaction.__all__,
+    *reaction_events.__all__,
+    *unicode.__all__,
 )
 
+# Deprecations
 
 from ...utils.module_deprecation import deprecated_import
 

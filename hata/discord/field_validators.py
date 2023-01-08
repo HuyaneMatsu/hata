@@ -421,16 +421,21 @@ def nullable_preinstanced_validator_factory(field_name, preinstanced_type, defau
     return validator
 
 
-def preinstanced_array_validator_factory(field_name, preinstanced_type):
+def preinstanced_array_validator_factory(field_name, preinstanced_type, *, include = None):
     """
-    Returns a new preinstanced array validator.
+    Returns a preinstanced array validator.
     
     Parameters
     ----------
     field_name : `str`
         The field's name.
+    
     preinstanced_type : ``PreinstancedBase``
         The accepted preinstanced type.
+    
+    include : `None`, `str` = `None`, Optional (Keyword only)
+        The type's name to include `preinstanced_type` with.
+        Should be used when `preinstanced_type` cannot be resolved initially.
     
     Returns
     -------
@@ -499,6 +504,12 @@ def preinstanced_array_validator_factory(field_name, preinstanced_type):
             return None
         
         return tuple(sorted(unique_elements))
+    
+    if (include is not None):
+        @include_with_callback(include)
+        def include_object_type(value):
+            nonlocal preinstanced_type
+            preinstanced_type = value
     
     return validator
 
@@ -1387,7 +1398,7 @@ def default_entity_validator(field_name, entity_type, default_value):
 
 
 
-def entity_validator_factory(field_name, entity_type):
+def entity_validator_factory(field_name, entity_type, *, include = None):
     """
     Returns an entity validator.
     
@@ -1397,6 +1408,8 @@ def entity_validator_factory(field_name, entity_type):
         The field's name.
     entity_type : `type`
         The allowed entity type.
+    include : `None`, `str` = `None`, Optional (Keyword only)
+        The object's name to include `entity_type` with. Should be used when `entity_type` cannot be resolved initially.
     
     Returns
     -------
@@ -1430,6 +1443,13 @@ def entity_validator_factory(field_name, entity_type):
         
         return entity
     
+    
+    if (include is not None):
+        @include_with_callback(include)
+        def include_object_type(value):
+            nonlocal entity_type
+            entity_type = value
+    
     return validator
 
 
@@ -1446,7 +1466,7 @@ def nullable_object_array_validator_factory(field_name, object_type, *, include 
         The allowed object type.
     
     include : `None`, `str` = `None`, Optional (Keyword only)
-        The object's name to include `entity_type` with. Should be used when `entity_type` cannot be resolved initially.
+        The object's name to include `object_type` with. Should be used when `entity_type` cannot be resolved initially.
     
     Returns
     -------

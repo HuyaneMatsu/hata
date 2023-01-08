@@ -94,24 +94,24 @@ class ForumTag(DiscordEntity, immortal=True):
         # id_
         id_ = self.id
         if id_:
-            repr_parts.append(' id=')
+            repr_parts.append(' id = ')
             repr_parts.append(repr(id_))
         else:
             repr_parts.append(' partial')
         
         # name
-        repr_parts.append(' name=')
+        repr_parts.append(' name = ')
         repr_parts.append(repr(self.name))
         
         # emoji:
         emoji = self.emoji
         if (emoji is not None):
-            repr_parts.append(' emoji=')
+            repr_parts.append(' emoji = ')
             repr_parts.append(repr(emoji))
         
         # moderated
         if self.moderated:
-            repr_parts.append(' moderated=True')
+            repr_parts.append(' moderated = True')
         
         repr_parts.append('>')
         return ''.join(repr_parts)

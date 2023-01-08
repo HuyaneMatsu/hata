@@ -16,6 +16,7 @@ from .response_modifier import (
 INTERACTION_TYPE_APPLICATION_COMMAND = InteractionType.application_command
 INTERACTION_TYPE_MESSAGE_COMPONENT = InteractionType.message_component
 INTERACTION_TYPE_FORM_SUBMIT = InteractionType.form_submit
+INTERACTION_TYPE_AUTOCOMPLETE = InteractionType.application_command_autocomplete
 
 
 def is_only_embed(maybe_embeds):
@@ -65,6 +66,11 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
     request_coroutine : `None`, `CoroutineType`
     """
     interaction_event_type = interaction_event.type
+    
+    # unanswered auto completions are a special case, where we want to auto complete if the event is unanswered.
+    if (interaction_event_type is INTERACTION_TYPE_AUTOCOMPLETE) and interaction_event.is_unanswered():
+        yield client.interaction_application_command_autocomplete(interaction_event, response)
+        return
     
     if (response is None):
         if interaction_event.is_unanswered():
@@ -650,6 +656,24 @@ class InteractionResponse:
             
             return
         
+        elif (interaction_event_type is INTERACTION_TYPE_AUTOCOMPLETE):
+            if interaction_event.is_unanswered():
+                yield client.interaction_application_command_autocomplete(interaction_event, None)
+            
+            response_parameters = self._get_response_parameters((
+                'allowed_mentions', 'content', 'components', 'embed', 'file', 'show_for_invoking_user_only',
+                'suppress_embeds', 'tts'
+            ))
+            if (response_modifier is not None):
+                response_modifier.apply_to_creation(response_parameters)
+            
+            yield client.interaction_followup_message_create(
+                interaction_event,
+                **response_parameters,
+            )
+            
+            return
+        
         # no more cases
     
     def __repr__(self):
@@ -768,27 +792,3 @@ class InteractionAbortedError(BaseException):
     def __repr__(self):
         """Returns the exception's representation."""
         return f'{self.__class__.__name__}({self.response!r})'
-
-
-async def process_auto_completer_coroutine(client, interaction_event, coroutine):
-    """
-    Processes a slasher application command coroutine.
-    
-    This function is a coroutine.
-    
-    Parameters
-    ----------
-    client : ``Client``
-        The client who will send the responses if applicable.
-    interaction_event : ``InteractionEvent``
-        The respective event to respond on.
-    coroutine : `Coroutine`
-        A coroutine which will produce command response.
-    
-    Raises
-    ------
-    BaseException
-        Any exception raised by `CoroutineType`.
-    """
-    response = await coroutine
-    await client.interaction_application_command_autocomplete(interaction_event, response)

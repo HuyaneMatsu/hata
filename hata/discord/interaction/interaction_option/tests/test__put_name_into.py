@@ -5,7 +5,7 @@ from ..fields import put_name_into
 
 def test__put_name_into():
     """
-    Tests whether ``put_name_into`` is working as intended.
+    Tests whether ``put_name_into`` works as intended.
     """
     for input_, defaults, expected_output in (
         ('', False, {'name': ''}),

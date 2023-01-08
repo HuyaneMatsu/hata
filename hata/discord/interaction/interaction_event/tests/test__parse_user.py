@@ -1,6 +1,6 @@
 import vampytest
 
-from ....user import User, GuildProfile, ClientUserBase
+from ....user import GuildProfile, ClientUserBase
 
 from ..fields import parse_user
 

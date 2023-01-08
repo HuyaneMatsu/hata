@@ -1,0 +1,30 @@
+import vampytest
+
+from ..fields import validate_require_colons
+
+
+def test__validate_require_colons__0():
+    """
+    Tests whether `validate_require_colons` works as intended.
+    
+    Case: passing.
+    """
+    for input_value, expected_output in (
+        (True, True),
+        (False, False)
+    ):
+        output = validate_require_colons(input_value)
+        vampytest.assert_eq(output, expected_output)
+
+
+def test__validate_require_colons__1():
+    """
+    Tests whether `validate_require_colons` works as intended.
+    
+    Case: `TypeError`.
+    """
+    for input_value in (
+        12.6,
+    ):
+        with vampytest.assert_raises(TypeError):
+            validate_require_colons(input_value)

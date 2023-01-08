@@ -912,8 +912,9 @@ class ClientCompoundInteractionEndpoints(Compound):
             return
         
         async with InteractionResponseContext(interaction_event, False, show_for_invoking_user_only):
-            message_data = await self.http.interaction_followup_message_create(application_id, interaction_event.id,
-                interaction_event.token, message_data)
+            message_data = await self.http.interaction_followup_message_create(
+                application_id, interaction_event.id, interaction_event.token, message_data
+            )
         
         message = interaction_event.channel._create_new_message(message_data)
         try_resolve_interaction_message(message, interaction_event)

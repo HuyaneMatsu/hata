@@ -2,6 +2,7 @@ __all__ = ('EULA', )
 
 from ...bases import DiscordEntity
 from ...core import EULAS
+from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .fields import (
     parse_content, parse_id, parse_name, put_content_into, put_id_into, put_name_into, validate_content, validate_id,
@@ -194,30 +195,9 @@ class EULA(DiscordEntity, immortal = True):
         eula_id = validate_id(eula_id)
 
         if keyword_parameters:
-            processable = []
-            extra = None
-            
-            while keyword_parameters:
-                field_name, field_value = keyword_parameters.popitem() 
-                try:
-                    attribute_name, validator = PRECREATE_FIELDS[field_name]
-                except KeyError:
-                    if extra is None:
-                        extra = {}
-                    extra[field_name] = field_value
-                    continue
-                
-                attribute_value = validator(field_value)
-                processable.append((attribute_name, attribute_value))
-                continue
-                
-            if (extra is not None):
-                raise TypeError(
-                    f'Unused or unsettable keyword parameters: {extra!r}.'
-                )
-        
+            processed = process_precreate_parameters_and_raise_extra(keyword_parameters, PRECREATE_FIELDS)
         else:
-            processable = None
+            processed = None
         
         try:
             self = EULAS[eula_id]
@@ -225,8 +205,8 @@ class EULA(DiscordEntity, immortal = True):
             self = cls._create_empty(eula_id)
             EULAS[eula_id] = self
         
-        if (processable is not None):
-            for item in processable:
+        if (processed is not None):
+            for item in processed:
                 setattr(self, *item)
         
         return self

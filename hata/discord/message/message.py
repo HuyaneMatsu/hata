@@ -740,7 +740,7 @@ class Message(DiscordEntity, immortal = True):
             _set_message_field(
                 self,
                 MESSAGE_FIELD_KEY_STICKERS,
-                tuple(Sticker._create_partial(sticker_data) for sticker_data in sticker_datas),
+                tuple(Sticker.from_partial_data(sticker_data) for sticker_data in sticker_datas),
             )
         
         

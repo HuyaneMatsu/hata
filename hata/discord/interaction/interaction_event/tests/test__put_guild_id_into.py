@@ -5,12 +5,14 @@ from ..fields import put_guild_id_into
 
 def test__put_guild_id_into():
     """
-    Tests whether ``put_guild_id_into`` is working as intended.
+    Tests whether ``put_guild_id_into`` works as intended.
     """
-    for input_, defaults, expected_output in (
+    guild_id = 202301040002
+    
+    for input_value, defaults, expected_output in (
         (0, False, {}),
         (0, True, {'guild_id': None}),
-        (1, False, {'guild_id': '1'}),
+        (guild_id, False, {'guild_id': str(guild_id)}),
     ):
-        data = put_guild_id_into(input_, {}, defaults)
-        vampytest.assert_eq(data, expected_output)
+        output = put_guild_id_into(input_value, {}, defaults)
+        vampytest.assert_eq(output, expected_output)

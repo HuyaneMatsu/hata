@@ -445,7 +445,7 @@ class ClientCompoundGuildEndpoints(Compound):
         self, name, *, icon=None, roles=None, channels=None, afk_channel_id=None, system_channel_id=None,
         afk_timeout = None, verification_level=VerificationLevel.medium,
         message_notification=MessageNotificationLevel.only_mentions, content_filter=ContentFilterLevel.disabled,
-        boost_progress_bar_enabled=None
+        boost_progress_bar_enabled=None, safety_alerts_channel_id = None
     ):
         """
         Creates a guild with the given parameter. Bot accounts can create guilds only when they have less than 10.
@@ -479,6 +479,8 @@ class ClientCompoundGuildEndpoints(Compound):
             The content filter level of the guild.
         boost_progress_bar_enabled : `None`, `bool` = `None`, Optional (Keyword only)
             Whether the guild has the boost progress bar should be enabled.
+        safety_alerts_channel_id : `None`, `int`, ``Channel`` = `None`, Optional (Keyword only)
+            The channel where safety alerts are sent by Discord.
         
         Returns
         -------
@@ -608,6 +610,17 @@ class ClientCompoundGuildEndpoints(Compound):
                     )
             
             data['afk_channel_id'] = afk_channel_id
+        
+        
+        if (safety_alerts_channel_id is not None):
+            if __debug__:
+                if not isinstance(safety_alerts_channel_id, int):
+                    raise AssertionError(
+                        f'`safety_alerts_channel_id` can be `int`, got {safety_alerts_channel_id.__class__.__name__}; {safety_alerts_channel_id!r}.'
+                    )
+            
+            data['safety_alerts_channel_id'] = safety_alerts_channel_id
+        
         
         if (system_channel_id is not None):
             if __debug__:
@@ -821,7 +834,7 @@ class ClientCompoundGuildEndpoints(Compound):
         afk_channel = ..., system_channel = ..., rules_channel = ..., public_updates_channel = ..., owner=...,
         afk_timeout = ..., verification_level=..., content_filter=..., message_notification=..., description = ...,
         preferred_locale=..., system_channel_flags=..., add_feature=..., remove_feature=...,
-        boost_progress_bar_enabled=..., reason = None
+        boost_progress_bar_enabled=..., safety_alerts_channel = ..., reason = None
     ):
         """
         Edits the guild with the given parameters.
@@ -884,39 +897,15 @@ class ClientCompoundGuildEndpoints(Compound):
             Guild feature(s) to remove from the guild's.
         boost_progress_bar_enabled : `bool`, Optional (Keyword only)
             Whether the guild has the boost progress bar should be enabled.
+        safety_alerts_channel : `None`, ``Channel``, `int`, Optional (Keyword only)
+            The new safety alerts channel of the guild. You can remove the current one by passing is as `None`.
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the guild's audit logs.
         
         Raises
         ------
         TypeError
-            - If `guild` was not given neither as ``Guild``, `str`.
-            - If `icon`, `invite_splash`, `discovery_splash`, `banner` is neither `None`, `bytes-like`.
-            - If `add_feature`, `remove_feature` was not given neither as `str`, ``GuildFeature``,
-                `iterable` of `str`, ``GuildFeature``-s.
-            - If `afk_channel` was given, but not as `None`, ``Channel``, neither as `int`.
-            - If `system_channel`, `rules_channel`, `public_updates_channel` was given, but not as `None`,
-                ``Channel``, neither as `int`.
-            - If `owner` was not given neither as ``ClientUserBase``, `int`.
-            - If `verification_level` was not given neither as ``VerificationLevel``, `int`.
-            - If `content_filter` was not given neither as ``ContentFilterLevel``, `int`.
-            - If `description` was not given either as `None`, `str`.
-            - If `preferred_locale` was not given as ``Locale``, `str`.
-        AssertionError
-            - If `icon`, `invite_splash`, `discovery_splash`, `banner` was passed as `bytes-like`, but it's format
-                is not any of the expected formats.
-            - If `banner` was given meanwhile the guild has no `BANNER` feature.
-            - If `rules_channel`, `preferred_locale`, `public_updates_channel` was passed meanwhile
-                the guild is not Community guild.
-            - If `owner` was passed meanwhile the client is not the owner of the guild.
-            - If `afk_timeout` was passed and not as one of: `60, 300, 900, 1800, 3600`.
-            - If `name` is shorter than `2` or longer than `100` characters.
-            - If `discovery_splash` was given meanwhile the guild is not discoverable.
-            - If `invite_splash` was passed meanwhile the guild has no `INVITE_SPLASH` feature.
-            - If `name` was not given as `str`.
-            - If `afk_timeout` was not given as `int`.
-            - If `system_channel_flags` was not given as `SystemChannelFlag`, `int`.
-            - If `boost_progress_bar_enabled` was not given as `bool`.
+            - If a parameter's type is invalid.
         ConnectionError
             No internet connection.
         DiscordException
@@ -1052,6 +1041,30 @@ class ClientCompoundGuildEndpoints(Compound):
                 )
             
             data['afk_channel_id'] = afk_channel_id
+        
+        
+        if (safety_alerts_channel is not ...):
+            while True:
+                if safety_alerts_channel is None:
+                    safety_alerts_channel_id = None
+                    break
+                
+                elif isinstance(safety_alerts_channel, Channel):
+                    if safety_alerts_channel.is_guild_voice() or safety_alerts_channel.partial:
+                        safety_alerts_channel_id = safety_alerts_channel.id
+                        break
+                
+                else:
+                    safety_alerts_channel_id = maybe_snowflake(safety_alerts_channel)
+                    if safety_alerts_channel_id is not None:
+                        break
+                
+                raise TypeError(
+                    f'`safety_alerts_channel` can be `None`, guild voice channel, `int` , got '
+                    f'{safety_alerts_channel.__class__.__name__}; {safety_alerts_channel!r}.'
+                )
+            
+            data['safety_alerts_channel_id'] = safety_alerts_channel_id
         
         
         if (system_channel is not ...):

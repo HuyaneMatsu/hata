@@ -644,6 +644,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-------------------------------+-------------------------------+
         | rules_channel_id              | `int`                         |
         +-------------------------------+-------------------------------+
+        | safety_alerts_channel_id      | `int`                         |
+        +-------------------------------+-------------------------------+
         | system_channel_id             | `int`                         |
         +-------------------------------+-------------------------------+
         | system_channel_flags          | ``SystemChannelFlag``         |

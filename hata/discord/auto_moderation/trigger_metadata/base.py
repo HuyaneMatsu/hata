@@ -126,6 +126,27 @@ class AutoModerationRuleTriggerMetadataBase(RichAttributeErrorBaseType):
         keywords : `None`, `tuple` of `str`
         """
     )
+    mention_limit = PlaceHolder(
+        0,
+        """
+        The amount of mentions in a message after the rule is triggered.
+        
+        Returns
+        -------
+        mention_limit : `int`
+        """
+    )
+    
+    raid_protection = PlaceHolder(
+        False,
+        """
+        Whether mention raid protection is enabled.
+        
+        Returns
+        -------
+        raid_protection : `bool`
+        """
+    )
     
     
     regex_patterns = PlaceHolder(
@@ -140,16 +161,6 @@ class AutoModerationRuleTriggerMetadataBase(RichAttributeErrorBaseType):
     )
     
     
-    mention_limit = PlaceHolder(
-        0,
-        """
-        The amount of mentions in a message after the rule is triggered.
-        
-        Returns
-        -------
-        mention_limit : `int`
-        """
-    )
     
     # ---- Extra utility ----
     

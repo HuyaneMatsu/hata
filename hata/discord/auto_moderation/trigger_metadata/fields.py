@@ -1,13 +1,15 @@
 __all__ = ()
 
 from ...field_parsers import (
-    int_parser_factory, nullable_string_array_parser_factory, preinstanced_array_parser_factory
+    bool_parser_factory, int_parser_factory, nullable_string_array_parser_factory, preinstanced_array_parser_factory
 )
 from ...field_putters import (
-    int_putter_factory, nullable_string_array_optional_putter_factory, preinstanced_array_putter_factory
+    bool_optional_putter_factory, int_putter_factory, nullable_string_array_optional_putter_factory,
+    preinstanced_array_putter_factory
 )
 from ...field_validators import (
-    int_conditional_validator_factory, nullable_string_array_validator_factory, preinstanced_array_validator_factory
+    bool_validator_factory, int_conditional_validator_factory, nullable_string_array_validator_factory,
+    preinstanced_array_validator_factory
 )
 
 from .constants import AUTO_MODERATION_TRIGGER_MENTION_LIMIT_MAX
@@ -44,6 +46,12 @@ validate_mention_limit = int_conditional_validator_factory(
     ),
     f'>= {0} and <= {AUTO_MODERATION_TRIGGER_MENTION_LIMIT_MAX},'
 )
+
+# raid_protection
+
+parse_raid_protection = bool_parser_factory('mention_raid_protection_enabled', False)
+put_raid_protection_into = bool_optional_putter_factory('mention_raid_protection_enabled', False)
+validate_raid_protection = bool_validator_factory('raid_protection')
 
 # regex_patterns
 

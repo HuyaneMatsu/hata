@@ -1,9 +1,20 @@
-## 1.3.19 *\[2023-01-??\]*
+## 1.3.19 *\[2023-01-15\]*
 
 #### Improvements
 
+- Add `Guild.safety_alerts_channel`.
+- Add `Guild.safety_alerts_channel_id`.
 - Add `RoleManagerType.application_role_connection`.
 - Add `RoleManagerMetadataApplicationRoleConnection`.
+- Add `safety_alerts_channel_id` audit log converter.
+- Add `AutoModerationRuleTriggerMetadataBase.raid_protection`.
+- Add `safety_alerts_channel` parameter to `Client.guild_edit`.
+- Add `safety_alerts_channel_id` parameter to `Guild.precreate`.
+- Add `safety_alerts_channel_id` parameter to `Client.guild_create`.
+
+#### Bug Fixes
+
+- `Guild._sync_stickers` dropped error, yeeting all stickers of the guild. (from 1.3.18).
 
 ## 1.3.18 *\[2023-01-15\]*
 

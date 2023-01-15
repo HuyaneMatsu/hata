@@ -30,9 +30,12 @@ from ..utils import DATETIME_FORMAT_CODE, EMOJI_NAME_RP
 
 from .embedded_activity_state import EmbeddedActivityState
 from .emoji_counts import EmojiCounts
-from .fields import parse_features, parse_premium_tier, validate_features, validate_premium_tier
+from .fields import (
+    parse_features, parse_premium_tier, parse_safety_alerts_channel_id, validate_features, validate_premium_tier,
+    validate_safety_alerts_channel_id
+)
 from .flags import SystemChannelFlag
-from .guild_premium_perks import TIER_MAX as PREMIUM_TIER_MAX, TIERS as PREMIUM_TIERS
+from .guild_premium_perks import TIERS as PREMIUM_TIERS, TIER_MAX as PREMIUM_TIER_MAX
 from .preinstanced import (
     ContentFilterLevel, GuildFeature, HubType, MFA, MessageNotificationLevel, NsfwLevel, VerificationLevel
 )
@@ -255,18 +258,22 @@ class Guild(DiscordEntity, immortal = True):
         The channel's identifier where the rules of a public guild's should be.
         
         The guild must be a `community` guild.
-    stages : `None`, `dict` of (`int`, ``Stage``) items
-        Active stages of the guild. Defaults to `None` if would be empty.
-    stickers : `dict` of (`int`, ``Sticker``) items
-        Stickers of th guild.
-    system_channel_id : `int`
-        The channel's identifier where the system messages are sent.
+    safety_alerts_channel_id : `int`
+        The channel's identifier where safety alerts are sent by Discord.
         
         Defaults to `0`.
     scheduled_events : `dict` of (`int`, ``ScheduledEvent``) items
         The scheduled events of the guild.
+    stages : `None`, `dict` of (`int`, ``Stage``) items
+        Active stages of the guild. Defaults to `None` if would be empty.
+    stickers : `dict` of (`int`, ``Sticker``) items
+        Stickers of th guild.
     system_channel_flags : ``SystemChannelFlag``
         Describe which type of messages are sent automatically to the system channel.
+    system_channel_id : `int`
+        The channel's identifier where the system messages are sent.
+        
+        Defaults to `0`.
     threads : `dict` of (`int`, ``Channel``)
         Thread channels of the guild.
     user_count : `int`
@@ -302,9 +309,9 @@ class Guild(DiscordEntity, immortal = True):
         'boost_count', 'channels', 'clients', 'content_filter', 'description', 'emojis', 'features', 'hub_type',
         'is_large', 'max_presences', 'max_users', 'max_video_channel_users', 'message_notification', 'mfa', 'name',
         'nsfw_level', 'owner_id', 'preferred_locale', 'premium_tier', 'public_updates_channel_id', 'roles',
-        'rules_channel_id', 'scheduled_events', 'stages', 'stickers', 'system_channel_flags', 'system_channel_id',
-        'threads', 'user_count', 'users', 'vanity_code', 'verification_level', 'voice_states', 'widget_channel_id',
-        'widget_enabled'
+        'rules_channel_id', 'safety_alerts_channel_id', 'scheduled_events', 'stages', 'stickers',
+        'system_channel_flags', 'system_channel_id', 'threads', 'user_count', 'users', 'vanity_code',
+        'verification_level', 'voice_states', 'widget_channel_id', 'widget_enabled'
     )
     
     banner = IconSlot(
@@ -621,6 +628,9 @@ class Guild(DiscordEntity, immortal = True):
         premium_tier : `int`, Optional (Keyword only)
             The premium tier of the guild.
         
+        safety_alerts_channel_id : `int`, ``Channel``, Optional (Keyword only)
+            The channel where safety alerts are sent by Discord.
+        
         Returns
         -------
         guild : `instance<cls>`
@@ -680,6 +690,14 @@ class Guild(DiscordEntity, immortal = True):
                 
                 attribute_value = field_validator(attribute_value)
                 processable.append((attribute_name, attribute_value))
+            
+            try:
+                safety_alerts_channel_id = kwargs.pop('safety_alerts_channel_id')
+            except KeyError:
+                pass
+            else:
+                safety_alerts_channel_id = validate_safety_alerts_channel_id(safety_alerts_channel_id)
+                processable.append(('safety_alerts_channel_id', safety_alerts_channel_id))
             
             if kwargs:
                 raise TypeError(f'Unused or unsettable attributes: {kwargs!r}.')
@@ -752,6 +770,7 @@ class Guild(DiscordEntity, immortal = True):
         self.premium_tier = 0
         self.public_updates_channel_id = 0
         self.rules_channel_id = 0
+        self.safety_alerts_channel_id = 0
         self.invite_splash_hash = 0
         self.invite_splash_type = ICON_TYPE_NONE
         self.system_channel_id = 0
@@ -2107,6 +2126,8 @@ class Guild(DiscordEntity, immortal = True):
         +-------------------------------+-------------------------------+
         | rules_channel_id              | `int`                         |
         +-------------------------------+-------------------------------+
+        | safety_alerts_channel_id      | `int`                         |
+        +-------------------------------+-------------------------------+
         | system_channel_id             | `int`                         |
         +-------------------------------+-------------------------------+
         | system_channel_flags          | ``SystemChannelFlag``         |
@@ -2254,6 +2275,11 @@ class Guild(DiscordEntity, immortal = True):
         if self.rules_channel_id != rules_channel_id:
             old_attributes['rules_channel_id'] = self.rules_channel_id
             self.rules_channel_id = rules_channel_id
+        
+        safety_alerts_channel_id = parse_safety_alerts_channel_id(data)
+        if self.safety_alerts_channel_id != safety_alerts_channel_id:
+            old_attributes['safety_alerts_channel_id'] = self.safety_alerts_channel_id
+            self.safety_alerts_channel_id = safety_alerts_channel_id
         
         description = data.get('description', None)
         if self.description != description:
@@ -2410,6 +2436,8 @@ class Guild(DiscordEntity, immortal = True):
         else:
             rules_channel_id = int(rules_channel_id)
         self.rules_channel_id = rules_channel_id
+        
+        self.safety_alerts_channel_id = parse_safety_alerts_channel_id(data)
         
         self.description = data.get('description', None)
         
@@ -2677,7 +2705,7 @@ class Guild(DiscordEntity, immortal = True):
         
         for sticker_data in sticker_datas:
             sticker = Sticker.from_data(sticker_data)
-            sticker[sticker.id] = sticker
+            stickers[sticker.id] = sticker
 
     
     
@@ -2985,7 +3013,7 @@ class Guild(DiscordEntity, immortal = True):
     def rules_channel(self):
         """
         Returns the channel where the rules of a public guild's should be.
-
+        
         Returns
         -------
         rules_channel : `None`, ``Channel``
@@ -2993,6 +3021,20 @@ class Guild(DiscordEntity, immortal = True):
         rules_channel_id = self.rules_channel_id
         if rules_channel_id:
             return self.channels.get(rules_channel_id, None)
+    
+    
+    @property
+    def safety_alerts_channel(self):
+        """
+        Returns the channel where safety alerts are sent by Discord.
+        
+        Returns
+        -------
+        safety_alerts_channel : `None`, ``Channel``
+        """
+        safety_alerts_channel_id = self.safety_alerts_channel_id
+        if safety_alerts_channel_id:
+            return self.channels.get(safety_alerts_channel_id, None)
     
     
     @property

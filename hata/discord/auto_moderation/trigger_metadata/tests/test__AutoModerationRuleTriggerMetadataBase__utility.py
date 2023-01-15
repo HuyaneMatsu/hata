@@ -42,6 +42,7 @@ def test__AutoModerationRuleTriggerMetadataBase__placeholders():
     vampytest.assert_instance(metadata.keywords, tuple, nullable = True)
     vampytest.assert_instance(metadata.regex_patterns, tuple, nullable = True)
     vampytest.assert_instance(metadata.mention_limit, int)
+    vampytest.assert_instance(metadata.raid_protection, bool)
 
 
 def test__AutoModerationRuleTriggerMetadataBase__iter_excluded_keywords():

@@ -5,7 +5,7 @@ from ..fields import put_channel_id_into
 
 def test__put_channel_id_into():
     """
-    Tests whether ``put_channel_id_into`` is working as intended.
+    Tests whether ``put_channel_id_into`` works as intended.
     """
     channel_id = 202212250002
     

@@ -90,6 +90,7 @@ GUILD_CONVERTERS = {
     'prune_delete_days': convert_int__days,
     'public_updates_channel_id': convert_snowflake,
     'rules_channel_id': convert_snowflake,
+    'safety_alerts_channel_id': convert_snowflake,
     'region': convert_voice_region,
     'splash_hash': convert_icon,
     'system_channel_id': convert_snowflake,

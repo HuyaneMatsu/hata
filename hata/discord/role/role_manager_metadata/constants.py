@@ -1,6 +1,6 @@
 __all__ = ()
 
-
+APPLICATION_ROLE_CONNECTION_KEY = 'guild_connections'
 BOOSTER_KEY = 'premium_subscriber'
 BOT_ID_KEY = 'bot_id'
 INTEGRATION_ID_KEY = 'integration_id'

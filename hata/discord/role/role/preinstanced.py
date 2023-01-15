@@ -3,8 +3,8 @@ __all__ = ('RoleManagerType',)
 from ...bases import Preinstance as P, PreinstancedBase
 
 from ..role_manager_metadata import (
-    RoleManagerMetadataBase, RoleManagerMetadataBooster, RoleManagerMetadataBot, RoleManagerMetadataIntegration,
-    RoleManagerMetadataSubscription
+    RoleManagerMetadataApplicationRoleConnection, RoleManagerMetadataBase, RoleManagerMetadataBooster,
+    RoleManagerMetadataBot, RoleManagerMetadataIntegration, RoleManagerMetadataSubscription
 )
 
 class RoleManagerType(PreinstancedBase):
@@ -29,23 +29,25 @@ class RoleManagerType(PreinstancedBase):
     
     Every predefined role manager type can be accessed as class attribute as well:
     
-    +-----------------------+---------------+-------+---------------------------------------+
-    | Class attribute name  | Name          | Value | Metadata type                         |
-    +=======================+===============+=======+=======================================+
-    | none                  | none          | 0     | ``RoleManagerMetadataBase``           |
-    +-----------------------+---------------+-------+---------------------------------------+
-    | unset                 | unset         | 1     | ``RoleManagerMetadataBase``           |
-    +-----------------------+---------------+-------+---------------------------------------+
-    | unknown               | unknown       | 2     | ``RoleManagerMetadataBase``           |
-    +-----------------------+---------------+-------+---------------------------------------+
-    | bot                   | bot           | 3     | ``RoleManagerMetadataBot``            |
-    +-----------------------+---------------+-------+---------------------------------------+
-    | booster               | booster       | 4     | ``RoleManagerMetadataBooster``        |
-    +-----------------------+---------------+-------+---------------------------------------+
-    | integration           | integration   | 5     | ``RoleManagerMetadataIntegration``    |
-    +-----------------------+---------------+-------+---------------------------------------+
-    | subscription          | subscription  | 6     | ``RoleManagerMetadataSubscription``   |
-    +-----------------------+---------------+-------+---------------------------------------+
+    +-------------------------------+-------------------------------+-------+---------------------------------------------------+
+    | Class attribute name          | Name                          | Value | Metadata type                                     |
+    +===============================+===============================+=======+===================================================+
+    | none                          | none                          | 0     | ``RoleManagerMetadataBase``                       |
+    +-------------------------------+-------------------------------+-------+---------------------------------------------------+
+    | unset                         | unset                         | 1     | ``RoleManagerMetadataBase``                       |
+    +-------------------------------+-------------------------------+-------+---------------------------------------------------+
+    | unknown                       | unknown                       | 2     | ``RoleManagerMetadataBase``                       |
+    +-------------------------------+-------------------------------+-------+---------------------------------------------------+
+    | bot                           | bot                           | 3     | ``RoleManagerMetadataBot``                        |
+    +-------------------------------+-------------------------------+-------+---------------------------------------------------+
+    | booster                       | booster                       | 4     | ``RoleManagerMetadataBooster``                    |
+    +-------------------------------+-------------------------------+-------+---------------------------------------------------+
+    | integration                   | integration                   | 5     | ``RoleManagerMetadataIntegration``                |
+    +-------------------------------+-------------------------------+-------+---------------------------------------------------+
+    | subscription                  | subscription                  | 6     | ``RoleManagerMetadataSubscription``               |
+    +-------------------------------+-------------------------------+-------+---------------------------------------------------+
+    | application_role_connection   | application role connection   | 7     | ``RoleManagerMetadataApplicationRoleConnection``  |
+    +-------------------------------+-------------------------------+-------+---------------------------------------------------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -111,3 +113,4 @@ class RoleManagerType(PreinstancedBase):
     booster = P(4, 'booster', RoleManagerMetadataBooster)
     integration = P(5, 'integration', RoleManagerMetadataIntegration)
     subscription = P(6, 'subscription', RoleManagerMetadataSubscription)
+    application_role_connection = P(7, 'application role connection', RoleManagerMetadataApplicationRoleConnection)

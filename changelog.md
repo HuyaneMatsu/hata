@@ -1,3 +1,10 @@
+## 1.3.19 *\[2023-01-??\]*
+
+#### Improvements
+
+- Add `RoleManagerType.application_role_connection`.
+- Add `RoleManagerMetadataApplicationRoleConnection`.
+
 ## 1.3.18 *\[2023-01-15\]*
 
 #### Improvements

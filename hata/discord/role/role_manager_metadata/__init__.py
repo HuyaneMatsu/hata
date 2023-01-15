@@ -1,3 +1,4 @@
+from .application_role_connection import *
 from .base import *
 from .booster import *
 from .bot import *
@@ -8,6 +9,7 @@ from .subscription import *
 
 
 __all__ = (
+    *application_role_connection.__all__,
     *base.__all__,
     *booster.__all__,
     *bot.__all__,

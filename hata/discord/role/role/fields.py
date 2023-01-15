@@ -17,7 +17,9 @@ from ...permission import Permission
 from ...permission.constants import PERMISSION_KEY
 
 from ..role_manager_metadata import RoleManagerMetadataBase
-from ..role_manager_metadata.constants import BOOSTER_KEY, BOT_ID_KEY, INTEGRATION_ID_KEY, SUBSCRIPTION_LISTING_ID_KEY
+from ..role_manager_metadata.constants import (
+    APPLICATION_ROLE_CONNECTION_KEY, BOOSTER_KEY, BOT_ID_KEY, INTEGRATION_ID_KEY, SUBSCRIPTION_LISTING_ID_KEY
+)
 
 from .constants import NAME_LENGTH_MAX, NAME_LENGTH_MIN, ROLE_MANAGER_DEFAULT
 from .preinstanced import RoleManagerType
@@ -76,7 +78,11 @@ def parse_manager(data):
             break
         
         if SUBSCRIPTION_LISTING_ID_KEY in manager_data:
-            manager_type = RoleManagerType.integration
+            manager_type = RoleManagerType.subscription
+            break
+        
+        if APPLICATION_ROLE_CONNECTION_KEY in manager_data:
+            manager_type = RoleManagerType.application_role_connection
             break
         
         if INTEGRATION_ID_KEY in manager_data:

@@ -1,14 +1,12 @@
 __all__ = ('RoleManagerMetadataSubscription',)
 
-from scarletio import copy_docs, include
+from scarletio import copy_docs
 
 from .integration import RoleManagerMetadataIntegration
 from .fields import (
     parse_purchasable, parse_subscription_listing_id, put_purchasable_into, put_subscription_listing_id_into,
     validate_purchasable, validate_subscription_listing_id
 )
-
-create_partial_integration_from_id = include('create_partial_integration_from_id')
 
 
 class RoleManagerMetadataSubscription(RoleManagerMetadataIntegration):
@@ -24,7 +22,7 @@ class RoleManagerMetadataSubscription(RoleManagerMetadataIntegration):
     subscription_listing_id : `int`
         The subscription listing's and sku's identifier to which the role belongs to.
     """
-    __slots__ = ('integration_id', 'purchasable', 'subscription_listing_id')
+    __slots__ = ('purchasable', 'subscription_listing_id')
     
     def __new__(cls, *, integration_id = ..., purchasable = ..., subscription_listing_id = ...):
         """

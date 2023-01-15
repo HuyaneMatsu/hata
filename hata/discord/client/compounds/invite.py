@@ -348,12 +348,12 @@ class ClientCompoundInviteEndpoints(Compound):
             voice_state = guild.voice_states[user_id]
         except KeyError:
             raise ValueError(
-                f'The user must stream at a voice channel of the guild. Got user={user!r}; guild={guild!r}.'
+                f'The user must stream at a voice channel of the guild. Got user = {user!r}; guild = {guild!r}.'
             ) from None
         
         if not voice_state.self_stream:
             raise ValueError(
-                f'The user must stream at a voice channel of the guild. Got user={user!r}; guild={guild!r}.'
+                f'The user must stream at a voice channel of the guild. Got user = {user!r}; guild = {guild!r}.'
             )
         
         assert _assert__invite_create__max_age(max_age)

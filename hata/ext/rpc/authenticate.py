@@ -60,7 +60,7 @@ class AuthenticateResponse:
     
     def __repr__(self):
         """Returns the authenticate representation."""
-        return f'<{self.__class__.__name__} user={self.user!r}>'
+        return f'<{self.__class__.__name__} user = {self.user!r}>'
 
 
 class Oauth2Application(DiscordEntity):

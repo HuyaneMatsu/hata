@@ -7,7 +7,7 @@ from ..bases import FlagBase
 
 INTENT_SHIFT_GUILDS = 0
 INTENT_SHIFT_GUILD_USERS = 1
-INTENT_SHIFT_GUILD_BANS = 2
+INTENT_SHIFT_GUILD_MODERATION = 2
 INTENT_SHIFT_GUILD_EMOJIS_AND_STICKERS = 3
 INTENT_SHIFT_GUILD_INTEGRATIONS = 4
 INTENT_SHIFT_GUILD_WEBHOOKS = 5
@@ -27,7 +27,7 @@ INTENT_SHIFT_AUTO_MODERATION_EXECUTION = 21
 
 INTENT_MASK_GUILDS = 1 << INTENT_SHIFT_GUILDS
 INTENT_MASK_GUILD_USERS = 1 << INTENT_SHIFT_GUILD_USERS
-INTENT_MASK_GUILD_BANS = 1 << INTENT_SHIFT_GUILD_BANS
+INTENT_MASK_GUILD_MODERATION = 1 << INTENT_SHIFT_GUILD_MODERATION
 INTENT_MASK_GUILD_EMOJIS_AND_STICKERS = 1 << INTENT_SHIFT_GUILD_EMOJIS_AND_STICKERS
 INTENT_MASK_GUILD_INTEGRATIONS = 1 << INTENT_SHIFT_GUILD_INTEGRATIONS
 INTENT_MASK_GUILD_WEBHOOKS = 1 << INTENT_SHIFT_GUILD_WEBHOOKS
@@ -78,7 +78,8 @@ INTENT_SHIFT_EVENTS = {
         'GUILD_MEMBER_REMOVE',
         'THREAD_MEMBERS_UPDATE',
     ),
-    INTENT_SHIFT_GUILD_BANS: (
+    INTENT_SHIFT_GUILD_MODERATION: (
+        'GUILD_AUDIT_LOG_ENTRY_CREATE',
         'GUILD_BAN_ADD',
         'GUILD_BAN_REMOVE',
     ),
@@ -209,7 +210,7 @@ populate_dispatch_event_intents()
 del populate_dispatch_event_intents
 
 
-class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
+class IntentFlag(FlagBase, enable_keyword = 'allow', disable_keyword = 'deny'):
     """
     An `int` subclass representing the intents to receive specific events. The wrapper picks these up as well and
     optimizes the dispatch events' events.
@@ -250,7 +251,8 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
     |                                               |       |                               | GUILD_MEMBER_REMOVE,                        |
     |                                               |       |                               | THREAD_MEMBERS_UPDATE                       |
     +-----------------------------------------------+-------+-------------------------------+---------------------------------------------+
-    | INTENT_SHIFT_GUILD_BANS                       | 2     | guild_bans                    | GUILD_BAN_ADD,                              |
+    | INTENT_SHIFT_GUILD_MODERATION                 | 2     | guild_bans                    | GUILD_AUDIT_LOG_ENTRY_CREATE,               |
+    |                                               |       |                               | GUILD_BAN_ADD,                              |
     |                                               |       |                               | GUILD_BAN_REMOVE                            |
     +-----------------------------------------------+-------+-------------------------------+---------------------------------------------+
     | INTENT_SHIFT_GUILD_EMOJIS_AND_STICKERS        | 3     | guild_emojis_and_stickers     | GUILD_EMOJIS_UPDATE                         |
@@ -315,7 +317,7 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
     __keys__ = {
         'guilds': INTENT_SHIFT_GUILDS,
         'guild_users': INTENT_SHIFT_GUILD_USERS,
-        'guild_bans': INTENT_SHIFT_GUILD_BANS,
+        'guild_moderation': INTENT_SHIFT_GUILD_MODERATION,
         'guild_emojis_and_stickers': INTENT_SHIFT_GUILD_EMOJIS_AND_STICKERS,
         'guild_integrations': INTENT_SHIFT_GUILD_INTEGRATIONS,
         'guild_webhooks': INTENT_SHIFT_GUILD_WEBHOOKS,
@@ -334,15 +336,19 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
         'auto_moderation_execution': INTENT_SHIFT_AUTO_MODERATION_EXECUTION,
     }
     
-    def __new__(cls, int_=-1):
+    __deprecated_keys__ = {
+        'guild_bans': (INTENT_SHIFT_GUILD_MODERATION, '2023 Jul', 'guild_moderation'),
+    }
+    
+    def __new__(cls, integer = -1):
         """
-        Creates a new ``IntentFlag`` from the passed `int_`. If any invalid intent flag is passed, those
+        Creates a new ``IntentFlag`` from the passed `integer`. If any invalid intent flag is passed, those
         will be removed. If the wrapper is started up without presence caching, then `.guild_presences` will be
         set to `False` by default.
         
         Parameters
         ----------
-        int_ : `int` = `-1`, Optional
+        integer : `int` = `-1`, Optional
             The value what will be converted ``IntentFlag``. If not passed or passed as a negative value,
             then returns an ``IntentFlag`` what contains all the enabled flags.
         
@@ -353,18 +359,20 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
         Raises
         ------
         TypeError
-            If `int_` was not passed as `int`.
+            If `integer` was not passed as `int`.
         
         Notes
         -----
         The default created intent flags contain the privileged gateway intents, so if you have those disabled, or
         if those are not allowed for you, then make sure, you specify them.
         """
-        if not isinstance(int_, int):
-            raise TypeError(f'{cls.__name__} expected `int`, got {int_.__class__.__name__}; {int_!r}.')
+        if not isinstance(integer, int):
+            raise TypeError(
+                f'{cls.__name__} expected `int`, got {integer.__class__.__name__}; {integer!r}.'
+            )
         
         intent_flag = 0
-        if int_ < 0:
+        if integer < 0:
             for value in cls.__keys__.values():
                 intent_flag = intent_flag | (1 << value)
             
@@ -373,7 +381,7 @@ class IntentFlag(FlagBase, enable_keyword='allow', disable_keyword='deny'):
                 intent_flag = intent_flag^(1 << INTENT_SHIFT_GUILD_PRESENCES)
         else:
             for value in cls.__keys__.values():
-                if (int_ >> value) & 1:
+                if (integer >> value) & 1:
                     intent_flag = intent_flag | (1 << value)
             
             # If presence cache is disabled, disable presence updates

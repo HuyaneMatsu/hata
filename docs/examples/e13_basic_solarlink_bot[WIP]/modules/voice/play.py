@@ -56,7 +56,7 @@ async def play(
     if player is None:
         player = await client.solarlink.join_voice(state.channel)
     
-    await player.append(track, user=user)
+    await player.append(track, user = user)
     
     yield (
         f'Track added to queue!\n'

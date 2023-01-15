@@ -3,6 +3,8 @@ __all__ = ('AuditLogEntry', )
 from ...env import ALLOW_DEBUG_MESSAGES
 from ...utils.debug import call_debug_logger
 
+from ..core import GUILDS
+from ..user import create_partial_user_from_id
 from ..utils import id_to_datetime
 
 from .change_converters.all_ import MERGED_CONVERTERS
@@ -13,16 +15,18 @@ from .preinstanced import AuditLogEvent
 
 class AuditLogEntry:
     """
-    Represents an entry of an ``AuditLog``.
+    Represents an entry of an audit log.
     
     Attributes
     ----------
-    _parent_reference : ``WeakReferer`` to ``AuditLog``
+    _parent_reference : `None`, ``WeakReferer`` to ``AuditLog``
         Reference to the audit log entry keys' parent.
     changes : `list` of ``AuditLogChange``
         The changes of the entry.
-    details : `None`, `dict` of (`str`, `Any`) items
+    details : `None`, `dict` of (`str`, `object`) items
         Additional information for a specific action types.
+    guild_id : `int`
+        The source guild's identifier.
     id : `int`
         The unique identifier number of the entry.
     reason : `None`, `str`
@@ -33,21 +37,22 @@ class AuditLogEntry:
         If no target is provided, this value defaults to `0`.
     type : ``AuditLogEvent``
         The event type of the logged action.
-    user : `None`, ``ClientUserBase``
-        The user, who executed the logged action. If no user is provided then can be `None` as well.
+    user_id : `int`
+        The user's identifier who triggered the event.
     """
-    __slots__ = ('_parent_reference', 'changes', 'details', 'id', 'reason', 'target_id', 'type', 'user',)
+    __slots__ = ('_parent_reference', 'changes', 'details', 'guild_id', 'id', 'reason', 'target_id', 'type', 'user_id',)
     
-    def __new__(cls, data, parent):
+    def __new__(cls, data, parent = None):
         """
         Creates an audit log entry, from entry data sent inside of an ``AuditLog``'s data and from the audit itself.
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Data received from Discord.
-        parent : ``AuditLog``
-            The parent of the entry, what contains the respective guild, the included users, webhooks and the
+        
+        parent : `None`, ``AuditLog`` = `None`, Optional
+            The parent of the entry that contains the respective guild, the included users, webhooks and the
             integrations, etc... to work with.
         
         Returns
@@ -55,15 +60,35 @@ class AuditLogEntry:
         self : `None`, ``AuditLogEntry``
             Returns `None` if Discord is derping like hell.
         """
+        # event type
         raw_event_type = data.get('action_type', None)
         if (raw_event_type is None):
             return None
         
+        event_type = AuditLogEvent.get(raw_event_type)
+        
+        # guild_id
+        if parent is None:
+            guild_id = data.get('guild_id', None)
+            if guild_id is None:
+                guild_id = 0
+            else:
+                guild_id = int(guild_id)
+        else:
+            guild_id = parent.guild_id
+        
+        # parent reference
+        if parent is None:
+            parent_reference = None
+        else:
+            parent_reference = parent._get_self_reference()
+        
+        
         self = object.__new__(cls)
-        self._parent_reference = parent._get_self_reference()
+        self.guild_id = guild_id
+        self._parent_reference = parent_reference
         self.id = int(data['id'])
         
-        event_type = AuditLogEvent.get(raw_event_type)
         self.type = event_type
         
         options = data.get('options', None)
@@ -86,10 +111,10 @@ class AuditLogEntry:
         
         user_id = data.get('user_id', None)
         if user_id is None:
-            user = None
+            user_id = 0
         else:
-            user = parent.users.get(int(user_id), None)
-        self.user = user
+            user_id = int(user_id)
+        self.user_id = user_id
         
         self.reason = data.get('reason', None)
         
@@ -176,29 +201,53 @@ class AuditLogEntry:
         -------
         parent : `None`, ``AuditLog``
         """
-        return self._parent_reference()
+        parent_reference = self._parent_reference
+        if (parent_reference is not None):
+            return parent_reference()
+    
+    
+    @property
+    def guild(self):
+        """
+        Returns the audit log's guild.
+        
+        Returns
+        -------
+        guild : `None`, ``Guild``
+        """
+        return GUILDS.get(self.guild_id, None)
+    
+    
+    @property
+    def user(self):
+        """
+        Returns the user who triggered the event's creation.
+        
+        Returns
+        -------
+        user : `None`, ``ClientUserBase``
+            Returns ˙None` if not an user triggered it.
+        """
+        user_id = self.user_id
+        if user_id:
+            return create_partial_user_from_id(user_id)
     
     
     def __repr__(self):
         """Returns the representation of the audit log entry."""
         repr_parts = [
             '<', self.__class__.__name__,
-            ' id=', repr(self.id),
-            ', type=', self.type.name,
+            ' id = ', repr(self.id),
+            ', type = ', self.type.name,
         ]
         
-        repr_parts.append(', user=')
-        user = self.user
-        if user is None:
-            user_repr = 'None'
-        else:
-            user_repr = user.full_name
-        repr_parts.append(user_repr)
+        repr_parts.append(', user = ')
+        repr_parts.append(repr(self.user))
         
-        repr_parts.append(', target=')
+        repr_parts.append(', target = ')
         repr_parts.append(repr(self.target))
         
-        repr_parts.append(', change count=')
+        repr_parts.append(', change count = ')
         changes = self.changes
         if changes is None:
             change_amount_repr = '0'
@@ -208,13 +257,13 @@ class AuditLogEntry:
         
         reason = self.reason
         if reason is not None:
-            repr_parts.append(', reason=')
+            repr_parts.append(', reason = ')
             # use repr to escape special inserted characters
             repr_parts.append(repr(reason))
         
         details = self.details
         if details is not None:
-            repr_parts.append(', details=')
+            repr_parts.append(', details = ')
             repr_parts.append(repr(details))
         
         repr_parts.append('>')

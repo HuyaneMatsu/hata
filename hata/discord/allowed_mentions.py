@@ -529,7 +529,7 @@ class AllowedMentionProxy:
         if allow_replied_user != STATE_ALLOW_REPLIED_USER_NONE:
             field_added = True
             
-            repr_parts.append(' allow_replied_user=')
+            repr_parts.append(' allow_replied_user = ')
             repr_parts.append(repr((allow_replied_user == STATE_ALLOW_REPLIED_USER_TRUE)))
         else:
             field_added = False

@@ -35,5 +35,5 @@ def test__parse_role():
         (name, role),
         (name[:3], role),
     ):
-        output = parse_role(input_value, message)
+        output = parse_role(input_value, message.guild)
         vampytest.assert_is(output, expected_output)

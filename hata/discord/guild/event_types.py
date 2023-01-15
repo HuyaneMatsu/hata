@@ -235,36 +235,36 @@ class GuildJoinRequest(GuildJoinRequestDeleteEvent):
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' guild_id=')
+        repr_parts.append(' guild_id = ')
         repr_parts.append(repr(self.guild_id))
         
-        repr_parts.append(', user=')
+        repr_parts.append(', user = ')
         repr_parts.append(repr(self.user))
         
-        repr_parts.append(', created_at=')
+        repr_parts.append(', created_at = ')
         repr_parts.append(format(self.created_at, DATETIME_FORMAT_CODE))
         
-        repr_parts.append(', status=')
+        repr_parts.append(', status = ')
         repr_parts.append(self.status.name)
         
         actioned_by = self.actioned_by
         if (actioned_by is not None):
-            repr_parts.append(', actioned_by=')
+            repr_parts.append(', actioned_by = ')
             repr_parts.append(repr(actioned_by))
         
         actioned_at = self.actioned_at
         if (actioned_at is not None):
-            repr_parts.append(', actioned_at=')
+            repr_parts.append(', actioned_at = ')
             repr_parts.append(format(actioned_at, DATETIME_FORMAT_CODE))
         
         last_seen = self.last_seen
         if (last_seen is not None):
-            repr_parts.append(', last_seen=')
+            repr_parts.append(', last_seen = ')
             repr_parts.append(format(last_seen, DATETIME_FORMAT_CODE))
         
         form_responses = self.form_responses
         if (form_responses is not None):
-            repr_parts.append(' form_responses=[')
+            repr_parts.append(' form_responses = [')
             
             form_response_count = len(form_responses)
             index = 0
@@ -283,7 +283,7 @@ class GuildJoinRequest(GuildJoinRequestDeleteEvent):
         
         rejection_reason = self.rejection_reason
         if (rejection_reason is not None):
-            repr_parts.append(', rejection_reason=')
+            repr_parts.append(', rejection_reason = ')
             repr_parts.append(reprlib.repr(rejection_reason))
         
         repr_parts.append('>')

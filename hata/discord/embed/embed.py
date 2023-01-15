@@ -944,7 +944,7 @@ class Embed(EmbedBase):
     
     # author
     
-    def add_author(self, name=None, icon_url = None, url = None):
+    def add_author(self, name = None, icon_url = None, url = None):
         """
         Adds an ``EmbedAuthor`` to the embed with the given parameters.
         
@@ -980,7 +980,7 @@ class Embed(EmbedBase):
     
     # fields
 
-    def add_field(self, name, value, inline=False):
+    def add_field(self, name, value, inline = False):
         """
         Adds an ``EmbedField`` to the end of the embed's fields.
         
@@ -1021,7 +1021,7 @@ class Embed(EmbedBase):
         return self
     
     
-    def insert_field(self, index, name, value, inline=False):
+    def insert_field(self, index, name, value, inline = False):
         """
         Inserts an ``EmbedField`` to the embed's fields at the specified `index`.
         
@@ -1288,7 +1288,7 @@ class _EmbedFieldsProxy:
     
     def __repr__(self):
         """Returns the representation of the object."""
-        return f'<{self.__class__.__name__} length={len(self._data)}>'
+        return f'<{self.__class__.__name__} length = {len(self._data)}>'
     
     
     def __getitem__(self, index):
@@ -1332,7 +1332,7 @@ class _EmbedFieldsProxy:
         self._data.insert(index,field.to_data())
     
     
-    def add_field(self, name, value, inline=False):
+    def add_field(self, name, value, inline = False):
         """
         Adds an ``EmbedField`` to the end of the respective embed's fields.
         
@@ -1362,7 +1362,7 @@ class _EmbedFieldsProxy:
         self._data.append(field_data)
     
     
-    def insert_field(self, index, name, value, inline=False):
+    def insert_field(self, index, name, value, inline = False):
         """
         Inserts an ``EmbedField`` to the respective embed's fields at the specified `index`.
         

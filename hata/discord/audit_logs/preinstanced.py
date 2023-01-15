@@ -125,7 +125,7 @@ class AuditLogTargetType(PreinstancedBase):
     
     @copy_docs(PreinstancedBase.__repr__)
     def __repr__(self):
-        return f'<{self.__class__.__name__} name={self.name!r}>'
+        return f'<{self.__class__.__name__} name = {self.name!r}>'
     
     
     def __init__(self, value, name, target_converter, change_converters):

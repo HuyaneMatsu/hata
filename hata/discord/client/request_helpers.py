@@ -2186,8 +2186,8 @@ def get_oauth2_access_token_and_user_id(access, user, required_scope = None):
         
         if user_id and (user_id != access.id):
             raise ValueError(
-                f'The given `user` and `access` refers to different users, got user={user!r}, '
-                f'access={access!r}.'
+                f'The given `user` and `access` refers to different users, got user = {user!r}, '
+                f'access = {access!r}.'
             )
         
         user_id = access.id
@@ -2205,7 +2205,7 @@ def get_oauth2_access_token_and_user_id(access, user, required_scope = None):
     if not user_id:
         raise TypeError(
             f'`user` was not detectable neither from `user` nor from `access` parameters, got '
-            f'user={user!r}, access={access!r}.'
+            f'user = {user!r}, access = {access!r}.'
         )
     
     return access_token, user_id

@@ -36,7 +36,7 @@ VALID_ICON_FORMATS_EXTENDED = frozenset((*VALID_ICON_FORMATS, 'gif',))
 VALID_ICON_MEDIA_TYPES = frozenset(('image/jpeg', 'image/png', 'image/webp'))
 VALID_ICON_MEDIA_TYPES_EXTENDED = frozenset(('image/gif', *VALID_ICON_MEDIA_TYPES))
 
-VALID_STICKER_IMAGE_MEDIA_TYPES = frozenset(('image/png', 'application/json'))
+VALID_STICKER_IMAGE_MEDIA_TYPES = frozenset(('image/gif', 'image/png', 'application/json'))
 VALID_IMAGE_MEDIA_TYPES_ALL = frozenset((*VALID_ICON_MEDIA_TYPES_EXTENDED, *VALID_STICKER_IMAGE_MEDIA_TYPES))
 
 

@@ -1,4 +1,4 @@
-## 1.3.18 *\[2023-01-??\]*
+## 1.3.18 *\[2023-01-15\]*
 
 #### Improvements
 
@@ -14,6 +14,8 @@
 - Add `StickerPack.copy`.
 - Add `GuildPreview.copy`.
 - Add `Sticker.copy_with`.
+- Add `AuditLog.guild_id`.
+- Add `StickerFormat.gif`.
 - Add `Activity.copy_with`.
 - Add `Sticker.__format__`.
 - Add `WelcomeScreen.copy`.
@@ -24,6 +26,7 @@
 - Add `GuildPreview.__new__`.
 - Add `GuildPreview.to_data`.
 - Add `ReactionAddEvent.copy`.
+- Add `AuditLogEntry.user_id`.
 - Add `WelcomeScreen.__new__`.
 - Add `StickerPack.precreate`.
 - Add `StickerPack.copy_with`.
@@ -56,6 +59,7 @@
 - `GuildPreview.__hash__` now deep hashes.
 - Add `WelcomeScreen.iter_welcome_channels`.
 - Add `EmbeddedActivityState.application_id`.
+- Add `Client.events.audit_log_entry_create`.
 - `Emoji.__eq__` now supports partial instances.
 - `Emoji.__hash__` now supports partial instances.
 - `Sticker.__eq__` now supports partial instances.
@@ -81,10 +85,12 @@
 - `parse_reaction` could raise `AttributeError`.
 - `create_unicode_emoji` could raise `AttributeError`.
 - Initially received ``EmbeddedActivityState`` were not cached correctly.
+- Some message update edge cases were not handled since they were after "edit check".
 
 #### Renames, Deprecation & Removals
 
 - Deprecate `WelcomeChannel`.
+- Deprecate `IntentFlag.guild_bans`.
 - Rename `WelcomeChannel` to `WelcomeScreenChannel`.
 - Rename `Sticker._from_partial` to `.from_partial_data`.
 - Deprecate `type` parameter of `WelcomeScreenChannel.custom`, use `step_type` instead.

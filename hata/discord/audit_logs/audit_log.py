@@ -5,6 +5,7 @@ from scarletio import RichAttributeErrorBaseType, WeakReferer
 from ..application_command import ApplicationCommand
 from ..auto_moderation import AutoModerationRule
 from ..channel import Channel
+from ..core import GUILDS
 from ..integration import Integration
 from ..scheduled_event import ScheduledEvent
 from ..user import User
@@ -30,8 +31,8 @@ class AuditLog(RichAttributeErrorBaseType):
         are the `id`-s of the rules and the values are the rules themselves.
     entries : `list` of ``AuditLogEntry``
         A list of audit log entries that the audit log contains.
-    guild : ``Guild``
-        The audit logs' respective guild.
+    guild_id : `int`
+        The audit logs' respective guild's identifier.
     integrations : `dict` of (`int`, ``Integration``) items
         A dictionary that contains the mentioned integrations by the audit log's entries. The keys are the `id`-s of
         the integrations, meanwhile the values are the integrations themselves.
@@ -47,11 +48,11 @@ class AuditLog(RichAttributeErrorBaseType):
         webhooks, meanwhile the values are the values themselves.
     """
     __slots__ = (
-        '__weakref__', '_self_reference', 'application_commands', 'auto_moderation_rules', 'entries', 'guild',
+        '__weakref__', '_self_reference', 'application_commands', 'auto_moderation_rules', 'entries', 'guild_id',
         'integrations', 'scheduled_events', 'threads', 'users', 'webhooks'
     )
     
-    def __new__(cls, data, guild):
+    def __new__(cls, data, guild_id):
         """
         Creates an ``AuditLog`` from the data received from Discord.
         
@@ -59,15 +60,15 @@ class AuditLog(RichAttributeErrorBaseType):
         ----------
         data : `None`, `dict` of (`str`, `Any`) items
             Data received from Discord.
-        guild : ``Guild``
-            The respective guild of the audit logs.
+        guild_id : `int`
+            The respective guild's identifier of the audit logs.
         """
         self = object.__new__(cls)
         self._self_reference = None
         self.application_commands = {}
         self.auto_moderation_rules = {}
         self.entries = []
-        self.guild = guild
+        self.guild_id = guild_id
         self.integrations = {}
         self.scheduled_events = {}
         self.threads = {}
@@ -171,7 +172,7 @@ class AuditLog(RichAttributeErrorBaseType):
             threads = self.threads
             
             for thread_data in thread_datas:
-                thread = Channel.from_data(thread_data, None, self.guild.id)
+                thread = Channel.from_data(thread_data, None, self.guild_id)
                 threads[thread.id] = thread
         
         
@@ -227,4 +228,16 @@ class AuditLog(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the representation of the Audit log."""
-        return f'<{self.__class__.__name__} of {self.guild.name}, length={len(self.entries)}>'
+        return f'<{self.__class__.__name__} length = {len(self.entries)}>'
+    
+    
+    @property
+    def guild(self):
+        """
+        Returns the audit log's guild.
+        
+        Returns
+        -------
+        guild : `None`, ``Guild``
+        """
+        return GUILDS.get(self.guild_id, None)

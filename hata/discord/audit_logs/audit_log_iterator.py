@@ -1,7 +1,7 @@
 __all__ = ('AuditLogIterator', )
 
 from ..bases import maybe_snowflake
-from ..guild import Guild, create_partial_guild_from_id
+from ..guild import Guild
 from ..user import ClientUserBase
 from ..utils import now_as_id
 
@@ -26,8 +26,8 @@ class AuditLogIterator(AuditLog):
         are the `id`-s of the rules and the values are the rules themselves.
     entries : `list` of ``AuditLogEntry``
         A list of audit log entries that the audit log contains.
-    guild : ``Guild``
-        The audit logs' respective guild.
+    guild_id : `int`
+        The audit logs' respective guild's identifier.
     integrations : `dict` of (`int`, ``Integration``) items
         A dictionary that contains the mentioned integrations by the audit log's entries. The keys are the `id`-s of
         the integrations, meanwhile the values are the integrations themselves.
@@ -52,7 +52,7 @@ class AuditLogIterator(AuditLog):
     """
     __slots__ = ('_data', '_index', 'client',)
     
-    async def __new__(cls, client, guild, user=None, event = None):
+    def __new__(cls, client, guild_id, user = None, event = None):
         """
         Creates an audit log iterator with the given parameters.
         
@@ -62,7 +62,7 @@ class AuditLogIterator(AuditLog):
         ----------
         client : ``Client``
             The client, who will execute the api requests.
-        guild : ``Guild``, `int`
+        guild_id : ``Guild``, `int`
             The guild what's audit logs will be requested.
         user : `None`, ``ClientUserBase``, `int` = `None`, Optional
             Whether the audit logs should be filtered only to those, which were created by the given user.
@@ -85,17 +85,15 @@ class AuditLogIterator(AuditLog):
             'before': now_as_id(),
         }
         
-        if isinstance(guild, Guild):
-            guild_id = guild.id
+        if isinstance(guild_id, Guild):
+            validated_guild_id = guild_id.id
         else:
-            guild_id = maybe_snowflake(guild)
+            validated_guild_id = maybe_snowflake(guild_id)
             if guild_id is None:
                 raise TypeError(
-                    f'`guild_or_discovery` can be `{Guild.__name__}`, `int`, got '
-                    f'{guild.__class__.__name__}; {guild!r}.'
+                    f'`guild_id` can be `{Guild.__name__}`, `int`, got '
+                    f'{type(guild_id).__name__}; {guild_id!r}.'
                 )
-            
-            guild = None
         
         if (user is not None):
             if isinstance(user, ClientUserBase):
@@ -124,20 +122,10 @@ class AuditLogIterator(AuditLog):
             
             data['action_type'] = event_value
         
-        if guild is None:
-            log_data = await client.http.audit_log_get_chunk(guild_id, data)
-            if guild is None:
-                guild = create_partial_guild_from_id(guild_id)
-        else:
-            log_data = None
-        
-        self = AuditLog.__new__(cls, None, guild)
+        self = AuditLog.__new__(cls, None, validated_guild_id)
         self._data = data
         self._index = 0
         self.client = client
-        
-        if (log_data is not None):
-            self._populate(log_data)
         
         return self
     
@@ -157,7 +145,7 @@ class AuditLogIterator(AuditLog):
             if entries:
                 data['before'] = entries[-1].id
             
-            log_data = await http.audit_log_get_chunk(self.guild.id, data)
+            log_data = await http.audit_log_get_chunk(self.guild_id, data)
             
             if not self._populate(log_data):
                 return
@@ -178,7 +166,7 @@ class AuditLogIterator(AuditLog):
         audit_log.application_commands = self.application_commands
         audit_log.auto_moderation_rules = self.auto_moderation_rules
         audit_log.entries = self.entries
-        audit_log.guild = self.guild
+        audit_log.guild_id = self.guild_id
         audit_log.integrations = self.integrations
         audit_log.scheduled_events = self.scheduled_events
         audit_log.threads = self.threads
@@ -213,8 +201,7 @@ class AuditLogIterator(AuditLog):
         if ln:
             data['before'] = self.entries[ln - 1].id
         
-        log_data = await self.client.http.audit_log_get_chunk(self.guild.id, data)
-        
+        log_data = await self.client.http.audit_log_get_chunk(self.guild_id, data)
         
         if not self._populate(log_data):
             raise StopAsyncIteration

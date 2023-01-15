@@ -248,13 +248,13 @@ class ClientCompoundEmojiEndpoints(Compound):
         guild_id, emoji_id = get_emoji_guild_id_and_id(emoji)
         
         # Cannot delete partially loaded emoji.
-        if guild_id is None:
+        if not guild_id:
             return
         
         await self.http.emoji_delete(guild_id, emoji_id, reason = reason)
     
     
-    async def emoji_edit(self, emoji, *, name=..., roles=..., reason = None):
+    async def emoji_edit(self, emoji, *, name = ..., roles = ..., reason = None):
         """
         Edits the given emoji.
         

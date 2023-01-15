@@ -423,8 +423,8 @@ class InteractionResponse:
     """
     __slots__ = ('_event', '_is_abort', '_message', '_parameters',)
     
-    def __init__(self, content=..., *, allowed_mentions = ..., components=..., embed = ..., event = None, file=...,
-            message = ..., show_for_invoking_user_only=..., suppress_embeds=..., tts=...,):
+    def __init__(self, content=..., *, allowed_mentions = ..., components = ..., embed = ..., event = None, file = ...,
+            message = ..., show_for_invoking_user_only = ..., suppress_embeds = ..., tts = ...,):
         """
         Creates a new ``InteractionResponse`` with the given parameters.
         

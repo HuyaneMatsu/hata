@@ -97,6 +97,7 @@ class StickerFormat(PreinstancedBase):
     png = P(1, 'png', 'png')
     apng = P(2, 'apng', 'png')
     lottie = P(3, 'lottie', 'json')
+    gif = P(4, 'gif', 'gif')
 
 
 class StickerType(PreinstancedBase):

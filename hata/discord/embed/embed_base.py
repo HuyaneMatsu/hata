@@ -1163,7 +1163,7 @@ class EmbedField:
     """
     __slots__ = ('inline', 'name', 'value',)
     
-    def __init__(self, name, value, inline=False):
+    def __init__(self, name, value, inline = False):
         """
         Creates an embed field with the given parameters.
         
@@ -1204,7 +1204,7 @@ class EmbedField:
     
     def __repr__(self):
         """Returns the representation of the embed field."""
-        return f'<{self.__class__.__name__} length={len(self)}, inline={self.inline}>'
+        return f'<{self.__class__.__name__} length = {len(self)}, inline = {self.inline}>'
     
     
     def __eq__(self, other):
@@ -1296,7 +1296,7 @@ class EmbedField:
         return self
     
     
-    def copy_with(self, *, name=..., value=..., inline=...):
+    def copy_with(self, *, name=..., value=..., inline = ...):
         """
         Copies the ``EmbedField`` and updates it with the given parameters.
         

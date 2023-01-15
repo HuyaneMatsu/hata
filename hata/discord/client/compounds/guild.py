@@ -1534,7 +1534,7 @@ class ClientCompoundGuildEndpoints(Compound):
         return voice_regions
     
     
-    async def audit_log_get_chunk(self, guild, limit=100, *, before=None, after=None, user=None, event = None):
+    async def audit_log_get_chunk(self, guild, limit=100, *, before=None, after=None, user = None, event = None):
         """
         Request a batch of audit logs of the guild and returns them. The `after`, `around` and the `before` parameters
         are mutually exclusive and they can be `int`, or as a ``DiscordEntity`` or as a `datetime`
@@ -1625,13 +1625,10 @@ class ClientCompoundGuildEndpoints(Compound):
             data['action_type'] = event_value
         
         data = await self.http.audit_log_get_chunk(guild_id, data)
-        if guild is None:
-            guild = create_partial_guild_from_id(guild_id)
-        
-        return AuditLog(data, guild)
+        return AuditLog(data, guild_id)
     
     
-    async def audit_log_iterator(self, guild, *, user=None, event = None):
+    async def audit_log_iterator(self, guild, *, user = None, event = None):
         """
         Returns an audit log iterator for the given guild.
         
@@ -1650,4 +1647,4 @@ class ClientCompoundGuildEndpoints(Compound):
         -------
         audit_log_iterator : ``AuditLogIterator``
         """
-        return await AuditLogIterator(self, guild, user=user, event = event)
+        return AuditLogIterator(self, guild, user = user, event = event)

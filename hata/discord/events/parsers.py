@@ -7,6 +7,7 @@ from scarletio import Task, include
 from ...env import CACHE_PRESENCE, CACHE_USER
 
 from ..application_command import ApplicationCommand, ApplicationCommandPermission
+from ..audit_logs import AuditLogEntry
 from ..auto_moderation import AutoModerationActionExecutionEvent, AutoModerationRule
 from ..channel import Channel
 from ..core import (
@@ -419,6 +420,7 @@ def MESSAGE_UPDATE__CAL_SC(client, data):
             return
         
         Task(client.events.message_edit(client, message, old_attributes), KOKORO)
+    
     else:
         change_state = message._update_embed(data)
         if change_state == EMBED_UPDATE_NONE:
@@ -2256,6 +2258,25 @@ add_parser(
     GUILD_DELETE__OPT)
 del GUILD_DELETE__CAL, \
     GUILD_DELETE__OPT
+
+
+def GUILD_AUDIT_LOG_ENTRY_CREATE__CAL(client, data):
+    audit_log_entry = AuditLogEntry(data)
+    if (audit_log_entry is not None):
+        Task(client.events.audit_log_entry_create(client, audit_log_entry), KOKORO)
+
+def GUILD_AUDIT_LOG_ENTRY_CREATE__OPT(client, data):
+    pass
+
+add_parser(
+    'GUILD_AUDIT_LOG_ENTRY_CREATE',
+    GUILD_AUDIT_LOG_ENTRY_CREATE__CAL,
+    GUILD_AUDIT_LOG_ENTRY_CREATE__CAL,
+    GUILD_AUDIT_LOG_ENTRY_CREATE__OPT,
+    GUILD_AUDIT_LOG_ENTRY_CREATE__OPT)
+del GUILD_AUDIT_LOG_ENTRY_CREATE__CAL, \
+    GUILD_AUDIT_LOG_ENTRY_CREATE__OPT
+
 
 def GUILD_BAN_ADD__CAL(client, data):
     guild_id = int(data['guild_id'])

@@ -42,7 +42,7 @@ class RichVoiceState:
     
     def __repr__(self):
         """Returns the rich voice state's representation."""
-        repr_parts = ['<', self.__class__.__name__, ' user=', repr(self.user), '>']
+        repr_parts = ['<', self.__class__.__name__, ' user = ', repr(self.user), '>']
         return ''.join(repr_parts)
     
     

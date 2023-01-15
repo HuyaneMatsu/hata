@@ -273,6 +273,7 @@ add_event_handler('auto_moderation_rule_create', 2, 'AUTO_MODERATION_RULE_CREATE
 add_event_handler('auto_moderation_rule_edit', 3, 'AUTO_MODERATION_RULE_UPDATE',)
 add_event_handler('auto_moderation_rule_delete', 2, 'AUTO_MODERATION_RULE_DELETE',)
 add_event_handler('auto_moderation_action_execution', 2, 'AUTO_MODERATION_ACTION_EXECUTION',)
+add_event_handler('audit_log_entry_create', 2, 'GUILD_AUDIT_LOG_ENTRY_CREATE',)
 
 
 class ParserSettingOption:

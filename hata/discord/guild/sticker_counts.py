@@ -7,8 +7,11 @@ from scarletio import RichAttributeErrorBaseType
 from ..sticker import StickerFormat
 
 
-STICKER_FORMAT_STATIC = StickerFormat.png
-STICKER_FORMAT_ANIMATED = StickerFormat.apng
+STICKER_FORMAT_ANIMATED_PNG = StickerFormat.apng
+STICKER_FORMAT_ANIMATED_GIF = StickerFormat.gif
+
+STICKER_FORMAT_STATIC_PNG = StickerFormat.png
+
 STICKER_FORMAT_LOTTIE = StickerFormat.lottie
 
 
@@ -77,16 +80,19 @@ class StickerCounts(RichAttributeErrorBaseType):
         
         for sticker in iterator:
             sticker_format = sticker.format
-            if sticker_format is STICKER_FORMAT_ANIMATED:
+            if (
+                (sticker_format is STICKER_FORMAT_ANIMATED_PNG) or
+                (sticker_format is STICKER_FORMAT_ANIMATED_GIF)
+            ):
                 animated += 1
+                continue
+            
+            if sticker_format is STICKER_FORMAT_STATIC_PNG:
+                static += 1
                 continue
             
             if sticker_format is STICKER_FORMAT_LOTTIE:
                 lottie += 1
-                continue
-            
-            if sticker_format is STICKER_FORMAT_STATIC:
-                static += 1
                 continue
         
         

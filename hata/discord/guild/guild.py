@@ -1195,7 +1195,7 @@ class Guild(DiscordEntity, immortal = True):
 ##            new_voice_states = self.voice_states = {}
 ##
 ##            for voice_state_data in voice_state_datas:
-##                user=create_partial_user_from_id(int(voice_state_data['user_id']))
+##                user = create_partial_user_from_id(int(voice_state_data['user_id']))
 ##
 ##                channel_id = voice_state_data.get('channel_id', None)
 ##                if channel_id is None:

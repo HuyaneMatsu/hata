@@ -94,7 +94,7 @@ def parse_role_mention(text):
     return ROLES.get(role_id, None)
 
 
-def parse_role(text, message = None):
+def parse_role(text, guild = None):
     """
     Tries to parse a role out from the given text.
     
@@ -103,7 +103,7 @@ def parse_role(text, message = None):
     text : `str`
         The text to parse the role out.
     
-    message : `None`, ``Message`` = `None`, Optional
+    guild : `None`, ``Guild`` = `None`, Optional
         Context for name based parsing.
     
     Returns
@@ -125,8 +125,7 @@ def parse_role(text, message = None):
     if (role is not None):
         return role
     
-    if (message is not None):
-        guild = message.guild
+    if (guild is not None):
         if (guild is not None):
             role = guild.get_role_like(text)
             if (role is not None):

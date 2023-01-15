@@ -2,8 +2,9 @@ __all__ = ()
 
 from scarletio import include
 
-from ..core import STAGES
-
+from ..core import (
+    AUTO_MODERATION_RULES, CHANNELS, EMOJIS, INTEGRATIONS, ROLES, SCHEDULED_EVENTS, STAGES, STICKERS, USERS
+)
 
 AuditLogEvent = include('AuditLogEvent')
 Invite = include('Invite')
@@ -21,25 +22,19 @@ def target_converter_guild(entry):
 def target_converter_channel(entry):
     target_id = entry.target_id
     if target_id:
-        parent = entry.parent
-        if (parent is not None):
-            return parent.channels.get(target_id, None)
+        return CHANNELS.get(target_id, None)
 
 
 def target_converter_user(entry):
     target_id = entry.target_id
     if target_id:
-        parent = entry.parent
-        if (parent is not None):
-            return parent.users.get(target_id, None)
+        return USERS.get(target_id, None)
 
 
 def target_converter_role(entry):
     target_id = entry.target_id
     if target_id:
-        parent = entry.parent
-        if (parent is not None):
-            return parent.guild.roles.get(target_id, None)
+        return ROLES.get(target_id, None)
 
 
 def target_converter_invite(entry):
@@ -70,25 +65,19 @@ def target_converter_invite(entry):
 def target_converter_webhook(entry):
     target_id = entry.target_id
     if target_id:
-        parent = entry.parent
-        if (parent is not None):
-            return parent.webhooks.get(target_id, None)
+        return USERS.get(target_id, None)
 
 
 def target_converter_emoji(entry):
     target_id = entry.target_id
     if target_id:
-        parent = entry.parent
-        if (parent is not None):
-            return parent.guild.emojis.get(target_id, None)
+        return EMOJIS.get(target_id, None)
 
 
 def target_converter_integration(entry):
     target_id = entry.target_id
     if target_id:
-        parent = entry.parent
-        if (parent is not None):
-            return parent.integrations.get(target_id, None)
+        return INTEGRATIONS.get(target_id, None)
 
 
 def target_converter_stage(entry):
@@ -100,25 +89,19 @@ def target_converter_stage(entry):
 def target_converter_sticker(entry):
     target_id = entry.target_id
     if target_id:
-        parent = entry.parent
-        if (parent is not None):
-            return parent.guild.stickers.get(target_id, None)
+        return STICKERS.get(target_id, None)
 
 
 def target_converter_scheduled_event(entry):
     target_id = entry.target_id
     if target_id:
-        parent = entry.parent
-        if (parent is not None):
-            return parent.scheduled_events.get(target_id, None)
+        return SCHEDULED_EVENTS.get(target_id, None)
 
 
 def target_converter_thread(entry):
     target_id = entry.target_id
     if target_id:
-        parent = entry.parent
-        if (parent is not None):
-            return parent.threads(target_id, None)
+        return CHANNELS.get(target_id, None)
 
 
 def target_converter_application_command(entry):
@@ -132,6 +115,4 @@ def target_converter_application_command(entry):
 def target_converter_auto_moderation_rule(entry):
     target_id = entry.target_id
     if target_id:
-        parent = entry.parent
-        if (parent is not None):
-            return parent.auto_moderation_rules(target_id, None)
+        return AUTO_MODERATION_RULES.get(target_id, None)

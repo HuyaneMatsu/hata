@@ -445,16 +445,16 @@ class Integration(DiscordEntity, immortal = True):
     
     def __repr__(self):
         """Returns the integration's representation."""
-        repr_parts = ['<', self.__class__.__name__, ' id=', str(self.id)]
+        repr_parts = ['<', self.__class__.__name__, ' id = ', str(self.id)]
         
         type_ = self.type
         if type_ is not IntegrationType.none:
-            repr_parts.append(', type=')
+            repr_parts.append(', type = ')
             repr_parts.append(repr(type_))
         
         user = self.user
         if (user is not ZEROUSER):
-            repr_parts.append(', user=')
+            repr_parts.append(', user = ')
             repr_parts.append(repr(user.full_name))
         
         repr_parts.append('>')

@@ -298,6 +298,11 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         | version                   | `int`                                             |
         +---------------------------+---------------------------------------------------+
     
+    audit_log_entry_create(client: ``Client``, audit_log_entry : ``AuditLogEntry``)
+        Called when an audit log entry is created inside of a guild.
+        
+        The client must have view audit log permissions in the guild to receive it.
+    
     auto_moderation_action_execution(client: ``Client``, event: ``AutoModerationActionExecutionEvent``)
         Called when an auto moderation rule is executed.
     

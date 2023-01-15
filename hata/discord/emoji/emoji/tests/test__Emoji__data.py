@@ -60,6 +60,8 @@ def test__Emoji__from_data__1():
     emoji_id = 202301010015
     guild_id = 202301010016
     
+    guild = Guild.precreate(guild_id)
+    
     data = {
         'id': str(emoji_id),
     }

@@ -432,7 +432,7 @@ class EmbedCore(EmbedBase):
         
         # fields
         new.fields = [
-            type(field)(field.name, sanitize_mentions(field.value, message.guild), inline=field.inline)
+            type(field)(field.name, sanitize_mentions(field.value, message.guild), inline = field.inline)
             for field in self.fields
         ]
         

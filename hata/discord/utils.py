@@ -1110,7 +1110,7 @@ class Relationship:
     
     def __repr__(self):
         """Returns the representation of the relationship."""
-        return f'<{self.__class__.__name__} {self.type.name} user={self.user.full_name!r}>'
+        return f'<{self.__class__.__name__} {self.type.name} user = {self.user.full_name!r}>'
 
 
 class Unknown(DiscordEntity):

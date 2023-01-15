@@ -337,10 +337,13 @@ class Message(DiscordEntity, immortal = True):
         
         else:
             if not self.partial:
-                if self.flags.loading:
+                flags = self.flags
+                if flags.loading:
                     self._set_attributes(data)
                 
-                elif not self.has_any_content_field():
+                # At some cases discord is not propagating the message components as intended.
+                # flags.invoking_user_only or 
+                elif (not self.has_any_content_field()):
                     self._update_content_fields(data)
                 
                 return self
@@ -1799,17 +1802,11 @@ class Message(DiscordEntity, immortal = True):
         except KeyError:
             pass
         else:
-            if edited_timestamp is None:
-                return old_attributes
-            
-            edited_at = timestamp_to_datetime(edited_timestamp)
-            
-            self_edited_at = self.edited_at
-            if self_edited_at == edited_at:
-                return old_attributes
-            
-            old_attributes['edited_at'] = self_edited_at
-            self.edited_at = edited_at
+            if (edited_timestamp is not None):
+                edited_at = timestamp_to_datetime(edited_timestamp)
+                if self.edited_at != edited_at:
+                    old_attributes['edited_at'] = self.edited_at
+                    self.edited_at = edited_at
         
         try:
             everyone_mention = data['mention_everyone']
@@ -1873,8 +1870,6 @@ class Message(DiscordEntity, immortal = True):
         except KeyError:
             pass
         else:
-            guild = self.guild
-            
             if (user_mention_datas is None) or (not user_mention_datas):
                 user_mentions = None
             else:
@@ -1984,15 +1979,8 @@ class Message(DiscordEntity, immortal = True):
         except KeyError:
             pass
         else:
-            if edited_timestamp is None:
-                return
-            
-            edited_at = timestamp_to_datetime(edited_timestamp)
-            if self.edited_at == edited_at:
-                return
-            
-            self.edited_at = edited_at
-        
+            if (edited_timestamp is not None):
+                self.edited_at = timestamp_to_datetime(edited_timestamp)
         
         try:
             everyone_mention = data['mention_everyone']
@@ -2155,7 +2143,6 @@ class Message(DiscordEntity, immortal = True):
         # 1 -> Only sizes are updated -> images showed up?
         # 2 -> New embeds appeared -> link.
         # 3 -> There are less embed -> bug?
-        
         embeds = self.embeds
         if embeds is None:
             embeds_length_actual = 0

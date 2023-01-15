@@ -142,7 +142,7 @@ class RPCClient(RichAttributeErrorBaseType):
     
     def start(self):
         """
-        Starts the ipc clients's connecting to Discord. If the client is already running, raises `RuntimeError`.
+        Starts the ipc client's connecting to Discord. If the client is already running, raises `RuntimeError`.
         
         The return of the method depends on the thread, from which it was called from.
         

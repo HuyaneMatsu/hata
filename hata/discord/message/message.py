@@ -28,10 +28,14 @@ from ..webhook import Webhook, WebhookRepr, WebhookType, create_partial_webhook_
 
 from .attachment import Attachment
 from .cross_mention import UnknownCrossMention
+from .fields import (
+    parse_role_subscription, put_role_subscription_into, validate_role_subscription
+)
 from .flags import MessageFlag
 from .message_activity import MessageActivity
 from .message_application import MessageApplication
 from .message_interaction import MessageInteraction
+from .message_role_subscription import MessageRoleSubscription
 from .preinstanced import GENERIC_MESSAGE_TYPES, MESSAGE_DEFAULT_CONVERTER, MessageType
 from .utils import try_resolve_interaction_message
 
@@ -77,6 +81,7 @@ MESSAGE_FIELD_KEY_THREAD = 23
 MESSAGE_FIELD_KEY_TTS = 24
 MESSAGE_FIELD_KEY_TYPE = 25
 MESSAGE_FIELD_KEY_USER_MENTIONS = 26
+MESSAGE_FIELD_KEY_ROLE_SUBSCRIPTION = 27
 
 MESSAGE_CACHE_FIELD_KEYS = (
     MESSAGE_FIELD_KEY_CHANNEL_MENTIONS,
@@ -108,7 +113,7 @@ def _set_message_field(message, field_key, value):
         The message to store the value in it's fields.
     field_key : `int`
         Message field key.
-    value : `Any``
+    value : `object``
         The value to store.
     """
     fields = message._fields
@@ -153,7 +158,7 @@ def _get_message_field(message, field_key):
     
     Returns
     -------
-    value : `None`, `Any`
+    value : `None`, `object`
     """
     fields = message._fields
     if (fields is not None):
@@ -173,7 +178,7 @@ def _get_first_message_field(message, field_key):
     
     Returns
     -------
-    value : `None`, `Any`
+    value : `None`, `object`
     """
     fields = message._fields
     if (fields is not None):
@@ -224,7 +229,7 @@ def _iter_message_field(message, field_key):
     
     Yields
     ------
-    value : `Any`
+    value : `object`
     """
     fields = message._fields
     if (fields is not None):
@@ -286,6 +291,7 @@ class Message(DiscordEntity, immortal = True):
     - ``.referenced_message``
     - ``.role_mentions`` (cache field)
     - ``.role_mention_ids``
+    - ``.role_subscription``
     - ``.stickers``
     - ``.thread``
     - ``.tts``
@@ -319,7 +325,7 @@ class Message(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Message data.
         
         Returns
@@ -360,7 +366,7 @@ class Message(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Message data.
         
         Returns
@@ -403,7 +409,7 @@ class Message(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Message reference data.
         
         Returns
@@ -509,7 +515,7 @@ class Message(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Message data.
         """
         channel_id = int(data['channel_id'])
@@ -778,6 +784,14 @@ class Message(DiscordEntity, immortal = True):
                 MESSAGE_FIELD_KEY_THREAD,
                 Channel.from_data(thread_data, None, guild_id),
             )
+        
+        role_subscription = parse_role_subscription(data)
+        if (role_subscription is not None):
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_ROLE_SUBSCRIPTION,
+                role_subscription,
+            )
     
     
     def _late_init(self, data):
@@ -796,7 +810,7 @@ class Message(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Message data.
         """
         if self.flags.loading:
@@ -885,11 +899,6 @@ class Message(DiscordEntity, immortal = True):
             
             If called as a classmethod defaults to `None`.
         
-        referenced_message : `None`, ``Message``, Optional (Keyword only)
-            The ``.referenced_message`` attribute of the message.
-            
-            If called as a classmethod defaults to `None`.
-        
         deleted : `bool`, Optional (Keyword only)
             The ``.deleted`` attribute of the message. If called as a class method, defaults to `True`.
         
@@ -949,11 +958,19 @@ class Message(DiscordEntity, immortal = True):
             
             If called as a classmethod defaults to `None`.
         
+        referenced_message : `None`, ``Message``, Optional (Keyword only)
+            The ``.referenced_message`` attribute of the message.
+            
+            If called as a classmethod defaults to `None`.
+        
         role_mentions : `None`, (`list`, `tuple`) of ``Role``, Optional (Keyword only)
             The ``.role_mentions`` attribute of the message. If passed as an empty `list`, will be set as `None`
             instead.
             
             If called as a classmethod defaults to `None`.
+        
+        role_subscription : `None`, ``MessageRoleSubscription``, Optional (Keyword only) 
+            Additional role subscription information attached to the message.
         
         stickers : `None`, (`list`, `tuple`) of ``Sticker``, Optional (Keyword only)
             The ``.stickers`` attribute of the message.
@@ -1398,6 +1415,18 @@ class Message(DiscordEntity, immortal = True):
                 )
         
         try:
+            role_subscription = kwargs.pop('role_subscription')
+        except KeyError:
+            if base is None:
+                role_subscription = None
+            else:
+                role_subscription = base.role_subscription
+                if (role_subscription is not None):
+                    role_subscription = role_subscription.copy()
+        else:
+            role_subscription = validate_role_subscription(role_subscription)
+        
+        try:
             role_mentions = kwargs.pop('role_mentions')
         except KeyError:
             if base is None:
@@ -1614,6 +1643,7 @@ class Message(DiscordEntity, immortal = True):
         self.pinned = pinned
         self.reactions = reactions
         self.role_mention_ids = role_mention_ids
+        self.role_subscription = role_subscription
         self.stickers = stickers
         self.tts = tts
         self.type = type_
@@ -1640,11 +1670,11 @@ class Message(DiscordEntity, immortal = True):
         if self.deleted:
             repr_parts.append(' deleted')
         
-        repr_parts.append(' id=')
+        repr_parts.append(' id = ')
         repr_parts.append(repr(self.id))
-        repr_parts.append(', length=')
+        repr_parts.append(', length = ')
         repr_parts.append(repr(len(self)))
-        repr_parts.append(', author=')
+        repr_parts.append(', author = ')
         repr_parts.append(repr(self.author.full_name))
         repr_parts.append('>')
         
@@ -1724,12 +1754,12 @@ class Message(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Message data received from Discord.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `object`) items
             All item in the returned dict is optional.
         
         Returned Data Structure
@@ -1944,7 +1974,7 @@ class Message(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Message data received from Discord.
         """
         self._clear_cache()
@@ -2045,7 +2075,7 @@ class Message(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Message data received from Discord.
         """
         try:
@@ -2118,7 +2148,7 @@ class Message(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Message data received from Discord.
         
         Returns
@@ -2208,7 +2238,7 @@ class Message(DiscordEntity, immortal = True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Message data received from Discord.
         """
         embeds = self.embeds
@@ -2592,9 +2622,6 @@ class Message(DiscordEntity, immortal = True):
                 , Optional (Keyword only)
             The `.cross_mentions` attribute of the message. If passed as an empty list, then will be set `None` instead.
         
-        referenced_message : `None`, ``Message``, Optional (Keyword only)
-            The ``.referenced_message`` attribute of the message.
-        
         deleted : `bool`, Optional (Keyword only)
             The ``.deleted`` attribute of the message. If called as a class method, defaults to `True`.
         
@@ -2624,6 +2651,7 @@ class Message(DiscordEntity, immortal = True):
             The ``.nonce`` attribute of the message. If passed as `str` can be between length `0` and `32`.
             
             If called as a classmethod defaults to `None`.
+        
         pinned : `bool`, `int` (`0`, `1`), Optional (Keyword only)
             The ``.pinned`` attribute of the message. Accepts other `int` as `bool` as well, but their value
             still cannot be other than `0`, `1`.
@@ -2631,10 +2659,16 @@ class Message(DiscordEntity, immortal = True):
         reactions : `None`, ``ReactionMapping``, Optional (Keyword only)
             The ``.reactions`` attribute of the message.
         
+        referenced_message : `None`, ``Message``, Optional (Keyword only)
+            The ``.referenced_message`` attribute of the message.
+        
         role_mentions : `None`, (`list`, `tuple`) of ``Role``, Optional (Keyword only)
             The ``.role_mentions`` attribute of the message. If passed as an empty `list`, will be set as `None`
             instead.
-            
+        
+        role_subscription : `None`, ``MessageRoleSubscription``, Optional (Keyword only) 
+            Additional role subscription information attached to the message.
+        
         stickers : `None`, (`list`, `tuple`) of ``Sticker``, Optional (Keyword only)
             The ``.stickers`` attribute of the message.
             
@@ -2699,6 +2733,7 @@ class Message(DiscordEntity, immortal = True):
                 (MESSAGE_FIELD_KEY_INTERACTION, MessageInteraction, 'interaction'),
                 (MESSAGE_FIELD_KEY_REACTIONS, ReactionMapping, 'reactions'),
                 (MESSAGE_FIELD_KEY_THREAD, Channel, 'thread'),
+                (MESSAGE_FIELD_KEY_ROLE_SUBSCRIPTION, MessageRoleSubscription, 'role_subscription'),
             ):
                 try:
                     variable_value = kwargs.pop(variable_name)
@@ -2917,7 +2952,7 @@ class Message(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`)
+        data : `dict` of (`str`, `object`)
         """
         data = {}
         
@@ -3079,12 +3114,16 @@ class Message(DiscordEntity, immortal = True):
         # type
         data['type'] = self.type.value
         
+        # user_mentions
         user_mentions = self.user_mentions
         if (user_mentions is None):
             user_mention_datas = []
         else:
             user_mention_datas = [user_mention.to_data() for user_mention in user_mentions]
         data['mentions'] = user_mention_datas
+        
+        if include_internals:
+            put_role_subscription_into(self.role_subscription, data, defaults)
         
         return data
     
@@ -3095,7 +3134,7 @@ class Message(DiscordEntity, immortal = True):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`)
+        data : `dict` of (`str`, `object`)
         """
         data = {
             'message_id': str(self.id)
@@ -4419,6 +4458,59 @@ class Message(DiscordEntity, immortal = True):
             MESSAGE_FIELD_KEY_ROLE_MENTION_IDS,
         )
     
+    # Message.role_subscription
+    
+    @property
+    def role_subscription(self):
+        """
+        Additional role subscription information attached to the message.
+        
+        Defaults to `None`.
+        
+        Returns
+        -------
+        role_subscription : `None`, ``MessageRoleSubscription``
+        """
+        return _get_message_field(
+            self,
+            MESSAGE_FIELD_KEY_ROLE_SUBSCRIPTION,
+        )
+    
+    @role_subscription.setter
+    def role_subscription(self, role_subscription):
+        if role_subscription is None:
+            _remove_message_field(
+                self,
+                MESSAGE_FIELD_KEY_ROLE_SUBSCRIPTION,
+            )
+        else:
+            _set_message_field(
+                self,
+                MESSAGE_FIELD_KEY_ROLE_SUBSCRIPTION,
+                role_subscription,
+            )
+    
+    @role_subscription.deleter
+    def role_subscription(self):
+        _remove_message_field(
+            self,
+            MESSAGE_FIELD_KEY_ROLE_SUBSCRIPTION,
+        )
+    
+    
+    def has_role_subscription(self):
+        """
+        Returns whether the message has ``.role_subscription`` set.
+        
+        Returns
+        -------
+        has_role_subscription : `bool`
+        """
+        return _has_message_field(
+            self,
+            MESSAGE_FIELD_KEY_ROLE_SUBSCRIPTION,
+        )
+    
     # Message.stickers
     
     @property
@@ -4726,6 +4818,7 @@ class Message(DiscordEntity, immortal = True):
             MESSAGE_FIELD_KEY_USER_MENTIONS,
         )
     
+    # Others
         
     def has_any_content_field(self):
         """

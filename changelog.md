@@ -1,3 +1,11 @@
+## 1.3.20 *\[2023-01-??\]*
+
+#### Improvements
+
+- Add `MessageRoleSubscription`.
+- Add `Message.role_subscription`.
+
+
 ## 1.3.19 *\[2023-01-15\]*
 
 #### Improvements

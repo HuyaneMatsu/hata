@@ -17,6 +17,7 @@ def test__ChannelMetadataBase__place_holders():
     """
     channel_metadata = ChannelMetadataBase({})
     
+    vampytest.assert_instance(channel_metadata.application_id, int)
     vampytest.assert_instance(channel_metadata.applied_tag_ids, tuple, nullable = True)
     vampytest.assert_instance(channel_metadata.archived, bool)
     vampytest.assert_instance(channel_metadata.archived_at, DateTime, nullable = True)

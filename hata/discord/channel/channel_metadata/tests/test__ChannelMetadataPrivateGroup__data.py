@@ -12,12 +12,14 @@ def test__ChannelMetadataPrivateGroup__from_data():
     """
     Tests whether ``ChannelMetadataPrivateGroup.from_data` works as intended.
     """
+    application_id = 202301210002
     user_1 = User.precreate(202209160009)
     owner_id = 202209160010
     icon = Icon(IconType.static, 1)
     name = 'Armelyrics'
     
     channel_metadata = ChannelMetadataPrivateGroup.from_data({
+        'application_id': str(application_id),
         'recipients': [user_1.to_data()],
         'owner_id': str(owner_id),
         'icon': icon.as_base_16_hash,
@@ -27,6 +29,7 @@ def test__ChannelMetadataPrivateGroup__from_data():
     vampytest.assert_instance(channel_metadata, ChannelMetadataPrivateGroup)
     assert_fields_set(channel_metadata)
     
+    vampytest.assert_eq(channel_metadata.application_id, application_id)
     vampytest.assert_eq(channel_metadata.users, [user_1])
     vampytest.assert_eq(channel_metadata.owner_id, owner_id)
     vampytest.assert_eq(channel_metadata.icon, icon)
@@ -39,12 +42,14 @@ def test__ChannelMetadataPrivateGroup__to_data__0():
     
     Case: include defaults and internals.
     """
+    application_id = 202301210003
     user_1 = User.precreate(202209160011)
     owner_id = 202209160012
     icon = Icon(IconType.static, 1)
     name = 'Armelyrics'
     
     channel_metadata = ChannelMetadataPrivateGroup({
+        'application_id': application_id,
         'users': [user_1],
         'owner_id': owner_id,
         'name': name,
@@ -53,15 +58,19 @@ def test__ChannelMetadataPrivateGroup__to_data__0():
     
     data = channel_metadata.to_data(defaults = True, include_internals = True)
     
+    expected_output = {
+        'application_id': str(application_id),
+        'recipients': [user_1.to_data()],
+        'owner_id': str(owner_id),
+        'icon': icon.as_base_16_hash,
+        'name': name,
+    }
+
     vampytest.assert_eq(
         data,
-        {
-            'recipients': [user_1.to_data()],
-            'owner_id': str(owner_id),
-            'icon': icon.as_base_16_hash,
-            'name': name,
-        },
+        expected_output,
     )
+
 
 def test__ChannelMetadataPrivateGroup__to_data__1():
     """

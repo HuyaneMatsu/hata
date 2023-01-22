@@ -657,6 +657,17 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
     
     # Slot place holders
     
+    application_id = PlaceHolder(
+        0,
+        """
+        If the channel is managed by an application, then returns its identifier.
+        
+        Returns
+        -------
+        application_id : `int`
+        """
+    )
+    
     applied_tag_ids = PlaceHolder(
         None,
         """

@@ -926,7 +926,7 @@ def user_avatar_url_for(user, guild):
     return f'{CDN_ENDPOINT}/guilds/{guild_id}/users/{user.id}/avatars/{prefix}{guild_profile.avatar_hash:0>32x}.{ext}'
 
 
-def user_avatar_url_for_as(user, guild, ext=None, size=None):
+def user_avatar_url_for_as(user, guild, ext = None, size = None):
     """
     Returns the user's guild specific avatar. If the user has no guild local avatar, then returns `None`.
     

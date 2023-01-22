@@ -33,23 +33,23 @@ Discord sets the following limitations:
 
 The parameter types can be the following:
 
-| Name              | Discord field | String representation | Type representation   | Output type               |
-|-------------------|---------------|-----------------------|-----------------------|---------------------------|
-| attachment        | attachment    | `'attachment'`        | `Attachment`          | `Attachment`              |
-| boolean           | boolean       | `'bool'`              | `bool`                | `bool`                    |
-| channel           | channel       | `'channel'`           | `Channel`             | `Channel`                 |
-| channel_id        | channel       | `'channel_id'`        | N/A                   | `int`                     |
-| expression        | string        | `'expression'`        | N/A                   | `int` / `float`           |
-| float             | float         | `'float'`             | `float`               | `float`                   |
-| integer           | string        | `'int'`               | `int`                 | `int`                     |
-| role              | role          | `'role'`              | `Role`                | `Role`                    |
-| role_id           | role          | `'role_id'`           | N/A                   | `int`                     |
-| string            | string        | `'str'`               | `str`                 | `str`                     |
-| mentionable       | mentionable   | `'mentionable'`       | N/A                   | `ClientUserBase`, `Role`  |
-| mentionable_id    | mentionable   | `'mentionable_id'`    | N/A                   | `int`                     |
-| number            | integer       | `'number'`            | N/A                   | `int`                     |
-| user              | user          | `'user'`              | `User`, `UserBase`    | `ClientUserBase`          |
-| user_id           | user          | `'user_id'`           | N/A                   | `int`                     |
+| Name              | Discord field | String representation | Type representation                   | Output type               |
+|-------------------|---------------|-----------------------|---------------------------------------|---------------------------|
+| attachment        | attachment    | `'attachment'`        | `Attachment`                          | `Attachment`              |
+| boolean           | boolean       | `'bool'`              | `bool`                                | `bool`                    |
+| channel           | channel       | `'channel'`           | `Channel`                             | `Channel`                 |
+| channel_id        | channel       | `'channel_id'`        | N/A                                   | `int`                     |
+| expression        | string        | `'expression'`        | N/A                                   | `int`, `float`            |
+| float             | float         | `'float'`             | `float`                               | `float`                   |
+| integer           | string        | `'int'`               | `int`                                 | `int`                     |
+| role              | role          | `'role'`              | `Role`                                | `Role`                    |
+| role_id           | role          | `'role_id'`           | N/A                                   | `int`                     |
+| string            | string        | `'str'`               | `str`                                 | `str`                     |
+| mentionable       | mentionable   | `'mentionable'`       | N/A                                   | `ClientUserBase`, `Role`  |
+| mentionable_id    | mentionable   | `'mentionable_id'`    | N/A                                   | `int`                     |
+| number            | integer       | `'number'`            | N/A                                   | `int`                     |
+| user              | user          | `'user'`              | `ClientUserBase`, `User`, `UserBase`  | `ClientUserBase`          |
+| user_id           | user          | `'user_id'`           | N/A                                   | `int`                     |
 
 
 ## Parameter notes

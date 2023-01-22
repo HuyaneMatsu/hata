@@ -69,6 +69,9 @@ class Channel(DiscordEntity, immortal = True):
         
         Other Parameters
         ----------------
+        application_id : `int`, ``Application``, Optional (Keyword only)
+            The application's identifier the channel is managed by.
+        
         archived : `bool`, Optional (Keyword only)
             Whether the (thread) channel is archived.
         
@@ -137,6 +140,9 @@ class Channel(DiscordEntity, immortal = True):
         
         open : `bool`, Optional (Keyword only)
             Whether the thread channel is open.
+        
+        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+            The channel's owner's or creator's identifier.
         
         parent_id : `None`, `int`, ``Channel``, Optional (Keyword only)
             The channel's parent's identifier.
@@ -1147,6 +1153,11 @@ class Channel(DiscordEntity, immortal = True):
     # Fields
     
     @property
+    @copy_docs(ChannelMetadataBase.application_id)
+    def application_id(self):
+        return self.metadata.application_id
+    
+    @property
     @copy_docs(ChannelMetadataBase.applied_tag_ids)
     def applied_tag_ids(self):
         return self.metadata.applied_tag_ids
@@ -1572,6 +1583,9 @@ class Channel(DiscordEntity, immortal = True):
         
         Other Parameters
         ----------------
+        application_id : `int`, ``Application``, Optional (Keyword only)
+            The application's identifier the channel is managed by.
+        
         archived : `bool`, Optional (Keyword only)
             Whether the (thread) channel is archived.
         
@@ -1591,7 +1605,7 @@ class Channel(DiscordEntity, immortal = True):
             When the channel was created.
         
         bitrate : `int`, Optional (Keyword only)
-            The channel's ``.bitrate``.
+            The bitrate (in bits) of the voice channel.
         
         created_at : `None`, `datetime`, Optional (Keyword only)
             When the (thread) channel was created.
@@ -1612,7 +1626,7 @@ class Channel(DiscordEntity, immortal = True):
             The emoji to show in the add reaction button on a thread of the forum channel.
         
         flags : `int`, ``ChannelFlag``, Optional (Keyword only)
-            The channel's ``.flags``.
+            The channel's flags.
         
         icon : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The channel's icon.
@@ -1630,16 +1644,19 @@ class Channel(DiscordEntity, immortal = True):
             > Mutually exclusive with the `icon` parameter.
         
         invitable : `bool`, Optional (Keyword only)
-            The channel's `..invitable``.
+            Whether non-moderators can invite other non-moderators to the threads.
         
         name : `str`, Optional (Keyword only)
-            The channel's ``.name``.
+            The channel's name.
         
         nsfw : `int`, Optional (Keyword only)
-            The channel's ``.nsfw``.
+            Whether the channel is marked as non safe for work.
         
         open : `bool`, Optional (Keyword only)
-            The channel's ``.open``.
+            Whether the thread channel is open.
+        
+        owner_id : `int`, ``ClientUserBase``, Optional (Keyword only)
+            The channel's owner's or creator's identifier.
         
         parent_id : `None`, `int`, ``Channel``, Optional (Keyword only)
             The channel's parent's identifier.
@@ -1654,10 +1671,10 @@ class Channel(DiscordEntity, immortal = True):
             The channel's voice region.
         
         slowmode : `int`, Optional (Keyword only)
-            The channel's ``.slowmode``.
+            The channel's slowmode.
         
         topic : `None`, `str`, Optional (Keyword only)
-            The channel's ``.topic``.
+            The channel's topic.
         
         user_limit : `int`, Optional (Keyword only)
             The channel's ``.user_limit``.

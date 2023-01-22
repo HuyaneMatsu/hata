@@ -125,7 +125,7 @@ def filter_content_intent_client(clients, message_data, me):
     client : ``Client``
     """
     # Fast check for obvious speed reasons.
-    if len(clients) <= 1:
+    if (len(clients) <= 1) or (message_data.get('flags', 0) & (1 << 6)):
         yield me
         yield me
         return
@@ -283,12 +283,11 @@ def first_content_intent_client(clients, message_data, me):
     client : ``Client``
     """
     # Fast check for obvious speed reasons.
-    if len(clients) <= 1:
+    if (len(clients) <= 1) or (message_data.get('flags', 0) & (1 << 6)):
         return me
     
     # Check whether any of the clients has the required intent mask
     flag_mask = INTENT_MASK_MESSAGE_CONTENT
-    
     if message_data.get('guild_id', None) is None:
         flag_mask |= INTENT_MASK_DIRECT_MESSAGES
     else:

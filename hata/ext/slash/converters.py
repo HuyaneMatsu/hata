@@ -23,7 +23,7 @@ from ...discord.interaction import (
 )
 from ...discord.message import Attachment
 from ...discord.role import Role
-from ...discord.user import User, UserBase
+from ...discord.user import ClientUserBase, User, UserBase
 
 from .exceptions import SlashCommandParameterConversionError
 from .expression_parser import evaluate_text
@@ -681,6 +681,7 @@ TYPE_ANNOTATION_TO_ANNOTATION_TYPE = {
     str: (ANNOTATION_TYPE_STR, None),
     int: (ANNOTATION_TYPE_INT, None),
     bool: (ANNOTATION_TYPE_BOOL, None),
+    ClientUserBase: (ANNOTATION_TYPE_USER, None),
     UserBase: (ANNOTATION_TYPE_USER, None),
     User: (ANNOTATION_TYPE_USER, None),
     Role: (ANNOTATION_TYPE_ROLE, None),

@@ -27,7 +27,7 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
     placeholder : `None`, `str`
         Placeholder text of the select.
     
-    options : `None`, `tuple` of ``ComponentSelectOption``
+    options : `None`, `tuple` of ``StringSelectOption``
         Options of the select.
     """
     __slots__ = ('options', )
@@ -52,7 +52,7 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
     @copy_docs(ComponentMetadataSelectBase._add_type_specific_repr_fields_into)
     def _add_type_specific_repr_fields_into(self, repr_parts):
         # options
-        repr_parts.append(', options=')
+        repr_parts.append(', options = ')
         options = self.options
         if (options is None):
             repr_parts.append('[]')

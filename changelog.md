@@ -1,10 +1,16 @@
-## 1.3.20 *\[2023-01-??\]*
+## 1.3.20 *\[2023-01-22\]*
 
 #### Improvements
 
 - Add `MessageRoleSubscription`.
 - Add `Message.role_subscription`.
+- Add `ERROR_CODES.max_group_channels`.
+- Add `ChannelMetadataBase.application_id`.
+- Add `Channel.application_id`.
 
+#### Bug Fixes
+
+- Invoking user only messages modifications at guilds were multiple clients are present were not handled correctly.
 
 ## 1.3.19 *\[2023-01-15\]*
 

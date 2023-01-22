@@ -5,8 +5,10 @@ from scarletio import copy_docs
 from ...bases import ICON_TYPE_NONE, Slotted
 from ...permission.permission import PERMISSION_GROUP, PERMISSION_GROUP_OWNER, PERMISSION_NONE
 
-from .fields import parse_name, parse_owner_id, put_name_into, put_owner_id_into, validate_name, validate_owner_id
-
+from .fields import (
+    parse_application_id, parse_name, parse_owner_id, put_application_id_into, put_name_into, put_owner_id_into,
+    validate_application_id, validate_name, validate_owner_id
+)
 from .base import CHANNEL_METADATA_ICON_SLOT
 from .private_base import ChannelMetadataPrivateBase
 
@@ -19,6 +21,8 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
     ----------
     users : `list` of ``ClientUserBase``
         The users in the channel.
+    application_id : `int`
+        The application's identifier the channel is managed by.
     icon_hash : `int`
         The channel's icon's hash in `uint128`.
     icon_type : ``iconType``
@@ -33,13 +37,19 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
     order_group: `int` = `0`
         The channel's order group used when sorting channels.
     """
-    __slots__ = ('name', 'owner_id')
+    __slots__ = ('application_id', 'name', 'owner_id')
     
     icon = CHANNEL_METADATA_ICON_SLOT
     
     @copy_docs(ChannelMetadataPrivateBase.__hash__)
     def __hash__(self):
         hash_value = ChannelMetadataPrivateBase.__hash__(self)
+        
+        # application_id
+        hash_value ^= self.application_id
+        
+        # icon
+        hash_value ^= hash(self.icon)
         
         # name
         name = self.name
@@ -50,6 +60,17 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
         hash_value ^= self.owner_id
         
         return hash_value
+    
+    
+    @classmethod
+    @copy_docs(ChannelMetadataPrivateBase.from_data)
+    def from_data(cls, data):
+        self = super(ChannelMetadataPrivateGroup, cls).from_data(data)
+        
+        # application_id
+        self.application_id = parse_application_id(data)
+        
+        return self
     
     
     @copy_docs(ChannelMetadataPrivateBase.__new__)
@@ -80,6 +101,10 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
     @copy_docs(ChannelMetadataPrivateBase._is_equal_same_type)
     def _is_equal_same_type(self, other):
         if not ChannelMetadataPrivateBase._is_equal_same_type(self, other):
+            return False
+        
+        # application_id
+        if self.application_id != other.application_id:
             return False
         
         # icon
@@ -117,6 +142,9 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
     def _update_attributes(self, data):
         ChannelMetadataPrivateBase._update_attributes(self, data)
         
+        # application_id
+        # Ignore internal
+        
         # icon
         self._set_icon(data)
         
@@ -130,6 +158,9 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
     @copy_docs(ChannelMetadataPrivateBase._difference_update_attributes)
     def _difference_update_attributes(self, data):
         old_attributes = ChannelMetadataPrivateBase._difference_update_attributes(self, data)
+        
+        # application_id
+        # Ignore internal
         
         # icon
         self._update_icon(data, old_attributes)
@@ -177,6 +208,7 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
     def _create_empty(cls):
         self = super(ChannelMetadataPrivateGroup, cls)._create_empty()
         
+        self.application_id = 0
         self.name = ''
         self.owner_id = 0
         
@@ -201,6 +233,14 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
     def _set_attributes_from_keyword_parameters(self, keyword_parameters):
         ChannelMetadataPrivateBase._set_attributes_from_keyword_parameters(self, keyword_parameters)
         
+        # application_id
+        try:
+            application_id = keyword_parameters.pop('application_id')
+        except KeyError:
+            pass
+        else:
+            self.application_id = validate_application_id(application_id)
+        
         # name
         try:
             name = keyword_parameters.pop('name')
@@ -222,14 +262,11 @@ class ChannelMetadataPrivateGroup(ChannelMetadataPrivateBase, metaclass=Slotted)
     def to_data(self, *, defaults = False, include_internals = False):
         data = ChannelMetadataPrivateBase.to_data(self, defaults = defaults, include_internals = include_internals)
         
-        # name
+        type(self).icon.put_into(self.icon, data, defaults, as_data = not include_internals)
         put_name_into(self.name, data, defaults)
         
-        # owner_id
         if include_internals:
+            put_application_id_into(self.application_id, data, defaults)
             put_owner_id_into(self.owner_id, data, defaults)
-        
-        # icon
-        type(self).icon.put_into(self.icon, data, defaults, as_data = not include_internals)
         
         return data

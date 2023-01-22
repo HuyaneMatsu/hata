@@ -38,6 +38,12 @@ from .preinstanced import ForumLayout, SortOrder, VideoQualityMode, VoiceRegion
 
 Channel = include('Channel')
 
+# application_id
+
+parse_application_id = entity_id_parser_factory('application_id')
+put_application_id_into = entity_id_optional_putter_factory('application_id')
+validate_application_id = entity_id_validator_factory('application_id', NotImplemented, include = 'Application')
+
 # applied_tag_ids
 
 parse_applied_tag_ids = entity_id_array_parser_factory('applied_tags')
@@ -192,6 +198,7 @@ def parse_auto_archive_after(data):
             auto_archive_after *= 60
 
     return auto_archive_after
+
 
 def put_auto_archive_after_into(auto_archive_after, data, defaults, *, flatten_thread_metadata = False):
     """
@@ -563,43 +570,7 @@ validate_owner_id = entity_id_validator_factory('owner_id', ClientUserBase)
 
 parse_parent_id = entity_id_parser_factory('parent_id')
 put_parent_id_into = entity_id_optional_putter_factory('parent_id')
-
-
-def validate_parent_id(parent_id):
-    """
-    Validates the given `parent_id` field.
-    
-    Parameters
-    ----------
-    parent_id : `None`, `str`, `int`, ``Channel``
-        The channel's parent's identifier.
-    
-    Returns
-    -------
-    parent_id : `int`
-    
-    Raises
-    ------
-    TypeError
-        - If `parent_id` is not `None`, `str`.
-    ValueError
-        - If `parent_id` is out of the expected range.
-    """
-    if parent_id is None:
-        processed_parent_id = 0
-    
-    elif isinstance(parent_id, Channel):
-        processed_parent_id = parent_id.id
-    
-    else:
-        processed_parent_id = maybe_snowflake(parent_id)
-        if processed_parent_id is None:
-            raise TypeError(
-                f'`parent_id` can be `int`, `{Channel.__name__}`, `int`, got '
-                f'{parent_id.__class__.__name__}; {parent_id!r}.'
-            )
-    
-    return processed_parent_id
+validate_parent_id = entity_id_validator_factory('parent_id', NotImplemented, include = 'Channel')
 
 # permission_overwrites
 

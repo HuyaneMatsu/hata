@@ -39,6 +39,7 @@ def test__Channel__general_properties():
     Checks whether the general proxy properties of the ``Channel`` work as intended.
     """
     for channel_type, field_name, value in (
+        (ChannelType.private_group, 'application_id', 202301210011),
         (ChannelType.guild_thread_public, 'applied_tag_ids', (202209180147, 202209180148)),
         (ChannelType.guild_thread_public, 'archived', True),
         (ChannelType.guild_thread_public, 'archived_at', DateTime(2022, 5, 14)),

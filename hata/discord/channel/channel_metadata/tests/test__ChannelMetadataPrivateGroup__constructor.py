@@ -7,6 +7,7 @@ from ..private_group import ChannelMetadataPrivateGroup
 
 
 def assert_fields_set(channel_metadata):
+    vampytest.assert_instance(channel_metadata.application_id, int)
     vampytest.assert_instance(channel_metadata.users, list)
     vampytest.assert_instance(channel_metadata.owner_id, int)
     vampytest.assert_instance(channel_metadata.icon, Icon)
@@ -19,12 +20,14 @@ def test__ChannelMetadataPrivateGroup__new__0():
     
     Case: all fields given.
     """
+    application_id = 202301210000
     users = [User.precreate(202209160005)]
     owner_id = 202209160006
     icon = Icon(IconType.static, 1)
     name = 'Armelyrics'
     
     keyword_parameters = {
+        'application_id': application_id,
         'users': users,
         'owner_id': owner_id,
         'name': name,
@@ -37,6 +40,7 @@ def test__ChannelMetadataPrivateGroup__new__0():
     
     assert_fields_set(channel_metadata)
     
+    vampytest.assert_eq(channel_metadata.application_id, application_id)
     vampytest.assert_eq(channel_metadata.users, users)
     vampytest.assert_eq(channel_metadata.owner_id, owner_id)
     vampytest.assert_eq(channel_metadata.icon, icon)
@@ -76,12 +80,14 @@ def test__ChannelMetadataPrivateGroup__precreate__0():
     
     Case: all fields given.
     """
+    application_id = 202301210001
     users = [User.precreate(202209160007)]
     owner_id = 202209160008
     icon = Icon(IconType.static, 1)
     name = 'Armelyrics'
     
     keyword_parameters = {
+        'application_id': application_id,
         'users': users,
         'owner_id': owner_id,
         'icon': icon,
@@ -95,6 +101,7 @@ def test__ChannelMetadataPrivateGroup__precreate__0():
     
     assert_fields_set(channel_metadata)
     
+    vampytest.assert_eq(channel_metadata.application_id, application_id)
     vampytest.assert_eq(channel_metadata.users, users)
     vampytest.assert_eq(channel_metadata.owner_id, owner_id)
     vampytest.assert_eq(channel_metadata.icon, icon)

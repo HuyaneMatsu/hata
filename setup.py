@@ -118,6 +118,7 @@ setup(
         'hata.discord.user',
         'hata.discord.user.guild_profile',
         'hata.discord.user.thread_profile',
+        'hata.discord.user.voice_state',
         'hata.discord.voice',
         'hata.discord.webhook',
         'hata.ext',

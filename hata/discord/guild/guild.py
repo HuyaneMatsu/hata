@@ -480,7 +480,7 @@ class Guild(DiscordEntity, immortal = True):
                 pass
             else:
                 for voice_state_data in voice_state_datas:
-                    VoiceState(voice_state_data, self.id)
+                    VoiceState.from_data(voice_state_data, self.id)
             
             try:
                 thread_datas = data['threads']
@@ -982,7 +982,7 @@ class Guild(DiscordEntity, immortal = True):
         try:
             voice_state = self.voice_states[user.id]
         except KeyError:
-            voice_state = VoiceState(data, self.id)
+            voice_state = VoiceState.from_data(data, self.id)
             if (voice_state is not None):
                 voice_state._set_cache_user(user)
                 yield VOICE_STATE_JOIN, voice_state, None
@@ -1016,7 +1016,7 @@ class Guild(DiscordEntity, immortal = True):
         try:
             voice_state = self.voice_states[user.id]
         except KeyError:
-            voice_state = VoiceState(data, self.id)
+            voice_state = VoiceState.from_data(data, self.id)
             if (voice_state is not None):
                 voice_state._set_cache_user(user)
         else:

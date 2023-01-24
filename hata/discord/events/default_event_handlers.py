@@ -169,8 +169,6 @@ async def default_voice_client_update_event_handler(client, voice_state, old_att
         +=======================+=======================+
         | deaf                  | `str`                 |
         +-----------------------+-----------------------+
-        | is_speaker            | `bool`                |
-        +-----------------------+-----------------------+
         | mute                  | `bool`                |
         +-----------------------+-----------------------+
         | requested_to_speak_at | `None`, `datetime`    |
@@ -182,6 +180,8 @@ async def default_voice_client_update_event_handler(client, voice_state, old_att
         | self_stream           | `bool`                |
         +-----------------------+-----------------------+
         | self_video            | `bool`                |
+        +-----------------------+-----------------------+
+        | speaker               | `bool`                |
         +-----------------------+-----------------------+
     """
     # We do nothing with it right now

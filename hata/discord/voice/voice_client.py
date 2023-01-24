@@ -637,7 +637,7 @@ class VoiceClient(RichAttributeErrorBaseType):
             except KeyError:
                 return
             
-            if voice_state.is_speaker:
+            if voice_state.speaker:
                 return
         
         if request:
@@ -678,7 +678,7 @@ class VoiceClient(RichAttributeErrorBaseType):
             except KeyError:
                 return
             
-            if not voice_state.is_speaker:
+            if not voice_state.speaker:
                 return
         
         data = {

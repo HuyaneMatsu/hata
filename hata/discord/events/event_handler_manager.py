@@ -1019,8 +1019,6 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +=======================+=======================+
         | deaf                  | `str`                 |
         +-----------------------+-----------------------+
-        | is_speaker            | `bool`                |
-        +-----------------------+-----------------------+
         | mute                  | `bool`                |
         +-----------------------+-----------------------+
         | requested_to_speak_at | `None`, `datetime`    |
@@ -1032,6 +1030,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         | self_stream           | `bool`                |
         +-----------------------+-----------------------+
         | self_video            | `bool`                |
+        +-----------------------+-----------------------+
+        | speaker               | `bool`                |
         +-----------------------+-----------------------+
     
     voice_client_join(client : ``Client``, voice_state : ``VoiceState``)
@@ -1083,8 +1083,6 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +=======================+=======================+
         | deaf                  | `str`                 |
         +-----------------------+-----------------------+
-        | is_speaker            | `bool`                |
-        +-----------------------+-----------------------+
         | mute                  | `bool`                |
         +-----------------------+-----------------------+
         | requested_to_speak_at | `None`, `datetime`    |
@@ -1096,6 +1094,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         | self_stream           | `bool`                |
         +-----------------------+-----------------------+
         | self_video            | `bool`                |
+        +-----------------------+-----------------------+
+        | speaker               | `bool`                |
         +-----------------------+-----------------------+
         
         > This event has a default handler defined, which is used by hata's ``VoiceClient``.

@@ -1,5 +1,7 @@
 __all__ = ('RichVoiceState', )
 
+import warnings
+
 from ...discord.user import User
 
 from .user_voice_settings import AudioBalance
@@ -15,7 +17,7 @@ class RichVoiceState:
         The user's audio balance.
     deaf : `bool`
         Whether the user is deafen.
-    is_speaker : `bool`
+    speaker : `bool`
         Whether the user is suppressed inside of the voice channel.
         
         If the channel is a ``Channel``, it is always `False`, meanwhile it ``Channel`` it can vary.
@@ -37,7 +39,7 @@ class RichVoiceState:
         Can be in range [0.0:2.0].
     """
     __slots__ = (
-        'audio_balance', 'deaf', 'is_speaker', 'mute', 'nick', 'self_deaf', 'self_mute', 'user', 'volume'
+        'audio_balance', 'deaf', 'speaker', 'mute', 'nick', 'self_deaf', 'self_mute', 'user', 'volume'
     )
     
     def __repr__(self):
@@ -63,7 +65,7 @@ class RichVoiceState:
         self = object.__new__(cls)
         self.audio_balance = AudioBalance.from_data(data['pan'])
         self.deaf = data['deaf']
-        self.is_speaker = not data.get('suppress', False)
+        self.speaker = not data.get('suppress', False)
         self.mute = data['mute']
         self.nick = data.get('nick', None)
         self.self_deaf = data['self_deaf']
@@ -71,3 +73,17 @@ class RichVoiceState:
         self.user = User.from_data(data['user'])
         self.volume = data['volume'] * 0.01
         return self
+
+    
+    @property
+    def is_speaker(self):
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.is_speaker` is deprecated and will be removed in 2023 jul. '
+                f'Please use `.speaker` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return self.speaker

@@ -43,7 +43,7 @@ class ActivityChange:
         if added is None:
             field_added = False
         else:
-            repr_parts.append(' added=')
+            repr_parts.append(' added = ')
             repr_parts.append(repr(added))
             field_added = True
         
@@ -54,7 +54,7 @@ class ActivityChange:
             else:
                 field_added = True
             
-            repr_parts.append(' updated=')
+            repr_parts.append(' updated = ')
             repr_parts.append(repr(updated))
         
         removed = self.removed
@@ -62,7 +62,7 @@ class ActivityChange:
             if field_added:
                 repr_parts.append(',')
             
-            repr_parts.append(' removed=')
+            repr_parts.append(' removed = ')
             repr_parts.append(repr(removed))
         
         repr_parts.append('>')
@@ -192,11 +192,13 @@ class ActivityUpdate:
     
     def __repr__(self):
         """Returns the representation of the activity update."""
-        return f'<{self.__class__.__name__} activity={self.activity!r} changes count={len(self.old_attributes)}>'
+        return f'<{self.__class__.__name__} activity = {self.activity!r} changes count = {len(self.old_attributes)}>'
+    
     
     def __len__(self):
         """Helper for unpacking if needed."""
         return 2
+    
     
     def __iter__(self):
         """

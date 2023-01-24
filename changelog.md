@@ -1,12 +1,30 @@
+## 1.3.21 *\[2023-01-??\]*
+
+#### Improvements
+
+- Add `VoiceState.copy`.
+- Add `VoiceState.to_data`.
+- Add `VoiceState.__new__`.
+- Add `VoiceState.__hash__`.
+- Add `VoiceState.copy_with`.
+- `VoiceState` now supports rich attribute exceptions.
+- Repurpose `VoiceState.__new__`. Rename to `.from_data`.
+- `VoiceState.__eq__` now works on partial instances as well.
+
+#### Renames, Deprecation & Removals
+
+- Deprecate `VoiceState.is_speaker`.
+- Rename `VoiceState.is_speaker` to `.speaker`.
+
 ## 1.3.20 *\[2023-01-22\]*
 
 #### Improvements
 
+- Add `Channel.application_id`.
 - Add `MessageRoleSubscription`.
 - Add `Message.role_subscription`.
 - Add `ERROR_CODES.max_group_channels`.
 - Add `ChannelMetadataBase.application_id`.
-- Add `Channel.application_id`.
 
 #### Bug Fixes
 

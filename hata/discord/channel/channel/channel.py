@@ -1498,7 +1498,7 @@ class Channel(DiscordEntity, immortal = True):
                 channel_id = self.id
                 
                 for voice_states in guild.voice_states.values():
-                    if (voice_states.channel_id == channel_id) and voice_states.is_speaker:
+                    if (voice_states.channel_id == channel_id) and voice_states.speaker:
                         users.append(voice_states.user)
         
         return users
@@ -1525,7 +1525,7 @@ class Channel(DiscordEntity, immortal = True):
                 channel_id = self.id
                 
                 for voice_states in guild.voice_states.values():
-                    if (voice_states.channel_id == channel_id) and (not voice_states.is_speaker):
+                    if (voice_states.channel_id == channel_id) and (not voice_states.speaker):
                         users.append(voice_states.user)
         
         return users

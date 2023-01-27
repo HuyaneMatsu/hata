@@ -53,9 +53,9 @@ def test__Event__new(event_type):
 
 @vampytest.call_with(ReactionAddEvent)
 @vampytest.call_with(ReactionDeleteEvent)
-def test__Event__from_values(event_type):
+def test__Event__from_fields(event_type):
     """
-    Tests whether `.from_values` works as intended.
+    Tests whether `.from_fields` works as intended.
     
     Parameters
     ----------
@@ -66,7 +66,7 @@ def test__Event__from_values(event_type):
     message = Message.precreate(202301030002)
     user = User.precreate(202301030003)
     
-    event = event_type.from_values(message, emoji, user)
+    event = event_type.from_fields(message, emoji, user)
     _assert_fields_set(event_type, event)
     
     vampytest.assert_is(event.emoji, emoji)

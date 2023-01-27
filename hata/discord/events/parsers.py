@@ -526,7 +526,7 @@ def MESSAGE_REACTION_ADD__CAL_SC(client, data):
     
     message._add_reaction(emoji, user)
     
-    event = ReactionAddEvent.from_values(message, emoji, user)
+    event = ReactionAddEvent.from_fields(message, emoji, user)
     Task(client.events.reaction_add(client, event), KOKORO)
 
 
@@ -550,7 +550,7 @@ def MESSAGE_REACTION_ADD__CAL_MC(client, data):
     
     message._add_reaction(emoji, user)
     
-    event = ReactionAddEvent.from_values(message, emoji, user)
+    event = ReactionAddEvent.from_fields(message, emoji, user)
     if clients is None:
         event_handler = client.events.reaction_add
         if (event_handler is not DEFAULT_EVENT_HANDLER):
@@ -706,7 +706,7 @@ def MESSAGE_REACTION_REMOVE__CAL_SC(client, data):
     
     message._remove_reaction(emoji, user)
     
-    event = ReactionDeleteEvent.from_values(message, emoji, user)
+    event = ReactionDeleteEvent.from_fields(message, emoji, user)
     Task(client.events.reaction_delete(client, event), KOKORO)
 
 
@@ -731,7 +731,7 @@ def MESSAGE_REACTION_REMOVE__CAL_MC(client, data):
     
     message._remove_reaction(emoji, user)
     
-    event = ReactionDeleteEvent.from_values(message, emoji, user)
+    event = ReactionDeleteEvent.from_fields(message, emoji, user)
     
     if clients is None:
         event_handler = client.events.reaction_delete

@@ -40,6 +40,8 @@ class ConnectionType(PreinstancedBase):
     +-----------------------+-----------------------+-------------------+
     | github                | GitHub                | github            |
     +-----------------------+-----------------------+-------------------+
+    | instagram             | Instagram             | instagram         |
+    +-----------------------+-----------------------+-------------------+
     | league_of_legends     | League of Legends     | leagueoflegends   |
     +-----------------------+-----------------------+-------------------+
     | paypal                | PayPal                | paypal            |
@@ -83,6 +85,7 @@ class ConnectionType(PreinstancedBase):
     epic_games = P('epicgames', 'Epic Games')
     facebook = P('facebook', 'Facebook')
     github = P('github', 'GitHub')
+    instagram = P('instagram', 'Instagram')
     league_of_legends = P('leagueoflegends', 'League of Legends')
     paypal = P('paypal', 'PayPal')
     playstation = P('playstation', 'PlayStation Network')

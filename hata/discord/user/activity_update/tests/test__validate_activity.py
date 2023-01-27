@@ -15,7 +15,6 @@ def test__validate_activity__0():
     
     for input_value, expected_output in (
         (activity, activity),
-        (None, Activity()),
     ):
         output = validate_activity(input_value)
         vampytest.assert_eq(output, expected_output)
@@ -29,6 +28,7 @@ def test__validate_activity__1():
     """
     for input_value in (
         12.5,
+        None,
     ):
         with vampytest.assert_raises(TypeError):
             validate_activity(input_value)

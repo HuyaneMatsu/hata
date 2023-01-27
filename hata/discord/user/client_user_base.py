@@ -8,7 +8,8 @@ from ..activity import Activity, ActivityType
 from ..color import Color
 from ..core import GUILDS, USERS
 
-from .activity_change import ActivityChange, ActivityUpdate
+from .activity_change import ActivityChange
+from .activity_update import ActivityUpdate
 from .flags import UserFlag
 from .guild_profile import GuildProfile
 from .preinstanced import Status
@@ -710,7 +711,7 @@ class ClientUserPBase(ClientUserBase):
                     
                     new_activities.append(activity)
                 
-                activity_change = ActivityChange(new_activities, None, None)
+                activity_change = ActivityChange.from_fields(new_activities, None, None)
                 
             else:
                 added_activities = None
@@ -732,7 +733,7 @@ class ClientUserPBase(ClientUserBase):
                         
                         activity_old_attributes = activity._difference_update_attributes(activity_data)
                         if activity_old_attributes:
-                            activity_update = ActivityUpdate(activity, activity_old_attributes)
+                            activity_update = ActivityUpdate.from_fields(activity, activity_old_attributes)
                             
                             if updated_activities is None:
                                 updated_activities = []
@@ -763,13 +764,15 @@ class ClientUserPBase(ClientUserBase):
                 if None is added_activities is updated_activities is removed_activities:
                     activity_change = None
                 else:
-                    activity_change = ActivityChange(added_activities, updated_activities, removed_activities)
+                    activity_change = ActivityChange.from_fields(
+                        added_activities, updated_activities, removed_activities
+                    )
         
         else:
             if old_activities is None:
                 activity_change = None
             else:
-                activity_change = ActivityChange(None, None, old_activities)
+                activity_change = ActivityChange.from_fields(None, None, old_activities)
         
         if (activity_change is not None):
             old_attributes['activities'] = activity_change

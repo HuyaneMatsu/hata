@@ -2,33 +2,35 @@ import vampytest
 
 from ....activity import Activity, ActivityType
 
-from ..fields import validate_activity
+from ..fields import validate_removed
 
 
-def test__validate_activity__0():
+def test__validate_removed__0():
     """
-    Tests whether ``validate_activity`` works as intended.
+    Tests whether ``validate_removed`` works as intended.
     
     Case: passing.
     """
     activity = Activity('tsuki', activity_type = ActivityType.competing)
     
     for input_value, expected_output in (
-        (activity, activity),
-        (None, Activity()),
+        ([], None),
+        ([activity], [activity]),
+        (None, None),
     ):
-        output = validate_activity(input_value)
+        output = validate_removed(input_value)
         vampytest.assert_eq(output, expected_output)
 
 
-def test__validate_activity__1():
+def test__validate_removed__1():
     """
-    Tests whether ``validate_activity`` works as intended.
+    Tests whether ``validate_removed`` works as intended.
     
     Case: `TypeError`.
     """
     for input_value in (
         12.5,
+        [12.6,]
     ):
         with vampytest.assert_raises(TypeError):
-            validate_activity(input_value)
+            validate_removed(input_value)

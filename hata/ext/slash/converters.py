@@ -1923,7 +1923,7 @@ def is_pep_593_typing(annotation_value):
     
     Parameters
     ----------
-    annotation_value : `Any`
+    annotation_value : `object`
         The parameter to decide whether it is a ``pep 593 typing:https://peps.python.org/pep-0593/``.
     
     Returns
@@ -2022,7 +2022,7 @@ def parse_annotation_fallback(parameter, annotation_value):
     ----------
     parameter : ``Parameter``
         The respective parameter's representation.
-    annotation_value : `None`, `Any`
+    annotation_value : `None`, `object`
         The annotated value to interpret.
     
     Returns
@@ -2212,12 +2212,12 @@ class ParameterConverter(RichAttributeErrorBaseType):
             The client who received the respective ``InteractionEvent``.
         interaction_event : ``InteractionEvent``
             The received application command interaction.
-        value : `Any`
+        value : `object`
             ``ApplicationCommandInteractionOption.value``.
         
         Returns
         -------
-        converted_value : `None`, ``Any``
+        converted_value : `None`, ``object``
             If conversion fails, always returns `None`.
         
         Raises
@@ -2267,7 +2267,7 @@ class RegexParameterConverter(ParameterConverter):
     ----------
     parameter_name : `str`
         The parameter's name.
-    default : `Any`
+    default : `object`
         Default value of the parameter.
     index : `int`
         the index of the regex pattern to take.
@@ -2322,9 +2322,9 @@ class RegexParameterConverter(ParameterConverter):
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' parameter_name=',
+            ' parameter_name = ',
             repr(self.parameter_name),
-            ', index=',
+            ', index = ',
             repr(self.index),
         ]
         
@@ -2347,7 +2347,7 @@ class FormFieldKeywordParameterConverter(ParameterConverter):
         The parameter's name.
     annotation : `str`, `Pattern`
         Annotation defaulting to the parameter's name if required.
-    default : `Any`
+    default : `object`
         Default value of the parameter.
     matcher : `FunctionType`
         Matches interaction options based on their `custom_id`.
@@ -2435,7 +2435,7 @@ class FormFieldKeywordParameterConverter(ParameterConverter):
         
         Returns
         -------
-        value : `Any`
+        value : `object`
             The matched value or the converter's default value.
         """
         value = interaction_event.get_value_for(converter.annotation)
@@ -2459,7 +2459,7 @@ class FormFieldKeywordParameterConverter(ParameterConverter):
         
         Returns
         -------
-        value : `Any`
+        value : `object`
             The matched value or the converter's default value.
         """
         match, value = interaction_event.get_match_and_value(converter.annotation.fullmatch)
@@ -2483,7 +2483,7 @@ class FormFieldKeywordParameterConverter(ParameterConverter):
         
         Returns
         -------
-        value : `Any`
+        value : `object`
             The matched value or the converter's default value.
         groups : `dict` of (`str`, `str`) items
             The matched values by the regex pattern.
@@ -2510,7 +2510,7 @@ class FormFieldKeywordParameterConverter(ParameterConverter):
         
         Returns
         -------
-        value : `Any`
+        value : `object`
             The matched value or the converter's default value.
         groups : `tuple` of `str`
             The matched values by the regex pattern.
@@ -2533,7 +2533,7 @@ class FormFieldMultiParameterConverter(FormFieldKeywordParameterConverter):
         The parameter's name.
     annotation : `str`, `Pattern`
         Annotation defaulting to the parameter's name if required.
-    default : `Any`
+    default : `object`
         Default value of the parameter.
     matcher : `FunctionType`
         Matches interaction options based on their `custom_id`.
@@ -2554,7 +2554,7 @@ class FormFieldMultiParameterConverter(FormFieldKeywordParameterConverter):
         
         Returns
         -------
-        values : `None`, `list` of `Any`
+        values : `None`, `list` of `object`
             The matched values.
         """
         value = interaction_event.get_value_for(converter.annotation)
@@ -2581,7 +2581,7 @@ class FormFieldMultiParameterConverter(FormFieldKeywordParameterConverter):
         
         Returns
         -------
-        values : `None`, `list` of `Any`
+        values : `None`, `list` of `object`
             The matched values.
         """
         values = None
@@ -2610,7 +2610,7 @@ class FormFieldMultiParameterConverter(FormFieldKeywordParameterConverter):
         
         Returns
         -------
-        groups_and_values : `None`, `list` of `tuple` (`dict` of (`str`, `str`) items, `Any`)
+        groups_and_values : `None`, `list` of `tuple` (`dict` of (`str`, `str`) items, `object`)
             The matched values from the field's `custom_id` and their values.
         """
         values = None
@@ -2641,7 +2641,7 @@ class FormFieldMultiParameterConverter(FormFieldKeywordParameterConverter):
         
         Returns
         -------
-        groups_and_values : `None`, `list` of `tuple` (`tuple` of `str`, `Any`)
+        groups_and_values : `None`, `list` of `tuple` (`tuple` of `str`, `object`)
             The matched values from the field's `custom_id` and their values.
         """
         values = None
@@ -2703,9 +2703,9 @@ class InternalParameterConverter(ParameterConverter):
         return ''.join([
             '<',
             self.__class__.__name__,
-            'parameter_name=',
+            'parameter_name = ',
             repr(self.parameter_name),
-            ', type=',
+            ', type = ',
             ANNOTATION_TYPE_TO_STR_ANNOTATION[self.type],
             '>',
         ])
@@ -2718,7 +2718,7 @@ class SlashCommandParameterConverter(ParameterConverter):
     Attributes
     ----------
     parameter_name : `str`
-        The parameter's name.
+        The parameter's internal name.
     auto_completer : `None`, ``SlashCommandParameterAutoCompleter``
         Auto completer if registered.
     channel_types : `None`, `tuple` of ``ChannelType``
@@ -2729,7 +2729,7 @@ class SlashCommandParameterConverter(ParameterConverter):
         The choices to choose from if applicable. The keys are choice vales meanwhile the values are choice names.
     converter : `CoroutineFunctionType`
         The converter to use to convert a value to it's desired type.
-    default : `Any`
+    default : `object`
         Default value of the parameter.
     description : `None`, `str`
         The parameter's description.
@@ -2769,7 +2769,7 @@ class SlashCommandParameterConverter(ParameterConverter):
         converter : `CoroutineFunctionType`
             The converter to use to convert a value to it's desired type.
         name : `str`
-            The parameter's name.
+            The parameter's internal name.
         description : `None`, `str`
             The parameter's description.
         default : `bool`
@@ -3064,6 +3064,7 @@ def create_parameter_converter(parameter, parameter_configurer):
         - If a `choice` name is duped.
         - If a `choice` values are mixed types.
         - If `annotation`'s 1st element's (description's) length is out of the expected range [2:100].
+        - If a slash parameter's final description's length is out of the expected range.
     """
     if parameter_configurer is None:
         (
@@ -3099,6 +3100,19 @@ def create_parameter_converter(parameter, parameter_configurer):
         parameter_converter = InternalParameterConverter(parameter.name, annotation_type, converter)
     
     else:
+        # Rare error case when the parameter has no description defined, so it defaults back to its name, that is
+        # outside of the expected range.
+        description_length = len(description)
+        if (description_length < APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN) and (name == description):
+            raise ValueError(
+                f'`{parameter.name}` parameter\'s description\'s length is out of the expected range: '
+                f'[{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN}:{APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX}], '
+                f'got {description_length!r}; {description!r}.\n'
+                f'This happened because the parameter has no description specified so it tried to default to its '
+                f'name.\n'
+                f'Note that the required minimal name length is lower than the required minimal description length.'
+            )
+        
         parameter_converter = SlashCommandParameterConverter(
             parameter.name, annotation_type, converter, name, description, default, required, choice_enum_type,
             choices, channel_types, max_value, min_value, autocomplete, max_length, min_length

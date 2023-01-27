@@ -5,16 +5,30 @@
 - Add `VoiceState.copy`.
 - Add `VoiceState.to_data`.
 - Add `VoiceState.__new__`.
+- Add `ActivityChange.copy`.
+- Add `ActivityUpdate.copy`.
 - Add `VoiceState.__hash__`.
 - Add `VoiceState.copy_with`.
+- Add `ActivityChange.__eq__`.
+- Add `ActivityUpdate.__eq__`.
+- Add `ActivityChange.__hash__`.
+- Add `ActivityUpdate.__hash__`.
+- Add `ConnectionType.instagram`.
+- Add `ActivityChange.copy_with`.
+- Add `ActivityUpdate.copy_with`.
+- Add `ActivityChange.from_fields`.
+- Add `ActivityUpdate.from_fields`.
 - `VoiceState` now supports rich attribute exceptions.
 - Repurpose `VoiceState.__new__`. Rename to `.from_data`.
+- `ActivityUpdate` nos supports rich attribute exceptions.
+- `ActivityChange` nos supports rich attribute exceptions.
 - `VoiceState.__eq__` now works on partial instances as well.
 
 #### Renames, Deprecation & Removals
 
 - Deprecate `VoiceState.is_speaker`.
 - Rename `VoiceState.is_speaker` to `.speaker`.
+- Rename `ReactionAddEvent.from_values` to `.from_fields`.
 
 ## 1.3.20 *\[2023-01-22\]*
 

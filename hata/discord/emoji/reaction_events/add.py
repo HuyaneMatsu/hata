@@ -96,7 +96,7 @@ class ReactionAddEvent(EventBase):
     
     
     @classmethod
-    def from_values(cls, message, emoji, user):
+    def from_fields(cls, message, emoji, user):
         """
         Creates a new reaction add (or delete) instance.
         

@@ -15,9 +15,9 @@ def test__put_members_into():
     """
     team_member = TeamMember(user = User.precreate(202211230021))
     
-    for input_, defaults, expected_output in (
+    for input_value, defaults, expected_output in (
         (None, True, {'members': []}),
-        ([team_member], False, {'members': [team_member.to_data(defaults = True)]}),
+        ([team_member], False, {'members': [team_member.to_data(defaults = False, include_internals = True)]}),
     ):
-        data = put_members_into(input_, {}, defaults)
+        data = put_members_into(input_value, {}, defaults, include_internals = True)
         vampytest.assert_eq(data, expected_output)

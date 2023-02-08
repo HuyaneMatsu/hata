@@ -20,7 +20,7 @@ def test__ChannelMetadataPrivateGroup__from_data():
     
     channel_metadata = ChannelMetadataPrivateGroup.from_data({
         'application_id': str(application_id),
-        'recipients': [user_1.to_data()],
+        'recipients': [user_1.to_data(defaults = True, include_internals = True)],
         'owner_id': str(owner_id),
         'icon': icon.as_base_16_hash,
         'name': name,
@@ -60,7 +60,7 @@ def test__ChannelMetadataPrivateGroup__to_data__0():
     
     expected_output = {
         'application_id': str(application_id),
-        'recipients': [user_1.to_data()],
+        'recipients': [user_1.to_data(defaults = True, include_internals = True)],
         'owner_id': str(owner_id),
         'icon': icon.as_base_16_hash,
         'name': name,

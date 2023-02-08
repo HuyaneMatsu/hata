@@ -29,6 +29,6 @@ def test__Oauth2User__has_scope():
     scope = Oauth2Scope.bot
     data['scope'] = scope.value
     
-    user = Oauth2User(_get_user_data(), Oauth2Access(data, ''))
+    user = Oauth2User.from_data(_get_user_data(), Oauth2Access.from_data(data, ''))
     
     vampytest.assert_eq(user.has_scope(scope), True)

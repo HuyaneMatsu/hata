@@ -5,7 +5,7 @@ from scarletio import Compound
 from ...bases import maybe_snowflake
 from ...channel import Channel
 from ...core import GUILDS
-from ...guild import Guild, create_partial_guild_from_id
+from ...guild import Guild
 from ...http import DiscordHTTPClient
 from ...role import Role
 from ...user import ClientUserBase, User
@@ -218,7 +218,7 @@ class ClientCompoundUserEndpoints(Compound):
             if (nick is not None) and (not nick):
                 nick = None
             
-            if (guild is not None) and (user is not None) and guild.partial:
+            if (guild is not None) and (user is not None) and (not guild.partial):
                 try:
                     guild_profile = user.guild_profiles[guild.id]
                 except KeyError:
@@ -554,7 +554,7 @@ class ClientCompoundUserEndpoints(Compound):
             break
         
         data = await self.http.user_get(user_id)
-        return User._create_and_update(data)
+        return User.from_data(data)
     
     
     async def guild_user_get(self, guild, user):
@@ -586,17 +586,14 @@ class ClientCompoundUserEndpoints(Compound):
             If any exception was received from the Discord API.
         """
         user_id = get_user_id(user)
-        guild, guild_id = get_guild_and_id(guild)
+        guild_id = get_guild_id(guild)
         
         data = await self.http.guild_user_get(guild_id, user_id)
         
-        if guild is None:
-            guild = create_partial_guild_from_id(guild_id)
-        
-        return User._create_and_update(data, guild)
+        return User.from_data(data['user'], data, guild_id)
     
     
-    async def guild_user_search(self, guild, query, limit=1):
+    async def guild_user_search(self, guild, query, limit = 1):
         """
         Gets an user and it's profile at a guild by it's name. If the users are already loaded updates it.
         
@@ -631,7 +628,7 @@ class ClientCompoundUserEndpoints(Compound):
             - If `limit` was not given as `str`.
             - If `limit` is out fo expected range [1:1000].
         """
-        guild, guild_id = get_guild_and_id(guild)
+        guild_id = get_guild_id(guild)
         
         assert _assert__guild_user_search__query(query)
         assert _assert__guild_user_search__limit(limit)
@@ -644,9 +641,6 @@ class ClientCompoundUserEndpoints(Compound):
         if limit != 1:
             data['limit'] = limit
         
-        data = await self.http.guild_user_search(guild_id, data)
+        datas = await self.http.guild_user_search(guild_id, data)
         
-        if guild is None:
-            guild = create_partial_guild_from_id(guild_id)
-        
-        return [User._create_and_update(user_data, guild) for user_data in data]
+        return [User.from_data(data['user'], data, guild_id) for data in datas]

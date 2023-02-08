@@ -58,7 +58,7 @@ def parse_archived(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Channel data.
     
     Returns
@@ -83,14 +83,14 @@ def put_archived_into(archived, data, defaults):
     ----------
     archived : `bool`
         Whether the channel is archived.
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     if archived or defaults:
         try:
@@ -114,7 +114,7 @@ def parse_archived_at(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Channel data.
     
     Returns
@@ -143,14 +143,14 @@ def put_archived_at_into(archived_at, data, defaults):
     ----------
     archived_at : `None`, `datetime`
         When the channel was archived.
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     if defaults or (archived_at is not None):
         try:
@@ -179,7 +179,7 @@ def parse_auto_archive_after(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Channel data.
     
     Returns
@@ -208,7 +208,7 @@ def put_auto_archive_after_into(auto_archive_after, data, defaults, *, flatten_t
     ----------
     auto_archive_after : `int`
         Duration in seconds to automatically archive the thread after recent activity.
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
@@ -217,7 +217,7 @@ def put_auto_archive_after_into(auto_archive_after, data, defaults, *, flatten_t
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     if defaults or (auto_archive_after != AUTO_ARCHIVE_DEFAULT):
         if flatten_thread_metadata:
@@ -262,7 +262,7 @@ def parse_created_at(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Channel data.
     
     Returns
@@ -291,14 +291,14 @@ def put_created_at_into(created_at, data, defaults):
     ----------
     created_at : `None`, `datetime`
         When the channel was created.
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     if defaults or (created_at is not None):
         try:
@@ -355,7 +355,7 @@ def parse_default_thread_reaction(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Channel data.
     
     Returns
@@ -379,14 +379,14 @@ def put_default_thread_reaction_into(default_thread_reaction, data, defaults):
     ----------
     default_thread_reaction : `None`, ``Emoji``
         The emoji to show in the add reaction button on a thread of the forum channel.
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     if defaults or (default_thread_reaction is not None):
         if default_thread_reaction is None:
@@ -432,7 +432,7 @@ def parse_invitable(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Channel data.
     
     Returns
@@ -457,7 +457,7 @@ def put_invitable_into(invitable, data, defaults, *, flatten_thread_metadata = F
     ----------
     invitable : `bool`
         Whether non-moderators can invite other non-moderators to the threads.
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
@@ -466,7 +466,7 @@ def put_invitable_into(invitable, data, defaults, *, flatten_thread_metadata = F
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     if (not invitable) or defaults:
         if flatten_thread_metadata:
@@ -506,7 +506,7 @@ def parse_open(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
          Channel data.
     
     Returns
@@ -531,7 +531,7 @@ def put_open_into(open_, data, defaults, *, flatten_thread_metadata = False):
     ----------
     open_ : `bool`
         Whether the channel is open.
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
@@ -540,7 +540,7 @@ def put_open_into(open_, data, defaults, *, flatten_thread_metadata = False):
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     if (not open_) or defaults:
         if flatten_thread_metadata:
@@ -580,7 +580,7 @@ def parse_permission_overwrites(data):
     
     Parameters
     ----------
-    data : `list` of (`dict` of (`str`, `Any`) items) elements
+    data : `list` of (`dict` of (`str`, `object`) items) elements
         A list of permission overwrites' data.
     
     Returns
@@ -606,14 +606,14 @@ def put_permission_overwrites_into(permission_overwrites, data, defaults):
     ----------
     permission_overwrites :`dict` of (`int`, ``PermissionOverwrite``) items
         The channel's permission overwrites.
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     data['permission_overwrites'] = [
         permission_overwrite.to_data(include_internals = True)
@@ -718,7 +718,7 @@ def parse_users(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Channel data.
     
     Returns
@@ -749,16 +749,16 @@ def put_users_into(users, data, defaults):
     ----------
     users : `list` of ``ClientUserBase``
         The users in the channel.
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
-    data['recipients'] = [user.to_data() for user in users]
+    data['recipients'] = [user.to_data(defaults = True, include_internals = True) for user in users]
     
     return data
 
@@ -821,14 +821,14 @@ def put_video_quality_mode_into(video_quality_mode, data, defaults):
     ----------
     video_quality_mode : ``VideoQualityMode``
         The video quality of the voice channel.
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
     defaults : `bool`
         Whether default values should be included as well.
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
     """
     if defaults or (
         (video_quality_mode is not VIDEO_QUALITY_MODE_NONE) and

@@ -1,34 +1,79 @@
-## 1.3.21 *\[2023-01-??\]*
+## 1.3.21 *\[2023-02-??\]*
 
 #### Improvements
 
+- Add `UserBase.mfa`.
+- Add `Userbase.copy`.
+- Add `userBase.email`.
 - Add `VoiceState.copy`.
+- Add `userBase.locale`.
+- Add `WebhookBase.user`.
+- Add `UserBase.__new__`.
+- Add `WebhookBase.token`.
+- Add `Oauth2Access.copy`.
 - Add `VoiceState.to_data`.
+- Add `UserBase.from_data`.
 - Add `VoiceState.__new__`.
 - Add `ActivityChange.copy`.
 - Add `ActivityUpdate.copy`.
 - Add `VoiceState.__hash__`.
+- Add `Oauth2Access.__new__`.
 - Add `VoiceState.copy_with`.
+- Add `Oauth2Access.to_data`.
 - Add `ActivityChange.__eq__`.
 - Add `ActivityUpdate.__eq__`.
+- Add `Oauth2Access.__repr__`.
+- Add `Oauth2Access.__hash__`.
+- Add `PlaceHolderFunctional`.
+- Add `UserBase.premium_type`.
+- Add `Oauth2Access.copy_with`.
+- Add `Oauth2User.iter_scopes`.
+- Add `UserBase.email_verified`.
+- Add `Webhook.to_webhook_data`.
 - Add `ActivityChange.__hash__`.
 - Add `ActivityUpdate.__hash__`.
+- Add `WebhookBase.source_guild`.
 - Add `ConnectionType.instagram`.
 - Add `ActivityChange.copy_with`.
 - Add `ActivityUpdate.copy_with`.
+- Add `Oauth2Access.iter_scopes`.
+- Add `WebhookBase.application_id`.
+- Add `WebhookBase.source_channel`.
 - Add `ActivityChange.from_fields`.
 - Add `ActivityUpdate.from_fields`.
+- Rename `UserBase.verified` to `.email_verified`.
+- `UserBase.__eq__` now works on partial instances.
+- `UserBase.__hash__` now works on partial instances.
+- Repurpose `Webhook.__new__`, rename to `.from_data`.
 - `VoiceState` now supports rich attribute exceptions.
 - Repurpose `VoiceState.__new__`. Rename to `.from_data`.
+- Repurpose `Oauth2User.__new__`, rename to `.from_data`.
 - `ActivityUpdate` nos supports rich attribute exceptions.
 - `ActivityChange` nos supports rich attribute exceptions.
+- Repurpose `WebhookRepr.__new__`, rename to `.from_data`.
+- Repurpose `Oauth2Access.__init__`, rename to `.from_data`.
 - `VoiceState.__eq__` now works on partial instances as well.
+
+#### Bug Fixes
+
+##### ext.slash
+
+- `power` had no name registered.
+- `WebhookBase.can_use_emoji` dropped `AttributeError`.
+- `WebhookBase.can_use_emoji` dropped `TypeError` if the webhook's guild was partial.
+- `ClientUserBase.top_role_at` returned `default` if the user had only the default role.
+- `ClientUserBase._update_profile` did not force assign the user to the guild if it was missing.
+- `ActivityMetadataCustom` was not popping empty name, making impossible to create custom custom activities.
+- `ClientUserBase.guild_profile_role_ids` logic fixed when checking required roles (was broken when emoji role > 1).
+- `ClientUserBase.has_higher_role_than_at` could return `True` when both user is same and also the owner of the guild.
 
 #### Renames, Deprecation & Removals
 
+- Deprecate `UserBase.verified`.
 - Deprecate `VoiceState.is_speaker`.
 - Rename `VoiceState.is_speaker` to `.speaker`.
 - Rename `ReactionAddEvent.from_values` to `.from_fields`.
+- Deprecate `type_` parameter of `create_partial_webhook_from_id`. Use `webhook_type` instead.
 
 ## 1.3.20 *\[2023-01-22\]*
 

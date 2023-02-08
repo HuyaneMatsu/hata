@@ -17,7 +17,7 @@ def test__parse_members():
         ({}, None),
         ({'members': None}, None),
         ({'members': []}, None),
-        ({'members': [team_member.to_data(defaults = True)]}, (team_member, ))
+        ({'members': [team_member.to_data(defaults = True, include_internals = True)]}, (team_member, ))
     ):
         output = parse_members(input_data)
         

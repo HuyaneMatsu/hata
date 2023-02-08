@@ -1,13 +1,10 @@
-from .preinstanced import *
-from .utils import *
 from .webhook import *
-from .webhook_base import *
-from .webhook_repr import *
+from .webhook_source_channel import *
+from .webhook_source_guild import *
+
 
 __all__ = (
-    *preinstanced.__all__,
-    *utils.__all__,
     *webhook.__all__,
-    *webhook_base.__all__,
-    *webhook_repr.__all__,
+    *webhook_source_channel.__all__,
+    *webhook_source_guild.__all__,
 )

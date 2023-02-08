@@ -47,7 +47,7 @@ HEARTBEAT : `int` = `1`
 IDENTIFY : `int` = `2`
     Send only, used ``DiscordGateway._identify``.
 PRESENCE : `int` = `3`
-    Send only, used at ``Client.client_edit_presence``.
+    Send only, used at ``Client.edit_presence``.
 VOICE_STATE : `int` = `4`
     Send only, used at ``DiscordGateway.change_voice_state``
 VOICE_PING : `int` = `5`

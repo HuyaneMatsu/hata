@@ -226,7 +226,7 @@ class IntegrationApplication(DiscordEntity):
         if include_internals:
             put_id_into(self.id, data, defaults)
         
-        put_bot_into(self.bot, data, defaults)
+        put_bot_into(self.bot, data, defaults, include_internals = include_internals)
         put_description_into(self.description, data, defaults)
         type(self).icon.put_into(self.icon, data, defaults, as_data = not include_internals)
         put_name_into(self.name, data, defaults)

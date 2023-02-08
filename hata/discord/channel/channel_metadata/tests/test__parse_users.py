@@ -18,8 +18,23 @@ def test__parse_users():
     for input_data, expected_output in (
         ({}, []),
         ({'recipients': []}, []),
-        ({'recipients': [user_1.to_data(), user_2.to_data()]}, [user_1, user_2]),
-        ({'recipients': [user_2.to_data(), user_1.to_data()]}, [user_1, user_2]),
+        (
+            {
+                'recipients': [
+                    user_1.to_data(defaults = True, include_internals = True),
+                    user_2.to_data(defaults = True, include_internals = True),
+                ]
+            },
+            [user_1, user_2],
+        ), (
+            {
+                'recipients': [
+                    user_2.to_data(defaults = True, include_internals = True),
+                    user_1.to_data(defaults = True, include_internals = True),
+                ],
+            },
+            [user_1, user_2],
+        ),
     ):
         output = parse_users(input_data)
         vampytest.assert_eq(output, expected_output)

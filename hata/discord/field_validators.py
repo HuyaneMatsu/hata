@@ -770,6 +770,51 @@ def nullable_date_time_validator_factory(field_name):
     return validator
 
 
+def force_date_time_validator_factory(field_name):
+    """
+    Returns a new non-nullable `DateTime` validator.
+    
+    Parameters
+    ----------
+    field_name : `str`
+        The field's name.
+    
+    Returns
+    -------
+    validator : `FunctionType`
+    """
+    def validator(date_time):
+        """
+        Validates the given date time value.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        date_time : `DateTime`
+            The date time to validate.
+        
+        Returns
+        -------
+        date_time : `DateTime`
+        
+        Raises
+        ------
+        TypeError
+            - If `date_time` is not `DateTime`.
+        """
+        nonlocal field_name
+        
+        if (not isinstance(date_time, DateTime)):
+            raise TypeError(
+                f'`{field_name} can be `{DateTime.__name__}`, got {date_time.__class__.__name__}; {date_time!r}.'
+            )
+        
+        return date_time
+    
+    return validator
+
+
 def force_string_validator_factory(field_name, length_min, length_max):
     """
     Returns an enforced string validator.

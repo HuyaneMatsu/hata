@@ -1,7 +1,5 @@
 __all__ = ()
 
-from .color import Color
-
 
 def preconvert_snowflake(snowflake, name):
     """
@@ -125,97 +123,6 @@ def preconvert_snowflake_array(snowflake_array, name):
         snowflake_array = tuple(sorted(snowflake_array_processed))
 
     return snowflake_array
-
-
-def preconvert_discriminator(discriminator):
-    """
-    Converts the given `discriminator` to an acceptable value by the wrapper.
-    
-    Parameters
-    ----------
-    discriminator : `str`, `int`
-        The discriminator of an user to convert.
-    
-    Returns
-    -------
-    discriminator : `int`
-    
-    Raises
-    ------
-    TypeError
-        If `discriminator` was not passed neither as `int`, `str`.
-    ValueError
-        - If `discriminator` was passed as `str` and it is not numerical or it's length is over `4`.
-        - If the `discriminator`'s value is less than `0` or is over than `9999`.
-    """
-    if (type(discriminator) is int):
-        pass
-    elif isinstance(discriminator, int):
-        discriminator = int(discriminator)
-    # Discord sends `discriminator` as `str`, so lets accept that as well.
-    elif isinstance(discriminator, str):
-        if 0 < len(discriminator) < 5 and discriminator.isdigit():
-            raise ValueError(
-                f'`discriminator` was given as a `str`, but it is either not numeric, or it\'s length is not 1-4, got '
-                f'{discriminator!r}.'
-            )
-        discriminator = int(discriminator)
-    
-    else:
-        raise TypeError(
-            f'`discriminator` can be `int`, `str`, got '
-            f'{discriminator.__class__.__name__}; {discriminator!r}.'
-        )
-    
-    if discriminator < 0 or discriminator > 9999:
-        raise ValueError(
-            f'`discriminator` can be between 0 and 9999, got got {discriminator!r}.'
-        )
-    
-    return discriminator
-
-
-def preconvert_color(color, name, nullable):
-    """
-    Converts the given `color` to an acceptable value by the wrapper.
-    
-    Parameters
-    ----------
-    color : `int`
-        The color to convert.
-    name : `str`
-        The name of the value.
-    nullable : `bool`
-        Whether the value is nullable.
-    
-    Returns
-    -------
-    color : `Color`
-    
-    Raises
-    ------
-    TypeError
-        If `color` was not passed as `int`.
-    ValueError
-        If the `color`'s value is less than `0` or is over than `0xffffff`.
-    """
-    if not (nullable and (color is None)):
-        if type(color) is Color:
-            pass
-        elif isinstance(color, int):
-            color = Color(color)
-        else:
-            raise TypeError(
-                f'`{name}` can be {"`None`, " if nullable else ""}`{Color.__name__}`, `int`, '
-                f'got {color.__class__.__name__}; {color!r}.'
-            )
-            
-            if color < 0 or color > 0xffffff:
-                raise ValueError(
-                    f'`{name}` can be between 0 and 0xffffff, got {color!r}.'
-                )
-    
-    return color
 
 
 def preconvert_str(value, name, lower_limit, upper_limit):

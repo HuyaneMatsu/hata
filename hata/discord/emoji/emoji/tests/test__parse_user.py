@@ -14,7 +14,7 @@ def test__parse_user():
     for input_data, expected_output in (
         ({}, ZEROUSER),
         ({'user': None}, ZEROUSER),
-        ({'user': user.to_data()}, user),
+        ({'user': user.to_data(defaults = True, include_internals = True)}, user),
     ):
         output = parse_user(input_data)
         vampytest.assert_is(output, expected_output)

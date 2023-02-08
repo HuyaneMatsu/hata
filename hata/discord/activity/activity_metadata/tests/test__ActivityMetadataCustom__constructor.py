@@ -57,3 +57,15 @@ def test__ActivityMetadataCustom__new__1():
     vampytest.assert_eq(activity_metadata.created_at, created_at)
     vampytest.assert_eq(activity_metadata.emoji, emoji)
     vampytest.assert_eq(activity_metadata.state, state)
+
+
+def test__ActivityMetadataCustom__new__2():
+    """
+    Tests whether ``ActivityMetadataCustom.__new__`` works as intended.
+    
+    Case: Should pop empty name.
+    """
+    for keyword_parameters in ({'name': None}, {'name': ''}):
+        activity_metadata = ActivityMetadataCustom(keyword_parameters)
+        _assert_fields_set(activity_metadata)
+        vampytest.assert_eq(keyword_parameters, {})

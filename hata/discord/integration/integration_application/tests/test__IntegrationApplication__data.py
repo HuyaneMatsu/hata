@@ -21,7 +21,7 @@ def test__IntegrationApplication__from_data():
     
     data = {
         'id': str(integration_application_id),
-        'bot': bot.to_data(),
+        'bot': bot.to_data(defaults = True, include_internals = True),
         'icon': icon.as_base_16_hash,
         'description': description,
         'name': name,
@@ -61,7 +61,7 @@ def test__IntegrationApplication__to_data():
     
     expected_data = {
         'id': str(integration_application_id),
-        'bot': bot.to_data(),
+        'bot': bot.to_data(defaults = True, include_internals = True),
         'icon': icon.as_base_16_hash,
         'description': description,
         'name': name,

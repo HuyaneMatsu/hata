@@ -98,7 +98,7 @@ class ClientCompoundClientEndpoints(Compound):
     premium_type : PremiumType
     
     @Theory
-    def _set_attributes(self, data): ...
+    def _update_attributes(self, data): ...
     
     
     async def edit(

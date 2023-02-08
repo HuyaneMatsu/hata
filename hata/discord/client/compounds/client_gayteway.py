@@ -136,10 +136,6 @@ class ClientCompoundClientGateway(Compound):
             - If activity is not ``Activity`` or has type ``ActivityType.custom``.
         ValueError:
             - If the status `str`, but not any of the predefined ones.
-        
-        Notes
-        -----
-        This method is an alternative version of ``.client_edit_presence`` till further decision.
         """
         if status is ...:
             status = self._status

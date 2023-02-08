@@ -123,7 +123,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         if len(data) == 1:
             return
         
-        return Oauth2Access(data, redirect_url)
+        return Oauth2Access.from_data(data, redirect_url)
     
     
     async def owners_access(self, scopes):
@@ -171,7 +171,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = BasicAuth(str(self.id), self.secret).encode()
         data = await self.http.oauth2_token(data, headers)
-        return Oauth2Access(data, '')
+        return Oauth2Access.from_data(data, '')
     
     
     async def user_info_get(self, access):
@@ -210,7 +210,7 @@ class ClientCompoundOauth2Endpoints(Compound):
         headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = f'Bearer {access_token}'
         data = await self.http.user_info_get(headers)
-        return Oauth2User(data, access)
+        return Oauth2User.from_data(data, access)
         
     
     async def user_connection_get_all(self, access):

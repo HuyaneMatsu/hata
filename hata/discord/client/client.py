@@ -5,7 +5,7 @@ from json import JSONDecodeError
 from math import inf
 
 from scarletio import (
-    CancelledError, CompoundMetaType, EventThread, Future, LOOP_TIME, Task, WaitTillAll, export, from_json,
+    CancelledError, CompoundMetaType, EventThread, Future, LOOP_TIME, Task, WaitTillAll, copy_docs, export, from_json,
     methodize, run_coroutine, sleep, write_exception_async
 )
 
@@ -14,7 +14,6 @@ from ...ext import get_and_validate_setup_functions, run_setup_functions
 
 from ..activity import ACTIVITY_UNKNOWN, Activity, ActivityType
 from ..application import Application, Team
-
 from ..core import APPLICATION_ID_TO_CLIENT, CHANNELS, CLIENTS, GUILDS, KOKORO, USERS
 from ..events.core import register_client, unregister_client
 from ..events.event_handler_manager import EventHandlerManager
@@ -23,20 +22,18 @@ from ..events.intent import IntentFlag
 from ..exceptions import (
     DiscordException, DiscordGatewayException, INTENT_ERROR_CODES, InvalidToken, RESHARD_ERROR_CODES
 )
-from ..gateway.client_gateway import (
-    DiscordGateway, DiscordGatewaySharder
-)
-from ..guild import Guild
+from ..gateway.client_gateway import DiscordGateway, DiscordGatewaySharder
 from ..http import DiscordHTTPClient, RateLimitProxy
-from ..localization.utils import DEFAULT_LOCALE, Locale, get_locale
-from ..message import Message
-from ..preconverters import (
-    preconvert_bool, preconvert_color, preconvert_discriminator, preconvert_flag, preconvert_preinstanced_type,
-    preconvert_snowflake, preconvert_str
-)
+from ..preconverters import preconvert_bool, preconvert_flag, preconvert_snowflake
 from ..user import (
-    ClientUserBase, ClientUserPBase, GuildProfile, PremiumType, RelationshipType, Status, User,
-    UserBase, UserFlag, create_partial_user_from_id
+    ClientUserBase, ClientUserPBase, GuildProfile, PremiumType, RelationshipType, Status, User, UserBase, UserFlag,
+    create_partial_user_from_id
+)
+from ..user.user.constants import LOCALE_DEFAULT
+from ..user.user.fields import (
+    parse_email, parse_email_verified, parse_locale, parse_mfa, parse_premium_type, validate_banner_color, validate_bot,
+    validate_discriminator, validate_email, validate_email_verified, validate_flags, validate_locale, validate_mfa,
+    validate_name, validate_premium_type, validate_status
 )
 
 from .compounds import CLIENT_COMPOUNDS
@@ -59,53 +56,6 @@ class Client(
     
     Attributes
     ----------
-    id : `int`
-        The client's unique identifier number.
-    
-    name : str
-        The client's username.
-    
-    discriminator : `int`
-        The client's discriminator. Given to avoid overlapping names.
-    
-    avatar_hash : `int`
-        The client's avatar's hash in `uint128`.
-    
-    avatar_type : ``IconType``
-        The client's avatar's type.
-    
-    banner_color : `None`, ``Color``
-        The user's banner color if has any.
-    
-    banner_hash : `int`
-        The user's banner's hash in `uint128`.
-    
-    banner_type : ``IconType``
-        The user's banner's type.
-    
-    guild_profiles : `dict` of (`int`, ``GuildProfile``) items
-        A dictionary, which contains the client's guild profiles. If a client is member of a guild, then it should
-        have a respective guild profile accordingly.
-    
-    bot : `bool`
-        Whether the client is a bot or a user account.
-    
-    flags : ``UserFlag``
-        The client's user flags.
-    
-    thread_profiles : `None`, `dict` (``Channel``, ``ThreadProfile``) items
-        A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
-        Defaults to `None`.
-    
-    activities : `None`, `list` of ``Activity``
-        A list of the client's activities. Defaults to `None`.
-    
-    status : `Status`
-        The client's display status.
-    
-    statuses : `dict` of (`str`, `str`) items
-        The client's statuses for each platform.
-    
     _activity : ``Activity``
         The client's preferred activity.
     
@@ -141,14 +91,44 @@ class Client(
         
         Nonce `0` is allocated for the case, when all the guild's users are requested.
     
+    activities : `None`, `list` of ``Activity``
+        A list of the client's activities. Defaults to `None`.
+    
     application : ``Application``
         The bot account's application. The application data of the client is requested meanwhile it logs in.
+    
+    avatar_hash : `int`
+        The client's avatar's hash in `uint128`.
+    
+    avatar_type : ``IconType``
+        The client's avatar's type.
+    
+    banner_color : `None`, ``Color``
+        The user's banner color if has any.
+    
+    banner_hash : `int`
+        The user's banner's hash in `uint128`.
+    
+    banner_type : ``IconType``
+        The user's banner's type.
+    
+    bot : `bool`
+        Whether the client is a bot or a user account.
+    
+    discriminator : `int`
+        The client's discriminator. Given to avoid overlapping names.
     
     email : `None`, `str`
         The client's email.
     
+    email_verified : `bool`
+        Whether the email of the client is verified.
+    
     events : ``EventHandlerManager``
         Contains the event handlers of the client. New event handlers can be added through it as well.
+    
+    flags : ``UserFlag``
+        The client's user flags.
     
     gateway : ``DiscordGateway``, ``DiscordGatewaySharder``
         The gateway of the client towards Discord. If the client uses sharding, then ``DiscordGatewaySharder`` is used
@@ -157,12 +137,19 @@ class Client(
     group_channels : `dict` of (`int`, ``Channel``) items
         The group channels of the client. They can be accessed by their id as the key.
     
+    guild_profiles : `dict` of (`int`, ``GuildProfile``) items
+        A dictionary, which contains the client's guild profiles. If a client is member of a guild, then it should
+        have a respective guild profile accordingly.
+    
     guilds : `set` of ``Guild``
         The guilds, where the client is in.
     
     http : ``DiscordHTTPClient``
         The http session of the client. Can be used as a normal http session, or for lower level interactions with the
         Discord API.
+    
+    id : `int`
+        The client's unique identifier number.
     
     intents : ``IntentFlag``
         The intent flags of the client.
@@ -173,6 +160,9 @@ class Client(
     mfa : `bool`
         Whether the client has two factor authorization enabled on the account.
     
+    name : str
+        The client's username.
+    
     premium_type : ``PremiumType``
         The Nitro subscription type of the client.
     
@@ -180,7 +170,7 @@ class Client(
         Stores the private channels of the client. The channels' other recipient' ids are the keys, meanwhile the
         channels are the values.
     
-    ready_state : ``ReadyState``, `None`
+    ready_state : `None`, ``ReadyState``
         The client on login fills up it's ``.ready_state`` with ``Guild`` objects, which will have their members
         requested.
         
@@ -202,11 +192,18 @@ class Client(
     shard_count : `int`
         The client's shard count. Set as `0` if the bot is not using sharding.
     
+    status : `Status`
+        The client's display status.
+    
+    statuses : `dict` of (`str`, `str`) items
+        The client's statuses for each platform.
+    
+    thread_profiles : `None`, `dict` (``Channel``, ``ThreadProfile``) items
+        A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
+        Defaults to `None`.
+    
     token : `str`
         The client's token.
-    
-    verified : `bool`
-        Whether the email of the client is verified.
     
     voice_clients : `dict` of (`int`, ``VoiceClient``) items
         Each bot can join a channel at every ``Guild`` and meanwhile they do, they have an active voice client for that
@@ -223,7 +220,7 @@ class Client(
     
     See Also
     --------
-    - ``UserBase`` : The superclass of ``Client`` and of other user classes.
+    - ``UserBase`` : The superclass of ``Client`` and of other user types.
     - ``User`` : The default type of Discord users.
     - ``Webhook`` : Discord webhook entity.
     - ``WebhookRepr`` : Discord webhook's user representation.
@@ -236,9 +233,9 @@ class Client(
     __slots__ = (
         '__dict__', '_activity', '_additional_owner_ids', '_gateway_max_concurrency', '_gateway_requesting',
         '_gateway_time', '_gateway_url', '_gateway_waiter', '_should_request_users', '_status', '_user_chunker_nonce',
-        'application', 'email', 'events', 'gateway', 'group_channels', 'guilds', 'http', 'intents', 'locale', 'mfa',
-        'premium_type', 'private_channels', 'ready_state', 'relationships', 'running', 'secret', 'shard_count',
-        'token', 'verified', 'voice_clients'
+        'application', 'email', 'email_verified', 'events', 'gateway', 'group_channels', 'guilds', 'http', 'intents',
+        'locale', 'mfa', 'premium_type', 'private_channels', 'ready_state', 'relationships', 'running', 'secret',
+        'shard_count', 'token', 'voice_clients'
     )
     
     loop = KOKORO
@@ -248,20 +245,31 @@ class Client(
         cls,
         token,
         *,
-        activity = ACTIVITY_UNKNOWN,
+        activity = ...,
         additional_owners = None,
-        application_id = None,
-        bot = True,
-        client_id = None,
+        application_id = ...,
+        avatar = ...,
+        banner = ...,
+        banner_color = ...,
+        bot = ...,
+        client_id = ...,
+        discriminator = ...,
+        email = ...,
+        email_verified = ...,
         extensions = None,
+        flags = ...,
         http_debug_options = None,
         intents = -1,
         is_bot = ...,
-        secret = None,
+        locale = ...,
+        mfa = ...,
+        name = ...,
+        premium_type = ...,
+        secret = ...,
         shard_count = 0,
         should_request_users = True,
-        status = None,
-        **kwargs
+        status = ...,
+        **keyword_parameters
     ):
         """
         Creates a new ``Client`` with the given parameters.
@@ -271,28 +279,49 @@ class Client(
         token : `str`
             A valid Discord token, what the client can use to interact with the Discord API.
         
-        activity : ``Activity`` = `ACTIVITY_UNKNOWN`, Optional (Keyword only)
+        activity : ``Activity``, Optional (Keyword only)
             The client's preferred activity.
-         
+        
         additional_owners : `None`, `int`, ``ClientUserBase``, `iterable` of (`int`, ``ClientUserBase``) = `None` \
                 , Optional (Keyword only)
             Additional users to return `True` if ``is_owner` is called.
         
-        application_id : `None`, `int`, `str` = `None`, Optional (Keyword only)
-            The client's application id. If passed as `str`, will be converted to `int`. Defaults to `None`.
+        application_id : `None`, `int`, `str`, Optional (Keyword only)
+            The client's application id. If passed as `str`, will be converted to `int`.
+         
+        avatar : `None`, ``Icon``, `str`, Optional (Keyword only)
+            The client's avatar.
         
-        bot : `bool` = `True` Optional (Keyword only)
+        banner : `None`, ``Icon``, `str`, Optional (Keyword only)
+            The client's banner.
+        
+        banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
+            The client's banner color.
+        
+        bot : `bool`, Optional (Keyword only)
             Whether the client is a bot user or a user account.
         
-        client_id : `None`, `int`, `str` = `None`, Optional (Keyword only)
+        client_id : `None`, `int`, `str`, Optional (Keyword only)
             The client's `.id`. If passed as `str` will be converted to `int`. Defaults to `None`.
             
             When more `Client` is started up, it is recommended to define their id initially. The wrapper can detect the
             clients' id-s only when they are logging in, so the wrapper  needs to check if a ``User`` alter_ego of the
             client exists anywhere, and if does will replace it.
         
+        discriminator : `str`, `int`, Optional (Keyword only)
+            The user's discriminator.
+        
+        email : `None, `str`, Optional (Keyword only)
+            The client's email.
+        
+        email_verified : `bool`, Optional (Keyword only)
+            Whether the email of the client is verified.
+        
         extensions : `None`, `str`, `iterable` of `str` = `None`, Optional (Keyword only)
             The extension's name to setup on the client.
+        
+        flags : `int`, ``UserFlag``, Optional (Keyword only)
+            The user's flags.
         
         http_debug_options: `None`, `str`, `iterable` of `str` = `None`, Optional (Keyword only)
             Http client debug options for the client.
@@ -301,7 +330,19 @@ class Client(
              By default the client will launch up using all the intent flags. Negative values will be interpreted as
              using all the intents, meanwhile if passed as positive, non existing intent flags are removed.
         
-        secret: `None`, `str` = `None`, Optional (Keyword only)
+        locale : ``Locale``, `str`, Optional (Keyword only)
+            The preferred locale by the client.
+        
+        mfa : `bool`, Optional (Keyword only)
+            Whether the user has two factor authorization enabled on the account.
+        
+        name : `str`, Optional (Keyword only)
+            The user's name.
+        
+        premium_type : ``PremiumType``, `int`, Optional (Keyword only)
+            The Nitro subscription type of the client.
+        
+        secret: `str`, Optional (Keyword only)
             Client secret used when interacting with oauth2 endpoints.
         
         shard_count : `int` = `0`, Optional (Keyword only)
@@ -310,62 +351,15 @@ class Client(
         should_request_users : `int` = `False`, Optional (Keyword only)
             Whether the client should try to request the users of it's guilds.
         
-        status : `None`, `str`, ``Status`` = `None`, Optional (Keyword only)
+        status : `None`, `str`, ``Status``, Optional (Keyword only)
             The client's preferred status.
         
-        **kwargs : keyword parameters
-            Additional predefined attributes for the client.
-        
-        Other Parameters
-        ----------------
-        
-        avatar : `None`, ``Icon``, `str`, Optional (Keyword only)
-            The client's avatar.
-            
-            > Mutually exclusive with `avatar_type` and `avatar_hash`.
-        
-        avatar_type : ``IconType``, Optional (Keyword only)
-            The client's avatar's type.
-            
-            > Mutually exclusive with `avatar_type`.
-            
-        avatar_hash : `int`, Optional (Keyword only)
-            The client's avatar hash.
-            
-            > Mutually exclusive with `avatar`.
-        
-        banner : `None`, ``Icon``, `str`, Optional (Keyword only)
-            The client's banner.
-            
-            > Mutually exclusive with `banner_type` and `banner_hash`.
-        
-        banner_color : `None`, ``Color``, Optional (Keyword only)
-            The user's banner color.
-        
-        banner_type : ``IconType``, Optional (Keyword only)
-            The client's banner's type.
-            
-            > Mutually exclusive with `banner_type`.
-        
-        banner_hash : `int`, Optional (Keyword only)
-            The client's banner hash.
-            
-            > Mutually exclusive with `banner`.
-        
-        discriminator : `int`, `str`, Optional (Keyword only)
-            The client's ``.discriminator``. Is accepted as `str` as well and will be converted to `int`.
-        
-        flags : ``UserFlag``, `int`, Optional (Keyword only)
-            The client's ``.flags``. If not passed as ``UserFlag``, then will be converted to it.
-        
-        name : `str`, Optional (Keyword only)
-            The client's ``.name``.
-        
-        **kwargs : keyword parameters
+        **keyword_parameters : keyword parameters
             Additional parameters to pass to extension setup functions.
             
             > If any required parameter by an extension is missing `RuntimeError` is raised, meanwhile if any extra
             > is given, `RuntimeWarning` is dropped.
+        
         
         Returns
         -------
@@ -393,10 +387,13 @@ class Client(
         # ---- Optional Client Parameters ----
         
         # activity
-        if (not isinstance(activity, Activity)) or (activity.type is ActivityType.custom):
-            raise TypeError(
-                f'`activity` can be `{Activity.__name__}` (except `{ActivityType.custom.name}`), got '
-                f'{activity.__class__.__name__}; {activity!r}.')
+        if activity is ...:
+            activity = ACTIVITY_UNKNOWN
+        else:
+            if (not isinstance(activity, Activity)) or (activity.type is ActivityType.custom):
+                raise TypeError(
+                    f'`activity` can be `{Activity.__name__}` (except `{ActivityType.custom.name}`), got '
+                    f'{activity.__class__.__name__}; {activity!r}.')
         
         # additional owners
         if additional_owners is None:
@@ -437,16 +434,32 @@ class Client(
                     additional_owner_ids = None
         
         # application_id
-        if (application_id is None):
+        if (application_id is ...):
             application_id = 0
         else:
             application_id = preconvert_snowflake(application_id, 'application_id')
         
         application = Application._create_empty(application_id)
         
-
-        # bot
+        # avatar
+        if avatar is ...:
+            avatar = None
+        else:
+            avatar = cls.avatar.validate_icon(avatar)
         
+        # banner
+        if banner is ...:
+            banner = None
+        else:
+            banner = cls.banner.validate_icon(banner)
+        
+        # banner_color
+        if banner_color is ...:
+            banner_color = None
+        else:
+            banner_color = validate_banner_color(banner_color)
+        
+        # bot
         if is_bot is not ...:
             warnings.warn(
                 (
@@ -458,16 +471,43 @@ class Client(
             )
             bot = is_bot
         
-        bot = preconvert_bool(bot, 'bot')
+        if bot is ...:
+            bot = True
+        else:
+            bot = validate_bot(bot)
         
         # client_id
-        if client_id is None:
+        if client_id is ...:
             client_id = try_get_user_id_from_token(token)
         else:
             client_id = preconvert_snowflake(client_id, 'client_id')
         
+        # discriminator
+        if discriminator is ...:
+            discriminator = 0
+        else:
+            discriminator = validate_discriminator(discriminator)
+        
+        # email
+        if email is ...:
+            email = None
+        else:
+            email = validate_email(email)
+        
+        # email_verified
+        if email_verified is ...:
+            email_verified = False
+        else:
+            email_verified = validate_email_verified(email_verified)
+        
         # extensions
         # They will eb checked at the end
+        
+        # flags
+        if flags is ...:
+            flags = UserFlag()
+        else:
+            flags = validate_flags(flags)
         
         # http_debug_options
         processed_http_debug_options = None
@@ -512,13 +552,41 @@ class Client(
         # intents
         intents = preconvert_flag(intents, 'intents', IntentFlag)
         
+        # locale
+        if locale is ...:
+            locale = LOCALE_DEFAULT
+        else:
+            locale = validate_locale(locale)
+        
+        # mfa
+        if mfa is ...:
+            mfa = False
+        else:
+            mfa = validate_mfa(mfa)
+        
+        # name
+        if name is ...:
+            name = ''
+        else:
+            name = validate_name(name)
+        
+        # premium_type
+        if premium_type is ...:
+            premium_type = PremiumType.none
+        else:
+            premium_type = validate_premium_type(premium_type)
+        
         # secret
-        if (secret is None) or type(secret is str):
+        if (secret is ...):
+            secret = ''
+        elif type(secret is str):
             pass
         elif isinstance(secret, str):
             secret = str(secret)
         else:
-            raise TypeError(f'`secret` can be `str`, got `{secret.__class__.__name__}`; {secret!r}.')
+            raise TypeError(
+                f'`secret` can be `str`, got `{secret.__class__.__name__}`; {secret!r}.'
+            )
         
         # shard count
         if (type(shard_count) is int):
@@ -543,73 +611,17 @@ class Client(
         should_request_users = preconvert_bool(should_request_users, 'should_request_users')
         
         # status
-        if (status is not None):
-            status = preconvert_preinstanced_type(status, 'status', Status)
+        if status is ...:
+            status = Status.online
+        else:
+            status = validate_status(status)
             if status is Status.offline:
                 status = Status.invisible
-        
-        if (status is None):
-            status = Status.online
-        
-        
-        # ---- Optional presettable user Parameters ----
-        
-        # kwargs
-        if kwargs:
-            processable = []
-            
-            # kwargs.avatar & kwargs.avatar_type & kwargs.avatar_hash
-            cls.avatar.preconvert(kwargs, processable)
-            
-            # kwargs.banner & kwargs.banner_type & kwargs.banner_hash
-            cls.banner.preconvert(kwargs, processable)
-            
-            try:
-                banner_color = kwargs.pop('banner_color')
-            except KeyError:
-                pass
-            else:
-                banner_color = preconvert_color(banner_color, 'banner_color', True)
-                processable.append(('banner_color', banner_color))
-            
-            # kwargs.discriminator
-            try:
-                discriminator = kwargs.pop('discriminator')
-            except KeyError:
-                pass
-            else:
-                discriminator = preconvert_discriminator(discriminator)
-                processable.append(('discriminator', discriminator))
-            
-            # kwargs.flags
-            try:
-                flags = kwargs.pop('flags')
-            except KeyError:
-                pass
-            else:
-                flags = preconvert_flag(flags, 'flags', UserFlag)
-                processable.append(('flags', flags))
-            
-            # kwargs.name
-            try:
-                name = kwargs.pop('name')
-            except KeyError:
-                pass
-            else:
-                name = preconvert_str(name, 'name', 2, 32)
-                processable.append(('name', name))
-            
-            if not processable:
-                processable = None
-        
-        else:
-            processable = None
-        
         
         # ---- Setup extensions ----
         
         # extensions
-        setup_functions = get_and_validate_setup_functions(extensions, kwargs)
+        setup_functions = get_and_validate_setup_functions(extensions, keyword_parameters)
         
         
         # ---- Auto generate initial id if un-detected ----
@@ -624,10 +636,9 @@ class Client(
         # Set all Attributes
         
         self = object.__new__(cls)
-        
-        ClientUserPBase._set_default_attributes(self)
-        self.bot = bot
+        # Set id & name first, so if an exception occurs `repr(self)` wont fail.
         self.id = client_id
+        self.name = name
         
         self._activity = activity
         self._additional_owner_ids = additional_owner_ids
@@ -639,33 +650,40 @@ class Client(
         self._should_request_users = should_request_users
         self._status = status
         self._user_chunker_nonce = 0
+        
+        self.activities = None
         self.application = application
-        self.email = None
+        self.avatar = avatar
+        self.bot = bot
+        self.banner = banner
+        self.banner_color = banner_color
+        self.discriminator = discriminator
+        self.email = email
+        self.email_verified = email_verified
         self.events = EventHandlerManager(self)
+        self.flags = flags
         self.group_channels = {}
+        self.guild_profiles = {}
         self.guilds = set()
-        self.http = DiscordHTTPClient(bot, token, debug_options=processed_http_debug_options)
+        self.http = DiscordHTTPClient(bot, token, debug_options = processed_http_debug_options)
         self.intents = intents
-        self.locale = DEFAULT_LOCALE
-        self.mfa = False
-        self.premium_type = PremiumType.none
+        self.locale = locale
+        self.mfa = mfa
+        self.premium_type = premium_type
         self.private_channels = {}
         self.ready_state = None
         self.relationships = {}
         self.running = False
         self.secret = secret
         self.shard_count = shard_count
+        self.status = Status.offline
+        self.statuses = {}
+        self.thread_profiles = None
         self.token = token
-        self.verified = False
         self.voice_clients = {}
         
         # These might require other attributes to be set
         self.gateway = (DiscordGatewaySharder if shard_count else DiscordGateway)(self)
-        
-        # Setup additional user related attributes
-        if (processable is not None):
-            for item in processable:
-                setattr(self, *item)
         
         # Check whether the client is duped
         if client_id > AUTO_CLIENT_ID_LIMIT:
@@ -673,7 +691,7 @@ class Client(
             self._maybe_replace_alter_ego()
         
         # Setup extensions
-        run_setup_functions(self, setup_functions, kwargs)
+        run_setup_functions(self, setup_functions, keyword_parameters)
         
         # Register client
         CLIENTS[client_id] = self
@@ -769,17 +787,7 @@ class Client(
             self.id = client_id
         
         self._maybe_replace_alter_ego()
-        
-        self.name = data['username']
-        self.discriminator = int(data['discriminator'])
-        self._set_avatar(data)
-        self._set_banner(data)
-        self.mfa = data.get('mfa_enabled', False)
-        self.verified = data.get('verified', False)
-        self.email = data.get('email', None)
-        self.flags = UserFlag(data.get('flags', 0))
-        self.premium_type = PremiumType.get(data.get('premium_type', 0))
-        self.locale = get_locale(data.get('locale', None))
+        self._update_attributes(data)
     
     
     @property
@@ -845,7 +853,7 @@ class Client(
             del APPLICATION_ID_TO_CLIENT[application_id]
         
         if USERS.get(client_id, None) is self:
-            alter_ego = User._from_client(self)
+            alter_ego = User._from_client(self, True)
             USERS[client_id] = alter_ego
             
             guild_profiles = self.guild_profiles
@@ -1646,27 +1654,29 @@ class Client(
             if not isinstance(user, (int, UserBase)):
                 raise TypeError(
                     f'`users[{index}]` is not `int`, `{UserBase.__name__}`, got {user.__class__.__name__}; {user!r}; '
-                    f'users={users!r}.'
+                    f'users = {users!r}.'
                 )
             
             if index == limit:
                 break
         
         additional_owner_ids = self._additional_owner_ids
-        if additional_owner_ids is None:
-            additional_owner_ids = self._additional_owner_ids = set()
         
         for user in users:
             if type(user) is int:
-                pass
+                user_id = user
             
             elif isinstance(user, int):
-                user = int(user)
+                user_id = int(user)
             
             else:
-                user = user.id
+                user_id = user.id
             
-            additional_owner_ids.add(user)
+            if additional_owner_ids is None:
+                additional_owner_ids = set()
+                self._additional_owner_ids = additional_owner_ids
+            
+            additional_owner_ids.add(user_id)
     
     
     def remove_additional_owners(self, *users):
@@ -1694,27 +1704,31 @@ class Client(
             if not isinstance(user, (int, UserBase)):
                 raise TypeError(
                     f'`users[{index}]` is not `int`, `{UserBase.__name__}`, got {user.__class__.__name__}; {user!r}; '
-                    f'users={users!r}.'
+                    f'users = {users!r}.'
                 )
             
             if index == limit:
                 break
         
         additional_owner_ids = self._additional_owner_ids
-        if additional_owner_ids is None:
-            additional_owner_ids = self._additional_owner_ids = set()
         
         for user in users:
             if type(user) is int:
-                pass
+                user_id = user
             
             elif isinstance(user, int):
-                user = int(user)
+                user_id = int(user)
             
             else:
-                user = user.id
+                user_id = user.id
             
-            additional_owner_ids.discard(user)
+            if additional_owner_ids is None:
+                continue
+            
+            additional_owner_ids.discard(user_id)
+            if not additional_owner_ids:
+                additional_owner_ids = None
+                self._additional_owner_ids = None
     
     
     @property
@@ -1743,101 +1757,47 @@ class Client(
         return owners
     
     
+    @copy_docs(ClientUserPBase._difference_update_attributes)
     def _difference_update_attributes(self, data):
-        """
-        Updates the client and returns it's old attributes in a `dict` with `attribute-name`, `old-value` relation.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Data received from Discord.
-        
-        Returns
-        -------
-        old_attributes : `dict` of (`str`, `Any`) items
-            All item in the returned dictionary is optional.
-            
-            +-----------------------+-----------------------+
-            | Keys                  | Values                |
-            +=======================+=======================+
-            | avatar                | ``Icon``              |
-            +-----------------------+-----------------------+
-            | banner                | ``Icon``              |
-            +-----------------------+-----------------------+
-            | banner_color          | `None`, ``Color``     |
-            +-----------------------+-----------------------+
-            | discriminator         | `int`                 |
-            +-----------------------+-----------------------+
-            | email                 | `None`, `str`         |
-            +-----------------------+-----------------------+
-            | flags                 | ``UserFlag``          |
-            +-----------------------+-----------------------+
-            | locale                | ``Locale``            |
-            +-----------------------+-----------------------+
-            | mfa                   | `bool`                |
-            +-----------------------+-----------------------+
-            | name                  | `str                  |
-            +-----------------------+-----------------------+
-            | premium_type          | ``PremiumType``       |
-            +-----------------------+-----------------------+
-            | verified              | `bool`                |
-            +-----------------------+-----------------------+
-        """
         old_attributes = ClientUserPBase._difference_update_attributes(self, data)
         
-        email = data.get('email', None)
+        email = parse_email(data)
         if self.email != email:
             old_attributes['email'] = self.email
             self.email = email
         
+        email_verified = parse_email_verified(data)
+        if self.email_verified != email_verified:
+            old_attributes['email_verified'] = self.email_verified
+            self.email_verified = email_verified
         
-        premium_type = PremiumType.get(data.get('premium_type', 0))
-        if self.premium_type is not premium_type:
-            old_attributes['premium_type'] = premium_type
-            self.premium_type = premium_type
-        
-        
-        verified = data.get('verified', False)
-        if self.verified != verified:
-            old_attributes['verified'] = self.verified
-            self.verified = verified
-        
-        
-        mfa = data.get('mfa_enabled', False)
-        if self.mfa != mfa:
-            old_attributes['mfa'] = self.mfa
-            self.mfa = mfa
-        
-        
-        locale = get_locale(data.get('locale', None))
+        locale = parse_locale(data)
         if self.locale is not locale:
             old_attributes['locale'] = self.locale
             self.locale = locale
         
+        mfa = parse_mfa(data)
+        if self.mfa != mfa:
+            old_attributes['mfa'] = self.mfa
+            self.mfa = mfa
+        
+        premium_type = parse_premium_type(data)
+        if self.premium_type is not premium_type:
+            old_attributes['premium_type'] = self.premium_type
+            self.premium_type = premium_type
         
         return old_attributes
     
     
-    def _set_attributes(self, data):
-        """
-        Updates the client by overwriting it's old attributes.
-        
-        Parameters
-        ----------
-        data : `dict` of (`str`, `Any`) items
-            Data received from Discord.
-        """
+    @copy_docs(ClientUserPBase._update_attributes)
+    def _update_attributes(self, data):
         ClientUserPBase._update_attributes(self, data)
         
-        self.verified = data.get('verified', False)
-        
-        self.email = data.get('email', None)
-        
-        self.premium_type = PremiumType.get(data.get('premium_type', 0))
-        
-        self.mfa = data.get('mfa_enabled', False)
-        
-        self.locale = get_locale(data.get('locale', None))
+        self.email = parse_email(data)
+        self.email_verified = parse_email_verified(data)
+        self.locale = parse_locale(data)
+        self.mfa = parse_mfa(data)
+        self.premium_type = parse_premium_type(data)
     
     
     def _difference_update_profile_only(self, data, guild):
@@ -1981,36 +1941,22 @@ class Client(
     
     
     @classmethod
-    def _from_client(cls, client):
-        """
-        Creates a client alter ego.
-        
-        Parameters
-        ----------
-        client : ``Client``
-            The client to copy.
-        
-        Raises
-        ------
-        RuntimeError
-            Not applicable for ``Client``-s.
-        """
+    @copy_docs(ClientUserBase._from_client)
+    def _from_client(cls, client, include_internals):
         raise RuntimeError('Cannot create client copy from client.')
     
     
     @classmethod
+    @copy_docs(ClientUserBase._create_empty)
     def _create_empty(cls, user_id):
-        """
-        Creates a user instance with the given `user_id` and with the default user attributes.
-        
-        Parameters
-        ----------
-        user_id : `int`
-            The user's id.
-        
-        Raises
-        ------
-        RuntimeError
-            Not applicable for ``Client``-s.
-        """
         raise RuntimeError('Cannot create empty client.')
+    
+    
+    @copy_docs(ClientUserBase.copy)
+    def copy(self):
+        return User._from_client(self, False)
+    
+    
+    @copy_docs(ClientUserBase.copy)
+    def copy_with(self, **keyword_parameters):
+        return User._from_client(self, False).copy_with(**keyword_parameters)

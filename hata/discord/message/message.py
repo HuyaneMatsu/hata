@@ -581,9 +581,9 @@ class Message(DiscordEntity, immortal = True):
                 webhook_type = WebhookType.bot
             
             if author_data is None:
-                author = create_partial_webhook_from_id(webhook_id, '', type_=webhook_type)
+                author = create_partial_webhook_from_id(webhook_id, '', webhook_type = webhook_type)
             else:
-                author = WebhookRepr(author_data, webhook_id, type_=webhook_type, channel_id=channel_id)
+                author = WebhookRepr.from_data(author_data, webhook_id, webhook_type, channel_id)
         
         self.author = author
         
@@ -2785,8 +2785,8 @@ class Message(DiscordEntity, immortal = True):
                                 raise TypeError(
                                     f'`{variable_name}` can contain '
                                     f'{get_type_names(variable_element_type)} elements, got '
-                                    f'{variable_element_value.__class__.__name__}; {variable_element_value!r};'
-                                    f'{variable_name}={variable_value!r}.'
+                                    f'{variable_element_value.__class__.__name__}; {variable_element_value!r}; '
+                                    f'{variable_name} = {variable_value!r}.'
                                 )
                             
                             variable_values_processed.append(variable_element_value)

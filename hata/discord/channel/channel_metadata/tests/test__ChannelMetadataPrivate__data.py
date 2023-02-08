@@ -14,7 +14,7 @@ def test__ChannelMetadataPrivate__from_data():
     user_1 = User.precreate(202209160002)
     
     channel_metadata = ChannelMetadataPrivate.from_data({
-        'recipients': [user_1.to_data()],
+        'recipients': [user_1.to_data(defaults = True, include_internals = True)],
     })
     
     vampytest.assert_instance(channel_metadata, ChannelMetadataPrivate)
@@ -40,7 +40,7 @@ def test__ChannelMetadataPrivate__to_data():
     vampytest.assert_eq(
         data,
         {
-            'recipients': [user_1.to_data()],
+            'recipients': [user_1.to_data(defaults = True, include_internals = True)],
         },
     )
 

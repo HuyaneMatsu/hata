@@ -15,7 +15,7 @@ def test__put_users_into():
     
     for input_, defaults, expected_output in (
         ([], False, {'recipients': []}),
-        ([user_1], False, {'recipients': [user_1.to_data()]}),
+        ([user_1], False, {'recipients': [user_1.to_data(defaults = True, include_internals = True)]}),
     ):
         data = put_users_into(input_, {}, defaults)
         vampytest.assert_eq(data, expected_output)

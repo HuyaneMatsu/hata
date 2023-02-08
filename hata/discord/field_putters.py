@@ -338,7 +338,7 @@ def field_putter_factory(field_key):
         Parameters
         ----------
         field_value : `object`
-            object field value.
+            Object field value.
         data : `dict` of (`str`, `object`) items
             Json serializable dictionary.
         defaults : `bool`
@@ -379,7 +379,7 @@ def nullable_field_optional_putter_factory(field_key):
         Parameters
         ----------
         field_value : `object`
-            object field value.
+            Object field value.
         data : `dict` of (`str`, `object`) items
             Json serializable dictionary.
         defaults : `bool`
@@ -1513,6 +1513,47 @@ def functional_putter_factory(field_key, function, *, include = None):
     return putter
 
 
+def flag_putter_factory(field_key):
+    """
+    Returns a flag putter.
+    
+    Returns
+    -------
+    field_key : `str`
+        The field's key used in payload.
+    
+    Returns
+    -------
+    putter : `FunctionType`
+    """
+    def putter(flag, data, defaults):
+        """
+        Puts the given flags into the given `data` json serializable object.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        flag : ``FlagBase``
+            Flag instance.
+        data : `dict` of (`str`, `object`) items
+            Json serializable dictionary.
+        defaults : `bool`
+            Whether default values should be included as well.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `object`) items
+        """
+        nonlocal field_key
+        
+        data[field_key] = int(flag)
+        
+        return data
+    
+    return putter
+
+
 def flag_optional_putter_factory(field_key, default_value):
     """
     Returns a new defaulted flag putter.
@@ -1521,7 +1562,7 @@ def flag_optional_putter_factory(field_key, default_value):
     -------
     field_key : `str`
         The field's key used in payload.
-    default : `object`
+    default_value : `object`
         The default value to handle as an unique case.
     
     Returns

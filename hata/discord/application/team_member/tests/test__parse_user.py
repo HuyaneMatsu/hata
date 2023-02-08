@@ -12,7 +12,7 @@ def test__parse_user():
     user = User.precreate(202211230000, name = 'Ken')
     
     for input_data, expected_output in (
-        ({'user': user.to_data()}, user),
+        ({'user': user.to_data(defaults = True, include_internals = True)}, user),
     ):
         output = parse_user(input_data)
         vampytest.assert_is(output, expected_output)

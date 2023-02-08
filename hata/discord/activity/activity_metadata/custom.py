@@ -4,7 +4,7 @@ from scarletio import copy_docs
 
 from ...utils import DATETIME_FORMAT_CODE
 
-from .base import ActivityMetadataBase
+from .base import _pop_empty_name, ActivityMetadataBase
 from .fields import (
     parse_created_at, parse_emoji, parse_state, put_created_at_into, put_emoji_into, put_state_into,
     validate_created_at, validate_emoji, validate_state
@@ -28,6 +28,8 @@ class ActivityMetadataCustom(ActivityMetadataBase):
     
     @copy_docs(ActivityMetadataBase.__new__)
     def __new__(cls, keyword_parameters):
+        _pop_empty_name(keyword_parameters)
+        
         # created_at
         try:
             created_at = keyword_parameters.pop('created_at')

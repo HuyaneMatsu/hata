@@ -121,5 +121,5 @@ class MessageInteraction(DiscordEntity):
             'id': str(self.id),
             'name': self.joined_name,
             'type': self.type.value,
-            'user': self.user.to_data()
+            'user': self.user.to_data(defaults = True, include_internals = True),
         }

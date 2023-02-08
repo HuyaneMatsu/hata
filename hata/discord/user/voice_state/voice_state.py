@@ -6,7 +6,7 @@ from scarletio import RichAttributeErrorBaseType, include
 
 from ...core import GUILDS
 
-from ..utils import create_partial_user_from_id
+from ..user import create_partial_user_from_id
 
 from .fields import (
     parse_channel_id, parse_deaf, parse_mute, parse_requested_to_speak_at, parse_self_deaf, parse_self_mute,

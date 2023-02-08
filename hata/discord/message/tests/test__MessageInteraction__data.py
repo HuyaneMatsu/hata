@@ -53,7 +53,7 @@ def test__MessageInteraction__from_data__2():
     data = {
         'name': 'test sub command',
         'id': '2',
-        'user': user.to_data(),
+        'user': user.to_data(defaults = True, include_internals = True),
         'member': {},
         'type': InteractionType.application_command.value,
     }

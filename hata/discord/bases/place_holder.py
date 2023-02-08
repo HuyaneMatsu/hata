@@ -1,19 +1,15 @@
-__all__ = ('PlaceHolder',)
+__all__ = ('PlaceHolder', 'PlaceHolderFunctional')
 
-from scarletio import docs_property
+from scarletio import RichAttributeErrorBaseType, copy_docs, docs_property
 
 
-class PlaceHolder:
+class PlaceHolderBase(RichAttributeErrorBaseType):
     __class_doc__ = (
     """
-    Slot place holder returning a default value.
-    
-    Might be used to avoid `__getattr__` definitions.
+    Base type of ``PlaceHolder`` and ``PlaceHolderFunctional``.
     
     Attributes
     ----------
-    default : `object`
-        The object to return from getter.
     docs : `None`, `str`
         Documentation of the place held attribute.
     name : `None, `str`
@@ -26,27 +22,23 @@ class PlaceHolder:
     
     __doc__ = docs_property()
     
-    __slots__ = ('default', 'docs', 'name')
-    
-    
-    def __new__(cls, default, docs = None):
+    __slots__ = ('docs', 'name')
+
+    def __new__(cls, docs = None):
         """
-        Creates a new new slot place holder.
+        Creates a new slot place holder.
         
         Parameters
         ----------
-        default : `object`
-            The object to return from getter.
         docs : `None`, `str` = `None`, Optional
             Documentation of the place held attribute.
         """
         self = object.__new__(cls)
-        self.default = default
         self.docs = docs
         self.name = None
         return self
     
-
+    
     def __set_name__(self, owner, name):
         """
         Called when the type is constructed.
@@ -73,7 +65,7 @@ class PlaceHolder:
         if instance is None:
             return self
         
-        return self.default
+        return NotImplemented
     
     
     def __set__(self, instance, value):
@@ -92,7 +84,7 @@ class PlaceHolder:
         
         raise NotImplementedError(
             f'Setting {name} attribute of {instance.__class__} is not supported; '
-            f'got instance={instance!r}; value={value!r}.'
+            f'got instance = {instance!r}; value = {value!r}.'
         )
     
     
@@ -112,5 +104,94 @@ class PlaceHolder:
         
         raise NotImplementedError(
             f'Deleting {name} attribute of {instance.__class__} is not supported; '
-            f'got instance={instance!r}.'
+            f'got instance = {instance!r}.'
         )
+
+
+class PlaceHolder(PlaceHolderBase):
+    __class_doc__ = (
+    """
+    Slot place holder returning a default value.
+    
+    Might be used to avoid `__getattr__` definitions.
+    
+    Attributes
+    ----------
+    default : `object`
+        The object to return from getter.
+    docs : `None`, `str`
+        Documentation of the place held attribute.
+    name : `None, `str`
+        The name of the place held attribute.
+    """)
+    
+    __slots__ = ('default',)
+    
+    
+    def __new__(cls, default, docs = None):
+        """
+        Creates a new new slot place holder.
+        
+        Parameters
+        ----------
+        default : `object`
+            The object to return from getter.
+        docs : `None`, `str` = `None`, Optional
+            Documentation of the place held attribute.
+        """
+        self = PlaceHolderBase.__new__(cls, docs)
+        self.default = default
+        return self
+    
+    
+    
+    @copy_docs(PlaceHolderBase.__get__)
+    def __get__(self, instance, type_):
+        if instance is None:
+            return self
+        
+        return self.default
+
+
+class PlaceHolderFunctional(PlaceHolderBase):
+    __class_doc__ = (
+    """
+    Slot place holder returning a default value.
+    
+    Might be used to avoid `__getattr__` definitions.
+    
+    Attributes
+    ----------
+    default_function : `callable`
+        A function to create the default value.
+    docs : `None`, `str`
+        Documentation of the place held attribute.
+    name : `None, `str`
+        The name of the place held attribute.
+    """)
+    
+    __slots__ = ('default_function',)
+    
+    
+    def __new__(cls, default_function, docs = None):
+        """
+        Creates a new new slot place holder.
+        
+        Parameters
+        ----------
+        default_function : `callable`
+            A function to create the default value.
+        docs : `None`, `str` = `None`, Optional
+            Documentation of the place held attribute.
+        """
+        self = PlaceHolderBase.__new__(cls, docs)
+        self.default_function = default_function
+        return self
+    
+    
+    @copy_docs(PlaceHolderBase.__get__)
+    def __get__(self, instance, type_):
+        if instance is None:
+            return self
+        
+        return self.default_function()

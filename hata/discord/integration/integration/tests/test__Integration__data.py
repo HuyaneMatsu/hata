@@ -23,7 +23,7 @@ def test__Integration__from_data__0():
         'name': name,
         'enabled': enabled,
         'type': integration_type.value,
-        'user': user.to_data(),
+        'user': user.to_data(defaults = True, include_internals = True),
     }
     
     integration = Integration.from_data(data)
@@ -78,7 +78,7 @@ def test__Integration__to_data():
         'name': name,
         'enabled': enabled,
         'type': integration_type.value,
-        'user': user.to_data(),
+        'user': user.to_data(defaults = True, include_internals = True),
         **integration_metadata.to_data(defaults = True),
     }
     

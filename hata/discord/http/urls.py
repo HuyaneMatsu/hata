@@ -860,7 +860,7 @@ def user_banner_url(user):
     return f'{CDN_ENDPOINT}/banners/{user.id}/{prefix}{user.banner_hash:0>32x}.{ext}'
 
 
-def user_banner_url_as(user, ext=None, size=None):
+def user_banner_url_as(user, ext = None, size = None):
     """
     Returns the user's banner's url. If the user has no banner, then returns `None`.
     

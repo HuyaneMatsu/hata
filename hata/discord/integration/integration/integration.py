@@ -398,7 +398,7 @@ class Integration(DiscordEntity, immortal = True):
         
         # user
         if include_internals:
-            put_user_into(self.user, data, defaults)
+            put_user_into(self.user, data, defaults, include_internals = include_internals)
         
         return data
     

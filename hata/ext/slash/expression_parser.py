@@ -159,6 +159,7 @@ TOKEN_NAMES = {
     VARIABLE_FUNCTION: 'function',
     TOKEN_GROUP_PARENTHESES: 'parentheses',
     TOKEN_GROUP_FUNCTION_CALL : 'function call',
+    OPERATION_POWER_ID: 'power',
 }
 
 TWO_SIDE_OPERATORS_ONLY = frozenset((

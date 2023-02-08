@@ -92,7 +92,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             data['avatar'] = image_to_base64(avatar)
         
         data = await self.http.webhook_create(channel_id, data)
-        return Webhook(data)
+        return Webhook.from_data(data)
     
     
     async def webhook_get(self, webhook):
@@ -131,7 +131,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         
         data = await self.http.webhook_get(webhook_id)
         if webhook is None:
-            webhook = Webhook(data)
+            webhook = Webhook.from_data(data)
         else:
             webhook._update_attributes(data)
         
@@ -228,7 +228,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         channel_id = get_channel_id(channel, Channel.is_in_group_guild_system)
         
         data = await self.http.webhook_get_all_channel(channel_id)
-        return [Webhook(webhook_data) for webhook_data in data]
+        return [Webhook.from_data(webhook_data) for webhook_data in data]
     
     
     async def webhook_get_own_channel(self, channel):
@@ -285,7 +285,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         guild_id = get_guild_id(guild)
         
         webhook_datas = await self.http.webhook_get_all_guild(guild_id)
-        return [Webhook(webhook_data) for webhook_data in webhook_datas]
+        return [Webhook.from_data(webhook_data) for webhook_data in webhook_datas]
     
     
     async def webhook_delete(self, webhook):
@@ -535,7 +535,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         data = await self.http.webhook_edit_token(webhook_id, webhook_token, data)
         
         if webhook is None:
-            webhook = Webhook(data)
+            webhook = Webhook.from_data(data)
         else:
             webhook._set_attributes(data)
         

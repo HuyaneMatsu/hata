@@ -148,7 +148,7 @@ class AuditLog(RichAttributeErrorBaseType):
             webhooks = self.webhooks
             
             for webhook_data in webhooks_data:
-                webhook = Webhook(webhook_data)
+                webhook = Webhook.from_data(webhook_data)
                 webhooks[webhook.id] = webhook
         
         

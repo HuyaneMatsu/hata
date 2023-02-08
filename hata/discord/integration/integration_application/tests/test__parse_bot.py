@@ -14,7 +14,7 @@ def test__parse_bot():
     for input_data, expected_output in (
         ({}, ZEROUSER),
         ({'bot': None}, ZEROUSER),
-        ({'bot': user.to_data()}, user),
+        ({'bot': user.to_data(defaults = True, include_internals = True)}, user),
     ):
         output = parse_bot(input_data)
         vampytest.assert_is(output, expected_output)

@@ -12,19 +12,18 @@ from scarletio import (
 from ...env import CACHE_USER
 from ...ext import get_and_validate_setup_functions, run_setup_functions
 
-from ..activity import ACTIVITY_UNKNOWN, Activity, ActivityType
+from ..activity import ACTIVITY_UNKNOWN
 from ..application import Application, Team
 from ..core import APPLICATION_ID_TO_CLIENT, CHANNELS, CLIENTS, GUILDS, KOKORO, USERS
+from ..events import IntentFlag
 from ..events.core import register_client, unregister_client
 from ..events.event_handler_manager import EventHandlerManager
 from ..events.handling_helpers import ensure_shutdown_event_handlers, ensure_voice_client_shutdown_event_handlers
-from ..events.intent import IntentFlag
 from ..exceptions import (
     DiscordException, DiscordGatewayException, INTENT_ERROR_CODES, InvalidToken, RESHARD_ERROR_CODES
 )
 from ..gateway.client_gateway import DiscordGateway, DiscordGatewaySharder
 from ..http import DiscordHTTPClient, RateLimitProxy
-from ..preconverters import preconvert_bool, preconvert_flag, preconvert_snowflake
 from ..user import (
     ClientUserBase, ClientUserPBase, GuildProfile, PremiumType, RelationshipType, Status, User, UserBase, UserFlag,
     create_partial_user_from_id
@@ -37,6 +36,11 @@ from ..user.user.fields import (
 )
 
 from .compounds import CLIENT_COMPOUNDS
+from .fields import (
+    validate_activity, validate_additional_owner_ids, validate_application_id, validate_client_id,
+    validate_http_debug_options, validate_intents, validate_secret, validate_should_request_users, validate_shard_count,
+    validate_token
+)
 from .functionality_helpers import _check_is_client_duped, try_get_user_id_from_token
 from .ready_state import ReadyState
 
@@ -246,7 +250,7 @@ class Client(
         token,
         *,
         activity = ...,
-        additional_owners = None,
+        additional_owners = ...,
         application_id = ...,
         avatar = ...,
         banner = ...,
@@ -258,18 +262,18 @@ class Client(
         email_verified = ...,
         extensions = None,
         flags = ...,
-        http_debug_options = None,
-        intents = -1,
+        http_debug_options = ...,
+        intents = ...,
         is_bot = ...,
         locale = ...,
         mfa = ...,
         name = ...,
         premium_type = ...,
         secret = ...,
-        shard_count = 0,
-        should_request_users = True,
+        shard_count = ...,
+        should_request_users = ...,
         status = ...,
-        **keyword_parameters
+        **keyword_parameters,
     ):
         """
         Creates a new ``Client`` with the given parameters.
@@ -282,9 +286,9 @@ class Client(
         activity : ``Activity``, Optional (Keyword only)
             The client's preferred activity.
         
-        additional_owners : `None`, `int`, ``ClientUserBase``, `iterable` of (`int`, ``ClientUserBase``) = `None` \
+        additional_owners : `None`, `int`, ``ClientUserBase``, `iterable` of (`int`, ``ClientUserBase``) \
                 , Optional (Keyword only)
-            Additional users to return `True` if ``is_owner` is called.
+            Additional users to return `True` for by ``.is_owner`.
         
         application_id : `None`, `int`, `str`, Optional (Keyword only)
             The client's application id. If passed as `str`, will be converted to `int`.
@@ -323,10 +327,10 @@ class Client(
         flags : `int`, ``UserFlag``, Optional (Keyword only)
             The user's flags.
         
-        http_debug_options: `None`, `str`, `iterable` of `str` = `None`, Optional (Keyword only)
+        http_debug_options: `None`, `str`, `iterable` of `str`, Optional (Keyword only)
             Http client debug options for the client.
         
-        intents : ``IntentFlag`` = `-1`, Optional (Keyword only)
+        intents : `int`, ``IntentFlag``, Optional (Keyword only)
              By default the client will launch up using all the intent flags. Negative values will be interpreted as
              using all the intents, meanwhile if passed as positive, non existing intent flags are removed.
         
@@ -345,10 +349,10 @@ class Client(
         secret: `str`, Optional (Keyword only)
             Client secret used when interacting with oauth2 endpoints.
         
-        shard_count : `int` = `0`, Optional (Keyword only)
+        shard_count : `int`, Optional (Keyword only)
             The client's shard count. If passed as lower as the recommended one, will reshard itself.
         
-        should_request_users : `int` = `False`, Optional (Keyword only)
+        should_request_users : `int`, Optional (Keyword only)
             Whether the client should try to request the users of it's guilds.
         
         status : `None`, `str`, ``Status``, Optional (Keyword only)
@@ -377,12 +381,7 @@ class Client(
         # ---- Required Parameters ----
         
         # token
-        if (type(token) is str):
-            pass
-        elif isinstance(token, str):
-            token = str(token)
-        else:
-            raise TypeError(f'`token` can be `str`, got {token.__class__.__name__}; {token!r}')
+        token = validate_token(token)
         
         # ---- Optional Client Parameters ----
         
@@ -390,54 +389,19 @@ class Client(
         if activity is ...:
             activity = ACTIVITY_UNKNOWN
         else:
-            if (not isinstance(activity, Activity)) or (activity.type is ActivityType.custom):
-                raise TypeError(
-                    f'`activity` can be `{Activity.__name__}` (except `{ActivityType.custom.name}`), got '
-                    f'{activity.__class__.__name__}; {activity!r}.')
+            activity = validate_activity(activity)
         
         # additional owners
-        if additional_owners is None:
+        if additional_owners is ...:
             additional_owner_ids = None
         else:
-            additional_owner_ids = set()
-            
-            if isinstance(additional_owners, ClientUserBase):
-                additional_owner_ids.add(additional_owners.id)
-            elif type(additional_owners) is int:
-                additional_owner_ids.add(additional_owners)
-            elif isinstance(additional_owners, int):
-                additional_owner_ids.add(int(additional_owners))
-            else:
-                iter_ = getattr(type(additional_owners), '__iter__', None)
-                if iter_ is None:
-                    raise TypeError(
-                        f'`additional_owners` can be `iterable`, got {additional_owners.__class__.__name__}; '
-                        f'{additional_owners!r}.'
-                    )
-                
-                for additional_owner in iter_(additional_owners):
-                    if type(additional_owner) is int:
-                        pass
-                    elif isinstance(additional_owner, int):
-                        additional_owner = int(additional_owner)
-                    elif isinstance(additional_owner, ClientUserBase):
-                        additional_owner = additional_owner.id
-                    else:
-                        raise TypeError(
-                            f'`additional_owners` contains a non `int`, `{ClientUserBase.__name__}` , got '
-                            f'{additional_owner.__class__.__name__}; {additional_owner!r}.'
-                        )
-                    
-                    additional_owner_ids.add(additional_owner)
-                
-                if (not additional_owner_ids):
-                    additional_owner_ids = None
+            additional_owner_ids = validate_additional_owner_ids(additional_owners)
         
         # application_id
         if (application_id is ...):
             application_id = 0
         else:
-            application_id = preconvert_snowflake(application_id, 'application_id')
+            application_id = validate_application_id(application_id)
         
         application = Application._create_empty(application_id)
         
@@ -480,7 +444,7 @@ class Client(
         if client_id is ...:
             client_id = try_get_user_id_from_token(token)
         else:
-            client_id = preconvert_snowflake(client_id, 'client_id')
+            client_id = validate_client_id(client_id)
         
         # discriminator
         if discriminator is ...:
@@ -510,47 +474,16 @@ class Client(
             flags = validate_flags(flags)
         
         # http_debug_options
-        processed_http_debug_options = None
-        
-        if (http_debug_options is not None):
-            if isinstance(http_debug_options, str):
-                if type(http_debug_options) is not str:
-                    http_debug_options = str(http_debug_options)
-                
-                if not http_debug_options.islower():
-                    http_debug_options = http_debug_options.lower()
-                
-                processed_http_debug_options = {http_debug_options}
-            else:
-                iterator = getattr(type(http_debug_options), '__iter__', None)
-                if (iterator is None):
-                    raise TypeError(
-                        f'`http_debug_options` can be `str`, `iterable` of `str`, got '
-                        f'{http_debug_options.__class__.__name__}; {http_debug_options!r}.'
-                    )
-                
-                for http_debug_option in iterator(http_debug_options):
-                    
-                    if type(http_debug_option) is str:
-                        pass
-                    elif isinstance(http_debug_option, str):
-                        http_debug_option = str(http_debug_option)
-                    else:
-                        raise TypeError(
-                            f'{http_debug_options} contains a non `str`, got '
-                            f'{http_debug_options.__class__.__name__}; {http_debug_options!r}.'
-                        )
-                    
-                    if not http_debug_option.islower():
-                        http_debug_option = http_debug_option.lower()
-                    
-                    if processed_http_debug_options is None:
-                        processed_http_debug_options = set()
-                    
-                    processed_http_debug_options.add(http_debug_option)
+        if http_debug_options is ...:
+            http_debug_options = None
+        else:
+            http_debug_options = validate_http_debug_options(http_debug_options)
         
         # intents
-        intents = preconvert_flag(intents, 'intents', IntentFlag)
+        if intents is ...:
+            intents = IntentFlag(-1)
+        else:
+            intents = validate_intents(intents)
         
         # locale
         if locale is ...:
@@ -577,38 +510,22 @@ class Client(
             premium_type = validate_premium_type(premium_type)
         
         # secret
-        if (secret is ...):
+        if secret is ...:
             secret = ''
-        elif type(secret is str):
-            pass
-        elif isinstance(secret, str):
-            secret = str(secret)
         else:
-            raise TypeError(
-                f'`secret` can be `str`, got `{secret.__class__.__name__}`; {secret!r}.'
-            )
+            secret = validate_secret(secret)
         
         # shard count
-        if (type(shard_count) is int):
-            pass
-        elif isinstance(shard_count, int):
-            shard_count = int(shard_count)
-        else:
-            raise TypeError(
-                f'`shard_count` can be `int`, got {shard_count.__class__.__name__}; {shard_count!r}.'
-            )
-        
-        if shard_count < 0:
-            raise ValueError(
-                f'`shard_count` can be non negative `int`, got {shard_count!r}.'
-            )
-        
-        # Default shard count to `0` if we received `1`.
-        if shard_count == 1:
+        if shard_count is ...:
             shard_count = 0
+        else:
+            shard_count = validate_shard_count(shard_count)
         
         # should_request_users
-        should_request_users = preconvert_bool(should_request_users, 'should_request_users')
+        if should_request_users is ...:
+            should_request_users = True
+        else:
+            should_request_users = validate_should_request_users(should_request_users)
         
         # status
         if status is ...:
@@ -665,7 +582,7 @@ class Client(
         self.group_channels = {}
         self.guild_profiles = {}
         self.guilds = set()
-        self.http = DiscordHTTPClient(bot, token, debug_options = processed_http_debug_options)
+        self.http = DiscordHTTPClient(bot, token, debug_options = http_debug_options)
         self.intents = intents
         self.locale = locale
         self.mfa = mfa

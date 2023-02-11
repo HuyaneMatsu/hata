@@ -219,7 +219,7 @@ def put_discriminator_into(discriminator, data, defaults):
     
     Parameters
     ----------
-    discriminator : `discriminator`
+    discriminator : `int`
         Discriminator value.
     data : `dict` of (`str`, `object`) items
         Json serializable dictionary.
@@ -250,7 +250,7 @@ def validate_discriminator(discriminator):
     Raises
     ------
     TypeError
-        If `discriminator` was not passed neither as `int`, `str`.
+        - If `discriminator` was not passed neither as `int`, `str`.
     ValueError
         - If `discriminator` was passed as `str` and it is not numerical or it's length is over `4`.
         - If the `discriminator`'s value is less than `0` or is over than `9999`.
@@ -401,15 +401,37 @@ def parse_statuses(data):
     
     Returns
     -------
-    statuses : `dict` of (`str`, `str`) items
+    statuses : `None`, `dict` of (`str`, `str`) items
     """
     statuses = data.get('client_status', None)
-    if statuses is None:
-        statuses = {}
+    if (statuses is not None) and (not statuses):
+        statuses = None
     
     return statuses
 
-put_statuses_into = field_putter_factory('client_status')
+
+def put_statuses_into(statuses, data, defaults):
+    """
+    Puts the given statuses value into the given data.
+    
+    Parameters
+    ----------
+    statuses : `None`, `dict` of (`str`, `str`) items
+        user statuses by platform.
+    data : `dict` of (`str`, `object`) items
+        Json serializable dictionary.
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict` of (`str`, `object`) items
+    """
+    if (statuses is None):
+        statuses = {}
+    
+    data['client_status'] = statuses
+    return data
 
 
 def validate_statuses(statuses):
@@ -423,7 +445,7 @@ def validate_statuses(statuses):
     
     Returns
     -------
-    statuses : `dict` of (`str`, `str`) items
+    statuses : `None`, `dict` of (`str`, `str`) items
     
     Raises
     ------
@@ -431,7 +453,7 @@ def validate_statuses(statuses):
         - If `statuses`'s type is incorrect.
     """
     if statuses is None:
-        return {}
+        return None
     
     if not isinstance(statuses, dict):
         raise TypeError(
@@ -439,7 +461,7 @@ def validate_statuses(statuses):
             f'got {type(statuses).__name__}; {statuses!r}.'
         )
     
-    statuses_validated = {}
+    statuses_validated = None
     
     for key, value in statuses.items():
         if not isinstance(key, str):
@@ -451,6 +473,9 @@ def validate_statuses(statuses):
                 f'`statuses` values can be `str`, got {value.__class__.__name__}; {value!r}; statuses = {statuses!r}.'
             )
         
+        if statuses_validated is None:
+            statuses_validated = {}
+            
         statuses_validated[key] = value
     
     return statuses_validated

@@ -8,9 +8,9 @@ def test__parse_statuses():
     Tests whether ``parse_statuses` works as intended.
     """
     for input_data, expected_output in (
-        ({}, {}),
-        ({'client_status': None}, {}),
-        ({'client_status': {}}, {}),
+        ({}, None),
+        ({'client_status': None}, None),
+        ({'client_status': {}}, None),
         ({'client_status': {'mobile': 'online'}}, {'mobile': 'online'}),
     ):
         output = parse_statuses(input_data)

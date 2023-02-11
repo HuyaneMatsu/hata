@@ -10,8 +10,8 @@ def test__validate_statuses__0():
     Case: passing.
     """
     for input_value, expected_output in (
-        (None, {}),
-        ({}, {}),
+        (None, None),
+        ({}, None),
         ({'mobile': 'online'}, {'mobile': 'online'}),
     ):
         output = validate_statuses(input_value)

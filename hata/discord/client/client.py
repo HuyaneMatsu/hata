@@ -199,7 +199,7 @@ class Client(
     status : `Status`
         The client's display status.
     
-    statuses : `dict` of (`str`, `str`) items
+    statuses : `None`, `dict` of (`str`, `str`) items
         The client's statuses for each platform.
     
     thread_profiles : `None`, `dict` (``Channel``, ``ThreadProfile``) items
@@ -594,7 +594,7 @@ class Client(
         self.secret = secret
         self.shard_count = shard_count
         self.status = Status.offline
-        self.statuses = {}
+        self.statuses = None
         self.thread_profiles = None
         self.token = token
         self.voice_clients = {}
@@ -815,7 +815,7 @@ class Client(
         self.guild_profiles.clear()
         self.thread_profiles = None
         self.status = Status.offline
-        self.statuses.clear()
+        self.statuses = None
         self._activity = ACTIVITY_UNKNOWN
         self.activities = None
         self.ready_state = None

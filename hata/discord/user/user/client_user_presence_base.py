@@ -54,7 +54,7 @@ class ClientUserPBase(ClientUserBase):
         The user's name.
     status : `Status`
         The user's display status.
-    statuses : `dict` of (`str`, `str`) items
+    statuses : `None`, `dict` of (`str`, `str`) items
         The user's statuses for each platform.
     thread_profiles : `None`, `dict` (``Channel``, ``ThreadProfile``) items
         A Dictionary which contains the thread profiles for the user in thread channel - thread profile relation.
@@ -99,7 +99,7 @@ class ClientUserPBase(ClientUserBase):
             The user's name.
         status : `Status`, `str`, Optional (Keyword only)
             The user's display status.
-        statuses : `dict` of (`str`, `str`) items, Optional (Keyword only)
+        statuses : `None`, `dict` of (`str`, `str`) items, Optional (Keyword only)
             The user's statuses for each platform.
         
         Returns
@@ -127,7 +127,7 @@ class ClientUserPBase(ClientUserBase):
         
         # statuses
         if statuses is ...:
-            statuses = {}
+            statuses = None
         else:
             statuses = validate_statuses(statuses)
         
@@ -176,7 +176,7 @@ class ClientUserPBase(ClientUserBase):
         ClientUserBase._set_default_attributes(self)
         
         self.status = Status.offline
-        self.statuses = {}
+        self.statuses = None
         self.activities = None
     
     
@@ -347,7 +347,7 @@ class ClientUserPBase(ClientUserBase):
             The user's name.
         status : `Status`, `str`, Optional (Keyword only)
             The user's display status.
-        statuses : `dict` of (`str`, `str`) items, Optional (Keyword only)
+        statuses : `None`, `dict` of (`str`, `str`) items, Optional (Keyword only)
             The user's statuses for each platform.
         
         Returns
@@ -457,7 +457,7 @@ class ClientUserPBase(ClientUserBase):
     @copy_docs(ClientUserBase.platform)
     def platform(self):
         statuses = self.statuses
-        if statuses:
+        if (statuses is not None):
             actual_status_value = self.status.value
             for platform, status_value in statuses.items():
                 if actual_status_value == status_value:

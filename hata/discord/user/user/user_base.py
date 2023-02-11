@@ -779,14 +779,14 @@ class UserBase(DiscordEntity, immortal = True):
     )
     
     
-    statuses = PlaceHolderFunctional(
-        (lambda : {}),
+    statuses = PlaceHolder(
+        None,
         """
         Returns the user's statuses for each platform.
         
         Returns
         -------
-        statuses : `dict` of (`str`, `str`) items
+        statuses : `None`, `dict` of (`str`, `str`) items
         """
     )
     
@@ -1283,15 +1283,15 @@ class UserBase(DiscordEntity, immortal = True):
         
         Returned Data Structure
         -----------------------
-        +---------------+-----------------------------------+
-        | Keys          | Values                            |
-        +===============+===================================+
-        | activities    | ``ActivityChange``                |
-        +---------------+-----------------------------------+
-        | status        | ``Status``                        |
-        +---------------+-----------------------------------+
-        | statuses      | `dict` of (`str`, `str`) items    |
-        +---------------+-----------------------------------+
+        +---------------+-------------------------------------------+
+        | Keys          | Values                                    |
+        +===============+===========================================+
+        | activities    | ``ActivityChange``                        |
+        +---------------+-------------------------------------------+
+        | status        | ``Status``                                |
+        +---------------+-------------------------------------------+
+        | statuses      | `None`, `dict` of (`str`, `str`) items    |
+        +---------------+-------------------------------------------+
         """
         return {}
     

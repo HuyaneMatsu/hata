@@ -82,7 +82,7 @@ class User(USER_BASE_TYPE):
         
         > Only available if presence caching is enabled.
     
-    statuses : `dict` of (`str`, `str`) items
+    statuses : `None`, `dict` of (`str`, `str`) items
         The user's statuses for each platform.
         
         > Only available if presence caching is enabled.
@@ -111,7 +111,7 @@ class User(USER_BASE_TYPE):
                 self.guild_profiles = {}
                 self.thread_profiles = None
                 self.status = Status.offline
-                self.statuses = {}
+                self.statuses = None
                 self.activities = None
                 
                 USERS[user_id] = self
@@ -249,7 +249,7 @@ class User(USER_BASE_TYPE):
         
             > Only available if presence caching is enabled.
         
-        statuses : `dict` of (`str`, `str`) items, Optional (Keyword only)
+        statuses : `None`, `dict` of (`str`, `str`) items, Optional (Keyword only)
             The user's statuses for each platform.
         
             > Only available if presence caching is enabled.

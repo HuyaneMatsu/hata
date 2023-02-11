@@ -1,3 +1,9 @@
+## 1.3.22 *\[2023-02-??\]*
+
+#### Improvements
+
+- `UserBase.statuses` now defaults to `None`. This will save a lot of memory when presence caching is enabled.
+
 ## 1.3.21 *\[2023-02-11\]*
 
 #### Improvements

@@ -57,6 +57,7 @@
 #### Bug Fixes
 
 - `WebhookBase.can_use_emoji` dropped `AttributeError`.
+- `Client.guild_user_get_all` had wrong exit condition, lol.
 - `WebhookBase.can_use_emoji` dropped `TypeError` if the webhook's guild was partial.
 - `ClientUserBase.top_role_at` returned `default` if the user had only the default role.
 - `ClientUserBase._update_profile` did not force assign the user to the guild if it was missing.

@@ -1437,7 +1437,7 @@ class ClientCompoundGuildEndpoints(Compound):
                 user = User.from_data(guild_profile_data['user'], guild_profile_data, guild_id)
                 users.append(user)
             
-            if len(guild_profile_datas) > 1000:
+            if len(guild_profile_datas) < 1000:
                 break
             
             data['after'] = user.id

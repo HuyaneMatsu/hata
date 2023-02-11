@@ -1,4 +1,4 @@
-## 1.3.21 *\[2023-02-??\]*
+## 1.3.21 *\[2023-02-11\]*
 
 #### Improvements
 
@@ -56,9 +56,6 @@
 
 #### Bug Fixes
 
-##### ext.slash
-
-- `power` had no name registered.
 - `WebhookBase.can_use_emoji` dropped `AttributeError`.
 - `WebhookBase.can_use_emoji` dropped `TypeError` if the webhook's guild was partial.
 - `ClientUserBase.top_role_at` returned `default` if the user had only the default role.
@@ -66,6 +63,9 @@
 - `ActivityMetadataCustom` was not popping empty name, making impossible to create custom custom activities.
 - `ClientUserBase.guild_profile_role_ids` logic fixed when checking required roles (was broken when emoji role > 1).
 - `ClientUserBase.has_higher_role_than_at` could return `True` when both user is same and also the owner of the guild.
+
+##### ext.slash
+- `power` had no name registered.
 
 #### Renames, Deprecation & Removals
 

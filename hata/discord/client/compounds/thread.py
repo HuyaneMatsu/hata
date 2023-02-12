@@ -24,6 +24,7 @@ from ..request_helpers import (
 )
 
 
+MESSAGE_FLAG_VALUE_SILENT = MessageFlag().update_by_keys(silent = True)
 MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS = MessageFlag().update_by_keys(embeds_suppressed=True)
 
 
@@ -257,6 +258,7 @@ class ClientCompoundThreadEndpoints(Compound):
         embed = None,
         file = None,
         nonce = None,
+        silent = False,
         sticker = None,
         suppress_embeds = False,
         tts = False,
@@ -302,6 +304,9 @@ class ClientCompoundThreadEndpoints(Compound):
         
         nonce : `None`, `str` = `None`, Optional (Keyword only)
             Used for optimistic message sending. Will shop up at the message's data.
+        
+        silent : `bool` = `False`, Optional (Keyword only)
+            Whether the message should be delivered silently.
         
         sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`) = `None` \
                 , Optional (Keyword only)
@@ -418,6 +423,11 @@ class ClientCompoundThreadEndpoints(Compound):
                     f'`nonce` can be `None`, `str`, got {nonce.__class__.__name__}; {nonce!r}.'
                 )
             
+            if not isinstance(silent, bool):
+                raise AssertionError(
+                    f'`suppress_embeds` can be `bool`, got {suppress_embeds.__class__.__name__}; {suppress_embeds!r}.'
+                )
+            
             if not isinstance(suppress_embeds, bool):
                 raise AssertionError(
                     f'`suppress_embeds` can be `bool`, got {suppress_embeds.__class__.__name__}; {suppress_embeds!r}.'
@@ -456,8 +466,12 @@ class ClientCompoundThreadEndpoints(Compound):
         if (allowed_mentions is not ...):
             message_data['allowed_mentions'] = parse_allowed_mentions(allowed_mentions)
         
-        if suppress_embeds:
-            message_data['flags'] = MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS
+        flags = (
+            (MESSAGE_FLAG_VALUE_SILENT if silent else 0) |
+            (MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS if suppress_embeds else 0)
+        )
+        if flags:
+            message_data['flags'] = flags
         
         message_data = add_file_to_message_data(message_data, file, contains_content, False)
         if message_data is None:

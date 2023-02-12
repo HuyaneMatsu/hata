@@ -19,8 +19,9 @@ from ..functionality_helpers import application_command_autocomplete_choice_pars
 from ..request_helpers import add_file_to_message_data, get_components_data, validate_content_and_embed
 
 
-MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY = MessageFlag().update_by_keys(invoking_user_only=True)
-MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS = MessageFlag().update_by_keys(embeds_suppressed=True)
+MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY = MessageFlag().update_by_keys(invoking_user_only = True)
+MESSAGE_FLAG_VALUE_SILENT = MessageFlag().update_by_keys(silent = True)
+MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS = MessageFlag().update_by_keys(embeds_suppressed = True)
 
 
 def _assert__interaction_event_type(interaction_event):
@@ -109,6 +110,29 @@ def _assert__show_for_invoking_user_only(show_for_invoking_user_only):
         raise AssertionError(
             f'`show_for_invoking_user_only` can be `bool`, got '
             f'{show_for_invoking_user_only.__class__.__name__}; {show_for_invoking_user_only!r}.'
+        )
+    
+    return True
+
+
+def _assert__silent(silent):
+    """
+    Asserts whether the given `silent`'s type is correct.
+    
+    Parameters
+    ----------
+    silent : ``bool``
+        Whether the message should be delivered silently.
+    
+    Raises
+    ------
+    AssertionError
+        - If `silent` is not ``bool``.
+    """
+    if not isinstance(silent, bool):
+        raise AssertionError(
+            f'`silent` can be `bool`, got '
+            f'{silent.__class__.__name__}; {silent!r}.'
         )
     
     return True
@@ -346,6 +370,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         components = None,
         embed = None,
         show_for_invoking_user_only = False,
+        silent = False,
         suppress_embeds = False,
         tts = False,
     ):
@@ -387,11 +412,14 @@ class ClientCompoundInteractionEndpoints(Compound):
             If `embed` and `content` parameters are both given as ``EmbedBase``, then `AssertionError` is
             raised.
         
-        suppress_embeds : `bool` = `False`, Optional (Keyword only)
-            Whether the message's embeds should be suppressed initially.
-        
         show_for_invoking_user_only : `bool` = `False`, Optional (Keyword only)
             Whether the sent message should only be shown to the invoking user. Defaults to `False`.
+        
+        silent : `bool` = `False`, Optional (Keyword only)
+            Whether the message should be delivered silently.
+        
+        suppress_embeds : `bool` = `False`, Optional (Keyword only)
+            Whether the message's embeds should be suppressed initially.
         
         tts : `bool` = `False`, Optional (Keyword only)
             Whether the message is text-to-speech.
@@ -426,6 +454,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         components = get_components_data(components, False)
         
         assert _assert__show_for_invoking_user_only(show_for_invoking_user_only)
+        assert _assert__silent(silent)
         assert _assert__suppress_embeds(suppress_embeds)
         assert _assert__tts(tts)
         
@@ -457,14 +486,11 @@ class ClientCompoundInteractionEndpoints(Compound):
         else:
             is_deferring = True
         
-        flags = 0
-        
-        if show_for_invoking_user_only:
-            flags |= MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY
-        
-        if suppress_embeds:
-            flags |= MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS
-        
+        flags = (
+            (MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY if show_for_invoking_user_only else 0) |
+            (MESSAGE_FLAG_VALUE_SILENT if silent else 0) |
+            (MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS if suppress_embeds else 0)
+        )
         if flags:
             message_data['flags'] = flags
             contains_content = True
@@ -789,6 +815,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         embed = None,
         file = None,
         show_for_invoking_user_only = False,
+        silent = False,
         suppress_embeds = False,
         tts = False,
     ):
@@ -833,6 +860,9 @@ class ClientCompoundInteractionEndpoints(Compound):
             Invoking user only messages can have attachments too. These attachments are purged by Discord after a set
             amount of time (2 weeks), so do not rely on reusing their url.
         
+        silent : `bool` = `False`, Optional (Keyword only)
+            Whether the message should be delivered silently.
+        
         suppress_embeds : `bool` = `False`, Optional (Keyword only)
             Whether the message's embeds should be suppressed initially.
         
@@ -870,6 +900,7 @@ class ClientCompoundInteractionEndpoints(Compound):
         components = get_components_data(components, False)
         
         assert _assert__show_for_invoking_user_only(show_for_invoking_user_only)
+        assert _assert__silent(silent)
         assert _assert__suppress_embeds(suppress_embeds)
         assert _assert__tts(tts)
         
@@ -896,14 +927,11 @@ class ClientCompoundInteractionEndpoints(Compound):
         if tts:
             message_data['tts'] = True
         
-        flags = 0
-        
-        if show_for_invoking_user_only:
-            flags |= MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY
-        
-        if suppress_embeds:
-            flags |= MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS
-        
+        flags = (
+            (MESSAGE_FLAG_VALUE_INVOKING_USER_ONLY if show_for_invoking_user_only else 0) |
+            (MESSAGE_FLAG_VALUE_SILENT if silent else 0) |
+            (MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS if suppress_embeds else 0)
+        )
         if flags:
             message_data['flags'] = flags
         

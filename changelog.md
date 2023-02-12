@@ -2,7 +2,24 @@
 
 #### Improvements
 
+- Add `MessageFlag.silent`.
+- Add `MessageFlag.voice_message`.
+- Add `silent` parameter to `Client.message_create`.
+- Add `silent` parameter to `Client.forum_thread_create`.
 - `UserBase.statuses` now defaults to `None`. This will save a lot of memory when presence caching is enabled.
+- Add `silent` parameter to `Client.interaction_followup_message_create`.
+- Add `silent` parameter to `Client.interaction_response_message_create`.
+- Add `silent` parameter to `Client.webhook_message_create`.
+- Add `suppress_embeds` parameter to `Client.webhook_message_create`.
+
+##### ext.slash
+- Add `silent` parameter to `InteractionResponse.__init__`.
+- Add `silent` parameter to `abort`.
+
+#### Bug Fixes
+
+##### ext.solar_link
+- `Equalizer.to_data` could drop `TypeError`.
 
 ## 1.3.21 *\[2023-02-11\]*
 

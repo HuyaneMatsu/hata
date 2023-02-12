@@ -237,16 +237,16 @@ class ChannelMix(Filter):
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' left_to_left=')
+        repr_parts.append(' left_to_left = ')
         repr_parts.append(format(self._left_to_left, '.02f'))
         
-        repr_parts.append(' left_to_right=')
+        repr_parts.append(' left_to_right = ')
         repr_parts.append(format(self._left_to_right, '.02f'))
         
-        repr_parts.append(' right_to_right=')
+        repr_parts.append(' right_to_right = ')
         repr_parts.append(format(self._right_to_right, '.02f'))
         
-        repr_parts.append(' right_to_left=')
+        repr_parts.append(' right_to_left = ')
         repr_parts.append(format(self._right_to_left, '.02f'))
         
         repr_parts.append('>')
@@ -319,8 +319,18 @@ class Distortion(Filter):
         '_cos_offset', '_cos_scale', '_offset', '_scale', '_sin_offset', '_sin_scale', '_tan_offset', '_tan_scale'
     )
     
-    def __new__(cls, *, sin_offset=0.0, sin_scale=1.0, cos_offset=0.0, cos_scale=1.0, tan_offset=0.0, tan_scale=1.0,
-            offset=0.0, scale=1.0):
+    def __new__(
+        cls,
+        *,
+        sin_offset = 0.0,
+        sin_scale = 1.0,
+        cos_offset = 0.0,
+        cos_scale = 1.0,
+        tan_offset = 0.0,
+        tan_scale = 1.0,
+        offset = 0.0,
+        scale = 1.0,
+    ):
         """
         Creates a new distortion filter.
         
@@ -493,7 +503,7 @@ class Distortion(Filter):
         if (sin_offset != 0.0):
             field_added = True
         
-            repr_parts.append(' sin_offset=')
+            repr_parts.append(' sin_offset = ')
             repr_parts.append(format(sin_offset, '.02f'))
         
         else:
@@ -507,7 +517,7 @@ class Distortion(Filter):
             else:
                 field_added = True
             
-            repr_parts.append(' sin_scale=')
+            repr_parts.append(' sin_scale = ')
             repr_parts.append(format(sin_scale, '.02f'))
         
         
@@ -518,7 +528,7 @@ class Distortion(Filter):
             else:
                 field_added = True
             
-            repr_parts.append(' cos_offset=')
+            repr_parts.append(' cos_offset = ')
             repr_parts.append(format(cos_offset, '.02f'))
 
         
@@ -529,7 +539,7 @@ class Distortion(Filter):
             else:
                 field_added = True
             
-            repr_parts.append(' cos_scale=')
+            repr_parts.append(' cos_scale = ')
             repr_parts.append(format(cos_scale, '.02f'))
         
         
@@ -540,7 +550,7 @@ class Distortion(Filter):
             else:
                 field_added = True
             
-            repr_parts.append(' tan_offset=')
+            repr_parts.append(' tan_offset = ')
             repr_parts.append(format(tan_offset, '.02f'))
 
         
@@ -551,7 +561,7 @@ class Distortion(Filter):
             else:
                 field_added = True
             
-            repr_parts.append(' tan_scale=')
+            repr_parts.append(' tan_scale = ')
             repr_parts.append(format(tan_scale, '.02f'))
         
         
@@ -562,7 +572,7 @@ class Distortion(Filter):
             else:
                 field_added = True
             
-            repr_parts.append(' offset=')
+            repr_parts.append(' offset = ')
             repr_parts.append(format(offset, '.02f'))
 
         
@@ -571,7 +581,7 @@ class Distortion(Filter):
             if field_added:
                 repr_parts.append(',')
             
-            repr_parts.append(' scale=')
+            repr_parts.append(' scale = ')
             repr_parts.append(format(scale, '.02f'))
         
         
@@ -726,7 +736,7 @@ class Equalizer(Filter):
         
         bands = self._bands
         if (bands is not None):
-            repr_parts.append(' bands={')
+            repr_parts.append(' bands = {')
             field_added = False
             
             for band, gain in sorted(bands.items()):
@@ -764,7 +774,7 @@ class Equalizer(Filter):
                 LAVALINK_KEY_FILTER_EQUALIZER_BAND: band,
                 LAVALINK_KEY_FILTER_EQUALIZER_GAIN: gain,
             }
-            for band, gain in self._bands
+            for band, gain in self._bands.items()
         ]
 
 
@@ -795,7 +805,7 @@ class Karaoke(Filter):
     
     __slots__ = ('_filter_band', '_filter_width', '_level', '_mono_level')
     
-    def __new__(cls, *, filter_band=220.0, filter_width=100.0, level=1.0, mono_level=1.0):
+    def __new__(cls, *, filter_band = 220.0, filter_width = 100.0, level = 1.0, mono_level = 1.0):
         """
         Creates a new karaoke filter.
         
@@ -883,16 +893,16 @@ class Karaoke(Filter):
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' level=')
+        repr_parts.append(' level = ')
         repr_parts.append(format(self._level, '.02f'))
         
-        repr_parts.append(', mono_level=')
+        repr_parts.append(', mono_level = ')
         repr_parts.append(format(self._mono_level, '.02f'))
         
-        repr_parts.append(', filter_band=')
+        repr_parts.append(', filter_band = ')
         repr_parts.append(format(self._filter_band, '.02f'))
         
-        repr_parts.append(', filter_width=')
+        repr_parts.append(', filter_width = ')
         repr_parts.append(format(self._filter_width, '.02f'))
         
         repr_parts.append('>')
@@ -988,7 +998,7 @@ class LowPass(Filter):
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' smoothing=')
+        repr_parts.append(' smoothing = ')
         repr_parts.append(format(self._smoothing, '.02f'))
         
         repr_parts.append('>')
@@ -1089,7 +1099,7 @@ class Rotation(Filter):
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' rotation=')
+        repr_parts.append(' rotation = ')
         repr_parts.append(format(self._rotation, '.02f'))
         
         repr_parts.append('>')
@@ -1136,7 +1146,7 @@ class Timescale(Filter):
     
     __slots__ = ('_pitch', '_rate', '_speed')
     
-    def __new__(cls, *, pitch=1.0, rate=1.0, speed=1.0):
+    def __new__(cls, *, pitch = 1.0, rate = 1.0, speed = 1.0):
         """
         Creates a new timescale filter.
         
@@ -1239,7 +1249,7 @@ class Timescale(Filter):
         if (speed != 1.0):
             field_added = True
             
-            repr_parts.append(' speed=')
+            repr_parts.append(' speed = ')
             repr_parts.append(format(speed, '.02f'))
         
         else:
@@ -1251,7 +1261,7 @@ class Timescale(Filter):
                 repr_parts.append(',')
             else:
                 field_added = True
-            repr_parts.append(' pitch=')
+            repr_parts.append(' pitch = ')
             repr_parts.append(format(pitch, '.02f'))
         
         rate = self._rate
@@ -1259,7 +1269,7 @@ class Timescale(Filter):
             if field_added:
                 repr_parts.append(',')
             
-            repr_parts.append(' rate=')
+            repr_parts.append(' rate = ')
             repr_parts.append(format(rate, '.02f'))
         
         repr_parts.append('>')
@@ -1396,10 +1406,10 @@ class Tremolo(Filter):
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' depth=')
+        repr_parts.append(' depth = ')
         repr_parts.append(format(self._depth, '.02f'))
         
-        repr_parts.append(', frequency=')
+        repr_parts.append(', frequency = ')
         repr_parts.append(format(self._frequency, '.02f'))
         
         repr_parts.append('>')
@@ -1526,10 +1536,10 @@ class Vibrato(Filter):
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' depth=')
+        repr_parts.append(' depth = ')
         repr_parts.append(format(self._depth, '.02f'))
         
-        repr_parts.append(', frequency=')
+        repr_parts.append(', frequency = ')
         repr_parts.append(format(self._frequency, '.02f'))
         
         repr_parts.append('>')
@@ -1627,7 +1637,7 @@ class Volume(Filter):
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' volume=')
+        repr_parts.append(' volume = ')
         repr_parts.append(format(self._volume, '.02f'))
         
         repr_parts.append('>')

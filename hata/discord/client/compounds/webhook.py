@@ -9,7 +9,7 @@ from ...application import Application
 from ...bases import maybe_snowflake
 from ...channel import Channel, ChannelType, create_partial_channel_from_id
 from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES_EXTENDED
-from ...message import Message
+from ...message import Message, MessageFlag
 from ...utils import get_image_media_type, image_to_base64
 from ...webhook import Webhook, create_partial_webhook_from_id
 
@@ -17,6 +17,10 @@ from ..request_helpers import (
     add_file_to_message_data, get_channel_id, get_components_data, get_guild_id, get_webhook_and_id,
     get_webhook_and_id_and_token, get_webhook_id, get_webhook_id_and_token, validate_content_and_embed,
 )
+
+
+MESSAGE_FLAG_VALUE_SILENT = MessageFlag().update_by_keys(silent = True)
+MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS = MessageFlag().update_by_keys(embeds_suppressed = True)
 
 
 class ClientCompoundWebhookEndpoints(Compound):
@@ -543,8 +547,21 @@ class ClientCompoundWebhookEndpoints(Compound):
     
     
     async def webhook_message_create(
-        self, webhook, content=None, *, embed = None, file=None, allowed_mentions = ..., components = None, tts=False,
-        name=None, avatar_url = None, thread=None, wait=False
+        self,
+        webhook,
+        content = None,
+        *,
+        allowed_mentions = ...,
+        avatar_url = None,
+        components = None,
+        embed = None,
+        file = None,
+        name = None,
+        thread = None,
+        silent = False,
+        suppress_embeds = False,
+        tts = False,
+        wait = False,
     ):
         """
         Sends a message with the given webhook. If there is nothing to send, or if `wait` was not passed as `True`
@@ -562,7 +579,21 @@ class ClientCompoundWebhookEndpoints(Compound):
             if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
             
             If given as ``EmbedBase``, then is sent as the message's embed.
+        
+        allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
+                , Optional (Keyword only)
             
+            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
+        
+        avatar_url : `None`, `str` = `None`, Optional (Keyword only)
+            The message's author's avatar's url. Defaults to the webhook's avatar' url by Discord.
+        
+        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of
+                ``Component``) = `None`, Optional (Keyword only)
+            Components attached to the message.
+            
+            > `components` do not count towards having any content in the message.
+        
         embed : `None`, ``EmbedBase``, `list` of ``EmbedBase`` = `None`, Optional (Keyword only)
             The embedded content of the message.
             
@@ -572,28 +603,20 @@ class ClientCompoundWebhookEndpoints(Compound):
         file : `None`, `Any` = `None`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
         
-        allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
-                , Optional (Keyword only)
-            
-            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions`` for details.
-        
-        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of
-                ``Component``) = `None`, Optional (Keyword only)
-            Components attached to the message.
-            
-            > `components` do not count towards having any content in the message.
-        
-        tts : `bool` = `False`, Optional (Keyword only)
-            Whether the message is text-to-speech.
-        
         name : `None`, `str` = `None`, Optional (Keyword only)
             The message's author's new name. Default to the webhook's name by Discord.
         
-        avatar_url : `None`, `str` = `None`, Optional (Keyword only)
-            The message's author's avatar's url. Defaults to the webhook's avatar' url by Discord.
-        
         thread : `None`, ``Channel``, `int` = `None`, Optional (Keyword only)
             The thread of the webhook's channel where the message should be sent.
+        
+        silent : `bool` = `False`, Optional (Keyword only)
+            Whether the message should be delivered silently.
+        
+        suppress_embeds : `bool` = `False`, Optional (Keyword only)
+            Whether the message's embeds should be suppressed initially.
+        
+        tts : `bool` = `False`, Optional (Keyword only)
+            Whether the message is text-to-speech.
         
         wait : `None`, `bool` = `None`, Optional (Keyword only)
             Whether we should wait for the message to send and receive it's data as well.
@@ -620,14 +643,6 @@ class ClientCompoundWebhookEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `name` was not passed neither as `None`, `str`.
-            - If `name` was passed as `str`, but it's length is out of range [1:32].
-            - If `avatar_url` was not given as `str`.
-            - If `tts` was not given as `bool`.
-            - If `wait` was not given as `bool`.
-            - If `embed` contains a non ``EmbedBase`` element.
-            - If both `content` and `embed` fields are embeds.
         
         See Also
         --------
@@ -672,6 +687,16 @@ class ClientCompoundWebhookEndpoints(Compound):
                 raise AssertionError(
                     f'`wait` can be `bool`, got {wait.__class__.__name__}; {wait!r}.'
                 )
+            
+            if not isinstance(silent, bool):
+                raise AssertionError(
+                    f'`suppress_embeds` can be `bool`, got {suppress_embeds.__class__.__name__}; {suppress_embeds!r}.'
+                )
+            
+            if not isinstance(suppress_embeds, bool):
+                raise AssertionError(
+                    f'`suppress_embeds` can be `bool`, got {suppress_embeds.__class__.__name__}; {suppress_embeds!r}.'
+                )
         
         message_data = {}
         contains_content = False
@@ -692,6 +717,13 @@ class ClientCompoundWebhookEndpoints(Compound):
         
         if tts:
             message_data['tts'] = True
+        
+        flags = (
+            (MESSAGE_FLAG_VALUE_SILENT if silent else 0) |
+            (MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS if suppress_embeds else 0)
+        )
+        if flags:
+            message_data['flags'] = flags
         
         if (avatar_url is not None):
             if __debug__:

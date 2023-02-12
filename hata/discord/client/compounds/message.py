@@ -15,7 +15,7 @@ from ...message import Message, MessageFlag
 from ...message.utils import process_message_chunk
 from ...permission.permission import PERMISSION_MASK_MANAGE_MESSAGES, PERMISSION_MASK_READ_MESSAGE_HISTORY
 from ...sticker import Sticker
-from ...utils import DISCORD_EPOCH, log_time_converter
+from ...utils import DISCORD_EPOCH, log_time_converter, now_as_id
 
 from ..functionality_helpers import (
     MultiClientMessageDeleteSequenceSharder, _message_delete_multiple_private_task, _message_delete_multiple_task
@@ -27,6 +27,7 @@ from ..request_helpers import (
 )
 
 
+MESSAGE_FLAG_VALUE_SILENT = MessageFlag().update_by_keys(silent = True)
 MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS = MessageFlag().update_by_keys(embeds_suppressed = True)
 
 
@@ -34,7 +35,6 @@ class ClientCompoundMessageEndpoints(Compound):
     
     http : DiscordHTTPClient
     id : int
-    
     
     async def message_get_chunk(self, channel, limit = 100, *, after = None, around = None, before = None):
         """
@@ -120,7 +120,7 @@ class ClientCompoundMessageEndpoints(Compound):
     
     # If you have 0-1 messages at a channel, and you wanna store the messages. The other wont store it, because it
     # wont see anything what allows channeling.
-    async def message_get_chunk_from_zero(self, channel, limit=100):
+    async def message_get_chunk_from_zero(self, channel, limit = 100):
         """
         If the `channel` has `1` or less messages loaded use this method instead of ``.message_get_chunk`` to request
         the newest messages there, because this method makes sure, the returned messages will be chained at the
@@ -168,7 +168,7 @@ class ClientCompoundMessageEndpoints(Compound):
         if (channel is not None):
             channel._add_message_collection_delay(60.0)
         
-        data = {'limit': limit, 'before': 9223372036854775807}
+        data = {'limit': limit, 'before': now_as_id()}
         data = await self.http.message_get_chunk(channel_id, data)
         if data:
             if (channel is not None):
@@ -245,8 +245,20 @@ class ClientCompoundMessageEndpoints(Compound):
     
     
     async def message_create(
-        self, channel, content=None, *, allowed_mentions = ...,  components = None, embed = None, file=None, nonce=None,
-        reply_fail_fallback=False,  sticker=None, suppress_embeds=False, tts=False
+        self,
+        channel,
+        content = None,
+        *,
+        allowed_mentions = ...,
+        components = None,
+        embed = None,
+        file = None,
+        nonce = None,
+        reply_fail_fallback = False,
+        silent = False,
+        sticker = None,
+        suppress_embeds = False,
+        tts = False,
     ):
         """
         Creates and returns a message at the given `channel`. If there is nothing to send, then returns `None`.
@@ -282,11 +294,14 @@ class ClientCompoundMessageEndpoints(Compound):
         file : `None`, `Any` = `None`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
         
+        nonce : `None`, `str` = `None`, Optional (Keyword only)
+            Used for optimistic message sending. Will shop up at the message's data.
+        
         reply_fail_fallback : `bool` = `False`, Optional (Keyword only)
             Whether normal message should be sent if the referenced message is deleted. Defaults to `False`.
         
-        nonce : `None`, `str` = `None`, Optional (Keyword only)
-            Used for optimistic message sending. Will shop up at the message's data.
+        silent : `bool` = `False`, Optional (Keyword only)
+            Whether the message should be delivered silently.
         
         sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`) = `None` \
                 , Optional (Keyword only)
@@ -321,13 +336,6 @@ class ClientCompoundMessageEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `tts` was not given as `bool`.
-            - If `nonce` was not given neither as `None`, `str`.
-            - If `reply_fail_fallback` was not given as `bool`.
-            - If `embed` contains a non ``EmbedBase`` element.
-            - If `suppress_embeds` is not `bool`.
-            - If both `content` and `embed` fields are embeds.
         
         See Also
         --------
@@ -422,7 +430,6 @@ class ClientCompoundMessageEndpoints(Compound):
         components = get_components_data(components, False)
         
         if __debug__:
-            
             if (nonce is not None) and (not isinstance(nonce, str)):
                 raise AssertionError(
                     f'`nonce` can be `None`, `str`, got {nonce.__class__.__name__}; {nonce!r}.'
@@ -432,6 +439,11 @@ class ClientCompoundMessageEndpoints(Compound):
                 raise AssertionError(
                     f'`reply_fail_fallback` can be `bool`, got {reply_fail_fallback.__class__.__name__}; '
                     f'{reply_fail_fallback!r}.')
+            
+            if not isinstance(silent, bool):
+                raise AssertionError(
+                    f'`suppress_embeds` can be `bool`, got {suppress_embeds.__class__.__name__}; {suppress_embeds!r}.'
+                )
             
             if not isinstance(suppress_embeds, bool):
                 raise AssertionError(
@@ -480,8 +492,13 @@ class ClientCompoundMessageEndpoints(Compound):
             
             message_data['message_reference'] = message_reference_data
         
-        if suppress_embeds:
-            message_data['flags'] = MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS
+        flags = (
+            (MESSAGE_FLAG_VALUE_SILENT if silent else 0) |
+            (MESSAGE_FLAG_VALUE_SUPPRESS_EMBEDS if suppress_embeds else 0)
+        )
+        if flags:
+            message_data['flags'] = flags
+        
         
         message_data = add_file_to_message_data(message_data, file, contains_content, False)
         if message_data is None:
@@ -493,7 +510,14 @@ class ClientCompoundMessageEndpoints(Compound):
     
 
     async def message_edit(
-        self, message, content = ..., *, embed = ..., file = ..., allowed_mentions = ..., components = ...,
+        self,
+        message,
+        content = ...,
+        *,
+        allowed_mentions = ...,
+        components = ...,
+        embed = ...,
+        file = ...,
         suppress_embeds = ...
     ):
         """
@@ -512,6 +536,19 @@ class ClientCompoundMessageEndpoints(Compound):
             instance, then it will be cased to string first.
             
             If given as ``EmbedBase``, then the message's embeds will be edited with it.
+        
+        
+        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
+                , Optional (Keyword only)
+            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
+            for details.
+        
+        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of
+                ``Component``), Optional (Keyword only)
+            Components attached to the message.
+            
+            Pass it as `None` remove the actual ones.
+        
         embed : `None`, ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
@@ -520,16 +557,6 @@ class ClientCompoundMessageEndpoints(Compound):
         
         file : `None`, `Any`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
-        
-        allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
-                , Optional (Keyword only)
-            Which user or role can the message ping (or everyone). Check ``parse_allowed_mentions``
-            for details.
-        components : `None`, ``Component``, (`tuple`, `list`) of (``Component``, (`tuple`, `list`) of
-                ``Component``), Optional (Keyword only)
-            Components attached to the message.
-            
-            Pass it as `None` remove the actual ones.
         
         suppress_embeds : `bool`, Optional (Keyword only)
             Whether the message's embeds should be suppressed or unsuppressed.
@@ -651,7 +678,7 @@ class ClientCompoundMessageEndpoints(Compound):
             
             author = message.author
         
-        if (author is self) or (message_id > int((time_now() - 1209590.) * 1000.-DISCORD_EPOCH) << 22):
+        if (author is self) or (message_id > int((time_now() - 1209590.0) * 1000.0 - DISCORD_EPOCH) << 22):
             # own or new
             coroutine = self.http.message_delete(channel_id, message_id, reason)
         else:
@@ -701,7 +728,7 @@ class ClientCompoundMessageEndpoints(Compound):
         if not messages:
             return
         
-        bulk_delete_limit = int((time_now() - 1209600.) * 1000.-DISCORD_EPOCH) << 22 # 2 weeks
+        bulk_delete_limit = int((time_now() - 1209600.0) * 1000.0 - DISCORD_EPOCH) << 22 # 2 weeks
         
         by_channel = {}
         
@@ -1530,7 +1557,7 @@ class ClientCompoundMessageEndpoints(Compound):
                 continue
     
     
-    async def message_suppress_embeds(self, message, suppress_embeds=True):
+    async def message_suppress_embeds(self, message, suppress_embeds = True):
         """
         Suppresses or unsuppressed the given message's embeds.
         

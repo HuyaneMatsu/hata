@@ -34,6 +34,12 @@ class MessageFlag(FlagBase):
     +-------------------------------------------+-------------------+
     | should_show_link_not_discord_warning      | 10                |
     +-------------------------------------------+-------------------+
+    | ???                                       | 11                |
+    +-------------------------------------------+-------------------+
+    | silent                                    | 12                |
+    +-------------------------------------------+-------------------+
+    | voice_message                             | 13                |
+    +-------------------------------------------+-------------------+
     """
     __keys__ = {
         'crossposted': 0,
@@ -45,5 +51,9 @@ class MessageFlag(FlagBase):
         'invoking_user_only': 6,
         'loading': 7,
         'failed_to_mention_some_roles_in_thread': 8,
+        # ???: 9
         'should_show_link_not_discord_warning': 10,
+        # ???: 11
+        'silent': 12,
+        'voice_message': 13,
     }

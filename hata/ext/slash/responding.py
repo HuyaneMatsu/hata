@@ -418,13 +418,27 @@ class InteractionResponse:
         - `'embed'`
         - `'file'`
         - `'show_for_invoking_user_only'`
+        - '`silent`'
         - `'suppress_embeds'`
         - `'tts'`
     """
     __slots__ = ('_event', '_is_abort', '_message', '_parameters',)
     
-    def __init__(self, content=..., *, allowed_mentions = ..., components = ..., embed = ..., event = None, file = ...,
-            message = ..., show_for_invoking_user_only = ..., suppress_embeds = ..., tts = ...,):
+    def __init__(
+        self,
+        content = ...,
+        *,
+        allowed_mentions = ...,
+        components = ...,
+        embed = ...,
+        event = None,
+        file = ...,
+        message = ...,
+        show_for_invoking_user_only = ..., 
+        silent = ...,
+        suppress_embeds = ...,
+        tts = ...,
+    ):
         """
         Creates a new ``InteractionResponse`` with the given parameters.
         
@@ -462,6 +476,9 @@ class InteractionResponse:
             Whether the sent message should only be shown to the invoking user. Defaults to the value passed when
             adding the command.
         
+        silent : `bool`, Optional (Keyword only)
+            Whether the message should be delivered silently.
+        
         suppress_embeds : `bool`, Optional (Keyword only)
             Whether the message's embeds should be suppressed initially.
         
@@ -490,6 +507,9 @@ class InteractionResponse:
         
         if (show_for_invoking_user_only is not ...):
             parameters['show_for_invoking_user_only'] = show_for_invoking_user_only
+        
+        if (silent is not ...):
+            parameters['silent'] = silent
         
         if (suppress_embeds is not ...):
             parameters['suppress_embeds'] = suppress_embeds
@@ -594,7 +614,7 @@ class InteractionResponse:
                 )
             
             response_parameters = self._get_response_parameters((
-                'allowed_mentions', 'content', 'components', 'embed', 'file', 'show_for_invoking_user_only',
+                'allowed_mentions', 'content', 'components', 'embed', 'file', 'show_for_invoking_user_only', 'silent',
                 'suppress_embeds', 'tts'
             ))
             if (response_modifier is not None):
@@ -647,7 +667,7 @@ class InteractionResponse:
             elif interaction_event.is_responded():
                 response_parameters = self._get_response_parameters((
                     'allowed_mentions', 'content', 'components', 'embed', 'file', 'show_for_invoking_user_only',
-                    'suppress_embeds', 'tts'
+                    'silent', 'suppress_embeds', 'tts'
                 ))
                 if (response_modifier is not None):
                     response_modifier.apply_to_creation(response_parameters)
@@ -661,7 +681,7 @@ class InteractionResponse:
                 yield client.interaction_application_command_autocomplete(interaction_event, None)
             
             response_parameters = self._get_response_parameters((
-                'allowed_mentions', 'content', 'components', 'embed', 'file', 'show_for_invoking_user_only',
+                'allowed_mentions', 'content', 'components', 'embed', 'file', 'show_for_invoking_user_only', 'silent',
                 'suppress_embeds', 'tts'
             ))
             if (response_modifier is not None):
@@ -686,7 +706,7 @@ class InteractionResponse:
         if parameters:
             for key, value in parameters.items():
                 repr_parts.append(key)
-                repr_parts.append('=')
+                repr_parts.append(' = ')
                 repr_parts.append(repr(value))
                 repr_parts.append(', ')
             
@@ -697,8 +717,20 @@ class InteractionResponse:
         return ''.join(repr_parts)
 
 
-def abort(content=..., *, allowed_mentions = ..., components=..., embed = ..., event = None, file=..., message = ...,
-        show_for_invoking_user_only=True, suppress_embeds=..., tts=...,):
+def abort(
+    content = ...,
+    *,
+    allowed_mentions = ...,
+    components = ...,
+    embed = ...,
+    event = None,
+    file = ...,
+    message = ...,
+    show_for_invoking_user_only = True,
+    silent = ...,
+    suppress_embeds = ...,
+    tts = ...,
+):
     """
     Aborts the slash response with sending the passed parameters as a response.
     
@@ -742,6 +774,12 @@ def abort(content=..., *, allowed_mentions = ..., components=..., embed = ..., e
         
         Defaults to `True`.
     
+    silent : `bool`, Optional (Keyword only)
+        Whether the message should be delivered silently.
+    
+    suppress_embeds : `bool`, Optional (Keyword only)
+        Whether the message's embeds should be suppressed initially.
+    
     tts : `bool`, Optional (Keyword only)
         Whether the message is text-to-speech.
     
@@ -759,6 +797,7 @@ def abort(content=..., *, allowed_mentions = ..., components=..., embed = ..., e
         file = file,
         message = message,
         show_for_invoking_user_only = show_for_invoking_user_only,
+        silent = silent,
         suppress_embeds = suppress_embeds,
         tts = tts,
     )

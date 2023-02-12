@@ -690,7 +690,7 @@ Group Details
     - Limit : `5`
     - Resets after : `5.0`
 
-- thread_user_get_all
+- thread_user_get_chunk
     - Endpoint : `/channels/{channel_id}/thread-members`
     - Method : `GET`
     - Required auth : `bot`
@@ -2037,7 +2037,7 @@ channel_group_user_add = RateLimitGroup(LIMITER_CHANNEL, optimistic = True) # un
 forum_tag_delete = RateLimitGroup(LIMITER_CHANNEL, optimistic = True)
 forum_tag_edit = RateLimitGroup(LIMITER_CHANNEL, optimistic = True)
 forum_tag_create = RateLimitGroup(LIMITER_CHANNEL, optimistic = True)
-thread_user_get_all = RateLimitGroup()
+thread_user_get_chunk = RateLimitGroup()
 thread_join = GROUP_THREAD_ACTION
 thread_leave = GROUP_THREAD_ACTION
 thread_user_add = GROUP_THREAD_ACTION

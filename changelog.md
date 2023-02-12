@@ -6,15 +6,21 @@
 - Add `MessageFlag.voice_message`.
 - Add `silent` parameter to `Client.message_create`.
 - Add `silent` parameter to `Client.forum_thread_create`.
-- `UserBase.statuses` now defaults to `None`. This will save a lot of memory when presence caching is enabled.
-- Add `silent` parameter to `Client.interaction_followup_message_create`.
-- Add `silent` parameter to `Client.interaction_response_message_create`.
 - Add `silent` parameter to `Client.webhook_message_create`.
 - Add `suppress_embeds` parameter to `Client.webhook_message_create`.
+- Add `silent` parameter to `Client.interaction_followup_message_create`.
+- Add `silent` parameter to `Client.interaction_response_message_create`.
+- Add `create_user_from_thread_user_data` to help with new thread user creation.
+- `UserBase.statuses` now defaults to `None`. This will save a lot of memory when presence caching is enabled.
 
 ##### ext.slash
-- Add `silent` parameter to `InteractionResponse.__init__`.
 - Add `silent` parameter to `abort`.
+- Add `silent` parameter to `InteractionResponse.__init__`.
+
+#### Renames, Deprecation & Removals
+
+- Rename `DiscordHTTPClient.thread_user_get_all` to `.thread_user_get_chunk`.
+- Rename `RATE_LIMIT_GROUPS.thread_user_get_all` to `.thread_user_get_chunk`.
 
 #### Bug Fixes
 

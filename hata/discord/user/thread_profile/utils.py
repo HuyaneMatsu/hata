@@ -1,10 +1,45 @@
-__all__ = ('thread_user_create', 'thread_user_delete', 'thread_user_difference_update', 'thread_user_pop')
+__all__ = (
+    'create_user_from_thread_user_data', 'thread_user_create', 'thread_user_delete', 'thread_user_difference_update',
+    'thread_user_pop'
+)
 
 from scarletio import include
+
+from ..user import User, create_partial_user_from_id
 
 from .thread_profile import ThreadProfile
 
 Client = include('Client')
+
+
+def create_user_from_thread_user_data(thread_channel, thread_user_data):
+    """
+    Parses the user out from the given thread profile data.
+    
+    Parameters
+    ----------
+    thread_channel : ``Channel``
+        The respective thread.
+    thread_user_data : `dict` of (`str`, `object`) items
+        Received thread profile data.
+    
+    Returns
+    -------
+    user : ``ClientUserBase``
+    """
+    try:
+        guild_profile_data = thread_user_data['member']
+    except KeyError:
+        pass
+    else:
+        try:
+            user_data = guild_profile_data['user']
+        except KeyError:
+            pass
+        else:
+            return User.from_data(user_data, guild_profile_data, thread_channel.guild_id)
+    
+    return create_partial_user_from_id(int(thread_user_data['user_id']))
 
 
 def thread_user_create(thread_channel, user, thread_profile_data):
@@ -17,7 +52,7 @@ def thread_user_create(thread_channel, user, thread_profile_data):
         The respective thread.
     user : ``ClientUserBase``
         The respective user to add or update in the thread.
-    thread_profile_data : `dict` of (`str`, `Any`) items
+    thread_profile_data : `dict` of (`str`, `object`) items
         Received thread profile data.
     
     Returns
@@ -56,12 +91,12 @@ def thread_user_difference_update(thread_channel, user, thread_profile_data):
         The respective thread.
     user : ``ClientUserBase``
         The respective user to add or update in the thread.
-    thread_profile_data : `dict` of (`str`, `Any`) items
+    thread_profile_data : `dict` of (`str`, `object`) items
         Received thread profile data.
     
     Returns
     -------
-    old_attributes : `None`, `dict` of (`str`, `Any`) items
+    old_attributes : `None`, `dict` of (`str`, `object`) items
     """
     thread_users = thread_channel.thread_users
     if thread_users is None:

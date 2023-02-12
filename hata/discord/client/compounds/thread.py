@@ -15,12 +15,12 @@ from ...http import DiscordHTTPClient
 from ...message import Message, MessageFlag
 from ...payload_building import build_create_payload
 from ...sticker import Sticker
-from ...user import ClientUserBase, create_partial_user_from_id, thread_user_create
+from ...user import ClientUserBase, create_partial_user_from_id, create_user_from_thread_user_data, thread_user_create
 
 from ..functionality_helpers import request_channel_thread_channels
 from ..request_helpers import (
     add_file_to_message_data, get_channel_and_id, get_channel_id, get_components_data, get_guild_id,
-    get_channel_guild_id_and_id, get_user_and_id, get_user_id, validate_content_and_embed,
+    get_channel_guild_id_and_id, get_user_id, validate_content_and_embed,
 )
 
 
@@ -595,18 +595,16 @@ class ClientCompoundThreadEndpoints(Compound):
         DiscordException
             If any exception was received from the Discord API.
         """
-        channel, channel_id = get_channel_and_id(thread_channel, Channel.is_in_group_thread)
-        user, user_id = get_user_and_id(user)
+        thread_channel, channel_id = get_channel_and_id(thread_channel, Channel.is_in_group_thread)
+        user_id = get_user_id(user)
         
-        thread_user_data = await self.http.thread_user_get(channel_id, user_id)
+        thread_user_data = await self.http.thread_user_get(channel_id, user_id, {'with_member': True})
         
-        if user is None:
-            user = create_partial_user_from_id(user_id)
+        if thread_channel is None:
+            thread_channel = create_partial_channel_from_id(channel_id, ChannelType.guild_thread_public, 0)
         
-        if channel is None:
-            channel = create_partial_channel_from_id(channel_id, ChannelType.guild_thread_public, 0)
-        
-        thread_user_create(channel, user, thread_user_data)
+        user = create_user_from_thread_user_data(thread_channel, thread_user_data)
+        thread_user_create(thread_channel, user, thread_user_data)
         
         return user
     
@@ -704,18 +702,30 @@ class ClientCompoundThreadEndpoints(Compound):
         """
         thread_channel, channel_id = get_channel_and_id(thread_channel, Channel.is_in_group_thread)
         
-        thread_user_datas = await self.http.thread_user_get_all(channel_id)
-        
-        if thread_channel is None:
-            thread_channel = create_partial_channel_from_id(channel_id, ChannelType.guild_thread_public, 0)
+        data = {
+            'after': 0,
+            'limit': 100,
+            'with_member': True,
+        }
         
         users = []
-        for thread_user_data in thread_user_datas:
-            user_id = int(thread_user_data['user_id'])
-            user = create_partial_user_from_id(user_id)
-            users.append(user)
+        
+        while True:
+            thread_user_datas = await self.http.thread_user_get_chunk(channel_id, data)
             
-            thread_user_create(thread_channel, user, thread_user_data)
+            if thread_channel is None:
+                thread_channel = create_partial_channel_from_id(channel_id, ChannelType.guild_thread_public, 0)
+            
+            for thread_user_data in thread_user_datas:
+                user = create_user_from_thread_user_data(thread_channel, thread_user_data)
+                thread_user_create(thread_channel, user, thread_user_data)
+                users.append(user)
+            
+            if len(thread_user_datas) < 100:
+                break
+            
+            data['after'] = users[-1].id
+            continue
         
         return users
     

@@ -1760,12 +1760,14 @@ class DiscordHTTPClient(HTTPClient):
             data,
         )
     
-    async def thread_user_get_all(self, channel_id):
+    async def thread_user_get_chunk(self, channel_id, query_parameters):
         return await self.discord_request(
-            RateLimitHandler(RATE_LIMIT_GROUPS.thread_user_get_all, channel_id),
+            RateLimitHandler(RATE_LIMIT_GROUPS.thread_user_get_chunk, channel_id),
             METHOD_GET,
-            f'{API_ENDPOINT}/channels/{channel_id}/thread-members'
+            f'{API_ENDPOINT}/channels/{channel_id}/thread-members',
+            params = query_parameters,
         )
+    
     
     async def thread_join(self, channel_id):
         return await self.discord_request(
@@ -1773,6 +1775,7 @@ class DiscordHTTPClient(HTTPClient):
             METHOD_POST,
             f'{API_ENDPOINT}/channels/{channel_id}/thread-members/@me'
         )
+    
     
     async def thread_leave(self, channel_id):
         return await self.discord_request(
@@ -1782,11 +1785,12 @@ class DiscordHTTPClient(HTTPClient):
         )
     
     
-    async def thread_user_get(self, channel_id, user_id):
+    async def thread_user_get(self, channel_id, user_id, query_parameters):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.thread_user_get, channel_id),
             METHOD_GET,
             f'{API_ENDPOINT}/channels/{channel_id}/thread-members/{user_id}',
+            params = query_parameters,
         )
     
     

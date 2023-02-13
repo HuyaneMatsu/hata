@@ -1185,7 +1185,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         
         This method is a coroutine.
         """
-        self._handshake_complete.clear()
+        self._handshake_complete = Future(KOKORO)
         
         gateway = self.client.gateway_for(self.guild_id)
         
@@ -1244,7 +1244,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         handshake_complete = self._handshake_complete
         if handshake_complete.is_done():
             # terminate the websocket and handle the reconnect loop if necessary.
-            handshake_complete.clear()
+            self._handshake_complete = Future(KOKORO)
             await self.gateway.terminate()
         else:
             handshake_complete.set_result(None)

@@ -519,7 +519,7 @@ async def get_interaction_client_and_message(event_or_message, timeout):
     client : ``Client``
         The client who executed the interaction or sent the message.
     message : ``Message``
-        The interactions's message.
+        The interaction's message.
     
     Raises
     ------

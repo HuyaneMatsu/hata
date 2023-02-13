@@ -370,6 +370,8 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
                 
                 USER_GUILD_CACHE[key] = reference_count
         
+        if message is None:
+            self._add_response_waiter()
         
         return self
     
@@ -731,6 +733,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         new.user = user
         new.user_permissions = user_permissions
         new.message = message
+        
         return new
     
     
@@ -752,21 +755,12 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         
         Raises
         ------
-        RuntimeError
-            The interaction was acknowledged with `show_for_invoking_user_only=True` (as ephemeral). Response
-            `message` cannot be detected.
         TimeoutError
             Message was not received before timeout.
         """
         message = self.message
         if (message is not None):
             return message
-        
-        if self._response_flag & RESPONSE_FLAG_EPHEMERAL:
-            raise RuntimeError(
-                f'The interaction was acknowledged with `show_for_invoking_user_only = True` '
-                f'(as ephemeral). Response `message` cannot be detected.'
-            )
         
         try:
             waiter = INTERACTION_EVENT_MESSAGE_WAITERS[self]

@@ -5,6 +5,7 @@ from ....core import KOKORO, INTERACTION_EVENT_MESSAGE_WAITERS
 from ....message import Message
 
 from ..interaction_event import InteractionEvent
+from ..preinstanced import InteractionType
 
 
 async def test__InteractionEvent__wait_for_response_message__0():
@@ -61,3 +62,37 @@ async def test__InteractionEvent__wait_for_response_message__2():
     
     with vampytest.assert_raises(TimeoutError):
         task.get_result()
+
+
+async def test__InteractionEvent__response_waiting():
+    """
+    Tests whether ``InteractionEvent`` response waiters set the event's message if it is received.
+    """
+    interaction_event_id = 202302130000
+    message_id = 202302130001
+    channel_id = 202302130002
+    user_id = 202302130003
+    
+    interaction_event_data = {
+        'data': {},
+        'id': interaction_event_id,
+    }
+    
+    message_data = {
+        'channel_id': str(channel_id),
+        'id': str(message_id),
+        'interaction': {
+            'name': '',
+            'id': str(interaction_event_id),
+            'type': InteractionType.application_command.value,
+            'user': {
+                'id': str(user_id),
+            }
+        }
+    }
+    
+    event = InteractionEvent.from_data(interaction_event_data)
+    
+    message = Message.from_data(message_data)
+    
+    vampytest.assert_is(event.message, message)

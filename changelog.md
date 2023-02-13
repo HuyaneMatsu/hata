@@ -17,6 +17,10 @@
 - Add `silent` parameter to `abort`.
 - Add `silent` parameter to `InteractionResponse.__init__`.
 
+#### Bug Fixes
+
+- `InteractionEvent` response waiters were not added. (When did this broke???)
+
 #### Renames, Deprecation & Removals
 
 - Rename `DiscordHTTPClient.thread_user_get_all` to `.thread_user_get_chunk`.

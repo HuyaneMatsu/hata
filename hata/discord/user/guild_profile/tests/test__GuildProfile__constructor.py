@@ -4,6 +4,7 @@ import vampytest
 
 from ....bases import Icon, IconType
 
+from ..flags import GuildProfileFlag
 from ..guild_profile import GuildProfile
 
 
@@ -18,6 +19,7 @@ def _check_is_all_fields_set(guild_profile):
     vampytest.assert_instance(guild_profile, GuildProfile)
     vampytest.assert_instance(guild_profile.avatar, Icon)
     vampytest.assert_instance(guild_profile.boosts_since, DateTime, nullable = True)
+    vampytest.assert_instance(guild_profile.flags, GuildProfileFlag)
     vampytest.assert_instance(guild_profile.joined_at, DateTime, nullable = True)
     vampytest.assert_instance(guild_profile.nick, str, nullable = True)
     vampytest.assert_instance(guild_profile.pending, bool)
@@ -44,6 +46,7 @@ def test__GuildProfile__new__1():
     """
     avatar = Icon(IconType.static, 12)
     boosts_since = DateTime(2016, 5, 14)
+    flags = GuildProfileFlag(3)
     joined_at = DateTime(2016, 5, 15)
     nick = 'Ayumi'
     pending = False
@@ -54,6 +57,7 @@ def test__GuildProfile__new__1():
     guild_profile = GuildProfile(
         avatar = avatar,
         boosts_since = boosts_since,
+        flags = flags,
         joined_at = joined_at,
         nick = nick,
         pending = pending,
@@ -64,6 +68,7 @@ def test__GuildProfile__new__1():
     
     vampytest.assert_eq(guild_profile.avatar, avatar)
     vampytest.assert_eq(guild_profile.boosts_since, boosts_since)
+    vampytest.assert_eq(guild_profile.flags, flags)
     vampytest.assert_eq(guild_profile.joined_at, joined_at)
     vampytest.assert_eq(guild_profile.nick, nick)
     vampytest.assert_eq(guild_profile.pending, pending)

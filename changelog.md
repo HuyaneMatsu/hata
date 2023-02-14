@@ -2,7 +2,10 @@
 
 #### Improvements
 
+- Add `GuildProfileFlag`.
 - Add `MessageFlag.silent`.
+- Add `GuildProfile.flags`.
+- Add `UserBase.iter_guilds`.
 - Add `MessageFlag.voice_message`.
 - Add `silent` parameter to `Client.message_create`.
 - Add `silent` parameter to `Client.forum_thread_create`.
@@ -12,7 +15,6 @@
 - Add `silent` parameter to `Client.interaction_response_message_create`.
 - Add `create_user_from_thread_user_data` to help with new thread user creation.
 - `UserBase.statuses` now defaults to `None`. This will save a lot of memory when presence caching is enabled.
-- Add `UserBase.iter_guilds`.
 
 ##### ext.slash
 - Add `silent` parameter to `abort`.

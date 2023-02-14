@@ -4,6 +4,7 @@ import vampytest
 
 from ....bases import Icon, IconType
 
+from ..flags import GuildProfileFlag
 from ..guild_profile import GuildProfile
 
 
@@ -13,6 +14,7 @@ def test__GuildProfile__repr():
     """
     avatar = Icon(IconType.static, 12)
     boosts_since = DateTime(2016, 5, 14)
+    flags = GuildProfileFlag(3)
     joined_at = DateTime(2016, 5, 15)
     nick = 'Ayumi'
     pending = False
@@ -23,6 +25,7 @@ def test__GuildProfile__repr():
     guild_profile = GuildProfile(
         avatar = avatar,
         boosts_since = boosts_since,
+        flags = flags,
         joined_at = joined_at,
         nick = nick,
         pending = pending,
@@ -39,6 +42,7 @@ def test__GuildProfile__hash():
     """
     avatar = Icon(IconType.static, 12)
     boosts_since = DateTime(2016, 5, 14)
+    flags = GuildProfileFlag(3)
     joined_at = DateTime(2016, 5, 15)
     nick = 'Ayumi'
     pending = False
@@ -49,6 +53,7 @@ def test__GuildProfile__hash():
     guild_profile = GuildProfile(
         avatar = avatar,
         boosts_since = boosts_since,
+        flags = flags,
         joined_at = joined_at,
         nick = nick,
         pending = pending,
@@ -65,6 +70,7 @@ def test__GuildProfile__eq():
     """
     avatar = Icon(IconType.static, 12)
     boosts_since = DateTime(2016, 5, 14)
+    flags = GuildProfileFlag(3)
     joined_at = DateTime(2016, 5, 15)
     nick = 'Ayumi'
     pending = False
@@ -74,6 +80,7 @@ def test__GuildProfile__eq():
     keyword_parameters = {
         'avatar': avatar,
         'boosts_since': boosts_since,
+        'flags': flags,
         'joined_at': joined_at,
         'nick': nick,
         'pending': pending,
@@ -89,6 +96,7 @@ def test__GuildProfile__eq():
     for field_name, field_value in (
         ('avatar', None),
         ('boosts_since', None),
+        ('flags', 0),
         ('joined_at', None),
         ('nick', None),
         ('pending', True),

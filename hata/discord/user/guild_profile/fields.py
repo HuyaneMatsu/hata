@@ -1,25 +1,32 @@
 __all__ = ()
 
 from ...field_parsers import (
-    bool_parser_factory, entity_id_array_parser_factory, nullable_date_time_parser_factory,
+    bool_parser_factory, entity_id_array_parser_factory, flag_parser_factory, nullable_date_time_parser_factory,
     nullable_string_parser_factory
 )
 from ...field_putters import (
-    bool_optional_putter_factory, entity_id_array_optional_putter_factory, nullable_date_time_optional_putter_factory,
-    nullable_string_optional_putter_factory
+    bool_optional_putter_factory, entity_id_array_optional_putter_factory, flag_optional_putter_factory,
+    nullable_date_time_optional_putter_factory, nullable_string_optional_putter_factory
 )
 from ...field_validators import (
-    bool_validator_factory, entity_id_array_validator_factory, nullable_date_time_validator_factory,
-    nullable_string_validator_factory
+    bool_validator_factory, flag_validator_factory, entity_id_array_validator_factory,
+    nullable_date_time_validator_factory, nullable_string_validator_factory
 )
 
 from .constants import NICK_LENGTH_MAX, NICK_LENGTH_MIN
+from .flags import GuildProfileFlag
 
 # boosts_since
 
 parse_boosts_since = nullable_date_time_parser_factory('premium_since')
 put_boosts_since_into = nullable_date_time_optional_putter_factory('premium_since')
 validate_boosts_since = nullable_date_time_validator_factory('boosts_since')
+
+# flags
+
+parse_flags = flag_parser_factory('flags', GuildProfileFlag)
+put_flags_into = flag_optional_putter_factory('flags', GuildProfileFlag())
+validate_flags = flag_validator_factory('flags', GuildProfileFlag)
 
 # joined_at
 

@@ -5,6 +5,7 @@ import vampytest
 from ....bases import Icon, IconType
 from ....role import Role
 
+from ..flags import GuildProfileFlag
 from ..guild_profile import GuildProfile
 
 from .test__GuildProfile__constructor import _check_is_all_fields_set
@@ -16,6 +17,7 @@ def test__GuildProfile__copy():
     """
     avatar = Icon(IconType.static, 12)
     boosts_since = DateTime(2016, 5, 14)
+    flags = GuildProfileFlag(3)
     joined_at = DateTime(2016, 5, 15)
     nick = 'Ayumi'
     pending = False
@@ -26,6 +28,7 @@ def test__GuildProfile__copy():
     guild_profile = GuildProfile(
         avatar = avatar,
         boosts_since = boosts_since,
+        flags = flags,
         joined_at = joined_at,
         nick = nick,
         pending = pending,
@@ -47,6 +50,7 @@ def test__GuildProfile__copy_with__0():
     """
     avatar = Icon(IconType.static, 12)
     boosts_since = DateTime(2016, 5, 14)
+    flags = GuildProfileFlag(3)
     joined_at = DateTime(2016, 5, 15)
     nick = 'Ayumi'
     pending = False
@@ -57,6 +61,7 @@ def test__GuildProfile__copy_with__0():
     guild_profile = GuildProfile(
         avatar = avatar,
         boosts_since = boosts_since,
+        flags = flags,
         joined_at = joined_at,
         nick = nick,
         pending = pending,
@@ -90,11 +95,14 @@ def test__GuildProfile__copy_with__1():
     new_role_ids = [2022100027, 2022100028]
     old_timed_out_until = DateTime(2016, 5, 20)
     new_timed_out_until = DateTime(2017, 5, 20)
+    old_flags = GuildProfileFlag(3)
+    new_flags = GuildProfileFlag(4)
     
     
     guild_profile = GuildProfile(
         avatar = old_avatar,
         boosts_since = old_boosts_since,
+        flags = old_flags,
         joined_at = old_joined_at,
         nick = old_nick,
         pending = old_pending,
@@ -104,6 +112,7 @@ def test__GuildProfile__copy_with__1():
     copy = guild_profile.copy_with(
         avatar = new_avatar,
         boosts_since = new_boosts_since,
+        flags = new_flags,
         joined_at = new_joined_at,
         nick = new_nick,
         pending = new_pending,
@@ -115,8 +124,9 @@ def test__GuildProfile__copy_with__1():
     vampytest.assert_not_is(guild_profile, copy)
 
     vampytest.assert_eq(copy.avatar, new_avatar)
-    vampytest.assert_eq(copy.joined_at, new_joined_at)
     vampytest.assert_eq(copy.boosts_since, new_boosts_since)
+    vampytest.assert_eq(copy.flags, new_flags)
+    vampytest.assert_eq(copy.joined_at, new_joined_at)
     vampytest.assert_eq(copy.nick, new_nick)
     vampytest.assert_eq(copy.pending, new_pending)
     vampytest.assert_eq(copy.role_ids, tuple(new_role_ids))

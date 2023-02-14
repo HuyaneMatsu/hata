@@ -5,6 +5,7 @@ import vampytest
 from ....bases import Icon, IconType
 from ....utils import datetime_to_timestamp
 
+from ..flags import GuildProfileFlag
 from ..guild_profile import GuildProfile
 
 from .test__GuildProfile__constructor import _check_is_all_fields_set
@@ -16,6 +17,7 @@ def test__GuildProfile__from_data():
     """
     avatar = Icon(IconType.static, 12)
     boosts_since = DateTime(2016, 5, 14)
+    flags = GuildProfileFlag(3)
     joined_at = DateTime(2016, 5, 15)
     nick = 'Ayumi'
     pending = False
@@ -30,6 +32,7 @@ def test__GuildProfile__from_data():
         'pending': pending,
         'roles': [str(role_id) for role_id in role_ids],
         'communication_disabled_until': datetime_to_timestamp(timed_out_until),
+        'flags': int(flags)
     }
     
     guild_profile = GuildProfile.from_data(data)
@@ -37,6 +40,7 @@ def test__GuildProfile__from_data():
     
     vampytest.assert_eq(guild_profile.avatar, avatar)
     vampytest.assert_eq(guild_profile.boosts_since, boosts_since)
+    vampytest.assert_eq(guild_profile.flags, flags)
     vampytest.assert_eq(guild_profile.joined_at, joined_at)
     vampytest.assert_eq(guild_profile.nick, nick)
     vampytest.assert_eq(guild_profile.pending, pending)
@@ -50,6 +54,7 @@ def test__GuildProfile__to_data():
     """
     avatar = Icon(IconType.static, 12)
     boosts_since = DateTime(2016, 5, 14)
+    flags = GuildProfileFlag(3)
     joined_at = DateTime(2016, 5, 15)
     nick = 'Ayumi'
     pending = False
@@ -59,6 +64,7 @@ def test__GuildProfile__to_data():
     guild_profile = GuildProfile(
         avatar = avatar,
         boosts_since = boosts_since,
+        flags = flags,
         joined_at = joined_at,
         nick = nick,
         pending = pending,
@@ -79,6 +85,7 @@ def test__GuildProfile__to_data():
             'pending': pending,
             'roles': [str(role_id) for role_id in role_ids],
             'communication_disabled_until': datetime_to_timestamp(timed_out_until),
+            'flags': int(flags),
         },
     )
 
@@ -117,6 +124,7 @@ def test__GuildProfile__update_attributes():
     """
     avatar = Icon(IconType.static, 12)
     boosts_since = DateTime(2016, 5, 14)
+    flags = GuildProfileFlag(3)
     nick = 'Ayumi'
     pending = False
     role_ids = [2022100017, 2022100018]
@@ -129,6 +137,7 @@ def test__GuildProfile__update_attributes():
         'pending': pending,
         'roles': [str(role_id) for role_id in role_ids],
         'communication_disabled_until': datetime_to_timestamp(timed_out_until),
+        'flags': int(flags),
     }
     
     guild_profile = GuildProfile()
@@ -136,6 +145,7 @@ def test__GuildProfile__update_attributes():
     
     vampytest.assert_eq(guild_profile.avatar, avatar)
     vampytest.assert_eq(guild_profile.boosts_since, boosts_since)
+    vampytest.assert_eq(guild_profile.flags, flags)
     vampytest.assert_eq(guild_profile.nick, nick)
     vampytest.assert_eq(guild_profile.pending, pending)
     vampytest.assert_eq(guild_profile.role_ids, tuple(role_ids))
@@ -158,6 +168,8 @@ def test__GuildProfile__difference_update_attributes():
     new_role_ids = [2022100021, 2022100022]
     old_timed_out_until = DateTime(2016, 5, 20)
     new_timed_out_until = DateTime(2017, 5, 20)
+    old_flags = GuildProfileFlag(3)
+    new_flags = GuildProfileFlag(4)
     
     data = {
         'avatar': new_avatar.as_base_16_hash,
@@ -166,11 +178,13 @@ def test__GuildProfile__difference_update_attributes():
         'pending': new_pending,
         'roles': [str(role_id) for role_id in new_role_ids],
         'communication_disabled_until': datetime_to_timestamp(new_timed_out_until),
+        'flags': int(new_flags),
     }
     
     guild_profile = GuildProfile(
         avatar = old_avatar,
         boosts_since = old_boosts_since,
+        flags = old_flags,
         nick = old_nick,
         pending = old_pending,
         role_ids = old_role_ids,
@@ -181,21 +195,21 @@ def test__GuildProfile__difference_update_attributes():
     
     vampytest.assert_eq(guild_profile.avatar, new_avatar)
     vampytest.assert_eq(guild_profile.boosts_since, new_boosts_since)
+    vampytest.assert_eq(guild_profile.flags, new_flags)
     vampytest.assert_eq(guild_profile.nick, new_nick)
     vampytest.assert_eq(guild_profile.pending, new_pending)
     vampytest.assert_eq(guild_profile.role_ids, tuple(new_role_ids))
     vampytest.assert_eq(guild_profile.timed_out_until, new_timed_out_until)
     
-    vampytest.assert_in('avatar', old_attributes)
-    vampytest.assert_in('boosts_since', old_attributes)
-    vampytest.assert_in('nick', old_attributes)
-    vampytest.assert_in('pending', old_attributes)
-    vampytest.assert_in('role_ids', old_attributes)
-    vampytest.assert_in('timed_out_until', old_attributes)
-    
-    vampytest.assert_eq(old_attributes['avatar'], old_avatar)
-    vampytest.assert_eq(old_attributes['boosts_since'], old_boosts_since)
-    vampytest.assert_eq(old_attributes['nick'], old_nick)
-    vampytest.assert_eq(old_attributes['pending'], old_pending)
-    vampytest.assert_eq(old_attributes['role_ids'], tuple(old_role_ids))
-    vampytest.assert_eq(old_attributes['timed_out_until'], old_timed_out_until)
+    vampytest.assert_eq(
+        old_attributes,
+        {
+            'avatar': old_avatar,
+            'boosts_since': old_boosts_since,
+            'flags': old_flags,
+            'nick': old_nick,
+            'pending': old_pending,
+            'role_ids': tuple(old_role_ids),
+            'timed_out_until': old_timed_out_until,
+        },
+    )

@@ -89,7 +89,7 @@ class SetupFunction:
         self.extension_short_name = extension_short_name
         return self
     
-    def __call__(self, client, kwargs):
+    def __call__(self, client, keyword_parameters):
         """
         Calls the internal ``setup_function``.
         
@@ -97,21 +97,21 @@ class SetupFunction:
         ----------
         client : ``Client``
             The client on who the extension should be setupped.
-        kwargs : `dict` of (`str`, `Any`) items
+        keyword_parameters : `dict` of (`str`, `object`) items
             Keyword parameters to get the extension's parameters from.
         """
         positional_parameters = []
         required_parameters = self.required_parameters
         if (required_parameters is not None):
             for required_parameter in required_parameters:
-                positional_parameters.append(kwargs[required_parameter])
+                positional_parameters.append(keyword_parameters[required_parameter])
         
         keyword_parameters = {}
         optional_parameters = self.optional_parameters
         if (optional_parameters is not None):
             for optional_parameter in optional_parameters:
                 try:
-                    parameter_value = kwargs[optional_parameter]
+                    parameter_value = keyword_parameters[optional_parameter]
                 except KeyError:
                     pass
                 else:
@@ -227,15 +227,15 @@ def _get_setup_function(extension_name):
     return setup_function
 
 
-def get_and_validate_setup_functions(extensions, kwargs):
+def get_setup_functions(extensions, keyword_parameters):
     """
     Gets and validates setup function parameters.
     
     Parameters
     ----------
-    extensions : `None`, `str`, `iterable` of `str`
+    extensions : `None`, `set` of `str`
         The extension(s)'s name to setup on a client.
-    kwargs : `dict` of (`str`, `Any`)
+    keyword_parameters : `dict` of (`str`, `object`)
         Additional parameters to pass to extensions.
     
     Returns
@@ -245,59 +245,24 @@ def get_and_validate_setup_functions(extensions, kwargs):
     
     Raises
     ------
-    Raises
-    ------
     ImportError
         If importing an extension failed.
     ModuleNotFoundError
         If an extension not found.
     RuntimeError
-        - If `kwargs` not contains any required parameter.
+        - If `keyword_parameters` not contains any required parameter.
         - The an extension has no setup function.
     
     Notes
     -----
-    If `kwargs` contains any extra parameters, `RuntimeWarning` is dropped.
+    If `keyword_parameters` contains any extra parameters, `RuntimeWarning` is dropped.
     
     > The function may block if new extension is imported, so please consider avoiding production time calls.
     """
-    extensions_to_setup = None
-    if (extensions is not None):
-        if isinstance(extensions, str):
-            if type(extensions) is str:
-                extension = extensions
-            else:
-                extension = str(extensions)
-            
-            extensions_to_setup = {extension}
-        else:
-            iter_ = getattr(type(extensions), '__iter__', None)
-            if iter_ is None:
-                raise TypeError(
-                    f'`extensions` can be `str`, `iterable` of `str`, got '
-                    f'{extensions.__class__.__name__}; {extensions!r}.'
-                )
-            
-            for extension in iter_(extensions):
-                if type(extension) is str:
-                    pass
-                elif isinstance(extension, str):
-                    extension = str(extension)
-                else:
-                    raise TypeError(
-                        f'`extensions` can contain `str` elements, got '
-                        f'{extension.__class__.__name__}; {extension!r}; extensions = {extensions!r}.'
-                    )
-                
-                if extensions_to_setup is None:
-                    extensions_to_setup = set()
-                
-                extensions_to_setup.add(extension)
-    
     setup_functions = None
     
-    if (extensions_to_setup is not None):
-        for extension_name in extensions_to_setup:
+    if (extensions is not None):
+        for extension_name in extensions:
             setup_function = _get_setup_function(extension_name)
             
             if setup_functions is None:
@@ -305,7 +270,7 @@ def get_and_validate_setup_functions(extensions, kwargs):
             
             setup_functions.add(setup_function)
     
-    exhaustible_parameters = set(kwargs.keys())
+    exhaustible_parameters = set(keyword_parameters.keys())
     
     if (setup_functions is not None):
         for setup_function in setup_functions:
@@ -314,7 +279,7 @@ def get_and_validate_setup_functions(extensions, kwargs):
                 exhaustible_parameters.difference_update(required_parameters)
                 
                 for required_parameter in required_parameters:
-                    if required_parameter not in kwargs:
+                    if required_parameter not in keyword_parameters:
                         raise RuntimeError(
                             f'`{required_parameter}` parameter is required by '
                             f'`{setup_function.extension_short_name}`.'
@@ -323,12 +288,12 @@ def get_and_validate_setup_functions(extensions, kwargs):
             optional_parameters = setup_function.optional_parameters
             if (optional_parameters is not None):
                 exhaustible_parameters.difference_update(optional_parameters)
-        
+    
     if exhaustible_parameters:
         warnings.warn(
             (
-                f'`get_and_validate_setup_functions` received unused parameters: '
-                f'{", ".join(f"{name}={kwargs[name]!r}" for name in exhaustible_parameters)}.'
+                f'`get_setup_functions` received unused parameters: '
+                f'{", ".join(f"{name} = {keyword_parameters[name]!r}" for name in exhaustible_parameters)}.'
             ),
             RuntimeWarning,
             stacklevel = 3,
@@ -337,7 +302,7 @@ def get_and_validate_setup_functions(extensions, kwargs):
     return setup_functions
 
 
-def run_setup_functions(client, setup_functions, kwargs):
+def run_setup_functions(client, setup_functions, keyword_parameters):
     """
     Setups the given extensions on the client.
     
@@ -347,9 +312,9 @@ def run_setup_functions(client, setup_functions, kwargs):
         The client on who the extensions should be setupped.
     setup_functions : `None`, `set` of ``SetupFunction``
         The setup functions to run with the client.
-    kwargs : `dict` of (`str`, `Any`) items
+    keyword_parameters : `dict` of (`str`, `object`) items
         Keyword parameters to get the extensions's parameters from.
     """
     if (setup_functions is not None):
         for setup_function in setup_functions:
-            setup_function(client, kwargs)
+            setup_function(client, keyword_parameters)

@@ -491,6 +491,31 @@ def test__ClientUserBase__iter_guilds_and_profiles():
     )
 
 
+def test__ClientUserBase__iter_guilds():
+    """
+    Tests whether ``ClientUserBase.iter_guilds`` works as intended.
+    """
+    user_id = 202302140000
+    guild_id_0 = 202302140001
+    guild_id_1 = 202302140002
+    
+    user = ClientUserBase._create_empty(user_id)
+    
+    guild_0 = Guild.precreate(guild_id_0)
+    guild_1 = Guild.precreate(guild_id_1)
+    
+    guild_profile_0 = GuildProfile(nick = 'orin')
+    guild_profile_1 = GuildProfile(nick = 'rin')
+    
+    user.guild_profiles[guild_id_0] = guild_profile_0
+    user.guild_profiles[guild_id_1] = guild_profile_1
+    
+    vampytest.assert_eq(
+        {*user.iter_guilds()},
+        {guild_0, guild_1},
+    )
+
+
 def test__ClientUserBase__is_boosting():
     """
     Tests whether ``ClientUserBase.is_boosting`` works as intended.

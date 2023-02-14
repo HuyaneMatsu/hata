@@ -621,6 +621,17 @@ class ClientUserBase(OrinUserBase):
             yield guild, guild_profile
     
     
+    @copy_docs(OrinUserBase.iter_guilds)
+    def iter_guilds(self):
+        for guild_id in self.guild_profiles.keys():
+            try:
+                guild = GUILDS[guild_id]
+            except KeyError:
+                continue
+            
+            yield guild
+    
+    
     @copy_docs(OrinUserBase.is_boosting)
     def is_boosting(self, guild):
         guild_id = _try_get_guild_id(guild)

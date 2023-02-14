@@ -10,7 +10,7 @@ from scarletio import (
 )
 
 from ...env import CACHE_USER
-from ...ext import get_and_validate_setup_functions, run_setup_functions
+from ...ext import get_setup_functions, run_setup_functions
 
 from ..activity import ACTIVITY_UNKNOWN
 from ..application import Application, Team
@@ -37,7 +37,7 @@ from ..user.user.fields import (
 
 from .compounds import CLIENT_COMPOUNDS
 from .fields import (
-    validate_activity, validate_additional_owner_ids, validate_application_id, validate_client_id,
+    validate_activity, validate_additional_owner_ids, validate_application_id, validate_client_id, validate_extensions,
     validate_http_debug_options, validate_intents, validate_secret, validate_should_request_users, validate_shard_count,
     validate_token
 )
@@ -260,7 +260,7 @@ class Client(
         discriminator = ...,
         email = ...,
         email_verified = ...,
-        extensions = None,
+        extensions = ...,
         flags = ...,
         http_debug_options = ...,
         intents = ...,
@@ -321,7 +321,7 @@ class Client(
         email_verified : `bool`, Optional (Keyword only)
             Whether the email of the client is verified.
         
-        extensions : `None`, `str`, `iterable` of `str` = `None`, Optional (Keyword only)
+        extensions : `None`, `str`, `iterable` of `str`, Optional (Keyword only)
             The extension's name to setup on the client.
         
         flags : `int`, ``UserFlag``, Optional (Keyword only)
@@ -465,7 +465,10 @@ class Client(
             email_verified = validate_email_verified(email_verified)
         
         # extensions
-        # They will eb checked at the end
+        if extensions is ...:
+            extensions = None
+        else:
+            extensions = validate_extensions(extensions)
         
         # flags
         if flags is ...:
@@ -538,7 +541,7 @@ class Client(
         # ---- Setup extensions ----
         
         # extensions
-        setup_functions = get_and_validate_setup_functions(extensions, keyword_parameters)
+        setup_functions = get_setup_functions(extensions, keyword_parameters)
         
         
         # ---- Auto generate initial id if un-detected ----

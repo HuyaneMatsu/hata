@@ -320,6 +320,15 @@ def test__UserBase__iter_guilds_and_profiles():
     vampytest.assert_eq([*user.iter_guilds_and_profiles()], [])
 
 
+def test__UserBase__iter_guilds():
+    """
+    Tests whether ``Userbase.iter_guilds`` works as intended.
+    """
+    user = UserBase()
+    
+    vampytest.assert_eq([*user.iter_guilds()], [])
+
+
 def test__UserBase__is_boosting():
     """
     Tests whether ``Userbase.is_boosting`` works as intended.

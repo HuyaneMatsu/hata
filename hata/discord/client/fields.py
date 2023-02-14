@@ -113,6 +113,62 @@ validate_application_id = entity_id_validator_factory('application_id', Applicat
 
 validate_client_id = entity_id_validator_factory('client_id')
 
+# extensions
+
+def validate_extensions(extensions):
+    """
+    Validates the given http client debug options.
+    
+    Parameters
+    ----------
+    extensions : `None`, `str`, `iterable` of `str`
+        Http client debug options.
+    
+    Returns
+    -------
+    extensions : `None`, `set` of `str`
+    
+    Raises
+    ------
+    TypeError
+        - If `extensions`'s type is incorrect.
+    """
+    if extensions is None:
+        return None
+
+    if isinstance(extensions, str):
+        if type(extensions) is not str:
+            extensions = str(extensions)
+        
+        return {extensions}
+    
+    if (getattr(extensions, '__iter__', None) is None):
+        raise TypeError(
+            f'`extensions` can be `None`, `str`, `iterable` of `str`, got '
+            f'{extensions.__class__.__name__}; {extensions!r}.'
+        )
+    
+    extensions_validated = None
+    
+    for extension in extensions:
+        
+        if type(extension) is str:
+            pass
+        elif isinstance(extension, str):
+            extension = str(extension)
+        else:
+            raise TypeError(
+                f'{extensions} contains a non `str`, got '
+                f'{extensions.__class__.__name__}; {extensions!r}.'
+            )
+        
+        if extensions_validated is None:
+            extensions_validated = set()
+        
+        extensions_validated.add(extension)
+    
+    return extensions_validated
+
 # http_debug_options
 
 def validate_http_debug_options(http_debug_options):

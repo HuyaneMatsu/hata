@@ -1236,6 +1236,21 @@ class UserBase(DiscordEntity, immortal = True):
         yield
     
     
+    def iter_guilds(self):
+        """
+        Iterates over the guilds of the user.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        guild : ``Guild``
+            The guild profile's guild.
+        """
+        return
+        yield
+    
+    
     def is_boosting(self, guild):
         """
         Returns whether the user is boosting the given guild.

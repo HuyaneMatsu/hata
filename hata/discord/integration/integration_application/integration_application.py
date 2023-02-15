@@ -310,14 +310,14 @@ class IntegrationApplication(DiscordEntity):
         
         integration_application_id = self.id
         if integration_application_id:
-            repr_parts.append(' id=')
+            repr_parts.append(' id = ')
             repr_parts.append(repr(integration_application_id))
         else:
             repr_parts.append(' (partial)')
         
         name = self.name
         if name:
-            repr_parts.append(', name=')
+            repr_parts.append(', name = ')
             repr_parts.append(repr(name))
         
         repr_parts.append('>')

@@ -269,7 +269,7 @@ class InteractionOption(RichAttributeErrorBaseType):
         """Returns the interaction option's representation."""
         repr_parts = [
             '<', self.__class__.__name__,
-            ' name=', repr(self.name),
+            ' name = ', repr(self.name),
         ]
         
         if self.focused:
@@ -277,11 +277,11 @@ class InteractionOption(RichAttributeErrorBaseType):
         
         value = self.value
         if (value is not None):
-            repr_parts.append(', value=')
+            repr_parts.append(', value = ')
             repr_parts.append(reprlib.repr(value))
         
         type_ = self.type
-        repr_parts.append(', type=')
+        repr_parts.append(', type = ')
         repr_parts.append(type_.name)
         repr_parts.append(' (')
         repr_parts.append(repr(type_.value))
@@ -289,7 +289,7 @@ class InteractionOption(RichAttributeErrorBaseType):
         
         options = self.options
         if (options is not None):
-            repr_parts.append(', options=[')
+            repr_parts.append(', options = [')
             
             index = 0
             limit = len(options)

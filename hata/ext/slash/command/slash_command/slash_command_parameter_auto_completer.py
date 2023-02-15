@@ -347,7 +347,7 @@ class SlashCommandParameterAutoCompleter(RichAttributeErrorBaseType):
         return matched
     
     
-    def error(self, exception_handler=None, *, first=False):
+    def error(self, exception_handler = None, *, first = False):
         """
         Registers an exception handler to the ``SlashCommandParameterAutoCompleter``.
         

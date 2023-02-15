@@ -178,8 +178,19 @@ class ClientCompoundScheduledEventEndpoints(Compound):
     # In theory you can edit the target entity is as well, but we will ignore it for now.
     
     async def scheduled_event_edit(
-        self, scheduled_event, *, name=..., description = ..., start=..., end=..., privacy_level=..., status=...,
-        location=..., stage=..., voice=..., reason = None
+        self,
+        scheduled_event,
+        *,
+        name = ...,
+        description = ...,
+        start = ...,
+        end = ...,
+        privacy_level = ...,
+        status = ...,
+        location = ...,
+        stage = ...,
+        voice = ...,
+        reason = None,
     ):
         """
         Edits the given scheduled event.

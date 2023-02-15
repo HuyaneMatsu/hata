@@ -378,7 +378,7 @@ if API_VERSION >= 9:
                 form.add_field('payload_json', to_json(data))
                 
                 for index, (name, io, description) in enumerate(files):
-                    form.add_field(f'files[{index}]', io, filename=name, content_type='application/octet-stream')
+                    form.add_field(f'files[{index}]', io, filename = name, content_type = 'application/octet-stream')
         
         
         return form, contains_attachments
@@ -526,14 +526,14 @@ else:
         # case 1 one file
         if len(files) == 1:
             name, io = files[0]
-            form.add_field('file', io, filename=name, content_type='application/octet-stream')
+            form.add_field('file', io, filename = name, content_type = 'application/octet-stream')
         # case 2, no files -> return None, we should use the already existing data
         elif len(files) == 0:
             return None
         # case 3 maximum 10 files
         elif len(files) < 11:
             for index, (name, io) in enumerate(files):
-                form.add_field(f'file{index}s', io, filename=name, content_type='application/octet-stream')
+                form.add_field(f'file{index}s', io, filename = name, content_type = 'application/octet-stream')
         
         # case 4 more than 10 files
         else:

@@ -221,7 +221,7 @@ class Connection(DiscordEntity):
         
         connection_id = self.id
         if connection_id:
-            repr_parts.append(' id=')
+            repr_parts.append(' id = ')
             repr_parts.append(repr(connection_id))
         
         else:
@@ -229,14 +229,14 @@ class Connection(DiscordEntity):
         
         connection_type = self.type
         if (connection_type is not ConnectionType.unknown):
-            repr_parts.append(', type=')
+            repr_parts.append(', type = ')
             repr_parts.append(connection_type.name)
             repr_parts.append('~')
             repr_parts.append(repr(connection_type.value))
         
         name = self.name
         if name:
-            repr_parts.append(', name=')
+            repr_parts.append(', name = ')
             repr_parts.append(repr(name))
         
         repr_parts.append('>')

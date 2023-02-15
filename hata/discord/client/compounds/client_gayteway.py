@@ -411,7 +411,7 @@ class ClientCompoundClientGateway(Compound):
         wait_for_handler = self.events.get_handler(event_name, WaitForHandler)
         if wait_for_handler is None:
             wait_for_handler = WaitForHandler()
-            self.events(wait_for_handler, name=event_name)
+            self.events(wait_for_handler, name = event_name)
         
         future = Future(KOKORO)
         wait_for_handler.waiters[future] = check
@@ -426,4 +426,4 @@ class ClientCompoundClientGateway(Compound):
             del waiters[future]
             
             if not waiters:
-                self.events.remove(wait_for_handler, name=event_name)
+                self.events.remove(wait_for_handler, name = event_name)

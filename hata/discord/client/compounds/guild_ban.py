@@ -138,7 +138,7 @@ class ClientCompoundGuildBanEndpoints(Compound):
         await self.http.guild_ban_delete(guild_id, user_id, reason)
     
     
-    async def guild_ban_get_chunk(self, guild, *, after=None, before=None, limit=0):
+    async def guild_ban_get_chunk(self, guild, *, after = None, before = None, limit = 0):
         """
         Returns a chunk of the guild's ban entries.
         

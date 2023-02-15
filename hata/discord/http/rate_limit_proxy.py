@@ -36,7 +36,7 @@ class RateLimitProxy:
     """
     __slots__ = ('_handler', '_key', 'client', 'group',)
     
-    def __new__(cls, client, group, limiter=None, keep_alive=False):
+    def __new__(cls, client, group, limiter = None, keep_alive = False):
         """
         Creates a new rate limit proxy.
         

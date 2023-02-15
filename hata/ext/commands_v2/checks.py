@@ -920,7 +920,7 @@ class CheckHasPermissionBase(CheckBase):
     permission : ``Permission``
         The required permissions to pass the check.
     """
-    def __new__(cls, permission=None, **kwargs):
+    def __new__(cls, permission = None, **kwargs):
         """
         Creates a check, which will validate whether the a received message of a client passes the given condition.
         

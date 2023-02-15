@@ -310,10 +310,10 @@ class EventHandlerSnapshotType(BaseSnapshotType):
         event_handler_manager = client.events
         for event_handler_name, difference in self.differences.items():
             for event_handler in difference.iter_added_event_handlers():
-                event_handler_manager.remove(event_handler, name=event_handler_name, count=1)
+                event_handler_manager.remove(event_handler, name = event_handler_name, count = 1)
             
             for event_handler in difference.iter_removed_event_handlers():
-                event_handler_manager(event_handler, name=event_handler_name)
+                event_handler_manager(event_handler, name = event_handler_name)
     
     
     @copy_docs(BaseSnapshotType.__repr__)
@@ -328,7 +328,7 @@ class EventHandlerSnapshotType(BaseSnapshotType):
         
         differences = self.differences
         if differences:
-            repr_parts.append(', differences=')
+            repr_parts.append(', differences = ')
             repr_parts.append(repr(self.differences))
         
         repr_parts.append('>')

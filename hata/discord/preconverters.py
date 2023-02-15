@@ -219,7 +219,7 @@ def preconvert_iterable_of_str(value, name, iterable_lower_limit, iterable_upper
         else:
             raise TypeError(
                 f'`{name}` can contain `str` elements, got {value_element.__class__.__name__}; {value_element!r}; '
-                f'value={value!r}.'
+                f'value = {value!r}.'
             )
         
         length = len(value_element)
@@ -229,7 +229,7 @@ def preconvert_iterable_of_str(value, name, iterable_lower_limit, iterable_upper
         if (length < lower_limit) or (length > upper_limit):
             raise ValueError(
                 f'`{name}` can contains elements between length {lower_limit} and {upper_limit}, '
-                f'got {length!r} {value_element!r}; value={value!r}.'
+                f'got {length!r} {value_element!r}; value = {value!r}.'
             )
         
         converted_value.add(value_element)

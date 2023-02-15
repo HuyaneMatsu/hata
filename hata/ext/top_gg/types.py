@@ -193,7 +193,7 @@ class BotInfo(metaclass=Slotted):
     
     def __repr__(self):
         """Returns the bot info's representation."""
-        return f'<{self.__class__.__name__} id={self.id} name={self.name}>'
+        return f'<{self.__class__.__name__} id = {self.id} name = {self.name}>'
 
 
 class BotStats:
@@ -364,7 +364,7 @@ class UserInfo(metaclass=Slotted):
     
     def __repr__(self):
         """Returns the bot info's representation."""
-        return f'<{self.__class__.__name__} id={self.id} name={self.name}>'
+        return f'<{self.__class__.__name__} id = {self.id} name = {self.name}>'
 
 
 class UserConnections:
@@ -484,7 +484,7 @@ class BriefUserInfo(metaclass=Slotted):
     
     def __repr__(self):
         """Returns the bot info's representation."""
-        return f'<{self.__class__.__name__} id={self.id} name={self.name}>'
+        return f'<{self.__class__.__name__} id = {self.id} name = {self.name}>'
 
 
 class BotsQueryResult:
@@ -621,7 +621,7 @@ class VoteBase:
     
     def __repr__(self):
         """Returns the vote's representation."""
-        return f'<{self.__class__.__name__} user_id={self.user_id!r}>'
+        return f'<{self.__class__.__name__} user_id = {self.user_id!r}>'
 
 
 class BotVote(VoteBase):
@@ -656,7 +656,7 @@ class BotVote(VoteBase):
     
     @copy_docs(VoteBase.__repr__)
     def __repr__(self):
-        return f'<{self.__class__.__name__} user_id={self.user_id!r} bot_id={self.bot_id!r}>'
+        return f'<{self.__class__.__name__} user_id = {self.user_id!r} bot_id = {self.bot_id!r}>'
 
 
 class GuildVote(VoteBase):
@@ -687,4 +687,4 @@ class GuildVote(VoteBase):
     
     @copy_docs(VoteBase.__repr__)
     def __repr__(self):
-        return f'<{self.__class__.__name__} user_id={self.user_id!r} guild_id={self.guild_id!r}>'
+        return f'<{self.__class__.__name__} user_id = {self.user_id!r} guild_id = {self.guild_id!r}>'

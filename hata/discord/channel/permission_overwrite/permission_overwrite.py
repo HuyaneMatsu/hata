@@ -67,7 +67,7 @@ class PermissionOverwrite(RichAttributeErrorBaseType):
             if target_type_processed is PermissionOverwriteTargetType.unknown:
                 raise ValueError(
                     f'`target_type` cannot be `None` if `target_id` is given as a snowflake. '
-                    f'Got target_id={target_id!r}.'
+                    f'Got target_id = {target_id!r}.'
                 )
         
         else:
@@ -78,7 +78,7 @@ class PermissionOverwrite(RichAttributeErrorBaseType):
                 if target_type_processed is not target_type_processed_from_target_type:
                     raise ValueError(
                         f'If `target_id` is given as an entity, then `target_type` should not be given, or should '
-                        f'match the entity\'s type. Got target_id={target_id!r}; target_type={target_type!r}.'
+                        f'match the entity\'s type. Got target_id = {target_id!r}; target_type = {target_type!r}.'
                     )
                     
         

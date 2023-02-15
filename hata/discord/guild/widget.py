@@ -95,7 +95,7 @@ class GuildWidgetUser(DiscordEntity):
     
     def __repr__(self):
         """Returns the representation of the guild widget user."""
-        return f'<{self.__class__.__name__} id={self.id}, name={self.full_name!r}>'
+        return f'<{self.__class__.__name__} id = {self.id}, name = {self.full_name!r}>'
 
 
 class GuildWidgetChannel(DiscordEntity):
@@ -141,7 +141,7 @@ class GuildWidgetChannel(DiscordEntity):
     
     def __repr__(self):
         """Returns the guild widget channel's representation."""
-        return f'<{self.__class__.__name__} id={self.id}, name={self.name!r}>'
+        return f'<{self.__class__.__name__} id = {self.id}, name = {self.name!r}>'
     
     
     def __gt__(self, other):
@@ -234,7 +234,7 @@ class GuildWidget(DiscordEntity):
         data : `dict` of (`str`, `Any`) items
             The requested guild widget data.
         """
-        self.guild = Guild.precreate(int(data['id']), name=data['name'])
+        self.guild = Guild.precreate(int(data['id']), name = data['name'])
         self._data = data
         self._cache = {}
     

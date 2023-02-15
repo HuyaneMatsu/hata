@@ -72,7 +72,7 @@ class VerificationScreenStepType(PreinstancedBase):
     
     def __repr__(self):
         """Returns the representation of the verification screen type."""
-        return f'{self.__class__.__name__}(value={self.value!r})'
+        return f'{self.__class__.__name__}(value = {self.value!r})'
     
     
     none = P('', 'none')

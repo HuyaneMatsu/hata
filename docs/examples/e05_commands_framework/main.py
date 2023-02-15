@@ -143,7 +143,7 @@ async def am_i_admin(ctx):
 
 
 @Sakuya.commands(aliases='slow_mode')
-async def slowmode(ctx, slowmode_rate:int=None):
+async def slowmode(ctx, slowmode_rate: int = None):
     """Returns or sets channel slowmode."""
     if slowmode_rate is None:
         return f'The channel\'s current slowmode is: `{ctx.channel.slowmode}` seconds.'

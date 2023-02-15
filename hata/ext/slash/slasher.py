@@ -1723,7 +1723,7 @@ class Slasher(EventHandlerBase):
         return registered_any
     
     
-    def delete_event(self, func, name=None):
+    def delete_event(self, func, name = None):
         """
         A method to remove a command by itself, or by it's function and name combination if defined.
         
@@ -3083,7 +3083,7 @@ class Slasher(EventHandlerBase):
         Task(self._do_main_sync(client), KOKORO)
     
     
-    def error(self, exception_handler=None, *, first=False):
+    def error(self, exception_handler = None, *, first = False):
         """
         Registers an exception handler to the ``Slasher``.
         
@@ -3455,7 +3455,7 @@ class Slasher(EventHandlerBase):
         return self_reference
 
 
-    def autocomplete(self, parameter_name, *parameter_names, function=None):
+    def autocomplete(self, parameter_name, *parameter_names, function = None):
         """
         Registers an auto completer function to the slasher.
         

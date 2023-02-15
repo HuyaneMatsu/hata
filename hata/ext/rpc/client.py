@@ -844,7 +844,7 @@ class RPCClient(RichAttributeErrorBaseType):
         return channels
     
     
-    async def user_voice_settings_set(self, *, audio_balance=None, mute=None, volume=None):
+    async def user_voice_settings_set(self, *, audio_balance = None, mute = None, volume = None):
         """
         Changes the user's voice settings.
         
@@ -1100,9 +1100,20 @@ class RPCClient(RichAttributeErrorBaseType):
         return VoiceSettings.from_data(data)
     
     
-    async def voice_settings_set(self, *, input_=None, output=None, mode=None, automatic_gain_control=None,
-            echo_cancellation=None, noise_suppression=None, quality_of_service=None, silence_warning=None, deaf=None,
-            mute=None):
+    async def voice_settings_set(
+        self,
+        *,
+        input_ = None,
+        output = None,
+        mode = None,
+        automatic_gain_control = None,
+        echo_cancellation = None,
+        noise_suppression = None,
+        quality_of_service = None,
+        silence_warning = None,
+        deaf = None,
+        mute = None,
+    ):
         """
         Modifies the user's voice settings and returns it's actual one.
         

@@ -358,9 +358,9 @@ class UserBase(DiscordEntity, immortal = True):
         --------
         ```py
         >>> from hata import User, now_as_id
-        >>> user = User.precreate(now_as_id(), name='Neko', discriminator=2012)
+        >>> user = User.precreate(now_as_id(), name = 'Neko', discriminator = 2012)
         >>> user
-        <User partial, id=730233383967260672>
+        <User id = 730233383967260672, name = '#0000'>
         >>> # no code stands for `user.name`.
         >>> f'{user}'
         'Neko'
@@ -1376,6 +1376,8 @@ class UserBase(DiscordEntity, immortal = True):
             | avatar            | ``Icon``                      |
             +-------------------+-------------------------------+
             | boosts_since      | `None`, `datetime`            |
+            +-------------------+-------------------------------+
+            | flags             | `None`, ``GuildProfileFlags`` |
             +-------------------+-------------------------------+
             | nick              | `None`, `str`                 |
             +-------------------+-------------------------------+

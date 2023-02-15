@@ -63,7 +63,7 @@ class FormSubmitCommand(CommandBaseCustomId):
     __slots__ = ('_keyword_parameter_converters', '_multi_parameter_converter')
     
     
-    def __new__(cls, func, custom_id, name=None, target = None, **kwargs):
+    def __new__(cls, func, custom_id, name = None, target = None, **keyword_parameters):
         """
         Creates a new ``FormSubmitCommand`` with the given parameters
         
@@ -98,7 +98,7 @@ class FormSubmitCommand(CommandBaseCustomId):
             - If `func` is not async callable, neither cannot be instanced to async.
             - If `func` accepts keyword only parameters.
             - If `func` accepts `*args`.
-            - If `func` accepts `**kwargs`.
+            - If `func` accepts `**keyword_parameters`.
             - If `name` was not given neither as `None`, `str`.
             - If `custom_id`'s type is incorrect.
         ValueError:
@@ -125,10 +125,10 @@ class FormSubmitCommand(CommandBaseCustomId):
         
         
         # Check extra parameters
-        response_modifier = ResponseModifier(kwargs)
+        response_modifier = ResponseModifier(keyword_parameters)
         
-        if kwargs:
-            raise TypeError(f'Extra or unused parameters: {kwargs!r}.')
+        if keyword_parameters:
+            raise TypeError(f'Extra or unused parameters: {keyword_parameters!r}.')
         
         
         command, parameter_converters, multi_parameter_converter, keyword_parameter_converters = \

@@ -45,11 +45,11 @@ class ScheduledEventSubscribeEvent(EventBase):
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' guild_id=',
+            ' guild_id = ',
             repr(self.guild_id),
-            ', scheduled_event_id=',
+            ', scheduled_event_id = ',
             repr(self.scheduled_event_id),
-            ', user_id=',
+            ', user_id = ',
             repr(self.scheduled_event_id),
             '>'
         ]

@@ -37,7 +37,7 @@ class AuditLogRole(DiscordEntity):
     
     def __repr__(self):
         """Returns the role's representation."""
-        return f'<{self.__class__.__name__} id={self.id!r}, name={self.name!r}>'
+        return f'<{self.__class__.__name__} id = {self.id!r}, name = {self.name!r}>'
     
     
     @property
@@ -51,4 +51,4 @@ class AuditLogRole(DiscordEntity):
         -------
         role : ``Role``
         """
-        return Role.precreate(self.id, name=self.name)
+        return Role.precreate(self.id, name = self.name)

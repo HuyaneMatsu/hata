@@ -173,7 +173,7 @@ class WaitAndContinue:
             timeouter.cancel()
     
     
-    def cancel(self, exception=None):
+    def cancel(self, exception = None):
         """
         Cancels the ``WaitAndContinue``.
         

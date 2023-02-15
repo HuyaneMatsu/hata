@@ -25,7 +25,7 @@ class UserVoiceSettings:
     
     def __repr__(self):
         """Returns the user voice setting's representation."""
-        repr_parts = ['<', self.__class__.__name__, ' user_id=', repr(self.user_id), '>']
+        repr_parts = ['<', self.__class__.__name__, ' user_id = ', repr(self.user_id), '>']
         return ''.join(repr_parts)
     
     
@@ -75,7 +75,7 @@ class AudioBalance:
     """
     __slots__ = ('left', 'right')
     
-    def __new__(cls, *, left=None, right=None):
+    def __new__(cls, *, left = None, right = None):
         """
         Creates a new ``AudioBalance`` from the given parameters.
         

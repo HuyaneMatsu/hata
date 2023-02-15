@@ -201,7 +201,7 @@ class Channel(DiscordEntity, immortal = True):
     
     
     @classmethod
-    def from_data(cls, data, client=None, guild_id=0):
+    def from_data(cls, data, client = None, guild_id = 0):
         """
         Creates a new channel from the channel data received from Discord. If the channel already exists and if it
         is partial, then updates it.
@@ -383,9 +383,9 @@ class Channel(DiscordEntity, immortal = True):
         --------
         ```py
         >>> from hata import Channel, now_as_id
-        >>> channel = Channel.precreate(now_as_id(), name='GENERAL')
+        >>> channel = Channel.precreate(now_as_id(), name = 'GENERAL')
         >>> channel
-        <Channel id=710506058560307200, name='GENERAL'>
+        <Channel id = 710506058560307200, name = 'GENERAL'>
         >>> # no code stands for `channel.name`.
         >>> f'{channel}'
         'GENERAL'
@@ -2023,9 +2023,9 @@ class Channel(DiscordEntity, immortal = True):
                 if self._message_history_collector is None:
                     messages = None
                 else:
-                    self.messages = messages = deque(maxlen=None)
+                    self.messages = messages = deque(maxlen = None)
             else:
-                self.messages = messages = deque(maxlen=message_keep_limit)
+                self.messages = messages = deque(maxlen = message_keep_limit)
         else:
             
             max_length = messages.maxlen
@@ -2033,7 +2033,7 @@ class Channel(DiscordEntity, immortal = True):
                 if self._message_history_collector is None:
                     self.message_history_reached_end = False
                 else:
-                    self.messages = messages = deque(messages, maxlen=None)
+                    self.messages = messages = deque(messages, maxlen = None)
         
         return messages
     

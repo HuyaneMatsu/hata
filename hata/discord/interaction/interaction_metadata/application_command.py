@@ -111,7 +111,7 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
             else:
                 field_added = True
             
-            repr_parts.append(' resolved=')
+            repr_parts.append(' resolved = ')
             repr_parts.append(repr(resolved))
         
         # target_id
@@ -122,7 +122,7 @@ class InteractionMetadataApplicationCommand(InteractionMetadataApplicationComman
             else:
                 field_added = True
             
-            repr_parts.append(' target_id=')
+            repr_parts.append(' target_id = ')
             repr_parts.append(repr(target_id))
         
         return field_added

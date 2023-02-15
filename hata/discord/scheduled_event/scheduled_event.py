@@ -364,14 +364,14 @@ class ScheduledEvent(DiscordEntity):
         """Returns the guild event's representation."""
         repr_parts = [
             '<', self.__class__.__name__,
-            ' id=', repr(self.id),
-            ', name=', repr(self.name),
-            ', guild_id=', repr(self.guild_id),
+            ' id = ', repr(self.id),
+            ', name = ', repr(self.name),
+            ', guild_id = ', repr(self.guild_id),
         ]
         
         entity_type = self.entity_type
         if entity_type is not ScheduledEventEntityType.none:
-            repr_parts.append(', entity_type=')
+            repr_parts.append(', entity_type = ')
             repr_parts.append(entity_type.name)
             repr_parts.append(' (')
             repr_parts.append(repr(entity_type.value))
@@ -380,7 +380,7 @@ class ScheduledEvent(DiscordEntity):
         
         status = self.status
         if status is not ScheduledEventStatus.none:
-            repr_parts.append(', status=')
+            repr_parts.append(', status = ')
             repr_parts.append(status.name)
             repr_parts.append(' (')
             repr_parts.append(repr(status.value))

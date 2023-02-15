@@ -1705,10 +1705,10 @@ class Message(DiscordEntity, immortal = True):
         >>>> from hata import Message, Channel, now_as_id
         >>>> message = Message.custom(content = 'Fluffy nekos', channel = Channel.precreate(now_as_id()))
         >>>> message
-        <Message id=0, ln=12, author=#0000>
+        <Message id = 0, ln = 12, author = #0000>
         >>>> # No code stands for str(message), what is same as repr(message) for the time being.
         >>>> f'{message}'
-        '<Message id=0, ln=12, author=#0000>'
+        '<Message id = 0, ln = 12, author = #0000>'
         >>>> # 'c' stands for created at.
         >>>> f'{message:c}'
         '2015.01.01-00:00:00'
@@ -1716,9 +1716,9 @@ class Message(DiscordEntity, immortal = True):
         >>>> f'{message:e}'
         'never'
         >>>> from datetime import datetime
-        >>>> message = message.custom(edited_at=datetime.utcnow())
+        >>>> message = message.custom(edited_at = datetime.utcnow())
         >>>> message
-        <Message id=0, ln=12, author=#0000>
+        <Message id = 0, ln = 12, author = #0000>
         >>>> f'{message:e}'
         '2020.05.31-16:00:00'
         ```
@@ -2347,6 +2347,24 @@ class Message(DiscordEntity, immortal = True):
         return self.type.converter(self)
     
     
+    def iter_contents(self):
+        """
+        Iterates over the contents of the message.
+        
+        This method is an iterable generator.
+        
+        Yields
+        ------
+        content : `str`
+        """
+        content = self.content
+        if (content is not None):
+            yield content
+        
+        for embed in self.iter_embeds():
+            yield from embed.iter_contents()
+    
+    
     @property
     def contents(self):
         """
@@ -2357,17 +2375,7 @@ class Message(DiscordEntity, immortal = True):
         -------
         contents : `list` of `str`
         """
-        contents = []
-        content = self.content
-        if (content is not None):
-            contents.append(content)
-        
-        embeds = self.embeds
-        if (embeds is not None):
-            for embed in embeds:
-                contents.extend(embed.contents)
-
-        return contents
+        return [*self.iter_contents()]
     
     
     @property

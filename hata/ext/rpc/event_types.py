@@ -38,7 +38,7 @@ class GuildCreateEvent(EventBase):
     
     @copy_docs(EventBase.__repr__)
     def __repr__(self):
-        return f'<{self.__class__.__name__} id={self.id}, name={self.name!r}>'
+        return f'<{self.__class__.__name__} id = {self.id}, name = {self.name!r}>'
     
     
     @copy_docs(EventBase.__len__)
@@ -104,7 +104,7 @@ class ChannelCreateEvent(EventBase):
     
     @copy_docs(EventBase.__repr__)
     def __repr__(self):
-        return f'<{self.__class__.__name__} id={self.id}, name={self.name!r}, type={self.type}>'
+        return f'<{self.__class__.__name__} id = {self.id}, name = {self.name!r}, type = {self.type}>'
     
     
     @copy_docs(EventBase.__len__)
@@ -183,7 +183,7 @@ class ChannelVoiceSelectEvent(EventBase):
     
     @copy_docs(EventBase.__repr__)
     def __repr__(self):
-        return f'<{self.__class__.__name__} guild_id={self.guild_id}, channel_id={self.channel_id}>'
+        return f'<{self.__class__.__name__} guild_id = {self.guild_id}, channel_id = {self.channel_id}>'
     
     
     @copy_docs(EventBase.__len__)
@@ -255,7 +255,7 @@ class NotificationCreateEvent(EventBase):
     
     @copy_docs(EventBase.__repr__)
     def __repr__(self):
-        return f'<{self.__class__.__name__} channel_id={self.channel_id}, title={reprlib.repr(self.title)}>'
+        return f'<{self.__class__.__name__} channel_id = {self.channel_id}, title = {reprlib.repr(self.title)}>'
     
     
     @copy_docs(EventBase.__len__)

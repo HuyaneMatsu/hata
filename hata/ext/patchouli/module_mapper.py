@@ -350,7 +350,7 @@ class UnitBase:
     
     def __repr__(self):
         """Returns the unit's representation."""
-        return f'<{self.__class__.__name__} name={self.name}, path={self.path!s}>'
+        return f'<{self.__class__.__name__} name = {self.name}, path = {self.path!s}>'
     
     @property
     def parent(self):
@@ -924,7 +924,7 @@ class DirectoryUnit(ObjectedUnitBase):
     def __repr__(self):
         """Returns the directory like unit's representation."""
         return (
-            f'<{self.__class__.__name__} name={self.name!r}, path={self.path!s}, reference count='
+            f'<{self.__class__.__name__} name = {self.name!r}, path = {self.path!s}, reference count = '
             f'{len(self.references)!r}>'
         )
 

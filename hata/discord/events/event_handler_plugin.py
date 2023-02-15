@@ -68,7 +68,7 @@ class Event:
     """
     __slots__ = ('callback', 'default_handler', 'instance_default_handler', 'parameter_count')
     
-    def __new__(cls, parameter_count, default_handler=None, callback=None):
+    def __new__(cls, parameter_count, default_handler = None, callback = None):
         """
         Creates a new event handler instance form the given parameters.
         
@@ -178,11 +178,11 @@ class Event:
     
     def __repr__(self):
         """Returns the custom event's representation."""
-        repr_parts = [self.__class__.__name__, ' parameter_count=', repr(self.parameter_count)]
+        repr_parts = [self.__class__.__name__, ' parameter_count = ', repr(self.parameter_count)]
         
         default_handler = self.default_handler
         if (default_handler is not None):
-            repr_parts.append(', default_handler=')
+            repr_parts.append(', default_handler = ')
             repr_parts.append(repr(default_handler))
             
             if self.instance_default_handler:
@@ -190,7 +190,7 @@ class Event:
         
         callback = self.callback
         if (callback is None):
-            repr_parts.append(', callback=')
+            repr_parts.append(', callback = ')
             repr_parts.append(repr(callback))
         
         repr_parts.append('>')

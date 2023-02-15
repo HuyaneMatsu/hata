@@ -99,7 +99,7 @@ class IntegrationAccount(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the integration account's representation."""
-        return f'<{self.__class__.__name__} id={self.id!r}, name={self.name!r}>'
+        return f'<{self.__class__.__name__} id = {self.id!r}, name = {self.name!r}>'
     
     
     def __eq__(self, other):

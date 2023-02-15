@@ -86,7 +86,7 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
     """
     __slots__ = ('name', 'name_localizations', 'value')
     
-    def __new__(cls, name, value=None, *, name_localizations=None):
+    def __new__(cls, name, value = None, *, name_localizations = None):
         """
         Creates a new ``ApplicationCommandOptionChoice`` with the given parameters.
         
@@ -126,7 +126,7 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
                 if not isinstance(choice_name, str):
                     raise TypeError(
                         f'`{Enum.__name__}` choice\'s `.name` should be `str`, '
-                        f'got {choice_name.__class__.__name__}; {choice_name!r}; name={name!r}; value={value!r}..'
+                        f'got {choice_name.__class__.__name__}; {choice_name!r}; name = {name!r}; value = {value!r}..'
                     )
                     
                 value = name.value
@@ -136,7 +136,7 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
                 if not isinstance(choice_name, str):
                     raise TypeError(
                         f'`{Enum.__name__}` choice\'s `.value` should be `str`, '
-                        f'got {choice_name.__class__.__name__}; {choice_name!r}; name={name!r}; value={value!r}.'
+                        f'got {choice_name.__class__.__name__}; {choice_name!r}; name = {name!r}; value = {value!r}.'
                     )
         
         else:
@@ -162,7 +162,7 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
             if not isinstance(choice_value, (str, int, float)):
                 raise TypeError(
                     f'`{Enum.__name__}` choice\'s `.value` can be `str`, `int`, `float`, '
-                    f'got {choice_value.__class__.__name__}; {choice_value!r}; value={value!r}.'
+                    f'got {choice_value.__class__.__name__}; {choice_value!r}; value = {value!r}.'
                 )
             
         else:
@@ -263,11 +263,11 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         repr_parts = ['<', self.__class__.__name__]
         
         # name
-        repr_parts.append(' name=')
+        repr_parts.append(' name = ')
         repr_parts.append(repr(self.name))
         
         # value
-        repr_parts.append(', value=')
+        repr_parts.append(', value = ')
         repr_parts.append(repr(self.value))
         
         # Extra fields: `.name_localizations`
@@ -275,7 +275,7 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         # name_localizations
         name_localizations = self.name_localizations
         if (name_localizations is not None):
-            repr_parts.append(', name_localizations=')
+            repr_parts.append(', name_localizations = ')
             repr_parts.append(repr(name_localizations))
         
         repr_parts.append('>')

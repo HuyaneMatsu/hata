@@ -113,7 +113,7 @@ class RPCEventHandlerManager:
         return f'<{self.__class__.__name__}>'
     
     
-    def __call__(self, func=None, name=None, overwrite=False):
+    def __call__(self, func = None, name = None, overwrite = False):
         """
         Adds the given `func` as an event handler.
         
@@ -142,7 +142,7 @@ class RPCEventHandlerManager:
             - If `name` was not passed as `None` or type `str`.
         """
         if func is None:
-            return partial_func(self, name=name, overwrite=overwrite)
+            return partial_func(self, name = name, overwrite = overwrite)
         
         name = check_name(func, name)
         
@@ -151,7 +151,7 @@ class RPCEventHandlerManager:
         except KeyError:
             raise LookupError(f'Invalid event name: {name!r}.') from None
         
-        func = check_parameter_count_and_convert(func, parameter_count, name=name)
+        func = check_parameter_count_and_convert(func, parameter_count, name = name)
         
         actual = getattr(self, name)
         

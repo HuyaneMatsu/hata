@@ -450,7 +450,7 @@ class TopGGClient:
         return BotInfo.from_data(data)
     
     
-    async def get_bots(self, *, limit=50, offset=0, sort_by=None, search=None):
+    async def get_bots(self, *, limit = 50, offset = 0, sort_by = None, search = None):
         """
         Gets information about multiple bots.
         
@@ -796,7 +796,7 @@ class TopGGClient:
             query_parameters = query_parameters,
         )
     
-    async def _request(self, method, url, rate_limit_handler, data=None, query_parameters=None):
+    async def _request(self, method, url, rate_limit_handler, data = None, query_parameters = None):
         """
         Does a request towards top.gg API.
         

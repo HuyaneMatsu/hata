@@ -508,7 +508,7 @@ class FunctionOrPropertySerializer:
     """
     __slots__ = ('content', 'object', 'parameter_section', 'path')
     
-    def __init__(self, object_, path=None):
+    def __init__(self, object_, path = None):
         """
         Creates a new method or property serializer.
         
@@ -1201,11 +1201,11 @@ class ParameterSubSection:
     
     def __repr__(self):
         """Returns the parameter sub section's representation."""
-        repr_parts = ['<', self.__class__.__name__, ' name=', repr(self.name)]
+        repr_parts = ['<', self.__class__.__name__, ' name = ', repr(self.name)]
         
         type_ = self.type
         if (type_ is not None):
-            repr_parts.append(', type=')
+            repr_parts.append(', type = ')
             repr_parts.append(reprlib.repr(type_))
         
         description = self.description
@@ -1214,10 +1214,10 @@ class ParameterSubSection:
             repr_parts.append(reprlib.repr(description))
         
         if self.optional:
-            repr_parts.append(', optional=True')
+            repr_parts.append(', optional = True')
         
         if self.keyword_only:
-            repr_parts.append(', keyword only=True')
+            repr_parts.append(', keyword only = True')
         
         repr_parts.append('>')
         return ''.join(repr_parts)

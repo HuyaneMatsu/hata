@@ -614,24 +614,24 @@ class ConverterFlag(FlagBase):
     sticker_default = NotImplemented
     sticker_all = NotImplemented
 
-ConverterFlag.user_default = ConverterFlag().update_by_keys(mention=True, name=True, id=True)
-ConverterFlag.user_all = ConverterFlag.user_default.update_by_keys(everywhere=True, profile=True)
-ConverterFlag.client_default = ConverterFlag().update_by_keys(mention=True, name=True, id=True)
-ConverterFlag.client_all = ConverterFlag.client_default.update_by_keys(everywhere=True)
-ConverterFlag.role_default = ConverterFlag().update_by_keys(mention=True, name=True, id=True)
-ConverterFlag.role_all = ConverterFlag.role_default.update_by_keys(everywhere=True)
-ConverterFlag.channel_default = ConverterFlag().update_by_keys(mention=True, name=True, id=True)
-ConverterFlag.channel_all = ConverterFlag.channel_default.update_by_keys(everywhere=True)
-ConverterFlag.emoji_default = ConverterFlag().update_by_keys(mention=True, name=True, id=True)
-ConverterFlag.emoji_all = ConverterFlag.emoji_default.update_by_keys(everywhere=True)
-ConverterFlag.guild_default = ConverterFlag().update_by_keys(id=True)
-ConverterFlag.guild_all = ConverterFlag.guild_default.update_by_keys(everywhere=True)
-ConverterFlag.message_default = ConverterFlag().update_by_keys(url = True, id=True)
-ConverterFlag.message_all = ConverterFlag.message_default.update_by_keys(everywhere=True)
-ConverterFlag.invite_default = ConverterFlag().update_by_keys(url = True, id=True)
+ConverterFlag.user_default = ConverterFlag().update_by_keys(mention = True, name = True, id = True)
+ConverterFlag.user_all = ConverterFlag.user_default.update_by_keys(everywhere = True, profile = True)
+ConverterFlag.client_default = ConverterFlag().update_by_keys(mention = True, name = True, id = True)
+ConverterFlag.client_all = ConverterFlag.client_default.update_by_keys(everywhere = True)
+ConverterFlag.role_default = ConverterFlag().update_by_keys(mention = True, name = True, id = True)
+ConverterFlag.role_all = ConverterFlag.role_default.update_by_keys(everywhere = True)
+ConverterFlag.channel_default = ConverterFlag().update_by_keys(mention = True, name = True, id = True)
+ConverterFlag.channel_all = ConverterFlag.channel_default.update_by_keys(everywhere = True)
+ConverterFlag.emoji_default = ConverterFlag().update_by_keys(mention = True, name = True, id = True)
+ConverterFlag.emoji_all = ConverterFlag.emoji_default.update_by_keys(everywhere = True)
+ConverterFlag.guild_default = ConverterFlag().update_by_keys(id = True)
+ConverterFlag.guild_all = ConverterFlag.guild_default.update_by_keys(everywhere = True)
+ConverterFlag.message_default = ConverterFlag().update_by_keys(url = True, id = True)
+ConverterFlag.message_all = ConverterFlag.message_default.update_by_keys(everywhere = True)
+ConverterFlag.invite_default = ConverterFlag().update_by_keys(url = True, id = True)
 ConverterFlag.invite_all = ConverterFlag.invite_default
-ConverterFlag.sticker_default = ConverterFlag().update_by_keys(name=True, id=True)
-ConverterFlag.sticker_all = ConverterFlag.sticker_default.update_by_keys(everywhere=True)
+ConverterFlag.sticker_default = ConverterFlag().update_by_keys(name = True, id = True)
+ConverterFlag.sticker_all = ConverterFlag.sticker_default.update_by_keys(everywhere = True)
 
 
 CONVERTER_FLAG_URL = 1 << ConverterFlag.__keys__['url']
@@ -895,7 +895,7 @@ class ConverterSetting(RichAttributeErrorBaseType):
         if default_type is None:
             alternative_type_name = self.alternative_type_name
             if (alternative_type_name is not None):
-                repr_parts.append(', alternative_type_name=')
+                repr_parts.append(', alternative_type_name = ')
                 repr_parts.append(repr(alternative_type_name))
         else:
             default_type_name = default_type.__name__
@@ -905,7 +905,7 @@ class ConverterSetting(RichAttributeErrorBaseType):
             
             alternative_type_name = self.alternative_type_name
             if alternative_type_name != default_type_name:
-                repr_parts.append(', alternative_type_name=')
+                repr_parts.append(', alternative_type_name = ')
                 repr_parts.append(repr(alternative_type_name))
             
             
@@ -918,7 +918,7 @@ class ConverterSetting(RichAttributeErrorBaseType):
                 index = 0
                 limit = len(alternative_checked_types_names)
                 while True:
-                    alternative_checked_types_name= alternative_checked_types_names[index]
+                    alternative_checked_types_name =  alternative_checked_types_names[index]
                     index += 1
                     
                     repr_parts.append(alternative_checked_types_name)
@@ -3280,9 +3280,9 @@ class RestParameterParsingState(ParameterParsingStateBase):
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' content_parser_parameter=',
+            ' content_parser_parameter = ',
             repr(self.content_parser_parameter),
-            ', value=',
+            ', value = ',
             repr(self.value),
             '>',
         ]

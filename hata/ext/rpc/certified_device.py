@@ -339,7 +339,7 @@ class Vendor:
     
     def __repr__(self):
         """Returns the vendor's representation."""
-        return f'<{self.__class__.__name__} name={self.name!r}>'
+        return f'<{self.__class__.__name__} name = {self.name!r}>'
     
     
     def to_data(self):
@@ -428,7 +428,7 @@ class Model:
     
     def __repr__(self):
         """Returns the model's representation."""
-        return f'<{self.__class__.__name__} name={self.name!r}>'
+        return f'<{self.__class__.__name__} name = {self.name!r}>'
     
     
     def to_data(self):

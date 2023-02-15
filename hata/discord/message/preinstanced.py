@@ -360,16 +360,16 @@ class MessageType(PreinstancedBase):
         """Returns the representation of the message type."""
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' name=')
+        repr_parts.append(' name = ')
         repr_parts.append(repr(self.name))
         
-        repr_parts.append(', value=')
+        repr_parts.append(', value = ')
         repr_parts.append(repr(self.value))
         
-        repr_parts.append(' converter=')
+        repr_parts.append(' converter = ')
         repr_parts.append(repr(self.converter))
         
-        repr_parts.append(', deletable=')
+        repr_parts.append(', deletable = ')
         repr_parts.append(repr(self.deletable))
         
         repr_parts.append('>')

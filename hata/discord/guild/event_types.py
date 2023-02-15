@@ -94,8 +94,8 @@ class GuildJoinRequestDeleteEvent(EventBase):
     def __repr__(self):
         repr_parts = [
             '<', self.__class__.__name__,
-            ' guild_id=', repr(self.guild_id),
-            ', user_id=', repr(self.user_id),
+            ' guild_id = ', repr(self.guild_id),
+            ', user_id = ', repr(self.user_id),
             '>',
         ]
         

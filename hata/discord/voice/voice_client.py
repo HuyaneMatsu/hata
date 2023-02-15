@@ -206,7 +206,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         
         client.voice_clients[guild_id] = self
         waiter = Future(KOKORO)
-        Task(self._connect(waiter=waiter), KOKORO)
+        Task(self._connect(waiter = waiter), KOKORO)
         return waiter
     
     # properties
@@ -847,7 +847,7 @@ class VoiceClient(RichAttributeErrorBaseType):
     
     # connection related
     
-    async def _connect(self, waiter=None):
+    async def _connect(self, waiter = None):
         """
         Connects the voice client to Discord and keeps receiving the gateway events.
         
@@ -1322,11 +1322,11 @@ class VoiceClient(RichAttributeErrorBaseType):
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' client=',
+            ' client = ',
             repr(self.client.full_name),
-            ', channel_id=',
+            ', channel_id = ',
             repr(self.channel_id),
-            ', guild_id=',
+            ', guild_id = ',
             repr(self.guild_id),
         ]
         

@@ -2620,11 +2620,11 @@ class Token:
         repr_parts.append(repr(self.start))
         
         repr_parts.append(', ')
-        repr_parts.append('end=')
+        repr_parts.append('end = ')
         repr_parts.append(repr(self.end))
         
         repr_parts.append(', ')
-        repr_parts.append('id=')
+        repr_parts.append('id = ')
         token_id = self.id
         repr_parts.append(repr(token_id))
         repr_parts.append(' (')
@@ -2636,13 +2636,13 @@ class Token:
         value = self.value
         if (value is not None):
             repr_parts.append(', ')
-            repr_parts.append('value=')
+            repr_parts.append('value = ')
             repr_parts.append(repr(value))
         
         sub_tokens = self.sub_tokens
         if (sub_tokens is not None):
             repr_parts.append(', ')
-            repr_parts.append('sub_tokens=')
+            repr_parts.append('sub_tokens = ')
             repr_parts.append(repr(sub_tokens))
         
         repr_parts.append('>')

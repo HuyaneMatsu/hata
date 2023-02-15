@@ -77,7 +77,7 @@ class EmbedThumbnail:
             repr_parts.append(url)
             repr_parts.append('\'')
         
-        repr_parts.append(', size=')
+        repr_parts.append(', size = ')
         repr_parts.append(str(self.width))
         repr_parts.append('x')
         repr_parts.append(str(self.height))
@@ -270,7 +270,7 @@ class EmbedVideo:
             repr_parts.append(url)
             repr_parts.append('\'')
         
-        repr_parts.append(', size=')
+        repr_parts.append(', size = ')
         repr_parts.append(str(self.width))
         repr_parts.append('x')
         repr_parts.append(str(self.height))
@@ -435,7 +435,7 @@ class EmbedImage:
             repr_parts.append(url)
             repr_parts.append('\'')
             
-        repr_parts.append(', size=')
+        repr_parts.append(', size = ')
         repr_parts.append(str(self.width))
         repr_parts.append('x')
         repr_parts.append(str(self.height))
@@ -573,9 +573,19 @@ class EmbedProvider:
     """
     __slots__ = ('name', 'url',)
     
-    def __init__(self):
-        self.name = None
-        self.url = None
+    def __init__(self, name = None, url = None):
+        """
+        Creates a new embed provider instance.
+        
+        Parameters
+        ----------
+        name : `None`, `str` = `None`, Optional
+            The name of the provider.
+        url : `None`, `str` = `None`, Optional
+            The url of the provider.
+        """
+        self.name = name
+        self.url = url
     
     
     def __len__(self):
@@ -609,7 +619,7 @@ class EmbedProvider:
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' length=',
+            ' length = ',
             str(len(self)),
             ', url = '
         ]
@@ -676,7 +686,17 @@ class EmbedProvider:
         provider_data : `dict` of (`str`, `Any`) items
         """
         # receive only
-        return {}
+        data = {}
+        
+        name = self.name
+        if (name is not None):
+            data['name'] = name
+        
+        url = self.url
+        if (url is not None):
+            data['url'] = url
+        
+        return data
     
     
     def copy(self):
@@ -722,7 +742,7 @@ class EmbedAuthor:
     """
     __slots__ = ('icon_url', 'name', 'proxy_icon_url', 'url')
     
-    def __init__(self, name=None, icon_url = None, url = None):
+    def __init__(self, name = None, icon_url = None, url = None):
         """
         Creates an embed author with the given parameters.
         
@@ -779,7 +799,7 @@ class EmbedAuthor:
         repr_parts = [
             '<',
             self.__class__.__name__,
-            ' length=',
+            ' length = ',
             str(len(self)),
             ', url = '
         ]
@@ -912,7 +932,7 @@ class EmbedAuthor:
         return self
     
     
-    def copy_with(self, *, icon_url = ..., name=..., url = ...):
+    def copy_with(self, *, icon_url = ..., name = ..., url = ...):
         """
         Copies the ``EmbedAuthor`` and updates it with the given parameters.
         
@@ -1296,7 +1316,7 @@ class EmbedField:
         return self
     
     
-    def copy_with(self, *, name=..., value=..., inline = ...):
+    def copy_with(self, *, name = ..., value = ..., inline = ...):
         """
         Copies the ``EmbedField`` and updates it with the given parameters.
         
@@ -1529,7 +1549,7 @@ class EmbedBase:
     
     def __repr__(self):
         """Returns the representation of the embed."""
-        return f'<{self.__class__.__name__} length={len(self)}>'
+        return f'<{self.__class__.__name__} length = {len(self)}>'
     
     
     def __eq__(self, other):
@@ -1624,7 +1644,77 @@ class EmbedBase:
         """
     
     
-
+    def iter_contents(self):
+        """
+        Iterates over the embed's contents.
+        
+        This method is an iterable coroutine.
+        
+        Yields
+        -------
+        contents : `str`
+        """
+        # author
+        author = self.author
+        if (author is not None):
+            author_name = author.name
+            if (author_name is not None):
+                yield author_name
+        
+        # color
+        # Not a text field
+        
+        # description
+        description = self.description
+        if (description is not None):
+            yield description
+        
+        # fields
+        fields = self.fields
+        if (fields is not None):
+            for field in fields:
+                yield field.name
+                yield field.value
+        
+        # footer
+        footer = self.footer
+        if (footer is not None):
+            yield footer.text
+        
+        # image
+        # Has no text fields
+        
+        # provider
+        provider = self.provider
+        if (provider is not None):
+            provider_name = provider.name
+            if (provider_name is not None):
+                yield provider_name
+                
+        # thumbnail
+        # Has no text fields
+        
+        # title
+        title = self.title
+        if (title is not None):
+            yield title
+        
+        # type
+        # Not a text field
+        
+        # url
+        # Not a text field
+        
+        # type
+        # Not a text field
+        
+        # url
+        # Not a text field
+        
+        # video
+        # Has no text fields
+        
+        
     @property
     def contents(self):
         """
@@ -1643,69 +1733,7 @@ class EmbedBase:
         -------
         contents : `list` of `str`
         """
-        contents = []
-        
-        # author
-        author = self.author
-        if (author is not None):
-            author_name = author.name
-            if (author_name is not None):
-                contents.append(author_name)
-        
-        # color
-        # Not a text field
-        
-        # description
-        description = self.description
-        if (description is not None):
-            contents.append(description)
-        
-        # fields
-        fields = self.fields
-        if (fields is not None):
-            for field in fields:
-                contents.append(field.name)
-                contents.append(field.value)
-        
-        # footer
-        footer = self.footer
-        if (footer is not None):
-            contents.append(footer.text)
-        
-        # image
-        # Has no text fields
-        
-        # provider
-        provider = self.provider
-        if (provider is not None):
-            provider_name = provider.name
-            if (provider_name is not None):
-                contents.append(provider_name)
-                
-        # thumbnail
-        # Has no text fields
-        
-        # title
-        title = self.title
-        if (title is not None):
-            contents.append(title)
-        
-        # type
-        # Not a text field
-        
-        # url
-        # Not a text field
-        
-        # type
-        # Not a text field
-        
-        # url
-        # Not a text field
-        
-        # video
-        # Has no text fields
-        
-        return contents
+        return [*self.iter_contents()]
     
     
     def copy(self):

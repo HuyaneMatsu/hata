@@ -351,7 +351,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         await self.http.webhook_delete_token(webhook_id, webhook_token)
     
     # later there gonna be more stuff that's why 2 different
-    async def webhook_edit(self, webhook, *, name=..., avatar=..., channel = ...):
+    async def webhook_edit(self, webhook, *, name = ..., avatar = ..., channel = ...):
         """
         Edits and updates the given webhook.
         
@@ -454,7 +454,7 @@ class ClientCompoundWebhookEndpoints(Compound):
         webhook._set_attributes(data)
     
     
-    async def webhook_edit_token(self, webhook, *, name=..., avatar=...):
+    async def webhook_edit_token(self, webhook, *, name = ..., avatar = ...):
         """
         Edits and updates the given webhook through Discord's webhook API.
         

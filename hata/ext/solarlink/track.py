@@ -692,7 +692,7 @@ class GetTracksResult(RichAttributeErrorBaseType):
         else:
             field_added = True
             
-            repr_parts.append(' playlist_name=')
+            repr_parts.append(' playlist_name = ')
             repr_parts.append(repr(playlist_name))
         
         
@@ -703,7 +703,7 @@ class GetTracksResult(RichAttributeErrorBaseType):
             else:
                 field_added = True
             
-            repr_parts.append(' selected_track_index=')
+            repr_parts.append(' selected_track_index = ')
             repr_parts.append(repr(selected_track_index))
         
         
@@ -712,7 +712,7 @@ class GetTracksResult(RichAttributeErrorBaseType):
             if field_added:
                 repr_parts.append(',')
             
-            repr_parts.append(' tracks=[')
+            repr_parts.append(' tracks = [')
             
             index = 0
             length = len(tracks)

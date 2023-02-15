@@ -295,7 +295,7 @@ def _iter_name_maybe_iterable(name):
             
             else:
                 raise TypeError(
-                    f'`name` contains a non `str` element, got {sub_name_type.__name__}; {sub_name!r}; name={name!r}.'
+                    f'`name` contains a non `str` element, got {sub_name_type.__name__}; {sub_name!r}; name = {name!r}.'
                 )
     
     else:

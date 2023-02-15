@@ -208,7 +208,7 @@ class PaginationBase:
         return False
     
     
-    def cancel(self, exception=None):
+    def cancel(self, exception = None):
         """
         Cancels the pagination, if it is not cancelled yet.
         

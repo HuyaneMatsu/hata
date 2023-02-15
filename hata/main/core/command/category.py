@@ -65,7 +65,7 @@ class CommandCategory(RichAttributeErrorBaseType):
         
         name = self.name
         if (name is not None):
-            repr_parts.append(' name=')
+            repr_parts.append(' name = ')
             repr_parts.append(repr(name))
             
             field_added = True
@@ -79,7 +79,7 @@ class CommandCategory(RichAttributeErrorBaseType):
             else:
                 field_added = True
             
-            repr_parts.append(' command_function=')
+            repr_parts.append(' command_function = ')
             repr_parts.append(repr(command_function))
         
         sub_categories = [*self.iter_sub_categories()]
@@ -87,7 +87,7 @@ class CommandCategory(RichAttributeErrorBaseType):
             if not field_added:
                 repr_parts.append(',')
             
-            repr_parts.append(', sub_categories={')
+            repr_parts.append(', sub_categories = {')
             
             index = 0
             limit = len(sub_categories)

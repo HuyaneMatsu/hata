@@ -760,9 +760,9 @@ class Role(DiscordEntity, immortal = True):
         --------
         ```py
         >>>> from hata import Role, now_as_id
-        >>>> role = Role.precreate(now_as_id(), name='admiral-general')
+        >>>> role = Role.precreate(now_as_id(), name = 'admiral-general')
         >>>> role
-        <Role name='admiral-general', id=725333995067277312>
+        <Role name = 'admiral-general', id = 725333995067277312>
         >>>> # no code stands for `role.name`.
         >>>> f'{role}'
         'admiral-general'

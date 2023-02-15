@@ -449,7 +449,7 @@ class SlashCommandFunction(RichAttributeErrorBaseType):
         return hash_value
         
     
-    def autocomplete(self, parameter_name, *parameter_names, function=None):
+    def autocomplete(self, parameter_name, *parameter_names, function = None):
         """
         Registers an auto completer function to the application command.
         
@@ -563,7 +563,7 @@ class SlashCommandFunction(RichAttributeErrorBaseType):
         return resolved
     
     
-    def error(self, exception_handler=None, *, first=False):
+    def error(self, exception_handler = None, *, first = False):
         """
         Registers an exception handler to the ``SlashCommandFunction``.
         

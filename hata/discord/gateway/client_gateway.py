@@ -102,7 +102,7 @@ class DiscordGateway:
         'session_id', 'shard_id', 'websocket',
     )
     
-    def __new__(cls, client, shard_id=0):
+    def __new__(cls, client, shard_id = 0):
         """
         Creates a gateway with it's default attributes.
         
@@ -143,7 +143,7 @@ class DiscordGateway:
         await kokoro.restart()
     
     
-    async def run(self, waiter=None):
+    async def run(self, waiter = None):
         """
         Keeps the gateway receiving message and processing it. If the gateway needs to be reconnected, reconnects
         itself. If connecting cannot succeed, because there is no internet returns `True`. If the `.client` is
@@ -536,7 +536,7 @@ class DiscordGateway:
     
     def __repr__(self):
         """Returns the representation of the gateway."""
-        return f'<{self.__class__.__name__} client={self.client.full_name!r}, shard_id={self.shard_id}>'
+        return f'<{self.__class__.__name__} client = {self.client.full_name!r}, shard_id = {self.shard_id}>'
     
     # Special operations
     

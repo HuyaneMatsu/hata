@@ -849,9 +849,9 @@ class Guild(DiscordEntity, immortal = True):
         --------
         ```py
         >>> from hata import Guild, now_as_id
-        >>> guild = Guild.precreate(now_as_id(), name='GrassGrass')
+        >>> guild = Guild.precreate(now_as_id(), name = 'GrassGrass')
         >>> guild
-        <Guild name='GrassGrass', id=713718885970345984 (partial)>
+        <Guild id = 713718885970345984 (partial), name = 'GrassGrass',>
         >>> # no code stands for `guild.name`
         >>> f'{guild}'
         'GrassGrass'
@@ -2412,7 +2412,7 @@ class Guild(DiscordEntity, immortal = True):
             owner_id = 0
         else:
             owner_id = int(owner_id)
-        self.owner_id= owner_id
+        self.owner_id = owner_id
         
         afk_channel_id = data.get('afk_channel_id', None)
         if afk_channel_id is None:

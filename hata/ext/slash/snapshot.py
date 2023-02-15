@@ -592,32 +592,32 @@ class SlasherSnapshotType(BaseSnapshotType):
         
         application_command_differences_by_guild_id = self.application_command_differences_by_guild_id
         if application_command_differences_by_guild_id:
-            repr_parts.append(', application_command_differences_by_guild_id=')
+            repr_parts.append(', application_command_differences_by_guild_id = ')
             repr_parts.append(repr(application_command_differences_by_guild_id))
         
         permission_overwrite_difference_by_guild_id = self.permission_overwrite_difference_by_guild_id
         if permission_overwrite_difference_by_guild_id:
-            repr_parts.append(', permission_overwrite_difference_by_guild_id=')
+            repr_parts.append(', permission_overwrite_difference_by_guild_id = ')
             repr_parts.append(repr(permission_overwrite_difference_by_guild_id))
         
         added_component_commands = self.added_component_commands
         if (added_component_commands is not None):
-            repr_parts.append(', added_component_commands=')
+            repr_parts.append(', added_component_commands = ')
             repr_parts.append(repr(added_component_commands))
             
         removed_component_commands = self.removed_component_commands
         if (removed_component_commands is not None):
-            repr_parts.append(', removed_component_commands=')
+            repr_parts.append(', removed_component_commands = ')
             repr_parts.append(repr(removed_component_commands))
         
         added_form_submit_commands = self.added_form_submit_commands
         if (added_form_submit_commands is not None):
-            repr_parts.append(', added_form_submit_commands=')
+            repr_parts.append(', added_form_submit_commands = ')
             repr_parts.append(repr(added_form_submit_commands))
         
         removed_form_submit_commands = self.removed_form_submit_commands
         if (removed_form_submit_commands is not None):
-            repr_parts.append(', removed_form_submit_commands=')
+            repr_parts.append(', removed_form_submit_commands = ')
             repr_parts.append(repr(removed_form_submit_commands))
         
         repr_parts.append('>')

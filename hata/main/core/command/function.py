@@ -71,7 +71,7 @@ class CommandFunction(RichAttributeErrorBaseType):
         """Returns the command function's representation."""
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' name=')
+        repr_parts.append(' name = ')
         repr_parts.append(repr(self.name))
         
         repr_parts.append('>')

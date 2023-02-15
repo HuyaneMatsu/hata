@@ -81,12 +81,12 @@ class SolarPlayerBase(RichAttributeErrorBaseType):
         self.node = node
         
         waiter = Future(KOKORO)
-        Task(self._connect(waiter=waiter), KOKORO)
+        Task(self._connect(waiter = waiter), KOKORO)
         
         return self, waiter
     
     
-    async def _connect(self, waiter=None):
+    async def _connect(self, waiter = None):
         """
         Connecting task of the solar player.
         
@@ -538,12 +538,12 @@ class SolarPlayerBase(RichAttributeErrorBaseType):
         """Returns the representation of the player."""
         repr_parts = [
             '<', self.__class__.__name__,
-            ' guild_id=', repr(self.guild_id),
+            ' guild_id = ', repr(self.guild_id),
         ]
         
         channel_id = self.channel_id
         if channel_id:
-            repr_parts.append(', channel_id=')
+            repr_parts.append(', channel_id = ')
             repr_parts.append(repr(channel_id))
         
         repr_parts.append('>')

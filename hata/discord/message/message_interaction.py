@@ -72,7 +72,7 @@ class MessageInteraction(DiscordEntity):
     
     def __repr__(self):
         """Returns the message interaction's representation."""
-        repr_parts = ['<', self.__class__.__name__, ' id=', repr(self.id), ', type=']
+        repr_parts = ['<', self.__class__.__name__, ' id = ', repr(self.id), ', type = ']
         
         interaction_type = self.type
         repr_parts.append(interaction_type.name)
@@ -80,12 +80,12 @@ class MessageInteraction(DiscordEntity):
         repr_parts.append(repr(interaction_type.value))
         repr_parts.append(')')
         
-        repr_parts.append(', name=')
+        repr_parts.append(', name = ')
         repr_parts.append(repr(self.name))
         
         sub_command_name_stack = self.sub_command_name_stack
         if (sub_command_name_stack is not None):
-            repr_parts.append(', sub_command_name_stack=')
+            repr_parts.append(', sub_command_name_stack = ')
             repr_parts.append(repr(sub_command_name_stack))
         
         repr_parts.append('>')

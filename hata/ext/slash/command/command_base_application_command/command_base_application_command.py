@@ -505,7 +505,7 @@ class CommandBaseApplicationCommand(CommandBase):
         )
     
     
-    def autocomplete(self, parameter_name, *parameter_names, function=None):
+    def autocomplete(self, parameter_name, *parameter_names, function = None):
         """
         Registers an auto completer function to the application command.
         

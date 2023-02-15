@@ -197,14 +197,14 @@ class ApplicationCommandPermission(RichAttributeErrorBaseType):
         repr_parts = ['<', self.__class__.__name__]
         
         # application_command_id
-        repr_parts.append(' application_command_id=')
+        repr_parts.append(' application_command_id = ')
         repr_parts.append(repr(self.application_command_id))
         
         # application_id
         # Unique by application_command_id
         
         # guild_id
-        repr_parts.append(' guild_id=')
+        repr_parts.append(' guild_id = ')
         repr_parts.append(repr(self.guild_id))
         
         # permission_overwrites
@@ -213,7 +213,7 @@ class ApplicationCommandPermission(RichAttributeErrorBaseType):
             permission_overwrite_count = '0'
         else:
             permission_overwrite_count = repr(len(permission_overwrites))
-        repr_parts.append(', permission overwrite count=')
+        repr_parts.append(', permission overwrite count: ')
         repr_parts.append(permission_overwrite_count)
         
         repr_parts.append('>')

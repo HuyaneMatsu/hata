@@ -86,13 +86,14 @@ class GuildUserChunkEvent(EventBase):
             
             return self
     
-    set_docs(__new__,
+    set_docs(
+        __new__,
         """
         Creates a new guild user chunk event from the given data.
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Guild user chunk event data.
         """
     )
@@ -102,22 +103,22 @@ class GuildUserChunkEvent(EventBase):
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' guild_id=')
+        repr_parts.append(' guild_id = ')
         repr_parts.append(repr(self.guild_id))
         
         count = self.count
         if count != 1:
-            repr_parts.append(', index=')
+            repr_parts.append(', index = ')
             repr_parts.append(repr(self.index))
             repr_parts.append('/')
             repr_parts.append(repr(count))
         
-        repr_parts.append(', user count=')
+        repr_parts.append(', user count: ')
         repr_parts.append(repr(len(self.users)))
         
         nonce = self.nonce
         if (nonce is not None):
-            repr_parts.append(' nonce=')
+            repr_parts.append(' nonce = ')
             repr_parts.append(repr(nonce))
         
         repr_parts.append('>')
@@ -232,7 +233,7 @@ class VoiceServerUpdateEvent(EventBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Voice server update data.
         """
         guild_id = data.get('guild_id', None)
@@ -253,17 +254,17 @@ class VoiceServerUpdateEvent(EventBase):
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__,]
         
-        repr_parts.append(' guild_id=')
+        repr_parts.append(' guild_id = ')
         repr_parts.append(repr(self.guild_id))
         
         endpoint = self.endpoint
         if (endpoint is not None):
-            repr_parts.append(', endpoint=')
+            repr_parts.append(', endpoint = ')
             repr_parts.append(repr(endpoint))
         
         token = self.token
         if (token is not None):
-            repr_parts.append(', token=')
+            repr_parts.append(', token = ')
             repr_parts.append(repr(self.token))
         
         repr_parts.append('>')
@@ -360,7 +361,7 @@ class WebhookUpdateEvent(EventBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Webhook update data.
         """
         channel_id = int(data['channel_id'])
@@ -383,10 +384,10 @@ class WebhookUpdateEvent(EventBase):
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__,]
         
-        repr_parts.append(' guild_id=')
+        repr_parts.append(' guild_id = ')
         repr_parts.append(repr(self.guild_id))
         
-        repr_parts.append(', channel_id=')
+        repr_parts.append(', channel_id = ')
         repr_parts.append(repr(self.channel_id))
         
         repr_parts.append('>')
@@ -487,7 +488,7 @@ class ApplicationCommandCountUpdate(EventBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Application command count update data.
         """
         raw_counts = data['application_command_counts']
@@ -515,10 +516,10 @@ class ApplicationCommandCountUpdate(EventBase):
     def __repr__(self):
         repr_parts = ['<', self.__class__.__name__,]
         
-        repr_parts.append(' guild_id=')
+        repr_parts.append(' guild_id = ')
         repr_parts.append(repr(self.guild_id))
         
-        repr_parts.append(', counts={')
+        repr_parts.append(', counts = {')
         
         items = sorted(self.counts.items())
         item_count = len(items)

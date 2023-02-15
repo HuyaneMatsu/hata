@@ -16,7 +16,7 @@ class ClientCompoundLockedEndpoints(Compound):
     http : DiscordHTTPClient
     
     @Theory
-    async def user_get(self, user, *, force_update=False): ...
+    async def user_get(self, user, *, force_update = False): ...
     
     
     async def relationship_delete(self, relationship):
@@ -59,7 +59,7 @@ class ClientCompoundLockedEndpoints(Compound):
         await self.http.relationship_delete(user_id)
     
     
-    async def relationship_create(self, user, relationship_type=None):
+    async def relationship_create(self, user, relationship_type = None):
         """
         Creates a relationship with the given user.
         

@@ -118,7 +118,7 @@ class CommandBase(RichAttributeErrorBaseType):
         """
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' name=')
+        repr_parts.append(' name = ')
         repr_parts.append(repr(self.name))
         
         yield repr_parts

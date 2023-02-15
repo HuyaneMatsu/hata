@@ -383,7 +383,7 @@ class ClientWrapper:
         return ''.join(result)
     
     
-    def events(self, func=None, name=None, overwrite=False):
+    def events(self, func = None, name = None, overwrite = False):
         """
         Adds the given `func` as event handler to the contained clients' with the given parameters.
         
@@ -427,7 +427,7 @@ class ClientWrapper:
             return self._events_wrapper(self, (name, overwrite))
         
         for client in self.clients:
-            client.events(func, name=name, overwrite=overwrite)
+            client.events(func, name = name, overwrite = overwrite)
         
         return func
     

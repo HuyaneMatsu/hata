@@ -321,7 +321,7 @@ class ParserSettingOption:
     
     def __repr__(self):
         """Returns the parser description's representation."""
-        return f'<{self.__class__.__name__} name={self.name!r}, intent_shift={self.intent_shift!r}>'
+        return f'<{self.__class__.__name__} name = {self.name!r}, intent_shift = {self.intent_shift!r}>'
 
 
 class ParserSetting:

@@ -1143,7 +1143,7 @@ class Unknown(DiscordEntity):
     """
     __slots__ = ('name', 'type', )
     
-    def __init__(self, type_, id_, name=None):
+    def __init__(self, type_, id_, name = None):
         """
         Creates a new ``Unknown`` object from the given parameters.
         
@@ -1164,7 +1164,7 @@ class Unknown(DiscordEntity):
     
     def __repr__(self):
         """Returns the representation of the entity."""
-        return f'<{self.__class__.__name__} type={self.type} id={self.id} name={self.name!r}>'
+        return f'<{self.__class__.__name__} type={self.type} id = {self.id} name = {self.name!r}>'
     
     def __gt__(self, other):
         """Returns whether this entity's respective type matches with the other's and it's id is greater than the

@@ -603,7 +603,7 @@ class GuildJoinRequestStatus(PreinstancedBase):
     
     def __repr__(self):
         """Returns the representation of the guild join request status."""
-        return f'{self.__class__.__name__}(value={self.value!r})'
+        return f'{self.__class__.__name__}(value = {self.value!r})'
     
     approved = P('APPROVED', 'approved')
     pending = P('PENDING', 'pending')
@@ -673,7 +673,7 @@ class VerificationFieldPlatform(PreinstancedBase):
     
     def __repr__(self):
         """Returns the representation of the verification field platform."""
-        return f'{self.__class__.__name__}(value={self.value!r})'
+        return f'{self.__class__.__name__}(value = {self.value!r})'
     
     email = P('email', 'email')
     phone = P('phone', 'phone')

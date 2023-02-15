@@ -185,8 +185,8 @@ class AsyncResultProxy:
     async def fetchone(self):
         return await self.executor.execute(self._result_proxy.fetchone)
     
-    async def fetchmany(self, size=None):
-        return await self.executor.execute(self._result_proxy.fetchmany, size=size)
+    async def fetchmany(self, size = None):
+        return await self.executor.execute(self._result_proxy.fetchmany, size = size)
     
     async def fetchall(self):
         return await self.executor.execute(self._result_proxy.fetchall)

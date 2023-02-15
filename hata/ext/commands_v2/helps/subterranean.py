@@ -660,7 +660,7 @@ class SubterraneanHelpCommand:
             field_added = False
         else:
             field_added = True
-            repr_parts.append(' prefix=')
+            repr_parts.append(' prefix = ')
             repr_parts.append(repr(prefix))
         
         embed_postprocessor = self.embed_postprocessor
@@ -668,7 +668,7 @@ class SubterraneanHelpCommand:
             if not field_added:
                 repr_parts.append(',')
             
-            repr_parts.append(' embed_postprocessor=')
+            repr_parts.append(' embed_postprocessor = ')
             repr_parts.append(repr(embed_postprocessor))
         
         repr_parts.append('>')
@@ -676,7 +676,7 @@ class SubterraneanHelpCommand:
         return ''.join(repr_parts)
     
     
-    async def __call__(self, command_context, name=None):
+    async def __call__(self, command_context, name = None):
         """
         Calls the subterranean help command.
         
@@ -812,7 +812,7 @@ class SubterraneanHelpCommand:
         
         displayable_categories_length = len(displayable_categories)
         if displayable_categories_length == 1:
-            await self.list_category(command_context, displayable_categories[0], display_category_name=False)
+            await self.list_category(command_context, displayable_categories[0], display_category_name = False)
             return
         
         category_names = sorted(category.display_name for category in displayable_categories)
@@ -859,7 +859,7 @@ class SubterraneanHelpCommand:
             check = partial_func(check_user, command_context.message.author))
     
     
-    async def list_category(self, command_context, category, display_category_name=True):
+    async def list_category(self, command_context, category, display_category_name = True):
         """
         Lists the given category's commands.
         

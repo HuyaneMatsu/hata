@@ -272,7 +272,7 @@ class SolarNode(RichAttributeErrorBaseType):
         await self.client.solarlink._node_connected(self)
     
     
-    async def run(self, waiter=None):
+    async def run(self, waiter = None):
         """
         Keeps the node's gateway open.
         
@@ -496,7 +496,7 @@ class SolarNode(RichAttributeErrorBaseType):
             Any exception raised when trying to connect.
         """
         waiter = Future(KOKORO)
-        Task(self.run(waiter=waiter), KOKORO)
+        Task(self.run(waiter = waiter), KOKORO)
         return await waiter
     
     

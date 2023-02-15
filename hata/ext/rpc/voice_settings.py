@@ -24,7 +24,7 @@ class VoiceSettingsInput:
     """
     __slots__ = ('_available_devices_set', 'available_devices', 'device_id', 'volume')
     
-    def __new__(cls, *, device_id=None, volume=None, available_devices=...):
+    def __new__(cls, *, device_id = None, volume = None, available_devices = ...):
         """
         Creates a new voice settings input object from the given parameters.
         
@@ -106,7 +106,7 @@ class VoiceSettingsInput:
         else:
             field_added = True
             
-            repr_parts.append(' device_id=')
+            repr_parts.append(' device_id = ')
             repr_parts.append(repr(device_id))
         
         
@@ -117,7 +117,7 @@ class VoiceSettingsInput:
             else:
                 field_added = True
             
-            repr_parts.append(' volume=')
+            repr_parts.append(' volume = ')
             repr_parts.append(repr(self.volume))
         
         
@@ -125,7 +125,7 @@ class VoiceSettingsInput:
             if field_added:
                 repr_parts.append(',')
             
-            repr_parts.append('available_devices=')
+            repr_parts.append('available_devices = ')
             
             available_devices = self.available_devices
             if (available_devices is None):
@@ -259,12 +259,12 @@ class AvailableDevice:
     
     def __repr__(self):
         """Returns the device's representation."""
-        return f'<{self.__class__.__name__} id={self.id!r}, name={self.name!r}>'
+        return f'<{self.__class__.__name__} id = {self.id!r}, name = {self.name!r}>'
     
     
     def to_data(self):
         """
-        Converts the available device to json serializible object.
+        Converts the available device to json serializable object.
         
         Returns
         -------
@@ -313,7 +313,7 @@ class VoiceSettingsOutput:
     """
     __slots__ = ('_available_devices_set', 'available_devices', 'device_id', 'volume')
     
-    def __new__(cls, *, device_id=None, volume=None, available_devices=...):
+    def __new__(cls, *, device_id = None, volume = None, available_devices = ...):
         """
         Creates a new voice settings output object from the given parameters.
         
@@ -395,7 +395,7 @@ class VoiceSettingsOutput:
         else:
             field_added = True
             
-            repr_parts.append(' device_id=')
+            repr_parts.append(' device_id = ')
             repr_parts.append(repr(device_id))
         
         
@@ -406,7 +406,7 @@ class VoiceSettingsOutput:
             else:
                 field_added = True
             
-            repr_parts.append(' volume=')
+            repr_parts.append(' volume = ')
             repr_parts.append(repr(self.volume))
         
         
@@ -414,7 +414,7 @@ class VoiceSettingsOutput:
             if field_added:
                 repr_parts.append(',')
             
-            repr_parts.append('available_devices=')
+            repr_parts.append('available_devices = ')
             
             available_devices = self.available_devices
             if (available_devices is None):
@@ -446,7 +446,7 @@ class VoiceSettingsOutput:
     
     def to_data(self):
         """
-        Converts the voice settings output to json serializible object.
+        Converts the voice settings output to json serializable object.
         
         Returns
         -------
@@ -525,7 +525,9 @@ class VoiceSettingsMode:
     """
     __slots__ = ('_shortcut_combination_set', 'auto_threshold', 'delay', 'shortcut_combination', 'threshold', 'type')
     
-    def __new__(cls, *, type_=None, auto_threshold=None, threshold=None, shortcut_combination=..., delay=None):
+    def __new__(
+        cls, *, type_ = None, auto_threshold = None, threshold = None, shortcut_combination = ..., delay = None
+    ):
         """
         Creates a new voice setting mode instance from the given parameters.
         
@@ -592,7 +594,7 @@ class VoiceSettingsMode:
                         raise TypeError(
                             f'`shortcut_combination` can contain `{ShortcutKey.__name__}` elements, got '
                             f'{shortcut.__class__.__name__}; {shortcut!r}; '
-                            f'shortcut_combination={shortcut_combination!r}.'
+                            f'shortcut_combination = {shortcut_combination!r}.'
                         )
                     
                     shortcut_combination_processed.append(shortcut)
@@ -701,7 +703,7 @@ class VoiceSettingsMode:
     
     def to_data(self):
         """
-        Converts the voice settings mode to json serializible object.
+        Converts the voice settings mode to json serializable object.
         
         Returns
         -------
@@ -819,7 +821,7 @@ class ShortcutKey:
     
     def __repr__(self):
         """Returns the shortcut key's representation."""
-        repr_parts = ['<', self.__class__.__name__, ' type=']
+        repr_parts = ['<', self.__class__.__name__, ' type = ']
         
         type_ = self.type
         repr_parts.append(type_.name)
@@ -827,12 +829,12 @@ class ShortcutKey:
         repr_parts.append(repr(type_.value))
         repr_parts.append(
             ')'
-            ', code'
+            ', code = '
         )
         
         repr_parts.append(repr(self.code))
         
-        repr_parts.append(', name=')
+        repr_parts.append(', name = ')
         repr_parts.append(repr(self.name))
         
         repr_parts.append('>')

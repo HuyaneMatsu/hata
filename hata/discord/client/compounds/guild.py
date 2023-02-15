@@ -442,10 +442,10 @@ class ClientCompoundGuildEndpoints(Compound):
     
     
     async def guild_create(
-        self, name, *, icon=None, roles=None, channels=None, afk_channel_id=None, system_channel_id=None,
-        afk_timeout = None, verification_level=VerificationLevel.medium,
-        message_notification=MessageNotificationLevel.only_mentions, content_filter=ContentFilterLevel.disabled,
-        boost_progress_bar_enabled=None, safety_alerts_channel_id = None
+        self, name, *, icon = None, roles = None, channels = None, afk_channel_id = None, system_channel_id = None,
+        afk_timeout = None, verification_level = VerificationLevel.medium,
+        message_notification = MessageNotificationLevel.only_mentions, content_filter = ContentFilterLevel.disabled,
+        boost_progress_bar_enabled = None, safety_alerts_channel_id = None
     ):
         """
         Creates a guild with the given parameter. Bot accounts can create guilds only when they have less than 10.
@@ -761,7 +761,7 @@ class ClientCompoundGuildEndpoints(Compound):
         return data.get('pruned', None)
     
     
-    async def guild_prune_estimate(self, guild, days, *, roles=None):
+    async def guild_prune_estimate(self, guild, days, *, roles = None):
         """
         Returns the amount users, who would been pruned, if ``.guild_prune`` would be called.
         
@@ -830,7 +830,7 @@ class ClientCompoundGuildEndpoints(Compound):
     
     
     async def guild_edit(
-        self, guild, *, name=..., icon=..., invite_splash=..., discovery_splash=..., banner=...,
+        self, guild, *, name = ..., icon=..., invite_splash=..., discovery_splash=..., banner=...,
         afk_channel = ..., system_channel = ..., rules_channel = ..., public_updates_channel = ..., owner=...,
         afk_timeout = ..., verification_level=..., content_filter=..., message_notification=..., description = ...,
         preferred_locale=..., system_channel_flags=..., add_feature=..., remove_feature=...,
@@ -1547,7 +1547,7 @@ class ClientCompoundGuildEndpoints(Compound):
         return voice_regions
     
     
-    async def audit_log_get_chunk(self, guild, limit=100, *, before=None, after=None, user = None, event = None):
+    async def audit_log_get_chunk(self, guild, limit=100, *, before = None, after = None, user = None, event = None):
         """
         Request a batch of audit logs of the guild and returns them. The `after`, `around` and the `before` parameters
         are mutually exclusive and they can be `int`, or as a ``DiscordEntity`` or as a `datetime`

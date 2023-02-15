@@ -79,12 +79,12 @@ class Command(RichAttributeErrorBaseType):
         """Returns the command's representation."""
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' name=')
+        repr_parts.append(' name = ')
         repr_parts.append(repr(self.name))
         
         command_category = self._command_category
         if (command_category is not None):
-            repr_parts.append(', command_category=')
+            repr_parts.append(', command_category = ')
             repr_parts.append(repr(command_category))
         
         repr_parts.append('>')

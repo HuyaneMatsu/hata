@@ -181,7 +181,7 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         # value
         value = self.value
         if (value is not None):
-            repr_parts.append(', value=')
+            repr_parts.append(', value = ')
             repr_parts.append(repr(value))
         
         # Optional descriptive fields : max_length & min_length & required

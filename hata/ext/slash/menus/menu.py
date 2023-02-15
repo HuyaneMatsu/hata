@@ -1193,7 +1193,7 @@ class Menu(metaclass = MenuType):
             self._gui_state = GUI_STATE_READY
     
     
-    def cancel(self, exception=None):
+    def cancel(self, exception = None):
         """
         Cancels the menu with the given exception.
         

@@ -242,8 +242,8 @@ class AuditLogChange:
         """Returns the representation of the audit log change."""
         return (
             f'{self.__class__.__name__}('
-                f'attribute_name={self.attribute_name!r}, '
-                f'before={self.before!r}, '
-                f'after={self.after!r}'
+                f'attribute_name = {self.attribute_name!r}, '
+                f'before = {self.before!r}, '
+                f'after = {self.after!r}'
             f')'
         )

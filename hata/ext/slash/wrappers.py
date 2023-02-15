@@ -199,8 +199,8 @@ class ApplicationCommandPermissionOverwriteWrapper(CommandWrapper):
     def __repr__(self):
         """Returns the command wrapper's representation."""
         return (
-            f'<{self.__class__.__name__} wrapped={self._wrapped!r}, guild_id={self._guild_id!r}, '
-            f'overwrite={self._permission_overwrite!r}>'
+            f'<{self.__class__.__name__} wrapped = {self._wrapped!r}, guild_id = {self._guild_id!r}, '
+            f'overwrite = {self._permission_overwrite!r}>'
         )
     
     
@@ -321,8 +321,20 @@ class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
         '_max_value', '_min_length', '_min_value', '_name', '_parameter_name', '_type'
     )
     
-    def __new__(cls, parameter_name, type_or_choice, description = None, name=None, *, autocomplete=None,
-            channel_types = None, max_length = None, max_value = None, min_length = None, min_value = None):
+    def __new__(
+        cls,
+        parameter_name,
+        type_or_choice,
+        description = None,
+        name = None,
+        *,
+        autocomplete = None,
+        channel_types = None,
+        max_length = None,
+        max_value = None,
+        min_length = None,
+        min_value = None,
+    ):
         """
         Creates a partial function to wrap a command.
         

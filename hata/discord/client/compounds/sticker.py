@@ -368,7 +368,7 @@ class ClientCompoundStickerEndpoints(Compound):
         
         form_data.add_field('tags', ', '.join(tags))
         
-        form_data.add_field('file', image, filename=f'file.{extension}', content_type=media_type)
+        form_data.add_field('file', image, filename = f'file.{extension}', content_type = media_type)
         
         
         sticker_data = await self.http.sticker_guild_create(guild_id, form_data, reason)
@@ -377,7 +377,7 @@ class ClientCompoundStickerEndpoints(Compound):
     
     
     async def sticker_guild_edit(
-        self, sticker, *, name=..., tags = ..., emoji_representation=..., description = ..., reason = None
+        self, sticker, *, name = ..., tags = ..., emoji_representation = ..., description = ..., reason = None
     ):
         """
         Edits the given guild bound sticker,

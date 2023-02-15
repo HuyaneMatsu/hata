@@ -218,7 +218,7 @@ class ComponentInteractionWaiter:
         return (yield from self._future)
     
     
-    def cancel(self, exception=None):
+    def cancel(self, exception = None):
         """
         Cancels the component waiter.
         
@@ -411,7 +411,7 @@ class ComponentInteractionIterator:
             self._future = None
     
     
-    def cancel(self, exception=None):
+    def cancel(self, exception = None):
         """
         Cancels the component iterator.
         

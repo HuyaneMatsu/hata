@@ -1024,8 +1024,19 @@ class SlashParameter(RichAttributeErrorBaseType):
         'type_or_choice'
     )
     
-    def __new__(cls, type_or_choice=None, description = None, name=None, *, autocomplete=None, channel_types = None,
-            max_length = None, max_value = None, min_length = None, min_value = None):
+    def __new__(
+        cls,
+        type_or_choice = None,
+        description = None,
+        name = None,
+        *,
+        autocomplete = None,
+        channel_types = None,
+        max_length = None,
+        max_value = None,
+        min_length = None,
+        min_value = None,
+    ):
         """
         Creates a new ``Parameter``.
         
@@ -1074,7 +1085,7 @@ class SlashParameter(RichAttributeErrorBaseType):
                 repr_parts.append(',')
             else:
                 field_added = True
-            repr_parts.append(' autocomplete=')
+            repr_parts.append(' autocomplete = ')
             repr_parts.append(repr(autocomplete))
         
         channel_types = self.channel_types
@@ -1139,7 +1150,7 @@ class SlashParameter(RichAttributeErrorBaseType):
                 repr_parts.append(',')
             else:
                 field_added = True
-            repr_parts.append(' name=')
+            repr_parts.append(' name = ')
             repr_parts.append(repr(name))
         
         type_or_choice = self.type_or_choice
@@ -1148,7 +1159,7 @@ class SlashParameter(RichAttributeErrorBaseType):
                 repr_parts.append(',')
             else:
                 field_added = True
-            repr_parts.append(' type_or_choice=')
+            repr_parts.append(' type_or_choice = ')
             repr_parts.append(repr(type_or_choice))
         
         repr_parts.append('>')
@@ -2230,7 +2241,7 @@ class ParameterConverter(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the parameter converter's representation."""
-        return f'<{self.__class__.__name__}, parameter_name={self.parameter_name!r}>'
+        return f'<{self.__class__.__name__}, parameter_name = {self.parameter_name!r}>'
     
     
     def as_option(self):

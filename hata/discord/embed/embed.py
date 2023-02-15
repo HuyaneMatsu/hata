@@ -31,7 +31,7 @@ class Embed(EmbedBase):
     
     Attributes
     ----------
-    _data : `dict` of (`str`, `Any`) items
+    _data : `dict` of (`str`, `object`) items
         The raw data of the embed. It should not be accessed directly. There are several properties and methods to do
         operations on them.
     
@@ -49,7 +49,7 @@ class Embed(EmbedBase):
     
     # Sending the message
     with (await ReuAsyncIO('some_file_path')) as file:
-        await client.message_create(channel, embed = embed, file=('image.png', file))
+        await client.message_create(channel, embed = embed, file = ('image.png', file))
     ```
     
     Note that you should use async io wrappers, but one which do not closes on `.close` either, but it resets
@@ -58,7 +58,7 @@ class Embed(EmbedBase):
     """
     __slots__ = ('_data',)
     
-    def __init__(self, title=None, description = None, color = None, url = None, timestamp=None, type_='rich'):
+    def __init__(self, title = None, description = None, color = None, url = None, timestamp = None, type_ = 'rich'):
         """
         Creates an embed instance. Accepts the base parameters of the embed.
         
@@ -220,12 +220,9 @@ class Embed(EmbedBase):
         return True
     
     
-    @property
-    @copy_docs(EmbedBase.contents)
-    def contents(self):
+    @copy_docs(EmbedBase.iter_contents)
+    def iter_contents(self):
         data = self._data
-        contents = []
-        
         # author
         try:
             author_data = data['author']
@@ -237,7 +234,7 @@ class Embed(EmbedBase):
             except KeyError:
                 pass
             else:
-                contents.append(author_name)
+                yield author_name
         
         # color
         # Not a text field
@@ -248,7 +245,7 @@ class Embed(EmbedBase):
         except KeyError:
             pass
         else:
-            contents.append(description)
+            yield description
         
         # fields
         try:
@@ -257,8 +254,8 @@ class Embed(EmbedBase):
             pass
         else:
             for field_data in field_datas:
-                contents.append(field_data['name'])
-                contents.append(field_data['value'])
+                yield field_data['name']
+                yield field_data['value']
         
         # footer
         try:
@@ -266,9 +263,8 @@ class Embed(EmbedBase):
         except KeyError:
             pass
         else:
-            contents.append(footer_data['text'])
+            yield footer_data['text']
         
-
         # image
         # Has no text fields
         
@@ -283,8 +279,8 @@ class Embed(EmbedBase):
             except KeyError:
                 pass
             else:
-                contents.append(provider_name)
-                
+                yield provider_name
+        
         # thumbnail
         # Has no text fields
         
@@ -294,7 +290,7 @@ class Embed(EmbedBase):
         except KeyError:
             pass
         else:
-            contents.append(title)
+            yield title
         
         # type
         # Not a text field
@@ -310,8 +306,6 @@ class Embed(EmbedBase):
         
         # video
         # Has no text fields
-        
-        return contents
     
     
     @classmethod
@@ -321,7 +315,7 @@ class Embed(EmbedBase):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Embed data received from Discord.
         
         Returns
@@ -342,7 +336,7 @@ class Embed(EmbedBase):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         return self._data
     
@@ -778,6 +772,10 @@ class Embed(EmbedBase):
             return None
         
         return EmbedProvider.from_data(provider_data)
+    
+    @provider.setter
+    def provider(self, value):
+        self._data['provider'] = value.to_data()
     
     @provider.deleter
     def provider(self):
@@ -1257,7 +1255,7 @@ class _EmbedFieldsProxy:
     
     Attributes
     ----------
-    _data : `list` of (`dict` of (`str`, `Any`) items)
+    _data : `list` of (`dict` of (`str`, `object`) items)
         Raw data containing the respective embed's fields.
     """
     __slots__ = ('_data',)
@@ -1268,7 +1266,7 @@ class _EmbedFieldsProxy:
         
         Parameters
         ----------
-        data : `list` of (`dict` of (`str`, `Any`) items)
+        data : `list` of (`dict` of (`str`, `object`) items)
             Raw data containing the respective embed's fields.
         """
         self._data = data
@@ -1288,7 +1286,30 @@ class _EmbedFieldsProxy:
     
     def __repr__(self):
         """Returns the representation of the object."""
-        return f'<{self.__class__.__name__} length = {len(self._data)}>'
+        repr_parts = ['<', self.__class__.__name__]
+        
+        fields = [*self]
+        
+        length = len(fields)
+        if length:
+            repr_parts.append(' fields = [')
+            index = 0
+            
+            while True:
+                field = fields[index]
+                index += 1
+                repr_parts.append(repr(field))
+                
+                if index == length:
+                    break
+                
+                repr_parts.append(', ')
+                continue
+            
+            repr_parts.append(']')
+        
+        repr_parts.append('>')
+        return ''.join(repr_parts)
     
     
     def __getitem__(self, index):

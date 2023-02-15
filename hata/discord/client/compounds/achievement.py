@@ -276,8 +276,15 @@ class ClientCompoundAchievementEndpoints(Compound):
     
     
     async def achievement_create(
-        self, name, description, icon, *, description_localizations=None, name_localizations=None, secret=False,
-        secure=False
+        self,
+        name,
+        description,
+        icon,
+        *,
+        description_localizations = None,
+        name_localizations = None,
+        secret = False,
+        secure = False,
     ):
         """
         Creates an achievement for the client's application and returns it.
@@ -372,8 +379,16 @@ class ClientCompoundAchievementEndpoints(Compound):
     
     
     async def achievement_edit(
-        self, achievement, *, description = ..., description_localizations=..., icon=..., name=...,
-        name_localizations=...,  secret=..., secure=...
+        self,
+        achievement,
+        *,
+        description = ...,
+        description_localizations = ...,
+        icon = ...,
+        name = ...,
+        name_localizations = ...,
+        secret = ...,
+        secure = ...,
     ):
         """
         Edits the passed achievement with the specified parameters. All parameter is optional.

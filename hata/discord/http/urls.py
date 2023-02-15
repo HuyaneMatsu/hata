@@ -207,7 +207,7 @@ def guild_icon_url(guild):
     return f'{CDN_ENDPOINT}/icons/{guild.id}/{prefix}{guild.icon_hash:0>32x}.{ext}'
 
 
-def guild_icon_url_as(guild, ext=None, size=None):
+def guild_icon_url_as(guild, ext = None, size = None):
     """
     Returns the guild's icon's url. If the guild has no icon, then returns `None`.
     
@@ -261,7 +261,7 @@ def guild_invite_splash_url(guild):
     return f'{CDN_ENDPOINT}/splashes/{guild.id}/{prefix}{guild.invite_splash_hash:0>32x}.{ext}'
 
 
-def guild_invite_splash_url_as(guild, ext=None, size=None):
+def guild_invite_splash_url_as(guild, ext = None, size = None):
     """
     Returns the guild's invite splash's image's url. If the guild has no invite splash, then returns `None`.
     
@@ -314,7 +314,7 @@ def guild_discovery_splash_url(guild):
     return f'{CDN_ENDPOINT}/discovery-splashes/{guild.id}/{prefix}{guild.discovery_splash_hash:0>32x}.{ext}'
 
 
-def guild_discovery_splash_url_as(guild, ext=None, size=None):
+def guild_discovery_splash_url_as(guild, ext = None, size = None):
     """
     Returns the guild's discovery splash's image's url. If the guild has no discovery splash, then returns `None`.
     
@@ -367,7 +367,7 @@ def guild_banner_url(guild):
     return f'{CDN_ENDPOINT}/banners/{guild.id}/{prefix}{guild.banner_hash:0>32x}.{ext}'
 
 
-def guild_banner_url_as(guild, ext=None, size=None):
+def guild_banner_url_as(guild, ext = None, size = None):
     """
     Returns the guild's banner's image's url. If the guild has no banner, then returns `None`.
     
@@ -459,7 +459,7 @@ def channel_group_icon_url(channel):
     return f'{CDN_ENDPOINT}/channel-icons/{channel.id}/{prefix}{channel.icon_hash:0>32x}.{ext}'
     
     
-def channel_group_icon_url_as(channel, ext=None, size=None):
+def channel_group_icon_url_as(channel, ext = None, size = None):
     """
     Returns the group channel's icon's image's url. If the channel has no icon, then returns `None`.
     
@@ -654,7 +654,7 @@ def activity_asset_image_large_url(activity):
     return f'{CDN_ENDPOINT}/app-assets/{application_id}/{image_large}.png'
 
 
-def activity_asset_image_large_url_as(activity, ext=None, size=None):
+def activity_asset_image_large_url_as(activity, ext = None, size = None):
     """
     Returns the activity's large asset image's url. If the activity has no large asset image, then returns `None`.
     
@@ -734,7 +734,7 @@ def activity_asset_image_small_url(activity):
     return f'{CDN_ENDPOINT}/app-assets/{application_id}/{image_small}.png'
 
 
-def activity_asset_image_small_url_as(activity, ext=None, size=None):
+def activity_asset_image_small_url_as(activity, ext = None, size = None):
     """
     Returns the activity's small asset image's url. If the activity has no small asset image, then returns `None`.
     
@@ -806,7 +806,7 @@ def user_avatar_url(user):
     return f'{CDN_ENDPOINT}/avatars/{user.id}/{prefix}{user.avatar_hash:0>32x}.{ext}'
 
 
-def user_avatar_url_as(user, ext=None, size=None):
+def user_avatar_url_as(user, ext = None, size = None):
     """
     Returns the user's avatar's url. If the user has no avatar, then returns it's default avatar's url.
     
@@ -992,7 +992,7 @@ def user_avatar_url_at(user, guild):
     return avatar_url
 
 
-def user_avatar_url_at_as(user, guild, ext=None, size=None):
+def user_avatar_url_at_as(user, guild, ext = None, size = None):
     """
     Returns the user's avatar's url at the guild. If the user has no avatar, then returns it's default avatar's url.
     
@@ -1017,9 +1017,9 @@ def user_avatar_url_at_as(user, guild, ext=None, size=None):
     ValueError
         If `ext`, `size` was not passed as any of the expected values.
     """
-    avatar_url = user_avatar_url_for_as(user, guild, ext=ext, size=size)
+    avatar_url = user_avatar_url_for_as(user, guild, ext = ext, size = size)
     if avatar_url is None:
-        avatar_url = user_avatar_url_as(user, ext=ext, size=size)
+        avatar_url = user_avatar_url_as(user, ext = ext, size = size)
     
     return avatar_url
 
@@ -1057,7 +1057,7 @@ def application_icon_url(application):
     return f'{CDN_ENDPOINT}/app-icons/{application.id}/{prefix}{application.icon_hash:0>32x}.{ext}'
 
 
-def application_icon_url_as(application, ext=None, size=None):
+def application_icon_url_as(application, ext = None, size = None):
     """
     Returns the application's icon's url. If the application has no icon, then returns `None`.
     
@@ -1110,7 +1110,7 @@ def application_cover_url(application):
     return f'{CDN_ENDPOINT}/app-assets/{application.id}/store/{prefix}{application.cover_hash:0>32x}.{ext}'
 
 
-def application_cover_url_as(application, ext=None, size=None):
+def application_cover_url_as(application, ext = None, size = None):
     """
     Returns the application's cover image's url. If the application has no cover image, then returns `None`.
     
@@ -1163,7 +1163,7 @@ def team_icon_url(team):
     return f'{CDN_ENDPOINT}/team-icons/{team.id}/{prefix}{team.icon_hash:0>32x}.{ext}'
 
 
-def team_icon_url_as(team, ext=None, size=None):
+def team_icon_url_as(team, ext = None, size = None):
     """
     Returns the team's icon's url. If the team has no icon, then returns `None`.
     
@@ -1217,7 +1217,7 @@ def achievement_icon_url(achievement):
            f'{achievement.icon_hash:0>32x}.{ext}'
 
 
-def achievement_icon_url_as(achievement, ext=None, size=None):
+def achievement_icon_url_as(achievement, ext = None, size = None):
     """
     Returns the achievement's icon's url.
     
@@ -1268,7 +1268,7 @@ def sticker_url(sticker):
     return f'{CDN_ENDPOINT}/stickers/{sticker.id}.{format.extension}'
 
 
-def sticker_url_as(sticker, size=None, preview=False):
+def sticker_url_as(sticker, size = None, preview=False):
     """
     Returns the sticker's url.
     
@@ -1329,7 +1329,7 @@ def sticker_pack_banner(sticker_pack):
         return f'{CDN_ENDPOINT}/app-assets/710982414301790216/store/{banner_id}.png'
 
 
-def sticker_pack_banner_as(sticker_pack, ext=None, size=None):
+def sticker_pack_banner_as(sticker_pack, ext = None, size = None):
     """
     Returns the achievement's icon's url.
     
@@ -1385,7 +1385,7 @@ def role_icon_url(role):
     return f'{CDN_ENDPOINT}/role-icons/{role.id}/{prefix}{role.icon_hash:0>32x}.{ext}'
 
 
-def role_icon_url_as(role, ext=None, size=None):
+def role_icon_url_as(role, ext = None, size = None):
     """
     Returns the role's icon's image's url. If the role has no icon, then returns `None`.
     
@@ -1438,7 +1438,7 @@ def scheduled_event_image_url(scheduled_event):
     return f'{CDN_ENDPOINT}/guild-events/{scheduled_event.id}/{prefix}{scheduled_event.image_hash:0>32x}.{ext}'
 
 
-def scheduled_event_image_url_as(scheduled_event, ext=None, size=None):
+def scheduled_event_image_url_as(scheduled_event, ext = None, size = None):
     """
     Returns the scheduled event's image's url. If the scheduled event has no image, then returns `None`.
     

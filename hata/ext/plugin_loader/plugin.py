@@ -162,18 +162,18 @@ class Plugin(RichAttributeErrorBaseType):
         repr_parts = []
         repr_parts.append('<')
         repr_parts.append(self.__class__.__name__)
-        repr_parts.append(' name=')
+        repr_parts.append(' name = ')
         repr_parts.append(repr(self._spec.name))
         
         state = self._state
-        repr_parts.append(', state=')
+        repr_parts.append(', state = ')
         state_name = PLUGIN_STATE_VALUE_TO_NAME.get(state, '???')
         repr_parts.append(state_name)
         repr_parts.append('~')
         repr_parts.append(repr(state))
         
         if self._locked:
-            repr_parts.append(', locked=True')
+            repr_parts.append(', locked = True')
         
         default_variables = self._default_variables
         if self._extend_default_variables:

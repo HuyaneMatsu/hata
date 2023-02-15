@@ -954,7 +954,7 @@ class ForceUpdateCache:
         """Returns the cache's representation."""
         repr_parts = ['<', self.__class__.__name__]
         if self.synced:
-            repr_parts.append(' value=')
+            repr_parts.append(' value = ')
             repr_parts.append(repr(self.value))
         
         repr_parts.append('>')

@@ -177,7 +177,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     If you are having an event handler with a different name, that is a problem, use the `name` parameter.
     
     ```py
-    @client.events(name='message_create')
+    @client.events(name = 'message_create')
     async def filter_messages(client, message):
         ...
     ```
@@ -220,7 +220,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
     If names do not match, it supports a name parameter for this reason.
     
     ```py
-    client.events.remove(filter_messages, name='message_create')
+    client.events.remove(filter_messages, name = 'message_create')
     ```
     
     If you want to remove all event handlers from an event, using the `del` keyword is an option.
@@ -696,6 +696,8 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-------------------+-------------------------------+
         | boosts_since      | `None`, `datetime`            |
         +-------------------+-------------------------------+
+        | flags             | `None`, ``GuildProfileFlags`` |
+        +-------------------+-------------------------------+
         | nick              | `None`, `str`                 |
         +-------------------+-------------------------------+
         | pending           | `bool`                        |
@@ -1150,7 +1152,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
             object.__setattr__(self, event_handler_name, event_handler)
     
     
-    def __call__(self, func=None, name=None, overwrite=False):
+    def __call__(self, func = None, name = None, overwrite = False):
         """
         Adds the given `func` as an event handler.
         
@@ -1183,7 +1185,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
             - If `name` was not passed as `None` or type `str`.
         """
         if func is None:
-            return partial_func(self, name=name, overwrite=overwrite)
+            return partial_func(self, name = name, overwrite = overwrite)
         
         name = check_name(func, name)
         
@@ -1203,7 +1205,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         if deprecation_state == DEPRECATION_LEVEL_SHOULD_WRAP:
             func = _wrap_maybe_deprecated_event(name, func)
-        func = check_parameter_count_and_convert(func, parameter_count, name=name)
+        func = check_parameter_count_and_convert(func, parameter_count, name = name)
         
         actual = getattr(plugin, name)
         
@@ -1305,7 +1307,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         
         if deprecation_state == DEPRECATION_LEVEL_SHOULD_WRAP:
             value = _wrap_maybe_deprecated_event(name, value)
-        func = check_parameter_count_and_convert(value, parameter_count, name=name)
+        func = check_parameter_count_and_convert(value, parameter_count, name = name)
         
         actual = getattr(plugin, name)
         
@@ -1466,7 +1468,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         return None
     
     
-    def remove(self, func, name=None, by_type=False, count=-1):
+    def remove(self, func, name = None, by_type = False, count = -1):
         """
         Removes the given event handler from the the event descriptor.
         

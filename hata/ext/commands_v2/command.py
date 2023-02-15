@@ -731,7 +731,7 @@ class Command:
     
     
     @classmethod
-    def from_class(cls, klass, kwargs=None):
+    def from_class(cls, klass, kwargs = None):
         """
         The method used, when creating a ``Command`` object from a class.
         
@@ -753,12 +753,25 @@ class Command:
         ValueError
             If any attribute's or value's type is correct, but it's type isn't.
         """
-        return create_event_from_class(cls, klass, COMMAND_PARAMETER_NAMES, COMMAND_NAME_NAME,
-            COMMAND_COMMAND_NAME)
+        return create_event_from_class(
+            cls, klass, COMMAND_PARAMETER_NAMES, COMMAND_NAME_NAME, COMMAND_COMMAND_NAME
+        )
     
     
-    def __new__(cls, command, name=None, description = None, aliases=None, category=None, checks=None,
-            error_handlers=None, separator=None, assigner=None, hidden=None, hidden_if_checks_fail=None):
+    def __new__(
+        cls, 
+        command,
+        name = None,
+        description = None,
+        aliases = None,
+        category = None,
+        checks = None,
+        error_handlers = None,
+        separator = None,
+        assigner = None,
+        hidden = None,
+        hidden_if_checks_fail = None,
+    ):
         """
         Creates a new ``Command`` object.
         
@@ -930,26 +943,26 @@ class Command:
     
     def __repr__(self):
         """Returns the command's representation."""
-        repr_parts = ['<', self.__class__.__name__, ' name=', repr(self.name)]
+        repr_parts = ['<', self.__class__.__name__, ' name = ', repr(self.name)]
         
         aliases = self.aliases
         if (aliases is not None):
-            repr_parts.append(' aliases=')
+            repr_parts.append(' aliases = ')
             repr_parts.append(repr(aliases))
         
         category_hint = self._category_hint
         if (category_hint is not None):
-            repr_parts.append(' category=')
+            repr_parts.append(' category = ')
             repr_parts.append(repr(category_hint))
         
         command_function = self._command_function
         if (command_function is not None):
-            repr_parts.append(' command_function=')
+            repr_parts.append(' command_function = ')
             repr_parts.append(repr(command_function))
         
         command_categories = self._command_categories
         if (command_categories is not None):
-            repr_parts.append(' command_categories=')
+            repr_parts.append(' command_categories = ')
             repr_parts.append(repr(command_categories))
         
         repr_parts.append('>')
@@ -1509,20 +1522,21 @@ class CommandCategory:
     
     def __repr__(self):
         """Returns the command category's representation."""
-        repr_parts = ['<', self.__class__.__name__, ' name=', repr(self.name)]
+        repr_parts = ['<', self.__class__.__name__, ' name = ', repr(self.name)]
         
         command_function = self._command_function
         if (command_function is not None):
-            repr_parts.append(' command_function=')
+            repr_parts.append(' command_function = ')
             repr_parts.append(repr(command_function))
         
         command_categories = self._command_categories
         if (command_categories is not None):
-            repr_parts.append(' command_categories=')
+            repr_parts.append(' command_categories = ')
             repr_parts.append(repr(command_categories))
         
         repr_parts.append('>')
         return ''.join(repr_parts)
+    
     
     def __hash__(self):
         """Returns the command category's hash value."""

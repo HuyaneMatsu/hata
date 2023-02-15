@@ -156,7 +156,7 @@ def bind(bind_to, bind_with, name, *, weak=False, weak_cache_size=0):
         old_binder = getattr(bind_to, name)
         if not isinstance(old_binder, ObjectBinderBase):
             raise TypeError(
-                f'`bind_to` already has an attribute named, as bind_to={bind_to!r}, name={name!r}.'
+                f'`bind_to` already has an attribute named, as bind_to = {bind_to!r}, name = {name!r}.'
             )
     
     else:
@@ -311,25 +311,25 @@ class ObjectBinderBase(RichAttributeErrorBaseType):
         """Returns the object binder representation."""
         repr_parts = ['<', self.__class__.__name__]
         
-        repr_parts.append(' name=')
+        repr_parts.append(' name = ')
         repr_parts.append(repr(self.name))
         
-        repr_parts.append(', type=')
+        repr_parts.append(', type = ')
         repr_parts.append(repr(self.type))
         
         length = len(self.relations)
         if length:
-            repr_parts.append(', length=')
+            repr_parts.append(', length = ')
             repr_parts.append(repr(length))
         
         supports_clearing = self.supports_clearing
         if supports_clearing:
-            repr_parts.append(', supports_clearing=')
+            repr_parts.append(', supports_clearing = ')
             repr_parts.append(repr(supports_clearing))
         
         supports_state_transfer = self.supports_state_transfer
         if supports_state_transfer:
-            repr_parts.append(', supports_state_transfer=')
+            repr_parts.append(', supports_state_transfer = ')
             repr_parts.append(repr(supports_state_transfer))
         
         repr_parts.append('>')

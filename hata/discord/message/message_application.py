@@ -61,7 +61,7 @@ class MessageApplication(DiscordEntity):
     
     def __repr__(self):
         """Returns the representation of the message application."""
-        return f'<{self.__class__.__name__} name={self.name!r}, id={self.id}>'
+        return f'<{self.__class__.__name__} name = {self.name!r}, id = {self.id}>'
     
     
     def to_data(self):

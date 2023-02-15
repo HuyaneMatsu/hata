@@ -232,8 +232,18 @@ class ApplicationCommand(DiscordEntity, immortal=True):
     )
     
     def __new__(
-        cls, name, description = None, *, allow_by_default = None, allow_in_dm=None, description_localizations=None,
-        name_localizations=None, nsfw = None, options=None, required_permissions = None, target_type=None
+        cls,
+        name,
+        description = None,
+        *,
+        allow_by_default = None,
+        allow_in_dm = None,
+        description_localizations = None,
+        name_localizations = None,
+        nsfw = None,
+        options = None,
+        required_permissions = None,
+        target_type = None,
     ):
         """
         Creates a new ``ApplicationCommand`` with the given parameters.
@@ -898,29 +908,29 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         else:
             # id
-            repr_parts.append(' id=')
+            repr_parts.append(' id = ')
             repr_parts.append(repr(self.id))
             
             # application_id
-            repr_parts.append(', application_id=')
+            repr_parts.append(', application_id = ')
             repr_parts.append(repr(self.application_id))
             
             # guild_id
             guild_id = self.guild_id
             if guild_id:
-                repr_parts.append(', guild_id=')
+                repr_parts.append(', guild_id = ')
                 repr_parts.append(repr(guild_id))
         
         # Required fields are `.name` and `.type`
         
         # name
-        repr_parts.append(', name=')
+        repr_parts.append(', name = ')
         repr_parts.append(repr(self.name))
         
         # target_type
         target_type = self.target_type
         if (target_type is not ApplicationCommandTargetType.none):
-            repr_parts.append(', target_type=')
+            repr_parts.append(', target_type = ')
             repr_parts.append(target_type.name)
             repr_parts.append(' (')
             repr_parts.append(repr(target_type.value))
@@ -941,7 +951,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         
         # allow_in_dm
         if not self.allow_in_dm:
-            repr_parts.append(', allow_in_dm=False')
+            repr_parts.append(', allow_in_dm = False')
         
         required_permissions = self.required_permissions
         if required_permissions:
@@ -1369,7 +1379,7 @@ class ApplicationCommand(DiscordEntity, immortal=True):
         >>> from hata import ApplicationCommand
         >>> application_command = ApplicationCommand('cake-lover', 'Sends a random cake recipe OwO')
         >>> application_command
-        <ApplicationCommand partial name='cake-lover', description = 'Sends a random cake recipe OwO'>
+        <ApplicationCommand partial name = 'cake-lover', description = 'Sends a random cake recipe OwO'>
         >>> # no code stands for `application_command.name`.
         >>> f'{application_command}'
         'CakeLover'

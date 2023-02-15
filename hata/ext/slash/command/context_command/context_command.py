@@ -110,8 +110,18 @@ class ContextCommand(CommandBaseApplicationCommand):
     
     
     def __new__(
-        cls, func, name=None, is_global = None, guild = None, is_default = None, delete_on_unload=None,
-        allow_by_default = None, allow_in_dm=None, required_permissions = None, target = None, nsfw = None,
+        cls,
+        func,
+        name = None,
+        is_global = None,
+        guild = None,
+        is_default = None,
+        delete_on_unload = None,
+        allow_by_default = None,
+        allow_in_dm = None,
+        required_permissions = None,
+        target = None,
+        nsfw = None,
         **keyword_parameters,
     ):
         """

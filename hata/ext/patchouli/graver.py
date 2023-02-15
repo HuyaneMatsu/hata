@@ -66,7 +66,7 @@ class DocWarning:
         return f'{self.__class__.__name__} at {self.path!s}:\n>> {self.reason}\n'
 
 
-def show_warnings(file=None):
+def show_warnings(file = None):
     """
     Writes the warning messages to the given file exhausting them.
     
@@ -575,7 +575,7 @@ class GravedAttributeDescription:
     def __repr__(self):
         """Returns the graved description's representation."""
         return (
-            f'<{self.__class__.__name__} name={self.name!r}, separator={self.separator!r}, content='
+            f'<{self.__class__.__name__} name = {self.name!r}, separator = {self.separator!r}, content = '
             f'{graved_to_source_text(self.content)!r}>'
         )
 

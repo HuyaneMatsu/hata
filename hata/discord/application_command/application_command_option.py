@@ -1004,15 +1004,15 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         # Descriptive fields `.name`, `.description`, `.type`
         
         # name
-        repr_parts.append(' name=')
+        repr_parts.append(' name = ')
         repr_parts.append(repr(self.name))
         
         # description
-        repr_parts.append(', description=')
+        repr_parts.append(', description = ')
         repr_parts.append(repr(self.description))
         
         # type
-        repr_parts.append(', type=')
+        repr_parts.append(', type = ')
         type_ = self.type
         repr_parts.append(repr(type_.value))
         repr_parts.append(' (')
@@ -1024,7 +1024,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         
         # autocomplete
         if self.autocomplete:
-            repr_parts.append(', autocomplete=True')
+            repr_parts.append(', autocomplete = True')
         
         # default
         if self.default:

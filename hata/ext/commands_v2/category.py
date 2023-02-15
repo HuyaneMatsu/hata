@@ -46,7 +46,7 @@ class Category:
         'command_instances', 'description', 'display_name', 'hidden', 'hidden_if_checks_fail', 'name'
     )
     
-    def __new__(cls, name, *, checks=None, description = None, hidden=False, hidden_if_checks_fail=True):
+    def __new__(cls, name, *, checks = None, description = None, hidden = False, hidden_if_checks_fail = True):
         """
         Creates a new category with the given parameters.
         
@@ -275,8 +275,20 @@ class Category:
         return _EventHandlerManager(self)
 
 
-    def create_event(self, command, name=None, description = None, aliases=None, category=None, checks=None,
-            error_handlers=None, separator=None, assigner=None, hidden=None, hidden_if_checks_fail=None):
+    def create_event(
+        self,
+        command,
+        name = None,
+        description = None,
+        aliases = None,
+        category = None,
+        checks = None,
+        error_handlers = None,
+        separator = None,
+        assigner = None,
+        hidden = None,
+        hidden_if_checks_fail = None,
+    ):
         """
         Adds a command to the command processor.
         

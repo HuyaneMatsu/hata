@@ -102,8 +102,8 @@ class ClientCompoundClientEndpoints(Compound):
     
     
     async def edit(
-        self, *, avatar=..., banner=..., banner_color = ..., bio=..., name=..., # Generic
-        password=..., new_password=..., email=..., # User account only
+        self, *, avatar = ..., banner = ..., banner_color = ..., bio = ..., name = ..., # Generic
+        password = ..., new_password = ..., email = ..., # User account only
     ):
         """
         Edits the client. Only the provided parameters will be changed. Every parameter what refers to a user

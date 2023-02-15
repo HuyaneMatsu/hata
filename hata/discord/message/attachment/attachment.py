@@ -217,7 +217,7 @@ class Attachment(DiscordEntity):
         
         attachment_id = self.id
         if attachment_id:
-            repr_parts.append(' id=')
+            repr_parts.append(' id = ')
             repr_parts.append(repr(attachment_id))
             
             if self.temporary:
@@ -225,13 +225,13 @@ class Attachment(DiscordEntity):
             
             repr_parts.append(',')
         
-        repr_parts.append(' name=')
+        repr_parts.append(' name = ')
         repr_parts.append(repr(self.name))
         
         width = self.width
         height = self.height
         if width and height:
-            repr_parts.append(', size=')
+            repr_parts.append(', size = ')
             repr_parts.append(repr(width))
             repr_parts.append('x')
             repr_parts.append(repr(height))

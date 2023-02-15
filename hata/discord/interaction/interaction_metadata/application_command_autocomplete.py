@@ -102,17 +102,17 @@ class InteractionMetadataApplicationCommandAutocomplete(InteractionMetadataBase)
     @copy_docs(InteractionMetadataBase._put_attribute_representations_into)
     def _put_attribute_representations_into(self, repr_parts):
         # id
-        repr_parts.append(' id=')
+        repr_parts.append(' id = ')
         repr_parts.append(repr(self.id))
         
         # name
-        repr_parts.append(', name=')
+        repr_parts.append(', name = ')
         repr_parts.append(repr(self.name))
         
         # options
         options = self.options
         if (options is not None):
-            repr_parts.append(', options=')
+            repr_parts.append(', options = ')
             repr_parts.append(repr(options))
         
         return True

@@ -151,8 +151,19 @@ class SlashCommand(CommandBaseApplicationCommand):
     
     
     def __new__(
-        cls, func, name=None, description = None, is_global = None, guild=None, is_default = None, delete_on_unload=None,
-        allow_by_default = None, allow_in_dm=None, required_permissions = None, nsfw = None, **keyword_parameters,
+        cls,
+        func,
+        name = None,
+        description = None,
+        is_global = None,
+        guild = None,
+        is_default = None,
+        delete_on_unload = None,
+        allow_by_default = None,
+        allow_in_dm = None,
+        required_permissions = None,
+        nsfw = None,
+        **keyword_parameters,
     ):
         """
         Creates a new ``SlashCommand`` with the given parameters.
@@ -792,7 +803,7 @@ class SlashCommand(CommandBaseApplicationCommand):
     
     
     @copy_docs(CommandBaseApplicationCommand.autocomplete)
-    def autocomplete(self, parameter_name, *parameter_names, function=None):
+    def autocomplete(self, parameter_name, *parameter_names, function = None):
         parameter_names = _build_auto_complete_parameter_names(parameter_name, parameter_names)
         
         if (function is None):

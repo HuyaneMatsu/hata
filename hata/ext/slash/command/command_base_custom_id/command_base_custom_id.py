@@ -53,7 +53,7 @@ class CommandBaseCustomId(CommandBase):
     )
     
     
-    def __new__(cls, func, custom_id, name=None, **keyword_parameters):
+    def __new__(cls, func, custom_id, name = None, **keyword_parameters):
         """
         Creates a new custom_id based command instance.
         

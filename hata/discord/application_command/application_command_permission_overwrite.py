@@ -267,14 +267,14 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
         repr_parts = ['<', self.__class__.__name__]
         
         # Primary fields: `.target_type`, `.target_id`
-        repr_parts.append(' target_type=')
+        repr_parts.append(' target_type = ')
         repr_parts.append(self.target_type.name)
         
-        repr_parts.append(', target_id=')
+        repr_parts.append(', target_id = ')
         repr_parts.append(repr(self.target_id))
         
         # Secondary fields: `.allow`
-        repr_parts.append(', allow=')
+        repr_parts.append(', allow = ')
         repr_parts.append(repr(self.allow))
         
         repr_parts.append('>')

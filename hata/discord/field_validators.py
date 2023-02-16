@@ -1186,7 +1186,7 @@ def url_array_optional_validator_factory(field_name):
     return validator
 
 
-def nullable_entity_array_validator_factory(field_name, entity_type):
+def nullable_entity_array_validator_factory(field_name, entity_type, *, include = None):
     """
     Returns a nullable entity array validator.
     
@@ -1196,6 +1196,8 @@ def nullable_entity_array_validator_factory(field_name, entity_type):
         The field's name.
     entity_type : `type`
         The allowed entity type.
+    include : `None`, `str` = `None`, Optional (Keyword only)
+        The object's name to include `entity_type` with. Should be used when `entity_type` cannot be resolved initially.
     
     Returns
     -------
@@ -1249,6 +1251,13 @@ def nullable_entity_array_validator_factory(field_name, entity_type):
             entity_array_processed = tuple(sorted(entity_array_processed))
         
         return entity_array_processed
+    
+    
+    if (include is not None):
+        @include_with_callback(include)
+        def include_object_type(value):
+            nonlocal entity_type
+            entity_type = value
     
     return validator
 
@@ -1440,7 +1449,6 @@ def default_entity_validator(field_name, entity_type, default_value):
         return entity
     
     return validator
-
 
 
 def entity_validator_factory(field_name, entity_type, *, include = None):

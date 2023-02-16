@@ -601,7 +601,7 @@ def nullable_string_array_parser_factory(field_key):
     return parser
 
 
-def nullable_entity_array_parser_factory(field_key, entity_type):
+def nullable_entity_array_parser_factory(field_key, entity_type, *, include = None):
     """
     Returns a new nullable entity array parser.
     
@@ -611,6 +611,8 @@ def nullable_entity_array_parser_factory(field_key, entity_type):
         The field's key used in payload.
     entity_type : `type` with `{from_data}`
         Entity's type.
+    include : `None`, `str` = `None`, Optional (Keyword only)
+        The name to include `entity_type` with. Should be used when `entity_type` cannot be resolved initially.
     
     Returns
     -------
@@ -641,6 +643,13 @@ def nullable_entity_array_parser_factory(field_key, entity_type):
             entity_array = tuple(sorted(entity_type.from_data(entity_data) for entity_data in entity_data_array))
         
         return entity_array
+    
+    
+    if (include is not None):
+        @include_with_callback(include)
+        def include_object_type(value):
+            nonlocal entity_type
+            entity_type = value
     
     return parser
 
@@ -828,7 +837,7 @@ def nullable_object_array_parser_factory(field_key, object_type, *, include = No
         Object's type.
     
     include : `None`, `str` = `None`, Optional (Keyword only)
-        The name to include `entity_type` with. Should be used when `entity_type` cannot be resolved initially.
+        The name to include `object_type` with. Should be used when `object_type` cannot be resolved initially.
     
     Returns
     -------

@@ -31,50 +31,6 @@ def parse_oauth2_redirect_url(url):
     return result.groups()
 
 
-def parse_joined_oauth2_scopes(joined_scopes):
-    """
-    Parses the joined oauth2 scopes.
-    
-    Parameters
-    ----------
-    joined_scopes : `str`
-        The joined scopes.
-    
-    Returns
-    -------
-    scopes : `None`, `tuple` of ``Oauth2Scope``
-    """
-    split_scopes = joined_scopes.split()
-    if not split_scopes:
-        return None
-    
-    split_scopes.sort()
-    
-    return tuple(Oauth2Scope.get(scope) for scope in split_scopes)
-
-
-def parse_oauth2_scope_array(scope_array):
-    """
-    Parsers the given oauth2 scope array.
-    
-    Parameters
-    ----------
-    scope_array : `None`, `list` of `str`
-        Scope array.
-    
-    
-    Returns
-    -------
-    scopes : `None`, `tuple` of ``Oauth2Scope``
-    """
-    if (scope_array is None) or (not scope_array):
-        return None
-    
-    scope_array.sort()
-    
-    return tuple(Oauth2Scope.get(scope) for scope in scope_array)
-
-
 def join_oauth2_scopes(scopes):
     """
     Joins the given oauth2 scopes together.
@@ -92,27 +48,6 @@ def join_oauth2_scopes(scopes):
         return ''
     
     return ' '.join([scope.value for scope in scopes])
-
-
-def make_oauth2_scope_array(scopes):
-    """
-    Converts the given oath2 scopes into a string array.
-    
-    Parameters
-    ----------
-    scopes : `None`, `tuple` of ``Oauth2Scope``
-        Oauth2 scopes to use.
-    
-    Returns
-    -------
-    scope_array : `list` of `str`
-    """
-    if scopes is None:
-        scope_array = []
-    else:
-        scope_array = [scope.value for scope in scopes]
-    
-    return scope_array
 
 
 def _get_one_scope_value(scope):

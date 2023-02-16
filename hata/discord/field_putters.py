@@ -940,7 +940,7 @@ def nullable_string_array_optional_putter_factory(field_key):
     return putter
 
 
-def nullable_entity_array_putter_factory(field_key, field_type, *, include = None):
+def nullable_entity_array_putter_factory(field_key, field_type, *, can_include_internals = ..., include = None):
     """
     Returns a new nullable entity array putter.
     
@@ -959,7 +959,10 @@ def nullable_entity_array_putter_factory(field_key, field_type, *, include = Non
     -------
     putter : `FunctionType`
     """
-    if _has_entity_include_internals_parameter(field_type):
+    if (
+        ((can_include_internals is not ...) and can_include_internals) or
+        ((field_type is not NotImplemented) and _has_entity_include_internals_parameter(field_type))
+    ):
         def putter(entity_array, data, defaults, *, include_internals = False):
             """
             Puts the given entity array into the given `data` json serializable object.

@@ -2,13 +2,22 @@
 
 #### Improvements
 
+- Add `Connection.copy`.
 - Add `GuildProfileFlag`.
 - Add `MessageFlag.silent`.
 - Add `GuildProfile.flags`.
 - Add `UserBase.iter_guilds`.
+- Add `Connection.copy_with`.
+- Add `Message.iter_contents`.
+- Add `EmbedBase.iter_contents.`
 - Add `MessageFlag.voice_message`.
+- Add `Connection.metadata_visibility`.
+- Add `ERROR_CODES.channels_too_large`.
+- Add `Connection.metadata_visibility`.
 - Add `silent` parameter to `Client.message_create`.
 - Add `silent` parameter to `Client.forum_thread_create`.
+- Add `Connection.__hash__` now supports partial instances.
+- `_EmbedFieldsProxy.__repr__` now shows the stored fields.
 - Add `silent` parameter to `Client.webhook_message_create`.
 - `DiscordHTTPClient.oauth2_token` switched to a newer endpoint.
 - Add `suppress_embeds` parameter to `Client.webhook_message_create`.
@@ -16,10 +25,6 @@
 - Add `silent` parameter to `Client.interaction_response_message_create`.
 - Add `create_user_from_thread_user_data` to help with new thread user creation.
 - `UserBase.statuses` now defaults to `None`. This will save a lot of memory when presence caching is enabled.
-- Add `ERROR_CODES.channels_too_large`.
-- Add `Message.iter_contents`.
-- `_EmbedFieldsProxy.__repr__` now shows the stored fields.
-- Add `EmbedBase.iter_contents.`
 
 ##### ext.slash
 - Add `silent` parameter to `abort`.

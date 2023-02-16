@@ -3,19 +3,33 @@ __all__ = ('Connection', )
 from scarletio import include
 
 from ...bases import DiscordEntity
-from ...preconverters import preconvert_snowflake
+from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .fields import (
-    parse_friend_sync, parse_integrations, parse_name, parse_revoked, parse_show_activity, parse_two_way_link,
-    parse_type, parse_verified, parse_visibility, put_friend_sync_into, put_integrations_into, put_name_into,
-    put_revoked_into, put_show_activity_into, put_two_way_link_into, put_type_into, put_verified_into,
-    put_visibility_into, validate_friend_sync, validate_integrations, validate_name, validate_revoked,
-    validate_show_activity, validate_two_way_link, validate_type, validate_verified, validate_visibility
+    parse_friend_sync, parse_id, parse_integrations, parse_metadata_visibility, parse_name, parse_revoked,
+    parse_show_activity, parse_two_way_link, parse_type, parse_verified, parse_visibility, put_friend_sync_into,
+    put_id_into, put_integrations_into, put_metadata_visibility_into, put_name_into, put_revoked_into,
+    put_show_activity_into, put_two_way_link_into, put_type_into, put_verified_into, put_visibility_into,
+    validate_friend_sync, validate_id, validate_integrations, validate_metadata_visibility, validate_name,
+    validate_revoked, validate_show_activity, validate_two_way_link, validate_type, validate_verified,
+    validate_visibility
 )
 from .preinstanced import ConnectionType, ConnectionVisibility
 
 
 Integration = include('Integration')
+
+PRECREATE_FIELDS = {
+    'connection_type': ('type', validate_type),
+    'friend_sync': ('friend_sync', validate_friend_sync),
+    'integrations': ('integrations', validate_integrations),
+    'metadata_visibility': ('metadata_visibility', validate_metadata_visibility),
+    'name': ('name', validate_name),
+    'show_activity': ('show_activity', validate_show_activity),
+    'two_way_link': ('two_way_link', validate_two_way_link),
+    'verified': ('verified', validate_verified),
+    'visibility': ('visibility', validate_visibility),
+}
 
 
 class Connection(DiscordEntity):
@@ -24,14 +38,17 @@ class Connection(DiscordEntity):
     
     Attributes
     ----------
-    id : `int`
-        The unique identifier value of the connection.
-    
     friend_sync : `bool`
         Whether the user has friend sync enabled for the connection.
     
+    id : `int`
+        The unique identifier value of the connection.
+    
     integrations : `None` or `tuple` of ``Integration``
         A guild's integrations which are attached to the connection.
+    
+    metadata_visibility : ``ConnectionVisibility``
+        For who is the connection metadata visible for.
     
     name : `str`
         The username of the connected account.
@@ -55,27 +72,41 @@ class Connection(DiscordEntity):
         For who is the connection visible for.
     """
     __slots__ = (
-        'friend_sync', 'integrations', 'name', 'revoked', 'show_activity', 'two_way_link', 'type', 'verified',
-        'visibility'
+        'friend_sync', 'integrations', 'metadata_visibility', 'name', 'revoked', 'show_activity', 'two_way_link',
+        'type', 'verified', 'visibility'
     )
     
     
-    def __new__(cls, **keyword_parameters):
+    def __new__(
+        cls,
+        *,
+        connection_type = ...,
+        friend_sync = ...,
+        integrations = ...,
+        metadata_visibility = ...,
+        name = ...,
+        revoked = ...,
+        show_activity = ...,
+        two_way_link = ...,
+        verified = ...,
+        visibility = ...,
+    ):
         """
         Creates a new connection from the given parameters.
         
         Parameters
         ----------
-        **keyword_parameters : Keyword Parameters
-            The attributes to set.
+        connection_type : ``ConnectionType``, `str`, Optional (Keyword only)
+            The service of the connection.
         
-        Other Parameters
-        ----------------
         friend_sync : `bool`, Optional (Keyword only)
             Whether the user has friend sync enabled for the connection.
         
         integrations : `None` or `iterable` of ``Integration``, Optional (Keyword only)
             A guild's integrations which are attached to the connection.
+        
+        metadata_visibility : ``ConnectionVisibility``, `int`, Optional (Keyword only)
+            For who is the connection metadata visible for.
         
         name : `str`, Optional (Keyword only)
             The username of the connected account.
@@ -89,9 +120,6 @@ class Connection(DiscordEntity):
         two_way_link : `bool`, Optional (Keyword only)
              Whether this connection has a corresponding third party OAuth2 token.
         
-        type : ``ConnectionType``, `str`, Optional (Keyword only)
-            The service of the connection.
-        
         verified : `bool`, Optional (Keyword only)
             Whether the connection is verified.
         
@@ -102,17 +130,83 @@ class Connection(DiscordEntity):
         ------
         TypeError
             - If a field's type is unacceptable.
-            - Extra or unused parameters
         ValueError
             - If a a field's value is unacceptable.
         """
-        self = cls._create_empty(0)
-        self._set_attributes_from_keyword_parameters(keyword_parameters)
+        # connection_type
+        if connection_type is ...:
+            connection_type = ConnectionType.unknown
+        else:
+            connection_type = validate_type(connection_type)
         
-        if keyword_parameters:
-            raise TypeError(
-                f'Extra or unused parameters: {keyword_parameters!r}.'
-            )
+        # friend_sync
+        if friend_sync is ...:
+            friend_sync = False
+        else:
+            friend_sync = validate_friend_sync(friend_sync)
+        
+        # integrations
+        if integrations is ...:
+            integrations = None
+        else:
+            integrations = validate_integrations(integrations)
+        
+        # metadata_visibility
+        if metadata_visibility is ...:
+            metadata_visibility = ConnectionVisibility.user_only
+        else:
+            metadata_visibility = validate_metadata_visibility(visibility)
+        
+        # name
+        if name is ...:
+            name = ''
+        else:
+            name = validate_name(name)
+        
+        # revoked
+        if revoked is ...:
+            revoked = False
+        else:
+            revoked = validate_revoked(revoked)
+        
+        # show_activity
+        if show_activity is ...:
+            show_activity = False
+        else:
+            show_activity = validate_show_activity(show_activity)
+        
+        # two_way_link
+        if two_way_link is ...:
+            two_way_link = False
+        else:
+            two_way_link = validate_two_way_link(two_way_link)
+        
+        # verified
+        if verified is ...:
+            verified = False
+        else:
+            verified = validate_verified(verified)
+        
+        # visibility
+        if visibility is ...:
+            visibility = ConnectionVisibility.user_only
+        else:
+            visibility = validate_visibility(visibility)
+        
+        # Construct
+        self = object.__new__(cls)
+        
+        self.id = 0
+        self.friend_sync = friend_sync
+        self.integrations = integrations
+        self.metadata_visibility = metadata_visibility
+        self.name = name
+        self.revoked = revoked
+        self.show_activity = show_activity
+        self.two_way_link = two_way_link
+        self.type = connection_type
+        self.verified = verified
+        self.visibility = visibility
         
         return self
     
@@ -133,11 +227,17 @@ class Connection(DiscordEntity):
         
         Other Parameters
         ----------------
+        connection_type : ``ConnectionType``, `str`, Optional (Keyword only)
+            The service of the connection.
+        
         friend_sync : `bool`, Optional (Keyword only)
             Whether the user has friend sync enabled for the connection.
         
         integrations : `None` or `iterable` of ``Integration``, Optional (Keyword only)
             A guild's integrations which are attached to the connection.
+        
+        metadata_visibility : ``ConnectionVisibility``, `int`, Optional (Keyword only)
+            For who is the connection metadata visible for.
         
         name : `str`, Optional (Keyword only)
             The username of the connected account.
@@ -150,9 +250,6 @@ class Connection(DiscordEntity):
         
         two_way_link : `bool`, Optional (Keyword only)
              Whether this connection has a corresponding third party OAuth2 token.
-        
-        type : ``ConnectionType``, `str`, Optional (Keyword only)
-            The service of the connection.
         
         verified : `bool`, Optional (Keyword only)
             Whether the connection is verified.
@@ -173,14 +270,18 @@ class Connection(DiscordEntity):
         ValueError
             - If a a field's value is unacceptable.
         """
-        connection_id = preconvert_snowflake(connection_id, 'connection_id')
-        self = cls._create_empty(connection_id)
-        self._set_attributes_from_keyword_parameters(keyword_parameters)
+        connection_id = validate_id(connection_id)
         
         if keyword_parameters:
-            raise TypeError(
-                f'Extra or unused parameters: {keyword_parameters!r}.'
-            )
+            processed = process_precreate_parameters_and_raise_extra(keyword_parameters, PRECREATE_FIELDS)
+        else:
+            processed = None
+        
+        self = cls._create_empty(connection_id)
+        
+        if (processed is not None):
+            for name, value in processed:
+                setattr(self, name, value)
         
         return self
     
@@ -241,6 +342,63 @@ class Connection(DiscordEntity):
         
         repr_parts.append('>')
         return ''.join(repr_parts)
+    
+    def __hash__(self):
+        """Returns the connection's hash."""
+        connection_id = self.id
+        if connection_id:
+            return connection_id
+        
+        return self._get_hash_partial()
+    
+    
+    def _get_hash_partial(self):
+        """
+        Returns a partial connection's hash value.
+        
+        Returns
+        -------
+        hash_value : `int`
+        """
+        hash_value = 0
+        
+        # friend_sync
+        hash_value ^= self.friend_sync
+        
+        # id | Internal -> skip
+        
+        # integrations
+        integrations = self.integrations
+        if (integrations is not None):
+            hash_value ^= len(integrations) << 1
+            for integration in integrations:
+                hash_value ^= hash(integration)
+        
+        # metadata_visibility
+        hash_value ^= hash(self.metadata_visibility) << 5
+        
+        # name
+        hash_value ^= hash(self.name)
+        
+        # revoked
+        hash_value ^= self.revoked << 9
+        
+        # show_activity
+        hash_value ^= self.show_activity << 10
+        
+        # two_way_link
+        hash_value ^= self.two_way_link << 11
+        
+        # type
+        hash_value ^= hash(self.type)
+        
+        # verified
+        hash_value ^= self.verified << 12
+        
+        # visibility
+        hash_value ^= hash(self.visibility) << 13
+        
+        return hash_value
     
     
     def __eq__(self, other):
@@ -332,9 +490,10 @@ class Connection(DiscordEntity):
         """
         self = object.__new__(cls)
         
-        self.id = int(data['id'])
+        self.id = parse_id(data)
         self.friend_sync = parse_friend_sync(data)
         self.integrations = parse_integrations(data)
+        self.metadata_visibility = parse_metadata_visibility(data)
         self.name = parse_name(data)
         self.revoked = parse_revoked(data)
         self.show_activity = parse_show_activity(data)
@@ -364,10 +523,11 @@ class Connection(DiscordEntity):
         data = {}
         
         if include_internals:
-            data['id'] = str(self.id)
+            data['id'] = put_id_into(self.id, data, defaults)
         
         put_friend_sync_into(self.friend_sync, data, defaults)
         put_integrations_into(self.integrations, data, defaults, include_internals = include_internals)
+        put_metadata_visibility_into(self.metadata_visibility, data, defaults)
         put_name_into(self.name, data, defaults)
         put_revoked_into(self.revoked, data, defaults)
         put_show_activity_into(self.show_activity, data, defaults)
@@ -377,98 +537,6 @@ class Connection(DiscordEntity):
         put_visibility_into(self.visibility, data, defaults)
         
         return data
-    
-    
-    def _set_attributes_from_keyword_parameters(self, keyword_parameters):
-        """
-        Sets the connection's attributes from the given keyword parameters.
-        
-        Parameters
-        ----------
-        keyword_parameters : `dict` of (`str`, `Any`) items
-            The keyword parameters to set the connection's attributes from.
-        
-        Raises
-        ------
-        TypeError
-            A field of invalid type.
-        ValueError
-            A field of invalid value.
-        """
-        # id
-        # Ignore, internal
-        
-        # friend_sync
-        try:
-            friend_sync = keyword_parameters.pop('friend_sync')
-        except KeyError:
-            pass
-        else:
-            self.friend_sync = validate_friend_sync(friend_sync)
-        
-        # integrations
-        try:
-            integrations = keyword_parameters.pop('integrations')
-        except KeyError:
-            pass
-        else:
-            self.integrations = validate_integrations(integrations)
-        
-        # name
-        try:
-            name = keyword_parameters.pop('name')
-        except KeyError:
-            pass
-        else:
-            self.name = validate_name(name)
-        
-        # revoked
-        try:
-            revoked = keyword_parameters.pop('revoked')
-        except KeyError:
-            pass
-        else:
-            self.revoked = validate_revoked(revoked)
-        
-        # show_activity
-        try:
-            show_activity = keyword_parameters.pop('show_activity')
-        except KeyError:
-            pass
-        else:
-            self.show_activity = validate_show_activity(show_activity)
-        
-        # two_way_link
-        try:
-            two_way_link = keyword_parameters.pop('two_way_link')
-        except KeyError:
-            pass
-        else:
-            self.two_way_link = validate_two_way_link(two_way_link)
-        
-        # type
-        try:
-            type_ = keyword_parameters.pop('type_')
-        except KeyError:
-            pass
-        else:
-            self.type = validate_type(type_)
-        
-        # verified
-        try:
-            verified = keyword_parameters.pop('verified')
-        except KeyError:
-            pass
-        else:
-            self.verified = validate_verified(verified)
-        
-        # visibility
-        try:
-            visibility = keyword_parameters.pop('visibility')
-        except KeyError:
-            pass
-        else:
-            self.visibility = validate_visibility(visibility)
     
     
     def iter_integrations(self):
@@ -484,3 +552,166 @@ class Connection(DiscordEntity):
         integrations = self.integrations
         if (integrations is not None):
             yield from integrations
+    
+    
+    def copy(self):
+        """
+        Copies the connection returning a new partial one.
+        
+        Returns
+        -------
+        new : `instance<cls>`
+        """
+        # Construct
+        new = object.__new__(type(self))
+        new.id = 0
+        new.friend_sync = self.friend_sync
+        integrations = self.integrations
+        if (integrations is not None):
+            integrations = (*integrations,)
+        new.integrations = integrations
+        new.metadata_visibility = self.metadata_visibility
+        new.name = self.name
+        new.revoked = self.revoked
+        new.show_activity = self.show_activity
+        new.two_way_link = self.two_way_link
+        new.type = self.connection_type
+        new.verified = self.verified
+        new.visibility = self.visibility
+        return new
+
+    
+    def copy_with(
+        self,
+        *,
+        connection_type = ...,
+        friend_sync = ...,
+        integrations = ...,
+        metadata_visibility = ...,
+        name = ...,
+        revoked = ...,
+        show_activity = ...,
+        two_way_link = ...,
+        verified = ...,
+        visibility = ...,):
+        """
+        Copies the connection with the given fields returning a new partial one.
+        
+        Parameters
+        ----------
+        connection_type : ``ConnectionType``, `str`, Optional (Keyword only)
+            The service of the connection.
+        
+        friend_sync : `bool`, Optional (Keyword only)
+            Whether the user has friend sync enabled for the connection.
+        
+        integrations : `None` or `iterable` of ``Integration``, Optional (Keyword only)
+            A guild's integrations which are attached to the connection.
+        
+        metadata_visibility : ``ConnectionVisibility``, `int`, Optional (Keyword only)
+            For who is the connection metadata visible for.
+        
+        name : `str`, Optional (Keyword only)
+            The username of the connected account.
+        
+        revoked : `bool`, Optional (Keyword only)
+            Whether the connection is revoked.
+        
+        show_activity : `bool`, Optional (Keyword only)
+            Whether activity related to this connection will be shown in presence updates.
+        
+        two_way_link : `bool`, Optional (Keyword only)
+             Whether this connection has a corresponding third party OAuth2 token.
+        
+        verified : `bool`, Optional (Keyword only)
+            Whether the connection is verified.
+        
+        visibility : ``ConnectionVisibility``, `int`, Optional (Keyword only)
+            For who is the connection visible for.
+        
+        Raises
+        ------
+        TypeError
+            - If a field's type is unacceptable.
+        ValueError
+            - If a a field's value is unacceptable.
+        
+        Returns
+        -------
+        new : `instance<cls>`
+        """
+        # connection_type
+        if connection_type is ...:
+            connection_type = ConnectionType.unknown
+        else:
+            connection_type = validate_type(connection_type)
+        
+        # friend_sync
+        if friend_sync is ...:
+            friend_sync = False
+        else:
+            friend_sync = validate_friend_sync(friend_sync)
+        
+        # integrations
+        if integrations is ...:
+            integrations = None
+        else:
+            integrations = validate_integrations(integrations)
+        
+        # metadata_visibility
+        if metadata_visibility is ...:
+            metadata_visibility = ConnectionVisibility.user_only
+        else:
+            metadata_visibility = validate_metadata_visibility(visibility)
+        
+        # name
+        if name is ...:
+            name = ''
+        else:
+            name = validate_name(name)
+        
+        # revoked
+        if revoked is ...:
+            revoked = False
+        else:
+            revoked = validate_revoked(revoked)
+        
+        # show_activity
+        if show_activity is ...:
+            show_activity = False
+        else:
+            show_activity = validate_show_activity(show_activity)
+        
+        # two_way_link
+        if two_way_link is ...:
+            two_way_link = False
+        else:
+            two_way_link = validate_two_way_link(two_way_link)
+        
+        # verified
+        if verified is ...:
+            verified = False
+        else:
+            verified = validate_verified(verified)
+        
+        # visibility
+        if visibility is ...:
+            visibility = ConnectionVisibility.user_only
+        else:
+            visibility = validate_visibility(visibility)
+        
+        # Construct
+        new = object.__new__(type(self))
+        new.id = 0
+        new.friend_sync = friend_sync
+        integrations = integrations
+        new.integrations = integrations
+        new.metadata_visibility = metadata_visibility
+        new.name = name
+        new.revoked = revoked
+        new.show_activity = show_activity
+        new.two_way_link = two_way_link
+        new.type = connection_type
+        new.verified = verified
+        new.visibility = visibility
+        return new

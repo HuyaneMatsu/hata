@@ -107,6 +107,7 @@ def test__Webhook__to_data():
     
     expected_output = {
         'avatar': avatar.as_base_16_hash,
+        'avatar_decoration': None,
         'accent_color': None,
         'discriminator': '0000',
         'username': name,

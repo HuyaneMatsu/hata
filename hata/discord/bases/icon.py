@@ -1,5 +1,6 @@
 __all__ = (
-    'ICON_TYPE_ANIMATED', 'ICON_TYPE_NONE', 'ICON_TYPE_STATIC', 'Icon', 'IconType', 'IconSlot', 'PreinstancedBase'
+    'ICON_TYPE_ANIMATED', 'ICON_TYPE_ANIMATED_APNG', 'ICON_TYPE_NONE', 'ICON_TYPE_STATIC', 'Icon', 'IconType',
+    'IconSlot', 'PreinstancedBase'
 )
 
 import reprlib, sys, warnings
@@ -204,6 +205,8 @@ class IconType(PreinstancedBase):
     +-----------------------+---------------+-------+-----------+-------------------|---------------------------------------+
     | animated              | animated      | 2     | `'a_'`    | `'gif'`           | `'jpg', 'jpeg', 'png', 'webp', 'gif'` |
     +-----------------------+---------------+-------+-----------+-------------------+---------------------------------------+
+    | animated_apng         | animated apng | 3     | `'a_'`    | `'png'`           | `'png'`                               |
+    +-----------------------+---------------+-------+-----------+-------------------+---------------------------------------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
@@ -393,11 +396,13 @@ class IconType(PreinstancedBase):
     none = P(0, 'none', '', '', None)
     static = P(1, 'static', '', 'png', frozenset(('jpg', 'jpeg', 'png', 'webp')))
     animated = P(2, 'animated', 'a_', 'gif', frozenset(('jpg', 'jpeg', 'png', 'webp', 'gif')))
+    animated_apng = P(3, 'animated apng', 'a_', 'png', frozenset(('png',)))
 
 
 ICON_TYPE_NONE = IconType.none
 ICON_TYPE_STATIC = IconType.static
 ICON_TYPE_ANIMATED = IconType.animated
+ICON_TYPE_ANIMATED_APNG = IconType.animated_apng
 
 
 class Icon(RichAttributeErrorBaseType):
@@ -575,7 +580,14 @@ class Icon(RichAttributeErrorBaseType):
     
     def __repr__(self):
         """Returns the representation of the icon."""
-        return f'{self.__class__.__name__}(type = ICON_TYPE_{self.type.name.upper()}, hash = {self.hash})'
+        return ''.join([
+            self.__class__.__name__,
+            '(type = ICON_TYPE_',
+            self.type.name.upper().replace(' ', '_'),
+            ', hash = ',
+            repr(self.hash),
+            ')',
+        ])
     
     
     def __iter__(self):
@@ -636,6 +648,8 @@ class IconSlot:
     
     Attributes
     ----------
+    animated_icon_type : ``IconType``
+        The icon type to use if the icon is animated.
     internal_name : `str`
         The internal name of the icon.
     discord_side_name : `str`
@@ -662,16 +676,28 @@ class IconSlot:
         
         __doc__ = docs_property()
     
-    __slots__ = ('internal_name', 'discord_side_name', 'added_instance_attributes', 'added_class_attributes')
+    __slots__ = (
+        'animated_icon_type', 'internal_name', 'discord_side_name', 'added_instance_attributes', 'added_class_attributes'
+    )
     
     _compile_globals = {
         'ICON_TYPE_NONE': ICON_TYPE_NONE,
         'ICON_TYPE_STATIC': ICON_TYPE_STATIC,
         'ICON_TYPE_ANIMATED': ICON_TYPE_ANIMATED,
+        'ICON_TYPE_ANIMATED_APNG': ICON_TYPE_ANIMATED_APNG,
         'Icon': Icon,
     }
     
-    def __new__(cls, internal_name, discord_side_name, url_property, url_as_method, add_updater=True):
+    def __new__(
+        cls,
+        internal_name,
+        discord_side_name,
+        url_property,
+        url_as_method,
+        *,
+        add_updater = True,
+        animated_icon_type = ICON_TYPE_ANIMATED,
+    ):
         """
         Creates an ``IconSlot`` with the given parameters.
         
@@ -685,8 +711,10 @@ class IconSlot:
             A function what will be used as a property when accessing the icon' url.
         url_as_method : `None`, `function`
             A function what will be used a method when creating a formatted icon url.
-        add_updater : `bool` = `True`, Optional
+        add_updater : `bool` = `True`, Optional (Keyword only)
             Whether the icon slot should add updater methods to the class.
+        add_updater : ``IconType`` = `IconType.animated_apng`, Optional (Keyword only)
+            The animated icon type to use if the icon is animated.
         
         Returns
         -------
@@ -702,6 +730,8 @@ class IconSlot:
         if (url_as_method is not None):
             added_class_attributes.append((f'{internal_name}_url_as', url_as_method))
         
+        animated_icon_type_name = 'ICON_TYPE_' + animated_icon_type.name.upper().replace(' ', '_')
+        
         locals_ = {}
         func_name = f'_set_{internal_name}'
         exec(compile((
@@ -714,14 +744,14 @@ class IconSlot:
             f'    else:\n'
             f'        if icon.startswith(\'a_\'):\n'
             f'            icon = icon[2:]\n'
-            f'            icon_type = ICON_TYPE_ANIMATED\n'
+            f'            icon_type = {animated_icon_type_name}\n'
             f'        else:\n'
             f'            icon_type = ICON_TYPE_STATIC\n'
             f'        icon_hash = int(icon, 16)\n'
             f''
             f'    self.{added_internal_attribute_name_type} = icon_type\n'
             f'    self.{added_instance_attribute_name_hash} = icon_hash\n'
-        ), f'<{cls.__name__}>', 'exec', optimize=2), cls._compile_globals, locals_)
+        ), f'<{cls.__name__}>', 'exec', optimize = 2), cls._compile_globals, locals_)
         
         added_class_attributes.append((func_name, locals_[func_name]),)
         
@@ -738,7 +768,7 @@ class IconSlot:
                 f'    else:\n'
                 f'        if icon.startswith(\'a_\'):\n'
                 f'            icon = icon[2:]\n'
-                f'            icon_type = ICON_TYPE_ANIMATED\n'
+                f'            icon_type = {animated_icon_type_name}\n'
                 f'        else:\n'
                 f'            icon_type = ICON_TYPE_STATIC\n'
                 f'        icon_hash = int(icon, 16)\n'
@@ -749,7 +779,7 @@ class IconSlot:
                 f'        old_attributes[{internal_name!r}] = Icon(self_icon_type, self_icon_hash)\n'
                 f'        self.{added_internal_attribute_name_type} = icon_type\n'
                 f'        self.{added_instance_attribute_name_hash} = icon_hash\n'
-            ), f'<{cls.__name__}>', 'exec', optimize=2), cls._compile_globals, locals_)
+            ), f'<{cls.__name__}>', 'exec', optimize = 2), cls._compile_globals, locals_)
             
             added_class_attributes.append((func_name, locals_[func_name]),)
         
@@ -842,7 +872,7 @@ class IconSlot:
         if isinstance(icon, str):
             if icon.startswith('a_'):
                 icon = icon[2:]
-                icon_type = ICON_TYPE_ANIMATED
+                icon_type = self.animated_icon_type
             else:
                 icon_type = ICON_TYPE_STATIC
             icon_hash = int(icon, 16)
@@ -975,7 +1005,7 @@ class IconSlot:
             elif isinstance(icon, str):
                 if icon.startswith('a_'):
                     icon = icon[2:]
-                    icon_type = ICON_TYPE_ANIMATED
+                    icon_type = self.animated_icon_type
                 else:
                     icon_type = ICON_TYPE_STATIC
                 icon_hash = int(icon, 16)

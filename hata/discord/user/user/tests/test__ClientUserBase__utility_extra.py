@@ -11,7 +11,6 @@ from ....role import Role
 
 from ...guild_profile import GuildProfile
 
-from ..flags import UserFlag
 from ..client_user_base import ClientUserBase
 
 

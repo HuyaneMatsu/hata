@@ -77,6 +77,7 @@ def test__Connection__to_data():
     
     connection = Connection.precreate(
         connection_id,
+        connection_type = connection_type,
         friend_sync = friend_sync,
         integrations = integrations,
         metadata_visibility = metadata_visibility,
@@ -84,7 +85,6 @@ def test__Connection__to_data():
         revoked = revoked,
         show_activity = show_activity,
         two_way_link = two_way_link,
-        connection = connection_type,
         verified = verified,
         visibility = visibility,
     )

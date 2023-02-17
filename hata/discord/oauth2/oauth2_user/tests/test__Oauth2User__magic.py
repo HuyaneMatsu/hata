@@ -14,6 +14,7 @@ def test__Oauth2User__repr():
     """
     user_id = 202302040024
     avatar = Icon(IconType.static, 14)
+    avatar_decoration = Icon(IconType.animated_apng, 25)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -30,6 +31,7 @@ def test__Oauth2User__repr():
 
     user = Oauth2User(
         avatar = avatar,
+        avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,
@@ -50,6 +52,7 @@ def test__Oauth2User__hash():
     """
     user_id = 202302040025
     avatar = Icon(IconType.static, 14)
+    avatar_decoration = Icon(IconType.animated_apng, 25)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -66,6 +69,7 @@ def test__Oauth2User__hash():
 
     user = Oauth2User(
         avatar = avatar,
+        avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,
@@ -87,6 +91,7 @@ def test__Oauth2User__eq():
     user_id = 202302040026
     
     avatar = Icon(IconType.static, 14)
+    avatar_decoration = Icon(IconType.animated_apng, 25)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -100,6 +105,7 @@ def test__Oauth2User__eq():
     
     keyword_parameters = {
         'avatar': avatar,
+        'avatar_decoration': avatar_decoration,
         'banner': banner,
         'banner_color': banner_color,
         'discriminator': discriminator,
@@ -122,6 +128,7 @@ def test__Oauth2User__eq():
     
     for field_name, field_value in (
         ('avatar', None),
+        ('avatar_decoration', None),
         ('banner', None),
         ('banner_color', None),
         ('discriminator', 0),
@@ -144,6 +151,7 @@ def test__Oauth2User__format():
     Case: Shallow.
     """
     avatar = Icon(IconType.static, 14)
+    avatar_decoration = Icon(IconType.animated_apng, 25)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -157,6 +165,7 @@ def test__Oauth2User__format():
     
     user = Oauth2User(
         avatar = avatar,
+        avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,

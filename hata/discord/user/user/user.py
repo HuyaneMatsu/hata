@@ -21,6 +21,7 @@ from .preinstanced import Status
 
 PRECREATE_FIELDS = {
     'avatar': ('avatar', ClientUserBase.avatar.validate_icon),
+    'avatar_decoration': ('avatar_decoration', ClientUserBase.avatar_decoration.validate_icon),
     'banner': ('banner', ClientUserBase.banner.validate_icon),
     'banner_color': ('banner_color', validate_banner_color),
     'bot': ('bot', validate_bot),
@@ -58,6 +59,10 @@ class User(USER_BASE_TYPE):
         The user's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The user's avatar's type.
+    avatar_decoration_hash : `int`
+        The user's avatar decoration's hash in `uint128`.
+    avatar_decoration_type : ``IconType``
+        The user's avatar decoration's type.
     banner_color : `None`, ``Color``
         The user's banner color if has any.
     banner_hash : `int`
@@ -223,6 +228,9 @@ class User(USER_BASE_TYPE):
         
         avatar : `None`, ``Icon``, `str`, Optional (Keyword only)
             The user's avatar.
+        
+        avatar_decoration : `None`, ``Icon``, `str`, Optional (Keyword only)
+            The user's avatar decoration.
         
         banner : `None`, ``Icon``, `str`, Optional (Keyword only)
             The user's banner.

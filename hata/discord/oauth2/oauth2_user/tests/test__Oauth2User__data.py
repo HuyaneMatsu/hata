@@ -20,6 +20,7 @@ def test__Oauth2User__from_data():
     
     user_id = 202302040030
     avatar = Icon(IconType.static, 24)
+    avatar_decoration = Icon(IconType.animated_apng, 25)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -33,6 +34,7 @@ def test__Oauth2User__from_data():
     
     data = {
         'avatar': avatar.as_base_16_hash,
+        'avatar_decoration': avatar_decoration.as_base_16_hash,
         'accent_color': int(banner_color),
         'discriminator': str(discriminator).rjust(4, '0'),
         'username': name,
@@ -54,6 +56,7 @@ def test__Oauth2User__from_data():
     vampytest.assert_is(user.access, access)
     
     vampytest.assert_eq(user.avatar, avatar)
+    vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner, banner)
     vampytest.assert_eq(user.banner_color, banner_color)
     vampytest.assert_eq(user.discriminator, discriminator)
@@ -74,6 +77,7 @@ def test__Oauth2User__to_data():
     """
     user_id = 202302040023
     avatar = Icon(IconType.static, 24)
+    avatar_decoration = Icon(IconType.animated_apng, 25)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -87,6 +91,7 @@ def test__Oauth2User__to_data():
     
     user = Oauth2User(
         avatar = avatar,
+        avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,
@@ -102,6 +107,7 @@ def test__Oauth2User__to_data():
     
     expected_output = {
         'avatar': avatar.as_base_16_hash,
+        'avatar_decoration': avatar_decoration.as_base_16_hash,
         'accent_color': int(banner_color),
         'discriminator': str(discriminator).rjust(4, '0'),
         'username': name,
@@ -128,6 +134,7 @@ def test__Oauth2User__update_attributes():
     Tests whether ``Oauth2User._update_attributes` works as intended.
     """
     avatar = Icon(IconType.static, 24)
+    avatar_decoration = Icon(IconType.animated_apng, 25)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -143,6 +150,7 @@ def test__Oauth2User__update_attributes():
     
     data = {
         'avatar': avatar.as_base_16_hash,
+        'avatar_decoration': avatar_decoration.as_base_16_hash,
         'banner': banner.as_base_16_hash,
         'accent_color': int(banner_color),
         'discriminator': str(discriminator).rjust(4, '0'),
@@ -158,6 +166,7 @@ def test__Oauth2User__update_attributes():
     user._update_attributes(data)
     
     vampytest.assert_eq(user.avatar, avatar)
+    vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner, banner)
     vampytest.assert_eq(user.banner_color, banner_color)
     vampytest.assert_eq(user.discriminator, discriminator)
@@ -175,6 +184,7 @@ def test__Oauth2User__difference_update_attributes():
     Tests whether ``Oauth2User._difference_update_attributes` works as intended.
     """
     old_avatar = Icon(IconType.static, 24)
+    old_avatar_decoration = Icon(IconType.animated_apng, 25)
     old_banner = Icon(IconType.animated, 12)
     old_banner_color = Color(1236)
     old_discriminator = 2222
@@ -187,6 +197,7 @@ def test__Oauth2User__difference_update_attributes():
     old_premium_type = PremiumType.nitro
     
     new_avatar = Icon(IconType.animated, 13)
+    new_avatar_decoration = Icon(IconType.static, 10)
     new_banner = Icon(IconType.animated, 14)
     new_banner_color = Color(12)
     new_discriminator = 11
@@ -200,6 +211,7 @@ def test__Oauth2User__difference_update_attributes():
     
     user = Oauth2User(
         avatar = old_avatar,
+        avatar_decoration = old_avatar_decoration,
         banner = old_banner,
         banner_color = old_banner_color,
         discriminator = old_discriminator,
@@ -214,6 +226,7 @@ def test__Oauth2User__difference_update_attributes():
     
     data = {
         'avatar': new_avatar.as_base_16_hash,
+        'avatar_decoration': new_avatar_decoration.as_base_16_hash,
         'banner': new_banner.as_base_16_hash,
         'accent_color': int(new_banner_color),
         'discriminator': str(new_discriminator).rjust(4, '0'),
@@ -229,6 +242,7 @@ def test__Oauth2User__difference_update_attributes():
     old_attributes = user._difference_update_attributes(data)
     
     vampytest.assert_eq(user.avatar, new_avatar)
+    vampytest.assert_eq(user.avatar_decoration, new_avatar_decoration)
     vampytest.assert_eq(user.banner, new_banner)
     vampytest.assert_eq(user.banner_color, new_banner_color)
     vampytest.assert_eq(user.discriminator, new_discriminator)
@@ -244,6 +258,7 @@ def test__Oauth2User__difference_update_attributes():
         old_attributes,
         {
             'avatar': old_avatar,
+            'avatar_decoration': old_avatar_decoration,
             'name': old_name,
             'banner': old_banner,
             'banner_color': old_banner_color,

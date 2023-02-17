@@ -39,6 +39,7 @@ def _assert_fields_set(client):
     vampytest.assert_instance(client.activities, list, nullable = True)
     vampytest.assert_instance(client.application, Application)
     vampytest.assert_instance(client.avatar, Icon)
+    vampytest.assert_instance(client.avatar_decoration, Icon)
     vampytest.assert_instance(client.banner_color, int, nullable = True)
     vampytest.assert_instance(client.banner, Icon)
     vampytest.assert_instance(client.bot, bool)
@@ -104,6 +105,7 @@ def test__ClientUserBase__new__1():
     Case: All fields given.
     """
     avatar = Icon(IconType.static, 32)
+    avatar_decoration = Icon(IconType.animated_apng, 25)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -120,6 +122,7 @@ def test__ClientUserBase__new__1():
     client = Client(
         token = 'token_20230208_0001',
         avatar = avatar,
+        avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,
@@ -138,6 +141,7 @@ def test__ClientUserBase__new__1():
         _assert_fields_set(client)
             
         vampytest.assert_eq(client.avatar, avatar)
+        vampytest.assert_eq(client.avatar_decoration, avatar_decoration)
         vampytest.assert_eq(client.banner, banner)
         vampytest.assert_eq(client.banner_color, banner_color)
         vampytest.assert_eq(client.discriminator, discriminator)

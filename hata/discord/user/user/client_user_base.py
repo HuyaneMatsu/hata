@@ -26,6 +26,10 @@ class ClientUserBase(OrinUserBase):
         The user's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The user's avatar's type.
+    avatar_decoration_hash : `int`
+        The user's avatar decoration's hash in `uint128`.
+    avatar_decoration_type : ``IconType``
+        The user's avatar decoration's type.
     banner_color : `None`, ``Color``
         The user's banner color if has any.
     banner_hash : `int`
@@ -56,6 +60,7 @@ class ClientUserBase(OrinUserBase):
         cls,
         *,
         avatar = ...,
+        avatar_decoration = ...,
         banner = ...,
         banner_color = ...,
         bot = ...,
@@ -70,6 +75,8 @@ class ClientUserBase(OrinUserBase):
         ----------
         avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's avatar.
+        avatar_decoration : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+            The user's avatar decoration.
         banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's banner.
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
@@ -99,6 +106,7 @@ class ClientUserBase(OrinUserBase):
         self = OrinUserBase.__new__(
             cls,
             avatar = avatar,
+            avatar_decoration = avatar_decoration,
             banner = banner,
             banner_color = banner_color,
             discriminator = discriminator,
@@ -233,6 +241,8 @@ class ClientUserBase(OrinUserBase):
         self = object.__new__(cls)
         self.avatar_hash = client.avatar_hash
         self.avatar_type = client.avatar_type
+        self.avatar_decoration_hash = client.avatar_decoration_hash
+        self.avatar_decoration_type = client.avatar_decoration_type
         self.banner_color = client.banner_color
         self.banner_hash = client.banner_hash
         self.banner_type = client.banner_type
@@ -292,6 +302,7 @@ class ClientUserBase(OrinUserBase):
         self,
         *,
         avatar = ...,
+        avatar_decoration = ...,
         banner = ...,
         banner_color = ...,
         bot = ...,
@@ -306,6 +317,8 @@ class ClientUserBase(OrinUserBase):
         ----------
         avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's avatar.
+        avatar_decoration : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+            The user's avatar decoration.
         banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's banner.
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
@@ -340,6 +353,7 @@ class ClientUserBase(OrinUserBase):
         new = OrinUserBase.copy_with(
             self,
             avatar = avatar,
+            avatar_decoration = avatar_decoration,
             banner = banner,
             banner_color = banner_color,
             discriminator = discriminator,

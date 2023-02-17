@@ -1469,3 +1469,56 @@ def scheduled_event_image_url_as(scheduled_event, ext = None, size = None):
     end = _build_end(size)
     
     return f'{CDN_ENDPOINT}/guild-events/{scheduled_event.id}/{prefix}{scheduled_event.image_hash:0>32x}.{ext}{end}'
+
+
+def user_avatar_decoration_url(user):
+    """
+    Returns the user's avatar decoration's url. If the user has no avatar decoration returns `None`.
+    
+    This function is a property of ``UserBase``.
+    
+    Returns
+    -------
+    url : `None`, `str`
+    """
+    icon_type = user.avatar_decoration_type
+    if not icon_type.can_create_url():
+        return None
+    
+    prefix = icon_type.prefix
+    ext = icon_type.default_postfix
+    
+    return f'{CDN_ENDPOINT}/avatar-decorations/{user.id}/{prefix}{user.avatar_decoration_hash:0>32x}.{ext}'
+
+
+def user_avatar_decoration_url_as(user, ext = None, size = None):
+    """
+    Returns the user's avatar decoration's url. If the user has no avatar decoration returns `None`.
+    
+    This function is a method of ``UserBase``.
+    
+    Returns
+    -------
+    url : `None`, `str`
+    
+    Parameters
+    ----------
+    ext : `None`, `str` = `None`, Optional
+        The extension of the image's url. Can be any of: `png`.
+    size : `None`, `int` = `None`, Optional
+        The preferred minimal size of the image's url.
+    
+    Raises
+    ------
+    ValueError
+        If `ext`, `size` was not passed as any of the expected values.
+    """
+    icon_type = user.avatar_decoration_type
+    if not icon_type.can_create_url():
+        return None
+    
+    prefix = icon_type.prefix
+    ext = _validate_extension(icon_type, ext)
+    end = _build_end(size)
+    
+    return f'{CDN_ENDPOINT}/avatar-decorations/{user.id}/{prefix}{user.avatar_decoration_hash:0>32x}.{ext}{end}'

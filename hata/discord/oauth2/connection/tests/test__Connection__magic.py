@@ -142,5 +142,4 @@ def test__Connection__eq():
         ('visibility', ConnectionVisibility.user_only),
     ):
         test_connection = Connection(**{**keyword_parameters, field_name: field_value})
-        
         vampytest.assert_ne(connection, test_connection)

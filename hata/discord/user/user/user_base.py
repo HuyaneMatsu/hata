@@ -32,14 +32,6 @@ class UserBase(DiscordEntity, immortal = True):
         The user's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The user's avatar's type.
-    banner_color : `None`, ``Color``
-        The user's banner color if has any.
-    banner_hash : `int`
-        The user's banner's hash in `uint128`.
-    banner_type : ``IconType``
-        The user's banner's type.
-    discriminator : `int`
-        The client's discriminator. Given to avoid overlapping names.
     id : `int`
         The client's unique identifier number.
     name : str
@@ -131,6 +123,8 @@ class UserBase(DiscordEntity, immortal = True):
         | Keys                  | Values                | Applicable for        |
         +=======================+=======================+=======================+
         | avatar                | ``Icon``              | all                   |
+        +-----------------------+-----------------------+-----------------------+
+        | avatar_decoration     | ``Icon``              | ``Client``, ``User``  |
         +-----------------------+-----------------------+-----------------------+
         | banner                | ``Icon``              | ``Client``, ``User``  |
         +-----------------------+-----------------------+-----------------------+
@@ -241,6 +235,13 @@ class UserBase(DiscordEntity, immortal = True):
         else:
             if defaults:
                 data['banner'] = None
+        
+        avatar_decoration_slot = type(self).avatar_decoration
+        if isinstance(avatar_decoration_slot, IconSlot):
+            avatar_decoration_slot.put_into(self.avatar_decoration, data, defaults, as_data = not include_internals)
+        else:
+            if defaults:
+                data['avatar_decoration'] = None
         
         put_banner_color_into(self.banner_color, data, defaults)
         put_discriminator_into(self.discriminator, data, defaults)
@@ -525,6 +526,14 @@ class UserBase(DiscordEntity, immortal = True):
         if (self.avatar_type != other.avatar_type):
             return False
         
+        # avatar_decoration_hash
+        if (self.avatar_decoration_hash != other.avatar_decoration_hash):
+            return False
+        
+        # avatar_decoration_type
+        if (self.avatar_decoration_type != other.avatar_decoration_type):
+            return False
+        
         # banner_color
         if (self.banner_color != other.banner_color):
             return False
@@ -600,6 +609,42 @@ class UserBase(DiscordEntity, immortal = True):
     )
     
     
+    avatar_decoration = PlaceHolderFunctional(
+        (lambda : Icon(IconType.none, 0)),
+        """
+        Returns the user's avatar decoration.
+        
+        Returns
+        -------
+        avatar_decoration : ``Icon``
+        """
+    )
+    
+    
+    avatar_decoration_hash = PlaceHolder(
+        0,
+        """
+        Returns the user's avatar decoration's hash.
+        
+        Returns
+        -------
+        avatar_decoration_hash : `int`
+        """,
+    )
+    
+    
+    avatar_decoration_type = PlaceHolder(
+        IconType.none,
+        """
+        Returns the user's avatar decoration's type.
+        
+        Returns
+        -------
+        avatar_decoration_type : ``IconType``
+        """,
+    )
+    
+    
     banner = PlaceHolderFunctional(
         (lambda : Icon(IconType.none, 0)),
         """
@@ -647,6 +692,7 @@ class UserBase(DiscordEntity, immortal = True):
         """,
     )
     
+    
     @property
     @copy_docs(module_urls.user_banner_url.__doc__)
     def banner_url(self):
@@ -655,6 +701,17 @@ class UserBase(DiscordEntity, immortal = True):
     
     @copy_docs(module_urls.user_banner_url_as.__doc__)
     def banner_url_as(self, ext = None, size = None):
+        return None
+    
+    
+    @property
+    @copy_docs(module_urls.user_avatar_decoration_url.__doc__)
+    def avatar_decoration_url(self):
+        return None
+    
+    
+    @copy_docs(module_urls.user_avatar_decoration_url_as.__doc__)
+    def avatar_decoration_url_as(self, ext = None, size = None):
         return None
     
     

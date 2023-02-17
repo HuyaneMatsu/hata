@@ -25,6 +25,7 @@ PRECREATE_FIELDS = {
     'integrations': ('integrations', validate_integrations),
     'metadata_visibility': ('metadata_visibility', validate_metadata_visibility),
     'name': ('name', validate_name),
+    'revoked': ('revoked', validate_revoked),
     'show_activity': ('show_activity', validate_show_activity),
     'two_way_link': ('two_way_link', validate_two_way_link),
     'verified': ('verified', validate_verified),
@@ -155,7 +156,7 @@ class Connection(DiscordEntity):
         if metadata_visibility is ...:
             metadata_visibility = ConnectionVisibility.user_only
         else:
-            metadata_visibility = validate_metadata_visibility(visibility)
+            metadata_visibility = validate_metadata_visibility(metadata_visibility)
         
         # name
         if name is ...:
@@ -305,6 +306,7 @@ class Connection(DiscordEntity):
         self.id = connection_id
         self.friend_sync = False
         self.integrations = None
+        self.metadata_visibility = ConnectionVisibility.user_only
         self.name = ''
         self.revoked = False
         self.show_activity = False
@@ -430,6 +432,7 @@ class Connection(DiscordEntity):
         -------
         is_equal : `bool`
         """
+        print('testing')
         # id
         self_id = self.id
         other_id = other.id
@@ -439,6 +442,7 @@ class Connection(DiscordEntity):
             
             return False
         
+        print('a')
         # friend_sync
         if self.friend_sync != other.friend_sync:
             return False
@@ -447,6 +451,11 @@ class Connection(DiscordEntity):
         if self.integrations != other.integrations:
             return False
         
+        # metadata_visibility
+        print(self.metadata_visibility, other.metadata_visibility)
+        if self.metadata_visibility is not other.metadata_visibility:
+            return False
+        print('b')
         # name
         if self.name != other.name:
             return False
@@ -462,7 +471,7 @@ class Connection(DiscordEntity):
         # two_way_link
         if self.two_way_link != other.two_way_link:
             return False
-        
+        print('c')
         # type
         if self.type is not other.type:
             return False
@@ -474,7 +483,7 @@ class Connection(DiscordEntity):
         # visibility
         if self.visibility is not other.visibility:
             return False
-        
+        print('j')
         return True
     
     
@@ -523,7 +532,7 @@ class Connection(DiscordEntity):
         data = {}
         
         if include_internals:
-            data['id'] = put_id_into(self.id, data, defaults)
+            put_id_into(self.id, data, defaults)
         
         put_friend_sync_into(self.friend_sync, data, defaults)
         put_integrations_into(self.integrations, data, defaults, include_internals = include_internals)
@@ -575,7 +584,7 @@ class Connection(DiscordEntity):
         new.revoked = self.revoked
         new.show_activity = self.show_activity
         new.two_way_link = self.two_way_link
-        new.type = self.connection_type
+        new.type = self.type
         new.verified = self.verified
         new.visibility = self.visibility
         return new
@@ -642,61 +651,63 @@ class Connection(DiscordEntity):
         """
         # connection_type
         if connection_type is ...:
-            connection_type = ConnectionType.unknown
+            connection_type = self.type
         else:
             connection_type = validate_type(connection_type)
         
         # friend_sync
         if friend_sync is ...:
-            friend_sync = False
+            friend_sync = self.friend_sync
         else:
             friend_sync = validate_friend_sync(friend_sync)
         
         # integrations
         if integrations is ...:
-            integrations = None
+            integrations = self.integrations
+            if (integrations is not None):
+                integrations = (*integrations,)
         else:
             integrations = validate_integrations(integrations)
         
         # metadata_visibility
         if metadata_visibility is ...:
-            metadata_visibility = ConnectionVisibility.user_only
+            metadata_visibility = self.metadata_visibility
         else:
-            metadata_visibility = validate_metadata_visibility(visibility)
+            metadata_visibility = validate_metadata_visibility(metadata_visibility)
         
         # name
         if name is ...:
-            name = ''
+            name = self.name
         else:
             name = validate_name(name)
         
         # revoked
         if revoked is ...:
-            revoked = False
+            revoked = self.revoked
         else:
             revoked = validate_revoked(revoked)
         
         # show_activity
         if show_activity is ...:
-            show_activity = False
+            show_activity = self.show_activity
         else:
             show_activity = validate_show_activity(show_activity)
         
         # two_way_link
         if two_way_link is ...:
-            two_way_link = False
+            two_way_link = self.two_way_link
         else:
             two_way_link = validate_two_way_link(two_way_link)
         
         # verified
         if verified is ...:
-            verified = False
+            verified = self.verified
         else:
             verified = validate_verified(verified)
         
         # visibility
         if visibility is ...:
-            visibility = ConnectionVisibility.user_only
+            visibility = self.visibility
         else:
             visibility = validate_visibility(visibility)
         

@@ -58,6 +58,7 @@ def test__Connection__new__1():
     visibility = ConnectionVisibility.everyone
     
     connection = Connection(
+        connection_type = connection_type,
         friend_sync = friend_sync,
         integrations = integrations,
         metadata_visibility = metadata_visibility,

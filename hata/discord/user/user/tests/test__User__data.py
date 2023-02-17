@@ -1,20 +1,14 @@
 import vampytest
 
-from .....env import CACHE_PRESENCE
-
 from ....core import USERS
 from ....guild import Guild
-from ....activity import Activity, ActivityType
 from ....bases import Icon, IconType
-from ....client import Client
 from ....color import Color
 
 from ...guild_profile import GuildProfile
-from ...thread_profile import ThreadProfile
 
 from ..flags import UserFlag
 from ..user import User
-from ..preinstanced import Status
 
 from .test__User__constructor import _assert_fields_set
 
@@ -27,6 +21,7 @@ def test__User__from_data__0():
     """
     user_id = 202302080011
     avatar = Icon(IconType.static, 24)
+    avatar_decoration = Icon(IconType.animated_apng, 25)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -36,6 +31,7 @@ def test__User__from_data__0():
     
     user_data = {
         'avatar': avatar.as_base_16_hash,
+        'avatar_decoration': avatar_decoration.as_base_16_hash,
         'accent_color': int(banner_color),
         'discriminator': str(discriminator).rjust(4, '0'),
         'username': name,
@@ -51,6 +47,7 @@ def test__User__from_data__0():
     vampytest.assert_eq(user.id, user_id)
     
     vampytest.assert_eq(user.avatar, avatar)
+    vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner_color, banner_color)
     vampytest.assert_eq(user.discriminator, discriminator)
     vampytest.assert_eq(user.name, name)
@@ -138,6 +135,7 @@ def test__User__difference_update_profile__0():
     """
     user_id = 202302080016
     avatar = Icon(IconType.static, 24)
+    avatar_decoration = Icon(IconType.animated_apng, 25)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -149,6 +147,7 @@ def test__User__difference_update_profile__0():
     
     user_data = {
         'avatar': avatar.as_base_16_hash,
+        'avatar_decoration': avatar_decoration.as_base_16_hash,
         'accent_color': int(banner_color),
         'discriminator': str(discriminator).rjust(4, '0'),
         'username': name,
@@ -174,6 +173,7 @@ def test__User__difference_update_profile__0():
     vampytest.assert_eq(old_attributes, {})
     
     vampytest.assert_eq(user.avatar, avatar)
+    vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner_color, banner_color)
     vampytest.assert_eq(user.discriminator, discriminator)
     vampytest.assert_eq(user.name, name)
@@ -277,6 +277,7 @@ def test__User__update_profile__0():
     user_id = 202302080024
     guild_id = 202302080025
     avatar = Icon(IconType.static, 24)
+    avatar_decoration = Icon(IconType.animated_apng, 25)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -290,6 +291,7 @@ def test__User__update_profile__0():
     
     user_data = {
         'avatar': avatar.as_base_16_hash,
+        'avatar_decoration': avatar_decoration.as_base_16_hash,
         'accent_color': int(banner_color),
         'discriminator': str(discriminator).rjust(4, '0'),
         'username': name,
@@ -314,6 +316,7 @@ def test__User__update_profile__0():
     vampytest.assert_is(user, test_user)
     
     vampytest.assert_eq(user.avatar, avatar)
+    vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner_color, banner_color)
     vampytest.assert_eq(user.discriminator, discriminator)
     vampytest.assert_eq(user.name, name)

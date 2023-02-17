@@ -25,6 +25,12 @@
 - Add `silent` parameter to `Client.interaction_response_message_create`.
 - Add `create_user_from_thread_user_data` to help with new thread user creation.
 - `UserBase.statuses` now defaults to `None`. This will save a lot of memory when presence caching is enabled.
+- Add `IconType.animated_apng`.
+- Add `UserBase.avatar_decoration`.
+- Add `UserBase.avatar_decoration_url`.
+- Add `UserBase.avatar_decoration_url_as`.
+- Add `UserBase.avatar_decoration_hash`.
+- Add `UserBase.avatar_decoration_type`.
 
 ##### ext.slash
 - Add `silent` parameter to `abort`.

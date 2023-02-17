@@ -26,6 +26,10 @@ class Oauth2User(OrinUserBase):
         The user's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The user's avatar's type.
+    avatar_decoration_hash : `int`
+        The user's avatar decoration's hash in `uint128`.
+    avatar_decoration_type : ``IconType``
+        The user's avatar decoration's type.
     banner_color : `None`, ``Color``
         The user's banner color if has any.
     banner_hash : `int`
@@ -57,6 +61,7 @@ class Oauth2User(OrinUserBase):
         cls,
         *,
         avatar = ...,
+        avatar_decoration = ...,
         banner = ...,
         banner_color = ...,
         discriminator = ...,
@@ -75,6 +80,8 @@ class Oauth2User(OrinUserBase):
         ----------
         avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's avatar.
+        avatar_decoration : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+            The user's avatar decoration.
         banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's banner.
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
@@ -137,6 +144,7 @@ class Oauth2User(OrinUserBase):
         self = OrinUserBase.__new__(
             cls,
             avatar = avatar,
+            avatar_decoration = avatar_decoration,
             banner = banner,
             banner_color = banner_color,
             discriminator = discriminator,
@@ -258,6 +266,7 @@ class Oauth2User(OrinUserBase):
         self,
         *,
         avatar = ...,
+        avatar_decoration = ...,
         banner = ...,
         banner_color = ...,
         discriminator = ...,
@@ -276,6 +285,8 @@ class Oauth2User(OrinUserBase):
         ----------
         avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's avatar.
+        avatar_decoration : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+            The user's avatar decoration.
         banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's banner.
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
@@ -338,6 +349,7 @@ class Oauth2User(OrinUserBase):
         new = OrinUserBase.copy_with(
             self,
             avatar = avatar,
+            avatar_decoration = avatar_decoration,
             banner = banner,
             banner_color = banner_color,
             discriminator = discriminator,

@@ -33,6 +33,10 @@ class ClientUserPBase(ClientUserBase):
         The user's avatar's hash in `uint128`.
     avatar_type : ``IconType``
         The user's avatar's type.
+    avatar_decoration_hash : `int`
+        The user's avatar decoration's hash in `uint128`.
+    avatar_decoration_type : ``IconType``
+        The user's avatar decoration's type.
     banner_color : `None`, ``Color``
         The user's banner color if has any.
     banner_hash : `int`
@@ -67,6 +71,7 @@ class ClientUserPBase(ClientUserBase):
         *,
         activities = ...,
         avatar = ...,
+        avatar_decoration = ...,
         banner = ...,
         banner_color = ...,
         bot = ...,
@@ -85,6 +90,8 @@ class ClientUserPBase(ClientUserBase):
             A list of the client's activities.
         avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's avatar.
+        avatar_decoration : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+            The user's avatar decoration.
         banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's banner.
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
@@ -134,6 +141,7 @@ class ClientUserPBase(ClientUserBase):
         self = ClientUserBase.__new__(
             cls,
             avatar = avatar,
+            avatar_decoration = avatar_decoration,
             banner = banner,
             banner_color = banner_color,
             bot = bot,
@@ -315,6 +323,7 @@ class ClientUserPBase(ClientUserBase):
         *,
         activities = ...,
         avatar = ...,
+        avatar_decoration = ...,
         banner = ...,
         banner_color = ...,
         bot = ...,
@@ -333,6 +342,8 @@ class ClientUserPBase(ClientUserBase):
             A list of the client's activities.
         avatar : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's avatar.
+        avatar_decoration : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
+            The user's avatar decoration.
         banner : `None`, ``Icon``, `str`, `bytes-like`, Optional (Keyword only)
             The user's banner.
         banner_color : `None`, ``Color``, `int`, Optional (Keyword only)
@@ -386,6 +397,7 @@ class ClientUserPBase(ClientUserBase):
         new = ClientUserBase.copy_with(
             self,
             avatar = avatar,
+            avatar_decoration = avatar_decoration,
             banner = banner,
             banner_color = banner_color,
             bot = bot,

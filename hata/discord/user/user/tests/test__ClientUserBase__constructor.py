@@ -22,6 +22,7 @@ def _assert_fields_set(user):
     """
     vampytest.assert_instance(user, ClientUserBase)
     vampytest.assert_instance(user.avatar, Icon)
+    vampytest.assert_instance(user.avatar_decoration, Icon)
     vampytest.assert_instance(user.banner, Icon)
     vampytest.assert_instance(user.banner_color, Color, nullable = True)
     vampytest.assert_instance(user.discriminator, int)
@@ -50,6 +51,7 @@ def test__ClientUserBase__new__1():
     Case: All fields given.
     """
     avatar = Icon(IconType.static, 32)
+    avatar_decoration = Icon(IconType.animated_apng, 25)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -59,6 +61,7 @@ def test__ClientUserBase__new__1():
     
     user = ClientUserBase(
         avatar = avatar,
+        avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,
@@ -69,6 +72,7 @@ def test__ClientUserBase__new__1():
     _assert_fields_set(user)
     
     vampytest.assert_eq(user.avatar, avatar)
+    vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner, banner)
     vampytest.assert_eq(user.banner_color, banner_color)
     vampytest.assert_eq(user.discriminator, discriminator)
@@ -95,6 +99,7 @@ def test_ClientUserBase___from_client__0():
     Case: include internals.
     """
     avatar = Icon(IconType.static, 32)
+    avatar_decoration = Icon(IconType.animated_apng, 25)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -110,6 +115,7 @@ def test_ClientUserBase___from_client__0():
         token = 'token_20230206_0000',
         client_id = user_id,
         avatar = avatar,
+        avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,
@@ -126,6 +132,7 @@ def test_ClientUserBase___from_client__0():
         vampytest.assert_is(type(user), ClientUserBase)
             
         vampytest.assert_eq(user.avatar, avatar)
+        vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
         vampytest.assert_eq(user.banner, banner)
         vampytest.assert_eq(user.banner_color, banner_color)
         vampytest.assert_eq(user.discriminator, discriminator)
@@ -151,6 +158,7 @@ def test_ClientUserBase___from_client__1():
     Case: not include internals.
     """
     avatar = Icon(IconType.static, 32)
+    avatar_decoration = Icon(IconType.animated_apng, 25)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -166,6 +174,7 @@ def test_ClientUserBase___from_client__1():
         token = 'token_20230206_0001',
         client_id = user_id,
         avatar = avatar,
+        avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,
@@ -182,6 +191,7 @@ def test_ClientUserBase___from_client__1():
         vampytest.assert_is(type(user), ClientUserBase)
             
         vampytest.assert_eq(user.avatar, avatar)
+        vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
         vampytest.assert_eq(user.banner, banner)
         vampytest.assert_eq(user.banner_color, banner_color)
         vampytest.assert_eq(user.discriminator, discriminator)

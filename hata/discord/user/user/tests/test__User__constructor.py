@@ -22,6 +22,7 @@ def _assert_fields_set(user):
     """
     vampytest.assert_instance(user, User)
     vampytest.assert_instance(user.avatar, Icon)
+    vampytest.assert_instance(user.avatar_decoration, Icon)
     vampytest.assert_instance(user.banner, Icon)
     vampytest.assert_instance(user.banner_color, Color, nullable = True)
     vampytest.assert_instance(user.discriminator, int)
@@ -58,6 +59,7 @@ def test__User__precreate__1():
     """
     user_id = 202302080009
     avatar = Icon(IconType.static, 32)
+    avatar_decoration = Icon(IconType.animated_apng, 25)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -80,6 +82,7 @@ def test__User__precreate__1():
     user = User.precreate(
         user_id,
         avatar = avatar,
+        avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,
@@ -92,6 +95,7 @@ def test__User__precreate__1():
     vampytest.assert_eq(user.id, user_id)
     
     vampytest.assert_eq(user.avatar, avatar)
+    vampytest.assert_eq(user.avatar_decoration, avatar_decoration)
     vampytest.assert_eq(user.banner, banner)
     vampytest.assert_eq(user.banner_color, banner_color)
     vampytest.assert_eq(user.discriminator, discriminator)

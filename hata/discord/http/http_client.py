@@ -21,7 +21,7 @@ from ..exceptions import DiscordException
 from . import rate_limit_groups as RATE_LIMIT_GROUPS
 from .headers import AUDIT_LOG_REASON, DEBUG_OPTIONS, RATE_LIMIT_PRECISION
 from .rate_limit import NO_SPECIFIC_RATE_LIMITER, RateLimitHandler, StackedStaticRateLimitHandler
-from .urls import API_ENDPOINT, DISCORD_ENDPOINT, STATUS_ENDPOINT
+from .urls import API_ENDPOINT, STATUS_ENDPOINT
 
 
 if LIBRARY_VERSION is None:

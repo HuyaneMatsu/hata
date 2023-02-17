@@ -14,6 +14,7 @@ def test__OrinUserBase__copy():
     Tests whether ``OrinUserBase.copy`` works as intended.
     """
     avatar = Icon(IconType.static, 14)
+    avatar_decoration = Icon(IconType.animated_apng, 25)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -22,6 +23,7 @@ def test__OrinUserBase__copy():
     
     user = OrinUserBase(
         avatar = avatar,
+        avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,
@@ -43,6 +45,7 @@ def test__OrinUserBase__copy_with__0():
     Case: No fields given.
     """
     avatar = Icon(IconType.static, 14)
+    avatar_decoration = Icon(IconType.animated_apng, 25)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -51,6 +54,7 @@ def test__OrinUserBase__copy_with__0():
     
     user = OrinUserBase(
         avatar = avatar,
+        avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,
@@ -72,6 +76,7 @@ def test__OrinUserBase__copy_with__1():
     Case: All fields given.
     """
     old_avatar = Icon(IconType.static, 14)
+    old_avatar_decoration = Icon(IconType.animated_apng, 25)
     old_banner = Icon(IconType.static, 15)
     old_banner_color = Color(1236)
     old_discriminator = 2222
@@ -79,6 +84,7 @@ def test__OrinUserBase__copy_with__1():
     old_name = 'orin'
     
     new_avatar = Icon(IconType.animated, 23)
+    new_avatar_decoration = Icon(IconType.static, 11)
     new_banner = Icon(IconType.static, 10)
     new_banner_color = Color(1236)
     new_discriminator = 1
@@ -87,6 +93,7 @@ def test__OrinUserBase__copy_with__1():
     
     user = OrinUserBase(
         avatar = old_avatar,
+        avatar_decoration = old_avatar_decoration,
         banner = old_banner,
         banner_color = old_banner_color,
         discriminator = old_discriminator,
@@ -96,6 +103,7 @@ def test__OrinUserBase__copy_with__1():
     
     copy = user.copy_with(
         avatar = new_avatar,
+        avatar_decoration = new_avatar_decoration,
         banner = new_banner,
         banner_color = new_banner_color,
         discriminator = new_discriminator,
@@ -106,6 +114,7 @@ def test__OrinUserBase__copy_with__1():
     vampytest.assert_is_not(user, copy)
     
     vampytest.assert_eq(copy.avatar, new_avatar)
+    vampytest.assert_eq(copy.avatar_decoration, new_avatar_decoration)
     vampytest.assert_eq(copy.banner, new_banner)
     vampytest.assert_eq(copy.banner_color, new_banner_color)
     vampytest.assert_eq(copy.discriminator, new_discriminator)

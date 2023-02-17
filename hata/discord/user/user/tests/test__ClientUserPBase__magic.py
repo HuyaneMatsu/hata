@@ -15,6 +15,7 @@ def test__ClientUserPBase__repr():
     """
     user_id = 202302060001
     avatar = Icon(IconType.static, 14)
+    avatar_decoration = Icon(IconType.animated_apng, 25)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -30,6 +31,7 @@ def test__ClientUserPBase__repr():
 
     user = ClientUserPBase(
         avatar = avatar,
+        avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,
@@ -49,6 +51,7 @@ def test__ClientUserPBase__hash():
     """
     user_id = 202302060002
     avatar = Icon(IconType.static, 14)
+    avatar_decoration = Icon(IconType.animated_apng, 25)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -64,6 +67,7 @@ def test__ClientUserPBase__hash():
 
     user = ClientUserPBase(
         avatar = avatar,
+        avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,
@@ -84,6 +88,7 @@ def test__ClientUserPBase__eq():
     user_id = 202302060003
     
     avatar = Icon(IconType.static, 14)
+    avatar_decoration = Icon(IconType.animated_apng, 25)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -96,6 +101,7 @@ def test__ClientUserPBase__eq():
     
     keyword_parameters = {
         'avatar': avatar,
+        'avatar_decoration': avatar_decoration,
         'banner': banner,
         'banner_color': banner_color,
         'discriminator': discriminator,
@@ -117,6 +123,7 @@ def test__ClientUserPBase__eq():
     
     for field_name, field_value in (
         ('avatar', None),
+        ('avatar_decoration', None),
         ('banner', None),
         ('banner_color', None),
         ('discriminator', 0),
@@ -138,6 +145,7 @@ def test__ClientUserPBase__format():
     Case: Shallow.
     """
     avatar = Icon(IconType.static, 14)
+    avatar_decoration = Icon(IconType.animated_apng, 25)
     banner = Icon(IconType.animated, 12)
     banner_color = Color(1236)
     discriminator = 2222
@@ -150,6 +158,7 @@ def test__ClientUserPBase__format():
     
     user = ClientUserPBase(
         avatar = avatar,
+        avatar_decoration = avatar_decoration,
         banner = banner,
         banner_color = banner_color,
         discriminator = discriminator,

@@ -107,6 +107,12 @@ class Client(
     avatar_type : ``IconType``
         The client's avatar's type.
     
+    avatar_decoration_hash : `int`
+        The client's avatar decoration's hash in `uint128`.
+    
+    avatar_decoration_type : ``IconType``
+        The client's avatar decoration's type.
+    
     banner_color : `None`, ``Color``
         The user's banner color if has any.
     
@@ -253,6 +259,7 @@ class Client(
         additional_owners = ...,
         application_id = ...,
         avatar = ...,
+        avatar_decoration = ...,
         banner = ...,
         banner_color = ...,
         bot = ...,
@@ -295,6 +302,9 @@ class Client(
          
         avatar : `None`, ``Icon``, `str`, Optional (Keyword only)
             The client's avatar.
+        
+        avatar_decoration : `None`, ``Icon``, `str`, Optional (Keyword only)
+            The client's avatar_decoration.
         
         banner : `None`, ``Icon``, `str`, Optional (Keyword only)
             The client's banner.
@@ -410,6 +420,12 @@ class Client(
             avatar = None
         else:
             avatar = cls.avatar.validate_icon(avatar)
+        
+        # avatar_decoration
+        if avatar_decoration is ...:
+            avatar_decoration = None
+        else:
+            avatar_decoration = cls.avatar_decoration.validate_icon(avatar_decoration)
         
         # banner
         if banner is ...:
@@ -574,6 +590,7 @@ class Client(
         self.activities = None
         self.application = application
         self.avatar = avatar
+        self.avatar_decoration = avatar_decoration
         self.bot = bot
         self.banner = banner
         self.banner_color = banner_color

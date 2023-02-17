@@ -21,6 +21,9 @@ def test__UserBase__placeholders():
     """
     user = UserBase()
     vampytest.assert_instance(user.activities, list, nullable = True)
+    vampytest.assert_instance(user.avatar_decoration, Icon)
+    vampytest.assert_instance(user.avatar_decoration_hash, int)
+    vampytest.assert_instance(user.avatar_decoration_type, IconType)
     vampytest.assert_instance(user.banner, Icon)
     vampytest.assert_instance(user.banner_color, Color, nullable = True)
     vampytest.assert_instance(user.banner_hash, int)
@@ -61,6 +64,30 @@ def test__UserBase__banner_url_as():
     vampytest.assert_instance(banner_url, str, nullable = True)
     if (banner_url is not None):
         vampytest.assert_true(is_url(banner_url))
+
+
+def test__UserBase__avatar_decoration_url():
+    """
+    Tests whether ``UserBase.avatar_decoration_url`` work as intended.
+    """
+    user = UserBase()
+    avatar_decoration_url = user.avatar_decoration_url
+    
+    vampytest.assert_instance(avatar_decoration_url, str, nullable = True)
+    if (avatar_decoration_url is not None):
+        vampytest.assert_true(is_url(avatar_decoration_url))
+
+
+def test__UserBase__avatar_decoration_url_as():
+    """
+    Tests whether ``UserBase.avatar_decoration_url_as`` work as intended.
+    """
+    user = UserBase()
+    avatar_decoration_url = user.avatar_decoration_url_as(ext = 'png', size = 4096)
+    
+    vampytest.assert_instance(avatar_decoration_url, str, nullable = True)
+    if (avatar_decoration_url is not None):
+        vampytest.assert_true(is_url(avatar_decoration_url))
 
 
 def test__UserBase__full_name():

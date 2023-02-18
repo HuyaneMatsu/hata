@@ -56,6 +56,8 @@ setup(
         'hata.discord.channel.channel',
         'hata.discord.channel.channel_metadata',
         'hata.discord.channel.forum_tag',
+        'hata.discord.channel.forum_tag_change',
+        'hata.discord.channel.forum_tag_update',
         'hata.discord.channel.permission_overwrite',
         'hata.discord.channel.permission_overwrite.fields',
         'hata.discord.client',

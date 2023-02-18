@@ -22,7 +22,6 @@ def test__ForumTag__from_data__0():
         'name': name,
         'moderated': moderated,
     }
-    
     put_partial_emoji_inline_data_into(emoji, data)
     
     forum_tag = ForumTag.from_data(data)
@@ -56,6 +55,78 @@ def test__ForumTag__from_data__1():
     new_forum_tag = ForumTag.from_data(data)
     
     vampytest.assert_is(forum_tag, new_forum_tag)
+
+
+def test__ForumTag__create_or_difference_update__0():
+    """
+    Tests whether ``ForumTag._create_or_difference_update`` works as intended.
+    
+    Case: Create.
+    """
+    forum_tag_id = 202302180000
+    emoji = BUILTIN_EMOJIS['heart']
+    name = 'EMOTiON'
+    moderated = True
+    
+    data = {
+        'id': str(forum_tag_id),
+        'name': name,
+        'moderated': moderated,
+    }
+    put_partial_emoji_inline_data_into(emoji, data)
+
+    forum_tag, old_attributes = ForumTag._create_or_difference_update(data)
+    
+    vampytest.assert_instance(forum_tag, ForumTag)  
+    vampytest.assert_eq(forum_tag.id, forum_tag_id)
+    
+    vampytest.assert_eq(forum_tag.name, name)
+    vampytest.assert_is(forum_tag.emoji, emoji)
+    vampytest.assert_eq(forum_tag.moderated, moderated)
+    
+    vampytest.assert_is(old_attributes, None)
+
+
+def test__ForumTag__create_or_difference_update__1():
+    """
+    Tests whether ``ForumTag._create_or_difference_update`` works as intended.
+    
+    Case: Difference update.
+    """
+    forum_tag_id = 202302180001
+    
+    old_emoji = BUILTIN_EMOJIS['heart']
+    new_emoji = BUILTIN_EMOJIS['x']
+    old_name = 'EMOTiON'
+    new_name = 'EMPEROR'
+    old_moderated = True
+    new_moderated = False
+    
+    forum_tag = ForumTag.precreate(forum_tag_id, name = old_name, emoji = old_emoji, moderated = old_moderated)
+    
+    data = {
+        'id': str(forum_tag_id),
+        'name': new_name,
+        'moderated': new_moderated,
+    }
+    put_partial_emoji_inline_data_into(new_emoji, data)
+    
+    test_forum_tag, old_attributes = ForumTag._create_or_difference_update(data)
+    
+    vampytest.assert_is(forum_tag, test_forum_tag)
+    
+    vampytest.assert_eq(forum_tag.name, new_name)
+    vampytest.assert_is(forum_tag.emoji, new_emoji)
+    vampytest.assert_eq(forum_tag.moderated, new_moderated)
+    
+    vampytest.assert_eq(
+        old_attributes,
+        {
+            'name': old_name,
+            'moderated': old_moderated,
+            'emoji': old_emoji,
+        }
+    )
 
 
 def test__ForumTag__update_attributes():

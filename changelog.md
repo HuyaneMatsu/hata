@@ -2,6 +2,8 @@
 
 #### Improvements
 
+- Add `ForumTagUpdate`.
+- Add `ForumTagChange`.
 - Add `Connection.copy`.
 - Add `GuildProfileFlag`.
 - Add `MessageFlag.silent`.
@@ -9,11 +11,17 @@
 - Add `UserBase.iter_guilds`.
 - Add `Connection.copy_with`.
 - Add `Message.iter_contents`.
+- Add `IconType.animated_apng`.
 - Add `EmbedBase.iter_contents.`
 - Add `MessageFlag.voice_message`.
+- Add `UserBase.avatar_decoration`.
 - Add `Connection.metadata_visibility`.
 - Add `ERROR_CODES.channels_too_large`.
+- Add `UserBase.avatar_decoration_url`.
 - Add `Connection.metadata_visibility`.
+- Add `UserBase.avatar_decoration_hash`.
+- Add `UserBase.avatar_decoration_type`.
+- Add `UserBase.avatar_decoration_url_as`.
 - Add `silent` parameter to `Client.message_create`.
 - Add `silent` parameter to `Client.forum_thread_create`.
 - Add `Connection.__hash__` now supports partial instances.
@@ -25,12 +33,6 @@
 - Add `silent` parameter to `Client.interaction_response_message_create`.
 - Add `create_user_from_thread_user_data` to help with new thread user creation.
 - `UserBase.statuses` now defaults to `None`. This will save a lot of memory when presence caching is enabled.
-- Add `IconType.animated_apng`.
-- Add `UserBase.avatar_decoration`.
-- Add `UserBase.avatar_decoration_url`.
-- Add `UserBase.avatar_decoration_url_as`.
-- Add `UserBase.avatar_decoration_hash`.
-- Add `UserBase.avatar_decoration_type`.
 
 ##### ext.slash
 - Add `silent` parameter to `abort`.
@@ -39,6 +41,7 @@
 #### Bug Fixes
 
 - `InteractionEvent` response waiters were not added. (When did this broke???)
+- `Client.events.channel_edit` never propagated if an existing forum tag was edited.
 
 #### Renames, Deprecation & Removals
 

@@ -5,6 +5,10 @@ from scarletio import copy_docs
 from ...permission import Permission
 from ...permission.permission import PERMISSION_MASK_VIEW_CHANNEL, PERMISSION_NONE, PERMISSION_THREAD_AND_VOICE_DENY
 
+from ..forum_tag import ForumTag
+from ..forum_tag_change import ForumTagChange
+from ..forum_tag_update import ForumTagUpdate
+
 from .constants import AUTO_ARCHIVE_DEFAULT, SLOWMODE_DEFAULT
 from .fields import (
     parse_available_tags, parse_default_forum_layout, parse_default_sort_order, parse_default_thread_auto_archive_after,
@@ -200,10 +204,9 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
         old_attributes = ChannelMetadataGuildMainBase._difference_update_attributes(self, data)
         
         # available_tags
-        available_tags = parse_available_tags(data)
-        if (self.available_tags != available_tags):
-            old_attributes['available_tags'] = self.available_tags
-            self.available_tags = available_tags
+        forum_tag_change = self._difference_update_available_tags(data)
+        if (forum_tag_change is not None):
+            old_attributes['available_tags'] = forum_tag_change
         
         # default_forum_layout
         default_forum_layout = parse_default_forum_layout(data)
@@ -248,6 +251,77 @@ class ChannelMetadataGuildForum(ChannelMetadataGuildMainBase):
             self.topic = topic
         
         return old_attributes
+    
+    
+    def _difference_update_available_tags(self, data):
+        """
+        Updates the guild forum's available tags and returns a ``ForumTagChange`` instance if anything was modified.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `object`) items
+            Channel data.
+        
+        Returns
+        -------
+        forum_tag_change : `None`, ``ForumTagChange``
+        """
+        new_available_tag_datas = data.get('available_tags', None)
+        if (new_available_tag_datas is not None) and (not new_available_tag_datas):
+            new_available_tag_datas = None
+        
+        old_available_tags = self.available_tags
+        if (old_available_tags is None) and (new_available_tag_datas is None):
+            return None
+        
+        
+        old_forum_tags = set()
+        if (old_available_tags is not None):
+            old_forum_tags.update(old_available_tags)
+        
+        new_forum_tags = set()
+        
+        # Update
+        updated_forum_tags = None
+        
+        if (new_available_tag_datas is not None):
+            for forum_tag_data in new_available_tag_datas:
+                forum_tag, old_attributes = ForumTag._create_or_difference_update(forum_tag_data)
+                if (old_attributes is not None) and old_attributes:
+                    if (updated_forum_tags is None):
+                        updated_forum_tags = []
+                    
+                    updated_forum_tags.append(ForumTagUpdate.from_fields(forum_tag, old_attributes))
+                
+                new_forum_tags.add(forum_tag)
+                continue
+        
+        # Added
+        added_forum_tags = old_forum_tags - new_forum_tags
+        if added_forum_tags:
+            added_forum_tags = sorted(added_forum_tags)
+        else:
+            added_forum_tags = None
+        
+        # Removed
+        removed_forum_tags = new_forum_tags - old_forum_tags
+        if removed_forum_tags:
+            removed_forum_tags = sorted(removed_forum_tags)
+        else:
+            removed_forum_tags = None
+        
+        # Set new
+        if new_forum_tags:
+            new_available_tags = tuple(sorted(new_forum_tags))
+        else:
+            new_available_tags = None
+        self.available_tags = new_available_tags
+        
+        # Construct
+        if (added_forum_tags is None) and (removed_forum_tags is None) and (updated_forum_tags is None):
+            return
+        
+        return ForumTagChange.from_fields(added_forum_tags, updated_forum_tags, removed_forum_tags)
     
     
     @copy_docs(ChannelMetadataGuildMainBase._iter_delete)

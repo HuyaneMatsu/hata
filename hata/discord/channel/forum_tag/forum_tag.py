@@ -4,24 +4,31 @@ from scarletio import copy_docs
 
 from ...bases import DiscordEntity
 from ...core import FORUM_TAGS
-from ...preconverters import preconvert_snowflake
+from ...precreate_helpers import process_precreate_parameters_and_raise_extra
 
 from .fields import (
-    parse_emoji, parse_moderated, parse_name, put_emoji_into, put_moderated_into, put_name_into, validate_emoji,
-    validate_moderated, validate_name
+    parse_emoji, parse_id, parse_moderated, parse_name, put_emoji_into, put_id_into, put_moderated_into, put_name_into,
+    validate_emoji, validate_id, validate_moderated, validate_name
 )
 
 
-class ForumTag(DiscordEntity, immortal=True):
+PRECREATE_FIELDS = {
+    'emoji': ('emoji', validate_emoji),
+    'name': ('name', validate_name),
+    'moderated': ('moderated', validate_moderated),
+}
+
+
+class ForumTag(DiscordEntity, immortal = True):
     """
     Forum tags can be applied to a thread of a forum channel.
     
     Attributes
     ----------
-    id : `int`
-        The tag's identifier.
     emoji : `None`, ``Emoji``
         The tag's emoji.
+    id : `int`
+        The tag's identifier.
     name : `str`
         The tag's name.
     moderated : `bool`
@@ -29,7 +36,7 @@ class ForumTag(DiscordEntity, immortal=True):
     """
     __slots__ = ('emoji', 'name', 'moderated')
     
-    def __new__(cls, name, *, emoji = None, moderated = False):
+    def __new__(cls, name = ..., *, emoji = ..., moderated = ...):
         """
         Creates a new forum tag instance.
         
@@ -37,15 +44,30 @@ class ForumTag(DiscordEntity, immortal=True):
         ----------
         name : `str`
             The tag's name.
-        emoji : `None`, ``Emoji`` = `None`, Optional (Keyword only)
+        emoji : `None`, ``Emoji``, Optional (Keyword only)
             The tag's emoji.
-        moderated : `bool` = `False`, Optional (Keyword only)
+        moderated : `bool`, Optional (Keyword only)
             Whether this tag can only be added or removed by a user with `manage_threads` permission.
         """
-        emoji = validate_emoji(emoji)
-        moderated = validate_moderated(moderated)
-        name = validate_name(name)
+        # emoji
+        if emoji is ...:
+            emoji = None
+        else:
+            emoji = validate_emoji(emoji)
         
+        # moderated
+        if moderated is ...:
+            moderated = False
+        else:
+            moderated = validate_moderated(moderated)
+        
+        # name
+        if name is ...:
+            name = ''
+        else:
+            name = validate_name(name)
+        
+        # Construct
         self = object.__new__(cls)
         self.id = 0
         self.emoji = emoji
@@ -284,43 +306,12 @@ class ForumTag(DiscordEntity, immortal=True):
         ValueError
             If an parameter's type is good, but it's value is unacceptable.
         """
-        forum_tag_id = preconvert_snowflake(forum_tag_id, 'forum_tag_id')
+        forum_tag_id = validate_id(forum_tag_id)
         
         if keyword_parameters:
-            processable = []
-            
-            # emoji
-            try:
-                emoji = keyword_parameters.pop('emoji')
-            except KeyError:
-                pass
-            else:
-                emoji = validate_emoji(emoji)
-                processable.append(('emoji', emoji))
-            
-            # name
-            try:
-                name = keyword_parameters.pop('name')
-            except KeyError:
-                pass
-            else:
-                name = validate_name(name)
-                processable.append(('name', name))
-            
-            # moderated
-            try:
-                moderated = keyword_parameters.pop('moderated')
-            except KeyError:
-                pass
-            else:
-                moderated = validate_moderated(moderated)
-                processable.append(('moderated', moderated))
-            
-            if keyword_parameters:
-                raise TypeError(f'Unused or unsettable attributes: {keyword_parameters!r}.')
-            
+            processed = process_precreate_parameters_and_raise_extra(keyword_parameters, PRECREATE_FIELDS)
         else:
-            processable = None
+            processed = None
         
         try:
             self = FORUM_TAGS[forum_tag_id]
@@ -330,8 +321,8 @@ class ForumTag(DiscordEntity, immortal=True):
             
             # Cannot detect when we are really-partial in our channel's scope, so lets assign variables only if we
             # were just created.
-            if (processable is not None):
-                for item in processable:
+            if (processed is not None):
+                for item in processed:
                     setattr(self, *item)
         
         return self
@@ -344,14 +335,14 @@ class ForumTag(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Forum tag data.
         
         Returns
         -------
         self : ``ForumTag``
         """
-        forum_tag_id = int(data['id'])
+        forum_tag_id = parse_id(data)
         
         try:
             self = FORUM_TAGS[forum_tag_id]
@@ -370,7 +361,7 @@ class ForumTag(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Forum tag data.
         """
         # id
@@ -393,12 +384,12 @@ class ForumTag(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Forum tag data.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `object`) items
             The updated attributes.
             
             Every item in the dictionary is optional.
@@ -439,6 +430,38 @@ class ForumTag(DiscordEntity, immortal=True):
         return old_attributes
     
     
+    @classmethod
+    def _create_or_difference_update(cls, data):
+        """
+        Creates a forum tag. if it already exists calls ``._difference_update_attributes`` on it.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `object`) items
+            Forum tag data.
+        
+        Returns
+        -------
+        forum_tag_and_difference : ``ForumTag``, (`None`, `dict` of (`str`, `object`) items)
+        """
+        forum_tag_id = parse_id(data)
+        
+        try:
+            self = FORUM_TAGS[forum_tag_id]
+        except KeyError:
+            self = object.__new__(cls)
+            self.id = forum_tag_id
+            self._update_attributes(data)
+            FORUM_TAGS[forum_tag_id] = self
+        
+            old_attributes = None
+        
+        else:
+            old_attributes = self._difference_update_attributes(data)
+        
+        return self, old_attributes
+    
+    
     def to_data(self, *, defaults = False, include_internals = False):
         """
         Converts the forum tag to a json serializable object.
@@ -452,15 +475,13 @@ class ForumTag(DiscordEntity, immortal=True):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         data = {}
         
         # id
         if include_internals:
-            id_ = self.id
-            if id_:
-                data['id'] = str(id_)
+            put_id_into(self.id, data, defaults)
         
         # emoji
         put_emoji_into(self.emoji, data, defaults)

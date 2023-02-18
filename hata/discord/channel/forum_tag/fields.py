@@ -1,9 +1,9 @@
 __all__ = ()
 
 from ...emoji import Emoji, create_emoji_from_exclusive_data, put_exclusive_emoji_data_into
-from ...field_parsers import force_string_parser_factory, bool_parser_factory
-from ...field_putters import force_string_putter_factory, bool_optional_putter_factory
-from ...field_validators import force_string_validator_factory, bool_validator_factory
+from ...field_parsers import entity_id_parser_factory, force_string_parser_factory, bool_parser_factory
+from ...field_putters import entity_id_putter_factory, force_string_putter_factory, bool_optional_putter_factory
+from ...field_validators import entity_id_validator_factory, force_string_validator_factory, bool_validator_factory
 
 from .constants import NAME_LENGTH_MIN, NAME_LENGTH_MAX
 
@@ -72,6 +72,12 @@ def validate_emoji(emoji):
         )
     
     return emoji
+
+# id
+
+parse_id = entity_id_parser_factory('id')
+put_id_into = entity_id_putter_factory('id')
+validate_id = entity_id_validator_factory('forum_tag_id')
 
 # moderated
 

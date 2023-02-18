@@ -3,6 +3,8 @@ import vampytest
 from ....core import BUILTIN_EMOJIS
 
 from ...forum_tag import ForumTag
+from ...forum_tag_change import ForumTagChange
+from ...forum_tag_update import ForumTagUpdate
 from ...permission_overwrite import PermissionOverwrite, PermissionOverwriteTargetType
 
 from ..flags import ChannelFlag
@@ -359,7 +361,10 @@ def test__ChannelMetadataGuildForum__difference_update_attributes():
         {permission_overwrite.target_id: permission_overwrite for permission_overwrite in old_permission_overwrites},
     )
     vampytest.assert_eq(old_attributes['position'], old_position)
-    vampytest.assert_eq(old_attributes['available_tags'], tuple(old_available_tags))
+    vampytest.assert_eq(
+        old_attributes['available_tags'],
+        ForumTagChange.from_fields(old_available_tags, None, new_available_tags),
+    )
     vampytest.assert_eq(old_attributes['default_thread_auto_archive_after'], old_default_thread_auto_archive_after)
     vampytest.assert_eq(old_attributes['default_thread_reaction'], old_default_thread_reaction)
     vampytest.assert_eq(old_attributes['default_thread_slowmode'], old_default_thread_slowmode)
@@ -383,3 +388,122 @@ def test__ChannelMetadataGuildForum__from_partial_data():
     assert_fields_set(channel_metadata)
     
     vampytest.assert_eq(channel_metadata.name, name)
+
+
+def test__ChannelMetadataGuildForum__difference_update_available_tags__0():
+    """
+    Tests whether ``ChannelMetadataGuildForum._difference_update_available_tags`` works as intended.
+    
+    Case: No metadata.
+    """
+    channel_metadata = ChannelMetadataGuildForum({})
+    
+    data = {}
+    
+    output = channel_metadata._difference_update_available_tags(data)
+    
+    vampytest.assert_is(output, None)
+    vampytest.assert_is(channel_metadata.available_tags, None)
+
+
+def test__ChannelMetadataGuildForum__difference_update_available_tags__1():
+    """
+    Tests whether ``ChannelMetadataGuildForum._difference_update_available_tags`` works as intended.
+    
+    Case: No change.
+    """
+    forum_tags = [
+        ForumTag.precreate(
+            202302180002,
+            emoji = BUILTIN_EMOJIS['heart'],
+            name = 'Yup',
+            moderated = False,
+        ),
+        ForumTag.precreate(
+            202302180003,
+            emoji = BUILTIN_EMOJIS['x'],
+            name = 'Ashy',
+            moderated = True,
+        ),
+    ]
+    
+    channel_metadata = ChannelMetadataGuildForum({'available_tags': forum_tags})
+    
+    data = {
+        'available_tags': [forum_tag.to_data(include_internals = True) for forum_tag in forum_tags],
+    }
+    
+    output = channel_metadata._difference_update_available_tags(data)
+    
+    vampytest.assert_is(output, None)
+    vampytest.assert_eq(channel_metadata.available_tags, tuple(forum_tags))
+
+
+def test__ChannelMetadataGuildForum__difference_update_available_tags__2():
+    """
+    Tests whether ``ChannelMetadataGuildForum._difference_update_available_tags`` works as intended.
+    
+    Case: All change.
+    """
+    forum_tag_0 = ForumTag.precreate(
+        202302180004,
+        emoji = BUILTIN_EMOJIS['x'],
+        name = 'Ashy',
+        moderated = True,
+    )
+    
+    forum_tags_1 = ForumTag.precreate(
+        202302180005,
+        emoji = BUILTIN_EMOJIS['heart'],
+        name = 'Yup',
+        moderated = False,
+    )
+    
+    forum_tags_2 = ForumTag.precreate(
+        202302180006,
+        emoji = BUILTIN_EMOJIS['smile'],
+        name = 'arara',
+        moderated = False,
+    )
+    
+    old_name = 'koishi'
+    new_name = 'yuuka'
+    
+    forum_tags_3 = ForumTag.precreate(
+        202302180007,
+        emoji = BUILTIN_EMOJIS['smile'],
+        name = old_name,
+        moderated = False,
+    )
+    
+    
+    channel_metadata = ChannelMetadataGuildForum({
+        'available_tags': [forum_tag_0, forum_tags_1, forum_tags_3],
+    })
+    
+    data = {
+        'available_tags': [
+            forum_tags_1.to_data(include_internals = True),
+            forum_tags_2.to_data(include_internals = True),
+            {
+                **forum_tags_3.to_data(include_internals = True),
+                'name': new_name,
+            },
+        ],
+    }
+    
+    output = channel_metadata._difference_update_available_tags(data)
+    
+    vampytest.assert_eq(
+        output, 
+        ForumTagChange.from_fields(
+            [forum_tag_0],
+            [ForumTagUpdate.from_fields(forum_tags_3, {'name': old_name})],
+            [forum_tags_2],
+        ),
+    )
+    
+    vampytest.assert_eq(
+        channel_metadata.available_tags,
+        (forum_tags_1, forum_tags_2, forum_tags_3),
+    )

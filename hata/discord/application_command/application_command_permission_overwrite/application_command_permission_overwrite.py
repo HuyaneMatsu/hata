@@ -2,114 +2,22 @@ __all__ = ('ApplicationCommandPermissionOverwrite',)
 
 from scarletio import RichAttributeErrorBaseType
 
-from ..channel import Channel
-from ..core import CHANNELS, ROLES
-from ..role import Role, create_partial_role_from_id
-from ..user import ClientUserBase, create_partial_user_from_id
+from ...channel import ChannelType, create_partial_channel_from_id
+from ...core import CHANNELS, ROLES
+from ...role import create_partial_role_from_id
+from ...user import create_partial_user_from_id
 
+from .fields import (
+    parse_allow, parse_target_id, parse_target_type, put_allow_into, put_target_id_into, put_target_type_into,
+    validate_allow
+)
+from .helpers import validate_application_command_permission_overwrite_target
 from .preinstanced import ApplicationCommandPermissionOverwriteTargetType
 
 
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER = ApplicationCommandPermissionOverwriteTargetType.user
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_ROLE = ApplicationCommandPermissionOverwriteTargetType.role
 APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_CHANNEL = ApplicationCommandPermissionOverwriteTargetType.channel
-
-
-def _validate_application_command_target(target):
-    """
-    Validates the given application command's input target.
-    
-    Parameters
-    ----------
-    target : ``ClientUserBase``, ``Role``, ``Channel``, `tuple` ((``ClientUserBase``, ``Role``, \
-            ``Channel``, `str` (`'Role'`, `'role'`, `'User'`, `'user'`, `'Channel'`, `'channel'`)), `int`)
-        The target entity of the application command permission overwrite.
-    
-    Returns
-    -------
-    target_type : ``ApplicationCommandPermissionOverwriteTargetType``
-        The target entity's type.
-    
-    target_id : `int`
-        The represented entity's identifier.
-    
-    Raises
-    ------
-    TypeError
-        - If `target` was not given as any of the expected types & values.
-    """
-    # GOTO
-    while True:
-        if isinstance(target, Role):
-            target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_ROLE
-            target_id = target.id
-            target_lookup_failed = False
-            break
-        
-        if isinstance(target, ClientUserBase):
-            target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER
-            target_id = target.id
-            target_lookup_failed = False
-            break
-        
-        if isinstance(target, Channel):
-            target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_CHANNEL
-            target_id = target.id
-            target_lookup_failed = False
-            break
-        
-        if isinstance(target, tuple) and len(target) == 2:
-            target_maybe, target_id_maybe = target
-            
-            if isinstance(target_maybe, type):
-                if issubclass(target_maybe, Role):
-                    target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_ROLE
-                elif issubclass(target_maybe, ClientUserBase):
-                    target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER
-                elif issubclass(target_maybe, Channel):
-                    target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_CHANNEL
-                else:
-                    target_lookup_failed = True
-                    break
-            
-            elif isinstance(target_maybe, str):
-                if target_maybe in ('Role', 'role'):
-                    target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_ROLE
-                elif target_maybe in ('User', 'user'):
-                    target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER
-                elif target_maybe in ('Channel', 'channel'):
-                    target_type = APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_CHANNEL
-                else:
-                    target_lookup_failed = True
-                    break
-            
-            else:
-                target_lookup_failed = True
-                break
-            
-            if type(target_id_maybe) is int:
-                target_id = target_id_maybe
-            elif isinstance(target_id_maybe, int):
-                target_id = int(target_id_maybe)
-            else:
-                target_lookup_failed = True
-                break
-            
-            target_lookup_failed = False
-            break
-        
-        target_lookup_failed = True
-        break
-    
-    if target_lookup_failed:
-        raise TypeError(
-            f'`target` can be `{Role.__name__}`, `{ClientUserBase.__name__}`, `{Channel.__name__}`, '
-            f'`tuple` ((`{Role.__name__}`, `{ClientUserBase.__name__}`, `{Channel.__name__}`, `str` '
-            f'(`\'Role\'`, `\'role\'`, `\'User\'`, `\'user\'`, `\'Channel\'`, `\'channel\'`)), `int`), '
-            f'got {target.__class__.__name__}: {target!r}.'
-        )
-    
-    return target_type, target_id
 
 
 class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
@@ -131,12 +39,13 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
     
     def __new__(cls, target, allow):
         """
-        Creates a new ``ApplicationCommandPermission`` with the given parameters.
+        Creates a new application command permission overwrite with the given parameters.
         
         Parameters
         ----------
         target : ``ClientUserBase``, ``Role``, ``Channel``, `tuple` ((``ClientUserBase``, ``Role``, \
-                ``Channel``, `str` (`'Role'`, `'role'`, `'User'`, `'user'`, `'Channel'`, `'channel'`)), `int`)
+                ``Channel``, `str` (`'Role'`, `'role'`, `'User'`, `'user'`, `'Channel'`, `'channel'`, \
+                ``ApplicationCommandPermissionOverwriteTargetType``, `int`)), `int`)
             The target entity of the application command permission overwrite.
             
             The expected type & value might be pretty confusing, but the target was it to allow relaxing creation.
@@ -154,6 +63,8 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
             - `tuple` (`'user'`, `int`)
             - `tuple` (`'Channel'`, `int`)
             - `tuple` (`'channel'`, `int`)
+            - `tuple` (``ApplicationCommandPermissionOverwriteTargetType``, `int`)
+            - `tuple` (`int`, `int`)
         
         allow : `bool`
             Whether the respective application command should be enabled for the respective entity.
@@ -161,19 +72,15 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
         Raises
         ------
         TypeError
-            - If `target` was not given as any of the expected types & values.
+            - If a parameter's type is incorrect.
         AssertionError
-            - If `allow` was not given as `bool`.
+            - If a parameter's value is incorrect.
         """
         # allow
-        if __debug__:
-            if not isinstance(allow, bool):
-                raise AssertionError(
-                    f'`allow` can be `bool`, got {allow.__class__.__name__}; {allow!r}.'
-                )
+        allow = validate_allow(allow)
         
         # target_id & target_type
-        target_type, target_id = _validate_application_command_target(target)
+        target_type, target_id = validate_application_command_permission_overwrite_target(target)
         
         self = object.__new__(cls)
         self.allow = allow
@@ -189,77 +96,39 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             The received application command permission overwrite data.
         
         Returns
         -------
-        self : ``ApplicationCommandPermission``
+        self : `instance<cls>`
             The created application command option.
         """
-        # allow
-        allow = data['permission']
-        
-        # target_id
-        target_id = int(data['id'])
-        
-        # target_type
-        target_type = ApplicationCommandPermissionOverwriteTargetType.get(data['type'])
-        
         self = object.__new__(cls)
-        self.allow = allow
-        self.target_id = target_id
-        self.target_type = target_type
+        self.allow = parse_allow(data)
+        self.target_id = parse_target_id(data)
+        self.target_type = parse_target_type(data)
         return self
     
     
-    def to_data(self):
+    def to_data(self, *, defaults = False):
         """
         Converts the application command permission overwrite to a json serializable object.
         
+        Parameters
+        ----------
+        defaults : `bool` = `False`, Optional (Keyword only)
+            Whether fields with their default value should be included as well.
+        
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         data = {}
-        
-        # allow
-        data['permission'] = self.allow
-        
-        # target_id
-        data['id'] = self.target_id
-        
-        # target_type
-        data['type'] = self.target_type.value
-        
+        put_allow_into(self.allow, data, defaults)
+        put_target_id_into(self.target_id, data, defaults)
+        put_target_type_into(self.target_type, data, defaults)
         return data
-    
-    
-    @property
-    def target(self):
-        """
-        Returns the application command overwrite's target entity.
-        
-        Returns
-        -------
-        target : `None`, ``Role``, ``ClientUserBase``, ``Channel``
-        """
-        target_type = self.target_type
-        target_id = self.target_id
-        
-        if target_type is APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_ROLE:
-            target = create_partial_role_from_id(target_id)
-        
-        elif target_type is APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER:
-            target = create_partial_user_from_id(target_id)
-        
-        elif target_type is APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_CHANNEL:
-            target = CHANNELS.get(target_id)
-        
-        else:
-            target = None
-        
-        return target
     
     
     def __repr__(self):
@@ -315,28 +184,6 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
         hash_value ^= self.target_type.value
         
         return hash_value
-    
-    
-    def copy(self):
-        """
-        Copies the application command permission overwrite.
-        
-        Returns
-        -------
-        new : ``ApplicationCommandPermissionOverwrite``
-        """
-        new = object.__new__(type(self))
-        
-        # allow
-        new.allow = self.allow
-        
-        # target_id
-        new.target_id = self.target_id
-        
-        # target_type
-        new.target_type = self.target_type
-        
-        return new
     
     
     def __gt__(self, other):
@@ -449,22 +296,41 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
         return True
     
     
-    def copy_with(self, **keyword_parameters):
+    def copy(self):
+        """
+        Copies the application command permission overwrite.
+        
+        Returns
+        -------
+        new : ``ApplicationCommandPermissionOverwrite``
+        """
+        new = object.__new__(type(self))
+        
+        # allow
+        new.allow = self.allow
+        
+        # target_id
+        new.target_id = self.target_id
+        
+        # target_type
+        new.target_type = self.target_type
+        
+        return new
+    
+    
+    
+    def copy_with(self, *, allow = ..., target = ...,):
         """
         Copies the application command permission overwrite with modifying the given parameters inside of it.
         
         Parameters
         ----------
-        **keyword_parameters : Keyword parameters
-            The attributes to change.
-        
-        Other Parameters
-        ----------------
         allow : `bool`
             Whether the respective application command should be enabled for the respective entity.
         
         target : ``ClientUserBase``, ``Role``, ``Channel``, `tuple` ((``ClientUserBase``, ``Role``, \
-                ``Channel``, `str` (`'Role'`, `'role'`, `'User'`, `'user'`, `'Channel'`, `'channel'`)), `int`)
+                ``Channel``, `str` (`'Role'`, `'role'`, `'User'`, `'user'`, `'Channel'`, `'channel'`, \
+                ``ApplicationCommandPermissionOverwriteTargetType``, `int`)), `int`)
             The target entity of the application command permission overwrite.
         
         Returns
@@ -475,39 +341,51 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
         Raises
         ------
         TypeError
-            - If `target` was not given as any of the expected types & values.
-            - If extra parameters were given.
+            - If a parameter's type is incorrect.
         AssertionError
-            - If `allow` was not given as `bool`.
+            - If a parameter's value is incorrect.
         """
         # allow
-        try:
-            allow = keyword_parameters.pop('allow')
-        except KeyError:
+        if allow is ...:
             allow = self.allow
         else:
-            if __debug__:
-                if not isinstance(allow, bool):
-                    raise AssertionError(
-                        f'`allow` can be `bool`, got {allow.__class__.__name__}; {allow!r}.'
-                    )
+            allow = validate_allow(allow)
         
-        # target_id & target_type
-        try:
-            target = keyword_parameters.pop('target')
-        except KeyError:
+        if target is ...:
             target_id = self.target_id
             target_type = self.target_type
         else:
-            target_type, target_id = _validate_application_command_target(target)
-        
-        if keyword_parameters:
-            raise TypeError(
-                f'Extra or unused parameters: {keyword_parameters!r}.'
-            )
+            target_type, target_id = validate_application_command_permission_overwrite_target(target)
         
         new = object.__new__(type(self))
         new.allow = allow
         new.target_id = target_id
         new.target_type = target_type
         return new
+    
+    
+    @property
+    def target(self):
+        """
+        Returns the application command overwrite's target entity.
+        
+        Returns
+        -------
+        target : `None`, ``Role``, ``ClientUserBase``, ``Channel``
+        """
+        target_type = self.target_type
+        target_id = self.target_id
+        
+        if target_type is APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_ROLE:
+            target = create_partial_role_from_id(target_id)
+        
+        elif target_type is APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_USER:
+            target = create_partial_user_from_id(target_id)
+        
+        elif target_type is APPLICATION_COMMAND_PERMISSION_OVERWRITE_TARGET_TYPE_CHANNEL:
+            target = create_partial_channel_from_id(target_id, ChannelType.unknown, 0)
+        
+        else:
+            target = None
+        
+        return target

@@ -144,7 +144,8 @@ class ApplicationCommandPermissionOverwriteWrapper(CommandWrapper):
         guild : ``Guild``, `int`
             The guild's identifier where the overwrite is applied.
         target : ``ClientUserBase``, ``Role``, ``Channel``, `tuple` ((``ClientUserBase``, ``Role``, \
-                ``Channel``, `str` (`'Role'`, `'role'`, `'User'`, `'user'`, `'Channel'`, `'channel'`)), `int`)
+                ``Channel``, `str` (`'Role'`, `'role'`, `'User'`, `'user'`, `'Channel'`, `'channel'`, \
+                ``ApplicationCommandPermissionOverwriteTargetType``, `int`)), `int`)
             The target entity of the overwrite
             
             The expected type & value might be pretty confusing, but the target was it to allow relaxing creation.

@@ -1,3 +1,9 @@
+## 1.3.?? *\[2023-03-??\]*
+
+#### Bug Fixes
+
+- `reconstruct_payload` put an extra line-break after a long string.
+
 ## 1.3.22 *\[2023-02-18\]*
 
 #### Improvements

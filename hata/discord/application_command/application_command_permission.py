@@ -29,7 +29,7 @@ class ApplicationCommandPermission(RichAttributeErrorBaseType):
     """
     __slots__ = ('application_command_id', 'application_id', 'guild_id', 'permission_overwrites')
     
-    def __new__(cls, application_command, *, permission_overwrites=None):
+    def __new__(cls, application_command, *, permission_overwrites = None):
         """
         Creates a new ``ApplicationCommandPermission`` from the given parameters.
         

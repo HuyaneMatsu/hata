@@ -29,13 +29,14 @@ STRING_MAX_LINE_LENGTH = 120
 STRING_BREAK_TO_MULTI_LINE_OVER = 60
 STRING_MAX_RENDER_LENGTH = 12000
 
+
 def reconstruct_payload(payload):
     """
     Tries to reconstruct the given payload.
     
     Parameters
     ----------
-    payload : `Any`
+    payload : `object`
         The payload to try to reconstruct.
     
     Returns
@@ -59,6 +60,7 @@ def reconstruct_payload(payload):
         reconstruct_unexpected_into(payload, into)
     
     return ''.join(into)
+
 
 def reconstruct_json_into(value, into, indent):
     """
@@ -228,7 +230,7 @@ def reconstruct_string_into(value, into, indent, is_file):
             for counter in range(indent):
                 into.append(VALUE_INDENT)
             
-            into.append(')\n')
+            into.append(')')
         
         else:
             into.append(repr(value))
@@ -344,7 +346,7 @@ def reconstruct_unexpected_into(value, into):
     
     Parameters
     ----------
-    value : `Any`
+    value : `object`
         Le value.
     into : `list` of `str`
         A list to extend it's content.
@@ -422,7 +424,7 @@ def hash_map_key_sort_key(item):
     
     Parameters
     ----------
-    item : `tuple` (`str`, `Any`)
+    item : `tuple` (`str`, `object`)
         An item of a hash map.
     
     Returns

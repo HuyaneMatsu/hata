@@ -302,7 +302,7 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
         
         Returns
         -------
-        new : ``ApplicationCommandPermissionOverwrite``
+        new : `instance<type<self>>`
         """
         new = object.__new__(type(self))
         
@@ -335,8 +335,7 @@ class ApplicationCommandPermissionOverwrite(RichAttributeErrorBaseType):
         
         Returns
         -------
-        new : ``ApplicationCommandPermissionOverwrite``
-            the newly created application command permission overwrite.
+        new : `instance<type<self>>`
         
         Raises
         ------

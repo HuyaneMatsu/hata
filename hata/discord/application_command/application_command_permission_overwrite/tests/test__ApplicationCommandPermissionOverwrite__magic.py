@@ -61,3 +61,53 @@ def test__ApplicationCommandPermissionOverwrite__eq():
     ):
         test_select_option = ApplicationCommandPermissionOverwrite(**{**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(application_command_permission_overwrite, test_select_option)
+
+
+def test__ApplicationCommandPermissionOverwrite__sort():
+    """
+    Tests whether ``ApplicationCommandPermissionOverwrite`` sort as intended.
+    """
+    entity_0 = ApplicationCommandPermissionOverwrite(
+        allow = True,
+        target = (ApplicationCommandPermissionOverwriteTargetType.role, 202302210014),
+    )
+    entity_1 = ApplicationCommandPermissionOverwrite(
+        allow = True,
+        target = (ApplicationCommandPermissionOverwriteTargetType.user, 202302210015),
+    )
+    entity_2 = ApplicationCommandPermissionOverwrite(
+        allow = True,
+        target = (ApplicationCommandPermissionOverwriteTargetType.channel, 202302210016),
+    )
+    entity_3 = ApplicationCommandPermissionOverwrite(
+        allow = True,
+        target = (ApplicationCommandPermissionOverwriteTargetType.role, 202302210017),
+    )
+    entity_4 = ApplicationCommandPermissionOverwrite(
+        allow = True,
+        target = (ApplicationCommandPermissionOverwriteTargetType.user, 202302210018),
+    )
+    entity_5 = ApplicationCommandPermissionOverwrite(
+        allow = True,
+        target = (ApplicationCommandPermissionOverwriteTargetType.channel, 202302210019),
+    )
+    
+    input = [
+        entity_0,
+        entity_1,
+        entity_2,
+        entity_3,
+        entity_4,
+        entity_5,
+    ]
+    
+    expected_output = [
+        entity_0,
+        entity_3,
+        entity_1,
+        entity_4,
+        entity_2,
+        entity_5,
+    ]
+    
+    vampytest.assert_eq(sorted(input), expected_output)

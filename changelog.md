@@ -1,8 +1,17 @@
 ## 1.3.?? *\[2023-03-??\]*
 
+#### Improvements
+
+- Add `ApplicationCommandPermission.copy_with`.
+- Add `ApplicationCommandPermission.iter_permission_overwrites`.
+
 #### Bug Fixes
 
 - `reconstruct_payload` put an extra line-break after a long string.
+
+#### Renames, Deprecation & Removals
+
+- Deprecate `ApplicationCommandPermission.
 
 ## 1.3.22 *\[2023-02-18\]*
 

@@ -165,7 +165,7 @@ def _assert__application_command__name(name):
     return True
 
 
-class ApplicationCommand(DiscordEntity, immortal=True):
+class ApplicationCommand(DiscordEntity, immortal = True):
     """
     Represents a Discord slash command.
     

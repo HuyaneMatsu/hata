@@ -7,10 +7,10 @@ def test__put_id_into():
     """
     Tests whether ``put_id_into`` is working as intended.
     """
-    id_ = 202211170029
+    rule_id = 202211170029
     
-    for input_, defaults, expected_output in (
-        (id_, False, {'id': str(id_)}),
+    for input_value, defaults, expected_output in (
+        (rule_id, False, {'id': str(rule_id)}),
     ):
-        data = put_id_into(input_, {}, defaults)
+        data = put_id_into(input_value, {}, defaults)
         vampytest.assert_eq(data, expected_output)

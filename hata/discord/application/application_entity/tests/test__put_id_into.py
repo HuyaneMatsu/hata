@@ -7,10 +7,10 @@ def test__put_id_into():
     """
     Tests whether ``put_id_into`` works as intended.
     """
-    id_ = 202211240042
+    application_entity_id = 202211240042
     
-    for input_, defaults, expected_output in (
-        (id_, False, {'id': str(id_)}),
+    for input_value, defaults, expected_output in (
+        (application_entity_id, False, {'id': str(application_entity_id)}),
     ):
-        data = put_id_into(input_, {}, defaults)
+        data = put_id_into(input_value, {}, defaults)
         vampytest.assert_eq(data, expected_output)

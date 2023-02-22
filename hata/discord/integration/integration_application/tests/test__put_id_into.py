@@ -9,8 +9,8 @@ def test__put_id_into():
     """
     integration_application_id = 202212170046
     
-    for input_, defaults, expected_output in (
+    for input_value, defaults, expected_output in (
         (integration_application_id, False, {'id': str(integration_application_id)}),
     ):
-        data = put_id_into(input_, {}, defaults)
+        data = put_id_into(input_value, {}, defaults)
         vampytest.assert_eq(data, expected_output)

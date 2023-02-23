@@ -6,12 +6,12 @@ from ..preinstanced import ApplicationCommandPermissionOverwriteTargetType
 
 def _asert_fields_set(application_command_permission_overwrite):
     """
-    Checks whether all attributes of the string select option are set.
+    Checks whether all attributes of the application command permission overwrite.
     
     Parameters
     ----------
-    application_command_permission_overwrite : ``ApplicationCommandPermissionOverwrite.__new__``
-        The string select option to check
+    application_command_permission_overwrite : ``ApplicationCommandPermissionOverwrite``
+        The application command permission overwrite to check.
     """
     vampytest.assert_instance(application_command_permission_overwrite, ApplicationCommandPermissionOverwrite)
     

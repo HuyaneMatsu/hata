@@ -8,12 +8,12 @@ from ..application_command_permission import ApplicationCommandPermission
 
 def _asert_fields_set(application_command_permission):
     """
-    Checks whether all attributes of the string select option are set.
+    Checks whether all attributes of the application command permission.
     
     Parameters
     ----------
-    application_command_permission : ``ApplicationCommandPermission.__new__``
-        The string select option to check
+    application_command_permission : ``ApplicationCommandPermission``
+        The application command permission to check.
     """
     vampytest.assert_instance(application_command_permission, ApplicationCommandPermission)
     

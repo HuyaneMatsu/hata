@@ -115,7 +115,6 @@ def test__ApplicationCommandPermission__copy_with__1():
     vampytest.assert_eq(copy.permission_overwrites, tuple(new_permission_overwrites))
 
 
-
 def test__ApplicationCommandPermission__iter_permission_overwrites():
     """
     Tests whether ``ApplicationCommandPermission.iter_permission_overwrites`` works as intended.

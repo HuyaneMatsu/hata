@@ -1,6 +1,5 @@
 __all__ = ('ApplicationCommandPermissionOverwriteTargetType',)
 
-
 from ...bases import Preinstance as P, PreinstancedBase
 
 

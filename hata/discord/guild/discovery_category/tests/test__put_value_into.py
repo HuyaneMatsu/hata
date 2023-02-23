@@ -9,8 +9,8 @@ def test__put_value_into():
     """
     value = 1
     
-    for input_, defaults, expected_output in (
+    for input_value, defaults, expected_output in (
         (value, False, {'id': value}),
     ):
-        data = put_value_into(input_, {}, defaults)
+        data = put_value_into(input_value, {}, defaults)
         vampytest.assert_eq(data, expected_output)

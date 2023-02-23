@@ -3,7 +3,9 @@ __all__ = ('CommandBaseApplicationCommand',)
 from scarletio import copy_docs
 
 from .....discord.application_command import ApplicationCommand, ApplicationCommandTargetType
-from .....discord.application_command.constants import APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
+from .....discord.application_command.application_command_permission.constants import (
+    APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
+)
 from .....discord.user.user.helpers import _try_get_guild_id
 
 from ...utils import SYNC_ID_GLOBAL, SYNC_ID_NON_GLOBAL, UNLOADING_BEHAVIOUR_DELETE, UNLOADING_BEHAVIOUR_INHERIT

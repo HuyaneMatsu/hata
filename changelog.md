@@ -11,7 +11,7 @@
 
 #### Renames, Deprecation & Removals
 
-- Deprecate `ApplicationCommandPermission.
+- Deprecate `ApplicationCommandPermission.add_permission_overwrite`.
 
 ## 1.3.22 *\[2023-02-18\]*
 

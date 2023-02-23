@@ -42,6 +42,7 @@ setup(
         'hata.discord.application.team_member',
         'hata.discord.application.third_party_sku',
         'hata.discord.application_command',
+        'hata.discord.application_command.application_command_option_choice',
         'hata.discord.application_command.application_command_permission',
         'hata.discord.application_command.application_command_permission_overwrite',
         'hata.discord.audit_logs',

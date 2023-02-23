@@ -12,8 +12,8 @@ def _check_are_fields_set(string_select_option):
     
     Parameters
     ----------
-    string_select_option : ``StringSelectOption.__new__``
-        The string select option to check
+    string_select_option : ``StringSelectOption``
+        The string select option to check.
     """
     vampytest.assert_instance(string_select_option, StringSelectOption)
     

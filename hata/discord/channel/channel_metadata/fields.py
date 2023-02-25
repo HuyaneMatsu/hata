@@ -240,7 +240,7 @@ validate_auto_archive_after = int_options_validator_factory('auto_archive_after'
 # available_tags
 
 parse_available_tags = nullable_entity_array_parser_factory('available_tags', ForumTag)
-put_available_tags_into = nullable_entity_array_optional_putter_factory('available_tags')
+put_available_tags_into = nullable_entity_array_optional_putter_factory('available_tags', ForumTag)
 validate_available_tags = nullable_entity_array_validator_factory('available_tags', ForumTag)
 
 # bitrate

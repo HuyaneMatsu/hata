@@ -7,7 +7,7 @@ from scarletio import RichAttributeErrorBaseType
 from ...localization.helpers import get_localized_length
 from ...localization.utils import hash_locale_dictionary
 
-from ..helpers import apply_translation_into
+from ..helpers import with_translation
 
 from .fields import (
     parse_name, parse_name_localizations, parse_value, put_name_into, put_name_localizations_into, put_value_into,
@@ -302,7 +302,7 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
             return
         
         # name
-        self.name_localizations = apply_translation_into(
+        self.name_localizations = with_translation(
             self.name,
             self.name_localizations,
             translation_table,
@@ -330,7 +330,7 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
             return self
         
         # name
-        name_localizations = apply_translation_into(
+        name_localizations = with_translation(
             self.name,
             self.name_localizations,
             translation_table,

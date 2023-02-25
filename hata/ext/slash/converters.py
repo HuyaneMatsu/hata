@@ -8,7 +8,7 @@ from scarletio import CallableAnalyzer, RichAttributeErrorBaseType, copy_docs, i
 from ...discord.application_command import (
     ApplicationCommandOption, ApplicationCommandOptionChoice, ApplicationCommandOptionType
 )
-from ...discord.application_command.application_command_option import _validate_max_length, _validate_min_length
+from ...discord.application_command.application_command_option.fields import validate_max_length, validate_min_length
 from ...discord.application_command.constants import (
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN,
     APPLICATION_COMMAND_OPTIONS_MAX
@@ -1910,8 +1910,8 @@ def parse_annotation_slash_parameter(parameter, slash_parameter):
     processed_channel_types = preprocess_channel_types(slash_parameter.channel_types)
     channel_types = postprocess_channel_types(processed_channel_types, parsed_channel_types)
     
-    max_length = _validate_max_length(slash_parameter.max_length, ANNOTATION_TYPE_TO_OPTION_TYPE[type_])
-    min_length = _validate_min_length(slash_parameter.min_length, ANNOTATION_TYPE_TO_OPTION_TYPE[type_])
+    max_length = validate_max_length(slash_parameter.max_length, ANNOTATION_TYPE_TO_OPTION_TYPE[type_])
+    min_length = validate_min_length(slash_parameter.min_length, ANNOTATION_TYPE_TO_OPTION_TYPE[type_])
     
     type_, max_value = process_max_and_min_value(type_, slash_parameter.max_value, 'max_value')
     type_, min_value = process_max_and_min_value(type_, slash_parameter.min_value, 'min_value')

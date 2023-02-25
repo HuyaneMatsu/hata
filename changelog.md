@@ -4,6 +4,12 @@
 
 - Add `ApplicationCommandPermission.copy_with`.
 - Add `ApplicationCommandPermission.iter_permission_overwrites`.
+- Add `ApplicationCommandOptionChoice.with_translation`.
+- Add `ApplicationCommandOptionChoice.copy_with`.
+- Add `ApplicationCommandOption.with_translation`.
+- Add `ApplicationCommandOption.copy_with`.
+- Add `ApplicationCommandOption.iter_choices`.
+- Add `ApplicationCommandOption.iter_options`.
 
 #### Bug Fixes
 
@@ -12,6 +18,10 @@
 #### Renames, Deprecation & Removals
 
 - Deprecate `ApplicationCommandPermission.add_permission_overwrite`.
+- Deprecate `ApplicationCommandOptionChoice.apply_translation`.
+- Deprecate `ApplicationCommandOption.add_option`.
+- Deprecate `ApplicationCommandOption.add_choice`.
+- Deprecate `ApplicationCommandOption.apply_translation`.
 
 ## 1.3.22 *\[2023-02-18\]*
 

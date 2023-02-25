@@ -1,7 +1,7 @@
 __all__ = ()
 
 from ...field_parsers import (
-    bool_parser_factory, nullable_date_time_parser_factory, nullable_string_array_parser_factory,
+    bool_parser_factory, nullable_date_time_parser_factory, nullable_sorted_array_parser_factory,
     preinstanced_array_parser_factory, preinstanced_parser_factory
 )
 from ...field_putters import (
@@ -35,7 +35,7 @@ validate_emoji_discovery = bool_validator_factory('emoji_discovery')
 
 # keywords
 
-parse_keywords = nullable_string_array_parser_factory('keywords')
+parse_keywords = nullable_sorted_array_parser_factory('keywords')
 put_keywords_into = nullable_string_array_optional_putter_factory('keywords')
 validate_keywords = nullable_string_array_validator_factory('keywords')
 

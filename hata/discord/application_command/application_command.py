@@ -15,7 +15,7 @@ from .constants import (
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN,
     APPLICATION_COMMAND_NAME_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN, APPLICATION_COMMAND_OPTIONS_MAX
 )
-from .helpers import apply_translation_into
+from .helpers import with_translation
 from .preinstanced import APPLICATION_COMMAND_CONTEXT_TARGET_TYPES, ApplicationCommandTargetType
 
 
@@ -964,7 +964,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         # options
         options = self.options
         if (options is not None):
-            repr_parts.append(', options=[')
+            repr_parts.append(', options = [')
             
             index = 0
             limit = len(options)
@@ -985,13 +985,13 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         # name_localizations
         name_localizations = self.name_localizations
         if (name_localizations is not None):
-            repr_parts.append(', name_localizations=')
+            repr_parts.append(', name_localizations = ')
             repr_parts.append(repr(name_localizations))
         
         # description_localizations
         description_localizations = self.description_localizations
         if (description_localizations is not None):
-            repr_parts.append(', description_localizations=')
+            repr_parts.append(', description_localizations = ')
             repr_parts.append(repr(description_localizations))
         
         # Ignore extra fields: `.version`
@@ -1511,7 +1511,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
             return
         
         # description
-        self.description_localizations = apply_translation_into(
+        self.description_localizations = with_translation(
             self.description,
             self.description_localizations,
             translation_table,
@@ -1519,7 +1519,7 @@ class ApplicationCommand(DiscordEntity, immortal = True):
         )
         
         # name
-        self.name_localizations = apply_translation_into(
+        self.name_localizations = with_translation(
             self.name,
             self.name_localizations,
             translation_table,

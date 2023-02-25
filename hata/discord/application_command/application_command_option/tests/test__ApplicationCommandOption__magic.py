@@ -1,14 +1,18 @@
 import vampytest
 
-from ...localization import Locale
+from ....localization import Locale
 
-from .. import ApplicationCommandOption, ApplicationCommandOptionChoice, ApplicationCommandOptionType
+from ...application_command_option_choice import ApplicationCommandOptionChoice
+
+from ..application_command_option import ApplicationCommandOption
+from ..preinstanced import ApplicationCommandOptionType
 
 
 def test__ApplicationCommandOption__repr__0():
     """
     Tests whether ``ApplicationCommandOption``'s `__repr__` method works correctly.
-    This test tests string sub-fields.
+    
+    Case: string sub-fields.
     """
     application_command_option = ApplicationCommandOption(
         'owo',
@@ -18,6 +22,37 @@ def test__ApplicationCommandOption__repr__0():
         max_length = 60,
     )
     vampytest.assert_instance(repr(application_command_option), str)
+
+
+def test__ApplicationCommandOption__hash__0():
+    """
+    Tests whether ``ApplicationCommandOption``'s `__hash__` method works correctly.
+    
+    Case: string sub-fields.
+    """
+    application_command_option = ApplicationCommandOption(
+        'vanilla',
+        'chocola',
+        ApplicationCommandOptionType.string,
+        choices = [
+            ApplicationCommandOptionChoice(
+                'exploring',
+                'is-fun',
+                name_localizations = {
+                    Locale.thai: 'stay-safe',
+                }
+            )
+        ],
+        description_localizations = {
+            Locale.thai: 'choco',
+        },
+        name_localizations = {
+            Locale.thai: 'vani',
+        },
+        required = True
+    )
+    
+    vampytest.assert_instance(hash(application_command_option), int)
 
 
 def test__ApplicationCommandOption__eq():
@@ -158,33 +193,3 @@ def test__ApplicationCommandOption__len__3():
     )
     
     vampytest.assert_eq(len(application_command_option), expected_length)
-
-
-def test__ApplicationCommandOption__hash__0():
-    """
-    Tests whether ``ApplicationCommandOption.__hash__`` works as intended.
-    """
-    application_command_option = ApplicationCommandOption(
-        'vanilla',
-        'chocola',
-        ApplicationCommandOptionType.string,
-        choices = [
-            ApplicationCommandOptionChoice(
-                'exploring',
-                'is-fun',
-                name_localizations = {
-                    Locale.thai: 'stay-safe',
-                }
-            )
-        ],
-        default = True,
-        description_localizations = {
-            Locale.thai: 'choco',
-        },
-        name_localizations = {
-            Locale.thai: 'vani',
-        },
-        required = True
-    )
-    
-    vampytest.assert_instance(hash(application_command_option), int)

@@ -35,7 +35,7 @@ def maybe_locale(value):
     return locale
 
 
-def apply_translation_into(source_value, localised_dictionary, translation_table, replace):
+def with_translation(source_value, actual_localized_dictionary, translation_table, replace):
     """
     Applies translation of for the given value to the given localized dictionary from the given translation table.
     
@@ -43,7 +43,7 @@ def apply_translation_into(source_value, localised_dictionary, translation_table
     ----------
     source_value : `None`, `str`
         The value to get translations for.
-    localised_dictionary : `None`, `dict` of ((`str`, ``Locale``), `str`) items
+    actual_localized_dictionary : `None`, `dict` of ((`str`, ``Locale``), `str`) items
         Localized dictionary to apply the translations to.
     translation_table : `dict` of ((``Locale``, `str`), (`None`, `dict` (`str`, (`None`, `str`)) items)) items
         Translation table to pull localizations from.
@@ -52,9 +52,14 @@ def apply_translation_into(source_value, localised_dictionary, translation_table
     
     Returns
     -------
-    localised_dictionary : `None`, `dict` of ((`str`, ``Locale``), `str`) items
+    localized_dictionary : `None`, `dict` of ((`str`, ``Locale``), `str`) items
         New localized dictionary.
     """
+    if (actual_localized_dictionary is None):
+        new_localized_dictionary = None
+    else:
+        new_localized_dictionary = actual_localized_dictionary.copy()
+    
     if (source_value is not None):
         for locale, relations in translation_table.items():
             if relations is None:
@@ -70,12 +75,12 @@ def apply_translation_into(source_value, localised_dictionary, translation_table
             
             locale = maybe_locale(locale)
             
-            if localised_dictionary is None:
-                localised_dictionary = {}
+            if new_localized_dictionary is None:
+                new_localized_dictionary = {}
             
             if replace:
-                localised_dictionary[locale] = translation
+                new_localized_dictionary[locale] = translation
             else:
-                localised_dictionary.setdefault(locale, translation)
+                new_localized_dictionary.setdefault(locale, translation)
     
-    return localised_dictionary
+    return new_localized_dictionary

@@ -952,6 +952,9 @@ def nullable_entity_array_putter_factory(field_key, field_type, *, can_include_i
     field_type : `type`
         The field's type.
     
+    can_include_internals : `bool`, Optional (Keyword only)
+        Whether the `field_type.to_data` implements the `include_internals` parameter.
+        
     include : `None`, `str` = `None`, Optional (Keyword only)
         The object's name to include `entity_type` with. Should be used when `entity_type` cannot be resolved initially.
     
@@ -1040,7 +1043,9 @@ def nullable_entity_array_putter_factory(field_key, field_type, *, can_include_i
     return putter
 
 
-def nullable_entity_array_optional_putter_factory(field_key):
+def nullable_entity_array_optional_putter_factory(
+    field_key, field_type, *, can_include_internals = ..., include = None
+):
     """
     Returns a nullable entity array putter.
     
@@ -1049,45 +1054,103 @@ def nullable_entity_array_optional_putter_factory(field_key):
     field_key : `str`
         The field's key used in payload.
     
+    field_type : `type`
+        The field's type.
+    
+    can_include_internals : `bool`, Optional (Keyword only)
+        Whether the `field_type.to_data` implements the `include_internals` parameter.
+        
+    include : `None`, `str` = `None`, Optional (Keyword only)
+        The object's name to include `entity_type` with. Should be used when `entity_type` cannot be resolved initially.
+    
     Returns
     -------
     putter : `FunctionType`
     """
-    def putter(entity_array, data, defaults, *, include_internals = False):
-        """
-        Puts the given entity array into the given `data` json serializable object.
-        
-        > This function is generated.
-        
-        Parameters
-        ----------
-        entity_array : `None`, `tuple` of `object`
-            Entity array.
-        data : `dict` of (`str`, `object`) items
-            Json serializable dictionary.
-        defaults : `bool`
-            Whether default values should be included as well.
-        include_internals : `bool` = `False`, Optional (Keyword only)
-            Whether internal fields should be included.
-        
-        Returns
-        -------
-        data : `dict` of (`str`, `object`) items
-        """
-        nonlocal field_key
-        
-        if defaults or (entity_array is not None):
-            if entity_array is None:
-                entity_data_array = []
-            else:
-                entity_data_array = [
-                    entity.to_data(defaults = defaults, include_internals = include_internals)
-                    for entity in entity_array
-                ]
+    if (
+        ((can_include_internals is not ...) and can_include_internals) or
+        ((field_type is not NotImplemented) and _has_entity_include_internals_parameter(field_type))
+    ):
+        def putter(entity_array, data, defaults, *, include_internals = False):
+            """
+            Puts the given entity array into the given `data` json serializable object.
             
-            data[field_key] = entity_data_array
-        
-        return data
+            > This function is generated.
+            
+            Parameters
+            ----------
+            entity_array : `None`, `tuple` of `object`
+                Entity array.
+            data : `dict` of (`str`, `object`) items
+                Json serializable dictionary.
+            defaults : `bool`
+                Whether default values should be included as well.
+            include_internals : `bool` = `False`, Optional (Keyword only)
+                Whether internal fields should be included.
+            
+            Returns
+            -------
+            data : `dict` of (`str`, `object`) items
+            """
+            nonlocal field_key
+            
+            if defaults or (entity_array is not None):
+                if entity_array is None:
+                    entity_data_array = []
+                else:
+                    entity_data_array = [
+                        entity.to_data(defaults = defaults, include_internals = include_internals)
+                        for entity in entity_array
+                    ]
+                
+                data[field_key] = entity_data_array
+            
+            return data
+    
+    else:
+        def putter(entity_array, data, defaults):
+            """
+            Puts the given entity array into the given `data` json serializable object.
+            
+            > This function is generated.
+            
+            Parameters
+            ----------
+            entity_array : `None`, `tuple` of `object`
+                Entity array.
+            data : `dict` of (`str`, `object`) items
+                Json serializable dictionary.
+            defaults : `bool`
+                Whether default values should be included as well.
+            include_internals : `bool` = `False`, Optional (Keyword only)
+                Whether internal fields should be included.
+            
+            Returns
+            -------
+            data : `dict` of (`str`, `object`) items
+            """
+            nonlocal field_key
+            
+            if defaults or (entity_array is not None):
+                if entity_array is None:
+                    entity_data_array = []
+                else:
+                    entity_data_array = [
+                        entity.to_data(defaults = defaults)
+                        for entity in entity_array
+                    ]
+                
+                data[field_key] = entity_data_array
+            
+            return data
+
+    
+    if (include is not None):
+        @include_with_callback(include)
+        def include_field_type(value):
+            nonlocal field_type
+            field_type = value
+    
     
     return putter
 

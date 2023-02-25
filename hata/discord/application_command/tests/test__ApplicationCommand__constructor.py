@@ -4,8 +4,8 @@ from ...localization import Locale
 from ...permission import Permission
 
 from ..application_command import ApplicationCommand
-from ..application_command_option import ApplicationCommandOption
-from ..preinstanced import ApplicationCommandOptionType, ApplicationCommandTargetType
+from ..application_command_option import ApplicationCommandOption, ApplicationCommandOptionType
+from ..preinstanced import ApplicationCommandTargetType
 
 
 def test__ApplicationCommand__new__0():

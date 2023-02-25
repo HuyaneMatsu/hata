@@ -7,9 +7,7 @@ import reprlib
 from scarletio import RichAttributeErrorBaseType, copy_docs, include
 
 from ...discord.application_command import ApplicationCommandPermissionOverwrite, ApplicationCommandOptionType
-from ...discord.application_command.application_command_option import (
-    _validate_max_length, _validate_min_length
-)
+from ...discord.application_command.application_command_option.fields import validate_max_length, validate_min_length
 from ...discord.client import Client
 from ...discord.guild import Guild
 from ...discord.preconverters import preconvert_snowflake
@@ -400,8 +398,8 @@ class ApplicationCommandParameterConfigurerWrapper(CommandWrapper):
             type_or_choice, parameter_name
         )
         
-        max_length = _validate_max_length(max_length, ANNOTATION_TYPE_TO_OPTION_TYPE[type_])
-        min_length = _validate_min_length(min_length, ANNOTATION_TYPE_TO_OPTION_TYPE[type_])
+        max_length = validate_max_length(max_length, ANNOTATION_TYPE_TO_OPTION_TYPE[type_])
+        min_length = validate_min_length(min_length, ANNOTATION_TYPE_TO_OPTION_TYPE[type_])
         
         type_, max_value = process_max_and_min_value(type_, max_value, 'max_value')
         type_, min_value = process_max_and_min_value(type_, min_value, 'min_value')

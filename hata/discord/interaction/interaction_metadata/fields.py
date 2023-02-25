@@ -7,7 +7,7 @@ from ...component import ComponentType
 from ...component.shared_constants import CUSTOM_ID_LENGTH_MAX
 from ...field_parsers import (
     entity_id_parser_factory, force_string_parser_factory, nullable_object_array_parser_factory,
-    nullable_string_array_parser_factory, nullable_string_parser_factory, preinstanced_parser_factory
+    nullable_sorted_array_parser_factory, nullable_string_parser_factory, preinstanced_parser_factory
 )
 from ...field_putters import (
     entity_id_optional_putter_factory, entity_id_putter_factory, force_string_putter_factory,
@@ -134,6 +134,6 @@ validate_target_id = entity_id_validator_factory('target_id', DiscordEntity)
 
 # values
 
-parse_values = nullable_string_array_parser_factory('values')
+parse_values = nullable_sorted_array_parser_factory('values')
 put_values_into = nullable_string_array_optional_putter_factory('values')
 validate_values = nullable_string_array_validator_factory('values')

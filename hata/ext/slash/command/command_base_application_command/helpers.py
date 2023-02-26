@@ -1,10 +1,10 @@
 __all__ = ()
 
 from .....discord.guild import Guild
-from .....discord.application_command.application_command import _assert__application_command__nsfw
-from .....discord.application_command.constants import (
+from .....discord.application_command.application_command.constants import (
     APPLICATION_COMMAND_NAME_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN
 )
+from .....discord.application_command.application_command.fields import validate_nsfw as _validate_nsfw
 from .....discord.permission import Permission
 from .....discord.preconverters import preconvert_bool, preconvert_flag, preconvert_snowflake
 
@@ -61,31 +61,6 @@ def _validate_delete_on_unload(delete_on_unload):
             unloading_behaviour = UNLOADING_BEHAVIOUR_KEEP
     
     return unloading_behaviour
-
-
-def _validate_allow_by_default(allow_by_default):
-    """
-    Validates the given `allow_by_default` value.
-    
-    Parameters
-    ----------
-    allow_by_default : `None`, `bool`
-        The `allow_by_default` value to validate.
-    
-    Returns
-    -------
-    allow_by_default : `None`, `bool`
-        The validated `allow_by_default` value.
-    
-    Raises
-    ------
-    TypeError
-        If `allow_by_default` was not given as `None`, `bool`.
-    """
-    if (allow_by_default is not None):
-        allow_by_default = preconvert_bool(allow_by_default, 'allow_by_default')
-    
-    return allow_by_default
 
 
 def _validate_allow_in_dm(allow_in_dm):
@@ -259,33 +234,6 @@ def _validate_name(name):
             )
     
     return name
-
-
-def _validate_nsfw(nsfw):
-    """
-    Validates the given `nsfw` value.
-    
-    Parameters
-    ----------
-    nsfw : `None`, `bool`
-        The `nsfw` value to validate.
-    
-    Returns
-    -------
-    nsfw : `None`, `bool`
-        The validated `nsfw` value.
-    
-    Raises
-    ------
-    TypeError
-        If `nsfw` was not given as `None`, `bool`.
-    """
-    try:
-        _assert__application_command__nsfw(nsfw)
-    except AssertionError as err:
-        raise TypeError(*err.args) from err
-    
-    return nsfw
 
 
 def _validate_required_permissions(required_permissions):

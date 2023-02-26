@@ -46,8 +46,7 @@ APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND_GROUP = ApplicationCommandOptionType
 
 parse_autocomplete = bool_parser_factory('autocomplete', False)
 put_autocomplete_into = bool_optional_putter_factory('autocomplete', False)
-
-_pre_validate_autocomplete = bool_validator_factory('autocomplete')
+_pre_validate_autocomplete = bool_validator_factory('autocomplete', False)
 
 
 def validate_autocomplete(autocomplete, option_type = APPLICATION_COMMAND_OPTION_TYPE_NONE):
@@ -198,8 +197,7 @@ def validate_choices(choices, option_type = APPLICATION_COMMAND_OPTION_TYPE_NONE
                         f'option_type = {option_type!r}.'
                     )
         
-        if len(choices) > APPLICATION_COMMAND_OPTION_CHOICES_MAX:
-            choices = choices[:APPLICATION_COMMAND_OPTION_CHOICES_MAX]
+        choices = choices[:APPLICATION_COMMAND_OPTION_CHOICES_MAX]
     
     return choices
 
@@ -208,8 +206,7 @@ def validate_choices(choices, option_type = APPLICATION_COMMAND_OPTION_TYPE_NONE
 
 parse_default = bool_parser_factory('default', False)
 put_default_into = bool_optional_putter_factory('default', False)
-
-_pre_validate_default = bool_validator_factory('default')
+_pre_validate_default = bool_validator_factory('default', False)
 
 
 def validate_default(default, option_type = APPLICATION_COMMAND_OPTION_TYPE_NONE):
@@ -626,8 +623,7 @@ def validate_options(options):
     """
     options = _pre_validate_options(options)
     if (options is not None):
-        if len(options) > APPLICATION_COMMAND_OPTION_OPTIONS_MAX:
-            options = options[:APPLICATION_COMMAND_OPTION_OPTIONS_MAX]
+        options = options[:APPLICATION_COMMAND_OPTION_OPTIONS_MAX]
     
     return options
 
@@ -636,7 +632,7 @@ def validate_options(options):
 
 parse_required = bool_parser_factory('required', False)
 put_required_into = bool_optional_putter_factory('required', False)
-validate_required = bool_validator_factory('required')
+validate_required = bool_validator_factory('required', False)
 
 # type
 

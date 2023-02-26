@@ -1,7 +1,9 @@
 __all__ = ()
 
 from ...application_command import ApplicationCommand
-from ...application_command.constants import APPLICATION_COMMAND_NAME_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN
+from ...application_command.application_command.constants import (
+    APPLICATION_COMMAND_NAME_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN
+)
 from ...bases import DiscordEntity
 from ...component import ComponentType
 from ...component.shared_constants import CUSTOM_ID_LENGTH_MAX

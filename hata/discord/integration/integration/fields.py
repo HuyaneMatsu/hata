@@ -23,7 +23,7 @@ from .preinstanced import IntegrationType
 
 parse_enabled = bool_parser_factory('enabled', True)
 put_enabled_into = bool_optional_putter_factory('enabled', True)
-validate_enabled = bool_validator_factory('enabled')
+validate_enabled = bool_validator_factory('enabled', True)
 
 # name
 

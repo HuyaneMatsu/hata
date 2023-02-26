@@ -51,7 +51,7 @@ validate_mention_limit = int_conditional_validator_factory(
 
 parse_raid_protection = bool_parser_factory('mention_raid_protection_enabled', False)
 put_raid_protection_into = bool_optional_putter_factory('mention_raid_protection_enabled', False)
-validate_raid_protection = bool_validator_factory('raid_protection')
+validate_raid_protection = bool_validator_factory('raid_protection', False)
 
 # regex_patterns
 

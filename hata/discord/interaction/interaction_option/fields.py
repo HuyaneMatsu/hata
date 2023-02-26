@@ -14,13 +14,16 @@ from ...field_validators import (
 )
 
 from ...application_command import ApplicationCommandOptionType
-from ...application_command.constants import APPLICATION_COMMAND_NAME_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN
+from ...application_command.application_command.constants import (
+    APPLICATION_COMMAND_NAME_LENGTH_MAX, APPLICATION_COMMAND_NAME_LENGTH_MIN
+)
+
 
 # focused
 
 parse_focused = bool_parser_factory('focused', False)
 put_focused_into = bool_optional_putter_factory('focused', False)
-validate_focused = bool_validator_factory('focused')
+validate_focused = bool_validator_factory('focused', False)
 
 # name
 

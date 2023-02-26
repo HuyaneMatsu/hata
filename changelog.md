@@ -10,10 +10,14 @@
 - Add `ApplicationCommandOption.copy_with`.
 - Add `ApplicationCommandOption.iter_choices`.
 - Add `ApplicationCommandOption.iter_options`.
+- Add `ApplicationCommand.copy_with`.
+- Add `ApplicationCommand.with_translation`.
+- Add `ApplicationCommand.iter_options`.
 
 #### Bug Fixes
 
 - `reconstruct_payload` put an extra line-break after a long string.
+- `ApplicationCommand.guild` raised `KeyError` if the guild was not cached.
 
 #### Renames, Deprecation & Removals
 
@@ -22,6 +26,8 @@
 - Deprecate `ApplicationCommandOption.add_option`.
 - Deprecate `ApplicationCommandOption.add_choice`.
 - Deprecate `ApplicationCommandOption.apply_translation`.
+- Deprecate `ApplicationCommand.add_option`.
+- Deprecate `ApplicationCommand.apply_translation`.
 
 ## 1.3.22 *\[2023-02-18\]*
 

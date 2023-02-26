@@ -13,7 +13,7 @@ from .constants import DESCRIPTION_LENGTH_MAX, LABEL_LENGTH_MAX, VALUE_LENGTH_MA
 
 parse_default = bool_parser_factory('default', False)
 put_default_into = bool_optional_putter_factory('default', False)
-validate_default = bool_validator_factory('default')
+validate_default = bool_validator_factory('default', False)
 
 # description
 

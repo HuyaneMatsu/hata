@@ -268,7 +268,7 @@ def validate_secret(secret):
 
 # should_request_users
 
-validate_should_request_users = bool_validator_factory('should_request_users')
+validate_should_request_users = bool_validator_factory('should_request_users', True)
 
 # shard_count
 

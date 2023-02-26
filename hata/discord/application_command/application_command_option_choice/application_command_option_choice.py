@@ -329,16 +329,14 @@ class ApplicationCommandOptionChoice(RichAttributeErrorBaseType):
         if translation_table is None:
             return self
         
-        # name
-        name_localizations = with_translation(
-            self.name,
-            self.name_localizations,
+        new = self.copy()
+        
+        # name_localizations
+        new.name_localizations = with_translation(
+            new.name,
+            new.name_localizations,
             translation_table,
             replace,
         )
-
-        new = object.__new__(type(self))
-        new.name = self.name
-        new.name_localizations = name_localizations
-        new.value = self.value
+        
         return new

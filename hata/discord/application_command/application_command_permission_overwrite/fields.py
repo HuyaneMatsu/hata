@@ -11,7 +11,7 @@ from .preinstanced import ApplicationCommandPermissionOverwriteTargetType
 
 parse_allow = bool_parser_factory('permission', True)
 put_allow_into = force_bool_putter_factory('permission')
-validate_allow = bool_validator_factory('permission')
+validate_allow = bool_validator_factory('allow', True)
 
 # target_id
 

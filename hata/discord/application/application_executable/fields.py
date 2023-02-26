@@ -18,7 +18,7 @@ from .preinstanced import OperationSystem
 
 parse_launcher = bool_parser_factory('is_launcher', False)
 put_launcher_into = bool_optional_putter_factory('is_launcher', False)
-validate_launcher = bool_validator_factory('launcher')
+validate_launcher = bool_validator_factory('launcher', False)
 
 # name
 

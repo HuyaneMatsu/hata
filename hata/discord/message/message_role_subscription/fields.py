@@ -16,7 +16,7 @@ from ...field_validators import (
 
 parse_renewal = bool_parser_factory('is_renewal', False)
 put_renewal_into = bool_optional_putter_factory('is_renewal', False)
-validate_renewal = bool_validator_factory('renewal')
+validate_renewal = bool_validator_factory('renewal', False)
 
 # subscription_listing_id
 

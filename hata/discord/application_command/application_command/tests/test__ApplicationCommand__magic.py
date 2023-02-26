@@ -1,10 +1,11 @@
 import vampytest
 
-from ...localization import Locale
-from ...permission import Permission
+from ....localization import Locale
+from ....permission import Permission
+
+from ...application_command_option import ApplicationCommandOption, ApplicationCommandOptionType
 
 from ..application_command import ApplicationCommand
-from ..application_command_option import ApplicationCommandOption, ApplicationCommandOptionType
 from ..preinstanced import ApplicationCommandTargetType
 
 
@@ -306,3 +307,45 @@ def test__ApplicationCommand__hash():
     )
     
     vampytest.assert_instance(hash(application_command), int)
+
+
+def test__ApplicationCommand__format():
+    """
+    Tests whether ``ApplicationCommand.__format__`` works as intended.
+    """
+    name = 'owo'
+    description = 'description'
+    allow_in_dm = True
+    description_localizations = {
+        Locale.thai: 'ayy',
+        Locale.czech: 'yay',
+    }
+    name_localizations = {
+        Locale.thai: 'nay',
+        Locale.czech: 'lay',
+    }
+    nsfw = True
+    options = [
+        ApplicationCommandOption(
+            'option',
+            'optional',
+            ApplicationCommandOptionType.string,
+
+        )
+    ]
+    required_permissions = Permission().update_by_keys(administrator = True)
+    target_type = ApplicationCommandTargetType.chat
+    
+    application_command = ApplicationCommand(
+        allow_in_dm = allow_in_dm,
+        description = description,
+        description_localizations = description_localizations,
+        name = name,
+        name_localizations = name_localizations,
+        nsfw = nsfw,
+        options = options,
+        required_permissions = required_permissions,
+        target_type = target_type,
+    )
+    
+    vampytest.assert_instance(format(application_command, ''), str)

@@ -1,6 +1,6 @@
 import vampytest
 
-from ....application_command.constants import APPLICATION_COMMAND_NAME_LENGTH_MAX
+from ....application_command.application_command.constants import APPLICATION_COMMAND_NAME_LENGTH_MAX
 
 from ..fields import validate_name
 

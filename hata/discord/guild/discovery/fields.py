@@ -31,7 +31,7 @@ validate_application_requested = nullable_date_time_validator_factory('applicati
 
 parse_emoji_discovery = bool_parser_factory('emoji_discoverability_enabled', False)
 put_emoji_discovery_into = bool_optional_putter_factory('emoji_discoverability_enabled', False)
-validate_emoji_discovery = bool_validator_factory('emoji_discovery')
+validate_emoji_discovery = bool_validator_factory('emoji_discovery', False)
 
 # keywords
 

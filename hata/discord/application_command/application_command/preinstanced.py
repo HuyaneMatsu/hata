@@ -1,6 +1,6 @@
 __all__ = ('ApplicationCommandTargetType', 'APPLICATION_COMMAND_CONTEXT_TARGET_TYPES')
 
-from ..bases import Preinstance as P, PreinstancedBase
+from ...bases import Preinstance as P, PreinstancedBase
 
 
 class ApplicationCommandTargetType(PreinstancedBase):

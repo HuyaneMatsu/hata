@@ -118,7 +118,7 @@ validate_expire_grace_period = int_options_validator_factory('expire_grace_perio
 
 parse_revoked = bool_parser_factory('revoked', False)
 put_revoked_into = bool_optional_putter_factory('revoked', False)
-validate_revoked = bool_validator_factory('revoked')
+validate_revoked = bool_validator_factory('revoked', False)
 
 # role_id
 
@@ -144,4 +144,4 @@ validate_synced_at = nullable_date_time_validator_factory('synced_at')
 
 parse_syncing = bool_parser_factory('syncing', False)
 put_syncing_into = bool_optional_putter_factory('syncing', False)
-validate_syncing = bool_validator_factory('syncing')
+validate_syncing = bool_validator_factory('syncing', False)

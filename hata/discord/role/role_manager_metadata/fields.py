@@ -59,7 +59,7 @@ def put_purchasable_into(purchasable, data, defaults):
     
     return data
 
-validate_purchasable = bool_validator_factory('purchasable')
+validate_purchasable = bool_validator_factory('purchasable', True)
 
 # subscription_listing_id
 

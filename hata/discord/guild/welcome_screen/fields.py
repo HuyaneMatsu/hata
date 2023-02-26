@@ -21,7 +21,7 @@ validate_description = nullable_string_validator_factory('description', 0, DESCR
 # enabled
 
 put_enabled_into = force_bool_putter_factory('enabled')
-validate_enabled = bool_validator_factory('enabled')
+validate_enabled = bool_validator_factory('enabled', True)
 
 # welcome_channels
 

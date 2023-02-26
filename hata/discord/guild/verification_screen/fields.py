@@ -31,7 +31,7 @@ validate_edited_at = nullable_date_time_validator_factory('edited_at')
 # enabled
 
 put_enabled_into = force_bool_putter_factory('enabled')
-validate_enabled = bool_validator_factory('enabled')
+validate_enabled = bool_validator_factory('enabled', True)
 
 # steps
 

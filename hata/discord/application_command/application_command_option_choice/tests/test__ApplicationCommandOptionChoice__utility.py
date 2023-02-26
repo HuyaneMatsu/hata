@@ -93,9 +93,9 @@ def test__ApplicationCommandOptionChoice__copy_with__1():
     vampytest.assert_eq(copy.value, new_value)
 
 
-def test__ApplicationCommandOptionChoice__with_translation_table__0():
+def test__ApplicationCommandOptionChoice__with_translation():
     """
-    Tests whether ``ApplicationCommandOptionChoice.with_translation_table`` works as intended.
+    Tests whether ``ApplicationCommandOptionChoice.with_translation`` works as intended.
     
     Case: no parameters.
     """ 

@@ -46,7 +46,7 @@ validate_creator_id = entity_id_validator_factory('creator_id', ClientUserBase)
 
 parse_enabled = bool_parser_factory('enabled', True)
 put_enabled_into = bool_optional_putter_factory('enabled', True)
-validate_enabled = bool_validator_factory('enabled')
+validate_enabled = bool_validator_factory('enabled', True)
 
 # event_type
 

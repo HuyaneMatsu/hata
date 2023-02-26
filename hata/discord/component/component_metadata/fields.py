@@ -46,7 +46,7 @@ validate_channel_types = preinstanced_array_validator_factory('channel_types', C
 
 parse_enabled = negated_bool_parser_factory('disabled', True)
 put_enabled_into = negated_bool_optional_putter_factory('disabled', True)
-validate_enabled = bool_validator_factory('enabled')
+validate_enabled = bool_validator_factory('enabled', True)
 
 # label
 
@@ -114,7 +114,7 @@ validate_placeholder = nullable_string_validator_factory('placeholder', 0, PLACE
 
 parse_required = bool_parser_factory('required', True)
 put_required_into = bool_optional_putter_factory('required', True)
-validate_required = bool_validator_factory('required')
+validate_required = bool_validator_factory('required', True)
 
 # text_input_style
 

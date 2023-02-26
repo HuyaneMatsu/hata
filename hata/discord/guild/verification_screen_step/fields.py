@@ -19,7 +19,7 @@ from .preinstanced import VerificationScreenStepType
 
 parse_required = bool_parser_factory('required', False)
 put_required_into = bool_optional_putter_factory('required', False)
-validate_required = bool_validator_factory('required')
+validate_required = bool_validator_factory('required', False)
 
 # title
 

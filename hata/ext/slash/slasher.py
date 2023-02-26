@@ -1402,7 +1402,6 @@ class Slasher(EventHandlerBase):
             Whether the command is the default command in it's category.
         delete_on_unload : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the command should be deleted from Discord when removed.
-        allow_by_default : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`), Optional
             Whether the command is enabled by default for everyone who has `use_application_commands` permission.
             
             > This field is deprecated.

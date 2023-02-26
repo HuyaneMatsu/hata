@@ -20,13 +20,13 @@ from .constants import NAME_ALLOWED_CHARACTERS, NAME_LENGTH_MAX, NAME_LENGTH_MIN
 
 parse_animated = bool_parser_factory('animated', False)
 put_animated_into = bool_optional_putter_factory('animated', False)
-validate_animated = bool_validator_factory('animated')
+validate_animated = bool_validator_factory('animated', False)
 
 # available
 
 parse_available = bool_parser_factory('available', True)
 put_available_into = bool_optional_putter_factory('available', True)
-validate_available = bool_validator_factory('available')
+validate_available = bool_validator_factory('available', True)
 
 # guild_id
 
@@ -42,7 +42,7 @@ validate_id = entity_id_validator_factory('emoji_id')
 
 parse_managed = bool_parser_factory('managed', False)
 put_managed_into = bool_optional_putter_factory('managed', False)
-validate_managed = bool_validator_factory('managed')
+validate_managed = bool_validator_factory('managed', False)
 
 # name
 
@@ -79,23 +79,23 @@ def validate_name(name):
             f'`name` can be `None`, `str`, got {name.__class__.__name__} ;{name!r}.'
         )
     
-    validate_name = ''.join(NAME_ALLOWED_CHARACTERS.findall(name))
+    validated_name = ''.join(NAME_ALLOWED_CHARACTERS.findall(name))
     
-    name_length = len(validate_name)
+    name_length = len(validated_name)
     if (name_length < NAME_LENGTH_MIN) or (name_length > NAME_LENGTH_MAX):
         raise ValueError(
             f'`name` length can be >= {NAME_LENGTH_MIN} and <= {NAME_LENGTH_MAX}, got {name_length}; '
-            f'validated_name = {validate_name}; input_name = {name!r}'
+            f'validated_name = {validated_name}; input_name = {name!r}'
         )
     
-    return validate_name
+    return validated_name
 
 
 # require_colons
 
 parse_require_colons = bool_parser_factory('require_colons', True)
 put_require_colons_into = bool_optional_putter_factory('require_colons', True)
-validate_require_colons = bool_validator_factory('require_colons')
+validate_require_colons = bool_validator_factory('require_colons', True)
 
 # role_ids
 

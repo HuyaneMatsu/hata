@@ -859,71 +859,33 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         if translation_table is None:
             return self
         
-        new = object.__new__(type(self))
-        
-        # autocomplete
-        new.autocomplete = self.autocomplete
-        
-        # channel_types
-        channel_types = self.channel_types
-        if (channel_types is not None):
-            channel_types = (*channel_types,)
-        new.channel_types = channel_types
+        new = self.copy()
         
         # choices
-        choices = self.choices
+        choices = new.choices
         if (choices is not None):
-            choices = (*(choice.with_translation(translation_table, replace) for choice in choices),)
-        new.choices = choices
-        
-        # default
-        new.default = self.default
-        
-        # description
-        new.description = self.description
+            new.choices = (*(choice.with_translation(translation_table, replace) for choice in choices),)
         
         # description_localizations
         new.description_localizations = with_translation(
-            self.description,
-            self.description_localizations,
+            new.description,
+            new.description_localizations,
             translation_table,
             replace,
         )
         
-        # max_length
-        new.max_length = self.max_length
-        
-        # max_value
-        new.max_value = self.max_value
-        
-        # min_length
-        new.min_length = self.min_length
-        
-        # min_value
-        new.min_value = self.min_value
-        
-        # name
-        new.name = self.name
-        
         # name_localizations
         new.name_localizations = with_translation(
-            self.name,
-            self.name_localizations,
+            new.name,
+            new.name_localizations,
             translation_table,
             replace,
         )
         
         # options
-        options = self.options
+        options = new.options
         if (options is not None):
-            options = (*(option.with_translation(translation_table, replace) for option in options),)
-        new.options = options
-        
-        # required
-        new.required = self.required
-        
-        # type
-        new.type = self.type
+            new.options = (*(option.with_translation(translation_table, replace) for option in options),)
         
         return new
     
@@ -1242,7 +1204,7 @@ class ApplicationCommandOption(RichAttributeErrorBaseType):
         
         Yields
         ------
-        choice : ``ApplicationCommandOption``
+        option : ``ApplicationCommandOption``
         """
         options = self.options
         if (options is not None):

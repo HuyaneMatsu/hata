@@ -187,7 +187,7 @@ def validate_manager(manager):
 
 parse_mentionable = bool_parser_factory('mentionable', False)
 put_mentionable_into = bool_optional_putter_factory('mentionable', False)
-validate_mentionable = bool_validator_factory('mentionable')
+validate_mentionable = bool_validator_factory('mentionable', False)
 
 # name
 
@@ -216,7 +216,7 @@ validate_position = int_conditional_validator_factory(
 
 parse_separated = bool_parser_factory('hoist', False)
 put_separated_into = bool_optional_putter_factory('hoist', False)
-validate_separated = bool_validator_factory('separated')
+validate_separated = bool_validator_factory('separated', False)
 
 # unicode_emoji
 

@@ -8,7 +8,9 @@ from ...application_command import (
     ApplicationCommand, ApplicationCommandPermission, ApplicationCommandPermissionOverwrite,
     ApplicationCommandPermissionOverwriteTargetType
 )
-from ...application_command.constants import APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD
+from ...application_command.application_command.constants import (
+    APPLICATION_COMMAND_LIMIT_GLOBAL, APPLICATION_COMMAND_LIMIT_GUILD
+)
 from ...application_command.application_command_permission.constants import APPLICATION_COMMAND_PERMISSION_OVERWRITE_MAX
 from ...http import DiscordHTTPClient
 from ...oauth2 import Oauth2Access, Oauth2Scope, Oauth2User

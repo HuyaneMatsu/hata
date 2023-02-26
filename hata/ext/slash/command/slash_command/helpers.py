@@ -1,6 +1,6 @@
 __all__ = ()
 
-from .....discord.application_command.constants import (
+from .....discord.application_command.application_command.constants import (
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN
 )
 from .....discord.preconverters import preconvert_bool

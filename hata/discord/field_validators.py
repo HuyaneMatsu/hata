@@ -684,7 +684,7 @@ def int_options_validator_factory(field_name, field_options):
     return validator
 
 
-def bool_validator_factory(field_name):
+def bool_validator_factory(field_name, default_value):
     """
     Returns a new `bool` validator.
     
@@ -692,6 +692,9 @@ def bool_validator_factory(field_name):
     ----------
     field_name : `str`
         The field's name.
+    
+    default_value : `bool`
+        The default value to return if `None` is received.
     
     Returns
     -------
@@ -705,7 +708,7 @@ def bool_validator_factory(field_name):
         
         Parameters
         ----------
-        boolean : `bool`
+        boolean : `None`, `bool`, `int`
             The boolean to validate.
         
         Returns
@@ -715,11 +718,30 @@ def bool_validator_factory(field_name):
         Raises
         ------
         TypeError
-            - If `boolean` is not `bool`.
+            - If `boolean`'s type is incorrect.
+        ValueError
+            - If `boolean`'s value is incorrect.
         """
         nonlocal field_name
-    
-        return preconvert_bool(boolean, field_name)
+        nonlocal default_value
+        
+        if type(boolean) is bool:
+            return boolean
+        
+        if boolean is None:
+            return default_value
+        
+        if isinstance(boolean, int):
+            if (boolean not in (0, 1)):
+                raise ValueError(
+                    f'`{field_name}` was given as `int`, but neither as `0`, `1`, got {boolean!r}.'
+                )
+            
+            return bool(boolean)
+        
+        raise TypeError(
+            f'`{field_name}` can be `None`, `bool`, `int` as `0`, `1`, got {boolean.__class__.__name__}; {boolean!r}.'
+        )
     
     return validator
 

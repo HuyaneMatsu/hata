@@ -5,7 +5,7 @@ from functools import partial as partial_func
 from scarletio import RichAttributeErrorBaseType, WeakReferer, copy_docs, include
 
 from .....discord.application_command import ApplicationCommandOption, ApplicationCommandOptionType
-from .....discord.application_command.constants import APPLICATION_COMMAND_OPTIONS_MAX
+from .....discord.application_command.application_command.constants import APPLICATION_COMMAND_OPTIONS_MAX
 from .....discord.client import Client
 from .....discord.events.handling_helpers import Router, _EventHandlerManager, create_event_from_class
 from .....discord.interaction import InteractionEvent

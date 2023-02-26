@@ -46,7 +46,7 @@ validate_name_localizations = partial_func(localized_dictionary_builder, paramet
 
 parse_primary = bool_parser_factory('is_primary', False)
 put_primary_into = bool_optional_putter_factory('is_primary', False)
-validate_primary = bool_validator_factory('primary')
+validate_primary = bool_validator_factory('primary', False)
 
 # Ignore additional fields:
 # 

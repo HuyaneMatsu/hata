@@ -104,7 +104,7 @@ def put_archived_into(archived, data, defaults):
     return data
 
 
-validate_archived = bool_validator_factory('archived')
+validate_archived = bool_validator_factory('archived', False)
 
 # archived_at
 
@@ -484,7 +484,7 @@ def put_invitable_into(invitable, data, defaults, *, flatten_thread_metadata = F
     return data
 
 
-validate_invitable = bool_validator_factory('invitable')
+validate_invitable = bool_validator_factory('invitable', True)
 
 # name
 
@@ -496,7 +496,7 @@ validate_name = force_string_validator_factory('name', NAME_LENGTH_MIN, NAME_LEN
 
 parse_nsfw = bool_parser_factory('nsfw', False)
 put_nsfw_into = bool_optional_putter_factory('nsfw', False)
-validate_nsfw = bool_validator_factory('nsfw')
+validate_nsfw = bool_validator_factory('nsfw', False)
 
 # open
 
@@ -558,7 +558,7 @@ def put_open_into(open_, data, defaults, *, flatten_thread_metadata = False):
     return data
 
 
-validate_open = bool_validator_factory('open')
+validate_open = bool_validator_factory('open', True)
 
 # owner_id
 

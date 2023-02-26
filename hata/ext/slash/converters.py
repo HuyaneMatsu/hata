@@ -8,11 +8,11 @@ from scarletio import CallableAnalyzer, RichAttributeErrorBaseType, copy_docs, i
 from ...discord.application_command import (
     ApplicationCommandOption, ApplicationCommandOptionChoice, ApplicationCommandOptionType
 )
-from ...discord.application_command.application_command_option.fields import validate_max_length, validate_min_length
-from ...discord.application_command.constants import (
+from ...discord.application_command.application_command.constants import (
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN,
     APPLICATION_COMMAND_OPTIONS_MAX
 )
+from ...discord.application_command.application_command_option.fields import validate_max_length, validate_min_length
 from ...discord.channel import Channel, ChannelType
 from ...discord.client import Client
 from ...discord.core import CHANNELS, ROLES

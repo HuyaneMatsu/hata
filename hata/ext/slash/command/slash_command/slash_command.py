@@ -5,7 +5,7 @@ from functools import partial as partial_func
 from scarletio import WeakReferer, copy_docs, export
 
 from .....discord.application_command import ApplicationCommandTargetType
-from .....discord.application_command.constants import APPLICATION_COMMAND_OPTIONS_MAX
+from .....discord.application_command.application_command.constants import APPLICATION_COMMAND_OPTIONS_MAX
 from .....discord.events.handling_helpers import Router, _EventHandlerManager, check_name, route_name, route_value
 
 from ...converters import get_slash_command_parameter_converters
@@ -20,7 +20,7 @@ from ..command_base_application_command.constants import (
     APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND, APPLICATION_COMMAND_OPTION_TYPE_SUB_COMMAND_CATEGORY
 )
 from ..command_base_application_command.helpers import (
-    _reset_application_command_schema, _validate_allow_by_default, _validate_allow_in_dm, _validate_delete_on_unload,
+    _reset_application_command_schema, _validate_allow_in_dm, _validate_delete_on_unload,
     _validate_guild, _validate_is_global, _validate_name, _validate_nsfw, _validate_required_permissions
 )
 
@@ -78,9 +78,6 @@ class SlashCommand(CommandBaseApplicationCommand):
         +-------------------------------+-------+
         | UNLOADING_BEHAVIOUR_INHERIT   | 2     |
         +-------------------------------+-------+
-    
-    allow_by_default : `None`, `bool`
-        Whether the command is enabled by default for everyone who has `use_application_commands` permission.
     
     allow_in_dm : `None`, `bool`
         Whether the command can be used in private channels (dm).
@@ -159,7 +156,6 @@ class SlashCommand(CommandBaseApplicationCommand):
         guild = None,
         is_default = None,
         delete_on_unload = None,
-        allow_by_default = None,
         allow_in_dm = None,
         required_permissions = None,
         nsfw = None,
@@ -193,9 +189,6 @@ class SlashCommand(CommandBaseApplicationCommand):
         
         delete_on_unload : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
             Whether the command should be deleted from Discord when removed.
-        
-        allow_by_default : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
-            Whether the command is enabled by default for everyone who has `use_application_commands` permission.
         
         allow_in_dm : `None`, `bool`, `tuple` of (`None`, `bool`, `Ellipsis`) = `None`, Optional
             Whether the command can be used in private channels (dm).
@@ -248,9 +241,6 @@ class SlashCommand(CommandBaseApplicationCommand):
         unloading_behaviour, route_to = _check_maybe_route(
             'delete_on_unload', delete_on_unload, route_to, _validate_delete_on_unload
         )
-        allow_by_default, route_to = _check_maybe_route(
-            'allow_by_default', allow_by_default, route_to, _validate_allow_by_default
-        )
         allow_in_dm, route_to = _check_maybe_route('allow_in_dm', allow_in_dm, route_to, _validate_allow_in_dm)
         nsfw, route_to = _check_maybe_route('nsfw', nsfw, route_to, _validate_nsfw)
         required_permissions, route_to = _check_maybe_route(
@@ -266,7 +256,6 @@ class SlashCommand(CommandBaseApplicationCommand):
             guild_ids = route_value(guild_ids, route_to)
             is_default = route_value(is_default, route_to)
             unloading_behaviour = route_value(unloading_behaviour, route_to)
-            allow_by_default = route_value(allow_by_default, route_to)
             allow_in_dm = route_value(allow_in_dm, route_to)
             nsfw = route_value(nsfw, route_to)
             required_permissions = route_value(required_permissions, route_to)
@@ -307,10 +296,10 @@ class SlashCommand(CommandBaseApplicationCommand):
             router = []
             
             for (
-                name, description, is_global, guild_ids, is_default, unloading_behaviour, allow_by_default,
+                name, description, is_global, guild_ids, is_default, unloading_behaviour,
                 nsfw, required_permissions, allow_in_dm
             ) in zip(
-                name, description, is_global, guild_ids, is_default, unloading_behaviour, allow_by_default,
+                name, description, is_global, guild_ids, is_default, unloading_behaviour,
                 nsfw, required_permissions, allow_in_dm
             ):
                 
@@ -340,7 +329,6 @@ class SlashCommand(CommandBaseApplicationCommand):
                 self._registered_application_command_ids = None
                 self.default = is_default
                 self._unloading_behaviour = unloading_behaviour
-                self.allow_by_default = allow_by_default
                 self.allow_in_dm = allow_in_dm
                 self.nsfw = nsfw
                 self.required_permissions = required_permissions
@@ -387,7 +375,6 @@ class SlashCommand(CommandBaseApplicationCommand):
             self._registered_application_command_ids = None
             self.default = is_default
             self._unloading_behaviour = unloading_behaviour
-            self.allow_by_default = allow_by_default
             self.allow_in_dm = allow_in_dm
             self.nsfw = nsfw
             self.required_permissions = required_permissions

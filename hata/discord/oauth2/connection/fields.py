@@ -21,7 +21,7 @@ from .preinstanced import ConnectionType, ConnectionVisibility
 
 parse_friend_sync = bool_parser_factory('friend_sync', False)
 put_friend_sync_into = bool_optional_putter_factory('friend_sync', False)
-validate_friend_sync = bool_validator_factory('friend_sync')
+validate_friend_sync = bool_validator_factory('friend_sync', False)
 
 # id
 
@@ -57,19 +57,19 @@ validate_name = force_string_validator_factory('name', NAME_LENGTH_MIN, NAME_LEN
 
 parse_revoked = bool_parser_factory('revoked', False)
 put_revoked_into = bool_optional_putter_factory('revoked', False)
-validate_revoked = bool_validator_factory('revoked')
+validate_revoked = bool_validator_factory('revoked', False)
 
 # show_activity
 
 parse_show_activity = bool_parser_factory('show_activity', False)
 put_show_activity_into = bool_optional_putter_factory('show_activity', False)
-validate_show_activity = bool_validator_factory('show_activity')
+validate_show_activity = bool_validator_factory('show_activity', False)
 
 # two_way_link
 
 parse_two_way_link = bool_parser_factory('two_way_link', False)
 put_two_way_link_into = bool_optional_putter_factory('two_way_link', False)
-validate_two_way_link = bool_validator_factory('two_way_link')
+validate_two_way_link = bool_validator_factory('two_way_link', False)
 
 # type
 
@@ -81,7 +81,7 @@ validate_type = preinstanced_validator_factory('type', ConnectionType)
 
 parse_verified = bool_parser_factory('verified', False)
 put_verified_into = bool_optional_putter_factory('verified', False)
-validate_verified = bool_validator_factory('verified')
+validate_verified = bool_validator_factory('verified', False)
 
 # visibility
 

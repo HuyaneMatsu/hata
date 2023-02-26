@@ -44,7 +44,7 @@ validate_nick = nullable_string_validator_factory('nick', NICK_LENGTH_MIN, NICK_
 
 parse_pending = bool_parser_factory('pending', False)
 put_pending_into = bool_optional_putter_factory('pending', False)
-validate_pending = bool_validator_factory('pending')
+validate_pending = bool_validator_factory('pending', False)
 
 # role_ids
 

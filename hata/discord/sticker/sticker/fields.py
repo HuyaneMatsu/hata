@@ -25,7 +25,7 @@ from .preinstanced import StickerFormat, StickerType
 
 parse_available = bool_parser_factory('available', True)
 put_available_into = bool_optional_putter_factory('available', True)
-validate_available = bool_validator_factory('available')
+validate_available = bool_validator_factory('available', True)
 
 # description 
 

@@ -207,7 +207,7 @@ def validate_banner_color(banner_color):
 
 parse_bot = bool_parser_factory('bot', False)
 put_bot_into = force_bool_putter_factory('bot')
-validate_bot = bool_validator_factory('bot')
+validate_bot = bool_validator_factory('bot', False)
 
 # discriminator
 
@@ -292,7 +292,7 @@ validate_email = nullable_string_validator_factory('email', 0, 1024)
 
 parse_email_verified = bool_parser_factory('verified', False)
 put_email_verified_into = bool_optional_putter_factory('verified', False)
-validate_email_verified = bool_validator_factory('email_verified')
+validate_email_verified = bool_validator_factory('email_verified', False)
 
 # flags
 
@@ -339,7 +339,7 @@ validate_locale = preinstanced_validator_factory('locale', Locale)
 
 parse_mfa = bool_parser_factory('mfa_enabled', False)
 put_mfa_into = bool_optional_putter_factory('mfa_enabled', False)
-validate_mfa = bool_validator_factory('mfa')
+validate_mfa = bool_validator_factory('mfa', False)
 
 # name
 

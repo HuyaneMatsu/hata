@@ -44,13 +44,13 @@ validate_aliases = nullable_string_array_validator_factory('aliases')
 
 parse_bot_public = bool_parser_factory('bot_public', BOT_PUBLIC_DEFAULT)
 put_bot_public_into = bool_optional_putter_factory('bot_public', BOT_PUBLIC_DEFAULT)
-validate_bot_public = bool_validator_factory('bot_public')
+validate_bot_public = bool_validator_factory('bot_public', BOT_PUBLIC_DEFAULT)
 
 # bot_require_code_grant
 
 parse_bot_require_code_grant = bool_parser_factory('bot_require_code_grant', BOT_REQUIRE_CODE_GRANT_DEFAULT)
 put_bot_require_code_grant_into = bool_optional_putter_factory('bot_require_code_grant', BOT_REQUIRE_CODE_GRANT_DEFAULT)
-validate_bot_require_code_grant = bool_validator_factory('bot_require_code_grant')
+validate_bot_require_code_grant = bool_validator_factory('bot_require_code_grant', BOT_REQUIRE_CODE_GRANT_DEFAULT)
 
 # custom_install_url
 
@@ -104,7 +104,7 @@ validate_guild_id = entity_id_validator_factory('guild_id', Guild)
 
 parse_hook = bool_parser_factory('hook', HOOK_DEFAULT)
 put_hook_into = bool_optional_putter_factory('hook', HOOK_DEFAULT)
-validate_hook = bool_validator_factory('hook')
+validate_hook = bool_validator_factory('hook', HOOK_DEFAULT)
 
 # id
 
@@ -147,7 +147,7 @@ validate_name = force_string_validator_factory('name', NAME_LENGTH_MIN, NAME_LEN
 
 parse_overlay = bool_parser_factory('overlay', OVERLAY_DEFAULT)
 put_overlay_into = bool_optional_putter_factory('overlay', OVERLAY_DEFAULT)
-validate_overlay = bool_validator_factory('overlay')
+validate_overlay = bool_validator_factory('overlay', OVERLAY_DEFAULT)
 
 # overlay_compatibility_hook
 
@@ -155,7 +155,9 @@ parse_overlay_compatibility_hook = bool_parser_factory('overlay_compatibility_ho
 put_overlay_compatibility_hook_into = bool_optional_putter_factory(
     'overlay_compatibility_hook', OVERLAY_COMPATIBILITY_HOOK_DEFAULT
 )
-validate_overlay_compatibility_hook = bool_validator_factory('overlay_compatibility_hook')
+validate_overlay_compatibility_hook = bool_validator_factory(
+    'overlay_compatibility_hook', OVERLAY_COMPATIBILITY_HOOK_DEFAULT
+)
 
 # owner
 

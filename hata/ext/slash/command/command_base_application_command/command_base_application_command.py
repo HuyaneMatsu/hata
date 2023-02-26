@@ -57,9 +57,6 @@ class CommandBaseApplicationCommand(CommandBase):
         | UNLOADING_BEHAVIOUR_INHERIT   | 2     |
         +-------------------------------+-------+
     
-    allow_by_default : `None`, `bool`
-        Whether the command is enabled by default for everyone who has `use_application_commands` permission.
-
     global_ : `bool`
         Whether the command is a global command.
         
@@ -87,7 +84,7 @@ class CommandBaseApplicationCommand(CommandBase):
     """
     __slots__ = (
         '_permission_overwrites', '_registered_application_command_ids', '_schema', '_unloading_behaviour',
-        'allow_by_default', 'allow_in_dm', 'default', 'global_', 'guild_ids', 'nsfw', 'required_permissions'
+        'allow_in_dm', 'default', 'global_', 'guild_ids', 'nsfw', 'required_permissions'
     )
     
     COMMAND_PARAMETER_NAMES = (
@@ -159,9 +156,6 @@ class CommandBaseApplicationCommand(CommandBase):
         # _unloading_behaviour
         new._unloading_behaviour = self._unloading_behaviour
         
-        # allow_by_default
-        new.allow_by_default = self.allow_by_default
-        
         # allow_in_dm
         new.allow_in_dm = self.allow_in_dm
         
@@ -202,16 +196,6 @@ class CommandBaseApplicationCommand(CommandBase):
         # _unloading_behaviour
         hash_value ^= (self._unloading_behaviour + 1) << 12
         
-        # allow_by_default
-        allow_by_default = self.allow_by_default
-        if (allow_by_default is not None):
-            hash_value ^= allow_by_default << 16
-        
-        # allow_by_default
-        allow_in_dm = self.allow_in_dm
-        if (allow_in_dm is not None):
-            hash_value ^= allow_in_dm << 17
-        
         # guild_ids
         guild_ids = self.guild_ids
         if (guild_ids is not None):
@@ -247,10 +231,6 @@ class CommandBaseApplicationCommand(CommandBase):
 
         # _unloading_behaviour
         if self._unloading_behaviour != other._unloading_behaviour:
-            return False
-        
-        # allow_by_default
-        if self.allow_by_default != other.allow_by_default:
             return False
         
         # allow_in_dm
@@ -293,11 +273,6 @@ class CommandBaseApplicationCommand(CommandBase):
             repr_parts.append(type_name)
             
             yield repr_parts
-            
-            allow_by_default = self.allow_by_default
-            if (allow_by_default is not None):
-                repr_parts.append(', allow_by_default = ')
-                repr_parts.append(repr(allow_by_default))
             
             allow_in_dm = self.allow_in_dm
             if (allow_in_dm is not None):
@@ -828,7 +803,6 @@ class CommandBaseApplicationCommand(CommandBase):
         schema = ApplicationCommand(
             self.name,
             self.description,
-            allow_by_default = self.allow_by_default,
             allow_in_dm = self.allow_in_dm,
             options = self._get_schema_options(),
             nsfw = self.nsfw,
@@ -840,7 +814,7 @@ class CommandBaseApplicationCommand(CommandBase):
         if (parent_reference is not None):
             parent = parent_reference()
             if (parent is not None):
-                schema.apply_translation(parent._translation_table)
+                schema = schema.with_translation(parent._translation_table)
         
         return schema
     

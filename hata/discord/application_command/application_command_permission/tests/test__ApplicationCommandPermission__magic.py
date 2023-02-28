@@ -87,5 +87,7 @@ def test__ApplicationCommandPermission__eq():
         ('application_command_id', False),
         ('permission_overwrites', None)
     ):
-        test_select_option = ApplicationCommandPermission(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(application_command_permission, test_select_option)
+        test_application_command_permission = ApplicationCommandPermission(
+            **{**keyword_parameters, field_name: field_value}
+        )
+        vampytest.assert_ne(application_command_permission, test_application_command_permission)

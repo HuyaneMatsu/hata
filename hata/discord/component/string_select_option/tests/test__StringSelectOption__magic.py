@@ -65,5 +65,5 @@ def test__StringSelectOption__eq():
         ('default', False),
         ('description', 'aka'),
     ):
-        test_select_option = StringSelectOption(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(string_select_option, test_select_option)
+        test_string_select_option = StringSelectOption(**{**keyword_parameters, field_name: field_value})
+        vampytest.assert_ne(string_select_option, test_string_select_option)

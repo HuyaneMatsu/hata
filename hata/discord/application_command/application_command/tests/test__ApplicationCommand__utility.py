@@ -192,7 +192,7 @@ def test__ApplicationCommand__copy_with__1():
     vampytest.assert_is(copy.target_type, new_target_type)
 
 
-def test__ApplicationCommandOption__with_translation():
+def test__ApplicationCommand__with_translation():
     """
     Tests whether ``ApplicationCommand.with_translation` works as intended.
     """

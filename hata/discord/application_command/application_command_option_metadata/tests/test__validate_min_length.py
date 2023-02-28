@@ -5,7 +5,6 @@ from ..constants import (
     APPLICATION_COMMAND_OPTION_MIN_LENGTH_MAX
 )
 from ..fields import validate_min_length
-from ..preinstanced import ApplicationCommandOptionType
 
 
 def test__validate_min_length__0():
@@ -36,13 +35,3 @@ def test__validate_min_length__1():
     ):
         with vampytest.assert_raises(TypeError):
             validate_min_length(input_value)
-
-
-def test__validate_min_length__2():
-    """
-    Tests whether `validate_min_length` works as intended.
-    
-    Case: `ValueError`.
-    """
-    with vampytest.assert_raises(ValueError):
-        validate_min_length(10, ApplicationCommandOptionType.float)

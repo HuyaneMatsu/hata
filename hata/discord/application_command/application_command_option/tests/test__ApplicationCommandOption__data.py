@@ -16,21 +16,10 @@ def test__ApplicationCommandOption__constructor__from_data():
     """
     Tests whether ``ApplicationCommandOption.from_data`` works as intended.
     """
-    autocomplete = True
-    channel_types = [ChannelType.private, ChannelType.guild_forum]
-    choices = [
-        ApplicationCommandOptionChoice('voice', 1.2),
-        ApplicationCommandOptionChoice('voice', 2.4),
-    ]
-    default = True
     description = 'primrose'
     description_localizations = {
         Locale.german: 'hartmann',
     }
-    max_length = 10
-    max_value = 11
-    min_length = 12
-    min_value = 13
     name = 'flower'
     name_localizations = {
         Locale.german: 'satori',
@@ -39,45 +28,26 @@ def test__ApplicationCommandOption__constructor__from_data():
         ApplicationCommandOption('voice-0', 'voice', ApplicationCommandOptionType.string),
         ApplicationCommandOption('voice-1', 'voice', ApplicationCommandOptionType.integer),
     ]
-    required = True
     option_type = ApplicationCommandOptionType.sub_command_group
     
     data = {
-        'autocomplete': autocomplete,
-        'channel_types': [channel_type.value for channel_type in channel_types],
-        'choices': [choice.to_data(defaults = True) for choice in choices],
-        'default': default,
         'description': description,
         'description_localizations': {key.value: value for key, value in description_localizations.items()},
-        'max_length': max_length,
-        'max_value': max_value,
-        'min_length': min_length,
-        'min_value': min_value,
         'name': name,
         'name_localizations': {key.value: value for key, value in name_localizations.items()},
         'options': [option.to_data(defaults = True) for option in options],
-        'required': required,
         'type': option_type.value,
     }
     
     option = ApplicationCommandOption.from_data(data)
     _assert_fields_set(option)
     
-    vampytest.assert_eq(option.autocomplete, autocomplete)
-    vampytest.assert_eq(option.channel_types, tuple(channel_types))
-    vampytest.assert_eq(option.choices, tuple(choices))
-    vampytest.assert_eq(option.default, default)
     vampytest.assert_eq(option.description, description)
     vampytest.assert_eq(option.description_localizations, description_localizations)
-    vampytest.assert_eq(option.max_length, max_length)
-    vampytest.assert_eq(option.max_value, max_value)
-    vampytest.assert_eq(option.min_length, min_length)
-    vampytest.assert_eq(option.min_value, min_value)
     vampytest.assert_eq(option.name, name)
     vampytest.assert_eq(option.name_localizations, name_localizations)
     vampytest.assert_eq(option.options, tuple(options))
-    vampytest.assert_eq(option.required, required)
-    vampytest.assert_eq(option.type, option_type)
+    vampytest.assert_is(option.type, option_type)
 
 
 def test__ApplicationCommandOption__to_data__string():

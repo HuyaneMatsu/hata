@@ -59,8 +59,10 @@ def test__ApplicationCommandPermissionOverwrite__eq():
         ('target', (target_type, 202302210006)),
         ('target', (ApplicationCommandPermissionOverwriteTargetType.channel, target_id)),
     ):
-        test_select_option = ApplicationCommandPermissionOverwrite(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(application_command_permission_overwrite, test_select_option)
+        test_application_command_permission_overwrite = ApplicationCommandPermissionOverwrite(
+            **{**keyword_parameters, field_name: field_value}
+        )
+        vampytest.assert_ne(application_command_permission_overwrite, test_application_command_permission_overwrite)
 
 
 def test__ApplicationCommandPermissionOverwrite__sort():

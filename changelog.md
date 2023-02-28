@@ -13,6 +13,18 @@
 - Add `ApplicationCommand.copy_with`.
 - Add `ApplicationCommand.with_translation`.
 - Add `ApplicationCommand.iter_options`.
+- Add `ApplicationCommandOption.metadata`.
+- Add `ApplicationCommandOptionType.metadata_type`.
+- Add `ApplicationCommandOptionMetadataBase`.
+- Add `ApplicationCommandOptionMetadataChannel`.
+- Add `ApplicationCommandOptionMetadataFloat`.
+- Add `ApplicationCommandOptionMetadataInteger`.
+- Add `ApplicationCommandOptionMetadataNested`.
+- Add `ApplicationCommandOptionMetadataNumeric`.
+- Add `ApplicationCommandOptionMetadataParameter`.
+- Add `ApplicationCommandOptionMetadataPrimitive`.
+- Add `ApplicationCommandOptionMetadataString`.
+- Add `ApplicationCommandOptionMetadataSubCommand`.
 
 #### Bug Fixes
 

@@ -568,20 +568,23 @@ def test__ApplicationCommandOption__iter_options():
         ([option_0], [option_0]),
         ([option_0, option_1], [option_0, option_1]),
     ):
-        option = ApplicationCommandOption('ibuki', 'suika', ApplicationCommandOptionType.string, options = input_value)
+        option = ApplicationCommandOption(
+            'ibuki', 'suika', ApplicationCommandOptionType.sub_command, options = input_value
+        )
         vampytest.assert_eq([*option.iter_options()], expected_output)
 
 
-def test__ApplicationCommandOption__with_translation():
+def test__ApplicationCommandOption__with_translation__0():
     """
     Tests whether ``ApplicationCommandOption.with_translation` works as intended.
+    
+    Case: string.
     """
     option = ApplicationCommandOption(
         'yukari',
         'ran',
         ApplicationCommandOptionType.string,
         choices = [ApplicationCommandOptionChoice('chen', 'chen',)],
-        options = [ApplicationCommandOption('aya', 'aya', ApplicationCommandOptionType.string)],
     )
     
     translation_table = {
@@ -612,6 +615,45 @@ def test__ApplicationCommandOption__with_translation():
                 }
             )
         ],
+    )
+    
+    output = option.with_translation(translation_table)
+    vampytest.assert_eq(output, expected_output)
+
+
+
+def test__ApplicationCommandOption__with_translation__1():
+    """
+    Tests whether ``ApplicationCommandOption.with_translation` works as intended.
+    
+    Case: nested.
+    """
+    option = ApplicationCommandOption(
+        'yukari',
+        'ran',
+        ApplicationCommandOptionType.sub_command,
+        options = [ApplicationCommandOption('aya', 'aya', ApplicationCommandOptionType.string)],
+    )
+    
+    translation_table = {
+        Locale.german: {
+            'yukari': 'satori',
+            'ran': 'orin',
+            'chen': 'okuu',
+            'aya': 'momiji',
+        }
+    }
+    
+    expected_output = ApplicationCommandOption(
+        'yukari',
+        'ran',
+        ApplicationCommandOptionType.sub_command,
+        name_localizations = {
+            Locale.german: 'satori',
+        },
+        description_localizations = {
+            Locale.german: 'orin',
+        },
         options = [
             ApplicationCommandOption(
                 'aya',
@@ -629,3 +671,25 @@ def test__ApplicationCommandOption__with_translation():
     
     output = option.with_translation(translation_table)
     vampytest.assert_eq(output, expected_output)
+
+
+def test__ApplicationCommandOption__field_proxies():
+    """
+    Tests whether ``ApplicationCommandOption``'s field proxies work as intended.
+    """
+    option = ApplicationCommandOption(
+        'yukari',
+        'ran',
+        ApplicationCommandOptionType.none,
+    )
+    
+    vampytest.assert_instance(option.autocomplete, bool)
+    vampytest.assert_instance(option.channel_types, tuple, nullable = True)
+    vampytest.assert_instance(option.choices, tuple, nullable = True)
+    vampytest.assert_instance(option.default, bool)
+    vampytest.assert_instance(option.max_length, int)
+    vampytest.assert_instance(option.max_value, object, nullable = True)
+    vampytest.assert_instance(option.min_length, int)
+    vampytest.assert_instance(option.min_value, object, nullable = True)
+    vampytest.assert_instance(option.options, tuple, nullable = True)
+    vampytest.assert_instance(option.required, bool)

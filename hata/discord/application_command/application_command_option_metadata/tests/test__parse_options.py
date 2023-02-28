@@ -1,8 +1,8 @@
 import vampytest
 
-from ..application_command_option import ApplicationCommandOption
+from ...application_command_option import ApplicationCommandOption, ApplicationCommandOptionType
+
 from ..fields import parse_options
-from ..preinstanced import ApplicationCommandOptionType
 
 
 def test__parse_options():

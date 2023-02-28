@@ -4,6 +4,7 @@ from ....channel import ChannelType
 from ....localization import Locale
 
 from ...application_command_option_choice import ApplicationCommandOptionChoice
+from ...application_command_option_metadata import ApplicationCommandOptionMetadataBase
 
 from ..application_command_option import ApplicationCommandOption
 from ..preinstanced import ApplicationCommandOptionType
@@ -19,20 +20,12 @@ def _assert_fields_set(option):
         The application command to check.
     """
     vampytest.assert_instance(option, ApplicationCommandOption)
-    vampytest.assert_instance(option.autocomplete, bool)
-    vampytest.assert_instance(option.channel_types, tuple, nullable = True)
-    vampytest.assert_instance(option.choices, tuple, nullable = True)
-    vampytest.assert_instance(option.default, bool)
+
     vampytest.assert_instance(option.description, str)
     vampytest.assert_instance(option.description_localizations, dict, nullable = True)
-    vampytest.assert_instance(option.max_length, int)
-    vampytest.assert_instance(option.max_value, object, nullable = True)
-    vampytest.assert_instance(option.min_length, int)
-    vampytest.assert_instance(option.min_value, object, nullable = True)
+    vampytest.assert_instance(option.metadata, ApplicationCommandOptionMetadataBase)
     vampytest.assert_instance(option.name, str)
     vampytest.assert_instance(option.name_localizations, dict, nullable = True)
-    vampytest.assert_instance(option.options, tuple, nullable = True)
-    vampytest.assert_instance(option.required, bool)
     vampytest.assert_instance(option.type, ApplicationCommandOptionType)
 
 

@@ -2,7 +2,6 @@ import vampytest
 
 from ..fields import validate_default
 
-from ..preinstanced import ApplicationCommandOptionType
 
 def test__validate_default__0():
     """
@@ -29,13 +28,3 @@ def test__validate_default__1():
     ):
         with vampytest.assert_raises(TypeError):
             validate_default(input_value)
-
-
-def test__validate_default__2():
-    """
-    Tests whether `validate_default` works as intended.
-    
-    Case: `ValueError`.
-    """
-    with vampytest.assert_raises(ValueError):
-        validate_default(True, ApplicationCommandOptionType.string)

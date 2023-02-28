@@ -50,7 +50,7 @@ class AutoModerationActionType(PreinstancedBase):
     
     INSTANCES = {}
     VALUE_TYPE = int
-
+    
     @classmethod
     def _from_value(cls, value):
         """

@@ -45,6 +45,7 @@ setup(
         'hata.discord.application_command.application_command',
         'hata.discord.application_command.application_command_option',
         'hata.discord.application_command.application_command_option_choice',
+        'hata.discord.application_command.application_command_option_metadata',
         'hata.discord.application_command.application_command_permission',
         'hata.discord.application_command.application_command_permission_overwrite',
         'hata.discord.audit_logs',

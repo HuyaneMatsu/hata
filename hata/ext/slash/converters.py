@@ -12,15 +12,17 @@ from ...discord.application_command.application_command.constants import (
     APPLICATION_COMMAND_DESCRIPTION_LENGTH_MAX, APPLICATION_COMMAND_DESCRIPTION_LENGTH_MIN,
     APPLICATION_COMMAND_OPTIONS_MAX
 )
-from ...discord.application_command.application_command_option.fields import validate_max_length, validate_min_length
+from ...discord.application_command.application_command_option_metadata.constants import (
+    APPLICATION_COMMAND_OPTION_MAX_LENGTH_DEFAULT, APPLICATION_COMMAND_OPTION_MIN_LENGTH_DEFAULT
+)
+from ...discord.application_command.application_command_option_metadata.fields import (
+    validate_max_length, validate_min_length
+)
 from ...discord.channel import Channel, ChannelType
 from ...discord.client import Client
 from ...discord.core import CHANNELS, ROLES
 from ...discord.exceptions import DiscordException, ERROR_CODES
-from ...discord.interaction import (
-     InteractionEvent,
-    InteractionType
-)
+from ...discord.interaction import InteractionEvent, InteractionType
 from ...discord.message import Attachment
 from ...discord.role import Role
 from ...discord.user import ClientUserBase, User, UserBase
@@ -1320,6 +1322,80 @@ def process_max_and_min_value(type_, value, value_name):
     return type_, value
 
 
+def process_max_length(max_length, option_type):
+    """
+    Processes the given `max_length` field.
+    
+    Parameters
+    ----------
+    max_length : `None`, `int`
+        The maximum input length allowed for this option.
+    
+    option_type : ``ApplicationCommandOptionType``
+        The respective option's type.
+    
+    Returns
+    -------
+    max_length : `int`
+        The processed value.
+    
+    Raises
+    ------
+    TypeError
+        - If `max_length`'s type is incorrect.
+    ValueError
+        - If `max_length`'s value is incorrect.
+    """
+    max_length = validate_max_length(max_length)
+    if (
+        (max_length != APPLICATION_COMMAND_OPTION_MAX_LENGTH_DEFAULT) and
+        (option_type is not ApplicationCommandOptionType.string)
+    ):
+        raise ValueError(
+            f'`max_length` is only applicable for `{ApplicationCommandOptionType.__name__}.string`, got '
+            f'max_length = {max_length!r}, option_type = {option_type.name}.'
+        )
+    
+    return max_length
+
+
+def process_min_length(min_length, option_type):
+    """
+    Processes the given `min_length` field.
+    
+    Parameters
+    ----------
+    min_length : `None`, `int`
+        The minimum input length allowed for this option.
+    
+    option_type : ``ApplicationCommandOptionType``
+        The respective option's type.
+    
+    Returns
+    -------
+    min_length : `int`
+        The processed value.
+    
+    Raises
+    ------
+    TypeError
+        - If `min_length`'s type is incorrect.
+    ValueError
+        - If `min_length`'s value is incorrect.
+    """
+    min_length = validate_min_length(min_length)
+    if (
+        (min_length != APPLICATION_COMMAND_OPTION_MIN_LENGTH_DEFAULT) and
+        (option_type is not ApplicationCommandOptionType.string)
+    ):
+        raise ValueError(
+            f'`min_length` is only applicable for `{ApplicationCommandOptionType.__name__}.string`, got '
+            f'min_length = {min_length!r}, option_type = {option_type.name}.'
+        )
+    
+    return min_length
+
+
 def create_annotation_choice_from_int(value):
     """
     Creates an annotation choice form an int.
@@ -1910,8 +1986,8 @@ def parse_annotation_slash_parameter(parameter, slash_parameter):
     processed_channel_types = preprocess_channel_types(slash_parameter.channel_types)
     channel_types = postprocess_channel_types(processed_channel_types, parsed_channel_types)
     
-    max_length = validate_max_length(slash_parameter.max_length, ANNOTATION_TYPE_TO_OPTION_TYPE[type_])
-    min_length = validate_min_length(slash_parameter.min_length, ANNOTATION_TYPE_TO_OPTION_TYPE[type_])
+    max_length = process_max_length(slash_parameter.max_length, ANNOTATION_TYPE_TO_OPTION_TYPE[type_])
+    min_length = process_min_length(slash_parameter.min_length, ANNOTATION_TYPE_TO_OPTION_TYPE[type_])
     
     type_, max_value = process_max_and_min_value(type_, slash_parameter.max_value, 'max_value')
     type_, min_value = process_max_and_min_value(type_, slash_parameter.min_value, 'min_value')

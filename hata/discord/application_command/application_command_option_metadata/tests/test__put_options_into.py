@@ -1,8 +1,8 @@
 import vampytest
 
-from ..application_command_option import ApplicationCommandOption
+from ...application_command_option import ApplicationCommandOption, ApplicationCommandOptionType
+
 from ..fields import put_options_into
-from ..preinstanced import ApplicationCommandOptionType
 
 
 def test__put_options_into():

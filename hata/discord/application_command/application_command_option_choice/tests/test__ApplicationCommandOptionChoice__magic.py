@@ -69,8 +69,10 @@ def test__ApplicationCommandOptionChoice__eq():
         ('name_localizations', None),
         ('value', 12.6)
     ):
-        test_select_option = ApplicationCommandOptionChoice(**{**keyword_parameters, field_name: field_value})
-        vampytest.assert_ne(application_command_option_choice, test_select_option)
+        test_application_command_option_choice = ApplicationCommandOptionChoice(
+            **{**keyword_parameters, field_name: field_value}
+        )
+        vampytest.assert_ne(application_command_option_choice, test_application_command_option_choice)
 
 
 def test__ApplicationCommandOptionChoice__len__0():

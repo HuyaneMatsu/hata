@@ -2,8 +2,6 @@ import vampytest
 
 from ..fields import validate_autocomplete
 
-from ..preinstanced import ApplicationCommandOptionType
-
 def test__validate_autocomplete__0():
     """
     Tests whether `validate_autocomplete` works as intended.
@@ -29,13 +27,3 @@ def test__validate_autocomplete__1():
     ):
         with vampytest.assert_raises(TypeError):
             validate_autocomplete(input_value)
-
-
-def test__validate_autocomplete__2():
-    """
-    Tests whether `validate_autocomplete` works as intended.
-    
-    Case: `ValueError`.
-    """
-    with vampytest.assert_raises(ValueError):
-        validate_autocomplete(True, ApplicationCommandOptionType.sub_command)

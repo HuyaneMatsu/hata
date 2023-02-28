@@ -5,7 +5,6 @@ from ..constants import (
     APPLICATION_COMMAND_OPTION_MAX_LENGTH_MAX
 )
 from ..fields import validate_max_length
-from ..preinstanced import ApplicationCommandOptionType
 
 
 def test__validate_max_length__0():
@@ -36,13 +35,3 @@ def test__validate_max_length__1():
     ):
         with vampytest.assert_raises(TypeError):
             validate_max_length(input_value)
-
-
-def test__validate_max_length__2():
-    """
-    Tests whether `validate_max_length` works as intended.
-    
-    Case: `ValueError`.
-    """
-    with vampytest.assert_raises(ValueError):
-        validate_max_length(10, ApplicationCommandOptionType.float)

@@ -1,4 +1,4 @@
-## 1.3.?? *\[2023-03-??\]*
+## 1.3.23 *\[2023-03-02\]*
 
 #### Improvements
 
@@ -25,6 +25,11 @@
 - Add `ApplicationCommandOptionMetadataPrimitive`.
 - Add `ApplicationCommandOptionMetadataString`.
 - Add `ApplicationCommandOptionMetadataSubCommand`.
+- Add `ERROR_CODES.user_cannot_burst_react`.
+- Add `ERROR_CODES.cannot_delete_guild_subscription_integration`.
+- Add `ERROR_CODES.activity_launch_age_gated`.
+- Add `ERROR_CODES.new_owner_ineligible_for_subscription`.
+- Add `ERROR_CODES.max_blocked_users`.
 
 #### Bug Fixes
 
@@ -40,6 +45,7 @@
 - Deprecate `ApplicationCommandOption.apply_translation`.
 - Deprecate `ApplicationCommand.add_option`.
 - Deprecate `ApplicationCommand.apply_translation`.
+- Rename `invalid_activity_launch_afk_channel` to `activity_launch_afk_channel`.
 
 ## 1.3.22 *\[2023-02-18\]*
 
@@ -450,7 +456,7 @@
 - Rename `DiscoveryCategory.local_names` to `.name_localizations`.
 - Rename `thread_user_update` to `.thread_user_difference_update`.
 - Remove `AuditLogEvent.guild_home_remove_item` to `.home_remove_item`.
-- Remove `AuditLogEvent.guild_home_feature_item` to `.home_feature_item`.
+- Rename `AuditLogEvent.guild_home_feature_item` to `.home_feature_item`.
 - Rename `Client.guild_discovery_add_subcategory` to `.guild_discovery_add_sub_category`.
 - Rename `Client.guild_discovery_delete_subcategory` to `.guild_discovery_delete_sub_category`.
 - Rename `DiscordHTTPClient.guild_discovery_add_subcategory` to `.guild_discovery_add_sub_category`.

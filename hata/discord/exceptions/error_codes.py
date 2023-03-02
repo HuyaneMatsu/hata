@@ -1,5 +1,7 @@
 __all__ = ()
 
+import warnings
+
 __doc__ = """
 The possible json error codes received from Discord HTTP API requests.
 
@@ -167,7 +169,7 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | max_used_usernames                                                | 30006     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
-| max_webhooks                                                      | 30007     | 10        |
+| max_webhooks                                                      | 30007     | 15        |
 +-------------------------------------------------------------------+-----------+-----------+
 | max_emojis                                                        | 30008     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -226,6 +228,8 @@ Error Codes
 | max_premium_emoji                                                 | 30056     | 25        |
 +-------------------------------------------------------------------+-----------+-----------+
 | max_webhooks_of_guilds                                            | 30058     | 100       |
++-------------------------------------------------------------------+-----------+-----------+
+| max_blocked_users                                                 | 30059     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | channels_too_large                                                | 30061     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -417,9 +421,15 @@ Error Codes
 +-------------------------------------------------------------------+-----------+-----------+
 | upload_file_not_found                                             | 50146     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
-| invalid_activity_launch_afk_channel                               | 50147     | -         |
+| activity_launch_afk_channel                                       | 50147     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | feature_not_yet_rolled_out                                        | 50155     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| cannot_delete_guild_subscription_integration                      | 50163     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| new_owner_ineligible_for_subscription                             | 50164     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| activity_launch_age_gated                                         | 50165     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | MFA_enabled                                                       | 60001     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -454,6 +464,8 @@ Error Codes
 | relationship_already_friends                                      | 80007     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | reaction_blocked                                                  | 90001     | -         |
++-------------------------------------------------------------------+-----------+-----------+
+| user_cannot_burst_react                                           | 90002     | -         |
 +-------------------------------------------------------------------+-----------+-----------+
 | unknown_billing_profile                                           | 100001    | -         |
 +-------------------------------------------------------------------+-----------+-----------+
@@ -625,7 +637,7 @@ max_pins = 30003 # 50
 max_recipients = 30004 # 10
 max_roles = 30005 # 250
 max_used_usernames = 30006
-max_webhooks = 30007 # 10
+max_webhooks = 30007 # 15
 max_emojis = 30008
 max_reactions = 30010 # 20
 max_group_channels = 30011 # 10
@@ -655,6 +667,7 @@ max_forum_channel_tags = 30048
 bitrate_too_high_for_channel_type = 30052
 max_premium_emoji = 30056
 max_webhooks_of_guilds = 30058
+max_blocked_users = 30059
 channels_too_large = 30061
 rate_limit_resource = 31002
 
@@ -752,8 +765,11 @@ failed_to_resize_asset_below_max_size = 50138
 cannot_mix_subscription_and_non_subscription_roles_for_an_emoji = 50144
 cannot_convert_emoji_between_premium_and_non_premium = 50145
 upload_file_not_found = 50146
-invalid_activity_launch_afk_channel = 50148
+activity_launch_afk_channel = 50148
 feature_not_yet_rolled_out = 50155
+cannot_delete_guild_subscription_integration = 50163
+new_owner_ineligible_for_subscription = 50164
+activity_launch_age_gated = 50165
 
 MFA_enabled = 60001
 MFA_disabled = 60002
@@ -775,6 +791,7 @@ relationship_invalid_discord_tag = 80004
 relationship_already_friends = 80007
 
 reaction_blocked = 90001
+user_cannot_burst_react = 90002
 
 unknown_billing_profile = 100001
 unknown_payment_source = 100002
@@ -836,3 +853,20 @@ auto_moderation_invalid_regex = 200002
 webhook_can_create_thread_only_in_forum_channel = 220003
 
 harmful_link_message_blocked = 240000
+
+
+def __getattr__(attribute_name):
+    """Deals with deprecations."""
+    if attribute_name == 'invalid_activity_launch_afk_channel':
+        warnings.warn(
+            (
+                '`invalid_activity_launch_afk_channel` is deprecated and will be removed in 2023 jun. '
+                'Please use `activity_launch_afk_channel` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return activity_launch_afk_channel
+        
+    raise AttributeError(attribute_name)

@@ -3,7 +3,8 @@ __all__ = ('AutoModerationActionType',)
 from ...bases import Preinstance as P, PreinstancedBase
 
 from ..action_metadata import (
-    AutoModerationActionMetadataBase, AutoModerationActionMetadataSendAlertMessage, AutoModerationActionMetadataTimeout
+    AutoModerationActionMetadataBase, AutoModerationActionMetadataBlock, AutoModerationActionMetadataSendAlertMessage,
+    AutoModerationActionMetadataTimeout
 )
 
 
@@ -39,7 +40,7 @@ class AutoModerationActionType(PreinstancedBase):
     +=======================+=======================+===========+===================================================+=======================================================================+
     | none                  | none                  | 0         | ``AutoModerationActionMetadataBase``              | N/A                                                                   |
     +-----------------------+-----------------------+-----------+---------------------------------------------------+-----------------------------------------------------------------------+
-    | block_message         | block message         | 1         | ``AutoModerationActionMetadataBase``              | Blocks the message's content according to the rule.                   |
+    | block_message         | block message         | 1         | ``AutoModerationActionMetadataBlock``             | Blocks the message's content according to the rule.                   |
     +-----------------------+-----------------------+-----------+---------------------------------------------------+-----------------------------------------------------------------------+
     | send_alert_message    | send alert message    | 2         | ``AutoModerationActionMetadataSendAlertMessage``  | Sends an alert message to the specified channel.                      |
     +-----------------------+-----------------------+-----------+---------------------------------------------------+-----------------------------------------------------------------------+
@@ -95,6 +96,6 @@ class AutoModerationActionType(PreinstancedBase):
     
     # predefined
     none = P(0, 'none', AutoModerationActionMetadataBase)
-    block_message = P(1, 'block message', AutoModerationActionMetadataBase)
+    block_message = P(1, 'block message', AutoModerationActionMetadataBlock)
     send_alert_message = P(2, 'send alert message', AutoModerationActionMetadataSendAlertMessage)
     timeout = P(3, 'timeout', AutoModerationActionMetadataTimeout)

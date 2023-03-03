@@ -238,6 +238,12 @@ class AutoModerationAction(RichAttributeErrorBaseType):
     def duration(self):
         return self.metadata.duration
     
+    
+    @property
+    @copy_docs(AutoModerationActionMetadataBase.custom_message)
+    def custom_message(self):
+        return self.metadata.custom_message
+    
     # ---- Utility proxies ----
     
     @property

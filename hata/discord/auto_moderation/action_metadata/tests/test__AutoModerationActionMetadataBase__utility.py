@@ -39,6 +39,7 @@ def test__AutoModerationActionMetadataBase__placeholders():
     
     vampytest.assert_instance(metadata.channel_id, int)
     vampytest.assert_instance(metadata.duration, int)
+    vampytest.assert_instance(metadata.custom_message, str, nullable = True)
 
 
 def test__AutoModerationActionMetadataBase__channel():

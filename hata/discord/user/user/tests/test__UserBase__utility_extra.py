@@ -488,3 +488,15 @@ def test__UserBase__difference_update_profile():
     
     with vampytest.assert_raises(NotImplementedError):
         user._difference_update_profile(data, guild)
+
+
+def test__UserBase__get_status_by_platform():
+    """
+    Tests whether ``UserBase.get_status_by_platform`` works as intended.
+    """
+    user = UserBase()
+    
+    output = user.get_status_by_platform('')
+    
+    vampytest.assert_instance(output, Status)
+    vampytest.assert_is(output, Status.offline)

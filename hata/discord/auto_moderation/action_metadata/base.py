@@ -115,6 +115,17 @@ class AutoModerationActionMetadataBase(RichAttributeErrorBaseType):
         """
     )
     
+    custom_message = PlaceHolder(
+        None,
+        """
+        A custom message that can be used as an explanation if a message is blocked.
+        
+        Returns
+        -------
+        custom_message : `None`, `str`
+        """
+    )
+    
     # ---- Additional utility ---
     
     @property

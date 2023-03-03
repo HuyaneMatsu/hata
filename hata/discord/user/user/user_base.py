@@ -1029,6 +1029,23 @@ class UserBase(DiscordEntity, immortal = True):
         return ''
     
     
+    def get_status_by_platform(self, platform):
+        """
+        Gets the user's status by the given platform.
+        
+        Parameters
+        ----------
+        platform : `str`
+            The platform to get the status for.
+        
+        Returns
+        -------
+        status : ``Status``
+            Defaults to `status.offline` if the user has no specific status for the given platform.
+        """
+        return Status.offline
+    
+    
     def color_at(self, guild):
         """
         Returns the user's color at the given guild.

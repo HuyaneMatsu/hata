@@ -16,6 +16,7 @@ def test__guess_action_type_from_keyword_parameters__passing():
         (AutoModerationActionType.none, {}, AutoModerationActionType.none),
         (AutoModerationActionType.none, {'duration': None}, AutoModerationActionType.timeout),
         (AutoModerationActionType.none, {'channel_id': None}, AutoModerationActionType.send_alert_message),
+        (AutoModerationActionType.none, {'custom_message': None}, AutoModerationActionType.block_message),
     ):
         output = guess_action_type_from_keyword_parameters(input_action_type, keyword_parameters)
         vampytest.assert_is(output, expected_output)

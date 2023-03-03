@@ -476,3 +476,17 @@ class ClientUserPBase(ClientUserBase):
                     return platform
         
         return ''
+    
+    
+    @copy_docs(ClientUserBase.get_status_by_platform)
+    def get_status_by_platform(self, platform):
+        statuses = self.statuses
+        if (statuses is not None):
+            try:
+                status_value = statuses[platform]
+            except KeyError:
+                pass
+            else:
+                return Status.get(status_value)
+        
+        return Status.offline

@@ -2,7 +2,7 @@ __all__ = ('AuthenticateResponse', 'Oauth2Application', )
 
 from ...discord.bases import DiscordEntity, IconSlot
 from ...discord.http import urls as module_urls
-from ...discord.oauth2.helpers import OAUTH2_SCOPES
+from ...discord.oauth2 import Oauth2Scope
 from ...discord.user import User
 from ...discord.utils import timestamp_to_datetime
 
@@ -17,7 +17,7 @@ class AuthenticateResponse:
         The application the user authorized to.
     expires : `datetime`
         The expiration date of the oauth2 token.
-    scopes : `set` of `str`
+    scopes : `set` of `Oauth2Scope`
         A set of scopes, what the user granted.
     user : ``ClientUserBase``
         The authenticated user.
@@ -43,7 +43,7 @@ class AuthenticateResponse:
         raw_scopes = data['raw_scopes']
         scopes = set()
         for scope in raw_scopes:
-            scope = OAUTH2_SCOPES.get(scope, scope)
+            scope = Oauth2Scope.get(scope)
             scopes.add(scope)
         
         expires = timestamp_to_datetime(data['date'])
@@ -107,7 +107,7 @@ class Oauth2Application(DiscordEntity):
             description = None
         
         rpc_origins = data['rpc_origins']
-        if (rpc_origins is not None) and (not rpc_origins):
+        if (rpc_origins is None) or (not rpc_origins):
             rpc_origins = None
         else:
             rpc_origins.sort()

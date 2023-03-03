@@ -70,6 +70,7 @@ def test__AutoModerationAction__proxies():
     
     vampytest.assert_instance(action.channel_id, int)
     vampytest.assert_instance(action.duration, int)
+    vampytest.assert_instance(action.custom_message, str, nullable = True)
 
 
 def test__AutoModerationAction__proxy__duration():
@@ -102,3 +103,13 @@ def test__AutoModerationAction__proxy__channel():
     ):
         action = AutoModerationAction(channel_id = channel_id)
         vampytest.assert_is(action.channel, expected_channel)
+
+
+def test__AutoModerationAction__proxy__custom_message():
+    """
+    Tests whether ``AutoModerationAction.custom_message`` works as intended.
+    """
+    custom_message = 'orin'
+    
+    action = AutoModerationAction(custom_message = custom_message)
+    vampytest.assert_eq(action.custom_message, custom_message)

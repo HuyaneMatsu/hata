@@ -20,7 +20,7 @@ def test__AutoModerationActionMetadataTimeout__to_data():
         },
     )
 
-    
+
 def test__AutoModerationActionMetadataTimeout__from_data():
     """
     Tests whether ``AutoModerationActionMetadataTimeout``'s `from_data` method works as expected.

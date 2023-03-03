@@ -6,6 +6,7 @@ from .preinstanced import AutoModerationActionType
 KEYWORD_TO_ACTION_TYPE = {
     'channel_id': AutoModerationActionType.send_alert_message,
     'duration': AutoModerationActionType.timeout,
+    'custom_message': AutoModerationActionType.block_message,
 }
 
 

@@ -1,3 +1,13 @@
+## 1.3.24 *\[2023-03-??\]*
+
+#### Improvements
+
+- Add `UserBase.get_status_by_platform`.
+- Add `AutoModerationActionMetadataBlock`.
+- Add `AutoModerationAction.custom_message`.
+- Add `AutoModerationActionMetadataBase.custom_message`.
+- Add `OnboardingPromptOption`.
+
 ## 1.3.23 *\[2023-03-02\]*
 
 #### Improvements

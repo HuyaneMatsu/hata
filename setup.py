@@ -115,6 +115,8 @@ setup(
         'hata.discord.oauth2.connection',
         'hata.discord.oauth2.oauth2_access',
         'hata.discord.oauth2.oauth2_user',
+        'hata.discord.onboarding',
+        'hata.discord.onboarding.onboarding_prompt_option',
         'hata.discord.permission',
         'hata.discord.role',
         'hata.discord.role.role',

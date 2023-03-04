@@ -132,7 +132,7 @@ class OnboardingPromptOption(DiscordEntity):
         return self
     
     
-    def to_data(self, *, defaults = False, include_internals = True):
+    def to_data(self, *, defaults = False, include_internals = False):
         """
         Converts the onboarding prompt option to json serializable object.
         
@@ -173,10 +173,8 @@ class OnboardingPromptOption(DiscordEntity):
             repr_parts.append(repr(option_id))
             repr_parts.append(',')
         
-        name = self.name
-        if (name is not None):
-            repr_parts.append(' name = ')
-            repr_parts.append(repr(name))
+        repr_parts.append(' name = ')
+        repr_parts.append(repr(self.name))
         
         description = self.description
         if (description is not None):
@@ -368,12 +366,22 @@ class OnboardingPromptOption(DiscordEntity):
         new : `instance<type<self>>`
         """
         new = object.__new__(type(self))
-        new.channel_ids = self.channel_ids
+        
+        channel_ids = self.channel_ids
+        if (channel_ids is not None):
+            channel_ids = (*channel_ids,)
+        new.channel_ids = channel_ids
+        
         new.description = self.description
         new.emoji = self.emoji
         new.id = 0
         new.name = self.name
-        new.role_ids = self.role_ids
+        
+        role_ids = self.role_ids
+        if (role_ids is not None):
+            role_ids = (*role_ids,)
+        new.role_ids = role_ids
+        
         return new
     
     
@@ -408,6 +416,8 @@ class OnboardingPromptOption(DiscordEntity):
         # channel_ids
         if channel_ids is ...:
             channel_ids = self.channel_ids
+            if (channel_ids is not None):
+                channel_ids = (*channel_ids,)
         else:
             channel_ids = validate_channel_ids(channel_ids)
         
@@ -432,6 +442,8 @@ class OnboardingPromptOption(DiscordEntity):
         # role_ids
         if role_ids is ...:
             role_ids = self.role_ids
+            if (role_ids is not None):
+                role_ids = (*role_ids,)
         else:
             role_ids = validate_role_ids(role_ids)
         

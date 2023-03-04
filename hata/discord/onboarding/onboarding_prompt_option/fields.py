@@ -3,12 +3,12 @@ __all__ = ()
 from ...channel import Channel
 from ...emoji import Emoji, create_partial_emoji_data, create_partial_emoji_from_data
 from ...field_parsers import (
-    entity_id_array_parser_factory, entity_id_parser_factory, force_string_parser_factory, functional_parser_factory,
-    nullable_string_parser_factory
+    entity_id_array_parser_factory, entity_id_parser_factory, force_string_parser_factory,
+    nullable_functional_parser_factory, nullable_string_parser_factory
 )
 from ...field_putters import (
     entity_id_array_optional_putter_factory, entity_id_putter_factory, force_string_putter_factory,
-    functional_putter_factory, nullable_string_putter_factory
+    nullable_functional_optional_putter_factory, nullable_string_putter_factory
 )
 from ...field_validators import (
     entity_id_array_validator_factory, entity_id_validator_factory, force_string_validator_factory,
@@ -30,8 +30,8 @@ validate_description = nullable_string_validator_factory('description', 0, 1024)
 
 # emoji
 
-parse_emoji = functional_parser_factory('emoji', create_partial_emoji_from_data)
-put_emoji_into = functional_putter_factory('emoji', create_partial_emoji_data)
+parse_emoji = nullable_functional_parser_factory('emoji', create_partial_emoji_from_data)
+put_emoji_into = nullable_functional_optional_putter_factory('emoji', create_partial_emoji_data)
 validate_emoji = nullable_entity_validator_factory('emoji', Emoji)
 
 # id

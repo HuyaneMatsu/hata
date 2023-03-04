@@ -1,6 +1,7 @@
 import vampytest
 
-from ...string_select_option import StringSelectOption
+from ...onboarding_prompt_option import OnboardingPromptOption
+
 from ..fields import validate_options
 
 
@@ -10,7 +11,7 @@ def test__validate_options__0():
     
     Case: passing.
     """
-    option = StringSelectOption('hello')
+    option = OnboardingPromptOption(name = 'ibuki')
     
     for input_value, expected_output in (
         (None, None),

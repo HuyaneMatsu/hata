@@ -14,6 +14,8 @@ def test__parse_emoji():
     emoji_1 = Emoji.precreate(202303030013, name = 'met')
     
     for input_value, expected_output in (
+        ({'emoji': None}, None),
+        ({}, None),
         ({'emoji': {'name': emoji_0.unicode}}, emoji_0),
         ({'emoji': {'name': emoji_1.name, 'id': str(emoji_1.id)}}, emoji_1),
     ):

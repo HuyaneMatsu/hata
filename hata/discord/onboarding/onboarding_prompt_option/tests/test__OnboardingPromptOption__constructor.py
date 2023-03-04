@@ -8,7 +8,7 @@ from ..onboarding_prompt_option import OnboardingPromptOption
 
 def _assert_fields_set(option):
     """
-    Checks whether every fields are set of the given onboarding option prompt.
+    Checks whether every fields are set of the given onboarding prompt option.
     
     Parameters
     ----------

@@ -13,9 +13,11 @@ def test__put_emoji_into():
     emoji_0 = BUILTIN_EMOJIS['heart']
     emoji_1 = Emoji.precreate(202303030014, name = 'met')
     
-    for input_value, expected_output in (
-        (emoji_0, {'emoji': {'name': emoji_0.unicode}},),
-        (emoji_1, {'emoji': {'name': emoji_1.name, 'id': str(emoji_1.id)}}),
+    for input_value, defaults, expected_output in (
+        (None, True, {'emoji': None}),
+        (None, False, {}),
+        (emoji_0, False, {'emoji': {'name': emoji_0.unicode}},),
+        (emoji_1, False, {'emoji': {'name': emoji_1.name, 'id': str(emoji_1.id)}}),
     ):
-        output = put_emoji_into(input_value, {}, False)
+        output = put_emoji_into(input_value, {}, defaults)
         vampytest.assert_eq(output, expected_output)

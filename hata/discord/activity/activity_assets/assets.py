@@ -144,7 +144,6 @@ class ActivityAssets(ActivityFieldBase):
             repr_parts.append(repr(text_small))
         
         repr_parts.append('>')
-        
         return ''.join(repr_parts)
     
     

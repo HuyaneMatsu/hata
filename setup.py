@@ -118,6 +118,7 @@ setup(
         'hata.discord.onboarding',
         'hata.discord.onboarding.onboarding_prompt',
         'hata.discord.onboarding.onboarding_prompt_option',
+        'hata.discord.onboarding.onboarding_screen',
         'hata.discord.permission',
         'hata.discord.role',
         'hata.discord.role.role',

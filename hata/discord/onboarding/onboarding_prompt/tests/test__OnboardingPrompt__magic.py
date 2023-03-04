@@ -92,7 +92,7 @@ def test__OnboardingPrompt__eq():
     
     for field_required, field_value in (
         ('in_onboarding', False),
-        ('name', 'yukari'),
+        ('name', 'yakumo'),
         ('options', None),
         ('required', False),
         ('single_select', False),

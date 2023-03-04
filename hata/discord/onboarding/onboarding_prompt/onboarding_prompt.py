@@ -235,10 +235,34 @@ class OnboardingPrompt(DiscordEntity):
     
     
     def __eq__(self, other):
-        """Returns whether the two onboarding prompt's are equal."""
+        """Returns whether the two onboarding prompts are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
+        return self._is_equal_same_type(other)
+    
+    
+    def __ne__(self, other):
+        """Returns whether the two onboarding prompts are not equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return not self._is_equal_same_type(other)
+    
+    
+    def _is_equal_same_type(self, other):
+        """
+        Returns whether the two onboarding prompts are equal.
+        
+        Parameters
+        ----------
+        other : `instance<type<self>>`
+            The other instance.
+        
+        Returns
+        -------
+        are_equal : `bool`
+        """
         if self.in_onboarding != other.in_onboarding:
             return False
         

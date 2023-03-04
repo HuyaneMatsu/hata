@@ -7,6 +7,9 @@
 - Add `AutoModerationAction.custom_message`.
 - Add `AutoModerationActionMetadataBase.custom_message`.
 - Add `OnboardingPromptOption`.
+- Add `OnboardingPrompt`.
+- Add `OnboardingPromptType`.
+- Add `OnboardingScreen`.
 
 ## 1.3.23 *\[2023-03-02\]*
 

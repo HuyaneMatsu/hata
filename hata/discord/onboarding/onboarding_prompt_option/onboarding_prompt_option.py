@@ -232,10 +232,34 @@ class OnboardingPromptOption(DiscordEntity):
     
     
     def __eq__(self, other):
-        """Returns whether the two onboarding prompt option's are equal."""
+        """Returns whether the two onboarding prompt options are equal."""
         if type(self) is not type(other):
             return NotImplemented
         
+        return self._is_equal_same_type(other)
+    
+    
+    def __ne__(self, other):
+        """Returns whether the two onboarding prompt options are not equal."""
+        if type(self) is not type(other):
+            return NotImplemented
+        
+        return not self._is_equal_same_type(other)
+    
+    
+    def _is_equal_same_type(self, other):
+        """
+        Returns whether the two onboarding prompt options are equal.
+        
+        Parameters
+        ----------
+        other : `instance<type<self>>`
+            The other instance.
+        
+        Returns
+        -------
+        are_equal : `bool`
+        """
         if self.channel_ids != other.channel_ids:
             return False
         
@@ -506,11 +530,12 @@ class OnboardingPromptOption(DiscordEntity):
         """
         for role_id in self.iter_role_ids():
             yield create_partial_role_from_id(role_id)
-
+    
+    
     @property
     def channels(self):
         """
-        Iterates over the channels that opted into when this option is selected.
+        Returns the channels that opted into when this option is selected.
         
         Returns
         -------

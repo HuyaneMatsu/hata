@@ -10,6 +10,9 @@
 - Add `OnboardingPrompt`.
 - Add `OnboardingPromptType`.
 - Add `OnboardingScreen`.
+- Add `Client.onboarding_screen_get`.
+- Add `DiscordHTTPClient.onboarding_screen_get`.
+- Add `RATE_LIMIT_GROUPS.onboarding_screen_get`.
 
 ## 1.3.23 *\[2023-03-02\]*
 

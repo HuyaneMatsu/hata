@@ -1247,6 +1247,15 @@ Group Details
     - Limit : `10`
     - Resets after : `10.0`
 
+- onboarding_screen_get
+    - Endpoint : `/guilds/{guild_id}/onboarding`
+    - Method : `GET`
+    - Required auth : `bot`
+    - Limiter : `guild_id`
+    - Limit : `OPT`
+    - Resets after : `OPT`
+    - Notes: Untested.
+
 - guild_preview_get
     - Endpoint : `/guilds/{guild_id}/preview`
     - Method : `GET`
@@ -2106,6 +2115,7 @@ guild_user_add = RateLimitGroup(LIMITER_GUILD)
 guild_user_search = RateLimitGroup(LIMITER_GUILD)
 user_role_delete = GROUP_USER_ROLE_MODIFY
 user_role_add = GROUP_USER_ROLE_MODIFY
+onboarding_screen_get = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 guild_preview_get = RateLimitGroup()
 guild_prune_estimate = RateLimitGroup(LIMITER_GUILD, optimistic = True)
 guild_prune = RateLimitGroup(LIMITER_GUILD, optimistic = True)

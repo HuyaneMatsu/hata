@@ -10,7 +10,7 @@ from ...channel import Channel, VoiceRegion
 from ...exceptions import DiscordException
 from ...guild import (
     ContentFilterLevel, Guild, GuildFeature, GuildPreview, GuildWidget, MessageNotificationLevel, SystemChannelFlag,
-    VerificationLevel, VerificationScreen, WelcomeScreen, create_partial_guild_from_data, create_partial_guild_from_id
+    VerificationLevel, VerificationScreen, WelcomeScreen, create_partial_guild_from_data
 )
 from ...guild.verification_screen.utils import VERIFICATION_SCREEN_FIELD_CONVERTERS
 from ...guild.welcome_screen.utils import WELCOME_SCREEN_FIELD_CONVERTERS
@@ -18,6 +18,7 @@ from ...http import DiscordHTTPClient, VALID_ICON_MEDIA_TYPES, VALID_ICON_MEDIA_
 from ...localization.utils import Locale
 from ...payload_building import build_edit_payload
 from ...role import Role
+from ...onboarding import OnboardingScreen
 from ...user import ClientUserBase, GuildProfile, PremiumType, User, UserBase, UserFlag
 from ...utils import get_image_media_type, image_to_base64, log_time_converter
 
@@ -107,7 +108,7 @@ class ClientCompoundGuildEndpoints(Compound):
         Parameters
         ----------
         guild : ``Guild``, `int`
-            The guild, what's welcome screen will be requested.
+            The guild what's welcome screen will be requested.
         
         Returns
         -------
@@ -121,10 +122,6 @@ class ClientCompoundGuildEndpoints(Compound):
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        
-        Notes
-        -----
-        If the guild has no welcome screen enabled, will not do any request.
         """
         guild_id = get_guild_id(guild)
         
@@ -273,6 +270,36 @@ class ClientCompoundGuildEndpoints(Compound):
         verification_screen_data = await self.http.verification_screen_edit(guild_id, data)
         
         return VerificationScreen.from_data(verification_screen_data)
+    
+    
+    async def onboarding_screen_get(self, guild):
+        """
+        Requests the given guild's onboarding screen.
+        
+        This method is a coroutine.
+        
+        Parameters
+        ----------
+        guild : ``Guild``, `int`
+            The guild what's onboarding screen will be requested.
+        
+        Returns
+        -------
+        onboarding_screen : ``OnboardingScreen``
+        
+        Raises
+        ------
+        TypeError
+            - If `guild` is not ``Guild``, `int`.
+        ConnectionError
+            No internet connection.
+        DiscordException
+            If any exception was received from the Discord API.
+        """
+        guild_id = get_guild_id(guild)
+        
+        onboarding_screen_data = await self.http.onboarding_screen_get(guild_id)
+        return OnboardingScreen.from_data(onboarding_screen_data)
     
     
     async def guild_get(self, guild):

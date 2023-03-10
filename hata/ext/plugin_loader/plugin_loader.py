@@ -264,7 +264,7 @@ class PluginLoader(RichAttributeErrorBaseType):
       File ".../hata/ext/plugin_loader/plugin_loader.py", line 652, in reload_all
         task.sync_wrap().wait()
       File ".../scarletio/core/traps/future_sync_wrapper.py", line 823, in wait
-        return self.result()
+        return self.get_result()
       File ".../scarletio/core/traps/future_sync_wrapper.py", line 723, in result
         raise exception
       File ".../scarletio/core/traps/task.py", line 1602, in _step

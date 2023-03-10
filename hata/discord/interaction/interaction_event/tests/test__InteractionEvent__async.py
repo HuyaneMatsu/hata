@@ -1,5 +1,5 @@
 import vampytest
-from scarletio import Task, future_or_timeout, skip_poll_cycle, skip_ready_cycle
+from scarletio import Task, skip_poll_cycle, skip_ready_cycle
 
 from ....core import KOKORO, INTERACTION_EVENT_MESSAGE_WAITERS
 from ....message import Message
@@ -19,7 +19,7 @@ async def test__InteractionEvent__wait_for_response_message__0():
     interaction_event = InteractionEvent(message = message)
     
     task = Task(interaction_event.wait_for_response_message(), KOKORO)
-    future_or_timeout(task, 0.015)
+    task.apply_timeout(0.015)
     output = await task
     
     vampytest.assert_is(output, message)
@@ -41,7 +41,7 @@ async def test__InteractionEvent__wait_for_response_message__1():
     INTERACTION_EVENT_MESSAGE_WAITERS[interaction_event].set_result(None)
     interaction_event.message = message
     
-    future_or_timeout(task, 0.015)
+    task.apply_timeout(0.015)
     output = await task
     
     vampytest.assert_is(output, message)

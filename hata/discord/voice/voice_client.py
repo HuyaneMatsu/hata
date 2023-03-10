@@ -5,8 +5,8 @@ from datetime import datetime
 from functools import partial as partial_func
 
 from scarletio import (
-    DOCS_ENABLED, DatagramMergerReadProtocol, Event, Future, Lock, Task, export, future_or_timeout,
-    RichAttributeErrorBaseType, skip_poll_cycle, sleep
+    DOCS_ENABLED, DatagramMergerReadProtocol, Event, Future, Lock, Task, export, RichAttributeErrorBaseType,
+    skip_poll_cycle, sleep
 )
 from scarletio.web_common import ConnectionClosed, InvalidHandshake, WebSocketProtocolError
 
@@ -880,13 +880,13 @@ class VoiceClient(RichAttributeErrorBaseType):
                 
                 try:
                     task = Task(self.gateway.connect(), KOKORO)
-                    future_or_timeout(task, 30.,)
+                    task.apply_timeout(30.0)
                     await task
                     
                     self.connected.clear()
                     while True:
                         task = Task(self.gateway._poll_event(), KOKORO)
-                        future_or_timeout(task, 60.)
+                        task.apply_timeout(60.0)
                         await task
                         
                         if self._secret_box is not None:
@@ -894,8 +894,10 @@ class VoiceClient(RichAttributeErrorBaseType):
                         
                     self.connected.set()
                 
-                except (OSError, TimeoutError, ConnectionError, ConnectionClosed, WebSocketProtocolError,
-                        InvalidHandshake, ValueError) as err:
+                except (
+                    OSError, TimeoutError, ConnectionError, ConnectionClosed, WebSocketProtocolError,
+                    InvalidHandshake, ValueError
+                ) as err:
                     self._maybe_close_socket()
                     
                     if isinstance(err, ConnectionClosed) and (err.code == VOICE_CLIENT_DISCONNECT_CLOSE_CODE):
@@ -927,7 +929,7 @@ class VoiceClient(RichAttributeErrorBaseType):
                 while True:
                     try:
                         task = Task(self.gateway._poll_event(), KOKORO)
-                        future_or_timeout(task, 60.)
+                        task.apply_timeout(60.0)
                         await task
                     except (OSError, TimeoutError, ConnectionClosed, WebSocketProtocolError,) as err:
                         self._maybe_close_socket()
@@ -1170,7 +1172,7 @@ class VoiceClient(RichAttributeErrorBaseType):
         
         # request joining
         await gateway.change_voice_state(self.guild_id, self.channel_id)
-        future_or_timeout(self._handshake_complete, 60.0)
+        self._handshake_complete.apply_timeout(60.0)
         
         try:
             await self._handshake_complete

@@ -1,6 +1,6 @@
 __all__ = ()
 
-from scarletio import Task, WaitTillAll
+from scarletio import Task, TaskGroup
 
 from ...discord.core import KOKORO
 
@@ -194,7 +194,7 @@ async def handle_voice_client_shutdown(client):
         tasks.append(task)
     
     task = None
-    await WaitTillAll(tasks, KOKORO)
+    await TaskGroup(KOKORO, tasks).wait_all()
     
     tasks = []
     for node in client.solarlink.nodes:
@@ -202,4 +202,4 @@ async def handle_voice_client_shutdown(client):
         tasks.append(task)
     
     task = None
-    await WaitTillAll(tasks, KOKORO)
+    await TaskGroup(KOKORO, tasks).wait_all()

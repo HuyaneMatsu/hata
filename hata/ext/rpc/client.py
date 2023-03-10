@@ -6,7 +6,7 @@ from os import getpid as get_process_identifier
 from sys import platform as PLATFORM
 
 from scarletio import (
-    Future, RichAttributeErrorBaseType, Task, from_json, future_or_timeout, run_coroutine, sleep, to_json
+    Future, RichAttributeErrorBaseType, Task, from_json, run_coroutine, sleep, to_json
 )
 
 from ...discord.activity import Activity
@@ -407,8 +407,8 @@ class RPCClient(RichAttributeErrorBaseType):
         
         waiter = Future(KOKORO)
         self._response_waiters[nonce] = waiter
+        waiter.apply_timeout(REQUEST_TIMEOUT)
         
-        future_or_timeout(waiter, REQUEST_TIMEOUT)
         try:
             await self._send_data(OPERATION_FRAME, payload)
             return await waiter

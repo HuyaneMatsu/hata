@@ -2,10 +2,7 @@ __all__ = ()
 
 import sys, zlib
 
-from scarletio import (
-    Future, Task, WaitContinuously, WaitTillAll, WaitTillExc, from_json, future_or_timeout, repeat_timeout, sleep,
-    to_json
-)
+from scarletio import Future, Task, TaskGroup, from_json, repeat_timeout, sleep, to_json
 from scarletio.web_common import ConnectionClosed, InvalidHandshake, WebSocketProtocolError
 
 from ...env import API_VERSION, CACHE_PRESENCE, LIBRARY_NAME
@@ -169,7 +166,7 @@ class DiscordGateway:
         while True:
             try:
                 task = Task(self._connect(), KOKORO)
-                future_or_timeout(task, TIMEOUT_GATEWAY_CONNECT)
+                task.apply_timeout(TIMEOUT_GATEWAY_CONNECT)
                 await task
                 
                 if (waiter is not None):
@@ -192,8 +189,8 @@ class DiscordGateway:
                         # timeout, no internet probably
                         return
                     
-                    task = Task(self._connect(resume=True,), KOKORO)
-                    future_or_timeout(task, TIMEOUT_GATEWAY_CONNECT)
+                    task = Task(self._connect(resume = True), KOKORO)
+                    task.apply_timeout(TIMEOUT_GATEWAY_CONNECT)
                     await task
             
             except (
@@ -684,18 +681,11 @@ class DiscordGatewaySharder:
         client : ``Client``
             The owner client of the gateway.
         """
-        
-        gateways = []
-        for shard_id in range(client.shard_count):
-            gateway = DiscordGateway(client, shard_id)
-            gateways.append(gateway)
-        
+        gateways = [DiscordGateway(client, shard_id) for shard_id in range(client.shard_count)]
         
         self = object.__new__(cls)
-        
         self.client = client
         self.gateways = gateways
-        
         return self
     
     
@@ -725,15 +715,11 @@ class DiscordGatewaySharder:
         
         This method is a coroutine.
         """
-        tasks = []
-        for gateway in self.gateways:
-            task = Task(gateway.start(), KOKORO)
-            tasks.append(task)
-        
-        await WaitTillExc(tasks, KOKORO)
-        
-        for task in tasks:
-            task.cancel()
+        task_group = TaskGroup(KOKORO, (Task(gateway.start(), KOKORO) for gateway in self.gateways))
+        failed_task = await task_group.wait_exception()
+        if (failed_task is not None):
+            task_group.cancel_all()
+            failed_task.get_result()
     
     
     async def run(self):
@@ -760,18 +746,13 @@ class DiscordGatewaySharder:
         # yields a ``Future`` and if the same amount of ``Future`` is yielded as gateway started up, then we do the next
         # loop. An exception is, when the waiter yielded a ``Task``, because t–en 1 of our gateway stopped with no
         # internet stop, or it was stopped by the client, so we abort all the launching and return.
-        waiter = WaitContinuously(None, KOKORO)
+        task_group = TaskGroup(KOKORO)
+        
         while True:
-            if index == limit:
-                break
-            
             left_from_batch = 0
             while True:
-                future = Future(KOKORO)
-                waiter.add(future)
-                
-                task = Task(gateways[index].run(future), KOKORO)
-                waiter.add(task)
+                future = task_group.create_future()
+                task_group.create_task(gateways[index].run(future))
                 
                 index += 1
                 left_from_batch += 1
@@ -785,14 +766,16 @@ class DiscordGatewaySharder:
             
             while True:
                 try:
-                    result = await waiter
+                    done_future = await task_group.wait_first_and_pop()
                 except:
-                    waiter.cancel()
+                    task_group.cancel_all()
                     raise
                 
-                waiter.reset()
+                # We do not have any task?
+                if done_future is None:
+                    break
                 
-                if type(result) is Future:
+                if type(done_future) is Future:
                     left_from_batch -= 1
                     
                     if left_from_batch:
@@ -800,21 +783,30 @@ class DiscordGatewaySharder:
                     
                     break
                 
-                waiter.cancel()
-                result.result()
+                # If we retrieved a task instead of a future, we cancel all and propagate the received exception if
+                # there is any.
+                task_group.cancel_all()
+                done_future.get_result()
+                return
             
-            # We could time gateway connect rate limit more precisely, but this is already fine. We don't need to rush
-            # it, there is many gateway to connect and sync with.
+            if index == limit:
+                break
+            
+            # Each gateway does an `IDENTIFY` on connection. You can send `max_concurrency` amount of identifies every
+            # second. That means here we sleep `5` seconds. We could rush this 5 seconds, but no need.
             await sleep(5.0, KOKORO)
-            
             continue
         
         try:
-            result = await waiter
-        finally:
-            waiter.cancel()
+            failed_task = await task_group.wait_exception()
+        except:
+            task_group.cancel_all()
+            raise
         
-        result.result()
+        # If any tasks failed, cancel all other tasks and propagate the exception.
+        if (failed_task is not None):
+            task_group.cancel_all()
+            failed_task.get_result()
     
     
     @property
@@ -848,12 +840,7 @@ class DiscordGatewaySharder:
         
         This method is a coroutine.
         """
-        tasks = []
-        for gateway in self.gateways:
-            task = Task(gateway.terminate(), KOKORO)
-            tasks.append(task)
-        
-        await WaitTillAll(tasks, KOKORO)
+        await TaskGroup(KOKORO, (Task(gateway.terminate(), KOKORO) for gateway in self.gateways)).wait_all()
     
     
     async def close(self):
@@ -862,12 +849,7 @@ class DiscordGatewaySharder:
         
         This method is a coroutine.
         """
-        tasks = []
-        for gateway in self.gateways:
-            task = Task(gateway.close(), KOKORO)
-            tasks.append(task)
-        
-        await WaitTillAll(tasks, KOKORO)
+        await TaskGroup(KOKORO, (Task(gateway.close(), KOKORO) for gateway in self.gateways)).wait_all()
     
     
     async def send_as_json(self, data):
@@ -882,18 +864,11 @@ class DiscordGatewaySharder:
         """
         data = to_json(data)
         
-        tasks = []
-        for gateway in self.gateways:
-            task = Task(self._send_json(gateway, data), KOKORO)
-            tasks.append(task)
-        
-        done, pending = await WaitTillExc(tasks, KOKORO)
-        
-        for task in pending:
-            task.cancel()
-        
-        for task in done:
-            task.result()
+        task_group = TaskGroup(KOKORO, (Task(self._send_json(gateway, data), KOKORO) for gateway in self.gateways))
+        failed_task = await task_group.wait_exception()
+        if (failed_task is not None):
+            task_group.cancel_all()
+            failed_task.get_result()
     
     
     @staticmethod

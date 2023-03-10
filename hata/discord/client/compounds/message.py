@@ -3,7 +3,7 @@ __all__ = ()
 from collections import deque
 from time import time as time_now
 
-from scarletio import Compound, Task, WaitTillAll, WaitTillFirst
+from scarletio import Compound, Task, TaskGroup
 
 from ...allowed_mentions import parse_allowed_mentions
 from ...bases import maybe_snowflake, maybe_snowflake_pair
@@ -785,11 +785,11 @@ class ClientCompoundMessageEndpoints(Compound):
             task = Task(function(self, channel_id, groups, reason), KOKORO)
             tasks.append(task)
         
-        await WaitTillAll(tasks, KOKORO)
+        await TaskGroup(KOKORO, tasks).wait_all()
         
         last_exception = None
         for task in tasks:
-            exception = task.exception()
+            exception = task.get_exception()
             if exception is None:
                 continue
             
@@ -1051,12 +1051,13 @@ class ClientCompoundMessageEndpoints(Compound):
                 
                 tasks.append(task)
             
-            done, pending = await WaitTillFirst(tasks, KOKORO)
+            task_group = TaskGroup(KOKORO, tasks)
+            await task_group.wait_first()
             
-            for task in done:
+            for task in task_group.done:
                 tasks.remove(task)
                 try:
-                    result = task.result()
+                    result = task.get_result()
                 except:
                     for task in tasks:
                         task.cancel()
@@ -1453,12 +1454,13 @@ class ClientCompoundMessageEndpoints(Compound):
                     sharder.delete_new_task = task
             
             
-            done, pending = await WaitTillFirst(tasks, KOKORO)
+            task_group = TaskGroup(KOKORO, tasks)
+            await task_group.wait_first()
             
-            for task in done:
+            for task in task_group.done:
                 tasks.remove(task)
                 try:
-                    result = task.result()
+                    result = task.get_result()
                 except:
                     for task in tasks:
                         task.cancel()

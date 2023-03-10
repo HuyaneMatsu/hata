@@ -2,7 +2,7 @@ __all__ = ()
 
 from time import time as time_now
 
-from scarletio import CancelledError, Compound, Future, Theory, future_or_timeout
+from scarletio import CancelledError, Compound, Future, Theory
 
 from ....env import CACHE_PRESENCE
 
@@ -417,7 +417,7 @@ class ClientCompoundClientGateway(Compound):
         wait_for_handler.waiters[future] = check
         
         if (timeout is not None):
-            future_or_timeout(future, timeout)
+            future.apply_timeout(timeout)
         
         try:
             return await future

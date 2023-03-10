@@ -1,3 +1,9 @@
+## 1.3.25 *\[2023-03-??\]*
+
+#### Bug Fixes
+
+- `shard_ready_waiter` was not set correct, always producing timeout. (Caused `ready` to be called later as intended.)
+
 ## 1.3.24 *\[2023-03-10\]*
 
 #### Improvements

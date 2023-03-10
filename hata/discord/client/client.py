@@ -5,7 +5,7 @@ from json import JSONDecodeError
 from math import inf
 
 from scarletio import (
-    CancelledError, CompoundMetaType, EventThread, Future, LOOP_TIME, Task, WaitTillAll, copy_docs, export, from_json,
+    CancelledError, CompoundMetaType, EventThread, Future, LOOP_TIME, Task, TaskGroup, copy_docs, export, from_json,
     methodize, run_coroutine, sleep, write_exception_async
 )
 
@@ -1427,7 +1427,7 @@ class Client(
                     tasks.append(Task(gateway.close(), KOKORO))
             
             if tasks:
-                future = WaitTillAll(tasks, KOKORO)
+                future = TaskGroup(KOKORO, tasks).wait_all()
                 tasks = None # clear references
                 await future
                 future = None # clear references

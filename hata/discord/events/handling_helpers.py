@@ -4,7 +4,7 @@ from functools import partial as partial_func
 from types import FunctionType
 
 from scarletio import (
-    CallableAnalyzer, MethodLike, RemovedDescriptor, RichAttributeErrorBaseType, Task, WaitTillAll, WeakKeyDictionary,
+    CallableAnalyzer, MethodLike, RemovedDescriptor, RichAttributeErrorBaseType, Task, TaskGroup, WeakKeyDictionary,
     is_coroutine_function
 )
 from scarletio.utils.compact import NEEDS_DUMMY_INIT
@@ -2571,7 +2571,7 @@ async def ensure_event_handlers(client, event_handlers):
         The event handlers to ensure.
     """
     if (event_handlers is not DEFAULT_EVENT_HANDLER):
-        # We use `WaitTillAll` even for 1 task, since we do not want any raised exceptions to be forwarded.
+        # We use `TaskGroup.wait_all` even for 1 task, since we do not want any raised exceptions to be forwarded.
         tasks = []
         
         if type(event_handlers) is asynclist:
@@ -2583,7 +2583,7 @@ async def ensure_event_handlers(client, event_handlers):
         
         event_handlers = None # clear references
         
-        future = WaitTillAll(tasks, KOKORO)
+        future = TaskGroup(KOKORO, tasks).wait_all()
         tasks = None # clear references
         await future
 

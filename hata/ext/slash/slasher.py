@@ -4,9 +4,7 @@ import warnings
 from datetime import datetime, timedelta
 from functools import partial as partial_func
 
-from scarletio import (
-    RichAttributeErrorBaseType, Task, WaitTillAll, WeakKeyDictionary, WeakReferer, export, run_coroutine
-)
+from scarletio import RichAttributeErrorBaseType, Task, TaskGroup, WeakKeyDictionary, WeakReferer, export, run_coroutine
 
 from ...discord.application_command import (
     APPLICATION_COMMAND_CONTEXT_TARGET_TYPES, ApplicationCommand, ApplicationCommandTargetType
@@ -2122,18 +2120,20 @@ class Slasher(EventHandlerBase):
                 ]
             
             success = True
+            
             for callbacks in (
                 guild_permission_sync_callbacks, command_register_callbacks, command_delete_callbacks,
                 command_edit_callbacks, command_create_callbacks,
             ):
                 if (callbacks is not None):
-                    done, pending = await WaitTillAll(
-                        [Task(callback[0](*callback[1:]), KOKORO) for callback in callbacks],
-                        KOKORO,
-                    )
+                    task_group = TaskGroup(KOKORO, (Task(callback[0](*callback[1:]), KOKORO) for callback in callbacks))
+                    failed_task = await task_group.wait_exception()
+                    if (failed_task is not None):
+                        task_group.cancel_all()
+                        failed_task.get_result()
                     
-                    for future in done:
-                        if not future.result():
+                    for future in task_group.done:
+                        if not future.get_result():
                             success = False
         
         finally:
@@ -2253,16 +2253,18 @@ class Slasher(EventHandlerBase):
                 command_delete_callbacks.append(callback)
             
             success = True
-            for callbacks in (command_register_callbacks, command_delete_callbacks, command_edit_callbacks,
-                    command_create_callbacks):
+            for callbacks in (
+                command_register_callbacks, command_delete_callbacks, command_edit_callbacks, command_create_callbacks
+            ):
                 if (callbacks is not None):
-                    done, pending = await WaitTillAll(
-                        [Task(callback[0](*callback[1:]), KOKORO) for callback in callbacks],
-                        KOKORO,
-                    )
+                    task_group = TaskGroup(KOKORO, (Task(callback[0](*callback[1:]), KOKORO) for callback in callbacks))
+                    failed_task = await task_group.wait_exception()
+                    if (failed_task is not None):
+                        task_group.cancel()
+                        failed_task.get_result()
                     
-                    for future in done:
-                        if not future.result():
+                    for future in task_group.done:
+                        if not future.get_result():
                             success = False
         
         finally:
@@ -2349,12 +2351,18 @@ class Slasher(EventHandlerBase):
                 tasks.append(task)
             
             if tasks:
-                await WaitTillAll(tasks, KOKORO)
+                task_group = TaskGroup(KOKORO, tasks)
+                failed_task = await task_group.wait_exception()
+                if (failed_task is not None):
+                    task_group.cancel_all()
+                    failed_task.get_result()
                 
-                success = True
                 for future in tasks:
-                    if not future.result():
+                    if not future.get_result():
                         success = False
+                        break
+                else:
+                    success = True
                 
                 if not success:
                     return False
@@ -2778,12 +2786,19 @@ class Slasher(EventHandlerBase):
                         tasks.append(task)
                     
                     if tasks:
-                        done, pending = await WaitTillAll(tasks, KOKORO)
+                        task_group = TaskGroup(KOKORO, tasks)
+                        failed_task = await task_group.wait_exception()
+                        if (failed_task is not None):
+                            task_group.cancel_all()
+                            failed_task.get_result()
                         
-                        success = True
-                        for future in done:
-                            if not future.result():
+                        for future in tasks:
+                            if not future.get_result():
                                 success = False
+                                break
+                        else:
+                            success = True
+                            
                     else:
                         success = True
                 except:

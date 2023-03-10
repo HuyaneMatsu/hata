@@ -4,13 +4,13 @@ import reprlib
 from collections import deque
 from datetime import datetime, timedelta
 
-from scarletio import CancelledError, Future, LOOP_TIME, Task, future_or_timeout, shield, sleep
+from scarletio import CancelledError, Future, LOOP_TIME, Task, shield, sleep
 
 from ...discord.core import KOKORO
 from ...discord.utils import sanitize_content
 
 
-MESSAGE_EDIT_TIMEDELTA = timedelta(seconds=10)
+MESSAGE_EDIT_TIMEDELTA = timedelta(seconds = 10)
 REQUEST_RATE_LIMIT = 1.2
 
 
@@ -295,7 +295,7 @@ class ChannelOutputStream:
         waiter = shield(close_waiter, KOKORO)
         
         if (timeout is not None):
-            future_or_timeout(waiter, timeout)
+            waiter.apply_timeout(timeout)
         
         return waiter
     
@@ -515,7 +515,7 @@ class ChannelInputStream:
         waiter = shield(close_waiter, KOKORO)
         
         if (timeout is not None):
-            future_or_timeout(waiter, timeout)
+            waiter.apply_timeout(timeout)
         
         return waiter
     

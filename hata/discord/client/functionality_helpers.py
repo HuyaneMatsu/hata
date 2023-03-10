@@ -5,7 +5,7 @@ from binascii import Error as Base64DecodeError
 from datetime import datetime
 from math import inf
 
-from scarletio import BaseMethodType, Future, LOOP_TIME, Task, WaitTillFirst
+from scarletio import BaseMethodType, Future, LOOP_TIME, Task, TaskGroup
 
 from ..channel import Channel
 from ..core import CHANNELS, CLIENTS, KOKORO
@@ -17,6 +17,7 @@ from ..utils import DISCORD_EPOCH, time_now
 
 
 USER_CHUNK_TIMEOUT = 2.5
+
 
 class SingleUserChunker:
     """
@@ -833,12 +834,13 @@ async def _message_delete_multiple_task(client, channel_id, groups, reason):
             
             tasks.append(delete_old_task)
         
-        done, pending = await WaitTillFirst(tasks, KOKORO)
+        task_group = TaskGroup(KOKORO, tasks)
+        await task_group.wait_first()
         
-        for task in done:
+        for task in task_group.done:
             tasks.remove(task)
             try:
-                result = task.result()
+                result = task.get_result()
             except (DiscordException, ConnectionError):
                 for task in tasks:
                     task.cancel()

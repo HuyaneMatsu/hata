@@ -2,7 +2,7 @@ __all__ = ()
 
 import sys
 
-from scarletio import Task, WaitTillAll, write_exception_async
+from scarletio import Task, TaskGroup, write_exception_async
 
 from ..core import KOKORO
 from ..voice import VoiceClient
@@ -201,10 +201,7 @@ async def default_voice_client_shutdown_event_handler(client):
     """
     voice_clients = client.voice_clients
     if voice_clients:
-        tasks = []
-        for voice_client in voice_clients.values():
-            tasks.append(Task(voice_client._disconnect(), KOKORO))
-        
-        future = WaitTillAll(tasks, KOKORO)
-        tasks = None # clear references
-        await future
+        await TaskGroup(
+            KOKORO,
+            (Task(voice_client._disconnect(), KOKORO) for voice_client in voice_clients.values())
+        ).wait_all()

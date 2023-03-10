@@ -1,8 +1,7 @@
 __all__ = ('SolarNode', )
 
 from scarletio import (
-    Future, RichAttributeErrorBaseType, Task, from_json, future_or_timeout, repeat_timeout, sleep, to_json,
-    write_exception_async
+    Future, RichAttributeErrorBaseType, Task, from_json, repeat_timeout, sleep, to_json, write_exception_async
 )
 from scarletio.web_common import ConnectionClosed, InvalidHandshake, WebSocketProtocolError
 
@@ -285,7 +284,7 @@ class SolarNode(RichAttributeErrorBaseType):
             while True:
                 try:
                     task = Task(self._connect(), KOKORO)
-                    future_or_timeout(task, 30.0)
+                    task.apply_timeout(30.0)
                     await task
                     
                     if (waiter is not None):
@@ -315,7 +314,7 @@ class SolarNode(RichAttributeErrorBaseType):
                         
                         reconnect_attempts = self.reconnect_attempts
                         task = Task(self._connect(), KOKORO)
-                        future_or_timeout(task, 30.0)
+                        task.apply_timeout(30.0)
                         await task
                 
                 

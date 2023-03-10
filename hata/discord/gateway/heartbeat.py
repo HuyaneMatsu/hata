@@ -2,7 +2,7 @@ __all__ = ()
 
 from time import perf_counter
 
-from scarletio import CancelledError, Future, Task, future_or_timeout, skip_ready_cycle, sleep
+from scarletio import CancelledError, Future, Task, skip_ready_cycle, sleep
 
 from ..core import KOKORO
 
@@ -196,7 +196,7 @@ class Kokoro:
             
             try:
                 task = Task(gateway._beat(), KOKORO)
-                future_or_timeout(task, HEARTBEAT_TIMEOUT)
+                task.apply_timeout(HEARTBEAT_TIMEOUT)
                 self.beat_task = task
                 await task
             except TimeoutError:

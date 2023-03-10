@@ -2,7 +2,7 @@ __all__ = ('SolarClient', )
 
 from random import choice
 
-from scarletio import RichAttributeErrorBaseType, Task, WaitTillAll, WeakReferer, run_coroutine, to_json
+from scarletio import RichAttributeErrorBaseType, Task, TaskGroup, WeakReferer, run_coroutine, to_json
 from scarletio.web_common.headers import AUTHORIZATION, CONTENT_TYPE
 
 from ...discord.channel import Channel
@@ -512,14 +512,13 @@ class SolarClient(RichAttributeErrorBaseType):
         """
         player_queue = self._player_queue
         if (player_queue is not None):
-            tasks = []
-            for player in player_queue:
-                task = Task(player.change_node(node), KOKORO)
-                tasks.append(task)
-            
+            task_group = TaskGroup(KOKORO, (Task(player.change_node(node), KOKORO) for player in player_queue))
             self._player_queue = None
             
-            await WaitTillAll(tasks, KOKORO)
+            failed_task = await task_group.wait_exception()
+            if (failed_task is not None):
+                task_group.cancel_all()
+                failed_task.get_result()
     
     
     async def _node_disconnected(self, node):
@@ -543,12 +542,11 @@ class SolarClient(RichAttributeErrorBaseType):
                 else:
                     player_queue.extend(players)
             else:
-                tasks = []
-                for player in players:
-                    task = Task(player.change_node(best_node), KOKORO)
-                    tasks.append(task)
-                
-                await WaitTillAll(tasks, KOKORO)
+                task_group = TaskGroup(KOKORO, (Task(player.change_node(best_node), KOKORO) for player in players))
+                failed_task = await task_group.wait_exception()
+                if (failed_task is not None):
+                    task_group.cancel_all()
+                    failed_task.get_result()
     
     
     def get_player(self, guild_id):

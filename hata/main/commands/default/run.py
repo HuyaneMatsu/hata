@@ -3,7 +3,7 @@ __all__ = ()
 import sys
 from datetime import datetime
 
-from scarletio import Future, LOOP_TIME, Task, WaitTillAll, WeakReferer
+from scarletio import Future, LOOP_TIME, Task, TaskGroup, WeakReferer
 
 from .... import (
     CLIENTS, DATETIME_FORMAT_CODE, KOKORO, stop_clients, run_console_till_interruption, wait_for_interruption
@@ -297,13 +297,13 @@ async def _connect_clients(do_log):
     event_handler = None
     
     try:
-        await WaitTillAll(connection_waiters, KOKORO)
+        await TaskGroup(KOKORO, connection_waiters).wait_all()
     except:
         stop_clients()
         raise
     
     else:
-        connected_count = sum(waiter.result() for waiter in connection_waiters)
+        connected_count = sum(waiter.get_result() for waiter in connection_waiters)
     
     finally:
         for event_handler in event_handlers:

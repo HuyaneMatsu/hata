@@ -2,7 +2,7 @@ __all__ = ()
 
 from collections import deque
 
-from scarletio import CancelledError, Future, Task, WaitTillAll, WeakReferer, future_or_timeout, set_docs, sleep
+from scarletio import CancelledError, Future, Task, TaskGroup, WeakReferer, set_docs, sleep
 
 from ...env import CACHE_PRESENCE, CACHE_USER
 
@@ -98,7 +98,7 @@ class ShardUserRequester:
                 
                 if not received_guild_ids:
                     guild_create_waiter = Future(KOKORO)
-                    future_or_timeout(guild_create_waiter, GUILD_RECEIVE_TIMEOUT)
+                    guild_create_waiter.apply_timeout(GUILD_RECEIVE_TIMEOUT)
                     self.guild_create_waiter = guild_create_waiter
                     
                     try:
@@ -380,15 +380,15 @@ class ReadyState:
                         done_tasks += 1
                 
                 if (tasks is not None):
-                    await WaitTillAll(tasks, KOKORO)
+                    await TaskGroup(KOKORO, tasks).wait_all()
                     continue
                 
                 if done_tasks == shard_count:
                     break
                 
                 shard_ready_waiter = Future(KOKORO)
-                future_or_timeout(shard_ready_waiter, SHARD_CONNECT_TIMEOUT)
-                self.shard_ready_waiter = None
+                shard_ready_waiter.apply_timeout(SHARD_CONNECT_TIMEOUT)
+                self.shard_ready_waiter = shard_ready_waiter
                 
                 try:
                     await shard_ready_waiter

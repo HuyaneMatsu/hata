@@ -7,7 +7,7 @@ import sys
 from threading import current_thread
 from time import sleep as blocking_sleep
 
-from scarletio import CancelledError, Task, WaitTillAll, get_last_module_frame, include, sleep
+from scarletio import CancelledError, Task, TaskGroup, get_last_module_frame, include, sleep
 from scarletio.tools.asynchronous_interactive_console import (
     create_banner, create_exit_message, run_asynchronous_interactive_console
 )
@@ -81,7 +81,11 @@ def wait_for_interruption():
     
     sys.stdout.write('\ninterrupted ...\n')
     
-    WaitTillAll([Task(client.disconnect(), KOKORO) for client in CLIENTS.values()], KOKORO).sync_wrap().wait()
+    TaskGroup(
+        KOKORO,
+        (Task(client.disconnect(), KOKORO) for client in CLIENTS.values())
+    ).wait_all().sync_wrap().wait()
+    
     KOKORO.stop()
     
     # reraise exception
@@ -93,7 +97,10 @@ def _console_exit_callback():
     """
     Callback used by ``run_console_till_interruption`` to stop the running clients.
     """
-    WaitTillAll([Task(client.disconnect(), KOKORO) for client in CLIENTS.values()], KOKORO).sync_wrap().wait()
+    TaskGroup(
+        KOKORO,
+        (Task(client.disconnect(), KOKORO) for client in CLIENTS.values())
+    ).wait_all().sync_wrap().wait()
 
 
 IGNORED_CONSOLE_VARIABLES = {'__name__', '__package__', '__loader__', '__spec__'}

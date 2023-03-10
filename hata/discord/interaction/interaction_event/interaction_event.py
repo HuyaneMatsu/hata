@@ -1,6 +1,6 @@
 __all__ = ('InteractionEvent',)
 
-from scarletio import Future, copy_docs, export, future_or_timeout, include, shield
+from scarletio import Future, copy_docs, export, include, shield
 
 from ...bases import DiscordEntity, EventBase
 from ...channel import ChannelType, create_partial_channel_from_id
@@ -771,7 +771,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         waiter = shield(waiter, KOKORO)
         
         if (timeout is not None):
-            future_or_timeout(waiter, timeout)
+            waiter.apply_timeout(timeout)
         
         await waiter
         return self.message

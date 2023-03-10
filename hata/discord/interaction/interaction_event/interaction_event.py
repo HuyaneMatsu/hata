@@ -1189,7 +1189,7 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
         except KeyError:
             voice_client = None
         else:
-            guild_id = self.message.guild_id
+            guild_id = self.guild_id
             if guild_id:
                 voice_client = client.voice_clients.get(guild_id, None)
             else:

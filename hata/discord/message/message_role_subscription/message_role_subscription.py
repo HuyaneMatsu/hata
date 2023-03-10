@@ -20,7 +20,7 @@ class MessageRoleSubscription(RichAttributeErrorBaseType):
     subscription_listing_id : `int`
         The subscription listing's and sku's identifier to which the role subscription belongs to.
     tier_name : `str`
-        The name of the tier teh user subscribed to.
+        The name of the tier the user subscribed to.
     total_months : `int`
         The total amount months the user has been subscribed.
     """
@@ -37,7 +37,7 @@ class MessageRoleSubscription(RichAttributeErrorBaseType):
         subscription_listing_id : `int`, Optional (Keyword only)
             The subscription listing's and sku's identifier to which the role subscription belongs to.
         tier_name : `str`, Optional (Keyword only)
-            The name of the tier teh user subscribed to.
+            The name of the tier the user subscribed to.
         total_months : `int`, Optional (Keyword only)
             The total amount months the user has been subscribed.
         
@@ -218,7 +218,7 @@ class MessageRoleSubscription(RichAttributeErrorBaseType):
         subscription_listing_id : `int`, Optional (Keyword only)
             The subscription listing's and sku's identifier to which the role subscription belongs to.
         tier_name : `str`, Optional (Keyword only)
-            The name of the tier teh user subscribed to.
+            The name of the tier the user subscribed to.
         total_months : `int`, Optional (Keyword only)
             The total amount months the user has been subscribed.
         

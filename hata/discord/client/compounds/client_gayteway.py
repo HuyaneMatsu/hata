@@ -312,7 +312,7 @@ class ClientCompoundClientGateway(Compound):
                 pass
     
     
-    async def request_members(self, guild, name, limit=1):
+    async def request_members(self, guild, name, limit = 1):
         """
         Requests the members of the given guild by their name.
         

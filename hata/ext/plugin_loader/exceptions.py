@@ -102,7 +102,7 @@ class PluginError(Exception):
         
         message = self._message
         if (message is not None):
-            repr_parts.append(' message=')
+            repr_parts.append(' message = ')
             repr_parts.append(repr(message))
         
         cause = self.__cause__

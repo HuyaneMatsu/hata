@@ -19,6 +19,7 @@ else:
     SecretBox = nacl.secret.SecretBox
     del nacl
 
+
 IDENTIFY = 0
 SELECT_PROTOCOL = 1
 READY = 2
@@ -167,7 +168,7 @@ class DiscordGatewayVoice:
         Raises
         ------
         TimeoutError
-            If the gateways's `.kokoro` is not beating, meanwhile it should.
+            If the gateway's `.kokoro` is not beating, meanwhile it should.
         ConnectionClosed
             If the websocket is already closed. Can happen when destroying ghost clients.
         """
@@ -193,7 +194,7 @@ class DiscordGatewayVoice:
         Raises
         ------
         TimeoutError
-            If the gateways's `.kokoro` is not beating, meanwhile it should.
+            If the gateway's `.kokoro` is not beating, meanwhile it should.
         """
         message = from_json(message)
         
@@ -244,7 +245,7 @@ class DiscordGatewayVoice:
         
         if operation == HELLO:
             # sowwy, but we need to ignore these or we will keep getting timeout
-            # kokoro.interval=data['heartbeat_interval']/100.
+            # kokoro.interval = data['heartbeat_interval']/100.
             # send a heartbeat immediately
             await kokoro.beat_now()
             return
@@ -345,7 +346,7 @@ class DiscordGatewayVoice:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items or `list` of `Any`
+        data : `dict` of (`str`, `object`) items or `list` of `object`
         """
         websocket = self.websocket
         if websocket is None:
@@ -457,26 +458,29 @@ class DiscordGatewayVoice:
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Received data from Discord.
         """
         voice_client = self.client
         voice_client._audio_source = data['ssrc']
         voice_client._audio_port = data['port']
         voice_client._endpoint_ip = data['ip']
-        packet = bytearray(70)
-        packet[0:4] = voice_client._audio_source.to_bytes(4, 'big')
         
+        packet = bytearray(74)
+        packet[0:2] = (1).to_bytes(2, 'big') # message type, 1 for send
+        packet[2:4] = (70).to_bytes(2, 'big') # message length, always 70, excludes type & length
+        packet[4:8] = voice_client._audio_source.to_bytes(4, 'big') # The received source value.
+    
         voice_client.send_packet(packet)
         
         protocol = voice_client._protocol
         # Make sure, that the voice client's reader do not wanna read our data away from us.
         protocol.cancel_current_reader()
-        received = await protocol.read(70)
         
-        # the ip is ascii starting at the 4th byte and ending at the first null
-        voice_client._ip = ip = received[4:received.index(0, 4)].decode('ascii')
-        voice_client._port = port = int.from_bytes(received[-2:], 'big')
+        received = await protocol.read(74)
+        # null terminated string starting from position 8, max 64 bit long
+        voice_client._ip = ip = received[8:received.index(0, 8)].decode('ascii') 
+        voice_client._port = port = int.from_bytes(received[-2:], 'big') # last 2 bytes
         
         await self._select_protocol(ip, port)
         await self._client_connect()

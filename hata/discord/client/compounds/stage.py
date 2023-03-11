@@ -16,7 +16,7 @@ class ClientCompoundStageEndpoints(Compound):
     
     
     async def stage_create(
-        self, channel, topic, *, privacy_level=PrivacyLevel.guild_only, send_start_notification=False,
+        self, channel, topic, *, privacy_level = PrivacyLevel.guild_only, send_start_notification = False,
     ):
         """
         Edits the given stage channel.
@@ -114,7 +114,7 @@ class ClientCompoundStageEndpoints(Compound):
         
         
         data = await self.http.stage_create(data)
-        return Stage(data)
+        return Stage.from_data(data)
     
     
     async def stage_edit(self, stage, topic=..., *, privacy_level=...):
@@ -239,4 +239,4 @@ class ClientCompoundStageEndpoints(Compound):
         channel_id = get_channel_id(channel, Channel.is_guild_stage)
         
         data = await self.http.stage_get(channel_id)
-        return Stage(data)
+        return Stage.from_data(data)

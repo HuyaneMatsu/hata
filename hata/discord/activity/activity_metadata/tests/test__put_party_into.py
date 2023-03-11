@@ -11,10 +11,10 @@ def test__put_party_into():
     """
     party = ActivityParty(party_id = 'hell')
     
-    for input_, defaults, expected_output in (
+    for input_value, defaults, expected_output in (
         (None, False, {}),
         (party, False, {'party': party.to_data()}),
         (party, True, {'party': party.to_data(defaults = True)}),
     ):
-        data = put_party_into(input_, {}, defaults)
+        data = put_party_into(input_value, {}, defaults)
         vampytest.assert_eq(data, expected_output)

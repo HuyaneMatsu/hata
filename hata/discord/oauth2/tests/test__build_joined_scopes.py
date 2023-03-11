@@ -9,14 +9,14 @@ def test__build_joined_scopes__0():
     
     cases: everything passes.
     """
-    for input_, expected_output in (
+    for input_value, expected_output in (
         ('bot', 'bot'),
         (Oauth2Scope.bot, 'bot'),
         (['bot'], 'bot'),
         ([Oauth2Scope.bot], 'bot'),
         (['email', Oauth2Scope.bot], 'email bot'),
     ):
-        output = build_joined_scopes(input_)
+        output = build_joined_scopes(input_value)
         vampytest.assert_eq(output, expected_output)
 
 
@@ -26,9 +26,9 @@ def test__build_joined_scopes__1():
     
     cases: everything fails.
     """
-    for input_ in (
+    for input_value in (
         12.6,
         [12.6],
     ):
         with vampytest.assert_raises(TypeError):
-            build_joined_scopes(input_)
+            build_joined_scopes(input_value)

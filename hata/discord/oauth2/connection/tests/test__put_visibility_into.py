@@ -9,10 +9,10 @@ def test__put_visibility_into():
     """
     Tests whether ``put_visibility_into`` is working as intended.
     """
-    for input_, defaults, expected_output in (
+    for input_value, defaults, expected_output in (
         (ConnectionVisibility.user_only, False, {}),
         (ConnectionVisibility.everyone, False, {'visibility': ConnectionVisibility.everyone.value}),
         (ConnectionVisibility.user_only, True, {'visibility': ConnectionVisibility.user_only.value}),
     ):
-        data = put_visibility_into(input_, {}, defaults)
+        data = put_visibility_into(input_value, {}, defaults)
         vampytest.assert_eq(data, expected_output)

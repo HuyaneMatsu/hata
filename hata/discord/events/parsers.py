@@ -3367,12 +3367,12 @@ del APPLICATION_COMMAND_PERMISSIONS_UPDATE__CAL, \
 
 
 def STAGE_INSTANCE_CREATE__CAL(client, data):
-    stage = Stage(data)
+    stage = Stage.from_data(data)
     
     Task(client.events.stage_create(client, stage), KOKORO)
 
 def STAGE_INSTANCE_CREATE__OPT(client, data):
-    Stage(data)
+    Stage.from_data(data)
 
 add_parser(
     'STAGE_INSTANCE_CREATE',

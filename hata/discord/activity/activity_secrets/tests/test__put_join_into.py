@@ -7,9 +7,9 @@ def test__put_join_into():
     """
     Tests whether ``put_join_into`` is working as intended.
     """
-    for input_, defaults, expected_output in (
+    for input_value, defaults, expected_output in (
         (None, False, {}),
         ('a', False, {'join': 'a'}),
     ):
-        data = put_join_into(input_, {}, defaults)
+        data = put_join_into(input_value, {}, defaults)
         vampytest.assert_eq(data, expected_output)

@@ -11,10 +11,10 @@ def test__put_secrets_into():
     """
     secrets = ActivitySecrets(join = 'hell')
     
-    for input_, defaults, expected_output in (
+    for input_value, defaults, expected_output in (
         (None, False, {}),
         (secrets, False, {'secrets': secrets.to_data()}),
         (secrets, True, {'secrets': secrets.to_data(defaults = True)}),
     ):
-        data = put_secrets_into(input_, {}, defaults)
+        data = put_secrets_into(input_value, {}, defaults)
         vampytest.assert_eq(data, expected_output)

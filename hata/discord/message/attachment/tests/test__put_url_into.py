@@ -7,9 +7,9 @@ def test__put_url_into():
     """
     Tests whether ``put_url_into`` is working as intended.
     """
-    for input_, defaults, expected_output in (
+    for input_value, defaults, expected_output in (
         (None, False, {}),
         ('https://orindance.party/', False, {'url': 'https://orindance.party/'}),
     ):
-        data = put_url_into(input_, {}, defaults)
+        data = put_url_into(input_value, {}, defaults)
         vampytest.assert_eq(data, expected_output)

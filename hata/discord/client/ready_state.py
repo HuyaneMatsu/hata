@@ -214,7 +214,8 @@ else:
         return False
 
 
-set_docs(should_request_users_of,
+set_docs(
+    should_request_users_of,
     """
     Returns whether the users of the given guild should be requested.
     
@@ -229,7 +230,8 @@ set_docs(should_request_users_of,
         The respective client instance.
     should_request_users : `bool`
         Whether the guild's users should be requested.
-    """)
+    """
+)
 
 
 class ReadyState:

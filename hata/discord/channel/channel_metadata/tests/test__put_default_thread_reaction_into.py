@@ -13,11 +13,11 @@ def test__put_default_thread_reaction_into():
     unicode_emoji = BUILTIN_EMOJIS['heart']
     custom_emoji = Emoji.precreate(202209110004)
     
-    for input_, defaults, expected_output in (
+    for input_value, defaults, expected_output in (
         (None, False, {}),
         (None, True, {'default_reaction_emoji': None}),
         (unicode_emoji, False, {'default_reaction_emoji': {'emoji_name': unicode_emoji.unicode}}),
         (custom_emoji, False, {'default_reaction_emoji': {'emoji_id': str(custom_emoji.id)}}),
     ):
-        data = put_default_thread_reaction_into(input_, {}, defaults)
+        data = put_default_thread_reaction_into(input_value, {}, defaults)
         vampytest.assert_eq(data, expected_output)

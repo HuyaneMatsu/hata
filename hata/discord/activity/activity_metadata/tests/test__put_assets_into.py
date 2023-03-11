@@ -11,10 +11,10 @@ def test__put_assets_into():
     """
     assets = ActivityAssets(image_large = 'hell')
     
-    for input_, defaults, expected_output in (
+    for input_value, defaults, expected_output in (
         (None, False, {}),
         (assets, False, {'assets': assets.to_data()}),
         (assets, True, {'assets': assets.to_data(defaults = True)}),
     ):
-        data = put_assets_into(input_, {}, defaults)
+        data = put_assets_into(input_value, {}, defaults)
         vampytest.assert_eq(data, expected_output)

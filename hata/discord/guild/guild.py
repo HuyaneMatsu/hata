@@ -501,7 +501,7 @@ class Guild(DiscordEntity, immortal = True):
             stage_datas = data.get('stage_instances', None)
             if (stage_datas is not None):
                 for stage_data in stage_datas:
-                    Stage(stage_data)
+                    Stage.from_data(stage_data)
             
             try:
                 embedded_activity_state_datas = data['embedded_activities']

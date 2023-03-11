@@ -9,10 +9,10 @@ def test__put_color_into():
     """
     Tests whether ``put_color_into`` is working as intended.
     """
-    for input_, defaults, expected_output in (
+    for input_value, defaults, expected_output in (
         (Color(0), False, {}),
         (Color(0), True, {'color': 0}),
         (Color(1), False, {'color': 1}),
     ):
-        data = put_color_into(input_, {}, defaults)
+        data = put_color_into(input_value, {}, defaults)
         vampytest.assert_eq(data, expected_output)

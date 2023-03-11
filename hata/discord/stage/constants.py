@@ -1,0 +1,4 @@
+__all__ = ()
+
+TOPIC_LENGTH_MIN = 0
+TOPIC_LENGTH_MAX = 120

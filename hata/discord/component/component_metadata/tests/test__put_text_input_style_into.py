@@ -8,9 +8,9 @@ def test__put_text_input_style_into():
     """
     Tests whether ``put_text_input_style_into`` is working as intended.
     """
-    for input_, defaults, expected_output in (
+    for input_value, defaults, expected_output in (
         (TextInputStyle.short, False, {'style': TextInputStyle.short.value}),
         (TextInputStyle.paragraph, True, {'style': TextInputStyle.paragraph.value}),
     ):
-        data = put_text_input_style_into(input_, {}, defaults)
+        data = put_text_input_style_into(input_value, {}, defaults)
         vampytest.assert_eq(data, expected_output)

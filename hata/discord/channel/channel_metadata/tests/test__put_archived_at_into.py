@@ -13,10 +13,10 @@ def test__put_archived_at_into():
     """
     archived_at = DateTime(2016, 9, 9)
     
-    for input_, defaults, expected_output in (
+    for input_value, defaults, expected_output in (
         (None, False, {}),
         (None, True, {'thread_metadata': {'archive_timestamp': None}}),
         (archived_at, False, {'thread_metadata': {'archive_timestamp': datetime_to_timestamp(archived_at)}}),
     ):
-        data = put_archived_at_into(input_, {}, defaults)
+        data = put_archived_at_into(input_value, {}, defaults)
         vampytest.assert_eq(data, expected_output)

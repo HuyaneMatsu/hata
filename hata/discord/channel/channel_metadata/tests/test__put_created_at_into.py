@@ -13,10 +13,10 @@ def test__put_created_at_into():
     """
     created_at = DateTime(2016, 9, 9)
     
-    for input_, defaults, expected_output in (
+    for input_value, defaults, expected_output in (
         (None, False, {}),
         (None, True, {'thread_metadata': {'create_timestamp': None}}),
         (created_at, False, {'thread_metadata': {'create_timestamp': datetime_to_timestamp(created_at)}}),
     ):
-        data = put_created_at_into(input_, {}, defaults)
+        data = put_created_at_into(input_value, {}, defaults)
         vampytest.assert_eq(data, expected_output)

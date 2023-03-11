@@ -7,9 +7,9 @@ def test__put_description_into():
     """
     Tests whether ``put_description_into`` works as intended.
     """
-    for input_, defaults, expected_output in (
+    for input_value, defaults, expected_output in (
         (None, False, {'description': ''}),
         ('a', False, {'description': 'a'}),
     ):
-        data = put_description_into(input_, {}, defaults)
+        data = put_description_into(input_value, {}, defaults)
         vampytest.assert_eq(data, expected_output)

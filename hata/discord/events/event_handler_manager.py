@@ -919,7 +919,7 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +---------------+-----------------------+
         | privacy_level | ``PrivacyLevel``      |
         +---------------+-----------------------+
-        | topic         | `str`                 |
+        | topic         | `None`, `str`         |
         +---------------+-----------------------+
     
     sticker_create(client: ``Client``, sticker: ``Sticker``):

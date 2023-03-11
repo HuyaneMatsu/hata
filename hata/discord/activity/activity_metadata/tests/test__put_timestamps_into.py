@@ -13,10 +13,10 @@ def test__put_timestamps_into():
     """
     timestamps = ActivityTimestamps(start = DateTime(2017, 5, 13))
     
-    for input_, defaults, expected_output in (
+    for input_value, defaults, expected_output in (
         (None, False, {}),
         (timestamps, False, {'timestamps': timestamps.to_data()}),
         (timestamps, True, {'timestamps': timestamps.to_data(defaults = True)}),
     ):
-        data = put_timestamps_into(input_, {}, defaults)
+        data = put_timestamps_into(input_value, {}, defaults)
         vampytest.assert_eq(data, expected_output)

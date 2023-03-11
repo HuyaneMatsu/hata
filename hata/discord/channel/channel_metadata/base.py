@@ -44,7 +44,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        keyword_parameters : `dict` of (`str`, `Any`) items
+        keyword_parameters : `dict` of (`str`, `object`) items
             Keyword parameters to work with.
         
         Raises
@@ -66,7 +66,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Channel data receive from Discord.
         
         Returns
@@ -144,7 +144,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) Items
+        data : `dict` of (`str`, `object`) Items
         """
         return {}
     
@@ -155,7 +155,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Channel data received from Discord.
         """
         pass
@@ -168,12 +168,12 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Channel data received from Discord.
         
         Returns
         -------
-        old_attributes : `dict` of (`str`, `Any`) items
+        old_attributes : `dict` of (`str`, `object`) items
             All item in the returned dict is optional.
             
             Might contain the following items:
@@ -250,7 +250,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `None`, `dict` of (`str`, `Any`) items
+        data : `None`, `dict` of (`str`, `object`) items
             Partial channel data.
         
         Returns
@@ -376,7 +376,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
             The channel entity owning the metadata.
         name : `str`
             The name to search for.
-        default : `Any`
+        default : `object`
             The value what is returned when no user was found. Defaults to `None`.
         
         Returns
@@ -419,7 +419,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
             The channel entity owning the metadata.
         name : `str`
             The name to search for.
-        default : `Any`
+        default : `object`
             The value what is returned when no user was found. Defaults to `None`.
         
         Returns
@@ -605,7 +605,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        keyword_parameters : `dict` of (`str`, `Any`) items
+        keyword_parameters : `dict` of (`str`, `object`) items
             Keyword parameters passed to ``Channel.precreate``
         
         Returns
@@ -650,7 +650,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        keyword_parameters : `dict` of (`str`, `Any`) items
+        keyword_parameters : `dict` of (`str`, `object`) items
             Keyword parameters to work with.
         """
         pass

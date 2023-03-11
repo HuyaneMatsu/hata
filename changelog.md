@@ -1,5 +1,20 @@
 ## 1.3.25 *\[2023-03-??\]*
 
+#### Improvements
+
+- Add `Stage.guild_id`.
+- Add `Stage.channel_id`.
+- Add `Stage.partial`.
+- Repurpose `Stage.__new__`, rename to `.from_data`.
+- Add `Stage.to_data`.
+- Add `Stage.__new__`.
+- Add `Stage.precreate`.
+- Add `Stage.copy`.
+- Add `Stage.copy_with`.
+- `Stage.__eq__` now supports partial instances.
+- `Stage.__hash__` now supports partial instances.
+- `Stage._delete` will no longer remove itself from the cache.
+
 #### Bug Fixes
 
 - `shard_ready_waiter` was not set correct, always producing timeout. (Caused `ready` to be called later as intended.)

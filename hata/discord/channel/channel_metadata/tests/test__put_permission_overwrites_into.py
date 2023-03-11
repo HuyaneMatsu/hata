@@ -11,7 +11,7 @@ def test__put_permission_overwrites_into():
     """
     permission_overwrite = PermissionOverwrite(202209140017, target_type = PermissionOverwriteTargetType.user)
     
-    for input_, defaults, expected_output in (
+    for input_value, defaults, expected_output in (
         ({}, False, {'permission_overwrites': []}),
         (
             {permission_overwrite.target_id: permission_overwrite},
@@ -19,5 +19,5 @@ def test__put_permission_overwrites_into():
             {'permission_overwrites': [permission_overwrite.to_data(include_internals = True)]}
         ),
     ):
-        data = put_permission_overwrites_into(input_, {}, defaults)
+        data = put_permission_overwrites_into(input_value, {}, defaults)
         vampytest.assert_eq(data, expected_output)

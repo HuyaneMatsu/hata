@@ -1,13 +1,16 @@
 __all__ = ()
 
+import warnings
+
 from scarletio import Compound
 
 from ...channel import Channel
 from ...http import DiscordHTTPClient
-from ...scheduled_event import PrivacyLevel
+from ...payload_building import build_create_payload, build_edit_payload
 from ...stage import Stage
+from ...stage.utils import STAGE_CREATE_FIELD_CONVERTERS, STAGE_EDIT_FIELD_CONVERTERS
 
-from ..request_helpers import get_channel_id, get_stage_channel_id
+from ..request_helpers import get_channel_id, get_stage_and_channel_id, get_stage_channel_id
 
 
 class ClientCompoundStageEndpoints(Compound):
@@ -15,9 +18,7 @@ class ClientCompoundStageEndpoints(Compound):
     http : DiscordHTTPClient
     
     
-    async def stage_create(
-        self, channel, topic, *, privacy_level = PrivacyLevel.guild_only, send_start_notification = False,
-    ):
+    async def stage_create(self, channel, stage_template = None, *, reason = None, **keyword_parameters):
         """
         Edits the given stage channel.
         
@@ -30,18 +31,29 @@ class ClientCompoundStageEndpoints(Compound):
         Parameters
         ----------
         channel : ``Channel``, `int`
-            The channel to edit.
+            The channel to create the stage at.
         
-        topic : `None`, `str`
-            The new topic of the stage.
+        stage_template : `None`, ``Stage`` = `None`, Optional
+            Stage entity to use as a template.
         
-        privacy_level : ``PrivacyLevel``, `int` = `PrivacyLevel.guild_only`, Optional (Keyword only)
+        reason : `None`, `str` = `None`, Optional (Keyword only)
+            Shows up at the guild's audit logs.
+        
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters to create the role with.
+        
+        Other Parameters
+        ----------------
+        privacy_level : ``PrivacyLevel``, `int`, Optional (Keyword only)
             The new privacy level of the stage. Defaults to guild only.
         
-        send_start_notification : `bool` = `False`, Optional (Keyword only)
+        send_start_notification : `bool`, Optional (Keyword only)
             Whether @everyone should be notified when the stage is started.
             
             > You must have `mention everyone` permission.
+        
+        topic : `None`, `str`, Optional (Keyword only)
+            The topic of the stage.
         
         Returns
         -------
@@ -52,72 +64,38 @@ class ClientCompoundStageEndpoints(Compound):
         ------
         TypeError
             - If `channel` was not given as ``Channel`` neither as `int`.
-            - If `privacy_level` was not given neither as ``PrivacyLevel`` nor as `int`.
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `topic` was not given neither as `None`, `str`.
-            - If `topic`'s length is out of range [1:120].
-            - If `send_start_notification` is not `bool`
         """
         # channel_id
         channel_id = get_channel_id(channel, Channel.is_guild_stage)
         
-        # topic
-        if topic is None:
-            topic = ''
-        else:
-            if __debug__:
-                if not isinstance(topic, str):
-                    raise AssertionError(
-                        f'`topic` can be `None`, `str`, got {topic.__class__.__name__}; {topic!r}.'
-                    )
-                
-                topic_length = len(topic)
-                if (topic_length < 1) or (topic_length > 120):
-                    raise AssertionError(
-                        f'`topic` length can be in range [1:120], got {topic_length!r}; {topic!r}.'
-                    )
-        
-        # privacy_level
-        if isinstance(privacy_level, PrivacyLevel):
-            privacy_level = privacy_level.value
-        
-        elif isinstance(privacy_level, int):
-            privacy_level = privacy_level
-        
-        else:
-            raise TypeError(
-                f'`privacy_level` can be `{PrivacyLevel.__name__}`, `int` , got '
-                f'{privacy_level.__class__.__name__}; {privacy_level!r}.'
+        if isinstance(stage_template, str):
+            warnings.warn(
+                (
+                    f'`{self.__class__.__name__}.stage_create`\'s `topic` parameters became keyword only. '
+                    f'Its positional support will be removed at 2023 August.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
             )
+            
+            keyword_parameters['topic'] = stage_template
+            stage_template = None
         
-        # send_start_notification
-        if __debug__:
-            if not isinstance(send_start_notification, bool):
-                raise AssertionError(
-                    f'`send_start_notification` can be `bool`, '
-                    f'got {send_start_notification.__class__.__name__}; {send_start_notification!r}.'
-                )
+        data = build_create_payload(stage_template, STAGE_CREATE_FIELD_CONVERTERS, keyword_parameters)
+        data['channel_id'] = channel_id
         
-        
-        data = {
-            'channel_id': channel_id,
-            'topic': topic,
-            'privacy_level': privacy_level,
-        }
-        
-        if send_start_notification:
-            data['send_start_notification'] = True
-        
-        
-        data = await self.http.stage_create(data)
-        return Stage.from_data(data)
+        stage_data = await self.http.stage_create(data, reason)
+        return Stage.from_data(stage_data)
     
     
-    async def stage_edit(self, stage, topic=..., *, privacy_level=...):
+    async def stage_edit(self, stage, stage_template = None, *, reason = None, **keyword_parameters):
         """
         Edits the given stage channel.
         
@@ -129,66 +107,59 @@ class ClientCompoundStageEndpoints(Compound):
         ----------
         stage : ``Stage``, ``Channel``, `int`
             The stage to edit. Can be given as it's channel's identifier.
-        topic : `str`
-            The new topic of the stage.
+        
+        stage_template : `None`, ``Stage`` = `None`, Optional
+            Stage entity to use as a template.
+        
+        reason : `None`, `str` = `None`, Optional (Keyword only)
+            Shows up at the guild's audit logs.
+        
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters to create the role with.
+        
+        Other Parameters
+        ----------------
         privacy_level : ``PrivacyLevel``, `int`, Optional (Keyword only)
             The new privacy level of the stage.
+        
+        topic : `None`, `str`, Optional (Keyword only)
+            The new topic of the stage.
         
         Raises
         ------
         TypeError
-            - If `stage` was not given as ``Stage``, ``Channel`` neither as `int`.
-            - If `privacy_level` was not given neither as ``PrivacyLevel`` nor as `int`.
+            - If `channel` was not given as ``Channel`` neither as `int`.
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `topic` was not given neither as `None` nor as `str`.
-            - If `topic`'s length is out of range [1:120].
         """
-        channel_id = get_stage_channel_id(stage)
+        stage, channel_id = get_stage_and_channel_id(stage)
         
-        data = {}
-        
-        if (topic is not ...):
-            if __debug__:
-                if not isinstance(topic, str):
-                    raise AssertionError(
-                        f'`topic` can be `None`, `str`, got {topic.__class__.__name__}; {topic!r}.'
-                    )
-                
-                topic_length = len(topic)
-                if (topic_length < 1) or (topic_length > 120):
-                    raise AssertionError(
-                        f'`topic` length can be in range [1:120], got {topic_length!r}; {topic!r}.'
-                    )
+        if isinstance(stage_template, str):
+            warnings.warn(
+                (
+                    f'`{self.__class__.__name__}.stage_edit`\'s `topic` parameters became keyword only. '
+                    f'Its positional support will be removed at 2023 August.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
             
-            data['topic'] = topic
+            keyword_parameters['topic'] = stage_template
+            stage_template = None
         
+        data = build_edit_payload(stage, stage_template, STAGE_EDIT_FIELD_CONVERTERS, keyword_parameters)
         
-        if (privacy_level is not ...):
-            if isinstance(privacy_level, PrivacyLevel):
-                privacy_level = privacy_level.value
-            elif isinstance(privacy_level, int):
-                privacy_level = privacy_level
-            else:
-                raise TypeError(
-                    f'`privacy_level` can be `{PrivacyLevel.__name__}`, `int` , got '
-                    f'{privacy_level.__class__.__name__}; {privacy_level!r}.'
-                )
-            
-            data['privacy_level'] = privacy_level
-        
-        
-        if not data:
-            return
-        
-        await self.http.stage_edit(channel_id, data)
-        # We receive data, but ignore it, so we can dispatch it.
+        if data:
+            await self.http.stage_edit(channel_id, data, reason)
+            # We receive data, but ignore it, so we can dispatch it.
     
     
-    async def stage_delete(self, stage):
+    async def stage_delete(self, stage, *, reason = None):
         """
         Deletes the given stage channel.
         
@@ -201,6 +172,9 @@ class ClientCompoundStageEndpoints(Compound):
         stage : ``Stage``, ``Channel``, `int`
             The stage to delete. Can be given as it's channel's identifier.
         
+        reason : `None`, `str` = `None`, Optional (Keyword only)
+            Shows up at the guild's audit logs.
+        
         Raises
         ------
         TypeError
@@ -212,7 +186,7 @@ class ClientCompoundStageEndpoints(Compound):
         """
         channel_id = get_stage_channel_id(stage)
         
-        await self.http.stage_delete(channel_id)
+        await self.http.stage_delete(channel_id, reason)
         # We receive no data.
     
     

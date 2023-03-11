@@ -21,7 +21,7 @@ def build_edit_payload(old_entity, new_entity, field_converters, keyword_paramet
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         The built payload.
     
     Raises
@@ -65,7 +65,7 @@ def build_create_payload(entity, field_converters, keyword_parameters):
     
     Returns
     -------
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         The built payload.
     
     Raises
@@ -96,7 +96,7 @@ def add_payload_fields_from_keyword_parameters(field_converters, keyword_paramet
     keyword_parameters : `dict` of (`str`, `object`) items
         Keyword parameters passed to the original function.
     
-    data : `dict` of (`str`, `Any`) items
+    data : `dict` of (`str`, `object`) items
         The built payload.
     
     defaults : `bool`

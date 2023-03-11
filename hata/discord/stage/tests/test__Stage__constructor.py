@@ -41,18 +41,15 @@ def test__Stage__new__1():
     
     Case: All fields given.
     """
-    channel_id = 202303110012
     privacy_level = PrivacyLevel.public
     topic = 'breaking me softly'
     
     stage = Stage(
-        channel_id = channel_id,
         privacy_level = privacy_level,
         topic = topic,
     )
     _assert_fields_set(stage)
     
-    vampytest.assert_eq(stage.channel_id, channel_id)
     vampytest.assert_is(stage.privacy_level, privacy_level)
     vampytest.assert_eq(stage.topic, topic)
 

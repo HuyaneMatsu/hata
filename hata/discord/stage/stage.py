@@ -61,14 +61,12 @@ class Stage(DiscordEntity):
     )
     
     
-    def __new__(cls, *, channel_id = ..., privacy_level = ..., topic = ...):
+    def __new__(cls, *, privacy_level = ..., topic = ...):
         """
         Creates a partial stage with the given fields.
         
         Parameters
         ----------
-        channel_id : `int`, ``Channel``, Optional (Keyword only)
-            The stage channel or its identifier where the stage is active.
         privacy_level : ``PrivacyLevel``, `int`, Optional (Keyword only)
             The privacy level of the stage.
         topic : `None`, `str`, Optional (Keyword only)
@@ -81,12 +79,6 @@ class Stage(DiscordEntity):
         ValueError
             - If a parameter's value is incorrect.
         """
-        # channel_id
-        if channel_id is ...:
-            channel_id = 0
-        else:
-            channel_id = validate_channel_id(channel_id)
-        
         # privacy_level
         if privacy_level is ...:
             privacy_level = PrivacyLevel.guild_only
@@ -101,7 +93,7 @@ class Stage(DiscordEntity):
         
         # Construct
         self = object.__new__(cls)
-        self.channel_id = channel_id
+        self.channel_id = 0
         self.discoverable = True
         self.guild_id = 0
         self.id = 0
@@ -169,11 +161,11 @@ class Stage(DiscordEntity):
         data : `dict` of (`str`, `object`) Items
         """
         data = {}
-        put_channel_id_into(self.channel_id, data, defaults)
         put_privacy_level_into(self.privacy_level, data, defaults)
         put_topic_into(self.topic, data, defaults)
         
         if include_internals:
+            put_channel_id_into(self.channel_id, data, defaults)
             put_discoverable_into(self.discoverable, data, defaults)
             put_guild_id_into(self.guild_id, data, defaults)
             put_id_into(self.id, data, defaults)
@@ -307,7 +299,7 @@ class Stage(DiscordEntity):
         hash_value : `int`
         """
         hash_value = 0
-        hash_value ^= self.channel_id
+        # channel_id | internal
         # discoverable | internal
         # guild_id | internal
         # id | internal
@@ -356,10 +348,6 @@ class Stage(DiscordEntity):
         if self_id and other_id:
             if self.id != other.id:
                 return False
-        
-        # channel_id
-        if self.channel_id != other.channel_id:
-            return False
         
         # privacy_level
         if self.privacy_level is not other.privacy_level:
@@ -478,7 +466,7 @@ class Stage(DiscordEntity):
         new : `instance<type<self>>`
         """
         new = object.__new__(type(self))
-        new.channel_id = self.channel_id
+        new.channel_id = 0
         new.discoverable = True
         new.guild_id = 0
         new.id = 0
@@ -489,14 +477,12 @@ class Stage(DiscordEntity):
         return new
     
     
-    def copy_with(self, *, channel_id = ..., privacy_level = ..., topic = ...):
+    def copy_with(self, *, privacy_level = ..., topic = ...):
         """
         Copies the stage state with the given fields.
         
         Parameters
         ----------
-        channel_id : `int`, ``Channel``, Optional (Keyword only)
-            The stage channel or its identifier where the stage is active.
         privacy_level : ``PrivacyLevel``, `int`, Optional (Keyword only)
             The privacy level of the stage.
         topic : `None`, `str`, Optional (Keyword only)
@@ -513,12 +499,6 @@ class Stage(DiscordEntity):
         ValueError
             - If a parameter's type is incorrect.
         """
-        # channel_id
-        if channel_id is ...:
-            channel_id = self.channel_id
-        else:
-            channel_id = validate_channel_id(channel_id)
-        
         # privacy_level
         if privacy_level is ...:
             privacy_level = self.privacy_level
@@ -532,7 +512,7 @@ class Stage(DiscordEntity):
             topic = validate_topic(topic)
         
         new = object.__new__(type(self))
-        new.channel_id = channel_id
+        new.channel_id = 0
         new.discoverable = True
         new.guild_id = 0
         new.id = 0
@@ -596,9 +576,7 @@ class Stage(DiscordEntity):
         -------
         channel : `None`, ``Channel``
         """
-        channel_id = self.channel_id
-        if channel_id:
-            return create_partial_channel_from_id(channel_id, ChannelType.guild_stage, self.guild_id)
+        return create_partial_channel_from_id(self.channel_id, ChannelType.guild_stage, self.guild_id)
     
     
     @property

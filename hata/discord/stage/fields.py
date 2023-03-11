@@ -2,11 +2,13 @@ __all__ = ()
 
 from ..channel import Channel
 from ..field_parsers import (
-    entity_id_parser_factory, negated_bool_parser_factory, nullable_string_parser_factory, preinstanced_parser_factory
+    bool_parser_factory, entity_id_parser_factory, negated_bool_parser_factory, nullable_string_parser_factory,
+    preinstanced_parser_factory
 )
 from ..field_putters import (
-    entity_id_optional_putter_factory, entity_id_putter_factory, negated_bool_optional_putter_factory,
-    nullable_string_putter_factory, preinstanced_putter_factory, url_optional_putter_factory
+    bool_optional_putter_factory, entity_id_optional_putter_factory, entity_id_putter_factory,
+    negated_bool_optional_putter_factory, nullable_string_putter_factory, preinstanced_putter_factory,
+    url_optional_putter_factory
 )
 from ..field_validators import (
     bool_validator_factory, entity_id_validator_factory, nullable_string_validator_factory,
@@ -59,6 +61,12 @@ validate_privacy_level = preinstanced_validator_factory('privacy_level', Privacy
 parse_scheduled_event_id = entity_id_parser_factory('guild_scheduled_event_id')
 put_scheduled_event_id_into = entity_id_optional_putter_factory('guild_scheduled_event_id')
 validate_scheduled_event_id = entity_id_validator_factory('scheduled_event_id', ScheduledEvent)
+
+# send_start_notification
+
+parse_send_start_notification = bool_parser_factory('send_start_notification', False)
+put_send_start_notification_into = bool_optional_putter_factory('send_start_notification', False)
+validate_send_start_notification = bool_validator_factory('send_start_notification', False)
 
 # topic
 

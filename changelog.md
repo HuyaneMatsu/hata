@@ -14,6 +14,7 @@
 - `Stage.__eq__` now supports partial instances.
 - `Stage.__hash__` now supports partial instances.
 - `Stage._delete` will no longer remove itself from the cache.
+- `Client`'s stage endpoints now support `reason` parameter (except the get one ofc).
 
 #### Bug Fixes
 

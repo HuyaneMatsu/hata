@@ -19,7 +19,6 @@ def test__Stage__repr():
     topic = 'breaking me softly'
     
     stage = Stage(
-        channel_id = channel_id,
         privacy_level = privacy_level,
         topic = topic,
     )
@@ -52,7 +51,6 @@ def test__Stage__hash():
     topic = 'breaking me softly'
     
     stage = Stage(
-        channel_id = channel_id,
         privacy_level = privacy_level,
         topic = topic,
     )
@@ -85,7 +83,6 @@ def test__Stage__eq():
     topic = 'breaking me softly'
     
     keyword_parameters = {
-        'channel_id': channel_id,
         'privacy_level': privacy_level,
         'topic': topic,
     }
@@ -93,6 +90,7 @@ def test__Stage__eq():
     stage = Stage.precreate(
         stage_id,
         **keyword_parameters,
+        channel_id = channel_id,
         discoverable = discoverable,
         guild_id = guild_id,
         invite_code = invite_code,
@@ -106,7 +104,6 @@ def test__Stage__eq():
     
     
     for field_name, field_value in (
-        ('channel_id', 202303110042),
         ('privacy_level', PrivacyLevel.guild_only),
         ('topic', 'tipsy oni'),
 

@@ -919,6 +919,52 @@ def get_channel_and_id(channel, type_checker):
     return channel, channel_id
 
 
+def get_stage_and_channel_id(stage):
+    """
+    Gets the stage an its channel's identifier.
+    
+    Parameters
+    ----------
+    stage : `Stage`, ``Channel``, `int`
+        The stage, or it's identifier.
+    
+    Returns
+    -------
+    stage : `None`, ``Stage``
+        The identified stage if any.
+    channel_id : `int`
+        The channel's identifier.
+    
+    Raises
+    ------
+    TypeError
+        If `stage`'s type is incorrect.
+    """
+    while True:
+        if isinstance(stage, Stage):
+            channel_id = stage.channel.id
+            break
+        
+        elif isinstance(stage, Channel):
+            if stage.is_guild_stage() or stage.partial:
+                channel_id = stage.id
+                stage = None
+                break
+        
+        else:
+            channel_id = maybe_snowflake(stage)
+            if (channel_id is not None):
+                stage = None
+                break
+        
+        raise TypeError(
+            f'`stage` can be `{Stage.__name__}`, `{Channel.__name__}`, `int`, got '
+            f'{stage.__class__.__name__}; {stage!r}.'
+        )
+    
+    return stage, channel_id
+
+
 def get_stage_channel_id(stage):
     """
     Gets stage's channel's identifier from the given stage or of it's identifier.

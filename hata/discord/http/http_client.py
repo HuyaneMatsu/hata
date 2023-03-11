@@ -1629,12 +1629,13 @@ class DiscordHTTPClient(HTTPClient):
         )
     
     
-    async def stage_create(self, data):
+    async def stage_create(self, data, reason):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.stage_create, NO_SPECIFIC_RATE_LIMITER),
             METHOD_POST,
             f'{API_ENDPOINT}/stage-instances',
             data,
+            reason = reason,
         )
     
     async def stage_get(self, channel_id):
@@ -1644,19 +1645,21 @@ class DiscordHTTPClient(HTTPClient):
             f'{API_ENDPOINT}/stage-instances/{channel_id}',
         )
     
-    async def stage_edit(self, channel_id, data):
+    async def stage_edit(self, channel_id, data, reason):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.stage_edit, NO_SPECIFIC_RATE_LIMITER),
             METHOD_PATCH,
             f'{API_ENDPOINT}/stage-instances/{channel_id}',
             data,
+            reason = reason,
         )
     
-    async def stage_delete(self, channel_id):
+    async def stage_delete(self, channel_id, reason):
         return await self.discord_request(
             RateLimitHandler(RATE_LIMIT_GROUPS.stage_delete, NO_SPECIFIC_RATE_LIMITER),
             METHOD_DELETE,
             f'{API_ENDPOINT}/stage-instances/{channel_id}',
+            reason = reason,
         )
     
     

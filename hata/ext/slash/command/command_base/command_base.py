@@ -197,7 +197,7 @@ class CommandBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        other : `type(self)`
+        other : `instance<type<self>>`
             The other instance. Must be from the same type.
         
         Returns

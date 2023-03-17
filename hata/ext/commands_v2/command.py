@@ -533,7 +533,7 @@ class Command:
     
     def _iter_names(self):
         """
-        Iterates overt he command's names.
+        Iterates over the command's names.
 
         This method is an iterable generator.
         

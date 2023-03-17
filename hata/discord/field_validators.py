@@ -173,38 +173,64 @@ def _entity_id_array_processor_factory(field_name, entity_type, include):
     include : `None`, `str`
         The object's name to include `entity_type` with. Should be used when `entity_type` cannot be resolved initially.
     """
-    def validator(entity_id_array):
-        nonlocal field_name
-        nonlocal entity_type
-        
-        if (getattr(entity_id_array, '__iter__', None) is None):
-            raise TypeError(
-                f'`{field_name}` can be `None`, `iterable` of (`int`, `{entity_type.__name__}`), '
-                f'got {entity_id_array.__class__.__name__}; {entity_id_array!r}.'
-            )
-        
-        entity_id_set_processed = None
-        
-        for applied_tag_id in entity_id_array:
-            if isinstance(applied_tag_id, entity_type):
-                 applied_tag_id_processed = applied_tag_id.id
+    if (entity_type is None):
+        def validator(entity_id_array):
+            nonlocal field_name
             
-            else:
+            if (getattr(entity_id_array, '__iter__', None) is None):
+                raise TypeError(
+                    f'`{field_name}` can be `None`, `iterable` of `int`, '
+                    f'got {entity_id_array.__class__.__name__}; {entity_id_array!r}.'
+                )
+            
+            entity_id_set_processed = None
+            
+            for applied_tag_id in entity_id_array:
                 applied_tag_id_processed = maybe_snowflake(applied_tag_id)
                 if applied_tag_id_processed is None:
                     raise TypeError(
-                        f'`{field_name}` can contain `int`, `{entity_type.__name__}` elements, got '
-                        f'{applied_tag_id.__class__.__name__}; {applied_tag_id!r}; '
-                        f'entity_id_array = {entity_id_array!r}.'
+                        f'`{field_name}` can contain `int` elements, got {applied_tag_id.__class__.__name__}'
+                        f'{applied_tag_id!r}; entity_id_array = {entity_id_array!r}.'
                     )
+                
+                if entity_id_set_processed is None:
+                    entity_id_set_processed = set()
+                
+                entity_id_set_processed.add(applied_tag_id_processed)
             
-            if entity_id_set_processed is None:
-                entity_id_set_processed = set()
+            return entity_id_set_processed
+    else:
+        def validator(entity_id_array):
+            nonlocal field_name
+            nonlocal entity_type
             
-            entity_id_set_processed.add(applied_tag_id_processed)
-        
-        return entity_id_set_processed
-    
+            if (getattr(entity_id_array, '__iter__', None) is None):
+                raise TypeError(
+                    f'`{field_name}` can be `None`, `iterable` of (`int`, `{entity_type.__name__}`), '
+                    f'got {entity_id_array.__class__.__name__}; {entity_id_array!r}.'
+                )
+            
+            entity_id_set_processed = None
+            
+            for applied_tag_id in entity_id_array:
+                if isinstance(applied_tag_id, entity_type):
+                     applied_tag_id_processed = applied_tag_id.id
+                
+                else:
+                    applied_tag_id_processed = maybe_snowflake(applied_tag_id)
+                    if applied_tag_id_processed is None:
+                        raise TypeError(
+                            f'`{field_name}` can contain `int`, `{entity_type.__name__}` elements, got '
+                            f'{applied_tag_id.__class__.__name__}; {applied_tag_id!r}; '
+                            f'entity_id_array = {entity_id_array!r}.'
+                        )
+                
+                if entity_id_set_processed is None:
+                    entity_id_set_processed = set()
+                
+                entity_id_set_processed.add(applied_tag_id_processed)
+            
+            return entity_id_set_processed
     
     if (include is not None):
         @include_with_callback(include)
@@ -216,7 +242,7 @@ def _entity_id_array_processor_factory(field_name, entity_type, include):
     return validator
 
 
-def entity_id_array_validator_factory(field_name, entity_type, *, include = None):
+def entity_id_array_validator_factory(field_name, entity_type = None, *, include = None):
     """
     Returns an entity id array validator.
     
@@ -225,7 +251,7 @@ def entity_id_array_validator_factory(field_name, entity_type, *, include = None
     field_name : `str`
         The field's name.
     
-    entity_type : `type` with `{id}`
+    entity_type : `type` with `{id}` = `None`, Optional
         The accepted entity's type.
     
     include : `None`, `str` = `None`, Optional (Keyword only)

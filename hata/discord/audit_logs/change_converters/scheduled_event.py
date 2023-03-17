@@ -1,7 +1,7 @@
 __all__ = ()
 
 from ...scheduled_event import PrivacyLevel, ScheduledEventEntityType, ScheduledEventStatus
-from ...scheduled_event.metadata.utils import try_get_scheduled_event_metadata_type_from_data
+from ...scheduled_event.scheduled_event_entity_metadata.utils import try_get_scheduled_event_metadata_type_from_data
 
 from ..audit_log_change import AuditLogChange
 
@@ -63,7 +63,6 @@ SCHEDULED_EVENT_CONVERTERS = {
     'privacy_level': convert_privacy_level,
     'scheduled_end_time': convert_timestamp__end,
     'scheduled_start_time': convert_timestamp__start,
-    'send_start_notification': convert_nothing,
     'sku_ids': convert_snowflake_array,
     'status': convert_scheduled_event_status,
 }

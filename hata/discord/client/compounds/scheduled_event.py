@@ -173,7 +173,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
             data['scheduled_end_time'] = datetime_to_timestamp(end)
         
         data = await self.http.scheduled_event_create(guild_id, data, reason)
-        return ScheduledEvent(data)
+        return ScheduledEvent.from_data(data)
     
     # In theory you can edit the target entity is as well, but we will ignore it for now.
     
@@ -430,12 +430,12 @@ class ClientCompoundScheduledEventEndpoints(Compound):
                 try:
                     scheduled_event = SCHEDULED_EVENTS[scheduled_event_id]
                 except KeyError:
-                    scheduled_event = ScheduledEvent(data)
+                    scheduled_event = ScheduledEvent.from_data(data)
                 else:
                     scheduled_event._update_attributes(data)
                     scheduled_event._update_counts_only(data)
             else:
-                scheduled_event = ScheduledEvent(data)
+                scheduled_event = ScheduledEvent.from_data(data)
         
         return scheduled_event
     
@@ -466,7 +466,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         """
         guild_id = get_guild_id(guild)
         scheduled_event_datas = await self.http.scheduled_event_get_all_guild(guild_id, {'with_user_count': True})
-        return [ScheduledEvent(scheduled_event_data) for scheduled_event_data in scheduled_event_datas]
+        return [ScheduledEvent.from_data(scheduled_event_data) for scheduled_event_data in scheduled_event_datas]
     
     
     async def scheduled_event_user_get_chunk(self, scheduled_event, *, after=None, before=None, limit=None):

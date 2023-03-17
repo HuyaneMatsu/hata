@@ -100,7 +100,7 @@ class PermissionOverwrite(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Received permission overwrite data.
         
         Returns
@@ -133,7 +133,7 @@ class PermissionOverwrite(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         data = {}
         

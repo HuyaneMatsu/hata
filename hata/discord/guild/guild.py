@@ -496,7 +496,7 @@ class Guild(DiscordEntity, immortal = True):
                 pass
             else:
                 for scheduled_event_data in scheduled_event_datas:
-                    ScheduledEvent(scheduled_event_data)
+                    ScheduledEvent.from_data(data)
             
             stage_datas = data.get('stage_instances', None)
             if (stage_datas is not None):

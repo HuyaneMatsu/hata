@@ -9,10 +9,10 @@ def test__put_user_id_into():
     """
     user_id = 202211160009
     
-    for input_, defaults, expected_output in (
+    for input_value, defaults, expected_output in (
         (0, False, {}),
         (0, True, {'user_id': None}),
         (user_id, False, {'user_id': str(user_id)}),
     ):
-        data = put_user_id_into(input_, {}, defaults)
+        data = put_user_id_into(input_value, {}, defaults)
         vampytest.assert_eq(data, expected_output)

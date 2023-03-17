@@ -391,7 +391,7 @@ class InteractionResponse:
     """
     Rich interaction response message usable with `return` or with `yield` statements.
     
-    May pass it's parameters to any oft he following method depending on control flow.
+    May pass it's parameters to any of the following method depending on control flow.
     
     - ``Client.interaction_response_message_create``
     - ``Client.interaction_response_message_edit``

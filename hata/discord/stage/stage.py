@@ -281,7 +281,7 @@ class Stage(DiscordEntity):
     
     
     def __hash__(self):
-        """Hashes the rate limit proxy."""
+        """Hashes the stage."""
         stage_id = self.id
         if stage_id:
             return stage_id
@@ -479,7 +479,7 @@ class Stage(DiscordEntity):
     
     def copy_with(self, *, privacy_level = ..., topic = ...):
         """
-        Copies the stage state with the given fields.
+        Copies the stage with the given fields.
         
         Parameters
         ----------

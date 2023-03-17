@@ -12,7 +12,7 @@ def try_get_auto_moderation_trigger_metadata_type_from_data(data):
     
     Parameters
     ----------
-    data : `dict` of (`str`, `str`) items
+    data : `dict` of (`str`, `object`) items
         Auto moderation trigger metadata data.
     
     Returns

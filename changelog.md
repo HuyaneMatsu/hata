@@ -15,6 +15,30 @@
 - `Stage.__hash__` now supports partial instances.
 - `Stage._delete` will no longer remove itself from the cache.
 - `Client`'s stage endpoints now support `reason` parameter (except the get one ofc).
+- Add `ScheduledEventSubscribeEvent.to_data`.
+- Repurpose `ScheduledEventSubscribeEvent.__new__`, rename to `.from_data`.
+- Add `ScheduledEventSubscribeEvent.__new__`.
+- Add `ScheduledEventSubscribeEvent.copy`.
+- Add `ScheduledEventSubscribeEvent.copy_with`.
+- Add `ScheduledEventSubscribeEvent.guild`.
+- Add ScheduledEventSubscribeEvent.user`.
+- Add `ScheduledEventEntityMetadataBase.location`.
+- Add `ScheduledEventEntityMetadataBase.speaker_ids`.
+- Add `ScheduledEventEntityMetadataBase.iter_speaker_ids`.
+- Add `ScheduledEventEntityMetadataBase.speakers`.
+- Add `ScheduledEventEntityMetadataBase.iter_speakers`.
+- Add `ScheduledEventEntityMetadataBase.copy`.
+- Add `ScheduledEventEntityMetadataBase.copy_with`.
+- Repurpose `ScheduledEvent.__new__`, rename to `.from_data`.
+- Add `ScheduledEvent.__new__`.
+- Add `ScheduledEvent.to_data`.
+- `ScheduledEvent.__hash__` now supports partial instances.
+- `ScheduledEvent.__eq__` now supports partial instances.
+- Add `ScheduledEvent.copy`.
+- Add `ScheduledEvent.copy_with`.
+- Add `ScheduledEvent.precreate`.
+- Add `ScheduledEvent.partial`.
+- Add `ScheduledEvent.iter_sku_ids`.
 
 #### Bug Fixes
 

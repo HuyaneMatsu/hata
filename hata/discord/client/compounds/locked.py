@@ -28,7 +28,7 @@ class ClientCompoundLockedEndpoints(Compound):
         Parameters
         ----------
         relationship : ``Relationship``, ``ClientUserBase``, `int`
-            The relationship to delete. Also can be given the respective user with who the client hast he relationship
+            The relationship to delete. Also can be given the respective user with who the client has the relationship
             with.
 
         Raises

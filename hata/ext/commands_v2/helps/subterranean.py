@@ -242,7 +242,7 @@ async def should_show_category(command_context, category):
 
 def iter_sub_commands(command_category, command_name_trace):
     """
-    Iterates overt he cub commands of a command or a command category.
+    Iterates over the sub-commands of a command or a command category.
     
     This function is a generator.
     

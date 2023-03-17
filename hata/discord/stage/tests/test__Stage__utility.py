@@ -143,7 +143,6 @@ def test__Stage__partial__2():
 
     client = Client(
         token = 'token_202303110000',
-        extensions = 'slash',
     )
     try:
         stage_id = 202303110052

@@ -184,7 +184,7 @@ class AuditLog(RichAttributeErrorBaseType):
             scheduled_events = self.scheduled_events
             
             for scheduled_event_data in scheduled_event_datas:
-                scheduled_event = ScheduledEvent(scheduled_event_data)
+                scheduled_event = ScheduledEvent.from_data(scheduled_event_data)
                 scheduled_events[scheduled_event.id] = scheduled_event
         
         

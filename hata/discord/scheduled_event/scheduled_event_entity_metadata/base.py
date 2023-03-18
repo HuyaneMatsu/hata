@@ -12,9 +12,24 @@ class ScheduledEventEntityMetadataBase(RichAttributeErrorBaseType):
     """
     __slots__ = ()
     
-    def __new__(cls, keyword_parameters):
+    def __new__(cls):
         """
         Creates a new entity metadata instance.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        return object.__new__(cls)
+    
+    
+    @classmethod
+    def from_keyword_parameters(cls, keyword_parameters):
+        """
+        Creates a new entity metadata instance from the given keyword_parameters.
         
         Parameters
         ----------
@@ -28,7 +43,7 @@ class ScheduledEventEntityMetadataBase(RichAttributeErrorBaseType):
         ValueError
             - If a parameter's value is incorrect.
         """
-        return object.__new__(cls)
+        return cls()
     
     
     @classmethod
@@ -121,14 +136,9 @@ class ScheduledEventEntityMetadataBase(RichAttributeErrorBaseType):
         return object.__new__(type(self))
     
     
-    def copy_with(self, keyword_parameters):
+    def copy_with(self):
         """
         Copies the scheduled event entity metadata with the given fields.
-        
-        Parameters
-        ----------
-        keyword_parameters : `dict` of (`str`, `object`) items
-            Additional keyword parameters passed to ``ScheduledEvent.copy_with``
         
         Returns
         -------
@@ -142,6 +152,28 @@ class ScheduledEventEntityMetadataBase(RichAttributeErrorBaseType):
             - If a parameter's value is incorrect.
         """
         return object.__new__(type(self))
+    
+    
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        """
+        Copies the scheduled event entity metadata with the given keyword parameters.
+        
+        Parameters
+        ----------
+        keyword_parameters : `dict` of (`str`, `object`) items
+            Additional keyword parameters passed to ``ScheduledEvent.copy_with``
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        return self.copy_with()
     
     
     location = PlaceHolder(

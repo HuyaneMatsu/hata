@@ -17,12 +17,24 @@ class ScheduledEventEntityMetadataStage(ScheduledEventEntityMetadataBase):
     """
     __slots__ = ('speaker_ids', )
     
-    @copy_docs(ScheduledEventEntityMetadataBase.__new__)
-    def __new__(cls, keyword_parameters):
+    def __new__(cls, *, speaker_ids = ...):
+        """
+        Creates a new entity metadata instance.
+        
+        Parameters
+        ----------
+        speaker_ids : `None`, `iterable` of (`int`, ``ClientUserBase``), Optional (Keyword only)
+            The speakers' identifier of the stage channel.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
         # speaker_ids
-        try:
-            speaker_ids = keyword_parameters.pop('speaker_ids')
-        except KeyError:
+        if speaker_ids is ...:
             speaker_ids = None
         else:
             speaker_ids = validate_speaker_ids(speaker_ids)
@@ -30,6 +42,14 @@ class ScheduledEventEntityMetadataStage(ScheduledEventEntityMetadataBase):
         self = object.__new__(cls)
         self.speaker_ids = speaker_ids
         return self
+    
+    
+    @classmethod
+    @copy_docs(ScheduledEventEntityMetadataBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            speaker_ids = keyword_parameters.pop('speaker_ids', ...),
+        )
     
     
     @classmethod
@@ -114,12 +134,29 @@ class ScheduledEventEntityMetadataStage(ScheduledEventEntityMetadataBase):
         return new
     
     
-    @copy_docs(ScheduledEventEntityMetadataBase.copy)
-    def copy_with(self, keyword_parameters):
+    @copy_docs(ScheduledEventEntityMetadataBase.copy_with)
+    def copy_with(self, *, speaker_ids = ...):
+        """
+        Copies the scheduled event entity metadata with the given fields.
+        
+        Parameters
+        ----------
+        speaker_ids : `None`, `iterable` of (`int`, ``ClientUserBase``), Optional (Keyword only)
+            The speakers' identifier of the stage channel.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
         # speaker_ids
-        try:
-            speaker_ids = keyword_parameters.pop('speaker_ids')
-        except KeyError:
+        if speaker_ids is ...:
             speaker_ids = self.speaker_ids
             if (speaker_ids is not None):
                 speaker_ids = (*speaker_ids,)
@@ -129,3 +166,10 @@ class ScheduledEventEntityMetadataStage(ScheduledEventEntityMetadataBase):
         new = object.__new__(type(self))
         new.speaker_ids = speaker_ids
         return new
+    
+    
+    @copy_docs(ScheduledEventEntityMetadataBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            speaker_ids = keyword_parameters.pop('speaker_ids', ...),
+        )

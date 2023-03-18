@@ -17,5 +17,4 @@ def test__try_get_scheduled_event_metadata_type_from_data():
         ({'speaker_ids': None}, ScheduledEventEntityMetadataStage),
     ):
         output = try_get_scheduled_event_metadata_type_from_data(data)
-        
         vampytest.assert_is(output, expected_value)

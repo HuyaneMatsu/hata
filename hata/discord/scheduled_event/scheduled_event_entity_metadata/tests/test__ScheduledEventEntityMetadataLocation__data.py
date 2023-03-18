@@ -31,9 +31,9 @@ def test__ScheduledEventEntityMetadataLocation__to_data():
     """
     location = 'Koishi WonderLand'
     
-    entity_metadata = ScheduledEventEntityMetadataLocation({
-        'location': location,
-    })
+    entity_metadata = ScheduledEventEntityMetadataLocation(
+        location = location,
+    )
     
     expected_data = {
         'location': location,

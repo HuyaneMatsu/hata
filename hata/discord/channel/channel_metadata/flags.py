@@ -24,6 +24,14 @@ class ChannelFlag(FlagBase):
     +-------------------------------+-------------------+
     | spam                          | 5                 |
     +-------------------------------+-------------------+
+    | ???                           | 6                 |
+    +-------------------------------+-------------------+
+    | guild_resource_channel        | 7                 |
+    +-------------------------------+-------------------+
+    | clyde_ai                      | 8                 |
+    +-------------------------------+-------------------+
+    | scheduled_for_deletion        | 9                 |
+    +-------------------------------+-------------------+
     """
     __keys__ = {
         'guild_feed_removed': 0,
@@ -31,4 +39,7 @@ class ChannelFlag(FlagBase):
         'active_channels_removed': 2,
         'require_tag': 4,
         'spam': 5,
+        'guild_resource_channel': 7,
+        'clyde_ai': 8,
+        'scheduled_for_deletion': 9,
     }

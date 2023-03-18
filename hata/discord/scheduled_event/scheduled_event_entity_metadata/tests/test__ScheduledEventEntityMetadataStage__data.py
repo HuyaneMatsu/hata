@@ -31,9 +31,9 @@ def test__ScheduledEventEntityMetadataStage__to_data():
     """
     speaker_ids = [202303130004, 202303130005]
     
-    entity_metadata = ScheduledEventEntityMetadataStage({
-        'speaker_ids': speaker_ids,
-    })
+    entity_metadata = ScheduledEventEntityMetadataStage(
+        speaker_ids = speaker_ids,
+    )
     
     expected_data = {
         'speaker_ids': [str(speaker_id) for speaker_id in speaker_ids],

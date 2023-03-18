@@ -60,6 +60,10 @@ class UserFlag(FlagBase):
     +-------------------------------+-------------------+
     | quarantined                   | 44                |
     +-------------------------------+-------------------+
+    | collaborator                  | 50                |
+    +-------------------------------+-------------------+
+    | collaborator_restricted       | 51                |
+    +-------------------------------+-------------------+
     """
     __keys__ = {
         'staff': 0,
@@ -86,6 +90,8 @@ class UserFlag(FlagBase):
         'premium_disabled': 21,
         'active_developer': 22,
         'quarantined': 44,
+        'collaborator': 50,
+        'collaborator_restricted': 51,
     }
 
 

@@ -10,11 +10,11 @@ def test__parse_entity_metadata():
     """
     Tests whether ``parse_entity_metadata`` is working as intended.
     """
-    entity_metadata = ScheduledEventEntityMetadataLocation({'location': 'Koishi Wonderland'})
+    entity_metadata = ScheduledEventEntityMetadataLocation(location = 'Koishi Wonderland')
     
     for input_data, entity_metadata_type, expected_output in (
-        ({}, ScheduledEventEntityType.none, ScheduledEventEntityMetadataBase({})),
-        ({'entity_metadata': None}, ScheduledEventEntityType.location, ScheduledEventEntityMetadataLocation({})),
+        ({}, ScheduledEventEntityType.none, ScheduledEventEntityMetadataBase()),
+        ({'entity_metadata': None}, ScheduledEventEntityType.location, ScheduledEventEntityMetadataLocation()),
         (
             {'entity_metadata': entity_metadata.to_data(defaults = False)},
             ScheduledEventEntityType.location, entity_metadata,

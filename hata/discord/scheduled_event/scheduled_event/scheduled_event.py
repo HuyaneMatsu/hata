@@ -210,7 +210,7 @@ class ScheduledEvent(DiscordEntity):
             status = validate_status(status)
         
         # entity_metadata
-        entity_metadata = entity_type.metadata_type(keyword_parameters)
+        entity_metadata = entity_type.metadata_type.from_keyword_parameters(keyword_parameters)
         
         if keyword_parameters:
             raise TypeError(
@@ -868,7 +868,7 @@ class ScheduledEvent(DiscordEntity):
                 if extra is None:
                     entity_metadata = entity_metadata_type._create_empty()
                 else:
-                    entity_metadata = entity_metadata_type(extra)
+                    entity_metadata = entity_metadata_type.from_keyword_parameters(extra)
                 processed.append(('entity_metadata', entity_metadata))
             
             # raise on extra
@@ -1041,9 +1041,9 @@ class ScheduledEvent(DiscordEntity):
         # entity_metadata
         entity_metadata = self.entity_metadata
         if (entity_type.metadata_type is type(entity_metadata)):
-            entity_metadata = entity_metadata.copy_with(keyword_parameters)
+            entity_metadata = entity_metadata.copy_with_keyword_parameters(keyword_parameters)
         else:
-            entity_metadata = entity_type.metadata_type(keyword_parameters)
+            entity_metadata = entity_type.metadata_type.from_keyword_parameters(keyword_parameters)
         
         if keyword_parameters:
             raise TypeError(

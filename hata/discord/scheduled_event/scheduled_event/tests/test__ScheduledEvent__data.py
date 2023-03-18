@@ -50,7 +50,7 @@ def test__ScheduledEvent__from_data__0():
         'privacy_level': privacy_level.value,
         'scheduled_start_time': datetime_to_timestamp(start),
         'status': status.value,
-        'entity_metadata': entity_type.metadata_type({'location': location}).to_data(defaults = True),
+        'entity_metadata': entity_type.metadata_type(location = location).to_data(defaults = True),
         'creator': creator.to_data(defaults = True, include_internals = True),
         'entity_id': str(entity_id),
         'guild_id': str(guild_id),
@@ -66,7 +66,7 @@ def test__ScheduledEvent__from_data__0():
     vampytest.assert_eq(scheduled_event.channel_id, channel_id)
     vampytest.assert_eq(scheduled_event.description, description)
     vampytest.assert_eq(scheduled_event.end, end)
-    vampytest.assert_eq(scheduled_event.entity_metadata, entity_type.metadata_type({'location': location}))
+    vampytest.assert_eq(scheduled_event.entity_metadata, entity_type.metadata_type(location = location))
     vampytest.assert_is(scheduled_event.entity_type, entity_type)
     vampytest.assert_eq(scheduled_event.image, image)
     vampytest.assert_eq(scheduled_event.name, name)
@@ -176,7 +176,7 @@ def test__ScheduledEvent__to_data():
         'privacy_level': privacy_level.value,
         'scheduled_start_time': datetime_to_timestamp(start),
         'status': status.value,
-        'entity_metadata': entity_type.metadata_type({'location': location}).to_data(defaults = True),
+        'entity_metadata': entity_type.metadata_type(location = location).to_data(defaults = True),
         'creator': creator.to_data(defaults = True, include_internals = True),
         'entity_id': str(entity_id),
         'guild_id': str(guild_id),
@@ -221,7 +221,7 @@ def test__ScheduledEvent__set_attributes():
         'privacy_level': privacy_level.value,
         'scheduled_start_time': datetime_to_timestamp(start),
         'status': status.value,
-        'entity_metadata': entity_type.metadata_type({'location': location}).to_data(defaults = True),
+        'entity_metadata': entity_type.metadata_type(location = location).to_data(defaults = True),
         'creator': creator.to_data(defaults = True, include_internals = True),
         'entity_id': str(entity_id),
         'guild_id': str(guild_id),
@@ -235,7 +235,7 @@ def test__ScheduledEvent__set_attributes():
     vampytest.assert_eq(scheduled_event.channel_id, channel_id)
     vampytest.assert_eq(scheduled_event.description, description)
     vampytest.assert_eq(scheduled_event.end, end)
-    vampytest.assert_eq(scheduled_event.entity_metadata, entity_type.metadata_type({'location': location}))
+    vampytest.assert_eq(scheduled_event.entity_metadata, entity_type.metadata_type(location = location))
     vampytest.assert_is(scheduled_event.entity_type, entity_type)
     vampytest.assert_eq(scheduled_event.image, image)
     vampytest.assert_eq(scheduled_event.name, name)
@@ -278,7 +278,7 @@ def test__ScheduledEvent__update_attributes():
         'privacy_level': privacy_level.value,
         'scheduled_start_time': datetime_to_timestamp(start),
         'status': status.value,
-        'entity_metadata': entity_type.metadata_type({'location': location}).to_data(defaults = True),
+        'entity_metadata': entity_type.metadata_type(location = location).to_data(defaults = True),
         'entity_id': str(entity_id),
         'sku_ids': [str(sku_id) for sku_id in sku_ids],
     }
@@ -289,7 +289,7 @@ def test__ScheduledEvent__update_attributes():
     vampytest.assert_eq(scheduled_event.channel_id, channel_id)
     vampytest.assert_eq(scheduled_event.description, description)
     vampytest.assert_eq(scheduled_event.end, end)
-    vampytest.assert_eq(scheduled_event.entity_metadata, entity_type.metadata_type({'location': location}))
+    vampytest.assert_eq(scheduled_event.entity_metadata, entity_type.metadata_type(location = location))
     vampytest.assert_is(scheduled_event.entity_type, entity_type)
     vampytest.assert_eq(scheduled_event.image, image)
     vampytest.assert_eq(scheduled_event.name, name)
@@ -378,7 +378,7 @@ def test__ScheduledEvent__difference_update_attributes():
         'privacy_level': new_privacy_level.value,
         'scheduled_start_time': datetime_to_timestamp(new_start),
         'status': new_status.value,
-        'entity_metadata': new_entity_type.metadata_type({'speaker_ids': new_speaker_ids}).to_data(defaults = True),
+        'entity_metadata': new_entity_type.metadata_type(speaker_ids = new_speaker_ids).to_data(defaults = True),
         'entity_id': str(new_entity_id),
         'sku_ids': [str(sku_id) for sku_id in new_sku_ids],
     }
@@ -389,7 +389,7 @@ def test__ScheduledEvent__difference_update_attributes():
     vampytest.assert_eq(scheduled_event.end, new_end)
     vampytest.assert_eq(
         scheduled_event.entity_metadata,
-        new_entity_type.metadata_type({'speaker_ids': new_speaker_ids}),
+        new_entity_type.metadata_type(speaker_ids = new_speaker_ids),
     )
     vampytest.assert_is(scheduled_event.entity_type, new_entity_type)
     vampytest.assert_eq(scheduled_event.image, new_image)
@@ -407,7 +407,7 @@ def test__ScheduledEvent__difference_update_attributes():
             'channel_id': old_channel_id,
             'description': old_description,
             'end': old_end,
-            'entity_metadata': old_entity_type.metadata_type({'location': old_location}),
+            'entity_metadata': old_entity_type.metadata_type(location = old_location),
             'entity_type': old_entity_type,
             'image': old_image,
             'name': old_name,

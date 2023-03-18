@@ -9,6 +9,8 @@ def test__put_status_into():
     Tests whether ``put_status_into`` is working as intended.
     """
     for input_value, defaults, expected_output in (
+        (ScheduledEventStatus.none, False, {}),
+        (ScheduledEventStatus.none, True, {'status': ScheduledEventStatus.active.none}),
         (ScheduledEventStatus.active, False, {'status': ScheduledEventStatus.active.value}),
     ):
         data = put_status_into(input_value, {}, defaults)

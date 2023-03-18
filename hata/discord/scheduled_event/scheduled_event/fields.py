@@ -2,23 +2,24 @@ __all__ = ()
 
 from ...channel import Channel
 from ...field_parsers import (
-    bool_parser_factory, default_entity_parser_factory, entity_id_array_parser_factory, entity_id_parser_factory,
+    default_entity_parser_factory, entity_id_array_parser_factory, entity_id_parser_factory,
     force_string_parser_factory, int_parser_factory, nullable_date_time_parser_factory, nullable_string_parser_factory,
     preinstanced_parser_factory
 )
 from ...field_putters import (
-    bool_optional_putter_factory, default_entity_putter_factory, entity_id_array_optional_putter_factory,
-    entity_id_optional_putter_factory, entity_id_putter_factory, force_string_putter_factory, int_putter_factory,
-    nullable_date_time_optional_putter_factory, nullable_string_optional_putter_factory, preinstanced_putter_factory
+    default_entity_putter_factory, entity_id_array_optional_putter_factory, entity_id_optional_putter_factory,
+    entity_id_putter_factory, force_string_putter_factory, int_putter_factory, 
+    nullable_date_time_optional_putter_factory, nullable_string_optional_putter_factory,
+    preinstanced_optional_putter_factory,preinstanced_putter_factory
 )
 from ...field_validators import (
-    bool_validator_factory, default_entity_validator, entity_id_array_validator_factory, entity_id_validator_factory,
+    default_entity_validator, entity_id_array_validator_factory, entity_id_validator_factory,
     force_string_validator_factory, int_conditional_validator_factory, nullable_date_time_validator_factory,
     nullable_string_validator_factory, preinstanced_validator_factory
 )
 from ...user import ClientUserBase, User, ZEROUSER
 
-from ..scheduled_event_entity_metadata import ScheduledEventEntityMetadataBase
+from ..scheduled_event_entity_metadata import ScheduledEventEntityMetadataBase, ScheduledEventEntityMetadataLocation
 
 from .constants import DESCRIPTION_LENGTH_MAX, DESCRIPTION_LENGTH_MIN, NAME_LENGTH_MAX, NAME_LENGTH_MIN
 from .preinstanced import PrivacyLevel, ScheduledEventEntityType, ScheduledEventStatus
@@ -149,7 +150,7 @@ validate_sku_ids = entity_id_array_validator_factory('sku_ids')
 # status
 
 parse_status = preinstanced_parser_factory('status', ScheduledEventStatus, ScheduledEventStatus.none)
-put_status_into = preinstanced_putter_factory('status')
+put_status_into = preinstanced_optional_putter_factory('status', ScheduledEventStatus.none)
 validate_status = preinstanced_validator_factory('status', ScheduledEventStatus)
 
 # user_count
@@ -162,3 +163,124 @@ validate_user_count = int_conditional_validator_factory(
     (lambda user_count : user_count >= 0),
     '>= 0',
 )
+
+# Target parsers
+
+ENTITY_METADATA_DEFAULT = ScheduledEventEntityMetadataBase._create_empty()
+
+# location
+
+def validate_target_location(location):
+    """
+    Validates scheduled event target (location).
+    
+    Parameters
+    ----------
+    location : `None`, `str`
+        The place where the event will take place.
+    
+    Returns
+    -------
+    entity_type : ``ScheduledEventEntityType``
+        Scheduled event entity type.
+    entity_metadata : ``ScheduledEventEntityMetadataBase``
+        Scheduled event entity metadata.
+    channel_id : `int`
+        Scheduled event target channel identifier.
+    
+    Raises
+    ------
+    TypeError
+        - If `location`'s type is incorrect.
+    ValueError
+        - If `location`'s value is incorrect.
+    """
+    entity_metadata = ScheduledEventEntityMetadataLocation(location = location)
+    return ScheduledEventEntityType.location, entity_metadata, 0
+
+# voice
+
+def validate_target_voice(voice):
+    """
+    Validates scheduled event target (voice channel).
+    
+    Parameters
+    ----------
+    voice : ``Channel``
+        The voice channel where the event will take place.
+    
+    Returns
+    -------
+    entity_type : ``ScheduledEventEntityType``
+        Scheduled event entity type.
+    entity_metadata : ``ScheduledEventEntityMetadataBase``
+        Scheduled event entity metadata.
+    channel_id : `int`
+        Scheduled event target channel identifier.
+    
+    Raises
+    ------
+    TypeError
+        - If `voice`'s type is incorrect.
+    ValueError
+        - If `voice`'s value is incorrect.
+    """
+    channel_id = validate_channel_id(voice)
+    return ScheduledEventEntityType.voice, ENTITY_METADATA_DEFAULT, channel_id
+
+# stage
+
+def validate_target_stage(stage):
+    """
+    Validates scheduled event target (stage channel).
+    
+    Parameters
+    ----------
+    stage : ``Channel``
+        The stage channel where the event will take place.
+    
+    Returns
+    -------
+    entity_type : ``ScheduledEventEntityType``
+        Scheduled event entity type.
+    entity_metadata : ``ScheduledEventEntityMetadataBase``
+        Scheduled event entity metadata.
+    channel_id : `int`
+        Scheduled event target channel identifier.
+    
+    Raises
+    ------
+    TypeError
+        - If `stage`'s type is incorrect.
+    ValueError
+        - If `stage`'s value is incorrect.
+    """
+    channel_id = validate_channel_id(stage)
+    return ScheduledEventEntityType.stage, ENTITY_METADATA_DEFAULT, channel_id
+
+# target
+
+def put_target_into(target, data, defaults):
+    """
+    Puts the given scheduled event target into the given `data` json serializable object.
+    
+    Used when creating  or editing a scheduled events.
+    
+    Parameters
+    ----------
+    target : `tuple` (``ScheduledEventEntityType``, ``ScheduledEventEntityMetadataBase``, `int`)
+        Scheduled event target.
+    data : `dict` of (`str`, `object`) items
+        Json serializable dictionary.
+    defaults : `bool`
+        Whether default values should be included as well.
+    
+    Returns
+    -------
+    data : `dict` of (`str`, `object`) items
+    """
+    entity_type, entity_metadata, channel_id = target
+    put_entity_type_into(entity_type, data, defaults)
+    put_entity_metadata_into(entity_metadata, data, defaults)
+    put_channel_id_into(channel_id, data, defaults)
+    return data

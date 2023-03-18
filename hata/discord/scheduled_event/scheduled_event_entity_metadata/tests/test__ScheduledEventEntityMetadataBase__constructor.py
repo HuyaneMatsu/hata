@@ -13,7 +13,7 @@ def _assert_fields_set(entity_metadata):
         The entity detail to check out.
     """
     vampytest.assert_instance(entity_metadata, ScheduledEventEntityMetadataBase)
-        
+
 
 def test__ScheduledEventEntityMetadataBase__new__0():
     """
@@ -21,9 +21,19 @@ def test__ScheduledEventEntityMetadataBase__new__0():
     
     Case: No fields given.
     """
+    entity_metadata = ScheduledEventEntityMetadataBase()
+    _assert_fields_set(entity_metadata)
+
+
+def test__ScheduledEventEntityMetadataBase__from_keyword_parameters__0():
+    """
+    Tests whether ``ScheduledEventEntityMetadataBase.from_keyword_parameters`` works as intended.
+    
+    Case: No fields given.
+    """
     keyword_parameters = {}
     
-    entity_metadata = ScheduledEventEntityMetadataBase(keyword_parameters)
+    entity_metadata = ScheduledEventEntityMetadataBase.from_keyword_parameters(keyword_parameters)
     _assert_fields_set(entity_metadata)
     vampytest.assert_eq(keyword_parameters, {})
 

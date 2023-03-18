@@ -13,9 +13,9 @@ def test__ScheduledEventEntityMetadataStage__copy():
     """
     speaker_ids = [202303130012, 202303130013]
     
-    entity_metadata = ScheduledEventEntityMetadataStage({
-        'speaker_ids': speaker_ids,
-    })
+    entity_metadata = ScheduledEventEntityMetadataStage(
+        speaker_ids = speaker_ids,
+    )
     copy = entity_metadata.copy()
     
     _assert_fields_set(copy)
@@ -31,10 +31,10 @@ def test__ScheduledEventEntityMetadataStage__copy_with__0():
     """
     speaker_ids = [202303130014, 202303130015]
     
-    entity_metadata = ScheduledEventEntityMetadataStage({
-        'speaker_ids': speaker_ids,
-    })
-    copy = entity_metadata.copy_with({})
+    entity_metadata = ScheduledEventEntityMetadataStage(
+        speaker_ids = speaker_ids,
+    )
+    copy = entity_metadata.copy_with()
     
     _assert_fields_set(copy)
     vampytest.assert_eq(copy, entity_metadata)
@@ -51,17 +51,56 @@ def test__ScheduledEventEntityMetadataStage__copy_with__1():
     
     new_speaker_ids = [202303130018, 202303130019]
     
-    entity_metadata = ScheduledEventEntityMetadataStage({
-        'speaker_ids': old_speaker_ids,
-    })
-    copy = entity_metadata.copy_with({
+    entity_metadata = ScheduledEventEntityMetadataStage(
+        speaker_ids = old_speaker_ids,
+    )
+    copy = entity_metadata.copy_with(
+        speaker_ids = new_speaker_ids,
+    )
+    
+    _assert_fields_set(copy)
+    vampytest.assert_is_not(copy, entity_metadata)
+    vampytest.assert_eq(copy.speaker_ids, tuple(new_speaker_ids))
+
+
+def test__ScheduledEventEntityMetadataStage__copy_with_keyword_parameters__0():
+    """
+    Tests whether ``ScheduledEventEntityMetadataStage.copy_with_keyword_parameters`` works as intended.
+    
+    Case: No fields given.
+    """
+    speaker_ids = [202303170024, 202303170025]
+    
+    entity_metadata = ScheduledEventEntityMetadataStage(
+        speaker_ids = speaker_ids,
+    )
+    copy = entity_metadata.copy_with_keyword_parameters({})
+    
+    _assert_fields_set(copy)
+    vampytest.assert_eq(copy, entity_metadata)
+    vampytest.assert_is_not(copy, entity_metadata)
+
+
+def test__ScheduledEventEntityMetadataStage__copy_with_keyword_parameters__1():
+    """
+    Tests whether ``ScheduledEventEntityMetadataStage.copy_with_keyword_parameters`` works as intended.
+    
+    Case: All fields given.
+    """
+    old_speaker_ids = [202303170027, 202303170028]
+    
+    new_speaker_ids = [202303170029, 202303170030]
+    
+    entity_metadata = ScheduledEventEntityMetadataStage(
+        speaker_ids = old_speaker_ids,
+    )
+    copy = entity_metadata.copy_with_keyword_parameters({
         'speaker_ids': new_speaker_ids,
     })
     
     _assert_fields_set(copy)
     vampytest.assert_is_not(copy, entity_metadata)
     vampytest.assert_eq(copy.speaker_ids, tuple(new_speaker_ids))
-
 
 
 def test__ScheduledEventEntityMetadataStage__iter_speaker_ids():
@@ -76,9 +115,9 @@ def test__ScheduledEventEntityMetadataStage__iter_speaker_ids():
         ([user_id_0], [user_id_0]),
         ([user_id_0, user_id_1], [user_id_0, user_id_1]),
     ):
-        entity_metadata = ScheduledEventEntityMetadataStage({
-            'speaker_ids': input_value,
-        })
+        entity_metadata = ScheduledEventEntityMetadataStage(
+            speaker_ids = input_value,
+        )
         vampytest.assert_eq([*entity_metadata.iter_speaker_ids()], expected_output)
 
 
@@ -97,9 +136,9 @@ def test__ScheduledEventEntityMetadataStage__speakers():
         ([user_id_0], (user_0, )),
         ([user_id_0, user_id_1], (user_0, user_1)),
     ):
-        entity_metadata = ScheduledEventEntityMetadataStage({
-            'speaker_ids': input_value,
-        })
+        entity_metadata = ScheduledEventEntityMetadataStage(
+            speaker_ids = input_value,
+        )
         vampytest.assert_eq(entity_metadata.speakers, expected_output)
 
 
@@ -118,7 +157,7 @@ def test__ScheduledEventEntityMetadataStage__iter_speakers():
         ([user_id_0], [user_0]),
         ([user_id_0, user_id_1], [user_0, user_1]),
     ):
-        entity_metadata = ScheduledEventEntityMetadataStage({
-            'speaker_ids': input_value,
-        })
+        entity_metadata = ScheduledEventEntityMetadataStage(
+            speaker_ids = input_value,
+        )
         vampytest.assert_eq([*entity_metadata.iter_speakers()], expected_output)

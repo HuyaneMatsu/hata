@@ -22,11 +22,8 @@ def test__ScheduledEventEntityMetadataLocation__new__0():
     
     Case: No fields given.
     """
-    keyword_parameters = {}
-    
-    entity_metadata = ScheduledEventEntityMetadataLocation(keyword_parameters)
+    entity_metadata = ScheduledEventEntityMetadataLocation()
     _assert_fields_set(entity_metadata)
-    vampytest.assert_eq(keyword_parameters, {})
 
 
 def test__ScheduledEventEntityMetadataLocation__new__1():
@@ -37,11 +34,38 @@ def test__ScheduledEventEntityMetadataLocation__new__1():
     """
     location = 'Koishi WonderLand'
     
+    entity_metadata = ScheduledEventEntityMetadataLocation(location = location)
+    _assert_fields_set(entity_metadata)
+    
+    vampytest.assert_eq(entity_metadata.location, location)
+
+
+def test__ScheduledEventEntityMetadataLocation__from_keyword_parameters__0():
+    """
+    Tests whether ``ScheduledEventEntityMetadataLocation.from_keyword_parameters`` works as intended.
+    
+    Case: No fields given.
+    """
+    keyword_parameters = {}
+    
+    entity_metadata = ScheduledEventEntityMetadataLocation.from_keyword_parameters(keyword_parameters)
+    _assert_fields_set(entity_metadata)
+    vampytest.assert_eq(keyword_parameters, {})
+
+
+def test__ScheduledEventEntityMetadataLocation__from_keyword_parameters__1():
+    """
+    Tests whether ``ScheduledEventEntityMetadataLocation.from_keyword_parameters`` works as intended.
+    
+    Case: All fields given.
+    """
+    location = 'Koishi WonderLand'
+    
     keyword_parameters = {
         'location': location,
     }
     
-    entity_metadata = ScheduledEventEntityMetadataLocation(keyword_parameters)
+    entity_metadata = ScheduledEventEntityMetadataLocation.from_keyword_parameters(keyword_parameters)
     _assert_fields_set(entity_metadata)
     vampytest.assert_eq(keyword_parameters, {})
     
@@ -54,3 +78,4 @@ def test__ScheduledEventEntityMetadataLocation__create_empty():
     """
     entity_metadata = ScheduledEventEntityMetadataLocation._create_empty()
     _assert_fields_set(entity_metadata)
+

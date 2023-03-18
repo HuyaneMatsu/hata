@@ -1,17 +1,20 @@
 __all__ = ()
 
-from datetime import datetime
+import warnings
 
 from scarletio import Compound
 
-from ...channel import Channel
-from ...core import SCHEDULED_EVENTS
 from ...http import DiscordHTTPClient
-from ...scheduled_event import PrivacyLevel, ScheduledEvent, ScheduledEventEntityType, ScheduledEventStatus
-from ...user import ClientUserBase, User
-from ...utils import datetime_to_timestamp, log_time_converter
+from ...payload_building import build_create_payload, build_edit_payload
+from ...scheduled_event import ScheduledEvent
+from ...scheduled_event.scheduled_event.utils import (
+    SCHEDULED_EVENT_CREATE_FIELD_CONVERTERS, SCHEDULED_EVENT_EDIT_FIELD_CONVERTERS
+)
+from ...user import User
+from ...utils import log_time_converter
+
 from ..request_helpers import (
-    get_channel_id, get_guild_id, get_scheduled_event_guild_id_and_id, get_scheduled_event_and_guild_id_and_id
+    get_guild_id, get_scheduled_event_and_guild_id_and_id, get_scheduled_event_guild_id_and_id
 )
 
 
@@ -21,8 +24,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
     
     
     async def scheduled_event_create(
-        self, guild, name, start, *, description = None, end=None, privacy_level=PrivacyLevel.guild_only,
-        location=None, stage=None, voice=None, reason = None
+        self, guild, scheduled_event_template = None, *positional_parameters, reason = None, **keyword_parameters
     ):
         """
         Creates a guild scheduled events.
@@ -35,162 +37,92 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         ----------
         guild : ``Guild``, `int`
             The guild, where to create the scheduled event.
-        name : `str`
-            The event's name. It's length can be in range [1:100].
-        start : `datetime``
-            When the event will start.
-        description : `None`, `str` = `None`, Optional (Keyword only)
-            The event's description. It's length can be in range [0:1000].
-        end : `None`, `datetime` = `None`, Optional (Keyword only)
-            When the event will end.
-        privacy_level : ``PrivacyLevel``, `int` = `None`, Optional (Keyword only)
-            The privacy level of the event. Whether it is global or guild only.
-        location : `None`, `str` = `None`, Optional (Keyword only)
-            The location, where the event will take place.
-        stage : `None`, ``Channel``, `int` = `None`, Optional (Keyword only)
-            The stage channel, where the event will take place.
-        voice : `None`, ``Channel``, `int` = `None`, Optional (Keyword only)
-            The voice channel, where the event will take place.
+        
+        scheduled_event_template : `None`, ``ScheduledEvent``` = `None`, Optional
+            Scheduled event to use as a template.
+        
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
+        
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters either to define the template, or to overwrite specific fields' values.
+        
+        Other Parameters
+        ----------------
+        description : `None`, `str` = `None`, Optional (Keyword only)
+            The event's description. It's length can be in range [0:1000].
+        
+        end : `None`, `datetime` = `None`, Optional (Keyword only)
+            When the event will end.
+        
+        location : `None`, `str` = `None`, Optional (Keyword only)
+            The location, where the event will take place.
+        
+        name : `str`, Optional (Keyword only)
+            The event's name. It's length can be in range [1:100].
+        
+        privacy_level : ``PrivacyLevel``, `int` = `None`, Optional (Keyword only)
+            The privacy level of the event. Whether it is global or guild only.
+        
+        stage : `None`, ``Channel``, `int` = `None`, Optional (Keyword only)
+            The stage channel, where the event will take place.
+        
+        start : `datetime`, Optional (Keyword only)
+            When the event will start.
+        
+        voice : `None`, ``Channel``, `int` = `None`, Optional (Keyword only)
+            The voice channel, where the event will take place.
         
         Returns
         -------
         scheduled_event : ``ScheduledEvent``
-            The created event.
+            The created scheduled event.
         
         Raises
         ------
         TypeError
-            - If `guild` is neither ``Guild``, nor `int`.
-            - If `privacy_level` is neither ``PrivacyLevel``, nor `int`.
-            - If `stage` is neither ``Channel``, nor `int`.
-            - If `voice` is neither ``Channel``, nor `int`.
-            - If neither `location`, `stage`, `voice` parameters is given.
+            - If `guild` is neither ``Guild`` nor `int`.
+            - Parameter of incorrect type given.
+            - Extra parameters.
+        ValueError
+            - Parameter of incorrect value given.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `name` is not `str`.
-            - If `name`'s length is out of the expected range.
-            - If `description is neither `None` nor `str`.
-            - If `description`'s length is out of the expected range.
-            - If `location` is not `str`.
-            - If `start` is not `datetime`.
-            - If `end `is neither `None`, nor `datetime`.
         """
+        if isinstance(scheduled_event_template, str) or positional_parameters:
+            warnings.warn(
+                (
+                    f'`{self.__class__.__name__}.scheduled_event_create`\'s `name` and `start` parameters has been '
+                    f'moved to be keyword only. Positional support will be removed in 2023 august.'
+                ),
+                FutureWarning,
+                stacklevel = 2,
+            )
+            
+            if isinstance(scheduled_event_template, str):
+                keyword_parameters['name'] = scheduled_event_template
+            
+            if positional_parameters:
+                keyword_parameters['start'] = positional_parameters[0]
+        
+        
         guild_id = get_guild_id(guild)
-        
-        if __debug__:
-            if not isinstance(name, str):
-                raise AssertionError(
-                    f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
-                )
-            
-            name_length = len(name)
-            if (name_length < 1) or (name_length > 100):
-                raise AssertionError(
-                    f'`name` length can be in range [1:100], got {name_length!r}; {name!r}.'
-                )
-        
-        if __debug__:
-            if not isinstance(start, datetime):
-                raise AssertionError(
-                    f'`start` can be `datetime`, got {start.__class__.__name__}; {start!r}.'
-                )
-            
-            if (end is not None) and (not isinstance(end, datetime)):
-                raise AssertionError(
-                    f'`end` can be `None`, `datetime`, got {end.__class__.__name__}; {end!r}.'
-                )
-        
-        if isinstance(privacy_level, PrivacyLevel):
-            privacy_level_value = privacy_level.value
-        elif isinstance(privacy_level, int):
-            privacy_level_value = privacy_level
-        else:
-            raise TypeError(
-                f'`privacy_level` can be `{PrivacyLevel.__name__}` `int`, got '
-                f'{privacy_level.__class__.__name__}; {privacy_level!r}.'
-            )
-        
-        if (description is not None):
-            if __debug__:
-                if (not isinstance(description, str)):
-                    raise AssertionError(
-                        f'`description` can be `None`, `str`, got {description.__class__.__name__}, {description!r}.'
-                    )
-                
-                description_length = len(description)
-                if description_length > 1000:
-                    raise AssertionError(
-                        f'description length can be in range [0:1000], got {description_length!r}; {description!r}.'
-                    )
-            
-            if not description:
-                description = None
-        
-        if (location is not None):
-            if __debug__:
-                if not isinstance(location, str):
-                    raise AssertionError(
-                        f'`location` can be `str`, got {location.__class__.__name__}; {location!r}.'
-                    )
-            
-            channel_id = None
-            entity_metadata = {'location': location}
-            entity_type = ScheduledEventEntityType.location
-        
-        elif (stage is not None):
-            channel_id = get_channel_id(stage, Channel.is_guild_stage)
-            entity_metadata = None
-            entity_type = ScheduledEventEntityType.stage
-        
-        elif (voice is not None):
-            channel_id = get_channel_id(voice, Channel.is_guild_voice)
-            entity_metadata = None
-            entity_type = ScheduledEventEntityType.voice
-            
-        else:
-            raise TypeError(
-                f'Either `location`, `stage`, `voice` parameters are required.'
-            )
-        
-        data = {
-            'name' : name,
-            'privacy_level': privacy_level_value,
-            'channel_id': channel_id,
-            'entity_metadata': entity_metadata,
-            'entity_type': entity_type.value,
-            'scheduled_start_time': datetime_to_timestamp(start),
-        }
-        
-        if (description is not None):
-            data['description'] = description
-        
-        if (end is not None):
-            data['scheduled_end_time'] = datetime_to_timestamp(end)
-        
-        data = await self.http.scheduled_event_create(guild_id, data, reason)
-        return ScheduledEvent.from_data(data)
+        data = build_create_payload(
+            scheduled_event_template, SCHEDULED_EVENT_CREATE_FIELD_CONVERTERS, keyword_parameters
+        )
+        scheduled_event_data = await self.http.scheduled_event_create(guild_id, data, reason)
+        return ScheduledEvent.from_data(scheduled_event_data)
     
-    # In theory you can edit the target entity is as well, but we will ignore it for now.
     
     async def scheduled_event_edit(
         self,
         scheduled_event,
+        scheduled_event_template = None,
         *,
-        name = ...,
-        description = ...,
-        start = ...,
-        end = ...,
-        privacy_level = ...,
-        status = ...,
-        location = ...,
-        stage = ...,
-        voice = ...,
         reason = None,
+        **keyword_parameters,
     ):
         """
         Edits the given scheduled event.
@@ -199,175 +131,65 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         
         Parameters
         ----------
-        scheduled_event : ``ScheduledEvent``, `tuple`, (`int`, `int`)
+        scheduled_event : ``ScheduledEvent``, `tuple` (`int`, `int`)
             The scheduled event to edit.
-        name : `str`, Optional (Keyword only)
-            The new name of the scheduled event. It's length can be in range [1:100].
-        description : `None`, `str`, Optional (Keyword only)
-            The new description of the scheduled event. It's length can be in range [0:1000].
-            
-            Pass it as `None` to remove the old one.
         
-        start : `datetime`, Optional (Keyword only)
-            The new start of the scheduled event.
-        
-        end : `None`, `datetime`
-            The end of the of the scheduled event.
-            
-            Pass it as `None` to remove the old end.
-        
-        privacy_level : ``PrivacyLevel``, `int`, Optional (Keyword only)
-            The privacy level of the event. Whether it is global or guild only.
-        
-        status : `str`, ``ScheduledEventStatus``, Optional (Keyword only)
-            Thew new status of the scheduled event.
-        
-        location : `str`, Optional (Keyword only)
-            The new location, where the event will take place.
-        
-        stage : ``Channel``, `int`, Optional (Keyword only)
-            The new stage channel, where the event will take place.
-        
-        voice : ``Channel``, `int`, Optional (Keyword only)
-            The new voice channel, where the event will take place.
+        scheduled_event_template : `None`, ``ScheduledEvent``` = `None`, Optional
+            Scheduled event to use as a template.
         
         reason : `None`, `str` = `None`, Optional (Keyword only)
             Shows up at the respective guild's audit logs.
         
+        **keyword_parameters : Keyword parameters
+            Additional keyword parameters either to define the template, or to overwrite specific fields' values.
+        
+        Other Parameters
+        ----------------
+        description : `None`, `str`, Optional (Keyword only)
+            The new description of the scheduled event. It's length can be in range [0:1000].
+        
+        end : `None`, `datetime`
+            The end of the of the scheduled event.
+        
+        location : `str`, Optional (Keyword only)
+            The new location, where the event will take place.
+        
+        name : `str`, Optional (Keyword only)
+            The new name of the scheduled event. It's length can be in range [1:100].
+        
+        privacy_level : ``PrivacyLevel``, `int`, Optional (Keyword only)
+            The privacy level of the event. Whether it is global or guild only.
+        
+        stage : ``Channel``, `int`, Optional (Keyword only)
+            The new stage channel, where the event will take place.
+        
+        start : `datetime`, Optional (Keyword only)
+            The new start of the scheduled event.
+        
+        status : `str`, ``ScheduledEventStatus``, Optional (Keyword only)
+            Thew new status of the scheduled event.
+        
+        voice : ``Channel``, `int`, Optional (Keyword only)
+            The new voice channel, where the event will take place.
+        
         Raises
         ------
         TypeError
-            - If `scheduled_event` is neither ``ScheduledEvent``, nor `tuple` (`int`, `int`).
-            - If `privacy_level` is neither ``PrivacyLevel``, nor `int`.
-            - If `stage` is neither ``Channel``, nor `int`.
-            - If `voice` is neither ``Channel``, nor `int`.
-            - If `privacy_level` is neither ``PrivacyLevel``, nor `int`.
-            - If `status` is neither ``ScheduledEventStatus``, nor `int`.
+            - If `scheduled_event` is neither ``ScheduledEvent`` nor `tuple` (`int`, `int`).
+            - Parameter of incorrect type given.
+            - Extra parameters.
+        ValueError
+            - Parameter of incorrect value given.
         ConnectionError
             No internet connection.
         DiscordException
             If any exception was received from the Discord API.
-        AssertionError
-            - If `name` is not `str`.
-            - If `name`'s length is out of the expected range.
-            - If `description is neither `None` nor `str`.
-            - If `description`'s length is out of the expected range.
-            - If `location` is not `str`.
-            - If `start` is not `datetime`.
-            - If `end `is neither `None`, nor `datetime`.
         """
-        guild_id, scheduled_event_id = get_scheduled_event_guild_id_and_id(scheduled_event)
+        scheduled_event, guild_id, scheduled_event_id = get_scheduled_event_and_guild_id_and_id(scheduled_event)
         
-        data = {}
-        
-        if (name is not ...):
-            if __debug__:
-                if not isinstance(name, str):
-                    raise AssertionError(
-                        f'`name` can be `str`, got {name.__class__.__name__}; {name!r}.'
-                    )
-                
-                name_length = len(name)
-                if (name_length < 1) or (name_length > 100):
-                    raise AssertionError(
-                        f'`name` length can be in range [1:100], got {name_length!r}; {name!r}.'
-                    )
-            
-            data['name'] = name
-        
-        
-        if (description is not ...):
-            if description is None:
-                description = ''
-            else:
-                if __debug__:
-                    if (not isinstance(description, str)):
-                        raise AssertionError(
-                            f'`description` can be `None`, `str`, got '
-                            f'{description.__class__.__name__}; {description!r}.'
-                        )
-                    
-                    description_length = len(description)
-                    if description_length > 1000:
-                        raise AssertionError(
-                            f'description length can be in range [0:1000], got '
-                            f'{description_length!r}; {description!r}.'
-                        )
-            
-            data['description'] = description
-        
-        if (start is not ...):
-            if __debug__:
-                if not isinstance(start, datetime):
-                    raise AssertionError(
-                        f'`start` can be `datetime`, got {start.__class__.__name__}; {start!r}.'
-                    )
-            
-            data['scheduled_start_time'] = datetime_to_timestamp(start)
-        
-        if (end is not ...):
-            if __debug__:
-                if (end is not None) and (not isinstance(end, datetime)):
-                    raise AssertionError(
-                        f'`end` can be `None`, `datetime`, got {end.__class__.__name__}; {end!r}.'
-                    )
-            
-            data['scheduled_end_time'] = None if end is None else datetime_to_timestamp(end)
-        
-        if (privacy_level is not ...):
-            if isinstance(privacy_level, PrivacyLevel):
-                privacy_level_value = privacy_level.value
-            elif isinstance(privacy_level, int):
-                privacy_level_value = privacy_level
-            else:
-                raise TypeError(
-                    f'`privacy_level` can be `{PrivacyLevel.__name__}`, `int`, got '
-                    f'{privacy_level.__class__.__name__}; {privacy_level!r}.'
-                )
-            
-            data['privacy_level'] = privacy_level_value
-        
-        if (status is not ...):
-            if isinstance(status, ScheduledEventStatus):
-                status_value = status.value
-            elif isinstance(status, int):
-                status_value = status
-            else:
-                raise TypeError(
-                    f'`status` can be `{ScheduledEventStatus.__name__}`, `int` , got '
-                    f'{status.__class__.__name__}; {status!r}.'
-                )
-            
-            data['status'] = status_value
-        
-        if (location is not ...) or (stage is not ...) or (voice is not ...):
-            if (location is not ...):
-                if __debug__:
-                    if not isinstance(location, str):
-                        raise AssertionError(
-                            f'`location` can be `str`, got {location.__class__.__name__}; {location!r}.'
-                        )
-                
-                channel_id = None
-                entity_metadata = {'location': location}
-                entity_type = ScheduledEventEntityType.location
-            
-            elif (stage is not ...):
-                channel_id = get_channel_id(stage, Channel.is_guild_stage)
-                entity_metadata = None
-                entity_type = ScheduledEventEntityType.stage
-            
-            # elif (voice is not ...):
-            else:
-                channel_id = get_channel_id(voice, Channel.is_guild_voice)
-                entity_metadata = None
-                entity_type = ScheduledEventEntityType.voice
-            
-            data['channel_id'] = channel_id
-            data['entity_metadata'] = entity_metadata
-            data['entity_type'] = entity_type.value
-        
-        
+        data = build_edit_payload(
+            scheduled_event, scheduled_event_template, SCHEDULED_EVENT_EDIT_FIELD_CONVERTERS, keyword_parameters
+        )
         if data:
             await self.http.scheduled_event_edit(guild_id, scheduled_event_id, data, reason)
     
@@ -396,7 +218,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         await self.http.scheduled_event_delete(guild_id, scheduled_event_id)
     
     
-    async def scheduled_event_get(self, scheduled_event, *, force_update=False):
+    async def scheduled_event_get(self, scheduled_event, *, force_update = False):
         """
         Gets the given scheduled event.
         
@@ -425,17 +247,10 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         scheduled_event, guild_id, scheduled_event_id = get_scheduled_event_and_guild_id_and_id(scheduled_event)
         if (scheduled_event is None) or force_update:
             data = await self.http.scheduled_event_get(guild_id, scheduled_event_id, {'with_user_count', None})
-        
-            if scheduled_event is None:
-                try:
-                    scheduled_event = SCHEDULED_EVENTS[scheduled_event_id]
-                except KeyError:
-                    scheduled_event = ScheduledEvent.from_data(data)
-                else:
-                    scheduled_event._update_attributes(data)
-                    scheduled_event._update_counts_only(data)
-            else:
-                scheduled_event = ScheduledEvent.from_data(data)
+            
+            scheduled_event, is_created = ScheduledEvent.from_data_is_created(data)
+            if not is_created:
+                scheduled_event._update_attributes(data)
         
         return scheduled_event
     
@@ -469,7 +284,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         return [ScheduledEvent.from_data(scheduled_event_data) for scheduled_event_data in scheduled_event_datas]
     
     
-    async def scheduled_event_user_get_chunk(self, scheduled_event, *, after=None, before=None, limit=None):
+    async def scheduled_event_user_get_chunk(self, scheduled_event, *, after = None, before = None, limit = None):
         """
         Requests a chunk user subscribed to a scheduled event.
         
@@ -581,9 +396,7 @@ class ClientCompoundScheduledEventEndpoints(Compound):
         
         while True:
             scheduled_event_user_datas = await self.http.scheduled_event_user_get_chunk(
-                guild_id,
-                scheduled_event_id,
-                query_parameters,
+                guild_id, scheduled_event_id, query_parameters,
             )
             
             for scheduled_event_user_data in scheduled_event_user_datas:

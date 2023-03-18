@@ -20,6 +20,8 @@ class ApplicationFlag(FlagBase):
     +-----------------------------------+-------------------+
     | group_dm_create                   | 4                 |
     +-----------------------------------+-------------------+
+    | auto_moderation_rule_create_badge | 6                 |
+    +-----------------------------------+-------------------+
     | rpc_has_connected                 | 11                |
     +-----------------------------------+-------------------+
     | gateway_presence                  | 12                |
@@ -50,6 +52,7 @@ class ApplicationFlag(FlagBase):
         'managed_emoji': 2,
         'embedded_iap': 3,
         'group_dm_create': 4,
+        'auto_moderation_rule_create_badge': 6,
         'rpc_has_connected': 11,
         'gateway_presence': 12,
         'gateway_presence_limited': 13,

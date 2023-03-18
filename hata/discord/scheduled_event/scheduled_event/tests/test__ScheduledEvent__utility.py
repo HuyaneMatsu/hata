@@ -145,10 +145,7 @@ def test__ScheduledEvent__copy_with__1():
     vampytest.assert_eq(copy.channel_id, new_channel_id)
     vampytest.assert_eq(copy.description, new_description)
     vampytest.assert_eq(copy.end, new_end)
-    vampytest.assert_eq(
-        copy.entity_metadata,
-        new_entity_type.metadata_type({'speaker_ids': new_speaker_ids}),
-    )
+    vampytest.assert_eq(copy.entity_metadata, new_entity_type.metadata_type(speaker_ids = new_speaker_ids))
     vampytest.assert_is(copy.entity_type, new_entity_type)
     vampytest.assert_eq(copy.image, new_image)
     vampytest.assert_eq(copy.name, new_name)

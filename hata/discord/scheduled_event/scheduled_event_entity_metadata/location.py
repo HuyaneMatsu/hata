@@ -17,12 +17,25 @@ class ScheduledEventEntityMetadataLocation(ScheduledEventEntityMetadataBase):
     """
     __slots__ = ('location', )
     
-    @copy_docs(ScheduledEventEntityMetadataBase.__new__)
-    def __new__(cls, keyword_parameters):
+    
+    def __new__(cls, *, location = ...):
+        """
+        Creates a new entity metadata instance.
+        
+        Parameters
+        ----------
+        location : `None`, `str`, Optional (Keyword only)
+            The place where the event will take place.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
         # location
-        try:
-            location = keyword_parameters.pop('location')
-        except KeyError:
+        if location is ...:
             location = None
         else:
             location = validate_location(location)
@@ -30,6 +43,14 @@ class ScheduledEventEntityMetadataLocation(ScheduledEventEntityMetadataBase):
         self = object.__new__(cls)
         self.location = location
         return self
+    
+    
+    @classmethod
+    @copy_docs(ScheduledEventEntityMetadataBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            location = keyword_parameters.pop('location', ...),
+        )
     
     
     @classmethod
@@ -80,12 +101,28 @@ class ScheduledEventEntityMetadataLocation(ScheduledEventEntityMetadataBase):
         return new
     
     
-    @copy_docs(ScheduledEventEntityMetadataBase.copy)
-    def copy_with(self, keyword_parameters):
+    def copy_with(self, *, location = ...):
+        """
+        Copies the scheduled event entity metadata with the given fields.
+        
+        Parameters
+        ----------
+        location : `None`, `str`, Optional (Keyword only)
+            The place where the event will take place.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
         # location
-        try:
-            location = keyword_parameters.pop('location')
-        except KeyError:
+        if location is ...:
             location = self.location
         else:
             location = validate_location(location)
@@ -93,3 +130,10 @@ class ScheduledEventEntityMetadataLocation(ScheduledEventEntityMetadataBase):
         new = object.__new__(type(self))
         new.location = location
         return new
+
+    
+    @copy_docs(ScheduledEventEntityMetadataBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            location = keyword_parameters.pop('location', ...),
+        )

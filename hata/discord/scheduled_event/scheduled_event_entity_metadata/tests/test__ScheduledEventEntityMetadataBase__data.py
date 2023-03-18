@@ -24,7 +24,7 @@ def test__ScheduledEventEntityMetadataBase__to_data():
     
     Case: defaults.
     """
-    entity_metadata = ScheduledEventEntityMetadataBase({})
+    entity_metadata = ScheduledEventEntityMetadataBase()
     
     expected_data = {}
     

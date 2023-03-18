@@ -39,10 +39,24 @@
 - Add `ScheduledEvent.precreate`.
 - Add `ScheduledEvent.partial`.
 - Add `ScheduledEvent.iter_sku_ids`.
+- Add `ScheduledEvent.from_data_is_created`.
+- Add `ScheduledEventEntityMetadataBase.from_keyword_parameters`.
+- Add `ScheduledEventEntityMetadataBase.copy_with_keyword_parameters`.
+- Add `ApplicationFlag.auto_moderation_rule_create_badge`.
+- Add `ChannelFlag.guild_resource_channel`.
+- Add `ChannelFlag.clyde_ai`.
+- Add `ChannelFlag.scheduled_for_deletion`.
+- Add `GuildProfileFlag.home_actions_started`.
+- Add `GuildProfileFlag.home_actions_completed`.
+- Add `GuildProfileFlag.auto_moderation_quarantined_name_or_nick`.
+- Add `GuildProfileFlag.auto_moderation_quarantined_bio`.
+- Add `UserFlag.collaborator`.
+- Add `UserFlag.collaborator_restricted`.
 
 #### Bug Fixes
 
 - `shard_ready_waiter` was not set correct, always producing timeout. (Caused `ready` to be called later as intended.)
+- `guild.scheduled_events` were populated incorrectly.
 
 ## 1.3.24 *\[2023-03-10\]*
 

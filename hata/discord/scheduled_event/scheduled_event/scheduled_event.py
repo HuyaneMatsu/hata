@@ -1071,6 +1071,9 @@ class ScheduledEvent(DiscordEntity):
         return new
     
     
+    url = property(module_urls.scheduled_event_url)
+    
+    
     @property
     def partial(self):
         """

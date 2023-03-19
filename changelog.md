@@ -52,6 +52,11 @@
 - Add `GuildProfileFlag.auto_moderation_quarantined_bio`.
 - Add `UserFlag.collaborator`.
 - Add `UserFlag.collaborator_restricted`.
+- Add `Color.from_hsl_tuple`.
+- Add `Color.as_hsl_tuple`.
+- Add `Color.from_hsl_float_tuple`.
+- Add `Color.as_hsl_float_tuple`.
+- Add `ScheduledEvent.url`.
 
 #### Bug Fixes
 

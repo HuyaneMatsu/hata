@@ -1471,6 +1471,19 @@ def scheduled_event_image_url_as(scheduled_event, ext = None, size = None):
     return f'{CDN_ENDPOINT}/guild-events/{scheduled_event.id}/{prefix}{scheduled_event.image_hash:0>32x}.{ext}{end}'
 
 
+def scheduled_event_url(scheduled_event):
+    """
+    Returns the scheduled event's url.
+    
+    This function is a property of ``ScheduledEvent``-s.
+    
+    Returns
+    -------
+    url : `str`
+    """
+    return f'{DISCORD_ENDPOINT}/events/{scheduled_event.guild_id}/{scheduled_event.id}'
+
+
 def user_avatar_decoration_url(user):
     """
     Returns the user's avatar decoration's url. If the user has no avatar decoration returns `None`.

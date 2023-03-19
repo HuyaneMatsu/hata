@@ -1,10 +1,12 @@
 __all__ = ('COLORS', 'Color', 'parse_color',)
 
 import re
+from colorsys import rgb_to_hls
 from math import floor
 from random import Random
 
 from scarletio import modulize
+
 
 class Color(int):
     """
@@ -13,7 +15,7 @@ class Color(int):
     Class Attributes
     ----------------
     _random : `random.Random`
-        ``Color`` class uses it's own random seeding, so it has it's own `random.Random` to do it.
+        Used for random seeding, so it has it's own `random.Random` to do it.
         
         To get a random color, use ``.random` and to set seed use ``.set_seed``
     
@@ -74,14 +76,16 @@ class Color(int):
         """Returns the color's representation."""
         return f'<{self.__class__.__name__} #{self:06X}>'
     
+    
     def __str__(self):
         """Returns the color as a string. Same as ``.as_html``."""
         return f'#{self:06X}'
     
+    
     @classmethod
     def from_html(cls, value):
         """
-        Converts a HTML color code to a ``Color`` object.
+        Converts a HTML color code to a color object.
         
         Parameters
         ----------
@@ -90,7 +94,7 @@ class Color(int):
         
         Returns
         -------
-        color : ``Color``
+        color : `instance<cls>`
         
         Raises
         ------
@@ -105,7 +109,7 @@ class Color(int):
             
             if value_length == 6:
                 try:
-                    color = cls(value, base=16)
+                    color = cls(value, base = 16)
                 except ValueError:
                     pass
                 else:
@@ -113,17 +117,17 @@ class Color(int):
             
             elif value_length == 3:
                 try:
-                    color_value = int(value, base=16)
+                    color_value = int(value, base = 16)
                 except ValueError:
                     pass
                 else:
                     red = (color_value >> 8) * 17
                     green = ((color_value >> 4) & 0xf) * 17
                     blue = (color_value & 0xf) * 17
-                    return Color((red << 16) | (green << 8) | blue)
+                    return cls((red << 16) | (green << 8) | blue)
         
         raise ValueError(
-            f'The given value has invalid length or is not hexadecimal, got {value!r}'
+            f'The given value has invalid length or is not hexadecimal, got {value!r}.'
         )
     
     @property
@@ -141,36 +145,36 @@ class Color(int):
     @classmethod
     def from_rgb_tuple(cls, rgb_tuple):
         """
-        Converts a tuple of ints to a ``Color`` object.
+        Converts the given red-green-blue tuple to a color object.
         
         Parameters
         ----------
         rgb_tuple : `tuple` (`int`, `int`, `int`)
-            A tuple of `3` ints which are in range [0, 255].
-
+            A tuple of `3` integers which are in range [0, 255].
+        
         Returns
         -------
-        color : ``Color``
+        color : `instance<cls>`
         
         Raises
         ------
         ValueError
-            - `rgb_tuple` has no length of `3`.
-            - Channel value out of expected range.
+            - If `rgb_tuple`'s length is not `3`.
+            - If a channel value out of expected range.
         """
         if len(rgb_tuple) != 3:
             raise ValueError(
                 f'Rgb tuple should have length `3`, got {len(rgb_tuple)!r}; {rgb_tuple!r}.'
             )
         
-        return cls.from_rgb( * rgb_tuple)
+        return cls.from_rgb(*rgb_tuple)
     
     from_tuple = from_rgb_tuple
     
     @property
     def as_rgb_tuple(self):
         """
-        Returns the color's red, green and blue channel's value in a tuple of integers.
+        Returns the color in red-green-blue tuple format.
         
         Returns
         -------
@@ -184,7 +188,7 @@ class Color(int):
     @classmethod
     def from_rgb_float_tuple(cls, rgb_tuple):
         """
-        Converts a tuple of floats to a ``Color`` object.
+        Converts the given red-green-blue float tuple to a color object.
         
         Parameters
         ----------
@@ -193,20 +197,19 @@ class Color(int):
         
         Returns
         -------
-        color : ``Color``
+        color : `instance<cls>`
         
         Raises
         ------
         ValueError
             - `rgb_tuple` has no length of `3`.
-            - Channel value out of expected range.
         """
         if len(rgb_tuple) != 3:
             raise ValueError(
                 f'Rgb tuple should have length `3`, got {len(rgb_tuple)!r}; {rgb_tuple!r}.'
             )
         
-        return cls.from_rgb_float( * rgb_tuple)
+        return cls.from_rgb_float(*rgb_tuple)
     
     from_float_tuple = from_rgb_float_tuple
     
@@ -227,10 +230,8 @@ class Color(int):
     @classmethod
     def from_rgb(cls, red, green, blue):
         """
-        Converts red, green and blue channels to a `Color` object.
+        Converts red, green and blue channels to a color object.
         
-        Does not checks if each element of the tuple is in 0-255, so inputting bad values can yield any error.
-
         Parameters
         ----------
         red : `int`
@@ -239,39 +240,34 @@ class Color(int):
             Green channel.
         blue : `int`
             Blue channel.
-
+        
         Returns
         -------
-        color : ``Color``
-        
-        Raises
-        ------
-            Channel value out of expected range.
+        color : `instance<cls>`
         """
-        if red > 255 or red < 0:
-            raise ValueError(
-                f'Red channel value out of [0, 255] expected range, got {red!r}.'
-            )
+        if red > 255:
+            red = 255
+        elif red < 0:
+            red = 0
         
-        if green > 255 or green < 0:
-            raise ValueError(
-                f'Green channel value out of [0, 255] expected range, got {green!r}.'
-            )
+        if green > 255:
+            green = 255
+        elif green < 0:
+            green = 0
         
-        if blue > 255 or blue < 0:
-            raise ValueError(
-                f'Blue channel value out of [0, 255] expected range, got {blue!r}.'
-            )
+        if blue > 255:
+            blue = 255
+        elif blue < 0:
+            blue = 0
         
         return cls((red << 16) | (green << 8) | blue)
+    
     
     @classmethod
     def from_rgb_float(cls, red, green, blue):
         """
-        Converts red, green and blue to a `Color` object.
+        Converts red, green and blue float channels to a color object.
         
-        Does not checks if each element of the tuple is in 0-255, so inputting bad values can yield any error.
-
         Parameters
         ----------
         red : `float`
@@ -280,37 +276,224 @@ class Color(int):
             Green channel.
         blue : `float`
             Blue channel.
-
+        
         Returns
         -------
-        color : ``Color``
+        color : `instance<cls>`
+        """
+        return cls.from_rgb(floor(red * 255.0), floor(green * 255.0), floor(blue * 255.0))
+    
+    # hsl
+    
+    @classmethod
+    def from_hsl_tuple(cls, hsl_tuple):
+        """
+        Converts the given hue-saturation-lightness tuple to a color object.
+        
+        Parameters
+        ----------
+        hsl_tuple : `tuple` (`int`, `int`, `int`)
+            A tuple of `3` integers ([0, 360], [0, 100], [0, 100]).
+        
+        Returns
+        -------
+        color : `instance<cls>`
+        
+        Raises
+        ------
+        ValueError
+            - If `hsl_tuple`'s length is not `3`.
+        """
+        if len(hsl_tuple) != 3:
+            raise ValueError(
+                f'Hsl tuple should have length `3`, got {len(hsl_tuple)!r}; {hsl_tuple!r}.'
+            )
+        
+        return cls.from_hsl(*hsl_tuple)
+    
+    
+    @property
+    def as_hsl_tuple(self):
+        """
+        Returns the color in hue-saturation-lightness tuple format.
+        
+        Returns
+        -------
+        hsl_tuple : `tuple` (`int`, `int`, `int`)
+        """
+        hue, saturation, lightness = self.as_hsl_float_tuple
+        return round(hue * 360), round(saturation * 100), round(lightness * 100)
+    
+    
+    @classmethod
+    def from_hsl_float_tuple(cls, hsl_tuple):
+        """
+        Converts a hue-saturation-lightness float tuple to a color object.
+        
+        Parameters
+        ----------
+        hsl_tuple : `tuple` (`float`, `float`, `float`)
+            A tuple of `3` floats which are in range [0.0, 1.0].
+        
+        Returns
+        -------
+        color : `instance<cls>`
+        
+        Raises
+        ------
+        ValueError
+            - `hsl_tuple` has no length of `3`.
+            - Channel value out of expected range.
+        """
+        if len(hsl_tuple) != 3:
+            raise ValueError(
+                f'Rgb tuple should have length `3`, got {len(hsl_tuple)!r}; {hsl_tuple!r}.'
+            )
+        
+        return cls.from_hsl_float(*hsl_tuple)
+    
+    
+    @property
+    def as_hsl_float_tuple(self):
+        """
+        Returns the color in hue-saturation-lightness float tuple format.
+        
+        Returns
+        -------
+        hsl_float_tuple : `tuple` (`float`, `float`, `float`)
+        """
+        red = ((self >> 16) & 0xff) * (1.0 / 255.0)
+        green = ((self >> 8) & 0xff) * (1.0 / 255.0)
+        blue = (self & 0xff) * (1.0 / 255.0)
+        
+        max_value = max(red, green, blue)
+        min_value = min(red, green, blue)
+        diversity = max_value - min_value
+        
+        if diversity == 0.0:
+            hue = 0.0
+        elif max_value == red:
+            hue = ((green - blue) / diversity) % 6.0
+        elif max_value == green:
+            hue = (blue - red) / diversity + 2.0
+        else:
+            hue = (red - green) / diversity + 4.0
+        
+        hue *= (1.0 / 6.0)
+        if hue < 0.0:
+            hue += 1.0
+        
+        lightness = (max_value + min_value) * 0.5
+        
+        if diversity == 0.0:
+            saturation = 0.0
+        else:
+            saturation = diversity / (1.0 - abs(2.0 * lightness - 1.0))
+        
+        return hue, saturation, lightness
+    
+    
+    @classmethod
+    def from_hsl(cls, hue, saturation, lightness):
+        """
+        Converts hue, saturation and lightness channels to a color object.
+        
+        Parameters
+        ----------
+        hue : `int`
+            Hue channel.
+        saturation : `int`
+            Saturation channel.
+        lightness : `int`
+            Lightness channel.
+        
+        Returns
+        -------
+        color : `instance<cls>`
+        """
+        return cls.from_hsl_float(hue * (1.0 / 360.0), saturation * (1.0 / 100.0), lightness * (1.0 / 100.0))
+    
+    
+    @classmethod
+    def from_hsl_float(cls, hue, saturation, lightness):
+        """
+        Converts hue, saturation and lightness float channels to a color object.
+        
+        Parameters
+        ----------
+        hue : `float`
+            Hue channel.
+        saturation : `float`
+            Saturation channel.
+        lightness : `float`
+            Lightness channel.
+        
+        Returns
+        -------
+        color : `instance<cls>`
         
         Raises
         ------
         ValueError
             Channel value out of expected range.
         """
-        if red > 1.0 or red < 0.0:
-            raise ValueError(
-                f'Red channel value out of [0.0, 1.0] expected range, got {red!r}.'
-            )
+        hue %= 1.0
         
-        if green > 1.0 or green < 0.0:
-            raise ValueError(
-                f'Green channel value out of [0.0, 1.0] expected range, got {green!r}.'
-            )
+        if saturation > 1.0:
+            saturation = 1.0
+        elif saturation < 0.0:
+            saturation = 0.0
         
-        if blue > 1.0 or blue < 0.0:
-            raise ValueError(
-                f'Blue channel value out of [0.0, 1.0] expected range, got {blue!r}.'
-            )
+        if lightness > 1.0:
+            lightness = 1.0
+        elif lightness < 0.0:
+            lightness = 0.0
         
-        # Convert float values to 8 bit ints.
-        red = floor(red * 255.0)
-        green = floor(green * 255.0)
-        blue = floor(blue * 255.0)
-        # Build color.
-        return Color((red << 16) | (green << 8) | blue)
+        primary_channel_value = (1 - abs(2 * lightness - 1)) * saturation
+        secondary_channel_value = primary_channel_value * (1.0 - abs((hue * 6.0) % 2.0 - 1.0))
+        lightness_base = lightness - primary_channel_value * 0.5
+        
+        if hue < (2.0 / 6.0):
+            if hue < (1.0 / 6.0):
+                red = primary_channel_value
+                green = secondary_channel_value
+                blue = 0.0
+            
+            else:
+                red = secondary_channel_value
+                green = primary_channel_value
+                blue = 0.0
+        
+        elif hue < (4.0 / 6.0):
+            if hue < (3.0 / 6.0):
+                red = 0.0
+                green = primary_channel_value
+                blue = secondary_channel_value
+            
+            else:
+                red = 0.0
+                green = secondary_channel_value
+                blue = primary_channel_value
+        
+        else:
+            if hue < (5.0 / 6.0):
+                red = secondary_channel_value
+                green = 0.0
+                blue = primary_channel_value
+            
+            else:
+                red = primary_channel_value
+                green = 0.0
+                blue = secondary_channel_value
+        
+        red += lightness_base
+        green += lightness_base
+        blue += lightness_base
+        
+        return cls((round(red * 255.0) << 16) | (round(green * 255.0) << 8) | round(blue * 255.0))
+    
+    
+    # Read only stuff
     
     @property
     def red(self):
@@ -360,18 +543,19 @@ class Color(int):
         
         Returns
         -------
-        color : ``Color``
+        color : `instance<cls>`
         """
         return cls(cls._random.random() * 0xffffff)
     
+    
     @classmethod
-    def set_seed(cls, seed=None, version=2):
+    def set_seed(cls, seed = None, version = 2):
         """
-        Initialize the random number generator for the ``Color`` class.
+        Initialize the random number generator for the color type.
         
         Parameters
         ----------
-        seed : `Any` = `None`, Optional
+        seed : `object` = `None`, Optional
             If `seed` is given as `None`, the current system time is used. If randomness sources are provided by the
             operating system, they are used instead of the system time.
             
@@ -390,6 +574,7 @@ class Color(int):
             for `str` and `bytes` generates a narrower range of seeds.
         """
         cls._random.seed(seed, version)
+
 
 COLOR_RGB_INT_RP = re.compile(
     '(25[0-5]|2[0-4][0-9]|1[0-9]{2}|0?[0-9]{0,2})[\s\,]+'
@@ -579,7 +764,7 @@ del attribute_name, attribute_value
 
 def parse_color(text):
     """
-    Tries to parse out a ``Color`` from the inputted text.
+    Tries to parse out a color from the inputted text.
     
     Returns
     -------
@@ -589,7 +774,7 @@ def parse_color(text):
     
     parsed = COLOR_HTML_6_RP.fullmatch(text)
     if (parsed is not None):
-        return Color(parsed.group(1), base=16)
+        return Color(parsed.group(1), base = 16)
     
     try:
         return COLOR_BY_NAME[text]
@@ -606,15 +791,15 @@ def parse_color(text):
     
     parsed = COLOR_HEX_RP.fullmatch(text)
     if (parsed is not None):
-        return Color(parsed.group(1), base=16)
+        return Color(parsed.group(1), base = 16)
     
     parsed = COLOR_OCT_RP.fullmatch(text)
     if (parsed is not None):
-        return Color(parsed.group(1), base=8)
+        return Color(parsed.group(1), base = 8)
     
     parsed = COLOR_BIN_RP.fullmatch(text)
     if (parsed is not None):
-        return Color(parsed.group(1), base=2)
+        return Color(parsed.group(1), base = 2)
     
     parsed = COLOR_RGB_FLOAT_RP.fullmatch(text)
     if (parsed is not None):

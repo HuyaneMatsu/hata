@@ -7,6 +7,7 @@ from ....channel import Channel
 from ....client import Client
 from ....guild import Guild
 from ....user import User
+from ....utils import is_url
 
 from ..preinstanced import PrivacyLevel, ScheduledEventEntityType, ScheduledEventStatus
 from ..scheduled_event import ScheduledEvent
@@ -389,3 +390,24 @@ def test__ScheduledEvent__entity__3():
     vampytest.assert_instance(output, Channel)
     vampytest.assert_true(output.is_guild_stage())
     vampytest.assert_eq(output.id, entity_id)
+
+
+def test__ScheduledEvent__url():
+    """
+    Tests whether ``ScheduledEvent.url`` works as intended.
+    
+    Case: stage channel.
+    """
+    scheduled_event_id = 202303190000
+    guild_id = 202303190001
+    
+    scheduled_event = ScheduledEvent.precreate(
+        scheduled_event_id,
+        guild_id = guild_id,
+    )
+    
+    output = scheduled_event.url
+    vampytest.assert_instance(output, str)
+    vampytest.assert_true(is_url(output))
+    vampytest.assert_in(str(scheduled_event_id), output)
+    vampytest.assert_in(str(guild_id), output)

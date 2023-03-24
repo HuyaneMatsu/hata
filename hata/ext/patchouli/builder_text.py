@@ -446,7 +446,7 @@ class TableConverter:
                 
                 length = len(part) - 1
                 for word in part:
-                    length +=len(word)
+                    length += len(word)
                 
                 if longest_lengths[index] < length:
                     longest_lengths[index] = length
@@ -501,14 +501,15 @@ class TableConverter:
                 average_lengths[index] = length
             
             size_factors = [
-                (((average_lengths[index]<<1) + longest_lengths[index]) * shortest_lengths[index])**.5 \
-                    for index in range(x)]
+                (((average_lengths[index] << 1) + longest_lengths[index]) * shortest_lengths[index])
+                for index in range(x)
+            ]
             
             factorizable_chars = fillable_chars - sum(shortest_lengths)
             
             factor = factorizable_chars / fillable_chars
             
-            sizes = [ceil(size_factors[index]*factor + shortest_lengths[index]) for index in range(x)]
+            sizes = [ceil(size_factors[index] * factor + shortest_lengths[index]) for index in range(x)]
             
             for line in lines:
                 for index in range(x):
@@ -533,7 +534,7 @@ class TableConverter:
         
         for length in sizes:
             result_line.append('+')
-            result_line.append('='*(length + 2))
+            result_line.append('=' * (length + 2))
         
         result_line.append('+\n')
         
@@ -544,7 +545,7 @@ class TableConverter:
         
         for length in sizes:
             result_line.append('+')
-            result_line.append('-'*(length + 2))
+            result_line.append('-' * (length + 2))
         
         result_line.append('+\n')
         
@@ -1673,7 +1674,7 @@ CONVERTER_TABLE = {
     GravedTable : TableConverter,
     GravedCodeBlock : CodeBlockConverter,
     GravedBlockQuote : BlockQuoteConverter,
-        }
+}
 
 
 class SectionTitleConverter(DescriptionConverter):
@@ -2111,7 +2112,7 @@ def serialize_docs_source_text(docs):
     
     return ''.join(result)
 
-def generate_preview_for(docs, length=200, min_cut_off=20, end='...'):
+def generate_preview_for(docs, length = 200, min_cut_off = 20, end = '...'):
     """
     Generates preview for the given docs.
     

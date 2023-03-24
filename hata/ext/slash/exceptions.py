@@ -435,9 +435,9 @@ def test_exception_handler(exception_handler):
         +-------------------+-------------------------------------------------------------------------------+
         | interaction_event | ``InteractionEvent``                                                          |
         +-------------------+-------------------------------------------------------------------------------+
-        | command           | ``ComponentCommand``, ``SlashCommand``,                          |
-        |                   | ``SlashCommandFunction``, ``SlashCommandCategory``, |
-        |                   | ``SlashCommandParameterAutoCompleter``                           |
+        | command           | ``ComponentCommand``, ``SlashCommand``,                                       |
+        |                   | ``SlashCommandFunction``, ``SlashCommandCategory``,                           |
+        |                   | ``SlashCommandParameterAutoCompleter``                                        |
         +-------------------+-------------------------------------------------------------------------------+
         | exception         | `BaseException`                                                               |
         +-------------------+-------------------------------------------------------------------------------+

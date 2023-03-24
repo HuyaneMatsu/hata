@@ -1221,6 +1221,7 @@ class Client(
         
         This method is a coroutine.
         """
+    
         try:
             while True:
                 ready_state = self.ready_state

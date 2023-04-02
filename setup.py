@@ -74,6 +74,7 @@ setup(
         'hata.discord.component.interaction_form',
         'hata.discord.component.string_select_option',
         'hata.discord.embed',
+        'hata.discord.embed.embed',
         'hata.discord.embed.embed_author',
         'hata.discord.embed.embed_field',
         'hata.discord.embed.embed_field_base',

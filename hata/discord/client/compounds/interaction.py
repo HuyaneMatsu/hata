@@ -390,11 +390,11 @@ class ClientCompoundInteractionEndpoints(Compound):
         interaction_event : ``InteractionEvent``
             Interaction to respond to.
         
-        content : `None`, `str`, ``EmbedBase``, `Any` = `None`, Optional
+        content : `None`, `str`, ``Embed``, `object` = `None`, Optional
             The interaction response's content if given. If given as `str` or empty string, then no content will be
-            sent, meanwhile if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
+            sent, meanwhile if any other non `str`, ``Embed`` is given, then will be casted to string.
             
-            If given as ``EmbedBase``, then is sent as the message's embed.
+            If given as ``Embed``, then is sent as the message's embed.
         
         allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
@@ -406,10 +406,10 @@ class ClientCompoundInteractionEndpoints(Compound):
             
             > `components` do not count towards having any content in the message.
         
-        embed : `None`, ``EmbedBase``, `list` of ``EmbedBase`` = `None`, Optional (Keyword only)
+        embed : `None`, ``Embed``, `list` of ``Embed`` = `None`, Optional (Keyword only)
             The embedded content of the interaction response.
             
-            If `embed` and `content` parameters are both given as ``EmbedBase``, then `AssertionError` is
+            If `embed` and `content` parameters are both given as ``Embed``, then `AssertionError` is
             raised.
         
         show_for_invoking_user_only : `bool` = `False`, Optional (Keyword only)
@@ -428,8 +428,8 @@ class ClientCompoundInteractionEndpoints(Compound):
         ------
         TypeError
             - If `allowed_mentions` contains an element of invalid type.
-            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase``-s.
-            - If `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
+            - If `embed` was not given neither as ``Embed`` nor as `list`, `tuple` of ``Embed``-s.
+            - If `content` parameter was given as ``Embed``, meanwhile `embed` parameter was given as well.
             - If `components` type is incorrect.
         ValueError
             If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
@@ -581,18 +581,18 @@ class ClientCompoundInteractionEndpoints(Compound):
         interaction_event : ``InteractionEvent``
             Interaction, what's source response message will be edited.
         
-        content : `None`, `str`, ``EmbedBase``, `Any`, Optional
+        content : `None`, `str`, ``Embed``, `object`, Optional
             The new content of the message.
             
-            If given as ``EmbedBase``, then the message's embeds will be edited with it.
+            If given as ``Embed``, then the message's embeds will be edited with it.
         
-        embed : `None`, ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
+        embed : `None`, ``Embed``, `list` of ``Embed``, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
+            If `embed` and `content` parameters are both given as  ``Embed``, then `AssertionError` is
             raised.
         
-        file : `None`, `Any`, Optional (Keyword only)
+        file : `None`, `object`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
         
         allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
@@ -609,8 +609,8 @@ class ClientCompoundInteractionEndpoints(Compound):
         ------
         TypeError
             - If `allowed_mentions` contains an element of invalid type.
-            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase``-s.
-            - If `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
+            - If `embed` was not given neither as ``Embed`` nor as `list`, `tuple` of ``Embed``-s.
+            - If `content` parameter was given as ``Embed``, meanwhile `embed` parameter was given as well.
         ValueError
             If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
         ConnectionError
@@ -681,15 +681,15 @@ class ClientCompoundInteractionEndpoints(Compound):
         interaction_event : ``InteractionEvent``
             Interaction, what's source response message will be edited.
         
-        content : `None`, `str`, ``EmbedBase``, `Any`, Optional
+        content : `None`, `str`, ``Embed``, `object`, Optional
             The new content of the message.
             
-            If given as ``EmbedBase``, then the message's embeds will be edited with it.
+            If given as ``Embed``, then the message's embeds will be edited with it.
         
-        embed : `None`, ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
+        embed : `None`, ``Embed``, `list` of ``Embed``, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
+            If `embed` and `content` parameters are both given as  ``Embed``, then `AssertionError` is
             raised.
         
         allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
@@ -700,8 +700,8 @@ class ClientCompoundInteractionEndpoints(Compound):
         ------
         TypeError
             - If `allowed_mentions` contains an element of invalid type.
-            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase``-s.
-            - If `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
+            - If `embed` was not given neither as ``Embed`` nor as `list`, `tuple` of ``Embed``-s.
+            - If `content` parameter was given as ``Embed``, meanwhile `embed` parameter was given as well.
         ValueError
             If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.
         ConnectionError
@@ -829,11 +829,11 @@ class ClientCompoundInteractionEndpoints(Compound):
         interaction_event : ``InteractionEvent``
             Interaction to create followup message with.
         
-        content : `None`, `str`, ``EmbedBase``, `Any` = `True`, Optional
+        content : `None`, `str`, ``Embed``, `object` = `True`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
-            if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
+            if any other non `str`, ``Embed`` is given, then will be casted to string.
             
-            If given as ``EmbedBase``, then is sent as the message's embed.
+            If given as ``Embed``, then is sent as the message's embed.
         
         allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
@@ -846,12 +846,12 @@ class ClientCompoundInteractionEndpoints(Compound):
             
             > `components` do not count towards having any content in the message.
         
-        embed : `None`, ``EmbedBase``, `list` of ``EmbedBase`` = `None`, Optional (Keyword only)
+        embed : `None`, ``Embed``, `list` of ``Embed`` = `None`, Optional (Keyword only)
             The embedded content of the message.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
+            If `embed` and `content` parameters are both given as  ``Embed``, then `TypeError` is raised.
         
-        file : `None`, `Any` = `None`, Optional
+        file : `None`, `object` = `None`, Optional
             A file to send. Check ``create_file_form`` for details.
         
         show_for_invoking_user_only : `bool` = `False`, Optional (Keyword only)
@@ -879,8 +879,8 @@ class ClientCompoundInteractionEndpoints(Compound):
         ------
         TypeError
             - If `allowed_mentions` contains an element of invalid type.
-            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase``-s.
-            - `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
+            - If `embed` was not given neither as ``Embed`` nor as `list`, `tuple` of ``Embed``-s.
+            - `content` parameter was given as ``Embed``, meanwhile `embed` parameter was given as well.
             - If invalid file type would be sent.
             - If `components` type is incorrect.
         ValueError
@@ -973,22 +973,22 @@ class ClientCompoundInteractionEndpoints(Compound):
         message : ``Message``, `int`
             The interaction followup's message to edit.
         
-        content : `None`, `str`, ``EmbedBase``, `Any`, Optional
+        content : `None`, `str`, ``Embed``, `object`, Optional
             The new content of the message.
             
-            If given as `str` then the message's content will be edited with it. If given as any non ``EmbedBase``
+            If given as `str` then the message's content will be edited with it. If given as any non ``Embed``
             instance, then it will be cased to string first.
             
             By passing it as empty string, you can remove the message's content.
             
-            If given as ``EmbedBase``, then the message's embeds will be edited with it.
+            If given as ``Embed``, then the message's embeds will be edited with it.
         
-        embed : `None`, ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
+        embed : `None`, ``Embed``, `list` of ``Embed``, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
+            If `embed` and `content` parameters are both given as  ``Embed``, then `TypeError` is raised.
         
-        file : `None`, `Any`, Optional (Keyword only)
+        file : `None`, `object`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
         
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
@@ -1006,8 +1006,8 @@ class ClientCompoundInteractionEndpoints(Compound):
         ------
         TypeError
             - If `allowed_mentions` contains an element of invalid type.
-            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase``-s.
-            - If `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
+            - If `embed` was not given neither as ``Embed`` nor as `list`, `tuple` of ``Embed``-s.
+            - If `content` parameter was given as ``Embed``, meanwhile `embed` parameter was given as well.
             - If `message` was not given neither as ``Message``, `int`.
         ValueError
             If `allowed_mentions`'s elements' type is correct, but one of their value is invalid.

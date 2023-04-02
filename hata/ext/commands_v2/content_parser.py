@@ -709,8 +709,7 @@ class ConverterSetting(RichAttributeErrorBaseType):
         TypeError
             - If any parameter's type is incorrect.
         ValueError
-            - If `uses_flags` is given as `true`, but at the same time `all_flags` was not given as
-            `ConverterFlag(0)`
+            - If `uses_flags` is given as `true`, but at the same time `all_flags` was not given as `ConverterFlag(0)`.
         """
         if not isinstance(converter, FunctionType):
             raise TypeError(

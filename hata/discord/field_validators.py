@@ -607,7 +607,7 @@ def int_conditional_validator_factory(field_name, default_value, condition_check
 
 def flag_validator_factory(field_name, flag_type):
     """
-    Returns a new `int` with condition validator.
+    Returns a new flag validator.
     
     Parameters
     ----------
@@ -647,6 +647,66 @@ def flag_validator_factory(field_name, flag_type):
         
         if flag is None:
             flag = flag_type()
+        
+        elif isinstance(flag, flag_type):
+            pass
+        
+        elif isinstance(flag, int):
+            flag = flag_type(flag)
+        
+        else:
+            raise TypeError(
+                f'`{field_name}` can be `None`, `int`, `{flag_type.__name__}`, '
+                f'got {flag.__class__.__name__}; {flag!r}.'
+            )
+    
+        return flag
+    
+    return validator
+
+
+def nullable_flag_validator_factory(field_name, flag_type):
+    """
+    Returns a new nullable flag validator.
+    
+    Parameters
+    ----------
+    field_name : `str`
+        The field's name.
+    flag_type : `type`
+        The flag type to use.
+    
+    Returns
+    -------
+    validator : `FunctionType`
+    """
+    def validator(flag):
+        """
+        Validates the given flag.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        integer : `None`, `int`, `instance<flag_type>`
+            The flag to validate.
+        
+        Returns
+        -------
+        integer : `instance<flag_type>`
+        
+        Raises
+        ------
+        TypeError
+            - If `flag` is not `int`.
+        ValueError
+            - If `flag` is not any of the expected options.
+        """
+        nonlocal field_name
+        nonlocal flag_type
+        
+        if flag is None:
+            pass
         
         elif isinstance(flag, flag_type):
             pass

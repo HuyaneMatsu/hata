@@ -5,7 +5,7 @@ from ..fields import put_url_into
 
 def test__put_url_into():
     """
-    Tests whether ``put_url_into`` is working as intended.
+    Tests whether ``put_url_into`` works as intended.
     """
     for input_value, defaults, expected_output in (
         (None, False, {}),

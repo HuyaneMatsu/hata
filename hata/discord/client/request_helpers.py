@@ -20,7 +20,7 @@ from ..core import (
     APPLICATION_COMMANDS, AUTO_MODERATION_RULES, CHANNELS, FORUM_TAGS, GUILDS, MESSAGES, ROLES, SCHEDULED_EVENTS,
     STICKERS, STICKER_PACKS, USERS
 )
-from ..embed import EmbedBase
+from ..embed import Embed
 from ..emoji import Emoji, parse_reaction
 from ..guild import Guild
 from ..message import Attachment, Message
@@ -590,15 +590,15 @@ def validate_content_and_embed(content, embed, is_edit):
     
     Parameters
     ----------
-    content : `str`, ``EmbedBase``, `Any`, Optional
+    content : `str`, ``Embed``, `Any`, Optional
         The content of the message.
         
         
-        If given as ``EmbedBase``, then the message's embeds will be edited with it.
-    embed : `None`, ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
+        If given as ``Embed``, then the message's embeds will be edited with it.
+    embed : `None`, ``Embed``, `list` of ``Embed``, Optional (Keyword only)
         The new embedded content of the message. By passing it as `None`, you can remove the old.
         
-        > If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
+        > If `embed` and `content` parameters are both given as  ``Embed``, then `AssertionError` is
         raised.
     is_edit : `bool`
         Whether the processed `content` and `embed` fields are for message edition. At this case passing `None` will
@@ -608,15 +608,15 @@ def validate_content_and_embed(content, embed, is_edit):
     -------
     content : `Ellipsis`, `None`, `str`
         The message's content.
-    embed : `Ellipsis`, `None`, ``EmbedBase``, (`list`, `tuple`) of ``EmbedBase``
+    embed : `Ellipsis`, `None`, ``Embed``, (`list`, `tuple`) of ``Embed``
         The messages embeds.
     
     Raises
     ------
     TypeError
-        If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase``-s.
+        If `embed` was not given neither as ``Embed`` nor as `list`, `tuple` of ``Embed``-s.
     AssertionError
-        - If `embed` contains a non ``EmbedBase`` element.
+        - If `embed` contains a non ``Embed`` element.
         - If both `content` and `embed` fields are embeds.
     """
     # Embed check order:
@@ -632,16 +632,16 @@ def validate_content_and_embed(content, embed, is_edit):
         if not is_edit:
             embed = None
     
-    elif isinstance(embed, EmbedBase):
+    elif isinstance(embed, Embed):
         embed = [embed]
     
     elif isinstance(embed, (list, tuple)):
         if embed:
             if __debug__:
                 for embed_element in embed:
-                    if not isinstance(embed_element, EmbedBase):
+                    if not isinstance(embed_element, Embed):
                         raise AssertionError(
-                            f'`embed` can contains `{EmbedBase.__name__}` elements, got '
+                            f'`embed` can contains `{Embed.__name__}` elements, got '
                             f'{embed_element.__class__.__name__}; {embed_element!r}; embed={embed!r}.'
                         )
             
@@ -651,7 +651,7 @@ def validate_content_and_embed(content, embed, is_edit):
     
     else:
         raise TypeError(
-            f'`embed` can be `{EmbedBase.__name__}`, (`list`, `tuple`) of {EmbedBase.__name__}, got '
+            f'`embed` can be `{Embed.__name__}`, (`list`, `tuple`) of {Embed.__name__}, got '
             f'{embed.__class__.__name__}; {embed!r}.'
         )
     
@@ -674,7 +674,7 @@ def validate_content_and_embed(content, embed, is_edit):
     elif isinstance(content, str):
         pass
     
-    elif isinstance(content, EmbedBase):
+    elif isinstance(content, Embed):
         if __debug__:
             if (embed is not (... if is_edit else None)):
                 raise AssertionError(
@@ -693,7 +693,7 @@ def validate_content_and_embed(content, embed, is_edit):
         if isinstance(content, (list, tuple)):
             if content:
                 for element in content:
-                    if isinstance(element, EmbedBase):
+                    if isinstance(element, Embed):
                         continue
                     
                     is_list_of_embeds = False

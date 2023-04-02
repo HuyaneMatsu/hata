@@ -61,9 +61,9 @@ A required **async** function to return the default content of the menu to displ
 
 Function takes no parameters and will return the following values:
 
-| Name      | Type                          |
-|-----------|-------------------------------|
-| content   | `str`, `EmbedBase`, `None`    |
+| Name      | Type                        |
+|-----------|-----------------------------|
+| content   | `str`, `Embed`, `None`      |
 
 If it returns `None` then the menu will be instantly closed. Note that at this point `menu.close()` can also be called
 to not add any reactions on the menu and leave.
@@ -81,9 +81,9 @@ The following parameters will be passed to it:
 
 It will return the following values:
 
-| Name      | Type                          |
-|-----------|-------------------------------|
-| content   | `str`, `EmbedBase`, `None`    |
+| Name      | Type                        |
+|-----------|-----------------------------|
+| content   | `str`, `Embed`, `None`      |
 
 If non-`None` value is returned the respective message will be edited and the timeout will be reset.
 

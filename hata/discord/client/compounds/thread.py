@@ -278,11 +278,11 @@ class ClientCompoundThreadEndpoints(Compound):
         channel_template : `None`, ``Channel`` = `None`, Optional
             (Thread) channel entity to use as a template.
         
-        content : `None`, `str`, ``EmbedBase``, `Any` = `None`, Optional
+        content : `None`, `str`, ``Embed``, `object` = `None`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
-            if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
+            if any other non `str`, ``Embed`` is given, then will be casted to string.
             
-            If given as ``EmbedBase``, then is sent as the message's embed.
+            If given as ``Embed``, then is sent as the message's embed.
         
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
@@ -294,12 +294,12 @@ class ClientCompoundThreadEndpoints(Compound):
             
             > `components` do not count towards having any content in the message.
         
-        embed : ``EmbedBase``, `list` of ``EmbedBase`` = `None`, Optional (Keyword only)
+        embed : ``Embed``, `list` of ``Embed`` = `None`, Optional (Keyword only)
             The embedded content of the message.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
+            If `embed` and `content` parameters are both given as  ``Embed``, then `TypeError` is raised.
         
-        file : `None`, `Any` = `None`, Optional (Keyword only)
+        file : `None`, `object` = `None`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
         
         nonce : `None`, `str` = `None`, Optional (Keyword only)

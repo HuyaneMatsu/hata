@@ -5,7 +5,7 @@ from functools import partial as partial_func
 from scarletio import CallableAnalyzer, DOCS_ENABLED, docs_property
 
 from ....discord.channel import Channel
-from ....discord.embed import Embed, EmbedBase
+from ....discord.embed import Embed
 from ....discord.emoji.emoji import Emoji
 from ....discord.guild import Guild
 from ....discord.invite import Invite
@@ -752,7 +752,7 @@ class SubterraneanHelpCommand:
         if callable(description):
             embed = await description(command_context)
             embed_type = type(embed)
-            if issubclass(embed_type, EmbedBase):
+            if issubclass(embed_type, Embed):
                 await Closer(command_context.client, command_context.message.channel, embed,
                     check = partial_func(check_user, command_context.message.author))
                 return

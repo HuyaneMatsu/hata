@@ -10,7 +10,7 @@ from scarletio import BaseMethodDescriptor, export, include
 from ..bases import DiscordEntity, id_sort_key
 from ..core import CHANNELS, GUILDS, MESSAGES
 from ..component import Component
-from ..embed import EXTRA_EMBED_TYPES, EmbedBase, EmbedCore
+from ..embed import Embed, EXTRA_EMBED_TYPES
 from ..emoji import ReactionMapping, merge_update_reaction_mapping
 from ..http import urls as module_urls
 from ..preconverters import (
@@ -701,7 +701,7 @@ class Message(DiscordEntity, immortal = True):
             _set_message_field(
                 self,
                 MESSAGE_FIELD_KEY_EMBEDS,
-                tuple(EmbedCore.from_data(embed) for embed in embed_datas),
+                tuple(Embed.from_data(embed) for embed in embed_datas),
             )
         
         
@@ -907,10 +907,10 @@ class Message(DiscordEntity, immortal = True):
             
             If called as a classmethod, defaults to `None`.
         
-        embeds : `None`, (`list`, `tuple`) of ``EmbedBase``, Optional (Keyword only)
+        embeds : `None`, (`list`, `tuple`) of ``Embed``, Optional (Keyword only)
             The ``.embeds`` attribute of the message. If passed as an empty list, then is set as `None` instead. If
-            passed as list and it contains any embeds, which are not type ``EmbedCore``, then those will be converted
-            to ``EmbedCore`` as well.
+            passed as list and it contains any embeds, which are not type ``Embed``, then those will be converted
+            to ``Embed`` as well.
             
             If called as a classmethod defaults to `None`.
         
@@ -1266,7 +1266,7 @@ class Message(DiscordEntity, immortal = True):
             if (embeds is not None):
                 if not isinstance(embeds, (list, tuple)):
                     raise TypeError(
-                        f'`embeds` can be `None`, `tuple`, `list` of `{EmbedBase.__name__}`, got '
+                        f'`embeds` can be `None`, `tuple`, `list` of `{Embed.__name__}`, got '
                         f'{embeds.__class__.__name__}; {embeds!r}.'
                     )
                 
@@ -1283,17 +1283,17 @@ class Message(DiscordEntity, immortal = True):
                     for index in range(embeds_length):
                         embed = embeds[index]
                         
-                        if isinstance(embed, EmbedCore):
+                        if isinstance(embed, Embed):
                             continue
                             
-                        if isinstance(embed, EmbedBase):
+                        if isinstance(embed, Embed):
                             # Embed compatible, lets convert it
-                            embed = EmbedCore.from_data(embed.to_data())
+                            embed = Embed.from_data(embed.to_data())
                             embeds[index] = embed
                             continue
                         
                         raise TypeError(
-                            f'`embeds` can contain `{EmbedBase.__name__}` elements, got {embeds.__class__.__name__}; '
+                            f'`embeds` can contain `{Embed.__name__}` elements, got {embeds.__class__.__name__}; '
                             f'{embeds!r}; embeds={embeds!r}.'
                         )
                     
@@ -1777,7 +1777,7 @@ class Message(DiscordEntity, immortal = True):
         +-------------------+-----------------------------------------------------------------------+
         | edited_at         | `None`  or `datetime`                                                 |
         +-------------------+-----------------------------------------------------------------------+
-        | embeds            | `None`  or `(tuple` of ``EmbedCore``)                                 |
+        | embeds            | `None`  or `(tuple` of ``Embed``)                                 |
         +-------------------+-----------------------------------------------------------------------+
         | flags             | `UserFlag`                                                            |
         +-------------------+-----------------------------------------------------------------------+
@@ -1817,7 +1817,7 @@ class Message(DiscordEntity, immortal = True):
                     pass
                 else:
                     if embed_datas:
-                        embeds = tuple(EmbedCore.from_data(embed) for embed in embed_datas)
+                        embeds = tuple(Embed.from_data(embed) for embed in embed_datas)
                     else:
                         embeds = None
                     
@@ -1873,7 +1873,7 @@ class Message(DiscordEntity, immortal = True):
             pass
         else:
             if embed_datas:
-                embeds = tuple(EmbedCore.from_data(embed) for embed in embed_datas)
+                embeds = tuple(Embed.from_data(embed) for embed in embed_datas)
             else:
                 embeds = None
             
@@ -1998,7 +1998,7 @@ class Message(DiscordEntity, immortal = True):
                     pass
                 else:
                     if embed_datas:
-                        embeds = tuple(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
+                        embeds = tuple(Embed.from_data(embed_data) for embed_data in embed_datas)
                     else:
                         embeds = None
                     self.embeds = embeds
@@ -2118,7 +2118,7 @@ class Message(DiscordEntity, immortal = True):
             pass
         else:
             if embed_datas:
-                embeds = tuple(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
+                embeds = tuple(Embed.from_data(embed_data) for embed_data in embed_datas)
             else:
                 embeds = None
             self.embeds = embeds
@@ -2191,7 +2191,7 @@ class Message(DiscordEntity, immortal = True):
                 return EMBED_UPDATE_NONE
             
             # New embeds are added
-            self.embeds = tuple(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
+            self.embeds = tuple(Embed.from_data(embed_data) for embed_data in embed_datas)
             return EMBED_UPDATE_EMBED_ADD
         
         if embeds_length_new < embeds_length_actual:
@@ -2205,7 +2205,7 @@ class Message(DiscordEntity, immortal = True):
             if embeds_length_new == 0:
                 embeds = None
             else:
-                embeds = tuple(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
+                embeds = tuple(Embed.from_data(embed_data) for embed_data in embed_datas)
             self.embeds = embeds
             return EMBED_UPDATE_EMBED_REMOVE
         
@@ -2220,11 +2220,11 @@ class Message(DiscordEntity, immortal = True):
                 return change_state
         
         if embeds is None:
-            embeds = tuple(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
+            embeds = tuple(Embed.from_data(embed_data) for embed_data in embed_datas)
         else:
             embeds = (
                 *embeds,
-                *(EmbedCore.from_data(embed_datas[index]) for index in range(embeds_length_actual, embeds_length_new)),
+                *(Embed.from_data(embed_datas[index]) for index in range(embeds_length_actual, embeds_length_new)),
             )
         
         self.embeds = embeds
@@ -2259,7 +2259,7 @@ class Message(DiscordEntity, immortal = True):
                 return
             
             # New embeds are added
-            self.embeds = tuple(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
+            self.embeds = tuple(Embed.from_data(embed_data) for embed_data in embed_datas)
             return
         
         if embeds_length_new < embeds_length_actual:
@@ -2273,7 +2273,7 @@ class Message(DiscordEntity, immortal = True):
             if embeds_length_new == 0:
                 embeds = None
             else:
-                embeds = tuple(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
+                embeds = tuple(Embed.from_data(embed_data) for embed_data in embed_datas)
             self.embeds = embeds
             return
         
@@ -2286,11 +2286,11 @@ class Message(DiscordEntity, immortal = True):
                 return
         
         if embeds is None:
-            embeds = tuple(EmbedCore.from_data(embed_data) for embed_data in embed_datas)
+            embeds = tuple(Embed.from_data(embed_data) for embed_data in embed_datas)
         else:
             embeds = (
                 *embeds,
-                *(EmbedCore.from_data(embed_datas[index]) for index in range(embeds_length_actual, embeds_length_new)),
+                *(Embed.from_data(embed_datas[index]) for index in range(embeds_length_actual, embeds_length_new)),
             )
         
         self.embeds = embeds
@@ -2443,7 +2443,7 @@ class Message(DiscordEntity, immortal = True):
         
         Returns
         -------
-        clean_embeds : `list` of ``EmbedCore``
+        clean_embeds : `list` of ``Embed``
         
         Notes
         -----
@@ -2636,10 +2636,10 @@ class Message(DiscordEntity, immortal = True):
         edited_at : `None`, `datetime`, Optional (Keyword only)
             The ``.edited_at`` attribute of the message.
         
-        embeds : `None`, (`list`, `tuple`) of ``EmbedBase``, Optional (Keyword only)
+        embeds : `None`, (`list`, `tuple`) of ``Embed``, Optional (Keyword only)
             The ``.embeds`` attribute of the message. If passed as an empty list, then is set as `None` instead. If
-            passed as list and it contains any embeds, which are not type ``EmbedCore``, then those will be converted
-            to ``EmbedCore`` as well.
+            passed as list and it contains any embeds, which are not type ``Embed``, then those will be converted
+            to ``Embed`` as well.
         
         everyone_mention : `bool`, `int` (`0`, `1`), Optional (Keyword only)
             The ``.everyone_mention`` attribute of the message. Accepts other `int` as `bool` as well, but
@@ -2840,23 +2840,23 @@ class Message(DiscordEntity, immortal = True):
                 if (embeds is not None):
                     if not isinstance(embeds, (list, tuple)):
                         raise TypeError(
-                            f'`embeds` can be `None`, `tuple`, `list` of `{EmbedBase.__name__}`, got '
+                            f'`embeds` can be `None`, `tuple`, `list` of `{Embed.__name__}`, got '
                             f'{embeds.__class__.__name__}; {embeds!r}.'
                         )
                     
                     embeds_processed = []
                     
                     for embed in embeds:
-                        if isinstance(embed, EmbedCore):
+                        if isinstance(embed, Embed):
                             pass
                         
-                        elif isinstance(embed, EmbedBase):
+                        elif isinstance(embed, Embed):
                             # Embed compatible, lets convert it
-                            embed = EmbedCore.from_data(embed.to_data())
+                            embed = Embed.from_data(embed.to_data())
                         
                         else:
                             raise TypeError(
-                                f'`embeds` can contain `{EmbedBase.__name__}` elements, got '
+                                f'`embeds` can contain `{Embed.__name__}` elements, got '
                                 f'{embeds.__class__.__name__}; {embeds!r}; embeds={embeds!r}.'
                             )
                     
@@ -3881,7 +3881,7 @@ class Message(DiscordEntity, immortal = True):
         
         Returns
         -------
-        embeds : `None`, `tuple` of ``EmbedCore``
+        embeds : `None`, `tuple` of ``Embed``
         """
         return _get_message_field(
             self,
@@ -3931,7 +3931,7 @@ class Message(DiscordEntity, immortal = True):
 
         Returns
         -------
-        embed : `None`, ``EmbedCore``
+        embed : `None`, ``Embed``
         """
         return _get_first_message_field(
             self,
@@ -3947,7 +3947,7 @@ class Message(DiscordEntity, immortal = True):
         
         Yields
         ------
-        embed : ``EmbedCore``
+        embed : ``Embed``
         """
         yield from _iter_message_field(
             self,

@@ -22,15 +22,15 @@ class CommandContext:
         Trace of command categories till to the command to invoke if applicable.
     command_function : `None`, ``CommandFunction``
         The command's function to run.
-    command_keyword_parameters : `dict` of (`str`, `Any`) items
+    command_keyword_parameters : `dict` of (`str`, `object`) items
         Keyword parameters to pass to the command function.
-    command_positional_parameters : `list` of `Any`
+    command_positional_parameters : `list` of `object`
         Positional parameters to pass to the command function.
     content : `str`
         The message's content after prefix.
     message : ``Message``
         The received message.
-    parameters : `None`, `dict` of (`str`, `Any`)
+    parameters : `None`, `dict` of (`str`, `object`)
         The parsed parameters.
     prefix : `str`
         The matched prefix or the client's prefix for the given respective message.
@@ -172,19 +172,19 @@ class CommandContext:
         
         Parameters
         ----------
-        content : `str`, ``EmbedBase``, `Any`, Optional
+        content : `str`, ``Embed``, `object`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
-            if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
+            if any other non `str`, ``Embed`` is given, then will be casted to string.
             
-            If given as ``EmbedBase``, then is sent as the message's embed.
+            If given as ``Embed``, then is sent as the message's embed.
             
-        embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
+        embed : ``Embed``, `list` of ``Embed``, Optional (Keyword only)
             The embedded content of the message.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
+            If `embed` and `content` parameters are both given as  ``Embed``, then `TypeError` is raised.
             
             If embeds are given as a list, then the first embed is picked up.
-        file : `Any`, Optional (Keyword only)
+        file : `object`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
         sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`)
             Sticker or stickers to send within the message.
@@ -210,9 +210,9 @@ class CommandContext:
         Raises
         ------
         TypeError
-            - If `embed` was given as `list`, but it contains not only ``EmbedBase``-s.
+            - If `embed` was given as `list`, but it contains not only ``Embed``-s.
             - If `allowed_mentions` contains an element of invalid type.
-            - `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
+            - `content` parameter was given as ``Embed``, meanwhile `embed` parameter was given as well.
             - If invalid file type would be sent.
             - If `sticker` was not given neither as `None`, ``Sticker``, `int`, (`list`, `tuple`, `set`) of \
                 (``Sticker``, `int).
@@ -239,19 +239,19 @@ class CommandContext:
         
         Parameters
         ----------
-        content : `str`, ``EmbedBase``, `Any`, Optional
+        content : `str`, ``Embed``, `object`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
-            if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
+            if any other non `str`, ``Embed`` is given, then will be casted to string.
             
-            If given as ``EmbedBase``, then is sent as the message's embed.
+            If given as ``Embed``, then is sent as the message's embed.
             
-        embed : ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
+        embed : ``Embed``, `list` of ``Embed``, Optional (Keyword only)
             The embedded content of the message.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
+            If `embed` and `content` parameters are both given as  ``Embed``, then `TypeError` is raised.
             
             If embeds are given as a list, then the first embed is picked up.
-        file : `Any`, Optional (Keyword only)
+        file : `object`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
         sticker : `None`, ``Sticker``, `int`, (`list`, `set`, `tuple`) of (``Sticker``, `int`)
             Sticker or stickers to send within the message.
@@ -275,9 +275,9 @@ class CommandContext:
         Raises
         ------
         TypeError
-            - If `embed` was given as `list`, but it contains not only ``EmbedBase``-s.
+            - If `embed` was given as `list`, but it contains not only ``Embed``-s.
             - If `allowed_mentions` contains an element of invalid type.
-            - `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
+            - `content` parameter was given as ``Embed``, meanwhile `embed` parameter was given as well.
             - If invalid file type would be sent.
             - If `sticker` was not given neither as `None`, ``Sticker``, `int`, (`list`, `tuple`, `set`) of \
                 (``Sticker``, `int).

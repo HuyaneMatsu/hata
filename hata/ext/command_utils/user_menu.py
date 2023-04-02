@@ -231,7 +231,7 @@ class UserMenuFactory:
         +-----------+-----------------------------------+
         | Name      | Type                              |
         +===========+===================================+
-        | response  | `None`, `str`, ``EmbedBase``      |
+        | response  | `None`, `str`, ``Embed``          |
         +-----------+-----------------------------------+
     
     invoke : `async-function`
@@ -252,7 +252,7 @@ class UserMenuFactory:
         +-----------+-----------------------------------+
         | Name      | Type                              |
         +===========+===================================+
-        | response  | `None`, `str`, ``EmbedBase``      |
+        | response  | `None`, `str`, ``Embed``          |
         +-----------+-----------------------------------+
     
     klass : `type`
@@ -474,7 +474,7 @@ class UserMenuRunner(PaginationBase):
     _factory : ``UserMenuFactory``
         The factory of the menu containing it's details.
     
-    _instance : `None`, `Any`
+    _instance : `None`, `object`
         The respective ``UserMenuFactory``'s class instanced.
     """
     __slots__ = ('_factory', '_instance',)
@@ -812,7 +812,7 @@ class UserPagination:
         
         Returns
         -------
-        page : `None`, `Any`
+        page : `None`, `object`
             The page to kick-off the pagination with.
         """
         pages = self.pages
@@ -872,7 +872,7 @@ class UserPagination:
             - `CancelledError` if closed with the close emoji.
             - `TimeoutError` if closed by timeout.
             - `PermissionError` if closed because cant add reactions.
-            - Any other value is other exception received runtime.
+            - object other value is other exception received runtime.
         """
         client = self.menu.client
         if exception is None:

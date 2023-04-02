@@ -1,3 +1,66 @@
+## 1.3.26 *\[2023-03-??\]*
+
+#### Improvements
+
+- Add `EmbedFieldBase`.
+- Add `EmbedThumbnail.__hash__`.
+- Add `EmbedThumbnail.contents`.
+- Add `EmbedThumbnail.iter_contents`.
+- `EmbedThumbnail` now supports rich attribute exceptions.
+- Add `EmbedVideo.__hash__`.
+- Add `EmbedVideo.contents`.
+- Add `EmbedVideo.iter_contents`.
+- `EmbedVideo` now supports rich attribute exceptions.
+- Add `EmbedImage.__hash__`.
+- Add `EmbedImage.contents`.
+- Add `EmbedImage.iter_contents`.
+- `EmbedImage` now supports rich attribute exceptions.
+- Add `EmbedProvider.__hash__`.
+- Add `EmbedProvider.contents`.
+- Add `EmbedProvider.iter_contents`.
+- `EmbedProvider` now supports rich attribute exceptions.
+- Add `EmbedAuthor.__hash__`.
+- Add `EmbedAuthor.contents`.
+- Add `EmbedAuthor.iter_contents`.
+- `EmbedAuthor` now supports rich attribute exceptions.
+- Add `EmbedFooter.__hash__`.
+- Add `EmbedFooter.contents`.
+- Add `EmbedFooter.iter_contents`.
+- `EmbedFooter` now supports rich attribute exceptions.
+- Add `EmbedType`.
+- Add `Embed.iter_fields`.
+- `Embed.iter_contents` now reflects display order. (This applies to `.contents` too ofc.)
+- Add `Embed.clean_copy`.
+- Add `EmbedAuthor.clean_copy`.
+- Add `EmbedField.clean_copy`.
+- Add `EmbedFooter.clean_copy`.
+- Add `EmbedImage.clean_copy`.
+- Add `EmbedProvider.clean_copy`.
+- Add `EmbedThumbnail.clean_copy`.
+- Add `EmbedVideo.clean_copy`.
+- Add `Embed.__hash__`.
+
+#### Bug Fixes
+
+- `EmbedThumbnail.copy` returned the same instance.
+- `EmbedThumbnail.copy_with` returned the same instance.
+- `EmbedImage.copy` returned the same instance.
+- `EmbedImage.copy_with` returned the same instance.
+- `EmbedAuthor.copy` returned the same instance.
+- `EmbedAuthor.copy_with` returned the same instance.
+- `EmbedFooter.copy` returned the same instance.
+- `EmbedFooter.copy_with` returned the same instance.
+
+#### Renames, Deprecation & Removals
+
+- Rename `EmbedAuthor.proxy_icon_url` to `.icon_proxy_url`.
+- Deprecate `EmbedAuthor.proxy_url_url`.
+- Rename `EmbedFooter.proxy_icon_url` to `.icon_proxy_url`.
+- Deprecate `EmbedFooter.proxy_url_url`.
+- Rename `EmbedCore` to `Embed`.
+- Remove & Deprecate `EmbedCore` reference.
+- Remove & Deprecate `EmbedBase` reference.
+
 ## 1.3.25 *\[2023-03-24\]*
 
 #### Improvements

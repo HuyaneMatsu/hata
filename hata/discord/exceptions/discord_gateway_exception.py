@@ -61,7 +61,7 @@ class DiscordGatewayException(BaseException):
         """Returns the representation of the intent error."""
         repr_parts = [
             self.__class__.__name__,
-            '(code=',
+            '(code = ',
         ]
         
         code = self.code

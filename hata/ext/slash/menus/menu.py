@@ -9,7 +9,7 @@ from ....discord.allowed_mentions import AllowedMentionProxy
 from ....discord.channel import Channel
 from ....discord.client import Client
 from ....discord.core import KOKORO
-from ....discord.embed import EmbedBase
+from ....discord.embed import Embed
 from ....discord.exceptions import DiscordException, ERROR_CODES
 from ....discord.component import Component, ComponentType, create_row
 from ....discord.interaction import  InteractionEvent, InteractionType
@@ -553,7 +553,7 @@ class MenuStructure:
         
         Parameters
         ----------
-        class_attributes : `dict` of (`str`, `Any`) items
+        class_attributes : `dict` of (`str`, `object`) items
             Class attributes of a type.
         
         Raises
@@ -744,14 +744,14 @@ def _iter_attributes(class_parents, class_attributes):
     ----------
     class_parents : `tuple` of `type`
         Parent classes.
-    class_attributes : `dict` of (`str`, `Any`) items
+    class_attributes : `dict` of (`str`, `object`) items
         Class attributes of the source type.
     
     Yields
     ------
     attribute_name : `str`
         An attribute's name.
-    attribute_value : `Any`
+    attribute_value : `object`
         An attribute's value.
     """
     for class_parent in reversed(class_parents):
@@ -815,7 +815,7 @@ class MenuType(type):
             The created class's name.
         class_parents : `tuple` of `type`
             The superclasses of the creates type.
-        class_attributes : `dict` of (`str`, `Any`) items
+        class_attributes : `dict` of (`str`, `object`) items
             The class attributes of the created type.
         
         Returns
@@ -899,7 +899,7 @@ class Menu(metaclass = MenuType):
     
     Attributes
     ----------
-    _allowed_mentions : ``Ellipsis``, `None`, `list` of `Any`
+    _allowed_mentions : ``Ellipsis``, `None`, `list` of `object`
         The used allowed mentions when editing the respective message.
     _canceller : None`, `CoroutineFunction`
         Canceller set as `._canceller_function``, meanwhile the gui is not cancelled.
@@ -929,7 +929,7 @@ class Menu(metaclass = MenuType):
         +-------------------------------+-------+
     _timeouter : `None`, ``Timeouter``
         Executes the timeout feature on the menu.
-    _tracked_changes : `dict` of (`str`, `Any`) items
+    _tracked_changes : `dict` of (`str`, `object`) items
         The tracked changes by parameter name.
     channel : ``Channel``
         The channel where the menu is executed.
@@ -1361,7 +1361,7 @@ class Menu(metaclass = MenuType):
         elif isinstance(content, str):
             change_name = 'content'
             change_value = content
-        elif isinstance(content, EmbedBase):
+        elif isinstance(content, Embed):
             change_name = 'embed'
             change_value = content
         else:
@@ -1396,9 +1396,9 @@ class Menu(metaclass = MenuType):
     
     @embed.setter
     def embed(self, embed):
-        if (embed is not None) and (not isinstance(embed, EmbedBase)):
+        if (embed is not None) and (not isinstance(embed, Embed)):
             raise TypeError(
-                f'`embed` can be `None`, `{EmbedBase.__name__}`, got '
+                f'`embed` can be `None`, `{Embed.__name__}`, got '
                 f'{embed.__class__.__name__}; {embed!r}.'
             )
         

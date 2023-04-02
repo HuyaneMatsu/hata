@@ -98,7 +98,7 @@ class CommandBaseCustomId(CommandBase):
             string_custom_ids = self._string_custom_ids
             if (string_custom_ids is not None):
                 
-                repr_parts.append(', string_custom_ids=[')
+                repr_parts.append(', string_custom_ids = [')
                 index = 0
                 limit = len(string_custom_ids)
                 
@@ -118,7 +118,7 @@ class CommandBaseCustomId(CommandBase):
             regex_custom_ids = self._regex_custom_ids
             if (regex_custom_ids is not None):
                 
-                repr_parts.append(', regex_custom_ids=[')
+                repr_parts.append(', regex_custom_ids = [')
                 index = 0
                 limit = len(regex_custom_ids)
                 
@@ -140,7 +140,7 @@ class CommandBaseCustomId(CommandBase):
             
             response_modifier = self.response_modifier
             if (response_modifier is not None):
-                repr_parts.append(', response_modifier=')
+                repr_parts.append(', response_modifier = ')
                 repr_parts.append(repr(response_modifier))
     
     

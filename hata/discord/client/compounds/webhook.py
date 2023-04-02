@@ -574,11 +574,11 @@ class ClientCompoundWebhookEndpoints(Compound):
         webhook : ``Webhook``, `tuple` (`int`, `str`)
             The webhook through what will the message be sent.
         
-        content : `None`, `str`, ``EmbedBase``, `Any` = `None`, Optional
+        content : `None`, `str`, ``Embed``, `object` = `None`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
-            if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
+            if any other non `str`, ``Embed`` is given, then will be casted to string.
             
-            If given as ``EmbedBase``, then is sent as the message's embed.
+            If given as ``Embed``, then is sent as the message's embed.
         
         allowed_mentions : `None`, `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
@@ -594,13 +594,13 @@ class ClientCompoundWebhookEndpoints(Compound):
             
             > `components` do not count towards having any content in the message.
         
-        embed : `None`, ``EmbedBase``, `list` of ``EmbedBase`` = `None`, Optional (Keyword only)
+        embed : `None`, ``Embed``, `list` of ``Embed`` = `None`, Optional (Keyword only)
             The embedded content of the message.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
+            If `embed` and `content` parameters are both given as  ``Embed``, then `AssertionError` is
             raised.
         
-        file : `None`, `Any` = `None`, Optional (Keyword only)
+        file : `None`, `object` = `None`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
         
         name : `None`, `str` = `None`, Optional (Keyword only)
@@ -631,8 +631,8 @@ class ClientCompoundWebhookEndpoints(Compound):
         TypeError
             - If `webhook` was not given neither as ``Webhook`` neither as a `tuple` (`int`, `str`).
             - If `allowed_mentions` contains an element of invalid type.
-            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase``-s.
-            - `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
+            - If `embed` was not given neither as ``Embed`` nor as `list`, `tuple` of ``Embed``-s.
+            - `content` parameter was given as ``Embed``, meanwhile `embed` parameter was given as well.
             - If invalid file type would be sent.
             - If `thread` was not given either as `None`, ``Channel`` nor as `int`.
             - If `components` type is incorrect.
@@ -801,21 +801,21 @@ class ClientCompoundWebhookEndpoints(Compound):
         message : ``Message``, `int`
             The webhook's message to edit.
         
-        content : `None`, `str`, ``EmbedBase``, `Any`, Optional
+        content : `None`, `str`, ``Embed``, `object`, Optional
             The new content of the message.
             
-            If given as `str` then the message's content will be edited with it. If given as any non ``EmbedBase``
+            If given as `str` then the message's content will be edited with it. If given as any non ``Embed``
             instance, then it will be cased to string first.
             
-            If given as ``EmbedBase``, then the message's embeds will be edited with it.
+            If given as ``Embed``, then the message's embeds will be edited with it.
         
-        embed : `None`, ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
+        embed : `None`, ``Embed``, `list` of ``Embed``, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
-            > If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
+            > If `embed` and `content` parameters are both given as  ``Embed``, then `AssertionError` is
             > raised.
         
-        file : `None`, `Any`, Optional (Keyword only)
+        file : `None`, `object`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
         
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
@@ -832,8 +832,8 @@ class ClientCompoundWebhookEndpoints(Compound):
         TypeError
             - If `webhook` was not given neither as ``Webhook`` neither as a `tuple` (`int`, `str`).
             - If `allowed_mentions` contains an element of invalid type.
-            - If `embed` was not given neither as ``EmbedBase`` nor as `list`, `tuple` of ``EmbedBase``-s.
-            - `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
+            - If `embed` was not given neither as ``Embed`` nor as `list`, `tuple` of ``Embed``-s.
+            - `content` parameter was given as ``Embed``, meanwhile `embed` parameter was given as well.
             - `message` was given as `None`. Make sure to use ``Client.webhook_message_create`` with `wait=True` and by
                 giving any content to it as well.
             - `message` was not given neither as ``Message``, `int`.
@@ -847,7 +847,7 @@ class ClientCompoundWebhookEndpoints(Compound):
             If any exception was received from the Discord API.
         AssertionError
             - If `message` was detectably not sent by the `webhook`.
-            - If `embed` contains a non ``EmbedBase`` element.
+            - If `embed` contains a non ``Embed`` element.
             - If both `content` and `embed` fields are embeds.
         
         See Also

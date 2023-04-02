@@ -2,7 +2,7 @@ __all__ = ()
 
 from scarletio import is_coroutine_generator
 
-from ...discord.embed import EmbedBase
+from ...discord.embed import Embed
 from ...discord.exceptions import DiscordException, ERROR_CODES
 
 
@@ -12,7 +12,7 @@ def is_only_embed(maybe_embeds):
     
     Parameters
     ----------
-    maybe_embeds : (`tuple`, `list`) of `EmbedBase`, `Any`
+    maybe_embeds : (`tuple`, `list`) of `Embed`, `object`
         The value to check whether is a `tuple`, `list` containing only `embed-like`-s.
     
     Returns
@@ -23,7 +23,7 @@ def is_only_embed(maybe_embeds):
         return False
     
     for maybe_embed in maybe_embeds:
-        if not isinstance(maybe_embed, EmbedBase):
+        if not isinstance(maybe_embed, Embed):
             return False
     
     return True
@@ -39,8 +39,8 @@ async def send_response(command_context, response):
     ----------
     command_context : ``CommandContext``
         The respective command context.
-    response : `Any`
-        Any object yielded or returned by the command coroutine.
+    response : `object`
+        object object yielded or returned by the command coroutine.
     
     Returns
     -------
@@ -53,7 +53,7 @@ async def send_response(command_context, response):
     if isinstance(response, str):
         return await command_context.client.message_create(command_context.channel, response)
         
-    if isinstance(response, EmbedBase) or is_only_embed(response) and response:
+    if isinstance(response, Embed) or is_only_embed(response) and response:
         return await command_context.client.message_create(command_context.channel, embed = response)
     
     if is_coroutine_generator(response):
@@ -85,13 +85,13 @@ async def process_command_coroutine_generator(command_context, coroutine_generat
     
     Returns
     -------
-    response : `Any`
+    response : `object`
         Returned object by the coroutine generator.
     
     Raises
     ------
     BaseException
-        Any exception raised by `coroutine_generator`.
+        object exception raised by `coroutine_generator`.
     """
     response_message = None
     response_exception = None
@@ -161,7 +161,7 @@ async def process_command_coroutine(command_context, coroutine):
     Raises
     ------
     BaseException
-        Any exception raised by `coroutine`.
+        object exception raised by `coroutine`.
     """
     if is_coroutine_generator(coroutine):
         response = await process_command_coroutine_generator(command_context, coroutine)

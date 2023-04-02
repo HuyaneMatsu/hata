@@ -270,11 +270,11 @@ class ClientCompoundMessageEndpoints(Compound):
         channel : ``Channel``, `int`, ``Message``, `tuple` (`int`, `int`)
             The text channel where the message will be sent, or the message on what you want to reply.
         
-        content : `None`, `str`, ``EmbedBase``, `Any` = `None`, Optional
+        content : `None`, `str`, ``Embed``, `object` = `None`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
-            if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
+            if any other non `str`, ``Embed`` is given, then will be casted to string.
             
-            If given as ``EmbedBase``, then is sent as the message's embed.
+            If given as ``Embed``, then is sent as the message's embed.
         
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
@@ -286,12 +286,12 @@ class ClientCompoundMessageEndpoints(Compound):
             
             > `components` do not count towards having any content in the message.
         
-        embed : ``EmbedBase``, `list` of ``EmbedBase`` = `None`, Optional (Keyword only)
+        embed : ``Embed``, `list` of ``Embed`` = `None`, Optional (Keyword only)
             The embedded content of the message.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
+            If `embed` and `content` parameters are both given as  ``Embed``, then `TypeError` is raised.
         
-        file : `None`, `Any` = `None`, Optional (Keyword only)
+        file : `None`, `object` = `None`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
         
         nonce : `None`, `str` = `None`, Optional (Keyword only)
@@ -321,9 +321,9 @@ class ClientCompoundMessageEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `embed` was not given neither as ``EmbedBase``, (`list`, `tuple`) of ``EmbedBase``-s.
+            - If `embed` was not given neither as ``Embed``, (`list`, `tuple`) of ``Embed``-s.
             - If `allowed_mentions` contains an element of invalid type.
-            - `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
+            - `content` parameter was given as ``Embed``, meanwhile `embed` parameter was given as well.
             - If invalid file type would be sent.
             - If `channel`'s type is incorrect.
             - If `sticker` was not given neither as `None`, ``Sticker``, `int`, (`list`, `tuple`) of \
@@ -529,13 +529,13 @@ class ClientCompoundMessageEndpoints(Compound):
         ----------
         message : ``Message``, `tuple` (`int`, `int`)
             The message to edit.
-        content : `None`, `str`, ``EmbedBase``, `Any`, Optional
+        content : `None`, `str`, ``Embed``, `object`, Optional
             The new content of the message.
             
-            If given as `str` then the message's content will be edited with it. If given as any non ``EmbedBase``
+            If given as `str` then the message's content will be edited with it. If given as any non ``Embed``
             instance, then it will be cased to string first.
             
-            If given as ``EmbedBase``, then the message's embeds will be edited with it.
+            If given as ``Embed``, then the message's embeds will be edited with it.
         
         
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
@@ -549,13 +549,13 @@ class ClientCompoundMessageEndpoints(Compound):
             
             Pass it as `None` remove the actual ones.
         
-        embed : `None`, ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
+        embed : `None`, ``Embed``, `list` of ``Embed``, Optional (Keyword only)
             The new embedded content of the message. By passing it as `None`, you can remove the old.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `AssertionError` is
+            If `embed` and `content` parameters are both given as  ``Embed``, then `AssertionError` is
             raised.
         
-        file : `None`, `Any`, Optional (Keyword only)
+        file : `None`, `object`, Optional (Keyword only)
             A file or files to send. Check ``create_file_form`` for details.
         
         suppress_embeds : `bool`, Optional (Keyword only)
@@ -564,9 +564,9 @@ class ClientCompoundMessageEndpoints(Compound):
         Raises
         ------
         TypeError
-            - If `embed` was not given neither as ``EmbedBase``, (`list`, `tuple`) of ``EmbedBase``-s.
+            - If `embed` was not given neither as ``Embed``, (`list`, `tuple`) of ``Embed``-s.
             - If `allowed_mentions` contains an element of invalid type.
-            - `content` parameter was given as ``EmbedBase``, meanwhile `embed` parameter was given as well.
+            - `content` parameter was given as ``Embed``, meanwhile `embed` parameter was given as well.
             - If `message`'s type is incorrect.
             - If `components` type is incorrect.
         ValueError
@@ -578,7 +578,7 @@ class ClientCompoundMessageEndpoints(Compound):
             If any exception was received from the Discord API.
         AssertionError
             - If `suppress_embeds` was not given as `bool`.
-            - If `embed` contains a non ``EmbedBase`` element.
+            - If `embed` contains a non ``Embed`` element.
             - If both `content` and `embed` fields are embeds.
         
         See Also

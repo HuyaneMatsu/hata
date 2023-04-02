@@ -1,0 +1,3 @@
+__all__ = ()
+
+EMBED_PROVIDER_NAME_LENGTH_MAX = 256

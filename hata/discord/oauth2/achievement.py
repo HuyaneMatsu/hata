@@ -1,3 +1,4 @@
+# Achievements are deprecated on discord side, no need to update them.
 __all__ = ('Achievement', )
 
 from ...env import API_VERSION

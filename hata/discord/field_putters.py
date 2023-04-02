@@ -1710,6 +1710,53 @@ def string_flag_optional_putter_factory(field_key, default_value):
     return putter
 
 
+def nullable_flag_optional_putter_factory(field_key):
+    """
+    Returns a new nullable flag putter.
+    
+    Returns
+    -------
+    field_key : `str`
+        The field's key used in payload.
+    default_value : `object`
+        The default value to handle as an unique case.
+    
+    Returns
+    -------
+    putter : `FunctionType`
+    """
+    def putter(flag, data, defaults):
+        """
+        Puts the given flags into the given `data` json serializable object.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        flag : ``FlagBase``
+            Flag instance.
+        data : `dict` of (`str`, `object`) items
+            Json serializable dictionary.
+        defaults : `bool`
+            Whether default values should be included as well.
+        
+        Returns
+        -------
+        data : `dict` of (`str`, `object`) items
+        """
+        nonlocal field_key
+        
+        if defaults or (flag is not None):
+            if flag is not None:
+                flag = int(flag)
+            
+            data[field_key] = flag
+        
+        return data
+    
+    return putter
+
+
 def string_flag_putter_factory(field_key):
     """
     Returns a string flag putter.

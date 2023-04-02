@@ -1533,18 +1533,18 @@ def sanitize_mentions(content, guild = None):
     for id_ in USER_MENTION_RP.findall(content):
         id_ = int(id_)
         user = USERS.get(id_, None)
-        if (user is None) or user.partial:
+        if (user is None):
             sanitized_mention = '@invalid-user'
         else:
             sanitized_mention = '@' + user.name_at(guild)
         
         transformations[f'<@{id_}>'] = sanitized_mention
         transformations[f'<@!{id_}>'] = sanitized_mention
-        
+    
     for id_ in CHANNEL_MENTION_RP.findall(content):
         id_ = int(id_)
         channel = CHANNELS.get(id_, None)
-        if (channel is None) or channel.partial:
+        if (channel is None):
             sanitized_mention = '@deleted channel'
         else:
             sanitized_mention = '#' + channel.name
@@ -1554,7 +1554,7 @@ def sanitize_mentions(content, guild = None):
     for id_ in ROLE_MENTION_RP.findall(content):
         id_ = int(id_)
         role = ROLES.get(id_, None)
-        if (role is None) or role.partial:
+        if (role is None):
             sanitized_mention = '@deleted role'
         else:
             sanitized_mention = '@' + role.name

@@ -1,0 +1,3 @@
+__all__ = ()
+
+EMBED_FOOTER_TEXT_LENGTH_MAX = 2048

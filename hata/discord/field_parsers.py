@@ -324,6 +324,48 @@ def flag_parser_factory(field_key, flag_type):
     return parser
 
 
+def nullable_flag_parser_factory(field_key, flag_type):
+    """
+    Returns a nullable `flag` parser.
+    
+    Parameters
+    ----------
+    field_key : `str`
+        The field's key used in payload.
+    flag_type : `type`
+        The type of the flag to return.
+    
+    Returns
+    -------
+    parser : `FunctionType`
+    """
+    def parser(data):
+        """
+        Parses out a nullable flag from the given payload.
+        
+        > This function is generated.
+        
+        Parameters
+        ----------
+        data : `dict` of (`str`, `object`) items
+            Entity data.
+        
+        Returns
+        -------
+        field_value : `None`, `instance<flag_type>`
+        """
+        nonlocal field_key
+        nonlocal flag_type
+        
+        value = data.get(field_key, None)
+        if (value is not None):
+            value = flag_type(value)
+        
+        return value
+    
+    return parser
+
+
 def bool_parser_factory(field_key, default_value):
     """
     Returns a `bool` parser.

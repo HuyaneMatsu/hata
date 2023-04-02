@@ -10,7 +10,7 @@ from ...bases import maybe_snowflake
 from ...guild import create_partial_guild_from_data
 from ...http import DiscordHTTPClient
 from ...oauth2 import Connection, Oauth2Access, Oauth2Scope, Oauth2User
-from ...oauth2.helpers import build_joined_scopes, join_oauth2_scopes
+from ...oauth2.oauth2_access.fields import put_scopes_into as put_oauth2_scopes_into, parse_scopes as parse_oauth2_scopes
 from ...payload_building import build_edit_payload
 from ...role import Role
 
@@ -108,16 +108,18 @@ class ClientCompoundOauth2Endpoints(Compound):
         assert _assert__redirect_url(redirect_url)
         assert _assert__code(code)
         
-        joined_scopes = build_joined_scopes(scopes)
-        
+        scopes = parse_oauth2_scopes(scopes)
+                
         data = {
             'client_id': self.id,
             'client_secret': self.secret,
             'grant_type': 'authorization_code',
             'code': code,
             'redirect_uri': redirect_url,
-            'scope': joined_scopes,
         }
+        
+        put_oauth2_scopes_into(scopes, data, True)
+        
         
         data = await self.http.oauth2_token(data, IgnoreCaseMultiValueDictionary())
         if len(data) == 1:
@@ -161,12 +163,13 @@ class ClientCompoundOauth2Endpoints(Compound):
         -----
         Does not work if the client's application is owned by a team.
         """
-        joined_scopes = build_joined_scopes(scopes)
+        scopes = parse_oauth2_scopes(scopes)
         
         data = {
             'grant_type': 'client_credentials',
-            'scope': joined_scopes,
         }
+        
+        put_oauth2_scopes_into(scopes, data, True)
         
         headers = IgnoreCaseMultiValueDictionary()
         headers[AUTHORIZATION] = BasicAuth(str(self.id), self.secret).encode()
@@ -287,15 +290,15 @@ class ClientCompoundOauth2Endpoints(Compound):
                 'grant_type': 'refresh_token',
                 'refresh_token': access.refresh_token,
                 'redirect_uri': redirect_url,
-                'scope': join_oauth2_scopes(access.scopes)
             }
         else:
             data = {
                 'client_id': self.id,
                 'client_secret': self.secret,
                 'grant_type': 'client_credentials',
-                'scope': join_oauth2_scopes(access.scopes),
             }
+        
+        put_oauth2_scopes_into(access.scopes, data, True)
         
         data = await self.http.oauth2_token(data, IgnoreCaseMultiValueDictionary())
         

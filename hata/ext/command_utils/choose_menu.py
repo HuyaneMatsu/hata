@@ -83,17 +83,17 @@ class ChooseMenu(PaginationBase):
         | should_process    | `bool`    |
         +-------------------+-----------+
     
-    embed : ``EmbedBase``
+    embed : ``Embed``
         An embed base, what's description and footer will be rendered with the given choices and with information
         about the respective page.
 
     selected : `int`
         The currently selected option of the ``ChooseMenu``.
     
-    choices : `indexable` of `Any`
+    choices : `indexable` of `object`
         An indexable container, what stores the displayable choices.
         
-        It's elements's type can be different from each other, and different structures act differently as well.
+        It's elements' type can be different from each other, and different structures act differently as well.
         There are the following cases:
         
         - If an element is `str`, then it will be used as an option's title and when selecting it, only that
@@ -181,10 +181,10 @@ class ChooseMenu(PaginationBase):
             If given as ``InteractionEvent``, then will acknowledge it and create a new message with it as well.
             Although will not acknowledge it if `message` is given.
         
-        choices : `indexable` of `Any`
+        choices : `indexable` of `object`
             An indexable container, what stores the displayable choices.
             
-            It's elements's type can be different from each other, and different structures act differently as well.
+            It's elements' type can be different from each other, and different structures act differently as well.
             There are the following cases:
             
             - If an element is `str`, then it will be used as an option's title and when selecting it, only
@@ -217,7 +217,7 @@ class ChooseMenu(PaginationBase):
             The rest of the parameters depend on the respective choice (an elements of ``choices``). If the element is a
             `tuple`, then it's elements will be passed, however if the choice is any other type, then only that
             object will be passed.
-        embed : ``EmbedBase`` = `Embed()`, Optional
+        embed : ``Embed`` = `Embed()`, Optional
             An embed base, what's description and footer will be rendered with the given choices and with information
             about the respective page. Defaults to an empty ``Embed``.
         timeout : `float` = `240.0`, Optional (Keyword only)

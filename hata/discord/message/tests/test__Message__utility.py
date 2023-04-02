@@ -1,6 +1,6 @@
 import vampytest
 
-from ...embed import EmbedAuthor, EmbedCore, EmbedField, EmbedFooter, EmbedProvider
+from ...embed import EmbedAuthor, Embed, EmbedField, EmbedFooter, EmbedProvider
 
 from ..message import Message
 
@@ -25,7 +25,7 @@ def test__Message__iter_contents__0():
     embed_0_provider_name = 'hecatia'
     embed_1_title = 'reimu'
     
-    embed_0 = EmbedCore(title = embed_0_title, description = embed_0_description)
+    embed_0 = Embed(title = embed_0_title, description = embed_0_description)
     embed_0.author = EmbedAuthor(embed_0_author_name)
     embed_0.fields = [
         EmbedField(embed_0_field_0_name, embed_0_field_0_value),
@@ -34,7 +34,7 @@ def test__Message__iter_contents__0():
     embed_0.footer = EmbedFooter(embed_0_footer_text)
     embed_0.provider = EmbedProvider(embed_0_provider_name)
     
-    embed_1 = EmbedCore(title = embed_1_title)
+    embed_1 = Embed(title = embed_1_title)
     
     message = Message.custom(channel_id = channel_id, content = message_content, embeds = [embed_0, embed_1])
     
@@ -50,7 +50,7 @@ def test__Message__iter_contents__0():
 
 def test__Message__iter_contents__1():
     """
-    Tests whether ``EmbedCore.iter_contents`` works as intended.
+    Tests whether ``Embed.iter_contents`` works as intended.
     
     Case: No contents.
     """
@@ -78,7 +78,7 @@ def test__Message__contents__0():
     embed_0_provider_name = 'hecatia'
     embed_1_title = 'reimu'
     
-    embed_0 = EmbedCore(title = embed_0_title, description = embed_0_description)
+    embed_0 = Embed(title = embed_0_title, description = embed_0_description)
     embed_0.author = EmbedAuthor(embed_0_author_name)
     embed_0.fields = [
         EmbedField(embed_0_field_0_name, embed_0_field_0_value),
@@ -87,7 +87,7 @@ def test__Message__contents__0():
     embed_0.footer = EmbedFooter(embed_0_footer_text)
     embed_0.provider = EmbedProvider(embed_0_provider_name)
     
-    embed_1 = EmbedCore(title = embed_1_title)
+    embed_1 = Embed(title = embed_1_title)
     
     message = Message.custom(channel_id = channel_id, content = message_content, embeds = [embed_0, embed_1])
     

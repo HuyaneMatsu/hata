@@ -144,7 +144,7 @@ class ChannelMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `object`) Items
+        data : `dict` of (`str`, `object`) items
         """
         return {}
     

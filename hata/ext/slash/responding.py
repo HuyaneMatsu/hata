@@ -4,7 +4,7 @@ from scarletio import is_coroutine_generator, skip_ready_cycle
 
 from ...discord.client import Client
 from ...discord.component import InteractionForm
-from ...discord.embed import EmbedBase
+from ...discord.embed import Embed
 from ...discord.interaction import InteractionType
 
 from .response_modifier import (
@@ -25,7 +25,7 @@ def is_only_embed(maybe_embeds):
     
     Parameters
     ----------
-    maybe_embeds : (`tuple`, `list`) of `EmbedBase`, `Any`
+    maybe_embeds : (`tuple`, `list`) of `Embed`, `object`
         The value to check whether is a `tuple`, `list` containing only `embed-like`-s.
     
     Returns
@@ -36,7 +36,7 @@ def is_only_embed(maybe_embeds):
         return False
     
     for maybe_embed in maybe_embeds:
-        if not isinstance(maybe_embed, EmbedBase):
+        if not isinstance(maybe_embed, Embed):
             return False
     
     return True
@@ -56,8 +56,8 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
         The respective event to respond on.
     response_modifier : `None`, ``ResponseModifier``
         Modifies values returned and yielded to command coroutine processor.
-    response : `Any`
-        Any object yielded or returned by the command coroutine.
+    response : `object`
+        object object yielded or returned by the command coroutine.
     is_return : `bool`
         Whether the response is used in a return and we do not require response message.
     
@@ -111,7 +111,7 @@ async def get_request_coroutines(client, interaction_event, response_modifier, r
     # wait for async acknowledgement if applicable
     await interaction_event._wait_for_async_task_completion()
     
-    if isinstance(response, (str, EmbedBase)) or is_only_embed(response):
+    if isinstance(response, (str, Embed)) or is_only_embed(response):
         async for request_coroutine in _get_request_coroutines_from_value(
             client,
             interaction_event,
@@ -188,8 +188,8 @@ async def _get_request_coroutines_from_value(client, interaction_event, response
         The respective event to respond on.
     response_modifier : `None`, ``ResponseModifier``
         Modifies values returned and yielded to command coroutine processor.
-    response : `Any`
-        Any object yielded or returned by the command coroutine.
+    response : `object`
+        object object yielded or returned by the command coroutine.
     is_return : `bool`
         Whether the response is used in a return and we do not require response message.
     
@@ -273,13 +273,13 @@ async def process_command_coroutine_generator(
     
     Returns
     -------
-    response : `Any`
+    response : `object`
         Returned object by the coroutine generator.
     
     Raises
     ------
     BaseException
-        Any exception raised by `coroutine_generator`.
+        object exception raised by `coroutine_generator`.
     """
     response_message = None
     response_exception = None
@@ -362,7 +362,7 @@ async def process_command_coroutine(client, interaction_event, response_modifier
     Raises
     ------
     BaseException
-        Any exception raised by `CoroutineType`.
+        object exception raised by `CoroutineType`.
     """
     if is_coroutine_generator(coroutine):
         response = await process_command_coroutine_generator(
@@ -407,7 +407,7 @@ class InteractionResponse:
         Whether the slash response is derived from an ``abort`` call.
     _message : `Ellipsis`, `None`, ``Message``.
         Whether a message should be edited instead of creating a new one.
-    _parameters : `dict` of (`str`, `Any`) items
+    _parameters : `dict` of (`str`, `object`) items
         Parameters to pass to the respective ``Client`` functions.
         
         Can have the following keys:
@@ -444,11 +444,11 @@ class InteractionResponse:
         
         Parameters
         ----------
-        content : `None`, `str`, ``EmbedBase``, `Any`, Optional
+        content : `None`, `str`, ``Embed``, `object`, Optional
             The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
-            if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
+            if any other non `str`, ``Embed`` is given, then will be casted to string.
             
-            If given as ``EmbedBase``, then is sent as the message's embed.
+            If given as ``Embed``, then is sent as the message's embed.
         
         allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
                 , Optional (Keyword only)
@@ -458,15 +458,15 @@ class InteractionResponse:
         components : `None`, ``Component``, (`set`, `list`) of ``Component``, Optional (Keyword only)
             Components attached to the message.
         
-        embed : `None`, ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
+        embed : `None`, ``Embed``, `list` of ``Embed``, Optional (Keyword only)
             The embedded content of the message.
             
-            If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
+            If `embed` and `content` parameters are both given as  ``Embed``, then `TypeError` is raised.
 
         event : `None`, ``InteractionEvent`` = `None`, Optional (Keyword only)
             A specific event ot answer instead of the command's.
         
-        file : `None`, `Any`, Optional (Keyword only)
+        file : `None`, `object`, Optional (Keyword only)
             A file to send. Check ``Client._create_file_form`` for details.
         
         message : `None`, ``Message``, Optional (Keyword only)
@@ -529,7 +529,7 @@ class InteractionResponse:
         
         Returns
         -------
-        response_parameters : `dict` of (`str`, `Any`) items
+        response_parameters : `dict` of (`str`, `object`) items
             Parameters to pass the the respective client method.
         """
         parameters = self._parameters
@@ -740,11 +740,11 @@ def abort(
     
     Parameters
     ----------
-    content : `None`, `str`, ``EmbedBase``, `Any`, Optional
+    content : `None`, `str`, ``Embed``, `object`, Optional
         The message's content if given. If given as `str` or empty string, then no content will be sent, meanwhile
-        if any other non `str`, ``EmbedBase`` is given, then will be casted to string.
+        if any other non `str`, ``Embed`` is given, then will be casted to string.
         
-        If given as ``EmbedBase``, then is sent as the message's embed.
+        If given as ``Embed``, then is sent as the message's embed.
     
     allowed_mentions : `None`,  `str`, ``UserBase``, ``Role``, `list` of (`str`, ``UserBase``, ``Role`` )
             , Optional (Keyword only)
@@ -753,15 +753,15 @@ def abort(
     components : `None`, ``Component``, (`set`, `list`) of ``Component``, Optional (Keyword only)
         Components attached to the message.
     
-    embed : `None` ``EmbedBase``, `list` of ``EmbedBase``, Optional (Keyword only)
+    embed : `None` ``Embed``, `list` of ``Embed``, Optional (Keyword only)
         The embedded content of the message.
         
-        If `embed` and `content` parameters are both given as  ``EmbedBase``, then `TypeError` is raised.
+        If `embed` and `content` parameters are both given as  ``Embed``, then `TypeError` is raised.
     
     event : `None`, ``InteractionEvent`` = `None`, Optional (Keyword only)
         A specific event ot answer instead of the command's.
     
-    file : `None` `Any`, Optional (Keyword only)
+    file : `None` `object`, Optional (Keyword only)
         A file to send. Check ``Client._create_file_form`` for details.
     
     message : `None`, ``Message``, Optional (Keyword only)

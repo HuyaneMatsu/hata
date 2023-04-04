@@ -9,7 +9,7 @@ from ...env import CACHE_PRESENCE, CACHE_USER
 from ..application_command import ApplicationCommand, ApplicationCommandPermission
 from ..audit_logs import AuditLogEntry
 from ..auto_moderation import AutoModerationActionExecutionEvent, AutoModerationRule
-from ..channel import Channel
+from ..channel import Channel, VoiceChannelEffect
 from ..core import (
     APPLICATION_COMMANDS, APPLICATION_ID_TO_CLIENT, AUTO_MODERATION_RULES, CHANNELS, CLIENTS, GUILDS, KOKORO,
     MESSAGES, ROLES, SCHEDULED_EVENTS, STAGES, USERS
@@ -4289,16 +4289,16 @@ del AUTO_MODERATION_RULE_DELETE__CAL_SC, \
 
 
 def AUTO_MODERATION_ACTION_EXECUTION__CAL_SC(client, data):
-    auto_moderation_action_execution = AutoModerationActionExecutionEvent(data)
-    Task(client.events.auto_moderation_action_execution(client, auto_moderation_action_execution), KOKORO)
+    event = AutoModerationActionExecutionEvent.from_data(data)
+    Task(client.events.auto_moderation_action_execution(client, event), KOKORO)
 
 
 def AUTO_MODERATION_ACTION_EXECUTION__CAL_MC(client, data):
-    auto_moderation_action_execution = AutoModerationActionExecutionEvent(data)
     
     event_handler = client.events.auto_moderation_action_execution
     if (event_handler is not DEFAULT_EVENT_HANDLER):
-        Task(event_handler(client, auto_moderation_action_execution), KOKORO)
+        event = AutoModerationActionExecutionEvent.from_data(data)
+        Task(event_handler(client, event), KOKORO)
 
 
 def AUTO_MODERATION_ACTION_EXECUTION__OPT(client, data):
@@ -4314,3 +4314,30 @@ add_parser(
 del AUTO_MODERATION_ACTION_EXECUTION__CAL_SC, \
     AUTO_MODERATION_ACTION_EXECUTION__CAL_MC, \
     AUTO_MODERATION_ACTION_EXECUTION__OPT
+
+
+def VOICE_CHANNEL_EFFECT_SEND__OPT(client, data):
+    pass
+
+
+def VOICE_CHANNEL_EFFECT_SEND__CAL_SC(client, data):
+    event = VoiceChannelEffect.from_data(data)
+    Task(client.events.voice_channel_effect(client, event), KOKORO)
+
+
+def VOICE_CHANNEL_EFFECT_SEND__CAL_MC(client, data):
+    event_handler = client.events.voice_channel_effect
+    if (event_handler is not DEFAULT_EVENT_HANDLER):
+        event = VoiceChannelEffect.from_data(data)
+        Task(event_handler(client, event), KOKORO)
+
+
+add_parser(
+    'VOICE_CHANNEL_EFFECT_SEND',
+    VOICE_CHANNEL_EFFECT_SEND__CAL_SC,
+    VOICE_CHANNEL_EFFECT_SEND__CAL_MC,
+    VOICE_CHANNEL_EFFECT_SEND__OPT,
+    VOICE_CHANNEL_EFFECT_SEND__OPT)
+del VOICE_CHANNEL_EFFECT_SEND__CAL_SC, \
+    VOICE_CHANNEL_EFFECT_SEND__CAL_MC, \
+    VOICE_CHANNEL_EFFECT_SEND__OPT

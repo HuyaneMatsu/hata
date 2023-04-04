@@ -66,6 +66,7 @@ setup(
         'hata.discord.channel.forum_tag_update',
         'hata.discord.channel.permission_overwrite',
         'hata.discord.channel.permission_overwrite.fields',
+        'hata.discord.channel.voice_channel_effect',
         'hata.discord.client',
         'hata.discord.client.compounds',
         'hata.discord.component',

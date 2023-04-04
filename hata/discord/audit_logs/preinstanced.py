@@ -1,6 +1,8 @@
 __all__ = ('AuditLogEvent', 'AuditLogTargetType')
 
-from scarletio import copy_docs, export
+import warnings
+
+from scarletio import class_property, copy_docs, export
 
 from ..bases import Preinstance as P, PreinstancedBase
 
@@ -293,9 +295,15 @@ class AuditLogEvent(PreinstancedBase):
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
     | application_command_permission_update | application command permission update | 121   | application_command           |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
+    | soundboard_sound_create               | soundboard sound create               | 130   | none                          |
+    +---------------------------------------+---------------------------------------+-------+-------------------------------+
+    | soundboard_sound_update               | soundboard sound update               | 131   | none                          |
+    +---------------------------------------+---------------------------------------+-------+-------------------------------+
+    | soundboard_sound_delete               | soundboard sound delete               | 132   | none                          |
+    +---------------------------------------+---------------------------------------+-------+-------------------------------+
     | auto_moderation_rule_create           | auto moderation rule create           | 140   | auto_moderation_rule          |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
-    | auto_moderation_rule_edit             | auto moderation rule edit             | 141   | auto_moderation_rule          |
+    | auto_moderation_rule_update           | auto moderation rule update           | 141   | auto_moderation_rule          |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
     | auto_moderation_rule_delete           | auto moderation rule delete           | 142   | auto_moderation_rule          |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
@@ -311,9 +319,19 @@ class AuditLogEvent(PreinstancedBase):
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
     | role_prompt_create                    | role_prompt_create                    | 160   | none                          |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
-    | role_prompt_edit                      | role_prompt_edit                      | 161   | none                          |
+    | role_prompt_update                    | role_prompt_update                    | 161   | none                          |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
     | role_prompt_delete                    | role_prompt_delete                    | 162   | none                          |
+    +---------------------------------------+---------------------------------------+-------+-------------------------------+
+    | onboarding_prompt_create              | onboarding prompt create              | 163   | none                          |
+    +---------------------------------------+---------------------------------------+-------+-------------------------------+
+    | onboarding_prompt_update              | onboarding prompt update              | 164   | none                          |
+    +---------------------------------------+---------------------------------------+-------+-------------------------------+
+    | onboarding_prompt_delete              | onboarding prompt delete              | 165   | none                          |
+    +---------------------------------------+---------------------------------------+-------+-------------------------------+
+    | onboarding_create                     | onboarding create                     | 166   | none                          |
+    +---------------------------------------+---------------------------------------+-------+-------------------------------+
+    | onboarding_update                     | onboarding update                     | 167   | none                          |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
     | home_feature_item                     | home_feature_item                     | 171   | none                          |
     +---------------------------------------+---------------------------------------+-------+-------------------------------+
@@ -406,8 +424,12 @@ class AuditLogEvent(PreinstancedBase):
         AuditLogTargetType.application_command,
     )
     
+    soundboard_sound_create =  P(130,'soundboard sound create', AuditLogTargetType.none)
+    soundboard_sound_update =  P(131, 'soundboard sound update', AuditLogTargetType.none)
+    soundboard_sound_delete = P(132, 'soundboard sound delete', AuditLogTargetType.none)
+    
     auto_moderation_rule_create = P(140, 'auto moderation rule create', AuditLogTargetType.auto_moderation_rule)
-    auto_moderation_rule_edit = P(141, 'auto moderation rule edit', AuditLogTargetType.auto_moderation_rule)
+    auto_moderation_rule_update = P(141, 'auto moderation rule update', AuditLogTargetType.auto_moderation_rule)
     auto_moderation_rule_delete = P(142, 'auto moderation rule delete', AuditLogTargetType.auto_moderation_rule)
     auto_moderation_block_message = P(143, 'auto moderation block message', AuditLogTargetType.none)
     auto_moderation_alert_message = P(143, 'auto moderation alert message', AuditLogTargetType.none)
@@ -417,8 +439,13 @@ class AuditLogEvent(PreinstancedBase):
     creator_monetization_terms_accepted = P(151, 'creator monetization terms accepted', AuditLogTargetType.none)
     
     role_prompt_create =  P(160,'role prompt create', AuditLogTargetType.none)
-    role_prompt_edit =  P(161, 'role prompt edit', AuditLogTargetType.none)
+    role_prompt_update =  P(161, 'role prompt update', AuditLogTargetType.none)
     role_prompt_delete = P(162, 'role prompt delete', AuditLogTargetType.none)
+    onboarding_prompt_create =  P(163,'onboarding prompt create', AuditLogTargetType.none)
+    onboarding_prompt_update =  P(164, 'onboarding prompt update', AuditLogTargetType.none)
+    onboarding_prompt_delete = P(165, 'onboarding prompt delete', AuditLogTargetType.none)
+    onboarding_create =  P(166,'onboarding create', AuditLogTargetType.none)
+    onboarding_update =  P(167, 'onboarding update', AuditLogTargetType.none)
     
     home_feature_item = P(171, 'home_feature_item', AuditLogTargetType.none)
     home_remove_item = P(172, 'home_remove_item', AuditLogTargetType.none)
@@ -470,3 +497,36 @@ class AuditLogEvent(PreinstancedBase):
             f'target_type = {self.target_type.name!r}'
             '>'
         )
+    
+    @class_property
+    def auto_moderation_rule_edit(cls):
+        """
+        Deprecated and will be removed in 2023 August. Please use `.auto_moderation_rule_update` instead.
+        """
+        warnings.warn(
+            (
+                f'`{cls.__name__}.auto_moderation_rule_edit` is deprecated and will be removed in 2023 August. '
+                f'Please use `.auto_moderation_rule_update` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return cls.auto_moderation_rule_update
+    
+    
+    @class_property
+    def role_prompt_edit(cls):
+        """
+        Deprecated and will be removed in 2023 August. Please use `.auto_moderation_rule_update` instead.
+        """
+        warnings.warn(
+            (
+                f'`{cls.__name__}.role_prompt_edit` is deprecated and will be removed in 2023 August. '
+                f'Please use `.role_prompt_update` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return cls.role_prompt_update

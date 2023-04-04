@@ -151,7 +151,7 @@ class ReactionAddEvent(EventBase):
         repr_parts.append(', emoji = ')
         repr_parts.append(repr(self.emoji))
         
-        repr_parts.append(' user = ')
+        repr_parts.append(', user = ')
         repr_parts.append(repr(self.user))
         
         repr_parts.append('>')

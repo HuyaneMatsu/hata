@@ -2,7 +2,7 @@ __all__ = ()
 
 from scarletio import include
 
-from ..core import APPLICATION_ID_TO_CLIENT, CLIENTS
+from ..core import APPLICATION_ID_TO_CLIENT
 
 from .intent import INTENT_MASK_DIRECT_MESSAGES, INTENT_MASK_GUILD_MESSAGES, INTENT_MASK_MESSAGE_CONTENT
 
@@ -182,7 +182,7 @@ def filter_clients_or_me(clients, flag_mask, me):
     ----------
     clients : `list` of ``Client``
         The clients to filter.
-    flag_shift : `int`
+    flag_mask : `int`
         The intent flag's mask based on what the clients will be filtered.
     me : ``Client``
         The client who received the respective event.

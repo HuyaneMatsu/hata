@@ -101,6 +101,7 @@ INTENT_SHIFT_EVENTS = {
         'INVITE_DELETE',
     ),
     INTENT_SHIFT_GUILD_VOICE_STATES: (
+        'VOICE_CHANNEL_EFFECT_SEND',
         'VOICE_STATE_UPDATE',
     ),
     INTENT_SHIFT_GUILD_PRESENCES: (
@@ -268,7 +269,8 @@ class IntentFlag(FlagBase, enable_keyword = 'allow', disable_keyword = 'deny'):
     | INTENT_SHIFT_GUILD_INVITES                    | 6     | guild_invites                 | INVITE_CREATE,                              |
     |                                               |       |                               | INVITE_DELETE                               |
     +-----------------------------------------------+-------+-------------------------------+---------------------------------------------+
-    | INTENT_SHIFT_GUILD_VOICE_STATES               | 7     | guild_voice_states            | VOICE_STATE_UPDATE                          |
+    | INTENT_SHIFT_GUILD_VOICE_STATES               | 7     | guild_voice_states            | VOICE_CHANNEL_EFFECT_SEND,                  |
+    |                                               |       |                               | VOICE_STATE_UPDATE                          |
     +-----------------------------------------------+-------+-------------------------------+---------------------------------------------+
     | INTENT_SHIFT_GUILD_PRESENCES                  | 8     | guild_presences               | PRESENCE_UPDATE                             |
     +-----------------------------------------------+-------+-------------------------------+---------------------------------------------+

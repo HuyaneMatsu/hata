@@ -31,8 +31,9 @@ from ..utils import DATETIME_FORMAT_CODE, EMOJI_NAME_RP
 from .embedded_activity_state import EmbeddedActivityState
 from .emoji_counts import EmojiCounts
 from .fields import (
-    parse_features, parse_premium_tier, parse_safety_alerts_channel_id, validate_features, validate_premium_tier,
-    validate_safety_alerts_channel_id
+    parse_features, parse_max_stage_channel_video_users, parse_max_voice_channel_video_users, parse_premium_tier,
+    parse_safety_alerts_channel_id, validate_features, validate_max_stage_channel_video_users, validate_max_voice_channel_video_users,
+    validate_premium_tier, validate_safety_alerts_channel_id
 )
 from .flags import SystemChannelFlag
 from .guild_premium_perks import TIERS as PREMIUM_TIERS, TIER_MAX as PREMIUM_TIER_MAX
@@ -82,7 +83,6 @@ else:
 
 MAX_PRESENCES_DEFAULT = 0
 MAX_USERS_DEFAULT = 250000
-MAX_VIDEO_CHANNEL_USERS_DEFAULT = 25
 
 
 def _user_date_sort_key(item):
@@ -230,10 +230,12 @@ class Guild(DiscordEntity, immortal = True):
     max_presences : `int`
         The maximal amount of presences for the guild. If not received defaults to `0`. Only applicable for very large
         guilds.
+    max_stage_channel_video_users : `int`
+        The maximal amount of users watching a video in a stage channel. Defaults to `0` if not set.
     max_users : `int`
         The maximal amount of users for the guild.
-    max_video_channel_users : `int`
-        The maximal amount of users in a video channel(?).
+    max_voice_channel_video_users : `int`
+        The maximal amount of users watching a video in a stage channel. Defaults to `0` if not set.
     message_notification : ``MessageNotificationLevel``
         The message notification level of the guild.
     mfa : ``MFA``
@@ -307,11 +309,11 @@ class Guild(DiscordEntity, immortal = True):
         '_boosters', '_embedded_activity_states', '_permission_cache', 'afk_channel_id', 'afk_timeout',
         'approximate_online_count', 'approximate_user_count', 'available', 'boost_progress_bar_enabled',
         'boost_count', 'channels', 'clients', 'content_filter', 'description', 'emojis', 'features', 'hub_type',
-        'is_large', 'max_presences', 'max_users', 'max_video_channel_users', 'message_notification', 'mfa', 'name',
-        'nsfw_level', 'owner_id', 'preferred_locale', 'premium_tier', 'public_updates_channel_id', 'roles',
-        'rules_channel_id', 'safety_alerts_channel_id', 'scheduled_events', 'stages', 'stickers',
-        'system_channel_flags', 'system_channel_id', 'threads', 'user_count', 'users', 'vanity_code',
-        'verification_level', 'voice_states', 'widget_channel_id', 'widget_enabled'
+        'is_large', 'max_presences', 'max_stage_channel_video_users', 'max_users', 'max_voice_channel_video_users',
+        'message_notification', 'mfa', 'name', 'nsfw_level', 'owner_id', 'preferred_locale', 'premium_tier',
+        'public_updates_channel_id', 'roles', 'rules_channel_id', 'safety_alerts_channel_id', 'scheduled_events',
+        'stages', 'stickers', 'system_channel_flags', 'system_channel_id', 'threads', 'user_count', 'users',
+        'vanity_code', 'verification_level', 'voice_states', 'widget_channel_id', 'widget_enabled'
     )
     
     banner = IconSlot(
@@ -553,9 +555,6 @@ class Guild(DiscordEntity, immortal = True):
         
         Other Parameters
         ----------------
-        name : `str`, Optional (Keyword only)
-            The guild's ``.name``.
-        
         banner : `None`, ``Icon``, `str`, Optional (Keyword only)
             The guild's banner.
             
@@ -622,9 +621,18 @@ class Guild(DiscordEntity, immortal = True):
             
             > Mutually exclusive with `icon`.
         
+        max_stage_channel_video_users : `int`, Optional (Keyword only)
+            The maximal amount of users watching a video in a stage channel.
+        
+        max_voice_channel_video_users : `int`
+            The maximal amount of users watching a video in a stage channel.
+        
+        name : `str`, Optional (Keyword only)
+            The guild's ``.name``.
+        
         nsfw_level : ``NsfwLevel``, Optional (Keyword only)
             The nsfw level of the guild.
-            
+        
         premium_tier : `int`, Optional (Keyword only)
             The premium tier of the guild.
         
@@ -682,6 +690,8 @@ class Guild(DiscordEntity, immortal = True):
             for attribute_name, field_validator in (
                 ('features', validate_features),
                 ('premium_tier', validate_premium_tier),
+                ('max_stage_channel_video_users', validate_max_stage_channel_video_users),
+                ('max_voice_channel_video_users', validate_max_voice_channel_video_users),
             ):
                 try:
                     attribute_value = kwargs.pop(attribute_name)
@@ -760,8 +770,9 @@ class Guild(DiscordEntity, immortal = True):
         self.id = guild_id
         self.is_large = False
         self.max_presences = MAX_PRESENCES_DEFAULT
+        self.max_stage_channel_video_users = 0
         self.max_users = MAX_USERS_DEFAULT
-        self.max_video_channel_users = MAX_VIDEO_CHANNEL_USERS_DEFAULT
+        self.max_voice_channel_video_users = 0
         self.message_notification = MessageNotificationLevel.only_mentions
         self.mfa = MFA.none
         self.name = ''
@@ -2104,9 +2115,11 @@ class Guild(DiscordEntity, immortal = True):
         +-------------------------------+-------------------------------+
         | max_presences                 | `int`                         |
         +-------------------------------+-------------------------------+
+        | max_stage_channel_video_users | `int`                         |
+        +-------------------------------+-------------------------------+
         | max_users                     | `int`                         |
         +-------------------------------+-------------------------------+
-        | max_video_channel_users       | `int`                         |
+        | max_voice_channel_video_users | `int`                         |
         +-------------------------------+-------------------------------+
         | message_notification          | ``MessageNotificationLevel``  |
         +-------------------------------+-------------------------------+
@@ -2298,6 +2311,11 @@ class Guild(DiscordEntity, immortal = True):
             old_attributes['max_users'] = self.max_users
             self.max_users = max_users
         
+        max_stage_channel_video_users = parse_max_stage_channel_video_users(data)
+        if self.max_stage_channel_video_users != max_stage_channel_video_users:
+            old_attributes['max_stage_channel_video_users'] = self.max_stage_channel_video_users
+            self.max_stage_channel_video_users = max_stage_channel_video_users
+        
         max_presences = data.get('max_presences', None)
         if max_presences is None:
             max_presences = MAX_PRESENCES_DEFAULT
@@ -2305,12 +2323,10 @@ class Guild(DiscordEntity, immortal = True):
             old_attributes['max_presences'] = self.max_presences
             self.max_presences = max_presences
         
-        max_video_channel_users = data.get('max_video_channel_users', None)
-        if max_video_channel_users is None:
-            max_video_channel_users = MAX_VIDEO_CHANNEL_USERS_DEFAULT
-        if self.max_video_channel_users != max_video_channel_users:
-            old_attributes['max_video_channel_users'] = self.max_video_channel_users
-            self.max_video_channel_users = max_video_channel_users
+        max_voice_channel_video_users = parse_max_voice_channel_video_users(data)
+        if self.max_voice_channel_video_users != max_voice_channel_video_users:
+            old_attributes['max_voice_channel_video_users'] = self.max_voice_channel_video_users
+            self.max_voice_channel_video_users = max_voice_channel_video_users
         
         premium_tier = parse_premium_tier(data)
         if self.premium_tier != premium_tier:
@@ -2448,15 +2464,14 @@ class Guild(DiscordEntity, immortal = True):
             max_users = MAX_USERS_DEFAULT
         self.max_users = max_users
         
+        self.max_stage_channel_video_users = parse_max_stage_channel_video_users(data)
+        
         max_presences = data.get('max_presences', None)
         if max_presences is None:
             max_presences = MAX_PRESENCES_DEFAULT
         self.max_presences = max_presences
         
-        max_video_channel_users = data.get('max_video_channel_users', None)
-        if max_video_channel_users is None:
-            max_video_channel_users = MAX_VIDEO_CHANNEL_USERS_DEFAULT
-        self.max_video_channel_users = max_video_channel_users
+        self.max_voice_channel_video_users = parse_max_voice_channel_video_users(data)
         
         self.premium_tier = parse_premium_tier(data)
         
@@ -2917,7 +2932,7 @@ class Guild(DiscordEntity, immortal = True):
         """
         warnings.warn(
             (
-                f'`{self.__class__.__name__}.sticker_count` is deprecated and will be removed in 2023 January. '
+                f'`{self.__class__.__name__}.sticker_count` is deprecated and will be removed in 2023 August. '
                 f'Please use `.sticker_counts` instead.'
             ),
             FutureWarning,
@@ -3066,3 +3081,21 @@ class Guild(DiscordEntity, immortal = True):
     
     
     vanity_url = property(module_urls.guild_vanity_invite_url)
+
+
+    @property
+    def max_video_channel_users(self):
+        """
+        `.max_video_channel_users` is deprecated and will be removed in 2023 August.
+        Please use `.max_voice_channel_video_users` instead.
+        """
+        warnings.warn(
+            (
+                f'`{self.__class__.__name__}.max_video_channel_users` is deprecated and will be removed in 2023 August. '
+                f'Please use `.max_voice_channel_video_users` instead.'
+            ),
+            FutureWarning,
+            stacklevel = 2,
+        )
+        
+        return self.max_voice_channel_video_users

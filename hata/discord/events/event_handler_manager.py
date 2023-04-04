@@ -622,9 +622,11 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-------------------------------+-------------------------------+
         | max_presences                 | `int`                         |
         +-------------------------------+-------------------------------+
+        | max_stage_channel_video_users | `int`                         |
+        +-------------------------------+-------------------------------+
         | max_users                     | `int`                         |
         +-------------------------------+-------------------------------+
-        | max_video_channel_users       | `int`                         |
+        | max_voice_channel_video_users | `int`                         |
         +-------------------------------+-------------------------------+
         | message_notification          | ``MessageNotificationLevel``  |
         +-------------------------------+-------------------------------+
@@ -1045,6 +1047,9 @@ class EventHandlerManager(RichAttributeErrorBaseType):
         +-----------------------+-----------------------+
         | speaker               | `bool`                |
         +-----------------------+-----------------------+
+    
+    voice_channel_effect(client : ``Client``, event : ``VoiceChannelEffect``)
+        Called when a user invokes (or sends) a voice channel effect.
     
     voice_client_join(client : ``Client``, voice_state : ``VoiceState``)
         Called when the client join a voice channel.

@@ -37,6 +37,14 @@ def convert_message_notification(name, data):
     return _convert_preinstanced('message_notification', data, MessageNotificationLevel)
 
 
+def convert_max_voice_channel_video_users(name, data):
+    return convert_nothing('max_voice_channel_video_users', data)
+
+
+def convert_max_stage_channel_video_users(name, data):
+    return convert_nothing('max_stage_channel_video_users', data)
+
+
 def convert_mfa(name, data):
     return _convert_preinstanced('mfa', data, MFA)
 
@@ -80,6 +88,8 @@ GUILD_CONVERTERS = {
     'explicit_content_filter': convert_content_filter,
     'hub_type': convert_hub_type,
     'icon_hash': convert_icon,
+    'max_stage_video_channel_users': convert_max_stage_channel_video_users,
+    'max_video_channel_users': convert_max_voice_channel_video_users,
     'mfa_level': convert_mfa,
     'name': convert_nothing,
     'nsfw': convert_deprecated,

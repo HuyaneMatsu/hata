@@ -48,7 +48,8 @@ def _check_name_should_break(name):
         return True
     
     return False
-    
+
+
 def check_name(func, name):
     """
     Tries to find the given `func`'s preferred name. The check order is the following:

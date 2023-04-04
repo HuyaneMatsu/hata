@@ -33,7 +33,7 @@ PERMISSION_SHIFT_CHANGE_NICKNAME = 26
 PERMISSION_SHIFT_MANAGE_NICKNAMES = 27
 PERMISSION_SHIFT_MANAGE_ROLES = 28
 PERMISSION_SHIFT_MANAGE_WEBHOOKS = 29
-PERMISSION_SHIFT_MANAGE_EMOJIS_AND_STICKERS = 30
+PERMISSION_SHIFT_MANAGE_GUILD_EXPRESSIONS = 30
 PERMISSION_SHIFT_USE_APPLICATION_COMMANDS = 31
 PERMISSION_SHIFT_REQUEST_TO_SPEAK = 32
 PERMISSION_SHIFT_MANAGE_EVENTS = 33
@@ -45,6 +45,10 @@ PERMISSION_SHIFT_SEND_MESSAGES_IN_THREADS = 38
 PERMISSION_SHIFT_USE_EMBEDDED_ACTIVITIES = 39
 PERMISSION_SHIFT_MODERATE_USERS = 40
 PERMISSION_SHIFT_VIEW_CREATOR_MONETIZATION_ANALYTICS = 41
+PERMISSION_SHIFT_USE_SOUNDBOARD = 42
+PERMISSION_SHIFT_CREATE_GUILD_EXPRESSIONS = 43
+PERMISSION_SHIFT_CREATE_GUILD_EVENTS = 44
+PERMISSION_SHIFT_USE_EXTERNAL_SOUNDS = 45
 
 
 PERMISSION_MASK_CREATE_INSTANT_INVITE = 1 << PERMISSION_SHIFT_CREATE_INSTANT_INVITE
@@ -77,7 +81,7 @@ PERMISSION_MASK_CHANGE_NICKNAME = 1 << PERMISSION_SHIFT_CHANGE_NICKNAME
 PERMISSION_MASK_MANAGE_NICKNAMES = 1 << PERMISSION_SHIFT_MANAGE_NICKNAMES
 PERMISSION_MASK_MANAGE_ROLES = 1 << PERMISSION_SHIFT_MANAGE_ROLES
 PERMISSION_MASK_MANAGE_WEBHOOKS = 1 << PERMISSION_SHIFT_MANAGE_WEBHOOKS
-PERMISSION_MASK_MANAGE_EMOJIS_AND_STICKERS = 1 << PERMISSION_SHIFT_MANAGE_EMOJIS_AND_STICKERS
+PERMISSION_MASK_MANAGE_GUILD_EXPRESSIONS = 1 << PERMISSION_SHIFT_MANAGE_GUILD_EXPRESSIONS
 PERMISSION_MASK_USE_APPLICATION_COMMANDS = 1 << PERMISSION_SHIFT_USE_APPLICATION_COMMANDS
 PERMISSION_MASK_REQUEST_TO_SPEAK = 1 << PERMISSION_SHIFT_REQUEST_TO_SPEAK
 PERMISSION_MASK_MANAGE_EVENTS = 1 << PERMISSION_SHIFT_MANAGE_EVENTS
@@ -89,6 +93,10 @@ PERMISSION_MASK_SEND_MESSAGES_IN_THREADS = 1 << PERMISSION_SHIFT_SEND_MESSAGES_I
 PERMISSION_MASK_USE_EMBEDDED_ACTIVITIES = 1 << PERMISSION_SHIFT_USE_EMBEDDED_ACTIVITIES
 PERMISSION_MASK_MODERATE_USERS = 1 << PERMISSION_SHIFT_MODERATE_USERS
 PERMISSION_MASK_VIEW_CREATOR_MONETIZATION_ANALYTICS = 1 << PERMISSION_SHIFT_VIEW_CREATOR_MONETIZATION_ANALYTICS
+PERMISSION_MASK_USE_SOUNDBOARD = 1 << PERMISSION_SHIFT_USE_SOUNDBOARD
+PERMISSION_MASK_CREATE_GUILD_EXPRESSIONS = 1 << PERMISSION_SHIFT_CREATE_GUILD_EXPRESSIONS
+PERMISSION_MASK_CREATE_GUILD_EVENTS = 1 << PERMISSION_SHIFT_CREATE_GUILD_EVENTS
+PERMISSION_MASK_USE_EXTERNAL_SOUNDS = 1 << PERMISSION_SHIFT_USE_EXTERNAL_SOUNDS
 
 
 class Permission(FlagBase, access_keyword = 'can', enable_keyword = 'allow', disable_keyword = 'deny'):
@@ -158,7 +166,7 @@ class Permission(FlagBase, access_keyword = 'can', enable_keyword = 'allow', dis
     +---------------------------------------+-------------------+
     | manage_webhooks                       | 29                |
     +---------------------------------------+-------------------+
-    | manage_emojis_and_stickers            | 30                |
+    | manage_guild_expressions              | 30                |
     +---------------------------------------+-------------------+
     | use_application_commands              | 31                |
     +---------------------------------------+-------------------+
@@ -181,6 +189,14 @@ class Permission(FlagBase, access_keyword = 'can', enable_keyword = 'allow', dis
     | moderate_users                        | 40                |
     +---------------------------------------+-------------------+
     | view_creator_monetization_analytics   | 41                |
+    +---------------------------------------+-------------------+
+    | use_soundboard                        | 42                |
+    +---------------------------------------+-------------------+
+    | create_guild_expressions              | 43                |
+    +---------------------------------------+-------------------+
+    | create_events                         | 44                |
+    +---------------------------------------+-------------------+
+    | use_external_sounds                   | 45                |
     +---------------------------------------+-------------------+
     
     
@@ -218,7 +234,7 @@ class Permission(FlagBase, access_keyword = 'can', enable_keyword = 'allow', dis
         'manage_nicknames': PERMISSION_SHIFT_MANAGE_NICKNAMES,
         'manage_roles': PERMISSION_SHIFT_MANAGE_ROLES,
         'manage_webhooks': PERMISSION_SHIFT_MANAGE_WEBHOOKS,
-        'manage_emojis_and_stickers': PERMISSION_SHIFT_MANAGE_EMOJIS_AND_STICKERS,
+        'manage_guild_expressions': PERMISSION_SHIFT_MANAGE_GUILD_EXPRESSIONS,
         'use_application_commands': PERMISSION_SHIFT_USE_APPLICATION_COMMANDS,
         'request_to_speak': PERMISSION_SHIFT_REQUEST_TO_SPEAK,
         'manage_events': PERMISSION_SHIFT_MANAGE_EVENTS,
@@ -230,10 +246,17 @@ class Permission(FlagBase, access_keyword = 'can', enable_keyword = 'allow', dis
         'use_embedded_activities': PERMISSION_SHIFT_USE_EMBEDDED_ACTIVITIES,
         'moderate_users': PERMISSION_SHIFT_MODERATE_USERS,
         'view_creator_monetization_analytics': PERMISSION_SHIFT_VIEW_CREATOR_MONETIZATION_ANALYTICS,
+        'use_soundboard': PERMISSION_SHIFT_USE_SOUNDBOARD,
+        'create_guild_expressions': PERMISSION_SHIFT_CREATE_GUILD_EXPRESSIONS,
+        'create_events': PERMISSION_SHIFT_CREATE_GUILD_EVENTS,
+        'use_external_sounds': PERMISSION_SHIFT_USE_EXTERNAL_SOUNDS,
     }
     
     __deprecated_keys__ = {
         'manage_channel': (PERMISSION_SHIFT_MANAGE_CHANNELS, '2023 Marc', 'manage_channels'),
+        'manage_emojis_and_stickers': (
+            PERMISSION_SHIFT_MANAGE_GUILD_EXPRESSIONS, '2023 Sept', 'manage_guild_expressions'
+        ),
     }
 
 
@@ -268,7 +291,7 @@ PERMISSION_ALL = Permission().update_by_keys(
     manage_nicknames = True,
     manage_roles = True,
     manage_webhooks = True,
-    manage_emojis_and_stickers = True,
+    manage_guild_expressions = True,
     use_application_commands = True,
     request_to_speak = True,
     manage_events = True,
@@ -280,6 +303,10 @@ PERMISSION_ALL = Permission().update_by_keys(
     use_embedded_activities = True,
     moderate_users = True,
     view_creator_monetization_analytics = True,
+    use_soundboard = True,
+    create_guild_expressions = True,
+    create_events = True,
+    use_external_sounds = True,
 )
 
 PERMISSION_NONE = Permission()
@@ -315,7 +342,7 @@ PERMISSION_PRIVATE = Permission().update_by_keys(
     manage_nicknames = False,
     manage_roles = False,
     manage_webhooks = False,
-    manage_emojis_and_stickers = False,
+    manage_guild_expressions = False,
     manage_events = False,
     manage_threads = False,
     use_application_commands = True,
@@ -325,6 +352,10 @@ PERMISSION_PRIVATE = Permission().update_by_keys(
     use_embedded_activities = False,
     moderate_users = False,
     view_creator_monetization_analytics = False,
+    use_soundboard = True,
+    create_guild_expressions = False,
+    create_events = False,
+    use_external_sounds = True,
 )
 
 PERMISSION_PRIVATE_BOT = PERMISSION_PRIVATE.update_by_keys(
@@ -370,7 +401,7 @@ PERMISSION_TEXT_ALL = Permission().update_by_keys(
     manage_nicknames = False,
     manage_roles = False,
     manage_webhooks = False,
-    manage_emojis_and_stickers = False,
+    manage_guild_expressions = False,
     use_application_commands = True,
     request_to_speak = False,
     manage_events = False,
@@ -382,6 +413,10 @@ PERMISSION_TEXT_ALL = Permission().update_by_keys(
     use_embedded_activities = False,
     moderate_users = False,
     view_creator_monetization_analytics = False,
+    use_soundboard = False,
+    create_guild_expressions = False,
+    create_events = False,
+    use_external_sounds = False,
 )
 
 PERMISSION_TEXT_DENY = Permission(~PERMISSION_TEXT_ALL)
@@ -429,7 +464,7 @@ PERMISSION_VOICE_ONLY = Permission().update_by_keys(
     manage_nicknames = False,
     manage_roles = False,
     manage_webhooks = False,
-    manage_emojis_and_stickers = False,
+    manage_guild_expressions = False,
     use_application_commands = False,
     request_to_speak = True,
     manage_events = True,
@@ -440,7 +475,11 @@ PERMISSION_VOICE_ONLY = Permission().update_by_keys(
     send_messages_in_threads = False,
     use_embedded_activities = True,
     moderate_users = False,
-    view_creator_monetization_analytics = False
+    view_creator_monetization_analytics = False,
+    use_soundboard = True,
+    create_guild_expressions = False,
+    create_events = False,
+    use_external_sounds = True,
 )
 
 PERMISSION_VOICE_DENY = Permission(~PERMISSION_VOICE_ONLY)
@@ -489,7 +528,7 @@ PERMISSION_STAGE_MODERATOR = Permission().update_by_keys(
     manage_nicknames = False,
     manage_roles = False,
     manage_webhooks = False,
-    manage_emojis_and_stickers = False,
+    manage_guild_expressions = False,
     use_application_commands = False,
     request_to_speak = True,
     manage_events = True,
@@ -499,7 +538,11 @@ PERMISSION_STAGE_MODERATOR = Permission().update_by_keys(
     use_external_stickers = False,
     send_messages_in_threads = False,
     moderate_users = False,
-    view_creator_monetization_analytics = False
+    view_creator_monetization_analytics = False,
+    use_soundboard = False,
+    create_guild_expressions = False,
+    create_events = False,
+    use_external_sounds = False,
 )
 
 PERMISSION_CAN_SEND_MESSAGES_ALL = Permission().update_by_keys(

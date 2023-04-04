@@ -1,4 +1,4 @@
-## 1.3.26 *\[2023-03-??\]*
+## 1.3.26 *\[2023-04-??\]*
 
 #### Improvements
 
@@ -39,6 +39,24 @@
 - Add `EmbedThumbnail.clean_copy`.
 - Add `EmbedVideo.clean_copy`.
 - Add `Embed.__hash__`.
+- Add `Guild.max_stage_channel_video_users`.
+- Add `max_video_channel_users` audit log converter.
+- Add `max_stage_video_channel_users` audit log converter.
+- Add `use_soundboard` permission.
+- Add `AuditLogEvent.soundboard_sound_create`.
+- Add `AuditLogEvent.soundboard_sound_edit`.
+- Add `AuditLogEvent.soundboard_sound_delete`.
+- Add `AuditLogEvent.onboarding_prompt_create`.
+- Add `AuditLogEvent.onboarding_prompt_update`.
+- Add `AuditLogEvent.onboarding_prompt_delete`.
+- Add `AuditLogEvent.onboarding_create`.
+- Add `AuditLogEvent.onboarding_update`.
+- Add `create_guild_expressions` permission.
+- Add `create_events` permission.
+- Add `use_external_sounds` permission.
+- Add `VoiceChannelEffectAnimationType`.
+- Add `VoiceChannelEffect`.
+- Add `Client.events.voice_channel_effect`.
 
 #### Bug Fixes
 
@@ -50,6 +68,8 @@
 - `EmbedAuthor.copy_with` returned the same instance.
 - `EmbedFooter.copy` returned the same instance.
 - `EmbedFooter.copy_with` returned the same instance.
+- `auto_moderation_action_execution` event parsers were not updated to use the updated
+    `AutoModerationActionExecutionEvent` api.
 
 #### Renames, Deprecation & Removals
 
@@ -60,6 +80,14 @@
 - Rename `EmbedCore` to `Embed`.
 - Remove & Deprecate `EmbedCore` reference.
 - Remove & Deprecate `EmbedBase` reference.
+- Rename `Guild.max_video_channel_users` to `.max_voice_channel_video_users`
+- Deprecate `Guild.max_video_channel_users`.
+- Rename `Permission`'s `manage_emojis_and_stickers` to `manage_guild_expressions`.
+- Deprecate `Permission`'s `manage_emojis_and_stickers`.
+- Rename `AuditLogEvent.auto_moderation_rule_edit` to `.auto_moderation_rule_update`.
+- Rename `AuditLogEvent.role_prompt_edit` to `.role_prompt_update`.
+- Deprecate `AuditLogEvent.auto_moderation_rule_edit`.
+- Deprecate `AuditLogEvent.role_prompt_edit`.
 
 ## 1.3.25 *\[2023-03-24\]*
 

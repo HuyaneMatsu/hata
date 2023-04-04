@@ -42,7 +42,7 @@ You can find them on the bot tab a little bit down.
 
 To invite to a guild, first you need a bot invite.
 
-To generate one for your bot, go to the `OAath2` tab.
+To generate one for your bot, go to the `OAath2` -> `URL Generator` tab.
 
 ![](assets/getting_started_0008.png)
 

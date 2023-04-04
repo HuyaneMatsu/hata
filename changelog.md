@@ -57,6 +57,7 @@
 - Add `VoiceChannelEffectAnimationType`.
 - Add `VoiceChannelEffect`.
 - Add `Client.events.voice_channel_effect`.
+- `FlagBase.update_by_keys` now supports any shift if they are given in `_(\d+)` format.
 
 #### Bug Fixes
 

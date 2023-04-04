@@ -32,7 +32,7 @@ client = Client('super secret token comes here')
 # When the bot finished logging in, its `ready` event handler is called.
 # You can register event handlers, with the `@client.events` decorator.
 @client.events
-def ready(client):
+async def ready(client):
     print('Ready!')
 
 
@@ -79,7 +79,7 @@ client = Client('super secret token comes here')
 
 
 @client.events
-def ready(client):
+async def ready(client):
     print('Ready!')
 
 
@@ -113,7 +113,7 @@ client = Client('super secret token comes here', extensions = 'slash')
 
 
 @client.events
-def ready(client):
+async def ready(client):
     print('Ready!')
 
 

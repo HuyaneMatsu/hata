@@ -586,6 +586,15 @@ class FlagBase(int, metaclass = FlagMeta, base_class = True):
                 
                 return shift
         
+        # support `_(\d+)` format
+        if key.startswith('_'):
+            try:
+                shift = int(key[1:])
+            except ValueError:
+                pass
+            else:
+                return shift
+        
         raise LookupError(f'Invalid key: {key!r}.')
     
     
@@ -611,10 +620,10 @@ class FlagBase(int, metaclass = FlagMeta, base_class = True):
         -------
         ```py
         >>> from hata import Permission
-        >>> perm = Permission().update_by_keys(kick_users=True, ban_users=True)
+        >>> perm = Permission().update_by_keys(kick_users = True, ban_users = True)
         >>> list(perm)
         ['kick_users', 'ban_users']
-        >>> perm = perm.update_by_keys(manage_roles=True, kick_users=False)
+        >>> perm = perm.update_by_keys(manage_roles = True, kick_users = False)
         >>> list(perm)
         ['ban_users', 'manage_roles']
         ```

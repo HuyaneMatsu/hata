@@ -102,14 +102,14 @@ def convert_snowflake_array(name, data):
     before = data.get('old_value', None)
     if (before is not None):
         if before:
-            before = tuple(int(sub_value) for sub_value in before)
+            before = (*(int(sub_value) for sub_value in before),)
         else:
             before = None
     
     after = data.get('new_value', None)
     if (after is not None):
         if after:
-            after = tuple(int(sub_value) for sub_value in after)
+            after = (*(int(sub_value) for sub_value in after),)
         else:
             after = None
     

@@ -4,8 +4,9 @@ from ...field_parsers import nullable_string_parser_factory
 from ...field_putters import nullable_string_putter_factory
 from ...field_validators import nullable_string_validator_factory
 
-from .constants import PLATFORM_NAME_LENGTH_MIN, PLATFORM_NAME_LENGTH_MAX, PLATFORM_USER_NAME_LENGTH_MIN, \
-    PLATFORM_USER_NAME_LENGTH_MAX
+from .constants import (
+    PLATFORM_NAME_LENGTH_MAX, PLATFORM_NAME_LENGTH_MIN, PLATFORM_USER_NAME_LENGTH_MAX, PLATFORM_USER_NAME_LENGTH_MIN
+)
 
 # platform_name
 

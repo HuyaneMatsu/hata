@@ -1,14 +1,20 @@
 __all__ = ()
 
-from ...field_parsers import entity_id_parser_factory, nullable_object_array_parser_factory, bool_parser_factory, \
-    entity_id_array_parser_factory
-from ...field_putters import entity_id_putter_factory, nullable_entity_array_putter_factory, \
-    bool_optional_putter_factory, entity_id_array_optional_putter_factory
-from ...field_validators import entity_id_validator_factory, nullable_object_array_validator_factory, \
-    bool_validator_factory, entity_id_array_validator_factory
-from ...guild import Guild
-from ..onboarding_prompt import OnboardingPrompt
 from ...channel import Channel
+from ...field_parsers import (
+    bool_parser_factory, entity_id_array_parser_factory, entity_id_parser_factory, nullable_object_array_parser_factory
+)
+from ...field_putters import (
+    bool_optional_putter_factory, entity_id_array_optional_putter_factory, entity_id_putter_factory,
+    nullable_entity_array_putter_factory
+)
+from ...field_validators import (
+    bool_validator_factory, entity_id_array_validator_factory, entity_id_validator_factory,
+    nullable_object_array_validator_factory
+)
+from ...guild import Guild
+
+from ..onboarding_prompt import OnboardingPrompt
 
 # default_channel_ids
 

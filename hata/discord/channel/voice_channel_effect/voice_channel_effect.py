@@ -163,10 +163,13 @@ class VoiceChannelEffect(EventBase):
         data = {}
         put_animation_id_into(new.animation_id, data, defaults)
         put_animation_type_into(new.animation_type, data, defaults)
-        put_channel_id_into(new.channel_id, data, defaults)
         put_emoji_into(new.emoji, data, defaults)
-        put_guild_id_into(new.guild_id, data, defaults)
-        put_user_id_into(new.user_id, data, defaults)
+        
+        if include_internals:
+            put_channel_id_into(new.channel_id, data, defaults)
+            put_guild_id_into(new.guild_id, data, defaults)
+            put_user_id_into(new.user_id, data, defaults)
+        
         return data
     
     

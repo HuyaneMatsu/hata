@@ -49,8 +49,8 @@
 - Add `AuditLogEvent.onboarding_prompt_create`.
 - Add `AuditLogEvent.onboarding_prompt_update`.
 - Add `AuditLogEvent.onboarding_prompt_delete`.
-- Add `AuditLogEvent.onboarding_create`.
-- Add `AuditLogEvent.onboarding_update`.
+- Add `AuditLogEvent.onboarding_screen_create`.
+- Add `AuditLogEvent.onboarding_screen_update`.
 - Add `create_guild_expressions` permission.
 - Add `create_events` permission.
 - Add `use_external_sounds` permission.
@@ -58,6 +58,19 @@
 - Add `VoiceChannelEffect`.
 - Add `Client.events.voice_channel_effect`.
 - `FlagBase.update_by_keys` now supports any shift if they are given in `_(\d+)` format.
+- Add `keywords` converter to audit logs.
+- Add `regex_patterns` converter to audit logs.
+- Add `excluded_keywords` converter to audit logs.
+- Add `default_channel_ids` converter to audit logs.
+- Add `prompts` converter to audit logs.
+- Update `permission_overwrites` audit log converters to reflect the new api.
+- Update (channel) `type` audit log converter to reflect the new api.
+- Add `(onboarding prompt) `type` audit log converter.
+- Add `in_onboarding` converter to audit logs.
+- Add `options` converter to audit logs.
+- Add `required` converter to audit logs.
+- Add `single_select` converter to audit logs.
+- `AuditLogChange` instances now supports rich attribute errors.
 
 #### Bug Fixes
 
@@ -69,8 +82,8 @@
 - `EmbedAuthor.copy_with` returned the same instance.
 - `EmbedFooter.copy` returned the same instance.
 - `EmbedFooter.copy_with` returned the same instance.
-- `auto_moderation_action_execution` event parsers were not updated to use the updated
-    `AutoModerationActionExecutionEvent` api.
+- `auto_moderation_action_execution` event parsers were not updated to use the updated api.
+- `auto_moderation_rule_actions` audit log converters were not updated to use the updated api.
 
 #### Renames, Deprecation & Removals
 

@@ -12,14 +12,14 @@ def convert_auto_moderation_rule_actions(name, data):
     before = data.get('old_value', None)
     if (before is not None):
         if before:
-            before = tuple(AutoModerationAction(data) for data in before)
+            before = (*(AutoModerationAction.from_data(data) for data in before),)
         else:
             before = None
     
     after = data.get('new_value', None)
     if (after is not None):
         if after:
-            after = tuple(AutoModerationAction(data) for data in after)
+            after = (*(AutoModerationAction.from_data(data) for data in after),)
         else:
             after = None
     
@@ -62,7 +62,52 @@ def convert_auto_moderation_rule_trigger_type(name, data):
     return _convert_preinstanced('trigger_type', data, AutoModerationRuleTriggerType)
 
 
+def convert_keywords(name, data):
+    keywords = (*data['new_value'],)
+    
+    if name.startswith('$add'):
+        before = None
+        after = keywords
+    else:
+        before = keywords
+        after = None
+    
+    return AuditLogChange('keywords', before, after)
+
+
+def convert_regex_patterns(name, data):
+    regex_patterns = (*data['new_value'],)
+    
+    if name.startswith('$add'):
+        before = None
+        after = regex_patterns
+    else:
+        before = regex_patterns
+        after = None
+    
+    return AuditLogChange('regex_patterns', before, after)
+
+
+def convert_excluded_keywords(name, data):
+    excluded_keywords = (*data['new_value'],)
+    
+    if name.startswith('$add'):
+        before = None
+        after = excluded_keywords
+    else:
+        before = excluded_keywords
+        after = None
+    
+    return AuditLogChange('excluded_keywords', before, after)
+
+
 AUTO_MODERATION_RULE_CONVERTERS = {
+    '$add_keyword_filter': convert_keywords,
+    '$remove_keyword_filter': convert_keywords,
+    '$add_regex_patterns': convert_regex_patterns,
+    '$remove_regex_patterns': convert_regex_patterns,
+    '$add_allow_list': convert_excluded_keywords,
+    '$remove_allow_list': convert_excluded_keywords,
     'actions': convert_auto_moderation_rule_actions,
     'creator_id': convert_snowflake,
     'enabled': convert_nothing,
@@ -71,5 +116,5 @@ AUTO_MODERATION_RULE_CONVERTERS = {
     'exempt_roles': convert_snowflake_array__excluded_role_ids,
     'name': convert_nothing,
     'trigger_metadata': convert_auto_moderation_trigger_entity_metadata,
-    'trigger_type': convert_auto_moderation_rule_trigger_type
+    'trigger_type': convert_auto_moderation_rule_trigger_type,
 }

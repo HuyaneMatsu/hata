@@ -1,20 +1,26 @@
 __all__ = ('Embed',)
 
 import warnings
-from ..embed_video import EmbedVideo
+
 from scarletio import RichAttributeErrorBaseType
-from ..embed_thumbnail import EmbedThumbnail
+
 from ...utils import sanitize_mentions
-from .fields import parse_author, put_author_into, validate_author, parse_color, put_color_into, validate_color, \
-    parse_description, put_description_into, validate_description, parse_fields, put_fields_into, validate_fields, \
-    parse_footer, put_footer_into, validate_footer, parse_image, put_image_into, validate_image, validate_title, \
-    parse_provider, put_provider_into, validate_provider, parse_thumbnail, put_thumbnail_into, validate_thumbnail, \
-    parse_timestamp, put_timestamp_into, validate_timestamp, parse_title, parse_type, put_type_into, validate_type, \
-    parse_url, put_url_into, validate_url, parse_video, put_video_into, validate_video, put_title_into
+
 from ..embed_author import EmbedAuthor
-from ..embed_image import EmbedImage
-from ..embed_footer import EmbedFooter
 from ..embed_field import EmbedField
+from ..embed_footer import EmbedFooter
+from ..embed_image import EmbedImage
+from ..embed_thumbnail import EmbedThumbnail
+from ..embed_video import EmbedVideo
+
+from .fields import (
+    parse_author, parse_color, parse_description, parse_fields, parse_footer, parse_image, parse_provider,
+    parse_thumbnail, parse_timestamp, parse_title, parse_type, parse_url, parse_video, put_author_into, put_color_into,
+    put_description_into, put_fields_into, put_footer_into, put_image_into, put_provider_into, put_thumbnail_into,
+    put_timestamp_into, put_title_into, put_type_into, put_url_into, put_video_into, validate_author, validate_color,
+    validate_description, validate_fields, validate_footer, validate_image, validate_provider, validate_thumbnail,
+    validate_timestamp, validate_title, validate_type, validate_url, validate_video
+)
 from .preinstanced import EmbedType
 
 

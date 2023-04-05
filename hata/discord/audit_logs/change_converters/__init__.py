@@ -7,6 +7,8 @@ from .emoji import *
 from .guild import *
 from .integration import *
 from .invite import *
+from .onboarding_prompt import *
+from .onboarding_screen import *
 from .role import *
 from .scheduled_event import *
 from .shared import *
@@ -14,6 +16,7 @@ from .stage import *
 from .sticker import *
 from .user import *
 from .webhook import *
+
 
 __all__ = (
     *all_.__all__,
@@ -25,6 +28,8 @@ __all__ = (
     *guild.__all__,
     *integration.__all__,
     *invite.__all__,
+    *onboarding_prompt.__all__,
+    *onboarding_screen.__all__,
     *role.__all__,
     *scheduled_event.__all__,
     *shared.__all__,

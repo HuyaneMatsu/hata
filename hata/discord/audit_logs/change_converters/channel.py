@@ -1,7 +1,7 @@
 __all__ = ()
 
 from ...channel import (
-    ChannelFlag, ForumLayout, ForumTag, PermissionOverwrite, SortOrder, VideoQualityMode, VoiceRegion
+    ChannelFlag, ChannelType, ForumLayout, ForumTag, PermissionOverwrite, SortOrder, VideoQualityMode, VoiceRegion
 )
 from ...emoji import create_emoji_from_exclusive_data
 
@@ -54,14 +54,14 @@ def convert_forum_tags(name, data):
     before = data.get('old_value', None)
     if (before is not None):
         if before:
-            before = tuple(sorted(ForumTag.from_data(tag_data) for tag_data in before))
+            before = (*sorted(ForumTag.from_data(tag_data) for tag_data in before),)
         else:
             before = None
     
     after = data.get('new_value', None)
     if (after is not None):
         if after:
-            after = tuple(sorted(ForumTag.from_data(tag_data) for tag_data in after))
+            after = (*sorted(ForumTag.from_data(tag_data) for tag_data in after),)
         else:
             after = None
     
@@ -88,16 +88,28 @@ def convert_int__default_thread_slowmode(name, data):
     return convert_nothing('default_thread_slowmode', data)
 
 
-def convert_overwrites(name, data):
+def convert_permission_overwrites(name, data):
     before = data.get('old_value', None)
     if (before is not None):
-        before = [PermissionOverwrite.from_data(overwrite_data) for overwrite_data in before]
+        if before:
+            before = {
+                permission_overwrite.id: permission_overwrite for permission_overwrite in
+                (PermissionOverwrite.from_data(overwrite_data) for overwrite_data in before)
+            }
+        else:
+            before = None
     
     after = data.get('new_value', None)
     if (after is not None):
-        after = [PermissionOverwrite.from_data(overwrite_data) for overwrite_data in after]
+        if after:
+            after = {
+                permission_overwrite.id: permission_overwrite for permission_overwrite in
+                (PermissionOverwrite.from_data(overwrite_data) for overwrite_data in after)
+            }
+        else:
+            after = None
     
-    return AuditLogChange('overwrites', before, after)
+    return AuditLogChange('permission_overwrites', before, after)
 
 
 def convert_video_quality_mode(name, data):
@@ -128,6 +140,10 @@ def default_forum_layout(name, data):
     return _convert_preinstanced('default_forum_layout', data, ForumLayout)
 
 
+def convert_channel_type(name, data):
+    return _convert_preinstanced('type', data, ChannelType)
+
+
 CHANNEL_CONVERTERS = {
     'applied_tags': convert_snowflake_array__applied_tag_ids,
     'archived': convert_nothing,
@@ -146,11 +162,11 @@ CHANNEL_CONVERTERS = {
     'nsfw': convert_nothing,
     'rate_limit_per_user': convert_int__slowmode,
     'parent_id': convert_snowflake,
-    'permission_overwrites': convert_overwrites,
+    'permission_overwrites': convert_permission_overwrites,
     'position': convert_nothing,
     'rtc_region': convert_voice_region,
     'topic': convert_nothing,
-    'type': convert_nothing,
+    'type': convert_channel_type,
     'video_quality_mode': convert_video_quality_mode,
     'user_limit': convert_nothing,
 }

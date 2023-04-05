@@ -154,8 +154,17 @@ class ClientCompoundUserEndpoints(Compound):
     id : int
     
     async def user_guild_profile_edit(
-        self, guild, user, *, nick = ..., deaf = ..., mute = ..., voice_channel = ..., roles = ...,
-        timeout_duration = ..., reason = None
+        self,
+        guild,
+        user,
+        *,
+        nick = ...,
+        deaf = ...,
+        mute = ...,
+        voice_channel = ...,
+        roles = ...,
+        timeout_duration = ...,
+        reason = None,
     ):
         """
         Edits the user's guild profile at the given guild.

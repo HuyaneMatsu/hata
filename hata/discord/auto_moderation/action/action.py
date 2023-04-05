@@ -69,7 +69,7 @@ class AutoModerationAction(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Received auto moderation action data.
         
         Returns
@@ -97,7 +97,7 @@ class AutoModerationAction(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         data = {}
         put_type_into(self.type, data, defaults)

@@ -1,13 +1,17 @@
 __all__ = ()
 
-from ..channel import Channel
+from ...emoji import Emoji, create_partial_emoji_data, create_partial_emoji_from_data
 from ...field_parsers import entity_id_parser_factory, nullable_functional_parser_factory, preinstanced_parser_factory
-from ...field_putters import entity_id_putter_factory, nullable_functional_optional_putter_factory, \
-    preinstanced_putter_factory
-from ...field_validators import entity_id_validator_factory, nullable_entity_validator_factory, \
-    preinstanced_validator_factory
+from ...field_putters import (
+    entity_id_putter_factory, nullable_functional_optional_putter_factory, preinstanced_putter_factory
+)
+from ...field_validators import (
+    entity_id_validator_factory, nullable_entity_validator_factory, preinstanced_validator_factory
+)
 from ...user import ClientUserBase
-from ...emoji import create_partial_emoji_from_data, create_partial_emoji_data, Emoji
+
+from ..channel import Channel
+
 from .preinstanced import VoiceChannelEffectAnimationType
 
 # animation_id

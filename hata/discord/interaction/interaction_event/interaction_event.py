@@ -1317,8 +1317,8 @@ class InteractionEvent(DiscordEntity, EventBase, immortal = True):
     @copy_docs(InteractionMetadataBase.get_non_focused_values)
     def get_non_focused_values(self):
         return self.interaction.get_non_focused_values()
-
-
+    
+    
     @copy_docs(InteractionMetadataBase.get_value_of)
     def get_value_of(self, *option_names):
         return self.interaction.get_value_of(*option_names)

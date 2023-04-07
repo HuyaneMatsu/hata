@@ -273,12 +273,12 @@ Lets improve the `cookie` command to not require user!
 from hata import Embed
 
 @Nitori.interactions(guild = TEST_GUILD)
-async def cookie(
+async def cola(
     client,
     event,
     user: ('user', 'To who?') = None,
 ):
-    """Gifts a cookie!"""
+    """Gifts a bottle of cola!"""
     if user is None:
         source_user = client
         target_user = event.user
@@ -286,12 +286,10 @@ async def cookie(
         source_user = event.user
         target_user = user
     
-    return Embed(description = f'{source_user:f} just gifted a cookie to {target_user:f} !')
+    return Embed(description = f'{source_user:f} just gifted a bottle of cola to {target_user:f} !')
 ```
 
-![](assets/slash_0006.png)
-
-![](assets/slash_0007.png)
+![](assets/slash_0030.gif)
 
 # Choice parameters
 

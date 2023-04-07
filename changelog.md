@@ -1,4 +1,4 @@
-## 1.3.26 *\[2023-04-??\]*
+## 1.3.26 *\[2023-04-07\]*
 
 #### Improvements
 
@@ -71,6 +71,8 @@
 - Add `required` converter to audit logs.
 - Add `single_select` converter to audit logs.
 - `AuditLogChange` instances now supports rich attribute errors.
+- `IconSlot` and `IconType` now supports new `v2_a_` icon prefixes.
+- `UserBase.avatar_decoration_url` and `.avatar_decoration_url_as` now supports the new avatar decorations.
 
 #### Bug Fixes
 
@@ -84,6 +86,7 @@
 - `EmbedFooter.copy_with` returned the same instance.
 - `auto_moderation_action_execution` event parsers were not updated to use the updated api.
 - `auto_moderation_rule_actions` audit log converters were not updated to use the updated api.
+- `SetupFunction.__call__` did not populate `**keyword_parameters` as intended. (Anri#6175)
 
 #### Renames, Deprecation & Removals
 
@@ -102,6 +105,7 @@
 - Rename `AuditLogEvent.role_prompt_edit` to `.role_prompt_update`.
 - Deprecate `AuditLogEvent.auto_moderation_rule_edit`.
 - Deprecate `AuditLogEvent.role_prompt_edit`.
+- Deprecate `Embed._data`.
 
 ## 1.3.25 *\[2023-03-24\]*
 

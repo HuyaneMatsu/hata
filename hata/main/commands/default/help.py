@@ -38,7 +38,10 @@ def list_commands():
     output_parts.append('Available commands:\n\n')
     
     command_count = len(REGISTERED_COMMANDS)
-    index_adjust = floor(log10(command_count)) + 1
+    if command_count:
+        index_adjust = floor(log10(command_count)) + 1
+    else:
+        index_adjust = 1
     
     for index, command in enumerate(sorted(REGISTERED_COMMANDS, key = command_sort_key), 1):
         command_name = command.name

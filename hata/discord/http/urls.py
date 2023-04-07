@@ -1501,6 +1501,9 @@ def user_avatar_decoration_url(user):
     prefix = icon_type.prefix
     ext = icon_type.default_postfix
     
+    if prefix.startswith('v2'):
+        return f'{CDN_ENDPOINT}/avatar-decoration-presets/{prefix}{user.avatar_decoration_hash:0>32x}.{ext}'
+    
     return f'{CDN_ENDPOINT}/avatar-decorations/{user.id}/{prefix}{user.avatar_decoration_hash:0>32x}.{ext}'
 
 
@@ -1533,5 +1536,8 @@ def user_avatar_decoration_url_as(user, ext = None, size = None):
     prefix = icon_type.prefix
     ext = _validate_extension(icon_type, ext)
     end = _build_end(size)
+    
+    if prefix.startswith('v2'):
+        return f'{CDN_ENDPOINT}/avatar-decoration-presets/{prefix}{user.avatar_decoration_hash:0>32x}.{ext}{end}'
     
     return f'{CDN_ENDPOINT}/avatar-decorations/{user.id}/{prefix}{user.avatar_decoration_hash:0>32x}.{ext}{end}'

@@ -57,8 +57,9 @@ class SetupFunction:
     setup_function : ``FunctionType``
         The setup function itself.
     """
-    __slots__ = ('extension_name', 'extension_short_name', 'optional_parameters', 'required_parameters',
-        'setup_function', )
+    __slots__ = (
+        'extension_name', 'extension_short_name', 'optional_parameters', 'required_parameters', 'setup_function'
+    )
     
     def __new__(cls, extension_name, setup_function, required_parameters, optional_parameters):
         """
@@ -89,7 +90,8 @@ class SetupFunction:
         self.extension_short_name = extension_short_name
         return self
     
-    def __call__(self, client, keyword_parameters):
+    
+    def __call__(self, client, input_keyword_parameters):
         """
         Calls the internal ``setup_function``.
         
@@ -97,28 +99,27 @@ class SetupFunction:
         ----------
         client : ``Client``
             The client on who the extension should be setupped.
-        keyword_parameters : `dict` of (`str`, `object`) items
+        input_keyword_parameters : `dict` of (`str`, `object`) items
             Keyword parameters to get the extension's parameters from.
         """
         positional_parameters = []
         required_parameters = self.required_parameters
         if (required_parameters is not None):
             for required_parameter in required_parameters:
-                positional_parameters.append(keyword_parameters[required_parameter])
+                positional_parameters.append(input_keyword_parameters[required_parameter])
         
         keyword_parameters = {}
         optional_parameters = self.optional_parameters
         if (optional_parameters is not None):
             for optional_parameter in optional_parameters:
                 try:
-                    parameter_value = keyword_parameters[optional_parameter]
+                    parameter_value = input_keyword_parameters[optional_parameter]
                 except KeyError:
                     pass
                 else:
                     keyword_parameters[optional_parameter] = parameter_value
         
         self.setup_function(client, *positional_parameters, **keyword_parameters)
-
 
 
 def register_setup_function(extension_name, setup_function, required_parameters, optional_parameters):

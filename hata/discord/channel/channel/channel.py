@@ -135,7 +135,7 @@ class Channel(DiscordEntity, immortal = True):
         name : `str`, Optional (Keyword only)
             The channel's name.
         
-        nsfw : `int`, Optional (Keyword only)
+        nsfw : `bool`, Optional (Keyword only)
             Whether the channel is marked as non safe for work.
         
         open : `bool`, Optional (Keyword only)
@@ -1649,7 +1649,7 @@ class Channel(DiscordEntity, immortal = True):
         name : `str`, Optional (Keyword only)
             The channel's name.
         
-        nsfw : `int`, Optional (Keyword only)
+        nsfw : `bool`, Optional (Keyword only)
             Whether the channel is marked as non safe for work.
         
         open : `bool`, Optional (Keyword only)

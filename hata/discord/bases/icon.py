@@ -31,6 +31,17 @@ class IconDetailsBase(RichAttributeErrorBaseType):
         """
     )
     
+    alternatives = PlaceHolder(
+        None,
+        """
+        Alternative icon types related to this one.
+        
+        Returns
+        -------
+        alternatives : `None`, `dict` of (`str`, ``IconType`) items
+        """
+    )
+    
     data = PlaceHolder(
         None,
         """
@@ -78,7 +89,35 @@ class IconDetailsBase(RichAttributeErrorBaseType):
     def __repr__(self):
         """Returns the icon details' representation."""
         return f'<{self.__class__.__name__}>'
+    
+    
+    def get_alternative_icon_type_for(self, prefix):
+        """
+        Tries to get the alternative icon type for the given prefix. If fails returns `None`.
         
+        Parameters
+        ----------
+        prefix : `str`
+            Icon prefix.
+        
+        Returns
+        -------
+        alternative_icon_type : `None`, ``IconType``
+        """
+        return None
+    
+    
+    def register_alternative_icon_type(self, alternative_icon_type):
+        """
+        Registers an alternative icon type under this one.
+        
+        Parameters
+        ----------
+        alternative_icon_type : ``IconType``
+            The icon type to register.
+        """
+        raise NotImplementedError
+
 
 class IconDetailsPreinstanced(IconDetailsBase):
     """
@@ -88,12 +127,14 @@ class IconDetailsPreinstanced(IconDetailsBase):
     ----------
     allowed_postfixes : `None`, `frozenset` of `str`
         The allowed postfixes.
+    alternatives : `None`, `dict` of (`str`, ``IconType`) items
+        Alternative icon types related to this one.
     default_postfix : `str`
         Default postfix used when building an url with the icon.
     prefix : `str`
         Prefix used when building an url with the icon.
     """
-    __slots__ = ('allowed_postfixes', 'default_postfix', 'prefix')
+    __slots__ = ('allowed_postfixes', 'alternatives', 'default_postfix', 'prefix')
     
     def __init__(self, allowed_postfixes, default_postfix, prefix):
         """
@@ -109,6 +150,7 @@ class IconDetailsPreinstanced(IconDetailsBase):
             Prefix used when building an url with the icon.
         """
         self.allowed_postfixes = allowed_postfixes
+        self.alternatives = None
         self.default_postfix = default_postfix
         self.prefix = prefix
     
@@ -128,6 +170,23 @@ class IconDetailsPreinstanced(IconDetailsBase):
         
         repr_parts.append('>')
         return ''.join(repr_parts)
+    
+    
+    @copy_docs(IconDetailsBase.get_alternative_icon_type_for)
+    def get_alternative_icon_type_for(self, prefix):
+        alternatives = self.alternatives
+        if (alternatives is not None):
+            return alternatives.get(prefix, None)
+    
+    
+    @copy_docs(IconDetailsBase.register_alternative_icon_type)
+    def register_alternative_icon_type(self, alternative_icon_type):
+        alternatives = self.alternatives
+        if (alternatives is None):
+            alternatives = {}
+            self.alternatives = alternatives
+        
+        alternatives[alternative_icon_type.prefix] = alternative_icon_type
 
 
 class IconDetailsCustom(IconDetailsBase):
@@ -196,20 +255,22 @@ class IconType(PreinstancedBase):
     
     Every predefined icon type can be accessed as class attribute as well:
     
-    +-----------------------+---------------+-------+-----------+-------------------+---------------------------------------+
-    | Class attribute name  | Name          | Value | Prefix    | Default postfix   | Allowed Postfixes                     |
-    +=======================+===============+=======+===========+===================+=======================================+
-    | none                  | none          | 0     | `''`      | `''`              | `None`                                |
-    +-----------------------+---------------+-------+-----------+-------------------+---------------------------------------+
-    | static                | static        | 1     | `''`      | `'png'`           | `'jpg', 'jpeg', 'png', 'webp'`        |
-    +-----------------------+---------------+-------+-----------+-------------------+---------------------------------------+
-    | animated              | animated      | 2     | `'a_'`    | `'gif'`           | `'jpg', 'jpeg', 'png', 'webp', 'gif'` |
-    +-----------------------+---------------+-------+-----------+-------------------+---------------------------------------+
-    | animated_apng         | animated apng | 3     | `'a_'`    | `'png'`           | `'png'`                               |
-    +-----------------------+---------------+-------+-----------+-------------------+---------------------------------------+
+    +-----------------------+-------------------+-------+-----------+-------------------+---------------------------------------+
+    | Class attribute name  | Name              | Value | Prefix    | Default postfix   | Allowed Postfixes                     |
+    +=======================+===================+=======+===========+===================+=======================================+
+    | none                  | none              | 0     | `''`      | `''`              | `None`                                |
+    +-----------------------+-------------------+-------+-----------+-------------------+---------------------------------------+
+    | static                | static            | 1     | `''`      | `'png'`           | `'jpg', 'jpeg', 'png', 'webp'`        |
+    +-----------------------+-------------------+-------+-----------+-------------------+---------------------------------------+
+    | animated              | animated          | 2     | `'a_'`    | `'gif'`           | `'jpg', 'jpeg', 'png', 'webp', 'gif'` |
+    +-----------------------+-------------------+-------+-----------+-------------------+---------------------------------------+
+    | animated_apng         | animated apng     | 3     | `'a_'`    | `'png'`           | `'png'`                               |
+    +-----------------------+-------------------+-------+-----------+-------------------+---------------------------------------+
     """
     INSTANCES = {}
     VALUE_TYPE = int
+    
+    _alternative_id_counter = 100
     
     __slots__ = ('details',)
     
@@ -237,6 +298,10 @@ class IconType(PreinstancedBase):
         allowed_postfixes : `None`, `frozenset` of `str`
             The allowed postfixes.
         """
+        if value < 0:
+            value = type(self)._alternative_id_counter
+            type(self)._alternative_id_counter = value + 1
+        
         details = IconDetailsPreinstanced(allowed_postfixes, default_postfix, prefix)
         
         self.details = details
@@ -391,6 +456,16 @@ class IconType(PreinstancedBase):
         can_create_url : `bool`
         """
         return (self.allowed_postfixes is not None)
+    
+    
+    @copy_docs(IconDetailsBase.get_alternative_icon_type_for)
+    def get_alternative_icon_type_for(self, prefix):
+        return self.details.get_alternative_icon_type_for(prefix)
+    
+    
+    @copy_docs(IconDetailsBase.register_alternative_icon_type)
+    def register_alternative_icon_type(self, alternative_icon_type):
+        return self.details.register_alternative_icon_type(alternative_icon_type)
     
     
     none = P(0, 'none', '', '', None)
@@ -627,17 +702,76 @@ class Icon(RichAttributeErrorBaseType):
             icon_type = ICON_TYPE_NONE
             icon_hash = 0
         else:
-            if icon.startswith('a_'):
-                icon = icon[2:]
-                icon_type = ICON_TYPE_ANIMATED
-            else:
+            icon_length = len(icon)
+            if icon_length == 32:
                 icon_type = ICON_TYPE_STATIC
+            else:
+                if icon_length == 34 and icon.startswith('a_'):
+                    icon_type = ICON_TYPE_ANIMATED
+                else:
+                    icon_type = create_alternative_icon_type(ICON_TYPE_STATIC, ICON_TYPE_ANIMATED, icon[:-32])
+                icon = icon[-32:]
+            
             icon_hash = int(icon, 16)
         
         self = object.__new__(cls)
         self.type = icon_type
         self.hash = icon_hash
         return self
+
+
+def create_alternative_icon_type(icon_type_static, icon_type_animated, prefix):
+    """
+    Creates an alternative icon type for the given prefix.
+    
+    Parameters
+    ----------
+    icon_type_static : ``IconType``
+        Static icon type to use if the new icon is static.
+    icon_type_animated : ``IconType``
+        Animated icon type to use if the new icon is animated.
+    prefix : `str`
+        The received icon prefix.
+    
+    Returns
+    -------
+    alternative_icon_type : ``IconType``
+    """
+    if prefix.endswith(icon_type_animated.prefix):
+        alternative_icon_type = create_alternative_icon_type_for(icon_type_animated, prefix)
+    else:
+        alternative_icon_type = create_alternative_icon_type_for(icon_type_static, prefix)
+    
+    return alternative_icon_type
+
+
+def create_alternative_icon_type_for(icon_type, prefix):
+    """
+    Creates an alternative icon type for the given prefix.
+    
+    Parameters
+    ----------
+    icon_type : ``IconType``
+        The icon type to create the alternative icon type for.
+    prefix : `str`
+        The received icon prefix.
+    
+    Returns
+    -------
+    alternative_icon_type : ``IconType``
+    """
+    alternative_icon_type = icon_type.get_alternative_icon_type_for(prefix)
+    if alternative_icon_type is None:
+        alternative_icon_type = IconType(
+            -1,
+            f'{icon_type.name} alternative with {prefix} prefix',
+            prefix,
+            icon_type.default_postfix,
+            icon_type.allowed_postfixes,
+        )
+        icon_type.register_alternative_icon_type(alternative_icon_type)
+    
+    return alternative_icon_type
 
 
 class IconSlot:
@@ -656,12 +790,12 @@ class IconSlot:
         The discord side name of the icon.
     added_instance_attributes : `tuple` of `str`
         The added instance attribute's name by the icon slot.
-    added_class_attributes : `list` of `tuple` (`str`, `Any`)
+    added_class_attributes : `list` of `tuple` (`str`, `object`)
         The added class attributes by the icon slot.
     
     Class Attributes
     ----------------
-    _compile_globals : `dict` of (`str`, `Any`)
+    _compile_globals : `dict` of (`str`, `object`)
         Compile time globals for the generated functions.
     """)
         
@@ -686,6 +820,7 @@ class IconSlot:
         'ICON_TYPE_ANIMATED': ICON_TYPE_ANIMATED,
         'ICON_TYPE_ANIMATED_APNG': ICON_TYPE_ANIMATED_APNG,
         'Icon': Icon,
+        'create_alternative_icon_type': create_alternative_icon_type,
     }
     
     def __new__(
@@ -742,11 +877,15 @@ class IconSlot:
             f'        icon_type = ICON_TYPE_NONE\n'
             f'        icon_hash = 0\n'
             f'    else:\n'
-            f'        if icon.startswith(\'a_\'):\n'
-            f'            icon = icon[2:]\n'
-            f'            icon_type = {animated_icon_type_name}\n'
-            f'        else:\n'
+            f'        icon_length = len(icon)\n'
+            f'        if icon_length == 32:\n'
             f'            icon_type = ICON_TYPE_STATIC\n'
+            f'        else:\n'
+            f'            if icon_length == 34 and icon.startswith(\'a_\'):\n'
+            f'                icon_type = {animated_icon_type_name}\n'
+            f'            else:\n'
+            f'                icon_type = create_alternative_icon_type(ICON_TYPE_STATIC, {animated_icon_type_name}, icon[:-32])\n'
+            f'            icon = icon[-32:]\n'
             f'        icon_hash = int(icon, 16)\n'
             f''
             f'    self.{added_internal_attribute_name_type} = icon_type\n'
@@ -766,11 +905,15 @@ class IconSlot:
                 f'        icon_type = ICON_TYPE_NONE\n'
                 f'        icon_hash = 0\n'
                 f'    else:\n'
-                f'        if icon.startswith(\'a_\'):\n'
-                f'            icon = icon[2:]\n'
-                f'            icon_type = {animated_icon_type_name}\n'
-                f'        else:\n'
+                f'        icon_length = len(icon)\n'
+                f'        if icon_length == 32:\n'
                 f'            icon_type = ICON_TYPE_STATIC\n'
+                f'        else:\n'
+                f'            if icon_length == 34 and icon.startswith(\'a_\'):\n'
+                f'                icon_type = {animated_icon_type_name}\n'
+                f'            else:\n'
+                f'                icon_type = create_alternative_icon_type(ICON_TYPE_STATIC, {animated_icon_type_name}, icon[:-32])\n'
+                f'            icon = icon[-32:]\n'
                 f'        icon_hash = int(icon, 16)\n'
                 f''
                 f'    self_icon_type = self.{added_internal_attribute_name_type}\n'
@@ -902,7 +1045,7 @@ class IconSlot:
         
         Parameters
         ----------
-        keyword_parameters : `dict` of (`str`, `Any`) items
+        keyword_parameters : `dict` of (`str`, `object`) items
             Keyword parameters passed to parse the icon from.
         
         Returns
@@ -931,7 +1074,7 @@ class IconSlot:
         
         Parameters
         ----------
-        keyword_parameters : `dict` of (`str`, `Any`) items
+        keyword_parameters : `dict` of (`str`, `object`) items
             Keyword parameters passed to parse the icon from.
         allow_data : `bool` = `False`, Optional (Keyword only)
             Whether data parsing is allowed.
@@ -1029,9 +1172,9 @@ class IconSlot:
         
         Parameters
         ----------
-        keyword_parameters : `dict` of (`str`, `Any`) items
+        keyword_parameters : `dict` of (`str`, `object`) items
             Keyword parameters passed to the respective preconverter.
-        processable : `list` of `tuple` (`str`, `Any`)
+        processable : `list` of `tuple` (`str`, `object`)
             A list of instance attributes which will be set when all the passed keyword_parameters are validated.
         
         Raises
@@ -1060,7 +1203,7 @@ class IconSlot:
         ----------
         icon : ``Icon``
             The icon to serialize.
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             The data put the icon into.
         defaults : `bool`
             Whether the `icon`'s value should be put even if it is the default value.
@@ -1069,7 +1212,7 @@ class IconSlot:
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         if icon is None:
             field_value = None

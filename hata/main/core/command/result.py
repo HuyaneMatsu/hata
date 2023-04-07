@@ -153,7 +153,7 @@ def command_result_processor_parameter_extra(parameter_values):
     
     Parameters
     ----------
-    parameter_values : `str`
+    parameter_values : `list` of `str`
         Extra parameters.
     
     Returns
@@ -167,22 +167,23 @@ def command_result_processor_parameter_extra(parameter_values):
         f'Extra parameter(s).',
     )
     
-    index = 0
     limit = len(parameter_values)
-    index_adjust = floor(log10(limit)) + 1
-    
-    while True:
-        parameter_value = parameter_values[index]
-        index += 1
+    if limit:
+        index = 0
+        index_adjust = floor(log10(limit)) + 1
         
-        message_parts.append(str(index).rjust(index_adjust))
-        message_parts.append(repr(parameter_value))
-        
-        if index == limit:
-            break
-        
-        message_parts.append('\n')
-        continue
+        while True:
+            parameter_value = parameter_values[index]
+            index += 1
+            
+            message_parts.append(str(index).rjust(index_adjust))
+            message_parts.append(repr(parameter_value))
+            
+            if index == limit:
+                break
+            
+            message_parts.append('\n')
+            continue
     
     return ''.join(message_parts)
 

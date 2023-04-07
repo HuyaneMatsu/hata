@@ -361,7 +361,7 @@ class UserBase(DiscordEntity, immortal = True):
         >>> from hata import User, now_as_id
         >>> user = User.precreate(now_as_id(), name = 'Neko', discriminator = 2012)
         >>> user
-        <User id = 730233383967260672, name = '#0000'>
+        <User id = 730233383967260672, name = 'Neko#2012'>
         >>> # no code stands for `user.name`.
         >>> f'{user}'
         'Neko'

@@ -583,7 +583,7 @@ class ClientCompoundChannelEndpoints(Compound):
         name : `str`, Optional (Keyword only)
             The channel's name.
         
-        nsfw : `int`, Optional (Keyword only)
+        nsfw : `bool`, Optional (Keyword only)
             Whether the channel is marked as non safe for work.
         
         parent_id : `None`, `int`, ``Channel``, Optional (Keyword only)
@@ -684,7 +684,7 @@ class ClientCompoundChannelEndpoints(Compound):
         name : `str`, Optional (Keyword only)
             The channel's name.
         
-        nsfw : `int`, Optional (Keyword only)
+        nsfw : `bool`, Optional (Keyword only)
             Whether the channel is marked as non safe for work.
         
         parent_id : `None`, `int`, ``Channel``, Optional (Keyword only)

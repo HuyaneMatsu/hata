@@ -2,15 +2,13 @@ __all__ = ()
 
 from ..channel import Channel
 from ..field_parsers import entity_id_parser_factory, int_parser_factory, preinstanced_array_parser_factory
-from ..field_putters import (
-    entity_id_optional_putter_factory, int_optional_putter_factory, int_putter_factory,
-    preinstanced_array_putter_factory
-)
+from ..field_putters import entity_id_optional_putter_factory, int_putter_factory, preinstanced_array_putter_factory
 from ..field_validators import (
     entity_id_validator_factory, int_conditional_validator_factory, int_options_validator_factory,
     preinstanced_array_validator_factory
 )
 
+from .constants import MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT, MAX_VOICE_CHANNEL_VIDEO_USERS_DEFAULT
 from .preinstanced import GuildFeature
 
 # features
@@ -21,22 +19,26 @@ validate_features = preinstanced_array_validator_factory('features', GuildFeatur
 
 # max_stage_channel_video_users
 
-parse_max_stage_channel_video_users = int_parser_factory('max_stage_video_channel_users', 0)
-put_max_stage_channel_video_users_into = int_optional_putter_factory('max_stage_video_channel_users', 0)
+parse_max_stage_channel_video_users = int_parser_factory(
+    'max_stage_video_channel_users', MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT
+)
+put_max_stage_channel_video_users_into = int_putter_factory('max_stage_video_channel_users')
 validate_max_stage_channel_video_users = int_conditional_validator_factory(
     'max_stage_channel_video_users',
-    0,
+    MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT,
     (lambda max_stage_channel_video_users : max_stage_channel_video_users >= 0),
     '>= 0',
 )
 
 # max_voice_channel_video_users
 
-parse_max_voice_channel_video_users = int_parser_factory('max_video_channel_users', 0)
-put_max_voice_channel_video_users_into = int_optional_putter_factory('max_video_channel_users', 0)
+parse_max_voice_channel_video_users = int_parser_factory(
+    'max_video_channel_users', MAX_VOICE_CHANNEL_VIDEO_USERS_DEFAULT
+)
+put_max_voice_channel_video_users_into = int_putter_factory('max_video_channel_users')
 validate_max_voice_channel_video_users = int_conditional_validator_factory(
     'max_voice_channel_video_users',
-    0,
+    MAX_VOICE_CHANNEL_VIDEO_USERS_DEFAULT,
     (lambda max_voice_channel_video_users : max_voice_channel_video_users >= 0),
     '>= 0',
 )

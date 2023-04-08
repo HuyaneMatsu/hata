@@ -23,16 +23,16 @@ def test__IntegrationMetadataSubscription__repr():
     synced_at = DateTime(2016, 9, 9)
     syncing = True
 
-    integration_metadata = IntegrationMetadataSubscription({
-        'account': account,
-        'expire_behavior': expire_behavior,
-        'expire_grace_period': expire_grace_period,
-        'revoked': revoked,
-        'role_id': role_id,
-        'subscriber_count': subscriber_count,
-        'synced_at': synced_at,
-        'syncing': syncing,
-    })
+    integration_metadata = IntegrationMetadataSubscription(
+        account = account,
+        expire_behavior = expire_behavior,
+        expire_grace_period = expire_grace_period,
+        revoked = revoked,
+        role_id = role_id,
+        subscriber_count = subscriber_count,
+        synced_at = synced_at,
+        syncing = syncing,
+    )
     
     vampytest.assert_instance(repr(integration_metadata), str)
 
@@ -61,7 +61,7 @@ def test__IntegrationMetadataSubscription__eq():
         'syncing': syncing,
     }
     
-    integration_metadata = IntegrationMetadataSubscription(keyword_parameters)
+    integration_metadata = IntegrationMetadataSubscription(**keyword_parameters)
     
     vampytest.assert_eq(integration_metadata, integration_metadata)
     vampytest.assert_ne(integration_metadata, object())
@@ -76,7 +76,7 @@ def test__IntegrationMetadataSubscription__eq():
         ('expire_grace_period', 3),
         ('syncing', False),
     ):
-        integration_metadata_test = IntegrationMetadataSubscription({**keyword_parameters, field_name: field_value})
+        integration_metadata_test = IntegrationMetadataSubscription(**{**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(integration_metadata, integration_metadata_test)
 
 
@@ -95,15 +95,15 @@ def test__IntegrationMetadataSubscription__hash():
     synced_at = DateTime(2016, 9, 9)
     syncing = True
 
-    integration_metadata = IntegrationMetadataSubscription({
-        'account': account,
-        'expire_behavior': expire_behavior,
-        'expire_grace_period': expire_grace_period,
-        'revoked': revoked,
-        'role_id': role_id,
-        'subscriber_count': subscriber_count,
-        'synced_at': synced_at,
-        'syncing': syncing,
-    })
+    integration_metadata = IntegrationMetadataSubscription(
+        account = account,
+        expire_behavior = expire_behavior,
+        expire_grace_period = expire_grace_period,
+        revoked = revoked,
+        role_id = role_id,
+        subscriber_count = subscriber_count,
+        synced_at = synced_at,
+        syncing = syncing,
+    )
     
     vampytest.assert_instance(hash(integration_metadata), int)

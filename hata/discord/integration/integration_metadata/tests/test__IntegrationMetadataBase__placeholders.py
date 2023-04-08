@@ -12,7 +12,7 @@ def test__IntegrationMetadataBase__placeholders():
     """
     Tests whether ``IntegrationMetadataBase``'s placeholders work as intended.
     """
-    integration_metadata = IntegrationMetadataBase({})
+    integration_metadata = IntegrationMetadataBase()
     vampytest.assert_instance(integration_metadata.account, object)
     vampytest.assert_instance(integration_metadata.application, IntegrationApplication, nullable = True)
     vampytest.assert_instance(integration_metadata.expire_behavior, IntegrationExpireBehavior)

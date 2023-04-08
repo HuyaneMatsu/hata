@@ -16,6 +16,46 @@ class IntegrationMetadataBase(RichAttributeErrorBaseType):
     """
     __all__ = ()
     
+    def __new__(cls):
+        """
+        Creates a new integration metadata with the given parameters.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        return object.__new__(cls)
+    
+    
+    @classmethod
+    def from_keyword_parameters(cls, keyword_parameters):
+        """
+        Creates a new integration metadata from the given keyword parameters.
+        
+        Parameters
+        ----------
+        keyword_parameters : `dict` of (`str`, `object`) items
+            Keyword parameters to populate the attributes.
+        
+        The used fields are removed from `keyword_parameters`.
+        
+        Returns
+        -------
+        self : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        return cls()
+    
+    
     def __eq__(self, other):
         """Returns whether the two integration accounts are the same."""
         if type(self) is not type(other):
@@ -45,27 +85,6 @@ class IntegrationMetadataBase(RichAttributeErrorBaseType):
     
     def __repr__(self):
         return f'<{self.__class__.__name__}>'
-    
-    
-    def __new__(cls, keyword_parameters):
-        """
-        Creates a new integration metadata from the given keyword parameters.
-        
-        Parameters
-        ----------
-        keyword_parameters : `dict` of (`str`, `object`) items
-            Keyword parameters to populate the attributes.
-        
-        The used fields are removed from `keyword_parameters`.
-        
-        Raises
-        ------
-        TypeError
-            - If a parameter's type is incorrect.
-        ValueError
-            - If a parameter's value is incorrect.
-        """
-        return object.__new__(cls)
     
     
     @classmethod
@@ -119,12 +138,30 @@ class IntegrationMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        copy : `instance<cls>`
+        copy : `instance<type<self>>`
         """
         return object.__new__(type(self))
     
     
-    def copy_with(self, keyword_parameters):
+    def copy_with(self):
+        """
+        Copy of the integration metadata with the given fields.
+        
+        Returns
+        -------
+        copy : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        return self.copy()
+    
+    
+    def copy_with_keyword_parameters(self, keyword_parameters):
         """
         Returns a copy of the integration metadata with using the given keyword parameters to populate it.
         
@@ -137,7 +174,7 @@ class IntegrationMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        copy : `instance<cls>`
+        copy : `instance<type<self>>`
         
         Raises
         ------
@@ -146,7 +183,7 @@ class IntegrationMetadataBase(RichAttributeErrorBaseType):
         ValueError
             - If a parameter's value is incorrect.
         """
-        return self.copy()
+        return self.copy_with()
     
     
     account = PlaceHolder(

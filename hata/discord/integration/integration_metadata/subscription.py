@@ -47,72 +47,97 @@ class IntegrationMetadataSubscription(IntegrationMetadataBase):
         'syncing'
     )
     
-    @copy_docs(IntegrationMetadataBase.__new__)
-    def __new__(cls, keyword_parameters):
+    
+    def __new__(
+        cls,
+        *,
+        account = ...,
+        expire_behavior = ...,
+        expire_grace_period = ...,
+        revoked = ...,
+        role_id = ...,
+        subscriber_count = ...,
+        synced_at = ...,
+        syncing = ...,
+    ):
+        """
+        Creates a new subscription integration metadata instance with the given parameters.
+        
+        Parameters
+        ----------
+        account : ``IntegrationAccount``, Optional (Keyword only)
+            The integration's respective account.
+        expire_behavior : ``IntegrationExpireBehavior``, `int`, Optional (Keyword only)
+            The behavior of expiring subscription.
+        expire_grace_period : `int`, Optional (Keyword only)
+            The grace period in days for expiring subscribers.
+        revoked : `bool`, Optional (Keyword only)
+            Whether the integration is removed.
+        role_id : `int`, Optional (Keyword only)
+            The role's identifier what the integration uses for subscribers.
+        subscriber_count : `int`, Optional (Keyword only)
+            How many subscribers the integration has.
+        synced_at : `None`, `datetime`, Optional (Keyword only)
+            When the integration was last synced.
+        syncing : `bool`, Optional (Keyword only)
+            Whether the integration syncing.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
         # account
-        try:
-            account = keyword_parameters.pop('account')
-        except KeyError:
+        if account is ...:
             account = IntegrationAccount._create_empty()
         else:
             account = validate_account(account)
         
         # expire_behavior
-        try:
-            expire_behavior = keyword_parameters.pop('expire_behavior')
-        except KeyError:
+        if expire_behavior is ...:
             expire_behavior = IntegrationExpireBehavior.remove_role
         else:
             expire_behavior = validate_expire_behavior(expire_behavior)
         
         # expire_grace_period
-        try:
-            expire_grace_period = keyword_parameters.pop('expire_grace_period')
-        except KeyError:
+        if expire_grace_period is ...:
             expire_grace_period = EXPIRE_GRACE_PERIOD_DEFAULT
         else:
             expire_grace_period = validate_expire_grace_period(expire_grace_period)
         
         # revoked
-        try:
-            revoked = keyword_parameters.pop('revoked')
-        except KeyError:
+        if revoked is ...:
             revoked = False
         else:
             revoked = validate_revoked(revoked)
         
         # role_id
-        try:
-            role_id = keyword_parameters.pop('role_id')
-        except KeyError:
+        if role_id is ...:
             role_id = 0
         else:
             role_id = validate_role_id(role_id)
         
         # subscriber_count
-        try:
-            subscriber_count = keyword_parameters.pop('subscriber_count')
-        except KeyError:
+        if subscriber_count is ...:
             subscriber_count = SUBSCRIBER_COUNT_DEFAULT
         else:
             subscriber_count = validate_subscriber_count(subscriber_count)
         
         # synced_at
-        try:
-            synced_at = keyword_parameters.pop('synced_at')
-        except KeyError:
+        if synced_at is ...:
             synced_at = None
         else:
             synced_at = validate_synced_at(synced_at)
         
         # syncing
-        try:
-            syncing = keyword_parameters.pop('syncing')
-        except KeyError:
+        if syncing is ...:
             syncing = False
         else:
             syncing = validate_syncing(syncing)
         
+        # Construct
         self = object.__new__(cls)
         self.account = account
         self.expire_behavior = expire_behavior
@@ -123,6 +148,21 @@ class IntegrationMetadataSubscription(IntegrationMetadataBase):
         self.synced_at = synced_at
         self.syncing = syncing
         return self
+        
+    
+    @classmethod
+    @copy_docs(IntegrationMetadataBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            account = keyword_parameters.pop('account', ...),
+            expire_behavior = keyword_parameters.pop('expire_behavior', ...),
+            expire_grace_period = keyword_parameters.pop('expire_grace_period', ...),
+            revoked = keyword_parameters.pop('revoked', ...),
+            role_id = keyword_parameters.pop('role_id', ...),
+            subscriber_count = keyword_parameters.pop('subscriber_count', ...),
+            synced_at = keyword_parameters.pop('synced_at', ...),
+            syncing = keyword_parameters.pop('syncing', ...),
+        )
     
     
     @classmethod
@@ -289,72 +329,100 @@ class IntegrationMetadataSubscription(IntegrationMetadataBase):
         return new
     
     
-    @copy_docs(IntegrationMetadataBase.copy_with)
-    def copy_with(self, keyword_parameters):
+    def copy_with( 
+        self,
+        *,
+        account = ...,
+        expire_behavior = ...,
+        expire_grace_period = ...,
+        revoked = ...,
+        role_id = ...,
+        subscriber_count = ...,
+        synced_at = ...,
+        syncing = ...,
+    ):
+        """
+        Copies the subscription integration metadata with the given fields.
+        
+        Parameters
+        ----------
+        account : ``IntegrationAccount``, Optional (Keyword only)
+            The integration's respective account.
+        expire_behavior : ``IntegrationExpireBehavior``, `int`, Optional (Keyword only)
+            The behavior of expiring subscription.
+        expire_grace_period : `int`, Optional (Keyword only)
+            The grace period in days for expiring subscribers.
+        revoked : `bool`, Optional (Keyword only)
+            Whether the integration is removed.
+        role_id : `int`, Optional (Keyword only)
+            The role's identifier what the integration uses for subscribers.
+        subscriber_count : `int`, Optional (Keyword only)
+            How many subscribers the integration has.
+        synced_at : `None`, `datetime`, Optional (Keyword only)
+            When the integration was last synced.
+        syncing : `bool`, Optional (Keyword only)
+            Whether the integration syncing.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
         # account
-        try:
-            account = keyword_parameters.pop('account')
-        except KeyError:
+        if account is ...:
             account = self.account
         else:
             account = validate_account(account)
         
         # expire_behavior
-        try:
-            expire_behavior = keyword_parameters.pop('expire_behavior')
-        except KeyError:
+        if expire_behavior is ...:
             expire_behavior = self.expire_behavior
         else:
             expire_behavior = validate_expire_behavior(expire_behavior)
         
         # expire_grace_period
-        try:
-            expire_grace_period = keyword_parameters.pop('expire_grace_period')
-        except KeyError:
+        if expire_grace_period is ...:
             expire_grace_period = self.expire_grace_period
         else:
             expire_grace_period = validate_expire_grace_period(expire_grace_period)
         
         # revoked
-        try:
-            revoked = keyword_parameters.pop('revoked')
-        except KeyError:
+        if revoked is ...:
             revoked = self.revoked
         else:
             revoked = validate_revoked(revoked)
         
         # role_id
-        try:
-            role_id = keyword_parameters.pop('role_id')
-        except KeyError:
+        if role_id is ...:
             role_id = self.role_id
         else:
             role_id = validate_role_id(role_id)
         
         # subscriber_count
-        try:
-            subscriber_count = keyword_parameters.pop('subscriber_count')
-        except KeyError:
+        if subscriber_count is ...:
             subscriber_count = self.subscriber_count
         else:
             subscriber_count = validate_subscriber_count(subscriber_count)
         
         # synced_at
-        try:
-            synced_at = keyword_parameters.pop('synced_at')
-        except KeyError:
+        if synced_at is ...:
             synced_at = self.synced_at
         else:
             synced_at = validate_synced_at(synced_at)
         
         # syncing
-        try:
-            syncing = keyword_parameters.pop('syncing')
-        except KeyError:
+        if syncing is ...:
             syncing = self.syncing
         else:
             syncing = validate_syncing(syncing)
         
+        # Construct
         new = object.__new__(type(self))
         new.account = account
         new.expire_behavior = expire_behavior
@@ -365,3 +433,17 @@ class IntegrationMetadataSubscription(IntegrationMetadataBase):
         new.synced_at = synced_at
         new.syncing = syncing
         return new
+    
+    
+    @copy_docs(IntegrationMetadataBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            account = keyword_parameters.pop('account', ...),
+            expire_behavior = keyword_parameters.pop('expire_behavior', ...),
+            expire_grace_period = keyword_parameters.pop('expire_grace_period', ...),
+            revoked = keyword_parameters.pop('revoked', ...),
+            role_id = keyword_parameters.pop('role_id', ...),
+            subscriber_count = keyword_parameters.pop('subscriber_count', ...),
+            synced_at = keyword_parameters.pop('synced_at', ...),
+            syncing = keyword_parameters.pop('syncing', ...),
+        )

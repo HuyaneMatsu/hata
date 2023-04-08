@@ -24,6 +24,51 @@ class IntegrationMetadataDiscord(IntegrationMetadataBase):
     """
     __slots__ = ('account', 'application',)
     
+    def __new__(cls, *, account = ..., application = ...):
+        """
+        Creates a new discord integration metadata instance with the given parameters.
+        
+        Parameters
+        ----------
+        account : ``IntegrationAccount``, ``ClientUserBase``, Optional (Keyword only)
+            The invited bot.
+        application : `None`, ``IntegrationApplication``, Optional (Keyword only)
+            The bot's application.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # account
+        if account is ...:
+            account = IntegrationAccount._create_empty()
+        else:
+            account = validate_account__discord(account)
+        
+        # application
+        if application is ...:
+            application = None
+        else:
+            application = validate_application(application)
+        
+        # Construct
+        self = object.__new__(cls)
+        self.account = account
+        self.application = application
+        return self
+    
+    
+    @classmethod
+    @copy_docs(IntegrationMetadataBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            account = keyword_parameters.pop('account', ...),
+            application = keyword_parameters.pop('application', ...),
+        )
+    
     
     @copy_docs(IntegrationMetadataBase._is_equal_same_type)
     def _is_equal_same_type(self, other):
@@ -49,28 +94,6 @@ class IntegrationMetadataDiscord(IntegrationMetadataBase):
             hash_value ^= hash(application)
         
         return hash_value
-    
-    
-    @copy_docs(IntegrationMetadataBase.__new__)
-    def __new__(cls, keyword_parameters):
-        try:
-            account = keyword_parameters.pop('account')
-        except KeyError:
-            account = IntegrationAccount._create_empty()
-        else:
-            account = validate_account__discord(account)
-        
-        try:
-            application = keyword_parameters.pop('application')
-        except KeyError:
-            application = None
-        else:
-            application = validate_application(application)
-        
-        self = object.__new__(cls)
-        self.account = account
-        self.application = application
-        return self
     
     
     @classmethod
@@ -107,23 +130,51 @@ class IntegrationMetadataDiscord(IntegrationMetadataBase):
         return new
     
     
-    @copy_docs(IntegrationMetadataBase.copy_with)
-    def copy_with(self, keyword_parameters):
-        try:
-            account = keyword_parameters.pop('account')
-        except KeyError:
+    def copy_with(self, *, account = ..., application = ...):
+        """
+        Copies the discord integration metadata with the given fields.
+        
+        Creates a new discord integration metadata instance with the given parameters.
+        
+        Parameters
+        ----------
+        account : ``IntegrationAccount``, ``ClientUserBase``, Optional (Keyword only)
+            The invited bot.
+        application : `None`, ``IntegrationApplication``, Optional (Keyword only)
+            The bot's application.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        # account
+        if account is ...:
             account = self.account
         else:
             account = validate_account__discord(account)
         
-        try:
-            application = keyword_parameters.pop('application')
-        except KeyError:
+        # application
+        if application is ...:
             application = self.application
         else:
             application = validate_application(application)
         
-        new = object.__new__(type(self))
-        new.account = account
-        new.application = application
-        return new
+        self = object.__new__(type(self))
+        self.account = account
+        self.application = application
+        return self
+    
+    
+    @copy_docs(IntegrationMetadataBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            account = keyword_parameters.pop('account', ...),
+            application = keyword_parameters.pop('application', ...),
+        )

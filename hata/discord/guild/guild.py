@@ -28,6 +28,10 @@ from ..sticker import Sticker
 from ..user import ClientUserBase, User, VoiceState, ZEROUSER, create_partial_user_from_id
 from ..utils import DATETIME_FORMAT_CODE, EMOJI_NAME_RP
 
+from .constants import (
+    MAX_PRESENCES_DEFAULT, MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT, MAX_USERS_DEFAULT,
+    MAX_VOICE_CHANNEL_VIDEO_USERS_DEFAULT
+)
 from .embedded_activity_state import EmbeddedActivityState
 from .emoji_counts import EmojiCounts
 from .fields import (
@@ -81,8 +85,6 @@ else:
     GUILD_USERS_TYPE = WeakValueDictionary
 
 
-MAX_PRESENCES_DEFAULT = 0
-MAX_USERS_DEFAULT = 250000
 
 
 def _user_date_sort_key(item):
@@ -770,9 +772,9 @@ class Guild(DiscordEntity, immortal = True):
         self.id = guild_id
         self.is_large = False
         self.max_presences = MAX_PRESENCES_DEFAULT
-        self.max_stage_channel_video_users = 0
+        self.max_stage_channel_video_users = MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT
         self.max_users = MAX_USERS_DEFAULT
-        self.max_voice_channel_video_users = 0
+        self.max_voice_channel_video_users = MAX_VOICE_CHANNEL_VIDEO_USERS_DEFAULT
         self.message_notification = MessageNotificationLevel.only_mentions
         self.mfa = MFA.none
         self.name = ''

@@ -1,5 +1,6 @@
 import vampytest
 
+from ..constants import MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT
 from ..fields import validate_max_stage_channel_video_users
 
 
@@ -10,6 +11,7 @@ def test__validate_max_stage_channel_video_users__0():
     Case: passing.
     """
     for input_value, expected_output in (
+        (None, MAX_STAGE_CHANNEL_VIDEO_USERS_DEFAULT),
         (0, 0),
         (1, 1),
     ):

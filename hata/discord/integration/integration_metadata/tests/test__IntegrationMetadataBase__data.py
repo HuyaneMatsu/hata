@@ -2,7 +2,7 @@ import vampytest
 
 from ..base import IntegrationMetadataBase
 
-from .test__IntegrationMetadataBase__constructor import _check_all_fields_set
+from .test__IntegrationMetadataBase__constructor import _assert_fields_set
 
 
 def test__IntegrationMetadataBase__from_data__0():
@@ -13,10 +13,9 @@ def test__IntegrationMetadataBase__from_data__0():
     """
     data = {}
     
-    
     integration_metadata = IntegrationMetadataBase.from_data(data)
     
-    _check_all_fields_set(integration_metadata)
+    _assert_fields_set(integration_metadata)
 
 
 def test__IntegrationMetadataBase__to_data():
@@ -25,7 +24,7 @@ def test__IntegrationMetadataBase__to_data():
     
     Case: defaults.
     """
-    integration_metadata = IntegrationMetadataBase({})
+    integration_metadata = IntegrationMetadataBase()
     
     expected_data = {}
     

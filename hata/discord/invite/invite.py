@@ -110,7 +110,7 @@ class Invite(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Invite data.
         """
         code = data['code']
@@ -150,7 +150,7 @@ class Invite(DiscordEntity, immortal=True):
         ----------
         guild : ``Guild``
             The respective guild of the vanity invite.
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Invite data requested from Discord.
         
         Returns
@@ -213,7 +213,7 @@ class Invite(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Invite data.
         """
         try:
@@ -324,7 +324,7 @@ class Invite(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Invite data.
         """
         guild = self.guild
@@ -431,7 +431,7 @@ class Invite(DiscordEntity, immortal=True):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Received invite data.
         """
         guild = self.guild

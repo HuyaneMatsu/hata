@@ -9,7 +9,7 @@ from ...integration_account import IntegrationAccount
 from ..preinstanced import IntegrationExpireBehavior
 from ..subscription import IntegrationMetadataSubscription
 
-from .test__IntegrationMetadataSubscription__constructor import _check_all_fields_set
+from .test__IntegrationMetadataSubscription__constructor import _assert_fields_set
 
 
 def test__IntegrationMetadataSubscription__from_data__0():
@@ -41,7 +41,7 @@ def test__IntegrationMetadataSubscription__from_data__0():
     
     integration_metadata = IntegrationMetadataSubscription.from_data(data)
     
-    _check_all_fields_set(integration_metadata)
+    _assert_fields_set(integration_metadata)
     
     vampytest.assert_eq(integration_metadata.account, account)
     vampytest.assert_is(integration_metadata.expire_behavior, expire_behavior)
@@ -68,16 +68,16 @@ def test__IntegrationMetadataSubscription__to_data():
     synced_at = DateTime(2016, 9, 9)
     syncing = True
     
-    integration_metadata = IntegrationMetadataSubscription({
-        'account': account,
-        'expire_behavior': expire_behavior,
-        'expire_grace_period': expire_grace_period,
-        'revoked': revoked,
-        'role_id': role_id,
-        'subscriber_count': subscriber_count,
-        'synced_at': synced_at,
-        'syncing': syncing,
-    })
+    integration_metadata = IntegrationMetadataSubscription(
+        account = account,
+        expire_behavior = expire_behavior,
+        expire_grace_period = expire_grace_period,
+        revoked = revoked,
+        role_id = role_id,
+        subscriber_count = subscriber_count,
+        synced_at = synced_at,
+        syncing = syncing,
+    )
     
     expected_data = {
         'account': account.to_data(),

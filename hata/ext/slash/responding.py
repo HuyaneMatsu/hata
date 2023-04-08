@@ -641,7 +641,21 @@ class InteractionResponse:
                 (interaction_event.message is not None)
             )
         ):
-            if interaction_event.is_unanswered():
+            if self._is_abort:
+                # If we are aborting we acknowledge it (if not yet) and create a new message.
+                if interaction_event.is_unanswered():
+                    yield client.interaction_component_acknowledge(interaction_event)
+                
+                response_parameters = self._get_response_parameters((
+                    'allowed_mentions', 'content', 'components', 'embed', 'file', 'show_for_invoking_user_only',
+                    'silent', 'suppress_embeds', 'tts'
+                ))
+                if (response_modifier is not None):
+                    response_modifier.apply_to_creation(response_parameters)
+                
+                yield client.interaction_followup_message_create(interaction_event, **response_parameters)
+                
+            elif interaction_event.is_unanswered():
                 response_parameters = self._get_response_parameters((
                     'allowed_mentions', 'content', 'components', 'embed'
                 ))

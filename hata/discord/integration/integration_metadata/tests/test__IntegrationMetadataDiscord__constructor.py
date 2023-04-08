@@ -7,7 +7,7 @@ from ...integration_application import IntegrationApplication
 from ..discord import IntegrationMetadataDiscord
 
 
-def _check_all_fields_set(integration_metadata):
+def _assert_fields_set(integration_metadata):
     """
     Tests whether all attributes of an ``IntegrationMetadataDiscord`` are set.
     
@@ -28,8 +28,8 @@ def test__IntegrationMetadataDiscord__new__0():
     
     Case: No fields given.
     """
-    integration_metadata = IntegrationMetadataDiscord({})
-    _check_all_fields_set(integration_metadata)
+    integration_metadata = IntegrationMetadataDiscord()
+    _assert_fields_set(integration_metadata)
 
 
 def test__IntegrationMetadataDiscord__new__1():
@@ -41,13 +41,42 @@ def test__IntegrationMetadataDiscord__new__1():
     account = User.precreate(202210140013, name = 'Nekoishi')
     application = IntegrationApplication.precreate(202210140014, name = 'Koishi', bot = account)
 
+    integration_metadata = IntegrationMetadataDiscord(
+        account = account,
+        application = application,
+    )
+    _assert_fields_set(integration_metadata)
+    
+    vampytest.assert_is(integration_metadata.account, account)
+    vampytest.assert_eq(integration_metadata.application, application)
+
+
+def test__IntegrationMetadataDiscord__from_keyword_parameters__0():
+    """
+    Tests whether ``IntegrationMetadataDiscord.from_keyword_parameters`` works as intended.
+    
+    Case: No fields given.
+    """
+    integration_metadata = IntegrationMetadataDiscord.from_keyword_parameters({})
+    _assert_fields_set(integration_metadata)
+
+
+def test__IntegrationMetadataDiscord__from_keyword_parameters__1():
+    """
+    Tests whether ``IntegrationMetadataDiscord.from_keyword_parameters`` works as intended.
+    
+    Case: All fields given.
+    """
+    account = User.precreate(202304080000, name = 'Nekoishi')
+    application = IntegrationApplication.precreate(202304080001, name = 'Koishi', bot = account)
+
     keyword_parameters = {
         'account': account,
         'application': application,
     }
 
-    integration_metadata = IntegrationMetadataDiscord(keyword_parameters)
-    _check_all_fields_set(integration_metadata)
+    integration_metadata = IntegrationMetadataDiscord.from_keyword_parameters(keyword_parameters)
+    _assert_fields_set(integration_metadata)
     vampytest.assert_eq(keyword_parameters, {})
     
     vampytest.assert_is(integration_metadata.account, account)
@@ -59,4 +88,4 @@ def test__IntegrationMetadataDiscord__create_empty():
     Tests whether ``IntegrationMetadataDiscord._create_empty`` works as intended.
     """
     integration_metadata = IntegrationMetadataDiscord._create_empty()
-    _check_all_fields_set(integration_metadata)
+    _assert_fields_set(integration_metadata)

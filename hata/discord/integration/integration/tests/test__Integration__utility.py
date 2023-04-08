@@ -171,4 +171,4 @@ def test__Integration__copy_with__1():
     vampytest.assert_eq(copy.enabled, new_enabled)
     vampytest.assert_is(copy.type, new_integration_type)
     vampytest.assert_eq(copy.user, new_user)
-    vampytest.assert_eq(copy.metadata, new_integration_type.metadata_type({'subscriber_count': new_subscriber_count}))
+    vampytest.assert_eq(copy.metadata, new_integration_type.metadata_type(subscriber_count = new_subscriber_count))

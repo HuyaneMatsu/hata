@@ -1,3 +1,13 @@
+## 1.3.27 *\[2023-04-??\]*
+
+#### Improvements
+
+- `.IntegrationMetadataBase.__new__` is now `.from_keyword_parameters`. Add new `.__new__` method.
+- `.IntegrationMetadataBase.copy_with` is now `.copy_with_keyword_parameters`. Add new `.copy_with` method.
+
+##### ext.slash
+- `abort` call from a component command is now handled as intended (so always creates a new message).
+
 ## 1.3.26 *\[2023-04-07\]*
 
 #### Improvements

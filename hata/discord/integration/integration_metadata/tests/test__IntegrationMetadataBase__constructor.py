@@ -3,7 +3,7 @@ import vampytest
 from ..base import IntegrationMetadataBase
 
 
-def _check_all_fields_set(integration_metadata):
+def _assert_fields_set(integration_metadata):
     """
     Tests whether all attributes of an ``IntegrationMetadataBase`` are set.
     
@@ -21,16 +21,26 @@ def test__IntegrationMetadataBase__new__0():
     
     Case: No fields given.
     """
+    integration_metadata = IntegrationMetadataBase()
+    _assert_fields_set(integration_metadata)
+
+
+def test__IntegrationMetadataBase__from_keyword_parameters__0():
+    """
+    Tests whether ``IntegrationMetadataBase.from_keyword_parameters`` works as intended.
+    
+    Case: No fields given.
+    """
     keyword_parameters = {}
     
-    integration_metadata = IntegrationMetadataBase(keyword_parameters)
-    _check_all_fields_set(integration_metadata)
+    integration_metadata = IntegrationMetadataBase.from_keyword_parameters(keyword_parameters)
+    _assert_fields_set(integration_metadata)
     vampytest.assert_eq(keyword_parameters, {})
-
-
+    
+    
 def test__IntegrationMetadataBase__create_empty():
     """
     Tests whether ``IntegrationMetadataBase._create_empty`` works as intended.
     """
     integration_metadata = IntegrationMetadataBase._create_empty()
-    _check_all_fields_set(integration_metadata)
+    _assert_fields_set(integration_metadata)

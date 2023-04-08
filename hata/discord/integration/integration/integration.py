@@ -136,7 +136,7 @@ class Integration(DiscordEntity, immortal = True):
         else:
             user = validate_user(user)
         
-        metadata = integration_type.metadata_type(keyword_parameters)
+        metadata = integration_type.metadata_type.from_keyword_parameters(keyword_parameters)
             
         if keyword_parameters:
             raise TypeError(
@@ -248,7 +248,7 @@ class Integration(DiscordEntity, immortal = True):
                 processable.append(('name', name))
             
             # metadata
-            metadata = integration_type.metadata_type(keyword_parameters)
+            metadata = integration_type.metadata_type.from_keyword_parameters(keyword_parameters)
             processable.append(('metadata', metadata))
             
             # user
@@ -677,9 +677,9 @@ class Integration(DiscordEntity, immortal = True):
         
         # metadata
         if integration_type is self.type:
-            metadata = self.metadata.copy_with(keyword_parameters)
+            metadata = self.metadata.copy_with_keyword_parameters(keyword_parameters)
         else:
-            metadata = integration_type.metadata_type(keyword_parameters)
+            metadata = integration_type.metadata_type.from_keyword_parameters(keyword_parameters)
         
         if keyword_parameters:
             raise TypeError(

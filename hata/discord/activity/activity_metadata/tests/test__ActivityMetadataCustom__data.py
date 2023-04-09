@@ -42,12 +42,11 @@ def test__ActivityMetadataCustom__to_data():
     emoji = Emoji.precreate(202209060004, name = 'Code49')
     created_at = DateTime(2014, 9, 16)
     
-    keyword_parameters = {
-        'created_at': created_at,
-        'emoji': emoji,
-        'state': state,
-    }
-    activity_metadata = ActivityMetadataCustom(keyword_parameters)
+    activity_metadata = ActivityMetadataCustom(
+        created_at = created_at,
+        emoji = emoji,
+        state = state,
+    )
     
     expected_output = {}
     
@@ -65,12 +64,11 @@ def test__ActivityMetadataCustom__to_data__user():
     emoji = Emoji.precreate(202209060005, name = 'Code49')
     created_at = DateTime(2014, 9, 16)
     
-    keyword_parameters = {
-        'created_at': created_at,
-        'emoji': emoji,
-        'state': state,
-    }
-    activity_metadata = ActivityMetadataCustom(keyword_parameters)
+    activity_metadata = ActivityMetadataCustom(
+        created_at = created_at,
+        emoji = emoji,
+        state = state,
+    )
     
     expected_output = {}
     
@@ -88,12 +86,11 @@ def test__ActivityMetadataCustom__to_data__include_internals():
     emoji = Emoji.precreate(202209060006, name = 'Code49')
     created_at = DateTime(2014, 9, 16)
     
-    keyword_parameters = {
-        'created_at': created_at,
-        'emoji': emoji,
-        'state': state,
-    }
-    activity_metadata = ActivityMetadataCustom(keyword_parameters)
+    activity_metadata = ActivityMetadataCustom(
+        created_at = created_at,
+        emoji = emoji,
+        state = state,
+    )
     
     expected_output = {
         'name': 'Custom Status',
@@ -119,12 +116,11 @@ def test__ActivityMetadataCustom__update_attributes():
     old_created_at = DateTime(2014, 9, 16)
     new_created_at = DateTime(2014, 9, 17)
     
-    keyword_parameters = {
-        'created_at': old_created_at,
-        'emoji': old_emoji,
-        'state': old_state,
-    }
-    activity_metadata = ActivityMetadataCustom(keyword_parameters)
+    activity_metadata = ActivityMetadataCustom(
+        created_at = old_created_at,
+        emoji = old_emoji,
+        state = old_state,
+    )
     
     activity_metadata._update_attributes({
         'state': new_state,
@@ -148,12 +144,11 @@ def test__ActivityMetadataCustom__difference_update_attributes():
     old_created_at = DateTime(2014, 9, 16)
     new_created_at = DateTime(2014, 9, 17)
     
-    keyword_parameters = {
-        'created_at': old_created_at,
-        'emoji': old_emoji,
-        'state': old_state,
-    }
-    activity_metadata = ActivityMetadataCustom(keyword_parameters)
+    activity_metadata = ActivityMetadataCustom(
+        created_at = old_created_at,
+        emoji = old_emoji,
+        state = old_state,
+    )
     
     old_attributes = activity_metadata._difference_update_attributes({
         'state': new_state,

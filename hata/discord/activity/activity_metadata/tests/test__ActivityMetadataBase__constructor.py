@@ -18,8 +18,22 @@ def _assert_fields_set(activity_metadata):
 def test__ActivityMetadataBase__new__0():
     """
     Tests whether ``ActivityMetadataBase.__new__`` works as intended.
+    
+    Case: No fields given.
     """
-    activity_metadata = ActivityMetadataBase({})
+    activity_metadata = ActivityMetadataBase()
+    _assert_fields_set(activity_metadata)
+    
+    vampytest.assert_is(activity_metadata.created_at, None)
+    vampytest.assert_is(activity_metadata.emoji, None)
+    vampytest.assert_is(activity_metadata.state, None)
+
+
+def test__ActivityMetadataBase__from_keyword_parameters__0():
+    """
+    Tests whether ``ActivityMetadataBase.from_keyword_parameters`` works as intended.
+    """
+    activity_metadata = ActivityMetadataBase.from_keyword_parameters({})
     _assert_fields_set(activity_metadata)
     
     vampytest.assert_is(activity_metadata.created_at, None)
@@ -27,26 +41,26 @@ def test__ActivityMetadataBase__new__0():
     vampytest.assert_is(activity_metadata.state, None)
     
 
-def test__ActivityMetadataBase__new__1():
+def test__ActivityMetadataBase__from_keyword_parameters__1():
     """
-    Tests whether ``ActivityMetadataBase.__new__`` wont touch the`keyword_parameters` parameter.
+    Tests whether ``ActivityMetadataBase.from_keyword_parameters`` wont touch the`keyword_parameters` parameter.
     """
     keyword_parameters = {'name': 'ara'}
     keyword_parameters_copy = keyword_parameters.copy()
     
-    activity_metadata = ActivityMetadataBase(keyword_parameters)
+    activity_metadata = ActivityMetadataBase.from_keyword_parameters(keyword_parameters)
     _assert_fields_set(activity_metadata)
     
     vampytest.assert_eq(keyword_parameters, keyword_parameters_copy)
 
 
-def test__ActivityMetadataBase__new__2():
+def test__ActivityMetadataBase__from_keyword_parameters__2():
     """
-    Tests whether ``ActivityMetadataBase.__new__`` will yeet empty name.
+    Tests whether ``ActivityMetadataBase.from_keyword_parameters`` will yeet empty name.
     """
     keyword_parameters = {'name': ''}
     
-    activity_metadata = ActivityMetadataBase(keyword_parameters)
+    activity_metadata = ActivityMetadataBase.from_keyword_parameters(keyword_parameters)
     _assert_fields_set(activity_metadata)
     
     vampytest.assert_eq(keyword_parameters, {})

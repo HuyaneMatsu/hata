@@ -15,12 +15,11 @@ def test__ActivityMetadataCustom__repr():
     emoji = Emoji.precreate(202209060000, name = 'Code49')
     created_at = DateTime(2014, 9, 16)
     
-    keyword_parameters = {
-        'created_at': created_at,
-        'emoji': emoji,
-        'state': state,
-    }
-    activity_metadata = ActivityMetadataCustom(keyword_parameters)
+    activity_metadata = ActivityMetadataCustom(
+        created_at = created_at,
+        emoji = emoji,
+        state = state,
+    )
     
     vampytest.assert_instance(repr(activity_metadata), str)
 
@@ -33,12 +32,11 @@ def test__ActivityMetadataCustom__hash():
     emoji = Emoji.precreate(202209060001, name = 'Code49')
     created_at = DateTime(2014, 9, 16)
     
-    keyword_parameters = {
-        'created_at': created_at,
-        'emoji': emoji,
-        'state': state,
-    }
-    activity_metadata = ActivityMetadataCustom(keyword_parameters)
+    activity_metadata = ActivityMetadataCustom(
+        created_at = created_at,
+        emoji = emoji,
+        state = state,
+    )
     
     vampytest.assert_instance(hash(activity_metadata), int)
 
@@ -56,7 +54,7 @@ def test__ActivityMetadataCustom__eq():
         'emoji': emoji,
         'state': state,
     }
-    activity_metadata = ActivityMetadataCustom(keyword_parameters)
+    activity_metadata = ActivityMetadataCustom(**keyword_parameters)
     
     vampytest.assert_eq(activity_metadata, activity_metadata)
     vampytest.assert_ne(activity_metadata, object())
@@ -66,5 +64,5 @@ def test__ActivityMetadataCustom__eq():
         'emoji',
         'created_at',
     ):
-        temporary_activity_metadata = ActivityMetadataCustom({**keyword_parameters, field_name: None})
+        temporary_activity_metadata = ActivityMetadataCustom(**{**keyword_parameters, field_name: None})
         vampytest.assert_ne(temporary_activity_metadata, activity_metadata)

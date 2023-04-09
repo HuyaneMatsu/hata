@@ -23,17 +23,17 @@ class AutoModerationRuleTriggerMetadataKeywordPreset(AutoModerationRuleTriggerMe
     """
     __slots__ = ('excluded_keywords', 'keyword_presets',)
     
-    def __new__(cls, keyword_presets = None, excluded_keywords = None):
+    def __new__(cls, keyword_presets = ..., excluded_keywords = ...):
         """
         Creates a new keyword preset trigger metadata for ``AutoModerationRule``-s.
         
         Parameters
         ----------
         keyword_presets : `None`, `int`, ``AutoModerationKeywordPresetType``, \
-                `iterable` of (`int`, ``AutoModerationKeywordPresetType``) = `None`, Optional
+                `iterable` of (`int`, ``AutoModerationKeywordPresetType``), Optional
             Keyword preset defined by Discord which will be searched for in content.
         
-        excluded_keywords : `None`, `str`, `iterable` of `str` = `None`, Optional
+        excluded_keywords : `None`, `str`, `iterable` of `str`, Optional
             Excluded keywords from the preset.
         
         Raises
@@ -41,9 +41,19 @@ class AutoModerationRuleTriggerMetadataKeywordPreset(AutoModerationRuleTriggerMe
         TypeError
             - If a parameter's type is incorrect.
         """
-        excluded_keywords = validate_excluded_keywords(excluded_keywords)
-        keyword_presets = validate_keyword_presets(keyword_presets)
+        # excluded_keywords
+        if excluded_keywords is ...:
+            excluded_keywords = None
+        else:
+            excluded_keywords = validate_excluded_keywords(excluded_keywords)
         
+        # keyword_presets
+        if keyword_presets is ...:
+            keyword_presets = None
+        else:
+            keyword_presets = validate_keyword_presets(keyword_presets)
+        
+        # Construct
         self = object.__new__(cls)
         self.excluded_keywords = excluded_keywords
         self.keyword_presets = keyword_presets

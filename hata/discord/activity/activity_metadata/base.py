@@ -31,14 +31,33 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
     """
     __slots__ = ()
     
-    def __new__(cls, keyword_parameters):
+    def __new__(cls):
         """
         Creates a new activity metadata.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is unexpected.
+        ValueError
+           - If an parameter's value is unexpected.
+        """
+        return object.__new__(cls)
+    
+    
+    @classmethod
+    def from_keyword_parameters(cls, keyword_parameters):
+        """
+        Creates a new activity metadata from the given keyword parameters.
         
         Parameters
         ----------
         keyword_parameters : `dict` of (`str`, `object`) items
             Keyword parameters passed to ``Activity.__new__``
+        
+        Returns
+        -------
+        self : `instance<cls>`
         
         Raises
         ------
@@ -48,8 +67,8 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
            - If an parameter's value is unexpected.
         """
         _pop_empty_name(keyword_parameters)
-        return object.__new__(cls)
-    
+        return cls()
+        
     
     def __repr__(self):
         """Returns the activity metadata's representation."""
@@ -202,9 +221,27 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
         return object.__new__(type(self))
     
     
-    def copy_with(self, keyword_parameters):
+    def copy_with(self):
         """
-        Copies the activity metadata.
+        Copies the activity metadata with the given fields.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is unexpected.
+        ValueError
+           - If an parameter's value is unexpected.
+        """
+        return self.copy()
+    
+    
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        """
+        Copies the activity metadata with the given keyword parameters
         
         Parameters
         ----------
@@ -223,7 +260,7 @@ class ActivityMetadataBase(RichAttributeErrorBaseType):
            - If an parameter's value is unexpected.
         """
         _pop_empty_name(keyword_parameters)
-        return self.copy()
+        return self.copy_with()
     
     
     application_id = PlaceHolder(

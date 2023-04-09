@@ -100,7 +100,7 @@ class Activity(RichAttributeErrorBaseType):
         
         # name & keyword_parameters
         keyword_parameters['name'] = name
-        metadata = activity_type.metadata_type(keyword_parameters)
+        metadata = activity_type.metadata_type.from_keyword_parameters(keyword_parameters)
         
         if keyword_parameters:
             raise TypeError(
@@ -439,9 +439,9 @@ class Activity(RichAttributeErrorBaseType):
         metadata = self.metadata
         metadata_type = activity_type.metadata_type
         if metadata_type is type(metadata):
-            metadata = metadata.copy_with(keyword_parameters)
+            metadata = metadata.copy_with_keyword_parameters(keyword_parameters)
         else:
-            metadata = metadata_type(keyword_parameters)
+            metadata = metadata_type.from_keyword_parameters(keyword_parameters)
         
         if keyword_parameters:
             raise TypeError(

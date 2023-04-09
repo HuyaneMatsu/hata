@@ -26,39 +26,62 @@ class ActivityMetadataCustom(ActivityMetadataBase):
     """
     __slots__ = ('created_at', 'emoji', 'state', )
     
-    @copy_docs(ActivityMetadataBase.__new__)
-    def __new__(cls, keyword_parameters):
-        _pop_empty_name(keyword_parameters)
+    
+    def __new__(cls, *, created_at = ..., emoji = ..., state = ...):
+        """
+        Creates a new custom activity metadata.
         
+        Parameters
+        ----------
+        created_at : `None`, `datetime`, Optional (Keyword only)
+            When the status was created.
+        emoji : `None`, ``Emoji``, Optional (Keyword only)
+            The emoji of the activity.
+        state : `None`, `str`, Optional (Keyword only)
+            The activity's text under it's emoji.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is unexpected.
+        ValueError
+           - If an parameter's value is unexpected.
+        """
         # created_at
-        try:
-            created_at = keyword_parameters.pop('created_at')
-        except KeyError:
+        if created_at is ...:
             created_at = None
         else:
             created_at = validate_created_at(created_at)
         
         # emoji
-        try:
-            emoji = keyword_parameters.pop('emoji')
-        except KeyError:
+        if emoji is ...:
             emoji = None
         else:
             emoji = validate_emoji(emoji)
         
         # state
-        try:
-            state = keyword_parameters.pop('state')
-        except KeyError:
+        if state is ...:
             state = None
         else:
             state = validate_state(state)
         
+        # Construct
         self = object.__new__(cls)
         self.created_at = created_at
         self.emoji = emoji
         self.state = state
         return self
+        
+    
+    @classmethod
+    @copy_docs(ActivityMetadataBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        _pop_empty_name(keyword_parameters)
+        return cls(
+            created_at = keyword_parameters.pop('created_at', ...),
+            emoji = keyword_parameters.pop('emoji', ...),
+            state = keyword_parameters.pop('state', ...),
+        )
     
     
     @copy_docs(ActivityMetadataBase.__repr__)
@@ -199,37 +222,64 @@ class ActivityMetadataCustom(ActivityMetadataBase):
         return new
     
     
-    @copy_docs(ActivityMetadataBase.copy_with)
-    def copy_with(self, keyword_parameters):
+    def copy_with(self, *, created_at = ..., emoji = ..., state = ...):
+        """
+        Copies the custom activity metadata with the given fields.
+        
+        Parameters
+        ----------
+        created_at : `None`, `datetime`, Optional (Keyword only)
+            When the status was created.
+        emoji : `None`, ``Emoji``, Optional (Keyword only)
+            The emoji of the activity.
+        state : `None`, `str`, Optional (Keyword only)
+            The activity's text under it's emoji.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is unexpected.
+        ValueError
+           - If an parameter's value is unexpected.
+        """
         # created_at
-        try:
-            created_at = keyword_parameters.pop('created_at')
-        except KeyError:
+        if created_at is ...:
             created_at = self.created_at
         else:
             created_at = validate_created_at(created_at)
         
         # emoji
-        try:
-            emoji = keyword_parameters.pop('emoji')
-        except KeyError:
+        if emoji is ...:
             emoji = self.emoji
         else:
             emoji = validate_emoji(emoji)
         
         # state
-        try:
-            state = keyword_parameters.pop('state')
-        except KeyError:
+        if state is ...:
             state = self.state
         else:
             state = validate_state(state)
         
+        # Construct
         new = object.__new__(type(self))
         new.created_at = created_at
         new.emoji = emoji
         new.state = state
         return new
+    
+    
+    @copy_docs(ActivityMetadataBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        _pop_empty_name(keyword_parameters)
+        return self.copy_with(
+            created_at = keyword_parameters.pop('created_at', ...),
+            emoji = keyword_parameters.pop('emoji', ...),
+            state = keyword_parameters.pop('state', ...),
+        )
     
     
     @property

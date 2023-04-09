@@ -89,23 +89,22 @@ def test__ActivityMetadataRich__to_data():
     timestamps = ActivityTimestamps(end = DateTime(2014, 9, 12), start = DateTime(2014, 9, 10))
     url = 'https://www.astil.dev/'
     
-    keyword_parameters = {
-        'application_id': application_id,
-        'assets': assets,
-        'created_at': created_at,
-        'details': details,
-        'flags': flags,
-        'activity_id': activity_id,
-        'name': name,
-        'party': party,
-        'secrets': secrets,
-        'session_id': session_id,
-        'state': state,
-        'sync_id': sync_id,
-        'timestamps': timestamps,
-        'url': url,
-    }
-    activity_metadata = ActivityMetadataRich(keyword_parameters)
+    activity_metadata = ActivityMetadataRich(
+        application_id = application_id,
+        assets = assets,
+        created_at = created_at,
+        details = details,
+        flags = flags,
+        activity_id = activity_id,
+        name = name,
+        party = party,
+        secrets = secrets,
+        session_id = session_id,
+        state = state,
+        sync_id = sync_id,
+        timestamps = timestamps,
+        url = url,
+    )
     
     expected_output = {
         'name': name,
@@ -137,23 +136,22 @@ def test__ActivityMetadataRich__to_data__user():
     timestamps = ActivityTimestamps(end = DateTime(2014, 9, 12), start = DateTime(2014, 9, 10))
     url = 'https://www.astil.dev/'
     
-    keyword_parameters = {
-        'application_id': application_id,
-        'assets': assets,
-        'created_at': created_at,
-        'details': details,
-        'flags': flags,
-        'activity_id': activity_id,
-        'name': name,
-        'party': party,
-        'secrets': secrets,
-        'session_id': session_id,
-        'state': state,
-        'sync_id': sync_id,
-        'timestamps': timestamps,
-        'url': url,
-    }
-    activity_metadata = ActivityMetadataRich(keyword_parameters)
+    activity_metadata = ActivityMetadataRich(
+        application_id = application_id,
+        assets = assets,
+        created_at = created_at,
+        details = details,
+        flags = flags,
+        activity_id = activity_id,
+        name = name,
+        party = party,
+        secrets = secrets,
+        session_id = session_id,
+        state = state,
+        sync_id = sync_id,
+        timestamps = timestamps,
+        url = url,
+    )
     
     expected_output = {
         'assets': assets.to_data(defaults = True),
@@ -191,23 +189,22 @@ def test__ActivityMetadataRich__to_data__include_internals():
     timestamps = ActivityTimestamps(end = DateTime(2014, 9, 12), start = DateTime(2014, 9, 10))
     url = 'https://www.astil.dev/'
     
-    keyword_parameters = {
-        'application_id': application_id,
-        'assets': assets,
-        'created_at': created_at,
-        'details': details,
-        'flags': flags,
-        'activity_id': activity_id,
-        'name': name,
-        'party': party,
-        'secrets': secrets,
-        'session_id': session_id,
-        'state': state,
-        'sync_id': sync_id,
-        'timestamps': timestamps,
-        'url': url,
-    }
-    activity_metadata = ActivityMetadataRich(keyword_parameters)
+    activity_metadata = ActivityMetadataRich(
+        application_id = application_id,
+        assets = assets,
+        created_at = created_at,
+        details = details,
+        flags = flags,
+        activity_id = activity_id,
+        name = name,
+        party = party,
+        secrets = secrets,
+        session_id = session_id,
+        state = state,
+        sync_id = sync_id,
+        timestamps = timestamps,
+        url = url,
+    )
     
     expected_output = {
         'application_id': str(application_id),
@@ -263,23 +260,22 @@ def test__ActivityMetadataRich__update_attributes():
     old_url = 'https://www.astil.dev/'
     new_url = 'https://www.astil.dev/project/hata/'
 
-    keyword_parameters = {
-        'application_id': application_id,
-        'assets': old_assets,
-        'created_at': old_created_at,
-        'details': old_details,
-        'flags': old_flags,
-        'activity_id': activity_id,
-        'name': old_name,
-        'party': old_party,
-        'secrets': old_secrets,
-        'session_id': old_session_id,
-        'state': old_state,
-        'sync_id': old_sync_id,
-        'timestamps': old_timestamps,
-        'url': old_url,
-    }
-    activity_metadata = ActivityMetadataRich(keyword_parameters)
+    activity_metadata = ActivityMetadataRich(
+        application_id = application_id,
+        assets = old_assets,
+        created_at = old_created_at,
+        details = old_details,
+        flags = old_flags,
+        activity_id = activity_id,
+        name = old_name,
+        party = old_party,
+        secrets = old_secrets,
+        session_id = old_session_id,
+        state = old_state,
+        sync_id = old_sync_id,
+        timestamps = old_timestamps,
+        url = old_url,
+    )
     
     data = {
         'assets': new_assets.to_data(),
@@ -342,23 +338,22 @@ def test__ActivityMetadataRich__difference_update_attributes():
     old_url = 'https://www.astil.dev/'
     new_url = 'https://www.astil.dev/project/hata/'
 
-    keyword_parameters = {
-        'application_id': application_id,
-        'assets': old_assets,
-        'created_at': old_created_at,
-        'details': old_details,
-        'flags': old_flags,
-        'activity_id': activity_id,
-        'name': old_name,
-        'party': old_party,
-        'secrets': old_secrets,
-        'session_id': old_session_id,
-        'state': old_state,
-        'sync_id': old_sync_id,
-        'timestamps': old_timestamps,
-        'url': old_url,
-    }
-    activity_metadata = ActivityMetadataRich(keyword_parameters)
+    activity_metadata = ActivityMetadataRich(
+        application_id = application_id,
+        assets = old_assets,
+        created_at = old_created_at,
+        details = old_details,
+        flags = old_flags,
+        activity_id = activity_id,
+        name = old_name,
+        party = old_party,
+        secrets = old_secrets,
+        session_id = old_session_id,
+        state = old_state,
+        sync_id = old_sync_id,
+        timestamps = old_timestamps,
+        url = old_url,
+    )
     
     data = {
         'assets': new_assets.to_data(),

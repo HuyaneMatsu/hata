@@ -83,19 +83,19 @@ class AutoModerationRuleTriggerMetadataKeyword(AutoModerationRuleTriggerMetadata
     """
     __slots__ = ('excluded_keywords', 'keywords', 'regex_patterns')
     
-    def __new__(cls, keywords = None, regex_patterns = None, excluded_keywords = None):
+    def __new__(cls, keywords = ..., regex_patterns = ..., excluded_keywords = ...):
         """
         Creates a new keyword trigger metadata for ``AutoModerationRule``-s.
         
         Parameters
         ----------
-        keywords : `None`, `str`, `iterable` of `str` = `None`, Optional
+        keywords : `None`, `str`, `iterable` of `str`, Optional
             Substrings which will be searched for in content.
         
-        regex_patterns : `None`, `tuple` of `str` = `None`, Optional
+        regex_patterns : `None`, `tuple` of `str`, Optional
             Regular expression patterns which are matched against content.
         
-        excluded_keywords : `None`, `str`, `iterable` of `str` = `None`, Optional
+        excluded_keywords : `None`, `str`, `iterable` of `str`, Optional
             Excluded keywords from the preset.
         
         Raises
@@ -103,10 +103,25 @@ class AutoModerationRuleTriggerMetadataKeyword(AutoModerationRuleTriggerMetadata
         TypeError
             - If a parameter's type is incorrect.
         """
-        excluded_keywords = validate_excluded_keywords(excluded_keywords)
-        keywords = validate_keywords(keywords)
-        regex_patterns = validate_regex_patterns(regex_patterns)
+        # excluded_keywords
+        if excluded_keywords is ...:
+            excluded_keywords = None
+        else:
+            excluded_keywords = validate_excluded_keywords(excluded_keywords)
         
+        # keywords
+        if keywords is ...:
+            keywords = None
+        else:
+            keywords = validate_keywords(keywords)
+        
+        # regex_patterns
+        if regex_patterns is ...:
+            regex_patterns = None
+        else:
+            regex_patterns = validate_regex_patterns(regex_patterns)
+        
+        # Construct
         self = object.__new__(cls)
         self.excluded_keywords = excluded_keywords
         self.keywords = keywords

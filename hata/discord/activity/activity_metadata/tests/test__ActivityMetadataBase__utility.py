@@ -9,7 +9,7 @@ def test__ActivityMetadataBase__copy():
     """
     Tests whether ``ActivityMetadataBase.copy`` works as intended.
     """
-    activity_metadata = ActivityMetadataBase({})
+    activity_metadata = ActivityMetadataBase()
     
     copy = activity_metadata.copy()
     _assert_fields_set(copy)
@@ -24,9 +24,24 @@ def test__ActivityMetadataBase__copy_with__0():
     
     Case: No fields given.
     """
-    activity_metadata = ActivityMetadataBase({})
+    activity_metadata = ActivityMetadataBase()
     
-    copy = activity_metadata.copy_with({})
+    copy = activity_metadata.copy_with()
+    _assert_fields_set(copy)
+    vampytest.assert_is_not(copy, activity_metadata)
+    
+    vampytest.assert_eq(copy, activity_metadata)
+
+
+def test__ActivityMetadataBase__copy_with_keyword_parameters__0():
+    """
+    Tests whether ``ActivityMetadataBase.copy_with_keyword_parameters`` works as intended.
+    
+    Case: No fields given.
+    """
+    activity_metadata = ActivityMetadataBase()
+    
+    copy = activity_metadata.copy_with_keyword_parameters({})
     _assert_fields_set(copy)
     vampytest.assert_is_not(copy, activity_metadata)
     

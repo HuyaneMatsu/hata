@@ -43,12 +43,8 @@ def test__ActivityMetadataRich__new__0():
     
     Case: no fields given.
     """
-    keyword_parameters = {}
-    activity_metadata = ActivityMetadataRich(keyword_parameters)
+    activity_metadata = ActivityMetadataRich()
     _assert_fields_set(activity_metadata)
-    
-    vampytest.assert_eq(keyword_parameters, {})
-
 
 
 def test__ActivityMetadataRich__new__1():
@@ -63,6 +59,74 @@ def test__ActivityMetadataRich__new__1():
     details = 'vocal'
     flags = ActivityFlag(1)
     activity_id = 202209070001
+    name = 'Iceon'
+    party = ActivityParty(party_id = 'Kamase-Tora')
+    secrets = ActivitySecrets(join = 'deitarabochi')
+    session_id = 'Autobahn'
+    state = 'plain'
+    sync_id = 'asia'
+    timestamps = ActivityTimestamps(end = DateTime(2014, 9, 12), start = DateTime(2014, 9, 10))
+    url = 'https://www.astil.dev/'
+    
+    activity_metadata = ActivityMetadataRich(
+        application_id = application_id,
+        assets = assets,
+        created_at = created_at,
+        details = details,
+        flags = flags,
+        activity_id = activity_id,
+        name = name,
+        party = party,
+        secrets = secrets,
+        session_id = session_id,
+        state = state,
+        sync_id = sync_id,
+        timestamps = timestamps,
+        url = url,
+    )
+    _assert_fields_set(activity_metadata)
+    
+    vampytest.assert_eq(activity_metadata.application_id, application_id)
+    vampytest.assert_eq(activity_metadata.assets, assets)
+    vampytest.assert_eq(activity_metadata.created_at, created_at)
+    vampytest.assert_eq(activity_metadata.details, details)
+    vampytest.assert_eq(activity_metadata.flags, flags)
+    vampytest.assert_eq(activity_metadata.id, activity_id)
+    vampytest.assert_eq(activity_metadata.name, name)
+    vampytest.assert_eq(activity_metadata.party, party)
+    vampytest.assert_eq(activity_metadata.secrets, secrets)
+    vampytest.assert_eq(activity_metadata.session_id, session_id)
+    vampytest.assert_eq(activity_metadata.state, state)
+    vampytest.assert_eq(activity_metadata.sync_id, sync_id)
+    vampytest.assert_eq(activity_metadata.timestamps, timestamps)
+    vampytest.assert_eq(activity_metadata.url, url)
+
+
+def test__ActivityMetadataRich__from_keyword_parameters__0():
+    """
+    Tests whether ``ActivityMetadataRich.from_keyword_parameters`` works as intended.
+    
+    Case: no fields given.
+    """
+    keyword_parameters = {}
+    activity_metadata = ActivityMetadataRich.from_keyword_parameters(keyword_parameters)
+    _assert_fields_set(activity_metadata)
+    
+    vampytest.assert_eq(keyword_parameters, {})
+
+
+def test__ActivityMetadataRich__from_keyword_parameters__1():
+    """
+    Tests whether ``ActivityMetadataRich.from_keyword_parameters`` works as intended.
+    
+    Case: all fields given.
+    """
+    application_id = 202304090000
+    assets = ActivityAssets(image_large = 'senya')
+    created_at = DateTime(2014, 9, 11)
+    details = 'vocal'
+    flags = ActivityFlag(1)
+    activity_id = 202304090001
     name = 'Iceon'
     party = ActivityParty(party_id = 'Kamase-Tora')
     secrets = ActivitySecrets(join = 'deitarabochi')
@@ -88,7 +152,7 @@ def test__ActivityMetadataRich__new__1():
         'timestamps': timestamps,
         'url': url,
     }
-    activity_metadata = ActivityMetadataRich(keyword_parameters)
+    activity_metadata = ActivityMetadataRich.from_keyword_parameters(keyword_parameters)
     _assert_fields_set(activity_metadata)
     
     vampytest.assert_eq(keyword_parameters, {})

@@ -1,7 +1,5 @@
 __all__ = ('ActivityMetadataRich',)
 
-import warnings
-
 from scarletio import copy_docs
 
 from .base import ActivityMetadataBase
@@ -38,7 +36,7 @@ class ActivityMetadataRich(ActivityMetadataBase):
     name : `str`
         The activity's name.
     party : `None`, ``ActivityParty``
-        The activity's party.
+        The activity's party. Defaults to `None`.
     secrets : `None`, ``ActivitySecrets``
         The activity's secrets. Defaults to `None`.
     session_id : `None`, `str`
@@ -57,133 +55,146 @@ class ActivityMetadataRich(ActivityMetadataBase):
         'state', 'sync_id', 'timestamps', 'url'
     )
     
-    @copy_docs(ActivityMetadataBase.__new__)
-    def __new__(cls, keyword_parameters):
+    
+    def __new__(
+        cls,
+        *,
+        activity_id = ...,
+        application_id = ...,
+        assets = ...,
+        created_at = ...,
+        details = ...,
+        flags = ...,
+        name = ...,
+        party = ...,
+        secrets = ...,
+        session_id = ...,
+        state = ...,
+        sync_id = ...,
+        timestamps = ...,
+        url = ...,
+    ):
+        """
+        Creates a new rich activity metadata from the given parameters.
+        
+        Attributes
+        ----------
+        activity_id : `int`
+            The id of the activity.
+        application_id : `int`
+            The id of the activity's application.
+        assets : `None`, ``ActivityAssets``
+            The activity's assets
+        created_at : `None`, `datetime`
+            When the activity was created.
+        details : `None`, `str`
+            What the player is currently doing.
+        flags : ``ActivityFlag``, `int`
+            The flags of the activity.
+        name : `str`
+            The activity's name.
+        party : `None`, ``ActivityParty``
+            The activity's party.
+        secrets : `None`, ``ActivitySecrets``
+            The activity's secrets.
+        session_id : `None`, `str`
+            Spotify activity's session's id. 
+        state : `None`, `str`
+            The player's current party status.
+        sync_id : `None`, `str`
+            The id of the currently playing track of a spotify activity.
+        timestamps : `None`, ``ActivityTimestamps``
+            The activity's timestamps.
+        url : `None`, `str`, Optional
+            The url of the stream (Twitch or Youtube only).
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is unexpected.
+        ValueError
+           - If an parameter's value is unexpected.
+        """
         # application_id
-        try:
-            application_id = keyword_parameters.pop('application_id')
-        except KeyError:
+        if application_id is ...:
             application_id = 0
         else:
             application_id = validate_application_id(application_id)
         
         # assets
-        try:
-            assets = keyword_parameters.pop('assets')
-        except KeyError:
+        if assets is ...:
             assets = None
         else:
             assets = validate_assets(assets)
         
         # created_at
-        try:
-            created_at = keyword_parameters.pop('created_at')
-        except KeyError:
+        if created_at is ...:
             created_at = None
         else:
             created_at = validate_created_at(created_at)
         
         # details
-        try:
-            details = keyword_parameters.pop('details')
-        except KeyError:
+        if details is ...:
             details = None
         else:
             details = validate_details(details)
         
         # flags
-        try:
-            flags = keyword_parameters.pop('flags')
-        except KeyError:
+        if flags is ...:
             flags = ActivityFlag()
         else:
             flags = validate_flags(flags)
         
-        # id_ (deprecated)
-        try:
-            activity_id = keyword_parameters.pop('id_')
-        except KeyError:
-            pass
-        else:
-            warnings.warn(
-                (
-                    f'`{cls.__name__}.__new__`\'s `id_` parameter is deprecated and will be removed in 2023 Marc. '
-                    f'Please use `activity_id` instead.'
-                ),
-                FutureWarning,
-                stacklevel = 2,
-            )
-            
-            keyword_parameters['activity_id'] = activity_id
-        
         # activity_id
-        try:
-            activity_id = keyword_parameters.pop('activity_id')
-        except KeyError:
+        if activity_id is ...:
             activity_id = 0
         else:
             activity_id = validate_id(activity_id)
         
         # name
-        try:
-            name = keyword_parameters.pop('name')
-        except KeyError:
+        if name is ...:
             name = ''
         else:
             name = validate_name(name)
         
         # party
-        try:
-            party = keyword_parameters.pop('party')
-        except KeyError:
+        if party is ...:
             party = None
         else:
             party = validate_party(party)
         
         # secrets
-        try:
-            secrets = keyword_parameters.pop('secrets')
-        except KeyError:
+        if secrets is ...:
             secrets = None
         else:
             secrets = validate_secrets(secrets)
         
         # session_id
-        try:
-            session_id = keyword_parameters.pop('session_id')
-        except KeyError:
+        if session_id is ...:
             session_id = None
         else:
             session_id = validate_session_id(session_id)
         
         # state
-        try:
-            state = keyword_parameters.pop('state')
-        except KeyError:
+        if state is ...:
             state = None
         else:
             state = validate_state(state)
         
         # sync_id
-        try:
-            sync_id = keyword_parameters.pop('sync_id')
-        except KeyError:
+        if sync_id is ...:
             sync_id = None
         else:
             sync_id = validate_sync_id(sync_id)
         
         # timestamps
-        try:
-            timestamps = keyword_parameters.pop('timestamps')
-        except KeyError:
+        if timestamps is ...:
             timestamps = None
         else:
             timestamps = validate_timestamps(timestamps)
         
         # url
-        try:
-            url = keyword_parameters.pop('url')
-        except KeyError:
+        if url is ...:
             url = None
         else:
             url = validate_url(url)
@@ -205,6 +216,27 @@ class ActivityMetadataRich(ActivityMetadataBase):
         self.timestamps = timestamps
         self.url = url
         return self
+    
+    
+    @classmethod
+    @copy_docs(ActivityMetadataBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            activity_id = keyword_parameters.pop('activity_id', ...),
+            application_id = keyword_parameters.pop('application_id', ...),
+            assets = keyword_parameters.pop('assets', ...),
+            created_at = keyword_parameters.pop('created_at', ...),
+            details = keyword_parameters.pop('details', ...),
+            flags = keyword_parameters.pop('flags', ...),
+            name = keyword_parameters.pop('name', ...),
+            party = keyword_parameters.pop('party', ...),
+            secrets = keyword_parameters.pop('secrets', ...),
+            session_id = keyword_parameters.pop('session_id', ...),
+            state = keyword_parameters.pop('state', ...),
+            sync_id = keyword_parameters.pop('sync_id', ...),
+            timestamps = keyword_parameters.pop('timestamps', ...),
+            url = keyword_parameters.pop('url', ...),
+        )
     
     
     @copy_docs(ActivityMetadataBase.__repr__)
@@ -518,20 +550,77 @@ class ActivityMetadataRich(ActivityMetadataBase):
         return new
     
     
-    @copy_docs(ActivityMetadataBase.copy_with)
-    def copy_with(self, keyword_parameters):
+    def copy_with(
+        self, 
+        *,
+        activity_id = ...,
+        application_id = ...,
+        assets = ...,
+        created_at = ...,
+        details = ...,
+        flags = ...,
+        name = ...,
+        party = ...,
+        secrets = ...,
+        session_id = ...,
+        state = ...,
+        sync_id = ...,
+        timestamps = ...,
+        url = ...,
+    ):
+        """
+        Copies the rich activity metadata with the given fields.
+        
+        Attributes
+        ----------
+        activity_id : `int`
+            The id of the activity.
+        application_id : `int`
+            The id of the activity's application.
+        assets : `None`, ``ActivityAssets``
+            The activity's assets
+        created_at : `None`, `datetime`
+            When the activity was created.
+        details : `None`, `str`
+            What the player is currently doing.
+        flags : ``ActivityFlag``, `int`
+            The flags of the activity.
+        name : `str`
+            The activity's name.
+        party : `None`, ``ActivityParty``
+            The activity's party.
+        secrets : `None`, ``ActivitySecrets``
+            The activity's secrets.
+        session_id : `None`, `str`
+            Spotify activity's session's id. 
+        state : `None`, `str`
+            The player's current party status.
+        sync_id : `None`, `str`
+            The id of the currently playing track of a spotify activity.
+        timestamps : `None`, ``ActivityTimestamps``
+            The activity's timestamps.
+        url : `None`, `str`, Optional
+            The url of the stream (Twitch or Youtube only).
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is unexpected.
+        ValueError
+           - If an parameter's value is unexpected.
+        """
         # application_id
-        try:
-            application_id = keyword_parameters.pop('application_id')
-        except KeyError:
+        if application_id is ...:
             application_id = self.application_id
         else:
             application_id = validate_application_id(application_id)
         
         # assets
-        try:
-            assets = keyword_parameters.pop('assets')
-        except KeyError:
+        if assets is ...:
             assets = self.assets
             if (assets is not None):
                 assets = assets.copy()
@@ -539,49 +628,37 @@ class ActivityMetadataRich(ActivityMetadataBase):
             assets = validate_assets(assets)
         
         # created_at
-        try:
-            created_at = keyword_parameters.pop('created_at')
-        except KeyError:
+        if created_at is ...:
             created_at = self.created_at
         else:
             created_at = validate_created_at(created_at)
         
         # details
-        try:
-            details = keyword_parameters.pop('details')
-        except KeyError:
+        if details is ...:
             details = self.details
         else:
             details = validate_details(details)
         
         # flags
-        try:
-            flags = keyword_parameters.pop('flags')
-        except KeyError:
+        if flags is ...:
             flags = self.flags
         else:
             flags = validate_flags(flags)
         
         # activity_id
-        try:
-            activity_id = keyword_parameters.pop('activity_id')
-        except KeyError:
+        if activity_id is ...:
             activity_id = self.id
         else:
             activity_id = validate_id(activity_id)
         
         # name
-        try:
-            name = keyword_parameters.pop('name')
-        except KeyError:
+        if name is ...:
             name = self.name
         else:
             name = validate_name(name)
         
         # party
-        try:
-            party = keyword_parameters.pop('party')
-        except KeyError:
+        if party is ...:
             party = self.party
             if (party is not None):
                 party = party.copy()
@@ -589,9 +666,7 @@ class ActivityMetadataRich(ActivityMetadataBase):
             party = validate_party(party)
         
         # secrets
-        try:
-            secrets = keyword_parameters.pop('secrets')
-        except KeyError:
+        if secrets is ...:
             secrets = self.secrets
             if (secrets is not None):
                 secrets = secrets.copy()
@@ -599,33 +674,25 @@ class ActivityMetadataRich(ActivityMetadataBase):
             secrets = validate_secrets(secrets)
         
         # session_id
-        try:
-            session_id = keyword_parameters.pop('session_id')
-        except KeyError:
+        if session_id is ...:
             session_id = self.session_id
         else:
             session_id = validate_session_id(session_id)
         
         # state
-        try:
-            state = keyword_parameters.pop('state')
-        except KeyError:
+        if state is ...:
             state = self.state
         else:
             state = validate_state(state)
         
         # sync_id
-        try:
-            sync_id = keyword_parameters.pop('sync_id')
-        except KeyError:
+        if sync_id is ...:
             sync_id = self.sync_id
         else:
             sync_id = validate_sync_id(sync_id)
         
         # timestamps
-        try:
-            timestamps = keyword_parameters.pop('timestamps')
-        except KeyError:
+        if timestamps is ...:
             timestamps = self.timestamps
             if (timestamps is not None):
                 timestamps = timestamps.copy()
@@ -633,9 +700,7 @@ class ActivityMetadataRich(ActivityMetadataBase):
             timestamps = validate_timestamps(timestamps)
         
         # url
-        try:
-            url = keyword_parameters.pop('url')
-        except KeyError:
+        if url is ...:
             url = self.url
         else:
             url = validate_url(url)
@@ -657,3 +722,23 @@ class ActivityMetadataRich(ActivityMetadataBase):
         new.timestamps = timestamps
         new.url = url
         return new
+    
+    
+    @copy_docs(ActivityMetadataBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            activity_id = keyword_parameters.pop('activity_id', ...),
+            application_id = keyword_parameters.pop('application_id', ...),
+            assets = keyword_parameters.pop('assets', ...),
+            created_at = keyword_parameters.pop('created_at', ...),
+            details = keyword_parameters.pop('details', ...),
+            flags = keyword_parameters.pop('flags', ...),
+            name = keyword_parameters.pop('name', ...),
+            party = keyword_parameters.pop('party', ...),
+            secrets = keyword_parameters.pop('secrets', ...),
+            session_id = keyword_parameters.pop('session_id', ...),
+            state = keyword_parameters.pop('state', ...),
+            sync_id = keyword_parameters.pop('sync_id', ...),
+            timestamps = keyword_parameters.pop('timestamps', ...),
+            url = keyword_parameters.pop('url', ...),
+        )

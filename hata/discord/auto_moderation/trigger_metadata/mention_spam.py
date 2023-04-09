@@ -53,6 +53,7 @@ class AutoModerationRuleTriggerMetadataMentionSpam(AutoModerationRuleTriggerMeta
         else:
             raid_protection = validate_raid_protection(raid_protection)
         
+        # Construct
         self = object.__new__(cls)
         self.mention_limit = mention_limit
         self.raid_protection = raid_protection

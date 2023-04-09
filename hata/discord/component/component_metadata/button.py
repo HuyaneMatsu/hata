@@ -50,57 +50,79 @@ class ComponentMetadataButton(ComponentMetadataBase):
     """
     __slots__ = ('button_style', 'custom_id', 'emoji', 'enabled', 'label', 'url',)
     
-    @copy_docs(ComponentMetadataBase.__new__)
-    def __new__(cls, keyword_parameters):
+    
+    def __new__(cls, *, button_style = ..., custom_id = ..., emoji = ..., enabled = ..., label = ..., url = ...):
+        """
+        Creates a new button component metadata.
+        
+        Parameters
+        ----------
+        button_style : ``ButtonStyle``, `int`, Optional (Keyword only)
+            The button's style.
+        
+        custom_id : `None`, `str`, Optional (Keyword only)
+            Custom identifier to detect which button was clicked by the user.
+            
+            > Mutually exclusive with the `url` field.
+        
+        emoji : `None`, ``Emoji``, Optional (Keyword only)
+            Emoji of the button if applicable.
+        
+        enabled : `bool`, Optional (Keyword only)
+            Whether the component is enabled.
+        
+        label : `None`, `str`, Optional (Keyword only)
+            Label of the component.
+        
+        url : `None`, `str`, Optional (Keyword only)
+            Url to redirect to when clicking on the button.
+            
+            > Mutually exclusive with the `custom_id` field.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
         # button_style
-        try:
-            button_style = keyword_parameters.pop('button_style')
-        except KeyError:
+        if button_style is ...:
             button_style = BUTTON_STYLE_DEFAULT
         else:
             button_style = validate_button_style(button_style)
         
         # custom_id
-        try:
-            custom_id = keyword_parameters.pop('custom_id')
-        except KeyError:
+        if custom_id is ...:
             custom_id = None
         else:
             custom_id = validate_custom_id(custom_id)
         
         # emoji
-        try:
-            emoji = keyword_parameters.pop('emoji')
-        except KeyError:
+        if emoji is ...:
             emoji = None
         else:
             emoji = validate_emoji(emoji)
         
         # enabled
-        try:
-            enabled = keyword_parameters.pop('enabled')
-        except KeyError:
+        if enabled is ...:
             enabled = True
         else:
             enabled = validate_enabled(enabled)
         
         # label
-        try:
-            label = keyword_parameters.pop('label')
-        except KeyError:
+        if label is ...:
             label = None
         else:
             label = validate_label(label)
         
         # url
-        try:
-            url = keyword_parameters.pop('url')
-        except KeyError:
+        if url is ...:
             url = None
         else:
             url = validate_url(url)
         
-        
+        # Construct
         self = object.__new__(cls)
         self.button_style = button_style
         self.custom_id = custom_id
@@ -112,6 +134,19 @@ class ComponentMetadataButton(ComponentMetadataBase):
         self._validate()
         
         return self
+    
+    
+    @classmethod
+    @copy_docs(ComponentMetadataBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            button_style = keyword_parameters.pop('button_style', ...),
+            custom_id = keyword_parameters.pop('custom_id', ...),
+            emoji = keyword_parameters.pop('emoji', ...),
+            enabled = keyword_parameters.pop('enabled', ...),
+            label = keyword_parameters.pop('label', ...),
+            url = keyword_parameters.pop('url', ...),
+        )
     
     
     def _validate(self):
@@ -302,76 +337,82 @@ class ComponentMetadataButton(ComponentMetadataBase):
         return new
     
     
-    @copy_docs(ComponentMetadataBase.copy_with)
-    def copy_with(self, keyword_parameters):
+    def copy_with(self, *, button_style = ..., custom_id = ..., emoji = ..., enabled = ..., label = ..., url = ...):
+        """
+        Copies the button component metadata with the given fields.
+        
+        Parameters
+        ----------
+        button_style : ``ButtonStyle``, `int`, Optional (Keyword only)
+            The button's style.
+        
+        custom_id : `None`, `str`, Optional (Keyword only)
+            Custom identifier to detect which button was clicked by the user.
+            
+            > Mutually exclusive with the `url` field.
+        
+        emoji : `None`, ``Emoji``, Optional (Keyword only)
+            Emoji of the button if applicable.
+        
+        enabled : `bool`, Optional (Keyword only)
+            Whether the component is enabled.
+        
+        label : `None`, `str`, Optional (Keyword only)
+            Label of the component.
+        
+        url : `None`, `str`, Optional (Keyword only)
+            Url to redirect to when clicking on the button.
+            
+            > Mutually exclusive with the `custom_id` field.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
         # button_style
-        try:
-            button_style = keyword_parameters.pop('button_style')
-        except KeyError:
+        if button_style is ...:
             button_style = self.button_style
         else:
             button_style = validate_button_style(button_style)
         
         # custom_id
-        try:
-            custom_id = keyword_parameters.pop('custom_id')
-        except KeyError:
+        if custom_id is ...:
             custom_id = self.custom_id
         else:
             custom_id = validate_custom_id(custom_id)
         
         # emoji
-        try:
-            emoji = keyword_parameters.pop('emoji')
-        except KeyError:
+        if emoji is ...:
             emoji = self.emoji
         else:
             emoji = validate_emoji(emoji)
         
         # enabled
-        try:
-            enabled = keyword_parameters.pop('enabled')
-        except KeyError:
+        if enabled is ...:
             enabled = self.enabled
         else:
             enabled = validate_enabled(enabled)
         
         # label
-        try:
-            label = keyword_parameters.pop('label')
-        except KeyError:
+        if label is ...:
             label = self.label
         else:
             label = validate_label(label)
         
         # url
-        try:
-            url = keyword_parameters.pop('url')
-        except KeyError:
+        if url is ...:
             url = self.url
         else:
             url = validate_url(url)
         
-        # Deprecated: style
-        
-        try:
-            style = keyword_parameters.pop('style')
-        except KeyError:
-            pass
-        else:
-            warnings.warn(
-                (
-                    '`style` parameter of components is deprecated and will be removed in 2023 February. '
-                    'Please use `button_style` for button components.'
-                ),
-                FutureWarning,
-                stacklevel = 3,
-            )
-            
-            button_style = validate_button_style(style)
-        
         # Construct
-        
         new = object.__new__(type(self))
         new.button_style = button_style
         new.custom_id = custom_id
@@ -383,3 +424,15 @@ class ComponentMetadataButton(ComponentMetadataBase):
         new._validate()
         
         return new
+    
+    
+    @copy_docs(ComponentMetadataBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            button_style = keyword_parameters.pop('button_style', ...),
+            custom_id = keyword_parameters.pop('custom_id', ...),
+            emoji = keyword_parameters.pop('emoji', ...),
+            enabled = keyword_parameters.pop('enabled', ...),
+            label = keyword_parameters.pop('label', ...),
+            url = keyword_parameters.pop('url', ...),
+        )

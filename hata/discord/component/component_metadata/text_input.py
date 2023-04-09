@@ -50,69 +50,100 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         'custom_id', 'label', 'max_length', 'min_length', 'placeholder', 'required', 'text_input_style', 'value'
     )
     
-    @copy_docs(ComponentMetadataBase.__new__)
-    def __new__(cls, keyword_parameters):
+    
+    def __new__(
+        cls,
+        *,
+        custom_id = ...,
+        label = ...,
+        max_length = ...,
+        min_length = ...,
+        placeholder = ...,
+        required = ...,
+        text_input_style = ...,
+        value = ...,
+    ):
+        """
+        Creates a new text input component metadata with the given parameters.
+        
+        Parameters
+        ----------
+        custom_id : `None`, `str`, Optional (Keyword only)
+            Custom identifier to detect which component was used by the user.
+        
+        label : `None`, `str`, Optional (Keyword only)
+            Label of the component.
+        
+        max_length : `int, Optional (Keyword only)
+            The minimal length of the inputted text.
+        
+        min_length : `int`, Optional (Keyword only)
+            The minimal amount of options to select.
+        
+        placeholder : `None`, `str`, Optional (Keyword only)
+            Placeholder text of the select.
+        
+        required : `bool`, Optional (Keyword only)
+            Whether the field is required to be fulfilled.
+        
+        text_input_style : ``TextInputStyle``, `int`, Optional (Keyword only)
+            The text input's style.
+        
+        value : `None`, `str`, Optional (Keyword only)
+            The text input's default value.
+            
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
         # custom_id
-        try:
-            custom_id = keyword_parameters.pop('custom_id')
-        except KeyError:
+        if custom_id is ...:
             custom_id = None
         else:
             custom_id = validate_custom_id(custom_id)
         
         # label
-        try:
-            label = keyword_parameters.pop('label')
-        except KeyError:
+        if label is ...:
             label = None
         else:
             label = validate_label(label)
         
         # max_length
-        try:
-            max_length = keyword_parameters.pop('max_length')
-        except KeyError:
+        if max_length is ...:
             max_length = MAX_LENGTH_DEFAULT
         else:
             max_length = validate_max_length(max_length)
         
         # min_length
-        try:
-            min_length = keyword_parameters.pop('min_length')
-        except KeyError:
+        if min_length is ...:
             min_length = MIN_LENGTH_DEFAULT
         else:
             min_length = validate_min_length(min_length)
         
         # placeholder
-        try:
-            placeholder = keyword_parameters.pop('placeholder')
-        except KeyError:
+        if placeholder is ...:
             placeholder = None
         else:
             placeholder = validate_placeholder(placeholder)
         
         # required
-        try:
-            required = keyword_parameters.pop('required')
-        except KeyError:
+        if required is ...:
             required = None
         else:
             if (required is not None):
                 required = validate_required(required)
         
         # text_input_style
-        try:
-            text_input_style = keyword_parameters.pop('text_input_style')
-        except KeyError:
+        if text_input_style is ...:
             text_input_style = TEXT_INPUT_STYLE_DEFAULT
         else:
             text_input_style = validate_text_input_style(text_input_style)
         
         # value
-        try:
-            value = keyword_parameters.pop('value')
-        except KeyError:
+        if value is ...:
             value = None
         else:
             value = validate_value(value)
@@ -142,6 +173,21 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         self.text_input_style = text_input_style
         self.value = value
         return self
+    
+    
+    @classmethod
+    @copy_docs(ComponentMetadataBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            custom_id = keyword_parameters.pop('custom_id', ...),
+            label = keyword_parameters.pop('label', ...),
+            max_length = keyword_parameters.pop('max_length', ...),
+            min_length = keyword_parameters.pop('min_length', ...),
+            placeholder = keyword_parameters.pop('placeholder', ...),
+            required = keyword_parameters.pop('required', ...),
+            text_input_style = keyword_parameters.pop('text_input_style', ...),
+            value = keyword_parameters.pop('value', ...),
+        )
     
     
     @copy_docs(ComponentMetadataBase.__repr__)
@@ -346,89 +392,104 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         return new
     
     
-    @copy_docs(ComponentMetadataBase.copy_with)
-    def copy_with(self, keyword_parameters):
-        # custom_id
-        try:
-            custom_id = keyword_parameters.pop('custom_id')
-        except KeyError:
+    def copy_with(
+        self, 
+        *,
+        custom_id = ...,
+        label = ...,
+        max_length = ...,
+        min_length = ...,
+        placeholder = ...,
+        required = ...,
+        text_input_style = ...,
+        value = ...,
+    ):
+        """
+        Copies the text input component metadata with the given fields.
+        
+        Parameters
+        ----------
+        custom_id : `None`, `str`, Optional (Keyword only)
+            Custom identifier to detect which component was used by the user.
+        
+        label : `None`, `str`, Optional (Keyword only)
+            Label of the component.
+        
+        max_length : `int, Optional (Keyword only)
+            The minimal length of the inputted text.
+        
+        min_length : `int`, Optional (Keyword only)
+            The minimal amount of options to select.
+        
+        placeholder : `None`, `str`, Optional (Keyword only)
+            Placeholder text of the select.
+        
+        required : `bool`, Optional (Keyword only)
+            Whether the field is required to be fulfilled.
+        
+        text_input_style : ``TextInputStyle``, `int`, Optional (Keyword only)
+            The text input's style.
+        
+        value : `None`, `str`, Optional (Keyword only)
+            The text input's default value.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        if custom_id is ...:
             custom_id = self.custom_id
         else:
             custom_id = validate_custom_id(custom_id)
         
         # label
-        try:
-            label = keyword_parameters.pop('label')
-        except KeyError:
+        if label is ...:
             label = self.label
         else:
             label = validate_label(label)
         
         # max_length
-        try:
-            max_length = keyword_parameters.pop('max_length')
-        except KeyError:
+        if max_length is ...:
             max_length = self.max_length
         else:
             max_length = validate_max_length(max_length)
         
         # min_length
-        try:
-            min_length = keyword_parameters.pop('min_length')
-        except KeyError:
+        if min_length is ...:
             min_length = self.min_length
         else:
             min_length = validate_min_length(min_length)
         
         # placeholder
-        try:
-            placeholder = keyword_parameters.pop('placeholder')
-        except KeyError:
+        if placeholder is ...:
             placeholder = self.placeholder
         else:
             placeholder = validate_placeholder(placeholder)
         
         # required
-        try:
-            required = keyword_parameters.pop('required')
-        except KeyError:
+        if required is ...:
             required = self.required
         else:
             required = validate_required(required)
         
         # text_input_style
-        try:
-            text_input_style = keyword_parameters.pop('text_input_style')
-        except KeyError:
+        if text_input_style is ...:
             text_input_style = self.text_input_style
         else:
             text_input_style = validate_text_input_style(text_input_style)
 
         # value
-        try:
-            value = keyword_parameters.pop('value')
-        except KeyError:
+        if value is ...:
             value = self.value
         else:
             value = validate_value(value)
-        
-        # Deprecated: style
-        
-        try:
-            style = keyword_parameters.pop('style')
-        except KeyError:
-            pass
-        else:
-            warnings.warn(
-                (
-                    '`style` parameter of components is deprecated and will be removed in 2023 February. '
-                    'Please use `text_input_style` for text input components.'
-                ),
-                FutureWarning,
-                stacklevel = 3,
-            )
-            
-            text_input_style = validate_text_input_style(style)
         
         # Extra checks
         
@@ -436,7 +497,6 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
             text_input_style = TEXT_INPUT_STYLE_DEFAULT
         
         # Construct
-        
         new = object.__new__(type(self))
         new.custom_id = custom_id
         new.label = label
@@ -447,3 +507,17 @@ class ComponentMetadataTextInput(ComponentMetadataBase):
         new.text_input_style = text_input_style
         new.value = value
         return new
+    
+    
+    @copy_docs(ComponentMetadataBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            custom_id = keyword_parameters.pop('custom_id', ...),
+            label = keyword_parameters.pop('label', ...),
+            max_length = keyword_parameters.pop('max_length', ...),
+            min_length = keyword_parameters.pop('min_length', ...),
+            placeholder = keyword_parameters.pop('placeholder', ...),
+            required = keyword_parameters.pop('required', ...),
+            text_input_style = keyword_parameters.pop('text_input_style', ...),
+            value = keyword_parameters.pop('value', ...),
+        )

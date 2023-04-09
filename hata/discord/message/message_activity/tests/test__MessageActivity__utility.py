@@ -3,7 +3,7 @@ import vampytest
 from ..message_activity import MessageActivity
 from ..preinstanced import MessageActivityType
 
-from .test__MessageActivity__constructor import _check_is_all_attribute_set
+from .test__MessageActivity__constructor import _assert_fields_set
 
 
 def test__MessageActivity__copy():
@@ -19,7 +19,7 @@ def test__MessageActivity__copy():
     )
     copy = message_activity.copy()
     
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(message_activity, copy)
     
     vampytest.assert_eq(message_activity, copy)
@@ -40,7 +40,7 @@ def test__MessageActivity__copy_with__0():
     )
     copy = message_activity.copy_with()
     
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(message_activity, copy)
     
     vampytest.assert_eq(message_activity, copy)
@@ -66,7 +66,7 @@ def test__MessageActivity__copy_with__1():
         party_id = new_party_id,
     )
     
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(message_activity, copy)
     
     vampytest.assert_eq(copy.party_id, new_party_id)

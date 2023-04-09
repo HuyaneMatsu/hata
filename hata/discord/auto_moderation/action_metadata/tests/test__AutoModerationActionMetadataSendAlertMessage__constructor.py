@@ -3,7 +3,7 @@ import vampytest
 from ..alert_message import AutoModerationActionMetadataSendAlertMessage
 
 
-def _check_is_all_attribute_set(metadata):
+def _assert_fields_set(metadata):
     """
     Asserts whether all attributes are set of the given auto moderation action metadata.
     
@@ -23,7 +23,7 @@ def test__AutoModerationActionMetadataSendAlertMessage__new__0():
     Case: No parameters given
     """
     metadata = AutoModerationActionMetadataSendAlertMessage()
-    _check_is_all_attribute_set(metadata)
+    _assert_fields_set(metadata)
 
 
 def test__AutoModerationActionMetadataSendAlertMessage__new__1():
@@ -36,5 +36,5 @@ def test__AutoModerationActionMetadataSendAlertMessage__new__1():
     
     metadata = AutoModerationActionMetadataSendAlertMessage(channel_id = channel_id)
     
-    _check_is_all_attribute_set(metadata)
+    _assert_fields_set(metadata)
     vampytest.assert_eq(metadata.channel_id, channel_id)

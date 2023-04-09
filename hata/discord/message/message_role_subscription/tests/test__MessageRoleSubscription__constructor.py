@@ -3,7 +3,7 @@ import vampytest
 from ..message_role_subscription import MessageRoleSubscription
 
 
-def _check_is_all_attribute_set(message_role_subscription):
+def _assert_fields_set(message_role_subscription):
     """
     Tests whether all attributes are set of the given message activity.
     
@@ -26,7 +26,7 @@ def test__MessageRoleSubscription__new__0():
     Case: No fields given.
     """
     message_role_subscription = MessageRoleSubscription()
-    _check_is_all_attribute_set(message_role_subscription)
+    _assert_fields_set(message_role_subscription)
 
 
 def test__MessageRoleSubscription__new__1():
@@ -46,7 +46,7 @@ def test__MessageRoleSubscription__new__1():
         tier_name = tier_name,
         total_months = total_months,
     )
-    _check_is_all_attribute_set(message_role_subscription)
+    _assert_fields_set(message_role_subscription)
     
     vampytest.assert_eq(message_role_subscription.renewal, renewal)
     vampytest.assert_eq(message_role_subscription.subscription_listing_id, subscription_listing_id)

@@ -4,7 +4,7 @@ from ....application_command import ApplicationCommandOptionType
 
 from ..interaction_option import InteractionOption
 
-from .test__InteractionOption__constructor import _check_is_all_attribute_set
+from .test__InteractionOption__constructor import _assert_fields_set
 
 
 def test__InteractionOption__copy():
@@ -26,7 +26,7 @@ def test__InteractionOption__copy():
     )
     
     copy = interaction_option.copy()
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(interaction_option, copy)
     vampytest.assert_eq(interaction_option, copy)
 
@@ -52,7 +52,7 @@ def test__InteractionOption__copy_with():
     )
     
     copy = interaction_option.copy_with()
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(interaction_option, copy)
     vampytest.assert_eq(interaction_option, copy)
 
@@ -90,7 +90,7 @@ def test__InteractionOption__copy_with__1():
         value = new_value,
     )
     
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(interaction_option, copy)
 
     vampytest.assert_eq(copy.focused, new_focused)

@@ -10,7 +10,7 @@ def test__ComponentMetadataBase__placeholders():
     """
     Tests whether ``ComponentMetadataBase``'s placeholders works as intended.
     """
-    component_metadata = ComponentMetadataBase({})
+    component_metadata = ComponentMetadataBase()
     
     vampytest.assert_instance(component_metadata.button_style, ButtonStyle)
     vampytest.assert_instance(component_metadata.channel_types, tuple, nullable = True)

@@ -18,19 +18,41 @@ class ComponentMetadataRow(ComponentMetadataBase):
     """
     __slots__ = ('components',)
     
-    @copy_docs(ComponentMetadataBase.__new__)
-    def __new__(cls, keyword_parameters):
+    
+    def __new__(cls, *, components = ...):
+        """
+        Creates a new row component metadata.
+        
+        Parameters
+        ----------
+        components : `None`, `iterable` of ``Component``, Optional (Keyword only)
+            The contained components.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
         # components
-        try:
-            components = keyword_parameters.pop('components')
-        except KeyError:
+        if components is ...:
             components = None
         else:
             components = validate_components(components)
         
+        # Construct
         self = object.__new__(cls)
         self.components = components
         return self
+    
+    
+    @classmethod
+    @copy_docs(ComponentMetadataBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            components = keyword_parameters.pop('components', ...),
+        )
     
     
     @copy_docs(ComponentMetadataBase.__repr__)
@@ -124,12 +146,24 @@ class ComponentMetadataRow(ComponentMetadataBase):
         return new
     
     
-    @copy_docs(ComponentMetadataBase.copy_with)
-    def copy_with(self, keyword_parameters):
+    def copy_with(self, *, components = ...):
+        """
+        Copies the row component metadata with the given fields.
+        
+        Parameters
+        ----------
+        components : `None`, `iterable` of ``Component``, Optional (Keyword only)
+            The contained components.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
         # components
-        try:
-            components = keyword_parameters.pop('components')
-        except KeyError:
+        if components is ...:
             components = self.components
             if (components is not None):
                 components = tuple(component.copy() for component in self.components)
@@ -141,3 +175,10 @@ class ComponentMetadataRow(ComponentMetadataBase):
         new = object.__new__(type(self))
         new.components = components
         return new
+    
+    
+    @copy_docs(ComponentMetadataBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            components = keyword_parameters.pop('components', ...),
+        )

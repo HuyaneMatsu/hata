@@ -4,7 +4,7 @@ from ....application_command import ApplicationCommandOptionType
 
 from ..interaction_option import InteractionOption
 
-from .test__InteractionOption__constructor import _check_is_all_attribute_set
+from .test__InteractionOption__constructor import _assert_fields_set
 
 
 def test__InteractionOption__from_data():
@@ -26,7 +26,7 @@ def test__InteractionOption__from_data():
     }
     
     interaction_option = InteractionOption.from_data(data)
-    _check_is_all_attribute_set(interaction_option)
+    _assert_fields_set(interaction_option)
     
     vampytest.assert_eq(interaction_option.focused, focused)
     vampytest.assert_eq(interaction_option.name, name)

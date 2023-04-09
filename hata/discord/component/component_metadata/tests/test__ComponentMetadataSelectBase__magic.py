@@ -13,15 +13,13 @@ def test__ComponentMetadataSelectBase__repr():
     min_values = 9
     placeholder = 'swing'
     
-    keyword_parameters = {
-        'custom_id': custom_id,
-        'enabled': enabled,
-        'max_values': max_values,
-        'min_values': min_values,
-        'placeholder': placeholder,
-    }
-    
-    component_metadata = ComponentMetadataSelectBase(keyword_parameters)
+    component_metadata = ComponentMetadataSelectBase(
+        custom_id = custom_id,
+        enabled = enabled,
+        max_values = max_values,
+        min_values = min_values,
+        placeholder = placeholder,
+    )
     
     vampytest.assert_instance(repr(component_metadata), str)
 
@@ -36,15 +34,13 @@ def test__ComponentMetadataSelectBase__hash():
     min_values = 9
     placeholder = 'swing'
     
-    keyword_parameters = {
-        'custom_id': custom_id,
-        'enabled': enabled,
-        'max_values': max_values,
-        'min_values': min_values,
-        'placeholder': placeholder,
-    }
-    
-    component_metadata = ComponentMetadataSelectBase(keyword_parameters)
+    component_metadata = ComponentMetadataSelectBase(
+        custom_id = custom_id,
+        enabled = enabled,
+        max_values = max_values,
+        min_values = min_values,
+        placeholder = placeholder,
+    )
     
     vampytest.assert_instance(hash(component_metadata), int)
 
@@ -67,7 +63,7 @@ def test__ComponentMetadataSelectBase__eq():
         'placeholder': placeholder,
     }
     
-    component_metadata = ComponentMetadataSelectBase(keyword_parameters)
+    component_metadata = ComponentMetadataSelectBase(**keyword_parameters)
     
     vampytest.assert_eq(component_metadata, component_metadata)
     vampytest.assert_ne(component_metadata, object())
@@ -79,5 +75,5 @@ def test__ComponentMetadataSelectBase__eq():
         ('min_values', 8),
         ('placeholder', 'kokoro'),
     ):
-        test_component_metadata = ComponentMetadataSelectBase({**keyword_parameters, field_name: field_value})
+        test_component_metadata = ComponentMetadataSelectBase(**{**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(component_metadata, test_component_metadata)

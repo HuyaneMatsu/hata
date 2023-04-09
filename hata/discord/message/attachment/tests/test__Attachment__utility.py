@@ -2,7 +2,7 @@ import vampytest
 
 from ..attachment import Attachment
 
-from .test__Attachment__constructor import _check_is_all_attribute_set
+from .test__Attachment__constructor import _assert_fields_set
 
 
 def test__Attachment__copy__0():
@@ -32,7 +32,7 @@ def test__Attachment__copy__0():
     )
     copy = attachment.copy()
     
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(attachment, copy)
     
     vampytest.assert_eq(attachment, copy)
@@ -54,7 +54,7 @@ def test__Attachment__copy__1():
     
     copy = attachment.copy()
     
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(attachment, copy)
     
     vampytest.assert_eq(copy.id, 0)
@@ -88,7 +88,7 @@ def test__Attachment__copy_with__0():
     )
     copy = attachment.copy_with()
     
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(attachment, copy)
     
     vampytest.assert_eq(attachment, copy)
@@ -110,7 +110,7 @@ def test__Attachment__copy_with__1():
     
     copy = attachment.copy_with()
     
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(attachment, copy)
     
     vampytest.assert_eq(copy.id, 0)
@@ -162,7 +162,7 @@ def test__Attachment__copy_with__2():
         width = new_width,
     )
     
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(attachment, copy)
 
     vampytest.assert_eq(copy.content_type, new_content_type)

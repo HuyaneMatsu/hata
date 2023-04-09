@@ -2,8 +2,6 @@ __all__ = ('Component',)
 
 from scarletio import RichAttributeErrorBaseType, copy_docs, export
 
-from ...preconverters import preconvert_preinstanced_type
-
 from ..component_metadata import ComponentMetadataBase
 from ..component_metadata.fields import (
     validate_button_style, validate_channel_types, validate_enabled, validate_label, validate_max_length,
@@ -12,6 +10,7 @@ from ..component_metadata.fields import (
 )
 from ..shared_fields import validate_components, validate_custom_id, validate_emoji
 
+from .fields import parse_type, put_type_into, validate_type
 from .preinstanced import ComponentType
 
 
@@ -102,8 +101,8 @@ class Component(RichAttributeErrorBaseType):
         ValueError
             - If a parameter's value is incorrect.
         """
-        component_type = preconvert_preinstanced_type(component_type, 'component_type', ComponentType)
-        metadata = component_type.metadata_type(keyword_parameters)
+        component_type = validate_type(component_type)
+        metadata = component_type.metadata_type.from_keyword_parameters(keyword_parameters)
         
         if keyword_parameters:
             raise TypeError(
@@ -183,7 +182,7 @@ class Component(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Component data.
         
         Returns
@@ -191,7 +190,7 @@ class Component(RichAttributeErrorBaseType):
         self : `instance<cls>`
             Returns the created component.
         """
-        component_type = ComponentType.get(data.get('type', 0))
+        component_type = parse_type(data)
         metadata = component_type.metadata_type.from_data(data)
         
         self = object.__new__(cls)
@@ -211,13 +210,13 @@ class Component(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         # metadata
         data = self.metadata.to_data(defaults = defaults)
         
         # type
-        data['type'] = self.type.value
+        put_type_into(self.type, data, defaults)
         
         return data
     
@@ -238,14 +237,15 @@ class Component(RichAttributeErrorBaseType):
         return new
     
     
-    def copy_with(self, **keyword_parameters):
+    def copy_with(self, *, component_type = ..., **keyword_parameters):
         """
         Copies the component with changing it's field.
         
-        > Changing the component's type is not supported.
-        
         Parameters
         ----------
+        component_type : `int`, ``ComponentType``, Optional (Keyword only)
+            The component's type.
+        
         **keyword_parameters : Keyword parameters
             Keyword parameters defining which fields should be changed.
         
@@ -314,16 +314,27 @@ class Component(RichAttributeErrorBaseType):
         ValueError
             - If a parameter's value is incorrect.
         """
-        metadata = self.metadata.copy_with(keyword_parameters)
+        # component_type
+        if component_type is ...:
+            component_type = self.type
+        else:
+            component_type = validate_type(component_type)
+        
+        # metadata
+        if component_type is self.type:
+            metadata = self.metadata.copy_with_keyword_parameters(keyword_parameters)
+        else:
+            metadata = component_type.metadata_type.from_keyword_parameters(keyword_parameters)
         
         if keyword_parameters:
             raise TypeError(
                 f'Extra or unused keyword parameters: {keyword_parameters!r}.'
             )
         
+        # Construct
         new = object.__new__(type(self))
         new.metadata = metadata
-        new.type = self.type
+        new.type = component_type
         return new
     
     

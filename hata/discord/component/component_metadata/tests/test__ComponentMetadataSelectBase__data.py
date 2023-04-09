@@ -2,7 +2,7 @@ import vampytest
 
 from ..select_base import ComponentMetadataSelectBase
 
-from .test__ComponentMetadataSelectBase__constructor import _check_is_all_attribute_set
+from .test__ComponentMetadataSelectBase__constructor import _assert_fields_set
 
 
 def test__ComponentMetadataSelectBase__from_data():
@@ -24,7 +24,7 @@ def test__ComponentMetadataSelectBase__from_data():
     }
     
     component_metadata = ComponentMetadataSelectBase.from_data(data)
-    _check_is_all_attribute_set(component_metadata)
+    _assert_fields_set(component_metadata)
     vampytest.assert_eq(component_metadata.custom_id, custom_id)
     vampytest.assert_eq(component_metadata.enabled, enabled)
     vampytest.assert_eq(component_metadata.max_values, max_values)
@@ -44,15 +44,13 @@ def test__ComponentMetadataSelectBase__to_data():
     min_values = 9
     placeholder = 'swing'
     
-    keyword_parameters = {
-        'custom_id': custom_id,
-        'enabled': enabled,
-        'max_values': max_values,
-        'min_values': min_values,
-        'placeholder': placeholder,
-    }
-    
-    component_metadata = ComponentMetadataSelectBase(keyword_parameters)
+    component_metadata = ComponentMetadataSelectBase(
+        custom_id = custom_id,
+        enabled = enabled,
+        max_values = max_values,
+        min_values = min_values,
+        placeholder = placeholder,
+    )
     
     vampytest.assert_eq(
         component_metadata.to_data(

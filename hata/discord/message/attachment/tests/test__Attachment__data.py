@@ -2,7 +2,7 @@ import vampytest
 
 from ..attachment import Attachment
 
-from .test__Attachment__constructor import _check_is_all_attribute_set
+from .test__Attachment__constructor import _assert_fields_set
 
 
 def test__Attachment__from_data():
@@ -37,7 +37,7 @@ def test__Attachment__from_data():
     
     attachment = Attachment.from_data(data)
     
-    _check_is_all_attribute_set(attachment)
+    _assert_fields_set(attachment)
     
     vampytest.assert_eq(attachment.id, attachment_id)
     vampytest.assert_eq(attachment.proxy_url, proxy_url)

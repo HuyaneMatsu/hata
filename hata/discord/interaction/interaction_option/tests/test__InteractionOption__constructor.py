@@ -5,7 +5,7 @@ from ....application_command import ApplicationCommandOptionType
 from ..interaction_option import InteractionOption
 
 
-def _check_is_all_attribute_set(interaction_option):
+def _assert_fields_set(interaction_option):
     """
     Checks whether all attributes of the given interaction option are set.
     
@@ -28,7 +28,7 @@ def test__InteractionOption__new__0():
     Case: No fields.
     """
     interaction_option = InteractionOption()
-    _check_is_all_attribute_set(interaction_option)
+    _assert_fields_set(interaction_option)
 
 
 def test__InteractionOption__new__1():
@@ -50,7 +50,7 @@ def test__InteractionOption__new__1():
         type_ = type_,
         value = value,
     )
-    _check_is_all_attribute_set(interaction_option)
+    _assert_fields_set(interaction_option)
     
     vampytest.assert_eq(interaction_option.focused, focused)
     vampytest.assert_eq(interaction_option.name, name)
@@ -64,4 +64,4 @@ def test__InteractionOption__create_empty():
     Tests whether ``InteractionOption._create_empty`` works as intended.
     """
     interaction_option = InteractionOption._create_empty()
-    _check_is_all_attribute_set(interaction_option)
+    _assert_fields_set(interaction_option)

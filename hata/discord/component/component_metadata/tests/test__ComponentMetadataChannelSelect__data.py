@@ -4,7 +4,7 @@ from ....channel import ChannelType
 
 from ..channel_select import ComponentMetadataChannelSelect
 
-from .test__ComponentMetadataChannelSelect__constructor import _check_is_all_attribute_set
+from .test__ComponentMetadataChannelSelect__constructor import _assert_fields_set
 
 
 def test__ComponentMetadataChannelSelect__from_data():
@@ -28,7 +28,7 @@ def test__ComponentMetadataChannelSelect__from_data():
     }
     
     component_metadata = ComponentMetadataChannelSelect.from_data(data)
-    _check_is_all_attribute_set(component_metadata)
+    _assert_fields_set(component_metadata)
     vampytest.assert_eq(component_metadata.custom_id, custom_id)
     vampytest.assert_eq(component_metadata.enabled, enabled)
     vampytest.assert_eq(component_metadata.max_values, max_values)
@@ -50,16 +50,14 @@ def test__ComponentMetadataChannelSelect__to_data():
     placeholder = 'swing'
     channel_types = [ChannelType.private]
     
-    keyword_parameters = {
-        'custom_id': custom_id,
-        'enabled': enabled,
-        'max_values': max_values,
-        'min_values': min_values,
-        'placeholder': placeholder,
-        'channel_types': channel_types,
-    }
-    
-    component_metadata = ComponentMetadataChannelSelect(keyword_parameters)
+    component_metadata = ComponentMetadataChannelSelect(
+        custom_id = custom_id,
+        enabled = enabled,
+        max_values = max_values,
+        min_values = min_values,
+        placeholder = placeholder,
+        channel_types = channel_types,
+    )
     
     vampytest.assert_eq(
         component_metadata.to_data(

@@ -2,7 +2,7 @@ import vampytest
 
 from ..message_role_subscription import MessageRoleSubscription
 
-from .test__MessageRoleSubscription__constructor import _check_is_all_attribute_set
+from .test__MessageRoleSubscription__constructor import _assert_fields_set
 
 
 def test__MessageRoleSubscription__copy():
@@ -22,7 +22,7 @@ def test__MessageRoleSubscription__copy():
     )
     copy = message_role_subscription.copy()
     
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(message_role_subscription, copy)
     
     vampytest.assert_eq(message_role_subscription, copy)
@@ -47,7 +47,7 @@ def test__MessageRoleSubscription__copy_with__0():
     )
     copy = message_role_subscription.copy_with()
     
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(message_role_subscription, copy)
     
     vampytest.assert_eq(message_role_subscription, copy)
@@ -81,7 +81,7 @@ def test__MessageRoleSubscription__copy_with__1():
         total_months = new_total_months
     )
     
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_is_not(message_role_subscription, copy)
     
     vampytest.assert_eq(copy.renewal, new_renewal)

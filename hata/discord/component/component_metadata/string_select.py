@@ -24,29 +24,86 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
     min_values : `int`
         The minimal amount of options to select.
     
-    placeholder : `None`, `str`
-        Placeholder text of the select.
-    
     options : `None`, `tuple` of ``StringSelectOption``
         Options of the select.
+    
+    placeholder : `None`, `str`
+        Placeholder text of the select.
     """
     __slots__ = ('options', )
     
-    @copy_docs(ComponentMetadataSelectBase.__new__)
-    def __new__(cls, keyword_parameters):
+    
+    def __new__(
+        cls,
+        *,
+        custom_id = ...,
+        enabled = ...,
+        max_values = ...,
+        min_values = ...,
+        options = ...,
+        placeholder = ...,
+    ):
+        """
+        Creates a new string select component metadata with the given parameters.
+        
+        Parameters
+        ----------
+        custom_id : `None`, `str`, Optional (Keyword only)
+            Custom identifier to detect which component was used by the user.
+        
+        enabled : `bool`, Optional (Keyword only)
+            Whether the component is enabled.
+        
+        max_values : `int, Optional (Keyword only)
+            The maximal amount of options to select.
+        
+        min_values : `int`, Optional (Keyword only)
+            The minimal amount of options to select.
+        
+        options : `None`, `iterable` of ``StringSelectOption``, Optional (Keyword only)
+            Options of the select.
+        
+        placeholder : `None`, `str`, Optional (Keyword only)
+            Placeholder text of the select.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
         # options
-        try:
-            options = keyword_parameters.pop('options')
-        except KeyError:
+        if options is ...:
             options = None
         else:
             options = validate_options(options)
         
         # Construct
-        self = ComponentMetadataSelectBase.__new__(cls, keyword_parameters)
+        self = ComponentMetadataSelectBase.__new__(
+            cls,
+            custom_id = custom_id,
+            enabled = enabled,
+            max_values = max_values,
+            min_values = min_values,
+            placeholder = placeholder,
+        )
         self.options = options
         
         return self
+    
+    
+    @classmethod
+    @copy_docs(ComponentMetadataSelectBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            custom_id = keyword_parameters.pop('custom_id', ...),
+            enabled = keyword_parameters.pop('enabled', ...),
+            max_values = keyword_parameters.pop('max_values', ...),
+            min_values = keyword_parameters.pop('min_values', ...),
+            options = keyword_parameters.pop('options', ...),
+            placeholder = keyword_parameters.pop('placeholder', ...),
+        )
     
     
     @copy_docs(ComponentMetadataSelectBase._add_type_specific_repr_fields_into)
@@ -133,12 +190,52 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
         return new
     
     
-    @copy_docs(ComponentMetadataSelectBase.copy_with)
-    def copy_with(self, keyword_parameters):
+    def copy_with(
+        self,
+        *,
+        custom_id = ...,
+        enabled = ...,
+        max_values = ...,
+        min_values = ...,
+        options = ...,
+        placeholder = ...,
+    ):
+        """
+        Copies the channel select component metadata with the given fields.
+        
+        Parameters
+        ----------
+        custom_id : `None`, `str`, Optional (Keyword only)
+            Custom identifier to detect which component was used by the user.
+        
+        enabled : `bool`, Optional (Keyword only)
+            Whether the component is enabled.
+        
+        max_values : `int, Optional (Keyword only)
+            The maximal amount of options to select.
+        
+        min_values : `int`, Optional (Keyword only)
+            The minimal amount of options to select.
+        
+        options : `None`, `iterable` of ``StringSelectOption``, Optional (Keyword only)
+            Options of the select.
+        
+        placeholder : `None`, `str`, Optional (Keyword only)
+            Placeholder text of the select.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
         # options
-        try:
-            options = keyword_parameters.pop('options')
-        except KeyError:
+        if options is ...:
             options = self.options
             if (options is not None):
                 options = tuple(option.copy() for option in options)
@@ -146,7 +243,25 @@ class ComponentMetadataStringSelect(ComponentMetadataSelectBase):
             options = validate_options(options)
         
         # Construct
-        
-        new = ComponentMetadataSelectBase.copy_with(self, keyword_parameters)
+        new = ComponentMetadataSelectBase.copy_with(
+            self,
+            custom_id = custom_id,
+            enabled = enabled,
+            max_values = max_values,
+            min_values = min_values,
+            placeholder = placeholder,
+        )
         new.options = options
         return new
+    
+    
+    @copy_docs(ComponentMetadataSelectBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            custom_id = keyword_parameters.pop('custom_id', ...),
+            enabled = keyword_parameters.pop('enabled', ...),
+            max_values = keyword_parameters.pop('max_values', ...),
+            min_values = keyword_parameters.pop('min_values', ...),
+            options = keyword_parameters.pop('options', ...),
+            placeholder = keyword_parameters.pop('placeholder', ...),
+        )

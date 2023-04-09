@@ -3,7 +3,7 @@ import vampytest
 from ..message_activity import MessageActivity
 from ..preinstanced import MessageActivityType
 
-from .test__MessageActivity__constructor import _check_is_all_attribute_set
+from .test__MessageActivity__constructor import _assert_fields_set
 
 
 def test__MessageActivity__from_data():
@@ -19,7 +19,7 @@ def test__MessageActivity__from_data():
     }
     
     message_activity = MessageActivity.from_data(data)
-    _check_is_all_attribute_set(message_activity)
+    _assert_fields_set(message_activity)
 
     vampytest.assert_eq(message_activity.party_id, party_id)
     vampytest.assert_is(message_activity.type, message_activity_type)

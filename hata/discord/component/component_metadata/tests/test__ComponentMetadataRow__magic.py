@@ -11,11 +11,9 @@ def test__ComponentMetadataRow__repr():
     """
     components = [Component(ComponentType.button, label = 'chata')]
     
-    keyword_parameters = {
-        'components': components,
-    }
-    
-    component_metadata = ComponentMetadataRow(keyword_parameters)
+    component_metadata = ComponentMetadataRow(
+        components = components,
+    )
     
     vampytest.assert_instance(repr(component_metadata), str)
 
@@ -26,11 +24,9 @@ def test__ComponentMetadataRow__hash():
     """
     components = [Component(ComponentType.button, label = 'chata')]
     
-    keyword_parameters = {
-        'components': components,
-    }
-    
-    component_metadata = ComponentMetadataRow(keyword_parameters)
+    component_metadata = ComponentMetadataRow(
+        components = components,
+    )
     
     vampytest.assert_instance(hash(component_metadata), int)
 
@@ -45,7 +41,7 @@ def test__ComponentMetadataRow__eq():
         'components': components,
     }
     
-    component_metadata = ComponentMetadataRow(keyword_parameters)
+    component_metadata = ComponentMetadataRow(**keyword_parameters)
     
     vampytest.assert_eq(component_metadata, component_metadata)
     vampytest.assert_ne(component_metadata, object())
@@ -53,5 +49,5 @@ def test__ComponentMetadataRow__eq():
     for field_name, field_value in (
         ('components', None),
     ):
-        test_component_metadata = ComponentMetadataRow({**keyword_parameters, field_name: field_value})
+        test_component_metadata = ComponentMetadataRow(**{**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(component_metadata, test_component_metadata)

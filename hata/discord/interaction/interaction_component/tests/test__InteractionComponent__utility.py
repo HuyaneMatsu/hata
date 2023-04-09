@@ -4,7 +4,7 @@ from ....component import ComponentType
 
 from ..interaction_component import InteractionComponent
 
-from .test__InteractionComponent__constructor import _check_is_all_attribute_set
+from .test__InteractionComponent__constructor import _assert_fields_set
 
 
 def test__InteractionComponent__copy():
@@ -24,7 +24,7 @@ def test__InteractionComponent__copy():
     )
     
     copy = interaction_component.copy()
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(interaction_component, copy)
     vampytest.assert_eq(interaction_component, copy)
 
@@ -48,7 +48,7 @@ def test__InteractionComponent__copy_with():
     )
     
     copy = interaction_component.copy_with()
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(interaction_component, copy)
     vampytest.assert_eq(interaction_component, copy)
 
@@ -82,7 +82,7 @@ def test__InteractionComponent__copy_with__1():
         value = new_value,
     )
     
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_not_is(interaction_component, copy)
 
     vampytest.assert_eq(copy.custom_id, new_custom_id)

@@ -2,7 +2,7 @@ import vampytest
 
 from ..base import AutoModerationActionMetadataBase
 
-from .test__AutoModerationActionMetadataBase__constructor import _check_is_all_attribute_set
+from .test__AutoModerationActionMetadataBase__constructor import _assert_fields_set
 
 
 def test__AutoModerationActionMetadataBase__copy():
@@ -12,7 +12,7 @@ def test__AutoModerationActionMetadataBase__copy():
     metadata = AutoModerationActionMetadataBase()
     
     copy = metadata.copy()
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_eq(metadata, copy)
     vampytest.assert_is_not(metadata, copy)
@@ -25,7 +25,7 @@ def test__AutoModerationActionMetadataBase__copy_with():
     metadata = AutoModerationActionMetadataBase()
     
     copy = metadata.copy_with()
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_eq(metadata, copy)
     vampytest.assert_is_not(metadata, copy)

@@ -10,7 +10,7 @@ from ..preinstanced import ChannelType
 from ..utils import create_partial_channel_from_id
 
 
-def _check_is_all_attribute_set(channel):
+def _assert_fields_set(channel):
     """
     Checks whether all attributes of the channel is set.
     
@@ -38,7 +38,7 @@ def test__Channel__new__0():
     name = 'Rose'
     
     channel = Channel(channel_type = channel_type, name = name)
-    _check_is_all_attribute_set(channel)
+    _assert_fields_set(channel)
     
     vampytest.assert_is(channel.type, channel_type)
     vampytest.assert_eq(channel.name, name)
@@ -51,7 +51,7 @@ def test__Channel__new__1():
     Case: no fields given.
     """
     channel = Channel()
-    _check_is_all_attribute_set(channel)
+    _assert_fields_set(channel)
 
 
 def test__Channel__precreate__0():
@@ -66,7 +66,7 @@ def test__Channel__precreate__0():
     channel_id = 202209180132
     
     channel = Channel.precreate(channel_id, channel_type = channel_type, guild_id = guild_id, name = name)
-    _check_is_all_attribute_set(channel)
+    _assert_fields_set(channel)
     
     vampytest.assert_eq(channel.id, channel_id)
     vampytest.assert_is(channel.type, channel_type)
@@ -87,7 +87,7 @@ def test__Channel__precreate__1():
     channel_id = 202209180133
     
     channel = Channel.precreate(channel_id)
-    _check_is_all_attribute_set(channel)
+    _assert_fields_set(channel)
 
 
 def test__Channel__precreate__2():
@@ -115,7 +115,7 @@ def test__Channel__create_empty():
     guild_id = 202209180135
     
     channel = Channel._create_empty(channel_id, channel_type, guild_id)
-    _check_is_all_attribute_set(channel)
+    _assert_fields_set(channel)
     
     vampytest.assert_eq(channel.id, channel_id)
     vampytest.assert_is(channel.type, channel_type)
@@ -132,7 +132,7 @@ def test__Channel__create_private_data_less():
     channel_id = 202209180138
     
     channel = Channel._create_private_data_less(channel_id)
-    _check_is_all_attribute_set(channel)
+    _assert_fields_set(channel)
     
     vampytest.assert_eq(channel.id, channel_id)
     vampytest.assert_eq(channel.type, ChannelType.private)

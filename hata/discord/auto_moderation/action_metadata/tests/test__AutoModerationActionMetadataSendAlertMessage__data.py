@@ -2,7 +2,7 @@ import vampytest
 
 from ..alert_message import AutoModerationActionMetadataSendAlertMessage
 
-from .test__AutoModerationActionMetadataSendAlertMessage__constructor import _check_is_all_attribute_set
+from .test__AutoModerationActionMetadataSendAlertMessage__constructor import _assert_fields_set
 
 
 def test__AutoModerationActionMetadataSendAlertMessage__to_data():
@@ -33,5 +33,5 @@ def test__AutoModerationActionMetadataSendAlertMessage__from_data():
     
     metadata = AutoModerationActionMetadataSendAlertMessage.from_data(data)
     
-    _check_is_all_attribute_set(metadata)
+    _assert_fields_set(metadata)
     vampytest.assert_eq(metadata.channel_id, channel_id)

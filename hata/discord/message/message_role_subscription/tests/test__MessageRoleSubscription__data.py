@@ -2,7 +2,7 @@ import vampytest
 
 from ..message_role_subscription import MessageRoleSubscription
 
-from .test__MessageRoleSubscription__constructor import _check_is_all_attribute_set
+from .test__MessageRoleSubscription__constructor import _assert_fields_set
 
 
 def test__MessageRoleSubscription__from_data():
@@ -22,7 +22,7 @@ def test__MessageRoleSubscription__from_data():
     }
     
     message_role_subscription = MessageRoleSubscription.from_data(data)
-    _check_is_all_attribute_set(message_role_subscription)
+    _assert_fields_set(message_role_subscription)
 
     vampytest.assert_eq(message_role_subscription.renewal, renewal)
     vampytest.assert_eq(message_role_subscription.subscription_listing_id, subscription_listing_id)

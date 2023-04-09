@@ -4,6 +4,9 @@
 
 - `.IntegrationMetadataBase.__new__` is now `.from_keyword_parameters`. Add new `.__new__` method.
 - `.IntegrationMetadataBase.copy_with` is now `.copy_with_keyword_parameters`. Add new `.copy_with` method.
+- `ComponentMetadataBase.__new__` is now `.from_keyword_parameters`. Add new `.__new__` method.
+- `ComponentMetadataBase.copy_with` is now `.copy_with_keyword_parameters`. Add new `.copy_with` method.
+- `Component.copy_with` now supports the `component_type` parameter.
 
 ##### ext.slash
 - `abort` call from a component command is now handled as intended (so always creates a new message).

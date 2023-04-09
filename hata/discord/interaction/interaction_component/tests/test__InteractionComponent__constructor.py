@@ -5,7 +5,7 @@ from ....component import ComponentType
 from ..interaction_component import InteractionComponent
 
 
-def _check_is_all_attribute_set(interaction_component):
+def _assert_fields_set(interaction_component):
     """
     Checks whether all attributes of the given interaction component are set.
     
@@ -27,7 +27,7 @@ def test__InteractionComponent__new__0():
     Case: No fields.
     """
     interaction_component = InteractionComponent()
-    _check_is_all_attribute_set(interaction_component)
+    _assert_fields_set(interaction_component)
 
 
 def test__InteractionComponent__new__1():
@@ -47,7 +47,7 @@ def test__InteractionComponent__new__1():
         type_ = type_,
         value = value,
     )
-    _check_is_all_attribute_set(interaction_component)
+    _assert_fields_set(interaction_component)
     
     vampytest.assert_eq(interaction_component.custom_id, custom_id)
     vampytest.assert_eq(interaction_component.components, tuple(components))
@@ -60,4 +60,4 @@ def test__InteractionComponent__create_empty():
     Tests whether ``InteractionComponent._create_empty`` works as intended.
     """
     interaction_component = InteractionComponent._create_empty()
-    _check_is_all_attribute_set(interaction_component)
+    _assert_fields_set(interaction_component)

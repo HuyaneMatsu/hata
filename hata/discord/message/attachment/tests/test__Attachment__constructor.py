@@ -3,7 +3,7 @@ import vampytest
 from ..attachment import Attachment
 
 
-def _check_is_all_attribute_set(attachment):
+def _assert_fields_set(attachment):
     """
     Tests whether all attributes are set of the given attachment.
     
@@ -32,7 +32,7 @@ def test__Attachment__new__0():
     Case: No fields given.
     """
     attachment = Attachment()
-    _check_is_all_attribute_set(attachment)
+    _assert_fields_set(attachment)
 
 
 def test__Attachment__new__1():
@@ -60,7 +60,7 @@ def test__Attachment__new__1():
         url = url,
         width = width,
     )
-    _check_is_all_attribute_set(attachment)
+    _assert_fields_set(attachment)
     
     vampytest.assert_eq(attachment.content_type, content_type)
     vampytest.assert_eq(attachment.description, description)
@@ -81,7 +81,7 @@ def test__Attachment__precreate__0():
     attachment_id = 202211010000
     
     attachment = Attachment.precreate(attachment_id)
-    _check_is_all_attribute_set(attachment)
+    _assert_fields_set(attachment)
     
     vampytest.assert_eq(attachment.id, attachment_id)
 
@@ -116,7 +116,7 @@ def test__Attachment__precreate__1():
         url = url,
         width = width,
     )
-    _check_is_all_attribute_set(attachment)
+    _assert_fields_set(attachment)
     
     vampytest.assert_eq(attachment.id, attachment_id)
     vampytest.assert_eq(attachment.proxy_url, proxy_url)

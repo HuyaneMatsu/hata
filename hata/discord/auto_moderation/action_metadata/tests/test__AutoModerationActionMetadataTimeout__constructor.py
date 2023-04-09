@@ -3,7 +3,7 @@ import vampytest
 from ..timeout import AutoModerationActionMetadataTimeout
 
 
-def _check_is_all_attribute_set(metadata):
+def _assert_fields_set(metadata):
     """
     Asserts whether all attributes are set of the given auto moderation action metadata.
     
@@ -23,7 +23,7 @@ def test__AutoModerationActionMetadataTimeout__new__0():
     Case: no parameters.
     """
     metadata = AutoModerationActionMetadataTimeout()
-    _check_is_all_attribute_set(metadata)
+    _assert_fields_set(metadata)
 
 
 def test__AutoModerationActionMetadataTimeout__new__1():
@@ -35,6 +35,6 @@ def test__AutoModerationActionMetadataTimeout__new__1():
     duration = 69
     
     metadata = AutoModerationActionMetadataTimeout(duration)
-    _check_is_all_attribute_set(metadata)
+    _assert_fields_set(metadata)
     
     vampytest.assert_eq(metadata.duration, duration)

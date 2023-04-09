@@ -17,18 +17,16 @@ def test__ComponentMetadataTextInput__repr():
     text_input_style = TextInputStyle.paragraph
     value = 'sanatorium'
     
-    keyword_parameters = {
-        'custom_id': custom_id,
-        'label': label,
-        'max_length': max_length,
-        'min_length': min_length,
-        'placeholder': placeholder,
-        'required': required,
-        'text_input_style': text_input_style,
-        'value': value,
-    }
-    
-    component_metadata = ComponentMetadataTextInput(keyword_parameters)
+    component_metadata = ComponentMetadataTextInput(
+        custom_id = custom_id,
+        label = label,
+        max_length = max_length,
+        min_length = min_length,
+        placeholder = placeholder,
+        required = required,
+        text_input_style = text_input_style,
+        value = value,
+    )
     
     vampytest.assert_instance(repr(component_metadata), str)
 
@@ -46,18 +44,16 @@ def test__ComponentMetadataTextInput__hash():
     text_input_style = TextInputStyle.paragraph
     value = 'sanatorium'
     
-    keyword_parameters = {
-        'custom_id': custom_id,
-        'label': label,
-        'max_length': max_length,
-        'min_length': min_length,
-        'placeholder': placeholder,
-        'required': required,
-        'text_input_style': text_input_style,
-        'value': value,
-    }
-    
-    component_metadata = ComponentMetadataTextInput(keyword_parameters)
+    component_metadata = ComponentMetadataTextInput(
+        custom_id = custom_id,
+        label = label,
+        max_length = max_length,
+        min_length = min_length,
+        placeholder = placeholder,
+        required = required,
+        text_input_style = text_input_style,
+        value = value,
+    )
     
     vampytest.assert_instance(hash(component_metadata), int)
 
@@ -86,7 +82,7 @@ def test__ComponentMetadataTextInput__eq():
         'value': value,
     }
     
-    component_metadata = ComponentMetadataTextInput(keyword_parameters)
+    component_metadata = ComponentMetadataTextInput(**keyword_parameters)
     
     vampytest.assert_eq(component_metadata, component_metadata)
     vampytest.assert_ne(component_metadata, object())
@@ -101,5 +97,5 @@ def test__ComponentMetadataTextInput__eq():
         ('text_input_style', TextInputStyle.short),
         ('value', 'nue'),
     ):
-        test_component_metadata = ComponentMetadataTextInput({**keyword_parameters, field_name: field_value})
+        test_component_metadata = ComponentMetadataTextInput(**{**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(component_metadata, test_component_metadata)

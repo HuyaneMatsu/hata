@@ -2,7 +2,7 @@ import vampytest
 
 from ..base import ComponentMetadataBase
 
-from .test__ComponentMetadataBase__constructor import _check_is_all_attribute_set
+from .test__ComponentMetadataBase__constructor import _assert_fields_set
 
 
 def test__ComponentMetadataBase__from_data():
@@ -12,7 +12,7 @@ def test__ComponentMetadataBase__from_data():
     data = {}
     
     component_metadata = ComponentMetadataBase.from_data(data)
-    _check_is_all_attribute_set(component_metadata)
+    _assert_fields_set(component_metadata)
 
 
 def test__ComponentMetadataBase__to_data():
@@ -21,9 +21,7 @@ def test__ComponentMetadataBase__to_data():
     
     Case: include defaults.
     """
-    keyword_parameters = {}
-    
-    component_metadata = ComponentMetadataBase(keyword_parameters)
+    component_metadata = ComponentMetadataBase()
     
     vampytest.assert_eq(
         component_metadata.to_data(

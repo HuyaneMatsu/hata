@@ -17,16 +17,14 @@ def test__ComponentMetadataButton__repr__0():
     label = 'frost'
     url = None
     
-    keyword_parameters = {
-        'button_style': button_style,
-        'custom_id': custom_id,
-        'emoji': emoji,
-        'enabled': enabled,
-        'label': label,
-        'url': url,
-    }
-    
-    component_metadata = ComponentMetadataButton(keyword_parameters)
+    component_metadata = ComponentMetadataButton(
+        button_style = button_style,
+        custom_id = custom_id,
+        emoji = emoji,
+        enabled = enabled,
+        label = label,
+        url = url,
+    )
     
     vampytest.assert_instance(repr(component_metadata), str)
 
@@ -39,11 +37,9 @@ def test__ComponentMetadataButton__repr__1():
     """
     url = 'https://orindance.party/'
     
-    keyword_parameters = {
-        'url': url,
-    }
-    
-    component_metadata = ComponentMetadataButton(keyword_parameters)
+    component_metadata = ComponentMetadataButton(
+        url = url,
+    )
     
     vampytest.assert_instance(repr(component_metadata), str)
 
@@ -61,16 +57,14 @@ def test__ComponentMetadataButton__hash__0():
     label = 'frost'
     url = None
     
-    keyword_parameters = {
-        'button_style': button_style,
-        'custom_id': custom_id,
-        'emoji': emoji,
-        'enabled': enabled,
-        'label': label,
-        'url': url,
-    }
-    
-    component_metadata = ComponentMetadataButton(keyword_parameters)
+    component_metadata = ComponentMetadataButton(
+        button_style = button_style,
+        custom_id = custom_id,
+        emoji = emoji,
+        enabled = enabled,
+        label = label,
+        url = url,
+    )
     
     vampytest.assert_instance(hash(component_metadata), int)
 
@@ -84,11 +78,9 @@ def test__ComponentMetadataButton__hash__1():
     """
     url = 'https://orindance.party/'
     
-    keyword_parameters = {
-        'url': url,
-    }
-    
-    component_metadata = ComponentMetadataButton(keyword_parameters)
+    component_metadata = ComponentMetadataButton(
+        url = url,
+    )
     
     vampytest.assert_instance(hash(component_metadata), int)
 
@@ -113,7 +105,7 @@ def test__ComponentMetadataButton__eq__0():
         'url': url,
     }
     
-    component_metadata = ComponentMetadataButton(keyword_parameters)
+    component_metadata = ComponentMetadataButton(**keyword_parameters)
     
     vampytest.assert_eq(component_metadata, component_metadata)
     vampytest.assert_ne(component_metadata, object())
@@ -124,9 +116,9 @@ def test__ComponentMetadataButton__eq__0():
         ('emoji', BUILTIN_EMOJIS['knife']),
         ('enabled', True),
         ('label', 'fragment'),
-        ('url', None),
+        # ('url', None), # <- we test url in the test under this one
     ):
-        test_component_metadata = ComponentMetadataButton({**keyword_parameters, field_name: field_value})
+        test_component_metadata = ComponentMetadataButton(**{**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(component_metadata, test_component_metadata)
 
 
@@ -142,7 +134,7 @@ def test__ComponentMetadataButton__eq__1():
         'url': url,
     }
     
-    component_metadata = ComponentMetadataButton(keyword_parameters)
+    component_metadata = ComponentMetadataButton(**keyword_parameters)
     
     vampytest.assert_eq(component_metadata, component_metadata)
     vampytest.assert_ne(component_metadata, object())
@@ -150,5 +142,5 @@ def test__ComponentMetadataButton__eq__1():
     for field_name, field_value in (
         ('url', 'https://www.astil.dev/'),
     ):
-        test_component_metadata = ComponentMetadataButton({**keyword_parameters, field_name: field_value})
+        test_component_metadata = ComponentMetadataButton(**{**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(component_metadata, test_component_metadata)

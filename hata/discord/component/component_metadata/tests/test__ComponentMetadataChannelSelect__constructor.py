@@ -5,7 +5,7 @@ from ....channel import ChannelType
 from ..channel_select import ComponentMetadataChannelSelect
 
 
-def _check_is_all_attribute_set(component_metadata):
+def _assert_fields_set(component_metadata):
     """
     Checks whether the ``ComponentMetadataChannelSelect`` has all it's attributes set.
     """
@@ -25,15 +25,55 @@ def test__ComponentMetadataChannelSelect__new__0():
     
     Case: no fields given.
     """
-    keyword_parameters = {}
-    
-    component_metadata = ComponentMetadataChannelSelect(keyword_parameters)
-    _check_is_all_attribute_set(component_metadata)
+    component_metadata = ComponentMetadataChannelSelect()
+    _assert_fields_set(component_metadata)
 
 
 def test__ComponentMetadataChannelSelect__new__1():
     """
     Tests whether ``ComponentMetadataChannelSelect.__new__`` works as intended.
+    
+    Case: all fields given
+    """
+    custom_id = 'oriental'
+    enabled = False
+    max_values = 10
+    min_values = 9
+    placeholder = 'swing'
+    channel_types = [ChannelType.private]
+    
+    component_metadata = ComponentMetadataChannelSelect(
+        custom_id = custom_id,
+        enabled = enabled,
+        max_values = max_values,
+        min_values = min_values,
+        placeholder = placeholder,
+        channel_types = channel_types,
+    )
+    _assert_fields_set(component_metadata)
+    vampytest.assert_eq(component_metadata.custom_id, custom_id)
+    vampytest.assert_eq(component_metadata.enabled, enabled)
+    vampytest.assert_eq(component_metadata.max_values, max_values)
+    vampytest.assert_eq(component_metadata.min_values, min_values)
+    vampytest.assert_eq(component_metadata.placeholder, placeholder)
+    vampytest.assert_eq(component_metadata.channel_types, tuple(channel_types))
+
+
+def test__ComponentMetadataChannelSelect__from_keyword_parameters__0():
+    """
+    Tests whether ``ComponentMetadataChannelSelect.from_keyword_parameters`` works as intended.
+    
+    Case: no fields given.
+    """
+    keyword_parameters = {}
+    
+    component_metadata = ComponentMetadataChannelSelect.from_keyword_parameters(keyword_parameters)
+    _assert_fields_set(component_metadata)
+
+
+def test__ComponentMetadataChannelSelect__from_keyword_parameters__1():
+    """
+    Tests whether ``ComponentMetadataChannelSelect.from_keyword_parameters`` works as intended.
     
     Case: all fields given
     """
@@ -53,8 +93,8 @@ def test__ComponentMetadataChannelSelect__new__1():
         'channel_types': channel_types,
     }
     
-    component_metadata = ComponentMetadataChannelSelect(keyword_parameters)
-    _check_is_all_attribute_set(component_metadata)
+    component_metadata = ComponentMetadataChannelSelect.from_keyword_parameters(keyword_parameters)
+    _assert_fields_set(component_metadata)
     vampytest.assert_eq(component_metadata.custom_id, custom_id)
     vampytest.assert_eq(component_metadata.enabled, enabled)
     vampytest.assert_eq(component_metadata.max_values, max_values)

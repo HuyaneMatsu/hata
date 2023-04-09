@@ -2,7 +2,7 @@ import vampytest
 
 from ..base import AutoModerationActionMetadataBase
 
-from .test__AutoModerationActionMetadataBase__constructor import _check_is_all_attribute_set
+from .test__AutoModerationActionMetadataBase__constructor import _assert_fields_set
 
 
 def test__AutoModerationActionMetadataBase__to_data__0():
@@ -24,4 +24,4 @@ def test__AutoModerationActionMetadataBase__from_data__0():
     data = {}
     
     metadata = AutoModerationActionMetadataBase.from_data(data)
-    _check_is_all_attribute_set(metadata)
+    _assert_fields_set(metadata)

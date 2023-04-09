@@ -4,7 +4,7 @@ from ..message_activity import MessageActivity
 from ..preinstanced import MessageActivityType
 
 
-def _check_is_all_attribute_set(message_activity):
+def _assert_fields_set(message_activity):
     """
     Tests whether all attributes are set of the given message activity.
     
@@ -25,7 +25,7 @@ def test__MessageActivity__new__0():
     Case: No fields given.
     """
     message_activity = MessageActivity()
-    _check_is_all_attribute_set(message_activity)
+    _assert_fields_set(message_activity)
 
 
 def test__MessageActivity__new__1():
@@ -41,7 +41,7 @@ def test__MessageActivity__new__1():
         message_activity_type = message_activity_type,
         party_id = party_id,
     )
-    _check_is_all_attribute_set(message_activity)
+    _assert_fields_set(message_activity)
     
     vampytest.assert_eq(message_activity.party_id, party_id)
     vampytest.assert_is(message_activity.type, message_activity_type)

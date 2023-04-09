@@ -3,7 +3,7 @@ import vampytest
 from ..mentionable_select import ComponentMetadataMentionableSelect
 
 
-def _check_is_all_attribute_set(component_metadata):
+def _assert_fields_set(component_metadata):
     """
     Checks whether the ``ComponentMetadataMentionableSelect`` has all it's attributes set.
     """
@@ -22,15 +22,52 @@ def test__ComponentMetadataMentionableSelect__new__0():
     
     Case: no fields given.
     """
-    keyword_parameters = {}
-    
-    component_metadata = ComponentMetadataMentionableSelect(keyword_parameters)
-    _check_is_all_attribute_set(component_metadata)
+    component_metadata = ComponentMetadataMentionableSelect()
+    _assert_fields_set(component_metadata)
 
 
 def test__ComponentMetadataMentionableSelect__new__1():
     """
     Tests whether ``ComponentMetadataMentionableSelect.__new__`` works as intended.
+    
+    Case: all fields given
+    """
+    custom_id = 'oriental'
+    enabled = False
+    max_values = 10
+    min_values = 9
+    placeholder = 'swing'
+    
+    component_metadata = ComponentMetadataMentionableSelect(
+        custom_id = custom_id,
+        enabled = enabled,
+        max_values = max_values,
+        min_values = min_values,
+        placeholder = placeholder,
+    )
+    _assert_fields_set(component_metadata)
+    vampytest.assert_eq(component_metadata.custom_id, custom_id)
+    vampytest.assert_eq(component_metadata.enabled, enabled)
+    vampytest.assert_eq(component_metadata.max_values, max_values)
+    vampytest.assert_eq(component_metadata.min_values, min_values)
+    vampytest.assert_eq(component_metadata.placeholder, placeholder)
+
+
+def test__ComponentMetadataMentionableSelect__from_keyword_parameters__0():
+    """
+    Tests whether ``ComponentMetadataMentionableSelect.from_keyword_parameters`` works as intended.
+    
+    Case: no fields given.
+    """
+    keyword_parameters = {}
+    
+    component_metadata = ComponentMetadataMentionableSelect.from_keyword_parameters(keyword_parameters)
+    _assert_fields_set(component_metadata)
+
+
+def test__ComponentMetadataMentionableSelect__from_keyword_parameters__1():
+    """
+    Tests whether ``ComponentMetadataMentionableSelect.from_keyword_parameters`` works as intended.
     
     Case: all fields given
     """
@@ -48,8 +85,8 @@ def test__ComponentMetadataMentionableSelect__new__1():
         'placeholder': placeholder,
     }
     
-    component_metadata = ComponentMetadataMentionableSelect(keyword_parameters)
-    _check_is_all_attribute_set(component_metadata)
+    component_metadata = ComponentMetadataMentionableSelect.from_keyword_parameters(keyword_parameters)
+    _assert_fields_set(component_metadata)
     vampytest.assert_eq(component_metadata.custom_id, custom_id)
     vampytest.assert_eq(component_metadata.enabled, enabled)
     vampytest.assert_eq(component_metadata.max_values, max_values)

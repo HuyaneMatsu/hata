@@ -13,14 +13,33 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
     """
     __slots__ = ()
     
-    def __new__(cls, keyword_parameters):
+    def __new__(cls):
+        """
+        Creates a new component metadata from the given fields.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        return object.__new__(cls)
+    
+    
+    @classmethod
+    def from_keyword_parameters(cls, keyword_parameters):
         """
         Creates a new component metadata from the given keyword parameters.
         
         Parameters
         ----------
-        keyword_parameters : `dict` of (`str`, `Any`) items
+        keyword_parameters : `dict` of (`str`, `object`) items
             Keyword parameters to build the metadata from.
+        
+        Returns
+        -------
+        self : `instance<type<cls>>`
         
         Raises
         ------
@@ -73,7 +92,7 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         
         Parameters
         ----------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
             Component data.
         
         Returns
@@ -95,7 +114,7 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         
         Returns
         -------
-        data : `dict` of (`str`, `Any`) items
+        data : `dict` of (`str`, `object`) items
         """
         return {}
     
@@ -111,14 +130,9 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         return object.__new__(type(self))
     
     
-    def copy_with(self, keyword_parameters):
+    def copy_with(self):
         """
-        Copies the component metadata with changing it's field.
-        
-        Parameters
-        ----------
-        keyword_parameters : `dict` of (`str`, `Any`) items
-            Keyword parameters defining which fields should be changed.
+        Copies the component metadata with the given fields.
         
         Returns
         -------
@@ -131,7 +145,33 @@ class ComponentMetadataBase(RichAttributeErrorBaseType):
         ValueError
             - If a parameter's value is incorrect.
         """
-        return object.__new__(type(self))
+        return self.copy()
+    
+    
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        """
+        Copies the component metadata with the given keyword parameters.
+        
+        The used up fields are popped from the keyword parameters.
+        
+        Parameters
+        ----------
+        keyword_parameters : `dict` of (`str`, `object`) items
+            Keyword parameters defining which fields should be changed.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
+        return self.copy_with()
+    
     
     # Field placeholders
     

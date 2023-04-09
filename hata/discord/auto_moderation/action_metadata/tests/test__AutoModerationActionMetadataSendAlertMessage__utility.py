@@ -2,7 +2,7 @@ import vampytest
 
 from ..alert_message import AutoModerationActionMetadataSendAlertMessage
 
-from .test__AutoModerationActionMetadataSendAlertMessage__constructor import _check_is_all_attribute_set
+from .test__AutoModerationActionMetadataSendAlertMessage__constructor import _assert_fields_set
 
 
 def test__AutoModerationActionMetadataSendAlertMessage__copy():
@@ -14,7 +14,7 @@ def test__AutoModerationActionMetadataSendAlertMessage__copy():
     
     copy = metadata.copy()
     
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_eq(metadata, copy)
     vampytest.assert_is_not(metadata, copy)
 
@@ -30,7 +30,7 @@ def test__AutoModerationActionMetadataSendAlertMessage__copy_with__0():
     
     copy = metadata.copy_with()
     
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_eq(metadata, copy)
     vampytest.assert_is_not(metadata, copy)
 
@@ -48,5 +48,5 @@ def test__AutoModerationActionMetadataSendAlertMessage__copy_with__1():
     
     copy = metadata.copy_with(channel_id = new_channel_id)
     
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     vampytest.assert_eq(copy.channel_id, new_channel_id)

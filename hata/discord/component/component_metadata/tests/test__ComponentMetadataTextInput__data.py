@@ -3,7 +3,7 @@ import vampytest
 from ..preinstanced import TextInputStyle
 from ..text_input import ComponentMetadataTextInput
 
-from .test__ComponentMetadataTextInput__constructor import _check_is_all_attribute_set
+from .test__ComponentMetadataTextInput__constructor import _assert_fields_set
 
 
 def test__ComponentMetadataTextInput__from_data():
@@ -31,7 +31,7 @@ def test__ComponentMetadataTextInput__from_data():
     }
     
     component_metadata = ComponentMetadataTextInput.from_data(data)
-    _check_is_all_attribute_set(component_metadata)
+    _assert_fields_set(component_metadata)
     vampytest.assert_eq(component_metadata.custom_id, custom_id)
     vampytest.assert_eq(component_metadata.label, label)
     vampytest.assert_eq(component_metadata.max_length, max_length)
@@ -57,18 +57,16 @@ def test__ComponentMetadataTextInput__to_data():
     text_input_style = TextInputStyle.paragraph
     value = 'sanatorium'
     
-    keyword_parameters = {
-        'custom_id': custom_id,
-        'label': label,
-        'max_length': max_length,
-        'min_length': min_length,
-        'placeholder': placeholder,
-        'required': required,
-        'text_input_style': text_input_style,
-        'value': value,
-    }
-    
-    component_metadata = ComponentMetadataTextInput(keyword_parameters)
+    component_metadata = ComponentMetadataTextInput(
+        custom_id = custom_id,
+        label = label,
+        max_length = max_length,
+        min_length = min_length,
+        placeholder = placeholder,
+        required = required,
+        text_input_style = text_input_style,
+        value = value,
+    )
     
     vampytest.assert_eq(
         component_metadata.to_data(

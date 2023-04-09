@@ -3,7 +3,8 @@ __all__ = ('ApplicationCommandOptionMetadataNumeric',)
 from scarletio import copy_docs
 
 from .fields import (
-    parse_max_value, parse_min_value, put_max_value_into, put_min_value_into, validate_max_value_postprocessed, validate_min_value_postprocessed
+    parse_max_value, parse_min_value, put_max_value_into, put_min_value_into, validate_max_value_postprocessed,
+    validate_min_value_postprocessed
 )
 from .primitive import ApplicationCommandOptionMetadataPrimitive
 

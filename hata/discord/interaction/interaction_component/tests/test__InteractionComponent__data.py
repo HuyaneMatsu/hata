@@ -4,7 +4,7 @@ from ....component import ComponentType
 
 from ..interaction_component import InteractionComponent
 
-from .test__InteractionComponent__constructor import _check_is_all_attribute_set
+from .test__InteractionComponent__constructor import _assert_fields_set
 
 
 def test__InteractionComponent__from_data():
@@ -24,7 +24,7 @@ def test__InteractionComponent__from_data():
     }
     
     interaction_component = InteractionComponent.from_data(data)
-    _check_is_all_attribute_set(interaction_component)
+    _assert_fields_set(interaction_component)
     
     vampytest.assert_eq(interaction_component.custom_id, custom_id)
     vampytest.assert_eq(interaction_component.components, tuple(components))

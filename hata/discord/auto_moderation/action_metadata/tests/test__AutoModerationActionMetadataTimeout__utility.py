@@ -2,7 +2,7 @@ import vampytest
 
 from ..timeout import AutoModerationActionMetadataTimeout
 
-from .test__AutoModerationActionMetadataTimeout__constructor import _check_is_all_attribute_set
+from .test__AutoModerationActionMetadataTimeout__constructor import _assert_fields_set
 
 
 def test__AutoModerationActionMetadataTimeout__copy():
@@ -14,7 +14,7 @@ def test__AutoModerationActionMetadataTimeout__copy():
     metadata = AutoModerationActionMetadataTimeout(duration)
     
     copy = metadata.copy()
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_eq(metadata, copy)
     vampytest.assert_is_not(metadata, copy)
@@ -31,7 +31,7 @@ def test__AutoModerationActionMetadataTimeout__copy_with__0():
     metadata = AutoModerationActionMetadataTimeout(duration)
     
     copy = metadata.copy_with()
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_eq(metadata, copy)
     vampytest.assert_is_not(metadata, copy)
@@ -51,6 +51,6 @@ def test__AutoModerationActionMetadataTimeout__copy_with__1():
     copy = metadata.copy_with(
         duration = new_duration,
     )
-    _check_is_all_attribute_set(copy)
+    _assert_fields_set(copy)
     
     vampytest.assert_eq(copy.duration, new_duration)

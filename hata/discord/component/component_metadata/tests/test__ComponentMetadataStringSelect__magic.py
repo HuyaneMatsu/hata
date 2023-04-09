@@ -16,16 +16,14 @@ def test__ComponentMetadataStringSelect__repr():
     placeholder = 'swing'
     options = [StringSelectOption('yume')]
     
-    keyword_parameters = {
-        'custom_id': custom_id,
-        'enabled': enabled,
-        'max_values': max_values,
-        'min_values': min_values,
-        'placeholder': placeholder,
-        'options': options,
-    }
-    
-    component_metadata = ComponentMetadataStringSelect(keyword_parameters)
+    component_metadata = ComponentMetadataStringSelect(
+        custom_id = custom_id,
+        enabled = enabled,
+        max_values = max_values,
+        min_values = min_values,
+        placeholder = placeholder,
+        options = options,
+    )
     
     vampytest.assert_instance(repr(component_metadata), str)
 
@@ -41,16 +39,14 @@ def test__ComponentMetadataStringSelect__hash():
     placeholder = 'swing'
     options = [StringSelectOption('yume')]
     
-    keyword_parameters = {
-        'custom_id': custom_id,
-        'enabled': enabled,
-        'max_values': max_values,
-        'min_values': min_values,
-        'placeholder': placeholder,
-        'options': options,
-    }
-    
-    component_metadata = ComponentMetadataStringSelect(keyword_parameters)
+    component_metadata = ComponentMetadataStringSelect(
+        custom_id = custom_id,
+        enabled = enabled,
+        max_values = max_values,
+        min_values = min_values,
+        placeholder = placeholder,
+        options = options,
+    )
     
     vampytest.assert_instance(hash(component_metadata), int)
 
@@ -75,7 +71,7 @@ def test__ComponentMetadataStringSelect__eq():
         'options': options,
     }
     
-    component_metadata = ComponentMetadataStringSelect(keyword_parameters)
+    component_metadata = ComponentMetadataStringSelect(**keyword_parameters)
     
     vampytest.assert_eq(component_metadata, component_metadata)
     vampytest.assert_ne(component_metadata, object())
@@ -88,5 +84,5 @@ def test__ComponentMetadataStringSelect__eq():
         ('placeholder', 'kokoro'),
         ('options', None),
     ):
-        test_component_metadata = ComponentMetadataStringSelect({**keyword_parameters, field_name: field_value})
+        test_component_metadata = ComponentMetadataStringSelect(**{**keyword_parameters, field_name: field_value})
         vampytest.assert_ne(component_metadata, test_component_metadata)

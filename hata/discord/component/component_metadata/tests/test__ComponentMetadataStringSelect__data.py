@@ -4,7 +4,7 @@ from ...string_select_option import StringSelectOption
 
 from ..string_select import ComponentMetadataStringSelect
 
-from .test__ComponentMetadataStringSelect__constructor import _check_is_all_attribute_set
+from .test__ComponentMetadataStringSelect__constructor import _assert_fields_set
 
 
 def test__ComponentMetadataStringSelect__from_data():
@@ -28,7 +28,7 @@ def test__ComponentMetadataStringSelect__from_data():
     }
     
     component_metadata = ComponentMetadataStringSelect.from_data(data)
-    _check_is_all_attribute_set(component_metadata)
+    _assert_fields_set(component_metadata)
     vampytest.assert_eq(component_metadata.custom_id, custom_id)
     vampytest.assert_eq(component_metadata.enabled, enabled)
     vampytest.assert_eq(component_metadata.max_values, max_values)
@@ -50,16 +50,14 @@ def test__ComponentMetadataStringSelect__to_data():
     placeholder = 'swing'
     options = [StringSelectOption('yume')]
     
-    keyword_parameters = {
-        'custom_id': custom_id,
-        'enabled': enabled,
-        'max_values': max_values,
-        'min_values': min_values,
-        'placeholder': placeholder,
-        'options': options,
-    }
-    
-    component_metadata = ComponentMetadataStringSelect(keyword_parameters)
+    component_metadata = ComponentMetadataStringSelect(
+        custom_id = custom_id,
+        enabled = enabled,
+        max_values = max_values,
+        min_values = min_values,
+        placeholder = placeholder,
+        options = options,
+    )
     
     vampytest.assert_eq(
         component_metadata.to_data(

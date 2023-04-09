@@ -39,44 +39,61 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
     """
     __slots__ = ('custom_id', 'enabled', 'max_values', 'min_values', 'placeholder')
     
-    @copy_docs(ComponentMetadataBase.__new__)
-    def __new__(cls, keyword_parameters):
+    
+    def __new__(cls, *, custom_id = ..., enabled = ..., max_values = ..., min_values = ..., placeholder = ...):
+        """
+        Creates a new base select component metadata with the given parameters.
+        
+        Parameters
+        ----------
+        custom_id : `None`, `str`, Optional (Keyword only)
+            Custom identifier to detect which component was used by the user.
+        
+        enabled : `bool`, Optional (Keyword only)
+            Whether the component is enabled.
+        
+        max_values : `int, Optional (Keyword only)
+            The maximal amount of options to select.
+        
+        min_values : `int`, Optional (Keyword only)
+            The minimal amount of options to select.
+        
+        placeholder : `None`, `str`, Optional (Keyword only)
+            Placeholder text of the select.
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
         # custom_id
-        try:
-            custom_id = keyword_parameters.pop('custom_id')
-        except KeyError:
+        if custom_id is ...:
             custom_id = None
         else:
             custom_id = validate_custom_id(custom_id)
         
         # enabled
-        try:
-            enabled = keyword_parameters.pop('enabled')
-        except KeyError:
+        if enabled is ...:
             enabled = True
         else:
             enabled = validate_enabled(enabled)
         
         # max_values
-        try:
-            max_values = keyword_parameters.pop('max_values')
-        except KeyError:
+        if max_values is ...:
             max_values = MAX_VALUES_DEFAULT
         else:
             max_values = validate_max_values(max_values)
         
         # min_values
-        try:
-            min_values = keyword_parameters.pop('min_values')
-        except KeyError:
+        if min_values is ...:
             min_values = MIN_VALUES_DEFAULT
         else:
             min_values = validate_min_values(min_values)
         
         # placeholder
-        try:
-            placeholder = keyword_parameters.pop('placeholder')
-        except KeyError:
+        if placeholder is ...:
             placeholder = None
         else:
             placeholder = validate_placeholder(placeholder)
@@ -87,7 +104,6 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
             custom_id = create_auto_custom_id()
         
         # Construct
-        
         self = object.__new__(cls)
         self.custom_id = custom_id
         self.enabled = enabled
@@ -95,6 +111,18 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         self.min_values = min_values
         self.placeholder = placeholder
         return self
+    
+    
+    @classmethod
+    @copy_docs(ComponentMetadataBase.from_keyword_parameters)
+    def from_keyword_parameters(cls, keyword_parameters):
+        return cls(
+            custom_id = keyword_parameters.pop('custom_id', ...),
+            enabled = keyword_parameters.pop('enabled', ...),
+            max_values = keyword_parameters.pop('max_values', ...),
+            min_values = keyword_parameters.pop('min_values', ...),
+            placeholder = keyword_parameters.pop('placeholder', ...),
+        )
     
     
     @copy_docs(ComponentMetadataBase.__repr__)
@@ -256,44 +284,73 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         return new
     
     
-    @copy_docs(ComponentMetadataBase.copy_with)
-    def copy_with(self, keyword_parameters):
+    def copy_with(
+        self,
+        *,
+        channel_types = ...,
+        custom_id = ...,
+        enabled = ...,
+        max_values = ...,
+        min_values = ...,
+        placeholder = ...,
+    ):
+        """
+        Copies the base select component metadata with the given fields.
+        
+        Parameters
+        ----------
+        custom_id : `None`, `str`, Optional (Keyword only)
+            Custom identifier to detect which component was used by the user.
+        
+        enabled : `bool`, Optional (Keyword only)
+            Whether the component is enabled.
+        
+        max_values : `int, Optional (Keyword only)
+            The maximal amount of options to select.
+        
+        min_values : `int`, Optional (Keyword only)
+            The minimal amount of options to select.
+        
+        placeholder : `None`, `str`, Optional (Keyword only)
+            Placeholder text of the select.
+        
+        Returns
+        -------
+        new : `instance<type<self>>`
+        
+        Raises
+        ------
+        TypeError
+            - If a parameter's type is incorrect.
+        ValueError
+            - If a parameter's value is incorrect.
+        """
         # custom_id
-        try:
-            custom_id = keyword_parameters.pop('custom_id')
-        except KeyError:
+        if custom_id is ...:
             custom_id = self.custom_id
         else:
             custom_id = validate_custom_id(custom_id)
         
         # enabled
-        try:
-            enabled = keyword_parameters.pop('enabled')
-        except KeyError:
+        if enabled is ...:
             enabled = self.enabled
         else:
             enabled = validate_enabled(enabled)
         
         # max_values
-        try:
-            max_values = keyword_parameters.pop('max_values')
-        except KeyError:
+        if max_values is ...:
             max_values = self.max_values
         else:
             max_values = validate_max_values(max_values)
         
         # min_values
-        try:
-            min_values = keyword_parameters.pop('min_values')
-        except KeyError:
+        if min_values is ...:
             min_values = self.min_values
         else:
             min_values = validate_min_values(min_values)
         
         # placeholder
-        try:
-            placeholder = keyword_parameters.pop('placeholder')
-        except KeyError:
+        if placeholder is ...:
             placeholder = self.placeholder
         else:
             placeholder = validate_placeholder(placeholder)
@@ -304,7 +361,6 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
             custom_id = create_auto_custom_id()
         
         # Construct
-        
         new = object.__new__(type(self))
         new.custom_id = custom_id
         new.enabled = enabled
@@ -312,3 +368,14 @@ class ComponentMetadataSelectBase(ComponentMetadataBase):
         new.min_values = min_values
         new.placeholder = placeholder
         return new
+    
+    
+    @copy_docs(ComponentMetadataBase.copy_with_keyword_parameters)
+    def copy_with_keyword_parameters(self, keyword_parameters):
+        return self.copy_with(
+            custom_id = keyword_parameters.pop('custom_id', ...),
+            enabled = keyword_parameters.pop('enabled', ...),
+            max_values = keyword_parameters.pop('max_values', ...),
+            min_values = keyword_parameters.pop('min_values', ...),
+            placeholder = keyword_parameters.pop('placeholder', ...),
+        )
